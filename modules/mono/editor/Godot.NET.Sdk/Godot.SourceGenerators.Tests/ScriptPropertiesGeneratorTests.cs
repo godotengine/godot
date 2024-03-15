@@ -41,7 +41,7 @@ public class ScriptPropertiesGeneratorTests
     }
 
     [Fact]
-    public async void OneWayPropertiesMixedReadonlyWriteOnly()
+    public async void OneWayPropertiesMixedReadOnlyWriteOnly()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
             "MixedReadOnlyWriteOnly.cs",

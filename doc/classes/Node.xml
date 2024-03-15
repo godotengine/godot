@@ -37,13 +37,9 @@
 			</description>
 		</method>
 		<method name="_get_configuration_warnings" qualifiers="virtual const">
-			<return type="Array" />
+			<return type="PackedStringArray" />
 			<description>
 				The elements in the array returned from this method are displayed as warnings in the Scene dock if the script that overrides it is a [code]tool[/code] script.
-				Each array element must either be a [String] or a [Dictionary].
-				A dictionary element must contain a key [code]message[/code] of type [String] which is shown in the user interface.
-				The dictionary may optionally contain a key [code]property[/code] of type [NodePath], which also shows this warning in the inspector on the corresponding property.
-				If a string is found in the returned array, it is converted to an equivalent dictionary with the [code]message[/code] field set.
 				Returning an empty array produces no warnings.
 				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
 				[codeblock]
@@ -186,6 +182,32 @@
 				[b]Note:[/b] [SceneTree]'s group methods will [i]not[/i] work on this node if not inside the tree (see [method is_inside_tree]).
 			</description>
 		</method>
+		<method name="atr" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
+			<description>
+				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
+				This method works the same as [method Object.tr], with the addition of respecting the [member auto_translate_mode] state.
+				If [method Object.can_translate_messages] is [code]false[/code], or no translation is available, this method returns the [param message] without changes. See [method Object.set_message_translation].
+				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url].
+			</description>
+		</method>
+		<method name="atr_n" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="plural_message" type="StringName" />
+			<param index="2" name="n" type="int" />
+			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
+			<description>
+				Translates a [param message] or [param plural_message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
+				This method works the same as [method Object.tr_n], with the addition of respecting the [member auto_translate_mode] state.
+				If [method Object.can_translate_messages] is [code]false[/code], or no translation is available, this method returns [param message] or [param plural_message], without changes. See [method Object.set_message_translation].
+				The [param n] is the number, or amount, of the message's subject. It is used by the translation system to fetch the correct plural form for the current language.
+				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url].
+				[b]Note:[/b] Negative and [float] numbers may not properly apply to some countable subjects. It's recommended to handle these cases with [method atr].
+			</description>
+		</method>
 		<method name="call_deferred_thread_group" qualifiers="vararg">
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
@@ -203,7 +225,7 @@
 		<method name="can_process" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node can receive processing notifications and input callbacks ([constant NOTIFICATION_PROCESS], [method _input], etc) from the [SceneTree] and [Viewport]. The returned value depends on [member process_mode]:
+				Returns [code]true[/code] if the node can receive processing notifications and input callbacks ([constant NOTIFICATION_PROCESS], [method _input], etc.) from the [SceneTree] and [Viewport]. The returned value depends on [member process_mode]:
 				- If set to [constant PROCESS_MODE_PAUSABLE], returns [code]true[/code] when the game is processing, i.e. [member SceneTree.paused] is [code]false[/code];
 				- If set to [constant PROCESS_MODE_WHEN_PAUSED], returns [code]true[/code] when the game is paused, i.e. [member SceneTree.paused] is [code]true[/code];
 				- If set to [constant PROCESS_MODE_ALWAYS], always returns [code]true[/code];
@@ -923,6 +945,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="auto_translate_mode" type="int" setter="set_auto_translate_mode" getter="get_auto_translate_mode" enum="Node.AutoTranslateMode" default="0">
+			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). See [enum AutoTranslateMode].
+			Also decides if the node's strings should be parsed for POT generation.
+		</member>
 		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
 			An optional description to the node. It will be displayed as a tooltip when hovering over the node in the editor's Scene dock.
 		</member>
@@ -951,7 +977,7 @@
 			Set the process thread group for this node (basically, whether it receives [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS], [method _process] or [method _physics_process] (and the internal versions) on the main thread or in a sub-thread.
 			By default, the thread group is [constant PROCESS_THREAD_GROUP_INHERIT], which means that this node belongs to the same thread group as the parent node. The thread groups means that nodes in a specific thread group will process together, separate to other thread groups (depending on [member process_thread_group_order]). If the value is set is [constant PROCESS_THREAD_GROUP_SUB_THREAD], this thread group will occur on a sub thread (not the main thread), otherwise if set to [constant PROCESS_THREAD_GROUP_MAIN_THREAD] it will process on the main thread. If there is not a parent or grandparent node set to something other than inherit, the node will belong to the [i]default thread group[/i]. This default group will process on the main thread and its group order is 0.
 			During processing in a sub-thread, accessing most functions in nodes outside the thread group is forbidden (and it will result in an error in debug mode). Use [method Object.call_deferred], [method call_thread_safe], [method call_deferred_thread_group] and the likes in order to communicate from the thread groups to the main thread (or to other thread groups).
-			To better understand process thread groups, the idea is that any node set to any other value than [constant PROCESS_THREAD_GROUP_INHERIT] will include any children (and grandchildren) nodes set to inherit into its process thread group. this means that the processing of all the nodes in the group will happen together, at the same time as the node including them.
+			To better understand process thread groups, the idea is that any node set to any other value than [constant PROCESS_THREAD_GROUP_INHERIT] will include any child (and grandchild) nodes set to inherit into its process thread group. This means that the processing of all the nodes in the group will happen together, at the same time as the node including them.
 		</member>
 		<member name="process_thread_group_order" type="int" setter="set_process_thread_group_order" getter="get_process_thread_group_order">
 			Change the process thread group order. Groups with a lesser order will process before groups with a greater order. This is useful when a large amount of nodes process in sub thread and, afterwards, another group wants to collect their result in the main thread, as an example.
@@ -1038,8 +1064,7 @@
 			Notification received when the node is about to exit a [SceneTree]. See [method _exit_tree].
 			This notification is received [i]after[/i] the related [signal tree_exiting] signal.
 		</constant>
-		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" is_deprecated="true">
-			[i]Deprecated.[/i] This notification is no longer emitted. Use [constant NOTIFICATION_CHILD_ORDER_CHANGED] instead.
+		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" deprecated="This notification is no longer sent by the engine. Use [constant NOTIFICATION_CHILD_ORDER_CHANGED] instead.">
 		</constant>
 		<constant name="NOTIFICATION_READY" value="13">
 			Notification received when the node is ready. See [method _ready].
@@ -1161,28 +1186,29 @@
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_RESUMED" value="2014">
 			Notification received from the OS when the application is resumed.
-			Implemented only on Android.
+			Specific to the Android and iOS platforms.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_PAUSED" value="2015">
 			Notification received from the OS when the application is paused.
-			Implemented only on Android.
+			Specific to the Android and iOS platforms.
+			[b]Note:[/b] On iOS, you only have approximately 5 seconds to finish a task started by this signal. If you go over this allotment, iOS will kill the app instead of pausing it.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_FOCUS_IN" value="2016">
-			Notification received from the OS when the application is focused, i.e. when changing the focus from the OS desktop or a third-party application to any open window of the Godot instance.
-			Implemented on desktop platforms.
+			Notification received from the OS when the application is focused, i.e. when changing the focus from the OS desktop or a thirdparty application to any open window of the Godot instance.
+			Implemented on desktop and mobile platforms.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_FOCUS_OUT" value="2017">
-			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a third-party application.
-			Implemented on desktop platforms.
+			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a thirdparty application.
+			Implemented on desktop and mobile platforms.
 		</constant>
 		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
 			Notification received when the [TextServer] is changed.
 		</constant>
 		<constant name="PROCESS_MODE_INHERIT" value="0" enum="ProcessMode">
-			Inherits [member process_mode] from the node's parent. For the root node, it is equivalent to [constant PROCESS_MODE_PAUSABLE]. This is the default for any newly created node.
+			Inherits [member process_mode] from the node's parent. This is the default for any newly created node.
 		</constant>
 		<constant name="PROCESS_MODE_PAUSABLE" value="1" enum="ProcessMode">
-			Stops processing when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_WHEN_PAUSED].
+			Stops processing when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_WHEN_PAUSED], and the default for the root node.
 		</constant>
 		<constant name="PROCESS_MODE_WHEN_PAUSED" value="2" enum="ProcessMode">
 			Process [b]only[/b] when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_PAUSABLE].
@@ -1194,13 +1220,13 @@
 			Never process. Completely disables processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_ALWAYS].
 		</constant>
 		<constant name="PROCESS_THREAD_GROUP_INHERIT" value="0" enum="ProcessThreadGroup">
-			If the [member process_thread_group] property is sent to this, the node will belong to any parent (or grandparent) node that has a thread group mode that is not inherit. See [member process_thread_group] for more information.
+			Process this node based on the thread group mode of the first parent (or grandparent) node that has a thread group mode that is not inherit. See [member process_thread_group] for more information.
 		</constant>
 		<constant name="PROCESS_THREAD_GROUP_MAIN_THREAD" value="1" enum="ProcessThreadGroup">
-			Process this node (and children nodes set to inherit) on the main thread. See [member process_thread_group] for more information.
+			Process this node (and child nodes set to inherit) on the main thread. See [member process_thread_group] for more information.
 		</constant>
 		<constant name="PROCESS_THREAD_GROUP_SUB_THREAD" value="2" enum="ProcessThreadGroup">
-			Process this node (and children nodes set to inherit) on a sub-thread. See [member process_thread_group] for more information.
+			Process this node (and child nodes set to inherit) on a sub-thread. See [member process_thread_group] for more information.
 		</constant>
 		<constant name="FLAG_PROCESS_THREAD_MESSAGES" value="1" enum="ProcessThreadMessages" is_bitfield="true">
 			Allows this node to process threaded messages created with [method call_deferred_thread_group] right before [method _process] is called.
@@ -1227,10 +1253,20 @@
 			The node will not be internal.
 		</constant>
 		<constant name="INTERNAL_MODE_FRONT" value="1" enum="InternalMode">
-			The node will be placed at the beginning of the parent's children list, before any non-internal sibling.
+			The node will be placed at the beginning of the parent's children, before any non-internal sibling.
 		</constant>
 		<constant name="INTERNAL_MODE_BACK" value="2" enum="InternalMode">
-			The node will be placed at the end of the parent's children list, after any non-internal sibling.
+			The node will be placed at the end of the parent's children, after any non-internal sibling.
+		</constant>
+		<constant name="AUTO_TRANSLATE_MODE_INHERIT" value="0" enum="AutoTranslateMode">
+			Inherits [member auto_translate_mode] from the node's parent. This is the default for any newly created node.
+		</constant>
+		<constant name="AUTO_TRANSLATE_MODE_ALWAYS" value="1" enum="AutoTranslateMode">
+			Always automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_DISABLED], and the default for the root node.
+		</constant>
+		<constant name="AUTO_TRANSLATE_MODE_DISABLED" value="2" enum="AutoTranslateMode">
+			Never automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_ALWAYS].
+			String parsing for POT generation will be skipped for this node and children that are set to [constant AUTO_TRANSLATE_MODE_INHERIT].
 		</constant>
 	</constants>
 </class>

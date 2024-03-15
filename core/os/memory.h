@@ -92,7 +92,7 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 
 _ALWAYS_INLINE_ void postinitialize_handler(void *) {}
 
-template <class T>
+template <typename T>
 _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 	postinitialize_handler(p_obj);
 	return p_obj;
@@ -107,7 +107,7 @@ _ALWAYS_INLINE_ bool predelete_handler(void *) {
 	return true;
 }
 
-template <class T>
+template <typename T>
 void memdelete(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
@@ -119,7 +119,7 @@ void memdelete(T *p_class) {
 	Memory::free_static(p_class, false);
 }
 
-template <class T, class A>
+template <typename T, typename A>
 void memdelete_allocator(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
@@ -213,10 +213,10 @@ struct _GlobalNilClass {
 	static _GlobalNil _nil;
 };
 
-template <class T>
+template <typename T>
 class DefaultTypedAllocator {
 public:
-	template <class... Args>
+	template <typename... Args>
 	_FORCE_INLINE_ T *new_allocation(const Args &&...p_args) { return memnew(T(p_args...)); }
 	_FORCE_INLINE_ void delete_allocation(T *p_allocation) { memdelete(p_allocation); }
 };

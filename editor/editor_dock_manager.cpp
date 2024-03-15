@@ -38,14 +38,18 @@
 #include "scene/gui/tab_container.h"
 #include "scene/main/window.h"
 
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
 
 EditorDockManager *EditorDockManager::singleton = nullptr;
+
+static const char *META_TOGGLE_SHORTCUT = "_toggle_shortcut";
 
 void DockSplitContainer::_update_visibility() {
 	if (is_updating) {
@@ -196,7 +200,7 @@ void EditorDockManager::_dock_select_input(const Ref<InputEvent> &p_input) {
 
 		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 			if (dock_bottom_selected_idx != -1) {
-				EditorNode::get_singleton()->remove_bottom_panel_item(bottom_docks[dock_bottom_selected_idx]);
+				EditorNode::get_bottom_panel()->remove_item(bottom_docks[dock_bottom_selected_idx]);
 
 				bottom_docks[dock_bottom_selected_idx]->call("_set_dock_horizontal", false);
 
@@ -391,13 +395,16 @@ void EditorDockManager::_dock_move_selected_to_bottom() {
 	dock->call("_set_dock_horizontal", true);
 
 	bottom_docks.push_back(dock);
-	EditorNode::get_singleton()->add_bottom_panel_item(dock->get_name(), dock, true);
+
+	// Force docks moved to the bottom to appear first in the list, and give them their associated shortcut to toggle their bottom panel.
+	EditorNode::get_bottom_panel()->add_item(dock->get_name(), dock, dock->get_meta(META_TOGGLE_SHORTCUT), true);
+
 	dock_select_popup->hide();
 	update_dock_slots_visibility(true);
 	_edit_current();
 	emit_signal(SNAME("layout_changed"));
 
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(dock);
+	EditorNode::get_bottom_panel()->make_item_visible(dock);
 }
 
 void EditorDockManager::_dock_make_float(Control *p_dock, int p_slot_index, bool p_show_window) {
@@ -601,7 +608,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 				dock_slot[atidx]->set_block_signals(false);
 			} else if (bottom_idx != -1) {
 				bottom_docks.erase(node);
-				EditorNode::get_singleton()->remove_bottom_panel_item(node);
+				EditorNode::get_bottom_panel()->remove_item(node);
 				dock_slot[i]->add_child(node);
 				node->call("_set_dock_horizontal", false);
 			}
@@ -662,7 +669,8 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 			node->call("_set_dock_horizontal", true);
 
 			bottom_docks.push_back(node);
-			EditorNode::get_singleton()->add_bottom_panel_item(node->get_name(), node, true);
+			// Force docks moved to the bottom to appear first in the list, and give them their associated shortcut to toggle their bottom panel.
+			EditorNode::get_bottom_panel()->add_item(node->get_name(), node, node->get_meta(META_TOGGLE_SHORTCUT), true);
 		}
 	}
 
@@ -729,8 +737,9 @@ void EditorDockManager::close_all_floating_docks() {
 	}
 }
 
-void EditorDockManager::add_control_to_dock(DockSlot p_slot, Control *p_control, const String &p_name) {
+void EditorDockManager::add_control_to_dock(DockSlot p_slot, Control *p_control, const String &p_name, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_INDEX(p_slot, DOCK_SLOT_MAX);
+	p_control->set_meta(META_TOGGLE_SHORTCUT, p_shortcut);
 	dock_slot[p_slot]->add_child(p_control);
 	if (!p_name.is_empty()) {
 		dock_slot[p_slot]->set_tab_title(dock_slot[p_slot]->get_tab_idx_from_control(p_control), p_name);

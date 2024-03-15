@@ -44,10 +44,10 @@
 				Returns the blend time (in seconds) between two animations, referenced by their keys.
 			</description>
 		</method>
-		<method name="get_method_call_mode" qualifiers="const" is_deprecated="true">
+		<method name="get_method_call_mode" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_method] instead.">
 			<return type="int" enum="AnimationPlayer.AnimationMethodCallMode" />
 			<description>
-				For backward compatibility. See [enum AnimationMixer.AnimationCallbackModeMethod].
+				Returns the call mode used for "Call Method" tracks.
 			</description>
 		</method>
 		<method name="get_playing_speed" qualifiers="const">
@@ -57,10 +57,10 @@
 				Returns a negative value if the current animation is playing backwards.
 			</description>
 		</method>
-		<method name="get_process_callback" qualifiers="const" is_deprecated="true">
+		<method name="get_process_callback" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
 			<return type="int" enum="AnimationPlayer.AnimationProcessCallback" />
 			<description>
-				For backward compatibility. See [enum AnimationMixer.AnimationCallbackModeProcess].
+				Returns the process notification in which to update animations.
 			</description>
 		</method>
 		<method name="get_queue">
@@ -69,10 +69,10 @@
 				Returns a list of the animation keys that are currently queued to play.
 			</description>
 		</method>
-		<method name="get_root" qualifiers="const" is_deprecated="true">
+		<method name="get_root" qualifiers="const" deprecated="Use [member AnimationMixer.root_node] instead.">
 			<return type="NodePath" />
 			<description>
-				For backward compatibility. See [member AnimationMixer.root_node].
+				Returns the node which node path references will travel from.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -90,7 +90,7 @@
 		</method>
 		<method name="play">
 			<return type="void" />
-			<param index="0" name="name" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
 			<param index="1" name="custom_blend" type="float" default="-1" />
 			<param index="2" name="custom_speed" type="float" default="1.0" />
 			<param index="3" name="from_end" type="bool" default="false" />
@@ -103,7 +103,7 @@
 		</method>
 		<method name="play_backwards">
 			<return type="void" />
-			<param index="0" name="name" type="StringName" default="&quot;&quot;" />
+			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
 			<param index="1" name="custom_blend" type="float" default="-1" />
 			<description>
 				Plays the animation with key [param name] in reverse.
@@ -158,25 +158,25 @@
 				Specifies a blend time (in seconds) between two animations, referenced by their keys.
 			</description>
 		</method>
-		<method name="set_method_call_mode" is_deprecated="true">
+		<method name="set_method_call_mode" deprecated="Use [member AnimationMixer.callback_mode_method] instead.">
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="AnimationPlayer.AnimationMethodCallMode" />
 			<description>
-				For backward compatibility. See [enum AnimationMixer.AnimationCallbackModeMethod].
+				Sets the call mode used for "Call Method" tracks.
 			</description>
 		</method>
-		<method name="set_process_callback" is_deprecated="true">
+		<method name="set_process_callback" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="AnimationPlayer.AnimationProcessCallback" />
 			<description>
-				For backward compatibility. See [enum AnimationMixer.AnimationCallbackModeProcess].
+				Sets the process notification in which to update animations.
 			</description>
 		</method>
-		<method name="set_root" is_deprecated="true">
+		<method name="set_root" deprecated="Use [member AnimationMixer.root_node] instead.">
 			<return type="void" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
-				For backward compatibility. See [member AnimationMixer.root_node].
+				Sets the node which node path references will travel from.
 			</description>
 		</method>
 		<method name="stop">
@@ -235,20 +235,15 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].
+		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
 		</constant>
-		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].
+		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].">
 		</constant>
-		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL].
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL].">
 		</constant>
-		<constant name="ANIMATION_METHOD_CALL_DEFERRED" value="0" enum="AnimationMethodCallMode" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_DEFERRED].
+		<constant name="ANIMATION_METHOD_CALL_DEFERRED" value="0" enum="AnimationMethodCallMode" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_DEFERRED].">
 		</constant>
-		<constant name="ANIMATION_METHOD_CALL_IMMEDIATE" value="1" enum="AnimationMethodCallMode" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE].
+		<constant name="ANIMATION_METHOD_CALL_IMMEDIATE" value="1" enum="AnimationMethodCallMode" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE].">
 		</constant>
 	</constants>
 </class>

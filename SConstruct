@@ -259,13 +259,16 @@ opts.Add(BoolVariable("builtin_zlib", "Use the built-in zlib library", True))
 opts.Add(BoolVariable("builtin_zstd", "Use the built-in Zstd library", True))
 
 # Compilation environment setup
-opts.Add("CXX", "C++ compiler")
-opts.Add("CC", "C compiler")
-opts.Add("LINK", "Linker")
-opts.Add("CCFLAGS", "Custom flags for both the C and C++ compilers")
-opts.Add("CFLAGS", "Custom flags for the C compiler")
-opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
-opts.Add("LINKFLAGS", "Custom flags for the linker")
+# CXX, CC, and LINK directly set the equivalent `env` values (which may still
+# be overridden for a specific platform), the lowercase ones are appended.
+opts.Add("CXX", "C++ compiler binary")
+opts.Add("CC", "C compiler binary")
+opts.Add("LINK", "Linker binary")
+opts.Add("cppdefines", "Custom defines for the pre-processor")
+opts.Add("ccflags", "Custom flags for both the C and C++ compilers")
+opts.Add("cxxflags", "Custom flags for the C++ compiler")
+opts.Add("cflags", "Custom flags for the C compiler")
+opts.Add("linkflags", "Custom flags for the linker")
 
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
@@ -507,21 +510,11 @@ if selected_platform in platform_list:
         env.extra_suffix += "." + env["extra_suffix"]
 
     # Environment flags
-    CCFLAGS = env.get("CCFLAGS", "")
-    env["CCFLAGS"] = ""
-    env.Append(CCFLAGS=str(CCFLAGS).split())
-
-    CFLAGS = env.get("CFLAGS", "")
-    env["CFLAGS"] = ""
-    env.Append(CFLAGS=str(CFLAGS).split())
-
-    CXXFLAGS = env.get("CXXFLAGS", "")
-    env["CXXFLAGS"] = ""
-    env.Append(CXXFLAGS=str(CXXFLAGS).split())
-
-    LINKFLAGS = env.get("LINKFLAGS", "")
-    env["LINKFLAGS"] = ""
-    env.Append(LINKFLAGS=str(LINKFLAGS).split())
+    env.Append(CPPDEFINES=env.get("cppdefines", "").split())
+    env.Append(CCFLAGS=env.get("ccflags", "").split())
+    env.Append(CXXFLAGS=env.get("cxxflags", "").split())
+    env.Append(CFLAGS=env.get("cflags", "").split())
+    env.Append(LINKFLAGS=env.get("linkflags", "").split())
 
     # Feature build profile
     disabled_classes = []
@@ -937,17 +930,17 @@ if selected_platform in platform_list:
 
     GLSL_BUILDERS = {
         "RD_GLSL": env.Builder(
-            action=env.Run(glsl_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
+            action=env.Run(glsl_builders.build_rd_headers),
             suffix="glsl.gen.h",
             src_suffix=".glsl",
         ),
         "GLSL_HEADER": env.Builder(
-            action=env.Run(glsl_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
+            action=env.Run(glsl_builders.build_raw_headers),
             suffix="glsl.gen.h",
             src_suffix=".glsl",
         ),
         "GLES3_GLSL": env.Builder(
-            action=env.Run(gles3_builders.build_gles3_headers, 'Building GLES3 GLSL header: "$TARGET"'),
+            action=env.Run(gles3_builders.build_gles3_headers),
             suffix="glsl.gen.h",
             src_suffix=".glsl",
         ),
@@ -963,25 +956,25 @@ if selected_platform in platform_list:
         env.vs_incs = []
         env.vs_srcs = []
 
-    if env["compiledb"]:
+    # CompileDB
+    from SCons import __version__ as scons_raw_version
+
+    scons_ver = env._get_major_minor_revision(scons_raw_version)
+    if env["compiledb"] and scons_ver < (4, 0, 0):
         # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-        from SCons import __version__ as scons_raw_version
-
-        scons_ver = env._get_major_minor_revision(scons_raw_version)
-
-        if scons_ver < (4, 0, 0):
-            print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
-            Exit(255)
-
+        print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
+        Exit(255)
+    if scons_ver >= (4, 0, 0):
         env.Tool("compilation_db")
         env.Alias("compiledb", env.CompilationDatabase())
 
+    # Threads
     if env["threads"]:
         env.Append(CPPDEFINES=["THREADS_ENABLED"])
 
+    # Build subdirs, the build order is dependent on link order.
     Export("env")
 
-    # Build subdirs, the build order is dependent on link order.
     SConscript("core/SCsub")
     SConscript("servers/SCsub")
     SConscript("scene/SCsub")
@@ -1045,3 +1038,13 @@ def print_elapsed_time():
 
 
 atexit.register(print_elapsed_time)
+
+
+def purge_flaky_files():
+    for build_failure in GetBuildFailures():
+        path = build_failure.node.abspath
+        if os.path.isfile(path):
+            os.remove(path)
+
+
+atexit.register(purge_flaky_files)

@@ -1316,7 +1316,7 @@ GridMapEditor::GridMapEditor() {
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
 	mesh_library_palette = memnew(ItemList);
-	mesh_library_palette->set_auto_translate(false);
+	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
 	mesh_library_palette->connect("gui_input", callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
@@ -1501,6 +1501,9 @@ GridMapEditor::~GridMapEditor() {
 void GridMapEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/grid_map")) {
+				break;
+			}
 			switch ((int)EDITOR_GET("editors/grid_map/editor_side")) {
 				case 0: { // Left.
 					Node3DEditor::get_singleton()->move_control_to_left_panel(grid_map_editor);

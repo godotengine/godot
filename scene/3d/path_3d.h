@@ -37,15 +37,15 @@
 class Path3D : public Node3D {
 	GDCLASS(Path3D, Node3D);
 
+private:
 	Ref<Curve3D> curve;
-
-	void _curve_changed();
-
 	RID debug_instance;
 	Ref<ArrayMesh> debug_mesh;
 
-private:
+	Callable update_callback; // Used only by CSG currently.
+
 	void _update_debug_mesh();
+	void _curve_changed();
 
 protected:
 	void _notification(int p_what);
@@ -53,6 +53,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_update_callback(Callable p_callback);
+
 	void set_curve(const Ref<Curve3D> &p_curve);
 	Ref<Curve3D> get_curve() const;
 
@@ -120,7 +122,7 @@ public:
 	void set_cubic_interpolation_enabled(bool p_enabled);
 	bool is_cubic_interpolation_enabled() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void update_transform(bool p_immediate = false);
 

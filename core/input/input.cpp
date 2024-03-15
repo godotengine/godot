@@ -181,8 +181,9 @@ void Input::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "device"), PropertyInfo(Variant::BOOL, "connected")));
 }
 
+#ifdef TOOLS_ENABLED
 void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 
 	if ((p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release" || pf == "is_action_just_pressed" || pf == "is_action_just_released" || pf == "get_action_strength" || pf == "get_action_raw_strength")) ||
 			(p_idx < 2 && pf == "get_axis") ||
@@ -201,6 +202,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void Input::VelocityTrack::update(const Vector2 &p_delta_p, const Vector2 &p_screen_delta_p) {
 	uint64_t tick = OS::get_singleton()->get_ticks_usec();
@@ -455,7 +457,7 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 }
 
-void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid, Dictionary p_joypad_info) {
+void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_name, const String &p_guid, const Dictionary &p_joypad_info) {
 	_THREAD_SAFE_METHOD_
 
 	// Clear the pressed status if a Joypad gets disconnected.
@@ -1414,7 +1416,7 @@ void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat
 	}
 }
 
-JoyButton Input::_get_output_button(String output) {
+JoyButton Input::_get_output_button(const String &output) {
 	for (int i = 0; i < (int)JoyButton::SDL_MAX; i++) {
 		if (output == _joy_buttons[i]) {
 			return JoyButton(i);
@@ -1423,7 +1425,7 @@ JoyButton Input::_get_output_button(String output) {
 	return JoyButton::INVALID;
 }
 
-JoyAxis Input::_get_output_axis(String output) {
+JoyAxis Input::_get_output_axis(const String &output) {
 	for (int i = 0; i < (int)JoyAxis::SDL_MAX; i++) {
 		if (output == _joy_axes[i]) {
 			return JoyAxis(i);
@@ -1432,7 +1434,7 @@ JoyAxis Input::_get_output_axis(String output) {
 	return JoyAxis::INVALID;
 }
 
-void Input::parse_mapping(String p_mapping) {
+void Input::parse_mapping(const String &p_mapping) {
 	_THREAD_SAFE_METHOD_;
 	JoyDeviceMapping mapping;
 
@@ -1535,7 +1537,7 @@ void Input::parse_mapping(String p_mapping) {
 	map_db.push_back(mapping);
 }
 
-void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
+void Input::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
 	parse_mapping(p_mapping);
 	if (p_update_existing) {
 		Vector<String> entry = p_mapping.split(",");
@@ -1549,7 +1551,7 @@ void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 	}
 }
 
-void Input::remove_joy_mapping(String p_guid) {
+void Input::remove_joy_mapping(const String &p_guid) {
 	for (int i = map_db.size() - 1; i >= 0; i--) {
 		if (p_guid == map_db[i].uid) {
 			map_db.remove_at(i);
@@ -1563,7 +1565,7 @@ void Input::remove_joy_mapping(String p_guid) {
 	}
 }
 
-void Input::set_fallback_mapping(String p_guid) {
+void Input::set_fallback_mapping(const String &p_guid) {
 	for (int i = 0; i < map_db.size(); i++) {
 		if (map_db[i].uid == p_guid) {
 			fallback_mapping = i;

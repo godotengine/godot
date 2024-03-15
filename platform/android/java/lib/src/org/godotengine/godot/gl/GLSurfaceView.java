@@ -1673,7 +1673,24 @@ public class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback
 				mWantRenderNotification = true;
 				mRequestRender = true;
 				mRenderComplete = false;
-				mFinishDrawingRunnable = finishDrawing;
+
+				// fix lost old callback when continuous call requestRenderAndNotify
+				//
+				// If continuous call requestRenderAndNotify before trigger old
+				// callback, old callback will lose, cause VRI will wait for SV's
+				// draw to finish forever not calling finishDraw.
+				// https://android.googlesource.com/platform/frameworks/base/+/044fce0b826f2da3a192aac56785b5089143e693%5E%21/
+				//+++++++++++++++++++++++++++++++++++++++++++++++++++
+				final Runnable oldCallback = mFinishDrawingRunnable;
+				mFinishDrawingRunnable = () -> {
+					if (oldCallback != null) {
+						oldCallback.run();
+					}
+					if (finishDrawing != null) {
+						finishDrawing.run();
+					}
+				};
+				//----------------------------------------------------
 
 				sGLThreadManager.notifyAll();
 			}

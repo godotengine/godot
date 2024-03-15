@@ -36,6 +36,8 @@
 
 class EditorThemeManager {
 	static int benchmark_run;
+	static inline bool outdated_cache = false;
+	static inline bool outdated_cache_dirty = true;
 
 	static String get_benchmark_key();
 
@@ -154,6 +156,9 @@ class EditorThemeManager {
 
 	static void _generate_text_editor_defaults(ThemeConfiguration &p_config);
 	static void _populate_text_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
+	static void _populate_visual_shader_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
+
+	static void _reset_dirty_flag();
 
 public:
 	static Ref<EditorTheme> generate_theme(const Ref<EditorTheme> &p_old_theme = nullptr);

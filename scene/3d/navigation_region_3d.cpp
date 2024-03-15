@@ -270,8 +270,8 @@ bool NavigationRegion3D::is_baking() const {
 	return NavigationServer3D::get_singleton()->is_baking_navigation_mesh(navigation_mesh);
 }
 
-Array NavigationRegion3D::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray NavigationRegion3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!navigation_mesh.is_valid()) {

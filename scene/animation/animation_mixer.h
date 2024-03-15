@@ -61,6 +61,12 @@ public:
 		ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE,
 	};
 
+	enum AnimationCallbackModeDiscrete {
+		ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT,
+		ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE,
+		ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS,
+	};
+
 	/* ---- Data ---- */
 	struct AnimationLibraryData {
 		StringName name;
@@ -120,6 +126,7 @@ protected:
 	/* ---- General settings for animation ---- */
 	AnimationCallbackModeProcess callback_mode_process = ANIMATION_CALLBACK_MODE_PROCESS_IDLE;
 	AnimationCallbackModeMethod callback_mode_method = ANIMATION_CALLBACK_MODE_METHOD_DEFERRED;
+	AnimationCallbackModeDiscrete callback_mode_discrete = ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT;
 	int audio_max_polyphony = 32;
 	NodePath root_node;
 
@@ -215,8 +222,9 @@ protected:
 		Variant init_value;
 		Variant value;
 		Vector<StringName> subpath;
-		bool is_continuous = false;
+		bool use_discrete = false;
 		bool is_using_angle = false;
+		bool is_variant_interpolatable = true;
 		Variant element_size;
 
 		TrackCacheValue(const TrackCacheValue &p_other) :
@@ -224,8 +232,9 @@ protected:
 				init_value(p_other.init_value),
 				value(p_other.value),
 				subpath(p_other.subpath),
-				is_continuous(p_other.is_continuous),
+				use_discrete(p_other.use_discrete),
 				is_using_angle(p_other.is_using_angle),
+				is_variant_interpolatable(p_other.is_variant_interpolatable),
 				element_size(p_other.element_size) {}
 
 		TrackCacheValue() { type = Animation::TYPE_VALUE; }
@@ -317,7 +326,10 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &p_property) const;
+
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	static void _bind_methods();
 	void _node_removed(Node *p_node);
@@ -402,6 +414,9 @@ public:
 	void set_callback_mode_method(AnimationCallbackModeMethod p_mode);
 	AnimationCallbackModeMethod get_callback_mode_method() const;
 
+	void set_callback_mode_discrete(AnimationCallbackModeDiscrete p_mode);
+	AnimationCallbackModeDiscrete get_callback_mode_discrete() const;
+
 	void set_audio_max_polyphony(int p_audio_max_polyphony);
 	int get_audio_max_polyphony() const;
 
@@ -466,5 +481,6 @@ public:
 
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeProcess);
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeMethod);
+VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeDiscrete);
 
 #endif // ANIMATION_MIXER_H

@@ -38,7 +38,10 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_uid.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
+#include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
@@ -477,6 +480,14 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		return false;
 	}
 
+	if (project_loaded) {
+		// This pack may have declared new global classes (make sure they are picked up).
+		refresh_global_class_list();
+
+		// This pack may have defined new UIDs, make sure they are cached.
+		ResourceUID::get_singleton()->load_from_cache(false);
+	}
+
 	//if data.pck is found, all directory access will be from here
 	DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
 	using_datapack = true;
@@ -688,7 +699,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	return err;
 }
 
-bool ProjectSettings::has_setting(String p_var) const {
+bool ProjectSettings::has_setting(const String &p_var) const {
 	_THREAD_SAFE_METHOD_
 
 	return props.has(p_var);
@@ -971,7 +982,7 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 }
 
 #ifdef TOOLS_ENABLED
-bool _csproj_exists(String p_root_dir) {
+bool _csproj_exists(const String &p_root_dir) {
 	Ref<DirAccess> dir = DirAccess::open(p_root_dir);
 	ERR_FAIL_COND_V(dir.is_null(), false);
 
@@ -1093,7 +1104,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	} else if (p_path.ends_with(".binary")) {
 		return _save_settings_binary(p_path, save_props, p_custom, save_features);
 	} else {
-		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown config file format: " + p_path + ".");
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown config file format: " + p_path);
 	}
 }
 
@@ -1185,6 +1196,19 @@ Variant ProjectSettings::get_setting(const String &p_setting, const Variant &p_d
 		return get(p_setting);
 	} else {
 		return p_default_value;
+	}
+}
+
+void ProjectSettings::refresh_global_class_list() {
+	// This is called after mounting a new PCK file to pick up class changes.
+	is_global_class_list_loaded = false; // Make sure we read from the freshly mounted PCK.
+	Array script_classes = get_global_class_list();
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary c = script_classes[i];
+		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+			continue;
+		}
+		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"]);
 	}
 }
 
@@ -1318,6 +1342,26 @@ const HashMap<StringName, HashSet<StringName>> &ProjectSettings::get_scene_group
 	return scene_groups_cache;
 }
 
+#ifdef TOOLS_ENABLED
+void ProjectSettings::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0) {
+		if (pf == "has_setting" || pf == "set_setting" || pf == "get_setting" || pf == "get_setting_with_override" ||
+				pf == "set_order" || pf == "get_order" || pf == "set_initial_value" || pf == "set_as_basic" ||
+				pf == "set_as_internal" || pf == "set_restart_if_changed" || pf == "clear") {
+			for (const KeyValue<StringName, VariantContainer> &E : props) {
+				if (E.value.hide_from_editor) {
+					continue;
+				}
+
+				r_options->push_back(String(E.key).quote());
+			}
+		}
+	}
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
+
 void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &ProjectSettings::set_setting);
@@ -1372,6 +1416,19 @@ ProjectSettings::ProjectSettings() {
 	CRASH_COND_MSG(singleton != nullptr, "Instantiating a new ProjectSettings singleton is not supported.");
 	singleton = this;
 
+#ifdef TOOLS_ENABLED
+	// Available only at runtime in editor builds. Needs to be processed before anything else to work properly.
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		String editor_features = OS::get_singleton()->get_environment("GODOT_EDITOR_CUSTOM_FEATURES");
+		if (!editor_features.is_empty()) {
+			PackedStringArray feature_list = editor_features.split(",");
+			for (const String &s : feature_list) {
+				custom_features.insert(s);
+			}
+		}
+	}
+#endif
+
 	GLOBAL_DEF_BASIC("application/config/name", "");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT), "");
@@ -1380,6 +1437,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res"), "");
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
+	GLOBAL_DEF("application/run/print_header", true);
 	GLOBAL_DEF_RST("application/config/use_hidden_project_data_directory", true);
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
@@ -1415,6 +1473,9 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor", false);
+
+	GLOBAL_DEF("animation/warnings/check_invalid_track_paths", true);
+	GLOBAL_DEF("animation/warnings/check_angle_interpolation_type_conflicting", true);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
 	GLOBAL_DEF_RST("audio/general/text_to_speech", false);
@@ -1497,6 +1558,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_remaps", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations_pot_files", PackedStringArray());
+	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_add_builtin_strings_to_pot", false);
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
 }

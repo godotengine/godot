@@ -40,7 +40,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
-#include "scene/resources/importer_mesh.h"
+#include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
 
 class SceneImportSettingsData : public Object {
@@ -432,25 +432,38 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 	if (!is_visible()) {
 		return;
 	}
+	const HashMap<StringName, Variant> &main_settings = scene_import_settings_data->current;
+	if (main_settings.has("nodes/import_as_skeleton_bones")) {
+		bool new_import_as_skeleton = main_settings["nodes/import_as_skeleton_bones"];
+		if (new_import_as_skeleton != previous_import_as_skeleton) {
+			previous_import_as_skeleton = new_import_as_skeleton;
+			_re_import();
+			open_settings(base_path);
+		}
+		return;
+	}
 	for (const KeyValue<String, NodeData> &e : node_map) {
+		// Skip import nodes that aren't MeshInstance3D.
+		const MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
+		if (mesh_node == nullptr || mesh_node->get_mesh().is_null()) {
+			continue;
+		}
+
+		// Determine if the mesh collider should be visible.
 		bool show_collider_view = false;
 		if (e.value.settings.has(SNAME("generate/physics"))) {
 			show_collider_view = e.value.settings[SNAME("generate/physics")];
 		}
 
-		MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
-		if (mesh_node == nullptr || mesh_node->get_mesh().is_null()) {
-			// Nothing to do.
-			continue;
-		}
-
+		// Get the collider_view MeshInstance3D.
 		TypedArray<Node> descendants = mesh_node->find_children("collider_view", "MeshInstance3D");
-
 		CRASH_COND_MSG(descendants.is_empty(), "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
+		MeshInstance3D *collider_view = Object::cast_to<MeshInstance3D>(descendants[0].operator Object *());
 
-		MeshInstance3D *collider_view = static_cast<MeshInstance3D *>(descendants[0].operator Object *());
-		collider_view->set_visible(show_collider_view);
-		if (generate_collider) {
+		// Regenerate the physics collider for this MeshInstance3D if either:
+		// - A regeneration is requested for the selected import node.
+		// - The collider is being made visible.
+		if ((generate_collider && e.key == selected_id) || (show_collider_view && !collider_view->is_visible())) {
 			// This collider_view doesn't have a mesh so we need to generate a new one.
 			Ref<ImporterMesh> mesh;
 			mesh.instantiate();
@@ -514,6 +527,9 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 			collider_view->set_mesh(collider_view_mesh);
 			collider_view->set_transform(transform);
 		}
+
+		// Set the collider visibility.
+		collider_view->set_visible(show_collider_view);
 	}
 
 	generate_collider = false;
@@ -591,6 +607,7 @@ void SceneImportSettingsDialog::update_view() {
 
 void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_animation) {
 	if (scene) {
+		_cleanup();
 		memdelete(scene);
 		scene = nullptr;
 	}
@@ -667,6 +684,10 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_a
 		first_aabb = false;
 	}
 
+	const HashMap<StringName, Variant> &main_settings = scene_import_settings_data->current;
+	if (main_settings.has("nodes/import_as_skeleton_bones")) {
+		previous_import_as_skeleton = main_settings["nodes/import_as_skeleton_bones"];
+	}
 	popup_centered_ratio();
 	_update_view_gizmos();
 	_update_camera();
@@ -694,7 +715,7 @@ Node *SceneImportSettingsDialog::get_selected_node() {
 	return node_map[selected_id].node;
 }
 
-void SceneImportSettingsDialog::_select(Tree *p_from, String p_type, String p_id) {
+void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, const String &p_id) {
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
 
@@ -1137,6 +1158,7 @@ void SceneImportSettingsDialog::_re_import() {
 		main_settings["_subresources"] = subresources;
 	}
 
+	_cleanup(); // Prevent skeletons and other pointers from pointing to dangling references.
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
 }
 

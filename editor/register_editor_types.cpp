@@ -30,6 +30,7 @@
 
 #include "register_editor_types.h"
 
+#include "core/object/script_language.h"
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_feature_profile.h"
@@ -101,6 +102,7 @@
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/plugins/occluder_instance_3d_editor_plugin.h"
 #include "editor/plugins/packed_scene_editor_plugin.h"
+#include "editor/plugins/parallax_background_editor_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
 #include "editor/plugins/path_3d_editor_plugin.h"
 #include "editor/plugins/physical_bone_3d_editor_plugin.h"
@@ -252,6 +254,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<NavigationLink2DEditorPlugin>();
 	EditorPlugins::add_by_type<NavigationObstacle2DEditorPlugin>();
 	EditorPlugins::add_by_type<NavigationPolygonEditorPlugin>();
+	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
 	EditorPlugins::add_by_type<Path2DEditorPlugin>();
 	EditorPlugins::add_by_type<Polygon2DEditorPlugin>();
 	EditorPlugins::add_by_type<Cast2DEditorPlugin>();
@@ -267,7 +270,8 @@ void register_editor_types() {
 
 	GLOBAL_DEF("editor/naming/default_signal_callback_name", "_on_{node_name}_{signal_name}");
 	GLOBAL_DEF("editor/naming/default_signal_callback_to_self_name", "_on_{signal_name}");
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/scene_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"), EditorNode::SCENE_NAME_CASING_SNAKE_CASE);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/scene_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case,kebab-case"), EditorNode::SCENE_NAME_CASING_SNAKE_CASE);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/script_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case,kebab-case"), ScriptLanguage::SCRIPT_NAME_CASING_AUTO);
 
 	GLOBAL_DEF("editor/import/reimport_missing_imported_files", true);
 	GLOBAL_DEF("editor/import/use_multiple_threads", true);

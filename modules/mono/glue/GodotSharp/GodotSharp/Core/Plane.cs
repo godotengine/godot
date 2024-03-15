@@ -435,7 +435,9 @@ namespace Godot
         /// <returns>A string representation of this plane.</returns>
         public readonly string ToString(string? format)
         {
+#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
             return $"{_normal.ToString(format)}, {_d.ToString(format)}";
+#pragma warning restore CA1305
         }
     }
 }

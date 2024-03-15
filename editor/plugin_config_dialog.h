@@ -48,6 +48,7 @@ class PluginConfigDialog : public ConfirmationDialog {
 		MSG_ID_PLUGIN,
 		MSG_ID_SUBFOLDER,
 		MSG_ID_SCRIPT,
+		MSG_ID_ACTIVE,
 	};
 
 	LineEdit *name_edit = nullptr;

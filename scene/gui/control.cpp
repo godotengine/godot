@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "control.h"
+#include "control.compat.inc"
 
 #include "container.h"
 #include "core/config/project_settings.h"
@@ -187,10 +188,12 @@ Size2 Control::_edit_get_minimum_size() const {
 
 void Control::reparent(Node *p_parent, bool p_keep_global_transform) {
 	ERR_MAIN_THREAD_GUARD;
-	Transform2D temp = get_global_transform();
-	Node::reparent(p_parent);
 	if (p_keep_global_transform) {
+		Transform2D temp = get_global_transform();
+		Node::reparent(p_parent);
 		set_global_position(temp.get_origin());
+	} else {
+		Node::reparent(p_parent);
 	}
 }
 
@@ -202,13 +205,14 @@ void Control::set_root_layout_direction(int p_root_dir) {
 	root_layout_direction = p_root_dir;
 }
 
+#ifdef TOOLS_ENABLED
 void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	ERR_READ_THREAD_GUARD;
 	CanvasItem::get_argument_options(p_function, p_idx, r_options);
 
 	if (p_idx == 0) {
 		List<StringName> sn;
-		String pf = p_function;
+		const String pf = p_function;
 		if (pf == "add_theme_color_override" || pf == "has_theme_color" || pf == "has_theme_color_override" || pf == "get_theme_color") {
 			ThemeDB::get_singleton()->get_default_theme()->get_color_list(get_class(), &sn);
 		} else if (pf == "add_theme_style_override" || pf == "has_theme_style" || pf == "has_theme_style_override" || pf == "get_theme_style") {
@@ -227,10 +231,11 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 		}
 	}
 }
+#endif
 
-Array Control::get_configuration_warnings() const {
-	ERR_READ_THREAD_GUARD_V(Array());
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray Control::get_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (data.mouse_filter == MOUSE_FILTER_IGNORE && !data.tooltip.is_empty()) {
 		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
@@ -268,6 +273,7 @@ String Control::properties_managed_by_container[] = {
 bool Control::_set(const StringName &p_name, const Variant &p_value) {
 	ERR_MAIN_THREAD_GUARD_V(false);
 	String name = p_name;
+
 	if (!name.begins_with("theme_override")) {
 		return false;
 	}
@@ -309,7 +315,6 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			return false;
 		}
-
 	} else {
 		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
@@ -333,12 +338,14 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 			return false;
 		}
 	}
+
 	return true;
 }
 
 bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 	ERR_MAIN_THREAD_GUARD_V(false);
 	String sname = p_name;
+
 	if (!sname.begins_with("theme_override")) {
 		return false;
 	}
@@ -1399,15 +1406,11 @@ void Control::_set_global_position(const Point2 &p_point) {
 
 void Control::set_global_position(const Point2 &p_point, bool p_keep_offsets) {
 	ERR_MAIN_THREAD_GUARD;
-
-	Transform2D global_transform_cache = get_global_transform();
-	if (p_point == global_transform_cache.get_origin()) {
-		return; // Edge case, but avoids calculation.
-	}
-
-	Point2 internal_position = global_transform_cache.affine_inverse().xform(p_point);
-
-	set_position(internal_position + data.pos_cache, p_keep_offsets);
+	// (parent_global_transform * T(new_position) * internal_transform).origin == new_global_position
+	// (T(new_position) * internal_transform).origin == new_position_in_parent_space
+	// new_position == new_position_in_parent_space - internal_transform.origin
+	Point2 position_in_parent_space = data.parent_canvas_item ? data.parent_canvas_item->get_global_transform().affine_inverse().xform(p_point) : p_point;
+	set_position(position_in_parent_space - _get_internal_transform().get_origin(), p_keep_offsets);
 }
 
 Point2 Control::get_global_position() const {
@@ -2996,7 +2999,6 @@ void Control::set_layout_direction(Control::LayoutDirection p_direction) {
 	ERR_FAIL_INDEX((int)p_direction, 4);
 
 	data.layout_dir = p_direction;
-	data.is_rtl_dirty = true;
 
 	propagate_notification(NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 }
@@ -3097,21 +3099,17 @@ bool Control::is_localizing_numeral_system() const {
 	return data.localize_numeral_system;
 }
 
+#ifndef DISABLE_DEPRECATED
 void Control::set_auto_translate(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
-	if (p_enable == data.auto_translate) {
-		return;
-	}
-
-	data.auto_translate = p_enable;
-
-	notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	set_auto_translate_mode(p_enable ? AUTO_TRANSLATE_MODE_ALWAYS : AUTO_TRANSLATE_MODE_DISABLED);
 }
 
 bool Control::is_auto_translating() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return data.auto_translate;
+	return can_auto_translate();
 }
+#endif
 
 // Extra properties.
 
@@ -3172,14 +3170,6 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-#ifdef TOOLS_ENABLED
-			if (is_part_of_edited_scene()) {
-				// Don't translate Controls on scene when inside editor.
-				set_message_translation(false);
-				notification(NOTIFICATION_TRANSLATION_CHANGED);
-			}
-#endif
-
 			// Emits NOTIFICATION_THEME_CHANGED internally.
 			set_theme_context(ThemeDB::get_singleton()->get_nearest_theme_context(this));
 		} break;
@@ -3192,6 +3182,7 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			set_theme_context(nullptr, false);
+
 			release_focus();
 			get_viewport()->_gui_remove_control(this);
 		} break;
@@ -3428,12 +3419,12 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_theme_color_override", "name"), &Control::remove_theme_color_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_constant_override", "name"), &Control::remove_theme_constant_override);
 
-	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Control::get_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Control::get_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "theme_type"), &Control::get_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Control::get_theme_font_size, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Control::get_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Control::get_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Control::get_theme_icon, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Control::get_theme_stylebox, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "theme_type"), &Control::get_theme_font, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Control::get_theme_font_size, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Control::get_theme_color, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Control::get_theme_constant, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon_override", "name"), &Control::has_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox_override", "name"), &Control::has_theme_stylebox_override);
@@ -3442,12 +3433,12 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_theme_color_override", "name"), &Control::has_theme_color_override);
 	ClassDB::bind_method(D_METHOD("has_theme_constant_override", "name"), &Control::has_theme_constant_override);
 
-	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Control::has_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Control::has_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "theme_type"), &Control::has_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Control::has_theme_font_size, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Control::has_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Control::has_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Control::has_theme_icon, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Control::has_theme_stylebox, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "theme_type"), &Control::has_theme_font, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Control::has_theme_font_size, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Control::has_theme_color, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Control::has_theme_constant, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("get_theme_default_base_scale"), &Control::get_theme_default_base_scale);
 	ClassDB::bind_method(D_METHOD("get_theme_default_font"), &Control::get_theme_default_font);
@@ -3506,8 +3497,10 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Control::get_layout_direction);
 	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Control::is_layout_rtl);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Control::set_auto_translate);
 	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Control::is_auto_translating);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_localize_numeral_system", "enable"), &Control::set_localize_numeral_system);
 	ClassDB::bind_method(D_METHOD("is_localizing_numeral_system"), &Control::is_localizing_numeral_system);
@@ -3558,8 +3551,11 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "0,20,0.01,or_greater"), "set_stretch_ratio", "get_stretch_ratio");
 
 	ADD_GROUP("Localization", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "localize_numeral_system"), "set_localize_numeral_system", "is_localizing_numeral_system");
+
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_auto_translate", "is_auto_translating");
+#endif
 
 	ADD_GROUP("Tooltip", "tooltip_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tooltip_text", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip_text", "get_tooltip_text");

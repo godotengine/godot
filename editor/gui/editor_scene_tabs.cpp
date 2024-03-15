@@ -60,8 +60,10 @@ void EditorSceneTabs::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
-			scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/scene_tabs")) {
+				scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
+				scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
+			}
 		} break;
 	}
 }
@@ -200,22 +202,23 @@ void EditorSceneTabs::update_scene_tabs() {
 	}
 	menu_initialized = true;
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-		DisplayServer::get_singleton()->global_menu_clear("_dock");
+	if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+		RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
+		NativeMenu::get_singleton()->clear(dock_rid);
 	}
 
 	scene_tabs->set_block_signals(true);
 	scene_tabs->set_tab_count(EditorNode::get_editor_data().get_edited_scene_count());
 	scene_tabs->set_block_signals(false);
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+	if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+		RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
 		for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
-			int global_menu_index = DisplayServer::get_singleton()->global_menu_add_item("_dock", EditorNode::get_editor_data().get_scene_title(i), callable_mp(this, &EditorSceneTabs::_global_menu_scene), Callable(), i);
+			int global_menu_index = NativeMenu::get_singleton()->add_item(dock_rid, EditorNode::get_editor_data().get_scene_title(i), callable_mp(this, &EditorSceneTabs::_global_menu_scene), Callable(), i);
 			scene_tabs->set_tab_metadata(i, global_menu_index);
 		}
-
-		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
-		DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &EditorSceneTabs::_global_menu_new_window));
+		NativeMenu::get_singleton()->add_separator(dock_rid);
+		NativeMenu::get_singleton()->add_item(dock_rid, TTR("New Window"), callable_mp(this, &EditorSceneTabs::_global_menu_new_window));
 	}
 
 	_update_tab_titles();
@@ -245,10 +248,11 @@ void EditorSceneTabs::_update_tab_titles() {
 		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(EditorNode::get_editor_data().get_scene_history_id(i));
 		scene_tabs->set_tab_title(i, disambiguated_scene_names[i] + (unsaved ? "(*)" : ""));
 
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+		if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+			RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
 			int global_menu_index = scene_tabs->get_tab_metadata(i);
-			DisplayServer::get_singleton()->global_menu_set_item_text("_dock", global_menu_index, EditorNode::get_editor_data().get_scene_title(i) + (unsaved ? "(*)" : ""));
-			DisplayServer::get_singleton()->global_menu_set_item_tag("_dock", global_menu_index, i);
+			NativeMenu::get_singleton()->set_item_text(dock_rid, global_menu_index, EditorNode::get_editor_data().get_scene_title(i) + (unsaved ? "(*)" : ""));
+			NativeMenu::get_singleton()->set_item_tag(dock_rid, global_menu_index, i);
 		}
 
 		if (show_rb && EditorNode::get_editor_data().get_scene_root_script(i).is_valid()) {
@@ -377,7 +381,7 @@ EditorSceneTabs::EditorSceneTabs() {
 	scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
 	scene_tabs->set_max_tab_width(int(EDITOR_GET("interface/scene_tabs/maximum_width")) * EDSCALE);
 	scene_tabs->set_drag_to_rearrange_enabled(true);
-	scene_tabs->set_auto_translate(false);
+	scene_tabs->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	scene_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tabbar_container->add_child(scene_tabs);
 

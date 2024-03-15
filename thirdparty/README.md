@@ -47,7 +47,7 @@ Files extracted from upstream source:
 ## astcenc
 
 - Upstream: https://github.com/ARM-software/astc-encoder
-- Version: 4.4.0 (5a5b5a1ef60dd47c27c28c66c118d22c40e3197e, 2023)
+- Version: 4.7.0 (1a51f2915121275038677317c8bf61f1a78b590c, 2024)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -64,7 +64,7 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- `encoder/` and `transcoder/` folders
+- `encoder/` and `transcoder/` folders, minus `jpgd.{cpp,h}`
 - `LICENSE`
 
 Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
@@ -94,13 +94,16 @@ Files extracted from upstream source:
 ## clipper2
 
 - Upstream: https://github.com/AngusJohnson/Clipper2
-- Version: 1.2.2 (756c5079aacab5837e812a143c59dc48a09f22e7, 2023)
+- Version: 1.3.0 (98db5662e8dd1808a5a7b50c5605a2289bb390e8, 2023)
 - License: BSL 1.0
 
 Files extracted from upstream source:
 
-- `CPP/Clipper2Lib` folder
+- `CPP/Clipper2Lib/` folder (in root)
 - `LICENSE`
+
+Apply the patches in the `patches/` folder when syncing on newer upstream
+commits.
 
 
 ## cvtt
@@ -372,7 +375,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 8.2.2 (18a6e78549e8e04a281129ea8ca784ce85f111b8, 2023)
+- Version: 8.3.0 (894a1f72ee93a1fd8dc1d9218cb3fd8f048be29a, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -380,13 +383,14 @@ Files extracted from upstream source:
 - `AUTHORS`, `COPYING`, `THANKS`
 - From the `src` folder, recursively:
   - All the `.c`, `.cc`, `.h`, `.hh` files
-  - Except `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`
+  - Except `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`,
+    and the `wasm` folder
 
 
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 74.1 (9edac7b78327a1cb58db29e2714b15f9fa14e4d7, 2023)
+- Version: 74.2 (2d029329c82c7792b985024b2bdab5fc7278fbc8, 2023)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -426,19 +430,21 @@ Files extracted from upstream source:
 ## libktx
 
 - Upstream: https://github.com/KhronosGroup/KTX-Software
-- Version: 4.1.0 (d7255fe73cd53b856731ceb9f2c279181d0dbbca, 2023)
+- Version: 4.3.1 (c0214158d551cfc779624b0f84130bcbbefef59a, 2024)
 - License: Apache-2.0
 
 Files extracted from upstream source:
 
 - `LICENSE.md`
 - `include/*`
-- `lib/dfdutils/{LICENSES/Apache-2.0.txt,KHR,*.c,*.h,*.inl}`
-- `lib/{basis_sgd.h,basis_transcode.cpp,checkheader.c,filestream.*,formatsize.h,gl_format.h,hashlist.c,ktxint.h,memstream.*,swap.c,texture*,uthash.h,vk_format.h,vkformat_enum.h}`
-- `utils/unused.h`
+- `lib/dfdutils/LICENSE.adoc` as `LICENSE.dfdutils.adoc` (in root)
+- `lib/dfdutils/LICENSES/Apache-2.0.txt` as `Apache-2.0.txt` (in root)
+- `lib/dfdutils/{KHR/*,dfd.h,colourspaces.c,createdfd.c,interpretdfd.c,printdfd.c,queries.c,dfd2vk.inl,vk2dfd.*}`
+- `lib/{basis_sgd.h,formatsize.h,gl_format.h,ktxint.h,uthash.h,vk_format.h,vkformat_enum.h,checkheader.c,swap.c,hashlist.c,vkformat_check.c,basis_transcode.cpp,miniz_wrapper.cpp,filestream.*,memstream.*,texture*}`
 - `other_include/KHR/*`
+- `utils/unused.h`
 
-Some Godot-specific changes are applied via `godot.patch`.
+Some Godot-specific changes are applied via patches included in the `patches` folder.
 
 
 ## libogg
@@ -457,12 +463,12 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.40 (f135775ad4e5d4408d2e12ffcc71bb36e6b48551, 2023)
+- Version: 1.6.43 (ed217e3e601d8e462f7fd1e04bed43ac42212429, 2024)
 - License: libpng/zlib
 
 Files extracted from upstream source:
 
-- All `.c` and `.h` files of the main directory, except from `example.c` and
+- All `.c` and `.h` files of the main directory, apart from `example.c` and
   `pngtest.c`
 - `arm/`, `intel/` and `powerpc/` folders
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
@@ -684,7 +690,7 @@ Collection of single-file libraries used in Godot components.
 ## msdfgen
 
 - Upstream: https://github.com/Chlumsky/msdfgen
-- Version: 1.10 (64a91eec3ca3787e6f78b4c99fcd3052ad3e37c0, 2021)
+- Version: 1.11 (f12d7ca00091a632a289865b85c3f2e0bfc6542d, 2023)
 - License: MIT
 
 Files extracted from the upstream source:
@@ -697,7 +703,7 @@ Files extracted from the upstream source:
 ## noise
 
 - Upstream: https://github.com/Auburn/FastNoiseLite
-- Version: git (6be3d6bf7fb408de341285f9ee8a29b67fd953f1, 2022)
+- Version: 1.1.0 (f7af54b56518aa659e1cf9fb103c0b6e36a833d9, 2023)
 - License: MIT
 
 Files extracted from the upstream source:
@@ -722,7 +728,7 @@ with the provided patch.
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.0.33 (dc1e23937fe45eabcce80f6588cf47449edb29d1, 2024)
+- Version: 1.0.34 (288d3a7ebc1ad959f62d51da75baa3d27438c499, 2024)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -750,7 +756,7 @@ Exclude:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.42 (52c08847921a324c804cabf2814549f50bce1265, 2022)
+- Version: 10.43 (3864abdb713f78831dd12d898ab31bbb0fa630b6, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -759,11 +765,9 @@ Files extracted from upstream source:
 - All `.h` files in `src/` apart from `pcre2posix.h`
 - `src/pcre2_jit_match.c`
 - `src/pcre2_jit_misc.c`
+- `src/pcre2_ucptables.c`
 - `src/sljit/`
 - `AUTHORS` and `LICENCE`
-
-A sljit patch from upstream was backported to fix macOS < 11.0 compilation
-in 10.40, it can be found in the `patches` folder.
 
 
 ## recastnavigation
@@ -842,7 +846,7 @@ comments and a patch is provided in the squish/ folder.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.5 (3627ab3060592468d49547b4cdf5353e9e2b50dc, 2023)
+- Version: 1.0.8 (6c8742cc8145c8f629698cd8248900990946d6b1, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -856,13 +860,25 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.12.5 (9c8eeaab9629b5d241b1092a3398fe6351c259cd, 2024)
+- Version: 0.12.7 (cddae9966cbb48c431ea17c262d6f48393206fd7, 2024)
 - License: MIT
 
 Files extracted from upstream source:
 
 See `thorvg/update-thorvg.sh` for extraction instructions. Set the version
-number and run the script and apply patches from the `patches` folder.
+number and run the script.
+
+
+## ufbx
+
+- Upstream: https://github.com/ufbx/ufbx
+- Version: git (v0.11.1, 2024)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `ufbx.{c,h}`
+- `LICENSE`
 
 
 ## vhacd

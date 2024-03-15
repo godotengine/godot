@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 3D vector using floating point coordinates.
+		A 3D vector using floating-point coordinates.
 	</brief_description>
 	<description>
 		A 3-element structure that can be used to represent 3D coordinates or any other triplet of numeric values.
@@ -204,7 +204,7 @@
 				This method is faster than using [method is_equal_approx] with one value as a zero vector.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -217,7 +217,7 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
-		<method name="lerp" qualifiers="const">
+		<method name="lerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector3" />
 			<param index="0" name="to" type="Vector3" />
 			<param index="1" name="weight" type="float" />
@@ -225,7 +225,7 @@
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="limit_length" qualifiers="const">
+		<method name="limit_length" qualifiers="const" keywords="truncate">
 			<return type="Vector3" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>
@@ -299,7 +299,8 @@
 			<return type="Vector3" />
 			<param index="0" name="b" type="Vector3" />
 			<description>
-				Returns the result of projecting the vector onto the given vector [param b].
+				Returns a new vector resulting from projecting this vector onto the given vector [param b]. The resulting new vector is parallel to [param b]. See also [method slide].
+				[b]Note:[/b] If the vector [param b] is a zero vector, the components of the resulting new vector will be [constant @GDScript.NAN].
 			</description>
 		</method>
 		<method name="reflect" qualifiers="const">
@@ -337,7 +338,7 @@
 				Returns the signed angle to the given vector, in radians. The sign of the angle is positive in a counter-clockwise direction and negative in a clockwise direction when viewed from the side specified by the [param axis].
 			</description>
 		</method>
-		<method name="slerp" qualifiers="const">
+		<method name="slerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector3" />
 			<param index="0" name="to" type="Vector3" />
 			<param index="1" name="weight" type="float" />
@@ -350,7 +351,8 @@
 			<return type="Vector3" />
 			<param index="0" name="n" type="Vector3" />
 			<description>
-				Returns a new vector slid along a plane defined by the given normal.
+				Returns a new vector resulting from sliding this vector along a plane with normal [param n]. The resulting new vector is perpendicular to [param n], and is equivalent to this vector minus its projection on [param n]. See also [method project].
+				[b]Note:[/b] The vector [param n] must be normalized. See also [method normalized].
 			</description>
 		</method>
 		<method name="snapped" qualifiers="const">

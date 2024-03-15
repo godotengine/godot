@@ -285,8 +285,11 @@ public:
 
 	virtual Rect2 get_item_rect() const override;
 
-	virtual Array get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
+
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	AnimatedSprite3D();
 };

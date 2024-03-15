@@ -305,21 +305,6 @@ msgstr "Muuda animatsiooni pikkust"
 msgid "Change Animation Loop"
 msgstr "Muuda animatsiooni tsüklit"
 
-msgid "Property Track"
-msgstr "Atribuudi rada"
-
-msgid "Call Method Track"
-msgstr "Meetodi kutsumise rada"
-
-msgid "Bezier Curve Track"
-msgstr "Bezier-kõvera rada"
-
-msgid "Audio Playback Track"
-msgstr "Helimängimise rada"
-
-msgid "Animation Playback Track"
-msgstr "Animatsiooni mängimise rada"
-
 msgid "Animation length (frames)"
 msgstr "Animatsiooni pikkus (kaadrid)"
 
@@ -403,9 +388,6 @@ msgstr "Sirgjooneline"
 
 msgid "Cubic"
 msgstr "Kuupmõõtmeline"
-
-msgid "Insert Key"
-msgstr "Sisesta võti"
 
 msgid "Duplicate Key(s)"
 msgstr "Paljunda võti (võtmed)"
@@ -517,12 +499,6 @@ msgstr "Muuda"
 msgid "Animation properties."
 msgstr "Animatsiooni atribuudid."
 
-msgid "Copy Tracks"
-msgstr "Kopeeri Rajad"
-
-msgid "Duplicate Selection"
-msgstr "Duplikeeri Valik"
-
 msgid "Delete Selection"
 msgstr "Kustuta Valim"
 
@@ -617,6 +593,9 @@ msgstr "Hoiatused"
 
 msgid "Line and column numbers."
 msgstr "Rea- ja veerunumbrid."
+
+msgid "Indentation"
+msgstr "Treppimine"
 
 msgid "Method in target node must be specified."
 msgstr "Tuleb täpsustada siht-node'i meetod."
@@ -1074,9 +1053,6 @@ msgstr "Kausta nimi on kehtiv."
 msgid "Thanks from the Godot community!"
 msgstr "Suur tänu Godot kogukonnalt!"
 
-msgid "Click to copy."
-msgstr "Klõpsa, et kopeerida."
-
 msgid "Godot Engine contributors"
 msgstr "Godot mängumootori panustajad"
 
@@ -1383,9 +1359,6 @@ msgstr "Laadi Profiil"
 msgid "Export Profile"
 msgstr "Ekspordi profiil"
 
-msgid "Forced classes on detect:"
-msgstr "Sunnitud klassid tuvastamisel:"
-
 msgid "Paste Params"
 msgstr "Kleebi parameetrid"
 
@@ -1403,6 +1376,12 @@ msgstr "[tühi]"
 
 msgid "[unsaved]"
 msgstr "[salvestamata]"
+
+msgid "%s - Godot Engine"
+msgstr "%s - Godot Engine"
+
+msgid "Dock Position"
+msgstr "Doki asukoht"
 
 msgid "3D Editor"
 msgstr "3D-redaktor"
@@ -1603,6 +1582,21 @@ msgstr ""
 "See meetod ei vaja kutsumiseks eksemplari.\n"
 "Seda saab kutsuda otse, kasutades klassi nime."
 
+msgid "Constructors"
+msgstr "Konstruktorid"
+
+msgid "Operators"
+msgstr "Operaatorid"
+
+msgid "Method Descriptions"
+msgstr "Meetodite kirjeldused"
+
+msgid "Constructor Descriptions"
+msgstr "Konstruktorite kirjeldused"
+
+msgid "Operator Descriptions"
+msgstr "Operaatorite kirjeldused"
+
 msgid "Error codes returned:"
 msgstr "Tagastatud veakoodid:"
 
@@ -1617,18 +1611,6 @@ msgstr "Pärandub:"
 
 msgid "Inherited by:"
 msgstr "Päritud järgneva poolt:"
-
-msgid ""
-"This class is marked as deprecated. It will be removed in future versions."
-msgstr ""
-"See klass on märgitud aegunuks. See eemaldatakse tulevastes versioonides."
-
-msgid ""
-"This class is marked as experimental. It is subject to likely change or "
-"possible removal in future versions. Use at your own discretion."
-msgstr ""
-"See klass on märgitud katseliseks. Seda võidakse tulevastes versioonides "
-"tõenäoliselt muuta või eemaldada. Kasutage oma äranägemise järgi."
 
 msgid "Description"
 msgstr "Kirjeldus"
@@ -1657,12 +1639,6 @@ msgstr "vaikimisi:"
 
 msgid "property:"
 msgstr "atribuut:"
-
-msgid "Constructors"
-msgstr "Konstruktorid"
-
-msgid "Operators"
-msgstr "Operaatorid"
 
 msgid "Theme Properties"
 msgstr "Teema atribuudid"
@@ -1700,15 +1676,6 @@ msgstr "Atribuutide kirjeldused"
 msgid "(value)"
 msgstr "(väärtus)"
 
-msgid "Constructor Descriptions"
-msgstr "Konstruktorite kirjeldused"
-
-msgid "Method Descriptions"
-msgstr "Meetodite kirjeldused"
-
-msgid "Operator Descriptions"
-msgstr "Operaatorite kirjeldused"
-
 msgid "Property:"
 msgstr "Atribuut:"
 
@@ -1720,6 +1687,24 @@ msgstr "%d vaste."
 
 msgid "%d matches."
 msgstr "%d vastet."
+
+msgid "Method"
+msgstr "Meetod"
+
+msgid "Signal"
+msgstr "Signaal"
+
+msgid "Constant"
+msgstr "Konstant"
+
+msgid "Property"
+msgstr "Atribuut"
+
+msgid "Theme Property"
+msgstr "Teema atribuut"
+
+msgid "Annotation"
+msgstr "Annotatsioon"
 
 msgid "Search Help"
 msgstr "Otsimise abi"
@@ -1768,24 +1753,6 @@ msgstr "(konstruktorid)"
 
 msgid "Class"
 msgstr "Klass"
-
-msgid "Method"
-msgstr "Meetod"
-
-msgid "Signal"
-msgstr "Signaal"
-
-msgid "Annotation"
-msgstr "Annotatsioon"
-
-msgid "Constant"
-msgstr "Konstant"
-
-msgid "Property"
-msgstr "Atribuut"
-
-msgid "Theme Property"
-msgstr "Teema atribuut"
 
 msgid "This member is marked as deprecated."
 msgstr "See liige on märgitud aegunuks."
@@ -2310,9 +2277,6 @@ msgstr "Tühjenda Hiljuti Avatud Tseenid"
 msgid "There is no defined scene to run."
 msgstr "Käitamiseks pole määratletud stseeni."
 
-msgid "%s - Godot Engine"
-msgstr "%s - Godot Engine"
-
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2337,14 +2301,14 @@ msgstr ""
 "Valitud stseen '%s' ei ole stseenifail, kas valida sobiv fail?\n"
 "Saate seda hiljem muuta \"Projekti sätted\" kategooria \"Rakendus\" all."
 
+msgid "Default"
+msgstr "Vaikimisi"
+
 msgid "Save Layout"
 msgstr "Salvesta Paigutus"
 
 msgid "Delete Layout"
 msgstr "Kustuta Paigutus"
-
-msgid "Default"
-msgstr "Vaikimisi"
 
 msgid "Save & Close"
 msgstr "Salvesta Ja Sulge"
@@ -2374,9 +2338,6 @@ msgstr "Ühilduvus"
 
 msgid "Pan View"
 msgstr "Nihuta Vaadet"
-
-msgid "Dock Position"
-msgstr "Doki asukoht"
 
 msgid "Distraction Free Mode"
 msgstr "Häirimatu režiim"
@@ -2432,6 +2393,9 @@ msgstr "Sule stseen"
 msgid "Quit"
 msgstr "Välju"
 
+msgid "Editor Settings..."
+msgstr "Redaktori sätted..."
+
 msgid "Project"
 msgstr "Projekt"
 
@@ -2458,9 +2422,6 @@ msgstr "Välju ja kuva projektide loetelu"
 
 msgid "Editor"
 msgstr "Redaktor"
-
-msgid "Editor Settings..."
-msgstr "Redaktori sätted..."
 
 msgid "Command Palette..."
 msgstr "Käskude palett..."
@@ -2522,9 +2483,6 @@ msgstr "Funktsionaalsuse Soovitamine"
 msgid "Send Docs Feedback"
 msgstr "Saada dokumentatsioonide tagasiside"
 
-msgid "About Godot"
-msgstr "Teave Godot'ist"
-
 msgid "Support Godot Development"
 msgstr "Toeta Godot'i Arendamist"
 
@@ -2549,9 +2507,6 @@ msgstr "Sõlm"
 msgid "History"
 msgstr "Ajalugu"
 
-msgid "Expand Bottom Panel"
-msgstr "Laienda alumist paneeli"
-
 msgid "Output"
 msgstr "Väljund"
 
@@ -2569,33 +2524,6 @@ msgstr "Installi failist"
 
 msgid "Select Android sources file"
 msgstr "Valige Androidi allikate fail"
-
-msgid ""
-"This will set up your project for gradle Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make gradle builds instead of using pre-built APKs, the "
-"\"Use Gradle Build\" option should be enabled in the Android export preset."
-msgstr ""
-"See häälestab teie projekti gradle Androidi versioonide jaoks, installides "
-"lähtemalli versiooni asukohta „res:// android/build”.\n"
-"Seejärel saate eksportimisel rakendada muudatusi ja luua oma kohandatud APK "
-"(moodulite lisamine, AndroidManifest.xml vahetamine jne).\n"
-"Pidage meeles, et eelehitatud APK-de kasutamise asemel astmejärkude "
-"tegemiseks peaks Androidi ekspordi eelseadistuses olema lubatud valik „Kasuta "
-"Gradle Buildit”."
-
-msgid ""
-"The Android build template is already installed in this project and it won't "
-"be overwritten.\n"
-"Remove the \"res://android/build\" directory manually before attempting this "
-"operation again."
-msgstr ""
-"Androidi ehitusmall on sellesse projekti juba installitud ja seda ei "
-"kirjutata üle.\n"
-"Enne selle toimingu uuesti proovimist eemaldage kataloog \"res://android/"
-"build\" käsitsi."
 
 msgid "Show in File Manager"
 msgstr "Kuva failihalduris"
@@ -2664,8 +2592,8 @@ msgstr "Ok"
 msgid "Warning!"
 msgstr "Hoiatus!"
 
-msgid "Main Script:"
-msgstr "Peamine Skript:"
+msgid "On"
+msgstr "Sees"
 
 msgid "Edit Plugin"
 msgstr "Redigeeri Pistikprogrammi"
@@ -2682,14 +2610,8 @@ msgstr "Versioon"
 msgid "Author"
 msgstr "Autor"
 
-msgid "Status"
-msgstr "Olek"
-
 msgid "Edit Text:"
 msgstr "Redigeeri Tekst:"
-
-msgid "On"
-msgstr "Sees"
 
 msgid "Renaming layer %d:"
 msgstr "Kihi %d ümbernimetamine:"
@@ -2800,8 +2722,8 @@ msgstr ""
 "Valitud ressurss (%s) ei vasta ühelegi selle atribuudi (%s) eeldatavale "
 "tüübile."
 
-msgid "Quick Load"
-msgstr "Kiire Laadimine"
+msgid "Load..."
+msgstr "Lae..."
 
 msgid "Inspect"
 msgstr "Vaata üle"
@@ -2824,14 +2746,8 @@ msgstr "Teisenda %s'ks"
 msgid "New %s"
 msgstr "Uus %s"
 
-msgid "New Script"
-msgstr "Uus skript"
-
-msgid "Extend Script"
-msgstr "Laienda skripti"
-
-msgid "New Shader"
-msgstr "Uus Shader"
+msgid "New Script..."
+msgstr "Uus skript..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "Ühtegi Kaugsilumise Ekspordi Eelseadistust Pole Konfigureeritud."
@@ -2856,12 +2772,6 @@ msgstr "Kirjutage oma loogika meetodis _run()."
 
 msgid "There is an edited scene already."
 msgstr "Redigeeritud stseen on juba olemas."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"Redaktori Skripti ei saanud käivitada, kas unustasite meetodi \"_ run\" "
-"ülekrijutada?"
 
 msgid "Undo: %s"
 msgstr "Võta tagasi %s"
@@ -2898,12 +2808,6 @@ msgstr "Kõik Seadmed"
 
 msgid "Device"
 msgstr "Seade"
-
-msgid "Listening for input..."
-msgstr "Sisendi kuulamine..."
-
-msgid "Filter by event..."
-msgstr "Filtreeri sündmuse järgi..."
 
 msgid "Project export for platform:"
 msgstr "Projekti eksportimine platvormi jaoks:"
@@ -3230,6 +3134,9 @@ msgstr ""
 "juurutamisel.\n"
 "Ainult ühe eelseadistuse ühe platvormi kohta võib märkida käitatavaks."
 
+msgid "Advanced Options"
+msgstr "Täpsemad sätted"
+
 msgid "Export Path"
 msgstr "Ekspordi Tee"
 
@@ -3339,23 +3246,6 @@ msgstr "Halda Ekspordi Malle"
 msgid "Export With Debug"
 msgstr "Ekspordi Koos Silujaga"
 
-msgid "Disable FBX & Restart"
-msgstr "Keela FBX ja taaskäivitage"
-
-msgid ""
-"Canceling this dialog will disable the FBX importer.\n"
-"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
-"> Enabled.\n"
-"\n"
-"The editor will restart as importers are registered when the editor starts."
-msgstr ""
-"Selle dialoogi tühistamine lülitab välja FBX-i importija.\n"
-"Saate selle uuesti sisse lülitada projekti seadetes jaotises Failisüsteem > "
-"Import > FBX > Lubatud.\n"
-"\n"
-"Redaktor käivitub uuesti, kuna importijad on redaktori käivitamisel "
-"registreeritud."
-
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Tee FBX2glTF programmini on tühi."
 
@@ -3370,13 +3260,6 @@ msgstr "Käivitatav FBX2glTF programm on korrektne."
 
 msgid "Configure FBX Importer"
 msgstr "Konfigureerige FBX Importija"
-
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBX-failide importimiseks on vajalik FBX2glTF.\n"
-"Laadige see alla ja sisestage binaarfaili kehtiv tee:"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "FBX2glTF allalaadimiseks klõpsake sellel lingil"
@@ -3525,9 +3408,6 @@ msgstr "Uus kaust..."
 msgid "New Scene..."
 msgstr "Uus stseen..."
 
-msgid "New Script..."
-msgstr "Uus skript..."
-
 msgid "New Resource..."
 msgstr "Uus ressurss..."
 
@@ -3644,56 +3524,23 @@ msgstr "%d vastet %d failis."
 msgid "%d matches in %d files"
 msgstr "%d vastet %d failis."
 
+msgid "Rename Group"
+msgstr "Nimeta grupp ümber"
+
 msgid "Add to Group"
 msgstr "Lisa Gruppi"
 
 msgid "Remove from Group"
 msgstr "Eemalda Grupist"
 
-msgid "Invalid group name."
-msgstr "Väär grupi nimi."
+msgid "Global"
+msgstr "Globaalne"
 
-msgid "Group name already exists."
-msgstr "Grupi nimi on juba olemas."
-
-msgid "Rename Group"
-msgstr "Nimeta grupp ümber"
-
-msgid "Delete Group"
-msgstr "Kustuta Grupp"
-
-msgid "Groups"
-msgstr "Grupid"
-
-msgid "Nodes Not in Group"
-msgstr "Sõlmed ei ole Grupis"
-
-msgid "Nodes in Group"
-msgstr "Sõlmed On Grupis"
-
-msgid "Empty groups will be automatically removed."
-msgstr "Tühjad Grupid eemaldatakse automaatselt."
-
-msgid "Group Editor"
-msgstr "Grupi Redaktor"
-
-msgid "Manage Groups"
-msgstr "Halda Gruppe"
+msgid "Expand Bottom Panel"
+msgstr "Laienda alumist paneeli"
 
 msgid "Move"
 msgstr "Liiguta"
-
-msgid "Please select a base directory first."
-msgstr "Palun valige kõigepealt baaskaust."
-
-msgid "Could not create folder. File with that name already exists."
-msgstr "Kausta ei saanud luua. Selle nimega Fail on juba olemas."
-
-msgid "Choose a Directory"
-msgstr "Valige kaust"
-
-msgid "Copy File(s)"
-msgstr "Kopeeri Fail(id)"
 
 msgid "Network"
 msgstr "Võrk"
@@ -3737,6 +3584,9 @@ msgstr "Ava kaust või kataloog"
 
 msgid "Save a File"
 msgstr "Salvesta fail"
+
+msgid "Could not create folder. File with that name already exists."
+msgstr "Kausta ei saanud luua. Selle nimega Fail on juba olemas."
 
 msgid "Favorited folder does not exist anymore and will be removed."
 msgstr "Lemmikkausta pole enam olemas ja see eemaldatakse."
@@ -3915,9 +3765,6 @@ msgstr "Lülitage Nähtavus"
 msgid "Unlock Node"
 msgstr "Avage Sõlm"
 
-msgid "Button Group"
-msgstr "Nuppude Grupp"
-
 msgid "Disable Scene Unique Name"
 msgstr "Keela Stseeni Unikaalne Nimi"
 
@@ -3945,9 +3792,6 @@ msgstr[1] "Sõlm on järgmistes gruppides:"
 
 msgid "Click to show signals dock."
 msgstr "Klõpsake signaalide doki kuvamiseks."
-
-msgid "Open in Editor"
-msgstr "Ava Redaktoris"
 
 msgid "This script is currently running in the editor."
 msgstr "See Skript töötab praegu Redaktoris."
@@ -3979,6 +3823,9 @@ msgstr ""
 "AnimationPlayer on kinnitatud.\n"
 "Klõpsake vabastamiseks."
 
+msgid "Open in Editor"
+msgstr "Ava Redaktoris"
+
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" pole tuntud filter."
 
@@ -4000,8 +3847,166 @@ msgstr "Valige Sõlm"
 msgid "The Beginning"
 msgstr "Algus"
 
-msgid "Global"
-msgstr "Globaalne"
+msgid "Pre-Import Scene"
+msgstr "Eel-Impordi Stseen"
+
+msgid "Importing Scene..."
+msgstr "Stseeni importimine..."
+
+msgid "Import Scene"
+msgstr "Impordi Stseen"
+
+msgid "Running Custom Script..."
+msgstr "Kohandatud Skripti Käitamine..."
+
+msgid "Couldn't load post-import script:"
+msgstr "Impordijärgset skripti ei saanud laadida:"
+
+msgid "Invalid/broken script for post-import (check console):"
+msgstr "Kehtetu/katkine skript pärast importimist (kontrolli konsooli):"
+
+msgid "Error running post-import script:"
+msgstr "Viga importimisjärgse skripti käivitamisel:"
+
+msgid "Saving..."
+msgstr "Salvestamine..."
+
+msgid "<Unnamed Material>"
+msgstr "<Nimetu Materjal>"
+
+msgid "Import ID: %s"
+msgstr "Import ID: %s"
+
+msgid ""
+"Type: %s\n"
+"Import ID: %s"
+msgstr ""
+"Tüüp: %s\n"
+"Impordi ID: %s"
+
+msgid "Error opening scene"
+msgstr "Stseeni avamisel tekkis viga"
+
+msgid "Advanced Import Settings for AnimationLibrary '%s'"
+msgstr "AnimationLibrary '%s' täpsemad impordiseaded"
+
+msgid "Advanced Import Settings for Scene '%s'"
+msgstr "Stseeni '%s' täpsemad impordiseaded"
+
+msgid "Select folder to extract material resources"
+msgstr "Valige materjaliressursside eraldamiseks kaust"
+
+msgid "Select folder where mesh resources will save on import"
+msgstr "Valige kaust, kuhu Mesh-ressursid importimisel salvestatakse"
+
+msgid "Select folder where animations will save on import"
+msgstr "Valige kaust, kuhu animatsioonid importimisel salvestatakse"
+
+msgid "Warning: File exists"
+msgstr "Hoiatus: Fail on olemas"
+
+msgid "Existing file with the same name will be replaced."
+msgstr "Olemasolev sama nimega fail asendatakse."
+
+msgid "Will create new file"
+msgstr "Loon Uue Faili"
+
+msgid "Already External"
+msgstr "Juba Väline"
+
+msgid ""
+"This material already references an external file, no action will be taken.\n"
+"Disable the external property for it to be extracted again."
+msgstr ""
+"See materjal viitab juba välisele failile, midagi ette ei võeta.\n"
+"Selle uuesti ekstraktimiseks keelake väline atribuut."
+
+msgid "No import ID"
+msgstr "Puudub impordi ID"
+
+msgid ""
+"Material has no name nor any other way to identify on re-import.\n"
+"Please name it or ensure it is exported with an unique ID."
+msgstr ""
+"Materjalil pole nime ega muud võimalust uuesti importimisel tuvastada.\n"
+"Nimetage see või veenduge, et see eksporditakse unikaalse ID-ga."
+
+msgid "Extract Materials to Resource Files"
+msgstr "Materjalide ekstraktimine ressursifailidesse"
+
+msgid "Extract"
+msgstr "Ekstrakti"
+
+msgid "Already Saving"
+msgstr "Juba Salvestan"
+
+msgid ""
+"This mesh already saves to an external resource, no action will be taken."
+msgstr "See Mesh juba salvestab välisesse ressurssi, midagi ei tehta."
+
+msgid "Existing file with the same name will be replaced on import."
+msgstr "Olemasolev sama nimega fail asendatakse importimisel."
+
+msgid "Will save to new file"
+msgstr "Salvestan uude faili"
+
+msgid ""
+"Mesh has no name nor any other way to identify on re-import.\n"
+"Please name it or ensure it is exported with an unique ID."
+msgstr ""
+"Mesh'il pole nime ega muud võimalust uuesti importimisel tuvastada.\n"
+"Nimetage see või veenduge, et see eksporditakse unikaalse ID-ga."
+
+msgid "Set paths to save meshes as resource files on Reimport"
+msgstr ""
+"Määrake teed et salvestada Mesh'id ressursifailidena Uuesti Importimisel"
+
+msgid "Set Paths"
+msgstr "Määra Teed"
+
+msgid ""
+"This animation already saves to an external resource, no action will be taken."
+msgstr "See Animatsioon salvestab juba välisressursi, midagi ei tehta."
+
+msgid "Set paths to save animations as resource files on Reimport"
+msgstr ""
+"Määrake teed et salvestada animatsioonide ressursifailid uuesti Importimisel"
+
+msgid "Actions..."
+msgstr "Tegevused..."
+
+msgid "Extract Materials"
+msgstr "Ekstrakti Materjalid"
+
+msgid "Set Animation Save Paths"
+msgstr "Määrake Animatsiooni Salvestamise Teed"
+
+msgid "Set Mesh Save Paths"
+msgstr "Määrake Mesh'i Salvestamise Teed"
+
+msgid "Meshes"
+msgstr "Mesh'id"
+
+msgid "Materials"
+msgstr "Materjalid"
+
+msgid "Status"
+msgstr "Olek"
+
+msgid "Save Extension:"
+msgstr "Salvesta Laiend:"
+
+msgid "Text: *.tres"
+msgstr "Tekst: *.tres"
+
+msgid "Binary: *.res"
+msgstr "Binaarne formaat: *.res"
+
+msgid "Text Resource"
+msgstr "Teksti Ressurss"
+
+msgid "Binary Resource"
+msgstr "Binaarne Ressurss"
 
 msgid "Audio Stream Importer: %s"
 msgstr "Helivoo importija: %s"
@@ -4136,30 +4141,6 @@ msgstr ""
 msgid "Dynamically rendered TrueType/OpenType font"
 msgstr "Dünaamiliselt renderdatud TrueType/OpenType font"
 
-msgid "Pre-Import Scene"
-msgstr "Eel-Impordi Stseen"
-
-msgid "Importing Scene..."
-msgstr "Stseeni importimine..."
-
-msgid "Import Scene"
-msgstr "Impordi Stseen"
-
-msgid "Running Custom Script..."
-msgstr "Kohandatud Skripti Käitamine..."
-
-msgid "Couldn't load post-import script:"
-msgstr "Impordijärgset skripti ei saanud laadida:"
-
-msgid "Invalid/broken script for post-import (check console):"
-msgstr "Kehtetu/katkine skript pärast importimist (kontrolli konsooli):"
-
-msgid "Error running post-import script:"
-msgstr "Viga importimisjärgse skripti käivitamisel:"
-
-msgid "Saving..."
-msgstr "Salvestamine..."
-
 msgid "2D/3D (Auto-Detect)"
 msgstr "2D/3D (automaatne tuvastamine)"
 
@@ -4168,140 +4149,6 @@ msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
-
-msgid "<Unnamed Material>"
-msgstr "<Nimetu Materjal>"
-
-msgid "Import ID: %s"
-msgstr "Import ID: %s"
-
-msgid ""
-"Type: %s\n"
-"Import ID: %s"
-msgstr ""
-"Tüüp: %s\n"
-"Impordi ID: %s"
-
-msgid "Error opening scene"
-msgstr "Stseeni avamisel tekkis viga"
-
-msgid "Advanced Import Settings for AnimationLibrary '%s'"
-msgstr "AnimationLibrary '%s' täpsemad impordiseaded"
-
-msgid "Advanced Import Settings for Scene '%s'"
-msgstr "Stseeni '%s' täpsemad impordiseaded"
-
-msgid "Select folder to extract material resources"
-msgstr "Valige materjaliressursside eraldamiseks kaust"
-
-msgid "Select folder where mesh resources will save on import"
-msgstr "Valige kaust, kuhu Mesh-ressursid importimisel salvestatakse"
-
-msgid "Select folder where animations will save on import"
-msgstr "Valige kaust, kuhu animatsioonid importimisel salvestatakse"
-
-msgid "Warning: File exists"
-msgstr "Hoiatus: Fail on olemas"
-
-msgid "Existing file with the same name will be replaced."
-msgstr "Olemasolev sama nimega fail asendatakse."
-
-msgid "Will create new file"
-msgstr "Loon Uue Faili"
-
-msgid "Already External"
-msgstr "Juba Väline"
-
-msgid ""
-"This material already references an external file, no action will be taken.\n"
-"Disable the external property for it to be extracted again."
-msgstr ""
-"See materjal viitab juba välisele failile, midagi ette ei võeta.\n"
-"Selle uuesti ekstraktimiseks keelake väline atribuut."
-
-msgid "No import ID"
-msgstr "Puudub impordi ID"
-
-msgid ""
-"Material has no name nor any other way to identify on re-import.\n"
-"Please name it or ensure it is exported with an unique ID."
-msgstr ""
-"Materjalil pole nime ega muud võimalust uuesti importimisel tuvastada.\n"
-"Nimetage see või veenduge, et see eksporditakse unikaalse ID-ga."
-
-msgid "Extract Materials to Resource Files"
-msgstr "Materjalide ekstraktimine ressursifailidesse"
-
-msgid "Extract"
-msgstr "Ekstrakti"
-
-msgid "Already Saving"
-msgstr "Juba Salvestan"
-
-msgid ""
-"This mesh already saves to an external resource, no action will be taken."
-msgstr "See Mesh juba salvestab välisesse ressurssi, midagi ei tehta."
-
-msgid "Existing file with the same name will be replaced on import."
-msgstr "Olemasolev sama nimega fail asendatakse importimisel."
-
-msgid "Will save to new file"
-msgstr "Salvestan uude faili"
-
-msgid ""
-"Mesh has no name nor any other way to identify on re-import.\n"
-"Please name it or ensure it is exported with an unique ID."
-msgstr ""
-"Mesh'il pole nime ega muud võimalust uuesti importimisel tuvastada.\n"
-"Nimetage see või veenduge, et see eksporditakse unikaalse ID-ga."
-
-msgid "Set paths to save meshes as resource files on Reimport"
-msgstr ""
-"Määrake teed et salvestada Mesh'id ressursifailidena Uuesti Importimisel"
-
-msgid "Set Paths"
-msgstr "Määra Teed"
-
-msgid ""
-"This animation already saves to an external resource, no action will be taken."
-msgstr "See Animatsioon salvestab juba välisressursi, midagi ei tehta."
-
-msgid "Set paths to save animations as resource files on Reimport"
-msgstr ""
-"Määrake teed et salvestada animatsioonide ressursifailid uuesti Importimisel"
-
-msgid "Actions..."
-msgstr "Tegevused..."
-
-msgid "Extract Materials"
-msgstr "Ekstrakti Materjalid"
-
-msgid "Set Animation Save Paths"
-msgstr "Määrake Animatsiooni Salvestamise Teed"
-
-msgid "Set Mesh Save Paths"
-msgstr "Määrake Mesh'i Salvestamise Teed"
-
-msgid "Meshes"
-msgstr "Mesh'id"
-
-msgid "Materials"
-msgstr "Materjalid"
-
-msgid "Save Extension:"
-msgstr "Salvesta Laiend:"
-
-msgid "Text: *.tres"
-msgstr "Tekst: *.tres"
-
-msgid "Binary: *.res"
-msgstr "Binaarne formaat: *.res"
-
-msgid "Text Resource"
-msgstr "Teksti Ressurss"
-
-msgid "Binary Resource"
-msgstr "Binaarne Ressurss"
 
 msgid "Importer:"
 msgstr "Importija:"
@@ -4499,6 +4346,9 @@ msgstr "Sea %s %d Sõlmedele"
 msgid "%s (%d Selected)"
 msgstr "%s (%d Valitud)"
 
+msgid "Groups"
+msgstr "Grupid"
+
 msgid "Select a single node to edit its signals and groups."
 msgstr "Valige üks sõlm, et muuta selle signaale ja rühmi."
 
@@ -4576,9 +4426,6 @@ msgstr "Lisa Animatsioon"
 
 msgid "Add %s"
 msgstr "Lisa %s"
-
-msgid "Load..."
-msgstr "Lae..."
 
 msgid "Move Node Point"
 msgstr "Liiguta Sõlme Punkt"
@@ -4790,23 +4637,14 @@ msgstr "Salvesta Animatsioon"
 msgid "Make Animation Unique: %s"
 msgstr "Muuda Animatsioon Unikaalseks: %s"
 
-msgid "Invalid AnimationLibrary file."
-msgstr "Sobimatu AnimationLibrary fail."
-
-msgid "Invalid Animation file."
-msgstr "Vigane animatsiooni fail."
-
-msgid "This animation is already added to the library."
-msgstr "See animatsioon on juba teeki lisatud."
-
-msgid "Load Animation into Library: %s"
-msgstr "Lae animatsioon teeki: %s"
-
 msgid "Save Animation library to File: %s"
 msgstr "Salvesta animatsiooniteek Faili: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "Salvesta animatsioon Faili: %s"
+
+msgid "Load Animation into Library: %s"
+msgstr "Lae animatsioon teeki: %s"
 
 msgid "Rename Animation Library: %s"
 msgstr "Nimeta animatsiooniteek ümber: %s"
@@ -4841,32 +4679,8 @@ msgstr "[võõras]"
 msgid "[imported]"
 msgstr "[imporditud]"
 
-msgid "Add Animation to Library"
-msgstr "Lisa Animatisoon Teeki"
-
-msgid "Load animation from file and add to library"
-msgstr "Lae Animatsioon Failist Ja Lisa Teeki"
-
-msgid "Paste Animation to Library from clipboard"
-msgstr "Kleebi animatsioon lõikelaualt teeki"
-
-msgid "Remove animation library"
-msgstr "Eemalda animatsiooniteek"
-
-msgid "Copy animation to clipboard"
-msgstr "Kopeeri animatsioon lõikelauale"
-
-msgid "Save animation to resource on disk"
-msgstr "Salvesta animatisoon ketta peal asuvasse ressursi"
-
-msgid "Remove animation from Library"
-msgstr "Eemalda animatioon Teegist"
-
 msgid "Edit Animation Libraries"
 msgstr "Muuda Animatsiooni Teeke"
-
-msgid "Add Library"
-msgstr "Lisa Teek"
 
 msgid "Load Library"
 msgstr "Lae Teek"
@@ -5174,6 +4988,9 @@ msgctxt "Pagination"
 msgid "Last"
 msgstr "Viimane"
 
+msgid "Failed to get repository configuration."
+msgstr "Hoidla konfiguratsiooni hankimine ebaõnnestus."
+
 msgid "All"
 msgstr "Kõik"
 
@@ -5203,9 +5020,6 @@ msgstr "Veebisait:"
 
 msgid "Support"
 msgstr "Toetus"
-
-msgid "Failed to get repository configuration."
-msgstr "Hoidla konfiguratsiooni hankimine ebaõnnestus."
 
 msgid "Assets ZIP File"
 msgstr "Asset'ite ZIP File"
@@ -5306,6 +5120,9 @@ msgstr "Tühjenda Juhid"
 msgid "Create Custom Bone2D(s) from Node(s)"
 msgstr "Looge Kohandatud Bone2D(d) Sõlme(de)st"
 
+msgid "Cancel Transformation"
+msgstr "Tühista Transformatsioonid"
+
 msgid "Zoom to 3.125%"
 msgstr "Suum 3.125%"
 
@@ -5401,14 +5218,8 @@ msgstr "Avage Valitud Sõlm, lubades valimist ja liikumist."
 msgid "Unlock Selected Node(s)"
 msgstr "Avage Valitud Sõlm(ed)"
 
-msgid "Make selected node's children not selectable."
-msgstr "Muuda valitud Sõlme Lapsed mitte valitavaks."
-
 msgid "Group Selected Node(s)"
 msgstr "Grupeeri Valitud Sõlm(ed)"
-
-msgid "Make selected node's children selectable."
-msgstr "Muuda valitud sõlme lapsed valitavaks."
 
 msgid "Ungroup Selected Node(s)"
 msgstr "Eemalda Valitud Sõlme(de) Grupeering"
@@ -5452,8 +5263,8 @@ msgstr "Kuva Teljed"
 msgid "Show Viewport"
 msgstr "Kuva Vaateaken"
 
-msgid "Show Group And Lock Icons"
-msgstr "Näita Grupeerimise Ja Lukustamise Ikoone"
+msgid "Gizmos"
+msgstr "Gizmod"
 
 msgid "Center Selection"
 msgstr "Säti Valitud Keskele"
@@ -5463,6 +5274,9 @@ msgstr "Suumi Valitule"
 
 msgid "Preview Canvas Scale"
 msgstr "Kanvaa Skaala Eelvaade"
+
+msgid "Insert Key"
+msgstr "Sisesta võti"
 
 msgid "Copy Pose"
 msgstr "Kopeeri Poos"
@@ -5621,11 +5435,23 @@ msgstr "Piiri Pikslid"
 msgid "Directed Border Pixels"
 msgstr "Suunatud Piiri Pikslid"
 
+msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
+msgstr "Genereeritakse Nähtavuse AABB'd (Ootab Osakese Simulatsiooni)"
+
+msgid "Generate Visibility AABB"
+msgstr "Genereeri Nähtavuse AABB"
+
 msgid "CPUParticles3D"
 msgstr "CPUParticles3D"
 
+msgid "Generate AABB"
+msgstr "Genereeri AABB"
+
 msgid "Create Emission Points From Node"
 msgstr "Loo Emissiooni Punktid Sõlmest"
+
+msgid "Generation Time (sec):"
+msgstr "Genereerimise Aeg (sek.):"
 
 msgid "Load Curve Preset"
 msgstr "Lae Kõvera Eelseadistus"
@@ -5760,14 +5586,6 @@ msgstr ""
 "Kui see Seade on Lubatud, jääb Redaktori Silumisserver avatuks ja kuulab uusi "
 "Seansse, mis on käivitatud väljaspool Redaktorit ennast."
 
-msgid "Run Multiple Instances"
-msgstr "Käivita Mitu Eksemplari"
-
-msgid "Run %d Instance"
-msgid_plural "Run %d Instances"
-msgstr[0] "Jooksuta %d Eksemplar"
-msgstr[1] "Jooksuta %d Eksemplari"
-
 msgid "Size: %s"
 msgstr "Suurus: %s"
 
@@ -5880,9 +5698,6 @@ msgstr "Tühjenda Emisiioni Mask"
 msgid "GPUParticles2D"
 msgstr "GPUParticles2D"
 
-msgid "Generation Time (sec):"
-msgstr "Genereerimise Aeg (sek.):"
-
 msgid "The geometry's faces don't contain any area."
 msgstr "Geomeetria Tahud Ei Sisalda Mingit Ala."
 
@@ -5919,17 +5734,8 @@ msgstr "Nõutav on 'ParticleProcessMaterial' tüüpi protsessori materjal."
 msgid "Convert to CPUParticles3D"
 msgstr "Konverteeri CPUParticles3D'ks"
 
-msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
-msgstr "Genereeritakse Nähtavuse AABB'd (Ootab Osakese Simulatsiooni)"
-
-msgid "Generate Visibility AABB"
-msgstr "Genereeri Nähtavuse AABB"
-
 msgid "GPUParticles3D"
 msgstr "GPUParticles3D"
-
-msgid "Generate AABB"
-msgstr "Genereeri AABB"
 
 msgid "Low"
 msgstr "Madal"
@@ -6429,9 +6235,6 @@ msgstr "Määra Pinna %d Ükirjutamise Materjal"
 msgid "Set Material Override"
 msgstr "Määra Materjali Ülekirjutamine"
 
-msgid "Cannot drag and drop into multiple selected nodes."
-msgstr "Ei saa Lohistada Mitmesse Valitud Sõlme."
-
 msgid "None"
 msgstr "Mitte Ühtegi"
 
@@ -6540,6 +6343,9 @@ msgstr "Kuva Keskkond"
 msgid "View Gizmos"
 msgstr "Kuva Gizmos"
 
+msgid "View Grid"
+msgstr "Kuva ruudustik"
+
 msgid "View Information"
 msgstr "Kuva Informatsioon"
 
@@ -6602,9 +6408,6 @@ msgstr "Lukusta Transformatsioonid XZ Tasandile"
 
 msgid "Lock Transformation to XY plane"
 msgstr "Lukusta Transformatsioonid XY Tasandile"
-
-msgid "Cancel Transformation"
-msgstr "Tühista Transformatsioonid"
 
 msgid "Begin Translate Transformation"
 msgstr "Alusta Liigutamise Transfromatsiooni"
@@ -6784,14 +6587,8 @@ msgstr "3 Vaateakent (Alt)"
 msgid "4 Viewports"
 msgstr "4 Aaateakent"
 
-msgid "Gizmos"
-msgstr "Gizmod"
-
 msgid "View Origin"
 msgstr "Kuva lähtekoht"
-
-msgid "View Grid"
-msgstr "Kuva ruudustik"
 
 msgid "Settings..."
 msgstr "Sätted..."
@@ -6810,9 +6607,6 @@ msgstr "Skaleeri Kinnitust (%):"
 
 msgid "Viewport Settings"
 msgstr "Vaateakna Seaded"
-
-msgid "Perspective FOV (deg.):"
-msgstr "Perspektiivi Vaateväli (kraad):"
 
 msgid "View Z-Near:"
 msgstr "Vaatamise lähedus (Z-Lähedal):"
@@ -6970,6 +6764,9 @@ msgstr "Kustuta Punkt"
 msgid "Close Curve"
 msgstr "Sulge Kõver"
 
+msgid "Please Confirm..."
+msgstr "Palun kinnita..."
+
 msgid "Mirror Handle Angles"
 msgstr "Peegelda Käepideme Nurki"
 
@@ -6978,9 +6775,6 @@ msgstr "Peegelda Käepideme Pikkusi"
 
 msgid "Curve Point #"
 msgstr "Kõvera Punkt #"
-
-msgid "Set Curve Point Position"
-msgstr "Määra Kõvera Punkti Asukoht"
 
 msgid "Set Curve Out Position"
 msgstr "Seadke Kõver Positsioonist Välja"
@@ -6996,6 +6790,9 @@ msgstr "Eemalda Tee Punkt"
 
 msgid "Split Segment (in curve)"
 msgstr "Tükelda Segment (Kõveras)"
+
+msgid "Set Curve Point Position"
+msgstr "Määra Kõvera Punkti Asukoht"
 
 msgid "Move Joint"
 msgstr "Liiguta Liigendit"
@@ -7270,14 +7067,14 @@ msgstr "Ajalugu Eelmine"
 msgid "History Next"
 msgstr "Ajalugu Järgmine"
 
-msgid "Theme"
-msgstr "Teema"
-
 msgid "Import Theme..."
 msgstr "Impordi Teema..."
 
 msgid "Reload Theme"
 msgstr "Laadi Teema uuesti"
+
+msgid "Theme"
+msgstr "Teema"
 
 msgid "Save Theme"
 msgstr "Salvesta Teema"
@@ -7369,9 +7166,6 @@ msgstr "Otsingusümbol"
 msgid "Pick Color"
 msgstr "Vali Värv"
 
-msgid "Indentation"
-msgstr "Treppimine"
-
 msgid "Uppercase"
 msgstr "Suurtähed"
 
@@ -7410,6 +7204,9 @@ msgstr "Peida Kõik Read"
 
 msgid "Unfold All Lines"
 msgstr "Näita Kõiki Ridu"
+
+msgid "Duplicate Selection"
+msgstr "Duplikeeri Valik"
 
 msgid "Evaluate Selection"
 msgstr "Hinda valikut"
@@ -7471,14 +7268,8 @@ msgstr "Naase eelmise katkepunkti juurde"
 msgid "Shader Editor"
 msgstr "Shader-Redaktor"
 
-msgid "Load Shader File"
-msgstr "Lae Shader Fail"
-
 msgid "Save File"
 msgstr "Salvesta Fail"
-
-msgid "Save File As"
-msgstr "Salvesta Fail Kui"
 
 msgid "Open File in Inspector"
 msgstr "Ava Fail Inspektoris"
@@ -7656,12 +7447,6 @@ msgstr "Pilte ei saa laadida"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "VIGA: Kaadri ressurssi ei saanud laadida!"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Ressursi lõikelaud on tühi või pole tekstuur!"
-
-msgid "Paste Frame"
-msgstr "Kleebi Kaader"
-
 msgid "Add Empty"
 msgstr "Lisa Tühi"
 
@@ -7712,9 +7497,6 @@ msgstr "Lisa Kaadrid Sprite-Lehelt"
 
 msgid "Delete Frame"
 msgstr "Kustuta Kaader"
-
-msgid "Copy Frame"
-msgstr "Kopeeri Kaader"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "Sisesta Tühi (Enne Valitud)"
@@ -8544,13 +8326,6 @@ msgstr ""
 msgid "Scattering:"
 msgstr "Hajumine:"
 
-msgid ""
-"This TileMap's TileSet has no source configured. Go to the TileSet bottom tab "
-"to add one."
-msgstr ""
-"Sellel TileMapi TileSet'il pole allikat seadistatud. Selle lisamiseks minge "
-"TileSeti alumisele Tab'ile."
-
 msgid "Sort sources"
 msgstr "Sorteeri allikad"
 
@@ -8581,13 +8356,6 @@ msgid ""
 msgstr ""
 "Ühendusrežiim: Maalib maastiku, seejärel ühendab selle ümbritsevate Tile'id "
 "sama maastikuga."
-
-msgid ""
-"Path mode: paints a terrain, thens connects it to the previous tile painted "
-"within the same stroke."
-msgstr ""
-"Tee režiim: maalib maastiku, siid ühendab selle eelmise sama käigu jooksul "
-"värvitud Tile'iga."
 
 msgid "Terrains"
 msgstr "Maastikud"
@@ -9334,6 +9102,33 @@ msgstr "Ujuvkoma operaator."
 msgid "Bake VoxelGI"
 msgstr "Küpseta VoxelGL"
 
+msgid "New Project"
+msgstr "Uus projekt"
+
+msgid "Scan"
+msgstr "Otsi"
+
+msgid "Create New Project"
+msgstr "Loo Uus Projekt"
+
+msgid "Import Existing Project"
+msgstr "Impordi Olemasolev Projekt"
+
+msgid "Rename Project"
+msgstr "Nimeta Projekt ümber"
+
+msgid "Remove Missing"
+msgstr "Eemalda puuduvad"
+
+msgid "Select a Folder to Scan"
+msgstr "Vali Kaust Mida Skanneerida"
+
+msgid "Remove All"
+msgstr "Eemalda Kõik"
+
+msgid "Create New Tag"
+msgstr "Loo Uus Silt"
+
 msgid "New Game Project"
 msgstr "Uus Mängu Projekt"
 
@@ -9355,17 +9150,8 @@ msgstr "Sobimatu Projekti Tee (kas olete midagi muutnud?)."
 msgid "Couldn't create project.godot in project path."
 msgstr "Projekti kaustas ei saanud faili project.godot luua."
 
-msgid "Rename Project"
-msgstr "Nimeta Projekt ümber"
-
-msgid "Import Existing Project"
-msgstr "Impordi Olemasolev Projekt"
-
 msgid "Import & Edit"
 msgstr "Impordi & Redigeeri"
-
-msgid "Create New Project"
-msgstr "Loo Uus Projekt"
 
 msgid "Install Project:"
 msgstr "Installi Projekt:"
@@ -9379,48 +9165,8 @@ msgstr "Projekti Tee:"
 msgid "Version Control Metadata:"
 msgstr "Versioonikontrolli Metadata"
 
-msgid ""
-"Can't run project: no main scene defined.\n"
-"Please edit the project and set the main scene in the Project Settings under "
-"the \"Application\" category."
-msgstr ""
-"Projekti ei saa käivitada: peastseeni ei ole määratud.\n"
-"Redigeerige project.godot faili ja määrake projekti peastseen \"application\" "
-"alajaotuses."
-
-msgid ""
-"Can't run project: Assets need to be imported.\n"
-"Please edit the project to trigger the initial import."
-msgstr ""
-"Projekti ei saa käivitada: varad tuleb importida.\n"
-"Redigeerige projekti käivitama algset importimise protsessi."
-
-msgid "New Project"
-msgstr "Uus projekt"
-
-msgid "Scan"
-msgstr "Otsi"
-
-msgid "Remove Missing"
-msgstr "Eemalda puuduvad"
-
-msgid "About"
-msgstr "Teave"
-
 msgid "Restart Now"
 msgstr "Taaskäivita Kohe"
-
-msgid "Select a Folder to Scan"
-msgstr "Vali Kaust Mida Skanneerida"
-
-msgid "Remove All"
-msgstr "Eemalda Kõik"
-
-msgid "Can't run project"
-msgstr "Projekti ei saa käivitada"
-
-msgid "Create New Tag"
-msgstr "Loo Uus Silt"
 
 msgid "Delete Item"
 msgstr "Kustuta Üksus"
@@ -9445,9 +9191,6 @@ msgstr "Pistikprogrammid"
 
 msgid "Select Property"
 msgstr "Vali Atribuut"
-
-msgid "Advanced Options"
-msgstr "Täpsemad sätted"
 
 msgid "Node name."
 msgstr "Sõlme nimi."
@@ -9493,12 +9236,6 @@ msgstr "Viga stseeni laadimisel asukohast %s"
 
 msgid "This operation can't be done on the tree root."
 msgstr "Seda toimingut ei saa puu juurega teha."
-
-msgid "Move Node In Parent"
-msgstr "Liiguta sõlm vanemasse"
-
-msgid "Move Nodes In Parent"
-msgstr "Liiguta sõlmed vanemasse"
 
 msgid "Duplicate Node(s)"
 msgstr "Duplikeeri Sõlm(ed)"
@@ -9810,18 +9547,6 @@ msgstr "Animatsiooni '%s' ei leitud"
 
 msgid "Alert!"
 msgstr "Tähelepanu!"
-
-msgid "Please Confirm..."
-msgstr "Palun kinnita..."
-
-msgid "Display Control Characters"
-msgstr "Kuva Juhtmärgid"
-
-msgid "Insert Control Character"
-msgstr "Sisesta Juhtmärk"
-
-msgid "(Other)"
-msgstr "(Muu)"
 
 msgid "Invalid source for preview."
 msgstr "Vigane eelvaate lähe."

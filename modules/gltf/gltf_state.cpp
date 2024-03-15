@@ -90,6 +90,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skeletons", "skeletons"), &GLTFState::set_skeletons);
 	ClassDB::bind_method(D_METHOD("get_create_animations"), &GLTFState::get_create_animations);
 	ClassDB::bind_method(D_METHOD("set_create_animations", "create_animations"), &GLTFState::set_create_animations);
+	ClassDB::bind_method(D_METHOD("get_import_as_skeleton_bones"), &GLTFState::get_import_as_skeleton_bones);
+	ClassDB::bind_method(D_METHOD("set_import_as_skeleton_bones", "import_as_skeleton_bones"), &GLTFState::set_import_as_skeleton_bones);
 	ClassDB::bind_method(D_METHOD("get_animations"), &GLTFState::get_animations);
 	ClassDB::bind_method(D_METHOD("set_animations", "animations"), &GLTFState::set_animations);
 	ClassDB::bind_method(D_METHOD("get_scene_node", "idx"), &GLTFState::get_scene_node);
@@ -125,6 +127,7 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "unique_animation_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_unique_animation_names", "get_unique_animation_names"); // Set<String>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "skeletons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeletons", "get_skeletons"); // Vector<Ref<GLTFSkeleton>>
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "create_animations"), "set_create_animations", "get_create_animations"); // bool
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "import_as_skeleton_bones"), "set_import_as_skeleton_bones", "get_import_as_skeleton_bones"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_animations", "get_animations"); // Vector<Ref<GLTFAnimation>>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "handle_binary_image", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_handle_binary_image", "get_handle_binary_image"); // enum
 
@@ -335,6 +338,14 @@ bool GLTFState::get_create_animations() {
 
 void GLTFState::set_create_animations(bool p_create_animations) {
 	create_animations = p_create_animations;
+}
+
+bool GLTFState::get_import_as_skeleton_bones() {
+	return import_as_skeleton_bones;
+}
+
+void GLTFState::set_import_as_skeleton_bones(bool p_import_as_skeleton_bones) {
+	import_as_skeleton_bones = p_import_as_skeleton_bones;
 }
 
 TypedArray<GLTFAnimation> GLTFState::get_animations() {

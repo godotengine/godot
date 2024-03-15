@@ -1,5 +1,6 @@
 """Functions used to generate scu build source files during build time
 """
+
 import glob, os
 import math
 from pathlib import Path
@@ -7,7 +8,7 @@ from os.path import normpath, basename
 
 base_folder_path = str(Path(__file__).parent) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
-_verbose = True  # Set manually for debug prints
+_verbose = False  # Set manually for debug prints
 _scu_folders = set()
 _max_includes_per_scu = 1024
 
@@ -310,11 +311,17 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["modules/gdscript/language_server"])
 
     process_folder(["scene/2d"])
+    process_folder(["scene/2d/physics"])
+    process_folder(["scene/2d/physics/joints"])
     process_folder(["scene/3d"])
+    process_folder(["scene/3d/physics"])
+    process_folder(["scene/3d/physics/joints"])
     process_folder(["scene/animation"])
     process_folder(["scene/gui"])
     process_folder(["scene/main"])
     process_folder(["scene/resources"])
+    process_folder(["scene/resources/2d"])
+    process_folder(["scene/resources/3d"])
 
     process_folder(["servers"])
     process_folder(["servers/rendering"])

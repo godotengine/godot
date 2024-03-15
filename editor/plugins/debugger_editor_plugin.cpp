@@ -34,8 +34,10 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "editor/debugger/editor_file_server.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/run_instances_dialog.h"
 #include "editor/themes/editor_scale.h"
@@ -54,7 +56,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	file_server = memnew(EditorFileServer);
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
-	Button *db = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Debugger"), debugger);
+	Button *db = EditorNode::get_bottom_panel()->add_item(TTR("Debugger"), debugger, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTR("Toggle Debugger Bottom Panel"), KeyModifierMask::ALT | Key::D));
 	debugger->set_tool_button(db);
 
 	// Main editor debug menu.
@@ -96,7 +98,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 
 	// Multi-instance, start/stop.
 	debug_menu->add_separator();
-	debug_menu->add_item(TTR("Run Multiple Instances..."), RUN_MULTIPLE_INSTANCES);
+	debug_menu->add_item(TTR("Customize Run Instances..."), RUN_MULTIPLE_INSTANCES);
 	debug_menu->connect("id_pressed", callable_mp(this, &DebuggerEditorPlugin::_menu_option));
 
 	run_instances_dialog = memnew(RunInstancesDialog);
@@ -186,7 +188,7 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 		} break;
 		case RUN_MULTIPLE_INSTANCES: {
-			run_instances_dialog->popup_centered();
+			run_instances_dialog->popup_dialog();
 
 		} break;
 	}

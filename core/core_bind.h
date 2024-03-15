@@ -63,9 +63,11 @@ public:
 	};
 
 	enum CacheMode {
-		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
-		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
-		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
+		CACHE_MODE_IGNORE,
+		CACHE_MODE_REUSE,
+		CACHE_MODE_REPLACE,
+		CACHE_MODE_IGNORE_DEEP,
+		CACHE_MODE_REPLACE_DEEP,
 	};
 
 	static ResourceLoader *get_singleton() { return singleton; }
@@ -157,8 +159,8 @@ public:
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
-	Error shell_open(String p_uri);
-	Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
+	Error shell_open(const String &p_uri);
+	Error shell_show_in_file_manager(const String &p_path, bool p_open_folder = true);
 
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
@@ -445,6 +447,8 @@ public:
 
 	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
+	int class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
+
 	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
 	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
@@ -457,6 +461,10 @@ public:
 	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
 	bool is_class_enabled(const StringName &p_class) const;
+
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	ClassDB() {}
 	~ClassDB() {}
@@ -528,7 +536,9 @@ public:
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
 
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	Engine() { singleton = this; }
 };

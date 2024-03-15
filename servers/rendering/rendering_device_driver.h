@@ -56,7 +56,7 @@
 
 // This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
 // (See https://github.com/godotengine/godot-proposals/issues/5144.)
-template <class T>
+template <typename T>
 class VectorView {
 	const T *_ptr = nullptr;
 	const uint32_t _size = 0;
@@ -97,20 +97,20 @@ public:
 #define ENUM_MEMBERS_EQUAL(m_a, m_b) ((int64_t)m_a == (int64_t)m_b)
 
 // This helps using a single paged allocator for many resource types.
-template <class... RESOURCE_TYPES>
+template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
 	static constexpr size_t MAX_RESOURCE_SIZE = std::max_element(RESOURCE_SIZES, RESOURCE_SIZES + sizeof...(RESOURCE_TYPES))[0];
 	uint8_t data[MAX_RESOURCE_SIZE];
 
-	template <class T>
+	template <typename T>
 	static T *allocate(PagedAllocator<VersatileResourceTemplate> &p_allocator) {
 		T *obj = (T *)p_allocator.alloc();
-		*obj = T();
+		memnew_placement(obj, T);
 		return obj;
 	}
 
-	template <class T>
+	template <typename T>
 	static void free(PagedAllocator<VersatileResourceTemplate> &p_allocator, T *p_object) {
 		p_object->~T();
 		p_allocator.free((VersatileResourceTemplate *)p_object);
@@ -408,8 +408,7 @@ public:
 	// ----- QUEUE -----
 
 	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) = 0;
-	virtual Error command_queue_execute(CommandQueueID p_cmd_queue, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_wait_semaphores, VectorView<SemaphoreID> p_signal_semaphores, FenceID p_signal_fence) = 0;
-	virtual Error command_queue_present(CommandQueueID p_cmd_queue, VectorView<SwapChainID> p_swap_chains, VectorView<SemaphoreID> p_wait_semaphores) = 0;
+	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) = 0;
 	virtual void command_queue_free(CommandQueueID p_cmd_queue) = 0;
 
 	// ----- POOL -----

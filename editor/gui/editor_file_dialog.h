@@ -155,6 +155,7 @@ private:
 		Ref<Texture2D> favorite;
 		Ref<Texture2D> mode_thumbnails;
 		Ref<Texture2D> mode_list;
+		Ref<Texture2D> create_folder;
 		Ref<Texture2D> favorites_up;
 		Ref<Texture2D> favorites_down;
 
@@ -199,7 +200,7 @@ private:
 	void _item_menu_id_pressed(int p_option);
 
 	void _select_drive(int p_idx);
-	void _dir_submitted(String p_dir);
+	void _dir_submitted(const String &p_dir);
 	void _action_pressed();
 	void _save_confirm_pressed();
 	void _cancel_pressed();

@@ -642,48 +642,59 @@ struct test_27_data {
 
 TEST_CASE("[String] Begins with") {
 	test_27_data tc[] = {
+		// Test cases for true:
 		{ "res://foobar", "res://", true },
+		{ "abc", "abc", true },
+		{ "abc", "", true },
+		{ "", "", true },
+		// Test cases for false:
 		{ "res", "res://", false },
-		{ "abc", "abc", true }
+		{ "abcdef", "foo", false },
+		{ "abc", "ax", false },
+		{ "", "abc", false }
 	};
 	size_t count = sizeof(tc) / sizeof(tc[0]);
 	bool state = true;
-	for (size_t i = 0; state && i < count; ++i) {
+	for (size_t i = 0; i < count; ++i) {
 		String s = tc[i].data;
 		state = s.begins_with(tc[i].part) == tc[i].expected;
-		if (state) {
-			String sb = tc[i].part;
-			state = s.begins_with(sb) == tc[i].expected;
-		}
-		CHECK(state);
-		if (!state) {
-			break;
-		}
-	};
-	CHECK(state);
+		CHECK_MESSAGE(state, "first check failed at: ", i);
+
+		String sb = tc[i].part;
+		state = s.begins_with(sb) == tc[i].expected;
+		CHECK_MESSAGE(state, "second check failed at: ", i);
+	}
+
+	// Test "const char *" version also with nullptr.
+	String s("foo");
+	state = s.begins_with(nullptr) == false;
+	CHECK_MESSAGE(state, "nullptr check failed");
+
+	String empty("");
+	state = empty.begins_with(nullptr) == false;
+	CHECK_MESSAGE(state, "nullptr check with empty string failed");
 }
 
 TEST_CASE("[String] Ends with") {
 	test_27_data tc[] = {
+		// test cases for true:
 		{ "res://foobar", "foobar", true },
+		{ "abc", "abc", true },
+		{ "abc", "", true },
+		{ "", "", true },
+		// test cases for false:
 		{ "res", "res://", false },
-		{ "abc", "abc", true }
+		{ "", "abc", false },
+		{ "abcdef", "foo", false },
+		{ "abc", "xc", false }
 	};
 	size_t count = sizeof(tc) / sizeof(tc[0]);
-	bool state = true;
-	for (size_t i = 0; state && i < count; ++i) {
+	for (size_t i = 0; i < count; ++i) {
 		String s = tc[i].data;
-		state = s.ends_with(tc[i].part) == tc[i].expected;
-		if (state) {
-			String sb = tc[i].part;
-			state = s.ends_with(sb) == tc[i].expected;
-		}
-		CHECK(state);
-		if (!state) {
-			break;
-		}
-	};
-	CHECK(state);
+		String sb = tc[i].part;
+		bool state = s.ends_with(sb) == tc[i].expected;
+		CHECK_MESSAGE(state, "check failed at: ", i);
+	}
 }
 
 TEST_CASE("[String] format") {
@@ -1300,39 +1311,54 @@ TEST_CASE("[String] Capitalize against many strings") {
 	input = "snake_case_function( snake_case_arg )";
 	output = "Snake Case Function( Snake Case Arg )";
 	CHECK(input.capitalize() == output);
+
+	input = U"словоСлово_слово слово";
+	output = U"Слово Слово Слово Слово";
+	CHECK(input.capitalize() == output);
+
+	input = U"λέξηΛέξη_λέξη λέξη";
+	output = U"Λέξη Λέξη Λέξη Λέξη";
+	CHECK(input.capitalize() == output);
+
+	input = U"բառԲառ_բառ բառ";
+	output = U"Բառ Բառ Բառ Բառ";
+	CHECK(input.capitalize() == output);
 }
 
 struct StringCasesTestCase {
-	const char *input;
-	const char *camel_case;
-	const char *pascal_case;
-	const char *snake_case;
+	const char32_t *input;
+	const char32_t *camel_case;
+	const char32_t *pascal_case;
+	const char32_t *snake_case;
 };
 
 TEST_CASE("[String] Checking case conversion methods") {
 	StringCasesTestCase test_cases[] = {
 		/* clang-format off */
-		{ "2D",                "2d",              "2d",              "2d"                },
-		{ "2d",                "2d",              "2d",              "2d"                },
-		{ "2db",               "2Db",             "2Db",             "2_db"              },
-		{ "Vector3",           "vector3",         "Vector3",         "vector_3"          },
-		{ "sha256",            "sha256",          "Sha256",          "sha_256"           },
-		{ "Node2D",            "node2d",          "Node2d",          "node_2d"           },
-		{ "RichTextLabel",     "richTextLabel",   "RichTextLabel",   "rich_text_label"   },
-		{ "HTML5",             "html5",           "Html5",           "html_5"            },
-		{ "Node2DPosition",    "node2dPosition",  "Node2dPosition",  "node_2d_position"  },
-		{ "Number2Digits",     "number2Digits",   "Number2Digits",   "number_2_digits"   },
-		{ "get_property_list", "getPropertyList", "GetPropertyList", "get_property_list" },
-		{ "get_camera_2d",     "getCamera2d",     "GetCamera2d",     "get_camera_2d"     },
-		{ "_physics_process",  "physicsProcess",  "PhysicsProcess",  "_physics_process"  },
-		{ "bytes2var",         "bytes2Var",       "Bytes2Var",       "bytes_2_var"       },
-		{ "linear2db",         "linear2Db",       "Linear2Db",       "linear_2_db"       },
-		{ "sha256sum",         "sha256Sum",       "Sha256Sum",       "sha_256_sum"       },
-		{ "camelCase",         "camelCase",       "CamelCase",       "camel_case"        },
-		{ "PascalCase",        "pascalCase",      "PascalCase",      "pascal_case"       },
-		{ "snake_case",        "snakeCase",       "SnakeCase",       "snake_case"        },
-		{ "Test TEST test",    "testTestTest",    "TestTestTest",    "test_test_test"    },
-		{ nullptr,             nullptr,           nullptr,           nullptr             },
+		{ U"2D",                     U"2d",                   U"2d",                   U"2d"                      },
+		{ U"2d",                     U"2d",                   U"2d",                   U"2d"                      },
+		{ U"2db",                    U"2Db",                  U"2Db",                  U"2_db"                    },
+		{ U"Vector3",                U"vector3",              U"Vector3",              U"vector_3"                },
+		{ U"sha256",                 U"sha256",               U"Sha256",               U"sha_256"                 },
+		{ U"Node2D",                 U"node2d",               U"Node2d",               U"node_2d"                 },
+		{ U"RichTextLabel",          U"richTextLabel",        U"RichTextLabel",        U"rich_text_label"         },
+		{ U"HTML5",                  U"html5",                U"Html5",                U"html_5"                  },
+		{ U"Node2DPosition",         U"node2dPosition",       U"Node2dPosition",       U"node_2d_position"        },
+		{ U"Number2Digits",          U"number2Digits",        U"Number2Digits",        U"number_2_digits"         },
+		{ U"get_property_list",      U"getPropertyList",      U"GetPropertyList",      U"get_property_list"       },
+		{ U"get_camera_2d",          U"getCamera2d",          U"GetCamera2d",          U"get_camera_2d"           },
+		{ U"_physics_process",       U"physicsProcess",       U"PhysicsProcess",       U"_physics_process"        },
+		{ U"bytes2var",              U"bytes2Var",            U"Bytes2Var",            U"bytes_2_var"             },
+		{ U"linear2db",              U"linear2Db",            U"Linear2Db",            U"linear_2_db"             },
+		{ U"sha256sum",              U"sha256Sum",            U"Sha256Sum",            U"sha_256_sum"             },
+		{ U"camelCase",              U"camelCase",            U"CamelCase",            U"camel_case"              },
+		{ U"PascalCase",             U"pascalCase",           U"PascalCase",           U"pascal_case"             },
+		{ U"snake_case",             U"snakeCase",            U"SnakeCase",            U"snake_case"              },
+		{ U"Test TEST test",         U"testTestTest",         U"TestTestTest",         U"test_test_test"          },
+		{ U"словоСлово_слово слово", U"словоСловоСловоСлово", U"СловоСловоСловоСлово", U"слово_слово_слово_слово" },
+		{ U"λέξηΛέξη_λέξη λέξη",     U"λέξηΛέξηΛέξηΛέξη",     U"ΛέξηΛέξηΛέξηΛέξη",     U"λέξη_λέξη_λέξη_λέξη"     },
+		{ U"բառԲառ_բառ բառ",         U"բառԲառԲառԲառ",         U"ԲառԲառԲառԲառ",         U"բառ_բառ_բառ_բառ"         },
+		{ nullptr,                   nullptr,                 nullptr,                 nullptr                    },
 		/* clang-format on */
 	};
 

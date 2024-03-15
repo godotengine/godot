@@ -38,9 +38,9 @@
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
+#include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/menu_button.h"
@@ -339,7 +339,7 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 	mesh_instance->set_mesh(mesh);
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Convert to MeshInstance2D"));
+	ur->create_action(TTR("Convert to MeshInstance2D"), UndoRedo::MERGE_DISABLE, node);
 	SceneTreeDock::get_singleton()->replace_node(node, mesh_instance);
 	ur->commit_action(false);
 }
@@ -394,7 +394,7 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 	polygon_2d_instance->set_polygons(polys);
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Convert to Polygon2D"));
+	ur->create_action(TTR("Convert to Polygon2D"), UndoRedo::MERGE_DISABLE, node);
 	SceneTreeDock::get_singleton()->replace_node(node, polygon_2d_instance);
 	ur->commit_action(false);
 }

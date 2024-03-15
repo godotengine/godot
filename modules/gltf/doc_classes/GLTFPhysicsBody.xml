@@ -55,7 +55,7 @@
 		<member name="inertia_orientation" type="Quaternion" setter="set_inertia_orientation" getter="get_inertia_orientation" default="Quaternion(0, 0, 0, 1)">
 			The inertia orientation of the physics body. This defines the rotation of the inertia's principle axes relative to the object's local axes. This is only used when the body type is "rigid" or "vehicle" and [member inertia_diagonal] is set to a non-zero value.
 		</member>
-		<member name="inertia_tensor" type="Basis" setter="set_inertia_tensor" getter="get_inertia_tensor" default="Basis(0, 0, 0, 0, 0, 0, 0, 0, 0)" is_deprecated="true">
+		<member name="inertia_tensor" type="Basis" setter="set_inertia_tensor" getter="get_inertia_tensor" default="Basis(0, 0, 0, 0, 0, 0, 0, 0, 0)" deprecated="">
 			The inertia tensor of the physics body, in kilogram meter squared (kg⋅m²). This is only used when the body type is "rigid" or "vehicle".
 			When converted to a Godot [RigidBody3D] node, if this value is zero, then the inertia will be calculated automatically.
 		</member>

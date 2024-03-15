@@ -445,7 +445,7 @@ void TileMapLayerEditorTilesPlugin::_update_scenes_collection_view() {
 	scene_tiles_list->set_fixed_icon_size(Vector2(int_size, int_size));
 }
 
-void TileMapLayerEditorTilesPlugin::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud) {
+void TileMapLayerEditorTilesPlugin::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_ud) {
 	int index = p_ud;
 
 	if (index >= 0 && index < scene_tiles_list->get_item_count()) {
@@ -2363,7 +2363,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	tiles_bottom_panel->set_name(TTR("Tiles"));
 
 	missing_source_label = memnew(Label);
-	missing_source_label->set_text(TTR("This TileMap's TileSet has no source configured. Go to the TileSet bottom tab to add one."));
+	missing_source_label->set_text(TTR("This TileMap's TileSet has no source configured. Go to the TileSet bottom panel to add one."));
 	missing_source_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -2401,7 +2401,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	sources_bottom_actions->add_child(source_sort_button);
 
 	sources_list = memnew(ItemList);
-	sources_list->set_auto_translate(false);
+	sources_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
 	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2441,7 +2441,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 
 	// Scenes collection source.
 	scene_tiles_list = memnew(ItemList);
-	scene_tiles_list->set_auto_translate(false);
+	scene_tiles_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
 	scene_tiles_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	scene_tiles_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	scene_tiles_list->set_select_mode(ItemList::SELECT_MULTI);
@@ -2467,7 +2467,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 
 	int thumbnail_size = 64;
 	patterns_item_list = memnew(ItemList);
-	patterns_item_list->set_auto_translate(false);
+	patterns_item_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
 	patterns_item_list->set_max_columns(0);
 	patterns_item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
@@ -3529,7 +3529,7 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	tilemap_tab_terrains->add_child(terrains_tree);
 
 	terrains_tile_list = memnew(ItemList);
-	terrains_tile_list->set_auto_translate(false);
+	terrains_tile_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
 	terrains_tile_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	terrains_tile_list->set_max_columns(0);
 	terrains_tile_list->set_same_column_width(true);
@@ -3650,7 +3650,9 @@ void TileMapLayerEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			toggle_grid_button->set_pressed(EDITOR_GET("editors/tiles_editor/display_grid"));
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/tiles_editor")) {
+				toggle_grid_button->set_pressed_no_signal(EDITOR_GET("editors/tiles_editor/display_grid"));
+			}
 		} break;
 	}
 }
@@ -3872,7 +3874,7 @@ void TileMapLayerEditor::_update_highlighting_toggle() {
 	}
 }
 
-void TileMapLayerEditor::_move_tile_map_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
+void TileMapLayerEditor::_move_tile_map_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos) {
 	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo_man);
 

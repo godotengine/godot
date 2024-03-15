@@ -72,7 +72,7 @@
 				Returns the distance between this vector and [param to].
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.

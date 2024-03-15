@@ -159,10 +159,6 @@ void ConnectDialog::_item_activated() {
 	_ok_pressed(); // From AcceptDialog.
 }
 
-void ConnectDialog::_text_submitted(const String &p_text) {
-	_ok_pressed(); // From AcceptDialog.
-}
-
 /*
  * Called each time a target node is selected within the target node tree.
  */
@@ -178,6 +174,7 @@ void ConnectDialog::_tree_node_selected() {
 		set_dst_method(generate_method_callback_name(source, signal, current));
 	}
 	_update_method_tree();
+	_update_warning_label();
 	_update_ok_enabled();
 }
 
@@ -235,7 +232,7 @@ void ConnectDialog::_remove_bind() {
 /*
  * Automatically generates a name for the callback method.
  */
-StringName ConnectDialog::generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target) {
+StringName ConnectDialog::generate_method_callback_name(Node *p_source, const String &p_signal_name, Node *p_target) {
 	String node_name = p_source->get_name();
 	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
 		char32_t c = node_name[i];
@@ -433,6 +430,28 @@ void ConnectDialog::_update_ok_enabled() {
 	get_ok_button()->set_disabled(false);
 }
 
+void ConnectDialog::_update_warning_label() {
+	Ref<Script> scr = source->get_node(dst_path)->get_script();
+	if (scr.is_null()) {
+		warning_label->set_visible(false);
+		return;
+	}
+
+	ScriptLanguage *language = scr->get_language();
+	if (language->can_make_function()) {
+		warning_label->set_visible(false);
+		return;
+	}
+
+	warning_label->set_text(vformat(TTR("%s: Callback code won't be generated, please add it manually."), language->get_name()));
+	warning_label->set_visible(true);
+}
+
+void ConnectDialog::_post_popup() {
+	callable_mp((Control *)dst_method, &Control::grab_focus).call_deferred();
+	callable_mp(dst_method, &LineEdit::select_all).call_deferred();
+}
+
 void ConnectDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -573,6 +592,18 @@ bool ConnectDialog::is_editing() const {
 	return edit_mode;
 }
 
+void ConnectDialog::shortcut_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> &key = p_event;
+
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			filter_nodes->grab_focus();
+			filter_nodes->select_all();
+			filter_nodes->accept_event();
+		}
+	}
+}
+
 /*
  * Initialize ConnectDialog and populate fields with expected data.
  * If creating a connection from scratch, sensible defaults are used.
@@ -615,8 +646,9 @@ void ConnectDialog::init(const ConnectionData &p_cd, const PackedStringArray &p_
 	source_connection_data = p_cd;
 }
 
-void ConnectDialog::popup_dialog(const String p_for_signal) {
+void ConnectDialog::popup_dialog(const String &p_for_signal) {
 	from_signal->set_text(p_for_signal);
+	warning_label->add_theme_color_override("font_color", warning_label->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	error_label->add_theme_color_override("font_color", error_label->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	filter_nodes->clear();
 
@@ -693,6 +725,10 @@ ConnectDialog::ConnectDialog() {
 	Node *mc = vbc_left->add_margin_child(TTR("Connect to Script:"), hbc_filter, false);
 	connect_to_label = Object::cast_to<Label>(vbc_left->get_child(mc->get_index() - 1));
 	vbc_left->add_child(tree);
+
+	warning_label = memnew(Label);
+	vbc_left->add_child(warning_label);
+	warning_label->hide();
 
 	error_label = memnew(Label);
 	error_label->set_text(TTR("Scene does not contain any script."));
@@ -790,8 +826,8 @@ ConnectDialog::ConnectDialog() {
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	dst_method->connect("text_changed", callable_mp(method_tree, &Tree::deselect_all).unbind(1));
-	dst_method->connect("text_submitted", callable_mp(this, &ConnectDialog::_text_submitted));
 	hbc_method->add_child(dst_method);
+	register_text_enter(dst_method);
 
 	open_method_tree = memnew(Button);
 	hbc_method->add_child(open_method_tree);
@@ -871,25 +907,34 @@ void ConnectionsDock::_make_or_edit_connection() {
 	bool b_oneshot = connect_dialog->get_one_shot();
 	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONE_SHOT : 0);
 
-	// Conditions to add function: must have a script and must not have the method already
-	// (in the class, the script itself, or inherited).
-	bool add_script_function = false;
+	// If the function is found in target's own script, check the editor setting
+	// to determine if the script should be opened.
+	// If the function is found in an inherited class or script no need to do anything
+	// except making a connection.
+	bool add_script_function_request = false;
 	Ref<Script> scr = target->get_script();
-	if (!scr.is_null() && !ClassDB::has_method(target->get_class(), cd.method)) {
-		// There is a chance that the method is inherited from another script.
-		bool found_inherited_function = false;
-		Ref<Script> inherited_scr = scr->get_base_script();
-		while (!inherited_scr.is_null()) {
-			int line = inherited_scr->get_language()->find_function(cd.method, inherited_scr->get_source_code());
-			if (line != -1) {
-				found_inherited_function = true;
-				break;
+
+	if (scr.is_valid() && !ClassDB::has_method(target->get_class(), cd.method)) {
+		// Check in target's own script.
+		int line = scr->get_language()->find_function(cd.method, scr->get_source_code());
+		if (line != -1) {
+			add_script_function_request = EDITOR_GET("text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method");
+		} else {
+			// There is a chance that the method is inherited from another script.
+			bool found_inherited_function = false;
+			Ref<Script> inherited_scr = scr->get_base_script();
+			while (inherited_scr.is_valid()) {
+				int inherited_line = inherited_scr->get_language()->find_function(cd.method, inherited_scr->get_source_code());
+				if (inherited_line != -1) {
+					found_inherited_function = true;
+					break;
+				}
+
+				inherited_scr = inherited_scr->get_base_script();
 			}
 
-			inherited_scr = inherited_scr->get_base_script();
+			add_script_function_request = !found_inherited_function;
 		}
-
-		add_script_function = !found_inherited_function;
 	}
 
 	if (connect_dialog->is_editing()) {
@@ -899,7 +944,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 		_connect(cd);
 	}
 
-	if (add_script_function) {
+	if (add_script_function_request) {
 		PackedStringArray script_function_args = connect_dialog->get_signal_args();
 		script_function_args.resize(script_function_args.size() - cd.unbinds);
 		for (int i = 0; i < cd.binds.size(); i++) {
@@ -1307,7 +1352,9 @@ void ConnectionsDock::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			update_tree();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editors")) {
+				update_tree();
+			}
 		} break;
 	}
 }
@@ -1531,6 +1578,7 @@ ConnectionsDock::ConnectionsDock() {
 
 	connect_dialog = memnew(ConnectDialog);
 	connect_dialog->connect("connected", callable_mp(NodeDock::get_singleton(), &NodeDock::restore_last_valid_node), CONNECT_DEFERRED);
+	connect_dialog->set_process_shortcut_input(true);
 	add_child(connect_dialog);
 
 	disconnect_all_dialog = memnew(ConfirmationDialog);

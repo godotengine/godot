@@ -238,6 +238,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="animation/warnings/check_angle_interpolation_type_conflicting" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [AnimationMixer] prints the warning of interpolation being forced to choose the shortest rotation path due to multiple angle interpolation types being mixed in the [AnimationMixer] cache.
+		</member>
+		<member name="animation/warnings/check_invalid_track_paths" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [AnimationMixer] prints the warning of no matching object of the track path in the scene.
+		</member>
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color(0.14, 0.14, 0.14, 1)">
 			Background color for the boot splash.
 		</member>
@@ -347,11 +353,14 @@
 			Maximum number of frames per second allowed. A value of [code]0[/code] means "no limit". The actual number of frames per second may still be below this value if the CPU or GPU cannot keep up with the project logic and rendering.
 			Limiting the FPS can be useful to reduce system power consumption, which reduces heat and noise emissions (and improves battery life on mobile devices).
 			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
-			If [member display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using a FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
+			If [member display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using an FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
 			If [member display/window/vsync/vsync_mode] is [code]Disabled[/code], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
 			See also [member physics/common/physics_ticks_per_second].
 			This setting can be overridden using the [code]--max-fps &lt;fps&gt;[/code] command line argument (including with a value of [code]0[/code] for unlimited framerate).
 			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.max_fps] instead.
+		</member>
+		<member name="application/run/print_header" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the engine header is printed in the console on startup. This header describes the current version of the engine, as well as the renderer being used. This behavior can also be disabled on the command line with the [code]--no-header[/code] option.
 		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
@@ -461,11 +470,12 @@
 		<member name="debug/gdscript/warnings/confusable_local_usage" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier that will be shadowed below in the block is used.
 		</member>
-		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1">
+		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. Instead, an error is generated if the expression type is known at compile time.">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a constant is used as a function.
 		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when deprecated keywords are used.
+			[b]Note:[/b] There are currently no deprecated keywords, so this warning is never produced.
 		</member>
 		<member name="debug/gdscript/warnings/empty_file" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an empty file is parsed.
@@ -476,7 +486,7 @@
 		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
 		</member>
-		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1">
+		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. When a function is used as a property, a [Callable] is returned.">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a function as if it is a property.
 		</member>
 		<member name="debug/gdscript/warnings/get_node_default_without_onready" type="int" setter="" getter="" default="2">
@@ -510,7 +520,7 @@
 		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
 		</member>
-		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1">
+		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. Instead, an error is generated if the expression type is known at compile time.">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a property as if it is a function.
 		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
@@ -523,7 +533,7 @@
 			When enabled, using a property, enum, or function that was renamed since Godot 3 will produce a hint if an error occurs.
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="0">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). These return values are sometimes used to indicate possible errors using the [enum Error] enum.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or member variable, signal, or enum that would have the same name as a built-in function or global class name, thus shadowing it.
@@ -584,7 +594,7 @@
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a private member variable is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_signal" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a signal is declared but never emitted.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a signal is declared but never explicitly used in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unused_variable" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable is unused.
@@ -617,7 +627,7 @@
 			If [code]true[/code], enables specific shader warnings (see [code]debug/shader_language/warnings/*[/code] settings). If [code]false[/code], disables all shader warnings.
 		</member>
 		<member name="debug/shader_language/warnings/float_comparison" type="bool" setter="" getter="" default="true">
-			When set to [code]true[/code], produces a warning when two floating point numbers are compared directly with the [code]==[/code] operator or the [code]!=[/code] operator.
+			When set to [code]true[/code], produces a warning when two floating-point numbers are compared directly with the [code]==[/code] operator or the [code]!=[/code] operator.
 		</member>
 		<member name="debug/shader_language/warnings/formatting_error" type="bool" setter="" getter="" default="true">
 			When set to [code]true[/code], produces a warning upon encountering certain formatting errors. Currently this only checks for empty statements. More formatting errors may be added over time.
@@ -939,18 +949,21 @@
 			The format of the default signal callback name when a signal connects to the same node that emits it (in the Signal Connection Dialog). The following substitutions are available: [code]{NodeName}[/code], [code]{nodeName}[/code], [code]{node_name}[/code], [code]{SignalName}[/code], [code]{signalName}[/code], and [code]{signal_name}[/code].
 		</member>
 		<member name="editor/naming/node_name_casing" type="int" setter="" getter="" default="0">
-			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
+			When creating node names automatically, set the type of casing to use in this project. This is mostly an editor setting.
 		</member>
 		<member name="editor/naming/node_name_num_separator" type="int" setter="" getter="" default="0">
 			What to use to separate node name from number. This is mostly an editor setting.
 		</member>
 		<member name="editor/naming/scene_name_casing" type="int" setter="" getter="" default="2">
-			When generating file names from scene root node, set the type of casing in this project. This is mostly an editor setting.
+			When generating scene file names from scene root node, set the type of casing to use in this project. This is mostly an editor setting.
+		</member>
+		<member name="editor/naming/script_name_casing" type="int" setter="" getter="" default="0">
+			When generating script file names from the selected node, set the type of casing to use in this project. This is mostly an editor setting.
 		</member>
 		<member name="editor/run/main_run_args" type="String" setter="" getter="" default="&quot;&quot;">
 			The command-line arguments to append to Godot's own command line when running the project. This doesn't affect the editor itself.
 			It is possible to make another executable run Godot by using the [code]%command%[/code] placeholder. The placeholder will be replaced with Godot's own command line. Program-specific arguments should be placed [i]before[/i] the placeholder, whereas Godot-specific arguments should be placed [i]after[/i] the placeholder.
-			For example, this can be used to force the project to run on the dedicated GPU in a NVIDIA Optimus system on Linux:
+			For example, this can be used to force the project to run on the dedicated GPU in an NVIDIA Optimus system on Linux:
 			[codeblock]
 			prime-run %command%
 			[/codeblock]
@@ -975,15 +988,15 @@
 		<member name="filesystem/import/blender/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/blender/enabled] on the Web where Blender can't easily be accessed from Godot.
 		</member>
-		<member name="filesystem/import/fbx/enabled" type="bool" setter="" getter="" default="true">
+		<member name="filesystem/import/fbx2gltf/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Autodesk FBX 3D scene files with the [code].fbx[/code] extension will be imported by converting them to glTF 2.0.
-			This requires configuring a path to a FBX2glTF executable in the editor settings at [code]filesystem/import/fbx/fbx2gltf_path[/code].
+			This requires configuring a path to an FBX2glTF executable in the editor settings at [member EditorSettings.filesystem/import/fbx2gltf/fbx2gltf_path].
 		</member>
-		<member name="filesystem/import/fbx/enabled.android" type="bool" setter="" getter="" default="false">
-			Override for [member filesystem/import/fbx/enabled] on Android where FBX2glTF can't easily be accessed from Godot.
+		<member name="filesystem/import/fbx2gltf/enabled.android" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/fbx2gltf/enabled] on Android where FBX2glTF can't easily be accessed from Godot.
 		</member>
-		<member name="filesystem/import/fbx/enabled.web" type="bool" setter="" getter="" default="false">
-			Override for [member filesystem/import/fbx/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
+		<member name="filesystem/import/fbx2gltf/enabled.web" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/fbx2gltf/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
@@ -1361,6 +1374,9 @@
 		<member name="input_devices/pointing/android/enable_pan_and_scale_gestures" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], multi-touch pan and scale gestures are enabled on Android devices.
 		</member>
+		<member name="input_devices/pointing/android/rotary_input_scroll_axis" type="int" setter="" getter="" default="1">
+			On Wear OS devices, defines which axis of the mouse wheel rotary input is mapped to. This rotary input is usually performed by rotating the physical or virtual (touch-based) bezel on a smartwatch.
+		</member>
 		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen.
 		</member>
@@ -1414,7 +1430,7 @@
 		</member>
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
-			"ICU / HarfBuzz / Graphite" is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc). The "Fallback" text driver does not support right-to-left typesetting and complex scripts.
+			"ICU / HarfBuzz / Graphite" is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc.). The "Fallback" text driver does not support right-to-left typesetting and complex scripts.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
@@ -2274,14 +2290,16 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the 2D shadow atlas size at runtime, use [method RenderingServer.canvas_set_shadow_texture_size] instead.
 		</member>
 		<member name="rendering/2d/snap/snap_2d_transforms_to_pixel" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], [CanvasItem] nodes will internally snap to full pixels. Their position can still be sub-pixel, but the decimals will not have effect. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled.
+			If [code]true[/code], [CanvasItem] nodes will internally snap to full pixels. Useful for low-resolution pixel art games. Their position can still be sub-pixel, but the decimals will not have effect as the position is rounded. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled.
 			[b]Note:[/b] This property is only read when the project starts. To toggle 2D transform snapping at runtime, use [method RenderingServer.viewport_set_snap_2d_transforms_to_pixel] on the root [Viewport] instead.
 			[b]Note:[/b] [Control] nodes are snapped to the nearest pixel by default. This is controlled by [member gui/common/snap_controls_to_pixels].
+			[b]Note:[/b] It is not recommended to use this setting together with [member rendering/2d/snap/snap_2d_vertices_to_pixel], as movement may appear even less smooth. Prefer only enabling this setting instead.
 		</member>
 		<member name="rendering/2d/snap/snap_2d_vertices_to_pixel" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], vertices of [CanvasItem] nodes will snap to full pixels. Only affects the final vertex positions, not the transforms. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled.
+			If [code]true[/code], vertices of [CanvasItem] nodes will snap to full pixels. Useful for low-resolution pixel art games. Only affects the final vertex positions, not the transforms. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled.
 			[b]Note:[/b] This property is only read when the project starts. To toggle 2D vertex snapping at runtime, use [method RenderingServer.viewport_set_snap_2d_vertices_to_pixel] on the root [Viewport] instead.
 			[b]Note:[/b] [Control] nodes are snapped to the nearest pixel by default. This is controlled by [member gui/common/snap_controls_to_pixels].
+			[b]Note:[/b] It is not recommended to use this setting together with [member rendering/2d/snap/snap_2d_transforms_to_pixel], as movement may appear even less smooth. Prefer only enabling that setting instead.
 		</member>
 		<member name="rendering/anti_aliasing/quality/msaa_2d" type="int" setter="" getter="" default="0">
 			Sets the number of MSAA samples to use for 2D/Canvas rendering (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware, especially integrated graphics due to their limited memory bandwidth. This has no effect on shader-induced aliasing or texture aliasing.
@@ -2333,9 +2351,8 @@
 			If [code]true[/code], performs a previous depth pass before rendering 3D materials. This increases performance significantly in scenes with high overdraw, when complex materials and lighting are used. However, in scenes with few occluded surfaces, the depth prepass may reduce performance. If your game is viewed from a fixed angle that makes it easy to avoid overdraw (such as top-down or side-scrolling perspective), consider disabling the depth prepass to improve performance. This setting can be changed at run-time to optimize performance depending on the scene currently being viewed.
 			[b]Note:[/b] Depth prepass is only supported when using the Forward+ or Compatibility rendering method. When using the Mobile rendering method, there is no depth prepass performed.
 		</member>
-		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
+		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1" experimental="This setting has several known bugs which can lead to crashing, especially when using particles or resizing the window. Not recommended for use in production at this stage.">
 			The thread model to use for rendering. Rendering on a thread may improve performance, but synchronizing to the main thread can cause a bit more jitter.
-			[b]Note:[/b] The [b]Multi-Threaded[/b] option is experimental, and has several known bugs which can lead to crashing, especially when using particles or resizing the window. Not recommended for use in production at this stage.
 		</member>
 		<member name="rendering/environment/defaults/default_clear_color" type="Color" setter="" getter="" default="Color(0.3, 0.3, 0.3, 1)">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].
@@ -2754,6 +2771,7 @@
 		</member>
 		<member name="rendering/textures/canvas_textures/default_texture_filter" type="int" setter="" getter="" default="1">
 			The default texture filtering mode to use on [CanvasItem]s.
+			[b]Note:[/b] For pixel art aesthetics, see also [member rendering/2d/snap/snap_2d_vertices_to_pixel] and [member rendering/2d/snap/snap_2d_transforms_to_pixel].
 		</member>
 		<member name="rendering/textures/canvas_textures/default_texture_repeat" type="int" setter="" getter="" default="0">
 			The default texture repeating mode to use on [CanvasItem]s.
@@ -2783,7 +2801,7 @@
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
 		<member name="rendering/textures/vram_compression/import_etc2_astc" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm for lower quality textures and normal maps and Adaptable Scalable Texture Compression algorithm for high quality textures (in 4x4 block size).
+			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm for lower quality textures and normal maps and Adaptable Scalable Texture Compression algorithm for high quality textures (in 4×4 block size).
 			[b]Note:[/b] This setting is an override. The texture importer will always import the format the host platform needs, even if this is set to [code]false[/code].
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
@@ -2811,16 +2829,16 @@
 			If [member rendering/vrs/mode] is set to [b]Texture[/b], this is the path to default texture loaded as the VRS image.
 			The texture [i]must[/i] use a lossless compression format so that colors can be matched precisely. The following VRS densities are mapped to various colors, with brighter colors representing a lower level of shading precision:
 			[codeblock]
-			- 1x1 = rgb(0, 0, 0)     - #000000
-			- 1x2 = rgb(0, 85, 0)    - #005500
-			- 2x1 = rgb(85, 0, 0)    - #550000
-			- 2x2 = rgb(85, 85, 0)   - #555500
-			- 2x4 = rgb(85, 170, 0)  - #55aa00
-			- 4x2 = rgb(170, 85, 0)  - #aa5500
-			- 4x4 = rgb(170, 170, 0) - #aaaa00
-			- 4x8 = rgb(170, 255, 0) - #aaff00 - Not supported on most hardware
-			- 8x4 = rgb(255, 170, 0) - #ffaa00 - Not supported on most hardware
-			- 8x8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
+			- 1×1 = rgb(0, 0, 0)     - #000000
+			- 1×2 = rgb(0, 85, 0)    - #005500
+			- 2×1 = rgb(85, 0, 0)    - #550000
+			- 2×2 = rgb(85, 85, 0)   - #555500
+			- 2×4 = rgb(85, 170, 0)  - #55aa00
+			- 4×2 = rgb(170, 85, 0)  - #aa5500
+			- 4×4 = rgb(170, 170, 0) - #aaaa00
+			- 4×8 = rgb(170, 255, 0) - #aaff00 - Not supported on most hardware
+			- 8×4 = rgb(255, 170, 0) - #ffaa00 - Not supported on most hardware
+			- 8×8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
 			[/codeblock]
 		</member>
 		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">

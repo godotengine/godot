@@ -458,8 +458,8 @@ void NavigationLink3D::set_travel_cost(real_t p_travel_cost) {
 	NavigationServer3D::get_singleton()->link_set_travel_cost(link, travel_cost);
 }
 
-Array NavigationLink3D::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray NavigationLink3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (start_position.is_equal_approx(end_position)) {
 		warnings.push_back(RTR("NavigationLink3D start position should be different than the end position to be useful."));

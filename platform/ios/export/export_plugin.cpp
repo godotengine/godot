@@ -124,6 +124,16 @@ String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPres
 	return String();
 }
 
+void EditorExportPlatformIOS::_notification(int p_what) {
+#ifdef MACOS_ENABLED
+	if (p_what == NOTIFICATION_POSTINITIALIZE) {
+		if (EditorExport::get_singleton()) {
+			EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformIOS::_update_preset_status));
+		}
+	}
+#endif
+}
+
 bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
 	return true;
 }
@@ -406,6 +416,10 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$pbx_launch_screen_build_reference") != -1) {
 			String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */; };";
 			strnew += lines[i].replace("$pbx_launch_screen_build_reference", value) + "\n";
+#ifndef DISABLE_DEPRECATED
+		} else if (lines[i].find("$pbx_launch_image_usage_setting") != -1) {
+			strnew += lines[i].replace("$pbx_launch_image_usage_setting", "") + "\n";
+#endif
 		} else if (lines[i].find("$launch_screen_image_mode") != -1) {
 			int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
 			String value;
@@ -1643,7 +1657,7 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	}
 	String pack_path = binary_dir + ".pck";
 	Vector<SharedObject> libraries;
-	Error err = save_pack(p_preset, p_debug, pack_path, &libraries);
+	Error err = save_pack(true, p_preset, p_debug, pack_path, &libraries);
 	if (err) {
 		// Message is supplied by the subroutine method.
 		return err;
@@ -2234,7 +2248,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 
 		// Enum real devices (via ios_deploy, pre Xcode 15).
 		String idepl = EDITOR_GET("export/ios/ios_deploy");
-		if (!idepl.is_empty()) {
+		if (ea->has_runnable_preset.is_set() && !idepl.is_empty()) {
 			String devices;
 			List<String> args;
 			args.push_back("-c");
@@ -2272,7 +2286,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 		}
 
 		// Enum simulators.
-		if (_check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
+		if (ea->has_runnable_preset.is_set() && _check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
 			{
 				String devices;
 				List<String> args;
@@ -2310,7 +2324,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 			}
 
 			// Enum simulators.
-			{
+			if (ea->has_runnable_preset.is_set()) {
 				String devices;
 				List<String> args;
 				args.push_back("simctl");
@@ -2377,6 +2391,25 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 				break;
 			}
 		}
+	}
+}
+
+void EditorExportPlatformIOS::_update_preset_status() {
+	const int preset_count = EditorExport::get_singleton()->get_export_preset_count();
+	bool has_runnable = false;
+
+	for (int i = 0; i < preset_count; i++) {
+		const Ref<EditorExportPreset> &preset = EditorExport::get_singleton()->get_export_preset(i);
+		if (preset->get_platform() == this && preset->is_runnable()) {
+			has_runnable = true;
+			break;
+		}
+	}
+
+	if (has_runnable) {
+		has_runnable_preset.set();
+	} else {
+		has_runnable_preset.clear();
 	}
 }
 #endif
@@ -2643,6 +2676,7 @@ EditorExportPlatformIOS::EditorExportPlatformIOS() {
 		plugins_changed.set();
 		devices_changed.set();
 #ifdef MACOS_ENABLED
+		_update_preset_status();
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 #endif
 	}

@@ -302,7 +302,7 @@ public:
 
 	BakeError bake(Node *p_from_node, String p_image_data_path = "", Lightmapper::BakeStepFunc p_bake_step = nullptr, void *p_bake_userdata = nullptr);
 
-	virtual Array get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	LightmapGI();
 };

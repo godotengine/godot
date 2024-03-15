@@ -35,15 +35,18 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/separator.h"
 #include "scene/main/window.h"
@@ -129,7 +132,9 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
+			}
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -309,6 +314,16 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 	if (updating) {
 		return;
 	}
+
+#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), true)
+	ITEM_CHECK_DISABLED(TOOL_RENAME_ANIM);
+	ITEM_CHECK_DISABLED(TOOL_DUPLICATE_ANIM);
+	ITEM_CHECK_DISABLED(TOOL_REMOVE_ANIM);
+
+	ITEM_CHECK_DISABLED(TOOL_EDIT_TRANSITIONS);
+	ITEM_CHECK_DISABLED(TOOL_EDIT_RESOURCE);
+#undef ITEM_CHECK_DISABLED
+
 	// when selecting an animation, the idea is that the only interesting behavior
 	// ui-wise is that it should play/blend the next one if currently playing
 	String current = _get_current();
@@ -317,10 +332,11 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 		player->set_assigned_animation(current);
 
 		Ref<Animation> anim = player->get_animation(current);
+		ERR_FAIL_COND(anim.is_null());
 		{
-			bool animation_library_is_foreign = EditorNode::get_singleton()->is_resource_read_only(anim);
+			bool animation_is_readonly = EditorNode::get_singleton()->is_resource_read_only(anim);
 
-			track_editor->set_animation(anim, animation_library_is_foreign);
+			track_editor->set_animation(anim, animation_is_readonly);
 			Node *root = player->get_node_or_null(player->get_root_node());
 			if (root) {
 				track_editor->set_root(root);
@@ -534,18 +550,10 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			new_anim->set_name(new_name);
 			String library_name;
 			Ref<AnimationLibrary> al;
-			if (library->is_visible()) {
-				library_name = library->get_item_metadata(library->get_selected());
-				// It's possible that [Global] was selected, but doesn't exist yet.
-				if (player->has_animation_library(library_name)) {
-					al = player->get_animation_library(library_name);
-				}
-
-			} else {
-				if (player->has_animation_library("")) {
-					al = player->get_animation_library("");
-					library_name = "";
-				}
+			library_name = library->get_item_metadata(library->get_selected());
+			// It's possible that [Global] was selected, but doesn't exist yet.
+			if (player->has_animation_library(library_name)) {
+				al = player->get_animation_library(library_name);
 			}
 
 			undo_redo->create_action(TTR("Add Animation"));
@@ -787,7 +795,7 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 			}
 
 			_update_player();
-			EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+			EditorNode::get_bottom_panel()->make_item_visible(this);
 			set_process(true);
 			ensure_visibility();
 
@@ -819,9 +827,7 @@ void AnimationPlayerEditor::_animation_edit() {
 	if (current != String()) {
 		Ref<Animation> anim = player->get_animation(current);
 
-		bool animation_library_is_foreign = EditorNode::get_singleton()->is_resource_read_only(anim);
-
-		track_editor->set_animation(anim, animation_library_is_foreign);
+		track_editor->set_animation(anim, EditorNode::get_singleton()->is_resource_read_only(anim));
 
 		Node *root = player->get_node_or_null(player->get_root_node());
 		if (root) {
@@ -880,17 +886,23 @@ void AnimationPlayerEditor::_update_player() {
 
 	int active_idx = -1;
 	bool no_anims_found = true;
-	bool foreign_global_anim_lib = false;
+	bool global_animation_library_is_readonly = false;
+	bool all_animation_libraries_are_readonly = libraries.size() > 0;
 
 	for (const StringName &K : libraries) {
 		if (K != StringName()) {
 			animation->add_separator(K);
 		}
 
-		// Check if the global library is foreign since we want to disable options for adding/remove/renaming animations if it is.
+		// Check if the global library is read-only since we want to disable options for adding/remove/renaming animations if it is.
 		Ref<AnimationLibrary> anim_library = player->get_animation_library(K);
-		if (K == "") {
-			foreign_global_anim_lib = EditorNode::get_singleton()->is_resource_read_only(anim_library);
+		bool is_animation_library_read_only = EditorNode::get_singleton()->is_resource_read_only(anim_library);
+		if (!is_animation_library_read_only) {
+			all_animation_libraries_are_readonly = false;
+		} else {
+			if (K == "") {
+				global_animation_library_is_readonly = true;
+			}
 		}
 
 		List<StringName> animlist;
@@ -909,20 +921,8 @@ void AnimationPlayerEditor::_update_player() {
 			no_anims_found = false;
 		}
 	}
-#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), foreign_global_anim_lib)
-
+#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), all_animation_libraries_are_readonly || (no_anims_found && global_animation_library_is_readonly))
 	ITEM_CHECK_DISABLED(TOOL_NEW_ANIM);
-
-#undef ITEM_CHECK_DISABLED
-
-#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), no_anims_found || foreign_global_anim_lib)
-
-	ITEM_CHECK_DISABLED(TOOL_DUPLICATE_ANIM);
-	ITEM_CHECK_DISABLED(TOOL_RENAME_ANIM);
-	ITEM_CHECK_DISABLED(TOOL_EDIT_TRANSITIONS);
-	ITEM_CHECK_DISABLED(TOOL_REMOVE_ANIM);
-	ITEM_CHECK_DISABLED(TOOL_EDIT_RESOURCE);
-
 #undef ITEM_CHECK_DISABLED
 
 	stop->set_disabled(no_anims_found);
@@ -956,9 +956,9 @@ void AnimationPlayerEditor::_update_player() {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
 
-		bool animation_library_is_foreign = EditorNode::get_singleton()->is_resource_read_only(anim);
+		bool animation_library_is_readonly = EditorNode::get_singleton()->is_resource_read_only(anim);
 
-		track_editor->set_animation(anim, animation_library_is_foreign);
+		track_editor->set_animation(anim, animation_library_is_readonly);
 		Node *root = player->get_node_or_null(player->get_root_node());
 		if (root) {
 			track_editor->set_root(root);
@@ -1004,30 +1004,59 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 	player->get_animation_library_list(&libraries);
 	library->clear();
 
+	int valid_library_count = 0;
+
 	// When [Global] isn't present, but other libraries are, add option of creating [Global].
 	int index_offset = 0;
 	if (!player->has_animation_library(StringName())) {
 		library->add_item(String(TTR("[Global] (create)")));
 		library->set_item_metadata(0, "");
-		index_offset = 1;
+		if (!libraries.is_empty()) {
+			index_offset = 1;
+		}
+		valid_library_count++;
 	}
 
 	int current_lib_id = index_offset; // Don't default to [Global] if it doesn't exist yet.
 	for (int i = 0; i < libraries.size(); i++) {
 		StringName library_name = libraries[i];
-		library->add_item((library_name == StringName()) ? String(TTR("[Global]")) : String(library_name));
-		library->set_item_metadata(i + index_offset, String(library_name));
-		// Default to duplicating into same library.
-		if (library_name == current_library_name) {
-			current_lib_id = i + index_offset;
+		if (!EditorNode::get_singleton()->is_resource_read_only(player->get_animation_library(library_name))) {
+			library->add_item((library_name == StringName()) ? String(TTR("[Global]")) : String(library_name));
+			library->set_item_metadata(valid_library_count, String(library_name));
+			// Default to duplicating into same library.
+			if (library_name == current_library_name) {
+				current_library_name = library_name;
+				current_lib_id = valid_library_count;
+			}
+			valid_library_count++;
 		}
 	}
 
-	if (library->get_item_count() > 1) {
+	// If our library name is empty, but we have valid libraries, we can check here to auto assign the first
+	// one which isn't a read-only library.
+	bool auto_assigning_non_global_library = false;
+	if (current_library_name == StringName() && valid_library_count > 0) {
+		for (int i = 0; i < libraries.size(); i++) {
+			StringName library_name = libraries[i];
+			if (!EditorNode::get_singleton()->is_resource_read_only(player->get_animation_library(library_name))) {
+				current_library_name = library_name;
+				current_lib_id = 0;
+				if (library_name != StringName()) {
+					auto_assigning_non_global_library = true;
+				}
+				break;
+			}
+		}
+	}
+
+	if (library->get_item_count() > 0) {
 		library->select(current_lib_id);
-		library->show();
-	} else {
-		library->hide();
+		if (library->get_item_count() > 1 || auto_assigning_non_global_library) {
+			library->show();
+			library->set_disabled(auto_assigning_non_global_library && library->get_item_count() == 1);
+		} else {
+			library->hide();
+		}
 	}
 }
 
@@ -1295,9 +1324,59 @@ void AnimationPlayerEditor::_current_animation_changed(const String &p_name) {
 		if (anim.is_null()) {
 			return;
 		}
-		bool animation_library_is_foreign = EditorNode::get_singleton()->is_resource_read_only(anim);
-		track_editor->set_animation(anim, animation_library_is_foreign);
+
+		// Determine the read-only status of the animation's library and the libraries as a whole.
+		List<StringName> libraries;
+		player->get_animation_library_list(&libraries);
+
+		bool current_animation_library_is_readonly = false;
+		bool all_animation_libraries_are_readonly = true;
+		for (const StringName &K : libraries) {
+			Ref<AnimationLibrary> anim_library = player->get_animation_library(K);
+			bool animation_library_is_readonly = EditorNode::get_singleton()->is_resource_read_only(anim_library);
+			if (!animation_library_is_readonly) {
+				all_animation_libraries_are_readonly = false;
+			}
+
+			List<StringName> animlist;
+			anim_library->get_animation_list(&animlist);
+			bool animation_found = false;
+			for (const StringName &E : animlist) {
+				String path = K;
+				if (path != "") {
+					path += "/";
+				}
+				path += E;
+				if (p_name == path) {
+					current_animation_library_is_readonly = animation_library_is_readonly;
+					break;
+				}
+			}
+			if (animation_found) {
+				break;
+			}
+		}
+
+		StringName library_name = player->find_animation_library(anim);
+
+		bool animation_is_readonly = EditorNode::get_singleton()->is_resource_read_only(anim);
+
+		track_editor->set_animation(anim, animation_is_readonly);
 		_update_animation();
+
+#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), false)
+		ITEM_CHECK_DISABLED(TOOL_EDIT_TRANSITIONS);
+		ITEM_CHECK_DISABLED(TOOL_EDIT_RESOURCE);
+#undef ITEM_CHECK_DISABLED
+
+#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), current_animation_library_is_readonly)
+		ITEM_CHECK_DISABLED(TOOL_RENAME_ANIM);
+		ITEM_CHECK_DISABLED(TOOL_REMOVE_ANIM);
+#undef ITEM_CHECK_DISABLED
+
+#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), all_animation_libraries_are_readonly)
+		ITEM_CHECK_DISABLED(TOOL_DUPLICATE_ANIM);
+#undef ITEM_CHECK_DISABLED
 	}
 }
 
@@ -1867,7 +1946,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	tool_anim->set_flat(false);
 	tool_anim->set_tooltip_text(TTR("Animation Tools"));
 	tool_anim->set_text(TTR("Animation"));
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/new_animation", TTR("New")), TOOL_NEW_ANIM);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/new_animation", TTR("New...")), TOOL_NEW_ANIM);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/animation_libraries", TTR("Manage Animations...")), TOOL_ANIM_LIBRARY);
 	tool_anim->get_popup()->add_separator();
@@ -1886,7 +1965,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
 	animation->set_tooltip_text(TTR("Display list of animations in player."));
 	animation->set_clip_text(true);
-	animation->set_auto_translate(false);
+	animation->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	autoplay = memnew(Button);
 	autoplay->set_theme_type_variation("FlatButton");
@@ -1908,6 +1987,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(onion_toggle);
 
 	onion_skinning = memnew(MenuButton);
+	onion_skinning->set_flat(false);
+	onion_skinning->set_theme_type_variation("FlatMenuButton");
 	onion_skinning->set_tooltip_text(TTR("Onion Skinning Options"));
 	onion_skinning->get_popup()->add_separator(TTR("Directions"));
 	// TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
@@ -1985,7 +2066,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.tree->connect(SNAME("item_edited"), callable_mp(this, &AnimationPlayerEditor::_blend_edited));
 
 	blend_editor.next = memnew(OptionButton);
-	blend_editor.next->set_auto_translate(false);
+	blend_editor.next->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	blend_vb->add_margin_child(TTR("Next (Auto Queue):"), blend_editor.next);
 
 	autoplay->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
@@ -2157,6 +2238,7 @@ void AnimationPlayerEditorPlugin::_update_dummy_player(AnimationMixer *p_mixer) 
 		Node *parent = p_mixer->get_parent();
 		ERR_FAIL_NULL(parent);
 		dummy_player = memnew(AnimationPlayer);
+		dummy_player->set_active(false); // Inactive as default, it will be activated if the AnimationPlayerEditor visibility is changed.
 		parent->add_child(dummy_player);
 	}
 	player = dummy_player;
@@ -2186,7 +2268,7 @@ bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
 
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(anim_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(anim_editor);
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();
 	}
@@ -2194,7 +2276,7 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 
 AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 	anim_editor = memnew(AnimationPlayerEditor(this));
-	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Animation"), anim_editor);
+	EditorNode::get_bottom_panel()->add_item(TTR("Animation"), anim_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_bottom_panel", TTR("Toggle Animation Bottom Panel"), KeyModifierMask::ALT | Key::N));
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {

@@ -71,6 +71,7 @@ private:
 	HashSet<String> selected_files;
 	HashMap<String, FileExportMode> customized_files;
 	bool runnable = false;
+	bool advanced_options_enabled = false;
 	bool dedicated_server = false;
 
 	friend class EditorExport;
@@ -78,6 +79,7 @@ private:
 
 	HashMap<StringName, PropertyInfo> properties;
 	HashMap<StringName, Variant> values;
+	HashMap<StringName, Variant> value_overrides;
 	HashMap<StringName, bool> update_visibility;
 
 	String name;
@@ -107,6 +109,7 @@ public:
 	bool has(const StringName &p_property) const { return values.has(p_property); }
 
 	void update_files();
+	void update_value_overrides();
 
 	Vector<String> get_files_to_export() const;
 	Dictionary get_customized_files() const;
@@ -125,6 +128,9 @@ public:
 
 	void set_runnable(bool p_enable);
 	bool is_runnable() const;
+
+	void set_advanced_options_enabled(bool p_enabled);
+	bool are_advanced_options_enabled() const;
 
 	void set_dedicated_server(bool p_enable);
 	bool is_dedicated_server() const;

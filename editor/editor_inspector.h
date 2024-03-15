@@ -76,7 +76,6 @@ private:
 	String doc_path;
 	bool internal = false;
 	bool has_doc_tooltip = false;
-	AcceptDialog *warning_dialog = nullptr;
 
 	int property_usage;
 
@@ -99,8 +98,6 @@ private:
 	bool check_hover = false;
 	Rect2 delete_rect;
 	bool delete_hover = false;
-	Rect2 configuration_warning_rect;
-	bool configuration_warning_hover = false;
 
 	bool can_revert = false;
 	bool can_pin = false;
@@ -124,15 +121,12 @@ private:
 	Control *bottom_editor = nullptr;
 	PopupMenu *menu = nullptr;
 
-	String configuration_warning;
-
 	HashMap<StringName, Variant> cache;
 
 	GDVIRTUAL0(_update_property)
 	GDVIRTUAL1(_set_read_only, bool)
 
 	void _update_pin_flags();
-	void _update_configuration_warnings();
 
 protected:
 	void _notification(int p_what);
@@ -208,9 +202,6 @@ public:
 
 	void set_name_split_ratio(float p_ratio);
 	float get_name_split_ratio() const;
-
-	void set_configuration_warning(const String &p_configuration_warning);
-	String get_configuration_warning() const;
 
 	void set_object_and_property(Object *p_object, const StringName &p_property);
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
@@ -415,7 +406,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 	int _drop_position() const;
 
 	void _new_size_spin_box_value_changed(float p_value);
-	void _new_size_spin_box_text_submitted(String p_text);
+	void _new_size_spin_box_text_submitted(const String &p_text);
 	void _resize_dialog_confirmed();
 
 	void _update_elements_visibility();
@@ -432,8 +423,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void setup_with_move_element_function(Object *p_object, String p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "");
-	void setup_with_count_property(Object *p_object, String p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "", const String &p_swap_method = "");
+	void setup_with_move_element_function(Object *p_object, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "");
+	void setup_with_count_property(Object *p_object, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "", const String &p_swap_method = "");
 	VBoxContainer *get_vbox(int p_index);
 
 	EditorInspectorArray(bool p_read_only);
@@ -453,7 +444,7 @@ class EditorPaginator : public HBoxContainer {
 
 	void _first_page_button_pressed();
 	void _prev_page_button_pressed();
-	void _page_line_edit_text_submitted(String p_text);
+	void _page_line_edit_text_submitted(const String &p_text);
 	void _next_page_button_pressed();
 	void _last_page_button_pressed();
 
@@ -529,7 +520,7 @@ class EditorInspector : public ScrollContainer {
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
 	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false, bool p_update_all = false);
-	void _multiple_properties_changed(Vector<String> p_paths, Array p_values, bool p_changing = false);
+	void _multiple_properties_changed(const Vector<String> &p_paths, const Array &p_values, bool p_changing = false);
 	void _property_keyed(const String &p_path, bool p_advance);
 	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
 	void _property_deleted(const String &p_path);
@@ -542,7 +533,6 @@ class EditorInspector : public ScrollContainer {
 	void _object_id_selected(const String &p_path, ObjectID p_id);
 
 	void _node_removed(Node *p_node);
-	void _warning_changed(Node *p_node);
 
 	HashMap<StringName, int> per_array_page;
 	void _page_change_request(int p_new_page, const StringName &p_array_prefix);

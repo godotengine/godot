@@ -30,7 +30,6 @@
 
 #include "camera_3d.h"
 
-#include "collision_object_3d.h"
 #include "core/math/projection.h"
 #include "scene/main/viewport.h"
 
@@ -465,6 +464,20 @@ void Camera3D::_attributes_changed() {
 	_update_camera_mode();
 }
 
+void Camera3D::set_compositor(const Ref<Compositor> &p_compositor) {
+	compositor = p_compositor;
+	if (compositor.is_valid()) {
+		RS::get_singleton()->camera_set_compositor(camera, compositor->get_rid());
+	} else {
+		RS::get_singleton()->camera_set_compositor(camera, RID());
+	}
+	_update_camera_mode();
+}
+
+Ref<Compositor> Camera3D::get_compositor() const {
+	return compositor;
+}
+
 void Camera3D::set_keep_aspect_mode(KeepAspect p_aspect) {
 	keep_aspect = p_aspect;
 	RenderingServer::get_singleton()->camera_set_use_vertical_aspect(camera, p_aspect == KEEP_WIDTH);
@@ -533,6 +546,8 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_environment"), &Camera3D::get_environment);
 	ClassDB::bind_method(D_METHOD("set_attributes", "env"), &Camera3D::set_attributes);
 	ClassDB::bind_method(D_METHOD("get_attributes"), &Camera3D::get_attributes);
+	ClassDB::bind_method(D_METHOD("set_compositor", "compositor"), &Camera3D::set_compositor);
+	ClassDB::bind_method(D_METHOD("get_compositor"), &Camera3D::get_compositor);
 	ClassDB::bind_method(D_METHOD("set_keep_aspect_mode", "mode"), &Camera3D::set_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"), &Camera3D::get_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera3D::set_doppler_tracking);
@@ -551,6 +566,7 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_attributes", "get_attributes");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "compositor", PROPERTY_HINT_RESOURCE_TYPE, "Compositor"), "set_compositor", "get_compositor");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");

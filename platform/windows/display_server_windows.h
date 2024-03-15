@@ -61,6 +61,8 @@
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
+#include "native_menu_windows.h"
+
 #include <io.h>
 #include <stdio.h>
 
@@ -192,6 +194,7 @@ typedef UINT32 PEN_MASK;
 #define POINTER_MESSAGE_FLAG_FIRSTBUTTON 0x00000010
 #endif
 
+#if WINVER < 0x0602
 enum tagPOINTER_INPUT_TYPE {
 	PT_POINTER = 0x00000001,
 	PT_TOUCH = 0x00000002,
@@ -242,6 +245,7 @@ typedef struct tagPOINTER_PEN_INFO {
 	INT32 tiltX;
 	INT32 tiltY;
 } POINTER_PEN_INFO;
+#endif
 
 #endif //POINTER_STRUCTURES
 
@@ -356,6 +360,7 @@ class DisplayServerWindows : public DisplayServer {
 	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
+	NativeMenuWindows *native_menu = nullptr;
 
 	struct WindowData {
 		HWND hWnd;
@@ -477,6 +482,8 @@ class DisplayServerWindows : public DisplayServer {
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 	RBMap<CursorShape, Vector<Variant>> cursors_cache;
 
+	Callable system_theme_changed;
+
 	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
 
@@ -522,6 +529,8 @@ public:
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
 	virtual Color get_accent_color() const override;
+	virtual Color get_base_color() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
 	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;
@@ -637,6 +646,9 @@ public:
 	virtual bool get_swap_cancel_ok() override;
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
+
+	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
+	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
 
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;

@@ -6,7 +6,7 @@ from platform_methods import detect_arch, detect_mvk
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from SCons import Environment
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -56,10 +56,11 @@ def get_flags():
     return [
         ("arch", detect_arch()),
         ("use_volk", False),
+        ("supported", ["mono"]),
     ]
 
 
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     if env["arch"] not in supported_arches:
@@ -207,7 +208,9 @@ def configure(env: "Environment"):
             "-framework",
             "IOKit",
             "-framework",
-            "ForceFeedback",
+            "GameController",
+            "-framework",
+            "CoreHaptics",
             "-framework",
             "CoreVideo",
             "-framework",
@@ -239,10 +242,17 @@ def configure(env: "Environment"):
         env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "IOSurface"])
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])
-            mvk_path = detect_mvk(env, "macos-arm64_x86_64")
+
+            mvk_path = ""
+            arch_variants = ["macos-arm64_x86_64", "macos-" + env["arch"]]
+            for arch in arch_variants:
+                mvk_path = detect_mvk(env, arch)
+                if mvk_path != "":
+                    mvk_path = os.path.join(mvk_path, arch)
+                    break
 
             if mvk_path != "":
-                env.Append(LINKFLAGS=["-L" + os.path.join(mvk_path, "macos-arm64_x86_64")])
+                env.Append(LINKFLAGS=["-L" + mvk_path])
             else:
                 print(
                     "MoltenVK SDK installation directory not found, use 'vulkan_sdk_path' SCons parameter to specify SDK path."

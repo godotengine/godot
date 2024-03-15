@@ -1,6 +1,7 @@
 /*
  * Copyright © 2017-2018 Red Hat Inc.
  * Copyright © 2018 Jonas Ådahl
+ * Copyright © 2019 Christian Rauch
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -80,6 +81,7 @@ enum libdecor_window_state {
 	LIBDECOR_WINDOW_STATE_TILED_RIGHT = 1 << 4,
 	LIBDECOR_WINDOW_STATE_TILED_TOP = 1 << 5,
 	LIBDECOR_WINDOW_STATE_TILED_BOTTOM = 1 << 6,
+	LIBDECOR_WINDOW_STATE_SUSPENDED = 1 << 7,
 };
 
 enum libdecor_resize_edge {
@@ -365,6 +367,22 @@ void
 libdecor_frame_set_max_content_size(struct libdecor_frame *frame,
 				    int content_width,
 				    int content_height);
+
+/**
+ * Get the min content size.
+ */
+void
+libdecor_frame_get_min_content_size(const struct libdecor_frame *frame,
+				    int *content_width,
+				    int *content_height);
+
+/**
+ * Get the max content size.
+ */
+void
+libdecor_frame_get_max_content_size(const struct libdecor_frame *frame,
+				    int *content_width,
+				    int *content_height);
 
 /**
  * Initiate an interactive resize.

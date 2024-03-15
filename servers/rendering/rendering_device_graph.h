@@ -142,9 +142,7 @@ public:
 		RESOURCE_USAGE_TEXTURE_SAMPLE,
 		RESOURCE_USAGE_STORAGE_IMAGE_READ,
 		RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE,
-		RESOURCE_USAGE_ATTACHMENT_COLOR_READ,
 		RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE,
-		RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ,
 		RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE
 	};
 
@@ -155,7 +153,9 @@ public:
 		int32_t read_slice_command_list_index = -1;
 		int32_t write_command_or_list_index = -1;
 		int32_t draw_list_index = -1;
+		ResourceUsage draw_list_usage = RESOURCE_USAGE_NONE;
 		int32_t compute_list_index = -1;
+		ResourceUsage compute_list_usage = RESOURCE_USAGE_NONE;
 		ResourceUsage usage = RESOURCE_USAGE_NONE;
 		BitField<RDD::BarrierAccessBits> usage_access;
 		RDD::BufferID buffer_driver_id;

@@ -187,8 +187,31 @@ void main() {
 #endif // !USE_INSTANCING
 
 #else // !USE_ATTRIBUTES
-	vec2 vertex_base_arr[6] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0), vec2(0.0, 0.0), vec2(1.0, 1.0));
-	vec2 vertex_base = vertex_base_arr[gl_VertexID % 6];
+
+	// crash on Adreno 320/330
+	//vec2 vertex_base_arr[6] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0), vec2(0.0, 0.0), vec2(1.0, 1.0));
+	//vec2 vertex_base = vertex_base_arr[gl_VertexID % 6];
+	//-----------------------------------------
+	// ID |  0  |  1  |  2  |  3  |  4  |  5  |
+	//-----------------------------------------
+	// X  | 0.0 | 0.0 | 1.0 | 1.0 | 0.0 | 1.0 |
+	// Y  | 0.0 | 1.0 | 1.0 | 0.0 | 0.0 | 1.0 |
+	//-----------------------------------------
+	// no crash or freeze on all Adreno 3xx	with 'if / else if' and slightly faster!
+	int vertex_id = gl_VertexID % 6;
+	vec2 vertex_base;
+	if (vertex_id == 0)
+		vertex_base = vec2(0.0, 0.0);
+	else if (vertex_id == 1)
+		vertex_base = vec2(0.0, 1.0);
+	else if (vertex_id == 2)
+		vertex_base = vec2(1.0, 1.0);
+	else if (vertex_id == 3)
+		vertex_base = vec2(1.0, 0.0);
+	else if (vertex_id == 4)
+		vertex_base = vec2(0.0, 0.0);
+	else if (vertex_id == 5)
+		vertex_base = vec2(1.0, 1.0);
 
 	vec2 uv = read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) * ((read_draw_data_flags & FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
 	vec4 color = read_draw_data_modulation;
@@ -475,16 +498,12 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
 	uint blend_mode = light_array[light_base].flags & LIGHT_FLAGS_BLEND_MASK;
 
-	switch (blend_mode) {
-		case LIGHT_FLAGS_BLEND_MODE_ADD: {
-			color.rgb += light_color.rgb * light_color.a;
-		} break;
-		case LIGHT_FLAGS_BLEND_MODE_SUB: {
-			color.rgb -= light_color.rgb * light_color.a;
-		} break;
-		case LIGHT_FLAGS_BLEND_MODE_MIX: {
-			color.rgb = mix(color.rgb, light_color.rgb, light_color.a);
-		} break;
+	if (blend_mode == LIGHT_FLAGS_BLEND_MODE_ADD) {
+		color.rgb += light_color.rgb * light_color.a;
+	} else if (blend_mode == LIGHT_FLAGS_BLEND_MODE_SUB) {
+		color.rgb -= light_color.rgb * light_color.a;
+	} else if (blend_mode == LIGHT_FLAGS_BLEND_MODE_MIX) {
+		color.rgb = mix(color.rgb, light_color.rgb, light_color.a);
 	}
 }
 

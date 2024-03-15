@@ -73,15 +73,15 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 		for (int i = 0; i < states_stack.size(); ++i) {
 			const SceneState::PackState &ia = states_stack[i];
 			bool found = false;
-			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found);
-			const Vector<String> &deferred_properties = ia.state->get_node_deferred_nodepath_properties(ia.node);
+			bool node_deferred = false;
+			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found, node_deferred);
 			if (found) {
 				if (r_is_valid) {
 					*r_is_valid = true;
 				}
 				// Replace properties stored as NodePaths with actual Nodes.
 				// Otherwise, the property value would be considered as overridden.
-				if (deferred_properties.has(p_property)) {
+				if (node_deferred) {
 					if (value_in_ancestor.get_type() == Variant::ARRAY) {
 						Array paths = value_in_ancestor;
 
@@ -103,7 +103,7 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 			}
 			// Save script for later
 			bool has_script = false;
-			Variant script = ia.state->get_property_value(ia.node, SNAME("script"), has_script);
+			Variant script = ia.state->get_property_value(ia.node, SNAME("script"), has_script, node_deferred);
 			if (has_script) {
 				Ref<Script> scr = script;
 				if (scr.is_valid()) {

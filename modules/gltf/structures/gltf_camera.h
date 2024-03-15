@@ -69,7 +69,7 @@ public:
 	Camera3D *to_node() const;
 
 	static Ref<GLTFCamera> from_dictionary(const Dictionary p_dictionary);
-	Dictionary to_dictionary() const;
+	virtual Dictionary to_dictionary() const;
 };
 
 #endif // GLTF_CAMERA_H

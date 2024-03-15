@@ -32,10 +32,12 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 
@@ -406,11 +408,11 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		//preloader_editor->show();
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(preloader_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(preloader_editor);
 		//preloader_editor->set_process(true);
 	} else {
 		if (preloader_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 		button->hide();
 		//preloader_editor->hide();
@@ -422,7 +424,7 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin() {
 	preloader_editor = memnew(ResourcePreloaderEditor);
 	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item("ResourcePreloader", preloader_editor);
+	button = EditorNode::get_bottom_panel()->add_item("ResourcePreloader", preloader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_resource_preloader_bottom_panel", TTR("Toggle ResourcePreloader Bottom Panel")));
 	button->hide();
 }
 

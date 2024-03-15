@@ -489,7 +489,7 @@ public:
 		return points;
 	}
 
-	static Vector<Vector<Vector2>> decompose_polygon_in_convex(Vector<Point2> polygon);
+	static Vector<Vector<Vector2>> decompose_polygon_in_convex(const Vector<Point2> &polygon);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 	static Vector<Vector3i> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);

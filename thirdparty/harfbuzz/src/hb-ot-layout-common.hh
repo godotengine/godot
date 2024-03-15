@@ -64,7 +64,7 @@ struct hb_collect_feature_substitutes_with_var_context_t
   const hb_hashmap_t<hb_tag_t, Triple> *axes_location;
   hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *record_cond_idx_map;
   hb_hashmap_t<unsigned, const Feature*> *feature_substitutes_map;
-  bool& insert_catch_all_feature_variation_record;
+  hb_set_t& catch_all_record_feature_idxes;
 
   // not stored in subset_plan
   hb_set_t *feature_indices;
@@ -142,6 +142,8 @@ struct hb_subset_layout_context_t :
   const hb_map_t *feature_index_map;
   const hb_hashmap_t<unsigned, const Feature*> *feature_substitutes_map;
   hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *feature_record_cond_idx_map;
+  const hb_set_t *catch_all_record_feature_idxes;
+  const hb_hashmap_t<unsigned, hb_pair_t<const void*, const void*>> *feature_idx_tag_map;
 
   unsigned cur_script_index;
   unsigned cur_feature_var_record_idx;
@@ -164,6 +166,8 @@ struct hb_subset_layout_context_t :
       feature_index_map = &c_->plan->gsub_features;
       feature_substitutes_map = &c_->plan->gsub_feature_substitutes_map;
       feature_record_cond_idx_map = c_->plan->user_axes_location.is_empty () ? nullptr : &c_->plan->gsub_feature_record_cond_idx_map;
+      catch_all_record_feature_idxes = &c_->plan->gsub_old_features;
+      feature_idx_tag_map = &c_->plan->gsub_old_feature_idx_tag_map;
     }
     else
     {
@@ -172,6 +176,8 @@ struct hb_subset_layout_context_t :
       feature_index_map = &c_->plan->gpos_features;
       feature_substitutes_map = &c_->plan->gpos_feature_substitutes_map;
       feature_record_cond_idx_map = c_->plan->user_axes_location.is_empty () ? nullptr : &c_->plan->gpos_feature_record_cond_idx_map;
+      catch_all_record_feature_idxes = &c_->plan->gpos_old_features;
+      feature_idx_tag_map = &c_->plan->gpos_old_feature_idx_tag_map;
     }
   }
 
@@ -454,6 +460,7 @@ struct FeatureParamsSize
   {
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this))) return_trace (false);
+    hb_barrier ();
 
     /* This subtable has some "history", if you will.  Some earlier versions of
      * Adobe tools calculated the offset of the FeatureParams subtable from the
@@ -820,6 +827,7 @@ struct Feature
     TRACE_SANITIZE (this);
     if (unlikely (!(c->check_struct (this) && lookupIndex.sanitize (c))))
       return_trace (false);
+    hb_barrier ();
 
     /* Some earlier versions of Adobe tools calculated the offset of the
      * FeatureParams subtable from the beginning of the FeatureList table!
@@ -838,6 +846,7 @@ struct Feature
     unsigned int orig_offset = featureParams;
     if (unlikely (!featureParams.sanitize (c, this, closure ? closure->tag : HB_TAG_NONE)))
       return_trace (false);
+    hb_barrier ();
 
     if (featureParams == 0 && closure &&
 	closure->tag == HB_TAG ('s','i','z','e') &&
@@ -900,7 +909,8 @@ struct Record
   {
     TRACE_SANITIZE (this);
     const Record_sanitize_closure_t closure = {tag, base};
-    return_trace (c->check_struct (this) && offset.sanitize (c, base, &closure));
+    return_trace (c->check_struct (this) &&
+		  offset.sanitize (c, base, &closure));
   }
 
   Tag           tag;            /* 4-byte Tag identifier */
@@ -1371,10 +1381,20 @@ struct Lookup
 
     if (lookupFlag & LookupFlag::UseMarkFilteringSet)
     {
-      if (unlikely (!c->serializer->extend (out))) return_trace (false);
       const HBUINT16 &markFilteringSet = StructAfter<HBUINT16> (subTable);
-      HBUINT16 &outMarkFilteringSet = StructAfter<HBUINT16> (out->subTable);
-      outMarkFilteringSet = markFilteringSet;
+      hb_codepoint_t *idx;
+      if (!c->plan->used_mark_sets_map.has (markFilteringSet, &idx))
+      {
+        unsigned new_flag = lookupFlag;
+        new_flag &= ~LookupFlag::UseMarkFilteringSet;
+        out->lookupFlag = new_flag;
+      }
+      else
+      {
+        if (unlikely (!c->serializer->extend (out))) return_trace (false);
+        HBUINT16 &outMarkFilteringSet = StructAfter<HBUINT16> (out->subTable);
+        outMarkFilteringSet = *idx;
+      }
     }
 
     // Always keep the lookup even if it's empty. The rest of layout subsetting depends on lookup
@@ -1391,6 +1411,7 @@ struct Lookup
   {
     TRACE_SANITIZE (this);
     if (!(c->check_struct (this) && subTable.sanitize (c))) return_trace (false);
+    hb_barrier ();
 
     unsigned subtables = get_subtable_count ();
     if (unlikely (!c->visit_subtables (subtables))) return_trace (false);
@@ -1406,6 +1427,8 @@ struct Lookup
 
     if (unlikely (get_type () == TSubTable::Extension && !c->get_edit_count ()))
     {
+      hb_barrier ();
+
       /* The spec says all subtables of an Extension lookup should
        * have the same type, which shall not be the Extension type
        * itself (but we already checked for that).
@@ -2156,6 +2179,7 @@ struct ClassDef
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 1: return_trace (u.format1.sanitize (c));
     case 2: return_trace (u.format2.sanitize (c));
@@ -2534,7 +2558,9 @@ struct VarRegionList
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) && axesZ.sanitize (c, axisCount * regionCount));
+    return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
+		  axesZ.sanitize (c, axisCount * regionCount));
   }
 
   bool serialize (hb_serialize_context_t *c,
@@ -2728,6 +2754,7 @@ struct VarData
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
 		  regionIndices.sanitize (c) &&
+		  hb_barrier () &&
 		  wordCount () <= regionIndices.len &&
 		  c->check_range (get_delta_bytes (),
 				  itemCount,
@@ -3077,6 +3104,7 @@ struct VariationStore
 
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  format == 1 &&
 		  regions.sanitize (c, this) &&
 		  dataSets.sanitize (c, this));
@@ -3330,8 +3358,12 @@ struct ConditionFormat1
 
     Triple axis_range (-1.f, 0.f, 1.f);
     Triple *axis_limit;
+    bool axis_set_by_user = false;
     if (c->axes_location->has (axis_tag, &axis_limit))
+    {
       axis_range = *axis_limit;
+      axis_set_by_user = true;
+    }
 
     float axis_min_val = axis_range.minimum;
     float axis_default_val = axis_range.middle;
@@ -3350,8 +3382,7 @@ struct ConditionFormat1
       return DROP_RECORD_WITH_VAR;
 
     //condition met and axis pinned, drop the condition
-    if (c->axes_location->has (axis_tag) &&
-        c->axes_location->get (axis_tag).is_point ())
+    if (axis_set_by_user && axis_range.is_point ())
       return DROP_COND_WITH_VAR;
 
     if (filter_max_val != axis_max_val || filter_min_val != axis_min_val)
@@ -3365,7 +3396,6 @@ struct ConditionFormat1
       condition_map->set (axisIndex, val);
       return KEEP_COND_WITH_VAR;
     }
-
     return KEEP_RECORD_WITH_VAR;
   }
 
@@ -3424,6 +3454,7 @@ struct Condition
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 1: return_trace (u.format1.sanitize (c));
     default:return_trace (true);
@@ -3497,11 +3528,14 @@ struct ConditionSet
   }
 
   bool subset (hb_subset_context_t *c,
-               hb_subset_layout_context_t *l) const
+               hb_subset_layout_context_t *l,
+               bool insert_catch_all) const
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (this);
     if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+
+    if (insert_catch_all) return_trace (true);
 
     hb_set_t *retained_cond_set = nullptr;
     if (l->feature_record_cond_idx_map != nullptr)
@@ -3548,27 +3582,51 @@ struct FeatureTableSubstitutionRecord
   }
 
   void collect_feature_substitutes_with_variations (hb_hashmap_t<unsigned, const Feature*> *feature_substitutes_map,
+                                                    hb_set_t& catch_all_record_feature_idxes,
                                                     const hb_set_t *feature_indices,
                                                     const void *base) const
   {
     if (feature_indices->has (featureIndex))
+    {
       feature_substitutes_map->set (featureIndex, &(base+feature));
+      catch_all_record_feature_idxes.add (featureIndex);
+    }
+  }
+
+  bool serialize (hb_subset_layout_context_t *c,
+                  unsigned feature_index,
+                  const Feature *f, const Tag *tag)
+  {
+    TRACE_SERIALIZE (this);
+    hb_serialize_context_t *s = c->subset_context->serializer;
+    if (unlikely (!s->extend_min (this))) return_trace (false);
+
+    uint32_t *new_feature_idx;
+    if (!c->feature_index_map->has (feature_index, &new_feature_idx))
+      return_trace (false);
+
+    if (!s->check_assign (featureIndex, *new_feature_idx, HB_SERIALIZE_ERROR_INT_OVERFLOW))
+      return_trace (false);
+
+    s->push ();
+    bool ret = f->subset (c->subset_context, c, tag);
+    if (ret) s->add_link (feature, s->pop_pack ());
+    else s->pop_discard ();
+
+    return_trace (ret);
   }
 
   bool subset (hb_subset_layout_context_t *c, const void *base) const
   {
     TRACE_SUBSET (this);
-    if (!c->feature_index_map->has (featureIndex) ||
-        c->feature_substitutes_map->has (featureIndex)) {
-      // Feature that is being substituted is not being retained, so we don't
-      // need this.
+    uint32_t *new_feature_index;
+    if (!c->feature_index_map->has (featureIndex, &new_feature_index))
       return_trace (false);
-    }
 
     auto *out = c->subset_context->serializer->embed (this);
     if (unlikely (!out)) return_trace (false);
 
-    out->featureIndex = c->feature_index_map->get (featureIndex);
+    out->featureIndex = *new_feature_index;
     return_trace (out->feature.serialize_subset (c->subset_context, feature, base, c));
   }
 
@@ -3600,16 +3658,10 @@ struct FeatureTableSubstitution
   }
 
   void collect_lookups (const hb_set_t *feature_indexes,
-			const hb_hashmap_t<unsigned, const Feature*> *feature_substitutes_map,
 			hb_set_t       *lookup_indexes /* OUT */) const
   {
     + hb_iter (substitutions)
     | hb_filter (feature_indexes, &FeatureTableSubstitutionRecord::featureIndex)
-    | hb_filter ([feature_substitutes_map] (const FeatureTableSubstitutionRecord& record)
-                 {
-                   if (feature_substitutes_map == nullptr) return true;
-                   return !feature_substitutes_map->has (record.featureIndex);
-                 })
     | hb_apply ([this, lookup_indexes] (const FeatureTableSubstitutionRecord& r)
 		{ r.collect_lookups (this, lookup_indexes); })
     ;
@@ -3634,11 +3686,14 @@ struct FeatureTableSubstitution
   void collect_feature_substitutes_with_variations (hb_collect_feature_substitutes_with_var_context_t *c) const
   {
     for (const FeatureTableSubstitutionRecord& record : substitutions)
-      record.collect_feature_substitutes_with_variations (c->feature_substitutes_map, c->feature_indices, this);
+      record.collect_feature_substitutes_with_variations (c->feature_substitutes_map,
+                                                          c->catch_all_record_feature_idxes,
+                                                          c->feature_indices, this);
   }
 
   bool subset (hb_subset_context_t        *c,
-	       hb_subset_layout_context_t *l) const
+	       hb_subset_layout_context_t *l,
+               bool insert_catch_all) const
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
@@ -3646,6 +3701,22 @@ struct FeatureTableSubstitution
 
     out->version.major = version.major;
     out->version.minor = version.minor;
+
+    if (insert_catch_all)
+    {
+      for (unsigned feature_index : *(l->catch_all_record_feature_idxes))
+      {
+        hb_pair_t<const void*, const void*> *p;
+        if (!l->feature_idx_tag_map->has (feature_index, &p))
+          return_trace (false);
+        auto *o = out->substitutions.serialize_append (c->serializer);
+        if (!o->serialize (l, feature_index,
+                           reinterpret_cast<const Feature*> (p->first),
+                           reinterpret_cast<const Tag*> (p->second)))
+          return_trace (false);
+      }
+      return_trace (true);
+    }
 
     + substitutions.iter ()
     | hb_apply (subset_record_array (l, &(out->substitutions), this))
@@ -3658,6 +3729,7 @@ struct FeatureTableSubstitution
   {
     TRACE_SANITIZE (this);
     return_trace (version.sanitize (c) &&
+		  hb_barrier () &&
 		  likely (version.major == 1) &&
 		  substitutions.sanitize (c, this));
   }
@@ -3676,10 +3748,9 @@ struct FeatureVariationRecord
 
   void collect_lookups (const void     *base,
 			const hb_set_t *feature_indexes,
-			const hb_hashmap_t<unsigned, const Feature*> *feature_substitutes_map,
 			hb_set_t       *lookup_indexes /* OUT */) const
   {
-    return (base+substitutions).collect_lookups (feature_indexes, feature_substitutes_map, lookup_indexes);
+    return (base+substitutions).collect_lookups (feature_indexes, lookup_indexes);
   }
 
   void closure_features (const void     *base,
@@ -3705,14 +3776,15 @@ struct FeatureVariationRecord
     }
   }
 
-  bool subset (hb_subset_layout_context_t *c, const void *base) const
+  bool subset (hb_subset_layout_context_t *c, const void *base,
+               bool insert_catch_all = false) const
   {
     TRACE_SUBSET (this);
     auto *out = c->subset_context->serializer->embed (this);
     if (unlikely (!out)) return_trace (false);
 
-    out->conditions.serialize_subset (c->subset_context, conditions, base, c);
-    out->substitutions.serialize_subset (c->subset_context, substitutions, base, c);
+    out->conditions.serialize_subset (c->subset_context, conditions, base, c, insert_catch_all);
+    out->substitutions.serialize_subset (c->subset_context, substitutions, base, c, insert_catch_all);
 
     return_trace (true);
   }
@@ -3771,9 +3843,8 @@ struct FeatureVariations
       if (c->universal)
         break;
     }
-    if (c->variation_applied && !c->universal &&
-        !c->record_cond_idx_map->is_empty ())
-      c->insert_catch_all_feature_variation_record = true;
+    if (c->universal || c->record_cond_idx_map->is_empty ())
+      c->catch_all_record_feature_idxes.reset ();
   }
 
   FeatureVariations* copy (hb_serialize_context_t *c) const
@@ -3783,11 +3854,17 @@ struct FeatureVariations
   }
 
   void collect_lookups (const hb_set_t *feature_indexes,
-			const hb_hashmap_t<unsigned, const Feature*> *feature_substitutes_map,
+			const hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *feature_record_cond_idx_map,
 			hb_set_t       *lookup_indexes /* OUT */) const
   {
-    for (const FeatureVariationRecord& r : varRecords)
-      r.collect_lookups (this, feature_indexes, feature_substitutes_map, lookup_indexes);
+    unsigned count = varRecords.len;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      if (feature_record_cond_idx_map &&
+          !feature_record_cond_idx_map->has (i))
+        continue;
+      varRecords[i].collect_lookups (this, feature_indexes, lookup_indexes);
+    }
   }
 
   void closure_features (const hb_map_t *lookup_indexes,
@@ -3832,6 +3909,13 @@ struct FeatureVariations
       l->cur_feature_var_record_idx = i;
       subset_record_array (l, &(out->varRecords), this) (varRecords[i]);
     }
+
+    if (out->varRecords.len && !l->catch_all_record_feature_idxes->is_empty ())
+    {
+      bool insert_catch_all_record = true;
+      subset_record_array (l, &(out->varRecords), this, insert_catch_all_record) (varRecords[0]);
+    }
+
     return_trace (bool (out->varRecords));
   }
 
@@ -3839,6 +3923,7 @@ struct FeatureVariations
   {
     TRACE_SANITIZE (this);
     return_trace (version.sanitize (c) &&
+		  hb_barrier () &&
 		  likely (version.major == 1) &&
 		  varRecords.sanitize (c, this));
   }

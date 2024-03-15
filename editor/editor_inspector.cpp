@@ -43,6 +43,7 @@
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
@@ -67,7 +68,7 @@ Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-	ms.height = font->get_height(font_size) + 4 * EDSCALE;
+	ms.height = label.is_empty() ? 0 : font->get_height(font_size) + 4 * EDSCALE;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -105,7 +106,7 @@ Size2 EditorProperty::get_minimum_size() const {
 	}
 
 	if (bottom_editor != nullptr && bottom_editor->is_visible()) {
-		ms.height += get_theme_constant(SNAME("v_separation"));
+		ms.height += label.is_empty() ? 0 : get_theme_constant(SNAME("v_separation"));
 		Size2 bems = bottom_editor->get_combined_minimum_size();
 		//bems.width += get_constant("item_margin", "Tree");
 		ms.height += bems.height;
@@ -137,7 +138,7 @@ void EditorProperty::_notification(int p_what) {
 				int child_room = size.width * (1.0 - split_ratio);
 				Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
 				int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-				int height = font->get_height(font_size) + 4 * EDSCALE;
+				int height = label.is_empty() ? 0 : font->get_height(font_size) + 4 * EDSCALE;
 				bool no_children = true;
 
 				//compute room needed
@@ -175,9 +176,8 @@ void EditorProperty::_notification(int p_what) {
 				}
 
 				if (bottom_editor) {
-					int m = 0; //get_constant("item_margin", "Tree");
-
-					bottom_rect = Rect2(m, rect.size.height + get_theme_constant(SNAME("v_separation")), size.width - m, bottom_editor->get_combined_minimum_size().height);
+					int v_offset = label.is_empty() ? 0 : get_theme_constant(SNAME("v_separation"));
+					bottom_rect = Rect2(0, rect.size.height + v_offset, size.width, bottom_editor->get_combined_minimum_size().height);
 				}
 
 				if (keying) {
@@ -212,22 +212,6 @@ void EditorProperty::_notification(int p_what) {
 
 					if (no_children) {
 						text_size -= close->get_width() + 4 * EDSCALE;
-					}
-				}
-
-				if (!configuration_warning.is_empty() && !read_only) {
-					Ref<Texture2D> warning;
-
-					warning = get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons"));
-
-					rect.size.x -= warning->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
-
-					if (is_layout_rtl()) {
-						rect.position.x += warning->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
-					}
-
-					if (no_children) {
-						text_size -= warning->get_width() + 4 * EDSCALE;
 					}
 				}
 			}
@@ -269,8 +253,13 @@ void EditorProperty::_notification(int p_what) {
 				size.height = label_reference->get_size().height;
 			}
 
-			Ref<StyleBox> sb = get_theme_stylebox(selected ? SNAME("bg_selected") : SNAME("bg"));
-			draw_style_box(sb, Rect2(Vector2(), size));
+			// Only draw the label if it's not empty.
+			if (label.is_empty()) {
+				size.height = 0;
+			} else {
+				Ref<StyleBox> sb = get_theme_stylebox(selected ? SNAME("bg_selected") : SNAME("bg"));
+				draw_style_box(sb, Rect2(Vector2(), size));
+			}
 
 			Ref<StyleBox> bg_stylebox = get_theme_stylebox(SNAME("child_bg"));
 			if (draw_top_bg && right_child_rect != Rect2()) {
@@ -415,38 +404,6 @@ void EditorProperty::_notification(int p_what) {
 			} else {
 				delete_rect = Rect2();
 			}
-
-			if (!configuration_warning.is_empty() && !read_only) {
-				Ref<Texture2D> warning;
-
-				StringName warning_icon;
-				Node *node = Object::cast_to<Node>(object);
-				if (node) {
-					const int warning_num = node->get_configuration_warnings_of_property(property_path).size();
-					warning_icon = Node::get_configuration_warning_icon(warning_num);
-				} else {
-					// This shouldn't happen, but let's not crash over an icon.
-					warning_icon = "NodeWarning";
-				}
-				warning = get_theme_icon(warning_icon, SNAME("EditorIcons"));
-
-				ofs -= warning->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
-
-				Color color2(1, 1, 1);
-				if (configuration_warning_hover) {
-					color2.r *= 1.2;
-					color2.g *= 1.2;
-					color2.b *= 1.2;
-				}
-				configuration_warning_rect = Rect2(ofs, ((size.height - warning->get_height()) / 2), warning->get_width(), warning->get_height());
-				if (rtl) {
-					draw_texture(warning, Vector2(size.width - configuration_warning_rect.position.x - warning->get_width(), configuration_warning_rect.position.y), color2);
-				} else {
-					draw_texture(warning, configuration_warning_rect.position, color2);
-				}
-			} else {
-				configuration_warning_rect = Rect2();
-			}
 		} break;
 	}
 }
@@ -477,7 +434,7 @@ EditorInspector *EditorProperty::get_parent_inspector() const {
 		}
 		parent = parent->get_parent();
 	}
-	ERR_FAIL_V_MSG(nullptr, "EditorProperty is outside inspector.");
+	return nullptr;
 }
 
 void EditorProperty::set_doc_path(const String &p_doc_path) {
@@ -722,12 +679,6 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			check_hover = new_check_hover;
 			queue_redraw();
 		}
-
-		bool new_configuration_warning_hover = configuration_warning_rect.has_point(mpos) && !button_left;
-		if (new_configuration_warning_hover != configuration_warning_hover) {
-			configuration_warning_hover = new_configuration_warning_hover;
-			queue_redraw();
-		}
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -783,16 +734,6 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			checked = !checked;
 			queue_redraw();
 			emit_signal(SNAME("property_checked"), property, checked);
-		}
-
-		if (configuration_warning_rect.has_point(mpos)) {
-			if (warning_dialog == nullptr) {
-				warning_dialog = memnew(AcceptDialog);
-				add_child(warning_dialog);
-				warning_dialog->set_title(TTR("Node Configuration Warning!"));
-			}
-			warning_dialog->set_text(configuration_warning);
-			warning_dialog->popup_centered();
 		}
 	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		accept_event();
@@ -919,16 +860,6 @@ float EditorProperty::get_name_split_ratio() const {
 	return split_ratio;
 }
 
-void EditorProperty::set_configuration_warning(const String &p_configuration_warning) {
-	configuration_warning = p_configuration_warning;
-	queue_redraw();
-	queue_sort();
-}
-
-String EditorProperty::get_configuration_warning() const {
-	return configuration_warning;
-}
-
 void EditorProperty::set_object_and_property(Object *p_object, const StringName &p_property) {
 	object = p_object;
 	property = p_property;
@@ -982,15 +913,6 @@ void EditorProperty::_update_pin_flags() {
 				can_pin = true;
 			}
 		}
-	}
-}
-
-void EditorProperty::_update_configuration_warnings() {
-	Node *node = Object::cast_to<Node>(object);
-	if (node) {
-		const PackedStringArray warnings = node->get_configuration_warnings_as_strings(true, property_path);
-		const String warning_lines = String("\n").join(warnings);
-		set_configuration_warning(warning_lines);
 	}
 }
 
@@ -1069,9 +991,6 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_deletable", "deletable"), &EditorProperty::set_deletable);
 	ClassDB::bind_method(D_METHOD("is_deletable"), &EditorProperty::is_deletable);
 
-	ClassDB::bind_method(D_METHOD("set_configuration_warning", "configuration_warning"), &EditorProperty::set_configuration_warning);
-	ClassDB::bind_method(D_METHOD("get_configuration_warning"), &EditorProperty::get_configuration_warning);
-
 	ClassDB::bind_method(D_METHOD("get_edited_property"), &EditorProperty::get_edited_property);
 	ClassDB::bind_method(D_METHOD("get_edited_object"), &EditorProperty::get_edited_object);
 
@@ -1089,7 +1008,6 @@ void EditorProperty::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_warning"), "set_draw_warning", "is_draw_warning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keying"), "set_keying", "is_keying");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deletable"), "set_deletable", "is_deletable");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "configuration_warning"), "set_configuration_warning", "get_configuration_warning");
 
 	ADD_SIGNAL(MethodInfo("property_changed", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::STRING_NAME, "field"), PropertyInfo(Variant::BOOL, "changing")));
 	ADD_SIGNAL(MethodInfo("multiple_properties_changed", PropertyInfo(Variant::PACKED_STRING_ARRAY, "properties"), PropertyInfo(Variant::ARRAY, "value")));
@@ -2091,6 +2009,10 @@ Array EditorInspectorArray::_extract_properties_as_array(const List<PropertyInfo
 	Array output;
 
 	for (const PropertyInfo &pi : p_list) {
+		if (!(pi.usage & PROPERTY_USAGE_EDITOR)) {
+			continue;
+		}
+
 		if (pi.name.begins_with(array_element_prefix)) {
 			String str = pi.name.trim_prefix(array_element_prefix);
 
@@ -2152,7 +2074,7 @@ void EditorInspectorArray::_new_size_spin_box_value_changed(float p_value) {
 	resize_dialog->get_ok_button()->set_disabled(int(p_value) == count);
 }
 
-void EditorInspectorArray::_new_size_spin_box_text_submitted(String p_text) {
+void EditorInspectorArray::_new_size_spin_box_text_submitted(const String &p_text) {
 	_resize_dialog_confirmed();
 }
 
@@ -2392,7 +2314,7 @@ void EditorInspectorArray::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("page_change_request"));
 }
 
-void EditorInspectorArray::setup_with_move_element_function(Object *p_object, String p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_numbered, int p_page_length, const String &p_add_item_text) {
+void EditorInspectorArray::setup_with_move_element_function(Object *p_object, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_numbered, int p_page_length, const String &p_add_item_text) {
 	count_property = "";
 	mode = MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION;
 	array_element_prefix = p_array_element_prefix;
@@ -2406,7 +2328,7 @@ void EditorInspectorArray::setup_with_move_element_function(Object *p_object, St
 	_setup();
 }
 
-void EditorInspectorArray::setup_with_count_property(Object *p_object, String p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_numbered, int p_page_length, const String &p_add_item_text, const String &p_swap_method) {
+void EditorInspectorArray::setup_with_count_property(Object *p_object, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_numbered, int p_page_length, const String &p_add_item_text, const String &p_swap_method) {
 	count_property = p_count_property;
 	mode = MODE_USE_COUNT_PROPERTY;
 	array_element_prefix = p_array_element_prefix;
@@ -2498,7 +2420,7 @@ void EditorPaginator::_prev_page_button_pressed() {
 	emit_signal("page_changed", MAX(0, page - 1));
 }
 
-void EditorPaginator::_page_line_edit_text_submitted(String p_text) {
+void EditorPaginator::_page_line_edit_text_submitted(const String &p_text) {
 	if (p_text.is_valid_int()) {
 		int new_page = p_text.to_int() - 1;
 		new_page = MIN(MAX(0, new_page), max_page);
@@ -2702,8 +2624,17 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 				}
 			}
 
-			if (p_section) {
-				ep->connect("property_can_revert_changed", callable_mp(p_section, &EditorInspectorSection::property_can_revert_changed));
+			Node *section_search = p_section;
+			while (section_search) {
+				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
+				if (section) {
+					ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+				}
+				section_search = section_search->get_parent();
+				if (Object::cast_to<EditorInspector>(section_search)) {
+					// Skip sub-resource inspectors.
+					break;
+				}
 			}
 
 			ep->set_read_only(read_only);
@@ -2892,7 +2823,9 @@ void EditorInspector::update_tree() {
 						(!filter.is_empty() || !restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
 					break;
 				}
-				if (N->get().usage & PROPERTY_USAGE_CATEGORY) {
+				// Treat custom categories as second-level ones. Do not skip a normal category if it is followed by a custom one.
+				// Skip in the other 3 cases (normal -> normal, custom -> custom, custom -> normal).
+				if ((N->get().usage & PROPERTY_USAGE_CATEGORY) && (p.hint_string.is_empty() || !N->get().hint_string.is_empty())) {
 					valid = false;
 					break;
 				}
@@ -3395,9 +3328,17 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(current_vbox->get_parent());
-				if (section) {
-					ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+				Node *section_search = current_vbox->get_parent();
+				while (section_search) {
+					EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
+					if (section) {
+						ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+					}
+					section_search = section_search->get_parent();
+					if (Object::cast_to<EditorInspector>(section_search)) {
+						// Skip sub-resource inspectors.
+						break;
+					}
 				}
 
 				ep->set_draw_warning(draw_warning);
@@ -3407,7 +3348,6 @@ void EditorInspector::update_tree() {
 				ep->set_keying(keying);
 				ep->set_read_only(property_read_only || all_read_only);
 				ep->set_deletable(deletable_properties || p.name.begins_with("metadata/"));
-				ep->_update_configuration_warnings();
 			}
 
 			current_vbox->add_child(editors[i].property_editor);
@@ -3897,7 +3837,7 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 	}
 }
 
-void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array p_values, bool p_changing) {
+void EditorInspector::_multiple_properties_changed(const Vector<String> &p_paths, const Array &p_values, bool p_changing) {
 	ERR_FAIL_COND(p_paths.is_empty() || p_values.is_empty());
 	ERR_FAIL_COND(p_paths.size() != p_values.size());
 	String names;
@@ -4054,12 +3994,6 @@ void EditorInspector::_node_removed(Node *p_node) {
 	}
 }
 
-void EditorInspector::_warning_changed(Node *p_node) {
-	if (p_node == object) {
-		update_tree_pending = true;
-	}
-}
-
 void EditorInspector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -4071,7 +4005,6 @@ void EditorInspector::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (!sub_inspector) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
-				get_tree()->connect("node_configuration_warning_changed", callable_mp(this, &EditorInspector::_warning_changed));
 			}
 		} break;
 
@@ -4082,7 +4015,6 @@ void EditorInspector::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			if (!sub_inspector) {
 				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
-				get_tree()->disconnect("node_configuration_warning_changed", callable_mp(this, &EditorInspector::_warning_changed));
 			}
 			edit(nullptr);
 		} break;
@@ -4139,7 +4071,9 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			_update_inspector_bg();
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				_update_inspector_bg();
+			}
 
 			bool needs_update = false;
 

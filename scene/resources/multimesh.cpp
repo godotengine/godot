@@ -269,6 +269,16 @@ Color MultiMesh::get_instance_custom_data(int p_instance) const {
 	return RenderingServer::get_singleton()->multimesh_instance_get_custom_data(multimesh, p_instance);
 }
 
+void MultiMesh::set_custom_aabb(const AABB &p_custom) {
+	custom_aabb = p_custom;
+	RS::get_singleton()->multimesh_set_custom_aabb(multimesh, custom_aabb);
+	emit_changed();
+}
+
+AABB MultiMesh::get_custom_aabb() const {
+	return custom_aabb;
+}
+
 AABB MultiMesh::get_aabb() const {
 	return RenderingServer::get_singleton()->multimesh_get_aabb(multimesh);
 }
@@ -326,6 +336,8 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_color", "instance"), &MultiMesh::get_instance_color);
 	ClassDB::bind_method(D_METHOD("set_instance_custom_data", "instance", "custom_data"), &MultiMesh::set_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("get_instance_custom_data", "instance"), &MultiMesh::get_instance_custom_data);
+	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &MultiMesh::set_custom_aabb);
+	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &MultiMesh::get_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &MultiMesh::get_aabb);
 
 	ClassDB::bind_method(D_METHOD("get_buffer"), &MultiMesh::get_buffer);
@@ -334,6 +346,7 @@ void MultiMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_format", PROPERTY_HINT_ENUM, "2D,3D"), "set_transform_format", "get_transform_format");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_colors"), "set_use_colors", "is_using_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_custom_data"), "set_use_custom_data", "is_using_custom_data");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "instance_count", PROPERTY_HINT_RANGE, "0,16384,1,or_greater"), "set_instance_count", "get_instance_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_instance_count", PROPERTY_HINT_RANGE, "-1,16384,1,or_greater"), "set_visible_instance_count", "get_visible_instance_count");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");

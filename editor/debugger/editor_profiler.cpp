@@ -350,7 +350,7 @@ void EditorProfiler::_update_frame() {
 			category->set_custom_color(0, _get_color_from_signature(m.categories[i].signature));
 		}
 
-		for (int j = m.categories[i].items.size() - 1; j >= 0; j--) {
+		for (int j = 0; j < m.categories[i].items.size(); j++) {
 			const Metric::Category::Item &it = m.categories[i].items[j];
 
 			if (it.internal == it.total && !display_internal_profiles->is_pressed() && m.categories[i].name == "Script Functions") {
@@ -647,6 +647,7 @@ EditorProfiler::EditorProfiler() {
 	hb->add_child(display_time);
 
 	display_internal_profiles = memnew(CheckButton(TTR("Display internal functions")));
+	display_internal_profiles->set_visible(EDITOR_GET("debugger/profile_native_calls"));
 	display_internal_profiles->set_pressed(false);
 	display_internal_profiles->connect("pressed", callable_mp(this, &EditorProfiler::_internal_profiles_pressed));
 	hb->add_child(display_internal_profiles);

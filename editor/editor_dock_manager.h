@@ -133,7 +133,7 @@ public:
 	void set_docks_visible(bool p_show);
 	bool are_docks_visible() const;
 
-	void add_control_to_dock(DockSlot p_slot, Control *p_control, const String &p_name = "");
+	void add_control_to_dock(DockSlot p_slot, Control *p_control, const String &p_name = "", const Ref<Shortcut> &p_shortcut = nullptr);
 	void remove_control_from_dock(Control *p_control);
 
 	EditorDockManager();

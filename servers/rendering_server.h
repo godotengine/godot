@@ -71,6 +71,11 @@ protected:
 	static RenderingServer *(*create_func)();
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _environment_set_fog_bind_compat_84792(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	static RenderingServer *get_singleton();
 	static RenderingServer *create();
@@ -412,6 +417,9 @@ public:
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
 	virtual AABB multimesh_get_aabb(RID p_multimesh) const = 0;
+
+	virtual void multimesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) = 0;
+	virtual AABB multimesh_get_custom_aabb(RID p_mesh) const = 0;
 
 	virtual Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
 	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
@@ -808,6 +816,7 @@ public:
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers) = 0;
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
 	virtual void camera_set_camera_attributes(RID p_camera, RID p_camera_attributes) = 0;
+	virtual void camera_set_compositor(RID p_camera, RID p_compositor) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 
 	/* VIEWPORT API */
@@ -1038,6 +1047,37 @@ public:
 	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
 	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) = 0;
 
+	/* COMPOSITOR EFFECTS API */
+
+	enum CompositorEffectFlags {
+		COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_COLOR = 1,
+		COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH = 2,
+		COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS = 4,
+		COMPOSITOR_EFFECT_FLAG_NEEDS_ROUGHNESS = 8,
+		COMPOSITOR_EFFECT_FLAG_NEEDS_SEPARATE_SPECULAR = 16,
+	};
+
+	enum CompositorEffectCallbackType {
+		COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE,
+		COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_OPAQUE,
+		COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_SKY,
+		COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT,
+		COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT,
+		COMPOSITOR_EFFECT_CALLBACK_TYPE_MAX,
+		COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY = -1,
+	};
+
+	virtual RID compositor_effect_create() = 0;
+	virtual void compositor_effect_set_enabled(RID p_effect, bool p_enabled) = 0;
+	virtual void compositor_effect_set_callback(RID p_effect, CompositorEffectCallbackType p_callback_type, const Callable &p_callback) = 0;
+	virtual void compositor_effect_set_flag(RID p_effect, CompositorEffectFlags p_flag, bool p_set) = 0;
+
+	/* COMPOSITOR API */
+
+	virtual RID compositor_create() = 0;
+
+	virtual void compositor_set_compositor_effects(RID p_compositor, const TypedArray<RID> &p_effects) = 0;
+
 	/* ENVIRONMENT API */
 
 	virtual RID environment_create() = 0;
@@ -1175,7 +1215,13 @@ public:
 
 	virtual void environment_set_sdfgi_frames_to_update_light(EnvironmentSDFGIFramesToUpdateLight p_update) = 0;
 
-	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect) = 0;
+	enum EnvironmentFogMode {
+		ENV_FOG_MODE_EXPONENTIAL,
+		ENV_FOG_MODE_DEPTH,
+	};
+
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, EnvironmentFogMode p_mode = EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL) = 0;
+	virtual void environment_set_fog_depth(RID p_env, float p_curve, float p_begin, float p_end) = 0;
 
 	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) = 0;
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
@@ -1227,6 +1273,7 @@ public:
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment) = 0;
 	virtual void scenario_set_camera_attributes(RID p_scenario, RID p_camera_attributes) = 0;
+	virtual void scenario_set_compositor(RID p_scenario, RID p_compositor) = 0;
 
 	/* INSTANCING API */
 
@@ -1331,6 +1378,7 @@ public:
 
 	virtual RID canvas_create() = 0;
 	virtual void canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring) = 0;
+	virtual void canvas_set_item_repeat(RID p_item, const Point2 &p_repeat_size, int p_repeat_times) = 0;
 	virtual void canvas_set_modulate(RID p_canvas, const Color &p_color) = 0;
 	virtual void canvas_set_parent(RID p_canvas, RID p_parent, float p_scale) = 0;
 
@@ -1723,10 +1771,13 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
 VARIANT_ENUM_CAST(RenderingServer::ViewportVRSMode);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
+VARIANT_ENUM_CAST(RenderingServer::CompositorEffectCallbackType);
+VARIANT_ENUM_CAST(RenderingServer::CompositorEffectFlags);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentBG);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentAmbientSource);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentReflectionSource);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentGlowBlendMode);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentFogMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSRRoughnessQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);

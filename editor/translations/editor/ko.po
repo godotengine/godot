@@ -60,13 +60,14 @@
 # maldron <bagjinhyeong640@gmail.com>, 2024.
 # nulta <un5450@outlook.com>, 2024.
 # Sovlus Haesaun <josuke4832@gmail.com>, 2024.
+# Minhyeok Lee <tracertw@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-22 23:01+0000\n"
-"Last-Translator: Sovlus Haesaun <josuke4832@gmail.com>\n"
+"PO-Revision-Date: 2024-02-23 09:02+0000\n"
+"Last-Translator: nulta <un5450@outlook.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -74,7 +75,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Main Thread"
 msgstr "메인 스레드"
@@ -514,8 +515,8 @@ msgstr "이벤트 수정"
 msgid "Remove Event"
 msgstr "이벤트 제거"
 
-msgid "Filter by name..."
-msgstr "이름으로 필터링..."
+msgid "Filter by Name"
+msgstr "이름으로 필터링"
 
 msgid "Clear All"
 msgstr "모두 지우기"
@@ -550,6 +551,15 @@ msgstr "여기에 키 삽입"
 msgid "Duplicate Selected Key(s)"
 msgstr "선택한 키 복제"
 
+msgid "Cut Selected Key(s)"
+msgstr "선택한 키 잘라내기"
+
+msgid "Copy Selected Key(s)"
+msgstr "선택한 키 복사"
+
+msgid "Paste Key(s)"
+msgstr "키 붙여넣기"
+
 msgid "Delete Selected Key(s)"
 msgstr "선택한 키 삭제"
 
@@ -579,6 +589,12 @@ msgstr "베지어 점 이동"
 
 msgid "Animation Duplicate Keys"
 msgstr "애니메이션 키프레임 복제"
+
+msgid "Animation Cut Keys"
+msgstr "애니메이션 키 잘라내기"
+
+msgid "Animation Paste Keys"
+msgstr "애니메이션 키 붙여넣기"
 
 msgid "Animation Delete Keys"
 msgstr "애니메이션 키프레임 삭제"
@@ -640,32 +656,32 @@ msgstr "가져온 씬에서 인스턴스화된 애니메이션의 루프 모드�
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr "다른 장면에 임베드된 애니메이션의 루프 모드를 변경할 수 없습니다."
 
-msgid "Property Track"
-msgstr "속성 트랙"
+msgid "Property Track..."
+msgstr "속성 트랙..."
 
-msgid "3D Position Track"
-msgstr "3D 위치 트래킹"
+msgid "3D Position Track..."
+msgstr "3D 위치 트랙..."
 
-msgid "3D Rotation Track"
-msgstr "3D 회전 트래킹"
+msgid "3D Rotation Track..."
+msgstr "3D 회전 트랙..."
 
-msgid "3D Scale Track"
-msgstr "3D 크기 트래킹"
+msgid "3D Scale Track..."
+msgstr "3D 크기 트랙..."
 
-msgid "Blend Shape Track"
-msgstr "블렌드 모양 트랙"
+msgid "Blend Shape Track..."
+msgstr "블렌드 모양 트랙..."
 
-msgid "Call Method Track"
-msgstr "메서드 호출 트랙"
+msgid "Call Method Track..."
+msgstr "메서드 호출 트랙..."
 
-msgid "Bezier Curve Track"
-msgstr "베지어 곡선 트랙"
+msgid "Bezier Curve Track..."
+msgstr "베지어 곡선 트랙..."
 
-msgid "Audio Playback Track"
-msgstr "오디오 재생 트랙"
+msgid "Audio Playback Track..."
+msgstr "오디오 재생 트랙..."
 
-msgid "Animation Playback Track"
-msgstr "애니메이션 재생 트랙"
+msgid "Animation Playback Track..."
+msgstr "애니메이션 재생 트랙..."
 
 msgid "Animation length (frames)"
 msgstr "애니메이션 길이 (프레임)"
@@ -799,11 +815,17 @@ msgstr "루프 보간 고정"
 msgid "Wrap Loop Interp"
 msgstr "루프 보간 래핑"
 
-msgid "Insert Key"
-msgstr "키 삽입"
+msgid "Insert Key..."
+msgstr "키 삽입..."
 
 msgid "Duplicate Key(s)"
 msgstr "키 복제"
+
+msgid "Cut Key(s)"
+msgstr "키 잘라내기"
+
+msgid "Copy Key(s)"
+msgstr "키 복사"
 
 msgid "Add RESET Value(s)"
 msgstr "초기화 값 추가"
@@ -959,13 +981,14 @@ msgstr "트랙 붙여 넣기"
 msgid "Animation Scale Keys"
 msgstr "애니메이션 스케일 키"
 
+msgid "Animation Set Start Offset"
+msgstr "애니메이션 시작 오프셋 설정"
+
+msgid "Animation Set End Offset"
+msgstr "애니메이션 종료 오프셋 설정"
+
 msgid "Make Easing Keys"
 msgstr "이징 키 만들기"
-
-msgid ""
-"This option does not work for Bezier editing, as it's only a single track."
-msgstr ""
-"이 설정은 단일 트랙에만 적용 가능하므로 베지어 편집에 사용할 수 없습니다."
 
 msgid "Animation Add RESET Keys"
 msgstr "애니메이션 리셋 키 추가"
@@ -1056,23 +1079,32 @@ msgstr "편집"
 msgid "Animation properties."
 msgstr "애니메이션 속성입니다."
 
-msgid "Copy Tracks"
-msgstr "트랙 복사"
+msgid "Copy Tracks..."
+msgstr "트랙 복사..."
 
-msgid "Scale Selection"
-msgstr "선택 항목 스케일 조절"
+msgid "Scale Selection..."
+msgstr "선택 항목 스케일 조절..."
 
-msgid "Scale From Cursor"
-msgstr "커서 위치에서 스케일 조절"
+msgid "Scale From Cursor..."
+msgstr "커서 위치에서 스케일 조절..."
 
-msgid "Make Easing Selection"
-msgstr "선택된 구간에 이징 만들기"
+msgid "Set Start Offset (Audio)"
+msgstr "시작 오프셋 설정 (오디오)"
 
-msgid "Duplicate Selection"
-msgstr "선택 항목 복제"
+msgid "Set End Offset (Audio)"
+msgstr "종료 오프셋 설정 (오디오)"
 
-msgid "Duplicate Transposed"
-msgstr "선택된 트랙에 복제"
+msgid "Make Easing Selection..."
+msgstr "선택 항목에 이징 만들기..."
+
+msgid "Duplicate Selected Keys"
+msgstr "선택한 키 복제"
+
+msgid "Cut Selected Keys"
+msgstr "선택한 키 잘라내기"
+
+msgid "Paste Keys"
+msgstr "키 붙여넣기"
 
 msgid "Delete Selection"
 msgstr "선택 항목 삭제"
@@ -1086,14 +1118,14 @@ msgstr "이전 단계로 이동"
 msgid "Apply Reset"
 msgstr "재설정 적용"
 
-msgid "Bake Animation"
-msgstr "애니메이션 굽기"
+msgid "Bake Animation..."
+msgstr "애니메이션 굽기..."
 
-msgid "Optimize Animation (no undo)"
-msgstr "애니메이션 최적화 (되돌릴 수 없음)"
+msgid "Optimize Animation (no undo)..."
+msgstr "애니메이션 최적화 (되돌릴 수 없음)..."
 
-msgid "Clean-Up Animation (no undo)"
-msgstr "애니메이션 정리 (되돌릴 수 없음)"
+msgid "Clean-Up Animation (no undo)..."
+msgstr "애니메이션 정리 (되돌릴 수 없음)..."
 
 msgid "Pick a node to animate:"
 msgstr "애니메이션을 줄 노드를 선택하세요:"
@@ -1306,6 +1338,9 @@ msgstr "경고"
 
 msgid "Line and column numbers."
 msgstr "행 및 열 번호."
+
+msgid "Indentation"
+msgstr "들여쓰기"
 
 msgid "Method in target node must be specified."
 msgstr "대상 노드에 있는 메서드는 반드시 지정해야 합니다."
@@ -1598,6 +1633,9 @@ msgstr ""
 "자체: 해당 함수에 의해 호출된 다른 함수에서가 아닌, 함수 자체에서 보낸 시간만 "
 "계산합니다.\n"
 "이를 사용하여 최적화할 개별 함수를 찾습니다."
+
+msgid "Display internal functions"
+msgstr "내부 함수 보이기"
 
 msgid "Frame #:"
 msgstr "프레임 #:"
@@ -1907,11 +1945,11 @@ msgstr "폴더 만들기"
 msgid "Folder name is valid."
 msgstr "폴더 이름이 올바릅니다."
 
+msgid "Double-click to open in browser."
+msgstr "더블 클릭하여 브라우저에서 엽니다."
+
 msgid "Thanks from the Godot community!"
 msgstr "Godot 커뮤니티에서 감사드립니다!"
-
-msgid "Click to copy."
-msgstr "클릭하여 복사합니다."
 
 msgid "Godot Engine contributors"
 msgstr "Godot Engine 기여자"
@@ -2410,8 +2448,8 @@ msgstr "프로필 가져오기"
 msgid "Export Profile"
 msgstr "프로필 내보내기"
 
-msgid "Forced classes on detect:"
-msgstr "감지 시 강제 클래스:"
+msgid "Forced Classes on Detect:"
+msgstr "감지 시 강제할 클래스:"
 
 msgid "Edit Build Configuration Profile"
 msgstr "빌드 설정 프로필 편집"
@@ -2443,6 +2481,21 @@ msgstr "[비었음]"
 
 msgid "[unsaved]"
 msgstr "[저장되지 않음]"
+
+msgid "%s - Godot Engine"
+msgstr "%s - Godot 엔진"
+
+msgid "Dock Position"
+msgstr "독 위치"
+
+msgid "Make Floating"
+msgstr "창 띄우기"
+
+msgid "Make this dock floating."
+msgstr "이 독을 창으로 띄웁니다."
+
+msgid "Move to Bottom"
+msgstr "아래로 이동"
 
 msgid "3D Editor"
 msgstr "3D 에디터"
@@ -2621,6 +2674,12 @@ msgstr "사용되지 않음"
 msgid "Experimental"
 msgstr "실험적"
 
+msgid "Deprecated:"
+msgstr "사용되지 않음:"
+
+msgid "Experimental:"
+msgstr "실험적:"
+
 msgid "This method supports a variable number of arguments."
 msgstr "이 메서드는 다양한 인수를 지원합니다."
 
@@ -2644,6 +2703,30 @@ msgid ""
 msgstr ""
 "이 메서드는 호출할 인스턴스가 필요하지 않습니다.\n"
 "클래스 이름을 사용하여 직접 호출할 수 있습니다."
+
+msgid "Constructors"
+msgstr "생성자"
+
+msgid "Operators"
+msgstr "연산자"
+
+msgid "Method Descriptions"
+msgstr "메서드 설명"
+
+msgid "Constructor Descriptions"
+msgstr "생성자 설명"
+
+msgid "Operator Descriptions"
+msgstr "연산자 설명"
+
+msgid "This method may be changed or removed in future versions."
+msgstr "이 메서드는 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
+msgid "This constructor may be changed or removed in future versions."
+msgstr "이 생성자는 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
+msgid "This operator may be changed or removed in future versions."
+msgstr "이 연산자는 향후 버전에서 변경되거나 삭제될 수도 있습니다."
 
 msgid "Error codes returned:"
 msgstr "반환된 오류 코드:"
@@ -2684,24 +2767,14 @@ msgstr "위쪽"
 msgid "Class:"
 msgstr "클래스:"
 
+msgid "This class may be changed or removed in future versions."
+msgstr "이 클래스는 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
 msgid "Inherits:"
 msgstr "상속:"
 
 msgid "Inherited by:"
 msgstr "상속한 클래스:"
-
-msgid ""
-"This class is marked as deprecated. It will be removed in future versions."
-msgstr ""
-"이 클래스는 더 이상 사용되지 않는 것으로 표시되어 있습니다. 향후 버전에서 제거"
-"될 예정입니다."
-
-msgid ""
-"This class is marked as experimental. It is subject to likely change or "
-"possible removal in future versions. Use at your own discretion."
-msgstr ""
-"이 클래스는 실험적이라고 표시되어 있습니다. 향후 버전에서 변경되거나 제거될 "
-"수 있습니다. 신중하게 사용하세요."
 
 msgid "Description"
 msgstr "설명"
@@ -2741,12 +2814,6 @@ msgstr "기본값:"
 msgid "property:"
 msgstr "속성:"
 
-msgid "Constructors"
-msgstr "생성자"
-
-msgid "Operators"
-msgstr "연산자"
-
 msgid "Theme Properties"
 msgstr "테마 속성"
 
@@ -2768,8 +2835,37 @@ msgstr "아이콘"
 msgid "Styles"
 msgstr "스타일"
 
+msgid "There is currently no description for this theme property."
+msgstr "현재 이 테마 속성에 대한 설명이 없습니다."
+
+msgid ""
+"There is currently no description for this theme property. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"현재 이 테마 속성의 설명이 없습니다. [color=$color][url=$url]관련 정보를 기여"
+"하여[/url][/color] 개선할 수 있도록 도와주세요!"
+
+msgid "This signal may be changed or removed in future versions."
+msgstr "이 시그널은 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
+msgid "There is currently no description for this signal."
+msgstr "현재 이 시그널에 대한 설명이 없습니다."
+
+msgid ""
+"There is currently no description for this signal. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"현재 이 시그널의 설명이 없습니다. [color=$color][url=$url]관련 정보를 기여하여"
+"[/url][/color] 개선할 수 있도록 도와주세요!"
+
 msgid "Enumerations"
 msgstr "열거형"
+
+msgid "This enumeration may be changed or removed in future versions."
+msgstr "이 열거형은 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
+msgid "This constant may be changed or removed in future versions."
+msgstr "이 상수는 향후 버전에서 변경되거나 삭제될 수도 있습니다."
 
 msgid "Annotations"
 msgstr "어노테이션"
@@ -2790,6 +2886,9 @@ msgstr "속성 설명"
 msgid "(value)"
 msgstr "(값)"
 
+msgid "This property may be changed or removed in future versions."
+msgstr "이 속성은 향후 버전에서 변경되거나 삭제될 수도 있습니다."
+
 msgid "There is currently no description for this property."
 msgstr "현재 이 속성에 대한 설명이 없습니다."
 
@@ -2800,14 +2899,8 @@ msgstr ""
 "현재 이 속성의 설명이 없습니다. [color=$color][url=$url]관련 정보를 기여하여[/"
 "url][/color] 개선할 수 있도록 도와주세요!"
 
-msgid "Constructor Descriptions"
-msgstr "생성자 설명"
-
-msgid "Method Descriptions"
-msgstr "메서드 설명"
-
-msgid "Operator Descriptions"
-msgstr "연산자 설명"
+msgid "This property can only be set in the Inspector."
+msgstr "이 속성은 인스펙터에서만 설정할 수 있습니다."
 
 msgid "Metadata:"
 msgstr "메타데이터:"
@@ -2821,8 +2914,8 @@ msgstr "메서드:"
 msgid "Signal:"
 msgstr "시그널:"
 
-msgid "Theme Item:"
-msgstr "테마 항목:"
+msgid "Theme Property:"
+msgstr "테마 속성:"
 
 msgid "No description available."
 msgstr "사용 가능한 설명이 없습니다."
@@ -2832,6 +2925,30 @@ msgstr "%d개 일치."
 
 msgid "%d matches."
 msgstr "%d개 일치."
+
+msgid "Constructor"
+msgstr "생성자"
+
+msgid "Method"
+msgstr "메서드"
+
+msgid "Operator"
+msgstr "연산자"
+
+msgid "Signal"
+msgstr "시그널"
+
+msgid "Constant"
+msgstr "상수"
+
+msgid "Property"
+msgstr "속성"
+
+msgid "Theme Property"
+msgstr "테마 속성"
+
+msgid "Annotation"
+msgstr "어노테이션"
 
 msgid "Search Help"
 msgstr "도움말 검색"
@@ -2878,26 +2995,11 @@ msgstr "멤버 타입"
 msgid "(constructors)"
 msgstr "(생성자)"
 
+msgid "Keywords"
+msgstr "키워드"
+
 msgid "Class"
 msgstr "클래스"
-
-msgid "Method"
-msgstr "메서드"
-
-msgid "Signal"
-msgstr "시그널"
-
-msgid "Annotation"
-msgstr "어노테이션"
-
-msgid "Constant"
-msgstr "상수"
-
-msgid "Property"
-msgstr "속성"
-
-msgid "Theme Property"
-msgstr "테마 속성"
 
 msgid "This member is marked as deprecated."
 msgstr "이 멤버는 사용되지 않는 것으로 표시되어 있습니다."
@@ -3451,14 +3553,37 @@ msgstr ""
 msgid "Scene '%s' has broken dependencies:"
 msgstr "씬 '%s'의 종속 항목이 망가짐:"
 
+msgid ""
+"Multi-window support is not available because the `--single-window` command "
+"line argument was used to start the editor."
+msgstr ""
+"에디터에 `--single-window` 명령줄 인자가 있기 때문에 다중 창을 사용할 수 없습"
+"니다."
+
+msgid ""
+"Multi-window support is not available because the current platform doesn't "
+"support multiple windows."
+msgstr "현재 플랫폼에서는 다중 창을 지원하지 않습니다."
+
+msgid ""
+"Multi-window support is not available because Interface > Editor > Single "
+"Window Mode is enabled in the editor settings."
+msgstr ""
+"에디터 설정의 인터페이스 > 에디터 > 단일 창 모드 속성이 켜져 있기 때문에 다중 "
+"창을 사용할 수 없습니다."
+
+msgid ""
+"Multi-window support is not available because Interface > Multi Window > "
+"Enable is disabled in the editor settings."
+msgstr ""
+"에디터 설정의 인터페이스 > 다중 창 > 활성화 속성이 꺼져 있기 때문에 다중 창을 "
+"사용할 수 없습니다."
+
 msgid "Clear Recent Scenes"
 msgstr "최근 씬 지우기"
 
 msgid "There is no defined scene to run."
 msgstr "실행할 씬이 정의되지 않았습니다."
-
-msgid "%s - Godot Engine"
-msgstr "%s - Godot 엔진"
 
 msgid ""
 "No main scene has ever been defined, select one?\n"
@@ -3484,14 +3609,20 @@ msgstr ""
 "선택한 씬 '%s'은(는) 씬 파일이 아닙니다, 다른 씬으로 정할까요?\n"
 "이건 나중에 \"프로젝트 설정\"의 'application' 카테고리에서 바꿀 수 있습니다."
 
+msgid "Save Layout..."
+msgstr "레이아웃 저장..."
+
+msgid "Delete Layout..."
+msgstr "레이아웃 삭제..."
+
+msgid "Default"
+msgstr "기본값"
+
 msgid "Save Layout"
 msgstr "레이아웃 저장"
 
 msgid "Delete Layout"
 msgstr "레이아웃 삭제"
-
-msgid "Default"
-msgstr "기본값"
 
 msgid "This scene was never saved."
 msgstr "이 씬은 저장되지 않았습니다."
@@ -3535,6 +3666,21 @@ msgid ""
 msgstr ""
 "파일 '%s'에 쓸 수 없습니다. 파일이 사용 중이거나 잠겨 있거나 권한이 없습니다."
 
+msgid ""
+"Changing the renderer requires restarting the editor.\n"
+"\n"
+"Choosing Save & Restart will change the rendering method to:\n"
+"- Desktop platforms: %s\n"
+"- Mobile platforms: %s\n"
+"- Web platform: gl_compatibility"
+msgstr ""
+"렌더러를 변경하려면 에디터를 재시작해야 합니다.\n"
+"\n"
+"저장 후 재시작 시 렌더링 메서드는 다음과 같이 변경됩니다.\n"
+"- 데스크탑 플랫폼: %s\n"
+"- 모바일 플랫폼: %s\n"
+"- 웹 플랫폼: gl_compatibility"
+
 msgid "Forward+"
 msgstr "Forward+"
 
@@ -3544,14 +3690,11 @@ msgstr "모바일"
 msgid "Compatibility"
 msgstr "호환성"
 
+msgid "(Overridden)"
+msgstr "(오버라이드)"
+
 msgid "Pan View"
 msgstr "팬 보기"
-
-msgid "Dock Position"
-msgstr "독 위치"
-
-msgid "Make Floating"
-msgstr "창 띄우기"
 
 msgid "Distraction Free Mode"
 msgstr "집중 모드"
@@ -3610,6 +3753,9 @@ msgstr "씬 닫기"
 msgid "Quit"
 msgstr "종료"
 
+msgid "Editor Settings..."
+msgstr "에디터 설정..."
+
 msgid "Project"
 msgstr "프로젝트"
 
@@ -3652,9 +3798,6 @@ msgstr "종료 후 프로젝트 목록으로 이동"
 msgid "Editor"
 msgstr "에디터"
 
-msgid "Editor Settings..."
-msgstr "에디터 설정..."
-
 msgid "Command Palette..."
 msgstr "커맨드 팔레트..."
 
@@ -3691,6 +3834,9 @@ msgstr "FBX 가져오기 설정..."
 msgid "Help"
 msgstr "도움말"
 
+msgid "Search Help..."
+msgstr "도움말 검색..."
+
 msgid "Online Documentation"
 msgstr "온라인 문서"
 
@@ -3715,11 +3861,25 @@ msgstr "기능 제안"
 msgid "Send Docs Feedback"
 msgstr "문서 피드백 보내기"
 
-msgid "About Godot"
-msgstr "Godot 정보"
+msgid "About Godot..."
+msgstr "Godot 정보..."
 
 msgid "Support Godot Development"
 msgstr "Godot 개발 지원"
+
+msgid ""
+"Choose a rendering method.\n"
+"\n"
+"Notes:\n"
+"- On mobile platforms, the Mobile rendering method is used if Forward+ is "
+"selected here.\n"
+"- On the web platform, the Compatibility rendering method is always used."
+msgstr ""
+"렌더링 메서드를 선택하세요.\n"
+"\n"
+"참고사항:\n"
+"- Forward+를 선택시, 모바일 플랫폼은 Mobile 렌더링 메서드를 사용합니다.\n"
+"- 웹 플랫폼은 항상 Compatibility 렌더링 메서드를 사용합니다."
 
 msgid "Update Continuously"
 msgstr "상시 업데이트"
@@ -3742,9 +3902,6 @@ msgstr "노드"
 msgid "History"
 msgstr "작업 내역"
 
-msgid "Expand Bottom Panel"
-msgstr "아래쪽 패널 확장"
-
 msgid "Output"
 msgstr "출력"
 
@@ -3762,31 +3919,6 @@ msgstr "파일에서 설치"
 
 msgid "Select Android sources file"
 msgstr "Android 소스 파일 선택"
-
-msgid ""
-"This will set up your project for gradle Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make gradle builds instead of using pre-built APKs, the "
-"\"Use Gradle Build\" option should be enabled in the Android export preset."
-msgstr ""
-"\"res://android/build\"에 소스 템플릿을 설치해서 프로젝트를 Gradle Android 빌"
-"드에 맞게 설정합니다.\n"
-"그런 다음 수정 사항을 적용하고 커스텀 APK를 빌드해서 내보낼 수 있습니다(모듈 "
-"추가, AndroidManifest.xml 변경 등).\n"
-"미리 빌드된 APK를 사용하는 대신 Gradle 빌드를 만들려면, Android 내보내기 프리"
-"셋에서 \"Gradle 빌드 사용\" 설정을 활성화해야 합니다."
-
-msgid ""
-"The Android build template is already installed in this project and it won't "
-"be overwritten.\n"
-"Remove the \"res://android/build\" directory manually before attempting this "
-"operation again."
-msgstr ""
-"Android 빌드 템플릿이 이미 이 프로젝트에 설치했고, 덮어 쓸 수 없습니다.\n"
-"이 명령을 다시 실행하기 전에 \"res://android/build\" 디렉토리를 직접 제거하세"
-"요."
 
 msgid "Show in File Manager"
 msgstr "파일 매니저에서 보기"
@@ -3821,9 +3953,6 @@ msgstr "새로고침"
 
 msgid "Resave"
 msgstr "다시 저장"
-
-msgid "Create Version Control Metadata..."
-msgstr "버전 관리 메타데이터 생성..."
 
 msgid "Version Control Settings..."
 msgstr "버전 관리 설정..."
@@ -3861,8 +3990,21 @@ msgstr "확인"
 msgid "Warning!"
 msgstr "경고!"
 
-msgid "Main Script:"
-msgstr "주 스크립트:"
+msgid ""
+"Name: %s\n"
+"Path: %s\n"
+"Main Script: %s\n"
+"\n"
+"%s"
+msgstr ""
+"이름: %s\n"
+"경로: %s\n"
+"메인 스크립트: %s\n"
+"\n"
+"%s"
+
+msgid "On"
+msgstr "사용"
 
 msgid "Edit Plugin"
 msgstr "플러그인 편집"
@@ -3873,20 +4015,17 @@ msgstr "설치된 플러그인:"
 msgid "Create New Plugin"
 msgstr "새 플러그인 만들기"
 
+msgid "Enabled"
+msgstr "활성화"
+
 msgid "Version"
 msgstr "버전"
 
 msgid "Author"
 msgstr "저자"
 
-msgid "Status"
-msgstr "상태"
-
 msgid "Edit Text:"
 msgstr "문자 편집:"
-
-msgid "On"
-msgstr "사용"
 
 msgid "Renaming layer %d:"
 msgstr "레이어 %d의 이름 변경:"
@@ -4016,8 +4155,11 @@ msgid ""
 "(%s)."
 msgstr "선택한 리소스(%s)가 이 속성(%s)에 적합한 모든 타입에 맞지 않습니다."
 
-msgid "Quick Load"
-msgstr "빠른 불러오기"
+msgid "Quick Load..."
+msgstr "빠른 불러오기..."
+
+msgid "Load..."
+msgstr "불러오기..."
 
 msgid "Inspect"
 msgstr "자세히"
@@ -4043,14 +4185,14 @@ msgstr "유일하게 만들 리소스를 선택하세요:"
 msgid "New %s"
 msgstr "새 %s"
 
-msgid "New Script"
-msgstr "새 스크립트"
+msgid "New Script..."
+msgstr "새 스크립트..."
 
-msgid "Extend Script"
-msgstr "스크립트 상속"
+msgid "Extend Script..."
+msgstr "스크립트 상속..."
 
-msgid "New Shader"
-msgstr "새 셰이더"
+msgid "New Shader..."
+msgstr "새 셰이더..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "원격 디버그 내보내기 프리셋이 구성되지 않았습니다."
@@ -4075,12 +4217,6 @@ msgstr "_run() 메서드에 당신의 논리를 작성하세요."
 
 msgid "There is an edited scene already."
 msgstr "이미 편집된 씬이 있습니다."
-
-msgid ""
-"Couldn't run editor script, did you forget to override the '_run' method?"
-msgstr ""
-"에디터 스크립트를 실행할 수 없습니다. '_run' 메서드를 오버라이딩하는 것을 잊으"
-"셨나요?"
 
 msgid "Undo: %s"
 msgstr "실행 취소: %s"
@@ -4190,11 +4326,11 @@ msgstr "모든 기기"
 msgid "Device"
 msgstr "기기"
 
-msgid "Listening for input..."
-msgstr "입력 대기 중..."
+msgid "Listening for Input"
+msgstr "입력 대기 중"
 
-msgid "Filter by event..."
-msgstr "이벤트로 필터링..."
+msgid "Filter by Event"
+msgstr "이벤트로 필터링"
 
 msgid "Project export for platform:"
 msgstr "플랫폼용 프로젝트 내보내기:"
@@ -4207,6 +4343,9 @@ msgstr "성공적으로 완료되었습니다."
 
 msgid "Failed."
 msgstr "실패했습니다."
+
+msgid "Unknown Error"
+msgstr "알 수 없는 오류"
 
 msgid "Storing File: %s"
 msgstr "파일 저장: %s"
@@ -4536,6 +4675,9 @@ msgstr ""
 "체크하면 프리셋은 원 클릭 배포로 사용할 수 있게 됩니다.\n"
 "플랫폼 당 하나의 프리셋만 실행 가능하다고 표시될 것입니다."
 
+msgid "Advanced Options"
+msgstr "고급 옵션"
+
 msgid "Export Path"
 msgstr "내보낼 경로"
 
@@ -4635,6 +4777,21 @@ msgstr ""
 msgid "More Info..."
 msgstr "추가 정보..."
 
+msgid "Scripts"
+msgstr "스크립트"
+
+msgid "GDScript Export Mode:"
+msgstr "GDScript 내보내기 모드:"
+
+msgid "Text (easier debugging)"
+msgstr "텍스트 (쉬운 디버깅)"
+
+msgid "Binary tokens (faster loading)"
+msgstr "바이너리 토큰 (빠른 로딩)"
+
+msgid "Compressed binary tokens (smaller files)"
+msgstr "압축된 바이너리 토큰 (작은 크기)"
+
 msgid "Export PCK/ZIP..."
 msgstr "PCK/ZIP 내보내기..."
 
@@ -4668,22 +4825,6 @@ msgstr "내보내기 템플릿 관리"
 msgid "Export With Debug"
 msgstr "디버그와 함께 내보내기"
 
-msgid "Disable FBX & Restart"
-msgstr "FBX 비활성화 & 다시 시작"
-
-msgid ""
-"Canceling this dialog will disable the FBX importer.\n"
-"You can re-enable it in the Project Settings under Filesystem > Import > FBX "
-"> Enabled.\n"
-"\n"
-"The editor will restart as importers are registered when the editor starts."
-msgstr ""
-"취소하면 FBX 임포터를 비활성화할 것입니다.\n"
-"프로젝트 설정의 파일시스템 > 가져오기 > FBX > 활성화됨 에서 다시 활성화할 수 "
-"있습니다.\n"
-"\n"
-"임포터는 에디터가 새로 시작될 때 등록되기 때문에, 에디터를 재시작할 것입니다."
-
 msgid "Path to FBX2glTF executable is empty."
 msgstr "FBX2glTF 실행 파일 경로가 비어 있습니다."
 
@@ -4699,13 +4840,6 @@ msgstr "FBX2glTF 실행 파일이 올바릅니다."
 
 msgid "Configure FBX Importer"
 msgstr "FBX 임포터 설정"
-
-msgid ""
-"FBX2glTF is required for importing FBX files.\n"
-"Please download it and provide a valid path to the binary:"
-msgstr ""
-"FBX 파일을 가져오려면 FBX2glTF가 필요합니다.\n"
-"다운로드하고 바이너리의 유효한 경로를 제공하세요:"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "이 링크를 클릭하여 FBX2glTF를 다운로드하세요"
@@ -4861,14 +4995,17 @@ msgstr "다시 가져오기"
 msgid "Open in File Manager"
 msgstr "파일 매니저에서 열기"
 
+msgid "Open in Terminal"
+msgstr "터미널에서 열기"
+
+msgid "Open Containing Folder in Terminal"
+msgstr "폴더를 터미널에서 열기"
+
 msgid "New Folder..."
 msgstr "새 폴더..."
 
 msgid "New Scene..."
 msgstr "새 씬..."
-
-msgid "New Script..."
-msgstr "새 스크립트..."
 
 msgid "New Resource..."
 msgstr "새 리소스..."
@@ -5016,56 +5153,26 @@ msgstr "%d개 매치가 %d개 파일 중 있음"
 msgid "%d matches in %d files"
 msgstr "%d개 매치가 %d개 파일 중 있음"
 
+msgid "Set Group Description"
+msgstr "그룹 설명 설정"
+
+msgid "Rename Group"
+msgstr "그룹 이름 바꾸기"
+
 msgid "Add to Group"
 msgstr "그룹에 추가"
 
 msgid "Remove from Group"
 msgstr "그룹에서 제거"
 
-msgid "Invalid group name."
-msgstr "이 그룹 이름은 잘못되었습니다."
+msgid "Global"
+msgstr "전역"
 
-msgid "Group name already exists."
-msgstr "이 그룹 이름은 이미 누가 쓰고 있습니다."
-
-msgid "Rename Group"
-msgstr "그룹 이름 바꾸기"
-
-msgid "Delete Group"
-msgstr "그룹 삭제"
-
-msgid "Groups"
-msgstr "그룹"
-
-msgid "Nodes Not in Group"
-msgstr "그룹에 속하지 않는 노드"
-
-msgid "Nodes in Group"
-msgstr "그룹에 속한 노드"
-
-msgid "Empty groups will be automatically removed."
-msgstr "빈 그룹은 자동으로 제거됩니다."
-
-msgid "Group Editor"
-msgstr "그룹 에디터"
-
-msgid "Manage Groups"
-msgstr "그룹 관리"
+msgid "Expand Bottom Panel"
+msgstr "아래쪽 패널 확장"
 
 msgid "Move"
 msgstr "이동"
-
-msgid "Please select a base directory first."
-msgstr "먼저 기본 디렉토리를 선택해주세요."
-
-msgid "Could not create folder. File with that name already exists."
-msgstr "폴더를 만들 수 없습니다. 다른 파일이 이 이름을 이미 쓰고 있습니다."
-
-msgid "Choose a Directory"
-msgstr "디렉토리를 선택하세요"
-
-msgid "Copy File(s)"
-msgstr "파일 복사"
 
 msgid "Network"
 msgstr "네트워크"
@@ -5109,6 +5216,9 @@ msgstr "디렉토리 또는 파일 열기"
 
 msgid "Save a File"
 msgstr "파일로 저장"
+
+msgid "Could not create folder. File with that name already exists."
+msgstr "폴더를 만들 수 없습니다. 다른 파일이 이 이름을 이미 쓰고 있습니다."
 
 msgid "Favorited folder does not exist anymore and will be removed."
 msgstr "즐겨찾기 폴더가 더 이상 존재하지 않으며 제거됩니다."
@@ -5302,9 +5412,6 @@ msgstr "보이기 토글"
 msgid "Unlock Node"
 msgstr "노드 잠금 풀기"
 
-msgid "Button Group"
-msgstr "버튼 그룹"
-
 msgid "Disable Scene Unique Name"
 msgstr "씬 고유 이름 비활성화"
 
@@ -5333,9 +5440,6 @@ msgstr[0] "노드가 다음 그룹에 속해 있습니다:"
 
 msgid "Click to show signals dock."
 msgstr "클릭하여 시그널 독을 봅니다."
-
-msgid "Open in Editor"
-msgstr "에디터에서 열기"
 
 msgid "This script is currently running in the editor."
 msgstr "이 스크립트는 에디터에서 실행되고 있습니다."
@@ -5367,6 +5471,9 @@ msgstr ""
 "AnimationPlayer가 고정되어 있습니다.\n"
 "클릭하면 고정을 해제합니다."
 
+msgid "Open in Editor"
+msgstr "에디터에서 열기"
+
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\"는 알 수 없는 필터입니다."
 
@@ -5394,8 +5501,177 @@ msgstr "모두 보기"
 msgid "The Beginning"
 msgstr "시작점"
 
-msgid "Global"
-msgstr "전역"
+msgid "Pre-Import Scene"
+msgstr "씬 미리 가져오기"
+
+msgid "Importing Scene..."
+msgstr "씬 가져오는 중..."
+
+msgid "Import Scene"
+msgstr "씬 가져오기"
+
+msgid "Running Custom Script..."
+msgstr "커스텀 스크립트 실행 중..."
+
+msgid "Couldn't load post-import script:"
+msgstr "post-import 스크립트를 불러올 수 없음:"
+
+msgid "Invalid/broken script for post-import (check console):"
+msgstr "post-impot용 스크립트가 잘못되거나 망가짐 (콘솔을 확인하세요):"
+
+msgid "Error running post-import script:"
+msgstr "post-import 스크립트 실행 중 오류:"
+
+msgid "Did you return a Node-derived object in the `_post_import()` method?"
+msgstr ""
+"`_post_import()` 메서드에서 Node에서 상속받은 오브젝트를 반환하셨습니까?"
+
+msgid "Saving..."
+msgstr "저장 중..."
+
+msgid "<Unnamed Material>"
+msgstr "<이름 없는 머티리얼>"
+
+msgid "Import ID: %s"
+msgstr "가져오기 ID: %s"
+
+msgid ""
+"Type: %s\n"
+"Import ID: %s"
+msgstr ""
+"유형: %s\n"
+"가져오기 ID: %s"
+
+msgid "Error opening scene"
+msgstr "씬 여는 중 오류"
+
+msgid "Advanced Import Settings for AnimationLibrary '%s'"
+msgstr "애니메이션 라이브러리 '%s'에 대한 고급 가져오기 설정"
+
+msgid "Advanced Import Settings for Scene '%s'"
+msgstr "씬 '%s'에 대한 고급 가져오기 설정"
+
+msgid "Select folder to extract material resources"
+msgstr "머티리얼 리소스를 내보낼 폴더를 선택합니다"
+
+msgid "Select folder where mesh resources will save on import"
+msgstr "가져오기 시 메시 리소스를 저장할 폴더를 선택합니다"
+
+msgid "Select folder where animations will save on import"
+msgstr "가져오기 시 애니메이션을 저장할 폴더를 선택합니다"
+
+msgid "Warning: File exists"
+msgstr "주의: 파일 이미 존재함"
+
+msgid "Existing file with the same name will be replaced."
+msgstr "같은 이름의 기존 파일은 대체됩니다."
+
+msgid "Will create new file"
+msgstr "새로운 파일을 만듭니다"
+
+msgid "Already External"
+msgstr "이미 외부임"
+
+msgid ""
+"This material already references an external file, no action will be taken.\n"
+"Disable the external property for it to be extracted again."
+msgstr ""
+"이 자료는 이미 외부 파일을 참조하고 있으므로 아무 조치도 취해지지 않습니다.\n"
+"외부 속성을 비활성화하면 다시 추출할 수 있습니다."
+
+msgid "No import ID"
+msgstr "가져오기 ID 없음"
+
+msgid ""
+"Material has no name nor any other way to identify on re-import.\n"
+"Please name it or ensure it is exported with an unique ID."
+msgstr ""
+"재 가져오기 시 식별할 수 있는 이름이나 다른 방법이 없는 자료입니다.\n"
+"이름을 지정하거나 고유 ID로 내보내야 합니다."
+
+msgid "Extract Materials to Resource Files"
+msgstr "리소스 파일로 자료 추출"
+
+msgid "Extract"
+msgstr "추출"
+
+msgid "Already Saving"
+msgstr "이미 저장됨"
+
+msgid ""
+"This mesh already saves to an external resource, no action will be taken."
+msgstr ""
+"이 메시가 이미 외부 리소스에 저장되어 있으므로 아무 작업도 수행되지 않습니다."
+
+msgid "Existing file with the same name will be replaced on import."
+msgstr "가져오기 시 같은 이름의 기존 파일이 대체됩니다."
+
+msgid "Will save to new file"
+msgstr "새 파일에 저장됨"
+
+msgid ""
+"Mesh has no name nor any other way to identify on re-import.\n"
+"Please name it or ensure it is exported with an unique ID."
+msgstr ""
+"메시에는 다시 가져올 때 식별할 수 있는 이름이나 다른 방법이 없습니다.\n"
+"이름을 지정하거나 고유 ID로 내보내야 합니다."
+
+msgid "Set paths to save meshes as resource files on Reimport"
+msgstr "다시 가져오기 시 메시를 리소스 파일로 저장할 경로 설정"
+
+msgid "Set Paths"
+msgstr "경로 설정"
+
+msgid ""
+"This animation already saves to an external resource, no action will be taken."
+msgstr ""
+"이 애니메이션은 이미 외부 리소스에 저장되어 있으므로 아무 작업도 수행되지 않습"
+"니다."
+
+msgid "Set paths to save animations as resource files on Reimport"
+msgstr "다시 가져오기 시 애니메이션을 리소스 파일로 저장할 경로 설정"
+
+msgid "Can't make material external to file, write error:"
+msgstr "자료를 파일 외부로 만들 수 없음, 쓰기 오류가 발생했습니다:"
+
+msgid "Actions..."
+msgstr "액션..."
+
+msgid "Extract Materials"
+msgstr "머티리얼 추출"
+
+msgid "Set Animation Save Paths"
+msgstr "애니메이션 저장 경로 설정"
+
+msgid "Set Mesh Save Paths"
+msgstr "메시 저장 경로 설정"
+
+msgid "Meshes"
+msgstr "메쉬"
+
+msgid "Materials"
+msgstr "머티리얼"
+
+msgid "Selected Animation Play/Pause"
+msgstr "선택된 애니메이션 재생/정지"
+
+msgid "Status"
+msgstr "상태"
+
+msgid "Save Extension:"
+msgstr "저장할 확장자:"
+
+msgid "Text: *.tres"
+msgstr "텍스트: *.tres"
+
+msgid "Binary: *.res"
+msgstr "바이너리: *.res"
+
+msgid "Text Resource"
+msgstr "텍스트 리소스"
+
+msgid "Binary Resource"
+msgstr "바이너리 리소스"
 
 msgid "Audio Stream Importer: %s"
 msgstr "오디오 스트림 임포터: %s"
@@ -5549,34 +5825,6 @@ msgstr "동적으로 렌더링된 트루타입/오픈타입 글꼴"
 msgid "Prerendered multichannel(+true) signed distance field"
 msgstr "프리렌더링된 MSDF (다채널 부호화 디스턴스 필드)"
 
-msgid "Pre-Import Scene"
-msgstr "씬 미리 가져오기"
-
-msgid "Importing Scene..."
-msgstr "씬 가져오는 중..."
-
-msgid "Import Scene"
-msgstr "씬 가져오기"
-
-msgid "Running Custom Script..."
-msgstr "커스텀 스크립트 실행 중..."
-
-msgid "Couldn't load post-import script:"
-msgstr "post-import 스크립트를 불러올 수 없음:"
-
-msgid "Invalid/broken script for post-import (check console):"
-msgstr "post-impot용 스크립트가 잘못되거나 망가짐 (콘솔을 확인하세요):"
-
-msgid "Error running post-import script:"
-msgstr "post-import 스크립트 실행 중 오류:"
-
-msgid "Did you return a Node-derived object in the `_post_import()` method?"
-msgstr ""
-"`_post_import()` 메서드에서 Node에서 상속받은 오브젝트를 반환하셨습니까?"
-
-msgid "Saving..."
-msgstr "저장 중..."
-
 msgid ""
 "Error importing GLSL shader file: '%s'. Open the file in the filesystem dock "
 "in order to see the reason."
@@ -5613,147 +5861,6 @@ msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
-
-msgid "<Unnamed Material>"
-msgstr "<이름 없는 머티리얼>"
-
-msgid "Import ID: %s"
-msgstr "가져오기 ID: %s"
-
-msgid ""
-"Type: %s\n"
-"Import ID: %s"
-msgstr ""
-"유형: %s\n"
-"가져오기 ID: %s"
-
-msgid "Error opening scene"
-msgstr "씬 여는 중 오류"
-
-msgid "Advanced Import Settings for AnimationLibrary '%s'"
-msgstr "애니메이션 라이브러리 '%s'에 대한 고급 가져오기 설정"
-
-msgid "Advanced Import Settings for Scene '%s'"
-msgstr "씬 '%s'에 대한 고급 가져오기 설정"
-
-msgid "Select folder to extract material resources"
-msgstr "머티리얼 리소스를 내보낼 폴더를 선택합니다"
-
-msgid "Select folder where mesh resources will save on import"
-msgstr "가져오기 시 메시 리소스를 저장할 폴더를 선택합니다"
-
-msgid "Select folder where animations will save on import"
-msgstr "가져오기 시 애니메이션을 저장할 폴더를 선택합니다"
-
-msgid "Warning: File exists"
-msgstr "주의: 파일 이미 존재함"
-
-msgid "Existing file with the same name will be replaced."
-msgstr "같은 이름의 기존 파일은 대체됩니다."
-
-msgid "Will create new file"
-msgstr "새로운 파일을 만듭니다"
-
-msgid "Already External"
-msgstr "이미 외부임"
-
-msgid ""
-"This material already references an external file, no action will be taken.\n"
-"Disable the external property for it to be extracted again."
-msgstr ""
-"이 자료는 이미 외부 파일을 참조하고 있으므로 아무 조치도 취해지지 않습니다.\n"
-"외부 속성을 비활성화하면 다시 추출할 수 있습니다."
-
-msgid "No import ID"
-msgstr "가져오기 ID 없음"
-
-msgid ""
-"Material has no name nor any other way to identify on re-import.\n"
-"Please name it or ensure it is exported with an unique ID."
-msgstr ""
-"재 가져오기 시 식별할 수 있는 이름이나 다른 방법이 없는 자료입니다.\n"
-"이름을 지정하거나 고유 ID로 내보내야 합니다."
-
-msgid "Extract Materials to Resource Files"
-msgstr "리소스 파일로 자료 추출"
-
-msgid "Extract"
-msgstr "추출"
-
-msgid "Already Saving"
-msgstr "이미 저장됨"
-
-msgid ""
-"This mesh already saves to an external resource, no action will be taken."
-msgstr ""
-"이 메시가 이미 외부 리소스에 저장되어 있으므로 아무 작업도 수행되지 않습니다."
-
-msgid "Existing file with the same name will be replaced on import."
-msgstr "가져오기 시 같은 이름의 기존 파일이 대체됩니다."
-
-msgid "Will save to new file"
-msgstr "새 파일에 저장됨"
-
-msgid ""
-"Mesh has no name nor any other way to identify on re-import.\n"
-"Please name it or ensure it is exported with an unique ID."
-msgstr ""
-"메시에는 다시 가져올 때 식별할 수 있는 이름이나 다른 방법이 없습니다.\n"
-"이름을 지정하거나 고유 ID로 내보내야 합니다."
-
-msgid "Set paths to save meshes as resource files on Reimport"
-msgstr "다시 가져오기 시 메시를 리소스 파일로 저장할 경로 설정"
-
-msgid "Set Paths"
-msgstr "경로 설정"
-
-msgid ""
-"This animation already saves to an external resource, no action will be taken."
-msgstr ""
-"이 애니메이션은 이미 외부 리소스에 저장되어 있으므로 아무 작업도 수행되지 않습"
-"니다."
-
-msgid "Set paths to save animations as resource files on Reimport"
-msgstr "다시 가져오기 시 애니메이션을 리소스 파일로 저장할 경로 설정"
-
-msgid "Can't make material external to file, write error:"
-msgstr "자료를 파일 외부로 만들 수 없음, 쓰기 오류가 발생했습니다:"
-
-msgid "Actions..."
-msgstr "액션..."
-
-msgid "Extract Materials"
-msgstr "머티리얼 추출"
-
-msgid "Set Animation Save Paths"
-msgstr "애니메이션 저장 경로 설정"
-
-msgid "Set Mesh Save Paths"
-msgstr "메시 저장 경로 설정"
-
-msgid "Meshes"
-msgstr "메쉬"
-
-msgid "Materials"
-msgstr "머티리얼"
-
-msgid "Selected Animation Play/Pause"
-msgstr "선택된 애니메이션 재생/정지"
-
-msgid "Save Extension:"
-msgstr "저장할 확장자:"
-
-msgid "Text: *.tres"
-msgstr "텍스트: *.tres"
-
-msgid "Binary: *.res"
-msgstr "바이너리: *.res"
-
-msgid "Text Resource"
-msgstr "텍스트 리소스"
-
-msgid "Binary Resource"
-msgstr "바이너리 리소스"
 
 msgid "Importer:"
 msgstr "임포터:"
@@ -6008,6 +6115,9 @@ msgstr "%s를 %d개 노드에 설정"
 msgid "%s (%d Selected)"
 msgstr "%s (%d개 선택됨)"
 
+msgid "Groups"
+msgstr "그룹"
+
 msgid "Select a single node to edit its signals and groups."
 msgstr "시그널과 그룹을 편집할 단일 노드를 선택하세요."
 
@@ -6138,9 +6248,6 @@ msgstr "애니메이션 추가"
 
 msgid "Add %s"
 msgstr "%s 추가"
-
-msgid "Load..."
-msgstr "불러오기..."
 
 msgid "Move Node Point"
 msgstr "노드 점 이동"
@@ -6383,26 +6490,14 @@ msgstr "애니메이션 저장"
 msgid "Make Animation Unique: %s"
 msgstr "애니메이션 유일하게 만들기: %s"
 
-msgid "Invalid AnimationLibrary file."
-msgstr "잘못된 AnimationLibrary 파일입니다."
-
-msgid "This library is already added to the mixer."
-msgstr "이 라이브러리는 이미 믹서에 추가되었습니다."
-
-msgid "Invalid Animation file."
-msgstr "잘못된 애니메이션 파일입니다."
-
-msgid "This animation is already added to the library."
-msgstr "이 애니메이션은 이미 라이브러리에 추가되었습니다."
-
-msgid "Load Animation into Library: %s"
-msgstr "애니메이션을 라이브러리에 불러오기: %s"
-
 msgid "Save Animation library to File: %s"
 msgstr "애니메이션 라이브러리를 파일에 저장: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "애니메이션을 파일에 저장: %s"
+
+msgid "Load Animation into Library: %s"
+msgstr "애니메이션을 라이브러리에 불러오기: %s"
 
 msgid "Rename Animation Library: %s"
 msgstr "애니메이션 라이브러리 이름 바꾸기: %s"
@@ -6440,35 +6535,8 @@ msgstr "[외부]"
 msgid "[imported]"
 msgstr "[가져옴]"
 
-msgid "Add Animation to Library"
-msgstr "애니메이션을 라이브러리에 추가"
-
-msgid "Load animation from file and add to library"
-msgstr "애니메이션을 파일에서 가져온 뒤 라이브러리에 추가"
-
-msgid "Paste Animation to Library from clipboard"
-msgstr "애니메이션을 클립보드에서 라이브러리로 붙여넣기"
-
-msgid "Save animation library to resource on disk"
-msgstr "애니메이션 라이브러리를 디스크에 리소스로 저장"
-
-msgid "Remove animation library"
-msgstr "애니메이션 라이브러리 제거"
-
-msgid "Copy animation to clipboard"
-msgstr "애니메이션을 클립보드에 복사"
-
-msgid "Save animation to resource on disk"
-msgstr "애니메이션을 디스크에 리소스로 저장"
-
-msgid "Remove animation from Library"
-msgstr "애니메이션을 라이브러리에서 제거"
-
 msgid "Edit Animation Libraries"
 msgstr "애니메이션 라이브러리 편집"
-
-msgid "Add Library"
-msgstr "라이브러리 추가"
 
 msgid "Load Library"
 msgstr "라이브러리 가져오기"
@@ -6830,6 +6898,9 @@ msgctxt "Pagination"
 msgid "Last"
 msgstr "마지막"
 
+msgid "Failed to get repository configuration."
+msgstr "저장소 구성을 가져오지 못했습니다."
+
 msgid "All"
 msgstr "모두"
 
@@ -6867,9 +6938,6 @@ msgstr "사이트:"
 
 msgid "Support"
 msgstr "지원"
-
-msgid "Failed to get repository configuration."
-msgstr "저장소 구성을 가져오지 못했습니다."
 
 msgid "Assets ZIP File"
 msgstr "애셋 ZIP 파일"
@@ -7036,6 +7104,9 @@ msgstr "가이드 지우기"
 msgid "Create Custom Bone2D(s) from Node(s)"
 msgstr "노드에서 커스텀 Bone2D 만들기"
 
+msgid "Cancel Transformation"
+msgstr "변형 취소"
+
 msgid "Zoom to 3.125%"
 msgstr "3.125%로 줌"
 
@@ -7148,12 +7219,6 @@ msgstr "상대적인 스냅"
 msgid "Use Pixel Snap"
 msgstr "픽셀 스냅 사용"
 
-msgid "Smart Snapping"
-msgstr "스마트 스냅"
-
-msgid "Configure Snap..."
-msgstr "스냅 구성..."
-
 msgid "Snap to Parent"
 msgstr "부모에 스냅"
 
@@ -7172,6 +7237,12 @@ msgstr "다른 노드에 스냅"
 msgid "Snap to Guides"
 msgstr "가이드에 스냅"
 
+msgid "Smart Snapping"
+msgstr "스마트 스냅"
+
+msgid "Configure Snap..."
+msgstr "스냅 구성..."
+
 msgid "Lock selected node, preventing selection and movement."
 msgstr "선택된 노드를 잠그어 선택하거나 이동하지 못하게 합니다."
 
@@ -7184,14 +7255,8 @@ msgstr "선택된 노드를 잠금 해제하여 선택하거나 이동할 수 �
 msgid "Unlock Selected Node(s)"
 msgstr "선택한 노드 잠금 해제"
 
-msgid "Make selected node's children not selectable."
-msgstr "선택된 노드의 자식을 선택하지 못하게 합니다."
-
 msgid "Group Selected Node(s)"
 msgstr "선택한 노드 그룹화"
-
-msgid "Make selected node's children selectable."
-msgstr "선택된 노드의 자식을 선택할 수 있게 합니다."
 
 msgid "Ungroup Selected Node(s)"
 msgstr "선택한 노드 그룹 해제"
@@ -7238,11 +7303,8 @@ msgstr "원점 보이기"
 msgid "Show Viewport"
 msgstr "뷰포트 보이기"
 
-msgid "Show Group And Lock Icons"
-msgstr "그룹과 잠금 아이콘 보이기"
-
-msgid "Show Transformation Gizmos"
-msgstr "변형 기즈모 표시"
+msgid "Gizmos"
+msgstr "기즈모"
 
 msgid "Center Selection"
 msgstr "선택 항목 중앙으로"
@@ -7276,6 +7338,9 @@ msgstr "키를 삽입하기 위한 스케일 마스크."
 
 msgid "Insert keys (based on mask)."
 msgstr "키 삽입하기 (마스크 기준)."
+
+msgid "Insert Key"
+msgstr "키 삽입"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -7312,17 +7377,8 @@ msgstr "격자 단계를 반으로 감소"
 msgid "Adding %s..."
 msgstr "%s 추가하는 중..."
 
-msgid "Drag and drop to add as child of current scene's root node."
-msgstr "드래그 & 드롭하면 현재 씬의 루트 노드의 자식으로서 노드를 추가합니다."
-
-msgid "Hold %s when dropping to add as child of selected node."
-msgstr "%s을 누른 채 드롭하면 현재 선택된 노드의 자식으로서 노드를 추가합니다."
-
 msgid "Hold Shift when dropping to add as sibling of selected node."
 msgstr "Shift를 누른 채 드롭하면 선택된 노드의 형제로서 노드를 추가합니다."
-
-msgid "Hold Alt when dropping to add as a different node type."
-msgstr "Alt를 누른 채 드롭하면 다른 타입의 노드로 추가합니다."
 
 msgid "Cannot instantiate multiple nodes without root."
 msgstr "루트 노드 없이 여러 노드를 인스턴스할 수 없습니다."
@@ -7521,11 +7577,23 @@ msgstr "중앙"
 msgid "Capture Colors from Pixel"
 msgstr "픽셀에서 색상 캡처"
 
+msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
+msgstr "가시성 AABB 생성 중 (파티클 시뮬레이션을 기다리는 중)"
+
+msgid "Generate Visibility AABB"
+msgstr "가시성 AABB 생성"
+
 msgid "CPUParticles3D"
 msgstr "CPUParticles3D"
 
+msgid "Generate AABB"
+msgstr "AABB 생성"
+
 msgid "Create Emission Points From Node"
 msgstr "노드에서 방출 점 만들기"
+
+msgid "Generation Time (sec):"
+msgstr "생성 시간 (초):"
 
 msgid "Load Curve Preset"
 msgstr "곡선 프리셋 불러오기"
@@ -7693,13 +7761,6 @@ msgstr ""
 "이 설정이 활성화되면, 에디터의 디버그 서버가 에디터 바깥에서 시작된 새로운 세"
 "션을 지원하기 위해 열려 있을 것입니다."
 
-msgid "Run Multiple Instances"
-msgstr "여러 인스턴스 실행"
-
-msgid "Run %d Instance"
-msgid_plural "Run %d Instances"
-msgstr[0] "%d개 인스턴스 실행"
-
 msgid "Size: %s"
 msgstr "크기: %s"
 
@@ -7822,9 +7883,6 @@ msgstr "에미션 마스크 정리"
 msgid "GPUParticles2D"
 msgstr "GPUParticles2D"
 
-msgid "Generation Time (sec):"
-msgstr "생성 시간 (초):"
-
 msgid "The geometry's faces don't contain any area."
 msgstr "지오메트리의 면에 영역이 포함되지 않습니다."
 
@@ -7864,17 +7922,8 @@ msgstr "'ParticlesProcessMaterial' 타입의 프로세서 머티리얼이 필요
 msgid "Convert to CPUParticles3D"
 msgstr "CPUParticles3D로 변환"
 
-msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
-msgstr "가시성 AABB 생성 중 (파티클 시뮬레이션을 기다리는 중)"
-
-msgid "Generate Visibility AABB"
-msgstr "가시성 AABB 생성"
-
 msgid "GPUParticles3D"
 msgstr "GPUParticles3D"
-
-msgid "Generate AABB"
-msgstr "AABB 생성"
 
 msgid "Low"
 msgstr "낮음"
@@ -7964,9 +8013,6 @@ msgstr "에디터 씬의 루트를 찾을 수 없습니다."
 
 msgid "Lightmap data is not local to the scene."
 msgstr "라이트맵 데이터가 씬에 로컬이 아닙니다."
-
-msgid "Maximum texture size is too small for the lightmap images."
-msgstr "최대 텍스처 사이즈가 라이트맵 이미지에 사용하기에는 너무 작습니다."
 
 msgid "Bake Lightmaps"
 msgstr "라이트맵 굽기"
@@ -8450,9 +8496,6 @@ msgstr "표면 %d 오버라이드 머티리얼 설정"
 msgid "Set Material Override"
 msgstr "머티리얼 오버라이드 설정"
 
-msgid "Cannot drag and drop into multiple selected nodes."
-msgstr "선택된 여러 노드에 드래그 드롭할 수 없습니다."
-
 msgid "None"
 msgstr "없음"
 
@@ -8573,6 +8616,9 @@ msgstr "환경 보기"
 msgid "View Gizmos"
 msgstr "기즈모 보기"
 
+msgid "View Grid"
+msgstr "격자 보기"
+
 msgid "View Information"
 msgstr "정보 보기"
 
@@ -8635,9 +8681,6 @@ msgstr "변형을 XZ 평면으로 잠금"
 
 msgid "Lock Transformation to XY plane"
 msgstr "변형을 XY 평면으로 잠금"
-
-msgid "Cancel Transformation"
-msgstr "변형 취소"
 
 msgid "Begin Translate Transformation"
 msgstr "이동 변형 시작"
@@ -8826,14 +8869,8 @@ msgstr "뷰포트 3개 (다른 방식)"
 msgid "4 Viewports"
 msgstr "뷰포트 4개"
 
-msgid "Gizmos"
-msgstr "기즈모"
-
 msgid "View Origin"
 msgstr "원점 보기"
-
-msgid "View Grid"
-msgstr "격자 보기"
 
 msgid "Settings..."
 msgstr "설정..."
@@ -8852,9 +8889,6 @@ msgstr "스케일 스냅 (%):"
 
 msgid "Viewport Settings"
 msgstr "뷰포트 설정"
-
-msgid "Perspective FOV (deg.):"
-msgstr "원근 시야 (도):"
 
 msgid "View Z-Near:"
 msgstr "Z-근경 보기:"
@@ -9030,6 +9064,9 @@ msgstr "점 삭제"
 msgid "Close Curve"
 msgstr "곡선 닫기"
 
+msgid "Please Confirm..."
+msgstr "확인해주세요..."
+
 msgid "Mirror Handle Angles"
 msgstr "핸들 각도 거울"
 
@@ -9047,9 +9084,6 @@ msgstr "핸들 아웃 #"
 
 msgid "Handle Tilt #"
 msgstr "핸들 틸트 #"
-
-msgid "Set Curve Point Position"
-msgstr "곡선 점 위치 설정"
 
 msgid "Set Curve Out Position"
 msgstr "곡선의 아웃 위치 설정"
@@ -9077,6 +9111,9 @@ msgstr "점 틸트 초기화"
 
 msgid "Split Segment (in curve)"
 msgstr "(곡선에서) 세그먼트 가르기"
+
+msgid "Set Curve Point Position"
+msgstr "곡선 점 위치 설정"
 
 msgid "Move Joint"
 msgstr "관절 이동"
@@ -9387,14 +9424,14 @@ msgstr "이전 기록"
 msgid "History Next"
 msgstr "다음 기록"
 
-msgid "Theme"
-msgstr "테마"
-
 msgid "Import Theme..."
 msgstr "테마 가져오기..."
 
 msgid "Reload Theme"
 msgstr "테마 새로고침"
+
+msgid "Theme"
+msgstr "테마"
 
 msgid "Save Theme"
 msgstr "테마 저장"
@@ -9512,9 +9549,6 @@ msgstr "색상 선택"
 msgid "Folding"
 msgstr "접기"
 
-msgid "Indentation"
-msgstr "들여쓰기"
-
 msgid "Uppercase"
 msgstr "대문자로"
 
@@ -9556,6 +9590,9 @@ msgstr "코드 영역 생성"
 
 msgid "Unfold All Lines"
 msgstr "모든 행 펼치기"
+
+msgid "Duplicate Selection"
+msgstr "선택 항목 복제"
 
 msgid "Duplicate Lines"
 msgstr "행 복제"
@@ -9623,20 +9660,8 @@ msgstr "종료하기 전에 해당 셰이더의 변경사항을 저장하시겠�
 msgid "Shader Editor"
 msgstr "셰이더 에디터"
 
-msgid "New Shader Include"
-msgstr "셰이더 인클루드 만들기"
-
-msgid "Load Shader File"
-msgstr "셰이더 파일 불러오기"
-
-msgid "Load Shader Include File"
-msgstr "셰이더 인클루드 파일 불러오기"
-
 msgid "Save File"
 msgstr "파일 저장"
-
-msgid "Save File As"
-msgstr "파일을 다른 이름으로 저장"
 
 msgid "Open File in Inspector"
 msgstr "파일을 인스펙터에서 열기"
@@ -9775,9 +9800,6 @@ msgstr "다른 씬으로부터 스프라이트를 변환할 수 없습니다."
 msgid "Can't convert an empty sprite to mesh."
 msgstr "빈 스프라이트를 메시로 변환할 수 없습니다."
 
-msgid "Can't convert a sprite using animation frames to mesh."
-msgstr "애니메이션 프레임을 사용하는 스프라이트를 메시로 변환할 수 없습니다."
-
 msgid "Invalid geometry, can't replace by mesh."
 msgstr "잘못된 지오메트리. 메시로 대체할 수 없습니다."
 
@@ -9835,12 +9857,6 @@ msgstr "이미지를 불러올 수 없음"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "오류: 프레임 리소스를 불러올 수 없습니다!"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "리소스 클립보드가 비었거나 텍스처가 아닙니다!"
-
-msgid "Paste Frame"
-msgstr "프레임 붙여넣기"
-
 msgid "Add Empty"
 msgstr "빈 프레임 추가"
 
@@ -9891,9 +9907,6 @@ msgstr "스프라이트 시트에서 프레임 추가"
 
 msgid "Delete Frame"
 msgstr "프레임 삭제"
-
-msgid "Copy Frame"
-msgstr "프레임 복사"
 
 msgid "Insert Empty (Before Selected)"
 msgstr "빈 프레임 삽입 (앞에)"
@@ -10797,13 +10810,6 @@ msgstr "흩뿌리기:"
 msgid "Tiles"
 msgstr "타일"
 
-msgid ""
-"This TileMap's TileSet has no source configured. Go to the TileSet bottom tab "
-"to add one."
-msgstr ""
-"이 타일맵의 타일셋에 지정된 소스가 없습니다. TileSet의 아래 탭에서 소스를 하"
-"나 추가하세요."
-
 msgid "Sort sources"
 msgstr "소스 정렬"
 
@@ -10842,11 +10848,6 @@ msgid ""
 "Connect mode: paints a terrain, then connects it with the surrounding tiles "
 "with the same terrain."
 msgstr "연결 모드: 지형을 칠하면, 둘러싸는 타일들을 같은 지형으로 연결합니다."
-
-msgid ""
-"Path mode: paints a terrain, thens connects it to the previous tile painted "
-"within the same stroke."
-msgstr "경로 모드: 지형을 칠하면, 같은 획에서 칠한 이전 타일과 연결합니다."
 
 msgid "Terrains"
 msgstr "지형"
@@ -11166,9 +11167,6 @@ msgstr ""
 "경고: 소스 ID를 바꾸면 같은 소스를 사용하는 모든 TileMap들이 잘못된 소스를 참"
 "조하게 됩니다. 이 경우 예측하지 못한 데이터 손실이 발생할 수도 있습니다. 변경 "
 "시 주의해주세요."
-
-msgid "ID: %d"
-msgstr "ID: %d"
 
 msgid "Add a Scene Tile"
 msgstr "씬 타일 추가"
@@ -12246,6 +12244,9 @@ msgstr "입력된 값의 최소값과 최대값 사이의 임의의 값을 반�
 msgid "Remaps a given input from the input range to the output range."
 msgstr "주어진 입력을 입력 범위에서 출력 범위로 리매핑합니다."
 
+msgid "Rotates an input vector by a given angle."
+msgstr "입력된 벡터를 주어진 각도만큼 회전합니다."
+
 msgid "Vector function."
 msgstr "벡터 함수."
 
@@ -12501,213 +12502,8 @@ msgstr "VoxelGI 굽기"
 msgid "Select path for VoxelGI Data File"
 msgstr "VoxelGI 데이터 파일 경로 선택"
 
-msgid "The path specified doesn't exist."
-msgstr "지정한 경로가 없습니다."
-
-msgid "Error opening package file (it's not in ZIP format)."
-msgstr "패키지 파일을 여는 중 오류 (ZIP 형식이 아닙니다)."
-
-msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr ""
-"잘못된 \".zip\" 프로젝트 파일입니다. \"project.godot\" 파일이 들어있지 않습니"
-"다."
-
-msgid "Please choose an empty folder."
-msgstr "비어있는 폴더를 선택해주세요."
-
-msgid ""
-"Please choose a \"project.godot\", a directory with it, or a \".zip\" file."
-msgstr ""
-"\"project.godot\" 파일, 해당 파일을 포함하는 디렉터리 또는 \".zip\" 파일을 선"
-"택해주세요."
-
-msgid "This directory already contains a Godot project."
-msgstr "디렉토리에 Godot 프로젝트가 이미 존재합니다."
-
-msgid ""
-"You cannot save a project in the selected path. Please make a new folder or "
-"choose a new path."
-msgstr ""
-"해당 경로에 프로젝트를 저장할 수 없습니다. 새 폴더를 만들거나 다른 경로를 골라"
-"주세요."
-
-msgid ""
-"The selected path is not empty. Choosing an empty folder is highly "
-"recommended."
-msgstr ""
-"선택된 경로는 비어있지 않습니다. 비어 있는 폴더를 선택하는 것을 매우 권장합니"
-"다."
-
-msgid "New Game Project"
-msgstr "새 게임 프로젝트"
-
-msgid "Imported Project"
-msgstr "가져온 프로젝트"
-
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "\"project.godot\" 파일 또는 \".zip\" 파일을 선택해주세요."
-
-msgid "Invalid project name."
-msgstr "잘못된 프로젝트 이름입니다."
-
-msgid "Couldn't create folder."
-msgstr "폴더를 만들 수 없습니다."
-
-msgid "There is already a folder in this path with the specified name."
-msgstr "이 경로에는 이 이름으로 된 폴더가 이미 있습니다."
-
-msgid "It would be a good idea to name your project."
-msgstr "프로젝트 이름을 정하는 게 좋을 것입니다."
-
-msgid "Supports desktop platforms only."
-msgstr "데스크톱 플랫폼만을 지원합니다."
-
-msgid "Advanced 3D graphics available."
-msgstr "고급 3D 그래픽을 사용할 수 있습니다."
-
-msgid "Can scale to large complex scenes."
-msgstr "크고 복잡한 씬도 충분히 그려낼 수 있습니다."
-
-msgid "Uses RenderingDevice backend."
-msgstr "RenderingDevice 백엔드를 사용합니다."
-
-msgid "Slower rendering of simple scenes."
-msgstr "단순한 씬을 렌더링할 때의 성능은 떨어집니다."
-
-msgid "Supports desktop + mobile platforms."
-msgstr "데스크톱과 모바일 플랫폼을 지원합니다."
-
-msgid "Less advanced 3D graphics."
-msgstr "조금 덜 고급인 3D 그래픽을 사용할 수 있습니다."
-
-msgid "Less scalable for complex scenes."
-msgstr "크고 복잡한 씬을 그려내기에는 좋지 않습니다."
-
-msgid "Fast rendering of simple scenes."
-msgstr "단순한 씬을 빠르게 그려낼 수 있습니다."
-
-msgid "Supports desktop, mobile + web platforms."
-msgstr "데스크톱, 모바일, 웹 플랫폼을 지원합니다."
-
-msgid "Least advanced 3D graphics (currently work-in-progress)."
-msgstr "고급 3D 그래픽 사용 능력이 가장 떨어집니다 (아직 작업 중입니다)."
-
-msgid "Intended for low-end/older devices."
-msgstr "저성능 또는 오래된 디바이스에서 사용하는 용도입니다."
-
-msgid "Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2)."
-msgstr "OpenGL 3 백엔드 (OpenGL 3.3/ES 3.0/WebGL2)를 사용합니다."
-
-msgid "Fastest rendering of simple scenes."
-msgstr "단순한 씬을 가장 빠르게 그려낼 수 있습니다."
-
-msgid "Invalid project path (changed anything?)."
-msgstr "잘못된 프로젝트 경로 (무언가를 변경하셨나요?)."
-
-msgid ""
-"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
-msgstr ""
-"'%s'에서 프로젝트를 불러올 수 없습니다 (오류 %d). 프로젝트가 누락되거나 손상"
-"된 것 같습니다."
-
-msgid "Couldn't save project at '%s' (error %d)."
-msgstr "'%s'에 프로젝트를 저장 할 수 없습니다 (오류 %d)."
-
-msgid "Warning: This folder is not empty"
-msgstr "경고: 빈 폴더가 아닙니다"
-
-msgid ""
-"You are about to create a Godot project in a non-empty folder.\n"
-"The entire contents of this folder will be imported as project resources!\n"
-"\n"
-"Are you sure you wish to continue?"
-msgstr ""
-"비어있지 않은 폴더에 Godot 프로젝트를 만들고 있습니다.\n"
-"그러면, 폴더 내의 모든 내용물들을 프로젝트 리소스로서 가져올 것입니다!\n"
-"\n"
-"정말로 진행하시겠습니까?"
-
-msgid "Couldn't create project.godot in project path."
-msgstr "프로젝트 경로에 project.godot 파일을 만들 수 없습니다."
-
-msgid "Couldn't create icon.svg in project path."
-msgstr "프로젝트 경로에 icon.svg 파일을 만들 수 없습니다."
-
-msgid "Error opening package file, not in ZIP format."
-msgstr "패키지 파일을 여는 중 오류. ZIP 형식이 아닙니다."
-
-msgid "The following files failed extraction from package:"
-msgstr "다음 파일을 패키지에서 추출하는데 실패함:"
-
-msgid "Package installed successfully!"
-msgstr "패키지를 성공적으로 설치했습니다!"
-
-msgid "Rename Project"
-msgstr "프로젝트 이름 바꾸기"
-
-msgid "Import Existing Project"
-msgstr "기존 프로젝트 가져오기"
-
-msgid "Import & Edit"
-msgstr "가져오기 & 편집"
-
-msgid "Create New Project"
-msgstr "새 프로젝트 만들기"
-
-msgid "Create & Edit"
-msgstr "만들기 & 편집"
-
-msgid "Install Project:"
-msgstr "프로젝트 설치:"
-
-msgid "Install & Edit"
-msgstr "설치 & 편집"
-
-msgid "Project Name:"
-msgstr "프로젝트 이름:"
-
-msgid "Project Path:"
-msgstr "프로젝트 경로:"
-
-msgid "Project Installation Path:"
-msgstr "프로젝트 설치 경로:"
-
-msgid "Renderer:"
-msgstr "렌더러:"
-
-msgid "The renderer can be changed later, but scenes may need to be adjusted."
-msgstr "렌더러는 나중에 바꿀 수 있지만, 씬을 조정해야 할 수도 있습니다."
-
-msgid "Version Control Metadata:"
-msgstr "버전 컨트롤 메타데이터:"
-
-msgid "Git"
-msgstr "Git"
-
-msgid "This project was last edited in a different Godot version: "
-msgstr "이 프로젝트는 다른 Godot 버전에서 마지막으로 편집되었습니다: "
-
-msgid "This project uses features unsupported by the current build:"
-msgstr "이 프로젝트는 현재 빌드에서는 지원하지 않는 기능을 사용합니다:"
-
-msgid "Error: Project is missing on the filesystem."
-msgstr "오류: 프로젝트가 파일시스템에서 누락되었습니다."
-
-msgid "Missing Project"
-msgstr "누락된 프로젝트"
-
-msgid "Local"
-msgstr "로컬"
-
-msgid "Local Projects"
-msgstr "로컬 프로젝트"
-
-msgid "Asset Library Projects"
-msgstr "애셋 라이브러리 프로젝트"
-
-msgid "Can't open project at '%s'."
-msgstr "'%s'에서 프로젝트를 열 수 없습니다."
+msgid "Are you sure to run %d projects at once?"
+msgstr "%d개의 프로젝트를 동시에 실행할까요?"
 
 msgid ""
 "You requested to open %d projects in parallel. Do you confirm?\n"
@@ -12855,37 +12651,6 @@ msgstr ""
 msgid "Open anyway? Project will be modified."
 msgstr "무시하고 열까요? 프로젝트가 수정될 것입니다."
 
-msgid ""
-"Can't run project: no main scene defined.\n"
-"Please edit the project and set the main scene in the Project Settings under "
-"the \"Application\" category."
-msgstr ""
-"프로젝트를 실행할 수 없음: 메인 씬을 정의하지 않았습니다.\n"
-"프로젝트를 편집하고 프로젝트 설정의 \"어플리케이션\" 카테고리에서 메인 씬을 설"
-"정해주세요."
-
-msgid ""
-"Can't run project: Assets need to be imported.\n"
-"Please edit the project to trigger the initial import."
-msgstr ""
-"프로젝트를 실행할 수 없음: 애셋을 가져와야 합니다.\n"
-"프로젝트를 편집해서 최초 가져오기가 실행되도록 하세요."
-
-msgid "Are you sure to run %d projects at once?"
-msgstr "%d개의 프로젝트를 동시에 실행할까요?"
-
-msgid "Tag name can't be empty."
-msgstr "태그 이름은 비워둘 수 없습니다."
-
-msgid "Tag name can't contain spaces."
-msgstr "태그 이름은 공백을 포함할 수 없습니다."
-
-msgid "These characters are not allowed in tags: %s."
-msgstr "다음 문자들을 태그에 넣을 수 없습니다: %s."
-
-msgid "Tag name must be lowercase."
-msgstr "태그 이름은 소문자여야 합니다."
-
 msgid "Remove %d projects from the list?"
 msgstr "목록에서 프로젝트 %d개를 제거하시겠습니까?"
 
@@ -12900,11 +12665,25 @@ msgstr ""
 "프로젝트 폴더의 콘텐츠는 수정되지 않습니다."
 
 msgid ""
-"Language changed.\n"
-"The interface will update after restarting the editor or project manager."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
-"언어가 바뀌었습니다.\n"
-"인터페이스는 에디터나 프로젝트 매니저를 다시 시작하고 나서 갱신됩니다."
+"'%s'에서 프로젝트를 불러올 수 없습니다 (오류 %d). 프로젝트가 누락되거나 손상"
+"된 것 같습니다."
+
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "'%s'에 프로젝트를 저장 할 수 없습니다 (오류 %d)."
+
+msgid "Tag name can't be empty."
+msgstr "태그 이름은 비워둘 수 없습니다."
+
+msgid "Tag name can't contain spaces."
+msgstr "태그 이름은 공백을 포함할 수 없습니다."
+
+msgid "These characters are not allowed in tags: %s."
+msgstr "다음 문자들을 태그에 넣을 수 없습니다: %s."
+
+msgid "Tag name must be lowercase."
+msgstr "태그 이름은 소문자여야 합니다."
 
 msgctxt "Application"
 msgid "Project Manager"
@@ -12943,8 +12722,17 @@ msgstr "마지막으로 수정됨"
 msgid "Tags"
 msgstr "태그"
 
+msgid "Create New Project"
+msgstr "새 프로젝트 만들기"
+
+msgid "Import Existing Project"
+msgstr "기존 프로젝트 가져오기"
+
 msgid "Edit Project"
 msgstr "프로젝트 편집"
+
+msgid "Rename Project"
+msgstr "프로젝트 이름 바꾸기"
 
 msgid "Manage Tags"
 msgstr "태그 설정"
@@ -12954,12 +12742,6 @@ msgstr "프로젝트 제거"
 
 msgid "Remove Missing"
 msgstr "누락된 부분 제거"
-
-msgid "About"
-msgstr "정보"
-
-msgid "Restart Now"
-msgstr "지금 다시 시작"
 
 msgid "Select a Folder to Scan"
 msgstr "스캔할 폴더를 선택하세요"
@@ -12994,16 +12776,6 @@ msgstr ""
 "중요: 반드시 변환하기 전에 프로젝트를 어딘가에 백업해 두세요. 변환을 수행하면 "
 "이전 버전의 Godot에서 프로젝트를 열지 못하게 됩니다."
 
-msgid "Can't run project"
-msgstr "프로젝트를 실행할 수 없습니다"
-
-msgid ""
-"You currently don't have any projects.\n"
-"Would you like to explore official example projects in the Asset Library?"
-msgstr ""
-"현재 프로젝트가 하나도 없습니다.\n"
-"애셋 라이브러리에서 공식 예제 프로젝트를 찾아보는 게 어떤가요?"
-
 msgid "Manage Project Tags"
 msgstr "프로젝트 태그 설정"
 
@@ -13024,6 +12796,181 @@ msgstr "새 태그 만들기"
 
 msgid "Tags are capitalized automatically when displayed."
 msgstr "태그 대소문자는 보여질 때 자동으로 붙여집니다."
+
+msgid "The path specified doesn't exist."
+msgstr "지정한 경로가 없습니다."
+
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "패키지 파일을 여는 중 오류 (ZIP 형식이 아닙니다)."
+
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+msgstr ""
+"잘못된 \".zip\" 프로젝트 파일입니다. \"project.godot\" 파일이 들어있지 않습니"
+"다."
+
+msgid ""
+"Please choose a \"project.godot\", a directory with it, or a \".zip\" file."
+msgstr ""
+"\"project.godot\" 파일, 해당 파일을 포함하는 디렉터리 또는 \".zip\" 파일을 선"
+"택해주세요."
+
+msgid ""
+"You cannot save a project in the selected path. Please make a new folder or "
+"choose a new path."
+msgstr ""
+"해당 경로에 프로젝트를 저장할 수 없습니다. 새 폴더를 만들거나 다른 경로를 골라"
+"주세요."
+
+msgid ""
+"The selected path is not empty. Choosing an empty folder is highly "
+"recommended."
+msgstr ""
+"선택된 경로는 비어있지 않습니다. 비어 있는 폴더를 선택하는 것을 매우 권장합니"
+"다."
+
+msgid "New Game Project"
+msgstr "새 게임 프로젝트"
+
+msgid "Imported Project"
+msgstr "가져온 프로젝트"
+
+msgid "Please choose a \"project.godot\" or \".zip\" file."
+msgstr "\"project.godot\" 파일 또는 \".zip\" 파일을 선택해주세요."
+
+msgid "Invalid project name."
+msgstr "잘못된 프로젝트 이름입니다."
+
+msgid "Couldn't create folder."
+msgstr "폴더를 만들 수 없습니다."
+
+msgid "There is already a folder in this path with the specified name."
+msgstr "이 경로에는 이 이름으로 된 폴더가 이미 있습니다."
+
+msgid "It would be a good idea to name your project."
+msgstr "프로젝트 이름을 정하는 게 좋을 것입니다."
+
+msgid "Supports desktop platforms only."
+msgstr "데스크톱 플랫폼만을 지원합니다."
+
+msgid "Advanced 3D graphics available."
+msgstr "고급 3D 그래픽을 사용할 수 있습니다."
+
+msgid "Can scale to large complex scenes."
+msgstr "크고 복잡한 씬도 충분히 그려낼 수 있습니다."
+
+msgid "Uses RenderingDevice backend."
+msgstr "RenderingDevice 백엔드를 사용합니다."
+
+msgid "Slower rendering of simple scenes."
+msgstr "단순한 씬을 렌더링할 때의 성능은 떨어집니다."
+
+msgid "Supports desktop + mobile platforms."
+msgstr "데스크톱과 모바일 플랫폼을 지원합니다."
+
+msgid "Less advanced 3D graphics."
+msgstr "조금 덜 고급인 3D 그래픽을 사용할 수 있습니다."
+
+msgid "Less scalable for complex scenes."
+msgstr "크고 복잡한 씬을 그려내기에는 좋지 않습니다."
+
+msgid "Fast rendering of simple scenes."
+msgstr "단순한 씬을 빠르게 그려낼 수 있습니다."
+
+msgid "Supports desktop, mobile + web platforms."
+msgstr "데스크톱, 모바일, 웹 플랫폼을 지원합니다."
+
+msgid "Least advanced 3D graphics (currently work-in-progress)."
+msgstr "고급 3D 그래픽 사용 능력이 가장 떨어집니다 (아직 작업 중입니다)."
+
+msgid "Intended for low-end/older devices."
+msgstr "저성능 또는 오래된 디바이스에서 사용하는 용도입니다."
+
+msgid "Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2)."
+msgstr "OpenGL 3 백엔드 (OpenGL 3.3/ES 3.0/WebGL2)를 사용합니다."
+
+msgid "Fastest rendering of simple scenes."
+msgstr "단순한 씬을 가장 빠르게 그려낼 수 있습니다."
+
+msgid "Invalid project path (changed anything?)."
+msgstr "잘못된 프로젝트 경로 (무언가를 변경하셨나요?)."
+
+msgid "Warning: This folder is not empty"
+msgstr "경고: 빈 폴더가 아닙니다"
+
+msgid ""
+"You are about to create a Godot project in a non-empty folder.\n"
+"The entire contents of this folder will be imported as project resources!\n"
+"\n"
+"Are you sure you wish to continue?"
+msgstr ""
+"비어있지 않은 폴더에 Godot 프로젝트를 만들고 있습니다.\n"
+"그러면, 폴더 내의 모든 내용물들을 프로젝트 리소스로서 가져올 것입니다!\n"
+"\n"
+"정말로 진행하시겠습니까?"
+
+msgid "Couldn't create project.godot in project path."
+msgstr "프로젝트 경로에 project.godot 파일을 만들 수 없습니다."
+
+msgid "Couldn't create icon.svg in project path."
+msgstr "프로젝트 경로에 icon.svg 파일을 만들 수 없습니다."
+
+msgid "Error opening package file, not in ZIP format."
+msgstr "패키지 파일을 여는 중 오류. ZIP 형식이 아닙니다."
+
+msgid "The following files failed extraction from package:"
+msgstr "다음 파일을 패키지에서 추출하는데 실패함:"
+
+msgid "Package installed successfully!"
+msgstr "패키지를 성공적으로 설치했습니다!"
+
+msgid "Import & Edit"
+msgstr "가져오기 & 편집"
+
+msgid "Create & Edit"
+msgstr "만들기 & 편집"
+
+msgid "Install Project:"
+msgstr "프로젝트 설치:"
+
+msgid "Install & Edit"
+msgstr "설치 & 편집"
+
+msgid "Project Name:"
+msgstr "프로젝트 이름:"
+
+msgid "Project Path:"
+msgstr "프로젝트 경로:"
+
+msgid "Project Installation Path:"
+msgstr "프로젝트 설치 경로:"
+
+msgid "Renderer:"
+msgstr "렌더러:"
+
+msgid "The renderer can be changed later, but scenes may need to be adjusted."
+msgstr "렌더러는 나중에 바꿀 수 있지만, 씬을 조정해야 할 수도 있습니다."
+
+msgid "Version Control Metadata:"
+msgstr "버전 컨트롤 메타데이터:"
+
+msgid "Git"
+msgstr "Git"
+
+msgid "This project was last edited in a different Godot version: "
+msgstr "이 프로젝트는 다른 Godot 버전에서 마지막으로 편집되었습니다: "
+
+msgid "This project uses features unsupported by the current build:"
+msgstr "이 프로젝트는 현재 빌드에서는 지원하지 않는 기능을 사용합니다:"
+
+msgid "Error: Project is missing on the filesystem."
+msgstr "오류: 프로젝트가 파일시스템에서 누락되었습니다."
+
+msgid "Missing Project"
+msgstr "누락된 프로젝트"
+
+msgid "Restart Now"
+msgstr "지금 다시 시작"
 
 msgid "Add Project Setting"
 msgstr "프로젝트 설정 추가"
@@ -13099,9 +13046,6 @@ msgstr "접미사:"
 
 msgid "Use Regular Expressions"
 msgstr "정규 표현식 사용"
-
-msgid "Advanced Options"
-msgstr "고급 옵션"
 
 msgid "Substitute"
 msgstr "대체"
@@ -13286,12 +13230,6 @@ msgstr "스크립트 떼기"
 msgid "This operation can't be done on the tree root."
 msgstr "이 작업은 트리 루트에서 할 수 없습니다."
 
-msgid "Move Node In Parent"
-msgstr "노드를 부모 노드로 이동"
-
-msgid "Move Nodes In Parent"
-msgstr "노드들을 부모 노드로 이동"
-
 msgid "Duplicate Node(s)"
 msgstr "노드 복제"
 
@@ -13412,9 +13350,6 @@ msgstr "새 씬 루트"
 msgid "Create Root Node:"
 msgstr "루트 노드 만들기:"
 
-msgid "Switch to Favorite Nodes"
-msgstr "즐겨찾기 노드로 전환"
-
 msgid "Other Node"
 msgstr "다른 노드"
 
@@ -13490,6 +13425,16 @@ msgstr "선택으로 자동 확장"
 msgid "All Scene Sub-Resources"
 msgstr "모든 씬 하위 리소스"
 
+msgid ""
+"Filter nodes by entering a part of their name, type (if prefixed with \"type:"
+"\" or \"t:\")\n"
+"or group (if prefixed with \"group:\" or \"g:\"). Filtering is case-"
+"insensitive."
+msgstr ""
+"노드 이름 / 타입 (그 앞에 \"type:\" 또는 \"t:\") / 그룹 (그 앞에 \"group:\" 또"
+"는 \"g:\")\n"
+"을 입력하여 노드를 필터링합니다. 대소문자를 구별하지 않습니다."
+
 msgid "Filter by Type"
 msgstr "타입으로 필터"
 
@@ -13550,12 +13495,6 @@ msgstr "타입 바꾸기..."
 msgid "Attach Script..."
 msgstr "스크립트 붙이기..."
 
-msgid "Extend Script..."
-msgstr "스크립트 상속..."
-
-msgid "Reparent to New Node"
-msgstr "새 노드에 부모 노드 다시 지정"
-
 msgid "Make Scene Root"
 msgstr "씬 루트 만들기"
 
@@ -13577,16 +13516,6 @@ msgstr ""
 msgid "Filter: name, t:type, g:group"
 msgstr "필터: 이름, t:타입, g:그룹"
 
-msgid ""
-"Filter nodes by entering a part of their name, type (if prefixed with \"type:"
-"\" or \"t:\")\n"
-"or group (if prefixed with \"group:\" or \"g:\"). Filtering is case-"
-"insensitive."
-msgstr ""
-"노드 이름 / 타입 (그 앞에 \"type:\" 또는 \"t:\") / 그룹 (그 앞에 \"group:\" 또"
-"는 \"g:\")\n"
-"을 입력하여 노드를 필터링합니다. 대소문자를 구별하지 않습니다."
-
 msgid "Attach a new or existing script to the selected node."
 msgstr "선택한 노드에 새 스크립트나 기존 스크립트를 붙입니다."
 
@@ -13607,6 +13536,9 @@ msgstr ""
 "선택되어 있다면, 원격 씬 트리 독은 그것이 업데이트될 때마다 프로젝트가 끊기는 "
 "원인이 됩니다.\n"
 "성능을 향상시키려면 로컬 씬 트리 독으로 다시 전환하세요."
+
+msgid "Local"
+msgstr "로컬"
 
 msgid "Delete Related Animation Tracks"
 msgstr "관련 애니메이션 트랙 삭제"
@@ -13766,12 +13698,6 @@ msgstr "셰이더 만들기"
 msgid "Set Shader Global Variable"
 msgstr "셰이더 전역 변수 설정"
 
-msgid "Please specify a valid shader uniform identifier name."
-msgstr "올바른 셰이더 유니폼 식별자 이름을 지정해 주세요."
-
-msgid "Global shader parameter '%s' already exists'"
-msgstr "글로벌 셰이더 매개변수 '%s'이(가) 이미 있습니다"
-
 msgid "Name '%s' is a reserved shader language keyword."
 msgstr "'%s'는 셰이더 언어의 예약된 키워드입니다."
 
@@ -13790,18 +13716,38 @@ msgstr "다시 저장을 시도하고 있습니다. "
 msgid "Attempting to remove "
 msgstr "제거를 시도하고 있습니다. "
 
+msgid ""
+"The mesh format has changed in Godot 4.2, which affects both imported meshes "
+"and meshes authored inside of Godot. The engine needs to update the format in "
+"order to use those meshes.\n"
+"\n"
+"If your project predates Godot 4.2 and contains meshes, we recommend you run "
+"this one time conversion tool. This update will restart the editor and may "
+"take several minutes. Upgrading will make the meshes incompatible with "
+"previous versions of Godot.\n"
+"\n"
+"You can still use your existing meshes as is. The engine will update each "
+"mesh in memory, but the update will not be saved. Choosing this option will "
+"lead to slower load times every time this project is loaded."
+msgstr ""
+"Godot 4.2에서 메시 포맷이 변경되어, 기존에 불러온 메시와 Godot 내에서 작성한 "
+"메시를 모두 수정해야 합니다. 엔진은 해당 메시를 사용하기 위해 포맷을 업데이트"
+"해야 합니다. \n"
+"\n"
+"만약 현재 프로젝트가 Godot 4.2 이전 버전에서 작성되었고 메시가 포함되어있다"
+"면, 이 변환 툴을 추천합니다. 이 업데이트는 에디터를 재시작하며 몇 분의 시간이 "
+"걸립니다. 업그레이드 시 프로젝트 내 메시는 Godot 4.2 이전 버전에서 호환되지 않"
+"습니다.\n"
+"\n"
+"메시를 그대로 둘 수 있습니다. 엔진은 각 메시를 메모리에 업데이트하지만 저장을 "
+"하지는 않습니다. 만약 메시를 그대로 둘 경우 프로젝트를 불러올 때마다 오랜 시간"
+"이 걸릴 것입니다."
+
 msgid "Restart & Upgrade"
 msgstr "재시작 및 업그레이드"
 
 msgid "Make this panel floating in the screen %d."
 msgstr "이 패널을 화면 %d 위에 창으로 띄웁니다."
-
-msgid ""
-"Make this panel floating.\n"
-"Right click to open the screen selector."
-msgstr ""
-"이 패널을 창으로 띄웁니다.\n"
-"우클릭으로 화면 선택기를 엽니다."
 
 msgid "Select Screen"
 msgstr "화면 선택"
@@ -14161,13 +14107,6 @@ msgstr "소환"
 
 msgid "Replicate"
 msgstr "리플리케이트"
-
-msgid ""
-"Add properties using the options above, or\n"
-"drag them them from the inspector and drop them here."
-msgstr ""
-"위의 버튼을 이용하여 속성을 추가하거나\n"
-"인스펙터에서 끌어와서 여기에 놓으세요."
 
 msgid "Please select a MultiplayerSynchronizer first."
 msgstr "MultiplayerSynchronizer를 먼저 선택해 주세요."
@@ -14561,18 +14500,6 @@ msgid ""
 msgstr ""
 "Gradle 빌드 템플릿으로 빌드하려 했으나, 버전 정보가 없습니다. '프로젝트' 메뉴"
 "에서 다시 설치해주세요."
-
-msgid ""
-"Android build version mismatch: Template installed: %s, Godot version: %s. "
-"Please reinstall Android build template from 'Project' menu."
-msgstr ""
-"Android 빌드 버전이 맞지 않음: 설치된 템플릿: %s, Godot 버전: %s. '프로젝트' "
-"메뉴에서 Android 빌드 템플릿을 다시 설치해주세요."
-
-msgid ""
-"Unable to overwrite res://android/build/res/*.xml files with project name."
-msgstr ""
-"res://android/build/res/*.xml 파일을 프로젝트 이름으로 덮어쓸 수 없습니다."
 
 msgid "Could not export project files to gradle project."
 msgstr "프로젝트 파일을 gradle 프로젝트로 내보낼 수 없습니다."
@@ -15025,61 +14952,6 @@ msgstr ""
 "알 수 없습니다."
 
 msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
-"its shape."
-msgstr ""
-"이 노드는 모양이 없어서 다른 물체와 충돌하거나 상호 작용할 수 없습니다.\n"
-"CollisionShape2D 또는 CollisionPolygon2D를 자식 노드로 추가하여 모양을 정의하"
-"는 것을 고려하세요."
-
-msgid ""
-"CollisionPolygon2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon2D는 CollisionObject2D 기반 노드에 콜리전 모양을 지정하는 용도"
-"로만 사용됩니다. 모양을 정의해야 하는 Area2D, StaticBody2D, RigidBody2D, "
-"CharacterBody2D 등의 자식으로만 사용해주세요."
-
-msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "빈 CollisionPolygon2D는 콜리전에 영향을 주지 않습니다."
-
-msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
-msgstr "잘못된 폴리곤. 적어도 '솔리드' 빌드 모드에서 점 3개가 필요합니다."
-
-msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
-msgstr "잘못된 폴리곤. 적어도 '세그먼트' 빌드 모드에서 점 2개가 필요합니다."
-
-msgid ""
-"The One Way Collision property will be ignored when the collision object is "
-"an Area2D."
-msgstr "충돌 오브젝트가 Area2D일 경우 일방향 충돌 속성은 무시됩니다."
-
-msgid ""
-"CollisionShape2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
-msgstr ""
-"CollisionShape2D는 CollisionObject2D 기반 노드에 콜리전 모양을 지정하는 용도로"
-"만 사용됩니다. 모양을 정의해야 하는 Area2D, StaticBody2D, RigidBody2D, "
-"CharacterBody2D 등의 자식으로만 사용해주세요."
-
-msgid ""
-"A shape must be provided for CollisionShape2D to function. Please create a "
-"shape resource for it!"
-msgstr ""
-"CollisionShape2D가 작동하려면 반드시 모양이 있어야 합니다. 모양 리소스를 만들"
-"어주세요!"
-
-msgid ""
-"Polygon-based shapes are not meant be used nor edited directly through the "
-"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
-msgstr ""
-"폴리곤 기반 모양은 CollisionShape2D에 추가하거나 거기서 편집하게끔 설계하지 않"
-"았습니다. 대신 CollisionPolygon2D 노드를 사용하십시오."
-
-msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
@@ -15110,21 +14982,6 @@ msgid ""
 "Particle sub-emitters are not available when using the GL Compatibility "
 "rendering backend."
 msgstr "파티클 서브이미터는 GL 호환성 백엔드를 사용할 때는 쓸 수 없습니다."
-
-msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr "노드 A와 노드 B는 PhysicsBody2D여야 합니다"
-
-msgid "Node A must be a PhysicsBody2D"
-msgstr "노드 A는 PhysicsBody2D여야 합니다"
-
-msgid "Node B must be a PhysicsBody2D"
-msgstr "노드 B는 PhysicsBody2D여야 합니다"
-
-msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr "관절이 PhysicsBody2D 두 곳과 연결되어 있지 않습니다"
-
-msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr "노드 A와 노드 B는 서로 다른 PhysicsBody2D여야 합니다"
 
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -15166,6 +15023,67 @@ msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr "PathFollow2D는 Path2D 노드의 자식 노드로 있을 때만 작동합니다."
 
 msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
+"its shape."
+msgstr ""
+"이 노드는 모양이 없어서 다른 물체와 충돌하거나 상호 작용할 수 없습니다.\n"
+"CollisionShape2D 또는 CollisionPolygon2D를 자식 노드로 추가하여 모양을 정의하"
+"는 것을 고려하세요."
+
+msgid ""
+"CollisionPolygon2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node. Please only use it as a child of Area2D, "
+"StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon2D는 CollisionObject2D 기반 노드에 콜리전 모양을 지정하는 용도"
+"로만 사용됩니다. 모양을 정의해야 하는 Area2D, StaticBody2D, RigidBody2D, "
+"CharacterBody2D 등의 자식으로만 사용해주세요."
+
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "빈 CollisionPolygon2D는 콜리전에 영향을 주지 않습니다."
+
+msgid "Invalid polygon. At least 3 points are needed in 'Solids' build mode."
+msgstr "잘못된 폴리곤. 적어도 '솔리드' 빌드 모드에서 점 3개가 필요합니다."
+
+msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
+msgstr "잘못된 폴리곤. 적어도 '세그먼트' 빌드 모드에서 점 2개가 필요합니다."
+
+msgid ""
+"The One Way Collision property will be ignored when the collision object is "
+"an Area2D."
+msgstr "충돌 오브젝트가 Area2D일 경우 일방향 충돌 속성은 무시됩니다."
+
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"CollisionShape2D가 작동하려면 반드시 모양이 있어야 합니다. 모양 리소스를 만들"
+"어주세요!"
+
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+"폴리곤 기반 모양은 CollisionShape2D에 추가하거나 거기서 편집하게끔 설계하지 않"
+"았습니다. 대신 CollisionPolygon2D 노드를 사용하십시오."
+
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr "노드 A와 노드 B는 PhysicsBody2D여야 합니다"
+
+msgid "Node A must be a PhysicsBody2D"
+msgstr "노드 A는 PhysicsBody2D여야 합니다"
+
+msgid "Node B must be a PhysicsBody2D"
+msgstr "노드 B는 PhysicsBody2D여야 합니다"
+
+msgid "Joint is not connected to two PhysicsBody2Ds"
+msgstr "관절이 PhysicsBody2D 두 곳과 연결되어 있지 않습니다"
+
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr "노드 A와 노드 B는 서로 다른 PhysicsBody2D여야 합니다"
+
+msgid ""
 "A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
 "parent node!"
 msgstr ""
@@ -15194,13 +15112,13 @@ msgstr ""
 "실행 중에 RigidBody2D의 크기 변경은 물리 엔진에 의해 오버라이드됩니다.\n"
 "대신 자식 콜리전 모양의 크기를 변경하세요."
 
-msgid "Path property must point to a valid Node2D node to work."
-msgstr "Path 속성은 올바른 Node2D 노드를 가리켜야 합니다."
-
 msgid ""
 "This node cannot interact with other objects unless a Shape2D is assigned."
 msgstr ""
 "이 노드는 Shape2D를 할당하지 않는 이상 다른 오브젝트와 상호작용하지 못합니다."
+
+msgid "Path property must point to a valid Node2D node to work."
+msgstr "Path 속성은 올바른 Node2D 노드를 가리켜야 합니다."
 
 msgid "This Bone2D chain should end at a Skeleton2D node."
 msgstr "이 Bone2D 체인은 Skeleton2D 노드에서 끝나야 합니다."
@@ -15270,90 +15188,6 @@ msgid ""
 msgstr ""
 "BoneAttachment3D 노드가 어떠한 본과도 엮여 있지 않습니다! 이 노드를 부착할 본"
 "을 선택해 주세요."
-
-msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
-"its shape."
-msgstr ""
-"이 노드는 모양이 없어서 다른 물체와 충돌하거나 상호 작용할 수 없습니다.\n"
-"CollisionShape3D 또는 CollisionPolygon3D를 자식 노드로 추가하여 모양을 정의하"
-"는 것을 고려하세요."
-
-msgid ""
-"With a non-uniform scale this node will probably not function as expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size in children collision shapes instead."
-msgstr ""
-"이 노드의 크기가 일관적이지 않아서 생각한 대로 작동하지 않을 것입니다.\n"
-"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 자식 "
-"충돌 모양의 크기를 변경하세요."
-
-msgid ""
-"CollisionPolygon3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon3D는 CollisionObject3D 기반 노드에 콜리전 모양을 지정하는 용도"
-"로만 사용됩니다.\n"
-"모양을 정의해야 하는 Area3D, StaticBody3D, RigidBody23D, CharacterBody3D 등의 "
-"자식으로만 사용해주세요."
-
-msgid "An empty CollisionPolygon3D has no effect on collision."
-msgstr "빈 CollisionPolygon3D는 콜리전에 영향을 주지 않습니다."
-
-msgid ""
-"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change its "
-"polygon's vertices instead."
-msgstr ""
-"일관적인 크기가 아닌 CollisionPolygon3D 노드는 아마 생각한 대로 작동하지 않을 "
-"것입니다.\n"
-"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 폴리"
-"곤의 모양을 변경하세요."
-
-msgid ""
-"CollisionShape3D only serves to provide a collision shape to a "
-"CollisionObject3D derived node.\n"
-"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
-"CharacterBody3D, etc. to give them a shape."
-msgstr ""
-"CollisionShape3D는 CollisionObject3D 기반 노드에 콜리전 모양을 지정하는 용도로"
-"만 사용됩니다.\n"
-"모양을 정의해야 하는 Area3D, StaticBody3D, RigidBody3D, CharacterBody3D 등의 "
-"자식으로만 사용해주세요."
-
-msgid ""
-"A shape must be provided for CollisionShape3D to function. Please create a "
-"shape resource for it."
-msgstr ""
-"CollisionShape3D가 제 기능을 하려면 모양이 있어야 합니다. 모양 리소스를 만들어"
-"주세요."
-
-msgid ""
-"ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."
-msgstr ""
-"ConcavePolygonShape3D는 static 외의 모드가 설정된 RigidBody3D를 지원하지 않습"
-"니다."
-
-msgid ""
-"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
-msgstr ""
-"WorldBoundaryShape3D는 static 외의 모드가 설정된 RigidBody3D를 지원하지 않습니"
-"다."
-
-msgid ""
-"A non-uniformly scaled CollisionShape3D node will probably not function as "
-"expected.\n"
-"Please make its scale uniform (i.e. the same on all axes), and change the "
-"size of its shape resource instead."
-msgstr ""
-"일관적인 크기가 아닌 CollisionShape3D 노드는 아마 생각한 대로 작동하지 않을 것"
-"입니다.\n"
-"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 모양 "
-"리소스의 크기를 변경하세요."
 
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "지정한 메시가 없어서 아무 것도 보이지 않습니다."
@@ -15457,21 +15291,6 @@ msgstr ""
 "GPUParticlesCollisionSDF3D에 대해 어떤 충돌도 만들어내지 않을 것입니다.\n"
 "굽기 마스크 속성에서 하나 이상의 비트를 설정해 주세요."
 
-msgid "Node A and Node B must be PhysicsBody3Ds"
-msgstr "노드 A와 노드 B는 PhysicsBody3D여야 합니다"
-
-msgid "Node A must be a PhysicsBody3D"
-msgstr "노드 A는 PhysicsBody3D여야 합니다"
-
-msgid "Node B must be a PhysicsBody3D"
-msgstr "노드 B는 PhysicsBody3D여야 합니다"
-
-msgid "Joint is not connected to any PhysicsBody3Ds"
-msgstr "Joint가 어떠한 PhysicsBody3D에도 연결되어 있지 않습니다"
-
-msgid "Node A and Node B must be different PhysicsBody3Ds"
-msgstr "노드 A와 노드 B는 서로 다른 PhysicsBody3D여야 합니다"
-
 msgid "A light's scale does not affect the visual size of the light."
 msgstr "빛의 크기는 실제로 보이는 빛의 크기에 영향을 미치지 않습니다."
 
@@ -15513,13 +15332,6 @@ msgid "Generating Probe Acceleration Structures"
 msgstr "프로브 가속 구조 생성 중"
 
 msgid ""
-"LightmapGI nodes are not supported when using the GL Compatibility backend "
-"yet. Support will be added in a future release."
-msgstr ""
-"LightmapGI 노드는 아직 GL 호환성 백엔드에서 지원되지 않습니다. 추후 릴리즈에"
-"서 지원될 예정입니다."
-
-msgid ""
 "The NavigationAgent3D can be used only under a Node3D inheriting parent node."
 msgstr ""
 "NavigationAgent3D는 Node3D 기반의 부모 노드 아래에서만 사용할 수 있습니다."
@@ -15552,12 +15364,117 @@ msgstr ""
 "Vector\"가 켜져 있어야 합니다."
 
 msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
+"its shape."
+msgstr ""
+"이 노드는 모양이 없어서 다른 물체와 충돌하거나 상호 작용할 수 없습니다.\n"
+"CollisionShape3D 또는 CollisionPolygon3D를 자식 노드로 추가하여 모양을 정의하"
+"는 것을 고려하세요."
+
+msgid ""
+"With a non-uniform scale this node will probably not function as expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size in children collision shapes instead."
+msgstr ""
+"이 노드의 크기가 일관적이지 않아서 생각한 대로 작동하지 않을 것입니다.\n"
+"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 자식 "
+"충돌 모양의 크기를 변경하세요."
+
+msgid ""
+"CollisionPolygon3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon3D는 CollisionObject3D 기반 노드에 콜리전 모양을 지정하는 용도"
+"로만 사용됩니다.\n"
+"모양을 정의해야 하는 Area3D, StaticBody3D, RigidBody23D, CharacterBody3D 등의 "
+"자식으로만 사용해주세요."
+
+msgid "An empty CollisionPolygon3D has no effect on collision."
+msgstr "빈 CollisionPolygon3D는 콜리전에 영향을 주지 않습니다."
+
+msgid ""
+"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change its "
+"polygon's vertices instead."
+msgstr ""
+"일관적인 크기가 아닌 CollisionPolygon3D 노드는 아마 생각한 대로 작동하지 않을 "
+"것입니다.\n"
+"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 폴리"
+"곤의 모양을 변경하세요."
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionShape3D는 CollisionObject3D 기반 노드에 콜리전 모양을 지정하는 용도로"
+"만 사용됩니다.\n"
+"모양을 정의해야 하는 Area3D, StaticBody3D, RigidBody3D, CharacterBody3D 등의 "
+"자식으로만 사용해주세요."
+
+msgid ""
+"A shape must be provided for CollisionShape3D to function. Please create a "
+"shape resource for it."
+msgstr ""
+"CollisionShape3D가 제 기능을 하려면 모양이 있어야 합니다. 모양 리소스를 만들어"
+"주세요."
+
+msgid ""
+"WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."
+msgstr ""
+"WorldBoundaryShape3D는 static 외의 모드가 설정된 RigidBody3D를 지원하지 않습니"
+"다."
+
+msgid ""
+"A non-uniformly scaled CollisionShape3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size of its shape resource instead."
+msgstr ""
+"일관적인 크기가 아닌 CollisionShape3D 노드는 아마 생각한 대로 작동하지 않을 것"
+"입니다.\n"
+"이 노드의 크기를 일관적으로 (즉, 모든 축에서의 크기가 같게) 만들고, 대신 모양 "
+"리소스의 크기를 변경하세요."
+
+msgid "Node A and Node B must be PhysicsBody3Ds"
+msgstr "노드 A와 노드 B는 PhysicsBody3D여야 합니다"
+
+msgid "Node A must be a PhysicsBody3D"
+msgstr "노드 A는 PhysicsBody3D여야 합니다"
+
+msgid "Node B must be a PhysicsBody3D"
+msgstr "노드 B는 PhysicsBody3D여야 합니다"
+
+msgid "Joint is not connected to any PhysicsBody3Ds"
+msgstr "Joint가 어떠한 PhysicsBody3D에도 연결되어 있지 않습니다"
+
+msgid "Node A and Node B must be different PhysicsBody3Ds"
+msgstr "노드 A와 노드 B는 서로 다른 PhysicsBody3D여야 합니다"
+
+msgid ""
 "Scale changes to RigidBody3D will be overridden by the physics engine when "
 "running.\n"
 "Please change the size in children collision shapes instead."
 msgstr ""
 "실행 중에 RigidBody3D의 크기 변경은 물리 엔진에 의해 오버라이드됩니다.\n"
 "대신 자식 콜리전 모양의 크기를 변경하세요."
+
+msgid ""
+"This node cannot interact with other objects unless a Shape3D is assigned."
+msgstr ""
+"이 노드는 Shape3D를 할당하지 않는 이상 다른 오브젝트와 상호작용하지 못합니다."
+
+msgid ""
+"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
+"use it as a child of a VehicleBody3D."
+msgstr ""
+"VehicleWheel3D는 VehicleBody3D에 바퀴 시스템을 제공하는 역할입니다. "
+"VehicleBody3D의 자식으로 사용해주세요."
 
 msgid ""
 "ReflectionProbes are not supported when using the GL Compatibility backend "
@@ -15573,11 +15490,6 @@ msgstr ""
 "\"원격 경로(Remote Path)\" 속성이 작동하려면 유효한 Node3D 또는 Node3D 파생 노"
 "드를 가리켜야 합니다."
 
-msgid ""
-"This node cannot interact with other objects unless a Shape3D is assigned."
-msgstr ""
-"이 노드는 Shape3D를 할당하지 않는 이상 다른 오브젝트와 상호작용하지 못합니다."
-
 msgid "This body will be ignored until you set a mesh."
 msgstr "이 바디는 메시를 설정할 때까지 무시됩니다."
 
@@ -15587,20 +15499,6 @@ msgid ""
 msgstr ""
 "AnimatedSprite3D가 프레임을 보여주기 위해서는 \"Frames\" 속성에 SpriteFrames "
 "리소스를 만들거나 설정해야 합니다."
-
-msgid ""
-"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
-"use it as a child of a VehicleBody3D."
-msgstr ""
-"VehicleWheel3D는 VehicleBody3D에 바퀴 시스템을 제공하는 역할입니다. "
-"VehicleBody3D의 자식으로 사용해주세요."
-
-msgid ""
-"VisibleOnScreenNotifier3D nodes are not supported when using the GL "
-"Compatibility backend yet. Support will be added in a future release."
-msgstr ""
-"VisibleOnScreenNotifier3D 노드는 아직 GL 호환성 백엔드에서 지원되지 않습니다. "
-"추후 릴리즈에서 지원될 예정입니다."
 
 msgid "Plotting Meshes"
 msgstr "메시 구분"
@@ -15675,51 +15573,11 @@ msgid ""
 msgstr ""
 "ButtonGroup은 오직 toggle_mode가 참인 버튼들만 함께 사용하도록 되어 있습니다."
 
-msgid "New Code Region"
-msgstr "새 코드 구역"
-
 msgid "Copy this constructor in a script."
 msgstr "이 생성자를 스크립트 안으로 복사합니다."
 
-msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
-msgstr "헥스 코드(\"#ff0000\") 또는 영어 색상 이름(\"red\")을 넣어 주세요."
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"색상: #%s\n"
-"좌클릭: 색상 지정\n"
-"우클릭: 프리셋 제거"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"색상: #%s\n"
-"좌클릭: 색상 지정"
-
-msgid "Pick a color from the screen."
-msgstr "화면에서 색상을 고르세요."
-
-msgid "Pick a color from the application window."
-msgstr "프로그램 창에서 색상을 고르세요."
-
-msgid "Select a picker shape."
-msgstr "피커 모양을 고르세요."
-
-msgid "Select a picker mode."
-msgstr "피커 모드를 고르세요."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "헥스 코드와 코드 값의 사이를 전환합니다."
-
-msgid "Hex code or named color"
-msgstr "헥스 코드 또는 색상 이름"
-
-msgid "Add current color as a preset."
-msgstr "현재 색상을 프리셋으로 추가합니다."
 
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
@@ -15746,15 +15604,6 @@ msgstr ""
 msgid "Alert!"
 msgstr "경고!"
 
-msgid "Please Confirm..."
-msgstr "확인해주세요..."
-
-msgid "You don't have permission to access contents of this folder."
-msgstr "이 폴더에 접근할 권한이 없습니다."
-
-msgid "Invalid extension, or empty filename."
-msgstr "잘못된 확장자이거나 파일명이 비어 있습니다."
-
 msgid ""
 "Please be aware that GraphEdit and GraphNode will undergo extensive "
 "refactoring in a future 4.x version involving compatibility-breaking API "
@@ -15762,21 +15611,6 @@ msgid ""
 msgstr ""
 "GraphEdit과 GraphNode는 이후의 4.x 버전에서 하위 호환성 없는 API 변경을 포함"
 "한 큰 리팩터링을 거칠 것임을 유의해 주세요."
-
-msgid "Toggle the visual grid."
-msgstr "배경 격자판을 보이거나 숨깁니다."
-
-msgid "Toggle snapping to the grid."
-msgstr "격자 스냅을 켜거나 끕니다."
-
-msgid "Change the snapping distance."
-msgstr "스냅의 거리를 변경합니다."
-
-msgid "Toggle the graph minimap."
-msgstr "그래프 미니맵을 활성화합니다."
-
-msgid "Automatically arrange selected nodes."
-msgstr "선택된 노드들을 자동으로 정렬합니다."
 
 msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
@@ -15791,33 +15625,6 @@ msgid ""
 msgstr ""
 "이 레이블에는 현재 글꼴이 렌더링하지 못하는 글자가 하나 이상 포함되어 있습니"
 "다."
-
-msgid "Same as Layout Direction"
-msgstr "레이아웃 방향과 같음"
-
-msgid "Auto-Detect Direction"
-msgstr "방향 자동 감지"
-
-msgid "Left-to-Right"
-msgstr "좌-우 방향으로"
-
-msgid "Right-to-Left"
-msgstr "우-좌 방향으로"
-
-msgid "Left-to-Right Mark (LRM)"
-msgstr "좌-우 방향 표식 (LRM)"
-
-msgid "Right-to-Left Mark (RLM)"
-msgstr "우-좌 방향 표식 (RLM)"
-
-msgid "Text Writing Direction"
-msgstr "텍스트 쓰기 방향"
-
-msgid "Display Control Characters"
-msgstr "제어 문자 표시"
-
-msgid "Insert Control Character"
-msgstr "제어 문자 삽입"
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "\"Exp Edit\"을 활성화하면, \"Min Value\"는 반드시 0보다 커야 합니다."
@@ -15838,9 +15645,6 @@ msgid ""
 msgstr ""
 "이 노드에는 SubViewport 자식이 없어서, 의도된 내용물을 표시하지 못합니다.\n"
 "무언가를 표시할 수 있게 SubViewport 자식을 추가하는 것을 고려해 보세요."
-
-msgid "(Other)"
-msgstr "(기타)"
 
 msgid ""
 "This node was saved as class type '%s', which was no longer available when "

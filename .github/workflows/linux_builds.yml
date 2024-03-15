@@ -116,12 +116,6 @@ jobs:
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
 
-      - name: Set up .NET Sdk
-        uses: actions/setup-dotnet@v3
-        if: ${{ matrix.build-mono }}
-        with:
-          dotnet-version: '6.0.x'
-
       - name: Setup GCC problem matcher
         uses: ammaraskar/gcc-problem-matcher@master
 
@@ -168,6 +162,11 @@ jobs:
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help
           ${{ matrix.bin }} --headless --test --force-colors
+
+      - name: .NET source generators tests
+        if: ${{ matrix.build-mono }}
+        run: |
+          dotnet test modules/mono/editor/Godot.NET.Sdk/Godot.SourceGenerators.Tests
 
       # Check class reference
       - name: Check for class reference updates

@@ -57,6 +57,7 @@
 #include "extensions/openxr_fb_display_refresh_rate_extension.h"
 #include "extensions/openxr_fb_foveation_extension.h"
 #include "extensions/openxr_fb_update_swapchain_extension.h"
+#include "extensions/openxr_hand_tracking_extension.h"
 
 #ifdef ANDROID_ENABLED
 #define OPENXR_LOADER_NAME "libopenxr_loader.so"
@@ -1531,9 +1532,21 @@ void OpenXRAPI::register_extension_metadata() {
 
 void OpenXRAPI::cleanup_extension_wrappers() {
 	for (OpenXRExtensionWrapper *extension_wrapper : registered_extension_wrappers) {
-		memdelete(extension_wrapper);
+		// Fix crash when the extension wrapper comes from GDExtension.
+		OpenXRExtensionWrapperExtension *gdextension_extension_wrapper = dynamic_cast<OpenXRExtensionWrapperExtension *>(extension_wrapper);
+		if (gdextension_extension_wrapper) {
+			memdelete(gdextension_extension_wrapper);
+		} else {
+			memdelete(extension_wrapper);
+		}
 	}
 	registered_extension_wrappers.clear();
+}
+
+XrHandTrackerEXT OpenXRAPI::get_hand_tracker(int p_hand_index) {
+	ERR_FAIL_INDEX_V(p_hand_index, OpenXRHandTrackingExtension::HandTrackedHands::OPENXR_MAX_TRACKED_HANDS, XR_NULL_HANDLE);
+	OpenXRHandTrackingExtension::HandTrackedHands hand = static_cast<OpenXRHandTrackingExtension::HandTrackedHands>(p_hand_index);
+	return OpenXRHandTrackingExtension::get_singleton()->get_hand_tracker(hand)->hand_tracker;
 }
 
 Size2 OpenXRAPI::get_recommended_target_size() {
@@ -2067,18 +2080,29 @@ void OpenXRAPI::end_frame() {
 		projection_views[eye].pose = views[eye].pose;
 	}
 
-	Vector<const XrCompositionLayerBaseHeader *> layers_list;
+	Vector<OrderedCompositionLayer> ordered_layers_list;
+	bool projection_layer_is_first = true;
 
 	// Add composition layers from providers
 	for (OpenXRCompositionLayerProvider *provider : composition_layer_providers) {
-		XrCompositionLayerBaseHeader *layer = provider->get_composition_layer();
-		if (layer) {
-			layers_list.push_back(layer);
+		for (int i = 0; i < provider->get_composition_layer_count(); i++) {
+			OrderedCompositionLayer layer = {
+				provider->get_composition_layer(i),
+				provider->get_composition_layer_order(i),
+			};
+			if (layer.composition_layer) {
+				ordered_layers_list.push_back(layer);
+				if (layer.sort_order == 0) {
+					WARN_PRINT_ONCE_ED("Composition layer returned sort order 0, it may be overwritten by projection layer.");
+				} else if (layer.sort_order < 0) {
+					projection_layer_is_first = false;
+				}
+			}
 		}
 	}
 
 	XrCompositionLayerFlags layer_flags = XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT;
-	if (layers_list.size() > 0 || environment_blend_mode != XR_ENVIRONMENT_BLEND_MODE_OPAQUE) {
+	if (!projection_layer_is_first || environment_blend_mode != XR_ENVIRONMENT_BLEND_MODE_OPAQUE) {
 		layer_flags |= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
 	}
 
@@ -2090,7 +2114,16 @@ void OpenXRAPI::end_frame() {
 		view_count, // viewCount
 		projection_views, // views
 	};
-	layers_list.push_back((const XrCompositionLayerBaseHeader *)&projection_layer);
+	ordered_layers_list.push_back({ (const XrCompositionLayerBaseHeader *)&projection_layer, 0 });
+
+	// Sort our layers.
+	ordered_layers_list.sort_custom<OrderedCompositionLayer>();
+
+	// Now make a list we can pass on to OpenXR.
+	Vector<const XrCompositionLayerBaseHeader *> layers_list;
+	for (OrderedCompositionLayer &ordered_layer : ordered_layers_list) {
+		layers_list.push_back(ordered_layer.composition_layer);
+	}
 
 	XrFrameEndInfo frame_end_info = {
 		XR_TYPE_FRAME_END_INFO, // type

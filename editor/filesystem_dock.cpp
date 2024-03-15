@@ -80,7 +80,7 @@ Control *FileSystemList::make_custom_tooltip(const String &p_text) const {
 	return FileSystemDock::get_singleton()->create_tooltip_for_path(get_item_metadata(idx));
 }
 
-void FileSystemList::_line_editor_submit(String p_text) {
+void FileSystemList::_line_editor_submit(const String &p_text) {
 	popup_editor->hide();
 
 	emit_signal(SNAME("item_edited"));
@@ -154,6 +154,8 @@ void FileSystemList::_bind_methods() {
 }
 
 FileSystemList::FileSystemList() {
+	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 	popup_editor = memnew(Popup);
 	add_child(popup_editor);
 
@@ -171,14 +173,48 @@ FileSystemList::FileSystemList() {
 
 FileSystemDock *FileSystemDock::singleton = nullptr;
 
-Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_file_type) {
-	Ref<Texture2D> file_icon;
-	if (!p_is_valid) {
-		file_icon = get_editor_theme_icon(SNAME("ImportFail"));
-	} else {
-		file_icon = (has_theme_icon(p_file_type, EditorStringName(EditorIcons))) ? get_editor_theme_icon(p_file_type) : get_editor_theme_icon(SNAME("File"));
+Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path) {
+	if (!p_icon_path.is_empty()) {
+		Ref<Texture2D> icon = ResourceLoader::load(p_icon_path);
+		if (icon.is_valid()) {
+			return icon;
+		}
 	}
-	return file_icon;
+
+	if (!p_is_valid) {
+		return get_editor_theme_icon(SNAME("ImportFail"));
+	} else if (has_theme_icon(p_file_type, EditorStringName(EditorIcons))) {
+		return get_editor_theme_icon(p_file_type);
+	} else {
+		return get_editor_theme_icon(SNAME("File"));
+	}
+}
+
+String FileSystemDock::_get_entry_script_icon(const EditorFileSystemDirectory *p_dir, int p_file) {
+	const PackedStringArray &deps = p_dir->get_file_deps(p_file);
+	if (deps.is_empty()) {
+		return String();
+	}
+
+	const String &script_path = deps[0]; // Assuming the first dependency is a script.
+	if (script_path.is_empty() || !ClassDB::is_parent_class(ResourceLoader::get_resource_type(script_path), SNAME("Script"))) {
+		return String();
+	}
+
+	String *cached = icon_cache.getptr(script_path);
+	if (cached) {
+		return *cached;
+	}
+
+	HashMap<String, String>::Iterator I;
+	int script_file;
+	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->find_file(script_path, &script_file);
+	if (efsd) {
+		I = icon_cache.insert(script_path, efsd->get_file_script_class_icon_path(script_file));
+	} else {
+		I = icon_cache.insert(script_path, String());
+	}
+	return I->value;
 }
 
 bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path) {
@@ -270,6 +306,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			FileInfo fi;
 			fi.name = p_dir->get_file(i);
 			fi.type = p_dir->get_file_type(i);
+			fi.icon_path = _get_entry_script_icon(p_dir, i);
 			fi.import_broken = !p_dir->get_file_import_is_valid(i);
 			fi.modified_time = p_dir->get_file_modified_time(i);
 
@@ -280,18 +317,21 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		_sort_file_info_list(file_list);
 
 		// Build the tree.
+		const int icon_size = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+
 		for (const FileInfo &fi : file_list) {
 			TreeItem *file_item = tree->create_item(subdirectory_item);
+			const String file_metadata = lpath.path_join(fi.name);
 			file_item->set_text(0, fi.name);
 			file_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
-			file_item->set_icon(0, _get_tree_item_icon(!fi.import_broken, fi.type));
+			file_item->set_icon(0, _get_tree_item_icon(!fi.import_broken, fi.type, fi.icon_path));
+			file_item->set_icon_max_width(0, icon_size);
 			Color parent_bg_color = subdirectory_item->get_custom_bg_color(0);
 			if (has_custom_color) {
 				file_item->set_custom_bg_color(0, parent_bg_color.darkened(0.3));
 			} else if (parent_bg_color != Color()) {
 				file_item->set_custom_bg_color(0, parent_bg_color);
 			}
-			String file_metadata = lpath.path_join(fi.name);
 			file_item->set_metadata(0, file_metadata);
 			if (!p_select_in_favorites && current_path == file_metadata) {
 				file_item->select(0);
@@ -364,6 +404,8 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	updating_tree = true;
 	TreeItem *root = tree->create_item();
 
+	icon_cache.clear();
+
 	// Handles the favorites.
 	TreeItem *favorites_item = tree->create_item(root);
 	favorites_item->set_icon(0, get_editor_theme_icon(SNAME("Favorites")));
@@ -411,7 +453,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			int index;
 			EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(favorite, &index);
 			if (dir) {
-				icon = _get_tree_item_icon(dir->get_file_import_is_valid(index), dir->get_file_type(index));
+				icon = _get_tree_item_icon(dir->get_file_import_is_valid(index), dir->get_file_path(index), dir->get_file_type(index));
 			} else {
 				icon = get_editor_theme_icon(SNAME("File"));
 			}
@@ -584,7 +626,7 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			file_list_button_sort->set_icon(get_editor_theme_icon(SNAME("Sort")));
 
-			button_dock_placement->set_icon(get_editor_theme_icon(SNAME("GuiTabMenu")));
+			button_dock_placement->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			if (is_layout_rtl()) {
 				button_hist_next->set_icon(get_editor_theme_icon(SNAME("Back")));
@@ -618,8 +660,10 @@ void FileSystemDock::_notification(int p_what) {
 				_update_tree(get_uncollapsed_paths());
 			}
 
-			// Change full tree mode.
-			_update_display_mode();
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				// Change full tree mode.
+				_update_display_mode();
+			}
 		} break;
 	}
 }
@@ -979,6 +1023,9 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			}
 		}
 	} else {
+		if (!directory.begins_with("res://")) {
+			directory = "res://" + directory;
+		}
 		// Get infos on the directory + file.
 		if (directory.ends_with("/") && directory != "res://") {
 			directory = directory.substr(0, directory.length() - 1);
@@ -1153,7 +1200,7 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			if (err == OK) {
 				if (config->has_section_key("remap", "importer")) {
 					String importer = config->get_value("remap", "importer");
-					if (importer == "keep") {
+					if (importer == "keep" || importer == "skip") {
 						EditorNode::get_singleton()->show_warning(TTR("Importing has been disabled for this file, so it can't be opened for editing."));
 						return;
 					}
@@ -1671,7 +1718,7 @@ void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
 	emit_signal(SNAME("resource_removed"), p_resource);
 }
 
-void FileSystemDock::_file_removed(String p_file) {
+void FileSystemDock::_file_removed(const String &p_file) {
 	emit_signal(SNAME("file_removed"), p_file);
 
 	// Find the closest parent directory available, in case multiple items were deleted along the same path.
@@ -1684,7 +1731,7 @@ void FileSystemDock::_file_removed(String p_file) {
 	current_path_line_edit->set_text(current_path);
 }
 
-void FileSystemDock::_folder_removed(String p_folder) {
+void FileSystemDock::_folder_removed(const String &p_folder) {
 	emit_signal(SNAME("folder_removed"), p_folder);
 
 	// Find the closest parent directory available, in case multiple items were deleted along the same path.
@@ -2063,13 +2110,18 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				fpath = p_selected[0];
 			}
 
-			String file = ProjectSettings::get_singleton()->globalize_path(fpath);
+			const String file = ProjectSettings::get_singleton()->globalize_path(fpath);
+			const String extension = file.get_extension();
 
-			String resource_type = ResourceLoader::get_resource_type(fpath);
+			const String resource_type = ResourceLoader::get_resource_type(fpath);
 			String external_program;
 
-			if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
-				if (file.get_extension() == "svg" || file.get_extension() == "svgz") {
+			if (ClassDB::is_parent_class(resource_type, "Script") || extension == "tres" || extension == "tscn") {
+				external_program = EDITOR_GET("text_editor/external/exec_path");
+			} else if (extension == "res" || extension == "scn") {
+				// Binary resources have no meaningful editor outside Godot, so just fallback to something default.
+			} else if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
+				if (extension == "svg" || extension == "svgz") {
 					external_program = EDITOR_GET("filesystem/external_programs/vector_image_editor");
 				} else {
 					external_program = EDITOR_GET("filesystem/external_programs/raster_image_editor");
@@ -2077,12 +2129,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			} else if (ClassDB::is_parent_class(resource_type, "AudioStream")) {
 				external_program = EDITOR_GET("filesystem/external_programs/audio_editor");
 			} else if (resource_type == "PackedScene") {
-				// Ignore non-model scenes.
-				if (file.get_extension() != "tscn" && file.get_extension() != "scn" && file.get_extension() != "res") {
-					external_program = EDITOR_GET("filesystem/external_programs/3d_model_editor");
-				}
-			} else if (ClassDB::is_parent_class(resource_type, "Script")) {
-				external_program = EDITOR_GET("text_editor/external/exec_path");
+				external_program = EDITOR_GET("filesystem/external_programs/3d_model_editor");
 			}
 
 			if (external_program.is_empty()) {
@@ -2125,7 +2172,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				terminal_emulators.push_back(terminal_emulator_setting);
 			}
 
-			String arguments = EDITOR_GET("filesystem/external_programs/terminal_emulator_flags");
+			String flags = EDITOR_GET("filesystem/external_programs/terminal_emulator_flags");
+			String arguments = flags;
 			if (arguments.is_empty()) {
 				// NOTE: This default value is ignored further below if the terminal executable is `powershell` or `cmd`,
 				// due to these terminals requiring nonstandard syntax to start in a specified folder.
@@ -2135,16 +2183,13 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 #ifdef LINUXBSD_ENABLED
 			String chosen_terminal_emulator;
 			for (const String &terminal_emulator : terminal_emulators) {
+				String pipe;
 				List<String> test_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
-				test_args.push_back("-v");
-				test_args.push_back(terminal_emulator);
-				// Silence command name being printed when found. (stderr is already silenced by `OS::execute()` by default.)
-				// FIXME: This doesn't appear to silence stdout.
-				test_args.push_back(">");
-				test_args.push_back("/dev/null");
-				int exit_code = 0;
-				const Error err = OS::get_singleton()->execute("command", test_args, nullptr, &exit_code);
-				if (err == OK && exit_code == EXIT_SUCCESS) {
+				test_args.push_back("-cr");
+				test_args.push_back("command -v " + terminal_emulator);
+				const Error err = OS::get_singleton()->execute("bash", test_args, &pipe);
+				// Check if a path to the terminal executable exists.
+				if (err == OK && pipe.contains("/")) {
 					chosen_terminal_emulator = terminal_emulator;
 					break;
 				} else if (err == ERR_CANT_FORK) {
@@ -2161,8 +2206,14 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			// Prepend default arguments based on the terminal emulator name.
 			// Use `String.ends_with()` so that installations in non-default paths
 			// or `/usr/local/bin` are detected correctly.
-			if (chosen_terminal_emulator.ends_with("konsole")) {
-				terminal_emulator_args.push_back("--workdir");
+			if (flags.is_empty()) {
+				if (chosen_terminal_emulator.ends_with("konsole")) {
+					terminal_emulator_args.push_back("--workdir");
+				} else if (chosen_terminal_emulator.ends_with("gnome-terminal")) {
+					terminal_emulator_args.push_back("--working-directory");
+				} else if (chosen_terminal_emulator.ends_with("urxvt")) {
+					terminal_emulator_args.push_back("-cd");
+				}
 			}
 #endif
 
@@ -2562,6 +2613,11 @@ void FileSystemDock::_split_dragged(int p_offset) {
 
 void FileSystemDock::fix_dependencies(const String &p_for_file) {
 	deps_editor->edit(p_for_file);
+}
+
+void FileSystemDock::focus_on_path() {
+	current_path_line_edit->grab_focus();
+	current_path_line_edit->select_all();
 }
 
 void FileSystemDock::focus_on_filter() {
@@ -2975,7 +3031,7 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 	_update_file_list(true);
 }
 
-void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options) {
+void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options) {
 	// Add options for files and folders.
 	ERR_FAIL_COND_MSG(p_paths.is_empty(), "Path cannot be empty.");
 
@@ -3043,11 +3099,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (p_paths.size() == 1 && p_display_path_dependent_options) {
 		PopupMenu *new_menu = memnew(PopupMenu);
-		new_menu->set_name("New");
 		new_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
 
-		p_popup->add_child(new_menu);
-		p_popup->add_submenu_item(TTR("Create New"), "New", FILE_NEW);
+		p_popup->add_submenu_node_item(TTR("Create New"), new_menu, FILE_NEW);
 		p_popup->set_item_icon(p_popup->get_item_index(FILE_NEW), get_editor_theme_icon(SNAME("Add")));
 
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR("Folder..."), FILE_NEW_FOLDER);
@@ -3070,11 +3124,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 		if (p_paths[0] != "res://") {
 			PopupMenu *folder_colors_menu = memnew(PopupMenu);
-			folder_colors_menu->set_name("FolderColor");
 			folder_colors_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_folder_color_index_pressed).bind(folder_colors_menu));
 
-			p_popup->add_child(folder_colors_menu);
-			p_popup->add_submenu_item(TTR("Set Folder Color..."), "FolderColor");
+			p_popup->add_submenu_node_item(TTR("Set Folder Color..."), folder_colors_menu);
 			p_popup->set_item_icon(-1, get_editor_theme_icon(SNAME("Paint")));
 
 			folder_colors_menu->add_icon_item(get_editor_theme_icon(SNAME("Folder")), TTR("Default (Reset)"));
@@ -3391,6 +3443,8 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_OPEN_EXTERNAL);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_event)) {
 			_tree_rmb_option(FILE_OPEN_IN_TERMINAL);
+		} else if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
+			focus_on_path();
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
 		} else {
@@ -3598,7 +3652,8 @@ Dictionary FileSystemDock::get_assigned_folder_colors() const {
 
 MenuButton *FileSystemDock::_create_file_menu_button() {
 	MenuButton *button = memnew(MenuButton);
-	button->set_flat(true);
+	button->set_flat(false);
+	button->set_theme_type_variation("FlatMenuButton");
 	button->set_tooltip_text(TTR("Sort Files"));
 
 	PopupMenu *p = button->get_popup();
@@ -3812,7 +3867,7 @@ FileSystemDock::FileSystemDock() {
 	button_toggle_display_mode->connect("pressed", callable_mp(this, &FileSystemDock::_change_split_mode));
 	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
 	button_toggle_display_mode->set_tooltip_text(TTR("Change Split Mode"));
-	button_toggle_display_mode->set_flat(true);
+	button_toggle_display_mode->set_theme_type_variation("FlatMenuButton");
 	toolbar_hbc->add_child(button_toggle_display_mode);
 
 	button_dock_placement = memnew(Button);

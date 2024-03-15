@@ -1044,17 +1044,17 @@ String String::_camelcase_to_underscore() const {
 	int start_index = 0;
 
 	for (int i = 1; i < size(); i++) {
-		bool is_prev_upper = is_ascii_upper_case(cstr[i - 1]);
-		bool is_prev_lower = is_ascii_lower_case(cstr[i - 1]);
+		bool is_prev_upper = is_unicode_upper_case(cstr[i - 1]);
+		bool is_prev_lower = is_unicode_lower_case(cstr[i - 1]);
 		bool is_prev_digit = is_digit(cstr[i - 1]);
 
-		bool is_curr_upper = is_ascii_upper_case(cstr[i]);
-		bool is_curr_lower = is_ascii_lower_case(cstr[i]);
+		bool is_curr_upper = is_unicode_upper_case(cstr[i]);
+		bool is_curr_lower = is_unicode_lower_case(cstr[i]);
 		bool is_curr_digit = is_digit(cstr[i]);
 
 		bool is_next_lower = false;
 		if (i + 1 < size()) {
-			is_next_lower = is_ascii_lower_case(cstr[i + 1]);
+			is_next_lower = is_unicode_lower_case(cstr[i + 1]);
 		}
 
 		const bool cond_a = is_prev_lower && is_curr_upper; // aA
@@ -1438,7 +1438,7 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	return ret;
 }
 
-String String::join(Vector<String> parts) const {
+String String::join(const Vector<String> &parts) const {
 	String ret;
 	for (int i = 0; i < parts.size(); ++i) {
 		if (i > 0) {
@@ -1536,7 +1536,7 @@ String String::num(double p_num, int p_decimals) {
 		fmt[5] = 'f';
 		fmt[6] = 0;
 	}
-	// if we want to convert a double with as much decimal places as as
+	// if we want to convert a double with as much decimal places as
 	// DBL_MAX or DBL_MIN then we would theoretically need a buffer of at least
 	// DBL_MAX_10_EXP + 2 for DBL_MAX and DBL_MAX_10_EXP + 4 for DBL_MIN.
 	// BUT those values where still giving me exceptions, so I tested from
@@ -2459,7 +2459,7 @@ bool String::is_numeric() const {
 	return true; // TODO: Use the parser below for this instead
 }
 
-template <class C>
+template <typename C>
 static double built_in_strtod(
 		/* A decimal ASCII floating-point number,
 		 * optionally preceded by white space. Must
@@ -3329,8 +3329,12 @@ bool String::begins_with(const String &p_string) const {
 
 bool String::begins_with(const char *p_string) const {
 	int l = length();
-	if (l == 0 || !p_string) {
+	if (!p_string) {
 		return false;
+	}
+
+	if (l == 0) {
+		return *p_string == 0;
 	}
 
 	const char32_t *str = &operator[](0);
@@ -5391,9 +5395,7 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 
 /**
  * "Run-time TRanslate". Performs string replacement for internationalization
- * within a running project. The translation string must be supplied by the
- * project, as Godot does not provide built-in translations for `RTR()` strings
- * to keep binary size low. A translation context can optionally be specified to
+ * without the editor. A translation context can optionally be specified to
  * disambiguate between identical source strings in translations. When
  * placeholders are desired, use `vformat(RTR("Example: %s"), some_string)`.
  * If a string mentions a quantity (and may therefore need a dynamic plural form),
@@ -5407,9 +5409,8 @@ String RTR(const String &p_text, const String &p_context) {
 		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
 		if (rtr.is_empty() || rtr == p_text) {
 			return TranslationServer::get_singleton()->translate(p_text, p_context);
-		} else {
-			return rtr;
 		}
+		return rtr;
 	}
 
 	return p_text;
@@ -5417,13 +5418,10 @@ String RTR(const String &p_text, const String &p_context) {
 
 /**
  * "Run-time TRanslate for N items". Performs string replacement for
- * internationalization within a running project. The translation string must be
- * supplied by the project, as Godot does not provide built-in translations for
- * `RTRN()` strings to keep binary size low. A translation context can
- * optionally be specified to disambiguate between identical source strings in
- * translations. Use `RTR()` if the string doesn't need dynamic plural form.
- * When placeholders are desired, use
- * `vformat(RTRN("%d item", "%d items", some_integer), some_integer)`.
+ * internationalization without the editor. A translation context can optionally
+ * be specified to disambiguate between identical source strings in translations.
+ * Use `RTR()` if the string doesn't need dynamic plural form. When placeholders
+ * are desired, use `vformat(RTRN("%d item", "%d items", some_integer), some_integer)`.
  * The placeholder must be present in both strings to avoid run-time warnings in `vformat()`.
  *
  * NOTE: Do not use `RTRN()` in editor-only code (typically within the `editor/`
@@ -5434,9 +5432,8 @@ String RTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
 		if (rtr.is_empty() || rtr == p_text || rtr == p_text_plural) {
 			return TranslationServer::get_singleton()->translate_plural(p_text, p_text_plural, p_n, p_context);
-		} else {
-			return rtr;
 		}
+		return rtr;
 	}
 
 	// Return message based on English plural rule if translation is not possible.

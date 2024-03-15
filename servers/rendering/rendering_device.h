@@ -39,7 +39,6 @@
 #include "core/templates/rid_owner.h"
 #include "core/variant/typed_array.h"
 #include "servers/display_server.h"
-#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
 #include "servers/rendering/rendering_device_graph.h"
@@ -1291,12 +1290,11 @@ private:
 	void _free_internal(RID p_id);
 	void _begin_frame();
 	void _end_frame();
-	void _execute_frame(bool p_signal_for_present);
-	void _present_frame();
+	void _execute_frame(bool p_present);
 	void _stall_for_previous_frames();
 	void _flush_and_stall_for_all_frames();
 
-	template <class T>
+	template <typename T>
 	void _free_rids(T &p_owner, const char *p_type);
 
 #ifdef DEV_ENABLED

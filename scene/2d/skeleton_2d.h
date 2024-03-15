@@ -32,7 +32,7 @@
 #define SKELETON_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 
 class Skeleton2D;
 
@@ -78,7 +78,7 @@ public:
 	void apply_rest();
 	Transform2D get_skeleton_rest() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_autocalculate_length_and_angle(bool p_autocalculate);
 	bool get_autocalculate_length_and_angle() const;

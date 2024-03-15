@@ -458,7 +458,7 @@ void TileSetEditor::_tab_changed(int p_tab_changed) {
 	patterns_item_list->set_visible(p_tab_changed == 1);
 }
 
-void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
+void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos) {
 	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo_man);
 
@@ -668,7 +668,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 	}
 }
 
-void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
+void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value) {
 	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo_man);
 
@@ -854,7 +854,7 @@ TileSetEditor::TileSetEditor() {
 	p->set_item_checked(TilesEditorUtils::SOURCE_SORT_ID, true);
 
 	sources_list = memnew(ItemList);
-	sources_list->set_auto_translate(false);
+	sources_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -934,7 +934,7 @@ TileSetEditor::TileSetEditor() {
 	//// Patterns ////
 	int thumbnail_size = 64;
 	patterns_item_list = memnew(ItemList);
-	patterns_item_list->set_auto_translate(false);
+	patterns_item_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	patterns_item_list->set_max_columns(0);
 	patterns_item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "window.h"
+#include "window.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
@@ -52,8 +53,8 @@ void Window::set_root_layout_direction(int p_root_dir) {
 
 bool Window::_set(const StringName &p_name, const Variant &p_value) {
 	ERR_MAIN_THREAD_GUARD_V(false);
-
 	String name = p_name;
+
 	if (!name.begins_with("theme_override")) {
 		return false;
 	}
@@ -95,7 +96,6 @@ bool Window::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			return false;
 		}
-
 	} else {
 		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
@@ -124,8 +124,8 @@ bool Window::_set(const StringName &p_name, const Variant &p_value) {
 
 bool Window::_get(const StringName &p_name, Variant &r_ret) const {
 	ERR_READ_THREAD_GUARD_V(false);
-
 	String sname = p_name;
+
 	if (!sname.begins_with("theme_override")) {
 		return false;
 	}
@@ -1194,10 +1194,7 @@ void Window::_update_viewport_size() {
 		}
 	}
 
-	if (old_size != size) {
-		old_size = size;
-		notification(NOTIFICATION_WM_SIZE_CHANGED);
-	}
+	notification(NOTIFICATION_WM_SIZE_CHANGED);
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
@@ -1212,8 +1209,26 @@ void Window::_update_window_callbacks() {
 	DisplayServer::get_singleton()->window_set_drop_files_callback(callable_mp(this, &Window::_window_drop_files), window_id);
 }
 
+void Window::set_force_native(bool p_force_native) {
+	if (force_native == p_force_native) {
+		return;
+	}
+	force_native = p_force_native;
+	if (is_visible()) {
+		WARN_PRINT("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
+	}
+}
+
+bool Window::get_force_native() const {
+	return force_native;
+}
+
 Viewport *Window::get_embedder() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
+	if (force_native && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) {
+		return nullptr;
+	}
+
 	Viewport *vp = get_parent_viewport();
 
 	while (vp) {
@@ -1307,14 +1322,6 @@ void Window::_notification(int p_what) {
 				emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
-
-#ifdef TOOLS_ENABLED
-			if (is_part_of_edited_scene()) {
-				// Don't translate Windows on scene when inside editor.
-				set_message_translation(false);
-				notification(NOTIFICATION_TRANSLATION_CHANGED);
-			}
-#endif
 
 			// Emits NOTIFICATION_THEME_CHANGED internally.
 			set_theme_context(ThemeDB::get_singleton()->get_nearest_theme_context(this));
@@ -1779,7 +1786,10 @@ void Window::popup(const Rect2i &p_screen_rect) {
 
 	if (p_screen_rect != Rect2i()) {
 		set_position(p_screen_rect.position);
-		set_size(p_screen_rect.size);
+		int screen_id = DisplayServer::get_singleton()->get_screen_from_rect(p_screen_rect);
+		Size2i screen_size = DisplayServer::get_singleton()->screen_get_usable_rect(screen_id).size;
+		Size2i new_size = p_screen_rect.size.min(screen_size);
+		set_size(new_size);
 	}
 
 	Rect2i adjust = _popup_adjust_rect();
@@ -2649,21 +2659,17 @@ bool Window::is_layout_rtl() const {
 	}
 }
 
+#ifndef DISABLE_DEPRECATED
 void Window::set_auto_translate(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
-	if (p_enable == auto_translate) {
-		return;
-	}
-
-	auto_translate = p_enable;
-
-	notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	set_auto_translate_mode(p_enable ? AUTO_TRANSLATE_MODE_ALWAYS : AUTO_TRANSLATE_MODE_DISABLED);
 }
 
 bool Window::is_auto_translating() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return auto_translate;
+	return can_auto_translate();
 }
+#endif
 
 Transform2D Window::get_final_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
@@ -2814,6 +2820,9 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_contents_minimum_size"), &Window::get_contents_minimum_size);
 
+	ClassDB::bind_method(D_METHOD("set_force_native", "force_native"), &Window::set_force_native);
+	ClassDB::bind_method(D_METHOD("get_force_native"), &Window::get_force_native);
+
 	ClassDB::bind_method(D_METHOD("set_content_scale_size", "size"), &Window::set_content_scale_size);
 	ClassDB::bind_method(D_METHOD("get_content_scale_size"), &Window::get_content_scale_size);
 
@@ -2865,12 +2874,12 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_theme_color_override", "name"), &Window::remove_theme_color_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_constant_override", "name"), &Window::remove_theme_constant_override);
 
-	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Window::get_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Window::get_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "theme_type"), &Window::get_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Window::get_theme_font_size, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Window::get_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Window::get_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Window::get_theme_icon, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Window::get_theme_stylebox, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "theme_type"), &Window::get_theme_font, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Window::get_theme_font_size, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Window::get_theme_color, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Window::get_theme_constant, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon_override", "name"), &Window::has_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox_override", "name"), &Window::has_theme_stylebox_override);
@@ -2879,12 +2888,12 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_theme_color_override", "name"), &Window::has_theme_color_override);
 	ClassDB::bind_method(D_METHOD("has_theme_constant_override", "name"), &Window::has_theme_constant_override);
 
-	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Window::has_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Window::has_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "theme_type"), &Window::has_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Window::has_theme_font_size, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Window::has_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Window::has_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Window::has_theme_icon, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Window::has_theme_stylebox, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "theme_type"), &Window::has_theme_font, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Window::has_theme_font_size, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Window::has_theme_color, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Window::has_theme_constant, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("get_theme_default_base_scale"), &Window::get_theme_default_base_scale);
 	ClassDB::bind_method(D_METHOD("get_theme_default_font"), &Window::get_theme_default_font);
@@ -2894,8 +2903,10 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Window::get_layout_direction);
 	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Window::is_layout_rtl);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Window::set_auto_translate);
 	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Window::is_auto_translating);
+#endif
 
 	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_on_parent", "parent_rect"), &Window::popup_on_parent);
@@ -2936,6 +2947,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "extend_to_title"), "set_flag", "get_flag", FLAG_EXTEND_TO_TITLE);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "mouse_passthrough"), "set_flag", "get_flag", FLAG_MOUSE_PASSTHROUGH);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_native"), "set_force_native", "get_force_native");
 
 	ADD_GROUP("Limits", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size", PROPERTY_HINT_NONE, "suffix:px"), "set_min_size", "get_min_size");
@@ -2949,8 +2961,9 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_stretch", PROPERTY_HINT_ENUM, "Fractional,Integer"), "set_content_scale_stretch", "get_content_scale_stretch");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), "set_content_scale_factor", "get_content_scale_factor");
 
-	ADD_GROUP("Localization", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate"), "set_auto_translate", "is_auto_translating");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_auto_translate", "is_auto_translating");
+#endif
 
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");

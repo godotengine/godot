@@ -398,7 +398,7 @@ DependencyEditorOwners::DependencyEditorOwners() {
 	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
-	owners->set_auto_translate(false);
+	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	owners->set_select_mode(ItemList::SELECT_MULTI);
 	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));

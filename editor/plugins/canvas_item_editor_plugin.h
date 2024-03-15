@@ -394,7 +394,7 @@ private:
 
 	void _save_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool save_bones = false);
 	void _restore_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool restore_bones = false);
-	void _commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, String action_name, bool commit_bones = false);
+	void _commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, const String &action_name, bool commit_bones = false);
 
 	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
@@ -440,7 +440,7 @@ private:
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
 
-	void _draw_text_at_position(Point2 p_position, String p_string, Side p_side);
+	void _draw_text_at_position(Point2 p_position, const String &p_string, Side p_side);
 	void _draw_margin_at_position(int p_value, Point2 p_position, Side p_side);
 	void _draw_percentage_at_position(real_t p_value, Point2 p_position, Side p_side);
 	void _draw_straight_line(Point2 p_from, Point2 p_to, Color p_color);
@@ -458,7 +458,7 @@ private:
 	void _draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _draw_hover();
-	void _draw_transform_message();
+	void _draw_message();
 
 	void _draw_viewport();
 
@@ -477,10 +477,13 @@ private:
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
 	void _update_cursor();
+	void _update_lock_and_group_button();
 
 	void _selection_changed();
 	void _focus_selection(int p_op);
 	void _reset_drag();
+
+	void _project_settings_changed();
 
 	SnapTarget snap_target[2];
 	Transform2D snap_transform;
@@ -543,6 +546,8 @@ public:
 
 		SNAP_DEFAULT = SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL,
 	};
+
+	String message;
 
 	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, const List<CanvasItem *> &p_other_nodes_exceptions = List<CanvasItem *>());
 	real_t snap_angle(real_t p_target, real_t p_start = 0) const;
@@ -642,7 +647,7 @@ class CanvasItemEditorViewport : public Control {
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();
 
-	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
+	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
 	bool _only_packed_scenes_selected() const;
 	void _create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point);
 	bool _create_instance(Node *parent, String &path, const Point2 &p_point);

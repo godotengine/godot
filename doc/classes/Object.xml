@@ -220,7 +220,7 @@
 			<return type="bool" />
 			<param index="0" name="property" type="StringName" />
 			<description>
-				Override this method to customize the given [param property]'s revert behavior. Should return [code]true[/code] if the [param property] can be reverted in the Inspector dock. Use [method _property_get_revert] to specify the [param property]'s default value.
+				Override this method to customize the given [param property]'s revert behavior. Should return [code]true[/code] if the [param property] has a custom default value and is revertible in the Inspector dock. Use [method _property_get_revert] to specify the [param property]'s default value.
 				[b]Note:[/b] This method must return consistently, regardless of the current value of the [param property].
 			</description>
 		</method>
@@ -406,7 +406,7 @@
 			<param index="0" name="method" type="StringName" />
 			<description>
 				Calls the [param method] on the object during idle time. Always returns null, [b]not[/b] the method's result.
-				Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. If not done carefully, this can result in infinite recursion without causing a stack overflow, which will hang the game similarly to an infinite loop.
+				Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. This means you should not call a method deferred from itself (or from a method called by it), as this causes infinite recursion the same way as if you had called the method directly.
 				This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
 				[codeblocks]
 				[gdscript]
@@ -643,7 +643,7 @@
 				[csharp]
 				var node = new Node2D();
 				node.Rotation = 1.5f;
-				var a = node.Get("rotation"); // a is 1.5
+				var a = node.Get(Node2D.PropertyName.Rotation); // a is 1.5
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
@@ -709,6 +709,14 @@
 			<return type="StringName[]" />
 			<description>
 				Returns the object's metadata entry names as a [PackedStringArray].
+			</description>
+		</method>
+		<method name="get_method_argument_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Returns the number of arguments of the given [param method] by name.
+				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="get_method_list" qualifiers="const">
@@ -911,7 +919,7 @@
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
-				node.Set("global_scale", new Vector2(8, 2.5));
+				node.Set(Node2D.PropertyName.GlobalScale, new Vector2(8, 2.5));
 				GD.Print(node.GlobalScale); // Prints Vector2(8, 2.5)
 				[/csharp]
 				[/codeblocks]
@@ -936,21 +944,21 @@
 				var node = Node2D.new()
 				add_child(node)
 
-				node.rotation = 45.0
-				node.set_deferred("rotation", 90.0)
-				print(node.rotation) # Prints 45.0
+				node.rotation = 1.5
+				node.set_deferred("rotation", 3.0)
+				print(node.rotation) # Prints 1.5
 
 				await get_tree().process_frame
-				print(node.rotation) # Prints 90.0
+				print(node.rotation) # Prints 3.0
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
-				node.Rotation = 45f;
-				node.SetDeferred("rotation", 90f);
-				GD.Print(node.Rotation); // Prints 45.0
+				node.Rotation = 1.5f;
+				node.SetDeferred(Node2D.PropertyName.Rotation, 3f);
+				GD.Print(node.Rotation); // Prints 1.5
 
 				await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-				GD.Print(node.Rotation); // Prints 90.0
+				GD.Print(node.Rotation); // Prints 3.0
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
@@ -1014,7 +1022,7 @@
 		<method name="tr" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="message" type="StringName" />
-			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
 				If [method can_translate_messages] is [code]false[/code], or no translation is available, this method returns the [param message] without changes. See [method set_message_translation].
@@ -1026,13 +1034,13 @@
 			<param index="0" name="message" type="StringName" />
 			<param index="1" name="plural_message" type="StringName" />
 			<param index="2" name="n" type="int" />
-			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="3" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Translates a [param message] or [param plural_message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
 				If [method can_translate_messages] is [code]false[/code], or no translation is available, this method returns [param message] or [param plural_message], without changes. See [method set_message_translation].
 				The [param n] is the number, or amount, of the message's subject. It is used by the translation system to fetch the correct plural form for the current language.
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url].
-				[b]Note:[/b] Negative and [float] numbers may not properly apply to some countable subjects. It's recommended handling these cases with [method tr].
+				[b]Note:[/b] Negative and [float] numbers may not properly apply to some countable subjects. It's recommended to handle these cases with [method tr].
 			</description>
 		</method>
 	</methods>

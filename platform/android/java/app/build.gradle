@@ -116,6 +116,14 @@ android {
         if (shouldNotStrip()) {
             doNotStrip '**/*.so'
         }
+
+        jniLibs {
+            // Setting this to true causes AGP to package compressed native libraries when building the app
+            // For more background, see:
+            // - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
+            // - https://stackoverflow.com/a/44704840
+            useLegacyPackaging shouldUseLegacyPackaging()
+        }
     }
 
     signingConfigs {

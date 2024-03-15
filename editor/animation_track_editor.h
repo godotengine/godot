@@ -231,6 +231,7 @@ class AnimationTrackEdit : public Control {
 		MENU_LOOP_CLAMP,
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
+		MENU_KEY_CUT,
 		MENU_KEY_COPY,
 		MENU_KEY_PASTE,
 		MENU_KEY_ADD_RESET,
@@ -439,7 +440,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _add_track(int p_type);
 	void _new_track_node_selected(NodePath p_path);
-	void _new_track_property_selected(String p_name);
+	void _new_track_property_selected(const String &p_name);
 
 	void _update_step_spinbox();
 
@@ -556,6 +557,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	SpinBox *optimize_precision_error = nullptr;
 
 	ConfirmationDialog *cleanup_dialog = nullptr;
+	CheckBox *cleanup_keys_with_trimming_head = nullptr;
+	CheckBox *cleanup_keys_with_trimming_end = nullptr;
 	CheckBox *cleanup_keys = nullptr;
 	CheckBox *cleanup_tracks = nullptr;
 	CheckBox *cleanup_all = nullptr;
@@ -578,7 +581,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _anim_duplicate_keys(float p_ofs, int p_track);
 
-	void _anim_copy_keys();
+	void _anim_copy_keys(bool p_cut);
 
 	bool _is_track_compatible(int p_target_track_idx, Variant::Type p_source_value_type, Animation::TrackType p_source_track_type);
 
@@ -649,14 +652,21 @@ public:
 		EDIT_COPY_TRACKS,
 		EDIT_COPY_TRACKS_CONFIRM,
 		EDIT_PASTE_TRACKS,
+		EDIT_CUT_KEYS,
 		EDIT_COPY_KEYS,
 		EDIT_PASTE_KEYS,
 		EDIT_SCALE_SELECTION,
 		EDIT_SCALE_FROM_CURSOR,
 		EDIT_SCALE_CONFIRM,
+		EDIT_SET_START_OFFSET,
+		EDIT_SET_END_OFFSET,
 		EDIT_EASE_SELECTION,
 		EDIT_EASE_CONFIRM,
 		EDIT_DUPLICATE_SELECTED_KEYS,
+		EDIT_DUPLICATE_SELECTION,
+		EDIT_DUPLICATE_TRANSPOSED,
+		EDIT_MOVE_FIRST_SELECTED_KEY_TO_CURSOR,
+		EDIT_MOVE_LAST_SELECTED_KEY_TO_CURSOR,
 		EDIT_ADD_RESET_KEY,
 		EDIT_DELETE_SELECTION,
 		EDIT_GOTO_NEXT_STEP,
@@ -689,7 +699,7 @@ public:
 	void set_anim_pos(float p_pos);
 	void insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists = false);
 	void insert_value_key(const String &p_property, const Variant &p_value, bool p_advance);
-	void insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant p_value);
+	void insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value);
 	bool has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type);
 	void make_insert_queue();
 	void commit_insert_queue();

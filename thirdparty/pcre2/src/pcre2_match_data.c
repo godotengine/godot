@@ -170,4 +170,16 @@ return offsetof(pcre2_match_data, ovector) +
   2 * (match_data->oveccount) * sizeof(PCRE2_SIZE);
 }
 
+
+
+/*************************************************
+*             Get heapframes size                *
+*************************************************/
+
+PCRE2_EXP_DEFN PCRE2_SIZE PCRE2_CALL_CONVENTION
+pcre2_get_match_data_heapframes_size(pcre2_match_data *match_data)
+{
+return match_data->heapframes_size;
+}
+
 /* End of pcre2_match_data.c */

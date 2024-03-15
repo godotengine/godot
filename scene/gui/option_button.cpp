@@ -127,10 +127,7 @@ void OptionButton::_notification(int p_what) {
 			theme_cache.arrow_icon->draw(ci, ofs, clr);
 		} break;
 
-		case NOTIFICATION_TRANSLATION_CHANGED: {
-			popup->set_auto_translate(is_auto_translating());
-			[[fallthrough]];
-		}
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
 			[[fallthrough]];
@@ -339,6 +336,13 @@ void OptionButton::set_item_count(int p_count) {
 		}
 	}
 
+	if (!initialized) {
+		if (queued_current != current) {
+			current = queued_current;
+		}
+		initialized = true;
+	}
+
 	_refresh_size_cache();
 	notify_property_list_changed();
 }
@@ -435,7 +439,13 @@ void OptionButton::_select(int p_which, bool p_emit) {
 }
 
 void OptionButton::_select_int(int p_which) {
-	if (p_which < NONE_SELECTED || p_which >= popup->get_item_count()) {
+	if (p_which < NONE_SELECTED) {
+		return;
+	}
+	if (p_which >= popup->get_item_count()) {
+		if (!initialized) {
+			queued_current = p_which;
+		}
 		return;
 	}
 	_select(p_which, false);
@@ -574,11 +584,10 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &OptionButton::get_allow_reselect);
 	ClassDB::bind_method(D_METHOD("set_disable_shortcuts", "disabled"), &OptionButton::set_disable_shortcuts);
 
-	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
-	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
+	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
@@ -605,8 +614,6 @@ void OptionButton::set_disable_shortcuts(bool p_disabled) {
 
 OptionButton::OptionButton(const String &p_text) :
 		Button(p_text) {
-	_set_h_separation_is_valid_when_no_text(true);
-
 	set_toggle_mode(true);
 	set_process_shortcut_input(true);
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);

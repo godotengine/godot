@@ -483,6 +483,10 @@ void GroupSettingsEditor::_show_rename_dialog() {
 	rename_group->grab_focus();
 }
 
+LineEdit *GroupSettingsEditor::get_name_box() const {
+	return group_name;
+}
+
 GroupSettingsEditor::GroupSettingsEditor() {
 	ProjectSettings::get_singleton()->add_hidden_prefix("global_group/");
 

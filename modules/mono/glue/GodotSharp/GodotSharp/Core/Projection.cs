@@ -251,10 +251,10 @@ namespace Godot
         /// <param name="right">The right clipping distance.</param>
         /// <param name="bottom">The bottom clipping distance.</param>
         /// <param name="top">The top clipping distance.</param>
-        /// <param name="near">The near clipping distance.</param>
-        /// <param name="far">The far clipping distance.</param>
+        /// <param name="depthNear">The near clipping distance.</param>
+        /// <param name="depthFar">The far clipping distance.</param>
         /// <returns>The created projection.</returns>
-        public static Projection CreateFrustum(real_t left, real_t right, real_t bottom, real_t top, real_t depth_near, real_t depth_far)
+        public static Projection CreateFrustum(real_t left, real_t right, real_t bottom, real_t top, real_t depthNear, real_t depthFar)
         {
             if (right <= left)
             {
@@ -264,18 +264,18 @@ namespace Godot
             {
                 throw new ArgumentException("top is less or equal to bottom.");
             }
-            if (depth_far <= depth_near)
+            if (depthFar <= depthNear)
             {
                 throw new ArgumentException("far is less or equal to near.");
             }
 
-            real_t x = 2 * depth_near / (right - left);
-            real_t y = 2 * depth_near / (top - bottom);
+            real_t x = 2 * depthNear / (right - left);
+            real_t y = 2 * depthNear / (top - bottom);
 
             real_t a = (right + left) / (right - left);
             real_t b = (top + bottom) / (top - bottom);
-            real_t c = -(depth_far + depth_near) / (depth_far - depth_near);
-            real_t d = -2 * depth_far * depth_near / (depth_far - depth_near);
+            real_t c = -(depthFar + depthNear) / (depthFar - depthNear);
+            real_t d = -2 * depthFar * depthNear / (depthFar - depthNear);
 
             return new Projection(
                 new Vector4(x, 0, 0, 0),
@@ -293,17 +293,17 @@ namespace Godot
         /// <param name="size">The frustum size.</param>
         /// <param name="aspect">The aspect ratio.</param>
         /// <param name="offset">The offset to apply.</param>
-        /// <param name="near">The near clipping distance.</param>
-        /// <param name="far">The far clipping distance.</param>
+        /// <param name="depthNear">The near clipping distance.</param>
+        /// <param name="depthFar">The far clipping distance.</param>
         /// <param name="flipFov">If the field of view is flipped over the projection's diagonal.</param>
         /// <returns>The created projection.</returns>
-        public static Projection CreateFrustumAspect(real_t size, real_t aspect, Vector2 offset, real_t depth_near, real_t depth_far, bool flipFov)
+        public static Projection CreateFrustumAspect(real_t size, real_t aspect, Vector2 offset, real_t depthNear, real_t depthFar, bool flipFov)
         {
             if (!flipFov)
             {
                 size *= aspect;
             }
-            return CreateFrustum(-size / 2 + offset.X, +size / 2 + offset.X, -size / aspect / 2 + offset.Y, +size / aspect / 2 + offset.Y, depth_near, depth_far);
+            return CreateFrustum(-size / 2 + offset.X, +size / 2 + offset.X, -size / aspect / 2 + offset.Y, +size / aspect / 2 + offset.Y, depthNear, depthFar);
         }
 
         /// <summary>
@@ -1023,10 +1023,12 @@ namespace Godot
         /// <returns>A string representation of this projection.</returns>
         public readonly string ToString(string? format)
         {
+#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
             return $"{X.X.ToString(format)}, {X.Y.ToString(format)}, {X.Z.ToString(format)}, {X.W.ToString(format)}\n" +
                 $"{Y.X.ToString(format)}, {Y.Y.ToString(format)}, {Y.Z.ToString(format)}, {Y.W.ToString(format)}\n" +
                 $"{Z.X.ToString(format)}, {Z.Y.ToString(format)}, {Z.Z.ToString(format)}, {Z.W.ToString(format)}\n" +
                 $"{W.X.ToString(format)}, {W.Y.ToString(format)}, {W.Z.ToString(format)}, {W.W.ToString(format)}\n";
+#pragma warning restore CA1305
         }
     }
 }

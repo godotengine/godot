@@ -124,6 +124,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_AUDIO_LISTENER,
 		VIEW_AUDIO_DOPPLER,
 		VIEW_GIZMOS,
+		VIEW_GRID,
 		VIEW_INFORMATION,
 		VIEW_FRAME_TIME,
 
@@ -399,7 +400,7 @@ private:
 	String message;
 	double message_time;
 
-	void set_message(String p_message, float p_time = 5);
+	void set_message(const String &p_message, float p_time = 5);
 
 	void _view_settings_confirmed(real_t p_interp_delta);
 	void _update_camera(real_t p_interp_delta);
@@ -443,7 +444,7 @@ private:
 	bool _apply_preview_material(ObjectID p_target, const Point2 &p_point) const;
 	void _reset_preview_material() const;
 	void _remove_preview_material();
-	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
+	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
 	bool _create_instance(Node *parent, String &path, const Point2 &p_point);
 	void _perform_drop_data();
 
@@ -509,7 +510,7 @@ public:
 	RID sbox_instance_xray;
 	RID sbox_instance_xray_offset;
 	Ref<EditorNode3DGizmo> gizmo;
-	HashMap<int, Transform3D> subgizmos; // map ID -> initial transform
+	HashMap<int, Transform3D> subgizmos; // Key: Subgizmo ID, Value: Initial subgizmo transform.
 
 	Node3DEditorSelectedItem() {
 		sp = nullptr;

@@ -31,6 +31,7 @@
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
 
+#include "core/object/script_language.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/editor_folding.h"
@@ -77,9 +78,11 @@ class DockSplitContainer;
 class DynamicFontImportSettingsDialog;
 class EditorAbout;
 class EditorBuildProfileManager;
+class EditorBottomPanel;
 class EditorCommandPalette;
 class EditorDockManager;
 class EditorExport;
+class EditorExportPreset;
 class EditorExtensionManager;
 class EditorFeatureProfileManager;
 class EditorFileDialog;
@@ -133,7 +136,8 @@ public:
 	enum SceneNameCasing {
 		SCENE_NAME_CASING_AUTO,
 		SCENE_NAME_CASING_PASCAL_CASE,
-		SCENE_NAME_CASING_SNAKE_CASE
+		SCENE_NAME_CASING_SNAKE_CASE,
+		SCENE_NAME_CASING_KEBAB_CASE,
 	};
 
 	struct ExecuteThreadArgs {
@@ -243,12 +247,6 @@ private:
 		MAX_BUILD_CALLBACKS = 128
 	};
 
-	struct BottomPanelItem {
-		String name;
-		Control *control = nullptr;
-		Button *button = nullptr;
-	};
-
 	struct ExportDefer {
 		String preset;
 		String path;
@@ -323,7 +321,6 @@ private:
 	DisplayServer::WindowMode prev_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
 	int old_split_ofs = 0;
 	VSplitContainer *top_split = nullptr;
-	HBoxContainer *bottom_hb = nullptr;
 	Control *vp_base = nullptr;
 
 	Label *project_title = nullptr;
@@ -357,6 +354,13 @@ private:
 
 	Ref<Theme> theme;
 
+	Timer *system_theme_timer = nullptr;
+	bool follow_system_theme = false;
+	bool use_system_accent_color = false;
+	bool last_dark_mode_state = false;
+	Color last_system_base_color = Color(0, 0, 0, 0);
+	Color last_system_accent_color = Color(0, 0, 0, 0);
+
 	PopupMenu *recent_scenes = nullptr;
 	String _recent_scene;
 	List<String> previous_scenes;
@@ -382,6 +386,9 @@ private:
 	ConfirmationDialog *gradle_build_manage_templates = nullptr;
 	ConfirmationDialog *install_android_build_template = nullptr;
 	ConfirmationDialog *remove_android_build_template = nullptr;
+	Label *install_android_build_template_message = nullptr;
+	OptionButton *choose_android_export_profile = nullptr;
+	Ref<EditorExportPreset> android_export_preset;
 
 	PopupMenu *vcs_actions_menu = nullptr;
 	EditorFileDialog *file = nullptr;
@@ -417,15 +424,7 @@ private:
 	Timer *editor_layout_save_delay_timer = nullptr;
 	Button *distraction_free = nullptr;
 
-	Vector<BottomPanelItem> bottom_panel_items;
-	PanelContainer *bottom_panel = nullptr;
-	HBoxContainer *bottom_panel_hb = nullptr;
-	HBoxContainer *bottom_panel_hb_editors = nullptr;
-	VBoxContainer *bottom_panel_vb = nullptr;
-	EditorToaster *editor_toaster = nullptr;
-	LinkButton *version_btn = nullptr;
-	Button *bottom_panel_raise = nullptr;
-	bool bottom_panel_updating = false;
+	EditorBottomPanel *bottom_panel = nullptr;
 
 	Tree *disk_changed_list = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
@@ -518,7 +517,8 @@ private:
 
 	void _dialog_action(String p_file);
 
-	void _edit_current(bool p_skip_foreign = false);
+	void _add_to_history(const Object *p_object, const String &p_property, bool p_inspector_only);
+	void _edit_current(bool p_skip_foreign = false, bool p_skip_inspector_update = false);
 	void _dialog_display_save_error(String p_file, Error p_error);
 	void _dialog_display_load_error(String p_file, Error p_error);
 
@@ -527,10 +527,13 @@ private:
 	void _menu_option_confirm(int p_option, bool p_confirmed);
 
 	void _android_build_source_selected(const String &p_file);
+	void _android_export_preset_selected(int p_index);
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
 	void _save_screenshot(NodePath p_path);
+
+	void _check_system_theme_changed();
 
 	void _tool_menu_option(int p_idx);
 	void _export_as_menu_option(int p_idx);
@@ -556,7 +559,6 @@ private:
 	void _show_messages();
 	void _vp_resized();
 	void _titlebar_resized();
-	void _version_button_pressed();
 
 	void _update_undo_redo_allowed();
 
@@ -657,11 +659,6 @@ private:
 	void _immediate_dialog_confirmed();
 	void _select_default_main_screen_plugin();
 
-	void _bottom_panel_switch_by_control(bool p_enable, Control *p_control);
-	void _bottom_panel_switch(bool p_enable, int p_idx);
-	void _bottom_panel_raise_toggled(bool);
-	bool _bottom_panel_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
-
 	void _begin_first_scan();
 
 	void _notify_scene_updated(Node *p_node);
@@ -692,8 +689,10 @@ public:
 
 	static EditorTitleBar *get_title_bar() { return singleton->title_bar; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
+	static EditorBottomPanel *get_bottom_panel() { return singleton->bottom_panel; }
 
-	static String adjust_scene_name_casing(const String &root_name);
+	static String adjust_scene_name_casing(const String &p_root_name);
+	static String adjust_script_name_casing(const String &p_file_name, ScriptLanguage::ScriptNameCasing p_auto_casing);
 
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
@@ -752,6 +751,7 @@ public:
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
+	void push_item_no_inspector(Object *p_object);
 	void edit_item(Object *p_object, Object *p_editing_owner);
 	void push_node_item(Node *p_node);
 	void hide_unused_editors(const Object *p_editing_owner = nullptr);
@@ -870,12 +870,6 @@ public:
 	void reload_instances_with_path_in_edited_scenes(const String &p_path);
 
 	bool is_exiting() const { return exiting; }
-
-	Button *add_bottom_panel_item(String p_text, Control *p_item, bool p_at_front = false);
-	void make_bottom_panel_item_visible(Control *p_item);
-	void raise_bottom_panel_item(Control *p_item);
-	void hide_bottom_panel();
-	void remove_bottom_panel_item(Control *p_item);
 
 	Variant drag_resource(const Ref<Resource> &p_res, Control *p_from);
 	Variant drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from);

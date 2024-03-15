@@ -360,7 +360,7 @@
 		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Font color of the currently hovered tab. Does not apply to the selected tab.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the tab name.
 		</theme_item>
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">

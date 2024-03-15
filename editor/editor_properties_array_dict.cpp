@@ -211,7 +211,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 
 void EditorPropertyArray::_change_type(Object *p_button, int p_slot_index) {
 	Button *button = Object::cast_to<Button>(p_button);
-	changing_type_index = slots[p_slot_index].index;
+	changing_type_index = p_slot_index;
 	Rect2 rect = button->get_screen_rect();
 	change_type->reset_size();
 	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
@@ -228,7 +228,7 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 	VariantInternal::initialize(&value, Variant::Type(p_index));
 
 	Variant array = object->get_array().duplicate();
-	array.set(changing_type_index, value);
+	array.set(slots[changing_type_index].index, value);
 
 	emit_changed(get_edited_property(), array, "", true);
 	update_property();
@@ -311,7 +311,9 @@ void EditorPropertyArray::update_property() {
 
 	int size = array.call("size");
 	int max_page = MAX(0, size - 1) / page_length;
-	page_index = MIN(page_index, max_page);
+	if (page_index > max_page) {
+		_page_changed(max_page);
+	}
 
 	edit->set_text(vformat(TTR("%s (size %s)"), array_type_name, itos(size)));
 
@@ -780,9 +782,19 @@ void EditorPropertyDictionary::_add_key_value() {
 	}
 
 	Dictionary dict = object->get_dict().duplicate();
-	dict[object->get_new_item_key()] = object->get_new_item_value();
-	object->set_new_item_key(Variant());
-	object->set_new_item_value(Variant());
+	Variant new_key = object->get_new_item_key();
+	Variant new_value = object->get_new_item_value();
+	dict[new_key] = new_value;
+
+	Variant::Type type = new_key.get_type();
+	new_key.zero();
+	VariantInternal::initialize(&new_key, type);
+	object->set_new_item_key(new_key);
+
+	type = new_value.get_type();
+	new_value.zero();
+	VariantInternal::initialize(&new_value, type);
+	object->set_new_item_value(new_value);
 
 	emit_changed(get_edited_property(), dict, "", false);
 	update_property();
@@ -851,6 +863,7 @@ void EditorPropertyDictionary::update_property() {
 		if (!container) {
 			container = memnew(MarginContainer);
 			container->set_theme_type_variation("MarginContainer4px");
+			container->set_mouse_filter(MOUSE_FILTER_STOP);
 			add_child(container);
 			set_bottom_editor(container);
 
@@ -1274,7 +1287,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 
 ///////////////////// LOCALIZABLE STRING ///////////////////////////
 
-void EditorPropertyLocalizableString::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void EditorPropertyLocalizableString::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("indices")) {
 		int index = p_property.get_slice("/", 1).to_int();
 

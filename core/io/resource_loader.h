@@ -47,9 +47,11 @@ class ResourceFormatLoader : public RefCounted {
 
 public:
 	enum CacheMode {
-		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
-		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
-		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
+		CACHE_MODE_IGNORE,
+		CACHE_MODE_REUSE,
+		CACHE_MODE_REPLACE,
+		CACHE_MODE_IGNORE_DEEP,
+		CACHE_MODE_REPLACE_DEEP,
 	};
 
 protected:
@@ -158,7 +160,7 @@ private:
 
 	static ResourceLoadedCallback _loaded_callback;
 
-	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
+	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(const String &path);
 
 	struct ThreadLoadTask {
 		WorkerThreadPool::TaskID task_id = 0; // Used if run on a worker thread from the pool.
@@ -263,7 +265,7 @@ public:
 	static void set_load_callback(ResourceLoadedCallback p_callback);
 	static ResourceLoaderImport import;
 
-	static bool add_custom_resource_format_loader(String script_path);
+	static bool add_custom_resource_format_loader(const String &script_path);
 	static void add_custom_loaders();
 	static void remove_custom_loaders();
 

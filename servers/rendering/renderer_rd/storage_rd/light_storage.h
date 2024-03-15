@@ -43,7 +43,7 @@
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
-struct RenderDataRD;
+class RenderDataRD;
 
 namespace RendererRD {
 
@@ -277,7 +277,6 @@ private:
 		int processing_layer = 1;
 		int processing_side = 0;
 
-		uint32_t render_step = 0;
 		uint64_t last_pass = 0;
 		uint32_t cull_mask = 0;
 
@@ -848,6 +847,7 @@ public:
 	virtual RID reflection_probe_instance_create(RID p_probe) override;
 	virtual void reflection_probe_instance_free(RID p_instance) override;
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override;
+	virtual bool reflection_probe_has_atlas_index(RID p_instance) override;
 	virtual void reflection_probe_release_atlas_index(RID p_instance) override;
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override;
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override;

@@ -35,9 +35,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
-#include "scene/resources/atlas_texture.h"
 
 #if defined(VULKAN_ENABLED)
 #include "rendering_context_driver_vulkan_windows.h"
@@ -51,6 +51,9 @@
 
 #include <avrt.h>
 #include <dwmapi.h>
+#include <propkey.h>
+#include <propvarutil.h>
+#include <shellapi.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
 #include <wbemcli.h>
@@ -93,6 +96,11 @@ static void track_mouse_leave_event(HWND hWnd) {
 
 bool DisplayServerWindows::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		case FEATURE_SUBWINDOWS:
 		case FEATURE_TOUCHSCREEN:
 		case FEATURE_MOUSE:
@@ -194,8 +202,8 @@ void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window)
 		rid[1].hwndTarget = windows[p_target_window].hWnd;
 	} else {
 		// Follow the keyboard focus
-		rid[0].hwndTarget = 0;
-		rid[1].hwndTarget = 0;
+		rid[0].hwndTarget = nullptr;
+		rid[1].hwndTarget = nullptr;
 	}
 
 	if (RegisterRawInputDevices(rid, 2, sizeof(rid[0])) == FALSE) {
@@ -264,7 +272,7 @@ public:
 			QITABENT(FileDialogEventHandler, IFileDialogEvents),
 			QITABENT(FileDialogEventHandler, IFileDialogControlEvents),
 #endif
-			{ 0, 0 },
+			{ nullptr, 0 },
 		};
 		return QISearch(this, qit, riid, ppv);
 	}
@@ -754,29 +762,54 @@ Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 		}
 	} else if (IsClipboardFormatAvailable(CF_DIB)) {
 		HGLOBAL mem = GetClipboardData(CF_DIB);
-		if (mem != NULL) {
+		if (mem != nullptr) {
 			BITMAPINFO *ptr = static_cast<BITMAPINFO *>(GlobalLock(mem));
 
-			if (ptr != NULL) {
+			if (ptr != nullptr) {
 				BITMAPINFOHEADER *info = &ptr->bmiHeader;
-				PackedByteArray pba;
+				void *dib_bits = (void *)(ptr->bmiColors);
 
-				for (LONG y = info->biHeight - 1; y > -1; y--) {
-					for (LONG x = 0; x < info->biWidth; x++) {
-						tagRGBQUAD *rgbquad = ptr->bmiColors + (info->biWidth * y) + x;
-						pba.append(rgbquad->rgbRed);
-						pba.append(rgbquad->rgbGreen);
-						pba.append(rgbquad->rgbBlue);
-						pba.append(rgbquad->rgbReserved);
+				// Draw DIB image to temporary DC surface and read it back as BGRA8.
+				HDC dc = GetDC(nullptr);
+				if (dc) {
+					HDC hdc = CreateCompatibleDC(dc);
+					if (hdc) {
+						HBITMAP hbm = CreateCompatibleBitmap(dc, info->biWidth, abs(info->biHeight));
+						if (hbm) {
+							SelectObject(hdc, hbm);
+							SetDIBitsToDevice(hdc, 0, 0, info->biWidth, abs(info->biHeight), 0, 0, 0, abs(info->biHeight), dib_bits, ptr, DIB_RGB_COLORS);
+
+							BITMAPINFO bmp_info = {};
+							bmp_info.bmiHeader.biSize = sizeof(bmp_info.bmiHeader);
+							bmp_info.bmiHeader.biWidth = info->biWidth;
+							bmp_info.bmiHeader.biHeight = -abs(info->biHeight);
+							bmp_info.bmiHeader.biPlanes = 1;
+							bmp_info.bmiHeader.biBitCount = 32;
+							bmp_info.bmiHeader.biCompression = BI_RGB;
+
+							Vector<uint8_t> img_data;
+							img_data.resize(info->biWidth * abs(info->biHeight) * 4);
+							GetDIBits(hdc, hbm, 0, abs(info->biHeight), img_data.ptrw(), &bmp_info, DIB_RGB_COLORS);
+
+							uint8_t *wr = (uint8_t *)img_data.ptrw();
+							for (int i = 0; i < info->biWidth * abs(info->biHeight); i++) {
+								SWAP(wr[i * 4 + 0], wr[i * 4 + 2]); // Swap B and R.
+								if (info->biBitCount != 32) {
+									wr[i * 4 + 3] = 255; // Set A to solid if it's not in the source image.
+								}
+							}
+							image = Image::create_from_data(info->biWidth, abs(info->biHeight), false, Image::Format::FORMAT_RGBA8, img_data);
+
+							DeleteObject(hbm);
+						}
+						DeleteDC(hdc);
 					}
+					ReleaseDC(nullptr, dc);
 				}
-				image = Image::create_from_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
-
 				GlobalUnlock(mem);
 			}
 		}
 	}
-
 	CloseClipboard();
 
 	return image;
@@ -835,7 +868,7 @@ int DisplayServerWindows::get_screen_count() const {
 }
 
 int DisplayServerWindows::get_primary_screen() const {
-	EnumScreenData data = { 0, 0, 0 };
+	EnumScreenData data = { 0, 0, nullptr };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcPrim, (LPARAM)&data);
 	return data.screen;
 }
@@ -1083,16 +1116,16 @@ Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 	p.x = pos.x;
 	p.y = pos.y;
 	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p);
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p);
 	}
-	HDC dc = GetDC(0);
+	HDC dc = GetDC(nullptr);
 	if (dc) {
 		COLORREF col = GetPixel(dc, p.x, p.y);
 		if (col != CLR_INVALID) {
-			ReleaseDC(NULL, dc);
+			ReleaseDC(nullptr, dc);
 			return Color(float(col & 0x000000FF) / 255.0f, float((col & 0x0000FF00) >> 8) / 255.0f, float((col & 0x00FF0000) >> 16) / 255.0f, 1.0f);
 		}
-		ReleaseDC(NULL, dc);
+		ReleaseDC(nullptr, dc);
 	}
 
 	return Color();
@@ -1123,12 +1156,12 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 	p2.x = pos.x + size.x;
 	p2.y = pos.y + size.y;
 	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
-		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p2);
 	}
 
 	Ref<Image> img;
-	HDC dc = GetDC(0);
+	HDC dc = GetDC(nullptr);
 	if (dc) {
 		HDC hdc = CreateCompatibleDC(dc);
 		int width = p2.x - p1.x;
@@ -1153,7 +1186,7 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 
 				uint8_t *wr = (uint8_t *)img_data.ptrw();
 				for (int i = 0; i < width * height; i++) {
-					SWAP(wr[i * 4 + 0], wr[i * 4 + 2]);
+					SWAP(wr[i * 4 + 0], wr[i * 4 + 2]); // Swap B and R.
 				}
 				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
 
@@ -1161,7 +1194,7 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 			}
 			DeleteDC(hdc);
 		}
-		ReleaseDC(NULL, dc);
+		ReleaseDC(nullptr, dc);
 	}
 
 	return img;
@@ -1350,6 +1383,15 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 
 	WindowData &wd = windows[p_window];
 
+	IPropertyStore *prop_store;
+	HRESULT hr = SHGetPropertyStoreForWindow(wd.hWnd, IID_IPropertyStore, (void **)&prop_store);
+	if (hr == S_OK) {
+		PROPVARIANT val;
+		PropVariantInit(&val);
+		prop_store->SetValue(PKEY_AppUserModel_ID, val);
+		prop_store->Release();
+	}
+
 	while (wd.transient_children.size()) {
 		window_set_transient(*wd.transient_children.begin(), INVALID_WINDOW_ID);
 	}
@@ -1378,7 +1420,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 
 	if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[p_window].wtctx) {
 		wintab_WTClose(windows[p_window].wtctx);
-		windows[p_window].wtctx = 0;
+		windows[p_window].wtctx = nullptr;
 	}
 	DestroyWindow(windows[p_window].hWnd);
 	windows.erase(p_window);
@@ -1499,7 +1541,7 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 		return size;
 	}
 
-	HDC hdc = GetDCEx(wd.hWnd, NULL, DCX_WINDOW);
+	HDC hdc = GetDCEx(wd.hWnd, nullptr, DCX_WINDOW);
 	if (hdc) {
 		Char16String s = p_title.utf16();
 		SIZE text_size;
@@ -1517,8 +1559,8 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 			ClientToScreen(wd.hWnd, (POINT *)&rect.right);
 
 			if (win81p_PhysicalToLogicalPointForPerMonitorDPI) {
-				win81p_PhysicalToLogicalPointForPerMonitorDPI(0, (POINT *)&rect.left);
-				win81p_PhysicalToLogicalPointForPerMonitorDPI(0, (POINT *)&rect.right);
+				win81p_PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.left);
+				win81p_PhysicalToLogicalPointForPerMonitorDPI(nullptr, (POINT *)&rect.right);
 			}
 
 			size.x += (rect.right - rect.left);
@@ -1949,7 +1991,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
 
 		if (restore_mouse_trails > 1) {
-			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
+			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);
 			restore_mouse_trails = 0;
 		}
 	}
@@ -2006,7 +2048,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		// Save number of trails so we can restore when exiting, then turn off mouse trails
 		SystemParametersInfoA(SPI_GETMOUSETRAILS, 0, &restore_mouse_trails, 0);
 		if (restore_mouse_trails > 1) {
-			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, 0, 0);
+			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, nullptr, 0);
 		}
 	}
 }
@@ -2261,10 +2303,10 @@ void DisplayServerWindows::window_set_ime_active(const bool p_active, WindowID p
 	if (p_active) {
 		wd.ime_active = true;
 		ImmAssociateContext(wd.hWnd, wd.im_himc);
-		CreateCaret(wd.hWnd, NULL, 1, 1);
+		CreateCaret(wd.hWnd, nullptr, 1, 1);
 		window_set_ime_position(wd.im_position, p_window);
 	} else {
-		ImmAssociateContext(wd.hWnd, (HIMC)0);
+		ImmAssociateContext(wd.hWnd, (HIMC) nullptr);
 		DestroyCaret();
 		wd.ime_active = false;
 	}
@@ -2279,7 +2321,7 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 	wd.im_position = p_pos;
 
 	HIMC himc = ImmGetContext(wd.hWnd);
-	if (himc == (HIMC)0) {
+	if (himc == (HIMC) nullptr) {
 		return;
 	}
 
@@ -2355,38 +2397,10 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 			cursors_cache.erase(p_shape);
 		}
 
-		Ref<Texture2D> texture = p_cursor;
-		ERR_FAIL_COND(!texture.is_valid());
-		Ref<AtlasTexture> atlas_texture = p_cursor;
-		Size2 texture_size;
 		Rect2 atlas_rect;
-
-		if (atlas_texture.is_valid()) {
-			texture = atlas_texture->get_atlas();
-
-			atlas_rect.size.width = texture->get_width();
-			atlas_rect.size.height = texture->get_height();
-			atlas_rect.position.x = atlas_texture->get_region().position.x;
-			atlas_rect.position.y = atlas_texture->get_region().position.y;
-			texture_size.width = atlas_texture->get_region().size.x;
-			texture_size.height = atlas_texture->get_region().size.y;
-		} else {
-			texture_size.width = texture->get_width();
-			texture_size.height = texture->get_height();
-		}
-
-		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
-		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
-		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
-
-		Ref<Image> image = texture->get_image();
-
-		ERR_FAIL_COND(!image.is_valid());
-		if (image->is_compressed()) {
-			image = image->duplicate(true);
-			Error err = image->decompress();
-			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
-		}
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot, atlas_rect);
+		ERR_FAIL_COND(image.is_null());
+		Vector2i texture_size = image->get_size();
 
 		UINT image_size = texture_size.width * texture_size.height;
 
@@ -2415,7 +2429,7 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
 			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
 
-			if (atlas_texture.is_valid()) {
+			if (atlas_rect.has_area()) {
 				column_index = MIN(column_index, atlas_rect.size.width - 1);
 				row_index = MIN(row_index, atlas_rect.size.height - 1);
 			}
@@ -2479,6 +2493,298 @@ void DisplayServerWindows::enable_for_stealing_focus(OS::ProcessID pid) {
 	_THREAD_SAFE_METHOD_
 
 	AllowSetForegroundWindow(pid);
+}
+
+static HRESULT CALLBACK win32_task_dialog_callback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LONG_PTR lpRefData) {
+	if (msg == TDN_CREATED) {
+		// To match the input text dialog.
+		SendMessageW(hwnd, WM_SETICON, ICON_BIG, 0);
+		SendMessageW(hwnd, WM_SETICON, ICON_SMALL, 0);
+	}
+
+	return 0;
+}
+
+Error DisplayServerWindows::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
+	_THREAD_SAFE_METHOD_
+
+	TASKDIALOGCONFIG config;
+	ZeroMemory(&config, sizeof(TASKDIALOGCONFIG));
+	config.cbSize = sizeof(TASKDIALOGCONFIG);
+
+	Char16String title = p_title.utf16();
+	Char16String message = p_description.utf16();
+	List<Char16String> buttons;
+	for (String s : p_buttons) {
+		buttons.push_back(s.utf16());
+	}
+
+	config.pszWindowTitle = (LPCWSTR)(title.get_data());
+	config.pszContent = (LPCWSTR)(message.get_data());
+
+	const int button_count = MIN(buttons.size(), 8);
+	config.cButtons = button_count;
+
+	// No dynamic stack array size :(
+	TASKDIALOG_BUTTON *tbuttons = button_count != 0 ? (TASKDIALOG_BUTTON *)alloca(sizeof(TASKDIALOG_BUTTON) * button_count) : nullptr;
+	if (tbuttons) {
+		for (int i = 0; i < button_count; i++) {
+			tbuttons[i].nButtonID = i;
+			tbuttons[i].pszButtonText = (LPCWSTR)(buttons[i].get_data());
+		}
+	}
+	config.pButtons = tbuttons;
+	config.pfCallback = win32_task_dialog_callback;
+
+	Error result = FAILED;
+	HMODULE comctl = LoadLibraryW(L"comctl32.dll");
+	if (comctl) {
+		typedef HRESULT(WINAPI * TaskDialogIndirectPtr)(const TASKDIALOGCONFIG *pTaskConfig, int *pnButton, int *pnRadioButton, BOOL *pfVerificationFlagChecked);
+
+		TaskDialogIndirectPtr task_dialog_indirect = (TaskDialogIndirectPtr)GetProcAddress(comctl, "TaskDialogIndirect");
+		int button_pressed;
+
+		if (task_dialog_indirect && SUCCEEDED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
+			if (!p_callback.is_null()) {
+				Variant button = button_pressed;
+				const Variant *args[1] = { &button };
+				Variant ret;
+				Callable::CallError ce;
+				p_callback.callp(args, 1, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT(vformat("Failed to execute dialog callback: %s.", Variant::get_callable_error_text(p_callback, args, 1, ce)));
+				}
+			}
+
+			result = OK;
+		}
+		FreeLibrary(comctl);
+	} else {
+		ERR_PRINT("Unable to create native dialog.");
+	}
+
+	return result;
+}
+
+struct Win32InputTextDialogInit {
+	const char16_t *title;
+	const char16_t *description;
+	const char16_t *partial;
+	const Callable &callback;
+};
+
+static int scale_with_dpi(int p_pos, int p_dpi) {
+	return IsProcessDPIAware() ? (p_pos * p_dpi / 96) : p_pos;
+}
+
+static INT_PTR input_text_dialog_init(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam) {
+	Win32InputTextDialogInit init = *(Win32InputTextDialogInit *)lParam;
+	SetWindowLongPtrW(hWnd, GWLP_USERDATA, (LONG_PTR)&init.callback); // Set dialog callback.
+
+	SetWindowTextW(hWnd, (LPCWSTR)init.title);
+
+	const int dpi = DisplayServerWindows::get_singleton()->screen_get_dpi();
+
+	const int margin = scale_with_dpi(7, dpi);
+	const SIZE dlg_size = { scale_with_dpi(300, dpi), scale_with_dpi(50, dpi) };
+
+	int str_len = lstrlenW((LPCWSTR)init.description);
+	SIZE str_size = { dlg_size.cx, 0 };
+	if (str_len > 0) {
+		HDC hdc = GetDC(nullptr);
+		RECT trect = { margin, margin, margin + dlg_size.cx, margin + dlg_size.cy };
+		SelectObject(hdc, (HFONT)SendMessageW(hWnd, WM_GETFONT, 0, 0));
+
+		// `+ margin` adds some space between the static text and the edit field.
+		// Don't scale this with DPI because DPI is already handled by DrawText.
+		str_size.cy = DrawTextW(hdc, (LPCWSTR)init.description, str_len, &trect, DT_LEFT | DT_WORDBREAK | DT_CALCRECT) + margin;
+
+		ReleaseDC(nullptr, hdc);
+	}
+
+	RECT crect, wrect;
+	GetClientRect(hWnd, &crect);
+	GetWindowRect(hWnd, &wrect);
+	int sw = GetSystemMetrics(SM_CXSCREEN);
+	int sh = GetSystemMetrics(SM_CYSCREEN);
+	int new_width = dlg_size.cx + margin * 2 + wrect.right - wrect.left - crect.right;
+	int new_height = dlg_size.cy + margin * 2 + wrect.bottom - wrect.top - crect.bottom + str_size.cy;
+
+	MoveWindow(hWnd, (sw - new_width) / 2, (sh - new_height) / 2, new_width, new_height, true);
+
+	HWND ok_button = GetDlgItem(hWnd, 1);
+	MoveWindow(ok_button,
+			dlg_size.cx + margin - scale_with_dpi(65, dpi),
+			dlg_size.cy + str_size.cy + margin - scale_with_dpi(20, dpi),
+			scale_with_dpi(65, dpi), scale_with_dpi(20, dpi), true);
+
+	HWND description = GetDlgItem(hWnd, 3);
+	MoveWindow(description, margin, margin, dlg_size.cx, str_size.cy, true);
+	SetWindowTextW(description, (LPCWSTR)init.description);
+
+	HWND text_edit = GetDlgItem(hWnd, 2);
+	MoveWindow(text_edit, margin, str_size.cy + margin, dlg_size.cx, scale_with_dpi(20, dpi), true);
+	SetWindowTextW(text_edit, (LPCWSTR)init.partial);
+
+	return TRUE;
+}
+
+static INT_PTR input_text_dialog_cmd_proc(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam) {
+	if (LOWORD(wParam) == 1) {
+		HWND text_edit = GetDlgItem(hWnd, 2);
+		ERR_FAIL_NULL_V(text_edit, false);
+
+		Char16String text;
+		text.resize(GetWindowTextLengthW(text_edit) + 1);
+		GetWindowTextW(text_edit, (LPWSTR)text.get_data(), text.size());
+
+		const Callable *callback = (const Callable *)GetWindowLongPtrW(hWnd, GWLP_USERDATA);
+		if (callback && callback->is_valid()) {
+			Variant v_result = String((const wchar_t *)text.get_data());
+			Variant ret;
+			Callable::CallError ce;
+			const Variant *args[1] = { &v_result };
+
+			callback->callp(args, 1, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Failed to execute input dialog callback: %s.", Variant::get_callable_error_text(*callback, args, 1, ce)));
+			}
+		}
+
+		return EndDialog(hWnd, 0);
+	}
+
+	return false;
+}
+
+static INT_PTR CALLBACK input_text_dialog_proc(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam) {
+	switch (code) {
+		case WM_INITDIALOG:
+			return input_text_dialog_init(hWnd, code, wParam, lParam);
+
+		case WM_COMMAND:
+			return input_text_dialog_cmd_proc(hWnd, code, wParam, lParam);
+
+		default:
+			return FALSE;
+	}
+}
+
+Error DisplayServerWindows::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
+#pragma pack(push, 1)
+
+	// NOTE: Use default/placeholder coordinates here. Windows uses its own coordinate system
+	//       specifically for dialogs which relies on font sizes instead of pixels.
+	const struct {
+		WORD dlgVer; // must be 1
+		WORD signature; // must be 0xFFFF
+		DWORD helpID;
+		DWORD exStyle;
+		DWORD style;
+		WORD cDlgItems;
+		short x;
+		short y;
+		short cx;
+		short cy;
+		WCHAR menu[1]; // must be 0
+		WCHAR windowClass[7]; // must be "#32770" -- the default window class for dialogs
+		WCHAR title[1]; // must be 0
+		WORD pointsize;
+		WORD weight;
+		BYTE italic;
+		BYTE charset;
+		WCHAR font[13]; // must be "MS Shell Dlg"
+	} template_base = {
+		1, 0xFFFF, 0, 0,
+		DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU,
+		3, 0, 0, 20, 20, L"", L"#32770", L"", 8, FW_NORMAL, 0, DEFAULT_CHARSET, L"MS Shell Dlg"
+	};
+
+	const struct {
+		DWORD helpID;
+		DWORD exStyle;
+		DWORD style;
+		short x;
+		short y;
+		short cx;
+		short cy;
+		DWORD id;
+		WCHAR windowClass[7]; // must be "Button"
+		WCHAR title[3]; // must be "OK"
+		WORD extraCount;
+	} ok_button = {
+		0, 0, WS_VISIBLE | BS_DEFPUSHBUTTON, 0, 0, 50, 14, 1, WC_BUTTONW, L"OK", 0
+	};
+	const struct {
+		DWORD helpID;
+		DWORD exStyle;
+		DWORD style;
+		short x;
+		short y;
+		short cx;
+		short cy;
+		DWORD id;
+		WCHAR windowClass[5]; // must be "Edit"
+		WCHAR title[1]; // must be 0
+		WORD extraCount;
+	} text_field = {
+		0, 0, WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, 0, 0, 250, 14, 2, WC_EDITW, L"", 0
+	};
+	const struct {
+		DWORD helpID;
+		DWORD exStyle;
+		DWORD style;
+		short x;
+		short y;
+		short cx;
+		short cy;
+		DWORD id;
+		WCHAR windowClass[7]; // must be "Static"
+		WCHAR title[1]; // must be 0
+		WORD extraCount;
+	} static_text = {
+		0, 0, WS_VISIBLE, 0, 0, 250, 14, 3, WC_STATICW, L"", 0
+	};
+
+#pragma pack(pop)
+
+	// Dialog template
+	const size_t data_size = sizeof(template_base) + (sizeof(template_base) % 4) +
+			sizeof(ok_button) + (sizeof(ok_button) % 4) +
+			sizeof(text_field) + (sizeof(text_field) % 4) +
+			sizeof(static_text) + (sizeof(static_text) % 4);
+
+	void *data_template = memalloc(data_size);
+	ERR_FAIL_NULL_V_MSG(data_template, FAILED, "Unable to allocate memory for the dialog template.");
+	ZeroMemory(data_template, data_size);
+
+	char *current_block = (char *)data_template;
+	CopyMemory(current_block, &template_base, sizeof(template_base));
+	current_block += sizeof(template_base) + (sizeof(template_base) % 4);
+	CopyMemory(current_block, &ok_button, sizeof(ok_button));
+	current_block += sizeof(ok_button) + (sizeof(ok_button) % 4);
+	CopyMemory(current_block, &text_field, sizeof(text_field));
+	current_block += sizeof(text_field) + (sizeof(text_field) % 4);
+	CopyMemory(current_block, &static_text, sizeof(static_text));
+
+	Char16String title16 = p_title.utf16();
+	Char16String description16 = p_description.utf16();
+	Char16String partial16 = p_partial.utf16();
+
+	Win32InputTextDialogInit init = {
+		title16.get_data(), description16.get_data(), partial16.get_data(), p_callback
+	};
+
+	// No modal dialogs for specific windows? Assume main window here.
+	INT_PTR ret = DialogBoxIndirectParamW(hInstance, (LPDLGTEMPLATEW)data_template, nullptr, (DLGPROC)input_text_dialog_proc, (LPARAM)(&init));
+
+	Error result = ret != -1 ? OK : FAILED;
+	memfree(data_template);
+
+	if (result == FAILED) {
+		ERR_PRINT("Unable to create native dialog.");
+	}
+	return result;
 }
 
 int DisplayServerWindows::keyboard_get_layout_count() const {
@@ -3056,9 +3362,9 @@ void DisplayServerWindows::set_context(Context p_context) {
 #define SIGNATURE_MASK 0xFFFFFF00
 // Keeping the name suggested by Microsoft, but this macro really answers:
 // Is this mouse event emulated from touch or pen input?
-#define IsPenEvent(dw) (((dw)&SIGNATURE_MASK) == MI_WP_SIGNATURE)
+#define IsPenEvent(dw) (((dw) & SIGNATURE_MASK) == MI_WP_SIGNATURE)
 // This one tells whether the event comes from touchscreen (and not from pen).
-#define IsTouchEvent(dw) (IsPenEvent(dw) && ((dw)&0x80))
+#define IsTouchEvent(dw) (IsPenEvent(dw) && ((dw) & 0x80))
 
 void DisplayServerWindows::_touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx) {
 	if (touch_state.has(idx) == p_pressed) {
@@ -3358,6 +3664,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case WM_MENUCOMMAND: {
+			native_menu->_menu_activate(HMENU(lParam), (int)wParam);
+		} break;
 		case WM_CREATE: {
 			if (is_dark_mode_supported() && dark_title_available) {
 				BOOL value = is_dark_mode();
@@ -3452,6 +3761,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 			if (wParam != WA_INACTIVE) {
 				track_mouse_leave_event(hWnd);
+
+				if (!IsIconic(hWnd)) {
+					SetFocus(hWnd);
+				}
 			}
 			return 0; // Return to the message loop.
 		} break;
@@ -3494,12 +3807,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_PAINT: {
 			Main::force_redraw();
 		} break;
-		case WM_SETTINGCHANGE: {
+		case WM_SETTINGCHANGE:
+		case WM_SYSCOLORCHANGE: {
 			if (lParam && CompareStringOrdinal(reinterpret_cast<LPCWCH>(lParam), -1, L"ImmersiveColorSet", -1, true) == CSTR_EQUAL) {
 				if (is_dark_mode_supported() && dark_title_available) {
 					BOOL value = is_dark_mode();
 					::DwmSetWindowAttribute(windows[window_id].hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 				}
+			}
+			if (system_theme_changed.is_valid()) {
+				system_theme_changed.call();
 			}
 		} break;
 		case WM_THEMECHANGED: {
@@ -4698,7 +5015,7 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 		if ((p_old_driver == "wintab") && wintab_available && wd.wtctx) {
 			wintab_WTEnable(wd.wtctx, false);
 			wintab_WTClose(wd.wtctx);
-			wd.wtctx = 0;
+			wd.wtctx = nullptr;
 		}
 		if ((p_new_driver == "wintab") && wintab_available) {
 			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
@@ -4787,8 +5104,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				dwExStyle,
 				L"Engine", L"",
 				dwStyle,
-				//				(GetSystemMetrics(SM_CXSCREEN) - WindowRect.right) / 2,
-				//				(GetSystemMetrics(SM_CYSCREEN) - WindowRect.bottom) / 2,
 				WindowRect.left,
 				WindowRect.top,
 				WindowRect.right - WindowRect.left,
@@ -4906,7 +5221,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				print_verbose("WinTab context creation failed.");
 			}
 		} else {
-			wd.wtctx = 0;
+			wd.wtctx = nullptr;
 		}
 
 		if (p_mode == WINDOW_MODE_MAXIMIZED) {
@@ -4923,9 +5238,36 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		wd.last_pressure_update = 0;
 		wd.last_tilt = Vector2();
 
+		IPropertyStore *prop_store;
+		HRESULT hr = SHGetPropertyStoreForWindow(wd.hWnd, IID_IPropertyStore, (void **)&prop_store);
+		if (hr == S_OK) {
+			PROPVARIANT val;
+			String appname;
+			if (Engine::get_singleton()->is_editor_hint()) {
+				appname = "Godot.GodotEditor." + String(VERSION_BRANCH);
+			} else {
+				String name = GLOBAL_GET("application/config/name");
+				String version = GLOBAL_GET("application/config/version");
+				if (version.is_empty()) {
+					version = "0";
+				}
+				String clean_app_name = name.to_pascal_case();
+				for (int i = 0; i < clean_app_name.length(); i++) {
+					if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
+						clean_app_name[i] = '_';
+					}
+				}
+				clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
+				appname = "Godot." + clean_app_name + "." + version;
+			}
+			InitPropVariantFromString((PCWSTR)appname.utf16().get_data(), &val);
+			prop_store->SetValue(PKEY_AppUserModel_ID, val);
+			prop_store->Release();
+		}
+
 		// IME.
 		wd.im_himc = ImmGetContext(wd.hWnd);
-		ImmAssociateContext(wd.hWnd, (HIMC)0);
+		ImmAssociateContext(wd.hWnd, (HIMC) nullptr);
 
 		wd.im_position = Vector2();
 
@@ -4980,17 +5322,17 @@ Vector2i _get_device_ids(const String &p_device_name) {
 
 	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
 	REFIID uuid = IID_IWbemLocator; // Interface UUID
-	IWbemLocator *wbemLocator = NULL; // to get the services
-	IWbemServices *wbemServices = NULL; // to get the class
-	IEnumWbemClassObject *iter = NULL;
+	IWbemLocator *wbemLocator = nullptr; // to get the services
+	IWbemServices *wbemServices = nullptr; // to get the class
+	IEnumWbemClassObject *iter = nullptr;
 	IWbemClassObject *pnpSDriverObject[1]; // contains driver name, version, etc.
 
-	HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
+	HRESULT hr = CoCreateInstance(clsid, nullptr, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
 	if (hr != S_OK) {
 		return Vector2i();
 	}
 	BSTR resource_name = SysAllocString(L"root\\CIMV2");
-	hr = wbemLocator->ConnectServer(resource_name, NULL, NULL, NULL, 0, NULL, NULL, &wbemServices);
+	hr = wbemLocator->ConnectServer(resource_name, nullptr, nullptr, nullptr, 0, nullptr, nullptr, &wbemServices);
 	SysFreeString(resource_name);
 
 	SAFE_RELEASE(wbemLocator) // from now on, use `wbemServices`
@@ -5004,7 +5346,7 @@ Vector2i _get_device_ids(const String &p_device_name) {
 	const String gpu_device_class_query = vformat("SELECT * FROM Win32_PnPSignedDriver WHERE DeviceName = \"%s\"", p_device_name);
 	BSTR query = SysAllocString((const WCHAR *)gpu_device_class_query.utf16().get_data());
 	BSTR query_lang = SysAllocString(L"WQL");
-	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, NULL, &iter);
+	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, nullptr, &iter);
 	SysFreeString(query_lang);
 	SysFreeString(query);
 	if (hr == S_OK) {
@@ -5015,7 +5357,7 @@ Vector2i _get_device_ids(const String &p_device_name) {
 			VARIANT did;
 			VariantInit(&did);
 			BSTR object_name = SysAllocString(L"DeviceID");
-			hr = pnpSDriverObject[0]->Get(object_name, 0, &did, NULL, NULL);
+			hr = pnpSDriverObject[0]->Get(object_name, 0, &did, nullptr, nullptr);
 			SysFreeString(object_name);
 			if (hr == S_OK) {
 				String device_id = String(V_BSTR(&did));
@@ -5056,6 +5398,19 @@ Color DisplayServerWindows::get_accent_color() const {
 
 	int argb = GetImmersiveColorFromColorSetEx((UINT)GetImmersiveUserColorSetPreference(false, false), GetImmersiveColorTypeFromName(L"ImmersiveSystemAccent"), false, 0);
 	return Color((argb & 0xFF) / 255.f, ((argb & 0xFF00) >> 8) / 255.f, ((argb & 0xFF0000) >> 16) / 255.f, ((argb & 0xFF000000) >> 24) / 255.f);
+}
+
+Color DisplayServerWindows::get_base_color() const {
+	if (!ux_theme_available) {
+		return Color(0, 0, 0, 0);
+	}
+
+	int argb = GetImmersiveColorFromColorSetEx((UINT)GetImmersiveUserColorSetPreference(false, false), GetImmersiveColorTypeFromName(ShouldAppsUseDarkMode() ? L"ImmersiveDarkChromeMediumLow" : L"ImmersiveLightChromeMediumLow"), false, 0);
+	return Color((argb & 0xFF) / 255.f, ((argb & 0xFF00) >> 8) / 255.f, ((argb & 0xFF0000) >> 16) / 255.f, ((argb & 0xFF000000) >> 24) / 255.f);
+}
+
+void DisplayServerWindows::set_system_theme_change_callback(const Callable &p_callable) {
+	system_theme_changed = p_callable;
 }
 
 int DisplayServerWindows::tablet_get_driver_count() const {
@@ -5116,6 +5471,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	if (tts_enabled) {
 		tts = memnew(TTS_Windows);
 	}
+	native_menu = memnew(NativeMenuWindows);
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
@@ -5199,6 +5555,23 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
+	HMODULE comctl32 = LoadLibraryW(L"comctl32.dll");
+	if (comctl32) {
+		typedef BOOL(WINAPI * InitCommonControlsExPtr)(_In_ const INITCOMMONCONTROLSEX *picce);
+		InitCommonControlsExPtr init_common_controls_ex = (InitCommonControlsExPtr)GetProcAddress(comctl32, "InitCommonControlsEx");
+
+		// Fails if the incorrect version was loaded. Probably not a big enough deal to print an error about.
+		if (init_common_controls_ex) {
+			INITCOMMONCONTROLSEX icc = {};
+			icc.dwICC = ICC_STANDARD_CLASSES;
+			icc.dwSize = sizeof(INITCOMMONCONTROLSEX);
+			if (!init_common_controls_ex(&icc)) {
+				WARN_PRINT("Unable to initialize Windows common controls. Native dialogs may not work properly.");
+			}
+		}
+		FreeLibrary(comctl32);
+	}
+
 	memset(&wc, 0, sizeof(WNDCLASSEXW));
 	wc.cbSize = sizeof(WNDCLASSEXW);
 	wc.style = CS_OWNDC | CS_DBLCLKS;
@@ -5249,7 +5622,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	if (rendering_driver == "opengl3") {
 		rendering_driver = "opengl3_angle";
 	}
-#else
+#elif defined(EGL_STATIC)
 	bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_angle");
 	if (fallback && (rendering_driver == "opengl3")) {
 		Dictionary gl_info = detect_wgl();
@@ -5307,6 +5680,26 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		RasterizerGLES3::make_current(false);
 	}
 #endif
+
+	String appname;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		appname = "Godot.GodotEditor." + String(VERSION_BRANCH);
+	} else {
+		String name = GLOBAL_GET("application/config/name");
+		String version = GLOBAL_GET("application/config/version");
+		if (version.is_empty()) {
+			version = "0";
+		}
+		String clean_app_name = name.to_pascal_case();
+		for (int i = 0; i < clean_app_name.length(); i++) {
+			if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
+				clean_app_name[i] = '_';
+			}
+		}
+		clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
+		appname = "Godot." + clean_app_name + "." + version;
+	}
+	SetCurrentProcessExplicitAppUserModelID((PCWSTR)appname.utf16().get_data());
 
 	mouse_monitor = SetWindowsHookEx(WH_MOUSE, ::MouseProc, nullptr, GetCurrentThreadId());
 
@@ -5433,7 +5826,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 	cursors_cache.clear();
 
 	// Destroy all status indicators.
-	for (HashMap<IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E;) {
+	for (HashMap<IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E; ++E) {
 		NOTIFYICONDATAW ndat;
 		ZeroMemory(&ndat, sizeof(NOTIFYICONDATAW));
 		ndat.cbSize = sizeof(NOTIFYICONDATAW);
@@ -5455,6 +5848,11 @@ DisplayServerWindows::~DisplayServerWindows() {
 	// Close power request handle.
 	screen_set_keep_on(false);
 
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
+
 #ifdef GLES3_ENABLED
 	// destroy windows .. NYI?
 	// FIXME wglDeleteContext is never called
@@ -5472,7 +5870,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 #endif
 		if (wintab_available && windows[MAIN_WINDOW_ID].wtctx) {
 			wintab_WTClose(windows[MAIN_WINDOW_ID].wtctx);
-			windows[MAIN_WINDOW_ID].wtctx = 0;
+			windows[MAIN_WINDOW_ID].wtctx = nullptr;
 		}
 		DestroyWindow(windows[MAIN_WINDOW_ID].hWnd);
 	}
@@ -5490,7 +5888,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 #endif
 
 	if (restore_mouse_trails > 1) {
-		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
+		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);
 	}
 #ifdef GLES3_ENABLED
 	if (gl_manager_angle) {

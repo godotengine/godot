@@ -30,8 +30,11 @@
 
 #include "test_main.h"
 
+#ifdef TOOLS_ENABLED
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
+#endif // TOOLS_ENABLED
+
 #include "tests/core/config/test_project_settings.h"
 #include "tests/core/input/test_input_event.h"
 #include "tests/core/input/test_input_event_key.h"
@@ -70,6 +73,7 @@
 #include "tests/core/object/test_class_db.h"
 #include "tests/core/object/test_method_bind.h"
 #include "tests/core/object/test_object.h"
+#include "tests/core/object/test_undo_redo.h"
 #include "tests/core/os/test_os.h"
 #include "tests/core/string/test_node_path.h"
 #include "tests/core/string/test_string.h"
@@ -89,6 +93,7 @@
 #include "tests/core/test_time.h"
 #include "tests/core/threads/test_worker_thread_pool.h"
 #include "tests/core/variant/test_array.h"
+#include "tests/core/variant/test_callable.h"
 #include "tests/core/variant/test_dictionary.h"
 #include "tests/core/variant/test_variant.h"
 #include "tests/core/variant/test_variant_utility.h"
@@ -103,14 +108,11 @@
 #include "tests/scene/test_curve_2d.h"
 #include "tests/scene/test_curve_3d.h"
 #include "tests/scene/test_gradient.h"
-#include "tests/scene/test_navigation_agent_2d.h"
-#include "tests/scene/test_navigation_obstacle_2d.h"
-#include "tests/scene/test_navigation_region_2d.h"
+#include "tests/scene/test_image_texture.h"
 #include "tests/scene/test_node.h"
 #include "tests/scene/test_node_2d.h"
 #include "tests/scene/test_packed_scene.h"
 #include "tests/scene/test_path_2d.h"
-#include "tests/scene/test_primitives.h"
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_text_edit.h"
 #include "tests/scene/test_theme.h"
@@ -118,16 +120,20 @@
 #include "tests/scene/test_visual_shader.h"
 #include "tests/scene/test_window.h"
 #include "tests/servers/rendering/test_shader_preprocessor.h"
-#include "tests/servers/test_navigation_server_2d.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
 
 #ifndef _3D_DISABLED
 #include "tests/scene/test_camera_3d.h"
+#include "tests/scene/test_navigation_agent_2d.h"
 #include "tests/scene/test_navigation_agent_3d.h"
+#include "tests/scene/test_navigation_obstacle_2d.h"
 #include "tests/scene/test_navigation_obstacle_3d.h"
+#include "tests/scene/test_navigation_region_2d.h"
 #include "tests/scene/test_navigation_region_3d.h"
 #include "tests/scene/test_path_3d.h"
+#include "tests/scene/test_primitives.h"
+#include "tests/servers/test_navigation_server_2d.h"
 #include "tests/servers/test_navigation_server_3d.h"
 #endif // _3D_DISABLED
 
@@ -137,10 +143,14 @@
 #include "tests/test_macros.h"
 
 #include "scene/theme/theme_db.h"
+#ifndef _3D_DISABLED
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
+#endif // _3D_DISABLED
 #include "servers/physics_server_2d.h"
+#ifndef _3D_DISABLED
 #include "servers/physics_server_3d.h"
+#endif // _3D_DISABLED
 #include "servers/rendering/rendering_server_default.h"
 
 int test_main(int argc, char *argv[]) {
@@ -215,10 +225,12 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 	SignalWatcher *signal_watcher = nullptr;
 
-	PhysicsServer3D *physics_server_3d = nullptr;
 	PhysicsServer2D *physics_server_2d = nullptr;
+#ifndef _3D_DISABLED
+	PhysicsServer3D *physics_server_3d = nullptr;
 	NavigationServer3D *navigation_server_3d = nullptr;
 	NavigationServer2D *navigation_server_2d = nullptr;
+#endif // _3D_DISABLED
 
 	void test_case_start(const doctest::TestCaseData &p_in) override {
 		reinitialize();
@@ -250,16 +262,20 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			ThemeDB::get_singleton()->finalize_theme();
 			ThemeDB::get_singleton()->initialize_theme_noproject();
 
+#ifndef _3D_DISABLED
 			physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
 			physics_server_3d->init();
+#endif // _3D_DISABLED
 
 			physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
 			physics_server_2d->init();
 
+#ifndef _3D_DISABLED
 			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
 			navigation_server_2d = NavigationServer2DManager::new_default_server();
 			ERR_PRINT_ON;
+#endif // _3D_DISABLED
 
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
@@ -270,11 +286,13 @@ struct GodotTestCaseListener : public doctest::IReporter {
 				SceneTree::get_singleton()->get_root()->set_embedding_subwindows(true);
 			}
 
+#ifdef TOOLS_ENABLED
 			if (name.find("[Editor]") != -1) {
 				Engine::get_singleton()->set_editor_hint(true);
 				EditorPaths::create();
 				EditorSettings::create();
 			}
+#endif // TOOLS_ENABLED
 
 			return;
 		}
@@ -288,6 +306,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			return;
 		}
 
+#ifndef _3D_DISABLED
 		if (suite_name.find("[Navigation]") != -1 && navigation_server_2d == nullptr && navigation_server_3d == nullptr) {
 			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
@@ -295,12 +314,15 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			ERR_PRINT_ON;
 			return;
 		}
+#endif // _3D_DISABLED
 	}
 
 	void test_case_end(const doctest::CurrentTestCaseStats &) override {
+#ifdef TOOLS_ENABLED
 		if (EditorSettings::get_singleton()) {
 			EditorSettings::destroy();
 		}
+#endif // TOOLS_ENABLED
 
 		Engine::get_singleton()->set_editor_hint(false);
 
@@ -316,6 +338,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memdelete(SceneTree::get_singleton());
 		}
 
+#ifndef _3D_DISABLED
 		if (navigation_server_3d) {
 			memdelete(navigation_server_3d);
 			navigation_server_3d = nullptr;
@@ -325,12 +348,15 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memdelete(navigation_server_2d);
 			navigation_server_2d = nullptr;
 		}
+#endif // _3D_DISABLED
 
+#ifndef _3D_DISABLED
 		if (physics_server_3d) {
 			physics_server_3d->finish();
 			memdelete(physics_server_3d);
 			physics_server_3d = nullptr;
 		}
+#endif // _3D_DISABLED
 
 		if (physics_server_2d) {
 			physics_server_2d->finish();

@@ -38,8 +38,11 @@
 class GLTFNode : public Resource {
 	GDCLASS(GLTFNode, Resource);
 	friend class GLTFDocument;
+	friend class SkinTool;
+	friend class FBXDocument;
 
 private:
+	String original_name;
 	GLTFNodeIndex parent = -1;
 	int height = -1;
 	Transform3D transform;
@@ -56,6 +59,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	String get_original_name();
+	void set_original_name(String p_name);
+
 	GLTFNodeIndex get_parent();
 	void set_parent(GLTFNodeIndex p_parent);
 
@@ -64,6 +70,9 @@ public:
 
 	Transform3D get_xform();
 	void set_xform(Transform3D p_xform);
+
+	Transform3D get_rest_xform();
+	void set_rest_xform(Transform3D p_rest_xform);
 
 	GLTFMeshIndex get_mesh();
 	void set_mesh(GLTFMeshIndex p_mesh);

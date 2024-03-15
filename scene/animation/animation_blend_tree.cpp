@@ -1403,6 +1403,7 @@ String AnimationNodeBlendTree::get_caption() const {
 double AnimationNodeBlendTree::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	Ref<AnimationNodeOutput> output = nodes[SceneStringNames::get_singleton()->output].node;
 	node_state.connections = nodes[SceneStringNames::get_singleton()->output].connections;
+	ERR_FAIL_COND_V(output.is_null(), 0);
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 	pi.weight = 1.0;
@@ -1544,8 +1545,9 @@ void AnimationNodeBlendTree::_node_changed(const StringName &p_node) {
 	emit_signal(SNAME("node_changed"), p_node);
 }
 
+#ifdef TOOLS_ENABLED
 void AnimationNodeBlendTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 	bool add_node_options = false;
 	if (p_idx == 0) {
 		add_node_options = (pf == "get_node" || pf == "has_node" || pf == "rename_node" || pf == "remove_node" || pf == "set_node_position" || pf == "get_node_position" || pf == "connect_node" || pf == "disconnect_node");
@@ -1553,12 +1555,13 @@ void AnimationNodeBlendTree::get_argument_options(const StringName &p_function, 
 		add_node_options = (pf == "connect_node" || pf == "disconnect_node");
 	}
 	if (add_node_options) {
-		for (KeyValue<StringName, Node> E : nodes) {
+		for (const KeyValue<StringName, Node> &E : nodes) {
 			r_options->push_back(String(E.key).quote());
 		}
 	}
 	AnimationRootNode::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void AnimationNodeBlendTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_node", "name", "node", "position"), &AnimationNodeBlendTree::add_node, DEFVAL(Vector2()));

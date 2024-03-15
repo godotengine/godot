@@ -101,6 +101,7 @@ android {
         }
 
         boolean devBuild = buildType == "dev"
+        boolean debugSymbols = devBuild || isAndroidStudio()
         boolean runTests = devBuild
         boolean productionBuild = !devBuild
         boolean storeRelease = buildType == "release"
@@ -168,7 +169,7 @@ android {
             def taskName = getSconsTaskName(flavorName, buildType, selectedAbi)
             tasks.create(name: taskName, type: Exec) {
                 executable sconsExecutableFile.absolutePath
-                args "--directory=${pathToRootDir}", "platform=android", "store_release=${storeRelease}", "production=${productionBuild}", "dev_mode=${devBuild}", "dev_build=${devBuild}", "tests=${runTests}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
+                args "--directory=${pathToRootDir}", "platform=android", "store_release=${storeRelease}", "production=${productionBuild}", "dev_mode=${devBuild}", "dev_build=${devBuild}", "debug_symbols=${debugSymbols}", "tests=${runTests}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
             }
 
             // Schedule the tasks so the generated libs are present before the aar file is packaged.

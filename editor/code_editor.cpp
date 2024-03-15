@@ -38,6 +38,9 @@
 #include "editor/editor_string_names.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/separator.h"
 #include "scene/resources/font.h"
 
 void GotoLineDialog::popup_find_line(CodeEdit *p_edit) {
@@ -92,8 +95,13 @@ GotoLineDialog::GotoLineDialog() {
 
 void FindReplaceBar::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorThemeManager::is_generated_theme_outdated()) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_READY: {
 			find_prev->set_icon(get_editor_theme_icon(SNAME("MoveUp")));
 			find_next->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
 			hide_button->set_texture_normal(get_editor_theme_icon(SNAME("Close")));
@@ -757,6 +765,8 @@ FindReplaceBar::FindReplaceBar() {
 
 /*** CODE EDITOR ****/
 
+static constexpr float ZOOM_FACTOR_PRESETS[7] = { 0.25f, 0.5f, 0.75f, 1.0f, 1.5f, 2.0f, 3.0f };
+
 // This function should be used to handle shortcuts that could otherwise
 // be handled too late if they weren't handled here.
 void CodeTextEditor::input(const Ref<InputEvent> &event) {
@@ -821,18 +831,21 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->is_pressed() && mb->is_command_or_control_pressed()) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				_zoom_in();
-			} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+				accept_event();
+				return;
+			}
+			if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				_zoom_out();
+				accept_event();
+				return;
 			}
 		}
 	}
 
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
 	if (magnify_gesture.is_valid()) {
-		font_size = text_editor->get_theme_font_size(SNAME("font_size"));
-		font_size *= powf(magnify_gesture->get_factor(), 0.25);
-
-		_add_font_size((int)font_size - text_editor->get_theme_font_size(SNAME("font_size")));
+		_zoom_to(zoom_factor * powf(magnify_gesture->get_factor(), 0.25f));
+		accept_event();
 		return;
 	}
 
@@ -843,38 +856,20 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 			if (ED_IS_SHORTCUT("script_editor/zoom_in", p_event)) {
 				_zoom_in();
 				accept_event();
+				return;
 			}
 			if (ED_IS_SHORTCUT("script_editor/zoom_out", p_event)) {
 				_zoom_out();
 				accept_event();
+				return;
 			}
 			if (ED_IS_SHORTCUT("script_editor/reset_zoom", p_event)) {
-				_reset_zoom();
+				_zoom_to(1);
 				accept_event();
+				return;
 			}
 		}
 	}
-}
-
-void CodeTextEditor::_zoom_in() {
-	font_resize_val += MAX(EDSCALE, 1.0f);
-	_zoom_changed();
-}
-
-void CodeTextEditor::_zoom_out() {
-	font_resize_val -= MAX(EDSCALE, 1.0f);
-	_zoom_changed();
-}
-
-void CodeTextEditor::_zoom_changed() {
-	if (font_resize_timer->get_time_left() == 0) {
-		font_resize_timer->start();
-	}
-}
-
-void CodeTextEditor::_reset_zoom() {
-	EditorSettings::get_singleton()->set("interface/editor/code_font_size", 14);
-	text_editor->add_theme_font_size_override("font_size", 14 * EDSCALE);
 }
 
 void CodeTextEditor::_line_col_changed() {
@@ -897,9 +892,6 @@ void CodeTextEditor::_line_col_changed() {
 	sb.append(itos(text_editor->get_caret_line() + 1).lpad(4));
 	sb.append(" : ");
 	sb.append(itos(positional_column + 1).lpad(3));
-
-	sb.append(" | ");
-	sb.append(text_editor->is_indent_using_spaces() ? TTR("Spaces", "Indentation") : TTR("Tabs", "Indentation"));
 
 	line_and_col_txt->set_text(sb.as_string());
 
@@ -939,9 +931,6 @@ void CodeTextEditor::_complete_request() {
 	bool forced = false;
 	if (code_complete_func) {
 		code_complete_func(code_complete_ud, ctext, &entries, forced);
-	}
-	if (entries.size() == 0) {
-		return;
 	}
 
 	for (const ScriptLanguage::CodeCompletionOption &e : entries) {
@@ -1004,24 +993,6 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 	return tex;
 }
 
-void CodeTextEditor::_font_resize_timeout() {
-	if (_add_font_size(font_resize_val)) {
-		font_resize_val = 0;
-	}
-}
-
-bool CodeTextEditor::_add_font_size(int p_delta) {
-	int old_size = text_editor->get_theme_font_size(SNAME("font_size"));
-	int new_size = CLAMP(old_size + p_delta, 8 * EDSCALE, 96 * EDSCALE);
-
-	if (new_size != old_size) {
-		EditorSettings::get_singleton()->set("interface/editor/code_font_size", new_size / EDSCALE);
-		text_editor->add_theme_font_size_override("font_size", new_size);
-	}
-
-	return true;
-}
-
 void CodeTextEditor::update_editor_settings() {
 	// Theme: Highlighting
 	completion_font_color = EDITOR_GET("text_editor/theme/highlighting/completion_font_color");
@@ -1062,12 +1033,17 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_drag_and_drop_selection_enabled(EDITOR_GET("text_editor/behavior/navigation/drag_and_drop_selection"));
 
 	// Behavior: indent
-	text_editor->set_indent_using_spaces(EDITOR_GET("text_editor/behavior/indent/type"));
+	set_indent_using_spaces(EDITOR_GET("text_editor/behavior/indent/type"));
 	text_editor->set_indent_size(EDITOR_GET("text_editor/behavior/indent/size"));
 	text_editor->set_auto_indent_enabled(EDITOR_GET("text_editor/behavior/indent/auto_indent"));
+	text_editor->set_indent_wrapped_lines(EDITOR_GET("text_editor/behavior/indent/indent_wrapped_lines"));
 
 	// Completion
 	text_editor->set_auto_brace_completion_enabled(EDITOR_GET("text_editor/completion/auto_brace_complete"));
+	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
+	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
+	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
+	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 
 	// Appearance: Guidelines
 	if (EDITOR_GET("text_editor/appearance/guidelines/show_line_length_guidelines")) {
@@ -1080,6 +1056,8 @@ void CodeTextEditor::update_editor_settings() {
 	} else {
 		text_editor->set_line_length_guidelines(TypedArray<int>());
 	}
+
+	set_zoom_factor(zoom_factor);
 }
 
 void CodeTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
@@ -1195,6 +1173,11 @@ void CodeTextEditor::convert_case(CaseStyle p_case) {
 		}
 	}
 	text_editor->end_complex_operation();
+}
+
+void CodeTextEditor::set_indent_using_spaces(bool p_use_spaces) {
+	text_editor->set_indent_using_spaces(p_use_spaces);
+	indentation_txt->set_text(p_use_spaces ? TTR("Spaces", "Indentation") : TTR("Tabs", "Indentation"));
 }
 
 void CodeTextEditor::move_lines_up() {
@@ -1699,35 +1682,32 @@ void CodeTextEditor::goto_error() {
 void CodeTextEditor::_update_text_editor_theme() {
 	emit_signal(SNAME("load_theme_settings"));
 
-	error->begin_bulk_theme_override();
-	error->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
-	error->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
-	error->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+	error_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
+	warning_button->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 
 	Ref<Font> status_bar_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
 	int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts));
-	error->add_theme_font_override("font", status_bar_font);
-	error->add_theme_font_size_override("font_size", status_bar_font_size);
-	error->end_bulk_theme_override();
 
 	int count = status_bar->get_child_count();
 	for (int i = 0; i < count; i++) {
 		Control *n = Object::cast_to<Control>(status_bar->get_child(i));
 		if (n) {
-			n->add_theme_font_override("font", status_bar_font);
-			n->add_theme_font_size_override("font_size", status_bar_font_size);
+			n->add_theme_font_override(SNAME("font"), status_bar_font);
+			n->add_theme_font_size_override(SNAME("font_size"), status_bar_font_size);
 		}
 	}
+
+	const Color &error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+	const Color &warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+
+	error->add_theme_color_override(SNAME("font_color"), error_color);
+	error_button->add_theme_color_override(SNAME("font_color"), error_color);
+	warning_button->add_theme_color_override(SNAME("font_color"), warning_color);
+
+	_update_font_ligatures();
 }
 
-void CodeTextEditor::_on_settings_change() {
-	_apply_settings_change();
-}
-
-void CodeTextEditor::_apply_settings_change() {
-	_update_text_editor_theme();
-
-	font_size = EDITOR_GET("interface/editor/code_font_size");
+void CodeTextEditor::_update_font_ligatures() {
 	int ot_mode = EDITOR_GET("interface/editor/code_font_contextual_ligatures");
 
 	Ref<FontVariation> fc = text_editor->get_theme_font(SNAME("font"));
@@ -1758,12 +1738,6 @@ void CodeTextEditor::_apply_settings_change() {
 			} break;
 		}
 	}
-
-	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
-
-	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
-	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
-	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {
@@ -1783,6 +1757,10 @@ void CodeTextEditor::_error_button_pressed() {
 void CodeTextEditor::_warning_button_pressed() {
 	_set_show_warnings_panel(!is_warnings_panel_opened);
 	_set_show_errors_panel(false);
+}
+
+void CodeTextEditor::_zoom_popup_id_pressed(int p_idx) {
+	_zoom_to(zoom_button->get_popup()->get_item_metadata(p_idx));
 }
 
 void CodeTextEditor::_set_show_errors_panel(bool p_show) {
@@ -1823,32 +1801,9 @@ void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void CodeTextEditor::_update_status_bar_theme() {
-	error_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
-	warning_button->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
-
-	error_button->begin_bulk_theme_override();
-	error_button->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-	error_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
-	error_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
-	error_button->end_bulk_theme_override();
-
-	warning_button->begin_bulk_theme_override();
-	warning_button->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
-	warning_button->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
-	warning_button->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
-	warning_button->end_bulk_theme_override();
-
-	line_and_col_txt->begin_bulk_theme_override();
-	line_and_col_txt->add_theme_font_override("font", get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts)));
-	line_and_col_txt->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
-	line_and_col_txt->end_bulk_theme_override();
-}
-
 void CodeTextEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_status_bar_theme();
 			if (toggle_scripts_button->is_visible()) {
 				update_toggle_scripts_button();
 			}
@@ -1956,11 +1911,54 @@ void CodeTextEditor::remove_all_bookmarks() {
 	text_editor->clear_bookmarked_lines();
 }
 
+void CodeTextEditor::_zoom_in() {
+	int s = text_editor->get_theme_font_size("font_size");
+	_zoom_to(zoom_factor * (s + MAX(1.0f, EDSCALE)) / s);
+}
+
+void CodeTextEditor::_zoom_out() {
+	int s = text_editor->get_theme_font_size("font_size");
+	_zoom_to(zoom_factor * (s - MAX(1.0f, EDSCALE)) / s);
+}
+
+void CodeTextEditor::_zoom_to(float p_zoom_factor) {
+	if (zoom_factor == p_zoom_factor) {
+		return;
+	}
+
+	float old_zoom_factor = zoom_factor;
+
+	set_zoom_factor(p_zoom_factor);
+
+	if (old_zoom_factor != zoom_factor) {
+		emit_signal(SNAME("zoomed"), zoom_factor);
+	}
+}
+
+void CodeTextEditor::set_zoom_factor(float p_zoom_factor) {
+	int preset_count = sizeof(ZOOM_FACTOR_PRESETS) / sizeof(float);
+	zoom_factor = CLAMP(p_zoom_factor, ZOOM_FACTOR_PRESETS[0], ZOOM_FACTOR_PRESETS[preset_count - 1]);
+	int neutral_font_size = int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE;
+	int new_font_size = Math::round(zoom_factor * neutral_font_size);
+
+	zoom_button->set_text(itos(Math::round(zoom_factor * 100)) + " %");
+
+	if (text_editor->has_theme_font_size_override("font_size")) {
+		text_editor->remove_theme_font_size_override("font_size");
+	}
+	text_editor->add_theme_font_size_override("font_size", new_font_size);
+}
+
+float CodeTextEditor::get_zoom_factor() {
+	return zoom_factor;
+}
+
 void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
 	ADD_SIGNAL(MethodInfo("show_errors_panel"));
 	ADD_SIGNAL(MethodInfo("show_warnings_panel"));
+	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "p_zoom_factor")));
 }
 
 void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud) {
@@ -1994,36 +1992,6 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_GDSCRIPT);
 	text_editor->set_draw_bookmarks_gutter(true);
 
-	int ot_mode = EDITOR_GET("interface/editor/code_font_contextual_ligatures");
-	Ref<FontVariation> fc = text_editor->get_theme_font(SNAME("font"));
-	if (fc.is_valid()) {
-		switch (ot_mode) {
-			case 1: { // Disable ligatures.
-				Dictionary ftrs;
-				ftrs[TS->name_to_tag("calt")] = 0;
-				fc->set_opentype_features(ftrs);
-			} break;
-			case 2: { // Custom.
-				Vector<String> subtag = String(EDITOR_GET("interface/editor/code_font_custom_opentype_features")).split(",");
-				Dictionary ftrs;
-				for (int i = 0; i < subtag.size(); i++) {
-					Vector<String> subtag_a = subtag[i].split("=");
-					if (subtag_a.size() == 2) {
-						ftrs[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
-					} else if (subtag_a.size() == 1) {
-						ftrs[TS->name_to_tag(subtag_a[0])] = 1;
-					}
-				}
-				fc->set_opentype_features(ftrs);
-			} break;
-			default: { // Enabled.
-				Dictionary ftrs;
-				ftrs[TS->name_to_tag("calt")] = 1;
-				fc->set_opentype_features(ftrs);
-			} break;
-		}
-	}
-
 	text_editor->set_draw_line_numbers(true);
 	text_editor->set_highlight_matching_braces_enabled(true);
 	text_editor->set_auto_indent_enabled(true);
@@ -2037,19 +2005,18 @@ CodeTextEditor::CodeTextEditor() {
 	idle = memnew(Timer);
 	add_child(idle);
 	idle->set_one_shot(true);
-	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 
 	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
 	code_complete_timer = memnew(Timer);
 	add_child(code_complete_timer);
 	code_complete_timer->set_one_shot(true);
-	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
 
 	error_line = 0;
 	error_column = 0;
 
 	toggle_scripts_button = memnew(Button);
 	toggle_scripts_button->set_flat(true);
+	toggle_scripts_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	toggle_scripts_button->connect("pressed", callable_mp(this, &CodeTextEditor::_toggle_scripts_pressed));
 	status_bar->add_child(toggle_scripts_button);
 	toggle_scripts_button->hide();
@@ -2087,12 +2054,44 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button->set_tooltip_text(TTR("Warnings"));
 	set_warning_count(0);
 
+	status_bar->add_child(memnew(VSeparator));
+
+	// Zoom
+	zoom_button = memnew(MenuButton);
+	status_bar->add_child(zoom_button);
+	zoom_button->set_flat(true);
+	zoom_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	zoom_button->set_tooltip_text(TTR("Zoom factor"));
+	zoom_button->set_text("100 %");
+
+	PopupMenu *zoom_menu = zoom_button->get_popup();
+	int preset_count = sizeof(ZOOM_FACTOR_PRESETS) / sizeof(float);
+
+	for (int i = 0; i < preset_count; i++) {
+		float z = ZOOM_FACTOR_PRESETS[i];
+		zoom_menu->add_item(itos(Math::round(z * 100)) + " %");
+		zoom_menu->set_item_metadata(i, z);
+	}
+
+	zoom_menu->connect("id_pressed", callable_mp(this, &CodeTextEditor::_zoom_popup_id_pressed));
+
+	status_bar->add_child(memnew(VSeparator));
+
 	// Line and column
 	line_and_col_txt = memnew(Label);
 	status_bar->add_child(line_and_col_txt);
 	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	line_and_col_txt->set_tooltip_text(TTR("Line and column numbers."));
 	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
+
+	status_bar->add_child(memnew(VSeparator));
+
+	// Indentation
+	indentation_txt = memnew(Label);
+	status_bar->add_child(indentation_txt);
+	indentation_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	indentation_txt->set_tooltip_text(TTR("Indentation"));
+	indentation_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
 	text_editor->connect("gui_input", callable_mp(this, &CodeTextEditor::_text_editor_gui_input));
 	text_editor->connect("caret_changed", callable_mp(this, &CodeTextEditor::_line_col_changed));
@@ -2112,14 +2111,5 @@ CodeTextEditor::CodeTextEditor() {
 
 	code_complete_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_code_complete_timer_timeout));
 
-	font_resize_val = 0;
-	font_size = EDITOR_GET("interface/editor/code_font_size");
-	font_resize_timer = memnew(Timer);
-	add_child(font_resize_timer);
-	font_resize_timer->set_one_shot(true);
-	font_resize_timer->set_wait_time(0.07);
-	font_resize_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_font_resize_timeout));
-
-	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CodeTextEditor::_on_settings_change));
 	add_theme_constant_override("separation", 4 * EDSCALE);
 }

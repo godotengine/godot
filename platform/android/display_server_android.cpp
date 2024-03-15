@@ -58,9 +58,13 @@ DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
 
 bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		case FEATURE_CURSOR_SHAPE:
 		//case FEATURE_CUSTOM_CURSOR_SHAPE:
-		//case FEATURE_GLOBAL_MENU:
 		//case FEATURE_HIDPI:
 		//case FEATURE_ICON:
 		//case FEATURE_IME:
@@ -125,6 +129,16 @@ bool DisplayServerAndroid::is_dark_mode() const {
 	ERR_FAIL_NULL_V(godot_java, false);
 
 	return godot_java->is_dark_mode();
+}
+
+void DisplayServerAndroid::set_system_theme_change_callback(const Callable &p_callable) {
+	system_theme_changed = p_callable;
+}
+
+void DisplayServerAndroid::emit_system_theme_changed() {
+	if (system_theme_changed.is_valid()) {
+		system_theme_changed.call_deferred();
+	}
 }
 
 void DisplayServerAndroid::clipboard_set(const String &p_text) {
@@ -568,6 +582,8 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	keep_screen_on = GLOBAL_GET("display/window/energy_saving/keep_screen_on");
 
+	native_menu = memnew(NativeMenu);
+
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
 		RasterizerGLES3::make_current(false);
@@ -631,6 +647,11 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 }
 
 DisplayServerAndroid::~DisplayServerAndroid() {
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
+
 #if defined(RD_ENABLED)
 	if (rendering_device) {
 		memdelete(rendering_device);

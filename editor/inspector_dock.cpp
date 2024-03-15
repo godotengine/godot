@@ -244,7 +244,7 @@ void InspectorDock::_load_resource(const String &p_type) {
 	load_resource_dialog->popup_file_dialog();
 }
 
-void InspectorDock::_resource_file_selected(String p_file) {
+void InspectorDock::_resource_file_selected(const String &p_file) {
 	Ref<Resource> res;
 	if (ResourceLoader::exists(p_file, "")) {
 		res = ResourceLoader::load(p_file);
@@ -646,20 +646,22 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	add_child(general_options_hb);
 
 	resource_new_button = memnew(Button);
-	resource_new_button->set_flat(true);
+	resource_new_button->set_theme_type_variation("FlatMenuButton");
 	resource_new_button->set_tooltip_text(TTR("Create a new resource in memory and edit it."));
 	general_options_hb->add_child(resource_new_button);
 	resource_new_button->connect("pressed", callable_mp(this, &InspectorDock::_new_resource));
 	resource_new_button->set_focus_mode(Control::FOCUS_NONE);
 
 	resource_load_button = memnew(Button);
-	resource_load_button->set_flat(true);
+	resource_load_button->set_theme_type_variation("FlatMenuButton");
 	resource_load_button->set_tooltip_text(TTR("Load an existing resource from disk and edit it."));
 	general_options_hb->add_child(resource_load_button);
 	resource_load_button->connect("pressed", callable_mp(this, &InspectorDock::_open_resource_selector));
 	resource_load_button->set_focus_mode(Control::FOCUS_NONE);
 
 	resource_save_button = memnew(MenuButton);
+	resource_save_button->set_flat(false);
+	resource_save_button->set_theme_type_variation("FlatMenuButton");
 	resource_save_button->set_tooltip_text(TTR("Save the currently edited resource."));
 	general_options_hb->add_child(resource_save_button);
 	resource_save_button->get_popup()->add_item(TTR("Save"), RESOURCE_SAVE);
@@ -669,6 +671,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_save_button->set_disabled(true);
 
 	resource_extra_button = memnew(MenuButton);
+	resource_extra_button->set_flat(false);
+	resource_extra_button->set_theme_type_variation("FlatMenuButton");
 	resource_extra_button->set_tooltip_text(TTR("Extra resource options."));
 	general_options_hb->add_child(resource_extra_button);
 	resource_extra_button->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_resource_extra_popup));
@@ -698,6 +702,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	forward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_forward));
 
 	history_menu = memnew(MenuButton);
+	history_menu->set_flat(false);
+	history_menu->set_theme_type_variation("FlatMenuButton");
 	history_menu->set_tooltip_text(TTR("History of recently edited objects."));
 	general_options_hb->add_child(history_menu);
 	history_menu->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_history));
@@ -710,7 +716,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	subresource_hb->add_child(object_selector);
 
 	open_docs_button = memnew(Button);
-	open_docs_button->set_flat(true);
+	open_docs_button->set_theme_type_variation("FlatMenuButton");
 	open_docs_button->set_disabled(true);
 	open_docs_button->set_tooltip_text(TTR("Open documentation for this object."));
 	open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTR("Open Documentation")));
@@ -732,6 +738,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	property_tools_hb->add_child(search);
 
 	object_menu = memnew(MenuButton);
+	object_menu->set_flat(false);
+	object_menu->set_theme_type_variation("FlatMenuButton");
 	object_menu->set_shortcut_context(this);
 	property_tools_hb->add_child(object_menu);
 	object_menu->set_tooltip_text(TTR("Manage object properties."));

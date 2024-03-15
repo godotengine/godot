@@ -4,10 +4,14 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
     <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
+    <SelfContained>False</SelfContained>
   </PropertyGroup>
   <PropertyGroup Condition="Exists('$(SolutionDir)/../../../../bin/GodotSharp/Api/Debug/GodotSharp.dll') And ('$(GodotPlatform)' == 'windows' Or ('$(GodotPlatform)' == '' And '$(OS)' == 'Windows_NT'))">
     <OutputPath>$(SolutionDir)/../../../../bin/GodotSharp/Tools</OutputPath>
     <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>False</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="EnvDTE" Version="17.8.37221" />

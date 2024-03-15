@@ -59,7 +59,9 @@ public:
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) override;
 	virtual void *set_hand_joint_locations_and_get_next_pointer(int p_hand_index, void *p_next_pointer) override;
-	virtual XrCompositionLayerBaseHeader *get_composition_layer() override;
+	virtual int get_composition_layer_count() override;
+	virtual XrCompositionLayerBaseHeader *get_composition_layer(int p_index) override;
+	virtual int get_composition_layer_order(int p_index) override;
 
 	//TODO workaround as GDExtensionPtr<void> return type results in build error in godot-cpp
 	GDVIRTUAL1R(uint64_t, _set_system_properties_and_get_next_pointer, GDExtensionPtr<void>);
@@ -67,7 +69,13 @@ public:
 	GDVIRTUAL1R(uint64_t, _set_session_create_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL1R(uint64_t, _set_swapchain_create_info_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL2R(uint64_t, _set_hand_joint_locations_and_get_next_pointer, int, GDExtensionPtr<void>);
-	GDVIRTUAL0R(uint64_t, _get_composition_layer);
+	GDVIRTUAL0R(int, _get_composition_layer_count);
+	GDVIRTUAL1R(uint64_t, _get_composition_layer, int);
+	GDVIRTUAL1R(int, _get_composition_layer_order, int);
+
+	virtual PackedStringArray get_suggested_tracker_names() override;
+
+	GDVIRTUAL0R(PackedStringArray, _get_suggested_tracker_names);
 
 	virtual void on_register_metadata() override;
 	virtual void on_before_instance_created() override;
@@ -114,6 +122,7 @@ public:
 	void register_extension_wrapper();
 
 	OpenXRExtensionWrapperExtension();
+	virtual ~OpenXRExtensionWrapperExtension() override;
 };
 
 #endif // OPENXR_EXTENSION_WRAPPER_EXTENSION_H

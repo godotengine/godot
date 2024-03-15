@@ -261,7 +261,7 @@ public:
 	void set_advance_expression_base_node(const NodePath &p_path);
 	NodePath get_advance_expression_base_node() const;
 
-	Array get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	bool is_state_invalid() const;
 	String get_invalid_state_reason() const;

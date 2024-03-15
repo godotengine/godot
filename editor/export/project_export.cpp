@@ -45,6 +45,7 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
@@ -240,6 +241,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		name->set_text("");
 		name->set_editable(false);
 		export_path->hide();
+		advanced_options->set_disabled(true);
 		runnable->set_disabled(true);
 		parameters->edit(nullptr);
 		presets->deselect_all();
@@ -274,8 +276,13 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 	export_path->setup(extension_vector, false, true);
 	export_path->update_property();
+	advanced_options->set_disabled(false);
+	advanced_options->set_pressed(current->are_advanced_options_enabled());
 	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
+	if (parameters->get_edited_object() != current.ptr()) {
+		current->update_value_overrides();
+	}
 	parameters->set_object_class(current->get_platform()->get_class_name());
 	parameters->edit(current.ptr());
 
@@ -444,6 +451,18 @@ void ProjectExportDialog::_tab_changed(int) {
 
 void ProjectExportDialog::_update_parameters(const String &p_edited_property) {
 	_update_current_preset();
+}
+
+void ProjectExportDialog::_advanced_options_pressed() {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_advanced_options_enabled(advanced_options->is_pressed());
+	_update_presets();
 }
 
 void ProjectExportDialog::_runnable_pressed() {
@@ -634,6 +653,7 @@ void ProjectExportDialog::_duplicate_preset() {
 	if (make_runnable) {
 		preset->set_runnable(make_runnable);
 	}
+	preset->set_advanced_options_enabled(current->are_advanced_options_enabled());
 	preset->set_dedicated_server(current->is_dedicated_server());
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
@@ -1019,6 +1039,8 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 		platform->export_zip(current, export_pck_zip_debug->is_pressed(), p_path);
 	} else if (p_path.ends_with(".pck")) {
 		platform->export_pack(current, export_pck_zip_debug->is_pressed(), p_path);
+	} else {
+		ERR_FAIL_MSG("Path must end with .pck or .zip");
 	}
 }
 
@@ -1100,6 +1122,7 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	exporting = true;
 
 	platform->clear_messages();
+	current->update_value_overrides();
 	Error err = platform->export_project(current, export_debug->is_pressed(), current->get_export_path(), 0);
 	result_dialog_log->clear();
 	if (err != ERR_SKIP) {
@@ -1149,6 +1172,7 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 			ep.step(preset->get_name(), i);
 
 			platform->clear_messages();
+			preset->update_value_overrides();
 			Error err = platform->export_project(preset, p_debug, preset->get_export_path(), 0);
 			if (err == ERR_SKIP) {
 				exporting = false;
@@ -1207,7 +1231,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_vb->add_child(mc);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	presets = memnew(ItemList);
-	presets->set_auto_translate(false);
+	presets->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(presets, ProjectExportDialog);
 	mc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
@@ -1231,11 +1255,22 @@ ProjectExportDialog::ProjectExportDialog() {
 	name = memnew(LineEdit);
 	settings_vb->add_margin_child(TTR("Name:"), name);
 	name->connect("text_changed", callable_mp(this, &ProjectExportDialog::_name_changed));
+
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
 	runnable->set_tooltip_text(TTR("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
 	runnable->connect("pressed", callable_mp(this, &ProjectExportDialog::_runnable_pressed));
-	settings_vb->add_child(runnable);
+
+	advanced_options = memnew(CheckButton);
+	advanced_options->set_text(TTR("Advanced Options"));
+	advanced_options->set_tooltip_text(TTR("If checked, the advanced options will be shown."));
+	advanced_options->connect("pressed", callable_mp(this, &ProjectExportDialog::_advanced_options_pressed));
+
+	HBoxContainer *preset_configs_container = memnew(HBoxContainer);
+	preset_configs_container->add_spacer(true);
+	preset_configs_container->add_child(advanced_options);
+	preset_configs_container->add_child(runnable);
+	settings_vb->add_child(preset_configs_container);
 
 	export_path = memnew(EditorPropertyPath);
 	settings_vb->add_child(export_path);
@@ -1408,6 +1443,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Disable by default.
 	name->set_editable(false);
 	export_path->hide();
+	advanced_options->set_disabled(true);
 	runnable->set_disabled(true);
 	duplicate_preset->set_disabled(true);
 	delete_preset->set_disabled(true);

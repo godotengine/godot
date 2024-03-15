@@ -342,7 +342,7 @@ void EditorToaster::_repop_old() {
 	}
 }
 
-Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_time, String p_tooltip) {
+Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_time, const String &p_tooltip) {
 	// Create the panel according to the severity.
 	PanelContainer *panel = memnew(PanelContainer);
 	panel->set_tooltip_text(p_tooltip);
@@ -398,7 +398,7 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	return panel;
 }
 
-void EditorToaster::popup_str(String p_message, Severity p_severity, String p_tooltip) {
+void EditorToaster::popup_str(const String &p_message, Severity p_severity, const String &p_tooltip) {
 	if (is_processing_error) {
 		return;
 	}
@@ -410,7 +410,7 @@ void EditorToaster::popup_str(String p_message, Severity p_severity, String p_to
 	is_processing_error = false;
 }
 
-void EditorToaster::_popup_str(String p_message, Severity p_severity, String p_tooltip) {
+void EditorToaster::_popup_str(const String &p_message, Severity p_severity, const String &p_tooltip) {
 	is_processing_error = true;
 	// Check if we already have a popup with the given message.
 	Control *control = nullptr;
@@ -543,7 +543,7 @@ EditorToaster::EditorToaster() {
 	main_button->set_tooltip_text(TTR("No notifications."));
 	main_button->set_modulate(Color(0.5, 0.5, 0.5));
 	main_button->set_disabled(true);
-	main_button->set_flat(true);
+	main_button->set_theme_type_variation("FlatMenuButton");
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(true));
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_repop_old));
 	main_button->connect("draw", callable_mp(this, &EditorToaster::_draw_button));

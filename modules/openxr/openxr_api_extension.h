@@ -72,6 +72,8 @@ public:
 	int64_t get_next_frame_time();
 	bool can_render();
 
+	uint64_t get_hand_tracker(int p_hand_index);
+
 	void register_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
 	void unregister_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
 

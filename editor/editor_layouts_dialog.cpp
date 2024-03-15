@@ -37,6 +37,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 
 void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
@@ -114,7 +115,7 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	add_child(makevb);
 
 	layout_names = memnew(ItemList);
-	layout_names->set_auto_translate(false);
+	layout_names->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	layout_names->set_auto_height(true);
 	layout_names->set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
 	layout_names->set_visible(true);

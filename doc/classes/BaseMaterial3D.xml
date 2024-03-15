@@ -57,19 +57,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)">
+		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)" keywords="albedo_colour, diffuse_color, diffuse_colour">
 			The material's base color.
 			[b]Note:[/b] If [member detail_enabled] is [code]true[/code] and a [member detail_albedo] texture is specified, [member albedo_color] will [i]not[/i] modulate the detail texture. This can be used to color partial areas of a material by not specifying an albedo texture and using a transparent [member detail_albedo] texture instead.
 		</member>
-		<member name="albedo_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+		<member name="albedo_texture" type="Texture2D" setter="set_texture" getter="get_texture" keywords="diffuse_texture">
 			Texture to multiply by [member albedo_color]. Used for basic texturing of objects.
 			If the texture appears unexpectedly too dark or too bright, check [member albedo_texture_force_srgb].
 		</member>
-		<member name="albedo_texture_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
+		<member name="albedo_texture_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false" keywords="diffuse_texture_force_srgb">
 			If [code]true[/code], forces a conversion of the [member albedo_texture] from sRGB color space to linear color space. See also [member vertex_color_is_srgb].
 			This should only be enabled when needed (typically when using a [ViewportTexture] as [member albedo_texture]). If [member albedo_texture_force_srgb] is [code]true[/code] when it shouldn't be, the texture will appear to be too dark. If [member albedo_texture_force_srgb] is [code]false[/code] when it shouldn't be, the texture will appear to be too bright.
 		</member>
-		<member name="albedo_texture_msdf" type="bool" setter="set_flag" getter="get_flag" default="false">
+		<member name="albedo_texture_msdf" type="bool" setter="set_flag" getter="get_flag" default="false" keywords="diffuse_texture_force_srgb">
 			Enables multichannel signed distance field rendering shader. Use [member msdf_pixel_range] and [member msdf_outline_size] to configure MSDF parameters.
 		</member>
 		<member name="alpha_antialiasing_edge" type="float" setter="set_alpha_antialiasing_edge" getter="get_alpha_antialiasing_edge">
@@ -81,7 +81,7 @@
 		<member name="alpha_hash_scale" type="float" setter="set_alpha_hash_scale" getter="get_alpha_hash_scale">
 			The hashing scale for Alpha Hash. Recommended values between [code]0[/code] and [code]2[/code].
 		</member>
-		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold">
+		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold" keywords="alpha_test_threshold">
 			Threshold at which the alpha scissor will discard values. Higher values will result in more pixels being discarded. If the material becomes too opaque at a distance, try increasing [member alpha_scissor_threshold]. If the material disappears at a distance, try decreasing [member alpha_scissor_threshold].
 		</member>
 		<member name="anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy" default="0.0">
@@ -534,7 +534,7 @@
 		<constant name="TRANSPARENCY_ALPHA" value="1" enum="Transparency">
 			The material will use the texture's alpha values for transparency. This is the slowest to render, and disables shadow casting.
 		</constant>
-		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency">
+		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency" keywords="TRANSPARENCY_ALPHA_TEST">
 			The material will cut off all values below a threshold, the rest will remain opaque. The opaque portions will be rendered in the depth prepass. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_HASH" value="3" enum="Transparency">

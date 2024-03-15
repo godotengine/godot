@@ -24,7 +24,7 @@ public partial class ScriptBoilerplate : Node
     }
 }
 
-partial struct OuterClass
+public partial struct OuterClass
 {
     public partial class NestedClass : RefCounted
     {

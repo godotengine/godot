@@ -40,15 +40,15 @@
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/3d/collision_shape_3d.h"
-#include "scene/3d/joint_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/joints/joint_3d.h"
+#include "scene/3d/physics/physical_bone_3d.h"
+#include "scene/3d/physics/physics_body_3d.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/resources/capsule_shape_3d.h"
+#include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/skeleton_profile.h"
-#include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
 
@@ -114,7 +114,7 @@ void BoneTransformEditor::_notification(int p_what) {
 	}
 }
 
-void BoneTransformEditor::_value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void BoneTransformEditor::_value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (updating) {
 		return;
 	}

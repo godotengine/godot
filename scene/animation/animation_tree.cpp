@@ -140,6 +140,7 @@ double AnimationNode::blend_input(int p_input, AnimationMixer::PlaybackInfo p_pl
 	}
 
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
+	ERR_FAIL_COND_V(node.is_null(), 0);
 
 	real_t activity = 0.0;
 	Vector<AnimationTree::Activity> *activity_ptr = process_state->tree->input_activity_map.getptr(node_state.base_path);
@@ -153,12 +154,13 @@ double AnimationNode::blend_input(int p_input, AnimationMixer::PlaybackInfo p_pl
 }
 
 double AnimationNode::blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter, bool p_sync, bool p_test_only) {
+	ERR_FAIL_COND_V(p_node.is_null(), 0);
+
 	p_node->node_state.connections.clear();
 	return _blend_node(p_node, p_subpath, this, p_playback_info, p_filter, p_sync, p_test_only, nullptr);
 }
 
 double AnimationNode::_blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter, bool p_sync, bool p_test_only, real_t *r_activity) {
-	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
 	ERR_FAIL_NULL_V(process_state, 0);
 
 	int blend_count = node_state.track_weights.size();
@@ -568,10 +570,11 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 			pi.seeked = true;
 			root_animation_node->_pre_process(&process_state, pi, false);
 			started = false;
+		} else {
+			pi.seeked = false;
+			pi.time = p_delta;
+			root_animation_node->_pre_process(&process_state, pi, false);
 		}
-		pi.seeked = false;
-		pi.time = p_delta;
-		root_animation_node->_pre_process(&process_state, pi, false);
 	}
 
 	if (!process_state.valid) {
@@ -606,8 +609,8 @@ uint64_t AnimationTree::get_last_process_pass() const {
 	return process_pass;
 }
 
-Array AnimationTree::get_configuration_warnings() const {
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray AnimationTree::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 	if (!root_animation_node.is_valid()) {
 		warnings.push_back(RTR("No root AnimationNode for the graph is set."));
 	}
@@ -897,6 +900,7 @@ void AnimationTree::_bind_methods() {
 
 AnimationTree::AnimationTree() {
 	deterministic = true;
+	callback_mode_discrete = ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS;
 }
 
 AnimationTree::~AnimationTree() {

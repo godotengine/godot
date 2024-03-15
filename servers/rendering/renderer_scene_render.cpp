@@ -186,6 +186,64 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	}
 }
 
+/* Compositor effect API */
+
+RID RendererSceneRender::compositor_effect_allocate() {
+	return compositor_storage.compositor_effect_allocate();
+}
+
+void RendererSceneRender::compositor_effect_initialize(RID p_rid) {
+	compositor_storage.compositor_effect_initialize(p_rid);
+}
+
+void RendererSceneRender::compositor_effect_free(RID p_rid) {
+	compositor_storage.compositor_effect_free(p_rid);
+}
+
+bool RendererSceneRender::is_compositor_effect(RID p_effect) const {
+	return compositor_storage.is_compositor_effect(p_effect);
+}
+
+void RendererSceneRender::compositor_effect_set_enabled(RID p_effect, bool p_enabled) {
+	compositor_storage.compositor_effect_set_enabled(p_effect, p_enabled);
+}
+
+void RendererSceneRender::compositor_effect_set_callback(RID p_effect, RS::CompositorEffectCallbackType p_callback_type, const Callable &p_callback) {
+	compositor_storage.compositor_effect_set_callback(p_effect, p_callback_type, p_callback);
+}
+
+void RendererSceneRender::compositor_effect_set_flag(RID p_effect, RS::CompositorEffectFlags p_flag, bool p_set) {
+	compositor_storage.compositor_effect_set_flag(p_effect, p_flag, p_set);
+}
+
+/* Compositor API */
+
+RID RendererSceneRender::compositor_allocate() {
+	return compositor_storage.compositor_allocate();
+}
+
+void RendererSceneRender::compositor_initialize(RID p_rid) {
+	compositor_storage.compositor_initialize(p_rid);
+}
+
+void RendererSceneRender::compositor_free(RID p_rid) {
+	compositor_storage.compositor_free(p_rid);
+}
+
+bool RendererSceneRender::is_compositor(RID p_rid) const {
+	return compositor_storage.is_compositor(p_rid);
+}
+
+void RendererSceneRender::compositor_set_compositor_effects(RID p_compositor, const TypedArray<RID> &p_effects) {
+	Vector<RID> rids;
+	for (int i = 0; i < p_effects.size(); i++) {
+		RID rid = p_effects[i];
+		rids.push_back(rid);
+	}
+
+	compositor_storage.compositor_set_compositor_effects(p_compositor, rids);
+}
+
 /* Environment API */
 
 RID RendererSceneRender::environment_allocate() {
@@ -310,12 +368,16 @@ float RendererSceneRender::environment_get_white(RID p_env) const {
 
 // Fog
 
-void RendererSceneRender::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect) {
-	environment_storage.environment_set_fog(p_env, p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_aerial_perspective, p_sky_affect);
+void RendererSceneRender::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode) {
+	environment_storage.environment_set_fog(p_env, p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_aerial_perspective, p_sky_affect, p_mode);
 }
 
 bool RendererSceneRender::environment_get_fog_enabled(RID p_env) const {
 	return environment_storage.environment_get_fog_enabled(p_env);
+}
+
+RS::EnvironmentFogMode RendererSceneRender::environment_get_fog_mode(RID p_env) const {
+	return environment_storage.environment_get_fog_mode(p_env);
 }
 
 Color RendererSceneRender::environment_get_fog_light_color(RID p_env) const {
@@ -348,6 +410,24 @@ float RendererSceneRender::environment_get_fog_height_density(RID p_env) const {
 
 float RendererSceneRender::environment_get_fog_aerial_perspective(RID p_env) const {
 	return environment_storage.environment_get_fog_aerial_perspective(p_env);
+}
+
+// Depth Fog
+
+void RendererSceneRender::environment_set_fog_depth(RID p_env, float p_curve, float p_begin, float p_end) {
+	environment_storage.environment_set_fog_depth(p_env, p_curve, p_begin, p_end);
+}
+
+float RendererSceneRender::environment_get_fog_depth_curve(RID p_env) const {
+	return environment_storage.environment_get_fog_depth_curve(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_depth_begin(RID p_env) const {
+	return environment_storage.environment_get_fog_depth_begin(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_depth_end(RID p_env) const {
+	return environment_storage.environment_get_fog_depth_end(p_env);
 }
 
 // Volumetric Fog

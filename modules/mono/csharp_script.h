@@ -278,6 +278,7 @@ public:
 
 	void get_script_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
+	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 	MethodInfo get_method_info(const StringName &p_method) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
@@ -346,6 +347,7 @@ public:
 
 	void get_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	void mono_object_disposed(GCHandleIntPtr p_gchandle_to_free);
@@ -493,7 +495,7 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	void get_reserved_words(List<String> *p_words) const override;
-	bool is_control_flow_keyword(String p_keyword) const override;
+	bool is_control_flow_keyword(const String &p_keyword) const override;
 	void get_comment_delimiters(List<String> *p_delimiters) const override;
 	void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
 	void get_string_delimiters(List<String> *p_delimiters) const override;
@@ -514,9 +516,11 @@ public:
 		return -1;
 	}
 	String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
+	virtual bool can_make_function() const override { return false; }
 	virtual String _get_indentation() const;
 	/* TODO? */ void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {}
 	/* TODO */ void add_global_constant(const StringName &p_variable, const Variant &p_value) override {}
+	virtual ScriptNameCasing preferred_file_name_casing() const override;
 
 	/* SCRIPT GLOBAL CLASS FUNCTIONS */
 	virtual bool handles_global_class_type(const String &p_type) const override;

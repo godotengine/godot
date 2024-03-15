@@ -85,6 +85,35 @@ String InputMap::suggest_actions(const StringName &p_action) const {
 	return error_message;
 }
 
+#ifdef TOOLS_ENABLED
+void InputMap::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	bool first_argument_is_action = false;
+	if (p_idx == 0) {
+		first_argument_is_action = (pf == "has_action" || pf == "erase_action" ||
+				pf == "action_set_deadzone" || pf == "action_get_deadzone" ||
+				pf == "action_has_event" || pf == "action_add_event" || pf == "action_get_events" ||
+				pf == "action_erase_event" || pf == "action_erase_events");
+	}
+	if (first_argument_is_action || (p_idx == 1 && pf == "event_is_action")) {
+		// Cannot rely on `get_actions()`, otherwise the actions would be in the context of the Editor (no user-defined actions).
+		List<PropertyInfo> pinfo;
+		ProjectSettings::get_singleton()->get_property_list(&pinfo);
+
+		for (const PropertyInfo &pi : pinfo) {
+			if (!pi.name.begins_with("input/")) {
+				continue;
+			}
+
+			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+			r_options->push_back(name.quote());
+		}
+	}
+
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
+
 void InputMap::add_action(const StringName &p_action, float p_deadzone) {
 	ERR_FAIL_COND_MSG(input_map.has(p_action), "InputMap already has action \"" + String(p_action) + "\".");
 	input_map[p_action] = Action();

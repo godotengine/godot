@@ -37,11 +37,11 @@
 #include "core/templates/sort_array.h"
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/2d/camera_2d.h"
-#include "scene/2d/collision_object_2d.h"
+#include "scene/2d/physics/collision_object_2d.h"
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/collision_object_3d.h"
+#include "scene/3d/physics/collision_object_3d.h"
 #include "scene/3d/world_environment.h"
 #endif // _3D_DISABLED
 #include "scene/gui/control.h"
@@ -1068,32 +1068,6 @@ void Viewport::canvas_parent_mark_dirty(Node *p_node) {
 	}
 }
 
-void Viewport::_update_audio_listener_2d() {
-	if (AudioServer::get_singleton()) {
-		AudioServer::get_singleton()->notify_listener_changed();
-	}
-}
-
-void Viewport::set_as_audio_listener_2d(bool p_enable) {
-	ERR_MAIN_THREAD_GUARD;
-	if (p_enable == is_audio_listener_2d_enabled) {
-		return;
-	}
-
-	is_audio_listener_2d_enabled = p_enable;
-	_update_audio_listener_2d();
-}
-
-bool Viewport::is_audio_listener_2d() const {
-	ERR_READ_THREAD_GUARD_V(false);
-	return is_audio_listener_2d_enabled;
-}
-
-AudioListener2D *Viewport::get_audio_listener_2d() const {
-	ERR_READ_THREAD_GUARD_V(nullptr);
-	return audio_listener_2d;
-}
-
 void Viewport::enable_canvas_transform_override(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 	if (override_canvas_transform == p_enable) {
@@ -1160,25 +1134,6 @@ void Viewport::set_global_canvas_transform(const Transform2D &p_transform) {
 Transform2D Viewport::get_global_canvas_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 	return global_canvas_transform;
-}
-
-void Viewport::_camera_2d_set(Camera2D *p_camera_2d) {
-	camera_2d = p_camera_2d;
-}
-
-void Viewport::_audio_listener_2d_set(AudioListener2D *p_listener) {
-	if (audio_listener_2d == p_listener) {
-		return;
-	} else if (audio_listener_2d) {
-		audio_listener_2d->clear_current();
-	}
-	audio_listener_2d = p_listener;
-}
-
-void Viewport::_audio_listener_2d_remove(AudioListener2D *p_listener) {
-	if (audio_listener_2d == p_listener) {
-		audio_listener_2d = nullptr;
-	}
 }
 
 void Viewport::_canvas_layer_add(CanvasLayer *p_canvas_layer) {
@@ -1272,38 +1227,9 @@ Ref<World2D> Viewport::get_world_2d() const {
 	return world_2d;
 }
 
-Camera2D *Viewport::get_camera_2d() const {
-	ERR_READ_THREAD_GUARD_V(nullptr);
-	return camera_2d;
-}
-
 Transform2D Viewport::get_final_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 	return stretch_transform * global_canvas_transform;
-}
-
-void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
-	ERR_MAIN_THREAD_GUARD;
-	List<Node *> camera_list;
-	get_tree()->get_nodes_in_group(p_camera_group, &camera_list);
-
-	Camera2D *new_camera = nullptr;
-	for (Node *E : camera_list) {
-		Camera2D *cam = Object::cast_to<Camera2D>(E);
-		if (!cam) {
-			continue; // Non-camera node (e.g. ParallaxBackground).
-		}
-
-		if (cam->is_enabled()) {
-			new_camera = cam;
-			break;
-		}
-	}
-
-	_camera_2d_set(new_camera);
-	if (!camera_2d) {
-		set_canvas_transform(Transform2D());
-	}
 }
 
 void Viewport::_update_canvas_items(Node *p_node) {
@@ -1383,6 +1309,13 @@ Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
 	}
 
 	Transform2D ai = get_final_transform().affine_inverse();
+	Ref<InputEventMouse> me = ev;
+	if (me.is_valid()) {
+		me = me->xformed_by(ai);
+		// For InputEventMouse, the global position is not adjusted by ev->xformed_by() and needs to be set separately.
+		me->set_global_position(me->get_position());
+		return me;
+	}
 	return ev->xformed_by(ai);
 }
 
@@ -1440,7 +1373,7 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 	String tooltip;
 
 	while (p_control) {
-		tooltip = p_control->get_tooltip(pos);
+		tooltip = p_control->atr(p_control->get_tooltip(pos));
 
 		// Temporary solution for PopupMenus.
 		PopupMenu *menu = Object::cast_to<PopupMenu>(this);
@@ -1517,7 +1450,6 @@ void Viewport::_gui_show_tooltip() {
 	if (!base_tooltip) {
 		gui.tooltip_label = memnew(Label);
 		gui.tooltip_label->set_theme_type_variation(SNAME("TooltipLabel"));
-		gui.tooltip_label->set_auto_translate(gui.tooltip_control->is_auto_translating());
 		gui.tooltip_label->set_text(gui.tooltip_text);
 		base_tooltip = gui.tooltip_label;
 		panel->connect("mouse_entered", callable_mp(this, &Viewport::_gui_cancel_tooltip));
@@ -2638,76 +2570,6 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 #endif // _3D_DISABLED
 }
 
-void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference) {
-	List<ObjectID> to_erase;
-	List<ObjectID> to_mouse_exit;
-
-	for (const KeyValue<ObjectID, uint64_t> &E : physics_2d_mouseover) {
-		if (!p_clean_all_frames && E.value == p_frame_reference) {
-			continue;
-		}
-
-		Object *o = ObjectDB::get_instance(E.key);
-		if (o) {
-			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-			if (co && co->is_inside_tree()) {
-				if (p_clean_all_frames && p_paused_only && co->can_process()) {
-					continue;
-				}
-				to_mouse_exit.push_back(E.key);
-			}
-		}
-		to_erase.push_back(E.key);
-	}
-
-	while (to_erase.size()) {
-		physics_2d_mouseover.erase(to_erase.front()->get());
-		to_erase.pop_front();
-	}
-
-	// Per-shape.
-	List<Pair<ObjectID, int>> shapes_to_erase;
-	List<Pair<ObjectID, int>> shapes_to_mouse_exit;
-
-	for (KeyValue<Pair<ObjectID, int>, uint64_t> &E : physics_2d_shape_mouseover) {
-		if (!p_clean_all_frames && E.value == p_frame_reference) {
-			continue;
-		}
-
-		Object *o = ObjectDB::get_instance(E.key.first);
-		if (o) {
-			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-			if (co && co->is_inside_tree()) {
-				if (p_clean_all_frames && p_paused_only && co->can_process()) {
-					continue;
-				}
-				shapes_to_mouse_exit.push_back(E.key);
-			}
-		}
-		shapes_to_erase.push_back(E.key);
-	}
-
-	while (shapes_to_erase.size()) {
-		physics_2d_shape_mouseover.erase(shapes_to_erase.front()->get());
-		shapes_to_erase.pop_front();
-	}
-
-	while (to_mouse_exit.size()) {
-		Object *o = ObjectDB::get_instance(to_mouse_exit.front()->get());
-		CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-		co->_mouse_exit();
-		to_mouse_exit.pop_front();
-	}
-
-	while (shapes_to_mouse_exit.size()) {
-		Pair<ObjectID, int> e = shapes_to_mouse_exit.front()->get();
-		Object *o = ObjectDB::get_instance(e.first);
-		CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-		co->_mouse_shape_exit(e.second);
-		shapes_to_mouse_exit.pop_front();
-	}
-}
-
 void Viewport::_gui_grab_click_focus(Control *p_control) {
 	gui.mouse_click_grabber = p_control;
 	callable_mp(this, &Viewport::_post_gui_grab_click_focus).call_deferred();
@@ -3152,9 +3014,6 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 							gui.subwindow_over->_mouse_leave_viewport();
 						}
 						gui.subwindow_over = sw;
-						if (!sw->is_input_disabled()) {
-							sw->_propagate_window_notification(sw, NOTIFICATION_WM_MOUSE_ENTER);
-						}
 					}
 					if (!sw->is_input_disabled()) {
 						sw->_update_mouse_over(sw->get_final_transform().affine_inverse().xform(p_pos - sw->get_position()));
@@ -3511,9 +3370,9 @@ Variant Viewport::gui_get_drag_data() const {
 	return gui.drag_data;
 }
 
-Array Viewport::get_configuration_warnings() const {
-	ERR_MAIN_THREAD_GUARD_V(Array());
-	Array warnings = Node::get_configuration_warnings();
+PackedStringArray Viewport::get_configuration_warnings() const {
+	ERR_MAIN_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (size.x <= 1 || size.y <= 1) {
 		warnings.push_back(RTR("The Viewport size must be greater than or equal to 2 pixels on both dimensions to render anything."));
@@ -4060,6 +3919,150 @@ bool Viewport::get_canvas_cull_mask_bit(uint32_t p_layer) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, 32, false);
 	return (canvas_cull_mask & (1 << p_layer));
+}
+
+void Viewport::_update_audio_listener_2d() {
+	if (AudioServer::get_singleton()) {
+		AudioServer::get_singleton()->notify_listener_changed();
+	}
+}
+
+void Viewport::_audio_listener_2d_set(AudioListener2D *p_audio_listener) {
+	if (audio_listener_2d == p_audio_listener) {
+		return;
+	} else if (audio_listener_2d) {
+		audio_listener_2d->clear_current();
+	}
+	audio_listener_2d = p_audio_listener;
+}
+
+void Viewport::_audio_listener_2d_remove(AudioListener2D *p_audio_listener) {
+	if (audio_listener_2d == p_audio_listener) {
+		audio_listener_2d = nullptr;
+	}
+}
+
+void Viewport::_camera_2d_set(Camera2D *p_camera_2d) {
+	camera_2d = p_camera_2d;
+}
+
+void Viewport::_cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference) {
+	List<ObjectID> to_erase;
+	List<ObjectID> to_mouse_exit;
+
+	for (const KeyValue<ObjectID, uint64_t> &E : physics_2d_mouseover) {
+		if (!p_clean_all_frames && E.value == p_frame_reference) {
+			continue;
+		}
+
+		Object *o = ObjectDB::get_instance(E.key);
+		if (o) {
+			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
+			if (co && co->is_inside_tree()) {
+				if (p_clean_all_frames && p_paused_only && co->can_process()) {
+					continue;
+				}
+				to_mouse_exit.push_back(E.key);
+			}
+		}
+		to_erase.push_back(E.key);
+	}
+
+	while (to_erase.size()) {
+		physics_2d_mouseover.erase(to_erase.front()->get());
+		to_erase.pop_front();
+	}
+
+	// Per-shape.
+	List<Pair<ObjectID, int>> shapes_to_erase;
+	List<Pair<ObjectID, int>> shapes_to_mouse_exit;
+
+	for (KeyValue<Pair<ObjectID, int>, uint64_t> &E : physics_2d_shape_mouseover) {
+		if (!p_clean_all_frames && E.value == p_frame_reference) {
+			continue;
+		}
+
+		Object *o = ObjectDB::get_instance(E.key.first);
+		if (o) {
+			CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
+			if (co && co->is_inside_tree()) {
+				if (p_clean_all_frames && p_paused_only && co->can_process()) {
+					continue;
+				}
+				shapes_to_mouse_exit.push_back(E.key);
+			}
+		}
+		shapes_to_erase.push_back(E.key);
+	}
+
+	while (shapes_to_erase.size()) {
+		physics_2d_shape_mouseover.erase(shapes_to_erase.front()->get());
+		shapes_to_erase.pop_front();
+	}
+
+	while (to_mouse_exit.size()) {
+		Object *o = ObjectDB::get_instance(to_mouse_exit.front()->get());
+		CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
+		co->_mouse_exit();
+		to_mouse_exit.pop_front();
+	}
+
+	while (shapes_to_mouse_exit.size()) {
+		Pair<ObjectID, int> e = shapes_to_mouse_exit.front()->get();
+		Object *o = ObjectDB::get_instance(e.first);
+		CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
+		co->_mouse_shape_exit(e.second);
+		shapes_to_mouse_exit.pop_front();
+	}
+}
+
+AudioListener2D *Viewport::get_audio_listener_2d() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
+	return audio_listener_2d;
+}
+
+void Viewport::set_as_audio_listener_2d(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
+	if (p_enable == is_audio_listener_2d_enabled) {
+		return;
+	}
+
+	is_audio_listener_2d_enabled = p_enable;
+	_update_audio_listener_2d();
+}
+
+bool Viewport::is_audio_listener_2d() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return is_audio_listener_2d_enabled;
+}
+
+Camera2D *Viewport::get_camera_2d() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
+	return camera_2d;
+}
+
+void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
+	ERR_MAIN_THREAD_GUARD;
+	List<Node *> camera_list;
+	get_tree()->get_nodes_in_group(p_camera_group, &camera_list);
+
+	Camera2D *new_camera = nullptr;
+	for (Node *E : camera_list) {
+		Camera2D *cam = Object::cast_to<Camera2D>(E);
+		if (!cam) {
+			continue; // Non-camera node (e.g. ParallaxBackground).
+		}
+
+		if (cam->is_enabled()) {
+			new_camera = cam;
+			break;
+		}
+	}
+
+	_camera_2d_set(new_camera);
+	if (!camera_2d) {
+		set_canvas_transform(Transform2D());
+	}
 }
 
 #ifndef _3D_DISABLED
@@ -4637,10 +4640,6 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_unhandled_input", "event", "in_local_coords"), &Viewport::push_unhandled_input, DEFVAL(false));
 #endif // DISABLE_DEPRECATED
 
-	ClassDB::bind_method(D_METHOD("get_camera_2d"), &Viewport::get_camera_2d);
-	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d", "enable"), &Viewport::set_as_audio_listener_2d);
-	ClassDB::bind_method(D_METHOD("is_audio_listener_2d"), &Viewport::is_audio_listener_2d);
-
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
 	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Viewport::warp_mouse);
 	ClassDB::bind_method(D_METHOD("update_mouse_cursor_state"), &Viewport::update_mouse_cursor_state);
@@ -4709,6 +4708,10 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_process_picking"), &Viewport::_process_picking);
 
+	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d", "enable"), &Viewport::set_as_audio_listener_2d);
+	ClassDB::bind_method(D_METHOD("is_audio_listener_2d"), &Viewport::is_audio_listener_2d);
+	ClassDB::bind_method(D_METHOD("get_camera_2d"), &Viewport::get_camera_2d);
+
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_world_3d", "world_3d"), &Viewport::set_world_3d);
 	ClassDB::bind_method(D_METHOD("get_world_3d"), &Viewport::get_world_3d);
@@ -4763,7 +4766,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_occlusion_culling"), "set_use_occlusion_culling", "is_using_occlusion_culling");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Lighting,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Lighting,Overdraw,Wireframe,Normal Buffer,VoxelGI Albedo,VoxelGI Lighting,VoxelGI Emission,Shadow Atlas,Directional Shadow Map,Scene Luminance,SSAO,SSIL,Directional Shadow Splits,Decal Atlas,SDFGI Cascades,SDFGI Probes,VoxelGI/SDFGI Buffer,Disable Mesh LOD,OmniLight3D Cluster,SpotLight3D Cluster,Decal Cluster,ReflectionProbe Cluster,Occlusion Culling Buffer,Motion Vectors,Internal Buffer"), "set_debug_draw", "get_debug_draw");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr_2d"), "set_use_hdr_2d", "is_using_hdr_2d");
 
 #ifndef _3D_DISABLED
@@ -4772,10 +4775,10 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scaling_3d_scale", PROPERTY_HINT_RANGE, "0.25,2.0,0.01"), "set_scaling_3d_scale", "get_scaling_3d_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), "set_texture_mipmap_bias", "get_texture_mipmap_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), "set_fsr_sharpness", "get_fsr_sharpness");
-#endif
 	ADD_GROUP("Variable Rate Shading", "vrs_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_mode", PROPERTY_HINT_ENUM, "Disabled,Texture,Depth buffer,XR"), "set_vrs_mode", "get_vrs_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "vrs_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_vrs_texture", "get_vrs_texture");
+#endif
 	ADD_GROUP("Canvas Items", "canvas_item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirror"), "set_default_canvas_item_texture_repeat", "get_default_canvas_item_texture_repeat");
@@ -4783,7 +4786,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_2d"), "set_as_audio_listener_2d", "is_audio_listener_2d");
 #ifndef _3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_3d"), "set_as_audio_listener_3d", "is_audio_listener_3d");
-#endif
+#endif // _3D_DISABLED
 	ADD_GROUP("Physics", "physics_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking"), "set_physics_object_picking", "get_physics_object_picking");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking_sort"), "set_physics_object_picking_sort", "get_physics_object_picking_sort");

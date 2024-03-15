@@ -120,6 +120,10 @@ void TreeItem::_change_tree(Tree *p_tree) {
 		}
 
 		if (tree->selected_item == this) {
+			for (int i = 0; i < tree->selected_item->cells.size(); i++) {
+				tree->selected_item->cells.write[i].selected = false;
+			}
+
 			tree->selected_item = nullptr;
 		}
 
@@ -311,6 +315,13 @@ void TreeItem::set_text(int p_column, String p_text) {
 			cells.write[p_column].max = MAX(cells[p_column].max, value);
 		}
 		cells.write[p_column].step = 0;
+	} else {
+		// Don't auto translate if it's in string mode and editable, as the text can be changed to anything by the user.
+		if (tree && (!cells[p_column].editable || cells[p_column].mode != TreeItem::CELL_MODE_STRING)) {
+			cells.write[p_column].xl_text = tree->atr(p_text);
+		} else {
+			cells.write[p_column].xl_text = p_text;
+		}
 	}
 
 	cells.write[p_column].cached_minimum_size_dirty = true;
@@ -680,7 +691,7 @@ bool TreeItem::_is_any_collapsed(bool p_only_visible) {
 }
 
 bool TreeItem::is_any_collapsed(bool p_only_visible) {
-	if (p_only_visible && !is_visible()) {
+	if (p_only_visible && !is_visible_in_tree()) {
 		return false;
 	}
 
@@ -701,10 +712,29 @@ void TreeItem::set_visible(bool p_visible) {
 		tree->queue_redraw();
 		_changed_notify();
 	}
+
+	_handle_visibility_changed(p_visible);
 }
 
 bool TreeItem::is_visible() {
 	return visible;
+}
+
+bool TreeItem::is_visible_in_tree() const {
+	return visible && parent_visible_in_tree;
+}
+
+void TreeItem::_handle_visibility_changed(bool p_visible) {
+	TreeItem *child = get_first_child();
+	while (child) {
+		child->_propagate_visibility_changed(p_visible);
+		child = child->get_next();
+	}
+}
+
+void TreeItem::_propagate_visibility_changed(bool p_parent_visible_in_tree) {
+	parent_visible_in_tree = p_parent_visible_in_tree;
+	_handle_visibility_changed(p_parent_visible_in_tree);
 }
 
 void TreeItem::uncollapse_tree() {
@@ -777,6 +807,7 @@ TreeItem *TreeItem::create_child(int p_index) {
 	}
 
 	ti->parent = this;
+	ti->parent_visible_in_tree = is_visible_in_tree();
 
 	return ti;
 }
@@ -788,6 +819,8 @@ void TreeItem::add_child(TreeItem *p_item) {
 
 	p_item->_change_tree(tree);
 	p_item->parent = this;
+	p_item->parent_visible_in_tree = is_visible_in_tree();
+	p_item->_handle_visibility_changed(p_item->parent_visible_in_tree);
 
 	TreeItem *item_prev = first_child;
 	while (item_prev && item_prev->next) {
@@ -895,7 +928,7 @@ TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
 TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
 	TreeItem *loop = this;
 	TreeItem *prev_item = _get_prev_in_tree(p_wrap);
-	while (prev_item && !prev_item->is_visible()) {
+	while (prev_item && !prev_item->is_visible_in_tree()) {
 		prev_item = prev_item->_get_prev_in_tree(p_wrap);
 		if (prev_item == loop) {
 			// Check that we haven't looped all the way around to the start.
@@ -936,7 +969,7 @@ TreeItem *TreeItem::_get_next_in_tree(bool p_wrap, bool p_include_invisible) {
 TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 	TreeItem *loop = this;
 	TreeItem *next_item = _get_next_in_tree(p_wrap);
-	while (next_item && !next_item->is_visible()) {
+	while (next_item && !next_item->is_visible_in_tree()) {
 		next_item = next_item->_get_next_in_tree(p_wrap);
 		if (next_item == loop) {
 			// Check that we haven't looped all the way around to the start.
@@ -1630,6 +1663,7 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_visible", "enable"), &TreeItem::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &TreeItem::is_visible);
+	ClassDB::bind_method(D_METHOD("is_visible_in_tree"), &TreeItem::is_visible_in_tree);
 
 	ClassDB::bind_method(D_METHOD("uncollapse_tree"), &TreeItem::uncollapse_tree);
 
@@ -1779,7 +1813,7 @@ Size2 Tree::_get_cell_icon_size(const TreeItem::Cell &p_cell) const {
 }
 
 int Tree::compute_item_height(TreeItem *p_item) const {
-	if ((p_item == root && hide_root) || !p_item->is_visible()) {
+	if ((p_item == root && hide_root) || !p_item->is_visible_in_tree()) {
 		return 0;
 	}
 
@@ -1837,7 +1871,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 }
 
 int Tree::get_item_height(TreeItem *p_item) const {
-	if (!p_item->is_visible()) {
+	if (!p_item->is_visible_in_tree()) {
 		return 0;
 	}
 	int height = compute_item_height(p_item);
@@ -1929,7 +1963,8 @@ void Tree::update_column(int p_col) {
 		columns.write[p_col].text_buf->set_direction((TextServer::Direction)columns[p_col].text_direction);
 	}
 
-	columns.write[p_col].text_buf->add_string(columns[p_col].title, theme_cache.tb_font, theme_cache.tb_font_size, columns[p_col].language);
+	columns.write[p_col].xl_title = atr(columns[p_col].title);
+	columns.write[p_col].text_buf->add_string(columns[p_col].xl_title, theme_cache.tb_font, theme_cache.tb_font_size, columns[p_col].language);
 	columns.write[p_col].cached_minimum_width_dirty = true;
 }
 
@@ -1945,7 +1980,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 
 			int option = (int)p_item->cells[p_col].val;
 
-			valtext = RTR("(Other)");
+			valtext = atr(ETR("(Other)"));
 			Vector<String> strings = p_item->cells[p_col].text.split(",");
 			for (int j = 0; j < strings.size(); j++) {
 				int value = j;
@@ -1953,7 +1988,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 					value = strings[j].get_slicec(':', 1).to_int();
 				}
 				if (option == value) {
-					valtext = strings[j].get_slicec(':', 0);
+					valtext = atr(strings[j].get_slicec(':', 0));
 					break;
 				}
 			}
@@ -1962,11 +1997,21 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 			valtext = String::num(p_item->cells[p_col].val, Math::range_step_decimals(p_item->cells[p_col].step));
 		}
 	} else {
-		valtext = p_item->cells[p_col].text;
+		// Don't auto translate if it's in string mode and editable, as the text can be changed to anything by the user.
+		if (!p_item->cells[p_col].editable || p_item->cells[p_col].mode != TreeItem::CELL_MODE_STRING) {
+			p_item->cells.write[p_col].xl_text = atr(p_item->cells[p_col].text);
+		} else {
+			p_item->cells.write[p_col].xl_text = p_item->cells[p_col].text;
+		}
+
+		valtext = p_item->cells[p_col].xl_text;
 	}
 
 	if (!p_item->cells[p_col].suffix.is_empty()) {
-		valtext += " " + p_item->cells[p_col].suffix;
+		if (!valtext.is_empty()) {
+			valtext += " ";
+		}
+		valtext += p_item->cells[p_col].suffix;
 	}
 
 	if (p_item->cells[p_col].text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -2028,7 +2073,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		return -1; //draw no more!
 	}
 
-	if (!p_item->is_visible()) {
+	if (!p_item->is_visible_in_tree()) {
 		return 0;
 	}
 
@@ -2072,7 +2117,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			if (p_item->cells[i].expand_right) {
 				int plus = 1;
-				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text.is_empty() && p_item->cells[i + plus].icon.is_null()) {
+				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].xl_text.is_empty() && p_item->cells[i + plus].icon.is_null()) {
 					item_width += get_column_width(i + plus);
 					plus++;
 					skip2++;
@@ -2485,7 +2530,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 
 			// Draw relationship lines.
-			if (theme_cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root) && c->is_visible()) {
+			if (theme_cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root) && c->is_visible_in_tree()) {
 				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin);
 				int parent_ofs = p_pos.x + theme_cache.item_margin;
 				Point2i root_pos = Point2i(root_ofs, children_pos.y + child_self_height / 2) - theme_cache.offset + p_draw_ofs;
@@ -2766,7 +2811,7 @@ void Tree::_range_click_timeout() {
 }
 
 int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod) {
-	if (p_item && !p_item->is_visible()) {
+	if (p_item && !p_item->is_visible_in_tree()) {
 		// Skip any processing of invisible items.
 		return 0;
 	}
@@ -4662,7 +4707,7 @@ int Tree::get_column_minimum_width(int p_column) const {
 
 		// Check if the visible title of the column is wider.
 		if (show_column_titles) {
-			min_width = MAX(theme_cache.font->get_string_size(columns[p_column].title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT), min_width);
+			min_width = MAX(theme_cache.font->get_string_size(columns[p_column].xl_title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT), min_width);
 		}
 
 		if (!columns[p_column].clip_content) {
@@ -4775,7 +4820,7 @@ int Tree::get_item_offset(TreeItem *p_item) const {
 			return ofs;
 		}
 
-		if ((it != root || !hide_root) && it->is_visible()) {
+		if ((it != root || !hide_root) && it->is_visible_in_tree()) {
 			ofs += compute_item_height(it);
 			ofs += theme_cache.v_separation;
 		}
@@ -4917,6 +4962,7 @@ void Tree::set_column_title(int p_column, const String &p_title) {
 	}
 
 	columns.write[p_column].title = p_title;
+	columns.write[p_column].xl_title = atr(p_title);
 	update_column(p_column);
 	queue_redraw();
 }
@@ -5148,7 +5194,7 @@ void Tree::_do_incr_search(const String &p_add) {
 TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const {
 	Point2 pos = p_pos;
 
-	if ((root != p_item || !hide_root) && p_item->is_visible()) {
+	if ((root != p_item || !hide_root) && p_item->is_visible_in_tree()) {
 		h = compute_item_height(p_item) + theme_cache.v_separation;
 		if (pos.y < h) {
 			if (drop_mode_flags == DROP_MODE_ON_ITEM) {
@@ -5181,7 +5227,7 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 		h = 0;
 	}
 
-	if (p_item->is_collapsed() || !p_item->is_visible()) {
+	if (p_item->is_collapsed() || !p_item->is_visible_in_tree()) {
 		return nullptr; // do not try children, it's collapsed
 	}
 
