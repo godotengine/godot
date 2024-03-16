@@ -77,8 +77,18 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	initialize_terrain_3d(p_level);
 	initialize_filiage_manager(p_level);
 	ClassDB::register_class<AnimationHelp>();
+
+	
 	ClassDB::register_class<CharacterBodyMain>();
 	ClassDB::register_class<CharacterBodyPart>();
+
+	
+	ClassDB::register_class<CharacterAnimatorMask>();
+	ClassDB::register_class<CharacterAnimatorNodeBase>();
+	ClassDB::register_class<CharacterAnimatorNode1D>();
+	ClassDB::register_class<CharacterAnimatorNode2D>();
+	ClassDB::register_class<CharacterAnimatorLayer>();
+	ClassDB::register_class<CharacterAnimator>();
 
 	animation_help = memnew(AnimationHelp);
 

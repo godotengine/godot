@@ -89,6 +89,7 @@ public:
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 		real_t weight = 0.0;
 		Vector<real_t> track_weights;
+		Dictionary disable_path;
 	};
 
 	struct AnimationInstance {
@@ -312,6 +313,7 @@ protected:
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
 	bool _update_caches();
+	void auto_cache_treak(Ref<Animation> anim,int i);
 
 	/* ---- Blending processor ---- */
 	LocalVector<AnimationInstance> animation_instances;
