@@ -331,9 +331,11 @@ void World::get_camera_list(List<Camera *> *r_cameras) {
 }
 
 void World::notify_saving(bool p_active) {
+#ifndef _3D_DISABLED
 	if (lod_manager) {
 		lod_manager->notify_saving(p_active);
 	}
+#endif
 }
 
 void World::_bind_methods() {
