@@ -319,7 +319,12 @@ void Light2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
 			if (is_visible_in_tree() && is_physics_interpolated()) {
-				VisualServer::get_singleton()->canvas_light_reset_physics_interpolation(canvas_light);
+				// Explicitly make sure the transform is up to date in VisualServer before
+				// resetting. This is necessary because NOTIFICATION_TRANSFORM_CHANGED
+				// is normally deferred, and a client change to transform will not always be sent
+				// before the reset, so we need to guarantee this.
+				VS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
+				VS::get_singleton()->canvas_light_reset_physics_interpolation(canvas_light);
 			}
 		} break;
 	}
