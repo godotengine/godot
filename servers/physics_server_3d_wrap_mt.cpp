@@ -32,43 +32,28 @@
 
 #include "core/os/os.h"
 
-void PhysicsServer3DWrapMT::thread_exit() {
-	exit = true;
-}
-
 void PhysicsServer3DWrapMT::thread_step(real_t p_delta) {
-	physics_server_3d->step(p_delta);
-	step_sem.post();
-}
-
-void PhysicsServer3DWrapMT::_thread_callback(void *_instance) {
-	PhysicsServer3DWrapMT *vsmt = reinterpret_cast<PhysicsServer3DWrapMT *>(_instance);
-
-	vsmt->thread_loop();
-}
-
-void PhysicsServer3DWrapMT::thread_loop() {
 	server_thread = Thread::get_caller_id();
+	command_queue.flush_all();
+	physics_server_3d->step(p_delta);
+	command_queue.flush_all(); // Flush pending commands before and after
+	server_thread = Thread::UNASSIGNED_ID;
+}
 
-	physics_server_3d->init();
-
-	exit = false;
-	step_thread_up = true;
-	while (!exit) {
-		// flush commands one by one, until exit is requested
-		command_queue.wait_and_flush();
+void PhysicsServer3DWrapMT::_main_thread_sync() {
+	if (task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
+		task_id = WorkerThreadPool::INVALID_TASK_ID;
 	}
 
-	command_queue.flush_all(); // flush all
-
-	physics_server_3d->finish();
+	server_thread = Thread::MAIN_ID;
 }
 
 /* EVENT QUEUING */
 
 void PhysicsServer3DWrapMT::step(real_t p_step) {
 	if (create_thread) {
-		command_queue.push(this, &PhysicsServer3DWrapMT::thread_step, p_step);
+		task_id = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &PhysicsServer3DWrapMT::thread_step).bind(p_step), true);
 	} else {
 		command_queue.flush_all(); //flush all pending from other threads
 		physics_server_3d->step(p_step);
@@ -77,10 +62,9 @@ void PhysicsServer3DWrapMT::step(real_t p_step) {
 
 void PhysicsServer3DWrapMT::sync() {
 	if (create_thread) {
-		if (first_frame) {
-			first_frame = false;
-		} else {
-			step_sem.wait(); //must not wait if a step was not issued
+		if (task_id != WorkerThreadPool::INVALID_TASK_ID) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
+			task_id = WorkerThreadPool::INVALID_TASK_ID;
 		}
 	}
 	physics_server_3d->sync();
@@ -95,24 +79,15 @@ void PhysicsServer3DWrapMT::end_sync() {
 }
 
 void PhysicsServer3DWrapMT::init() {
-	if (create_thread) {
-		//OS::get_singleton()->release_rendering_thread();
-		thread.start(_thread_callback, this);
-		while (!step_thread_up) {
-			OS::get_singleton()->delay_usec(1000);
-		}
-	} else {
-		physics_server_3d->init();
-	}
+	physics_server_3d->init();
 }
 
 void PhysicsServer3DWrapMT::finish() {
-	if (thread.is_started()) {
-		command_queue.push(this, &PhysicsServer3DWrapMT::thread_exit);
-		thread.wait_to_finish();
-	} else {
-		physics_server_3d->finish();
+	if (task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
+		task_id = WorkerThreadPool::INVALID_TASK_ID;
 	}
+	physics_server_3d->finish();
 }
 
 PhysicsServer3DWrapMT::PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool p_create_thread) :
@@ -121,12 +96,12 @@ PhysicsServer3DWrapMT::PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool 
 	create_thread = p_create_thread;
 
 	if (!p_create_thread) {
-		server_thread = Thread::get_caller_id();
+		server_thread = Thread::MAIN_ID;
 	} else {
-		server_thread = 0;
+		server_thread = Thread::UNASSIGNED_ID;
 	}
 
-	main_thread = Thread::get_caller_id();
+	main_thread = Thread::MAIN_ID;
 }
 
 PhysicsServer3DWrapMT::~PhysicsServer3DWrapMT() {
