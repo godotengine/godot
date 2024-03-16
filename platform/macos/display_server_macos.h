@@ -192,7 +192,7 @@ private:
 	HashMap<WindowID, WindowData> windows;
 
 	struct IndicatorData {
-		id view;
+		id delegate;
 		id item;
 	};
 
@@ -431,9 +431,10 @@ public:
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
-	virtual IndicatorID create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
-	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) override;
+	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
 	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
+	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) override;
 	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
 	virtual void delete_status_indicator(IndicatorID p_id) override;
 
