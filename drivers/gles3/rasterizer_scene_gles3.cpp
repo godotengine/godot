@@ -1563,9 +1563,7 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 
 	if (p_render_data->view_count > 1) {
 		for (uint32_t v = 0; v < p_render_data->view_count; v++) {
-			Projection view_correction;
-			view_correction.set_depth_correction(p_flip_y, false, false);
-			projection = view_correction * p_render_data->view_projection[v];
+			projection = correction * p_render_data->view_projection[v];
 			GLES3::MaterialStorage::store_camera(projection, scene_state.multiview_ubo.projection_matrix_view[v]);
 			GLES3::MaterialStorage::store_camera(projection.inverse(), scene_state.multiview_ubo.inv_projection_matrix_view[v]);
 

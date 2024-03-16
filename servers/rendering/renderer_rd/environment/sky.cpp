@@ -1174,7 +1174,7 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 	}
 
 	Projection correction;
-	correction.set_depth_correction(false, true, false);
+	correction.set_depth_correction(false, true);
 	correction.add_jitter_offset(p_jitter);
 
 	sky_scene_state.view_count = p_view_count;
@@ -1183,14 +1183,14 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 
 	// Our info in our UBO is only used if we're rendering stereo.
 	for (uint32_t i = 0; i < p_view_count; i++) {
-		Projection view_correction;
-		view_correction.add_jitter_offset(p_jitter);
-		Projection view_inv_projection = (view_correction * p_view_projections[i]).inverse();
+		Projection view_inv_projection = (correction * p_view_projections[i]).inverse();
 		if (p_view_count > 1) {
+			// Reprojection is used when we need to have things in combined space,
 			RendererRD::MaterialStorage::store_camera(p_cam_projection * view_inv_projection, sky_scene_state.ubo.combined_reprojection[i]);
 		} else {
+			// This is unused so just reset to identity.
 			Projection ident;
-			RendererRD::MaterialStorage::store_camera(correction, sky_scene_state.ubo.combined_reprojection[i]);
+			RendererRD::MaterialStorage::store_camera(ident, sky_scene_state.ubo.combined_reprojection[i]);
 		}
 
 		RendererRD::MaterialStorage::store_camera(view_inv_projection, sky_scene_state.ubo.view_inv_projections[i]);

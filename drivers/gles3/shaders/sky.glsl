@@ -139,9 +139,11 @@ void main() {
 	vec3 cube_normal;
 #ifdef USE_MULTIVIEW
 	// In multiview our projection matrices will contain positional and rotational offsets that we need to properly unproject.
-	vec4 unproject = vec4(uv_interp.x, uv_interp.y, 1.0, 1.0);
+	vec4 unproject = vec4(uv_interp.xy, -1.0, 1.0); // unproject at the far plane
 	vec4 unprojected = multiview_data.inv_projection_matrix_view[ViewIndex] * unproject;
 	cube_normal = unprojected.xyz / unprojected.w;
+
+	// Unproject will give us the position between the eyes, need to re-offset
 	cube_normal += multiview_data.eye_offset[ViewIndex].xyz;
 #else
 	cube_normal.z = -1.0;
