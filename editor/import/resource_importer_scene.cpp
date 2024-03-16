@@ -629,14 +629,11 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 }
 
 void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, bool p_bake_all) {
-	if (!scene->has_node(String("AnimationPlayer"))) {
+	AnimationPlayer *anim = _find_animation_player(scene);
+	if (!anim) {
+		WARN_PRINT("Creating clips is enabled, but no animation player was found.");
 		return;
 	}
-
-	Node *n = scene->get_node(String("AnimationPlayer"));
-	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
-	ERR_FAIL_COND(!anim);
 
 	if (!anim->has_animation("default")) {
 		ERR_FAIL_COND_MSG(p_clips.size() > 0, "To create clips, animations must be named \"default\".");
@@ -757,13 +754,10 @@ void ResourceImporterScene::_filter_anim_tracks(Ref<Animation> anim, Set<String>
 }
 
 void ResourceImporterScene::_filter_tracks(Node *scene, const String &p_text) {
-	if (!scene->has_node(String("AnimationPlayer"))) {
+	AnimationPlayer *anim = _find_animation_player(scene);
+	if (!anim) {
 		return;
 	}
-	Node *n = scene->get_node(String("AnimationPlayer"));
-	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
-	ERR_FAIL_COND(!anim);
 
 	Vector<String> strings = p_text.split("\n");
 	for (int i = 0; i < strings.size(); i++) {
@@ -864,13 +858,10 @@ void ResourceImporterScene::_filter_tracks(Node *scene, const String &p_text) {
 }
 
 void ResourceImporterScene::_optimize_animations(Node *scene, float p_max_lin_error, float p_max_ang_error, float p_max_angle) {
-	if (!scene->has_node(String("AnimationPlayer"))) {
+	AnimationPlayer *anim = _find_animation_player(scene);
+	if (!anim) {
 		return;
 	}
-	Node *n = scene->get_node(String("AnimationPlayer"));
-	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
-	ERR_FAIL_COND(!anim);
 
 	List<StringName> anim_names;
 	anim->get_animation_list(&anim_names);
@@ -893,6 +884,24 @@ static String _make_extname(const String &p_str) {
 	ext_name = ext_name.replace("*", "_");
 
 	return ext_name;
+}
+
+AnimationPlayer *ResourceImporterScene::_find_animation_player(Node *p_node) {
+	// Find a direct child that is an AnimationPlayer.
+	AnimationPlayer *ret = nullptr;
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		AnimationPlayer *child = Object::cast_to<AnimationPlayer>(p_node->get_child(i));
+		if (child) {
+			if (ret == nullptr) {
+				ret = child;
+			} else {
+				WARN_PRINT("More than one animation player: \"" + ret->get_name() + "\" and \"" + child->get_name() + "\".");
+			}
+		}
+	}
+
+	return ret;
 }
 
 void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Transform> &meshes) {
