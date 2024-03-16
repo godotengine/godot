@@ -924,13 +924,14 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 	transition_path.push_back(current);
 	while (true) {
 		next = _find_next(p_tree, p_state_machine);
-		if (transition_path.has(next.node)) {
-			WARN_PRINT_ONCE_ED("AnimationNodeStateMachinePlayback: " + base_path + "playback aborts the transition by detecting one or more looped transitions in the same frame to prevent to infinity loop. You may need to check the transition settings.");
-			break; // Maybe infinity loop, do nothing more.
-		}
 
 		if (!_can_transition_to_next(p_tree, p_state_machine, next, p_test_only)) {
 			break; // Finish transition.
+		}
+
+		if (transition_path.has(next.node)) {
+			WARN_PRINT_ONCE_ED("AnimationNodeStateMachinePlayback: " + base_path + "playback aborts the transition by detecting one or more looped transitions in the same frame to prevent to infinity loop. You may need to check the transition settings.");
+			break; // Maybe infinity loop, do nothing more.
 		}
 
 		transition_path.push_back(next.node);
