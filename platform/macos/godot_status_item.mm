@@ -32,30 +32,32 @@
 
 #include "display_server_macos.h"
 
-@implementation GodotStatusItemView
+@implementation GodotStatusItemDelegate
 
 - (id)init {
 	self = [super init];
-	image = nullptr;
 	return self;
 }
 
-- (void)setImage:(NSImage *)newImage {
-	image = newImage;
-	[self setNeedsDisplayInRect:self.frame];
-}
-
-- (void)setCallback:(const Callable &)callback {
-	cb = callback;
-}
-
-- (void)drawRect:(NSRect)rect {
-	if (image) {
-		[image drawInRect:rect];
+- (IBAction)click:(id)sender {
+	NSEvent *current_event = [NSApp currentEvent];
+	MouseButton index = MouseButton::LEFT;
+	if (current_event) {
+		if (current_event.type == NSEventTypeLeftMouseDown) {
+			index = MouseButton::LEFT;
+		} else if (current_event.type == NSEventTypeRightMouseDown) {
+			index = MouseButton::RIGHT;
+		} else if (current_event.type == NSEventTypeOtherMouseDown) {
+			if ((int)[current_event buttonNumber] == 2) {
+				index = MouseButton::MIDDLE;
+			} else if ((int)[current_event buttonNumber] == 3) {
+				index = MouseButton::MB_XBUTTON1;
+			} else if ((int)[current_event buttonNumber] == 4) {
+				index = MouseButton::MB_XBUTTON2;
+			}
+		}
 	}
-}
 
-- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (!ds) {
 		return;
@@ -71,31 +73,8 @@
 	}
 }
 
-- (void)mouseDown:(NSEvent *)event {
-	[super mouseDown:event];
-	if (([event modifierFlags] & NSEventModifierFlagControl)) {
-		[self processMouseEvent:event index:MouseButton::RIGHT];
-	} else {
-		[self processMouseEvent:event index:MouseButton::LEFT];
-	}
-}
-
-- (void)rightMouseDown:(NSEvent *)event {
-	[super rightMouseDown:event];
-
-	[self processMouseEvent:event index:MouseButton::RIGHT];
-}
-
-- (void)otherMouseDown:(NSEvent *)event {
-	[super otherMouseDown:event];
-
-	if ((int)[event buttonNumber] == 2) {
-		[self processMouseEvent:event index:MouseButton::MIDDLE];
-	} else if ((int)[event buttonNumber] == 3) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1];
-	} else if ((int)[event buttonNumber] == 4) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2];
-	}
+- (void)setCallback:(const Callable &)callback {
+	cb = callback;
 }
 
 @end
