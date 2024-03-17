@@ -4825,7 +4825,7 @@ void BindingsGenerator::_initialize() {
 
 static String generate_all_glue_option = "--generate-mono-glue";
 
-static void handle_cmdline_options(String glue_dir_path) {
+static void handle_cmdline_options(const String &glue_dir_path) {
 	BindingsGenerator bindings_generator;
 	bindings_generator.set_log_print_enabled(true);
 

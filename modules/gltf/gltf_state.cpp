@@ -152,7 +152,7 @@ Dictionary GLTFState::get_json() {
 	return json;
 }
 
-void GLTFState::set_json(Dictionary p_json) {
+void GLTFState::set_json(const Dictionary &p_json) {
 	json = p_json;
 }
 
@@ -184,7 +184,7 @@ Vector<uint8_t> GLTFState::get_glb_data() {
 	return glb_data;
 }
 
-void GLTFState::set_glb_data(Vector<uint8_t> p_glb_data) {
+void GLTFState::set_glb_data(const Vector<uint8_t> &p_glb_data) {
 	glb_data = p_glb_data;
 }
 
@@ -248,7 +248,7 @@ String GLTFState::get_scene_name() {
 	return scene_name;
 }
 
-void GLTFState::set_scene_name(String p_scene_name) {
+void GLTFState::set_scene_name(const String &p_scene_name) {
 	scene_name = p_scene_name;
 }
 
@@ -256,7 +256,7 @@ PackedInt32Array GLTFState::get_root_nodes() {
 	return root_nodes;
 }
 
-void GLTFState::set_root_nodes(PackedInt32Array p_root_nodes) {
+void GLTFState::set_root_nodes(const PackedInt32Array &p_root_nodes) {
 	root_nodes = p_root_nodes;
 }
 
@@ -393,7 +393,7 @@ String GLTFState::get_base_path() {
 	return base_path;
 }
 
-void GLTFState::set_base_path(String p_base_path) {
+void GLTFState::set_base_path(const String &p_base_path) {
 	base_path = p_base_path;
 }
 
@@ -409,7 +409,7 @@ Variant GLTFState::get_additional_data(const StringName &p_extension_name) {
 	return additional_data[p_extension_name];
 }
 
-void GLTFState::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
+void GLTFState::set_additional_data(const StringName &p_extension_name, const Variant &p_additional_data) {
 	additional_data[p_extension_name] = p_additional_data;
 }
 

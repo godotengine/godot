@@ -31,7 +31,7 @@
 #include "gltf_document_extension_texture_webp.h"
 
 // Import process.
-Error GLTFDocumentExtensionTextureWebP::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
+Error GLTFDocumentExtensionTextureWebP::import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions) {
 	if (!p_extensions.has("EXT_texture_webp")) {
 		return ERR_SKIP;
 	}

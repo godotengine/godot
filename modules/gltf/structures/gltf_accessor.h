@@ -78,10 +78,10 @@ public:
 	void set_type(int p_type);
 
 	Vector<double> get_min();
-	void set_min(Vector<double> p_min);
+	void set_min(const Vector<double> &p_min);
 
 	Vector<double> get_max();
-	void set_max(Vector<double> p_max);
+	void set_max(const Vector<double> &p_max);
 
 	int get_sparse_count();
 	void set_sparse_count(int p_sparse_count);

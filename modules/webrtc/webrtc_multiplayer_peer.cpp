@@ -190,20 +190,20 @@ MultiplayerPeer::ConnectionStatus WebRTCMultiplayerPeer::get_connection_status()
 	return connection_status;
 }
 
-Error WebRTCMultiplayerPeer::create_server(Array p_channels_config) {
+Error WebRTCMultiplayerPeer::create_server(const Array &p_channels_config) {
 	return _initialize(1, MODE_SERVER, p_channels_config);
 }
 
-Error WebRTCMultiplayerPeer::create_client(int p_self_id, Array p_channels_config) {
+Error WebRTCMultiplayerPeer::create_client(int p_self_id, const Array &p_channels_config) {
 	ERR_FAIL_COND_V_MSG(p_self_id == 1, ERR_INVALID_PARAMETER, "Clients cannot have ID 1.");
 	return _initialize(p_self_id, MODE_CLIENT, p_channels_config);
 }
 
-Error WebRTCMultiplayerPeer::create_mesh(int p_self_id, Array p_channels_config) {
+Error WebRTCMultiplayerPeer::create_mesh(int p_self_id, const Array &p_channels_config) {
 	return _initialize(p_self_id, MODE_MESH, p_channels_config);
 }
 
-Error WebRTCMultiplayerPeer::_initialize(int p_self_id, NetworkMode p_mode, Array p_channels_config) {
+Error WebRTCMultiplayerPeer::_initialize(int p_self_id, NetworkMode p_mode, const Array &p_channels_config) {
 	ERR_FAIL_COND_V(p_self_id < 1 || p_self_id > ~(1 << 31), ERR_INVALID_PARAMETER);
 	channels_config.clear();
 	channels_modes.clear();

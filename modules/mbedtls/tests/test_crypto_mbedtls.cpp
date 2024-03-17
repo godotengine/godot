@@ -37,7 +37,7 @@
 
 namespace TestCryptoMbedTLS {
 
-void hmac_digest_test(HashingContext::HashType ht, String expected_hex) {
+void hmac_digest_test(HashingContext::HashType ht, const String &expected_hex) {
 	CryptoMbedTLS crypto;
 	PackedByteArray key = String("supersecretkey").to_utf8_buffer();
 	PackedByteArray msg = String("Return of the MAC!").to_utf8_buffer();
@@ -46,7 +46,7 @@ void hmac_digest_test(HashingContext::HashType ht, String expected_hex) {
 	CHECK(hex == expected_hex);
 }
 
-void hmac_context_digest_test(HashingContext::HashType ht, String expected_hex) {
+void hmac_context_digest_test(HashingContext::HashType ht, const String &expected_hex) {
 	HMACContextMbedTLS ctx;
 	PackedByteArray key = String("supersecretkey").to_utf8_buffer();
 	PackedByteArray msg1 = String("Return of ").to_utf8_buffer();

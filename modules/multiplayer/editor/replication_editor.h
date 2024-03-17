@@ -85,12 +85,12 @@ private:
 	void _pick_node_selected(NodePath p_path);
 
 	void _pick_new_property();
-	void _pick_node_property_selected(String p_name);
+	void _pick_node_property_selected(const String &p_name);
 
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	void _add_sync_property(String p_path);
+	void _add_sync_property(const String &p_path);
 
 protected:
 	static void _bind_methods();

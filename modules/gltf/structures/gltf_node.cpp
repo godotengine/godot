@@ -166,7 +166,7 @@ Vector<int> GLTFNode::get_children() {
 	return children;
 }
 
-void GLTFNode::set_children(Vector<int> p_children) {
+void GLTFNode::set_children(const Vector<int> &p_children) {
 	children = p_children;
 }
 
@@ -182,6 +182,6 @@ Variant GLTFNode::get_additional_data(const StringName &p_extension_name) {
 	return additional_data[p_extension_name];
 }
 
-void GLTFNode::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
+void GLTFNode::set_additional_data(const StringName &p_extension_name, const Variant &p_additional_data) {
 	additional_data[p_extension_name] = p_additional_data;
 }

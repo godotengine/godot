@@ -125,7 +125,7 @@ public:
 	}
 
 	Dictionary get_json();
-	void set_json(Dictionary p_json);
+	void set_json(const Dictionary &p_json);
 
 	int get_major_version();
 	void set_major_version(int p_major_version);
@@ -137,7 +137,7 @@ public:
 	void set_copyright(const String &p_copyright);
 
 	Vector<uint8_t> get_glb_data();
-	void set_glb_data(Vector<uint8_t> p_glb_data);
+	void set_glb_data(const Vector<uint8_t> &p_glb_data);
 
 	bool get_use_named_skin_binds();
 	void set_use_named_skin_binds(bool p_use_named_skin_binds);
@@ -173,16 +173,16 @@ public:
 	void set_materials(TypedArray<Material> p_materials);
 
 	String get_scene_name();
-	void set_scene_name(String p_scene_name);
+	void set_scene_name(const String &p_scene_name);
 
 	String get_base_path();
-	void set_base_path(String p_base_path);
+	void set_base_path(const String &p_base_path);
 
 	String get_filename() const;
 	void set_filename(const String &p_filename);
 
 	PackedInt32Array get_root_nodes();
-	void set_root_nodes(PackedInt32Array p_root_nodes);
+	void set_root_nodes(const PackedInt32Array &p_root_nodes);
 
 	TypedArray<GLTFTexture> get_textures();
 	void set_textures(TypedArray<GLTFTexture> p_textures);
@@ -228,7 +228,7 @@ public:
 	AnimationPlayer *get_animation_player(int idx);
 
 	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+	void set_additional_data(const StringName &p_extension_name, const Variant &p_additional_data);
 };
 
 #endif // GLTF_STATE_H

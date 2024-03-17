@@ -174,7 +174,7 @@ void EMWSPeer::_clear() {
 	packet_buffer.clear();
 }
 
-void EMWSPeer::close(int p_code, String p_reason) {
+void EMWSPeer::close(int p_code, const String &p_reason) {
 	if (p_code < 0) {
 		if (peer_sock != -1) {
 			godot_js_websocket_destroy(peer_sock);

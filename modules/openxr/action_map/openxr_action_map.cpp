@@ -54,7 +54,7 @@ void OpenXRActionMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_default_action_sets"), &OpenXRActionMap::create_default_action_sets);
 }
 
-void OpenXRActionMap::set_action_sets(Array p_action_sets) {
+void OpenXRActionMap::set_action_sets(const Array &p_action_sets) {
 	action_sets.clear();
 
 	for (int i = 0; i < p_action_sets.size(); i++) {
@@ -73,7 +73,7 @@ int OpenXRActionMap::get_action_set_count() const {
 	return action_sets.size();
 }
 
-Ref<OpenXRActionSet> OpenXRActionMap::find_action_set(String p_name) const {
+Ref<OpenXRActionSet> OpenXRActionMap::find_action_set(const String &p_name) const {
 	for (int i = 0; i < action_sets.size(); i++) {
 		Ref<OpenXRActionSet> action_set = action_sets[i];
 		if (action_set->get_name() == p_name) {
@@ -107,7 +107,7 @@ void OpenXRActionMap::remove_action_set(Ref<OpenXRActionSet> p_action_set) {
 	}
 }
 
-void OpenXRActionMap::set_interaction_profiles(Array p_interaction_profiles) {
+void OpenXRActionMap::set_interaction_profiles(const Array &p_interaction_profiles) {
 	interaction_profiles.clear();
 
 	for (int i = 0; i < p_interaction_profiles.size(); i++) {
@@ -126,7 +126,7 @@ int OpenXRActionMap::get_interaction_profile_count() const {
 	return interaction_profiles.size();
 }
 
-Ref<OpenXRInteractionProfile> OpenXRActionMap::find_interaction_profile(String p_path) const {
+Ref<OpenXRInteractionProfile> OpenXRActionMap::find_interaction_profile(const String &p_path) const {
 	for (int i = 0; i < interaction_profiles.size(); i++) {
 		Ref<OpenXRInteractionProfile> interaction_profile = interaction_profiles[i];
 		if (interaction_profile->get_interaction_profile_path() == p_path) {
@@ -514,7 +514,7 @@ void OpenXRActionMap::create_editor_action_sets() {
 	// TODO implement
 }
 
-Ref<OpenXRAction> OpenXRActionMap::get_action(const String p_path) const {
+Ref<OpenXRAction> OpenXRActionMap::get_action(const String &p_path) const {
 	PackedStringArray paths = p_path.split("/", false);
 	ERR_FAIL_COND_V(paths.size() != 2, Ref<OpenXRAction>());
 
@@ -526,7 +526,7 @@ Ref<OpenXRAction> OpenXRActionMap::get_action(const String p_path) const {
 	return Ref<OpenXRAction>();
 }
 
-void OpenXRActionMap::remove_action(const String p_path, bool p_remove_interaction_profiles) {
+void OpenXRActionMap::remove_action(const String &p_path, bool p_remove_interaction_profiles) {
 	Ref<OpenXRAction> action = get_action(p_path);
 	if (action.is_valid()) {
 		for (int i = 0; i < interaction_profiles.size(); i++) {

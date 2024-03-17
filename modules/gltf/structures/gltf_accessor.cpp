@@ -128,7 +128,7 @@ Vector<double> GLTFAccessor::get_min() {
 	return min;
 }
 
-void GLTFAccessor::set_min(Vector<double> p_min) {
+void GLTFAccessor::set_min(const Vector<double> &p_min) {
 	min = p_min;
 }
 
@@ -136,7 +136,7 @@ Vector<double> GLTFAccessor::get_max() {
 	return max;
 }
 
-void GLTFAccessor::set_max(Vector<double> p_max) {
+void GLTFAccessor::set_max(const Vector<double> &p_max) {
 	max = p_max;
 }
 

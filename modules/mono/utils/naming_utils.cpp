@@ -33,7 +33,7 @@
 #include "core/string/ucaps.h"
 #include "core/templates/hash_map.h"
 
-HashMap<String, String> _create_hashmap_from_vector(Vector<Pair<String, String>> vector) {
+HashMap<String, String> _create_hashmap_from_vector(const Vector<Pair<String, String>> &vector) {
 	HashMap<String, String> hashmap = HashMap<String, String>(vector.size());
 	for (const Pair<String, String> &pair : vector) {
 		hashmap.insert(pair.first, pair.second);

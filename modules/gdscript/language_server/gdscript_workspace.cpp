@@ -54,7 +54,7 @@ void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_script_api", "path"), &GDScriptWorkspace::generate_script_api);
 }
 
-void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {
+void GDScriptWorkspace::apply_new_signal(Object *obj, const String &function, const PackedStringArray &args) {
 	Ref<Script> scr = obj->get_script();
 
 	if (scr->get_language()->get_name() != "GDScript") {
@@ -580,7 +580,7 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 	GDScriptLanguageProtocol::get_singleton()->notify_client("textDocument/publishDiagnostics", params);
 }
 
-void GDScriptWorkspace::_get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners) {
+void GDScriptWorkspace::_get_owners(EditorFileSystemDirectory *efsd, const String &p_path, List<String> &owners) {
 	if (!efsd) {
 		return;
 	}
@@ -606,7 +606,7 @@ void GDScriptWorkspace::_get_owners(EditorFileSystemDirectory *efsd, String p_pa
 	}
 }
 
-Node *GDScriptWorkspace::_get_owner_scene_node(String p_path) {
+Node *GDScriptWorkspace::_get_owner_scene_node(const String &p_path) {
 	Node *owner_scene_node = nullptr;
 	List<String> owners;
 

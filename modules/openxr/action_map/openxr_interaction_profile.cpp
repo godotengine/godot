@@ -69,7 +69,7 @@ int OpenXRIPBinding::get_path_count() const {
 	return paths.size();
 }
 
-void OpenXRIPBinding::set_paths(const PackedStringArray p_paths) {
+void OpenXRIPBinding::set_paths(const PackedStringArray &p_paths) {
 	paths = p_paths;
 	emit_changed();
 }
@@ -78,23 +78,23 @@ PackedStringArray OpenXRIPBinding::get_paths() const {
 	return paths;
 }
 
-void OpenXRIPBinding::parse_paths(const String p_paths) {
+void OpenXRIPBinding::parse_paths(const String &p_paths) {
 	paths = p_paths.split(",", false);
 	emit_changed();
 }
 
-bool OpenXRIPBinding::has_path(const String p_path) const {
+bool OpenXRIPBinding::has_path(const String &p_path) const {
 	return paths.has(p_path);
 }
 
-void OpenXRIPBinding::add_path(const String p_path) {
+void OpenXRIPBinding::add_path(const String &p_path) {
 	if (!paths.has(p_path)) {
 		paths.push_back(p_path);
 		emit_changed();
 	}
 }
 
-void OpenXRIPBinding::remove_path(const String p_path) {
+void OpenXRIPBinding::remove_path(const String &p_path) {
 	if (paths.has(p_path)) {
 		paths.erase(p_path);
 		emit_changed();
@@ -125,7 +125,7 @@ Ref<OpenXRInteractionProfile> OpenXRInteractionProfile::new_profile(const char *
 	return profile;
 }
 
-void OpenXRInteractionProfile::set_interaction_profile_path(const String p_input_profile_path) {
+void OpenXRInteractionProfile::set_interaction_profile_path(const String &p_input_profile_path) {
 	OpenXRInteractionProfileMetadata *pmd = OpenXRInteractionProfileMetadata::get_singleton();
 	ERR_FAIL_NULL(pmd);
 
@@ -147,7 +147,7 @@ Ref<OpenXRIPBinding> OpenXRInteractionProfile::get_binding(int p_index) const {
 	return bindings[p_index];
 }
 
-void OpenXRInteractionProfile::set_bindings(Array p_bindings) {
+void OpenXRInteractionProfile::set_bindings(const Array &p_bindings) {
 	// TODO add check here that our bindings don't contain duplicate actions
 
 	bindings = p_bindings;

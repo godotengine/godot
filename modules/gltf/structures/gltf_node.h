@@ -96,13 +96,13 @@ public:
 	void set_scale(Vector3 p_scale);
 
 	Vector<int> get_children();
-	void set_children(Vector<int> p_children);
+	void set_children(const Vector<int> &p_children);
 
 	GLTFLightIndex get_light();
 	void set_light(GLTFLightIndex p_light);
 
 	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+	void set_additional_data(const StringName &p_extension_name, const Variant &p_additional_data);
 };
 
 #endif // GLTF_NODE_H

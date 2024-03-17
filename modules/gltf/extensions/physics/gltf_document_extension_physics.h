@@ -40,7 +40,7 @@ class GLTFDocumentExtensionPhysics : public GLTFDocumentExtension {
 
 public:
 	// Import process.
-	Error import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) override;
+	Error import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions) override;
 	Vector<String> get_supported_extensions() override;
 	Error parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &p_extensions) override;
 	Node3D *generate_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent) override;

@@ -43,7 +43,7 @@ void OpenXRSelectActionDialog::_notification(int p_what) {
 	}
 }
 
-void OpenXRSelectActionDialog::_on_select_action(const String p_action) {
+void OpenXRSelectActionDialog::_on_select_action(const String &p_action) {
 	if (selected_action != "") {
 		NodePath button_path = action_buttons[selected_action];
 		Button *button = Object::cast_to<Button>(get_node(button_path));

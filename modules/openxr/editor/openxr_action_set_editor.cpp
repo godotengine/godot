@@ -82,7 +82,7 @@ void OpenXRActionSetEditor::_on_toggle_expand() {
 	_set_fold_icon();
 }
 
-void OpenXRActionSetEditor::_on_action_set_name_changed(const String p_new_text) {
+void OpenXRActionSetEditor::_on_action_set_name_changed(const String &p_new_text) {
 	if (action_set->get_name() != p_new_text) {
 		undo_redo->create_action(TTR("Rename Action Set"));
 		undo_redo->add_do_method(this, "_do_set_name", p_new_text);
@@ -104,12 +104,12 @@ void OpenXRActionSetEditor::_on_action_set_name_changed(const String p_new_text)
 	}
 }
 
-void OpenXRActionSetEditor::_do_set_name(const String p_new_text) {
+void OpenXRActionSetEditor::_do_set_name(const String &p_new_text) {
 	action_set->set_name(p_new_text);
 	action_set_name->set_text(p_new_text);
 }
 
-void OpenXRActionSetEditor::_on_action_set_localized_name_changed(const String p_new_text) {
+void OpenXRActionSetEditor::_on_action_set_localized_name_changed(const String &p_new_text) {
 	if (action_set->get_localized_name() != p_new_text) {
 		undo_redo->create_action(TTR("Rename Action Sets Localized name"));
 		undo_redo->add_do_method(this, "_do_set_localized_name", p_new_text);
@@ -121,12 +121,12 @@ void OpenXRActionSetEditor::_on_action_set_localized_name_changed(const String p
 	}
 }
 
-void OpenXRActionSetEditor::_do_set_localized_name(const String p_new_text) {
+void OpenXRActionSetEditor::_do_set_localized_name(const String &p_new_text) {
 	action_set->set_localized_name(p_new_text);
 	action_set_localized_name->set_text(p_new_text);
 }
 
-void OpenXRActionSetEditor::_on_action_set_priority_changed(const String p_new_text) {
+void OpenXRActionSetEditor::_on_action_set_priority_changed(const String &p_new_text) {
 	int64_t value = p_new_text.to_int();
 
 	if (action_set->get_priority() != value) {

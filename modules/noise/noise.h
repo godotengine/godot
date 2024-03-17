@@ -82,7 +82,7 @@ class Noise : public Resource {
 	};
 
 	template <typename T>
-	Vector<Ref<Image>> _generate_seamless_image(Vector<Ref<Image>> p_src, int p_width, int p_height, int p_depth, bool p_invert, real_t p_blend_skirt) const {
+	Vector<Ref<Image>> _generate_seamless_image(Vector<Ref<Image>> &p_src, int p_width, int p_height, int p_depth, bool p_invert, real_t p_blend_skirt) const {
 		/*
 		To make a seamless image, we swap the quadrants so the edges are perfect matches.
 		We initially get a 10% larger image so we have an overlap we can use to blend over the seams.

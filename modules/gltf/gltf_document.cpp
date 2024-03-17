@@ -1509,7 +1509,7 @@ Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> p_state, const GLTF
 	return dst_buffer;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state, const Vector<int32_t> p_attribs, const bool p_for_vertex, const bool p_for_vertex_indices) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state, const Vector<int32_t> &p_attribs, const bool p_for_vertex, const bool p_for_vertex_indices) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -1627,7 +1627,7 @@ void GLTFDocument::_round_min_max_components(Vector<double> &r_type_min, Vector<
 	}
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> p_state, const Vector<Vector2> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> p_state, const Vector<Vector2> &p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -1674,7 +1674,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> p_state,
 	return p_state->accessors.size() - 1;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> p_state, const Vector<Color> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> p_state, const Vector<Color> &p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -1724,7 +1724,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> p_state
 	return p_state->accessors.size() - 1;
 }
 
-void GLTFDocument::_calc_accessor_min_max(int p_i, const int p_element_count, Vector<double> &p_type_max, Vector<double> p_attribs, Vector<double> &p_type_min) {
+void GLTFDocument::_calc_accessor_min_max(int p_i, const int p_element_count, Vector<double> &p_type_max, Vector<double> &p_attribs, Vector<double> &p_type_min) {
 	if (p_i == 0) {
 		for (int32_t type_i = 0; type_i < p_element_count; type_i++) {
 			p_type_max.write[type_i] = p_attribs[(p_i * p_element_count) + type_i];
@@ -1737,7 +1737,7 @@ void GLTFDocument::_calc_accessor_min_max(int p_i, const int p_element_count, Ve
 	}
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> p_state, const Vector<Color> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> p_state, const Vector<Color> &p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -1788,7 +1788,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> p_sta
 	return p_state->accessors.size() - 1;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> p_state, const Vector<Color> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> p_state, const Vector<Color> &p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -1836,7 +1836,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> p_stat
 	return p_state->accessors.size() - 1;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quaternions(Ref<GLTFState> p_state, const Vector<Quaternion> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quaternions(Ref<GLTFState> p_state, const Vector<Quaternion> &p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -1912,7 +1912,7 @@ Vector<Vector2> GLTFDocument::_decode_accessor_as_vec2(Ref<GLTFState> p_state, c
 	return ret;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> p_state, const Vector<real_t> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> p_state, const Vector<real_t> &p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -1958,7 +1958,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> p_stat
 	return p_state->accessors.size() - 1;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> p_state, const Vector<Vector3> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> p_state, const Vector<Vector3> &p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -2111,7 +2111,7 @@ GLTFAccessorIndex GLTFDocument::_encode_sparse_accessor_as_vec3(Ref<GLTFState> p
 	return p_state->accessors.size() - 1;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> p_state, const Vector<Transform3D> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> p_state, const Vector<Transform3D> &p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -6613,7 +6613,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> p_sta
 	return p_track;
 }
 
-void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, String p_animation_track_name) {
+void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const String &p_animation_track_name) {
 	Ref<Animation> animation = p_animation_player->get_animation(p_animation_track_name);
 	Ref<GLTFAnimation> gltf_animation;
 	gltf_animation.instantiate();
@@ -6809,7 +6809,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 	}
 }
 
-Error GLTFDocument::_parse(Ref<GLTFState> p_state, String p_path, Ref<FileAccess> p_file) {
+Error GLTFDocument::_parse(Ref<GLTFState> p_state, const String &p_path, Ref<FileAccess> p_file) {
 	Error err;
 	if (p_file.is_null()) {
 		return FAILED;
@@ -6911,7 +6911,7 @@ Error GLTFDocument::_serialize_asset_header(Ref<GLTFState> p_state) {
 	return OK;
 }
 
-Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path) {
+Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String &p_path) {
 	Error err = FAILED;
 	if (p_path.to_lower().ends_with("glb")) {
 		err = _encode_buffer_glb(p_state, p_path);
@@ -7321,7 +7321,7 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 	return OK;
 }
 
-Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags) {
+Error GLTFDocument::append_from_buffer(const PackedByteArray &p_bytes, const String &p_base_path, Ref<GLTFState> p_state, uint32_t p_flags) {
 	Ref<GLTFState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), FAILED);
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
@@ -7345,7 +7345,7 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 	return OK;
 }
 
-Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags, String p_base_path) {
+Error GLTFDocument::append_from_file(const String &p_path, Ref<GLTFState> p_state, uint32_t p_flags, const String &p_base_path) {
 	Ref<GLTFState> state = p_state;
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	if (state == Ref<GLTFState>()) {

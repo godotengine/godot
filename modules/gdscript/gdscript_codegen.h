@@ -81,7 +81,7 @@ public:
 	virtual void start_block() = 0;
 	virtual void end_block() = 0;
 
-	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Variant p_rpc_config, const GDScriptDataType &p_return_type) = 0;
+	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, const Variant &p_rpc_config, const GDScriptDataType &p_return_type) = 0;
 	virtual GDScriptFunction *write_end() = 0;
 
 #ifdef DEBUG_ENABLED

@@ -53,14 +53,14 @@ public:
 	Ref<OpenXRAction> get_action() const; // Get the action for this binding
 
 	int get_path_count() const; // Get the number of io paths
-	void set_paths(const PackedStringArray p_paths); // Set our paths (for loading from resource)
+	void set_paths(const PackedStringArray &p_paths); // Set our paths (for loading from resource)
 	PackedStringArray get_paths() const; // Get our paths (for saving to resource)
 
-	void parse_paths(const String p_paths); // Parse a comma separated string of io paths.
+	void parse_paths(const String &p_paths); // Parse a comma separated string of io paths.
 
-	bool has_path(const String p_path) const; // Has this io path
-	void add_path(const String p_path); // Add an io path
-	void remove_path(const String p_path); // Remove an io path
+	bool has_path(const String &p_path) const; // Has this io path
+	void add_path(const String &p_path); // Add an io path
+	void remove_path(const String &p_path); // Remove an io path
 
 	// TODO add validation that we can display in the interface that checks if no two paths belong to the same top level path
 
@@ -80,12 +80,12 @@ protected:
 public:
 	static Ref<OpenXRInteractionProfile> new_profile(const char *p_input_profile_path); // Helper function to create a new interaction profile
 
-	void set_interaction_profile_path(const String p_input_profile_path); // Set our input profile path
+	void set_interaction_profile_path(const String &p_input_profile_path); // Set our input profile path
 	String get_interaction_profile_path() const; // get our input profile path
 
 	int get_binding_count() const; // Retrieve the number of bindings in this profile path
 	Ref<OpenXRIPBinding> get_binding(int p_index) const;
-	void set_bindings(Array p_bindings); // Set the bindings (for loading from a resource)
+	void set_bindings(const Array &p_bindings); // Set the bindings (for loading from a resource)
 	Array get_bindings() const; // Get the bindings (for saving to a resource)
 
 	Ref<OpenXRIPBinding> get_binding_for_action(const Ref<OpenXRAction> p_action) const; // Get our binding record for a given action
