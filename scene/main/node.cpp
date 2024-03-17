@@ -3215,6 +3215,17 @@ PackedStringArray Node::get_configuration_warnings() const {
 	ERR_THREAD_GUARD_V(PackedStringArray());
 	PackedStringArray ret;
 
+	if (get_script()) {
+		Ref<Script> scr = Object::cast_to<Script>(get_script());
+		if (scr.is_valid() && scr->is_valid()) {
+			StringName script_base_type = scr->get_instance_base_type();
+			StringName this_node_type = StringName(get_class());
+			if (!ClassDB::is_parent_class(this_node_type, script_base_type)) {
+				ret.append(vformat(RTR("Script inherits from native type '%s', so it can't be assigned to an object of type: '%s'"), script_base_type, this_node_type));
+			}
+		}
+	}
+
 	Vector<String> warnings;
 	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
 		ret.append_array(warnings);
@@ -3708,6 +3719,11 @@ String Node::_get_name_num_separator() {
 
 Node::Node() {
 	orphan_node_count++;
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		connect(CoreStringNames::get_singleton()->script_changed, callable_mp(this, &Node::update_configuration_warnings));
+	}
+#endif
 }
 
 Node::~Node() {
