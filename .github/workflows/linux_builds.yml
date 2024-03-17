@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os || 'ubuntu-20.04' }}
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -70,6 +70,18 @@ jobs:
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
+
+          - name: Editor with C++20 (target=editor, tests=yes, dev_build=yes, cpp_standard=20)
+            cache-name: linux-editor-cpp20
+            target: editor
+            tests: true
+            sconsflags: dev_build=yes cpp_standard=20
+            bin: ./bin/godot.linuxbsd.editor.dev.x86_64
+            build-mono: false
+            # Skip 2GiB artifact speeding up action.
+            artifact: false
+            # Ensure a later version of Ubuntu for full C++20 support.
+            os: ubuntu-24.04
 
           - name: Template w/ Mono (target=template_release, tests=yes)
             cache-name: linux-template-mono
