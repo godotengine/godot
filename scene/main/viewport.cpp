@@ -797,6 +797,12 @@ void Viewport::_process_picking() {
 					canvas_layer_id = ObjectID();
 				}
 
+				uint32_t input_cull_mask_current = input_cull_mask_2d;
+				Camera2D *cam = get_camera_2d();
+				if (cam != nullptr && cam->get_override_input_cull_mask()) {
+					input_cull_mask_current = cam->get_input_cull_mask();
+				}
+
 				Vector2 point = canvas_layer_transform.affine_inverse().xform(pos);
 
 				PhysicsDirectSpaceState2D::PointParameters point_params;
@@ -804,6 +810,7 @@ void Viewport::_process_picking() {
 				point_params.canvas_instance_id = canvas_layer_id;
 				point_params.collide_with_areas = true;
 				point_params.pick_point = true;
+				point_params.collision_mask = input_cull_mask_current;
 
 				int rc = ss2d->intersect_point(point_params, res, 64);
 				if (physics_object_picking_sort) {
@@ -905,6 +912,7 @@ void Viewport::_process_picking() {
 					ray_params.to = from + dir * depth_far;
 					ray_params.collide_with_areas = true;
 					ray_params.pick_ray = true;
+					ray_params.collision_mask = camera_3d->get_override_input_cull_mask() ? camera_3d->get_input_cull_mask() : input_cull_mask_3d;
 
 					bool col = space->intersect_ray(ray_params, result);
 					ObjectID new_collider;
@@ -3623,6 +3631,58 @@ bool Viewport::is_handling_input_locally() const {
 	return handle_input_locally;
 }
 
+void Viewport::set_input_cull_mask_2d(uint32_t p_mask) {
+	input_cull_mask_2d = p_mask;
+}
+
+uint32_t Viewport::get_input_cull_mask_2d() const {
+	return input_cull_mask_2d;
+}
+
+void Viewport::set_input_cull_mask_2d_bit(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Input cull layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Input cull layer number must be between 1 and 32 inclusive.");
+	uint32_t mask = get_input_cull_mask_2d();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
+	} else {
+		mask &= ~(1 << (p_layer_number - 1));
+	}
+	set_input_cull_mask_2d(mask);
+}
+
+bool Viewport::get_input_cull_mask_2d_bit(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Input cull layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Input cull layer number must be between 1 and 32 inclusive.");
+	return get_input_cull_mask_2d() & (1 << (p_layer_number - 1));
+}
+
+void Viewport::set_input_cull_mask_3d(uint32_t p_mask) {
+	input_cull_mask_3d = p_mask;
+}
+
+uint32_t Viewport::get_input_cull_mask_3d() const {
+	return input_cull_mask_3d;
+}
+
+void Viewport::set_input_cull_mask_3d_bit(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Input cull layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Input cull layer number must be between 1 and 32 inclusive.");
+	uint32_t mask = get_input_cull_mask_3d();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
+	} else {
+		mask &= ~(1 << (p_layer_number - 1));
+	}
+	set_input_cull_mask_3d(mask);
+}
+
+bool Viewport::get_input_cull_mask_3d_bit(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Input cull layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Input cull layer number must be between 1 and 32 inclusive.");
+	return get_input_cull_mask_3d() & (1 << (p_layer_number - 1));
+}
+
 void Viewport::set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_filter, DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX);
@@ -4633,6 +4693,16 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_object_picking_first_only", "enable"), &Viewport::set_physics_object_picking_first_only);
 	ClassDB::bind_method(D_METHOD("get_physics_object_picking_first_only"), &Viewport::get_physics_object_picking_first_only);
 
+	ClassDB::bind_method(D_METHOD("set_input_cull_mask_2d", "input_cull_mask_2d"), &Viewport::set_input_cull_mask_2d);
+	ClassDB::bind_method(D_METHOD("get_input_cull_mask_2d"), &Viewport::get_input_cull_mask_2d);
+	ClassDB::bind_method(D_METHOD("set_input_cull_mask_2d_bit", "layer_number", "value"), &Viewport::set_input_cull_mask_2d_bit);
+	ClassDB::bind_method(D_METHOD("get_input_cull_mask_2d_bit", "layer_number"), &Viewport::get_input_cull_mask_2d_bit);
+
+	ClassDB::bind_method(D_METHOD("set_input_cull_mask_3d", "input_cull_mask_3d"), &Viewport::set_input_cull_mask_3d);
+	ClassDB::bind_method(D_METHOD("get_input_cull_mask_3d"), &Viewport::get_input_cull_mask_3d);
+	ClassDB::bind_method(D_METHOD("set_input_cull_mask_3d_bit", "layer_number", "value"), &Viewport::set_input_cull_mask_3d_bit);
+	ClassDB::bind_method(D_METHOD("get_input_cull_mask_3d_bit", "layer_number"), &Viewport::get_input_cull_mask_3d_bit);
+
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
 	ClassDB::bind_method(D_METHOD("push_text_input", "text"), &Viewport::push_text_input);
 	ClassDB::bind_method(D_METHOD("push_input", "event", "in_local_coords"), &Viewport::push_input, DEFVAL(false));
@@ -4791,6 +4861,8 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking"), "set_physics_object_picking", "get_physics_object_picking");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking_sort"), "set_physics_object_picking_sort", "get_physics_object_picking_sort");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking_first_only"), "set_physics_object_picking_first_only", "get_physics_object_picking_first_only");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_cull_mask_2d", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_input_cull_mask_2d", "get_input_cull_mask_2d");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_cull_mask_3d", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_input_cull_mask_3d", "get_input_cull_mask_3d");
 	ADD_GROUP("GUI", "gui_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");

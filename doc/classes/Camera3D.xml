@@ -48,6 +48,13 @@
 				Returns the camera's frustum planes in world space units as an array of [Plane]s in the following order: near, far, left, top, right, bottom. Not to be confused with [member frustum_offset].
 			</description>
 		</method>
+		<method name="get_input_cull_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member input_cull_mask] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
 		<method name="get_pyramid_shape_rid">
 			<return type="RID" />
 			<description>
@@ -120,6 +127,14 @@
 			<param index="3" name="z_far" type="float" />
 			<description>
 				Sets the camera projection to frustum mode (see [constant PROJECTION_FRUSTUM]), by specifying a [param size], an [param offset], and the [param z_near] and [param z_far] clip planes in world space units. See also [member frustum_offset].
+			</description>
+		</method>
+		<method name="set_input_cull_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member input_cull_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_orthogonal">
@@ -196,11 +211,18 @@
 		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset" default="0.0">
 			The horizontal (X) offset of the camera viewport.
 		</member>
+		<member name="input_cull_mask" type="int" setter="set_input_cull_mask" getter="get_input_cull_mask" default="4294967295">
+			The collision layers in which physics objects can receive input events. See [member Viewport.input_cull_mask_3d].
+			Only used when [member override_input_cull_mask] is [code]true[/code], otherwise it will be ignored in favor of [member Viewport.input_cull_mask_3d].
+		</member>
 		<member name="keep_aspect" type="int" setter="set_keep_aspect_mode" getter="get_keep_aspect_mode" enum="Camera3D.KeepAspect" default="1">
 			The axis to lock during [member fov]/[member size] adjustments. Can be either [constant KEEP_WIDTH] or [constant KEEP_HEIGHT].
 		</member>
 		<member name="near" type="float" setter="set_near" getter="get_near" default="0.05">
 			The distance to the near culling boundary for this camera relative to its local Z axis. Lower values allow the camera to see objects more up close to its origin, at the cost of lower precision across the [i]entire[/i] range. Values lower than the default can lead to increased Z-fighting.
+		</member>
+		<member name="override_input_cull_mask" type="bool" setter="set_override_input_cull_mask" getter="get_override_input_cull_mask" default="false">
+			Determines whether to pick [member input_cull_mask] (when [code]true[/code]) or [member Viewport.input_cull_mask_3d] (when [code]false[/code]) for determining which collision layers receive input events.
 		</member>
 		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera3D.ProjectionType" default="0">
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.

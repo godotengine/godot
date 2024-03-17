@@ -84,6 +84,9 @@ protected:
 	bool drag_horizontal_offset_changed = false;
 	bool drag_vertical_offset_changed = false;
 
+	uint32_t input_cull_mask = 0xffffffff;
+	bool override_input_cull_mask = false;
+
 	Point2 camera_screen_center;
 	bool _is_editing_in_editor() const;
 	void _update_process_callback();
@@ -185,6 +188,14 @@ public:
 
 	void set_margin_drawing_enabled(bool enable);
 	bool is_margin_drawing_enabled() const;
+
+	void set_input_cull_mask(uint32_t p_layers);
+	uint32_t get_input_cull_mask() const;
+	void set_input_cull_mask_value(int p_layer_number, bool p_enable);
+	bool get_input_cull_mask_value(int p_layer_number) const;
+
+	void set_override_input_cull_mask(bool p_value);
+	bool get_override_input_cull_mask() const;
 
 	Camera2D();
 };

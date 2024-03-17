@@ -82,6 +82,9 @@ private:
 
 	uint32_t layers = 0xfffff;
 
+	uint32_t input_cull_mask = 0xffffffff;
+	bool override_input_cull_mask = false;
+
 	Ref<Environment> environment;
 	Ref<CameraAttributes> attributes;
 	Ref<Compositor> compositor;
@@ -159,6 +162,14 @@ public:
 
 	void set_cull_mask_value(int p_layer_number, bool p_enable);
 	bool get_cull_mask_value(int p_layer_number) const;
+
+	void set_input_cull_mask(uint32_t p_layers);
+	uint32_t get_input_cull_mask() const;
+	void set_input_cull_mask_value(int p_layer_number, bool p_enable);
+	bool get_input_cull_mask_value(int p_layer_number) const;
+
+	void set_override_input_cull_mask(bool p_value);
+	bool get_override_input_cull_mask() const;
 
 	virtual Vector<Plane> get_frustum() const;
 	bool is_position_in_frustum(const Vector3 &p_position) const;
