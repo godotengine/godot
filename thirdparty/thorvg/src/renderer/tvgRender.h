@@ -103,7 +103,7 @@ struct RenderRegion
     void intersect(const RenderRegion& rhs);
     void add(const RenderRegion& rhs);
 
-    bool operator==(const RenderRegion& rhs)
+    bool operator==(const RenderRegion& rhs) const
     {
         if (x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h) return true;
         return false;

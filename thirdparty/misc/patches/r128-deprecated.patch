@@ -1,0 +1,15 @@
+diff --git a/thirdparty/misc/r128.h b/thirdparty/misc/r128.h
+index ff05569ea7..b3f655d77c 100644
+--- a/thirdparty/misc/r128.h
++++ b/thirdparty/misc/r128.h
+@@ -302,8 +302,10 @@ struct numeric_limits<R128>
+    static const bool has_infinity = false;
+    static const bool has_quiet_NaN = false;
+    static const bool has_signaling_NaN = false;
++#ifndef CPP23_ENABLED
+    static const float_denorm_style has_denorm = denorm_absent;
+    static const bool has_denorm_loss = false;
++#endif
+ 
+    static R128 infinity() throw() { return R128_zero; }
+    static R128 quiet_NaN() throw() { return R128_zero; }
