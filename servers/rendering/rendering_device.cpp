@@ -4597,22 +4597,27 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 		}
 
 		if (!cl->state.sets[i].bound) {
-			// All good, see if this requires re-binding.
-			if (i - last_set_index > 1) {
-				// If the descriptor sets are not contiguous, bind the previous ones and start a new batch
-				draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, VectorView(valid_descriptor_ids, valid_set_count), first_set_index, valid_set_count);
+			// @NicolaTF: descriptor set batching
+			if (descriptor_set_batching) {
+				// All good, see if this requires re-binding.
+				if (i - last_set_index > 1) {
+					// If the descriptor sets are not contiguous, bind the previous ones and start a new batch
+					draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, VectorView(valid_descriptor_ids, valid_set_count), first_set_index, valid_set_count);
 
-				first_set_index = i;
-				valid_set_count = 1;
-				valid_descriptor_ids[0] = cl->state.sets[i].uniform_set_driver_id;
-			} else {
-				// Otherwise, keep storing in the current batch
-				valid_descriptor_ids[valid_set_count] = cl->state.sets[i].uniform_set_driver_id;
-				valid_set_count++;
+					first_set_index = i;
+					valid_set_count = 1;
+					valid_descriptor_ids[0] = cl->state.sets[i].uniform_set_driver_id;
+				} else {
+					// Otherwise, keep storing in the current batch
+					valid_descriptor_ids[valid_set_count] = cl->state.sets[i].uniform_set_driver_id;
+					valid_set_count++;
+				}
+
+				last_set_index = i;
 			}
-
-			last_set_index = i;
-
+			else {
+				draw_graph.add_compute_list_bind_uniform_set(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
+			}
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
 			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
 			cl->state.sets[i].bound = true;
@@ -5316,6 +5321,8 @@ void RenderingDevice::_begin_frame() {
 		bool reset = driver->command_pool_reset(frames[frame].command_pool);
 		ERR_FAIL_COND(!reset);
 	}
+
+	driver->linear_uniform_set_pools_reset(frame);
 	
 	// Begin recording on the frame's command buffers.
 	driver->begin_segment(frame, frames_drawn++);

@@ -486,7 +486,7 @@ private:
 	// VkDescriptorPool _descriptor_set_pool_find_or_create(const DescriptorSetPoolKey &p_key, DescriptorSetPools::Iterator *r_pool_sets_it);
 	// void _descriptor_set_pool_unreference(DescriptorSetPools::Iterator p_pool_sets_it, VkDescriptorPool p_vk_descriptor_pool);
 	HashMap<int,DescriptorSetPools> linear_descriptor_set_pools;
-	bool linear_descriptor_pools_enabled = true;
+	bool linear_descriptor_pools_enabled = false;
 	VkDescriptorPool _descriptor_set_pool_find_or_create(const DescriptorSetPoolKey &p_key, DescriptorSetPools::Iterator *r_pool_sets_it, int p_linear_pool_index);
 	void _descriptor_set_pool_unreference(DescriptorSetPools::Iterator p_pool_sets_it, VkDescriptorPool p_vk_descriptor_pool, int p_linear_pool_index);
 	// </TF>
@@ -494,7 +494,7 @@ private:
 	// <TF>
 	// @ShadyTF :
 	// global  flag to toggle usage of immutable sampler when creating  pipeline layouts and for skipping when creating uniform sets
-	bool immutable_samplers_enabled = false;
+	bool immutable_samplers_enabled = true;
 	// </TF>
 	
 	

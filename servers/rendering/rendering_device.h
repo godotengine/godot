@@ -197,7 +197,7 @@ private:
 	void persistent_uniform_buffers_reset();
 	void update_perf_report();
 	// flag for using persistent buffers;
-	bool persistent_buffer_enabled = true;
+	bool persistent_buffer_enabled = false;
 	// flag for batching descriptor sets
 	bool descriptor_set_batching = true;
 	// flag for separate queue submissions
