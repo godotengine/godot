@@ -49,7 +49,6 @@ def get_doc_path():
 def get_flags():
     return [
         ("arch", "arm64"),  # Default for convenience.
-        ("target", "template_debug"),
         ("use_volk", False),
         ("supported", ["mono"]),
         ("builtin_pcre2_with_jit", False),

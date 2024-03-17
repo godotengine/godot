@@ -66,7 +66,6 @@ def get_doc_path():
 def get_flags():
     return [
         ("arch", "wasm32"),
-        ("target", "template_debug"),
         ("builtin_pcre2_with_jit", False),
         ("vulkan", False),
         # Embree is heavy and requires too much memory (GH-70621).
