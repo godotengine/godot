@@ -211,10 +211,10 @@ public:
 		size_mask = mask;
 	}
 
-	RingBuffer<T>(int p_power = 0) {
+	RingBuffer(int p_power = 0) {
 		resize(p_power);
 	}
-	~RingBuffer<T>() {}
+	~RingBuffer() {}
 };
 
 #endif // RING_BUFFER_H

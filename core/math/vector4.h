@@ -35,6 +35,7 @@
 #include "core/math/math_funcs.h"
 
 class String;
+struct Vector4i;
 
 struct _NO_DISCARD_ Vector4 {
 	static const int AXIS_COUNT = 4;
@@ -122,13 +123,17 @@ struct _NO_DISCARD_ Vector4 {
 	_FORCE_INLINE_ Vector4 operator/(real_t p_s) const;
 
 	_FORCE_INLINE_ bool operator==(const Vector4 &p_vec4) const;
-	_FORCE_INLINE_ bool operator!=(const Vector4 &p_vec4) const;
+	INEQUALITY_OPERATOR(const Vector4 &)
 	_FORCE_INLINE_ bool operator>(const Vector4 &p_vec4) const;
 	_FORCE_INLINE_ bool operator<(const Vector4 &p_vec4) const;
 	_FORCE_INLINE_ bool operator>=(const Vector4 &p_vec4) const;
 	_FORCE_INLINE_ bool operator<=(const Vector4 &p_vec4) const;
 
+	bool operator==(const Vector4i &p_vec4) const;
+	INEQUALITY_OPERATOR(const Vector4i &)
+
 	operator String() const;
+	operator Vector4i() const;
 
 	_FORCE_INLINE_ Vector4() {}
 
@@ -230,10 +235,6 @@ Vector4 Vector4::operator/(real_t p_s) const {
 
 bool Vector4::operator==(const Vector4 &p_vec4) const {
 	return x == p_vec4.x && y == p_vec4.y && z == p_vec4.z && w == p_vec4.w;
-}
-
-bool Vector4::operator!=(const Vector4 &p_vec4) const {
-	return x != p_vec4.x || y != p_vec4.y || z != p_vec4.z || w != p_vec4.w;
 }
 
 bool Vector4::operator<(const Vector4 &p_v) const {

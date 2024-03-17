@@ -183,6 +183,7 @@ opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a 
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("threads", "Enable threading support", True))
+opts.Add(EnumVariable("cpp_standard", 'C++ standard (experimental, only "complete" versions)', "17", ("17", "20")))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
@@ -479,6 +480,9 @@ if not env_base["deprecated"]:
 if env_base["precision"] == "double":
     env_base.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
 
+if env_base["cpp_standard"] == "20":
+    env_base.Append(CPPDEFINES=["CPP20_ENABLED"])
+
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
     sys.path.insert(0, tmppath)
@@ -634,16 +638,17 @@ if selected_platform in platform_list:
     # Set our C and C++ standard requirements.
     # C++17 is required as we need guaranteed copy elision as per GH-36436.
     # Prepending to make it possible to override.
+    cppstd = int(env["cpp_standard"])
     # This needs to come after `configure`, otherwise we don't have env.msvc.
     if not env.msvc:
         # Specifying GNU extensions support explicitly, which are supported by
         # both GCC and Clang. Both currently default to gnu11 and gnu++14.
         env.Prepend(CFLAGS=["-std=gnu11"])
-        env.Prepend(CXXFLAGS=["-std=gnu++17"])
+        env.Prepend(CXXFLAGS=[f"-std=gnu++{cppstd}"])
     else:
         # MSVC doesn't have clear C standard support, /std only covers C++.
         # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
-        env.Prepend(CCFLAGS=["/std:c++17"])
+        env.Prepend(CCFLAGS=[f"/std:c++{cppstd}"])
 
     # Enforce our minimal compiler version requirements
     cc_version = methods.get_compiler_version(env) or {
@@ -662,11 +667,19 @@ if selected_platform in platform_list:
         if cc_version_major == -1:
             print(
                 "Couldn't detect compiler version, skipping version checks. "
-                "Build may fail if the compiler doesn't support C++17 fully."
+                f"Build may fail if the compiler doesn't support C++{cppstd} fully."
             )
+        elif cppstd == 20 and cc_version_major < 12:
+            print(
+                "Detected GCC version older than 12, which does not fully support "
+                "C++20. Supported versions are GCC 12 and later. Use a newer GCC "
+                'version, or Clang 17 or later by passing "use_llvm=yes" to the '
+                "SCons command line."
+            )
+            Exit(255)
         # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
         # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
-        elif cc_version_major == 8 and cc_version_minor < 4:
+        elif cppstd == 17 and cc_version_major == 8 and cc_version_minor < 4:
             print(
                 "Detected GCC 8 version < 8.4, which is not supported due to a "
                 "regression in its C++17 guaranteed copy elision support. Use a "
@@ -674,7 +687,7 @@ if selected_platform in platform_list:
                 "to the SCons command line."
             )
             Exit(255)
-        elif cc_version_major < 7:
+        elif cppstd == 17 and cc_version_major < 7:
             print(
                 "Detected GCC version older than 7, which does not fully support "
                 "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
@@ -694,25 +707,45 @@ if selected_platform in platform_list:
         if cc_version_major == -1:
             print(
                 "Couldn't detect compiler version, skipping version checks. "
-                "Build may fail if the compiler doesn't support C++17 fully."
+                f"Build may fail if the compiler doesn't support C++{cppstd} fully."
             )
         # Apple LLVM versions differ from upstream LLVM version \o/, compare
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
         elif env["platform"] == "macos" or env["platform"] == "ios":
             vanilla = methods.is_vanilla_clang(env)
-            if vanilla and cc_version_major < 6:
+            if cppstd == 20 and vanilla and cc_version_major < 17:
+                print(
+                    "Detected Clang version older than 17, which does not fully support "
+                    "C++20. Supported versions are Clang 17 and later."
+                )
+                Exit(255)
+            # XCode started defaulting to c++20 in XCode 14, despite their equivalent Clang
+            # being 14. Assume 14 as the "minimum" version, but full support is uncertain.
+            elif cppstd == 20 and not vanilla and cc_version_major < 14:
+                print(
+                    "Detected Apple Clang version older than 14, which does not fully "
+                    'support C++20. "Supported" versions are Apple Clang 14 and later.'
+                )
+                Exit(255)
+            elif cppstd == 17 and vanilla and cc_version_major < 6:
                 print(
                     "Detected Clang version older than 6, which does not fully support "
                     "C++17. Supported versions are Clang 6 and later."
                 )
                 Exit(255)
-            elif not vanilla and cc_version_major < 10:
+            elif cppstd == 17 and not vanilla and cc_version_major < 10:
                 print(
                     "Detected Apple Clang version older than 10, which does not fully "
                     "support C++17. Supported versions are Apple Clang 10 and later."
                 )
                 Exit(255)
-        elif cc_version_major < 6:
+        elif cppstd == 20 and cc_version_major < 17:
+            print(
+                "Detected Clang version older than 17, which does not fully support "
+                "C++20. Supported versions are Clang 17 and later."
+            )
+            Exit(255)
+        elif cppstd == 17 and cc_version_major < 6:
             print(
                 "Detected Clang version older than 6, which does not fully support "
                 "C++17. Supported versions are Clang 6 and later."
