@@ -197,7 +197,7 @@ private:
 	void persistent_uniform_buffers_reset();
 	void update_perf_report();
 	// flag for using persistent buffers;
-	bool persistent_buffer_enabled = false;
+	bool persistent_buffer_enabled = true;
 	// flag for batching descriptor sets
 	bool descriptor_set_batching = true;
 	// flag for separate queue submissions
@@ -1381,7 +1381,7 @@ private:
 	uint64_t buffer_memory = 0;
 
 	void _free_internal(RID p_id);
-	void _begin_frame();
+	void _begin_frame(bool presented = false);
 	void _end_frame();
 	void _execute_frame(bool p_present, bool p_swap);
 	void _stall_for_previous_frames();

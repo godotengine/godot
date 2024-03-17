@@ -5189,7 +5189,7 @@ void RenderingDevice::swap_buffers() {
 	// Advance to the next frame and begin recording again.
 	frame = (frame + 1) % frames.size();
 
-	_begin_frame();
+	_begin_frame(true);
 }
 
 void RenderingDevice::submit() {
@@ -5200,7 +5200,7 @@ void RenderingDevice::submit() {
 
 void RenderingDevice::sync() {
 	_THREAD_SAFE_METHOD_
-	_begin_frame();
+	_begin_frame(true);
 }
 
 void RenderingDevice::_free_pending_resources(int p_frame) {
@@ -5307,7 +5307,7 @@ uint64_t RenderingDevice::get_memory_usage(MemoryType p_type) const {
 	}
 }
 
-void RenderingDevice::_begin_frame() {
+void RenderingDevice::_begin_frame(bool presented) {
 	screen_prepared = false;
 
 	// Before beginning this frame, wait on the fence if it was signaled to make sure its work is finished.
@@ -5322,7 +5322,16 @@ void RenderingDevice::_begin_frame() {
 		ERR_FAIL_COND(!reset);
 	}
 
-	driver->linear_uniform_set_pools_reset(frame);
+	if (presented) {
+		// <TF>
+		// @ShadyTF persistently mapped buffers
+		// reset linear uniform
+		persistent_uniform_buffers_reset();
+		//driver->linear_uniform_set_pools_reset(frame);
+		update_perf_report();
+		// </TF>
+	}
+	//
 	
 	// Begin recording on the frame's command buffers.
 	driver->begin_segment(frame, frames_drawn++);
@@ -5337,13 +5346,6 @@ void RenderingDevice::_begin_frame() {
 
 	// Erase pending resources.
 	_free_pending_resources(frame);
-
-	// <TF>
-	// @ShadyTF persistently mapped buffers
-	// reset linear uniform buffers
-	persistent_uniform_buffers_reset();
-	update_perf_report();
-	// </TF>
 
 	// Advance staging buffer if used.
 	if (staging_buffer_used) {
