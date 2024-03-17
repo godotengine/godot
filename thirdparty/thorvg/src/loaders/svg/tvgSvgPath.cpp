@@ -122,9 +122,6 @@ void _pathAppendArcTo(Array<PathCommand>* cmds, Array<Point>* pts, Point* cur, P
     sx = cur->x;
     sy = cur->y;
 
-    //If start and end points are identical, then no arc is drawn
-    if ((fabsf(x - sx) < (1.0f / 256.0f)) && (fabsf(y - sy) < (1.0f / 256.0f))) return;
-
     //Correction of out-of-range radii, see F6.6.1 (step 2)
     rx = fabsf(rx);
     ry = fabsf(ry);
