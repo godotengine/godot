@@ -36,8 +36,11 @@
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
 #include "servers/navigation_server_3d.h"
-#include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
+
+#ifndef _2D_DISABLED
+#include "servers/physics_server_2d.h"
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 #include "servers/physics_server_3d.h"
@@ -181,12 +184,14 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TEXTURE_MEM_USED);
 		case RENDER_BUFFER_MEM_USED:
 			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_BUFFER_MEM_USED);
+#ifndef _2D_DISABLED
 		case PHYSICS_2D_ACTIVE_OBJECTS:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_2D_COLLISION_PAIRS:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_COLLISION_PAIRS);
 		case PHYSICS_2D_ISLAND_COUNT:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ISLAND_COUNT);
+#endif // _2D_DISABLED
 #ifdef _3D_DISABLED
 		case PHYSICS_3D_ACTIVE_OBJECTS:
 			return 0;

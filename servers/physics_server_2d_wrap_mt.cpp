@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef _2D_DISABLED
+
 #include "physics_server_2d_wrap_mt.h"
 
 #include "core/os/os.h"
@@ -133,3 +135,5 @@ PhysicsServer2DWrapMT::~PhysicsServer2DWrapMT() {
 	memdelete(physics_server_2d);
 	//finish();
 }
+
+#endif // _2D_DISABLED
