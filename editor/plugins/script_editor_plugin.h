@@ -587,7 +587,14 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_name() const override { return "Script"; }
+	virtual String get_name() const override {
+		return
+#ifndef DISABLE_SCRIPTING
+				"Script";
+#else
+				"TextFile";
+#endif // DISABLE_SCRIPTING
+	}
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

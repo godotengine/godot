@@ -214,6 +214,9 @@ opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
+opts.Add(
+    BoolVariable("disable_scripting", "Disable scripting for a smaller executable for GDExtension projects", False)
+)
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
@@ -387,6 +390,9 @@ for name, path in modules_detected.items():
         except AttributeError:
             pass
     else:
+        enabled = False
+
+    if env_base["disable_scripting"] and name == "gdscript":
         enabled = False
 
     opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
@@ -904,6 +910,9 @@ if selected_platform in platform_list:
 
     env["OBJPREFIX"] = env["object_prefix"]
     env["SHOBJPREFIX"] = env["object_prefix"]
+
+    if env["disable_scripting"]:
+        env.Append(CPPDEFINES=["DISABLE_SCRIPTING"])
 
     if env["disable_3d"]:
         if env.editor_build:

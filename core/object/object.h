@@ -638,8 +638,12 @@ private:
 	uint32_t _edited_version = 0;
 	HashSet<String> editor_section_folding;
 #endif
+
+#ifndef DISABLE_SCRIPTING
 	ScriptInstance *script_instance = nullptr;
 	Variant script; // Reference does not exist yet, store it in a Variant.
+#endif // DISABLE_SCRIPTING
+
 	HashMap<StringName, Variant> metadata;
 	HashMap<StringName, Variant *> metadata_properties;
 	mutable const StringName *_class_name_ptr = nullptr;
@@ -916,7 +920,13 @@ public:
 #endif
 
 	void set_script_instance(ScriptInstance *p_instance);
-	_FORCE_INLINE_ ScriptInstance *get_script_instance() const { return script_instance; }
+	_FORCE_INLINE_ ScriptInstance *get_script_instance() const {
+#ifndef DISABLE_SCRIPTING
+		return script_instance;
+#else
+		return nullptr;
+#endif // DISABLE_SCRIPTING
+	}
 
 	// Some script languages can't control instance creation, so this function eases the process.
 	void set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance);

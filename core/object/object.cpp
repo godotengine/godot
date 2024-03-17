@@ -227,6 +227,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 	_edited = true;
 #endif
 
+#ifndef DISABLE_SCRIPTING
 	if (script_instance) {
 		if (script_instance->set(p_name, p_value)) {
 			if (r_valid) {
@@ -235,6 +236,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 			return;
 		}
 	}
+#endif // DISABLE_SCRIPTING
 
 	if (_extension && _extension->set) {
 // C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
@@ -286,6 +288,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 	}
 
 #ifdef TOOLS_ENABLED
+#ifndef DISABLE_SCRIPTING
 	if (script_instance) {
 		bool valid;
 		script_instance->property_set_fallback(p_name, p_value, &valid);
@@ -296,6 +299,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 			return;
 		}
 	}
+#endif // DISABLE_SCRIPTING
 #endif
 
 	// Something inside the object... :|
@@ -315,6 +319,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 Variant Object::get(const StringName &p_name, bool *r_valid) const {
 	Variant ret;
 
+#ifndef DISABLE_SCRIPTING
 	if (script_instance) {
 		if (script_instance->get(p_name, ret)) {
 			if (r_valid) {
@@ -323,6 +328,8 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 			return ret;
 		}
 	}
+#endif // DISABLE_SCRIPTING
+
 	if (_extension && _extension->get) {
 // C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
 #if defined(__GNUC__) && !defined(__clang__)
@@ -370,6 +377,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 
 	} else {
 #ifdef TOOLS_ENABLED
+#ifndef DISABLE_SCRIPTING
 		if (script_instance) {
 			bool valid;
 			ret = script_instance->property_get_fallback(p_name, &valid);
@@ -380,6 +388,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 				return ret;
 			}
 		}
+#endif // DISABLE_SCRIPTING
 #endif
 		// Something inside the object... :|
 		bool success = _getv(p_name, ret);
@@ -481,9 +490,11 @@ Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) co
 }
 
 void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) const {
+#ifndef DISABLE_SCRIPTING
 	if (script_instance && p_reversed) {
 		script_instance->get_property_list(p_list);
 	}
+#endif // DISABLE_SCRIPTING
 
 	if (_extension) {
 		const ObjectGDExtension *current_extension = _extension;
@@ -517,13 +528,17 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	_get_property_listv(p_list, p_reversed);
 
+#ifndef DISABLE_SCRIPTING
 	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NEVER_DUPLICATE));
 	}
+#endif // DISABLE_SCRIPTING
 
+#ifndef DISABLE_SCRIPTING
 	if (script_instance && !p_reversed) {
 		script_instance->get_property_list(p_list);
 	}
+#endif // DISABLE_SCRIPTING
 
 	for (const KeyValue<StringName, Variant> &K : metadata) {
 		PropertyInfo pi = PropertyInfo(K.value.get_type(), "metadata/" + K.key.operator String());
@@ -559,17 +574,21 @@ void Object::validate_property(PropertyInfo &p_property) const {
 		};
 	}
 
+#ifndef DISABLE_SCRIPTING
 	if (script_instance) { // Call it last to allow user altering already validated properties.
 		script_instance->validate_property(p_property);
 	}
+#endif // DISABLE_SCRIPTING
 }
 
 bool Object::property_can_revert(const StringName &p_name) const {
+#ifndef DISABLE_SCRIPTING
 	if (script_instance) {
 		if (script_instance->property_can_revert(p_name)) {
 			return true;
 		}
 	}
+#endif // DISABLE_SCRIPTING
 
 // C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
 #if defined(__GNUC__) && !defined(__clang__)
@@ -591,11 +610,13 @@ bool Object::property_can_revert(const StringName &p_name) const {
 Variant Object::property_get_revert(const StringName &p_name) const {
 	Variant ret;
 
+#ifndef DISABLE_SCRIPTING
 	if (script_instance) {
 		if (script_instance->property_get_revert(p_name, ret)) {
 			return ret;
 		}
 	}
+#endif // DISABLE_SCRIPTING
 
 // C style pointer casts should never trigger a compiler warning because the risk is assumed by the user, so GCC should keep quiet about it.
 #if defined(__GNUC__) && !defined(__clang__)
@@ -619,9 +640,11 @@ Variant Object::property_get_revert(const StringName &p_name) const {
 
 void Object::get_method_list(List<MethodInfo> *p_list) const {
 	ClassDB::get_method_list(get_class_name(), p_list);
+#ifndef DISABLE_SCRIPTING
 	if (script_instance) {
 		script_instance->get_method_list(p_list);
 	}
+#endif // DISABLE_SCRIPTING
 }
 
 Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -671,9 +694,11 @@ bool Object::has_method(const StringName &p_method) const {
 		return true;
 	}
 
+#ifndef DISABLE_SCRIPTING
 	if (script_instance && script_instance->has_method(p_method)) {
 		return true;
 	}
+#endif // DISABLE_SCRIPTING
 
 	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
 	if (method != nullptr) {
@@ -811,6 +836,7 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 	Variant ret;
 	OBJ_DEBUG_LOCK
 
+#ifndef DISABLE_SCRIPTING
 	if (script_instance) {
 		ret = script_instance->callp(p_method, p_args, p_argcount, r_error);
 		//force jumptable
@@ -828,6 +854,7 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 			}
 		}
 	}
+#endif // DISABLE_SCRIPTING
 
 	//extension does not need this, because all methods are registered in MethodBind
 
@@ -854,6 +881,7 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 	Variant ret;
 	OBJ_DEBUG_LOCK
 
+#ifndef DISABLE_SCRIPTING
 	if (script_instance) {
 		ret = script_instance->call_const(p_method, p_args, p_argcount, r_error);
 		//force jumptable
@@ -872,6 +900,7 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 			}
 		}
 	}
+#endif // DISABLE_SCRIPTING
 
 	//extension does not need this, because all methods are registered in MethodBind
 
@@ -892,9 +921,11 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 
 void Object::notification(int p_notification, bool p_reversed) {
 	if (p_reversed) {
+#ifndef DISABLE_SCRIPTING
 		if (script_instance) {
 			script_instance->notification(p_notification, p_reversed);
 		}
+#endif // DISABLE_SCRIPTING
 	} else {
 		_notificationv(p_notification, p_reversed);
 	}
@@ -912,13 +943,16 @@ void Object::notification(int p_notification, bool p_reversed) {
 	if (p_reversed) {
 		_notificationv(p_notification, p_reversed);
 	} else {
+#ifndef DISABLE_SCRIPTING
 		if (script_instance) {
 			script_instance->notification(p_notification, p_reversed);
 		}
+#endif // DISABLE_SCRIPTING
 	}
 }
 
 String Object::to_string() {
+#ifndef DISABLE_SCRIPTING
 	if (script_instance) {
 		bool valid;
 		String ret = script_instance->to_string(&valid);
@@ -926,6 +960,7 @@ String Object::to_string() {
 			return ret;
 		}
 	}
+#endif // DISABLE_SCRIPTING
 	if (_extension && _extension->to_string) {
 		String ret;
 		GDExtensionBool is_valid;
@@ -936,6 +971,7 @@ String Object::to_string() {
 }
 
 void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
+#ifndef DISABLE_SCRIPTING
 	//this function is not meant to be used in any of these ways
 	ERR_FAIL_COND(p_script.is_null());
 	ERR_FAIL_NULL(p_instance);
@@ -943,9 +979,13 @@ void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_
 
 	script = p_script;
 	script_instance = p_instance;
+#else
+	ERR_FAIL();
+#endif // DISABLE_SCRIPTING
 }
 
 void Object::set_script(const Variant &p_script) {
+#ifndef DISABLE_SCRIPTING
 	if (script == p_script) {
 		return;
 	}
@@ -975,9 +1015,14 @@ void Object::set_script(const Variant &p_script) {
 
 	notify_property_list_changed(); //scripts may add variables, so refresh is desired
 	emit_signal(CoreStringNames::get_singleton()->script_changed);
+#else
+	ERR_FAIL_COND(!p_script.is_null());
+#endif // DISABLE_SCRIPTING
 }
 
 void Object::set_script_instance(ScriptInstance *p_instance) {
+#ifndef DISABLE_SCRIPTING
+
 	if (script_instance == p_instance) {
 		return;
 	}
@@ -993,10 +1038,17 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 	} else {
 		script = Variant();
 	}
+#else
+	ERR_FAIL();
+#endif // DISABLE_SCRIPTING
 }
 
 Variant Object::get_script() const {
+#ifndef DISABLE_SCRIPTING
 	return script;
+#else
+	return Variant();
+#endif // DISABLE_SCRIPTING
 }
 
 bool Object::has_meta(const StringName &p_name) const {
@@ -1143,7 +1195,9 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 #ifdef DEBUG_ENABLED
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_name);
 		//check in script
+#ifndef DISABLE_SCRIPTING
 		ERR_FAIL_COND_V_MSG(!signal_is_valid && !script.is_null() && !Ref<Script>(script)->has_script_signal(p_name), ERR_UNAVAILABLE, "Can't emit non-existing signal " + String("\"") + p_name + "\".");
+#endif // DISABLE_SCRIPTING
 #endif
 		//not connected? just return
 		return ERR_UNAVAILABLE;
@@ -1191,7 +1245,11 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 #ifdef DEBUG_ENABLED
-				if (c.flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint() && (script.is_null() || !Ref<Script>(script)->is_tool())) {
+				if (c.flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint()
+#ifndef DISABLE_SCRIPTING
+						&& (script.is_null() || !Ref<Script>(script)->is_tool())
+#endif // DISABLE_SCRIPTING
+				) {
 					continue;
 				}
 #endif
@@ -1293,12 +1351,14 @@ TypedArray<Dictionary> Object::_get_incoming_connections() const {
 }
 
 bool Object::has_signal(const StringName &p_name) const {
+#ifndef DISABLE_SCRIPTING
 	if (!script.is_null()) {
 		Ref<Script> scr = script;
 		if (scr.is_valid() && scr->has_script_signal(p_name)) {
 			return true;
 		}
 	}
+#endif // DISABLE_SCRIPTING
 
 	if (ClassDB::has_signal(get_class_name(), p_name)) {
 		return true;
@@ -1312,12 +1372,14 @@ bool Object::has_signal(const StringName &p_name) const {
 }
 
 void Object::get_signal_list(List<MethodInfo> *p_signals) const {
+#ifndef DISABLE_SCRIPTING
 	if (!script.is_null()) {
 		Ref<Script> scr = script;
 		if (scr.is_valid()) {
 			scr->get_script_signal_list(p_signals);
 		}
 	}
+#endif // DISABLE_SCRIPTING
 
 	ClassDB::get_signal_list(get_class_name(), p_signals);
 	//find maybe usersignals?
@@ -1388,6 +1450,8 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
+
+#ifndef DISABLE_SCRIPTING
 		//check in script
 		if (!signal_is_valid && !script.is_null()) {
 			if (Ref<Script>(script)->has_script_signal(p_signal)) {
@@ -1402,6 +1466,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 			}
 #endif
 		}
+#endif // DISABLE_SCRIPTING
 
 		ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, "In Object of type '" + String(get_class()) + "': Attempt to connect nonexistent signal '" + p_signal + "' to callable '" + p_callable + "'.");
 
@@ -1450,9 +1515,11 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 			return false;
 		}
 
+#ifndef DISABLE_SCRIPTING
 		if (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal)) {
 			return false;
 		}
+#endif // DISABLE_SCRIPTING
 
 		ERR_FAIL_V_MSG(false, "Nonexistent signal: " + p_signal + ".");
 	}
@@ -1469,8 +1536,11 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
-				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
+		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal)
+#ifndef DISABLE_SCRIPTING
+				|| (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal))
+#endif // DISABLE_SCRIPTING
+				;
 		ERR_FAIL_COND_V_MSG(signal_is_valid, false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
 	}
 	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
@@ -1655,8 +1725,10 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("to_string"), &Object::to_string);
 	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
 
+#ifndef DISABLE_SCRIPTING
 	ClassDB::bind_method(D_METHOD("set_script", "script"), &Object::set_script);
 	ClassDB::bind_method(D_METHOD("get_script"), &Object::get_script);
+#endif // DISABLE_SCRIPTING
 
 	ClassDB::bind_method(D_METHOD("set_meta", "name", "value"), &Object::set_meta);
 	ClassDB::bind_method(D_METHOD("remove_meta", "name"), &Object::remove_meta);
@@ -2059,10 +2131,12 @@ void Object::detach_from_objectdb() {
 }
 
 Object::~Object() {
+#ifndef DISABLE_SCRIPTING
 	if (script_instance) {
 		memdelete(script_instance);
 	}
 	script_instance = nullptr;
+#endif // DISABLE_SCRIPTING
 
 	if (_extension) {
 #ifdef TOOLS_ENABLED

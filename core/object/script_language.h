@@ -47,7 +47,11 @@ typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
 class ScriptServer {
 	enum {
+#ifndef DISABLE_SCRIPTING
 		MAX_LANGUAGES = 16
+#else
+		MAX_LANGUAGES = 1
+#endif // DISABLE_SCRIPTING
 	};
 
 	static ScriptLanguage *_languages[MAX_LANGUAGES];
