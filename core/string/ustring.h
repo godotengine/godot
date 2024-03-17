@@ -228,7 +228,7 @@ public:
 	_FORCE_INLINE_ CharProxy<char32_t> operator[](int p_index) { return CharProxy<char32_t>(p_index, _cowdata); }
 
 	bool operator==(const String &p_str) const;
-	bool operator!=(const String &p_str) const;
+	INEQUALITY_OPERATOR(const String &)
 	String operator+(const String &p_str) const;
 	String operator+(char32_t p_char) const;
 
@@ -249,9 +249,10 @@ public:
 	bool operator==(const char32_t *p_str) const;
 	bool operator==(const StrRange &p_str_range) const;
 
-	bool operator!=(const char *p_str) const;
-	bool operator!=(const wchar_t *p_str) const;
-	bool operator!=(const char32_t *p_str) const;
+	INEQUALITY_OPERATOR(const char *)
+	INEQUALITY_OPERATOR(const wchar_t *)
+	INEQUALITY_OPERATOR(const char32_t *)
+	INEQUALITY_OPERATOR(const StrRange &)
 
 	bool operator<(const char32_t *p_str) const;
 	bool operator<(const char *p_str) const;
@@ -498,10 +499,12 @@ public:
 	String(const StrRange &p_range);
 };
 
-bool operator==(const char *p_chr, const String &p_str);
-bool operator==(const wchar_t *p_chr, const String &p_str);
-bool operator!=(const char *p_chr, const String &p_str);
-bool operator!=(const wchar_t *p_chr, const String &p_str);
+#if __cplusplus < 202002L
+_ALWAYS_INLINE_ bool operator==(const char *p_cstr, const String &p_str) { return p_str == p_cstr; }
+_ALWAYS_INLINE_ bool operator==(const wchar_t *p_cstr, const String &p_str) { return p_str == p_cstr; }
+INEQUALITY_OPERATOR_GLOBAL(const char *, const String &)
+INEQUALITY_OPERATOR_GLOBAL(const wchar_t *, const String &)
+#endif
 
 String operator+(const char *p_chr, const String &p_str);
 String operator+(const wchar_t *p_chr, const String &p_str);
