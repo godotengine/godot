@@ -84,6 +84,7 @@ public:
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
+	friend class AnimationNodeExternal;
 	double _blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false, real_t *r_activity = nullptr);
 	double _pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false);
 
@@ -172,6 +173,33 @@ public:
 	AnimationRootNode() {}
 };
 
+class AnimationNodeExternal : public AnimationRootNode {
+	GDCLASS(AnimationNodeExternal, AnimationRootNode);
+
+public:
+	void get_parameter_list(List<PropertyInfo> *r_list) const override {
+		r_list->push_back(PropertyInfo(Variant::OBJECT, "external_node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE));
+	}
+
+	virtual String get_caption() const override {
+		return "External";
+	}
+
+	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override {
+		Ref<AnimationRootNode> node = get_parameter("external_node");
+		if (node.is_valid()) {
+			node->node_state = node_state;
+			node->process_state = process_state;
+			return node->_process(p_playback_info, p_test_only);
+			node->process_state = nullptr;
+		}
+
+		return 0.0;
+	}
+
+	AnimationNodeExternal() {}
+};
+
 class AnimationNodeStartState : public AnimationRootNode {
 	GDCLASS(AnimationNodeStartState, AnimationRootNode);
 };
@@ -204,6 +232,7 @@ private:
 	friend class AnimationNode;
 
 	List<PropertyInfo> properties;
+	List<StringName> external_properties;
 	HashMap<StringName, HashMap<StringName, StringName>> property_parent_map;
 	HashMap<ObjectID, StringName> property_reference_map;
 	HashMap<StringName, Pair<Variant, bool>> property_map; // Property value and read-only flag.
