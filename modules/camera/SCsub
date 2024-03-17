@@ -12,3 +12,7 @@ if env["platform"] == "windows":
 elif env["platform"] == "macos":
     env_camera.add_source_files(env.modules_sources, "register_types.cpp")
     env_camera.add_source_files(env.modules_sources, "camera_macos.mm")
+
+# elif env["platform"] == "android":
+#     env_camera.add_source_files(env.modules_sources, "register_types.cpp")
+#     env_camera.add_source_files(env.modules_sources, "camera_android.cpp")

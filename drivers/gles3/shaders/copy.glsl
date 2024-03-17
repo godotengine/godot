@@ -41,6 +41,11 @@ void main() {
 /* clang-format off */
 #[fragment]
 
+#ifdef USE_EXTERNAL_SAMPLER
+// Leave the ifdef so we have this define, for now the extension is loaded through custom defines
+// #extension GL_OES_EGL_image_external_essl3 : require
+#endif
+
 in vec2 uv_interp;
 /* clang-format on */
 #ifdef MODE_SIMPLE_COLOR
@@ -61,6 +66,8 @@ vec3 oct_to_vec3(vec2 e) {
 	v.xy += t * -sign(v.xy);
 	return normalize(v);
 }
+#elif defined(USE_EXTERNAL_SAMPLER)
+uniform samplerExternalOES source;
 #else
 uniform sampler2D source; // texunit:0
 

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_win.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#ifndef CAMERA_ANDROID_H
+#define CAMERA_ANDROID_H
 
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_macos.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
-#endif
+#include "servers/camera/camera_feed.h"
+#include "servers/camera_server.h"
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+class CameraAndroid : public CameraServer {
+private:
+	void add_active_cameras();
 
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraMacOS>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
-}
+public:
+	CameraAndroid();
+	~CameraAndroid() {}
+};
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+#endif // CAMERA_ANDROID_H

@@ -2349,6 +2349,15 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				keep_color = true;
 			} break;
 			case RS::ENV_BG_CAMERA_FEED: {
+				// RID camera_RGBA = feed->get_texture(CameraServer::FEED_RGBA_IMAGE);
+				// VS::get_singleton()->texture_bind(camera_RGBA, 0);
+				// // TODO: we need to find a better way of doing this
+				// storage->shaders.copy.add_custom_define("#extension GL_OES_EGL_image_external : require\n");
+				// storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_EXTERNAL_SAMPLER, true);
+				// clear_color = environment_get_bg_color(render_data.environment);
+				// clear_color.r *= bg_energy_multiplier;
+				// clear_color.g *= bg_energy_multiplier;
+				// clear_color.b *= bg_energy_multiplier;
 			} break;
 			default: {
 			}

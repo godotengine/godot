@@ -1108,6 +1108,31 @@ void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 	tex->proxies.push_back(p_texture);
 }
 
+void TextureStorage::texture_set_external(RID p_texture, int p_width, int p_height) {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND(!texture);
+
+	texture->width = p_width;
+	texture->height = p_height;
+
+	// most of this is ignored
+	texture->depth = 1;
+	texture->format = Image::FORMAT_RGBA8;
+	// texture->flags = 0;
+	// texture->stored_cube_sides = 0;
+	// texture->type = Texture::TYPE_2D;
+
+	// texture->target = _GL_TEXTURE_EXTERNAL_OES;
+	// texture->images.resize(0);
+
+	// glActiveTexture(GL_TEXTURE0);
+	// glBindTexture(texture->target, texture->tex_id);
+	// glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	// glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// texture->active = true;
+}
+
 void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate) {
 	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
 

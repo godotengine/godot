@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_win.cpp                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#include "camera_external_feed.h"
 
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_macos.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
-#endif
+//////////////////////////////////////////////////////////////////////////
+// CameraAndroidFeed - Subclass for our camera feed on windows
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+/// @TODO need to implement this
 
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraMacOS>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
+class CameraAndroidFeed : public CameraFeed {
+private:
+protected:
+public:
+	CameraAndroidFeed();
+	virtual ~CameraAndroidFeed();
+
+	bool activate_feed();
+	void deactivate_feed();
+};
+
+CameraAndroidFeed::CameraAndroidFeed() {
+	///@TODO implement this, should store information about our available camera
 }
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+CameraAndroidFeed::~CameraAndroidFeed() {
+	// make sure we stop recording if we are!
+	if (is_active()) {
+		deactivate_feed();
+	};
+
+	///@TODO free up anything used by this
+};
+
+bool CameraAndroidFeed::activate_feed() {
+	///@TODO this should activate our camera and start the process of capturing frames
+
+	return true;
+};
+
+///@TODO we should probably have a callback method here that is being called by the
+// camera API which provides frames and call back into the CameraServer to update our texture
+
+void CameraAndroidFeed::deactivate_feed() {
+	///@TODO this should deactivate our camera and stop the process of capturing frames
 }
+
+//////////////////////////////////////////////////////////////////////////
+// CameraAndroid - Subclass for our camera server on windows
+
+void CameraAndroid::add_active_cameras() {
+	///@TODO scan through any active cameras and create CameraAndroidFeed objects for them
+}
+
+CameraAndroid::CameraAndroid() {
+	// Find cameras active right now
+	add_active_cameras();
+
+	// need to add something that will react to devices being connected/removed...
+};
