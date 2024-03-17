@@ -1,4 +1,6 @@
 /* clang-format off */
+#version 300 es
+
 #[modes]
 
 mode_default = #define MODE_SIMPLE_COPY

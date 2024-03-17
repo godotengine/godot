@@ -146,6 +146,8 @@ public:
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
 	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to) = 0;
+	
+	virtual RID texture_set_external(RID p_texture, int p_width, int p_height) = 0;
 
 	// These two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create() = 0;
@@ -1152,6 +1154,7 @@ public:
 	virtual void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, EnvironmentAmbientSource p_ambient = ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, EnvironmentReflectionSource p_reflection_source = ENV_REFLECTION_SOURCE_BG) = 0;
+	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
 
 	enum EnvironmentGlowBlendMode {
 		ENV_GLOW_BLEND_MODE_ADDITIVE,

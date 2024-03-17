@@ -33,6 +33,10 @@
 #include "copy_effects.h"
 #include "../storage/texture_storage.h"
 
+#ifdef ANDROID_ENABLED
+#include <GLES3/gl3ext.h>
+#endif
+
 using namespace GLES3;
 
 CopyEffects *CopyEffects::singleton = nullptr;

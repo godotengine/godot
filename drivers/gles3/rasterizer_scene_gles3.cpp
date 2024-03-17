@@ -31,6 +31,7 @@
 #include "rasterizer_scene_gles3.h"
 
 #include "drivers/gles3/effects/copy_effects.h"
+#include "drivers/gles3/effects/feed_effects.h"
 #include "rasterizer_gles3.h"
 #include "storage/config.h"
 #include "storage/mesh_storage.h"
@@ -41,8 +42,17 @@
 #include "core/templates/sort_array.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_globals.h"
+#include "servers/camera/camera_feed.h"
+#include "servers/camera_server.h"
 
 #ifdef GLES3_ENABLED
+
+#include "platform_gl.h"
+
+#ifdef ANDROID_ENABLED
+#include <GLES2/gl2ext.h>
+#endif
+
 
 RasterizerSceneGLES3 *RasterizerSceneGLES3::singleton = nullptr;
 
@@ -2387,7 +2397,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	bool draw_sky = false;
 	bool draw_sky_fog_only = false;
 	bool keep_color = false;
+	bool draw_image = false;
 	float sky_energy_multiplier = 1.0;
+	int camera_feed_id = -1;
 
 	if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
@@ -2432,6 +2444,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				keep_color = true;
 			} break;
 			case RS::ENV_BG_CAMERA_FEED: {
+				camera_feed_id = environment_get_camera_feed_id(render_data.environment);
+				draw_image = true;
 			} break;
 			default: {
 			}
@@ -2541,7 +2555,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
-	if (!keep_color) {
+	if (!keep_color && !draw_image) {
 		clear_color.a = render_data.transparent_bg ? 0.0f : 1.0f;
 		glClearBufferfv(GL_COLOR, 0, clear_color.components);
 	} else if (fbo != rt->fbo) {
@@ -2600,6 +2614,33 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		}
 
 		_draw_sky(render_data.environment, projection, render_data.cam_transform, sky_energy_multiplier, render_data.luminance_multiplier, p_camera_data->view_count > 1, flip_y, apply_color_adjustments_in_post);
+	}
+
+	if (draw_image && camera_feed_id > -1) {
+		RENDER_TIMESTAMP("Render Camera feed");
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+
+		Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+
+		if (feed.is_valid()) {
+			if (feed->is_depthmap_available()) {
+				RID camera_DEPTHMAP = feed->get_texture(CameraServer::FEED_DEPTHMAP);
+				GLES3::TextureStorage::get_singleton()->texture_bind(camera_DEPTHMAP, 0);
+			} 
+
+			RID camera_YCBCR = feed->get_texture(CameraServer::FEED_YCBCR_IMAGE);
+			GLES3::TextureStorage::get_singleton()->texture_bind(camera_YCBCR, 1);
+			float max_depth_meters = feed->get_maxDepthMeters();
+
+			GLES3::FeedEffects *feed_effects = GLES3::FeedEffects::get_singleton();
+			feed_effects->fill_z_buffer(feed->is_depthmap_available(), feed->should_display_depthmap(), max_depth_meters);
+
+			glDisable(GL_BLEND);
+		}
 	}
 
 	if (rt && (scene_state.used_screen_texture || scene_state.used_depth_texture)) {

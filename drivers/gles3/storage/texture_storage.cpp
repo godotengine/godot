@@ -38,6 +38,11 @@
 #include "utilities.h"
 
 #ifdef ANDROID_ENABLED
+#include <GLES2/gl2ext.h>
+#endif
+
+
+#ifdef ANDROID_ENABLED
 #define glFramebufferTextureMultiviewOVR GLES3::Config::get_singleton()->eglFramebufferTextureMultiviewOVR
 #endif
 
@@ -746,6 +751,27 @@ void TextureStorage::texture_free(RID p_texture) {
 	}
 
 	texture_owner.free(p_texture);
+}
+
+RID TextureStorage::texture_set_external(RID p_texture, int p_width, int p_height) {
+	Texture texture;
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.alloc_width = texture.width;
+	texture.alloc_height = texture.height;
+	texture.mipmaps = 1;
+	texture.format = Image::FORMAT_RGB8; // TODO MCT CHECK with specification
+	texture.type = Texture::TYPE_2D;
+#ifdef ANDROID_ENABLED
+	texture.target = GL_TEXTURE_EXTERNAL_OES;
+#endif
+	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
+	texture.total_data_size = Image::get_image_data_size(texture.width, texture.height, texture.format, texture.mipmaps);
+	texture.active = true;
+	glGenTextures(1, &texture.tex_id);
+	GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, texture.total_data_size, "Texture 2D");
+
+	return texture_owner.make_rid(texture);
 }
 
 void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) {
@@ -1706,13 +1732,26 @@ uint32_t TextureStorage::texture_get_depth(RID p_texture) const {
 	return texture->depth;
 }
 
+bool CheckExtension1(const char* extensionName) {
+    const char* extensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+    return (extensions != nullptr) && (strstr(extensions, extensionName) != nullptr);
+}
+
 void TextureStorage::texture_bind(RID p_texture, uint32_t p_texture_no) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
 	ERR_FAIL_NULL(texture);
 
+	int max_texture_units;
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units);
+
 	glActiveTexture(GL_TEXTURE0 + p_texture_no);
+
 	glBindTexture(texture->target, texture->tex_id);
+	glTexParameteri(texture->target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(texture->target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 }
 
 /* TEXTURE ATLAS API */
