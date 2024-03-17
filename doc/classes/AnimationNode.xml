@@ -145,6 +145,18 @@
 				Gets the value of a parameter. Parameters are custom local memory used for your animation nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
+		<method name="get_player" qualifiers="const">
+			<return type="AnimationPlayer" />
+			<description>
+				Gets the [AnimationPlayer] referenced by the [AnimationTree] currently processing this node. Returns [code]null[/code] when called outside of [method _process], as multiple trees may reference a single [AnimationNode] resource.
+			</description>
+		</method>
+		<method name="get_tree" qualifiers="const">
+			<return type="AnimationTree" />
+			<description>
+				Gets the [AnimationTree] currently processing this node. Returns [code]null[/code] when called outside of [method _process], as multiple trees may reference a single [AnimationNode] resource.
+			</description>
+		</method>
 		<method name="is_path_filtered" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />

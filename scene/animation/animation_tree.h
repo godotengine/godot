@@ -154,6 +154,9 @@ public:
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const;
 	Ref<AnimationNode> find_node_by_path(const String &p_name) const;
 
+	AnimationTree *get_tree() const;
+	AnimationPlayer *get_player() const;
+
 	AnimationNode();
 };
 
