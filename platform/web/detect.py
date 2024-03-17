@@ -85,7 +85,7 @@ def configure(env: "Environment"):
     supported_arches = ["wasm32"]
     if env["arch"] not in supported_arches:
         print(
-            'Unsupported CPU architecture "%s" for iOS. Supported architectures are: %s.'
+            'Unsupported CPU architecture "%s" for Web. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
         sys.exit()
