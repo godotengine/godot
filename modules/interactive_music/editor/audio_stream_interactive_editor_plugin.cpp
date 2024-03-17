@@ -32,6 +32,7 @@
 
 #include "../audio_stream_interactive.h"
 #include "editor/editor_node.h"
+#include "editor/themes/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/check_box.h"
@@ -144,6 +145,10 @@ void AudioStreamInteractiveTransitionEditor::_update_selection() {
 }
 
 void AudioStreamInteractiveTransitionEditor::_cell_selected(TreeItem *p_item, int p_column, bool p_selected) {
+	if (!p_item->get_meta("is_editable_cell")) {
+		return;
+	}
+
 	int to = p_item->get_meta("to");
 	int from = p_column == audio_stream_interactive->get_clip_count() ? AudioStreamInteractive::CLIP_ANY : p_column;
 	if (p_selected) {
@@ -265,6 +270,7 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 	int header_index = clip_count + 1;
 	header->set_text(header_index, TTR("From / To"));
 	header->set_selectable(header_index, false);
+	header->set_meta("is_editable_cell", false);
 
 	filler_clip->clear();
 	filler_clip->add_item(TTR("Disabled"), -1);
@@ -290,6 +296,7 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 		}
 
 		int min_w = header_font->get_string_size(name + "XX").width;
+		min_w = Math::ceil(EDSCALE * min_w);
 		tree->set_column_expand(cell_index, false);
 		tree->set_column_custom_minimum_width(cell_index, min_w);
 		max_w = MAX(max_w, min_w);
@@ -302,6 +309,7 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 		row->set_custom_font(header_index, header_font);
 		row->set_custom_font_size(header_index, header_font_size);
 		row->set_custom_bg_color(header_index, header_color);
+		row->set_meta("is_editable_cell", true);
 		row->set_meta("to", clip_i);
 		for (int j = 0; j <= clip_count; j++) {
 			int clip_j = j == clip_count ? AudioStreamInteractive::CLIP_ANY : j;
@@ -327,6 +335,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	set_title(TTR("AudioStreamInteractive Transition Editor"));
 	split = memnew(HSplitContainer);
 	add_child(split);
+
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
