@@ -83,7 +83,7 @@ public:
 	bool is_empty() const;
 
 	bool operator==(const NodePath &p_path) const;
-	bool operator!=(const NodePath &p_path) const;
+	INEQUALITY_OPERATOR(const NodePath &);
 	void operator=(const NodePath &p_path);
 
 	void simplify();

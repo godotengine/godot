@@ -143,10 +143,7 @@ struct _NO_DISCARD_ Projection {
 		}
 		return true;
 	}
-
-	bool operator!=(const Projection &p_cam) const {
-		return !(*this == p_cam);
-	}
+	INEQUALITY_OPERATOR(const Projection &);
 
 	float get_lod_multiplier() const;
 

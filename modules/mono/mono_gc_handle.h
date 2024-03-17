@@ -46,8 +46,8 @@ extern "C" {
 struct GCHandleIntPtr {
 	void *value;
 
-	_FORCE_INLINE_ bool operator==(const GCHandleIntPtr &p_other) { return value == p_other.value; }
-	_FORCE_INLINE_ bool operator!=(const GCHandleIntPtr &p_other) { return value != p_other.value; }
+	_FORCE_INLINE_ bool operator==(const GCHandleIntPtr &p_other) const { return value == p_other.value; }
+	INEQUALITY_OPERATOR(const GCHandleIntPtr &);
 
 	GCHandleIntPtr() = delete;
 };
