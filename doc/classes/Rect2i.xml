@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Rect2i" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Rect2i" keywords="rectangle, bounding_box" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 2D axis-aligned bounding box using integer coordinates.
 	</brief_description>
@@ -71,7 +71,7 @@
 				[b]Note:[/b] It's recommended to use this method when [member size] is negative, as most other methods in Godot assume that the [member position] is the top-left corner, and the [member end] is the bottom-right corner.
 			</description>
 		</method>
-		<method name="encloses" qualifiers="const">
+		<method name="encloses" qualifiers="const" keywords="includes, contains">
 			<return type="bool" />
 			<param index="0" name="b" type="Rect2i" />
 			<description>
@@ -112,7 +112,7 @@
 				[b]Note:[/b] If the [member size] is odd, the result will be rounded towards [member position].
 			</description>
 		</method>
-		<method name="grow" qualifiers="const">
+		<method name="grow" qualifiers="const" keywords="extend">
 			<return type="Rect2i" />
 			<param index="0" name="amount" type="int" />
 			<description>
@@ -129,7 +129,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="grow_individual" qualifiers="const">
+		<method name="grow_individual" qualifiers="const" keywords="extend_sides, grow_sides">
 			<return type="Rect2i" />
 			<param index="0" name="left" type="int" />
 			<param index="1" name="top" type="int" />
@@ -139,7 +139,7 @@
 				Returns a copy of this rectangle with its [param left], [param top], [param right], and [param bottom] sides extended by the given amounts. Negative values shrink the sides, instead. See also [method grow] and [method grow_side].
 			</description>
 		</method>
-		<method name="grow_side" qualifiers="const">
+		<method name="grow_side" qualifiers="const" keywords="extend_side">
 			<return type="Rect2i" />
 			<param index="0" name="side" type="int" />
 			<param index="1" name="amount" type="int" />
@@ -153,7 +153,7 @@
 				Returns [code]true[/code] if this rectangle has positive width and height. See also [method get_area].
 			</description>
 		</method>
-		<method name="has_point" qualifiers="const">
+		<method name="has_point" qualifiers="const" keywords="contains">
 			<return type="bool" />
 			<param index="0" name="point" type="Vector2i" />
 			<description>
@@ -183,7 +183,7 @@
 				[b]Note:[/b] If you only need to know whether two rectangles are overlapping, use [method intersects], instead.
 			</description>
 		</method>
-		<method name="intersects" qualifiers="const">
+		<method name="intersects" qualifiers="const" keywords="overlaps">
 			<return type="bool" />
 			<param index="0" name="b" type="Rect2i" />
 			<description>
@@ -205,7 +205,7 @@
 		<member name="position" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
 			The origin point. This is usually the top-left corner of the rectangle.
 		</member>
-		<member name="size" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
+		<member name="size" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)" keywords="width, height">
 			The rectangle's width and height, starting from [member position]. Setting this value also affects the [member end] point.
 			[b]Note:[/b] It's recommended setting the width and height to non-negative values, as most methods in Godot assume that the [member position] is the top-left corner, and the [member end] is the bottom-right corner. To get an equivalent rectangle with non-negative size, use [method abs].
 		</member>

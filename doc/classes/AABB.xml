@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AABB" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AABB" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd" keywords="bounding_box">
 	<brief_description>
 		A 3D axis-aligned bounding box.
 	</brief_description>
@@ -59,7 +59,7 @@
 				[b]Note:[/b] It's recommended to use this method when [member size] is negative, as most other methods in Godot assume that the [member size]'s components are greater than [code]0[/code].
 			</description>
 		</method>
-		<method name="encloses" qualifiers="const">
+		<method name="encloses" qualifiers="const" keywords="includes, contains">
 			<return type="bool" />
 			<param index="0" name="with" type="AABB" />
 			<description>
@@ -123,7 +123,7 @@
 				Returns the center point of the bounding box. This is the same as [code]position + (size / 2.0)[/code].
 			</description>
 		</method>
-		<method name="get_endpoint" qualifiers="const">
+		<method name="get_endpoint" qualifiers="const" keywords="get_vertex, get_corner">
 			<return type="Vector3" />
 			<param index="0" name="idx" type="int" />
 			<description>
@@ -217,7 +217,7 @@
 				Returns the bounding box's volume. This is equivalent to [code]size.x * size.y * size.z[/code]. See also [method has_volume].
 			</description>
 		</method>
-		<method name="grow" qualifiers="const">
+		<method name="grow" qualifiers="const" keywords="extend">
 			<return type="AABB" />
 			<param index="0" name="by" type="float" />
 			<description>
@@ -244,7 +244,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="has_point" qualifiers="const">
+		<method name="has_point" qualifiers="const" keywords="contains">
 			<return type="bool" />
 			<param index="0" name="point" type="Vector3" />
 			<description>
@@ -290,21 +290,21 @@
 				[b]Note:[/b] If you only need to know whether two bounding boxes are intersecting, use [method intersects], instead.
 			</description>
 		</method>
-		<method name="intersects" qualifiers="const">
+		<method name="intersects" qualifiers="const" keywords="overlaps">
 			<return type="bool" />
 			<param index="0" name="with" type="AABB" />
 			<description>
 				Returns [code]true[/code] if this bounding box overlaps with the box [param with]. The edges of both boxes are [i]always[/i] excluded.
 			</description>
 		</method>
-		<method name="intersects_plane" qualifiers="const">
+		<method name="intersects_plane" qualifiers="const" keywords="overlaps_plane">
 			<return type="bool" />
 			<param index="0" name="plane" type="Plane" />
 			<description>
 				Returns [code]true[/code] if this bounding box is on both sides of the given [param plane].
 			</description>
 		</method>
-		<method name="intersects_ray" qualifiers="const">
+		<method name="intersects_ray" qualifiers="const" keywords="overlaps_ray">
 			<return type="Variant" />
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="dir" type="Vector3" />
@@ -313,7 +313,7 @@
 				The ray begin at [param from], faces [param dir] and extends towards infinity.
 			</description>
 		</method>
-		<method name="intersects_segment" qualifiers="const">
+		<method name="intersects_segment" qualifiers="const" keywords="overlaps_segment">
 			<return type="Variant" />
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
@@ -350,7 +350,7 @@
 		<member name="position" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
 			The origin point. This is usually the corner on the bottom-left and back of the bounding box.
 		</member>
-		<member name="size" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
+		<member name="size" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)" keywords="width, height, depth">
 			The bounding box's width, height, and depth starting from [member position]. Setting this value also affects the [member end] point.
 			[b]Note:[/b] It's recommended setting the width, height, and depth to non-negative values. This is because most methods in Godot assume that the [member position] is the bottom-left-back corner, and the [member end] is the top-right-forward corner. To get an equivalent bounding box with non-negative size, use [method abs].
 		</member>
