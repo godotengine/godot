@@ -414,6 +414,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	Button *inactive_player_warning = nullptr;
 	void _show_inactive_player_warning();
 
+	Button *readonly_anim_info = nullptr;
+	void _show_readonly_anim_info();
+
 	void _snap_mode_changed(int p_mode);
 	Vector<AnimationTrackEdit *> track_edits;
 	Vector<AnimationTrackEditGroup *> groups;
@@ -707,6 +710,7 @@ public:
 	void show_select_node_warning(bool p_show);
 	void show_dummy_player_warning(bool p_show);
 	void show_inactive_player_warning(bool p_show);
+	void show_readonly_anim_info(bool p_show);
 
 	bool is_key_selected(int p_track, int p_key) const;
 	bool is_selection_active() const;

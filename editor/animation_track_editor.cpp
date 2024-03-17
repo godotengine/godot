@@ -3456,6 +3456,8 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		}
 
 		_check_bezier_exist();
+
+		show_readonly_anim_info(read_only);
 	} else {
 		hscroll->hide();
 		edit->set_disabled(true);
@@ -3466,6 +3468,8 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		snap->set_disabled(true);
 		snap_mode->set_disabled(true);
 		bezier_edit_icon->set_disabled(true);
+
+		show_readonly_anim_info(false);
 	}
 }
 
@@ -4417,6 +4421,10 @@ void AnimationTrackEditor::show_inactive_player_warning(bool p_show) {
 	inactive_player_warning->set_visible(p_show);
 }
 
+void AnimationTrackEditor::show_readonly_anim_info(bool p_show) {
+	readonly_anim_info->set_visible(p_show);
+}
+
 bool AnimationTrackEditor::is_key_selected(int p_track, int p_key) const {
 	SelectedKey sk;
 	sk.key = p_key;
@@ -4761,6 +4769,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 			imported_anim_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			dummy_player_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			inactive_player_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+			readonly_anim_info->set_icon(get_editor_theme_icon(SNAME("NodeInfo")));
 			main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_editor_theme_icon(SNAME("Reload")));
 		} break;
@@ -6915,6 +6924,13 @@ void AnimationTrackEditor::_show_inactive_player_warning() {
 			TTR("AnimationPlayer is inactive. The playback will not be processed."));
 }
 
+void AnimationTrackEditor::_show_readonly_anim_info() {
+	if (animation.is_valid()) {
+		EditorNode::get_singleton()->show_warning(
+				TTR("This animation is a sub-resource of another resource or scene, so it cannot be edited directly from here."));
+	}
+}
+
 void AnimationTrackEditor::_select_all_tracks_for_copy() {
 	TreeItem *track = track_copy_select->get_root()->get_first_child();
 	if (!track) {
@@ -7109,6 +7125,13 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	inactive_player_warning->set_tooltip_text(TTR("Warning: AnimationPlayer is inactive"));
 	inactive_player_warning->connect("pressed", callable_mp(this, &AnimationTrackEditor::_show_inactive_player_warning));
 	bottom_hb->add_child(inactive_player_warning);
+
+	readonly_anim_info = memnew(Button);
+	readonly_anim_info->hide();
+	readonly_anim_info->set_text(TTR("Read-only Animation"));
+	readonly_anim_info->set_tooltip_text(TTR("Info: This animation cannot be edited"));
+	readonly_anim_info->connect("pressed", callable_mp(this, &AnimationTrackEditor::_show_readonly_anim_info));
+	bottom_hb->add_child(readonly_anim_info);
 
 	bottom_hb->add_spacer();
 
