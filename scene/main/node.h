@@ -209,6 +209,7 @@ private:
 		bool shortcut_input = false;
 		bool unhandled_input = false;
 		bool unhandled_key_input = false;
+		bool unhandled_picking_input = false;
 
 		bool parent_owned = false;
 		bool in_constructor = true;
@@ -316,6 +317,7 @@ protected:
 	void _call_shortcut_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
+	void _call_unhandled_picking_input(const Ref<InputEvent> &p_event);
 
 	void _validate_property(PropertyInfo &p_property) const;
 
@@ -324,6 +326,7 @@ protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_key_event);
 	virtual void unhandled_input(const Ref<InputEvent> &p_event);
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_key_event);
+	virtual void unhandled_picking_input(const Ref<InputEvent> &p_picking_event);
 
 	GDVIRTUAL1(_process, double)
 	GDVIRTUAL1(_physics_process, double)
@@ -336,6 +339,7 @@ protected:
 	GDVIRTUAL1(_shortcut_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_input, Ref<InputEvent>)
 	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
+	GDVIRTUAL1(_unhandled_picking_input, Ref<InputEvent>)
 
 public:
 	enum {
@@ -550,6 +554,9 @@ public:
 
 	void set_process_unhandled_key_input(bool p_enable);
 	bool is_processing_unhandled_key_input() const;
+
+	void set_process_unhandled_picking_input(bool p_enable);
+	bool is_processing_unhandled_picking_input() const;
 
 	_FORCE_INLINE_ bool _is_any_processing() const {
 		return data.process || data.process_internal || data.physics_process || data.physics_process_internal;
