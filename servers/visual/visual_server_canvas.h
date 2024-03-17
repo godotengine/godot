@@ -265,7 +265,7 @@ public:
 
 	void canvas_item_set_interpolated(RID p_item, bool p_interpolated);
 	void canvas_item_reset_physics_interpolation(RID p_item);
-	void canvas_item_transform_physics_interpolation(RID p_item, Transform2D p_transform);
+	void canvas_item_transform_physics_interpolation(RID p_item, const Transform2D &p_transform);
 
 	void _canvas_item_invalidate_local_bound(RID p_item);
 	void _canvas_item_remove_references(RID p_item, RID p_rid);
@@ -294,7 +294,7 @@ public:
 
 	void canvas_light_set_interpolated(RID p_light, bool p_interpolated);
 	void canvas_light_reset_physics_interpolation(RID p_light);
-	void canvas_light_transform_physics_interpolation(RID p_light, Transform2D p_transform);
+	void canvas_light_transform_physics_interpolation(RID p_light, const Transform2D &p_transform);
 
 	RID canvas_light_occluder_create();
 	void canvas_light_occluder_attach_to_canvas(RID p_occluder, RID p_canvas);
@@ -305,7 +305,7 @@ public:
 
 	void canvas_light_occluder_set_interpolated(RID p_occluder, bool p_interpolated);
 	void canvas_light_occluder_reset_physics_interpolation(RID p_occluder);
-	void canvas_light_occluder_transform_physics_interpolation(RID p_occluder, Transform2D p_transform);
+	void canvas_light_occluder_transform_physics_interpolation(RID p_occluder, const Transform2D &p_transform);
 
 	RID canvas_occluder_polygon_create();
 	void canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const PoolVector<Vector2> &p_shape, bool p_closed);

@@ -1076,7 +1076,7 @@ public:
 
 	virtual void canvas_item_set_interpolated(RID p_item, bool p_interpolated) = 0;
 	virtual void canvas_item_reset_physics_interpolation(RID p_item) = 0;
-	virtual void canvas_item_transform_physics_interpolation(RID p_item, Transform2D p_transform) = 0;
+	virtual void canvas_item_transform_physics_interpolation(RID p_item, const Transform2D &p_transform) = 0;
 
 	virtual RID canvas_light_create() = 0;
 	virtual void canvas_light_attach_to_canvas(RID p_light, RID p_canvas) = 0;
@@ -1095,7 +1095,7 @@ public:
 
 	virtual void canvas_light_set_interpolated(RID p_light, bool p_interpolated) = 0;
 	virtual void canvas_light_reset_physics_interpolation(RID p_light) = 0;
-	virtual void canvas_light_transform_physics_interpolation(RID p_light, Transform2D p_transform) = 0;
+	virtual void canvas_light_transform_physics_interpolation(RID p_light, const Transform2D &p_transform) = 0;
 
 	enum CanvasLightMode {
 		CANVAS_LIGHT_MODE_ADD,
@@ -1131,7 +1131,7 @@ public:
 
 	virtual void canvas_light_occluder_set_interpolated(RID p_occluder, bool p_interpolated) = 0;
 	virtual void canvas_light_occluder_reset_physics_interpolation(RID p_occluder) = 0;
-	virtual void canvas_light_occluder_transform_physics_interpolation(RID p_occluder, Transform2D p_transform) = 0;
+	virtual void canvas_light_occluder_transform_physics_interpolation(RID p_occluder, const Transform2D &p_transform) = 0;
 
 	virtual RID canvas_occluder_polygon_create() = 0;
 	virtual void canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const PoolVector<Vector2> &p_shape, bool p_closed) = 0;

@@ -626,7 +626,7 @@ public:
 
 	FUNC2(canvas_item_set_interpolated, RID, bool)
 	FUNC1(canvas_item_reset_physics_interpolation, RID)
-	FUNC2(canvas_item_transform_physics_interpolation, RID, Transform2D)
+	FUNC2(canvas_item_transform_physics_interpolation, RID, const Transform2D &)
 
 	FUNC0R(RID, canvas_light_create)
 	FUNC2(canvas_light_attach_to_canvas, RID, RID)
@@ -654,7 +654,7 @@ public:
 
 	FUNC2(canvas_light_set_interpolated, RID, bool)
 	FUNC1(canvas_light_reset_physics_interpolation, RID)
-	FUNC2(canvas_light_transform_physics_interpolation, RID, Transform2D)
+	FUNC2(canvas_light_transform_physics_interpolation, RID, const Transform2D &)
 
 	FUNCRID(canvas_light_occluder)
 	FUNC2(canvas_light_occluder_attach_to_canvas, RID, RID)
@@ -665,7 +665,7 @@ public:
 
 	FUNC2(canvas_light_occluder_set_interpolated, RID, bool)
 	FUNC1(canvas_light_occluder_reset_physics_interpolation, RID)
-	FUNC2(canvas_light_occluder_transform_physics_interpolation, RID, Transform2D)
+	FUNC2(canvas_light_occluder_transform_physics_interpolation, RID, const Transform2D &)
 
 	FUNCRID(canvas_occluder_polygon)
 	FUNC3(canvas_occluder_polygon_set_shape, RID, const PoolVector<Vector2> &, bool)
