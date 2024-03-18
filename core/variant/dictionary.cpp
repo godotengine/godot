@@ -189,6 +189,7 @@ Variant Dictionary::get_or_add(const Variant &p_key, const Variant &p_default) {
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "get"), p_default);
 	const Variant *result = getptr(key);
 	if (!result) {
+		ERR_FAIL_COND_V_MSG(_p->read_only, Variant(), "Dictionary is in read-only state.");
 		Variant value = p_default;
 		ERR_FAIL_COND_V(!_p->typed_value.validate(value, "add"), value);
 		operator[](key) = value;
