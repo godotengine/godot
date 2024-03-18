@@ -33,9 +33,11 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 
 class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);
@@ -46,7 +48,8 @@ public:
 	Ref<ResourceImporter> importer;
 	Vector<String> paths;
 	HashSet<StringName> checked;
-	bool checking;
+	bool checking = false;
+	bool skip = false;
 	String base_options_path;
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
@@ -89,10 +92,6 @@ public:
 	void update() {
 		notify_property_list_changed();
 	}
-
-	ImportDockParameters() {
-		checking = false;
-	}
 };
 
 ImportDock *ImportDock::singleton = nullptr;
@@ -107,8 +106,16 @@ void ImportDock::set_edit_path(const String &p_path) {
 	}
 
 	String importer_name = config->get_value("remap", "importer");
-
-	params->importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
+	if (importer_name == "keep") {
+		params->importer.unref();
+		params->skip = false;
+	} else if (importer_name == "skip") {
+		params->importer.unref();
+		params->skip = true;
+	} else {
+		params->importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
+		params->skip = false;
+	}
 
 	params->paths.clear();
 	params->paths.push_back(p_path);
@@ -150,9 +157,13 @@ void ImportDock::set_edit_path(const String &p_path) {
 
 void ImportDock::_add_keep_import_option(const String &p_importer_name) {
 	import_as->add_separator();
-	import_as->add_item(TTR("Keep File (No Import)"));
+	import_as->add_item(TTR("Keep File (exported as is)"));
 	import_as->set_item_metadata(-1, "keep");
+	import_as->add_item(TTR("Skip File (not exported)"));
+	import_as->set_item_metadata(-1, "skip");
 	if (p_importer_name == "keep") {
+		import_as->select(import_as->get_item_count() - 2);
+	} else if (p_importer_name == "skip") {
 		import_as->select(import_as->get_item_count() - 1);
 	}
 }
@@ -161,7 +172,7 @@ void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_
 	// Set the importer class to fetch the correct class in the XML class reference.
 	// This allows tooltips to display when hovering properties.
 	if (params->importer != nullptr) {
-		// Null check to avoid crashing if the "Keep File (No Import)" mode is selected.
+		// Null check to avoid crashing if the "Keep File (exported as is)" mode is selected.
 		import_opts->set_object_class(params->importer->get_class_name());
 	}
 
@@ -213,7 +224,17 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 		ERR_CONTINUE(err != OK);
 
 		if (i == 0) {
-			params->importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(config->get_value("remap", "importer"));
+			String importer_name = config->get_value("remap", "importer");
+			if (importer_name == "keep") {
+				params->importer.unref();
+				params->skip = false;
+			} else if (importer_name == "skip") {
+				params->importer.unref();
+				params->skip = true;
+			} else {
+				params->importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
+				params->skip = false;
+			}
 			if (params->importer.is_null()) {
 				clear();
 				return;
@@ -370,12 +391,18 @@ void ImportDock::_importer_selected(int i_idx) {
 	String name = import_as->get_selected_metadata();
 	if (name == "keep") {
 		params->importer.unref();
+		params->skip = false;
+		_update_options(params->base_options_path, Ref<ConfigFile>());
+	} else if (name == "skip") {
+		params->importer.unref();
+		params->skip = true;
 		_update_options(params->base_options_path, Ref<ConfigFile>());
 	} else {
 		Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(name);
 		ERR_FAIL_COND(importer.is_null());
 
 		params->importer = importer;
+		params->skip = false;
 		Ref<ConfigFile> config;
 		if (params->paths.size()) {
 			String path = params->paths[0];
@@ -488,7 +515,11 @@ void ImportDock::_reimport_attempt() {
 	if (params->importer.is_valid()) {
 		importer_name = params->importer->get_importer_name();
 	} else {
-		importer_name = "keep";
+		if (params->skip) {
+			importer_name = "skip";
+		} else {
+			importer_name = "keep";
+		}
 	}
 	for (int i = 0; i < params->paths.size(); i++) {
 		Ref<ConfigFile> config;
@@ -498,9 +529,12 @@ void ImportDock::_reimport_attempt() {
 
 		String imported_with = config->get_value("remap", "importer");
 		if (imported_with != importer_name) {
-			need_cleanup.push_back(params->paths[i]);
-			if (_find_owners(EditorFileSystem::get_singleton()->get_filesystem(), params->paths[i])) {
-				used_in_resources = true;
+			Ref<Resource> resource = ResourceLoader::load(params->paths[i]);
+			if (resource.is_valid()) {
+				need_cleanup.push_back(params->paths[i]);
+				if (_find_owners(EditorFileSystem::get_singleton()->get_filesystem(), params->paths[i])) {
+					used_in_resources = true;
+				}
 			}
 		}
 	}
@@ -543,8 +577,11 @@ void ImportDock::_reimport_and_cleanup() {
 		Ref<Resource> old_res = old_resources[path];
 		Ref<Resource> new_res = ResourceLoader::load(path);
 
-		for (int j = 0; j < EditorNode::get_editor_data().get_edited_scene_count(); j++) {
-			_replace_resource_in_object(EditorNode::get_editor_data().get_edited_scene_root(j), old_res, new_res);
+		for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
+			Node *edited_scene_root = EditorNode::get_editor_data().get_edited_scene_root(i);
+			if (likely(edited_scene_root)) {
+				_replace_resource_in_object(edited_scene_root, old_res, new_res);
+			}
 		}
 		for (Ref<Resource> res : external_resources) {
 			_replace_resource_in_object(res.ptr(), old_res, new_res);
@@ -558,6 +595,7 @@ void ImportDock::_advanced_options() {
 		params->importer->show_advanced_options(params->paths[0]);
 	}
 }
+
 void ImportDock::_reimport() {
 	for (int i = 0; i < params->paths.size(); i++) {
 		Ref<ConfigFile> config;
@@ -603,7 +641,11 @@ void ImportDock::_reimport() {
 		} else {
 			//set to no import
 			config->clear();
-			config->set_value("remap", "importer", "keep");
+			if (params->skip) {
+				config->set_value("remap", "importer", "skip");
+			} else {
+				config->set_value("remap", "importer", "keep");
+			}
 		}
 
 		config->save(params->paths[i] + ".import");
@@ -649,12 +691,14 @@ void ImportDock::_replace_resource_in_object(Object *p_object, const Ref<Resourc
 void ImportDock::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			imported->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				imported->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
 			import_opts->edit(params);
-			label_warning->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			label_warning->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
 	}
 }
@@ -667,7 +711,7 @@ void ImportDock::_set_dirty(bool p_dirty) {
 	if (p_dirty) {
 		// Add a dirty marker to notify the user that they should reimport the selected resource to see changes.
 		import->set_text(TTR("Reimport") + " (*)");
-		import->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+		import->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		import->set_tooltip_text(TTR("You have pending changes that haven't been applied yet. Click Reimport to apply changes made to the import options.\nSelecting another resource in the FileSystem dock without clicking Reimport first will discard changes made in the Import dock."));
 	} else {
 		// Remove the dirty marker on the Reimport button.
@@ -705,7 +749,7 @@ ImportDock::ImportDock() {
 	content->hide();
 
 	imported = memnew(Label);
-	imported->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+	imported->add_theme_style_override("normal", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("normal"), SNAME("LineEdit")));
 	imported->set_clip_text(true);
 	content->add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);

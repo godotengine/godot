@@ -31,8 +31,9 @@
 #include "editor_sectioned_inspector.h"
 
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 
 static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.findn(p_filter) != -1) {
@@ -264,8 +265,8 @@ void SectionedInspector::update_category_list() {
 
 		for (int i = 0; i < sc; i++) {
 			TreeItem *parent = section_map[metasection];
-			//parent->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-			parent->set_custom_font(0, get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+			//parent->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+			parent->set_custom_font(0, get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 
 			if (i > 0) {
 				metasection += "/" + sectionarr[i];

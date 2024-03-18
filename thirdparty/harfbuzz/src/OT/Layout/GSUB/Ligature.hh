@@ -19,7 +19,6 @@ struct Ligature
                                          * in writing direction */
   public:
   DEFINE_SIZE_ARRAY (Types::size + 2, component);
-  DEFINE_SIZE_MAX (65536 * Types::HBGlyphID::static_size);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {

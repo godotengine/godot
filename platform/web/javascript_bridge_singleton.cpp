@@ -68,11 +68,12 @@ private:
 	int _js_id = 0;
 	Callable _callable;
 
-	static int _variant2js(const void **p_args, int p_pos, godot_js_wrapper_ex *r_val, void **p_lock);
-	static void _free_lock(void **p_lock, int p_type);
-	static Variant _js2variant(int p_type, godot_js_wrapper_ex *p_val);
-	static void *_alloc_variants(int p_size);
-	static void _callback(void *p_ref, int p_arg_id, int p_argc);
+	WASM_EXPORT static int _variant2js(const void **p_args, int p_pos, godot_js_wrapper_ex *r_val, void **p_lock);
+	WASM_EXPORT static void _free_lock(void **p_lock, int p_type);
+	WASM_EXPORT static Variant _js2variant(int p_type, godot_js_wrapper_ex *p_val);
+	WASM_EXPORT static void *_alloc_variants(int p_size);
+	WASM_EXPORT static void callback(void *p_ref, int p_arg_id, int p_argc);
+	static void _callback(const JavaScriptObjectImpl *obj, Variant arg);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value) override;
@@ -163,7 +164,7 @@ void JavaScriptObjectImpl::_get_property_list(List<PropertyInfo> *p_list) const 
 }
 
 void JavaScriptObjectImpl::_free_lock(void **p_lock, int p_type) {
-	ERR_FAIL_COND_MSG(*p_lock == nullptr, "No lock to free!");
+	ERR_FAIL_NULL_MSG(*p_lock, "No lock to free!");
 	const Variant::Type type = (Variant::Type)p_type;
 	switch (type) {
 		case Variant::STRING: {
@@ -245,9 +246,10 @@ Variant JavaScriptObjectImpl::callp(const StringName &p_method, const Variant **
 	return _js2variant(type, &exchange);
 }
 
-void JavaScriptObjectImpl::_callback(void *p_ref, int p_args_id, int p_argc) {
+void JavaScriptObjectImpl::callback(void *p_ref, int p_args_id, int p_argc) {
 	const JavaScriptObjectImpl *obj = (JavaScriptObjectImpl *)p_ref;
 	ERR_FAIL_COND_MSG(obj->_callable.is_null(), "JavaScript callback failed.");
+
 	Vector<const Variant *> argp;
 	Array arg_arr;
 	for (int i = 0; i < p_argc; i++) {
@@ -257,14 +259,24 @@ void JavaScriptObjectImpl::_callback(void *p_ref, int p_args_id, int p_argc) {
 		arg_arr.push_back(_js2variant(type, &exchange));
 	}
 	Variant arg = arg_arr;
-	const Variant *argv[1] = { &arg };
-	Callable::CallError err;
-	Variant ret;
-	obj->_callable.callp(argv, 1, ret, err);
+
+#ifdef PROXY_TO_PTHREAD_ENABLED
+	if (!Thread::is_main_thread()) {
+		callable_mp_static(JavaScriptObjectImpl::_callback).bind(obj, arg).call_deferred();
+		return;
+	}
+#endif
+
+	_callback(obj, arg);
+}
+
+void JavaScriptObjectImpl::_callback(const JavaScriptObjectImpl *obj, Variant arg) {
+	obj->_callable.call(arg);
 
 	// Set return value
 	godot_js_wrapper_ex exchange;
 	void *lock = nullptr;
+	Variant ret;
 	const Variant *v = &ret;
 	int type = _variant2js((const void **)&v, 0, &exchange, &lock);
 	godot_js_wrapper_object_set_cb_ret(type, &exchange);
@@ -276,7 +288,7 @@ void JavaScriptObjectImpl::_callback(void *p_ref, int p_args_id, int p_argc) {
 Ref<JavaScriptObject> JavaScriptBridge::create_callback(const Callable &p_callable) {
 	Ref<JavaScriptObjectImpl> out = memnew(JavaScriptObjectImpl);
 	out->_callable = p_callable;
-	out->_js_id = godot_js_wrapper_create_cb(out.ptr(), JavaScriptObjectImpl::_callback);
+	out->_js_id = godot_js_wrapper_create_cb(out.ptr(), JavaScriptObjectImpl::callback);
 	return out;
 }
 
@@ -289,7 +301,7 @@ Ref<JavaScriptObject> JavaScriptBridge::get_interface(const String &p_interface)
 Variant JavaScriptBridge::_create_object_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return Ref<JavaScriptObject>();
 	}
 	if (p_args[0]->get_type() != Variant::STRING) {

@@ -35,8 +35,9 @@
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
@@ -65,27 +66,27 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 }
 
 void EditorLog::_update_theme() {
-	const Ref<Font> normal_font = get_theme_font(SNAME("output_source"), SNAME("EditorFonts"));
+	const Ref<Font> normal_font = get_theme_font(SNAME("output_source"), EditorStringName(EditorFonts));
 	if (normal_font.is_valid()) {
 		log->add_theme_font_override("normal_font", normal_font);
 	}
 
-	const Ref<Font> bold_font = get_theme_font(SNAME("output_source_bold"), SNAME("EditorFonts"));
+	const Ref<Font> bold_font = get_theme_font(SNAME("output_source_bold"), EditorStringName(EditorFonts));
 	if (bold_font.is_valid()) {
 		log->add_theme_font_override("bold_font", bold_font);
 	}
 
-	const Ref<Font> italics_font = get_theme_font(SNAME("output_source_italic"), SNAME("EditorFonts"));
+	const Ref<Font> italics_font = get_theme_font(SNAME("output_source_italic"), EditorStringName(EditorFonts));
 	if (italics_font.is_valid()) {
 		log->add_theme_font_override("italics_font", italics_font);
 	}
 
-	const Ref<Font> bold_italics_font = get_theme_font(SNAME("output_source_bold_italic"), SNAME("EditorFonts"));
+	const Ref<Font> bold_italics_font = get_theme_font(SNAME("output_source_bold_italic"), EditorStringName(EditorFonts));
 	if (bold_italics_font.is_valid()) {
 		log->add_theme_font_override("bold_italics_font", bold_italics_font);
 	}
 
-	const Ref<Font> mono_font = get_theme_font(SNAME("output_source_mono"), SNAME("EditorFonts"));
+	const Ref<Font> mono_font = get_theme_font(SNAME("output_source_mono"), EditorStringName(EditorFonts));
 	if (mono_font.is_valid()) {
 		log->add_theme_font_override("mono_font", mono_font);
 	}
@@ -95,33 +96,35 @@ void EditorLog::_update_theme() {
 	log->add_theme_constant_override("text_highlight_h_padding", 0);
 	log->add_theme_constant_override("text_highlight_v_padding", 0);
 
-	const int font_size = get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts"));
+	const int font_size = get_theme_font_size(SNAME("output_source_size"), EditorStringName(EditorFonts));
+	log->begin_bulk_theme_override();
 	log->add_theme_font_size_override("normal_font_size", font_size);
 	log->add_theme_font_size_override("bold_font_size", font_size);
 	log->add_theme_font_size_override("italics_font_size", font_size);
 	log->add_theme_font_size_override("mono_font_size", font_size);
+	log->end_bulk_theme_override();
 
-	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_theme_icon(SNAME("Popup"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Popup")));
+	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
+	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusWarning")));
+	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
 
 	type_filter_map[MSG_TYPE_STD]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 
-	clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
-	copy_button->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-	collapse_button->set_icon(get_theme_icon(SNAME("CombineLines"), SNAME("EditorIcons")));
-	show_search_button->set_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+	copy_button->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+	collapse_button->set_icon(get_editor_theme_icon(SNAME("CombineLines")));
+	show_search_button->set_icon(get_editor_theme_icon(SNAME("Search")));
+	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-	theme_cache.error_color = get_theme_color(SNAME("error_color"), SNAME("Editor"));
-	theme_cache.error_icon = get_theme_icon(SNAME("Error"), SNAME("EditorIcons"));
-	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), SNAME("Editor"));
-	theme_cache.warning_icon = get_theme_icon(SNAME("Warning"), SNAME("EditorIcons"));
-	theme_cache.message_color = get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
+	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+	theme_cache.error_icon = get_editor_theme_icon(SNAME("Error"));
+	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+	theme_cache.warning_icon = get_editor_theme_icon(SNAME("Warning"));
+	theme_cache.message_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 }
 
 void EditorLog::_notification(int p_what) {
@@ -187,6 +190,10 @@ void EditorLog::_load_state() {
 	show_search_button->set_pressed(show_search);
 
 	is_loading_state = false;
+}
+
+void EditorLog::_meta_clicked(const String &p_meta) {
+	OS::get_singleton()->shell_open(p_meta);
 }
 
 void EditorLog::_clear_request() {
@@ -404,6 +411,7 @@ EditorLog::EditorLog() {
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
 	log->set_deselect_on_focus_loss_enabled(false);
+	log->connect("meta_clicked", callable_mp(this, &EditorLog::_meta_clicked));
 	vb_left->add_child(log);
 
 	// Search box
@@ -425,7 +433,7 @@ EditorLog::EditorLog() {
 
 	// Clear.
 	clear_button = memnew(Button);
-	clear_button->set_flat(true);
+	clear_button->set_theme_type_variation("FlatButton");
 	clear_button->set_focus_mode(FOCUS_NONE);
 	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::K));
 	clear_button->set_shortcut_context(this);
@@ -434,12 +442,15 @@ EditorLog::EditorLog() {
 
 	// Copy.
 	copy_button = memnew(Button);
-	copy_button->set_flat(true);
+	copy_button->set_theme_type_variation("FlatButton");
 	copy_button->set_focus_mode(FOCUS_NONE);
 	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KeyModifierMask::CMD_OR_CTRL | Key::C));
 	copy_button->set_shortcut_context(this);
 	copy_button->connect("pressed", callable_mp(this, &EditorLog::_copy_request));
 	hb_tools->add_child(copy_button);
+
+	// Separate toggle buttons from normal buttons.
+	vb_right->add_child(memnew(HSeparator));
 
 	// A second hbox to make a 2x2 grid of buttons.
 	HBoxContainer *hb_tools2 = memnew(HBoxContainer);
@@ -448,7 +459,7 @@ EditorLog::EditorLog() {
 
 	// Collapse.
 	collapse_button = memnew(Button);
-	collapse_button->set_flat(true);
+	collapse_button->set_theme_type_variation("FlatButton");
 	collapse_button->set_focus_mode(FOCUS_NONE);
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
@@ -458,7 +469,7 @@ EditorLog::EditorLog() {
 
 	// Show Search.
 	show_search_button = memnew(Button);
-	show_search_button->set_flat(true);
+	show_search_button->set_theme_type_variation("FlatButton");
 	show_search_button->set_focus_mode(FOCUS_NONE);
 	show_search_button->set_toggle_mode(true);
 	show_search_button->set_pressed(true);

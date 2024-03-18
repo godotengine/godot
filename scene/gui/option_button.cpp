@@ -32,6 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
+#include "scene/theme/theme_db.h"
 
 static const int NONE_SELECTED = -1;
 
@@ -59,7 +60,7 @@ Size2 OptionButton::get_minimum_size() const {
 	}
 
 	if (has_theme_icon(SNAME("arrow"))) {
-		const Size2 padding = theme_cache.normal->get_minimum_size();
+		const Size2 padding = _get_current_stylebox()->get_minimum_size();
 		const Size2 arrow_size = theme_cache.arrow_icon->get_size();
 
 		Size2 content_size = minsize - padding;
@@ -70,25 +71,6 @@ Size2 OptionButton::get_minimum_size() const {
 	}
 
 	return minsize;
-}
-
-void OptionButton::_update_theme_item_cache() {
-	Button::_update_theme_item_cache();
-
-	theme_cache.normal = get_theme_stylebox(SNAME("normal"));
-
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_focus_color = get_theme_color(SNAME("font_focus_color"));
-	theme_cache.font_pressed_color = get_theme_color(SNAME("font_pressed_color"));
-	theme_cache.font_hover_color = get_theme_color(SNAME("font_hover_color"));
-	theme_cache.font_hover_pressed_color = get_theme_color(SNAME("font_hover_pressed_color"));
-	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
-
-	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-
-	theme_cache.arrow_icon = get_theme_icon(SNAME("arrow"));
-	theme_cache.arrow_margin = get_theme_constant(SNAME("arrow_margin"));
-	theme_cache.modulate_arrow = get_theme_constant(SNAME("modulate_arrow"));
 }
 
 void OptionButton::_notification(int p_what) {
@@ -145,10 +127,7 @@ void OptionButton::_notification(int p_what) {
 			theme_cache.arrow_icon->draw(ci, ofs, clr);
 		} break;
 
-		case NOTIFICATION_TRANSLATION_CHANGED: {
-			popup->set_auto_translate(is_auto_translating());
-			[[fallthrough]];
-		}
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
 			[[fallthrough]];
@@ -177,7 +156,7 @@ void OptionButton::_notification(int p_what) {
 bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0] == "popup") {
-		String property = components[2];
+		const String &property = components[2];
 		if (property != "text" && property != "icon" && property != "id" && property != "disabled" && property != "separator") {
 			return false;
 		}
@@ -204,7 +183,7 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 bool OptionButton::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0] == "popup") {
-		String property = components[2];
+		const String &property = components[2];
 		if (property != "text" && property != "icon" && property != "id" && property != "disabled" && property != "separator") {
 			return false;
 		}
@@ -357,6 +336,13 @@ void OptionButton::set_item_count(int p_count) {
 		}
 	}
 
+	if (!initialized) {
+		if (queued_current != current) {
+			current = queued_current;
+		}
+		initialized = true;
+	}
+
 	_refresh_size_cache();
 	notify_property_list_changed();
 }
@@ -453,7 +439,13 @@ void OptionButton::_select(int p_which, bool p_emit) {
 }
 
 void OptionButton::_select_int(int p_which) {
-	if (p_which < NONE_SELECTED || p_which >= popup->get_item_count()) {
+	if (p_which < NONE_SELECTED) {
+		return;
+	}
+	if (p_which >= popup->get_item_count()) {
+		if (!initialized) {
+			queued_current = p_which;
+		}
 		return;
 	}
 	_select(p_which, false);
@@ -592,13 +584,28 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &OptionButton::get_allow_reselect);
 	ClassDB::bind_method(D_METHOD("set_disable_shortcuts", "disabled"), &OptionButton::set_disable_shortcuts);
 
-	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
-	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
+	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
+
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, OptionButton, normal);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, OptionButton, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, OptionButton, font_focus_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, OptionButton, font_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, OptionButton, font_hover_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, OptionButton, font_hover_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, OptionButton, font_disabled_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, h_separation);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, arrow_icon, "arrow");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, arrow_margin);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, modulate_arrow);
 }
 
 void OptionButton::set_disable_shortcuts(bool p_disabled) {

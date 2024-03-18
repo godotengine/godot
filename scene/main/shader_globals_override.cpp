@@ -30,7 +30,7 @@
 
 #include "shader_globals_override.h"
 
-#include "scene/3d/node_3d.h"
+#include "scene/main/node.h"
 #include "scene/scene_string_names.h"
 
 StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
@@ -41,7 +41,7 @@ StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
 		if (p.begins_with("params/")) {
 			String q = p.replace_first("params/", "");
 			param_remaps[p] = q;
-			r = param_remaps.getptr(q);
+			r = param_remaps.getptr(p);
 		}
 	}
 
@@ -247,12 +247,12 @@ void ShaderGlobalsOverride::_activate() {
 
 void ShaderGlobalsOverride::_notification(int p_what) {
 	switch (p_what) {
-		case Node3D::NOTIFICATION_ENTER_TREE: {
+		case Node::NOTIFICATION_ENTER_TREE: {
 			add_to_group(SceneStringNames::get_singleton()->shader_overrides_group);
 			_activate();
 		} break;
 
-		case Node3D::NOTIFICATION_EXIT_TREE: {
+		case Node::NOTIFICATION_EXIT_TREE: {
 			if (active) {
 				//remove overrides
 				for (const KeyValue<StringName, Override> &E : overrides) {

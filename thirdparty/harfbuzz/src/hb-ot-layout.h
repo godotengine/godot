@@ -325,6 +325,13 @@ hb_ot_layout_collect_features (hb_face_t      *face,
 			       hb_set_t       *feature_indexes /* OUT */);
 
 HB_EXTERN void
+hb_ot_layout_collect_features_map (hb_face_t      *face,
+				   hb_tag_t        table_tag,
+				   unsigned        script_index,
+				   unsigned        language_index,
+				   hb_map_t       *feature_map /* OUT */);
+
+HB_EXTERN void
 hb_ot_layout_collect_lookups (hb_face_t      *face,
 			      hb_tag_t        table_tag,
 			      const hb_tag_t *scripts,

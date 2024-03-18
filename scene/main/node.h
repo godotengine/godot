@@ -57,7 +57,7 @@ protected:
 		MTFlag() :
 				mt{} {}
 	};
-	template <class T>
+	template <typename T>
 	union MTNumeric {
 		SafeNumeric<T> mt;
 		T st;
@@ -106,6 +106,12 @@ public:
 		INTERNAL_MODE_DISABLED,
 		INTERNAL_MODE_FRONT,
 		INTERNAL_MODE_BACK,
+	};
+
+	enum AutoTranslateMode {
+		AUTO_TRANSLATE_MODE_INHERIT,
+		AUTO_TRANSLATE_MODE_ALWAYS,
+		AUTO_TRANSLATE_MODE_DISABLED,
 	};
 
 	struct Comparator {
@@ -211,14 +217,18 @@ private:
 		bool display_folded = false;
 		bool editable_instance = false;
 
+		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
+		mutable bool is_auto_translating = true;
+		mutable bool is_auto_translate_dirty = true;
+
 		mutable NodePath *path_cache = nullptr;
 
 	} data;
 
 	Ref<MultiplayerAPI> multiplayer;
 
-	void _print_tree_pretty(const String &prefix, const bool last);
-	void _print_tree(const Node *p_node);
+	String _get_tree_string_pretty(const String &p_prefix, bool p_last);
+	String _get_tree_string(const Node *p_node);
 
 	Node *_get_child_by_name(const StringName &p_name) const;
 
@@ -350,7 +360,6 @@ public:
 		NOTIFICATION_POST_ENTER_TREE = 27,
 		NOTIFICATION_DISABLED = 28,
 		NOTIFICATION_ENABLED = 29,
-		NOTIFICATION_NODE_RECACHE_REQUESTED = 30,
 		//keep these linked to node
 
 		NOTIFICATION_WM_MOUSE_ENTER = 1002,
@@ -411,7 +420,7 @@ public:
 	Window *get_last_exclusive_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
-		ERR_FAIL_COND_V(!data.tree, nullptr);
+		ERR_FAIL_NULL_V(data.tree, nullptr);
 		return data.tree;
 	}
 
@@ -476,6 +485,8 @@ public:
 
 	void print_tree();
 	void print_tree_pretty();
+	String get_tree_string();
+	String get_tree_string_pretty();
 
 	void set_scene_file_path(const String &p_scene_file_path);
 	String get_scene_file_path() const;
@@ -504,6 +515,7 @@ public:
 	void propagate_call(const StringName &p_method, const Array &p_args = Array(), const bool p_parent_first = false);
 
 	/* PROCESSING */
+
 	void set_physics_process(bool p_process);
 	double get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
@@ -557,7 +569,9 @@ public:
 	_FORCE_INLINE_ bool is_readable_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
 			// No thread processing.
-			return is_current_thread_safe_for_nodes();
+			// Only accessible if node is outside the scene tree
+			// or access will happen from a node-safe thread.
+			return !data.inside_tree || is_current_thread_safe_for_nodes();
 		} else {
 			// Thread processing.
 			return true;
@@ -611,6 +625,8 @@ public:
 
 #ifdef TOOLS_ENABLED
 	String validate_child_name(Node *p_child);
+	String prevalidate_child_name(Node *p_child, StringName p_name);
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
 	static String adjust_name_casing(const String &p_name);
 
@@ -626,19 +642,17 @@ public:
 
 	bool is_owned_by_parent() const;
 
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-
 	void clear_internal_tree_resource_paths();
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
 	virtual PackedStringArray get_configuration_warnings() const;
-	String get_configuration_warnings_as_string() const;
 
 	void update_configuration_warnings();
 
 	void set_display_folded(bool p_folded);
 	bool is_displayed_folded() const;
+
 	/* NETWORK */
 
 	virtual void set_multiplayer_authority(int p_peer_id, bool p_recursive = true);
@@ -657,6 +671,17 @@ public:
 	Error rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
+
+	/* INTERNATIONALIZATION */
+
+	void set_auto_translate_mode(AutoTranslateMode p_mode);
+	AutoTranslateMode get_auto_translate_mode() const;
+	bool can_auto_translate() const;
+
+	_FORCE_INLINE_ String atr(const String p_message, const StringName p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
+	_FORCE_INLINE_ String atr_n(const String p_message, const StringName &p_message_plural, int p_n, const StringName p_context = "") const { return can_auto_translate() ? tr_n(p_message, p_message_plural, p_n, p_context) : p_message; }
+
+	/* THREADING */
 
 	void call_deferred_thread_groupp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
 	template <typename... VarArgs>
@@ -717,6 +742,7 @@ VARIANT_ENUM_CAST(Node::ProcessMode);
 VARIANT_ENUM_CAST(Node::ProcessThreadGroup);
 VARIANT_BITFIELD_CAST(Node::ProcessThreadMessages);
 VARIANT_ENUM_CAST(Node::InternalMode);
+VARIANT_ENUM_CAST(Node::AutoTranslateMode);
 
 typedef HashSet<Node *, Node::Comparator> NodeSet;
 

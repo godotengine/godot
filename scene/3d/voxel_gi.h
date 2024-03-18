@@ -131,6 +131,8 @@ private:
 	void _find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes);
 	void _debug_bake();
 
+	float _get_camera_exposure_normalization();
+
 protected:
 	static void _bind_methods();
 #ifndef DISABLE_DEPRECATED

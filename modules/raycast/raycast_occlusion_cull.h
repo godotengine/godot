@@ -132,7 +132,6 @@ private:
 		Thread *commit_thread = nullptr;
 		bool commit_done = true;
 		bool dirty = false;
-		bool removed = false;
 
 		RTCScene ebr_scene[2] = { nullptr, nullptr };
 		int current_scene_idx = 0;
@@ -147,7 +146,8 @@ private:
 		void _transform_vertices_thread(uint32_t p_thread, TransformThreadData *p_data);
 		void _transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform3D &p_xform, int p_from, int p_to);
 		static void _commit_scene(void *p_ud);
-		bool update();
+		void free();
+		void update();
 
 		void _raycast(uint32_t p_thread, const RaycastThreadData *p_raycast_data) const;
 		void raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count) const;

@@ -239,6 +239,13 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
     feature_infos.shrink (j + 1);
   }
 
+  hb_map_t feature_indices[2];
+  for (unsigned int table_index = 0; table_index < 2; table_index++)
+    hb_ot_layout_collect_features_map (face,
+				       table_tags[table_index],
+				       script_index[table_index],
+				       language_index[table_index],
+				       &feature_indices[table_index]);
 
   /* Allocate bits now */
   static_assert ((!(HB_GLYPH_FLAG_DEFINED & (HB_GLYPH_FLAG_DEFINED + 1))), "");
@@ -261,7 +268,6 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
     if (!info->max_value || next_bit + bits_needed >= global_bit_shift)
       continue; /* Feature disabled, or not enough bits. */
 
-
     bool found = false;
     unsigned int feature_index[2];
     for (unsigned int table_index = 0; table_index < 2; table_index++)
@@ -269,12 +275,14 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
       if (required_feature_tag[table_index] == info->tag)
 	required_feature_stage[table_index] = info->stage[table_index];
 
-      found |= (bool) hb_ot_layout_language_find_feature (face,
-							  table_tags[table_index],
-							  script_index[table_index],
-							  language_index[table_index],
-							  info->tag,
-							  &feature_index[table_index]);
+      hb_codepoint_t *index;
+      if (feature_indices[table_index].has (info->tag, &index))
+      {
+        feature_index[table_index] = *index;
+        found = true;
+      }
+      else
+        feature_index[table_index] = HB_OT_LAYOUT_NO_FEATURE_INDEX;
     }
     if (!found && (info->flags & F_GLOBAL_SEARCH))
     {

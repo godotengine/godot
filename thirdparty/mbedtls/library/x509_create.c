@@ -2,19 +2,7 @@
  *  X.509 base functions for creating certificates / CSRs
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #include "common.h"
@@ -207,6 +195,10 @@ int mbedtls_x509_set_extension(mbedtls_asn1_named_data **head, const char *oid, 
 {
     mbedtls_asn1_named_data *cur;
 
+    if (val_len > (SIZE_MAX  - 1)) {
+        return MBEDTLS_ERR_X509_BAD_INPUT_DATA;
+    }
+
     if ((cur = mbedtls_asn1_store_named_data(head, oid, oid_len,
                                              NULL, val_len + 1)) == NULL) {
         return MBEDTLS_ERR_X509_ALLOC_FAILED;
@@ -285,9 +277,11 @@ int mbedtls_x509_write_names(unsigned char **p, unsigned char *start,
 
 int mbedtls_x509_write_sig(unsigned char **p, unsigned char *start,
                            const char *oid, size_t oid_len,
-                           unsigned char *sig, size_t size)
+                           unsigned char *sig, size_t size,
+                           mbedtls_pk_type_t pk_alg)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    int write_null_par;
     size_t len = 0;
 
     if (*p < start || (size_t) (*p - start) < size) {
@@ -310,8 +304,19 @@ int mbedtls_x509_write_sig(unsigned char **p, unsigned char *start,
 
     // Write OID
     //
-    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_algorithm_identifier(p, start, oid,
-                                                                      oid_len, 0));
+    if (pk_alg == MBEDTLS_PK_ECDSA) {
+        /*
+         * The AlgorithmIdentifier's parameters field must be absent for DSA/ECDSA signature
+         * algorithms, see https://www.rfc-editor.org/rfc/rfc5480#page-17 and
+         * https://www.rfc-editor.org/rfc/rfc5758#section-3.
+         */
+        write_null_par = 0;
+    } else {
+        write_null_par = 1;
+    }
+    MBEDTLS_ASN1_CHK_ADD(len,
+                         mbedtls_asn1_write_algorithm_identifier_ext(p, start, oid, oid_len,
+                                                                     0, write_null_par));
 
     return (int) len;
 }

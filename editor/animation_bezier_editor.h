@@ -42,6 +42,9 @@ class AnimationBezierTrackEdit : public Control {
 	enum {
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
+		MENU_KEY_CUT,
+		MENU_KEY_COPY,
+		MENU_KEY_PASTE,
 		MENU_KEY_DELETE,
 		MENU_KEY_SET_HANDLE_FREE,
 		MENU_KEY_SET_HANDLE_LINEAR,
@@ -81,8 +84,11 @@ class AnimationBezierTrackEdit : public Control {
 	int solo_track = -1;
 	bool is_filtered = false;
 
-	float v_scroll = 0;
-	float v_zoom = 1;
+	float track_v_scroll = 0;
+	float track_v_scroll_max = 0;
+
+	float timeline_v_scroll = 0;
+	float timeline_v_zoom = 1;
 
 	PopupMenu *menu = nullptr;
 
@@ -136,6 +142,7 @@ class AnimationBezierTrackEdit : public Control {
 	void _clear_selection();
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, real_t p_pos);
+	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 	void _change_selected_keys_handle_mode(Animation::HandleMode p_mode, bool p_auto = false);
 
 	Vector2 menu_insert_key;
@@ -187,6 +194,9 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static Array make_default_bezier_key(float p_value);
+	static float get_bezier_key_value(Array p_bezier_key_array);
+
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	Ref<Animation> get_animation() const;
@@ -202,7 +212,9 @@ public:
 	void set_play_position(real_t p_pos);
 	void update_play_position();
 
-	void duplicate_selection();
+	void duplicate_selected_keys(real_t p_ofs);
+	void copy_selected_keys(bool p_cut);
+	void paste_keys(real_t p_ofs);
 	void delete_selection();
 
 	void _bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode);

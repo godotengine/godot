@@ -47,9 +47,11 @@
 
 @interface GodotContentLayerDelegate : NSObject <CALayerDelegate> {
 	DisplayServer::WindowID window_id;
+	bool need_redraw;
 }
 
 - (void)setWindowID:(DisplayServer::WindowID)wid;
+- (void)setNeedRedraw:(bool)redraw;
 
 @end
 
@@ -70,7 +72,7 @@
 
 - (void)processScrollEvent:(NSEvent *)event button:(MouseButton)button factor:(double)factor;
 - (void)processPanEvent:(NSEvent *)event dx:(double)dx dy:(double)dy;
-- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index pressed:(bool)pressed;
+- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index pressed:(bool)pressed outofstream:(bool)outofstream;
 - (void)setWindowID:(DisplayServer::WindowID)wid;
 - (void)updateLayerDelegate;
 - (void)cancelComposition;

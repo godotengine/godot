@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A WebRTC connection between the local computer and a remote peer. Provides an interface to connect, maintain and monitor the connection.
-		Setting up a WebRTC connection between two peers from now on) may not seem a trivial task, but it can be broken down into 3 main steps:
+		Setting up a WebRTC connection between two peers may not seem a trivial task, but it can be broken down into 3 main steps:
 		- The peer that wants to initiate the connection ([code]A[/code] from now on) creates an offer and send it to the other peer ([code]B[/code] from now on).
 		- [code]B[/code] receives the offer, generate and answer, and sends it to [code]A[/code]).
 		- [code]A[/code] and [code]B[/code] then generates and exchange ICE candidates with each other.
@@ -76,7 +76,7 @@
 		<method name="get_signaling_state" qualifiers="const">
 			<return type="int" enum="WebRTCPeerConnection.SignalingState" />
 			<description>
-				Returns the [enum SignalingState] on the local end of the connection while connecting or reconnecting to another peer.
+				Returns the signaling state on the local end of the connection while connecting or reconnecting to another peer.
 			</description>
 		</method>
 		<method name="initialize">

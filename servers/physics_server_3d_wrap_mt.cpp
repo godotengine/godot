@@ -120,8 +120,6 @@ PhysicsServer3DWrapMT::PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool 
 	physics_server_3d = p_contained;
 	create_thread = p_create_thread;
 
-	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
-
 	if (!p_create_thread) {
 		server_thread = Thread::get_caller_id();
 	} else {

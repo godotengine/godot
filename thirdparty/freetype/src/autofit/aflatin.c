@@ -1022,7 +1022,7 @@
         {
           *a = *b;
           FT_TRACE5(( "blue zone overlap:"
-                      " adjusting %s %ld to %ld\n",
+                      " adjusting %s %td to %ld\n",
                       a_is_top ? "overshoot" : "reference",
                       blue_sorted[i] - axis->blues,
                       *a ));
@@ -2960,7 +2960,7 @@
 
     stem_edge->pos = base_edge->pos + fitted_width;
 
-    FT_TRACE5(( "  LINK: edge %ld (opos=%.2f) linked to %.2f,"
+    FT_TRACE5(( "  LINK: edge %td (opos=%.2f) linked to %.2f,"
                 " dist was %.2f, now %.2f\n",
                 stem_edge - hints->axis[dim].edges,
                 (double)stem_edge->opos / 64, (double)stem_edge->pos / 64,
@@ -3085,13 +3085,13 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
         if ( !anchor )
-          FT_TRACE5(( "  BLUE_ANCHOR: edge %ld (opos=%.2f) snapped to %.2f,"
-                      " was %.2f (anchor=edge %ld)\n",
+          FT_TRACE5(( "  BLUE_ANCHOR: edge %td (opos=%.2f) snapped to %.2f,"
+                      " was %.2f (anchor=edge %td)\n",
                       edge1 - edges,
                       (double)edge1->opos / 64, (double)blue->fit / 64,
                       (double)edge1->pos / 64, edge - edges ));
         else
-          FT_TRACE5(( "  BLUE: edge %ld (opos=%.2f) snapped to %.2f,"
+          FT_TRACE5(( "  BLUE: edge %td (opos=%.2f) snapped to %.2f,"
                       " was %.2f\n",
                       edge1 - edges,
                       (double)edge1->opos / 64, (double)blue->fit / 64,
@@ -3141,7 +3141,7 @@
       /* this should not happen, but it's better to be safe */
       if ( edge2->blue_edge )
       {
-        FT_TRACE5(( "  ASSERTION FAILED for edge %ld\n", edge2 - edges ));
+        FT_TRACE5(( "  ASSERTION FAILED for edge %td\n", edge2 - edges ));
 
         af_latin_align_linked_edge( hints, dim, edge2, edge );
         edge->flags |= AF_EDGE_DONE;
@@ -3209,7 +3209,7 @@
         anchor       = edge;
         edge->flags |= AF_EDGE_DONE;
 
-        FT_TRACE5(( "  ANCHOR: edge %ld (opos=%.2f) and %ld (opos=%.2f)"
+        FT_TRACE5(( "  ANCHOR: edge %td (opos=%.2f) and %td (opos=%.2f)"
                     " snapped to %.2f and %.2f\n",
                     edge - edges, (double)edge->opos / 64,
                     edge2 - edges, (double)edge2->opos / 64,
@@ -3238,7 +3238,7 @@
 
         if ( edge2->flags & AF_EDGE_DONE )
         {
-          FT_TRACE5(( "  ADJUST: edge %ld (pos=%.2f) moved to %.2f\n",
+          FT_TRACE5(( "  ADJUST: edge %td (pos=%.2f) moved to %.2f\n",
                       edge - edges, (double)edge->pos / 64,
                       (double)( edge2->pos - cur_len ) / 64 ));
 
@@ -3279,7 +3279,7 @@
           edge->pos  = cur_pos1 - cur_len / 2;
           edge2->pos = cur_pos1 + cur_len / 2;
 
-          FT_TRACE5(( "  STEM: edge %ld (opos=%.2f) linked to %ld (opos=%.2f)"
+          FT_TRACE5(( "  STEM: edge %td (opos=%.2f) linked to %td (opos=%.2f)"
                       " snapped to %.2f and %.2f\n",
                       edge - edges, (double)edge->opos / 64,
                       edge2 - edges, (double)edge2->opos / 64,
@@ -3310,7 +3310,7 @@
           edge->pos  = ( delta1 < delta2 ) ? cur_pos1 : cur_pos2;
           edge2->pos = edge->pos + cur_len;
 
-          FT_TRACE5(( "  STEM: edge %ld (opos=%.2f) linked to %ld (opos=%.2f)"
+          FT_TRACE5(( "  STEM: edge %td (opos=%.2f) linked to %td (opos=%.2f)"
                       " snapped to %.2f and %.2f\n",
                       edge - edges, (double)edge->opos / 64,
                       edge2 - edges, (double)edge2->opos / 64,
@@ -3333,7 +3333,7 @@
           if ( edge->link && FT_ABS( edge->link->pos - edge[-1].pos ) > 16 )
           {
 #ifdef FT_DEBUG_LEVEL_TRACE
-            FT_TRACE5(( "  BOUND: edge %ld (pos=%.2f) moved to %.2f\n",
+            FT_TRACE5(( "  BOUND: edge %td (pos=%.2f) moved to %.2f\n",
                         edge - edges,
                         (double)edge->pos / 64,
                         (double)edge[-1].pos / 64 ));
@@ -3435,7 +3435,7 @@
         if ( delta < 64 + 16 )
         {
           af_latin_align_serif_edge( hints, edge->serif, edge );
-          FT_TRACE5(( "  SERIF: edge %ld (opos=%.2f) serif to %ld (opos=%.2f)"
+          FT_TRACE5(( "  SERIF: edge %td (opos=%.2f) serif to %td (opos=%.2f)"
                       " aligned to %.2f\n",
                       edge - edges, (double)edge->opos / 64,
                       edge->serif - edges, (double)edge->serif->opos / 64,
@@ -3445,9 +3445,9 @@
         {
           edge->pos = FT_PIX_ROUND( edge->opos );
           anchor    = edge;
-          FT_TRACE5(( "  SERIF_ANCHOR: edge %ld (opos=%.2f)"
+          FT_TRACE5(( "  SERIF_ANCHOR: edge %td (opos=%.2f)"
                       " snapped to %.2f\n",
-                      edge-edges,
+                      edge - edges,
                       (double)edge->opos / 64, (double)edge->pos / 64 ));
         }
         else
@@ -3474,8 +3474,8 @@
                                      after->pos - before->pos,
                                      after->opos - before->opos );
 
-            FT_TRACE5(( "  SERIF_LINK1: edge %ld (opos=%.2f) snapped to %.2f"
-                        " from %ld (opos=%.2f)\n",
+            FT_TRACE5(( "  SERIF_LINK1: edge %td (opos=%.2f) snapped to %.2f"
+                        " from %td (opos=%.2f)\n",
                         edge - edges, (double)edge->opos / 64,
                         (double)edge->pos / 64,
                         before - edges, (double)before->opos / 64 ));
@@ -3484,7 +3484,7 @@
           {
             edge->pos = anchor->pos +
                         ( ( edge->opos - anchor->opos + 16 ) & ~31 );
-            FT_TRACE5(( "  SERIF_LINK2: edge %ld (opos=%.2f)"
+            FT_TRACE5(( "  SERIF_LINK2: edge %td (opos=%.2f)"
                         " snapped to %.2f\n",
                         edge - edges,
                         (double)edge->opos / 64, (double)edge->pos / 64 ));
@@ -3505,7 +3505,7 @@
           if ( edge->link && FT_ABS( edge->link->pos - edge[-1].pos ) > 16 )
           {
 #ifdef FT_DEBUG_LEVEL_TRACE
-            FT_TRACE5(( "  BOUND: edge %ld (pos=%.2f) moved to %.2f\n",
+            FT_TRACE5(( "  BOUND: edge %td (pos=%.2f) moved to %.2f\n",
                         edge - edges,
                         (double)edge->pos / 64,
                         (double)edge[-1].pos / 64 ));
@@ -3526,7 +3526,7 @@
           if ( edge->link && FT_ABS( edge->link->pos - edge[-1].pos ) > 16 )
           {
 #ifdef FT_DEBUG_LEVEL_TRACE
-            FT_TRACE5(( "  BOUND: edge %ld (pos=%.2f) moved to %.2f\n",
+            FT_TRACE5(( "  BOUND: edge %td (pos=%.2f) moved to %.2f\n",
                         edge - edges,
                         (double)edge->pos / 64,
                         (double)edge[1].pos / 64 ));

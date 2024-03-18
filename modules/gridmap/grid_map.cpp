@@ -30,12 +30,12 @@
 
 #include "grid_map.h"
 
+#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
-#include "core/object/message_queue.h"
 #include "scene/3d/light_3d.h"
-#include "scene/resources/mesh_library.h"
+#include "scene/resources/3d/mesh_library.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/physics_material.h"
-#include "scene/resources/primitive_meshes.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
@@ -266,6 +266,7 @@ void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	}
 
 	_recreate_octant_data();
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
 Ref<MeshLibrary> GridMap::get_mesh_library() const {
@@ -905,13 +906,14 @@ void GridMap::_notification(int p_what) {
 			}
 		} break;
 
-#ifdef DEBUG_ENABLED
 		case NOTIFICATION_ENTER_TREE: {
+#ifdef DEBUG_ENABLED
 			if (bake_navigation && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
 				_update_navigation_debug_edge_connections();
 			}
-		} break;
 #endif // DEBUG_ENABLED
+			_update_visibility();
+		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Transform3D new_xform = get_global_transform();
@@ -972,7 +974,7 @@ void GridMap::_queue_octants_dirty() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_update_octants_callback");
+	callable_mp(this, &GridMap::_update_octants_callback).call_deferred();
 	awaiting_update = true;
 }
 
@@ -1079,7 +1081,6 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("local_to_map", "local_position"), &GridMap::local_to_map);
 	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &GridMap::map_to_local);
 
-	ClassDB::bind_method(D_METHOD("_update_octants_callback"), &GridMap::_update_octants_callback);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);
 #endif
@@ -1122,6 +1123,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo(CoreStringNames::get_singleton()->changed));
 }
 
 void GridMap::set_cell_scale(float p_scale) {

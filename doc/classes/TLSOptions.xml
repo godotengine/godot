@@ -28,7 +28,7 @@
 			<param index="1" name="common_name_override" type="String" default="&quot;&quot;" />
 			<description>
 				Creates a TLS client configuration which validates certificates and their common names (fully qualified domain names).
-				You can specify a custom [param trusted_chain] of certification authorities (the default CA list will be used if [code]null[/code]), and optionally provide a [param common_name_override] if you expect the certificate to have a common name other then the server FQDN.
+				You can specify a custom [param trusted_chain] of certification authorities (the default CA list will be used if [code]null[/code]), and optionally provide a [param common_name_override] if you expect the certificate to have a common name other than the server FQDN.
 				[b]Note:[/b] On the Web platform, TLS verification is always enforced against the CA list of the web browser. This is considered a security feature.
 			</description>
 		</method>

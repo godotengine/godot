@@ -9,18 +9,4 @@
 	<tutorials>
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
-	<theme_items>
-		<theme_item name="autohide" data_type="constant" type="int" default="1">
-			Boolean value. If 1 ([code]true[/code]), the grabber will hide automatically when it isn't under the cursor. If 0 ([code]false[/code]), it's always visible.
-		</theme_item>
-		<theme_item name="minimum_grab_thickness" data_type="constant" type="int" default="6">
-			The minimum thickness of the area users can click on to grab the splitting line. If [theme_item separation] or [theme_item grabber]'s thickness are too small, this ensure that the splitting line can still be dragged.
-		</theme_item>
-		<theme_item name="separation" data_type="constant" type="int" default="12">
-			The space between sides of the container.
-		</theme_item>
-		<theme_item name="grabber" data_type="icon" type="Texture2D">
-			The icon used for the grabber drawn in the middle area.
-		</theme_item>
-	</theme_items>
 </class>

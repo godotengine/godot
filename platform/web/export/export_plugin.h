@@ -39,6 +39,7 @@
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/export/editor_export_platform.h"
 #include "main/splash.gen.h"
 
@@ -51,14 +52,14 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	int menu_options = 0;
 
 	Ref<EditorHTTPServer> server;
-	bool server_quit = false;
-	Mutex server_lock;
-	Thread server_thread;
 
-	String _get_template_name(bool p_extension, bool p_debug) const {
+	String _get_template_name(bool p_extension, bool p_thread_support, bool p_debug) const {
 		String name = "web";
 		if (p_extension) {
 			name += "_dlink";
+		}
+		if (!p_thread_support) {
+			name += "_nothreads";
 		}
 		if (p_debug) {
 			name += "_debug.zip";
@@ -73,7 +74,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 		icon.instantiate();
 		const String icon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
 		if (icon_path.is_empty() || ImageLoader::load_image(icon_path, icon) != OK) {
-			return EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("DefaultProjectIcon"), SNAME("EditorIcons"))->get_image();
+			return EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("DefaultProjectIcon"), EditorStringName(EditorIcons))->get_image();
 		}
 		return icon;
 	}
@@ -89,13 +90,11 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	}
 
 	Error _extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa);
-	void _replace_strings(HashMap<String, String> p_replaces, Vector<uint8_t> &r_template);
+	void _replace_strings(const HashMap<String, String> &p_replaces, Vector<uint8_t> &r_template);
 	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
 	Error _add_manifest_icon(const String &p_path, const String &p_icon, int p_size, Array &r_arr);
 	Error _build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects);
 	Error _write_or_error(const uint8_t *p_content, int p_len, String p_path);
-
-	static void _server_thread_poll(void *data);
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;

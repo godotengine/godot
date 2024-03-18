@@ -34,14 +34,13 @@
 #include "core/object/script_language.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/grid_container.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 
 class CreateDialog;
 class EditorFileDialog;
 class EditorValidationPanel;
+class LineEdit;
 
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
@@ -53,7 +52,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 		MSG_ID_TEMPLATE,
 	};
 
-	LineEdit *class_name = nullptr;
 	EditorValidationPanel *validation_panel = nullptr;
 	LineEdit *parent_name = nullptr;
 	Button *parent_browse_button = nullptr;
@@ -61,21 +59,20 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	OptionButton *language_menu = nullptr;
 	OptionButton *template_menu = nullptr;
 	LineEdit *file_path = nullptr;
-	LineEdit *internal_name = nullptr;
+	LineEdit *built_in_name = nullptr;
 	Button *path_button = nullptr;
 	EditorFileDialog *file_browse = nullptr;
-	CheckBox *internal = nullptr;
+	CheckBox *built_in = nullptr;
 	CheckBox *use_templates = nullptr;
 	VBoxContainer *path_vb = nullptr;
 	AcceptDialog *alert = nullptr;
 	CreateDialog *select_class = nullptr;
+
 	bool is_browsing_parent = false;
 	String path_error;
 	String template_inactive_message;
-	String initial_bp;
 	bool is_new_script_created = true;
 	bool is_path_valid = false;
-	bool has_named_classes = false;
 	bool supports_built_in = false;
 	bool can_inherit_from_file = false;
 	bool is_parent_name_valid = false;
@@ -84,7 +81,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_using_templates = true;
 	bool built_in_enabled = true;
 	bool load_enabled = true;
-	int current_language;
 	int default_language;
 	bool re_check_path = false;
 
@@ -99,15 +95,11 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _path_hbox_sorted();
 	bool _can_be_built_in();
 	void _path_changed(const String &p_path = String());
-	void _path_submitted(const String &p_path = String());
 	void _language_changed(int l = 0);
 	void _built_in_pressed();
 	void _use_template_pressed();
 	bool _validate_parent(const String &p_string);
-	bool _validate_class(const String &p_string);
 	String _validate_path(const String &p_path, bool p_file_must_exist);
-	String _get_class_name() const;
-	void _class_name_changed(const String &p_name);
 	void _parent_name_changed(const String &p_parent);
 	void _template_changed(int p_template = 0);
 	void _browse_path(bool browse_parent, bool p_save);
@@ -123,6 +115,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Vector<ScriptLanguage::ScriptTemplate> _get_user_templates(const ScriptLanguage *p_language, const StringName &p_object, const String &p_dir, const ScriptLanguage::TemplateLocation &p_origin) const;
 	ScriptLanguage::ScriptTemplate _parse_template(const ScriptLanguage *p_language, const String &p_path, const String &p_filename, const ScriptLanguage::TemplateLocation &p_origin, const String &p_inherits) const;
 	String _get_script_origin_label(const ScriptLanguage::TemplateLocation &p_origin) const;
+	String _adjust_file_path(const String &p_base_path) const;
 
 protected:
 	void _notification(int p_what);

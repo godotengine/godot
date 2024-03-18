@@ -42,11 +42,7 @@ void initialize_webrtc_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-
-#define SET_HINT(NAME, _VAL_, _MAX_) \
-	GLOBAL_DEF(PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"), _VAL_);
-
-	SET_HINT(WRTC_IN_BUF, 64, 4096);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/webrtc/max_channel_in_buffer_kb", PROPERTY_HINT_RANGE, "2,4096,1,or_greater"), 64);
 
 	ClassDB::register_custom_instance_class<WebRTCPeerConnection>();
 	GDREGISTER_CLASS(WebRTCPeerConnectionExtension);
@@ -55,8 +51,6 @@ void initialize_webrtc_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(WebRTCDataChannelExtension);
 
 	GDREGISTER_CLASS(WebRTCMultiplayerPeer);
-
-#undef SET_HINT
 }
 
 void uninitialize_webrtc_module(ModuleInitializationLevel p_level) {

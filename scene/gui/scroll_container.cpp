@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "scene/main/window.h"
+#include "scene/theme/theme_db.h"
 
 Size2 ScrollContainer::get_minimum_size() const {
 	Size2 min_size;
@@ -78,12 +79,6 @@ Size2 ScrollContainer::get_minimum_size() const {
 
 	min_size += theme_cache.panel_style->get_minimum_size();
 	return min_size;
-}
-
-void ScrollContainer::_update_theme_item_cache() {
-	Container::_update_theme_item_cache();
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
 }
 
 void ScrollContainer::_cancel_drag() {
@@ -351,12 +346,12 @@ void ScrollContainer::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_updating_scrollbars = true;
-			call_deferred(SNAME("_update_scrollbar_position"));
+			callable_mp(this, &ScrollContainer::_update_scrollbar_position).call_deferred();
 		} break;
 
 		case NOTIFICATION_READY: {
 			Viewport *viewport = get_viewport();
-			ERR_FAIL_COND(!viewport);
+			ERR_FAIL_NULL(viewport);
 			viewport->connect("gui_focus_changed", callable_mp(this, &ScrollContainer::_gui_focus_changed));
 			_reposition_children();
 		} break;
@@ -578,8 +573,6 @@ VScrollBar *ScrollContainer::get_v_scroll_bar() {
 }
 
 void ScrollContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
-
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
 
@@ -626,6 +619,8 @@ void ScrollContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCROLL_MODE_AUTO);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_ALWAYS);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_NEVER);
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollContainer, panel_style, "panel");
 
 	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
 };

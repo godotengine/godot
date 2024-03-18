@@ -54,7 +54,7 @@ protected:
 	const lsp::DocumentSymbol *get_native_symbol(const String &p_class, const String &p_member = "") const;
 	const lsp::DocumentSymbol *get_script_symbol(const String &p_path) const;
 	const lsp::DocumentSymbol *get_parameter_symbol(const lsp::DocumentSymbol *p_parent, const String &symbol_identifier);
-	const lsp::DocumentSymbol *get_local_symbol(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier);
+	const lsp::DocumentSymbol *get_local_symbol_at(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier, const lsp::Position p_position);
 
 	void reload_all_workspace_scripts();
 
@@ -72,9 +72,6 @@ public:
 	HashMap<String, ExtendGDScriptParser *> scripts;
 	HashMap<String, ExtendGDScriptParser *> parse_results;
 	HashMap<StringName, ClassMembers> native_members;
-
-public:
-	Array symbol(const Dictionary &p_params);
 
 public:
 	Error initialize();
@@ -96,6 +93,9 @@ public:
 	Error resolve_signature(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::SignatureHelp &r_signature);
 	void did_delete_files(const Dictionary &p_params);
 	Dictionary rename(const lsp::TextDocumentPositionParams &p_doc_pos, const String &new_name);
+	bool can_rename(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::DocumentSymbol &r_symbol, lsp::Range &r_range);
+	Vector<lsp::Location> find_usages_in_file(const lsp::DocumentSymbol &p_symbol, const String &p_file_path);
+	Vector<lsp::Location> find_all_usages(const lsp::DocumentSymbol &p_symbol);
 
 	GDScriptWorkspace();
 	~GDScriptWorkspace();

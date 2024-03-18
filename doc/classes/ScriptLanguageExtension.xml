@@ -34,6 +34,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_can_make_function" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="_complete_code" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<param index="0" name="code" type="String" />
@@ -114,9 +119,10 @@
 		</method>
 		<method name="_find_function" qualifiers="virtual const">
 			<return type="int" />
-			<param index="0" name="class_name" type="String" />
-			<param index="1" name="function_name" type="String" />
+			<param index="0" name="function" type="String" />
+			<param index="1" name="code" type="String" />
 			<description>
+				Returns the line where the function is defined in the code, or [code]-1[/code] if the function is not present.
 			</description>
 		</method>
 		<method name="_finish" qualifiers="virtual">
@@ -136,6 +142,11 @@
 			</description>
 		</method>
 		<method name="_get_comment_delimiters" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_doc_comment_delimiters" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
 			</description>
@@ -197,7 +208,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_has_named_classes" qualifiers="virtual const">
+		<method name="_has_named_classes" qualifiers="virtual const" deprecated="This method is not called by the engine.">
 			<return type="bool" />
 			<description>
 			</description>
@@ -256,6 +267,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_preferred_file_name_casing" qualifiers="virtual const">
+			<return type="int" enum="ScriptLanguage.ScriptNameCasing" />
+			<description>
+			</description>
+		</method>
 		<method name="_profiling_get_accumulated_data" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="info_array" type="ScriptLanguageExtensionProfilingInfo*" />
@@ -267,6 +283,12 @@
 			<return type="int" />
 			<param index="0" name="info_array" type="ScriptLanguageExtensionProfilingInfo*" />
 			<param index="1" name="info_max" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_profiling_set_save_native_calls" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
 			<description>
 			</description>
 		</method>
@@ -361,7 +383,7 @@
 			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
 		</constant>
 		<constant name="LOCATION_PARENT_MASK" value="256" enum="CodeCompletionLocation">
-			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. 0 for the local class, 1 for the parent, 2 for the grandparent, etc) to store the depth of an option in the class or a parent class.
+			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.
 		</constant>
 		<constant name="LOCATION_OTHER_USER_CODE" value="512" enum="CodeCompletionLocation">
 			The option is from user code which is not local and not in a derived class (e.g. Autoload Singletons).

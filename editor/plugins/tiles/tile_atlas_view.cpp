@@ -32,14 +32,13 @@
 
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
-
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
 
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	if (panner->gui_input(p_event)) {
@@ -90,8 +89,6 @@ Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
 }
 
 void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
-	// Don't allow zoom to go below 1% or above 10000%
-	zoom_widget->set_zoom(CLAMP(zoom_widget->get_zoom(), 0.01f, 100.f));
 	float zoom = zoom_widget->get_zoom();
 
 	// Compute the minimum sizes.
@@ -572,14 +569,19 @@ void TileAtlasView::queue_redraw() {
 void TileAtlasView::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
-	theme_cache.center_view_icon = get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons"));
-	theme_cache.checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+	theme_cache.center_view_icon = get_editor_theme_icon(SNAME("CenterView"));
+	theme_cache.checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
 }
 
 void TileAtlasView::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 		} break;
 
@@ -632,7 +634,7 @@ TileAtlasView::TileAtlasView() {
 	panel->add_child(center_container);
 
 	missing_source_label = memnew(Label);
-	missing_source_label->set_text(TTR("No atlas source with a valid texture selected."));
+	missing_source_label->set_text(TTR("The selected atlas source has no valid texture. Assign a texture in the TileSet bottom tab."));
 	center_container->add_child(missing_source_label);
 
 	margin_container = memnew(MarginContainer);

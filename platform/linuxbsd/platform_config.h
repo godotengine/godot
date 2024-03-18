@@ -43,5 +43,3 @@
 #define PTHREAD_BSD_SET_NAME
 #endif
 #endif
-
-#define OPENGL_INCLUDE_H "thirdparty/glad/glad/gl.h"

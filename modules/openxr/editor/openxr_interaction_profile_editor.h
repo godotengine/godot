@@ -33,7 +33,7 @@
 
 #include "../action_map/openxr_action_map.h"
 #include "../action_map/openxr_interaction_profile.h"
-#include "../action_map/openxr_interaction_profile_meta_data.h"
+#include "../action_map/openxr_interaction_profile_metadata.h"
 #include "openxr_select_action_dialog.h"
 
 #include "editor/editor_undo_redo_manager.h"
@@ -52,7 +52,7 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	const OpenXRInteractionProfileMetaData::InteractionProfile *profile_def = nullptr;
+	const OpenXRInteractionProfileMetadata::InteractionProfile *profile_def = nullptr;
 
 public:
 	Ref<OpenXRInteractionProfile> get_interaction_profile() { return interaction_profile; }
@@ -77,7 +77,7 @@ private:
 	HBoxContainer *main_hb = nullptr;
 	OpenXRSelectActionDialog *select_action_dialog = nullptr;
 
-	void _add_io_path(VBoxContainer *p_container, const OpenXRInteractionProfileMetaData::IOPath *p_io_path);
+	void _add_io_path(VBoxContainer *p_container, const OpenXRInteractionProfileMetadata::IOPath *p_io_path);
 
 public:
 	void select_action_for(const String p_io_path);

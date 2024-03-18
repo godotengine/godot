@@ -72,19 +72,14 @@ struct LigatureSet
     ;
   }
 
-  static bool match_always (hb_glyph_info_t &info HB_UNUSED, unsigned value HB_UNUSED, const void *data HB_UNUSED)
-  {
-    return true;
-  }
-
   bool apply (hb_ot_apply_context_t *c) const
   {
     TRACE_APPLY (this);
 
     unsigned int num_ligs = ligature.len;
 
-#ifndef HB_NO_OT_LIGATURES_FAST_PATH
-    if (HB_OPTIMIZE_SIZE_VAL || num_ligs <= 2)
+#ifndef HB_NO_OT_RULESETS_FAST_PATH
+    if (HB_OPTIMIZE_SIZE_VAL || num_ligs <= 4)
 #endif
     {
     slow:
@@ -97,10 +92,12 @@ struct LigatureSet
     }
 
     /* This version is optimized for speed by matching the first component
-     * of the ligature here, instead of calling into the ligation code. */
+     * of the ligature here, instead of calling into the ligation code.
+     *
+     * This is replicated in ChainRuleSet and RuleSet. */
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-    skippy_iter.reset (c->buffer->idx, 1);
+    skippy_iter.reset (c->buffer->idx);
     skippy_iter.set_match_func (match_always, nullptr);
     skippy_iter.set_glyph_data ((HBUINT16 *) nullptr);
     unsigned unsafe_to;
@@ -118,6 +115,8 @@ struct LigatureSet
         goto slow;
       }
     }
+    else
+      goto slow;
 
     bool unsafe_to_concat = false;
 
@@ -125,7 +124,7 @@ struct LigatureSet
     {
       const auto &lig = this+ligature.arrayZ[i];
       if (unlikely (lig.component.lenP1 <= 1) ||
-	  lig.component[1] == first)
+	  lig.component.arrayZ[0] == first)
       {
 	if (lig.apply (c))
 	{

@@ -1,0 +1,13 @@
+GDTEST_OK
+var test_native: GDScriptNativeClass
+var test_script: GDScript
+var test_class: GDScript
+var test_enum: Dictionary
+GDScriptNativeClass
+GDScript
+GDScript
+{ "A": 0, "B": 1, "C": 2 }
+[]
+100
+10
+["A", "B", "C"]

@@ -139,7 +139,7 @@ TEST_CASE("[Resource] Breaking circular references on save") {
 			loaded_resource_c_binary->get_name() == "C",
 			"The loaded child resource name should be equal to the expected value.");
 	CHECK_MESSAGE(
-			!loaded_resource_c_binary->get_meta("next"),
+			!loaded_resource_c_binary->has_meta("next"),
 			"The loaded child resource circular reference should be NULL.");
 
 	const Ref<Resource> &loaded_resource_a_text = ResourceLoader::load(save_path_text);
@@ -155,7 +155,7 @@ TEST_CASE("[Resource] Breaking circular references on save") {
 			loaded_resource_c_text->get_name() == "C",
 			"The loaded child resource name should be equal to the expected value.");
 	CHECK_MESSAGE(
-			!loaded_resource_c_text->get_meta("next"),
+			!loaded_resource_c_text->has_meta("next"),
 			"The loaded child resource circular reference should be NULL.");
 
 	// Break circular reference to avoid memory leak

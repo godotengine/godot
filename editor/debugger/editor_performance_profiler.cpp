@@ -31,13 +31,14 @@
 #include "editor_performance_profiler.h"
 
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "main/performance.h"
 
 EditorPerformanceProfiler::Monitor::Monitor() {}
 
-EditorPerformanceProfiler::Monitor::Monitor(String p_name, String p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
+EditorPerformanceProfiler::Monitor::Monitor(const String &p_name, const String &p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
 	type = p_type;
 	item = p_item;
 	frame_index = p_frame_index;
@@ -46,7 +47,7 @@ EditorPerformanceProfiler::Monitor::Monitor(String p_name, String p_base, int p_
 }
 
 void EditorPerformanceProfiler::Monitor::update_value(float p_value) {
-	ERR_FAIL_COND(!item);
+	ERR_FAIL_NULL(item);
 	String label = EditorPerformanceProfiler::_create_label(p_value, type);
 	String tooltip = label;
 	switch (type) {
@@ -121,7 +122,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 	}
 	Size2i cell_size = Size2i(monitor_draw->get_size()) / Size2i(columns, rows);
 	float spacing = float(POINT_SEPARATION) / float(columns);
-	float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4f : 0.55f;
+	float value_multiplier = EditorThemeManager::is_dark_theme() ? 1.4f : 0.55f;
 	float hue_shift = 1.0f / float(monitors.size());
 
 	for (int i = 0; i < active.size(); i++) {
@@ -131,7 +132,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 
 		rect.position += graph_style_box->get_offset();
 		rect.size -= graph_style_box->get_minimum_size();
-		Color draw_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		Color draw_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		draw_color.set_hsv(Math::fmod(hue_shift * float(current.frame_index), 0.9f), draw_color.get_s() * 0.9f, draw_color.get_v() * value_multiplier, 0.6f);
 		monitor_draw->draw_string(graph_font, rect.position + Point2(0, graph_font->get_ascent(font_size)), current.item->get_text(0), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x, font_size, draw_color);
 
@@ -235,7 +236,7 @@ TreeItem *EditorPerformanceProfiler::_get_monitor_base(const StringName &p_base_
 	base->set_selectable(0, false);
 	base->set_expand_right(0, true);
 	if (is_inside_tree()) {
-		base->set_custom_font(0, get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+		base->set_custom_font(0, get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 	}
 	base_map.insert(p_base_name, base);
 	return base;
@@ -374,7 +375,7 @@ void EditorPerformanceProfiler::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			for (KeyValue<StringName, TreeItem *> &E : base_map) {
-				E.value->set_custom_font(0, get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+				E.value->set_custom_font(0, get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 			}
 		} break;
 	}

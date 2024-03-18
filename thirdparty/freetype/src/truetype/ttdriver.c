@@ -100,11 +100,6 @@
         break;
 
       case TT_INTERPRETER_VERSION_38:
-#ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
-        driver->interpreter_version = TT_INTERPRETER_VERSION_38;
-      break;
-#endif
-
       case TT_INTERPRETER_VERSION_40:
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
         driver->interpreter_version = TT_INTERPRETER_VERSION_40;

@@ -66,7 +66,6 @@ class PhysicsServer2DWrapMT : public PhysicsServer2D {
 	bool first_frame = true;
 
 	Mutex alloc_mutex;
-	int pool_max_size = 0;
 
 public:
 #define ServerName PhysicsServer2D
@@ -296,6 +295,9 @@ public:
 
 	FUNC3(pin_joint_set_param, RID, PinJointParam, real_t);
 	FUNC2RC(real_t, pin_joint_get_param, RID, PinJointParam);
+
+	FUNC3(pin_joint_set_flag, RID, PinJointFlag, bool);
+	FUNC2RC(bool, pin_joint_get_flag, RID, PinJointFlag);
 
 	FUNC3(damped_spring_joint_set_param, RID, DampedSpringParam, real_t);
 	FUNC2RC(real_t, damped_spring_joint_get_param, RID, DampedSpringParam);

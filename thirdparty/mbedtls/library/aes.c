@@ -2,24 +2,12 @@
  *  FIPS-197 compliant AES implementation
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 /*
  *  The AES block cipher was designed by Vincent Rijmen and Joan Daemen.
  *
- *  http://csrc.nist.gov/encryption/aes/rijndael/Rijndael.pdf
+ *  https://csrc.nist.gov/csrc/media/projects/cryptographic-standards-and-guidelines/documents/aes-development/rijndael-ammended.pdf
  *  http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf
  */
 
@@ -50,7 +38,7 @@
 #define AES_VALIDATE(cond)        \
     MBEDTLS_INTERNAL_VALIDATE(cond)
 
-#if defined(MBEDTLS_PADLOCK_C) && defined(MBEDTLS_HAVE_X86)
+#if defined(MBEDTLS_VIA_PADLOCK_HAVE_CODE)
 static int aes_padlock_ace = -1;
 #endif
 
@@ -548,7 +536,7 @@ void mbedtls_aes_xts_free(mbedtls_aes_xts_context *ctx)
  * Note that the offset is in units of elements of buf, i.e. 32-bit words,
  * i.e. an offset of 1 means 4 bytes and so on.
  */
-#if (defined(MBEDTLS_PADLOCK_C) && defined(MBEDTLS_HAVE_X86)) ||        \
+#if defined(MBEDTLS_VIA_PADLOCK_HAVE_CODE) || \
     (defined(MBEDTLS_AESNI_C) && MBEDTLS_AESNI_HAVE_CODE == 2)
 #define MAY_NEED_TO_ALIGN
 #endif
@@ -560,7 +548,7 @@ static unsigned mbedtls_aes_rk_offset(uint32_t *buf)
 #if defined(MAY_NEED_TO_ALIGN)
     int align_16_bytes = 0;
 
-#if defined(MBEDTLS_PADLOCK_C) && defined(MBEDTLS_HAVE_X86)
+#if defined(MBEDTLS_VIA_PADLOCK_HAVE_CODE)
     if (aes_padlock_ace == -1) {
         aes_padlock_ace = mbedtls_padlock_has_support(MBEDTLS_PADLOCK_ACE);
     }
@@ -1076,7 +1064,7 @@ int mbedtls_aes_crypt_ecb(mbedtls_aes_context *ctx,
     }
 #endif
 
-#if defined(MBEDTLS_PADLOCK_C) && defined(MBEDTLS_HAVE_X86)
+#if defined(MBEDTLS_VIA_PADLOCK_HAVE_CODE)
     if (aes_padlock_ace) {
         return mbedtls_padlock_xcryptecb(ctx, mode, input, output);
     }
@@ -1115,7 +1103,7 @@ int mbedtls_aes_crypt_cbc(mbedtls_aes_context *ctx,
         return MBEDTLS_ERR_AES_INVALID_INPUT_LENGTH;
     }
 
-#if defined(MBEDTLS_PADLOCK_C) && defined(MBEDTLS_HAVE_X86)
+#if defined(MBEDTLS_VIA_PADLOCK_HAVE_CODE)
     if (aes_padlock_ace) {
         if (mbedtls_padlock_xcryptcbc(ctx, mode, length, iv, input, output) == 0) {
             return 0;
@@ -1875,7 +1863,7 @@ int mbedtls_aes_self_test(int verbose)
 #if defined(MBEDTLS_AES_ALT)
         mbedtls_printf("  AES note: alternative implementation.\n");
 #else /* MBEDTLS_AES_ALT */
-#if defined(MBEDTLS_PADLOCK_C) && defined(MBEDTLS_HAVE_X86)
+#if defined(MBEDTLS_VIA_PADLOCK_HAVE_CODE)
         if (mbedtls_padlock_has_support(MBEDTLS_PADLOCK_ACE)) {
             mbedtls_printf("  AES note: using VIA Padlock.\n");
         } else

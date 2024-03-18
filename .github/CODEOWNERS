@@ -36,6 +36,7 @@ doc_classes/*                       @godotengine/documentation
 /drivers/xaudio2/                   @godotengine/audio
 
 ## Rendering
+/drivers/d3d12/                     @godotengine/rendering
 /drivers/dummy/                     @godotengine/rendering
 /drivers/gles3/                     @godotengine/rendering
 /drivers/spirv-reflect/             @godotengine/rendering
@@ -51,12 +52,14 @@ doc_classes/*                       @godotengine/documentation
 # Editor
 
 /editor/*debugger*                  @godotengine/debugger
+/editor/gui/                        @godotengine/usability @godotengine/gui-nodes
 /editor/icons/                      @godotengine/usability
 /editor/import/                     @godotengine/import
 /editor/plugins/*2d_*.*             @godotengine/2d-editor
 /editor/plugins/*3d_*.*             @godotengine/3d-editor
 /editor/plugins/script_*.*          @godotengine/script-editor
 /editor/plugins/*shader*.*          @godotengine/shaders
+/editor/themes/                     @godotengine/usability @godotengine/gui-nodes
 /editor/code_editor.*               @godotengine/script-editor
 /editor/*dock*.*                    @godotengine/docks
 /editor/*shader*.*                  @godotengine/shaders
@@ -68,6 +71,7 @@ doc_classes/*                       @godotengine/documentation
 # Misc
 
 /misc/                              @godotengine/buildsystem
+/misc/extension_api_validation/     @godotengine/gdextension @godotengine/dotnet
 
 # Modules
 
@@ -139,10 +143,9 @@ doc_classes/*                       @godotengine/documentation
 
 /platform/android/                  @godotengine/android
 /platform/ios/                      @godotengine/ios
-/platform/javascript/               @godotengine/html5
 /platform/linuxbsd/                 @godotengine/linux-bsd
 /platform/macos/                    @godotengine/macos
-/platform/uwp/                      @godotengine/uwp
+/platform/web/                      @godotengine/web
 /platform/windows/                  @godotengine/windows
 
 # Scene
@@ -154,11 +157,11 @@ doc_classes/*                       @godotengine/documentation
 /scene/debugger/                    @godotengine/debugger
 /scene/gui/                         @godotengine/gui-nodes
 /scene/main/                        @godotengine/core
-/scene/resources/default_theme/     @godotengine/gui-nodes
 /scene/resources/font.*             @godotengine/gui-nodes
 /scene/resources/text_line.*        @godotengine/gui-nodes
 /scene/resources/text_paragraph.*   @godotengine/gui-nodes
 /scene/resources/visual_shader*.*   @godotengine/shaders
+/scene/theme/                       @godotengine/gui-nodes
 
 # Servers
 

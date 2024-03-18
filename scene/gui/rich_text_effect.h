@@ -33,7 +33,6 @@
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 
 class CharFXTransform : public RefCounted {
 	GDCLASS(CharFXTransform, RefCounted);
@@ -42,6 +41,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	Transform2D transform;
 	Vector2i range;
 	bool visibility = true;
 	bool outline = false;
@@ -57,6 +57,9 @@ public:
 
 	CharFXTransform();
 	~CharFXTransform();
+
+	void set_transform(const Transform2D &p_transform) { transform = p_transform; }
+	const Transform2D &get_transform() { return transform; }
 
 	Vector2i get_range() { return range; }
 	void set_range(const Vector2i &p_range) { range = p_range; }

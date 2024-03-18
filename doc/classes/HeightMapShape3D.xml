@@ -9,9 +9,23 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_max_height" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the largest height value found in [member map_data]. Recalculates only when [member map_data] changes.
+			</description>
+		</method>
+		<method name="get_min_height" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the smallest height value found in [member map_data]. Recalculates only when [member map_data] changes.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="map_data" type="PackedFloat32Array" setter="set_map_data" getter="get_map_data" default="PackedFloat32Array(0, 0, 0, 0)">
-			Height map data, pool array must be of [member map_width] * [member map_depth] size.
+			Height map data. The array's size must be equal to [member map_width] multiplied by [member map_depth].
 		</member>
 		<member name="map_depth" type="int" setter="set_map_depth" getter="get_map_depth" default="2">
 			Number of vertices in the depth of the height map. Changing this will resize the [member map_data].

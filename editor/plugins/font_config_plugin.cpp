@@ -30,9 +30,10 @@
 
 #include "font_config_plugin.h"
 
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/gui/margin_container.h"
 
 /*************************************************************************/
 /*  EditorPropertyFontMetaObject                                         */
@@ -156,13 +157,13 @@ void EditorPropertyFontMetaOverride::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (button_add) {
-				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+				button_add->set_icon(get_editor_theme_icon(SNAME("Add")));
 			}
 		} break;
 	}
 }
 
-void EditorPropertyFontMetaOverride::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void EditorPropertyFontMetaOverride::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("keys")) {
 		Dictionary dict = object->get_dict();
 		String key = p_property.get_slice("/", 1);
@@ -302,7 +303,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 			hbox->add_child(prop);
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
 			Button *remove = memnew(Button);
-			remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			remove->set_icon(get_editor_theme_icon(SNAME("Remove")));
 			hbox->add_child(remove);
 			remove->connect("pressed", callable_mp(this, &EditorPropertyFontMetaOverride::_remove).bind(remove, name));
 
@@ -390,7 +391,7 @@ void EditorPropertyOTVariation::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyOTVariation::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void EditorPropertyOTVariation::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("keys")) {
 		Dictionary dict = object->get_dict();
 		Dictionary defaults_dict = object->get_defaults();
@@ -552,13 +553,13 @@ void EditorPropertyOTFeatures::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (button_add) {
-				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+				button_add->set_icon(get_editor_theme_icon(SNAME("Add")));
 			}
 		} break;
 	}
 }
 
-void EditorPropertyOTFeatures::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+void EditorPropertyOTFeatures::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("keys")) {
 		Dictionary dict = object->get_dict();
 		int key = p_property.get_slice("/", 1).to_int();
@@ -670,7 +671,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 
 		// Update add menu items.
-		menu->clear();
+		menu->clear(false);
 		bool have_sub[FGRP_MAX];
 		for (int i = 0; i < FGRP_MAX; i++) {
 			menu_sub[i]->clear();
@@ -723,7 +724,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 		for (int i = 0; i < FGRP_MAX; i++) {
 			if (have_sub[i]) {
-				menu->add_submenu_item(RTR(group_names[i]), "FTRMenu_" + itos(i));
+				menu->add_submenu_node_item(RTR(group_names[i]), menu_sub[i]);
 			}
 		}
 
@@ -789,7 +790,7 @@ void EditorPropertyOTFeatures::update_property() {
 				hbox->add_child(prop);
 				prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				Button *remove = memnew(Button);
-				remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+				remove->set_icon(get_editor_theme_icon(SNAME("Remove")));
 				hbox->add_child(remove);
 				remove->connect("pressed", callable_mp(this, &EditorPropertyOTFeatures::_remove).bind(remove, name_tag));
 
@@ -798,7 +799,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 
 		button_add = EditorInspector::create_inspector_action_button(TTR("Add Feature"));
-		button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+		button_add->set_icon(get_editor_theme_icon(SNAME("Add")));
 		button_add->connect("pressed", callable_mp(this, &EditorPropertyOTFeatures::_add_menu));
 		property_vbox->add_child(button_add);
 
@@ -851,7 +852,6 @@ EditorPropertyOTFeatures::EditorPropertyOTFeatures() {
 
 	for (int i = 0; i < FGRP_MAX; i++) {
 		menu_sub[i] = memnew(PopupMenu);
-		menu_sub[i]->set_name("FTRMenu_" + itos(i));
 		menu->add_child(menu_sub[i]);
 		menu_sub[i]->connect("id_pressed", callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
 	}
@@ -970,7 +970,7 @@ bool EditorInspectorPluginFontPreview::can_handle(Object *p_object) {
 
 void EditorInspectorPluginFontPreview::parse_begin(Object *p_object) {
 	Font *fd = Object::cast_to<Font>(p_object);
-	ERR_FAIL_COND(!fd);
+	ERR_FAIL_NULL(fd);
 
 	FontPreview *editor = memnew(FontPreview);
 	editor->set_data(fd);

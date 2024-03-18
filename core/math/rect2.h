@@ -51,7 +51,7 @@ struct _NO_DISCARD_ Rect2 {
 
 	_FORCE_INLINE_ Vector2 get_center() const { return position + (size * 0.5f); }
 
-	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
+	inline bool intersects(const Rect2 &p_rect, bool p_include_borders = false) const {
 #ifdef MATH_CHECKS
 		if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {
 			ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
@@ -283,6 +283,10 @@ struct _NO_DISCARD_ Rect2 {
 
 	_FORCE_INLINE_ Rect2 abs() const {
 		return Rect2(Point2(position.x + MIN(size.x, (real_t)0), position.y + MIN(size.y, (real_t)0)), size.abs());
+	}
+
+	_FORCE_INLINE_ Rect2 round() const {
+		return Rect2(position.round(), size.round());
 	}
 
 	Vector2 get_support(const Vector2 &p_normal) const {

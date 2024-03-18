@@ -1,6 +1,7 @@
 # meta-description: Basic import script template (no comments)
+
 @tool
-extends EditorScenePostImport
+extends _BASE_
 
 
 func _post_import(scene: Node) -> Object:

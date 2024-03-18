@@ -34,7 +34,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "editor/editor_file_system.h"
-#include "editor/import/resource_importer_scene.h"
+#include "editor/import/3d/resource_importer_scene.h"
 
 class Animation;
 class Node;
@@ -42,6 +42,9 @@ class ConfirmationDialog;
 
 class EditorSceneFormatImporterBlend : public EditorSceneFormatImporter {
 	GDCLASS(EditorSceneFormatImporterBlend, EditorSceneFormatImporter);
+
+	int blender_major_version = -1;
+	int blender_minor_version = -1;
 
 public:
 	enum {
@@ -92,12 +95,14 @@ class EditorFileSystemImportFormatSupportQueryBlend : public EditorFileSystemImp
 	String auto_detected_path;
 	void _validate_path(String p_path);
 
-	bool _autodetect_path(String p_path);
+	bool _autodetect_path();
 
 	void _path_confirmed();
 
 	void _select_install(String p_path);
 	void _browse_install();
+
+	void _update_icons();
 
 public:
 	virtual bool is_active() const override;

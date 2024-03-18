@@ -61,7 +61,7 @@ void WebRTCDataChannel::_bind_methods() {
 }
 
 WebRTCDataChannel::WebRTCDataChannel() {
-	_in_buffer_shift = nearest_shift((int)GLOBAL_GET(WRTC_IN_BUF) - 1) + 10;
+	_in_buffer_shift = nearest_shift((int)GLOBAL_GET("network/limits/webrtc/max_channel_in_buffer_kb") - 1) + 10;
 }
 
 WebRTCDataChannel::~WebRTCDataChannel() {

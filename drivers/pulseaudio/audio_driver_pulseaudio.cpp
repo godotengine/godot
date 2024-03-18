@@ -107,7 +107,7 @@ void AudioDriverPulseAudio::pa_source_info_cb(pa_context *c, const pa_source_inf
 }
 
 void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata) {
-	ERR_FAIL_COND_MSG(!i, "PulseAudio server info is null.");
+	ERR_FAIL_NULL_MSG(i, "PulseAudio server info is null.");
 	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
 	ad->default_input_device = i->default_source_name;
@@ -308,7 +308,7 @@ Error AudioDriverPulseAudio::init() {
 	mix_rate = _get_configured_mix_rate();
 
 	pa_ml = pa_mainloop_new();
-	ERR_FAIL_COND_V(pa_ml == nullptr, ERR_CANT_OPEN);
+	ERR_FAIL_NULL_V(pa_ml, ERR_CANT_OPEN);
 
 	String context_name;
 	if (Engine::get_singleton()->is_editor_hint()) {
@@ -321,7 +321,7 @@ Error AudioDriverPulseAudio::init() {
 	}
 
 	pa_ctx = pa_context_new(pa_mainloop_get_api(pa_ml), context_name.utf8().ptr());
-	ERR_FAIL_COND_V(pa_ctx == nullptr, ERR_CANT_OPEN);
+	ERR_FAIL_NULL_V(pa_ctx, ERR_CANT_OPEN);
 
 	pa_ready = 0;
 	pa_context_set_state_callback(pa_ctx, pa_state_cb, (void *)this);

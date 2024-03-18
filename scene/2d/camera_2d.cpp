@@ -60,9 +60,11 @@ void Camera2D::_update_scroll() {
 
 		Size2 screen_size = _get_camera_screen_size();
 		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5) : Point2());
+		Point2 adj_screen_pos = camera_screen_center - (screen_size * 0.5);
 
-		get_tree()->call_group(group_name, "_camera_moved", xform, screen_offset);
-	};
+		// TODO: Remove xform and screen_offset when ParallaxBackground/ParallaxLayer is removed.
+		get_tree()->call_group(group_name, SNAME("_camera_moved"), xform, screen_offset, adj_screen_pos);
+	}
 }
 
 void Camera2D::_update_process_callback() {
@@ -209,8 +211,6 @@ Transform2D Camera2D::get_camera_transform() {
 		screen_rect.position += offset;
 	}
 
-	camera_screen_center = screen_rect.get_center();
-
 	Transform2D xform;
 	xform.scale_basis(zoom_scale);
 	if (!ignore_rotation) {
@@ -218,7 +218,9 @@ Transform2D Camera2D::get_camera_transform() {
 	}
 	xform.set_origin(screen_rect.position);
 
-	return (xform).affine_inverse();
+	camera_screen_center = xform.xform(0.5 * screen_size);
+
+	return xform.affine_inverse();
 }
 
 void Camera2D::_notification(int p_what) {
@@ -229,7 +231,7 @@ void Camera2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (!is_processing_internal() && !is_physics_processing_internal()) {
+			if (!position_smoothing_enabled || _is_editing_in_editor()) {
 				_update_scroll();
 			}
 		} break;

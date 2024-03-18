@@ -81,7 +81,7 @@
 			<return type="Array" />
 			<description>
 				Returns an array of [EditorDebuggerSession] currently available to this debugger plugin.
-				[b]Note:[/b] Not sessions in the array may be inactive, check their state via [method EditorDebuggerSession.is_active]
+				[b]Note:[/b] Sessions in the array may be inactive, check their state via [method EditorDebuggerSession.is_active].
 			</description>
 		</method>
 	</methods>
