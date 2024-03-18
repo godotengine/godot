@@ -81,6 +81,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	
 	ClassDB::register_class<CharacterBodyMain>();
 	ClassDB::register_class<CharacterBodyPart>();
+	ClassDB::register_class<BTPlaySkill>();
 
 	
 	ClassDB::register_class<CharacterAnimatorMask>();
@@ -113,6 +114,11 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<MObstacle>();
 	ClassDB::register_class<MBrushLayers>();
 	ClassDB::register_class<MTerrainMaterial>();
+
+
+
+	// 技能释放
+	LimboTaskDB::register_task<BTPlaySkill>();
 
 }
 

@@ -29,6 +29,9 @@ void CharacterBodyMain::_bind_methods()
 
 	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "status")));
 	ADD_SIGNAL(MethodInfo("behavior_tree_updated", PropertyInfo(Variant::INT, "status")));
+    
+	ADD_SIGNAL(MethodInfo("skill_tree_finished", PropertyInfo(Variant::INT, "status")));
+	ADD_SIGNAL(MethodInfo("skill_tree_updated", PropertyInfo(Variant::INT, "status")));
 
 }
 
@@ -114,6 +117,14 @@ void CharacterBodyMain::behavior_tree_update(int last_status)
 {
     emit_signal("updated", last_status);
 }
+void CharacterBodyMain::skill_tree_finished(int last_status)
+{
+    emit_signal("skill_tree_finished", last_status);
+}
+void CharacterBodyMain::skill_tree_update(int last_status)
+{
+    emit_signal("skill_tree_updated", last_status);
+}
 BTPlayer * CharacterBodyMain::get_bt_player()
 {
     if(btPlayer == nullptr)
@@ -123,18 +134,32 @@ BTPlayer * CharacterBodyMain::get_bt_player()
         btPlayer->set_name("BTPlayer");
         btPlayer->connect("behavior_tree_finished", callable_mp(this, &CharacterBodyMain::behavior_tree_finished));
         btPlayer->connect("updated", callable_mp(this, &CharacterBodyMain::behavior_tree_update));
+        btPlayer->get_blackboard()->set_parent(player_blackboard);
         add_child(btPlayer);
     }
     return btPlayer;
 }
 
-
 CharacterBodyMain::CharacterBodyMain()
 {
+    player_blackboard.instantiate();
     animator.instantiate();
     animator->set_body(this);
 }
 CharacterBodyMain::~CharacterBodyMain()
 {
     
+}
+
+
+
+
+void BTPlaySkill::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("set_skill", "skill"), &BTPlaySkill::set_skill);
+    ClassDB::bind_method(D_METHOD("get_skill"), &BTPlaySkill::get_skill);
+
+
+    
+	ADD_PROPERTY(PropertyInfo(Variant::String, "skill"), "set_skill", "get_skill");
 }

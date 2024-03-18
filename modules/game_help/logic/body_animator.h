@@ -586,6 +586,20 @@ public:
     ~CharacterAnimatorLayer();
 };
 
+// 时间线资源,这个主要用来Animation 对角色进行一些操控,比如播放动画,切换角色材质
+class CharacterTimelineNode : public Node3D
+{
+    GDCLASS(CharacterTimelineNode, Node3D);
+
+    class CharacterBodyMain* m_Body = nullptr;
+    AnimationPlayer* m_AnimationPlayer = nullptr;
+    Ref<Animation>  m_Animation;
+
+    void play_action(StringName p_action_name){}
+    
+    void set_float_value(StringName p_name,float value){}
+};
+
 class CharacterAnimator : public RefCounted
 {
     GDCLASS(CharacterAnimator, RefCounted);

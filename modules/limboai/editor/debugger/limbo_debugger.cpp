@@ -152,6 +152,10 @@ void LimboDebugger::_track_tree(NodePath p_path) {
 	} else if (node->is_class("BTState")) {
 		node->connect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_state_updated).bind(p_path));
 	}
+	else if(node->has_node(NodePath("BTPlayer_Skill")))
+	{
+		node->get_node(NodePath("BTPlayer_Skill"))->connect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_bt_updated).bind(p_path));
+	}
 	else if(node->has_node(NodePath("BTPlayer")))
 	{
 		node->get_node(NodePath("BTPlayer"))->connect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_bt_updated).bind(p_path));
@@ -173,6 +177,10 @@ void LimboDebugger::_untrack_tree() {
 		node->disconnect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_bt_updated));
 	} else if (node->is_class("BTState")) {
 		node->disconnect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_state_updated));
+	}
+	else if(node->has_node(NodePath("BTPlayer_Skill")))
+	{
+		node->get_node(NodePath("BTPlayer_Skill"))->disconnect(LW_NAME(updated), callable_mp(this, &LimboDebugger::_on_bt_updated));
 	}
 	else if(node->has_node(NodePath("BTPlayer")))
 	{
