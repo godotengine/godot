@@ -130,6 +130,14 @@ void Dictionary::set(const Variant &p_key, const Variant &p_value) {
 	operator[](key) = p_value;
 }
 
+Error Dictionary::set_safe(const Variant &p_key, const Variant &p_value) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Dictionary is in read-only state.");
+	Variant key = p_key;
+	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "set_safe"), ERR_INVALID_PARAMETER);
+	operator[](key) = p_value;
+	return OK;
+}
+
 Variant Dictionary::get_valid(const Variant &p_key) const {
 	Variant key = p_key;
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "get_valid"), Variant());
