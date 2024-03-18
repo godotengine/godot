@@ -137,6 +137,12 @@ void Dictionary::set(const Variant &p_key, const Variant &p_value) {
 	operator[](p_key) = p_value;
 }
 
+Error Dictionary::set_safe(const Variant &p_key, const Variant &p_value) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Dictionary is in read-only state.");
+	operator[](p_key) = p_value;
+	return OK;
+}
+
 Variant Dictionary::get_valid(const Variant &p_key) const {
 	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(p_key));
 

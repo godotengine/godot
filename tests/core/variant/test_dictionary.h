@@ -102,6 +102,9 @@ TEST_CASE("[Dictionary] Assignment using bracket notation ([])") {
 	map.set("This key does not exist", String());
 	CHECK_FALSE(map.has("This key does not exist"));
 	CHECK(map.size() == length);
+
+	CHECK(map.set_safe("This key does not exist", String()) == ERR_LOCKED);
+	CHECK(map.size() == length);
 	ERR_PRINT_ON;
 }
 
