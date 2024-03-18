@@ -192,6 +192,55 @@
 				[b]Note:[/b] If [method _init] is defined with [i]required[/i] parameters, the Object with script may only be created directly. If any other means (such as [method PackedScene.instantiate] or [method Node.duplicate]) are used, the script's initialization will fail.
 			</description>
 		</method>
+		<method name="_iter_get" qualifiers="virtual">
+			<return type="Variant" />
+			<param index="0" name="iter" type="Variant" />
+			<description>
+				Returns the current iterable value. [param iter] stores the iteration state, but unlike [method _iter_init] and [method _iter_next] the state is supposed to be read-only, so there is no [Array] wrapper.
+			</description>
+		</method>
+		<method name="_iter_init" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="iter" type="Array" />
+			<description>
+				Initializes the iterator. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
+				Example:
+				[codeblock]
+				class MyRange:
+				    var _from
+				    var _to
+
+				    func _init(from, to):
+				        assert(from &lt;= to)
+				        _from = from
+				        _to = to
+
+				    func _iter_init(iter):
+				        iter[0] = _from
+				        return iter[0] &lt; _to
+
+				    func _iter_next(iter):
+				        iter[0] += 1
+				        return iter[0] &lt; _to
+
+				    func _iter_get(iter):
+				        return iter
+
+				func _ready():
+				    var my_range = MyRange.new(2, 5)
+				    for x in my_range:
+				        print(x) # Prints 2, 3, 4.
+				[/codeblock]
+				[b]Note:[/b] Alternatively, you can ignore [param iter] and use the object's state instead, see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_advanced.html#custom-iterators]online docs[/url] for an example. Note that in this case you will not be able to reuse the same iterator instance in nested loops. Also, make sure you reset the iterator state in this method if you want to reuse the same instance multiple times.
+			</description>
+		</method>
+		<method name="_iter_next" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="iter" type="Array" />
+			<description>
+				Moves the iterator to the next iteration. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
+			</description>
+		</method>
 		<method name="_notification" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="what" type="int" />
