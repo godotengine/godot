@@ -312,6 +312,71 @@ String ResourceImporterScene::get_preset_name(int p_idx) const {
 	return String();
 }
 
+void ResourceImporterScene::_pre_fix_global(Node *p_scene, const HashMap<StringName, Variant> &p_options) const {
+	if (p_options.has("animation/import_rest_as_RESET") && (bool)p_options["animation/import_rest_as_RESET"]) {
+		TypedArray<Node> anim_players = p_scene->find_children("*", "AnimationPlayer");
+		if (anim_players.is_empty()) {
+			AnimationPlayer *anim_player = memnew(AnimationPlayer);
+			anim_player->set_name("AnimationPlayer");
+			p_scene->add_child(anim_player);
+			anim_player->set_owner(p_scene);
+			anim_players.append(anim_player);
+		}
+		Ref<Animation> reset_anim;
+		for (int i = 0; i < anim_players.size(); i++) {
+			AnimationPlayer *player = cast_to<AnimationPlayer>(anim_players[i]);
+			if (player->has_animation(SNAME("RESET"))) {
+				reset_anim = player->get_animation(SNAME("RESET"));
+				break;
+			}
+		}
+		if (reset_anim.is_null()) {
+			AnimationPlayer *anim_player = cast_to<AnimationPlayer>(anim_players[0]);
+			reset_anim.instantiate();
+			Ref<AnimationLibrary> anim_library;
+			if (anim_player->has_animation_library(StringName())) {
+				anim_library = anim_player->get_animation_library(StringName());
+			} else {
+				anim_library.instantiate();
+				anim_player->add_animation_library(StringName(), anim_library);
+			}
+			anim_library->add_animation(SNAME("RESET"), reset_anim);
+		}
+		TypedArray<Node> skeletons = p_scene->find_children("*", "Skeleton3D");
+		for (int i = 0; i < skeletons.size(); i++) {
+			Skeleton3D *skeleton = cast_to<Skeleton3D>(skeletons[i]);
+			NodePath skeleton_path = p_scene->get_path_to(skeleton);
+
+			HashSet<NodePath> existing_pos_tracks;
+			HashSet<NodePath> existing_rot_tracks;
+			for (int trk_i = 0; trk_i < reset_anim->get_track_count(); trk_i++) {
+				NodePath np = reset_anim->track_get_path(trk_i);
+				if (reset_anim->track_get_type(trk_i) == Animation::TYPE_POSITION_3D) {
+					existing_pos_tracks.insert(np);
+				}
+				if (reset_anim->track_get_type(trk_i) == Animation::TYPE_ROTATION_3D) {
+					existing_rot_tracks.insert(np);
+				}
+			}
+			for (int bone_i = 0; bone_i < skeleton->get_bone_count(); bone_i++) {
+				NodePath bone_path(skeleton_path.get_names(), Vector<StringName>{ skeleton->get_bone_name(bone_i) }, false);
+				if (!existing_pos_tracks.has(bone_path)) {
+					int pos_t = reset_anim->add_track(Animation::TYPE_POSITION_3D);
+					reset_anim->track_set_path(pos_t, bone_path);
+					reset_anim->position_track_insert_key(pos_t, 0.0, skeleton->get_bone_rest(bone_i).origin);
+					reset_anim->track_set_imported(pos_t, true);
+				}
+				if (!existing_rot_tracks.has(bone_path)) {
+					int rot_t = reset_anim->add_track(Animation::TYPE_ROTATION_3D);
+					reset_anim->track_set_path(rot_t, bone_path);
+					reset_anim->rotation_track_insert_key(rot_t, 0.0, skeleton->get_bone_rest(bone_i).basis.get_rotation_quaternion());
+					reset_anim->track_set_imported(rot_t, true);
+				}
+			}
+		}
+	}
+}
+
 static bool _teststr(const String &p_what, const String &p_str) {
 	String what = p_what;
 
@@ -1945,6 +2010,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 30));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/trimming"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/remove_immutable_tracks"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import_rest_as_RESET"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "import_script/path", PROPERTY_HINT_FILE, script_ext_hint), ""));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "_subresources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Dictionary()));
@@ -2387,6 +2453,8 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 		return nullptr;
 	}
 
+	_pre_fix_global(scene, p_options);
+
 	HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
 	List<Pair<NodePath, Node *>> node_renames;
 	_pre_fix_node(scene, scene, collision_map, nullptr, node_renames);
@@ -2520,6 +2588,8 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 			scene_3d->scale(scale);
 		}
 	}
+
+	_pre_fix_global(scene, p_options);
 
 	HashSet<Ref<ImporterMesh>> scanned_meshes;
 	HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;

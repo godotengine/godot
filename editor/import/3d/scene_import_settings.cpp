@@ -433,13 +433,20 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 		return;
 	}
 	const HashMap<StringName, Variant> &main_settings = scene_import_settings_data->current;
+	bool reshow_settings = false;
 	if (main_settings.has("nodes/import_as_skeleton_bones")) {
 		bool new_import_as_skeleton = main_settings["nodes/import_as_skeleton_bones"];
-		if (new_import_as_skeleton != previous_import_as_skeleton) {
-			previous_import_as_skeleton = new_import_as_skeleton;
-			_re_import();
-			open_settings(base_path);
-		}
+		reshow_settings = reshow_settings || (new_import_as_skeleton != previous_import_as_skeleton);
+		previous_import_as_skeleton = new_import_as_skeleton;
+	}
+	if (main_settings.has("animation/import_rest_as_RESET")) {
+		bool new_rest_as_reset = main_settings["animation/import_rest_as_RESET"];
+		reshow_settings = reshow_settings || (new_rest_as_reset != previous_rest_as_reset);
+		previous_rest_as_reset = new_rest_as_reset;
+	}
+	if (reshow_settings) {
+		_re_import();
+		open_settings(base_path);
 		return;
 	}
 	for (const KeyValue<String, NodeData> &e : node_map) {
@@ -687,6 +694,9 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_a
 	const HashMap<StringName, Variant> &main_settings = scene_import_settings_data->current;
 	if (main_settings.has("nodes/import_as_skeleton_bones")) {
 		previous_import_as_skeleton = main_settings["nodes/import_as_skeleton_bones"];
+	}
+	if (main_settings.has("animation/import_rest_as_RESET")) {
+		previous_rest_as_reset = main_settings["animation/import_rest_as_RESET"];
 	}
 	popup_centered_ratio();
 	_update_view_gizmos();
