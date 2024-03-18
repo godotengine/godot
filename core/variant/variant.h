@@ -349,6 +349,7 @@ public:
 	bool is_zero() const;
 	bool is_one() const;
 	bool is_null() const;
+	bool is_read_only() const;
 
 	// Make sure Variant is not implicitly cast when accessing it with bracket notation (GH-49469).
 	Variant &operator[](const Variant &p_key) = delete;
