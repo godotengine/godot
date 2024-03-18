@@ -464,7 +464,7 @@ void VersionControlEditorPlugin::_force_push() {
 void VersionControlEditorPlugin::_update_opened_tabs() {
 	Vector<EditorData::EditedScene> open_scenes = EditorNode::get_editor_data().get_edited_scenes();
 	for (int i = 0; i < open_scenes.size(); i++) {
-		if (open_scenes[i].root == NULL) {
+		if (open_scenes[i].root == nullptr) {
 			continue;
 		}
 		EditorNode::get_singleton()->reload_scene(open_scenes[i].path);

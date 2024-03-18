@@ -688,6 +688,59 @@ bool Object::has_method(const StringName &p_method) const {
 	return false;
 }
 
+int Object::_get_method_argument_count_bind(const StringName &p_method) const {
+	return get_method_argument_count(p_method);
+}
+
+int Object::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	if (p_method == CoreStringNames::get_singleton()->_free) {
+		if (r_is_valid) {
+			*r_is_valid = true;
+		}
+		return 0;
+	}
+
+	if (script_instance) {
+		bool valid = false;
+		int ret = script_instance->get_method_argument_count(p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret;
+		}
+	}
+
+	{
+		bool valid = false;
+		int ret = ClassDB::get_method_argument_count(get_class_name(), p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret;
+		}
+	}
+
+	const Script *scr = Object::cast_to<Script>(this);
+	while (scr != nullptr) {
+		bool valid = false;
+		int ret = scr->get_script_method_argument_count(p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret;
+		}
+		scr = scr->get_base_script().ptr();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
+}
+
 Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
 	if (r_valid) {
 		*r_valid = false;
@@ -1482,9 +1535,9 @@ String Object::tr(const StringName &p_message, const StringName &p_context) cons
 		return p_message;
 	}
 
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		String tr_msg = TranslationServer::get_singleton()->extractable_translate(p_message, p_context);
-		if (!tr_msg.is_empty()) {
+		if (!tr_msg.is_empty() && tr_msg != p_message) {
 			return tr_msg;
 		}
 
@@ -1503,9 +1556,9 @@ String Object::tr_n(const StringName &p_message, const StringName &p_message_plu
 		return p_message_plural;
 	}
 
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		String tr_msg = TranslationServer::get_singleton()->extractable_translate_plural(p_message, p_message_plural, p_n, p_context);
-		if (!tr_msg.is_empty()) {
+		if (!tr_msg.is_empty() && tr_msg != p_message && tr_msg != p_message_plural) {
 			return tr_msg;
 		}
 
@@ -1643,6 +1696,8 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("callv", "method", "arg_array"), &Object::callv);
 
 	ClassDB::bind_method(D_METHOD("has_method", "method"), &Object::has_method);
+
+	ClassDB::bind_method(D_METHOD("get_method_argument_count", "method"), &Object::_get_method_argument_count_bind);
 
 	ClassDB::bind_method(D_METHOD("has_signal", "signal"), &Object::has_signal);
 	ClassDB::bind_method(D_METHOD("get_signal_list"), &Object::_get_signal_list);

@@ -1294,7 +1294,7 @@ private:
 	void _stall_for_previous_frames();
 	void _flush_and_stall_for_all_frames();
 
-	template <class T>
+	template <typename T>
 	void _free_rids(T &p_owner, const char *p_type);
 
 #ifdef DEV_ENABLED

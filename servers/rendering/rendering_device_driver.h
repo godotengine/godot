@@ -56,7 +56,7 @@
 
 // This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
 // (See https://github.com/godotengine/godot-proposals/issues/5144.)
-template <class T>
+template <typename T>
 class VectorView {
 	const T *_ptr = nullptr;
 	const uint32_t _size = 0;
@@ -97,20 +97,20 @@ public:
 #define ENUM_MEMBERS_EQUAL(m_a, m_b) ((int64_t)m_a == (int64_t)m_b)
 
 // This helps using a single paged allocator for many resource types.
-template <class... RESOURCE_TYPES>
+template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
 	static constexpr size_t MAX_RESOURCE_SIZE = std::max_element(RESOURCE_SIZES, RESOURCE_SIZES + sizeof...(RESOURCE_TYPES))[0];
 	uint8_t data[MAX_RESOURCE_SIZE];
 
-	template <class T>
+	template <typename T>
 	static T *allocate(PagedAllocator<VersatileResourceTemplate> &p_allocator) {
 		T *obj = (T *)p_allocator.alloc();
 		memnew_placement(obj, T);
 		return obj;
 	}
 
-	template <class T>
+	template <typename T>
 	static void free(PagedAllocator<VersatileResourceTemplate> &p_allocator, T *p_object) {
 		p_object->~T();
 		p_allocator.free((VersatileResourceTemplate *)p_object);

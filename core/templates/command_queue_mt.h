@@ -207,41 +207,41 @@
 
 #define ARG(N) p##N
 #define PARAM(N) P##N p##N
-#define TYPE_PARAM(N) class P##N
+#define TYPE_PARAM(N) typename P##N
 #define PARAM_DECL(N) typename GetSimpleTypeT<P##N>::type_t p##N
 
-#define DECL_CMD(N)                                                    \
-	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
-	struct Command##N : public CommandBase {                           \
-		T *instance;                                                   \
-		M method;                                                      \
-		SEMIC_SEP_LIST(PARAM_DECL, N);                                 \
-		virtual void call() override {                                 \
-			(instance->*method)(COMMA_SEP_LIST(ARG, N));               \
-		}                                                              \
+#define DECL_CMD(N)                                                          \
+	template <typename T, typename M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
+	struct Command##N : public CommandBase {                                 \
+		T *instance;                                                         \
+		M method;                                                            \
+		SEMIC_SEP_LIST(PARAM_DECL, N);                                       \
+		virtual void call() override {                                       \
+			(instance->*method)(COMMA_SEP_LIST(ARG, N));                     \
+		}                                                                    \
 	};
 
-#define DECL_CMD_RET(N)                                                         \
-	template <class T, class M, COMMA_SEP_LIST(TYPE_PARAM, N) COMMA(N) class R> \
-	struct CommandRet##N : public SyncCommand {                                 \
-		R *ret;                                                                 \
-		T *instance;                                                            \
-		M method;                                                               \
-		SEMIC_SEP_LIST(PARAM_DECL, N);                                          \
-		virtual void call() override {                                          \
-			*ret = (instance->*method)(COMMA_SEP_LIST(ARG, N));                 \
-		}                                                                       \
+#define DECL_CMD_RET(N)                                                                  \
+	template <typename T, typename M, COMMA_SEP_LIST(TYPE_PARAM, N) COMMA(N) typename R> \
+	struct CommandRet##N : public SyncCommand {                                          \
+		R *ret;                                                                          \
+		T *instance;                                                                     \
+		M method;                                                                        \
+		SEMIC_SEP_LIST(PARAM_DECL, N);                                                   \
+		virtual void call() override {                                                   \
+			*ret = (instance->*method)(COMMA_SEP_LIST(ARG, N));                          \
+		}                                                                                \
 	};
 
-#define DECL_CMD_SYNC(N)                                               \
-	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
-	struct CommandSync##N : public SyncCommand {                       \
-		T *instance;                                                   \
-		M method;                                                      \
-		SEMIC_SEP_LIST(PARAM_DECL, N);                                 \
-		virtual void call() override {                                 \
-			(instance->*method)(COMMA_SEP_LIST(ARG, N));               \
-		}                                                              \
+#define DECL_CMD_SYNC(N)                                                     \
+	template <typename T, typename M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
+	struct CommandSync##N : public SyncCommand {                             \
+		T *instance;                                                         \
+		M method;                                                            \
+		SEMIC_SEP_LIST(PARAM_DECL, N);                                       \
+		virtual void call() override {                                       \
+			(instance->*method)(COMMA_SEP_LIST(ARG, N));                     \
+		}                                                                    \
 	};
 
 #define TYPE_ARG(N) P##N
@@ -249,7 +249,7 @@
 #define CMD_ASSIGN_PARAM(N) cmd->p##N = p##N
 
 #define DECL_PUSH(N)                                                         \
-	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>       \
+	template <typename T, typename M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
 	void push(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) { \
 		CMD_TYPE(N) *cmd = allocate_and_lock<CMD_TYPE(N)>();                 \
 		cmd->instance = p_instance;                                          \
@@ -263,7 +263,7 @@
 #define CMD_RET_TYPE(N) CommandRet##N<T, M, COMMA_SEP_LIST(TYPE_ARG, N) COMMA(N) R>
 
 #define DECL_PUSH_AND_RET(N)                                                                   \
-	template <class T, class M, COMMA_SEP_LIST(TYPE_PARAM, N) COMMA(N) class R>                \
+	template <typename T, typename M, COMMA_SEP_LIST(TYPE_PARAM, N) COMMA(N) typename R>       \
 	void push_and_ret(T *p_instance, M p_method, COMMA_SEP_LIST(PARAM, N) COMMA(N) R *r_ret) { \
 		SyncSemaphore *ss = _alloc_sync_sem();                                                 \
 		CMD_RET_TYPE(N) *cmd = allocate_and_lock<CMD_RET_TYPE(N)>();                           \
@@ -282,7 +282,7 @@
 #define CMD_SYNC_TYPE(N) CommandSync##N<T, M COMMA(N) COMMA_SEP_LIST(TYPE_ARG, N)>
 
 #define DECL_PUSH_AND_SYNC(N)                                                         \
-	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>                \
+	template <typename T, typename M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>          \
 	void push_and_sync(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) { \
 		SyncSemaphore *ss = _alloc_sync_sem();                                        \
 		CMD_SYNC_TYPE(N) *cmd = allocate_and_lock<CMD_SYNC_TYPE(N)>();                \
@@ -343,7 +343,7 @@ class CommandQueueMT {
 	Semaphore *sync = nullptr;
 	uint64_t flush_read_ptr = 0;
 
-	template <class T>
+	template <typename T>
 	T *allocate() {
 		// alloc size is size+T+safeguard
 		uint32_t alloc_size = ((sizeof(T) + 8 - 1) & ~(8 - 1));
@@ -354,7 +354,7 @@ class CommandQueueMT {
 		return cmd;
 	}
 
-	template <class T>
+	template <typename T>
 	T *allocate_and_lock() {
 		lock();
 		T *ret = allocate<T>();

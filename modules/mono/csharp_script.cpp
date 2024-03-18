@@ -1735,6 +1735,34 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 			gchandle.get_intptr(), &p_method);
 }
 
+int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	if (!script->is_valid() || !script->valid) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
+
+	const CSharpScript *top = script.ptr();
+	while (top != nullptr) {
+		for (const CSharpScript::CSharpMethodInfo &E : top->methods) {
+			if (E.name == p_method) {
+				if (r_is_valid) {
+					*r_is_valid = true;
+				}
+				return E.method_info.arguments.size();
+			}
+		}
+
+		top = top->base_script.ptr();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
+}
+
 Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	ERR_FAIL_COND_V(!script.is_valid(), Variant());
 
@@ -2577,6 +2605,29 @@ bool CSharpScript::has_method(const StringName &p_method) const {
 	}
 
 	return false;
+}
+
+int CSharpScript::get_script_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	if (!valid) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
+
+	for (const CSharpMethodInfo &E : methods) {
+		if (E.name == p_method) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return E.method_info.arguments.size();
+		}
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
 }
 
 MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {

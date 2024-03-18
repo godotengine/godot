@@ -562,6 +562,12 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 	class_type.native_type = result.native_type;
 	p_class->set_datatype(class_type);
 
+	// Apply annotations.
+	for (GDScriptParser::AnnotationNode *&E : p_class->annotations) {
+		resolve_annotation(E);
+		E->apply(parser, p_class, p_class->outer);
+	}
+
 	parser->current_class = previous_class;
 
 	return OK;
@@ -912,7 +918,6 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 	{
 #ifdef DEBUG_ENABLED
-		HashSet<GDScriptWarning::Code> previously_ignored_warnings = parser->ignored_warnings;
 		GDScriptParser::Node *member_node = member.get_source_node();
 		if (member_node && member_node->type != GDScriptParser::Node::ANNOTATION) {
 			// Apply @warning_ignore annotations before resolving member.
@@ -921,9 +926,6 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					resolve_annotation(E);
 					E->apply(parser, member.variable, p_class);
 				}
-			}
-			for (GDScriptWarning::Code ignored_warning : member_node->ignored_warnings) {
-				parser->ignored_warnings.insert(ignored_warning);
 			}
 		}
 #endif
@@ -1061,6 +1063,13 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 					enum_type.enum_values[element.identifier->name] = element.value;
 					dictionary[String(element.identifier->name)] = element.value;
+
+#ifdef DEBUG_ENABLED
+					// Named enum identifiers do not shadow anything since you can only access them with `NamedEnum.ENUM_VALUE`.
+					if (member.m_enum->identifier->name == StringName()) {
+						is_shadowing(element.identifier, "enum member", false);
+					}
+#endif
 				}
 
 				current_enum = prev_enum;
@@ -1133,9 +1142,6 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				ERR_PRINT("Trying to resolve undefined member.");
 				break;
 		}
-#ifdef DEBUG_ENABLED
-		parser->ignored_warnings = previously_ignored_warnings;
-#endif
 	}
 
 	parser->current_class = previous_class;
@@ -1146,11 +1152,11 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 		p_source = p_class;
 	}
 
+	if (!p_class->resolved_interface) {
 #ifdef DEBUG_ENABLED
-	bool has_static_data = p_class->has_static_data;
+		bool has_static_data = p_class->has_static_data;
 #endif
 
-	if (!p_class->resolved_interface) {
 		if (!parser->has_class(p_class)) {
 			String script_path = p_class->get_datatype().script_path;
 			Ref<GDScriptParserRef> parser_ref = get_parser_for(script_path);
@@ -1178,6 +1184,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 
 			return;
 		}
+
 		p_class->resolved_interface = true;
 
 		if (resolve_class_inheritance(p_class) != OK) {
@@ -1319,10 +1326,6 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 #ifdef DEBUG_ENABLED
-			HashSet<GDScriptWarning::Code> previously_ignored_warnings = parser->ignored_warnings;
-			for (GDScriptWarning::Code ignored_warning : member.variable->ignored_warnings) {
-				parser->ignored_warnings.insert(ignored_warning);
-			}
 			if (member.variable->usages == 0 && String(member.variable->identifier->name).begins_with("_")) {
 				parser->push_warning(member.variable->identifier, GDScriptWarning::UNUSED_PRIVATE_CLASS_VARIABLE, member.variable->identifier->name);
 			}
@@ -1396,10 +1399,12 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 					}
 				}
 			}
-
+		} else if (member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
 #ifdef DEBUG_ENABLED
-			parser->ignored_warnings = previously_ignored_warnings;
-#endif // DEBUG_ENABLED
+			if (member.signal->usages == 0) {
+				parser->push_warning(member.signal->identifier, GDScriptWarning::UNUSED_SIGNAL, member.signal->identifier->name);
+			}
+#endif
 		}
 	}
 
@@ -1431,6 +1436,7 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 		case GDScriptParser::Node::NONE:
 			break; // Unreachable.
 		case GDScriptParser::Node::CLASS:
+			// NOTE: Currently this route is never executed, `resolve_class_*()` is called directly.
 			if (OK == resolve_class_inheritance(static_cast<GDScriptParser::ClassNode *>(p_node), true)) {
 				resolve_class_interface(static_cast<GDScriptParser::ClassNode *>(p_node), true);
 				resolve_class_body(static_cast<GDScriptParser::ClassNode *>(p_node), true);
@@ -1583,13 +1589,6 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		return;
 	}
 	p_function->resolved_signature = true;
-
-#ifdef DEBUG_ENABLED
-	HashSet<GDScriptWarning::Code> previously_ignored_warnings = parser->ignored_warnings;
-	for (GDScriptWarning::Code ignored_warning : p_function->ignored_warnings) {
-		parser->ignored_warnings.insert(ignored_warning);
-	}
-#endif
 
 	GDScriptParser::FunctionNode *previous_function = parser->current_function;
 	parser->current_function = p_function;
@@ -1775,9 +1774,6 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		p_function->set_datatype(prev_datatype);
 	}
 
-#ifdef DEBUG_ENABLED
-	parser->ignored_warnings = previously_ignored_warnings;
-#endif
 	parser->current_function = previous_function;
 	static_context = previous_static_context;
 }
@@ -1787,13 +1783,6 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 		return;
 	}
 	p_function->resolved_body = true;
-
-#ifdef DEBUG_ENABLED
-	HashSet<GDScriptWarning::Code> previously_ignored_warnings = parser->ignored_warnings;
-	for (GDScriptWarning::Code ignored_warning : p_function->ignored_warnings) {
-		parser->ignored_warnings.insert(ignored_warning);
-	}
-#endif
 
 	GDScriptParser::FunctionNode *previous_function = parser->current_function;
 	parser->current_function = p_function;
@@ -1812,9 +1801,6 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 		}
 	}
 
-#ifdef DEBUG_ENABLED
-	parser->ignored_warnings = previously_ignored_warnings;
-#endif
 	parser->current_function = previous_function;
 	static_context = previous_static_context;
 }
@@ -1852,23 +1838,11 @@ void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite) {
 		// Apply annotations.
 		for (GDScriptParser::AnnotationNode *&E : stmt->annotations) {
 			resolve_annotation(E);
-			E->apply(parser, stmt, nullptr);
+			E->apply(parser, stmt, nullptr); // TODO: Provide `p_class`.
 		}
-
-#ifdef DEBUG_ENABLED
-		HashSet<GDScriptWarning::Code> previously_ignored_warnings = parser->ignored_warnings;
-		for (GDScriptWarning::Code ignored_warning : stmt->ignored_warnings) {
-			parser->ignored_warnings.insert(ignored_warning);
-		}
-#endif // DEBUG_ENABLED
 
 		resolve_node(stmt);
 		resolve_pending_lambda_bodies();
-
-#ifdef DEBUG_ENABLED
-		parser->ignored_warnings = previously_ignored_warnings;
-#endif // DEBUG_ENABLED
-
 		decide_suite_type(p_suite, stmt);
 	}
 }
@@ -2257,6 +2231,12 @@ void GDScriptAnalyzer::resolve_match(GDScriptParser::MatchNode *p_match) {
 }
 
 void GDScriptAnalyzer::resolve_match_branch(GDScriptParser::MatchBranchNode *p_match_branch, GDScriptParser::ExpressionNode *p_match_test) {
+	// Apply annotations.
+	for (GDScriptParser::AnnotationNode *&E : p_match_branch->annotations) {
+		resolve_annotation(E);
+		E->apply(parser, p_match_branch, nullptr); // TODO: Provide `p_class`.
+	}
+
 	for (int i = 0; i < p_match_branch->patterns.size(); i++) {
 		resolve_match_pattern(p_match_branch->patterns[i], p_match_test);
 	}
@@ -3746,6 +3726,8 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					if (is_base && !base.is_meta_type) {
 						p_identifier->set_datatype(member.get_datatype());
 						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
+						p_identifier->signal_source = member.signal;
+						member.signal->usages += 1;
 						return;
 					}
 				} break;
@@ -3930,6 +3912,8 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			found_source = true;
 			break;
 		case GDScriptParser::IdentifierNode::MEMBER_SIGNAL:
+			p_identifier->signal_source->usages++;
+			[[fallthrough]];
 		case GDScriptParser::IdentifierNode::INHERITED_VARIABLE:
 			mark_lambda_use_self();
 			break;
@@ -5636,21 +5620,20 @@ Error GDScriptAnalyzer::resolve_dependencies() {
 
 Error GDScriptAnalyzer::analyze() {
 	parser->errors.clear();
-	Error err = OK;
 
-	err = resolve_inheritance();
+	Error err = resolve_inheritance();
 	if (err) {
 		return err;
 	}
 
-	// Apply annotations.
-	for (GDScriptParser::AnnotationNode *&E : parser->head->annotations) {
-		resolve_annotation(E);
-		E->apply(parser, parser->head, nullptr);
-	}
-
 	resolve_interface();
 	resolve_body();
+
+#ifdef DEBUG_ENABLED
+	// Apply here, after all `@warning_ignore`s have been resolved and applied.
+	parser->apply_pending_warnings();
+#endif
+
 	if (!parser->errors.is_empty()) {
 		return ERR_PARSE_ERROR;
 	}

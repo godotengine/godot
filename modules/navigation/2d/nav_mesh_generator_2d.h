@@ -81,6 +81,7 @@ class NavMeshGenerator2D : public Object {
 	static void generator_parse_polygon2d_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
 	static void generator_parse_staticbody2d_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
 	static void generator_parse_tilemap_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
+	static void generator_parse_navigationobstacle_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
 
 	static bool generator_emit_callback(const Callable &p_callback);
 

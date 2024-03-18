@@ -101,6 +101,19 @@ public:
 	EXBIND1RC(bool, has_method, const StringName &)
 	EXBIND1RC(bool, has_static_method, const StringName &)
 
+	GDVIRTUAL1RC(Variant, _get_script_method_argument_count, const StringName &)
+	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		Variant ret;
+		if (GDVIRTUAL_CALL(_get_script_method_argument_count, p_method, ret) && ret.get_type() == Variant::INT) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret.operator int();
+		}
+		// Fallback to default.
+		return Script::get_script_method_argument_count(p_method, r_is_valid);
+	}
+
 	GDVIRTUAL1RC(Dictionary, _get_method_info, const StringName &)
 	virtual MethodInfo get_method_info(const StringName &p_method) const override {
 		Dictionary mi;
@@ -807,6 +820,19 @@ public:
 		return false;
 	}
 
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		if (native_info->get_method_argument_count_func) {
+			GDExtensionBool is_valid = 0;
+			GDExtensionInt ret = native_info->get_method_argument_count_func(instance, (GDExtensionStringNamePtr)&p_method, &is_valid);
+			if (r_is_valid) {
+				*r_is_valid = is_valid != 0;
+			}
+			return ret;
+		}
+		// Fallback to default.
+		return ScriptInstance::get_method_argument_count(p_method, r_is_valid);
+	}
+
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		Variant ret;
 		if (native_info->call_func) {
@@ -894,7 +920,6 @@ public:
 			return reinterpret_cast<ScriptLanguage *>(lang);
 		}
 		return nullptr;
-		;
 	}
 	virtual ~ScriptInstanceExtension() {
 		if (native_info->free_func) {

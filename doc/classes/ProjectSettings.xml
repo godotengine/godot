@@ -353,7 +353,7 @@
 			Maximum number of frames per second allowed. A value of [code]0[/code] means "no limit". The actual number of frames per second may still be below this value if the CPU or GPU cannot keep up with the project logic and rendering.
 			Limiting the FPS can be useful to reduce system power consumption, which reduces heat and noise emissions (and improves battery life on mobile devices).
 			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
-			If [member display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using a FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
+			If [member display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using an FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
 			If [member display/window/vsync/vsync_mode] is [code]Disabled[/code], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
 			See also [member physics/common/physics_ticks_per_second].
 			This setting can be overridden using the [code]--max-fps &lt;fps&gt;[/code] command line argument (including with a value of [code]0[/code] for unlimited framerate).
@@ -470,11 +470,12 @@
 		<member name="debug/gdscript/warnings/confusable_local_usage" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier that will be shadowed below in the block is used.
 		</member>
-		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1">
+		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. Instead, an error is generated if the expression type is known at compile time.">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a constant is used as a function.
 		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when deprecated keywords are used.
+			[b]Note:[/b] There are currently no deprecated keywords, so this warning is never produced.
 		</member>
 		<member name="debug/gdscript/warnings/empty_file" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an empty file is parsed.
@@ -485,7 +486,7 @@
 		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
 		</member>
-		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1">
+		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. When a function is used as a property, a [Callable] is returned.">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a function as if it is a property.
 		</member>
 		<member name="debug/gdscript/warnings/get_node_default_without_onready" type="int" setter="" getter="" default="2">
@@ -519,7 +520,7 @@
 		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
 		</member>
-		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1">
+		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. Instead, an error is generated if the expression type is known at compile time.">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a property as if it is a function.
 		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
@@ -593,7 +594,7 @@
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a private member variable is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_signal" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a signal is declared but never emitted.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a signal is declared but never explicitly used in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unused_variable" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable is unused.
@@ -962,7 +963,7 @@
 		<member name="editor/run/main_run_args" type="String" setter="" getter="" default="&quot;&quot;">
 			The command-line arguments to append to Godot's own command line when running the project. This doesn't affect the editor itself.
 			It is possible to make another executable run Godot by using the [code]%command%[/code] placeholder. The placeholder will be replaced with Godot's own command line. Program-specific arguments should be placed [i]before[/i] the placeholder, whereas Godot-specific arguments should be placed [i]after[/i] the placeholder.
-			For example, this can be used to force the project to run on the dedicated GPU in a NVIDIA Optimus system on Linux:
+			For example, this can be used to force the project to run on the dedicated GPU in an NVIDIA Optimus system on Linux:
 			[codeblock]
 			prime-run %command%
 			[/codeblock]
@@ -989,7 +990,7 @@
 		</member>
 		<member name="filesystem/import/fbx2gltf/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Autodesk FBX 3D scene files with the [code].fbx[/code] extension will be imported by converting them to glTF 2.0.
-			This requires configuring a path to a FBX2glTF executable in the editor settings at [member EditorSettings.filesystem/import/fbx2gltf/fbx2gltf_path].
+			This requires configuring a path to an FBX2glTF executable in the editor settings at [member EditorSettings.filesystem/import/fbx2gltf/fbx2gltf_path].
 		</member>
 		<member name="filesystem/import/fbx2gltf/enabled.android" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/fbx2gltf/enabled] on Android where FBX2glTF can't easily be accessed from Godot.

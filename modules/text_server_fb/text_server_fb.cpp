@@ -59,10 +59,16 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
+#ifdef _MSC_VER
+#pragma warning(disable : 4458)
+#endif
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>
 #include <msdfgen.h>
+#ifdef _MSC_VER
+#pragma warning(default : 4458)
+#endif
 #endif
 
 #ifdef MODULE_SVG_ENABLED
@@ -72,8 +78,6 @@ using namespace godot;
 #endif
 
 /*************************************************************************/
-
-#define OT_TAG(c1, c2, c3, c4) ((int32_t)((((uint32_t)(c1) & 0xff) << 24) | (((uint32_t)(c2) & 0xff) << 16) | (((uint32_t)(c3) & 0xff) << 8) | ((uint32_t)(c4) & 0xff)))
 
 bool TextServerFallback::_has_feature(Feature p_feature) const {
 	switch (p_feature) {
@@ -907,8 +911,8 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 					coords.write[i] = CLAMP(var_value * 65536.0, amaster->axis[i].minimum, amaster->axis[i].maximum);
 				}
 
-				if (p_font_data->variation_coordinates.has(_tag_to_name(var_tag))) {
-					var_value = p_font_data->variation_coordinates[_tag_to_name(var_tag)];
+				if (p_font_data->variation_coordinates.has(tag_to_name(var_tag))) {
+					var_value = p_font_data->variation_coordinates[tag_to_name(var_tag)];
 					coords.write[i] = CLAMP(var_value * 65536.0, amaster->axis[i].minimum, amaster->axis[i].maximum);
 				}
 			}
@@ -3704,9 +3708,9 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 		int font_weight = _font_get_weight(p_fdef);
 		int font_stretch = _font_get_stretch(p_fdef);
 		Dictionary dvar = _font_get_variation_coordinates(p_fdef);
-		static int64_t wgth_tag = _name_to_tag("weight");
-		static int64_t wdth_tag = _name_to_tag("width");
-		static int64_t ital_tag = _name_to_tag("italic");
+		static int64_t wgth_tag = name_to_tag("weight");
+		static int64_t wdth_tag = name_to_tag("width");
+		static int64_t ital_tag = name_to_tag("italic");
 		if (dvar.has(wgth_tag)) {
 			font_weight = dvar[wgth_tag].operator int();
 		}

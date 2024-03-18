@@ -61,6 +61,8 @@
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
+#include "native_menu_windows.h"
+
 #include <io.h>
 #include <stdio.h>
 
@@ -152,11 +154,23 @@ typedef UINT(WINAPI *WTInfoPtr)(UINT p_category, UINT p_index, LPVOID p_output);
 typedef BOOL(WINAPI *WTPacketPtr)(HANDLE p_ctx, UINT p_param, LPVOID p_packets);
 typedef BOOL(WINAPI *WTEnablePtr)(HANDLE p_ctx, BOOL p_enable);
 
+enum PreferredAppMode {
+	APPMODE_DEFAULT = 0,
+	APPMODE_ALLOWDARK = 1,
+	APPMODE_FORCEDARK = 2,
+	APPMODE_FORCELIGHT = 3,
+	APPMODE_MAX = 4
+};
+
 typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
 typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
 typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);
 typedef int(WINAPI *GetImmersiveUserColorSetPreferencePtr)(bool bForceCheckRegistry, bool bSkipCheckOnFail);
 typedef HRESULT(WINAPI *RtlGetVersionPtr)(OSVERSIONINFOW *lpVersionInformation);
+typedef bool(WINAPI *AllowDarkModeForAppPtr)(bool darkMode);
+typedef PreferredAppMode(WINAPI *SetPreferredAppModePtr)(PreferredAppMode appMode);
+typedef void(WINAPI *RefreshImmersiveColorPolicyStatePtr)();
+typedef void(WINAPI *FlushMenuThemesPtr)();
 
 // Windows Ink API
 #ifndef POINTER_STRUCTURES
@@ -358,7 +372,7 @@ class DisplayServerWindows : public DisplayServer {
 	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
-	NativeMenu *native_menu = nullptr;
+	NativeMenuWindows *native_menu = nullptr;
 
 	struct WindowData {
 		HWND hWnd;

@@ -515,7 +515,7 @@ void DisplayServerMacOS::_keyboard_layout_changed(CFNotificationCenterRef center
 NSImage *DisplayServerMacOS::_convert_to_nsimg(Ref<Image> &p_image) const {
 	p_image->convert(Image::FORMAT_RGBA8);
 	NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
-			initWithBitmapDataPlanes:NULL
+			initWithBitmapDataPlanes:nullptr
 						  pixelsWide:p_image->get_width()
 						  pixelsHigh:p_image->get_height()
 					   bitsPerSample:8

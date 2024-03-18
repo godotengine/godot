@@ -642,6 +642,48 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FIXED_SIZE_SCALE_ENABLED);
 }
 
+_FORCE_INLINE_ int32_t ot_tag_from_string(const char *p_str, int p_len) {
+	char tag[4];
+	uint32_t i;
+
+	if (!p_str || !p_len || !*p_str) {
+		return OT_TAG(0, 0, 0, 0);
+	}
+
+	if (p_len < 0 || p_len > 4) {
+		p_len = 4;
+	}
+	for (i = 0; i < (uint32_t)p_len && p_str[i]; i++) {
+		tag[i] = p_str[i];
+	}
+
+	for (; i < 4; i++) {
+		tag[i] = ' ';
+	}
+
+	return OT_TAG(tag[0], tag[1], tag[2], tag[3]);
+}
+
+int64_t TextServer::name_to_tag(const String &p_name) const {
+	// No readable name, use tag string.
+	return ot_tag_from_string(p_name.replace("custom_", "").ascii().get_data(), -1);
+}
+
+_FORCE_INLINE_ void ot_tag_to_string(int32_t p_tag, char *p_buf) {
+	p_buf[0] = (char)(uint8_t)(p_tag >> 24);
+	p_buf[1] = (char)(uint8_t)(p_tag >> 16);
+	p_buf[2] = (char)(uint8_t)(p_tag >> 8);
+	p_buf[3] = (char)(uint8_t)(p_tag >> 0);
+}
+
+String TextServer::tag_to_name(int64_t p_tag) const {
+	// No readable name, use tag string.
+	char name[5];
+	memset(name, 0, 5);
+	ot_tag_to_string(p_tag, name);
+	return String("custom_") + String(name);
+}
+
 Vector2 TextServer::get_hex_code_box_size(int64_t p_size, int64_t p_index) const {
 	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
 	int sp = MAX(0, w - 1);

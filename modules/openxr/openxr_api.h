@@ -118,7 +118,7 @@ private:
 	XrSession session = XR_NULL_HANDLE;
 	XrSessionState session_state = XR_SESSION_STATE_UNKNOWN;
 	bool running = false;
-	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, NULL, 0, 0, false };
+	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, nullptr, 0, 0, false };
 	double render_target_size_multiplier = 1.0;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
@@ -286,6 +286,15 @@ private:
 	RID_Owner<InteractionProfile, true> interaction_profile_owner;
 	RID get_interaction_profile_rid(XrPath p_path);
 	XrPath get_interaction_profile_path(RID p_interaction_profile);
+
+	struct OrderedCompositionLayer {
+		const XrCompositionLayerBaseHeader *composition_layer;
+		int sort_order;
+
+		_FORCE_INLINE_ bool operator()(const OrderedCompositionLayer &a, const OrderedCompositionLayer &b) const {
+			return a.sort_order < b.sort_order || (a.sort_order == b.sort_order && uint64_t(a.composition_layer) < uint64_t(b.composition_layer));
+		}
+	};
 
 	// state changes
 	bool poll_events();

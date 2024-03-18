@@ -2683,10 +2683,8 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	help_label = memnew(Label(TTR("Hold Shift to create big tiles.")));
 	tile_create_help->add_child(help_label);
 
-	tile_create_help->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT, Control::PRESET_MODE_MINSIZE);
-	Vector2 pos = tile_create_help->get_position();
-	pos.y -= 8 * EDSCALE;
-	tile_create_help->set_position(pos);
+	tile_create_help->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT, Control::PRESET_MODE_MINSIZE, 8);
+	tile_create_help->set_grow_direction_preset(Control::PRESET_BOTTOM_LEFT);
 
 	base_tile_popup_menu = memnew(PopupMenu);
 	base_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);

@@ -56,6 +56,16 @@ signal test_signal_6(a: Resource, b: Array[Resource])
 signal test_signal_7(a: TestMemberInfo, b: Array[TestMemberInfo])
 signal test_signal_8(a: MyClass, b: Array[MyClass])
 
+func no_exec():
+	test_signal_1.emit()
+	test_signal_2.emit()
+	test_signal_3.emit()
+	test_signal_4.emit()
+	test_signal_5.emit()
+	test_signal_6.emit()
+	test_signal_7.emit()
+	test_signal_8.emit()
+
 func test():
 	var script: Script = get_script()
 	for property in script.get_property_list():

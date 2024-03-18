@@ -353,7 +353,7 @@ static void _test_and_swap(T &p_elem, uint32_t p_a, uint32_t p_b) {
 }
 
 void AudioStreamInteractive::_inspector_array_swap_clip(uint32_t p_item_a, uint32_t p_item_b) {
-	ERR_FAIL_INDEX(p_item_a, (uint32_t)clip_count);
+	ERR_FAIL_UNSIGNED_INDEX(p_item_a, (uint32_t)clip_count);
 	ERR_FAIL_UNSIGNED_INDEX(p_item_b, (uint32_t)clip_count);
 
 	for (int i = 0; i < clip_count; i++) {

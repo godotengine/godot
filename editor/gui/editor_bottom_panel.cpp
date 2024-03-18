@@ -50,10 +50,6 @@ void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			expand_button->set_icon(get_editor_theme_icon(SNAME("ExpandBottomDock")));
-			for (int i = 0; i < items.size(); i++) {
-				items.write[i].button->add_theme_style_override("pressed", get_theme_stylebox(SNAME("MenuTransparent"), EditorStringName(EditorStyles)));
-				items.write[i].button->add_theme_style_override("hover_pressed", get_theme_stylebox(SNAME("MenuHover"), EditorStringName(EditorStyles)));
-			}
 		} break;
 	}
 }
@@ -160,7 +156,7 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 
 Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
 	Button *tb = memnew(Button);
-	tb->set_theme_type_variation("FlatMenuButton");
+	tb->set_theme_type_variation("BottomPanelButton");
 	tb->connect("toggled", callable_mp(this, &EditorBottomPanel::_switch_by_control).bind(p_item));
 	tb->set_drag_forwarding(Callable(), callable_mp(this, &EditorBottomPanel::_button_drag_hover).bind(tb, p_item), Callable());
 	tb->set_text(p_text);

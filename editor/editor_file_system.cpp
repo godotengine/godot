@@ -439,7 +439,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		}
 	}
 
-	if (importer_name == "keep") {
+	if (importer_name == "keep" || importer_name == "skip") {
 		return false; //keep mode, do not reimport
 	}
 
@@ -1859,7 +1859,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		source_file_options[p_files[i]] = HashMap<StringName, Variant>();
 		importer_name = file_importer_name;
 
-		if (importer_name == "keep") {
+		if (importer_name == "keep" || importer_name == "skip") {
 			continue; //do nothing
 		}
 
@@ -1885,7 +1885,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		base_paths[p_files[i]] = ResourceFormatImporter::get_singleton()->get_import_base_path(p_files[i]);
 	}
 
-	if (importer_name == "keep") {
+	if (importer_name == "keep" || importer_name == "skip") {
 		return OK; // (do nothing)
 	}
 
@@ -2078,7 +2078,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 	}
 
-	if (importer_name == "keep") {
+	if (importer_name == "keep" || importer_name == "skip") {
 		//keep files, do nothing.
 		fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
 		fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");

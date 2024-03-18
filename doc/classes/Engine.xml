@@ -28,7 +28,7 @@
 				    GD.Print("Running a 32-bit build of Godot.");
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method does [i]not[/i] return the name of the system's CPU architecture (like [method OS.get_processor_name]). For example, when running a [code]x86_32[/code] Godot binary on a [code]x86_64[/code] system, the returned value will still be [code]"x86_32"[/code].
+				[b]Note:[/b] This method does [i]not[/i] return the name of the system's CPU architecture (like [method OS.get_processor_name]). For example, when running an [code]x86_32[/code] Godot binary on an [code]x86_64[/code] system, the returned value will still be [code]"x86_32"[/code].
 			</description>
 		</method>
 		<method name="get_author_info" qualifiers="const">
@@ -314,7 +314,7 @@
 			The maximum number of frames that can be rendered every second (FPS). A value of [code]0[/code] means the framerate is uncapped.
 			Limiting the FPS can be useful to reduce the host machine's power consumption, which reduces heat, noise emissions, and improves battery life.
 			If [member ProjectSettings.display/window/vsync/vsync_mode] is [b]Enabled[/b] or [b]Adaptive[/b], the setting takes precedence and the max FPS number cannot exceed the monitor's refresh rate.
-			If [member ProjectSettings.display/window/vsync/vsync_mode] is [b]Enabled[/b], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using a FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
+			If [member ProjectSettings.display/window/vsync/vsync_mode] is [b]Enabled[/b], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using an FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
 			See also [member physics_ticks_per_second] and [member ProjectSettings.application/run/max_fps].
 			[b]Note:[/b] The actual number of frames per second may still be below this value if the CPU or GPU cannot keep up with the project's logic and rendering.
 			[b]Note:[/b] If [member ProjectSettings.display/window/vsync/vsync_mode] is [b]Disabled[/b], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.

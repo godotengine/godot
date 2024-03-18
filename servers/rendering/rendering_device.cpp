@@ -5182,7 +5182,7 @@ void RenderingDevice::_save_pipeline_cache(void *p_data) {
 	}
 }
 
-template <class T>
+template <typename T>
 void RenderingDevice::_free_rids(T &p_owner, const char *p_type) {
 	List<RID> owned;
 	p_owner.get_owned_list(&owned);
