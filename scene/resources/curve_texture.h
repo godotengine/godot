@@ -35,7 +35,8 @@
 
 class CurveTexture : public Texture2D {
 	GDCLASS(CurveTexture, Texture2D);
-	RES_BASE_EXTENSION("curvetex")
+	RES_BASE_EXTENSION("curvetex");
+
 public:
 	enum TextureMode {
 		TEXTURE_MODE_RGB,
@@ -76,11 +77,11 @@ public:
 	~CurveTexture();
 };
 
-VARIANT_ENUM_CAST(CurveTexture::TextureMode)
+VARIANT_ENUM_CAST(CurveTexture::TextureMode);
 
 class CurveXYZTexture : public Texture2D {
 	GDCLASS(CurveXYZTexture, Texture2D);
-	RES_BASE_EXTENSION("curvetex")
+	RES_BASE_EXTENSION("curvetex");
 
 private:
 	mutable RID _texture;

@@ -129,9 +129,9 @@ private:
 	Vector3 hand_joint_angular_velocities[HAND_JOINT_MAX];
 };
 
-VARIANT_ENUM_CAST(XRHandTracker::Hand)
-VARIANT_ENUM_CAST(XRHandTracker::HandTrackingSource)
-VARIANT_ENUM_CAST(XRHandTracker::HandJoint)
-VARIANT_BITFIELD_CAST(XRHandTracker::HandJointFlags)
+VARIANT_ENUM_CAST(XRHandTracker::Hand);
+VARIANT_ENUM_CAST(XRHandTracker::HandTrackingSource);
+VARIANT_ENUM_CAST(XRHandTracker::HandJoint);
+VARIANT_BITFIELD_CAST(XRHandTracker::HandJointFlags);
 
 #endif // XR_HAND_TRACKER_H

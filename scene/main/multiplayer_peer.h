@@ -112,24 +112,24 @@ public:
 	/* PacketPeer extension */
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
 	GDVIRTUAL2R(Error, _get_packet, GDExtensionConstPtr<const uint8_t *>, GDExtensionPtr<int>);
-	GDVIRTUAL0R(PackedByteArray, _get_packet_script); // For GDScript.
+	GDVIRTUAL0R(PackedByteArray, _get_packet_script); // For GDScript.;
 
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 	GDVIRTUAL2R(Error, _put_packet, GDExtensionConstPtr<const uint8_t>, int);
-	GDVIRTUAL1R(Error, _put_packet_script, PackedByteArray); // For GDScript.
+	GDVIRTUAL1R(Error, _put_packet_script, PackedByteArray); // For GDScript.;
 
 	EXBIND0RC(int, get_available_packet_count);
 	EXBIND0RC(int, get_max_packet_size);
 
 	/* MultiplayerPeer extension */
 	virtual void set_refuse_new_connections(bool p_enable) override;
-	GDVIRTUAL1(_set_refuse_new_connections, bool); // Optional.
+	GDVIRTUAL1(_set_refuse_new_connections, bool); // Optional.;
 
 	virtual bool is_refusing_new_connections() const override;
-	GDVIRTUAL0RC(bool, _is_refusing_new_connections); // Optional.
+	GDVIRTUAL0RC(bool, _is_refusing_new_connections); // Optional.;
 
 	virtual bool is_server_relay_supported() const override;
-	GDVIRTUAL0RC(bool, _is_server_relay_supported); // Optional.
+	GDVIRTUAL0RC(bool, _is_server_relay_supported); // Optional.;
 
 	EXBIND1(set_transfer_channel, int);
 	EXBIND0RC(int, get_transfer_channel);

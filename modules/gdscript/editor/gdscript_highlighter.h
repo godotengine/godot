@@ -35,7 +35,7 @@
 #include "scene/gui/text_edit.h"
 
 class GDScriptSyntaxHighlighter : public EditorSyntaxHighlighter {
-	GDCLASS(GDScriptSyntaxHighlighter, EditorSyntaxHighlighter)
+	GDCLASS(GDScriptSyntaxHighlighter, EditorSyntaxHighlighter);
 
 private:
 	struct ColorRegion {

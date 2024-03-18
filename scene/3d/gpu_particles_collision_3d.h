@@ -203,7 +203,7 @@ public:
 	~GPUParticlesCollisionSDF3D();
 };
 
-VARIANT_ENUM_CAST(GPUParticlesCollisionSDF3D::Resolution)
+VARIANT_ENUM_CAST(GPUParticlesCollisionSDF3D::Resolution);
 
 class GPUParticlesCollisionHeightField3D : public GPUParticlesCollision3D {
 	GDCLASS(GPUParticlesCollisionHeightField3D, GPUParticlesCollision3D);
@@ -258,8 +258,8 @@ public:
 	~GPUParticlesCollisionHeightField3D();
 };
 
-VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::Resolution)
-VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::UpdateMode)
+VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::Resolution);
+VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::UpdateMode);
 
 class GPUParticlesAttractor3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesAttractor3D, VisualInstance3D);

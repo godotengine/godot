@@ -245,9 +245,9 @@ public: // internal methods
 	VisualShader();
 };
 
-VARIANT_ENUM_CAST(VisualShader::Type)
-VARIANT_ENUM_CAST(VisualShader::VaryingMode)
-VARIANT_ENUM_CAST(VisualShader::VaryingType)
+VARIANT_ENUM_CAST(VisualShader::Type);
+VARIANT_ENUM_CAST(VisualShader::VaryingMode);
+VARIANT_ENUM_CAST(VisualShader::VaryingType);
 ///
 ///
 ///
@@ -371,7 +371,7 @@ public:
 	VisualShaderNode();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNode::PortType)
+VARIANT_ENUM_CAST(VisualShaderNode::PortType);
 
 class VisualShaderNodeCustom : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeCustom, VisualShaderNode);
@@ -415,27 +415,27 @@ protected:
 	virtual void remove_input_port_default_value(int p_port) override;
 	virtual void clear_default_input_values() override;
 
-	GDVIRTUAL0RC(String, _get_name)
-	GDVIRTUAL0RC(String, _get_description)
-	GDVIRTUAL0RC(String, _get_category)
-	GDVIRTUAL0RC(PortType, _get_return_icon_type)
-	GDVIRTUAL0RC(int, _get_input_port_count)
-	GDVIRTUAL1RC(PortType, _get_input_port_type, int)
-	GDVIRTUAL1RC(String, _get_input_port_name, int)
-	GDVIRTUAL1RC(Variant, _get_input_port_default_value, int)
-	GDVIRTUAL1RC(int, _get_default_input_port, PortType)
-	GDVIRTUAL0RC(int, _get_output_port_count)
-	GDVIRTUAL1RC(PortType, _get_output_port_type, int)
-	GDVIRTUAL1RC(String, _get_output_port_name, int)
-	GDVIRTUAL0RC(int, _get_property_count)
-	GDVIRTUAL1RC(String, _get_property_name, int)
-	GDVIRTUAL1RC(int, _get_property_default_index, int)
-	GDVIRTUAL1RC(Vector<String>, _get_property_options, int)
-	GDVIRTUAL4RC(String, _get_code, TypedArray<String>, TypedArray<String>, Shader::Mode, VisualShader::Type)
-	GDVIRTUAL2RC(String, _get_func_code, Shader::Mode, VisualShader::Type)
-	GDVIRTUAL1RC(String, _get_global_code, Shader::Mode)
-	GDVIRTUAL0RC(bool, _is_highend)
-	GDVIRTUAL2RC(bool, _is_available, Shader::Mode, VisualShader::Type)
+	GDVIRTUAL0RC(String, _get_name);
+	GDVIRTUAL0RC(String, _get_description);
+	GDVIRTUAL0RC(String, _get_category);
+	GDVIRTUAL0RC(PortType, _get_return_icon_type);
+	GDVIRTUAL0RC(int, _get_input_port_count);
+	GDVIRTUAL1RC(PortType, _get_input_port_type, int);
+	GDVIRTUAL1RC(String, _get_input_port_name, int);
+	GDVIRTUAL1RC(Variant, _get_input_port_default_value, int);
+	GDVIRTUAL1RC(int, _get_default_input_port, PortType);
+	GDVIRTUAL0RC(int, _get_output_port_count);
+	GDVIRTUAL1RC(PortType, _get_output_port_type, int);
+	GDVIRTUAL1RC(String, _get_output_port_name, int);
+	GDVIRTUAL0RC(int, _get_property_count);
+	GDVIRTUAL1RC(String, _get_property_name, int);
+	GDVIRTUAL1RC(int, _get_property_default_index, int);
+	GDVIRTUAL1RC(Vector<String>, _get_property_options, int);
+	GDVIRTUAL4RC(String, _get_code, TypedArray<String>, TypedArray<String>, Shader::Mode, VisualShader::Type);
+	GDVIRTUAL2RC(String, _get_func_code, Shader::Mode, VisualShader::Type);
+	GDVIRTUAL1RC(String, _get_global_code, Shader::Mode);
+	GDVIRTUAL0RC(bool, _is_highend);
+	GDVIRTUAL2RC(bool, _is_available, Shader::Mode, VisualShader::Type);
 
 	bool _is_valid_code(const String &p_code) const;
 
@@ -618,7 +618,7 @@ public:
 	VisualShaderNodeParameter();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeParameter::Qualifier)
+VARIANT_ENUM_CAST(VisualShaderNodeParameter::Qualifier);
 
 class VisualShaderNodeParameterRef : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeParameterRef, VisualShaderNode);

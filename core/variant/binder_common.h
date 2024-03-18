@@ -109,7 +109,7 @@ struct VariantCaster<const T &> {
 	struct VariantInternalAccessor<m_enum> {                                                                            \
 		static _FORCE_INLINE_ m_enum get(const Variant *v) { return m_enum(*VariantInternal::get_int(v)); }             \
 		static _FORCE_INLINE_ void set(Variant *v, m_enum p_value) { *VariantInternal::get_int(v) = (int64_t)p_value; } \
-	};
+	}
 
 #define VARIANT_BITFIELD_CAST(m_enum)                                                                                                       \
 	MAKE_BITFIELD_TYPE_INFO(m_enum)                                                                                                         \
@@ -137,7 +137,7 @@ struct VariantCaster<const T &> {
 	struct VariantInternalAccessor<BitField<m_enum>> {                                                                                      \
 		static _FORCE_INLINE_ BitField<m_enum> get(const Variant *v) { return BitField<m_enum>(*VariantInternal::get_int(v)); }             \
 		static _FORCE_INLINE_ void set(Variant *v, BitField<m_enum> p_value) { *VariantInternal::get_int(v) = p_value.operator int64_t(); } \
-	};
+	}
 
 // Object enum casts must go here
 VARIANT_ENUM_CAST(Object::ConnectFlags);

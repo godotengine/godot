@@ -152,7 +152,7 @@ public:
 VARIANT_ENUM_CAST(ResourceImporter::ImportOrder);
 
 class ResourceFormatImporterSaver : public ResourceFormatSaver {
-	GDCLASS(ResourceFormatImporterSaver, ResourceFormatSaver)
+	GDCLASS(ResourceFormatImporterSaver, ResourceFormatSaver);
 
 public:
 	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;

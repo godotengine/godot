@@ -45,7 +45,8 @@ public:                                                                         
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \
 	virtual String get_base_extension() const override { return m_ext; }                                            \
                                                                                                                     \
-private:
+private:                                                                                                            \
+	_FORCE_SEMICOLON_
 
 class Resource : public RefCounted {
 	GDCLASS(Resource, RefCounted);

@@ -194,8 +194,8 @@ public:
 	~GPUParticles3D();
 };
 
-VARIANT_ENUM_CAST(GPUParticles3D::DrawOrder)
-VARIANT_ENUM_CAST(GPUParticles3D::TransformAlign)
-VARIANT_ENUM_CAST(GPUParticles3D::EmitFlags)
+VARIANT_ENUM_CAST(GPUParticles3D::DrawOrder);
+VARIANT_ENUM_CAST(GPUParticles3D::TransformAlign);
+VARIANT_ENUM_CAST(GPUParticles3D::EmitFlags);
 
 #endif // GPU_PARTICLES_3D_H

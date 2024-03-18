@@ -34,7 +34,7 @@
 #include "servers/movie_writer/movie_writer.h"
 
 class MovieWriterPNGWAV : public MovieWriter {
-	GDCLASS(MovieWriterPNGWAV, MovieWriter)
+	GDCLASS(MovieWriterPNGWAV, MovieWriter);
 
 	enum {
 		MAX_TRAILING_ZEROS = 8 // more than 10 days at 60fps, no hard drive can put up with this anyway :)

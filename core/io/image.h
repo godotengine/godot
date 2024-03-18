@@ -446,13 +446,13 @@ public:
 	Dictionary compute_image_metrics(const Ref<Image> p_compared_image, bool p_luma_metric = true);
 };
 
-VARIANT_ENUM_CAST(Image::Format)
-VARIANT_ENUM_CAST(Image::Interpolation)
-VARIANT_ENUM_CAST(Image::CompressMode)
-VARIANT_ENUM_CAST(Image::CompressSource)
-VARIANT_ENUM_CAST(Image::UsedChannels)
-VARIANT_ENUM_CAST(Image::AlphaMode)
-VARIANT_ENUM_CAST(Image::RoughnessChannel)
-VARIANT_ENUM_CAST(Image::ASTCFormat)
+VARIANT_ENUM_CAST(Image::Format);
+VARIANT_ENUM_CAST(Image::Interpolation);
+VARIANT_ENUM_CAST(Image::CompressMode);
+VARIANT_ENUM_CAST(Image::CompressSource);
+VARIANT_ENUM_CAST(Image::UsedChannels);
+VARIANT_ENUM_CAST(Image::AlphaMode);
+VARIANT_ENUM_CAST(Image::RoughnessChannel);
+VARIANT_ENUM_CAST(Image::ASTCFormat);
 
 #endif // IMAGE_H

@@ -39,7 +39,7 @@
 #import <ApplicationServices/ApplicationServices.h>
 
 class NativeMenuMacOS : public NativeMenu {
-	GDCLASS(NativeMenuMacOS, NativeMenu)
+	GDCLASS(NativeMenuMacOS, NativeMenu);
 
 	struct MenuData {
 		NSMenu *menu = nullptr;

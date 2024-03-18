@@ -35,7 +35,7 @@
 #include "scene/main/node.h"
 
 class MissingNode : public Node {
-	GDCLASS(MissingNode, Node)
+	GDCLASS(MissingNode, Node);
 	HashMap<StringName, Variant> properties;
 
 	String original_class;

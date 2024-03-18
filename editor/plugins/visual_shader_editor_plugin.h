@@ -58,7 +58,7 @@ protected:
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL2RC(Object *, _create_editor, Ref<Resource>, Ref<VisualShaderNode>)
+	GDVIRTUAL2RC(Object *, _create_editor, Ref<Resource>, Ref<VisualShaderNode>);
 
 public:
 	void set_editor(VisualShaderEditor *p_editor);

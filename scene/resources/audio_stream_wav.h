@@ -82,7 +82,7 @@ public:
 
 class AudioStreamWAV : public AudioStream {
 	GDCLASS(AudioStreamWAV, AudioStream);
-	RES_BASE_EXTENSION("sample")
+	RES_BASE_EXTENSION("sample");
 
 public:
 	enum Format {
@@ -153,7 +153,7 @@ public:
 	~AudioStreamWAV();
 };
 
-VARIANT_ENUM_CAST(AudioStreamWAV::Format)
-VARIANT_ENUM_CAST(AudioStreamWAV::LoopMode)
+VARIANT_ENUM_CAST(AudioStreamWAV::Format);
+VARIANT_ENUM_CAST(AudioStreamWAV::LoopMode);
 
 #endif // AUDIO_STREAM_WAV_H

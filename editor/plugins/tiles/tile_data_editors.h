@@ -73,7 +73,8 @@ public:
 };
 
 class DummyObject : public Object {
-	GDCLASS(DummyObject, Object)
+	GDCLASS(DummyObject, Object);
+
 private:
 	HashMap<String, Variant> properties;
 

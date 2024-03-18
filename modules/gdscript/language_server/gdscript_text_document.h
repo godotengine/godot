@@ -37,7 +37,8 @@
 #include "core/object/ref_counted.h"
 
 class GDScriptTextDocument : public RefCounted {
-	GDCLASS(GDScriptTextDocument, RefCounted)
+	GDCLASS(GDScriptTextDocument, RefCounted);
+
 protected:
 	static void _bind_methods();
 

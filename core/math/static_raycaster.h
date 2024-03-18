@@ -44,7 +44,8 @@
 #endif
 
 class StaticRaycaster : public RefCounted {
-	GDCLASS(StaticRaycaster, RefCounted)
+	GDCLASS(StaticRaycaster, RefCounted);
+
 protected:
 	static StaticRaycaster *(*create_function)();
 

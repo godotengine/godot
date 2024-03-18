@@ -6191,12 +6191,12 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("paste", "caret_index"), &TextEdit::paste, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("paste_primary_clipboard", "caret_index"), &TextEdit::paste_primary_clipboard, DEFVAL(-1));
 
-	GDVIRTUAL_BIND(_handle_unicode_input, "unicode_char", "caret_index")
-	GDVIRTUAL_BIND(_backspace, "caret_index")
-	GDVIRTUAL_BIND(_cut, "caret_index")
-	GDVIRTUAL_BIND(_copy, "caret_index")
-	GDVIRTUAL_BIND(_paste, "caret_index")
-	GDVIRTUAL_BIND(_paste_primary_clipboard, "caret_index")
+	GDVIRTUAL_BIND(_handle_unicode_input, "unicode_char", "caret_index");
+	GDVIRTUAL_BIND(_backspace, "caret_index");
+	GDVIRTUAL_BIND(_cut, "caret_index");
+	GDVIRTUAL_BIND(_copy, "caret_index");
+	GDVIRTUAL_BIND(_paste, "caret_index");
+	GDVIRTUAL_BIND(_paste_primary_clipboard, "caret_index");
 
 	// Context Menu
 	BIND_ENUM_CONSTANT(MENU_CUT);

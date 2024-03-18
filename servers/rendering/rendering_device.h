@@ -59,7 +59,7 @@ class RDFramebufferPass;
 class RDPipelineSpecializationConstant;
 
 class RenderingDevice : public RenderingDeviceCommons {
-	GDCLASS(RenderingDevice, Object)
+	GDCLASS(RenderingDevice, Object);
 
 	_THREAD_SAFE_CLASS_
 public:
@@ -1395,38 +1395,38 @@ private:
 	void _compute_list_set_push_constant(ComputeListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 };
 
-VARIANT_ENUM_CAST(RenderingDevice::DeviceType)
-VARIANT_ENUM_CAST(RenderingDevice::DriverResource)
-VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
-VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)
-VARIANT_ENUM_CAST(RenderingDevice::CompareOperator)
-VARIANT_ENUM_CAST(RenderingDevice::DataFormat)
-VARIANT_ENUM_CAST(RenderingDevice::TextureType)
-VARIANT_ENUM_CAST(RenderingDevice::TextureSamples)
-VARIANT_BITFIELD_CAST(RenderingDevice::TextureUsageBits)
-VARIANT_ENUM_CAST(RenderingDevice::TextureSwizzle)
-VARIANT_ENUM_CAST(RenderingDevice::TextureSliceType)
-VARIANT_ENUM_CAST(RenderingDevice::SamplerFilter)
-VARIANT_ENUM_CAST(RenderingDevice::SamplerRepeatMode)
-VARIANT_ENUM_CAST(RenderingDevice::SamplerBorderColor)
-VARIANT_ENUM_CAST(RenderingDevice::VertexFrequency)
-VARIANT_ENUM_CAST(RenderingDevice::IndexBufferFormat)
-VARIANT_BITFIELD_CAST(RenderingDevice::StorageBufferUsage)
-VARIANT_ENUM_CAST(RenderingDevice::UniformType)
-VARIANT_ENUM_CAST(RenderingDevice::RenderPrimitive)
-VARIANT_ENUM_CAST(RenderingDevice::PolygonCullMode)
-VARIANT_ENUM_CAST(RenderingDevice::PolygonFrontFace)
-VARIANT_ENUM_CAST(RenderingDevice::StencilOperation)
-VARIANT_ENUM_CAST(RenderingDevice::LogicOperation)
-VARIANT_ENUM_CAST(RenderingDevice::BlendFactor)
-VARIANT_ENUM_CAST(RenderingDevice::BlendOperation)
-VARIANT_BITFIELD_CAST(RenderingDevice::PipelineDynamicStateFlags)
-VARIANT_ENUM_CAST(RenderingDevice::PipelineSpecializationConstantType)
-VARIANT_ENUM_CAST(RenderingDevice::InitialAction)
-VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
-VARIANT_ENUM_CAST(RenderingDevice::Limit)
-VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
-VARIANT_ENUM_CAST(RenderingDevice::Features)
+VARIANT_ENUM_CAST(RenderingDevice::DeviceType);
+VARIANT_ENUM_CAST(RenderingDevice::DriverResource);
+VARIANT_ENUM_CAST(RenderingDevice::ShaderStage);
+VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage);
+VARIANT_ENUM_CAST(RenderingDevice::CompareOperator);
+VARIANT_ENUM_CAST(RenderingDevice::DataFormat);
+VARIANT_ENUM_CAST(RenderingDevice::TextureType);
+VARIANT_ENUM_CAST(RenderingDevice::TextureSamples);
+VARIANT_BITFIELD_CAST(RenderingDevice::TextureUsageBits);
+VARIANT_ENUM_CAST(RenderingDevice::TextureSwizzle);
+VARIANT_ENUM_CAST(RenderingDevice::TextureSliceType);
+VARIANT_ENUM_CAST(RenderingDevice::SamplerFilter);
+VARIANT_ENUM_CAST(RenderingDevice::SamplerRepeatMode);
+VARIANT_ENUM_CAST(RenderingDevice::SamplerBorderColor);
+VARIANT_ENUM_CAST(RenderingDevice::VertexFrequency);
+VARIANT_ENUM_CAST(RenderingDevice::IndexBufferFormat);
+VARIANT_BITFIELD_CAST(RenderingDevice::StorageBufferUsage);
+VARIANT_ENUM_CAST(RenderingDevice::UniformType);
+VARIANT_ENUM_CAST(RenderingDevice::RenderPrimitive);
+VARIANT_ENUM_CAST(RenderingDevice::PolygonCullMode);
+VARIANT_ENUM_CAST(RenderingDevice::PolygonFrontFace);
+VARIANT_ENUM_CAST(RenderingDevice::StencilOperation);
+VARIANT_ENUM_CAST(RenderingDevice::LogicOperation);
+VARIANT_ENUM_CAST(RenderingDevice::BlendFactor);
+VARIANT_ENUM_CAST(RenderingDevice::BlendOperation);
+VARIANT_BITFIELD_CAST(RenderingDevice::PipelineDynamicStateFlags);
+VARIANT_ENUM_CAST(RenderingDevice::PipelineSpecializationConstantType);
+VARIANT_ENUM_CAST(RenderingDevice::InitialAction);
+VARIANT_ENUM_CAST(RenderingDevice::FinalAction);
+VARIANT_ENUM_CAST(RenderingDevice::Limit);
+VARIANT_ENUM_CAST(RenderingDevice::MemoryType);
+VARIANT_ENUM_CAST(RenderingDevice::Features);
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_BITFIELD_CAST(RenderingDevice::BarrierMask);

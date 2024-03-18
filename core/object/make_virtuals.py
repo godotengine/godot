@@ -68,7 +68,8 @@ proto = """#define GDVIRTUAL$VER($RET m_name $ARG)\\
 		method_info.flags = $METHOD_FLAGS;\\
 		$FILL_METHOD_INFO\\
 		return method_info;\\
-	}
+	}\\
+	_FORCE_SEMICOLON_
 
 """
 
@@ -185,9 +186,10 @@ def run(target, source, env):
 		tracker->initialized = &m_initialized;\\
 		tracker->next = virtual_method_list;\\
 		virtual_method_list = tracker;\\
-	}
+	}\\
+	_FORCE_SEMICOLON_
 #else
-#define GDVIRTUAL_TRACK(m_virtual, m_initialized)
+#define GDVIRTUAL_TRACK(m_virtual, m_initialized) _FORCE_SEMICOLON_
 #endif
 
 """

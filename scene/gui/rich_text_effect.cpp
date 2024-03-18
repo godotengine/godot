@@ -39,8 +39,8 @@ CharFXTransform::~CharFXTransform() {
 	environment.clear();
 }
 
-void RichTextEffect::_bind_methods(){
-	GDVIRTUAL_BIND(_process_custom_fx, "char_fx")
+void RichTextEffect::_bind_methods() {
+	GDVIRTUAL_BIND(_process_custom_fx, "char_fx");
 }
 
 Variant RichTextEffect::get_bbcode() const {

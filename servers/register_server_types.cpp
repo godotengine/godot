@@ -299,8 +299,8 @@ void register_server_types() {
 	GDREGISTER_ABSTRACT_CLASS(PhysicsServer3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3DExtension);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3DExtension);
-	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3DExtension)
-	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3DRenderingServerHandler)
+	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState3DExtension);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3DRenderingServerHandler);
 
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionRayResult, "Vector3 position;Vector3 normal;RID rid;ObjectID collider_id;Object *collider;int shape;int face_index");
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionShapeResult, "RID rid;ObjectID collider_id;Object *collider;int shape");

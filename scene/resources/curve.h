@@ -159,7 +159,7 @@ private:
 	int _minmax_set_once = 0b00; // Encodes whether min and max have been set a first time, first bit for min and second for max.
 };
 
-VARIANT_ENUM_CAST(Curve::TangentMode)
+VARIANT_ENUM_CAST(Curve::TangentMode);
 
 class Curve2D : public Resource {
 	GDCLASS(Curve2D, Resource);

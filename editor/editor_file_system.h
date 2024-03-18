@@ -115,9 +115,9 @@ class EditorFileSystemImportFormatSupportQuery : public RefCounted {
 	GDCLASS(EditorFileSystemImportFormatSupportQuery, RefCounted);
 
 protected:
-	GDVIRTUAL0RC(bool, _is_active)
-	GDVIRTUAL0RC(Vector<String>, _get_file_extensions)
-	GDVIRTUAL0RC(bool, _query)
+	GDVIRTUAL0RC(bool, _is_active);
+	GDVIRTUAL0RC(Vector<String>, _get_file_extensions);
+	GDVIRTUAL0RC(bool, _query);
 	static void _bind_methods() {
 		GDVIRTUAL_BIND(_is_active);
 		GDVIRTUAL_BIND(_get_file_extensions);

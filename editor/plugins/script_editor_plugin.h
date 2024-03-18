@@ -52,7 +52,7 @@ class VSplitContainer;
 class WindowWrapper;
 
 class EditorSyntaxHighlighter : public SyntaxHighlighter {
-	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter)
+	GDCLASS(EditorSyntaxHighlighter, SyntaxHighlighter);
 
 private:
 	Ref<RefCounted> edited_resourse;
@@ -60,8 +60,8 @@ private:
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0RC(String, _get_name)
-	GDVIRTUAL0RC(PackedStringArray, _get_supported_languages)
+	GDVIRTUAL0RC(String, _get_name);
+	GDVIRTUAL0RC(PackedStringArray, _get_supported_languages);
 
 public:
 	virtual String _get_name() const;
@@ -74,7 +74,7 @@ public:
 };
 
 class EditorStandardSyntaxHighlighter : public EditorSyntaxHighlighter {
-	GDCLASS(EditorStandardSyntaxHighlighter, EditorSyntaxHighlighter)
+	GDCLASS(EditorStandardSyntaxHighlighter, EditorSyntaxHighlighter);
 
 private:
 	Ref<CodeHighlighter> highlighter;
@@ -91,7 +91,7 @@ public:
 };
 
 class EditorPlainTextSyntaxHighlighter : public EditorSyntaxHighlighter {
-	GDCLASS(EditorPlainTextSyntaxHighlighter, EditorSyntaxHighlighter)
+	GDCLASS(EditorPlainTextSyntaxHighlighter, EditorSyntaxHighlighter);
 
 public:
 	virtual String _get_name() const override { return TTR("Plain Text"); }
@@ -100,7 +100,7 @@ public:
 };
 
 class EditorJSONSyntaxHighlighter : public EditorSyntaxHighlighter {
-	GDCLASS(EditorJSONSyntaxHighlighter, EditorSyntaxHighlighter)
+	GDCLASS(EditorJSONSyntaxHighlighter, EditorSyntaxHighlighter);
 
 private:
 	Ref<CodeHighlighter> highlighter;

@@ -42,7 +42,7 @@ class Texture2D;
 class Image;
 
 class DisplayServer : public Object {
-	GDCLASS(DisplayServer, Object)
+	GDCLASS(DisplayServer, Object);
 
 	static DisplayServer *singleton;
 	static bool hidpi_allowed;
@@ -587,17 +587,17 @@ public:
 	~DisplayServer();
 };
 
-VARIANT_ENUM_CAST(DisplayServer::WindowEvent)
-VARIANT_ENUM_CAST(DisplayServer::Feature)
-VARIANT_ENUM_CAST(DisplayServer::MouseMode)
-VARIANT_ENUM_CAST(DisplayServer::ScreenOrientation)
-VARIANT_ENUM_CAST(DisplayServer::WindowMode)
-VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
-VARIANT_ENUM_CAST(DisplayServer::HandleType)
+VARIANT_ENUM_CAST(DisplayServer::WindowEvent);
+VARIANT_ENUM_CAST(DisplayServer::Feature);
+VARIANT_ENUM_CAST(DisplayServer::MouseMode);
+VARIANT_ENUM_CAST(DisplayServer::ScreenOrientation);
+VARIANT_ENUM_CAST(DisplayServer::WindowMode);
+VARIANT_ENUM_CAST(DisplayServer::WindowFlags);
+VARIANT_ENUM_CAST(DisplayServer::HandleType);
 VARIANT_ENUM_CAST(DisplayServer::VirtualKeyboardType);
-VARIANT_ENUM_CAST(DisplayServer::CursorShape)
-VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
-VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)
-VARIANT_ENUM_CAST(DisplayServer::FileDialogMode)
+VARIANT_ENUM_CAST(DisplayServer::CursorShape);
+VARIANT_ENUM_CAST(DisplayServer::VSyncMode);
+VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent);
+VARIANT_ENUM_CAST(DisplayServer::FileDialogMode);
 
 #endif // DISPLAY_SERVER_H

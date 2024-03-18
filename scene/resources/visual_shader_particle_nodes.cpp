@@ -1059,7 +1059,7 @@ void VisualShaderNodeParticleAccelerator::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Linear,Radial,Tangential"), "set_mode", "get_mode");
 
 	BIND_ENUM_CONSTANT(MODE_LINEAR);
-	BIND_ENUM_CONSTANT(MODE_RADIAL)
+	BIND_ENUM_CONSTANT(MODE_RADIAL);
 	BIND_ENUM_CONSTANT(MODE_TANGENTIAL);
 	BIND_ENUM_CONSTANT(MODE_MAX);
 }

@@ -44,7 +44,7 @@
 #include "scene/resources/surface_tool.h"
 
 class SceneImportSettingsData : public Object {
-	GDCLASS(SceneImportSettingsData, Object)
+	GDCLASS(SceneImportSettingsData, Object);
 	friend class SceneImportSettingsDialog;
 	HashMap<StringName, Variant> *settings = nullptr;
 	HashMap<StringName, Variant> current;

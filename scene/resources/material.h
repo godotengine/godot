@@ -39,7 +39,7 @@
 
 class Material : public Resource {
 	GDCLASS(Material, Resource);
-	RES_BASE_EXTENSION("material")
+	RES_BASE_EXTENSION("material");
 	OBJ_SAVE_TYPE(Material);
 
 	RID material;
@@ -65,10 +65,11 @@ protected:
 	void _mark_initialized(const Callable &p_queue_shader_change_callable);
 	bool _is_initialized() { return init_state == INIT_STATE_READY; }
 
-	GDVIRTUAL0RC(RID, _get_shader_rid)
-	GDVIRTUAL0RC(Shader::Mode, _get_shader_mode)
-	GDVIRTUAL0RC(bool, _can_do_next_pass)
-	GDVIRTUAL0RC(bool, _can_use_render_priority)
+	GDVIRTUAL0RC(RID, _get_shader_rid);
+	GDVIRTUAL0RC(Shader::Mode, _get_shader_mode);
+	GDVIRTUAL0RC(bool, _can_do_next_pass);
+	GDVIRTUAL0RC(bool, _can_use_render_priority);
+
 public:
 	enum {
 		RENDER_PRIORITY_MAX = RS::MATERIAL_RENDER_PRIORITY_MAX,
@@ -782,26 +783,27 @@ public:
 	virtual ~BaseMaterial3D();
 };
 
-VARIANT_ENUM_CAST(BaseMaterial3D::TextureParam)
-VARIANT_ENUM_CAST(BaseMaterial3D::TextureFilter)
-VARIANT_ENUM_CAST(BaseMaterial3D::ShadingMode)
-VARIANT_ENUM_CAST(BaseMaterial3D::Transparency)
-VARIANT_ENUM_CAST(BaseMaterial3D::AlphaAntiAliasing)
-VARIANT_ENUM_CAST(BaseMaterial3D::DetailUV)
-VARIANT_ENUM_CAST(BaseMaterial3D::Feature)
-VARIANT_ENUM_CAST(BaseMaterial3D::BlendMode)
-VARIANT_ENUM_CAST(BaseMaterial3D::DepthDrawMode)
-VARIANT_ENUM_CAST(BaseMaterial3D::CullMode)
-VARIANT_ENUM_CAST(BaseMaterial3D::Flags)
-VARIANT_ENUM_CAST(BaseMaterial3D::DiffuseMode)
-VARIANT_ENUM_CAST(BaseMaterial3D::SpecularMode)
-VARIANT_ENUM_CAST(BaseMaterial3D::BillboardMode)
-VARIANT_ENUM_CAST(BaseMaterial3D::TextureChannel)
-VARIANT_ENUM_CAST(BaseMaterial3D::EmissionOperator)
-VARIANT_ENUM_CAST(BaseMaterial3D::DistanceFadeMode)
+VARIANT_ENUM_CAST(BaseMaterial3D::TextureParam);
+VARIANT_ENUM_CAST(BaseMaterial3D::TextureFilter);
+VARIANT_ENUM_CAST(BaseMaterial3D::ShadingMode);
+VARIANT_ENUM_CAST(BaseMaterial3D::Transparency);
+VARIANT_ENUM_CAST(BaseMaterial3D::AlphaAntiAliasing);
+VARIANT_ENUM_CAST(BaseMaterial3D::DetailUV);
+VARIANT_ENUM_CAST(BaseMaterial3D::Feature);
+VARIANT_ENUM_CAST(BaseMaterial3D::BlendMode);
+VARIANT_ENUM_CAST(BaseMaterial3D::DepthDrawMode);
+VARIANT_ENUM_CAST(BaseMaterial3D::CullMode);
+VARIANT_ENUM_CAST(BaseMaterial3D::Flags);
+VARIANT_ENUM_CAST(BaseMaterial3D::DiffuseMode);
+VARIANT_ENUM_CAST(BaseMaterial3D::SpecularMode);
+VARIANT_ENUM_CAST(BaseMaterial3D::BillboardMode);
+VARIANT_ENUM_CAST(BaseMaterial3D::TextureChannel);
+VARIANT_ENUM_CAST(BaseMaterial3D::EmissionOperator);
+VARIANT_ENUM_CAST(BaseMaterial3D::DistanceFadeMode);
 
 class StandardMaterial3D : public BaseMaterial3D {
-	GDCLASS(StandardMaterial3D, BaseMaterial3D)
+	GDCLASS(StandardMaterial3D, BaseMaterial3D);
+
 protected:
 #ifndef DISABLE_DEPRECATED
 	// Kept for compatibility from 3.x to 4.0.
@@ -814,14 +816,16 @@ public:
 };
 
 class ORMMaterial3D : public BaseMaterial3D {
-	GDCLASS(ORMMaterial3D, BaseMaterial3D)
+	GDCLASS(ORMMaterial3D, BaseMaterial3D);
+
 public:
 	ORMMaterial3D() :
 			BaseMaterial3D(true) {}
 };
 
 class PlaceholderMaterial : public Material {
-	GDCLASS(PlaceholderMaterial, Material)
+	GDCLASS(PlaceholderMaterial, Material);
+
 public:
 	virtual RID get_shader_rid() const override { return RID(); }
 	virtual Shader::Mode get_shader_mode() const override { return Shader::MODE_CANVAS_ITEM; }

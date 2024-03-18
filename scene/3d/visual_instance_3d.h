@@ -49,7 +49,8 @@ protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 
-	GDVIRTUAL0RC(AABB, _get_aabb)
+	GDVIRTUAL0RC(AABB, _get_aabb);
+
 public:
 	enum GetFacesFlags {
 		FACES_SOLID = 1, // solid geometry

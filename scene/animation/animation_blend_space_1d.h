@@ -123,6 +123,6 @@ public:
 	~AnimationNodeBlendSpace1D();
 };
 
-VARIANT_ENUM_CAST(AnimationNodeBlendSpace1D::BlendMode)
+VARIANT_ENUM_CAST(AnimationNodeBlendSpace1D::BlendMode);
 
 #endif // ANIMATION_BLEND_SPACE_1D_H

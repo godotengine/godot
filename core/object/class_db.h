@@ -481,13 +481,13 @@ public:
 };
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant)
 
 #define BIND_BITFIELD_FLAG(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant, #m_constant), #m_constant, m_constant, true);
+	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant, #m_constant), #m_constant, m_constant, true)
 
 #define BIND_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant)
 
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -512,35 +512,40 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 }
 
 #define BIND_METHOD_ERR_RETURN_DOC(m_method, ...) \
-	::ClassDB::set_method_error_return_values(get_class_static(), m_method, errarray(__VA_ARGS__));
+	::ClassDB::set_method_error_return_values(get_class_static(), m_method, errarray(__VA_ARGS__))
 
 #else
 
-#define BIND_METHOD_ERR_RETURN_DOC(m_method, ...)
+#define BIND_METHOD_ERR_RETURN_DOC(m_method, ...) _FORCE_SEMICOLON_
 
 #endif
 
 #define GDREGISTER_CLASS(m_class)             \
 	if (m_class::_class_is_enabled) {         \
 		::ClassDB::register_class<m_class>(); \
-	}
+	}                                         \
+	_FORCE_SEMICOLON_
 #define GDREGISTER_VIRTUAL_CLASS(m_class)         \
 	if (m_class::_class_is_enabled) {             \
 		::ClassDB::register_class<m_class>(true); \
-	}
+	}                                             \
+	_FORCE_SEMICOLON_
 #define GDREGISTER_ABSTRACT_CLASS(m_class)             \
 	if (m_class::_class_is_enabled) {                  \
 		::ClassDB::register_abstract_class<m_class>(); \
-	}
+	}                                                  \
+	_FORCE_SEMICOLON_
 #define GDREGISTER_INTERNAL_CLASS(m_class)             \
 	if (m_class::_class_is_enabled) {                  \
 		::ClassDB::register_internal_class<m_class>(); \
-	}
+	}                                                  \
+	_FORCE_SEMICOLON_
 
 #define GDREGISTER_RUNTIME_CLASS(m_class)             \
 	if (m_class::_class_is_enabled) {                 \
 		::ClassDB::register_runtime_class<m_class>(); \
-	}
+	}                                                 \
+	_FORCE_SEMICOLON_
 
 #define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))
 

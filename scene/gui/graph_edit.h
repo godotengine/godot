@@ -364,9 +364,9 @@ protected:
 	virtual bool is_in_input_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
 	virtual bool is_in_output_hotzone(GraphNode *p_graph_node, int p_port_idx, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
 
-	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
-	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
-	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2)
+	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2);
+	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2);
+	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2);
 	GDVIRTUAL4R(bool, _is_node_hover_valid, StringName, int, StringName, int);
 
 public:

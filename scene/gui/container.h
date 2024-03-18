@@ -46,8 +46,8 @@ protected:
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
-	GDVIRTUAL0RC(Vector<int>, _get_allowed_size_flags_horizontal)
-	GDVIRTUAL0RC(Vector<int>, _get_allowed_size_flags_vertical)
+	GDVIRTUAL0RC(Vector<int>, _get_allowed_size_flags_horizontal);
+	GDVIRTUAL0RC(Vector<int>, _get_allowed_size_flags_vertical);
 
 	void _notification(int p_what);
 	static void _bind_methods();

@@ -71,7 +71,7 @@ struct DAPeer : RefCounted {
 };
 
 class DebugAdapterProtocol : public Object {
-	GDCLASS(DebugAdapterProtocol, Object)
+	GDCLASS(DebugAdapterProtocol, Object);
 
 	friend class DebugAdapterParser;
 

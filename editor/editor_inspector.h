@@ -123,8 +123,8 @@ private:
 
 	HashMap<StringName, Variant> cache;
 
-	GDVIRTUAL0(_update_property)
-	GDVIRTUAL1(_set_read_only, bool)
+	GDVIRTUAL0(_update_property);
+	GDVIRTUAL1(_set_read_only, bool);
 
 	void _update_pin_flags();
 
@@ -232,12 +232,12 @@ public:
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL1RC(bool, _can_handle, Object *)
-	GDVIRTUAL1(_parse_begin, Object *)
-	GDVIRTUAL2(_parse_category, Object *, String)
-	GDVIRTUAL2(_parse_group, Object *, String)
-	GDVIRTUAL7R(bool, _parse_property, Object *, Variant::Type, String, PropertyHint, String, BitField<PropertyUsageFlags>, bool)
-	GDVIRTUAL1(_parse_end, Object *)
+	GDVIRTUAL1RC(bool, _can_handle, Object *);
+	GDVIRTUAL1(_parse_begin, Object *);
+	GDVIRTUAL2(_parse_category, Object *, String);
+	GDVIRTUAL2(_parse_group, Object *, String);
+	GDVIRTUAL7R(bool, _parse_property, Object *, Variant::Type, String, PropertyHint, String, BitField<PropertyUsageFlags>, bool);
+	GDVIRTUAL1(_parse_end, Object *);
 
 public:
 	void add_custom_control(Control *control);

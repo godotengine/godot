@@ -41,7 +41,7 @@
 #include "scene/gui/tree.h"
 
 class EditorNetworkProfiler : public VBoxContainer {
-	GDCLASS(EditorNetworkProfiler, VBoxContainer)
+	GDCLASS(EditorNetworkProfiler, VBoxContainer);
 
 public:
 	struct NodeInfo {

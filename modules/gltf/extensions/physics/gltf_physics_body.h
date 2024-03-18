@@ -38,7 +38,7 @@
 // https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_physics_body
 
 class GLTFPhysicsBody : public Resource {
-	GDCLASS(GLTFPhysicsBody, Resource)
+	GDCLASS(GLTFPhysicsBody, Resource);
 
 public:
 	// These values map to Godot's physics body types.

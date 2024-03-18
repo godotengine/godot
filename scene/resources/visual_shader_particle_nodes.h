@@ -259,7 +259,7 @@ public:
 	VisualShaderNodeParticleRandomness();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeParticleRandomness::OpType)
+VARIANT_ENUM_CAST(VisualShaderNodeParticleRandomness::OpType);
 
 // Process nodes
 
@@ -303,7 +303,7 @@ public:
 	VisualShaderNodeParticleAccelerator();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeParticleAccelerator::Mode)
+VARIANT_ENUM_CAST(VisualShaderNodeParticleAccelerator::Mode);
 
 // Common nodes
 
@@ -367,6 +367,6 @@ public:
 	VisualShaderNodeParticleEmit();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeParticleEmit::EmitFlags)
+VARIANT_ENUM_CAST(VisualShaderNodeParticleEmit::EmitFlags);
 
 #endif // VISUAL_SHADER_PARTICLE_NODES_H

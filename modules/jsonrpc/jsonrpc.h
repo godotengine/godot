@@ -35,7 +35,7 @@
 #include "core/variant/variant.h"
 
 class JSONRPC : public Object {
-	GDCLASS(JSONRPC, Object)
+	GDCLASS(JSONRPC, Object);
 
 	HashMap<String, Object *> method_scopes;
 

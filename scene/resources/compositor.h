@@ -65,7 +65,7 @@ protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 
-	GDVIRTUAL2(_render_callback, int, const RenderData *)
+	GDVIRTUAL2(_render_callback, int, const RenderData *);
 
 public:
 	virtual RID get_rid() const override { return rid; }
@@ -95,7 +95,7 @@ public:
 	~CompositorEffect();
 };
 
-VARIANT_ENUM_CAST(CompositorEffect::EffectCallbackType)
+VARIANT_ENUM_CAST(CompositorEffect::EffectCallbackType);
 
 /* Compositor */
 

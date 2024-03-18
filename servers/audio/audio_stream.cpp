@@ -91,12 +91,12 @@ Variant AudioStreamPlayback::get_parameter(const StringName &p_name) const {
 }
 
 void AudioStreamPlayback::_bind_methods() {
-	GDVIRTUAL_BIND(_start, "from_pos")
-	GDVIRTUAL_BIND(_stop)
-	GDVIRTUAL_BIND(_is_playing)
-	GDVIRTUAL_BIND(_get_loop_count)
-	GDVIRTUAL_BIND(_get_playback_position)
-	GDVIRTUAL_BIND(_seek, "position")
+	GDVIRTUAL_BIND(_start, "from_pos");
+	GDVIRTUAL_BIND(_stop);
+	GDVIRTUAL_BIND(_is_playing);
+	GDVIRTUAL_BIND(_get_loop_count);
+	GDVIRTUAL_BIND(_get_playback_position);
+	GDVIRTUAL_BIND(_seek, "position");
 	GDVIRTUAL_BIND(_mix, "buffer", "rate_scale", "frames");
 	GDVIRTUAL_BIND(_tag_used_streams);
 	GDVIRTUAL_BIND(_set_parameter, "name", "value");
@@ -279,9 +279,9 @@ void AudioStream::_bind_methods() {
 	GDVIRTUAL_BIND(_get_stream_name);
 	GDVIRTUAL_BIND(_get_length);
 	GDVIRTUAL_BIND(_is_monophonic);
-	GDVIRTUAL_BIND(_get_bpm)
-	GDVIRTUAL_BIND(_get_beat_count)
-	GDVIRTUAL_BIND(_get_parameter_list)
+	GDVIRTUAL_BIND(_get_bpm);
+	GDVIRTUAL_BIND(_get_beat_count);
+	GDVIRTUAL_BIND(_get_parameter_list);
 
 	ADD_SIGNAL(MethodInfo("parameter_list_changed"));
 }

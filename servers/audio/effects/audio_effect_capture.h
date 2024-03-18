@@ -52,7 +52,7 @@ public:
 };
 
 class AudioEffectCapture : public AudioEffect {
-	GDCLASS(AudioEffectCapture, AudioEffect)
+	GDCLASS(AudioEffectCapture, AudioEffect);
 	friend class AudioEffectCaptureInstance;
 
 	RingBuffer<AudioFrame> buffer;

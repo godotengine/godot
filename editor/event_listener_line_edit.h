@@ -41,7 +41,7 @@ enum InputType {
 };
 
 class EventListenerLineEdit : public LineEdit {
-	GDCLASS(EventListenerLineEdit, LineEdit)
+	GDCLASS(EventListenerLineEdit, LineEdit);
 
 	int allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
 	bool ignore_next_event = true;

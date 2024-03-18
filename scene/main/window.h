@@ -257,7 +257,7 @@ protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
-	GDVIRTUAL0RC(Vector2, _get_contents_minimum_size)
+	GDVIRTUAL0RC(Vector2, _get_contents_minimum_size);
 
 public:
 	enum {

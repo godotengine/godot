@@ -57,18 +57,18 @@ public:
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
-	GDVIRTUAL2RC(bool, _recognize_path, String, StringName)
-	GDVIRTUAL1RC(bool, _handles_type, StringName)
-	GDVIRTUAL1RC(String, _get_resource_type, String)
-	GDVIRTUAL1RC(String, _get_resource_script_class, String)
-	GDVIRTUAL1RC(ResourceUID::ID, _get_resource_uid, String)
-	GDVIRTUAL2RC(Vector<String>, _get_dependencies, String, bool)
-	GDVIRTUAL1RC(Vector<String>, _get_classes_used, String)
-	GDVIRTUAL2RC(Error, _rename_dependencies, String, Dictionary)
-	GDVIRTUAL1RC(bool, _exists, String)
+	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions);
+	GDVIRTUAL2RC(bool, _recognize_path, String, StringName);
+	GDVIRTUAL1RC(bool, _handles_type, StringName);
+	GDVIRTUAL1RC(String, _get_resource_type, String);
+	GDVIRTUAL1RC(String, _get_resource_script_class, String);
+	GDVIRTUAL1RC(ResourceUID::ID, _get_resource_uid, String);
+	GDVIRTUAL2RC(Vector<String>, _get_dependencies, String, bool);
+	GDVIRTUAL1RC(Vector<String>, _get_classes_used, String);
+	GDVIRTUAL2RC(Error, _rename_dependencies, String, Dictionary);
+	GDVIRTUAL1RC(bool, _exists, String);
 
-	GDVIRTUAL4RC(Variant, _load, String, String, bool, int)
+	GDVIRTUAL4RC(Variant, _load, String, String, bool, int);
 
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
@@ -91,7 +91,7 @@ public:
 	virtual ~ResourceFormatLoader() {}
 };
 
-VARIANT_ENUM_CAST(ResourceFormatLoader::CacheMode)
+VARIANT_ENUM_CAST(ResourceFormatLoader::CacheMode);
 
 typedef void (*ResourceLoadErrorNotify)(const String &p_text);
 typedef void (*DependencyErrorNotify)(const String &p_loading, const String &p_which, const String &p_type);

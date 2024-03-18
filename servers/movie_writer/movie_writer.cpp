@@ -130,14 +130,14 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 void MovieWriter::_bind_methods() {
 	ClassDB::bind_static_method("MovieWriter", D_METHOD("add_writer", "writer"), &MovieWriter::add_writer);
 
-	GDVIRTUAL_BIND(_get_audio_mix_rate)
-	GDVIRTUAL_BIND(_get_audio_speaker_mode)
+	GDVIRTUAL_BIND(_get_audio_mix_rate);
+	GDVIRTUAL_BIND(_get_audio_speaker_mode);
 
-	GDVIRTUAL_BIND(_handles_file, "path")
+	GDVIRTUAL_BIND(_handles_file, "path");
 
-	GDVIRTUAL_BIND(_write_begin, "movie_size", "fps", "base_path")
-	GDVIRTUAL_BIND(_write_frame, "frame_image", "audio_frame_block")
-	GDVIRTUAL_BIND(_write_end)
+	GDVIRTUAL_BIND(_write_begin, "movie_size", "fps", "base_path");
+	GDVIRTUAL_BIND(_write_frame, "frame_image", "audio_frame_block");
+	GDVIRTUAL_BIND(_write_end);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/mix_rate", PROPERTY_HINT_RANGE, "8000,192000,1,suffix:Hz"), 48000);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/movie_writer/speaker_mode", PROPERTY_HINT_ENUM, "Stereo,3.1,5.1,7.1"), 0);

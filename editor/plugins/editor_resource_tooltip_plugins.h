@@ -48,8 +48,8 @@ class EditorResourceTooltipPlugin : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL1RC(bool, _handles, String)
-	GDVIRTUAL3RC(Control *, _make_tooltip_for_path, String, Dictionary, Control *)
+	GDVIRTUAL1RC(bool, _handles, String);
+	GDVIRTUAL3RC(Control *, _make_tooltip_for_path, String, Dictionary, Control *);
 
 public:
 	static VBoxContainer *make_default_tooltip(const String &p_resource_path);

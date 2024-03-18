@@ -82,7 +82,7 @@ public:
 	~Sky();
 };
 
-VARIANT_ENUM_CAST(Sky::RadianceSize)
-VARIANT_ENUM_CAST(Sky::ProcessMode)
+VARIANT_ENUM_CAST(Sky::RadianceSize);
+VARIANT_ENUM_CAST(Sky::ProcessMode);
 
 #endif // SKY_H

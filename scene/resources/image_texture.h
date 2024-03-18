@@ -165,7 +165,7 @@ public:
 };
 
 class Texture2DArray : public ImageTextureLayered {
-	GDCLASS(Texture2DArray, ImageTextureLayered)
+	GDCLASS(Texture2DArray, ImageTextureLayered);
 
 protected:
 	static void _bind_methods();

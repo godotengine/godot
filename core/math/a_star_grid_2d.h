@@ -149,8 +149,8 @@ protected:
 	virtual real_t _estimate_cost(const Vector2i &p_from_id, const Vector2i &p_to_id);
 	virtual real_t _compute_cost(const Vector2i &p_from_id, const Vector2i &p_to_id);
 
-	GDVIRTUAL2RC(real_t, _estimate_cost, Vector2i, Vector2i)
-	GDVIRTUAL2RC(real_t, _compute_cost, Vector2i, Vector2i)
+	GDVIRTUAL2RC(real_t, _estimate_cost, Vector2i, Vector2i);
+	GDVIRTUAL2RC(real_t, _compute_cost, Vector2i, Vector2i);
 
 public:
 	void set_region(const Rect2i &p_region);
@@ -204,6 +204,6 @@ public:
 
 VARIANT_ENUM_CAST(AStarGrid2D::DiagonalMode);
 VARIANT_ENUM_CAST(AStarGrid2D::Heuristic);
-VARIANT_ENUM_CAST(AStarGrid2D::CellShape)
+VARIANT_ENUM_CAST(AStarGrid2D::CellShape);
 
 #endif // A_STAR_GRID_2D_H

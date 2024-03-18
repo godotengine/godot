@@ -83,7 +83,7 @@ public:
 
 class AudioStreamMP3 : public AudioStream {
 	GDCLASS(AudioStreamMP3, AudioStream);
-	OBJ_SAVE_TYPE(AudioStream) //children are all saved as AudioStream, so they can be exchanged
+	OBJ_SAVE_TYPE(AudioStream); //children are all saved as AudioStream, so they can be exchanged
 	RES_BASE_EXTENSION("mp3str");
 
 	friend class AudioStreamPlaybackMP3;

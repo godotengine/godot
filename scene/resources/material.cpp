@@ -158,10 +158,10 @@ void Material::_bind_methods() {
 	BIND_CONSTANT(RENDER_PRIORITY_MAX);
 	BIND_CONSTANT(RENDER_PRIORITY_MIN);
 
-	GDVIRTUAL_BIND(_get_shader_rid)
-	GDVIRTUAL_BIND(_get_shader_mode)
-	GDVIRTUAL_BIND(_can_do_next_pass)
-	GDVIRTUAL_BIND(_can_use_render_priority)
+	GDVIRTUAL_BIND(_get_shader_rid);
+	GDVIRTUAL_BIND(_get_shader_mode);
+	GDVIRTUAL_BIND(_can_do_next_pass);
+	GDVIRTUAL_BIND(_can_use_render_priority);
 }
 
 Material::Material() {

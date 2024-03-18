@@ -280,6 +280,6 @@ public:
 	Node3D();
 };
 
-VARIANT_ENUM_CAST(Node3D::RotationEditMode)
+VARIANT_ENUM_CAST(Node3D::RotationEditMode);
 
 #endif // NODE_3D_H

@@ -185,7 +185,8 @@ public:
 };
 
 class CompressedTexture2DArray : public CompressedTextureLayered {
-	GDCLASS(CompressedTexture2DArray, CompressedTextureLayered)
+	GDCLASS(CompressedTexture2DArray, CompressedTextureLayered);
+
 public:
 	CompressedTexture2DArray() :
 			CompressedTextureLayered(LAYERED_TYPE_2D_ARRAY) {}

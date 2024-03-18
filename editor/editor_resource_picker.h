@@ -118,8 +118,8 @@ protected:
 
 	void set_assign_button_min_size(const Size2i &p_size);
 
-	GDVIRTUAL1(_set_create_options, Object *)
-	GDVIRTUAL1R(bool, _handle_menu_selected, int)
+	GDVIRTUAL1(_set_create_options, Object *);
+	GDVIRTUAL1R(bool, _handle_menu_selected, int);
 
 public:
 	void set_base_type(const String &p_base_type);

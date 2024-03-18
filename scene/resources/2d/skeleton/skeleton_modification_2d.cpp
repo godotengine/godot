@@ -215,8 +215,8 @@ bool SkeletonModification2D::get_editor_draw_gizmo() const {
 
 void SkeletonModification2D::_bind_methods() {
 	GDVIRTUAL_BIND(_execute, "delta");
-	GDVIRTUAL_BIND(_setup_modification, "modification_stack")
-	GDVIRTUAL_BIND(_draw_editor_gizmo)
+	GDVIRTUAL_BIND(_setup_modification, "modification_stack");
+	GDVIRTUAL_BIND(_draw_editor_gizmo);
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification2D::get_enabled);

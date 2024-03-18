@@ -163,8 +163,8 @@ private:
 	Transform3D joint_transforms[JOINT_MAX];
 };
 
-VARIANT_BITFIELD_CAST(XRBodyTracker::BodyFlags)
-VARIANT_ENUM_CAST(XRBodyTracker::Joint)
-VARIANT_BITFIELD_CAST(XRBodyTracker::JointFlags)
+VARIANT_BITFIELD_CAST(XRBodyTracker::BodyFlags);
+VARIANT_ENUM_CAST(XRBodyTracker::Joint);
+VARIANT_BITFIELD_CAST(XRBodyTracker::JointFlags);
 
 #endif // XR_BODY_TRACKER_H

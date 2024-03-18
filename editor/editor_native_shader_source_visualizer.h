@@ -35,7 +35,7 @@
 #include "scene/gui/tab_container.h"
 
 class EditorNativeShaderSourceVisualizer : public AcceptDialog {
-	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog)
+	GDCLASS(EditorNativeShaderSourceVisualizer, AcceptDialog);
 	TabContainer *versions = nullptr;
 
 	void _inspect_shader(RID p_shader);

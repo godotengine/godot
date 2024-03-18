@@ -759,7 +759,7 @@ def generate_cpp_hint_file(filename):
     else:
         try:
             with open(filename, "w", encoding="utf-8", newline="\n") as fd:
-                fd.write("#define GDCLASS(m_class, m_inherits)\n")
+                fd.write("#define GDCLASS(m_class, m_inherits);\n")
         except OSError:
             print("Could not write cpp.hint file.")
 

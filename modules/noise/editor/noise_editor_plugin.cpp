@@ -41,7 +41,7 @@
 #include "scene/gui/texture_rect.h"
 
 class NoisePreview : public Control {
-	GDCLASS(NoisePreview, Control)
+	GDCLASS(NoisePreview, Control);
 
 	static const int PREVIEW_HEIGHT = 150;
 	static const int PADDING_3D_SPACE_SWITCH = 2;
@@ -119,7 +119,8 @@ private:
 /////////////////////////////////////////////////////////////////////////////////
 
 class NoiseEditorInspectorPlugin : public EditorInspectorPlugin {
-	GDCLASS(NoiseEditorInspectorPlugin, EditorInspectorPlugin)
+	GDCLASS(NoiseEditorInspectorPlugin, EditorInspectorPlugin);
+
 public:
 	bool can_handle(Object *p_object) override {
 		return Object::cast_to<Noise>(p_object) != nullptr;

@@ -879,20 +879,20 @@ void Mesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
 
-	GDVIRTUAL_BIND(_get_surface_count)
-	GDVIRTUAL_BIND(_surface_get_array_len, "index")
-	GDVIRTUAL_BIND(_surface_get_array_index_len, "index")
-	GDVIRTUAL_BIND(_surface_get_arrays, "index")
-	GDVIRTUAL_BIND(_surface_get_blend_shape_arrays, "index")
-	GDVIRTUAL_BIND(_surface_get_lods, "index")
-	GDVIRTUAL_BIND(_surface_get_format, "index")
-	GDVIRTUAL_BIND(_surface_get_primitive_type, "index")
-	GDVIRTUAL_BIND(_surface_set_material, "index", "material")
-	GDVIRTUAL_BIND(_surface_get_material, "index")
-	GDVIRTUAL_BIND(_get_blend_shape_count)
-	GDVIRTUAL_BIND(_get_blend_shape_name, "index")
-	GDVIRTUAL_BIND(_set_blend_shape_name, "index", "name")
-	GDVIRTUAL_BIND(_get_aabb)
+	GDVIRTUAL_BIND(_get_surface_count);
+	GDVIRTUAL_BIND(_surface_get_array_len, "index");
+	GDVIRTUAL_BIND(_surface_get_array_index_len, "index");
+	GDVIRTUAL_BIND(_surface_get_arrays, "index");
+	GDVIRTUAL_BIND(_surface_get_blend_shape_arrays, "index");
+	GDVIRTUAL_BIND(_surface_get_lods, "index");
+	GDVIRTUAL_BIND(_surface_get_format, "index");
+	GDVIRTUAL_BIND(_surface_get_primitive_type, "index");
+	GDVIRTUAL_BIND(_surface_set_material, "index", "material");
+	GDVIRTUAL_BIND(_surface_get_material, "index");
+	GDVIRTUAL_BIND(_get_blend_shape_count);
+	GDVIRTUAL_BIND(_get_blend_shape_name, "index");
+	GDVIRTUAL_BIND(_set_blend_shape_name, "index", "name");
+	GDVIRTUAL_BIND(_get_aabb);
 }
 
 void Mesh::clear_cache() const {

@@ -67,7 +67,7 @@ static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
 };
 
 class ShaderGlobalsEditorInterface : public Object {
-	GDCLASS(ShaderGlobalsEditorInterface, Object)
+	GDCLASS(ShaderGlobalsEditorInterface, Object);
 
 	void _set_var(const StringName &p_name, const Variant &p_value, const Variant &p_prev_value) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();

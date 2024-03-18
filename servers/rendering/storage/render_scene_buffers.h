@@ -118,10 +118,10 @@ class RenderSceneBuffersExtension : public RenderSceneBuffers {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL1(_configure, const RenderSceneBuffersConfiguration *)
-	GDVIRTUAL1(_set_fsr_sharpness, float)
-	GDVIRTUAL1(_set_texture_mipmap_bias, float)
-	GDVIRTUAL1(_set_use_debanding, bool)
+	GDVIRTUAL1(_configure, const RenderSceneBuffersConfiguration *);
+	GDVIRTUAL1(_set_fsr_sharpness, float);
+	GDVIRTUAL1(_set_texture_mipmap_bias, float);
+	GDVIRTUAL1(_set_use_debanding, bool);
 
 public:
 	virtual ~RenderSceneBuffersExtension(){};

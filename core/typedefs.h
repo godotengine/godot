@@ -82,6 +82,12 @@
 #define _ALLOW_DISCARD_ (void)
 #endif
 
+// We often want our macros to be followed with a semicolon, append this to make intent explicit.
+// Crucially, while this mandates a semicolon, it WON'T compile any extra code.
+#ifndef _FORCE_SEMICOLON_
+#define _FORCE_SEMICOLON_ static_assert(true)
+#endif
+
 // Windows badly defines a lot of stuff we'll never use. Undefine it.
 #ifdef _WIN32
 #undef min // override standard definition

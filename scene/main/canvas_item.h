@@ -165,7 +165,7 @@ protected:
 
 	_FORCE_INLINE_ void set_hide_clip_children(bool p_value) { hide_clip_children = p_value; }
 
-	GDVIRTUAL0(_draw)
+	GDVIRTUAL0(_draw);
 
 public:
 	enum {
@@ -369,9 +369,9 @@ public:
 	~CanvasItem();
 };
 
-VARIANT_ENUM_CAST(CanvasItem::TextureFilter)
-VARIANT_ENUM_CAST(CanvasItem::TextureRepeat)
-VARIANT_ENUM_CAST(CanvasItem::ClipChildrenMode)
+VARIANT_ENUM_CAST(CanvasItem::TextureFilter);
+VARIANT_ENUM_CAST(CanvasItem::TextureRepeat);
+VARIANT_ENUM_CAST(CanvasItem::ClipChildrenMode);
 
 class CanvasTexture : public Texture2D {
 	GDCLASS(CanvasTexture, Texture2D);

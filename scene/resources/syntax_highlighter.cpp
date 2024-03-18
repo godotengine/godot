@@ -109,9 +109,9 @@ void SyntaxHighlighter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_highlighting_cache"), &SyntaxHighlighter::clear_highlighting_cache);
 	ClassDB::bind_method(D_METHOD("get_text_edit"), &SyntaxHighlighter::get_text_edit);
 
-	GDVIRTUAL_BIND(_get_line_syntax_highlighting, "line")
-	GDVIRTUAL_BIND(_clear_highlighting_cache)
-	GDVIRTUAL_BIND(_update_cache)
+	GDVIRTUAL_BIND(_get_line_syntax_highlighting, "line");
+	GDVIRTUAL_BIND(_clear_highlighting_cache);
+	GDVIRTUAL_BIND(_update_cache);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

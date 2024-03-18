@@ -63,6 +63,6 @@ public:
 	~ZIPPacker();
 };
 
-VARIANT_ENUM_CAST(ZIPPacker::ZipAppend)
+VARIANT_ENUM_CAST(ZIPPacker::ZipAppend);
 
 #endif // ZIP_PACKER_H

@@ -42,8 +42,8 @@ class EditorTranslationParserPlugin : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL3(_parse_file, String, TypedArray<String>, TypedArray<Array>)
-	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL3(_parse_file, String, TypedArray<String>, TypedArray<Array>);
+	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions);
 
 public:
 	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural);

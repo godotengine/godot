@@ -88,8 +88,8 @@ protected:
 
 	bool _was_pressed_by_mouse() const;
 
-	GDVIRTUAL0(_pressed)
-	GDVIRTUAL1(_toggled, bool)
+	GDVIRTUAL0(_pressed);
+	GDVIRTUAL1(_toggled, bool);
 
 public:
 	enum DrawMode {
@@ -145,8 +145,8 @@ public:
 	~BaseButton();
 };
 
-VARIANT_ENUM_CAST(BaseButton::DrawMode)
-VARIANT_ENUM_CAST(BaseButton::ActionMode)
+VARIANT_ENUM_CAST(BaseButton::DrawMode);
+VARIANT_ENUM_CAST(BaseButton::ActionMode);
 
 class ButtonGroup : public Resource {
 	GDCLASS(ButtonGroup, Resource);

@@ -132,10 +132,10 @@ void StyleBox::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_right", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_content_margin", "get_content_margin", SIDE_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "content_margin_bottom", PROPERTY_HINT_RANGE, "-1,2048,1,suffix:px"), "set_content_margin", "get_content_margin", SIDE_BOTTOM);
 
-	GDVIRTUAL_BIND(_draw, "to_canvas_item", "rect")
-	GDVIRTUAL_BIND(_get_draw_rect, "rect")
-	GDVIRTUAL_BIND(_get_minimum_size)
-	GDVIRTUAL_BIND(_test_mask, "point", "rect")
+	GDVIRTUAL_BIND(_draw, "to_canvas_item", "rect");
+	GDVIRTUAL_BIND(_get_draw_rect, "rect");
+	GDVIRTUAL_BIND(_get_minimum_size);
+	GDVIRTUAL_BIND(_test_mask, "point", "rect");
 }
 
 StyleBox::StyleBox() {

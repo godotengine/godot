@@ -44,7 +44,8 @@
 class CommandQueueMT;
 
 class WorkerThreadPool : public Object {
-	GDCLASS(WorkerThreadPool, Object)
+	GDCLASS(WorkerThreadPool, Object);
+
 public:
 	enum {
 		INVALID_TASK_ID = -1

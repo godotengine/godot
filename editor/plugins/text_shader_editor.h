@@ -39,7 +39,7 @@
 #include "servers/rendering/shader_warnings.h"
 
 class GDShaderSyntaxHighlighter : public CodeHighlighter {
-	GDCLASS(GDShaderSyntaxHighlighter, CodeHighlighter)
+	GDCLASS(GDShaderSyntaxHighlighter, CodeHighlighter);
 
 private:
 	Vector<Point2i> disabled_branch_regions;

@@ -36,7 +36,7 @@
 #include "editor/editor_plugin.h"
 
 class NoiseEditorPlugin : public EditorPlugin {
-	GDCLASS(NoiseEditorPlugin, EditorPlugin)
+	GDCLASS(NoiseEditorPlugin, EditorPlugin);
 
 public:
 	String get_name() const override;

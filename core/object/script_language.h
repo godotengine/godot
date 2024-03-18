@@ -194,7 +194,7 @@ public:
 };
 
 class ScriptLanguage : public Object {
-	GDCLASS(ScriptLanguage, Object)
+	GDCLASS(ScriptLanguage, Object);
 
 protected:
 	static void _bind_methods();

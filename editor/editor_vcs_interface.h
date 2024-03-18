@@ -38,7 +38,7 @@
 #include "core/variant/typed_array.h"
 
 class EditorVCSInterface : public Object {
-	GDCLASS(EditorVCSInterface, Object)
+	GDCLASS(EditorVCSInterface, Object);
 
 public:
 	enum ChangeType {

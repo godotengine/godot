@@ -169,6 +169,6 @@ public:
 	~VoxelGI();
 };
 
-VARIANT_ENUM_CAST(VoxelGI::Subdiv)
+VARIANT_ENUM_CAST(VoxelGI::Subdiv);
 
 #endif // VOXEL_GI_H

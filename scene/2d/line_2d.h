@@ -143,8 +143,8 @@ private:
 };
 
 // Needed so we can bind functions
-VARIANT_ENUM_CAST(Line2D::LineJointMode)
-VARIANT_ENUM_CAST(Line2D::LineCapMode)
-VARIANT_ENUM_CAST(Line2D::LineTextureMode)
+VARIANT_ENUM_CAST(Line2D::LineJointMode);
+VARIANT_ENUM_CAST(Line2D::LineCapMode);
+VARIANT_ENUM_CAST(Line2D::LineTextureMode);
 
 #endif // LINE_2D_H

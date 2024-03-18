@@ -42,7 +42,7 @@ class TextureButton;
 class TextureRect;
 
 class ProjectListItemControl : public HBoxContainer {
-	GDCLASS(ProjectListItemControl, HBoxContainer)
+	GDCLASS(ProjectListItemControl, HBoxContainer);
 
 	VBoxContainer *main_vbox = nullptr;
 	TextureButton *favorite_button = nullptr;
@@ -84,7 +84,7 @@ public:
 };
 
 class ProjectList : public ScrollContainer {
-	GDCLASS(ProjectList, ScrollContainer)
+	GDCLASS(ProjectList, ScrollContainer);
 
 	friend class ProjectManager;
 

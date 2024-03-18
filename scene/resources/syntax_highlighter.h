@@ -37,7 +37,7 @@
 class TextEdit;
 
 class SyntaxHighlighter : public Resource {
-	GDCLASS(SyntaxHighlighter, Resource)
+	GDCLASS(SyntaxHighlighter, Resource);
 
 private:
 	RBMap<int, Dictionary> highlighting_cache;
@@ -49,9 +49,10 @@ protected:
 
 	static void _bind_methods();
 
-	GDVIRTUAL1RC(Dictionary, _get_line_syntax_highlighting, int)
-	GDVIRTUAL0(_clear_highlighting_cache)
-	GDVIRTUAL0(_update_cache)
+	GDVIRTUAL1RC(Dictionary, _get_line_syntax_highlighting, int);
+	GDVIRTUAL0(_clear_highlighting_cache);
+	GDVIRTUAL0(_update_cache);
+
 public:
 	Dictionary get_line_syntax_highlighting(int p_line);
 	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) { return Dictionary(); }
@@ -72,7 +73,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 class CodeHighlighter : public SyntaxHighlighter {
-	GDCLASS(CodeHighlighter, SyntaxHighlighter)
+	GDCLASS(CodeHighlighter, SyntaxHighlighter);
 
 private:
 	struct ColorRegion {

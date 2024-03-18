@@ -35,7 +35,7 @@
 #include "servers/audio/audio_stream.h"
 
 class AudioStreamPolyphonic : public AudioStream {
-	GDCLASS(AudioStreamPolyphonic, AudioStream)
+	GDCLASS(AudioStreamPolyphonic, AudioStream);
 	int polyphony = 32;
 
 	static void _bind_methods();
@@ -52,7 +52,7 @@ public:
 };
 
 class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
-	GDCLASS(AudioStreamPlaybackPolyphonic, AudioStreamPlayback)
+	GDCLASS(AudioStreamPlaybackPolyphonic, AudioStreamPlayback);
 
 	enum {
 		INTERNAL_BUFFER_LEN = 128,

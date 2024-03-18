@@ -81,7 +81,7 @@ public:
 	VisualShaderNodeVectorBase();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeVectorBase::OpType)
+VARIANT_ENUM_CAST(VisualShaderNodeVectorBase::OpType);
 
 ///////////////////////////////////////
 /// CONSTANTS
@@ -446,8 +446,8 @@ public:
 	VisualShaderNodeTexture();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeTexture::TextureType)
-VARIANT_ENUM_CAST(VisualShaderNodeTexture::Source)
+VARIANT_ENUM_CAST(VisualShaderNodeTexture::TextureType);
+VARIANT_ENUM_CAST(VisualShaderNodeTexture::Source);
 
 ///////////////////////////////////////
 
@@ -558,7 +558,7 @@ public:
 	VisualShaderNodeSample3D();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeSample3D::Source)
+VARIANT_ENUM_CAST(VisualShaderNodeSample3D::Source);
 
 class VisualShaderNodeTexture2DArray : public VisualShaderNodeSample3D {
 	GDCLASS(VisualShaderNodeTexture2DArray, VisualShaderNodeSample3D);
@@ -664,8 +664,8 @@ public:
 	VisualShaderNodeCubemap();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeCubemap::TextureType)
-VARIANT_ENUM_CAST(VisualShaderNodeCubemap::Source)
+VARIANT_ENUM_CAST(VisualShaderNodeCubemap::TextureType);
+VARIANT_ENUM_CAST(VisualShaderNodeCubemap::Source);
 
 ///////////////////////////////////////
 
@@ -791,7 +791,7 @@ public:
 	VisualShaderNodeFloatOp();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeFloatOp::Operator)
+VARIANT_ENUM_CAST(VisualShaderNodeFloatOp::Operator);
 
 class VisualShaderNodeIntOp : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeIntOp, VisualShaderNode);
@@ -841,7 +841,7 @@ public:
 	VisualShaderNodeIntOp();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeIntOp::Operator)
+VARIANT_ENUM_CAST(VisualShaderNodeIntOp::Operator);
 
 class VisualShaderNodeUIntOp : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeUIntOp, VisualShaderNode);
@@ -891,7 +891,7 @@ public:
 	VisualShaderNodeUIntOp();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeUIntOp::Operator)
+VARIANT_ENUM_CAST(VisualShaderNodeUIntOp::Operator);
 
 class VisualShaderNodeVectorOp : public VisualShaderNodeVectorBase {
 	GDCLASS(VisualShaderNodeVectorOp, VisualShaderNodeVectorBase);
@@ -940,7 +940,7 @@ public:
 	VisualShaderNodeVectorOp();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeVectorOp::Operator)
+VARIANT_ENUM_CAST(VisualShaderNodeVectorOp::Operator);
 
 ///////////////////////////////////////
 
@@ -989,7 +989,7 @@ public:
 	VisualShaderNodeColorOp();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeColorOp::Operator)
+VARIANT_ENUM_CAST(VisualShaderNodeColorOp::Operator);
 
 ////////////////////////////////
 /// TRANSFORM-TRANSFORM OPERATOR
@@ -1040,7 +1040,7 @@ public:
 	VisualShaderNodeTransformOp();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeTransformOp::Operator)
+VARIANT_ENUM_CAST(VisualShaderNodeTransformOp::Operator);
 
 ///////////////////////////////////////
 /// TRANSFORM-VECTOR MULTIPLICATION
@@ -1086,7 +1086,7 @@ public:
 	VisualShaderNodeTransformVecMult();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeTransformVecMult::Operator)
+VARIANT_ENUM_CAST(VisualShaderNodeTransformVecMult::Operator);
 
 ///////////////////////////////////////
 /// FLOAT FUNC
@@ -1160,7 +1160,7 @@ public:
 	VisualShaderNodeFloatFunc();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeFloatFunc::Function)
+VARIANT_ENUM_CAST(VisualShaderNodeFloatFunc::Function);
 
 ///////////////////////////////////////
 /// INT FUNC
@@ -1206,7 +1206,7 @@ public:
 	VisualShaderNodeIntFunc();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeIntFunc::Function)
+VARIANT_ENUM_CAST(VisualShaderNodeIntFunc::Function);
 
 ///////////////////////////////////////
 /// UINT FUNC
@@ -1250,7 +1250,7 @@ public:
 	VisualShaderNodeUIntFunc();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeUIntFunc::Function)
+VARIANT_ENUM_CAST(VisualShaderNodeUIntFunc::Function);
 
 ///////////////////////////////////////
 /// VECTOR FUNC
@@ -1325,7 +1325,7 @@ public:
 	VisualShaderNodeVectorFunc();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeVectorFunc::Function)
+VARIANT_ENUM_CAST(VisualShaderNodeVectorFunc::Function);
 
 ///////////////////////////////////////
 /// COLOR FUNC
@@ -1371,7 +1371,7 @@ public:
 	VisualShaderNodeColorFunc();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeColorFunc::Function)
+VARIANT_ENUM_CAST(VisualShaderNodeColorFunc::Function);
 
 ///////////////////////////////////////
 /// TRANSFORM FUNC
@@ -1415,7 +1415,7 @@ public:
 	VisualShaderNodeTransformFunc();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeTransformFunc::Function)
+VARIANT_ENUM_CAST(VisualShaderNodeTransformFunc::Function);
 
 ///////////////////////////////////////
 /// UV FUNC
@@ -1462,7 +1462,7 @@ public:
 	VisualShaderNodeUVFunc();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeUVFunc::Function)
+VARIANT_ENUM_CAST(VisualShaderNodeUVFunc::Function);
 
 ///////////////////////////////////////
 /// UV POLARCOORD
@@ -1614,7 +1614,7 @@ public:
 	VisualShaderNodeClamp();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeClamp::OpType)
+VARIANT_ENUM_CAST(VisualShaderNodeClamp::OpType);
 
 ///////////////////////////////////////
 /// DERIVATIVE FUNCTION
@@ -1684,9 +1684,9 @@ public:
 	VisualShaderNodeDerivativeFunc();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeDerivativeFunc::OpType)
-VARIANT_ENUM_CAST(VisualShaderNodeDerivativeFunc::Function)
-VARIANT_ENUM_CAST(VisualShaderNodeDerivativeFunc::Precision)
+VARIANT_ENUM_CAST(VisualShaderNodeDerivativeFunc::OpType);
+VARIANT_ENUM_CAST(VisualShaderNodeDerivativeFunc::Function);
+VARIANT_ENUM_CAST(VisualShaderNodeDerivativeFunc::Precision);
 
 ///////////////////////////////////////
 /// FACEFORWARD
@@ -1788,7 +1788,7 @@ public:
 	VisualShaderNodeStep();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeStep::OpType)
+VARIANT_ENUM_CAST(VisualShaderNodeStep::OpType);
 
 ///////////////////////////////////////
 /// SMOOTHSTEP
@@ -1843,7 +1843,7 @@ public:
 	VisualShaderNodeSmoothStep();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeSmoothStep::OpType)
+VARIANT_ENUM_CAST(VisualShaderNodeSmoothStep::OpType);
 
 ///////////////////////////////////////
 /// DISTANCE
@@ -1942,7 +1942,7 @@ public:
 	VisualShaderNodeMix();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeMix::OpType)
+VARIANT_ENUM_CAST(VisualShaderNodeMix::OpType);
 
 ///////////////////////////////////////
 /// COMPOSE
@@ -2105,7 +2105,7 @@ public:
 	VisualShaderNodeFloatParameter();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeFloatParameter::Hint)
+VARIANT_ENUM_CAST(VisualShaderNodeFloatParameter::Hint);
 
 class VisualShaderNodeIntParameter : public VisualShaderNodeParameter {
 	GDCLASS(VisualShaderNodeIntParameter, VisualShaderNodeParameter);
@@ -2172,7 +2172,7 @@ public:
 	VisualShaderNodeIntParameter();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeIntParameter::Hint)
+VARIANT_ENUM_CAST(VisualShaderNodeIntParameter::Hint);
 
 ///////////////////////////////////////
 
@@ -2567,11 +2567,11 @@ public:
 	VisualShaderNodeTextureParameter();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureType)
-VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::ColorDefault)
-VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureFilter)
-VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureRepeat)
-VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureSource)
+VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureType);
+VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::ColorDefault);
+VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureFilter);
+VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureRepeat);
+VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureSource);
 
 ///////////////////////////////////////
 
@@ -2728,7 +2728,7 @@ public:
 	VisualShaderNodeSwitch();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeSwitch::OpType)
+VARIANT_ENUM_CAST(VisualShaderNodeSwitch::OpType);
 
 ///////////////////////////////////////
 /// FRESNEL
@@ -2800,7 +2800,7 @@ public:
 	VisualShaderNodeIs();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeIs::Function)
+VARIANT_ENUM_CAST(VisualShaderNodeIs::Function);
 
 ///////////////////////////////////////
 /// Compare
@@ -2876,9 +2876,9 @@ public:
 	VisualShaderNodeCompare();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeCompare::ComparisonType)
-VARIANT_ENUM_CAST(VisualShaderNodeCompare::Function)
-VARIANT_ENUM_CAST(VisualShaderNodeCompare::Condition)
+VARIANT_ENUM_CAST(VisualShaderNodeCompare::ComparisonType);
+VARIANT_ENUM_CAST(VisualShaderNodeCompare::Function);
+VARIANT_ENUM_CAST(VisualShaderNodeCompare::Condition);
 
 class VisualShaderNodeMultiplyAdd : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeMultiplyAdd, VisualShaderNode);
@@ -2927,7 +2927,7 @@ public:
 	VisualShaderNodeMultiplyAdd();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeMultiplyAdd::OpType)
+VARIANT_ENUM_CAST(VisualShaderNodeMultiplyAdd::OpType);
 
 class VisualShaderNodeBillboard : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeBillboard, VisualShaderNode);
@@ -2976,7 +2976,7 @@ public:
 	VisualShaderNodeBillboard();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeBillboard::BillboardType)
+VARIANT_ENUM_CAST(VisualShaderNodeBillboard::BillboardType);
 
 ///////////////////////////////////////
 /// DistanceFade

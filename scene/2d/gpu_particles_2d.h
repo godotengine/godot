@@ -184,7 +184,7 @@ public:
 	~GPUParticles2D();
 };
 
-VARIANT_ENUM_CAST(GPUParticles2D::DrawOrder)
-VARIANT_ENUM_CAST(GPUParticles2D::EmitFlags)
+VARIANT_ENUM_CAST(GPUParticles2D::DrawOrder);
+VARIANT_ENUM_CAST(GPUParticles2D::EmitFlags);
 
 #endif // GPU_PARTICLES_2D_H

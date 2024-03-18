@@ -149,6 +149,6 @@ public:
 	~AnimationNodeBlendSpace2D();
 };
 
-VARIANT_ENUM_CAST(AnimationNodeBlendSpace2D::BlendMode)
+VARIANT_ENUM_CAST(AnimationNodeBlendSpace2D::BlendMode);
 
 #endif // ANIMATION_BLEND_SPACE_2D_H

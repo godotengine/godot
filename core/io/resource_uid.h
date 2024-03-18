@@ -36,7 +36,8 @@
 #include "core/templates/hash_map.h"
 
 class ResourceUID : public Object {
-	GDCLASS(ResourceUID, Object)
+	GDCLASS(ResourceUID, Object);
+
 public:
 	typedef int64_t ID;
 	enum {

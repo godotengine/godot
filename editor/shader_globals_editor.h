@@ -40,7 +40,7 @@
 class ShaderGlobalsEditorInterface;
 
 class ShaderGlobalsEditor : public VBoxContainer {
-	GDCLASS(ShaderGlobalsEditor, VBoxContainer)
+	GDCLASS(ShaderGlobalsEditor, VBoxContainer);
 
 	ShaderGlobalsEditorInterface *interface = nullptr;
 	EditorInspector *inspector = nullptr;

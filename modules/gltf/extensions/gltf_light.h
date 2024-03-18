@@ -38,7 +38,7 @@ class Light3D;
 // https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual
 
 class GLTFLight : public Resource {
-	GDCLASS(GLTFLight, Resource)
+	GDCLASS(GLTFLight, Resource);
 	friend class GLTFDocument;
 
 protected:

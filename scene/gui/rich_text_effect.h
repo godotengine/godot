@@ -105,7 +105,7 @@ class RichTextEffect : public Resource {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL1RC(bool, _process_custom_fx, Ref<CharFXTransform>)
+	GDVIRTUAL1RC(bool, _process_custom_fx, Ref<CharFXTransform>);
 
 public:
 	Variant get_bbcode() const;

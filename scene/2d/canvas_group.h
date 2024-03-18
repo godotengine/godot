@@ -34,7 +34,7 @@
 #include "scene/2d/node_2d.h"
 
 class CanvasGroup : public Node2D {
-	GDCLASS(CanvasGroup, Node2D)
+	GDCLASS(CanvasGroup, Node2D);
 	real_t fit_margin = 10.0;
 	real_t clear_margin = 10.0;
 	bool use_mipmaps = false;

@@ -39,9 +39,9 @@ void RenderData::_bind_methods() {
 
 void RenderDataExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_render_scene_buffers);
-	GDVIRTUAL_BIND(_get_render_scene_data)
-	GDVIRTUAL_BIND(_get_environment)
-	GDVIRTUAL_BIND(_get_camera_attributes)
+	GDVIRTUAL_BIND(_get_render_scene_data);
+	GDVIRTUAL_BIND(_get_environment);
+	GDVIRTUAL_BIND(_get_camera_attributes);
 }
 
 Ref<RenderSceneBuffers> RenderDataExtension::get_render_scene_buffers() const {

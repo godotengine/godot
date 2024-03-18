@@ -350,17 +350,17 @@ protected:
 
 	// Exposed virtual methods.
 
-	GDVIRTUAL1RC(bool, _has_point, Vector2)
-	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
-	GDVIRTUAL0RC(Vector2, _get_minimum_size)
-	GDVIRTUAL1RC(String, _get_tooltip, Vector2)
+	GDVIRTUAL1RC(bool, _has_point, Vector2);
+	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String);
+	GDVIRTUAL0RC(Vector2, _get_minimum_size);
+	GDVIRTUAL1RC(String, _get_tooltip, Vector2);
 
-	GDVIRTUAL1R(Variant, _get_drag_data, Vector2)
-	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant)
-	GDVIRTUAL2(_drop_data, Vector2, Variant)
-	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String)
+	GDVIRTUAL1R(Variant, _get_drag_data, Vector2);
+	GDVIRTUAL2RC(bool, _can_drop_data, Vector2, Variant);
+	GDVIRTUAL2(_drop_data, Vector2, Variant);
+	GDVIRTUAL1RC(Object *, _make_custom_tooltip, String);
 
-	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
+	GDVIRTUAL1(_gui_input, Ref<InputEvent>);
 
 public:
 	enum {

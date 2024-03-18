@@ -70,7 +70,7 @@ protected:
 
 	bool _rounded_values = false;
 
-	GDVIRTUAL1(_value_changed, double)
+	GDVIRTUAL1(_value_changed, double);
 
 public:
 	void set_value(double p_val);

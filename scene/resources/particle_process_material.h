@@ -501,10 +501,10 @@ public:
 	~ParticleProcessMaterial();
 };
 
-VARIANT_ENUM_CAST(ParticleProcessMaterial::Parameter)
-VARIANT_ENUM_CAST(ParticleProcessMaterial::ParticleFlags)
-VARIANT_ENUM_CAST(ParticleProcessMaterial::EmissionShape)
-VARIANT_ENUM_CAST(ParticleProcessMaterial::SubEmitterMode)
-VARIANT_ENUM_CAST(ParticleProcessMaterial::CollisionMode)
+VARIANT_ENUM_CAST(ParticleProcessMaterial::Parameter);
+VARIANT_ENUM_CAST(ParticleProcessMaterial::ParticleFlags);
+VARIANT_ENUM_CAST(ParticleProcessMaterial::EmissionShape);
+VARIANT_ENUM_CAST(ParticleProcessMaterial::SubEmitterMode);
+VARIANT_ENUM_CAST(ParticleProcessMaterial::CollisionMode);
 
 #endif // PARTICLE_PROCESS_MATERIAL_H

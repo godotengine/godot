@@ -57,11 +57,11 @@ protected:
 	Node *import_scene_wrapper(const String &p_path, uint32_t p_flags, const Dictionary &p_options);
 	Ref<Animation> import_animation_wrapper(const String &p_path, uint32_t p_flags, const Dictionary &p_options);
 
-	GDVIRTUAL0RC(uint32_t, _get_import_flags)
-	GDVIRTUAL0RC(Vector<String>, _get_extensions)
-	GDVIRTUAL3R(Object *, _import_scene, String, uint32_t, Dictionary)
-	GDVIRTUAL1(_get_import_options, String)
-	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String)
+	GDVIRTUAL0RC(uint32_t, _get_import_flags);
+	GDVIRTUAL0RC(Vector<String>, _get_extensions);
+	GDVIRTUAL3R(Object *, _import_scene, String, uint32_t, Dictionary);
+	GDVIRTUAL1(_get_import_options, String);
+	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String);
 
 public:
 	enum ImportFlags {
@@ -92,7 +92,7 @@ class EditorScenePostImport : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL1R(Object *, _post_import, Node *)
+	GDVIRTUAL1R(Object *, _post_import, Node *);
 
 public:
 	String get_source_file() const;
@@ -123,14 +123,14 @@ private:
 	InternalImportCategory current_category = INTERNAL_IMPORT_CATEGORY_MAX;
 
 protected:
-	GDVIRTUAL1(_get_internal_import_options, int)
-	GDVIRTUAL3RC(Variant, _get_internal_option_visibility, int, bool, String)
-	GDVIRTUAL2RC(Variant, _get_internal_option_update_view_required, int, String)
-	GDVIRTUAL4(_internal_process, int, Node *, Node *, Ref<Resource>)
-	GDVIRTUAL1(_get_import_options, String)
-	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String)
-	GDVIRTUAL1(_pre_process, Node *)
-	GDVIRTUAL1(_post_process, Node *)
+	GDVIRTUAL1(_get_internal_import_options, int);
+	GDVIRTUAL3RC(Variant, _get_internal_option_visibility, int, bool, String);
+	GDVIRTUAL2RC(Variant, _get_internal_option_update_view_required, int, String);
+	GDVIRTUAL4(_internal_process, int, Node *, Node *, Ref<Resource>);
+	GDVIRTUAL1(_get_import_options, String);
+	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String);
+	GDVIRTUAL1(_pre_process, Node *);
+	GDVIRTUAL1(_post_process, Node *);
 
 	static void _bind_methods();
 
@@ -154,7 +154,7 @@ public:
 	EditorScenePostImportPlugin() {}
 };
 
-VARIANT_ENUM_CAST(EditorScenePostImportPlugin::InternalImportCategory)
+VARIANT_ENUM_CAST(EditorScenePostImportPlugin::InternalImportCategory);
 
 class ResourceImporterScene : public ResourceImporter {
 	GDCLASS(ResourceImporterScene, ResourceImporter);

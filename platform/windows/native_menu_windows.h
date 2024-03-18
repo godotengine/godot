@@ -39,7 +39,7 @@
 #include <windows.h>
 
 class NativeMenuWindows : public NativeMenu {
-	GDCLASS(NativeMenuWindows, NativeMenu)
+	GDCLASS(NativeMenuWindows, NativeMenu);
 
 	enum GlobalMenuCheckType {
 		CHECKABLE_TYPE_NONE,

@@ -41,10 +41,10 @@ class MainLoop : public Object {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0(_initialize)
-	GDVIRTUAL1R(bool, _physics_process, double)
-	GDVIRTUAL1R(bool, _process, double)
-	GDVIRTUAL0(_finalize)
+	GDVIRTUAL0(_initialize);
+	GDVIRTUAL1R(bool, _physics_process, double);
+	GDVIRTUAL1R(bool, _process, double);
+	GDVIRTUAL0(_finalize);
 
 public:
 	enum {

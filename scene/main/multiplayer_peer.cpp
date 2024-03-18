@@ -198,7 +198,7 @@ void MultiplayerPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_available_packet_count);
 	GDVIRTUAL_BIND(_get_max_packet_size);
 
-	GDVIRTUAL_BIND(_get_packet_script)
+	GDVIRTUAL_BIND(_get_packet_script);
 	GDVIRTUAL_BIND(_put_packet_script, "p_buffer");
 
 	GDVIRTUAL_BIND(_get_packet_channel);

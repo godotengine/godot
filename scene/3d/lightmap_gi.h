@@ -41,7 +41,7 @@ class CameraAttributes;
 
 class LightmapGIData : public Resource {
 	GDCLASS(LightmapGIData, Resource);
-	RES_BASE_EXTENSION("lmbake")
+	RES_BASE_EXTENSION("lmbake");
 
 	Ref<TextureLayered> light_texture;
 	TypedArray<TextureLayered> light_textures;

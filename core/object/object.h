@@ -370,9 +370,9 @@ struct ObjectGDExtension {
 #define GDVIRTUAL_REQUIRED_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call<true>(__VA_ARGS__)
 
 #ifdef DEBUG_METHODS_ENABLED
-#define GDVIRTUAL_BIND(m_name, ...) ::ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info(), true, sarray(__VA_ARGS__));
+#define GDVIRTUAL_BIND(m_name, ...) ::ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info(), true, sarray(__VA_ARGS__))
 #else
-#define GDVIRTUAL_BIND(m_name, ...)
+#define GDVIRTUAL_BIND(m_name, ...) _FORCE_SEMICOLON_
 #endif
 #define GDVIRTUAL_IS_OVERRIDDEN(m_name) _gdvirtual_##m_name##_overridden()
 #define GDVIRTUAL_IS_OVERRIDDEN_PTR(m_obj, m_name) m_obj->_gdvirtual_##m_name##_overridden()
@@ -565,13 +565,15 @@ protected:                                                                      
 		}                                                                                                                                        \
 	}                                                                                                                                            \
                                                                                                                                                  \
-private:
+private:                                                                                                                                         \
+	_FORCE_SEMICOLON_
 
 #define OBJ_SAVE_TYPE(m_class)                                          \
 public:                                                                 \
 	virtual String get_save_class() const override { return #m_class; } \
                                                                         \
-private:
+private:                                                                \
+	_FORCE_SEMICOLON_
 
 class ScriptInstance;
 

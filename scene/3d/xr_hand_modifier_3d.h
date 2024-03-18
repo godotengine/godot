@@ -82,6 +82,6 @@ private:
 	void _tracker_changed(StringName p_tracker_name, const Ref<XRHandTracker> &p_tracker);
 };
 
-VARIANT_ENUM_CAST(XRHandModifier3D::BoneUpdate)
+VARIANT_ENUM_CAST(XRHandModifier3D::BoneUpdate);
 
 #endif // XR_HAND_MODIFIER_3D_H

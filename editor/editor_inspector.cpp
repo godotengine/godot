@@ -1021,8 +1021,8 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "focusable_idx")));
 
-	GDVIRTUAL_BIND(_update_property)
-	GDVIRTUAL_BIND(_set_read_only, "read_only")
+	GDVIRTUAL_BIND(_update_property);
+	GDVIRTUAL_BIND(_set_read_only, "read_only");
 
 	ClassDB::bind_method(D_METHOD("_update_editor_property_status"), &EditorProperty::update_editor_property_status);
 }
@@ -1129,12 +1129,12 @@ void EditorInspectorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_property_editor", "property", "editor", "add_to_end"), &EditorInspectorPlugin::add_property_editor, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_property_editor_for_multiple_properties", "label", "properties", "editor"), &EditorInspectorPlugin::add_property_editor_for_multiple_properties);
 
-	GDVIRTUAL_BIND(_can_handle, "object")
-	GDVIRTUAL_BIND(_parse_begin, "object")
-	GDVIRTUAL_BIND(_parse_category, "object", "category")
-	GDVIRTUAL_BIND(_parse_group, "object", "group")
+	GDVIRTUAL_BIND(_can_handle, "object");
+	GDVIRTUAL_BIND(_parse_begin, "object");
+	GDVIRTUAL_BIND(_parse_category, "object", "category");
+	GDVIRTUAL_BIND(_parse_group, "object", "group");
 	GDVIRTUAL_BIND(_parse_property, "object", "type", "name", "hint_type", "hint_string", "usage_flags", "wide");
-	GDVIRTUAL_BIND(_parse_end, "object")
+	GDVIRTUAL_BIND(_parse_end, "object");
 }
 
 ////////////////////////////////////////////////

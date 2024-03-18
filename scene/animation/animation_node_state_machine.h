@@ -97,8 +97,8 @@ public:
 	AnimationNodeStateMachineTransition();
 };
 
-VARIANT_ENUM_CAST(AnimationNodeStateMachineTransition::SwitchMode)
-VARIANT_ENUM_CAST(AnimationNodeStateMachineTransition::AdvanceMode)
+VARIANT_ENUM_CAST(AnimationNodeStateMachineTransition::SwitchMode);
+VARIANT_ENUM_CAST(AnimationNodeStateMachineTransition::AdvanceMode);
 
 class AnimationNodeStateMachinePlayback;
 

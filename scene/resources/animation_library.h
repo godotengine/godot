@@ -35,7 +35,7 @@
 #include "scene/resources/animation.h"
 
 class AnimationLibrary : public Resource {
-	GDCLASS(AnimationLibrary, Resource)
+	GDCLASS(AnimationLibrary, Resource);
 
 	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;

@@ -40,7 +40,7 @@ class PhysicalBone3D;
 class Skeleton3D;
 
 class SkinReference : public RefCounted {
-	GDCLASS(SkinReference, RefCounted)
+	GDCLASS(SkinReference, RefCounted);
 	friend class Skeleton3D;
 
 	Skeleton3D *skeleton_node = nullptr;

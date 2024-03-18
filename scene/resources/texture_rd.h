@@ -40,7 +40,7 @@
 #include "scene/resources/texture.h"
 
 class Texture2DRD : public Texture2D {
-	GDCLASS(Texture2DRD, Texture2D)
+	GDCLASS(Texture2DRD, Texture2D);
 
 	mutable RID texture_rid;
 	RID texture_rd_rid;
@@ -68,7 +68,7 @@ public:
 };
 
 class TextureLayeredRD : public TextureLayered {
-	GDCLASS(TextureLayeredRD, TextureLayered)
+	GDCLASS(TextureLayeredRD, TextureLayered);
 
 	LayeredType layer_type;
 
@@ -105,7 +105,7 @@ public:
 };
 
 class Texture2DArrayRD : public TextureLayeredRD {
-	GDCLASS(Texture2DArrayRD, TextureLayeredRD)
+	GDCLASS(Texture2DArrayRD, TextureLayeredRD);
 
 public:
 	Texture2DArrayRD() :
@@ -113,7 +113,7 @@ public:
 };
 
 class TextureCubemapRD : public TextureLayeredRD {
-	GDCLASS(TextureCubemapRD, TextureLayeredRD)
+	GDCLASS(TextureCubemapRD, TextureLayeredRD);
 
 public:
 	TextureCubemapRD() :
@@ -121,7 +121,7 @@ public:
 };
 
 class TextureCubemapArrayRD : public TextureLayeredRD {
-	GDCLASS(TextureCubemapArrayRD, TextureLayeredRD)
+	GDCLASS(TextureCubemapArrayRD, TextureLayeredRD);
 
 public:
 	TextureCubemapArrayRD() :
@@ -129,7 +129,7 @@ public:
 };
 
 class Texture3DRD : public Texture3D {
-	GDCLASS(Texture3DRD, Texture3D)
+	GDCLASS(Texture3DRD, Texture3D);
 
 	mutable RID texture_rid;
 	RID texture_rd_rid;

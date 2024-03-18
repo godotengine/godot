@@ -36,8 +36,9 @@
 class AudioStreamPlaybackInteractive;
 
 class AudioStreamInteractive : public AudioStream {
-	GDCLASS(AudioStreamInteractive, AudioStream)
-	OBJ_SAVE_TYPE(AudioStream)
+	GDCLASS(AudioStreamInteractive, AudioStream);
+	OBJ_SAVE_TYPE(AudioStream);
+
 public:
 	enum TransitionFromTime {
 		TRANSITION_FROM_TIME_IMMEDIATE,
@@ -192,13 +193,13 @@ protected:
 	void _validate_property(PropertyInfo &r_property) const;
 };
 
-VARIANT_ENUM_CAST(AudioStreamInteractive::TransitionFromTime)
-VARIANT_ENUM_CAST(AudioStreamInteractive::TransitionToTime)
-VARIANT_ENUM_CAST(AudioStreamInteractive::AutoAdvanceMode)
-VARIANT_ENUM_CAST(AudioStreamInteractive::FadeMode)
+VARIANT_ENUM_CAST(AudioStreamInteractive::TransitionFromTime);
+VARIANT_ENUM_CAST(AudioStreamInteractive::TransitionToTime);
+VARIANT_ENUM_CAST(AudioStreamInteractive::AutoAdvanceMode);
+VARIANT_ENUM_CAST(AudioStreamInteractive::FadeMode);
 
 class AudioStreamPlaybackInteractive : public AudioStreamPlayback {
-	GDCLASS(AudioStreamPlaybackInteractive, AudioStreamPlayback)
+	GDCLASS(AudioStreamPlaybackInteractive, AudioStreamPlayback);
 	friend class AudioStreamInteractive;
 
 private:

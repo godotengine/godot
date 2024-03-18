@@ -88,6 +88,6 @@ private:
 	IGDStatus igd_status;
 };
 
-VARIANT_ENUM_CAST(UPNPDevice::IGDStatus)
+VARIANT_ENUM_CAST(UPNPDevice::IGDStatus);
 
 #endif // UPNP_DEVICE_H

@@ -46,7 +46,7 @@ enum TileMapDataFormat {
 };
 
 class TileMap : public TileMapLayerGroup {
-	GDCLASS(TileMap, TileMapLayerGroup)
+	GDCLASS(TileMap, TileMapLayerGroup);
 
 public:
 	// Kept for compatibility, but should use TileMapLayer::VisibilityMode instead.

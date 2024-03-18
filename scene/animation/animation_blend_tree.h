@@ -75,7 +75,7 @@ private:
 	bool backward = false; // Only used by pingpong animation.
 };
 
-VARIANT_ENUM_CAST(AnimationNodeAnimation::PlayMode)
+VARIANT_ENUM_CAST(AnimationNodeAnimation::PlayMode);
 
 class AnimationNodeSync : public AnimationNode {
 	GDCLASS(AnimationNodeSync, AnimationNode);
@@ -166,8 +166,8 @@ public:
 	AnimationNodeOneShot();
 };
 
-VARIANT_ENUM_CAST(AnimationNodeOneShot::OneShotRequest)
-VARIANT_ENUM_CAST(AnimationNodeOneShot::MixMode)
+VARIANT_ENUM_CAST(AnimationNodeOneShot::OneShotRequest);
+VARIANT_ENUM_CAST(AnimationNodeOneShot::MixMode);
 
 class AnimationNodeAdd2 : public AnimationNodeSync {
 	GDCLASS(AnimationNodeAdd2, AnimationNodeSync);
@@ -462,6 +462,6 @@ public:
 	~AnimationNodeBlendTree();
 };
 
-VARIANT_ENUM_CAST(AnimationNodeBlendTree::ConnectionError)
+VARIANT_ENUM_CAST(AnimationNodeBlendTree::ConnectionError);
 
 #endif // ANIMATION_BLEND_TREE_H

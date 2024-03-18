@@ -680,12 +680,12 @@ protected:
 	virtual void _paste_internal(int p_caret);
 	virtual void _paste_primary_clipboard_internal(int p_caret);
 
-	GDVIRTUAL2(_handle_unicode_input, int, int)
-	GDVIRTUAL1(_backspace, int)
-	GDVIRTUAL1(_cut, int)
-	GDVIRTUAL1(_copy, int)
-	GDVIRTUAL1(_paste, int)
-	GDVIRTUAL1(_paste_primary_clipboard, int)
+	GDVIRTUAL2(_handle_unicode_input, int, int);
+	GDVIRTUAL1(_backspace, int);
+	GDVIRTUAL1(_cut, int);
+	GDVIRTUAL1(_copy, int);
+	GDVIRTUAL1(_paste, int);
+	GDVIRTUAL1(_paste_primary_clipboard, int);
 
 public:
 	/* General overrides. */

@@ -61,10 +61,10 @@ protected:
 	virtual RID get_environment() const override;
 	virtual RID get_camera_attributes() const override;
 
-	GDVIRTUAL0RC(Ref<RenderSceneBuffers>, _get_render_scene_buffers)
-	GDVIRTUAL0RC(RenderSceneData *, _get_render_scene_data)
-	GDVIRTUAL0RC(RID, _get_environment)
-	GDVIRTUAL0RC(RID, _get_camera_attributes)
+	GDVIRTUAL0RC(Ref<RenderSceneBuffers>, _get_render_scene_buffers);
+	GDVIRTUAL0RC(RenderSceneData *, _get_render_scene_data);
+	GDVIRTUAL0RC(RID, _get_environment);
+	GDVIRTUAL0RC(RID, _get_camera_attributes);
 };
 
 #endif // RENDER_DATA_H

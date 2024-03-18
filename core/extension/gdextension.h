@@ -41,7 +41,7 @@
 class GDExtensionMethodBind;
 
 class GDExtension : public Resource {
-	GDCLASS(GDExtension, Resource)
+	GDCLASS(GDExtension, Resource);
 
 	friend class GDExtensionManager;
 
@@ -170,7 +170,7 @@ public:
 	~GDExtension();
 };
 
-VARIANT_ENUM_CAST(GDExtension::InitializationLevel)
+VARIANT_ENUM_CAST(GDExtension::InitializationLevel);
 
 class GDExtensionResourceLoader : public ResourceFormatLoader {
 public:

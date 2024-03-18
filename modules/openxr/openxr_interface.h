@@ -253,10 +253,10 @@ public:
 	~OpenXRInterface();
 };
 
-VARIANT_ENUM_CAST(OpenXRInterface::Hand)
-VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange)
-VARIANT_ENUM_CAST(OpenXRInterface::HandTrackedSource)
-VARIANT_ENUM_CAST(OpenXRInterface::HandJoints)
-VARIANT_BITFIELD_CAST(OpenXRInterface::HandJointFlags)
+VARIANT_ENUM_CAST(OpenXRInterface::Hand);
+VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange);
+VARIANT_ENUM_CAST(OpenXRInterface::HandTrackedSource);
+VARIANT_ENUM_CAST(OpenXRInterface::HandJoints);
+VARIANT_BITFIELD_CAST(OpenXRInterface::HandJointFlags);
 
 #endif // OPENXR_INTERFACE_H

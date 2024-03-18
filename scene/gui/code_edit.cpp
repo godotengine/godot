@@ -2638,7 +2638,7 @@ void CodeEdit::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(LOCATION_LOCAL);
 	BIND_ENUM_CONSTANT(LOCATION_PARENT_MASK);
-	BIND_ENUM_CONSTANT(LOCATION_OTHER_USER_CODE)
+	BIND_ENUM_CONSTANT(LOCATION_OTHER_USER_CODE);
 	BIND_ENUM_CONSTANT(LOCATION_OTHER);
 
 	ClassDB::bind_method(D_METHOD("get_text_for_code_completion"), &CodeEdit::get_text_for_code_completion);
@@ -2661,9 +2661,9 @@ void CodeEdit::_bind_methods() {
 
 	// Overridable
 
-	GDVIRTUAL_BIND(_confirm_code_completion, "replace")
-	GDVIRTUAL_BIND(_request_code_completion, "force")
-	GDVIRTUAL_BIND(_filter_code_completion_candidates, "candidates")
+	GDVIRTUAL_BIND(_confirm_code_completion, "replace");
+	GDVIRTUAL_BIND(_request_code_completion, "force");
+	GDVIRTUAL_BIND(_filter_code_completion_candidates, "candidates");
 
 	/* Line length guidelines */
 	ClassDB::bind_method(D_METHOD("set_line_length_guidelines", "guideline_columns"), &CodeEdit::set_line_length_guidelines);

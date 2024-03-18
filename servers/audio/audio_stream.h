@@ -47,16 +47,16 @@ class AudioStreamPlayback : public RefCounted {
 
 protected:
 	static void _bind_methods();
-	GDVIRTUAL1(_start, double)
-	GDVIRTUAL0(_stop)
-	GDVIRTUAL0RC(bool, _is_playing)
-	GDVIRTUAL0RC(int, _get_loop_count)
-	GDVIRTUAL0RC(double, _get_playback_position)
-	GDVIRTUAL1(_seek, double)
-	GDVIRTUAL3R(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
-	GDVIRTUAL0(_tag_used_streams)
-	GDVIRTUAL2(_set_parameter, const StringName &, const Variant &)
-	GDVIRTUAL1RC(Variant, _get_parameter, const StringName &)
+	GDVIRTUAL1(_start, double);
+	GDVIRTUAL0(_stop);
+	GDVIRTUAL0RC(bool, _is_playing);
+	GDVIRTUAL0RC(int, _get_loop_count);
+	GDVIRTUAL0RC(double, _get_playback_position);
+	GDVIRTUAL1(_seek, double);
+	GDVIRTUAL3R(int, _mix, GDExtensionPtr<AudioFrame>, float, int);
+	GDVIRTUAL0(_tag_used_streams);
+	GDVIRTUAL2(_set_parameter, const StringName &, const Variant &);
+	GDVIRTUAL1RC(Variant, _get_parameter, const StringName &);
 
 public:
 	virtual void start(double p_from_pos = 0.0);
@@ -97,8 +97,8 @@ protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames);
 	virtual float get_stream_sampling_rate();
 
-	GDVIRTUAL2R(int, _mix_resampled, GDExtensionPtr<AudioFrame>, int)
-	GDVIRTUAL0RC(float, _get_stream_sampling_rate)
+	GDVIRTUAL2R(int, _mix_resampled, GDExtensionPtr<AudioFrame>, int);
+	GDVIRTUAL0RC(float, _get_stream_sampling_rate);
 
 	static void _bind_methods();
 
@@ -123,15 +123,15 @@ class AudioStream : public Resource {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0RC(Ref<AudioStreamPlayback>, _instantiate_playback)
-	GDVIRTUAL0RC(String, _get_stream_name)
-	GDVIRTUAL0RC(double, _get_length)
-	GDVIRTUAL0RC(bool, _is_monophonic)
-	GDVIRTUAL0RC(double, _get_bpm)
-	GDVIRTUAL0RC(bool, _has_loop)
-	GDVIRTUAL0RC(int, _get_bar_beats)
-	GDVIRTUAL0RC(int, _get_beat_count)
-	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_parameter_list)
+	GDVIRTUAL0RC(Ref<AudioStreamPlayback>, _instantiate_playback);
+	GDVIRTUAL0RC(String, _get_stream_name);
+	GDVIRTUAL0RC(double, _get_length);
+	GDVIRTUAL0RC(bool, _is_monophonic);
+	GDVIRTUAL0RC(double, _get_bpm);
+	GDVIRTUAL0RC(bool, _has_loop);
+	GDVIRTUAL0RC(int, _get_bar_beats);
+	GDVIRTUAL0RC(int, _get_beat_count);
+	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_parameter_list);
 
 public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback();
