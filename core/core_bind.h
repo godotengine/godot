@@ -257,6 +257,11 @@ class Geometry2D : public Object {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	bool _is_polygon_clockwise_bind_compat_89635(const Vector<Vector2> &p_polygon);
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
 	static Geometry2D *get_singleton();
 	Variant segment_intersects_segment(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b);
@@ -269,7 +274,11 @@ public:
 	bool is_point_in_circle(const Vector2 &p_point, const Vector2 &p_circle_pos, real_t p_circle_radius);
 	real_t segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius);
 
-	bool is_polygon_clockwise(const Vector<Vector2> &p_polygon);
+	enum PolyHandedness {
+		RIGHT_HANDED,
+		LEFT_HANDED,
+	};
+	bool is_polygon_clockwise(const Vector<Vector2> &p_polygon, PolyHandedness p_handedness = RIGHT_HANDED);
 	bool is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_delaunay(const Vector<Vector2> &p_points);
@@ -590,6 +599,7 @@ VARIANT_ENUM_CAST(core_bind::OS::SystemDir);
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyBooleanOperation);
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyJoinType);
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyEndType);
+VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyHandedness);
 
 VARIANT_ENUM_CAST(core_bind::Thread::Priority);
 

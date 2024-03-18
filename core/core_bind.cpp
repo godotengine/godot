@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "core_bind.h"
+#include "core_bind.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
@@ -731,8 +732,8 @@ bool Geometry2D::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, co
 	return ::Geometry2D::is_point_in_triangle(s, a, b, c);
 }
 
-bool Geometry2D::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
-	return ::Geometry2D::is_polygon_clockwise(p_polygon);
+bool Geometry2D::is_polygon_clockwise(const Vector<Vector2> &p_polygon, PolyHandedness p_handedness) {
+	return ::Geometry2D::is_polygon_clockwise(p_polygon, ::Geometry2D::PolyHandedness(p_handedness));
 }
 
 bool Geometry2D::is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon) {
@@ -888,7 +889,7 @@ void Geometry2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("point_is_inside_triangle", "point", "a", "b", "c"), &Geometry2D::point_is_inside_triangle);
 
-	ClassDB::bind_method(D_METHOD("is_polygon_clockwise", "polygon"), &Geometry2D::is_polygon_clockwise);
+	ClassDB::bind_method(D_METHOD("is_polygon_clockwise", "polygon", "handedness"), &Geometry2D::is_polygon_clockwise, DEFVAL(RIGHT_HANDED));
 	ClassDB::bind_method(D_METHOD("is_point_in_polygon", "point", "polygon"), &Geometry2D::is_point_in_polygon);
 	ClassDB::bind_method(D_METHOD("triangulate_polygon", "polygon"), &Geometry2D::triangulate_polygon);
 	ClassDB::bind_method(D_METHOD("triangulate_delaunay", "points"), &Geometry2D::triangulate_delaunay);
@@ -922,6 +923,9 @@ void Geometry2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(END_BUTT);
 	BIND_ENUM_CONSTANT(END_SQUARE);
 	BIND_ENUM_CONSTANT(END_ROUND);
+
+	BIND_ENUM_CONSTANT(RIGHT_HANDED);
+	BIND_ENUM_CONSTANT(LEFT_HANDED);
 }
 
 ////// Geometry3D //////
