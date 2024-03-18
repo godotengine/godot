@@ -170,7 +170,12 @@ void AreaBullet::mark_all_overlaps_dirty() {
 
 void AreaBullet::mark_object_overlaps_inside(CollisionObjectBullet *p_other_object) {
 	OverlappingShapeData *overlapping_shapes_w = overlapping_shapes.ptrw();
-	for (int i = 0; i < overlapping_shapes.size(); i++) {
+
+	// This routine can be a bottleneck, and loading the count into register can be
+	// 3x faster than calling size() each iteration.
+	int count = overlapping_shapes.size();
+
+	for (int i = 0; i < count; i++) {
 		if (overlapping_shapes_w[i].other_object == p_other_object && overlapping_shapes_w[i].state == OVERLAP_STATE_DIRTY) {
 			overlapping_shapes_w[i].state = OVERLAP_STATE_INSIDE;
 		}
