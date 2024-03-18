@@ -2774,6 +2774,9 @@ void EditorInspector::update_tree() {
 			subgroup_base = "";
 			section_depth = 0;
 
+			vbox_per_path.clear();
+			editor_inspector_array_per_prefix.clear();
+
 			if (!show_categories) {
 				continue;
 			}
