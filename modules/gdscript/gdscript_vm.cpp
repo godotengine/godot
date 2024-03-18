@@ -884,23 +884,27 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					Object *obj = dst->get_validated_object();
-					String v = index->operator String();
-					bool read_only_property = false;
-					if (obj) {
-						read_only_property = ClassDB::has_property(obj->get_class_name(), v) && (ClassDB::get_property_setter(obj->get_class_name(), v) == StringName());
-					}
-					if (read_only_property) {
-						err_text = vformat(R"(Cannot set value into property "%s" (on base "%s") because it is read-only.)", v, _get_var_type(dst));
+					if (dst->is_read_only()) {
+						err_text = "Invalid assignment on read-only value (on base: '" + _get_var_type(dst) + "').";
 					} else {
-						if (!v.is_empty()) {
-							v = "'" + v + "'";
-						} else {
-							v = "of type '" + _get_var_type(index) + "'";
+						Object *obj = dst->get_validated_object();
+						String v = index->operator String();
+						bool read_only_property = false;
+						if (obj) {
+							read_only_property = ClassDB::has_property(obj->get_class_name(), v) && (ClassDB::get_property_setter(obj->get_class_name(), v) == StringName());
 						}
-						err_text = "Invalid assignment of property or key " + v + " with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
-						if (err_code == Variant::VariantSetError::SET_INDEXED_ERR) {
-							err_text = "Invalid assignment of index " + v + " (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'.";
+						if (read_only_property) {
+							err_text = vformat(R"(Cannot set value into property "%s" (on base "%s") because it is read-only.)", v, _get_var_type(dst));
+						} else {
+							if (!v.is_empty()) {
+								v = "'" + v + "'";
+							} else {
+								v = "of type '" + _get_var_type(index) + "'";
+							}
+							err_text = "Invalid assignment of property or key " + v + " with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
+							if (err_code == Variant::VariantSetError::SET_INDEXED_ERR) {
+								err_text = "Invalid assignment of index " + v + " (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'.";
+							}
 						}
 					}
 					OPCODE_BREAK;
@@ -926,13 +930,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					String v = index->operator String();
-					if (!v.is_empty()) {
-						v = "'" + v + "'";
+					if (dst->is_read_only()) {
+						err_text = "Invalid assignment on read-only value (on base: '" + _get_var_type(dst) + "').";
 					} else {
-						v = "of type '" + _get_var_type(index) + "'";
+						String v = index->operator String();
+						if (!v.is_empty()) {
+							v = "'" + v + "'";
+						} else {
+							v = "of type '" + _get_var_type(index) + "'";
+						}
+						err_text = "Invalid assignment of property or key " + v + " with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
 					}
-					err_text = "Invalid assignment of property or key " + v + " with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
 					OPCODE_BREAK;
 				}
 #endif
@@ -958,13 +966,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (oob) {
-					String v = index->operator String();
-					if (!v.is_empty()) {
-						v = "'" + v + "'";
+					if (dst->is_read_only()) {
+						err_text = "Invalid assignment on read-only value (on base: '" + _get_var_type(dst) + "').";
 					} else {
-						v = "of type '" + _get_var_type(index) + "'";
+						String v = index->operator String();
+						if (!v.is_empty()) {
+							v = "'" + v + "'";
+						} else {
+							v = "of type '" + _get_var_type(index) + "'";
+						}
+						err_text = "Out of bounds set index " + v + " (on base: '" + _get_var_type(dst) + "')";
 					}
-					err_text = "Out of bounds set index " + v + " (on base: '" + _get_var_type(dst) + "')";
 					OPCODE_BREAK;
 				}
 #endif
@@ -1092,15 +1104,19 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					Object *obj = dst->get_validated_object();
-					bool read_only_property = false;
-					if (obj) {
-						read_only_property = ClassDB::has_property(obj->get_class_name(), *index) && (ClassDB::get_property_setter(obj->get_class_name(), *index) == StringName());
-					}
-					if (read_only_property) {
-						err_text = vformat(R"(Cannot set value into property "%s" (on base "%s") because it is read-only.)", String(*index), _get_var_type(dst));
+					if (dst->is_read_only()) {
+						err_text = "Invalid assignment on read-only value (on base: '" + _get_var_type(dst) + "').";
 					} else {
-						err_text = "Invalid assignment of property or key '" + String(*index) + "' with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
+						Object *obj = dst->get_validated_object();
+						bool read_only_property = false;
+						if (obj) {
+							read_only_property = ClassDB::has_property(obj->get_class_name(), *index) && (ClassDB::get_property_setter(obj->get_class_name(), *index) == StringName());
+						}
+						if (read_only_property) {
+							err_text = vformat(R"(Cannot set value into property "%s" (on base "%s") because it is read-only.)", String(*index), _get_var_type(dst));
+						} else {
+							err_text = "Invalid assignment of property or key '" + String(*index) + "' with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
+						}
 					}
 					OPCODE_BREAK;
 				}

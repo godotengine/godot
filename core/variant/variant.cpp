@@ -3515,6 +3515,17 @@ bool Variant::is_shared() const {
 	return is_type_shared(type);
 }
 
+bool Variant::is_read_only() const {
+	switch (type) {
+		case ARRAY:
+			return reinterpret_cast<const Array *>(_data._mem)->is_read_only();
+		case DICTIONARY:
+			return reinterpret_cast<const Dictionary *>(_data._mem)->is_read_only();
+		default:
+			return false;
+	}
+}
+
 void Variant::_variant_call_error(const String &p_method, Callable::CallError &error) {
 	switch (error.error) {
 		case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
