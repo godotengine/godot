@@ -251,15 +251,21 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 			return;
 		}
 	} else if (type == Variant::DICTIONARY) {
-		Variant *v = VariantGetInternalPtr<Dictionary>::get_ptr(this)->getptr(p_member);
-		if (v) {
-			*v = p_value;
-			r_valid = true;
-		} else {
-			VariantGetInternalPtr<Dictionary>::get_ptr(this)->operator[](p_member) = p_value;
-			r_valid = true;
+		Dictionary &dict = *VariantGetInternalPtr<Dictionary>::get_ptr(this);
+
+		if (dict.is_read_only()) {
+			r_valid = false;
+			return;
 		}
 
+		Variant *v = dict.getptr(p_member);
+		if (v) {
+			*v = p_value;
+		} else {
+			dict[p_member] = p_value;
+		}
+
+		r_valid = true;
 	} else {
 		r_valid = false;
 	}
