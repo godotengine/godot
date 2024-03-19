@@ -306,7 +306,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, const CompileData *p_data) {
 	{
 		MutexLock lock(variant_set_mutex);
 
-		p_data->version->variants[variant] = RD::get_singleton()->shader_create_from_bytecode(shader_data, p_data->version->variants[variant]);
+		p_data->version->variants[variant] = RD::get_singleton()->shader_create_from_bytecode_with_samplers(shader_data, p_data->version->variants[variant], immutable_samplers);
 		p_data->version->variant_data[variant] = shader_data;
 	}
 }
