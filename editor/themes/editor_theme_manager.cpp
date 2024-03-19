@@ -356,20 +356,25 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 		if (config.spacing_preset != "Custom") {
 			int preset_base_spacing = 0;
 			int preset_extra_spacing = 0;
+			Size2 preset_dialogs_buttons_min_size;
 
 			if (config.spacing_preset == "Compact") {
 				preset_base_spacing = 0;
 				preset_extra_spacing = 4;
+				preset_dialogs_buttons_min_size = Size2(90, 26);
 			} else if (config.spacing_preset == "Spacious") {
 				preset_base_spacing = 6;
 				preset_extra_spacing = 2;
+				preset_dialogs_buttons_min_size = Size2(112, 36);
 			} else { // Default
 				preset_base_spacing = 4;
 				preset_extra_spacing = 0;
+				preset_dialogs_buttons_min_size = Size2(105, 34);
 			}
 
 			config.base_spacing = preset_base_spacing;
 			config.extra_spacing = preset_extra_spacing;
+			config.dialogs_buttons_min_size = preset_dialogs_buttons_min_size;
 
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_spacing", config.base_spacing);
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/additional_spacing", config.extra_spacing);
@@ -1271,6 +1276,9 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		// AcceptDialog.
 		p_theme->set_stylebox("panel", "AcceptDialog", p_config.dialog_style);
 		p_theme->set_constant("buttons_separation", "AcceptDialog", 8 * EDSCALE);
+		// Make buttons with short texts such as "OK" easier to click/tap.
+		p_theme->set_constant("buttons_min_width", "AcceptDialog", p_config.dialogs_buttons_min_size.x * EDSCALE);
+		p_theme->set_constant("buttons_min_height", "AcceptDialog", p_config.dialogs_buttons_min_size.y * EDSCALE);
 
 		// FileDialog.
 		p_theme->set_icon("folder", "FileDialog", p_theme->get_icon(SNAME("Folder"), EditorStringName(EditorIcons)));
