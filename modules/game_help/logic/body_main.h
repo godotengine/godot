@@ -185,7 +185,7 @@ public:
     {
         skillTree = p_value;
     }
-	Ref<BehaviorTree> get_skill() const { return skillTree; }
+	String get_skill() const { return skillTree; }
 
 	virtual void initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard) override
     {

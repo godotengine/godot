@@ -161,5 +161,5 @@ void BTPlaySkill::_bind_methods()
 
 
     
-	ADD_PROPERTY(PropertyInfo(Variant::String, "skill"), "set_skill", "get_skill");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "skill"), "set_skill", "get_skill");
 }

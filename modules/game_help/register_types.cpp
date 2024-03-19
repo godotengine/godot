@@ -40,6 +40,7 @@
 #include "modules/game_help/logic/animation_help.h"
 #include "modules/game_help/logic/body_main.h"
 #include "modules/game_help/logic/body_part.h"
+#include "modules/game_help/csv/CSV_EditorImportPlugin.h"
 
 
 
@@ -69,11 +70,20 @@
 
 
 static AnimationHelp* animation_help = nullptr;
+static CSV_EditorImportPlugin * csv_editor_import = nullptr;
 
 void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+#ifdef TOOLS_ENABLED
+		Ref<CSV_EditorImportPlugin> mp3_import;
+		mp3_import.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(mp3_import);
+#endif
+
+	ClassDB::register_class<CSVData>();
+
 	initialize_terrain_3d(p_level);
 	initialize_filiage_manager(p_level);
 	ClassDB::register_class<AnimationHelp>();
