@@ -30,7 +30,6 @@
 
 #include "editor_profiler.h"
 
-#include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
