@@ -156,6 +156,7 @@ public:
 
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state) const;
+	Node *instantiate_as_child(Node* p_parent, GenEditState p_edit_state) const;
 
 	Array setup_resources_in_array(Array &array_to_scan, const SceneState::NodeData &n, HashMap<Ref<Resource>, Ref<Resource>> &resources_local_to_sub_scene, Node *node, const StringName sname, HashMap<Ref<Resource>, Ref<Resource>> &resources_local_to_scene, int i, Node **ret_nodes, SceneState::GenEditState p_edit_state) const;
 	Variant make_local_resource(Variant &value, const SceneState::NodeData &p_node_data, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_sub_scene, Node *p_node, const StringName p_sname, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_scene, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const;
@@ -255,7 +256,8 @@ public:
 
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state = GEN_EDIT_STATE_DISABLED) const;
-
+	Node *instantiate_as_child(Node* parent, GenEditState p_edit_state = GEN_EDIT_STATE_DISABLED) const;
+	
 	void recreate_state();
 	void replace_state(Ref<SceneState> p_by);
 

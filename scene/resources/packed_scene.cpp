@@ -2092,6 +2092,13 @@ Node *PackedScene::instantiate(GenEditState p_edit_state) const {
 	return s;
 }
 
+Node *PackedScene::instantiate_as_child(Node* p_parent, GenEditState p_edit_state) const {
+	ERR_FAIL_NULL_V_MSG(p_parent, nullptr, "Cannot instantiate scene under null parent.");
+	Node* p_node = instantiate(p_edit_state);
+	p_parent->add_child(p_node);
+	return p_node;
+}
+
 void PackedScene::replace_state(Ref<SceneState> p_by) {
 	state = p_by;
 	state->set_path(get_path());
@@ -2128,6 +2135,7 @@ void PackedScene::reset_state() {
 void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "path"), &PackedScene::pack);
 	ClassDB::bind_method(D_METHOD("instantiate", "edit_state"), &PackedScene::instantiate, DEFVAL(GEN_EDIT_STATE_DISABLED));
+	ClassDB::bind_method(D_METHOD("instantiate_as_child", "parent", "edit_state"), &PackedScene::instantiate_as_child, DEFVAL(GEN_EDIT_STATE_DISABLED));
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &PackedScene::can_instantiate);
 	ClassDB::bind_method(D_METHOD("_set_bundled_scene", "scene"), &PackedScene::_set_bundled_scene);
 	ClassDB::bind_method(D_METHOD("_get_bundled_scene"), &PackedScene::_get_bundled_scene);

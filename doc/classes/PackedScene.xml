@@ -95,6 +95,14 @@
 				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers a [constant Node.NOTIFICATION_SCENE_INSTANTIATED] notification on the root node.
 			</description>
 		</method>
+		<method name="instantiate_as_child" qualifiers="const" keywords="create, make, spawn, new">
+			<return type="Node" />
+			<param index="0" name="parent" type="Node" />
+			<param index="1" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0" />
+			<description>
+				Same as [method instantiate], but also adds the instantiated node as a child to [param parent].
+			</description>
+		</method>
 		<method name="pack">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="Node" />
