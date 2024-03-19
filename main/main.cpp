@@ -2488,7 +2488,9 @@ Error Main::setup2() {
 	set_current_thread_safe_for_nodes(true);
 
 	// Don't use rich formatting to prevent ANSI escape codes from being written to log files.
-	print_header(false);
+	if (Engine::get_singleton()->_print_header) {
+		print_header(false);
+	}
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager || cmdline_tool) {
