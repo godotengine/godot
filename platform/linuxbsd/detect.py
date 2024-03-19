@@ -472,6 +472,19 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
         env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
+    if env["ACCESSKIT_SDK_PATH"] != "":
+        env.Prepend(CPPPATH=[env["ACCESSKIT_SDK_PATH"] + "/include"])
+        if env["arch"] == "arm64":
+            env.Append(LIBPATH=[env["ACCESSKIT_SDK_PATH"] + "/lib/linux/arm64/static/"])
+        elif env["arch"] == "rv64":
+            env.Append(LIBPATH=[env["ACCESSKIT_SDK_PATH"] + "/lib/linux/riscv64gc/static/"])
+        elif env["arch"] == "x86_64":
+            env.Append(LIBPATH=[env["ACCESSKIT_SDK_PATH"] + "/lib/linux/x86_64/static/"])
+        elif env["arch"] == "x86_32":
+            env.Append(LIBPATH=[env["ACCESSKIT_SDK_PATH"] + "/lib/linux/x86/static/"])
+        env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+        env.Append(LIBS=["accesskit"])
+
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         if not env["use_volk"]:

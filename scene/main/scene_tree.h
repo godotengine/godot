@@ -169,6 +169,11 @@ private:
 
 	List<ObjectID> delete_queue;
 
+	bool accessibility_force_update = true;
+	HashSet<ObjectID> accessibility_change_queue;
+	RID accessibility_focus_element;
+	uint64_t accessibility_last_update = 0;
+
 	HashMap<UGCall, Vector<Variant>, UGCall> unique_group_calls;
 	bool ugc_locked = false;
 	void _flush_ugc();
@@ -310,6 +315,12 @@ public:
 	}
 
 	void flush_transform_notifications();
+
+	bool is_accessibility_enabled() const;
+	bool is_accessibility_supported() const;
+	void _accessibility_force_update();
+	void _accessibility_notify_change(const Node *p_node, bool p_remove = false);
+	void _flush_accessibility_changes();
 
 	virtual void initialize() override;
 

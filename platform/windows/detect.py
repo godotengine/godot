@@ -290,6 +290,42 @@ def build_res_file(target, source, env: "SConsEnvironment"):
     return 0
 
 
+def build_def_file(target, source, env: "SConsEnvironment"):
+    arch_aliases = {
+        "x86_32": "i386",
+        "x86_64": "i386:x86-64",
+        "arm32": "arm",
+        "arm64": "arm64",
+    }
+
+    cmdbase = "dlltool --no-leading-underscore -m " + arch_aliases[env["arch"]]
+
+    mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
+
+    for x in range(len(source)):
+        ok = True
+        # Try prefixed executable (MinGW on Linux).
+        cmd = mingw_bin_prefix + cmdbase + " -d " + str(source[x]) + " -l " + str(target[x])
+        try:
+            out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
+            if len(out[1]):
+                ok = False
+        except Exception:
+            ok = False
+
+        # Try generic executable (MSYS2).
+        if not ok:
+            cmd = cmdbase + " -d " + str(source[x]) + " -l " + str(target[x])
+            try:
+                out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
+                if len(out[1]):
+                    return -1
+            except Exception:
+                return -1
+
+    return 0
+
+
 def setup_msvc_manual(env: "SConsEnvironment"):
     """Running from VCVARS environment"""
 
@@ -489,6 +525,17 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     if env.debug_features:
         LIBS += ["psapi", "dbghelp"]
+
+    if env["ACCESSKIT_SDK_PATH"] != "":
+        env.Prepend(CPPPATH=[env["ACCESSKIT_SDK_PATH"] + "/include"])
+        if env["arch"] == "arm64":
+            env.Append(LIBPATH=[env["ACCESSKIT_SDK_PATH"] + "/lib/windows/arm64/msvc/static"])
+        elif env["arch"] == "x86_64":
+            env.Append(LIBPATH=[env["ACCESSKIT_SDK_PATH"] + "/lib/windows/x86_64/msvc/static"])
+        elif env["arch"] == "x86_32":
+            env.Append(LIBPATH=[env["ACCESSKIT_SDK_PATH"] + "/lib/windows/x86/msvc/static"])
+        env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+        LIBS += ["accesskit", "uiautomationcore", "oleaut32", "user32", "userenv", "ntdll"]
 
     if env["vulkan"]:
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
@@ -716,6 +763,16 @@ def configure_mingw(env: "SConsEnvironment"):
         ]
     )
 
+    if env["ACCESSKIT_SDK_PATH"] != "":
+        env.Prepend(CPPPATH=[env["ACCESSKIT_SDK_PATH"] + "/include"])
+        if env["arch"] == "x86_64":
+            env.Append(LIBPATH=[env["ACCESSKIT_SDK_PATH"] + "/lib/windows/x86_64/mingw/static/"])
+        elif env["arch"] == "x86_32":
+            env.Append(LIBPATH=[env["ACCESSKIT_SDK_PATH"] + "/lib/windows/x86/mingw/static/"])
+        env.Append(LIBPATH=["#platform/windows"])
+        env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+        env.Append(LIBS=["accesskit", "uiautomationcore." + env["arch"], "oleaut32", "user32", "userenv", "ntdll"])
+
     if env.debug_features:
         env.Append(LIBS=["psapi", "dbghelp"])
 
@@ -771,6 +828,8 @@ def configure_mingw(env: "SConsEnvironment"):
 
     # resrc
     env.Append(BUILDERS={"RES": env.Builder(action=build_res_file, suffix=".o", src_suffix=".rc")})
+    # dlltool
+    env.Append(BUILDERS={"DEF": env.Builder(action=build_def_file, suffix=".a", src_suffix=".def")})
 
 
 def configure(env: "SConsEnvironment"):

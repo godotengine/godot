@@ -238,6 +238,16 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility/accessibility/accessibility_support" type="int" setter="" getter="" default="0">
+			Accessibility support mode:
+			If [code]0[/code], accessibility support is fully disabled.
+			If [code]1[/code], accessibility support is enabled, and accessibility information updates are processed regardless of current assistive apps' status.
+			If [code]2[/code], accessibility support is enabled, but accessibility information updates are processed only is assistive app (e.g. screen reader or Braille display) is active (default).
+			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, macOS Accessibility Inspector or AT-SPI Browser do not count as assistive app. To test your app with these tools, use [code]1[/code].
+		</member>
+		<member name="accessibility/accessibility/updates_per_second" type="int" setter="" getter="" default="15">
+			The number of accessibility information updates per second.
+		</member>
 		<member name="animation/warnings/check_angle_interpolation_type_conflicting" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [AnimationMixer] prints the warning of interpolation being forced to choose the shortest rotation path due to multiple angle interpolation types being mixed in the [AnimationMixer] cache.
 		</member>

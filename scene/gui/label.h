@@ -79,6 +79,7 @@ private:
 
 	struct ThemeCache {
 		Ref<StyleBox> normal_style;
+		Ref<StyleBox> focus_style;
 		Ref<Font> font;
 
 		int font_size = 0;

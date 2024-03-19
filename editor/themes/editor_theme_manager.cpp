@@ -1438,6 +1438,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		// Label.
 
 		p_theme->set_stylebox("normal", "Label", p_config.base_empty_style);
+		p_theme->set_stylebox("focus", "Label", p_config.button_style_focus);
 
 		p_theme->set_color("font_color", "Label", p_config.font_color);
 		p_theme->set_color("font_shadow_color", "Label", Color(0, 0, 0, 0));

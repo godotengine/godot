@@ -198,6 +198,7 @@ opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loade
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
+opts.Add(("ACCESSKIT_SDK_PATH", "Path to the AccessKit C SDK", ""))
 
 # Advanced options
 opts.Add(BoolVariable("dev_mode", "Alias for dev options: verbose=yes warnings=extra werror=yes tests=yes", False))

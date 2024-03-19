@@ -1145,6 +1145,9 @@
 		<constant name="FOCUS_ALL" value="2" enum="FocusMode">
 			The node can grab focus on mouse click, using the arrows and the Tab keys on the keyboard, or using the D-pad buttons on a gamepad. Use with [member focus_mode].
 		</constant>
+		<constant name="FOCUS_ACCESSIBILITY" value="3" enum="FocusMode">
+			The node can grab focus only when screen reader is active. Use with [member focus_mode].
+		</constant>
 		<constant name="NOTIFICATION_RESIZED" value="40">
 			Sent when the node changes size. Use [member size] to get the new size.
 		</constant>

@@ -1408,7 +1408,28 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 	return tooltip;
 }
 
+void Viewport::cancel_tooltip() {
+	_gui_cancel_tooltip();
+}
+
+void Viewport::show_tooltip(Control *p_control) {
+	if (!p_control) {
+		return;
+	}
+
+	if (gui.tooltip_timer.is_valid()) {
+		gui.tooltip_timer->release_connections();
+		gui.tooltip_timer = Ref<SceneTreeTimer>();
+	}
+	gui.tooltip_control = p_control;
+	_gui_show_tooltip_at(p_control->get_size() / 2);
+}
+
 void Viewport::_gui_show_tooltip() {
+	_gui_show_tooltip_at(gui.last_mouse_pos);
+}
+
+void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 	if (!gui.tooltip_control) {
 		return;
 	}
@@ -1417,7 +1438,7 @@ void Viewport::_gui_show_tooltip() {
 	Control *tooltip_owner = nullptr;
 	gui.tooltip_text = _gui_get_tooltip(
 			gui.tooltip_control,
-			gui.tooltip_control->get_global_transform().xform_inv(gui.last_mouse_pos),
+			gui.tooltip_control->get_global_transform().xform_inv(p_pos),
 			&tooltip_owner);
 	gui.tooltip_text = gui.tooltip_text.strip_edges();
 

@@ -49,6 +49,10 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
+#if defined(ACCESSKIT_ENABLED)
+#include "drivers/accesskit/accessibility_driver_accesskit.h"
+#endif
+
 #include <avrt.h>
 #include <dwmapi.h>
 #include <propkey.h>
@@ -120,6 +124,11 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
 			return true;
+#ifdef ACCESSKIT_ENABLED
+		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return (accessibility_driver != nullptr);
+		} break;
+#endif
 		default:
 			return false;
 	}
@@ -2242,6 +2251,46 @@ bool DisplayServerWindows::can_any_window_draw() const {
 	return false;
 }
 
+int DisplayServerWindows::accessibility_should_increase_contrast() const {
+	HIGHCONTRASTA hc;
+	hc.cbSize = sizeof(HIGHCONTRAST);
+	if (!SystemParametersInfoA(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRAST), &hc, 0)) {
+		return -1;
+	}
+	return (hc.dwFlags & HCF_HIGHCONTRASTON);
+}
+
+int DisplayServerWindows::accessibility_should_reduce_animation() const {
+	bool anim_enabled = false;
+	if (!SystemParametersInfoA(SPI_GETCLIENTAREAANIMATION, 0, &anim_enabled, 0)) {
+		return -1;
+	}
+	return (!anim_enabled);
+}
+
+int DisplayServerWindows::accessibility_should_reduce_transparency() const {
+	bool tr_enabled = false;
+	if (!SystemParametersInfoA(SPI_GETDISABLEOVERLAPPEDCONTENT, 0, &tr_enabled, 0)) {
+		return -1;
+	}
+	return tr_enabled;
+}
+
+int DisplayServerWindows::accessibility_screen_reader_active() const {
+	bool sr_enabled = false;
+	if (SystemParametersInfoA(SPI_GETSCREENREADER, 0, &sr_enabled, 0) && sr_enabled) {
+		return true;
+	}
+
+	static const WCHAR *narrator_mutex_name = L"NarratorRunning";
+	HANDLE narrator_mutex = OpenMutexW(MUTEX_ALL_ACCESS, false, narrator_mutex_name);
+	if (narrator_mutex) {
+		CloseHandle(narrator_mutex);
+		return true;
+	}
+	return false;
+}
+
 Vector2i DisplayServerWindows::ime_get_selection() const {
 	_THREAD_SAFE_METHOD_
 
@@ -3614,6 +3663,18 @@ LRESULT DisplayServerWindows::_handle_early_window_message(HWND hWnd, UINT uMsg,
 
 			// Fix this up so we can recognize the remaining messages.
 			pWindowData->hWnd = hWnd;
+
+#ifdef ACCESSKIT_ENABLED
+			if (accessibility_driver) {
+				if (!accessibility_driver->window_create(pWindowData->id, (void *)hWnd)) {
+					if (OS::get_singleton()->is_stdout_verbose()) {
+						ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+					}
+					memdelete(accessibility_driver);
+					accessibility_driver = nullptr;
+				}
+			}
+#endif
 		} break;
 		default: {
 			// Additional messages during window creation should happen after we fixed
@@ -4769,6 +4830,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			joypad->probe_joypads();
 		} break;
 		case WM_DESTROY: {
+#ifdef ACCESSKIT_ENABLED
+			if (accessibility_driver) {
+				accessibility_driver->window_destroy(window_id);
+			}
+#endif
 			Input::get_singleton()->flush_buffered_events();
 			if (window_mouseover_id == window_id) {
 				window_mouseover_id = INVALID_WINDOW_ID;
@@ -5100,6 +5166,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	{
 		WindowData &wd = windows[id];
 
+		wd.id = id;
 		wd.hWnd = CreateWindowExW(
 				dwExStyle,
 				L"Engine", L"",
@@ -5472,6 +5539,19 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		tts = memnew(TTS_Windows);
 	}
 	native_menu = memnew(NativeMenuWindows);
+
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		accessibility_driver = memnew(AccessibilityDriverAccessKit);
+		if (accessibility_driver->init() != OK) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT("Can't create an accessibility driver, accessibility support disabled!");
+			}
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+	}
+#endif
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
@@ -5924,6 +6004,11 @@ DisplayServerWindows::~DisplayServerWindows() {
 	if (gl_manager_native) {
 		memdelete(gl_manager_native);
 		gl_manager_native = nullptr;
+	}
+#endif
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		memdelete(accessibility_driver);
 	}
 #endif
 	if (tts) {

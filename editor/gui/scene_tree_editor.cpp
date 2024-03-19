@@ -129,8 +129,10 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_WARNING) {
-		const PackedStringArray warnings = n->get_configuration_warnings();
-
+		PackedStringArray warnings = n->get_configuration_warnings();
+		if (accessibility_warnings) {
+			warnings.append_array(n->get_accessibility_configuration_warnings());
+		}
 		if (warnings.is_empty()) {
 			return;
 		}
@@ -290,8 +292,10 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	}
 
 	if (can_rename) { //should be can edit..
-
-		const PackedStringArray warnings = p_node->get_configuration_warnings();
+		PackedStringArray warnings = p_node->get_configuration_warnings();
+		if (accessibility_warnings) {
+			warnings.append_array(p_node->get_accessibility_configuration_warnings());
+		}
 		const int num_warnings = warnings.size();
 		if (num_warnings > 0) {
 			String warning_icon;
@@ -1467,6 +1471,13 @@ void SceneTreeEditor::set_auto_expand_selected(bool p_auto, bool p_update_settin
 		EditorSettings::get_singleton()->set("docks/scene_tree/auto_expand_to_selected", p_auto);
 	}
 	auto_expand_selected = p_auto;
+}
+
+void SceneTreeEditor::set_accessibility_warnings(bool p_enable, bool p_update_settings) {
+	if (p_update_settings) {
+		EditorSettings::get_singleton()->set("docks/scene_tree/accessibility_warnings", p_enable);
+	}
+	accessibility_warnings = p_enable;
 }
 
 void SceneTreeEditor::set_connect_to_script_mode(bool p_enable) {

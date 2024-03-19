@@ -217,6 +217,9 @@
 		<member name="docks/property_editor/subresource_hue_tint" type="float" setter="" getter="">
 			The tint intensity to use for the subresources background in the Inspector dock. The tint is used to distinguish between different subresources in the inspector. Higher values result in a more noticeable background color difference.
 		</member>
+		<member name="docks/scene_tree/accessibility_warnings" type="bool" setter="" getter="">
+			If [code]true[/code], accessibility related warnings are displayed alongside other configuration warnings.
+		</member>
 		<member name="docks/scene_tree/auto_expand_to_selected" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will automatically unfold nodes when a node that has folded parents is selected.
 		</member>

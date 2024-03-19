@@ -191,6 +191,95 @@ void SceneTree::flush_transform_notifications() {
 	}
 }
 
+bool SceneTree::is_accessibility_enabled() const {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ACCESSIBILITY_SCREEN_READER)) {
+		return false;
+	}
+
+	DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::accessibility_get_mode();
+	int screen_reader_acvite = DisplayServer::get_singleton()->accessibility_screen_reader_active();
+	if ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) || ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO) && (screen_reader_acvite == 0))) {
+		return false;
+	}
+	return true;
+}
+
+bool SceneTree::is_accessibility_supported() const {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ACCESSIBILITY_SCREEN_READER)) {
+		return false;
+	}
+
+	DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::accessibility_get_mode();
+	if (accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		return false;
+	}
+	return true;
+}
+
+void SceneTree::_accessibility_force_update() {
+	accessibility_force_update = true;
+}
+
+void SceneTree::_accessibility_notify_change(const Node *p_node, bool p_remove) {
+	if (p_node) {
+		if (p_remove) {
+			accessibility_change_queue.erase(p_node->get_instance_id());
+		} else {
+			accessibility_change_queue.insert(p_node->get_instance_id());
+		}
+	}
+}
+
+void SceneTree::_flush_accessibility_changes() {
+	if (is_accessibility_enabled()) {
+		uint64_t time = OS::get_singleton()->get_ticks_msec();
+		if (!accessibility_force_update) {
+			uint64_t upd_per_sec = GLOBAL_GET(SNAME("accessibility/accessibility/updates_per_second"));
+			if (time - accessibility_last_update < 1000 / upd_per_sec) {
+				return;
+			}
+		}
+		accessibility_force_update = false;
+		accessibility_last_update = time;
+
+		DisplayServer::get_singleton()->accessibility_update_start();
+
+		for (const ObjectID &id : accessibility_change_queue) {
+			Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+			if (!node || !node->get_window() || node->get_window()->get_window_id() == DisplayServer::INVALID_WINDOW_ID) {
+				continue;
+			}
+			node->notification(Node::NOTIFICATION_ACCESSIBILITY_UPDATE);
+		}
+
+		// Track focus change.
+		RID new_focus_element;
+		Window *w_focus = Window::get_focused_window();
+		if (DisplayServer::get_singleton()->window_get_active_popup() != DisplayServer::INVALID_WINDOW_ID) {
+			DisplayServer::WindowID wid = DisplayServer::get_singleton()->window_get_active_popup();
+			ObjectID oid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
+			w_focus = (Window *)ObjectDB::get_instance(oid);
+		}
+		if (w_focus) {
+			Control *n_focus = w_focus->gui_get_focus_owner();
+			if (n_focus) {
+				new_focus_element = n_focus->get_focused_accessibility_element();
+			} else {
+				new_focus_element = w_focus->get_focused_accessibility_element();
+			}
+		}
+		if (accessibility_focus_element != new_focus_element) {
+			accessibility_focus_element = new_focus_element;
+			DisplayServer::get_singleton()->accessibility_update_set_focus(accessibility_focus_element);
+		}
+
+		// Push update to the accessibility driver.
+		DisplayServer::get_singleton()->accessibility_update_commit();
+
+		accessibility_change_queue.clear();
+	}
+}
+
 void SceneTree::_flush_ugc() {
 	ugc_locked = true;
 
@@ -480,6 +569,7 @@ bool SceneTree::physics_process(double p_time) {
 	root_lock--;
 
 	_flush_delete_queue();
+
 	_call_idle_callbacks();
 
 	return _quit;
@@ -526,6 +616,9 @@ bool SceneTree::process(double p_time) {
 	process_tweens(p_time, false);
 
 	flush_transform_notifications(); //additional transforms after timers update
+
+	//TODO limit flush rate to 5-10 fps
+	_flush_accessibility_changes();
 
 	_call_idle_callbacks();
 
@@ -1579,6 +1672,9 @@ bool SceneTree::is_multiplayer_poll_enabled() const {
 void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
+
+	ClassDB::bind_method(D_METHOD("is_accessibility_enabled"), &SceneTree::is_accessibility_enabled);
+	ClassDB::bind_method(D_METHOD("is_accessibility_supported"), &SceneTree::is_accessibility_supported);
 
 	ClassDB::bind_method(D_METHOD("is_auto_accept_quit"), &SceneTree::is_auto_accept_quit);
 	ClassDB::bind_method(D_METHOD("set_auto_accept_quit", "enabled"), &SceneTree::set_auto_accept_quit);

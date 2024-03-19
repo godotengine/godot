@@ -171,6 +171,8 @@ static int audio_driver_idx = -1;
 
 // Engine config/tools
 
+static DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
+static bool accessibility_node_set = false;
 static bool single_window = false;
 static bool editor = false;
 static bool project_manager = false;
@@ -582,6 +584,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--screen <N>", "Request window screen.\n");
 	print_help_option("--single-window", "Use a single window (no separate subwindows).\n");
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
+	print_help_option("--accessibility <mode>", "Select accessibility mode ['auto' (when screen reader is running, default), 'always', 'disabled'].\n");
 
 	print_help_title("Debug options");
 	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
@@ -1211,6 +1214,22 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--single-window") { // force single window
 
 			single_window = true;
+		} else if (I->get() == "--accessibility") {
+			if (I->next()) {
+				if (I->next()->get() == "auto") {
+					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
+				} else if (I->next()->get() == "always") {
+					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_ALWAYS;
+				} else if (I->next()->get() == "disabled") {
+					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED;
+				}
+				accessibility_node_set = true;
+
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing accessibility mode argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "-t" || I->get() == "--always-on-top") { // force always-on-top window
 
 			init_always_on_top = true;
@@ -2659,6 +2678,11 @@ Error Main::setup2() {
 
 		Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
 		DisplayServer::set_early_window_clear_color_override(true, boot_bg_color);
+
+		if (!accessibility_node_set) {
+			accessibility_mode = (DisplayServer::AccessibilityMode)GLOBAL_GET("accessibility/accessibility/accessibility_support").operator int64_t();
+		}
+		DisplayServer::accessibility_set_mode(accessibility_mode);
 
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;

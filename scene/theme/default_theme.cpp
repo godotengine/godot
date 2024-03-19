@@ -384,6 +384,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Label
 
 	theme->set_stylebox("normal", "Label", memnew(StyleBoxEmpty));
+	theme->set_stylebox("focus", "Label", focus);
 	theme->set_font("font", "Label", Ref<Font>());
 	theme->set_font_size("font_size", "Label", -1);
 
@@ -766,6 +767,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("cursor", "Tree", focus);
 	theme->set_stylebox("cursor_unfocused", "Tree", focus);
 	theme->set_stylebox("button_pressed", "Tree", button_pressed);
+	theme->set_stylebox("button_hover", "Tree", button_hover);
 	theme->set_stylebox("title_button_normal", "Tree", make_flat_stylebox(style_pressed_color, 4, 4, 4, 4));
 	theme->set_stylebox("title_button_pressed", "Tree", make_flat_stylebox(style_hover_color, 4, 4, 4, 4));
 	theme->set_stylebox("title_button_hover", "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 4));

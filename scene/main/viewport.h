@@ -416,6 +416,7 @@ private:
 	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_owner = nullptr);
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
+	void _gui_show_tooltip_at(const Point2i &p_pos);
 
 	void _gui_remove_control(Control *p_control);
 	void _gui_hide_control(Control *p_control);
@@ -483,6 +484,9 @@ public:
 	void canvas_item_top_level_changed();
 
 	uint64_t get_processed_events_count() const { return event_count; }
+
+	void cancel_tooltip();
+	void show_tooltip(Control *p_control);
 
 	void update_canvas_items();
 

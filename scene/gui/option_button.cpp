@@ -75,6 +75,15 @@ Size2 OptionButton::get_minimum_size() const {
 
 void OptionButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_LIST);
+			DisplayServer::get_singleton()->accessibility_update_set_default_action_verb(ae, DisplayServer::AccessibilityActionVerb::ACTION_VERB_OPEN);
+		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			_refresh_size_cache();
 			if (has_theme_icon(SNAME("arrow"))) {
