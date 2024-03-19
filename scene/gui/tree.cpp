@@ -3868,6 +3868,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				if (!root || (!root->get_first_child() && hide_root)) {
+					emit_signal(SNAME("empty_clicked"), get_local_mouse_position(), mb->get_button_index());
 					break;
 				}
 
