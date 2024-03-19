@@ -695,13 +695,7 @@ public:
 			u.binding = 0;
 			u.append_id(multimesh->buffer);
 			uniforms.push_back(u);
-			// <TF>
-			// @ShadyTF :
-			// descriptor optimizations : linear allocation of descriptor set pools
-			// Was:
-			// multimesh->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
-			multimesh->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set, true);
-			// </TF>
+			multimesh->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
 
 		return multimesh->uniform_set_3d;

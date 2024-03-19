@@ -536,13 +536,7 @@ public:
 				uniforms.push_back(u);
 			}
 
-			// <TF>
-			// @ShadyTF :
-			// descriptor optimizations : linear allocation of descriptor set pools
-			// Was:
-			//particles->particles_transforms_buffer_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
-			particles->particles_transforms_buffer_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set, true);
-			// </TF>
+			particles->particles_transforms_buffer_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
 		}
 
 		return particles->particles_transforms_buffer_uniform_set;

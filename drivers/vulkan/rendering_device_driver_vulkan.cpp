@@ -4228,7 +4228,7 @@ void RenderingDeviceDriverVulkan::uniform_set_free(UniformSetID p_uniform_set) {
 }
 
 void RenderingDeviceDriverVulkan::linear_uniform_set_pools_reset(int p_linear_pool_index) {
-	if (linear_descriptor_pools_enabled ) {
+	if (linear_descriptor_pools_enabled) {
 		DescriptorSetPools& pools_to_reset = linear_descriptor_set_pools[p_linear_pool_index];
 		DescriptorSetPools::Iterator curr_pool = pools_to_reset.begin();
 

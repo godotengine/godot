@@ -5328,11 +5328,11 @@ void RenderingDevice::_begin_frame(bool presented) {
 		// @ShadyTF persistently mapped buffers
 		// reset linear uniform
 		persistent_uniform_buffers_reset();
-		//driver->linear_uniform_set_pools_reset(frame);
 		update_perf_report();
+		// reset linear descriptor sets
+		driver->linear_uniform_set_pools_reset(frame);
 		// </TF>
 	}
-	//
 	
 	// Begin recording on the frame's command buffers.
 	driver->begin_segment(frame, frames_drawn++);
