@@ -427,8 +427,8 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	};
 	String dbg_sign_id = p_preset->get("application/code_sign_identity_debug").operator String().empty() ? "iPhone Developer" : p_preset->get("application/code_sign_identity_debug");
 	String rel_sign_id = p_preset->get("application/code_sign_identity_release").operator String().empty() ? "iPhone Distribution" : p_preset->get("application/code_sign_identity_release");
-	bool dbg_manual = !p_preset->get("application/provisioning_profile_uuid_debug").operator String().empty() || (dbg_sign_id != "iPhone Developer");
-	bool rel_manual = !p_preset->get("application/provisioning_profile_uuid_release").operator String().empty() || (rel_sign_id != "iPhone Distribution");
+	bool dbg_manual = !p_preset->get("application/provisioning_profile_uuid_debug").operator String().empty() || (dbg_sign_id != "iPhone Developer" && dbg_sign_id != "iPhone Distribution");
+	bool rel_manual = !p_preset->get("application/provisioning_profile_uuid_release").operator String().empty() || (rel_sign_id != "iPhone Developer" && rel_sign_id != "iPhone Distribution");
 	String str;
 	String strnew;
 	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
