@@ -149,10 +149,6 @@ void OS_IOS::deinitialize_modules() {
 
 void OS_IOS::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
-
-	if (main_loop) {
-		main_loop->initialize();
-	}
 }
 
 MainLoop *OS_IOS::get_main_loop() const {
@@ -181,7 +177,9 @@ bool OS_IOS::iterate() {
 }
 
 void OS_IOS::start() {
-	Main::start();
+	if (Main::start() == EXIT_SUCCESS) {
+		main_loop->initialize();
+	}
 
 	if (joypad_ios) {
 		joypad_ios->start_processing();
