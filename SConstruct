@@ -311,27 +311,22 @@ else:
     if selected_platform != "":
         print("Automatically detected platform: " + selected_platform)
 
-if selected_platform == "osx":
-    # Deprecated alias kept for compatibility.
-    print('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
-    selected_platform = "macos"
+# Deprecated aliases kept for compatibility.
+compatibility_platform_aliases = {
+    "osx": "macos",
+    "iphone": "ios",
+    "x11": "linuxbsd",
+    "javascript": "web",
+}
 
-if selected_platform == "iphone":
-    # Deprecated alias kept for compatibility.
-    print('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
-    selected_platform = "ios"
+if selected_platform in compatibility_platform_aliases.keys():
+    platform = compatibility_platform_aliases[selected_platform]
+    print('Platform "' + selected_platform  + '" has been renamed to "' + platform + '" in Godot 4. Building for platform "' + platform + '".')
+    selected_platform = platform
 
-if selected_platform in ["linux", "bsd", "x11"]:
-    if selected_platform == "x11":
-        # Deprecated alias kept for compatibility.
-        print('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
-    # Alias for convenience.
+# Alias for convenience.
+if selected_platform in ["linux", "bsd"]:
     selected_platform = "linuxbsd"
-
-if selected_platform == "javascript":
-    # Deprecated alias kept for compatibility.
-    print('Platform "javascript" has been renamed to "web" in Godot 4. Building for platform "web".')
-    selected_platform = "web"
 
 # Make sure to update this to the found, valid platform as it's used through the buildsystem as the reference.
 # It should always be re-set after calling `opts.Update()` otherwise it uses the original input value.
