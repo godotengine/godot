@@ -1013,12 +1013,12 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	_update_buttons_state();
 	emit_signal(SNAME("started"));
 
-	if (GLOBAL_GET("debug/settings/profiler/autostart_profiler")) {
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
 		tabs->set_current_tab(2);
 		profiler->set_pressed(true); // activate profiler
 	}
 
-	if (GLOBAL_GET("debug/settings/profiler/autostart_visual_profiler")) {
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false)) {
 		tabs->set_current_tab(3);
 		visual_profiler->set_pressed(true); // activate visual profiler
 	}

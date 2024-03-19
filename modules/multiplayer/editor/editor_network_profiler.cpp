@@ -32,8 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -45,10 +43,7 @@ void EditorNetworkProfiler::_bind_methods() {
 
 void EditorNetworkProfiler::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &EditorNetworkProfiler::_project_settings_changed));
-			break;
-		}
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (activate->is_pressed()) {
 				activate->set_icon(theme_cache.stop_icon);
@@ -87,10 +82,6 @@ void EditorNetworkProfiler::_update_theme_item_cache() {
 	theme_cache.outgoing_bandwidth_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 
 	theme_cache.autoplay_profiler_icon = get_editor_theme_icon(SNAME("AutoPlay"));
-}
-
-void EditorNetworkProfiler::_project_settings_changed() {
-	autostart_button->set_pressed(GLOBAL_GET("debug/settings/profiler/autostart_network_profiler"));
 }
 
 void EditorNetworkProfiler::_refresh() {
@@ -207,7 +198,7 @@ void EditorNetworkProfiler::_update_button_text() {
 }
 
 void EditorNetworkProfiler::started() {
-	if (GLOBAL_GET("debug/settings/profiler/autostart_network_profiler")) {
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_network_profiler", false)) {
 		set_pressed(true);
 		refresh_timer->start();
 	}
@@ -236,8 +227,7 @@ void EditorNetworkProfiler::_clear_pressed() {
 
 void EditorNetworkProfiler::_autostart_pressed() {
 	autostart_button->release_focus();
-	ProjectSettings::get_singleton()->set_setting("debug/settings/profiler/autostart_network_profiler", autostart_button->is_pressed());
-	ProjectSettings::get_singleton()->save();
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_network_profiler", autostart_button->is_pressed());
 }
 
 void EditorNetworkProfiler::_replication_button_clicked(TreeItem *p_item, int p_column, int p_idx, MouseButton p_button) {
@@ -319,7 +309,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	autostart_button = memnew(Button);
 	autostart_button->set_toggle_mode(true);
 	autostart_button->set_text(TTR("Auto Start"));
-	autostart_button->set_pressed(GLOBAL_GET("debug/settings/profiler/autostart_network_profiler"));
+	autostart_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_network_profiler", false));
 	autostart_button->connect("pressed", callable_mp(this, &EditorNetworkProfiler::_autostart_pressed));
 	hb->add_child(autostart_button);
 

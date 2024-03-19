@@ -32,8 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -420,16 +418,12 @@ void EditorProfiler::_internal_profiles_pressed() {
 
 void EditorProfiler::_autostart_pressed() {
 	autostart_button->release_focus();
-	ProjectSettings::get_singleton()->set_setting("debug/settings/profiler/autostart_profiler", autostart_button->is_pressed());
-	ProjectSettings::get_singleton()->save();
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_profiler", autostart_button->is_pressed());
 }
 
 void EditorProfiler::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &EditorProfiler::_project_settings_changed));
-			[[fallthrough]];
-		}
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -621,10 +615,6 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 	return res;
 }
 
-void EditorProfiler::_project_settings_changed() {
-	autostart_button->set_pressed(GLOBAL_GET("debug/settings/profiler/autostart_profiler"));
-}
-
 EditorProfiler::EditorProfiler() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -640,6 +630,13 @@ EditorProfiler::EditorProfiler() {
 	clear_button->connect("pressed", callable_mp(this, &EditorProfiler::_clear_pressed));
 	clear_button->set_disabled(true);
 	hb->add_child(clear_button);
+
+	autostart_button = memnew(Button);
+	autostart_button->set_toggle_mode(true);
+	autostart_button->set_text(TTR("Auto Start"));
+	autostart_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false));
+	autostart_button->connect("pressed", callable_mp(this, &EditorProfiler::_autostart_pressed));
+	hb->add_child(autostart_button);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
@@ -671,13 +668,6 @@ EditorProfiler::EditorProfiler() {
 	hb->add_child(display_internal_profiles);
 
 	hb->add_spacer();
-
-	autostart_button = memnew(Button);
-	autostart_button->set_toggle_mode(true);
-	autostart_button->set_text(TTR("Auto Start"));
-	autostart_button->set_pressed(GLOBAL_GET("debug/settings/profiler/autostart_profiler"));
-	autostart_button->connect("pressed", callable_mp(this, &EditorProfiler::_autostart_pressed));
-	hb->add_child(autostart_button);
 
 	hb->add_child(memnew(Label(TTR("Frame #:"))));
 

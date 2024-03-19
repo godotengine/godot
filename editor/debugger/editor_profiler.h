@@ -158,8 +158,6 @@ private:
 
 	Metric _get_frame_metric(int index);
 
-	void _project_settings_changed();
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

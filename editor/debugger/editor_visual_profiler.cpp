@@ -32,8 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -430,16 +428,12 @@ void EditorVisualProfiler::_clear_pressed() {
 
 void EditorVisualProfiler::_autostart_pressed() {
 	autostart_button->release_focus();
-	ProjectSettings::get_singleton()->set_setting("debug/settings/profiler/autostart_visual_profiler", autostart_button->is_pressed());
-	ProjectSettings::get_singleton()->save();
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_visual_profiler", autostart_button->is_pressed());
 }
 
 void EditorVisualProfiler::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &EditorVisualProfiler::_project_settings_changed));
-			[[fallthrough]];
-		}
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -743,10 +737,6 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 	return res;
 }
 
-void EditorVisualProfiler::_project_settings_changed() {
-	autostart_button->set_pressed(GLOBAL_GET("debug/settings/profiler/autostart_visual_profiler"));
-}
-
 EditorVisualProfiler::EditorVisualProfiler() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -762,6 +752,13 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	clear_button->set_disabled(true);
 	clear_button->connect("pressed", callable_mp(this, &EditorVisualProfiler::_clear_pressed));
 	hb->add_child(clear_button);
+
+	autostart_button = memnew(Button);
+	autostart_button->set_toggle_mode(true);
+	autostart_button->set_text(TTR("Auto Start"));
+	autostart_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false));
+	autostart_button->connect("pressed", callable_mp(this, &EditorVisualProfiler::_autostart_pressed));
+	hb->add_child(autostart_button);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
@@ -782,13 +779,6 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	linked->connect("pressed", callable_mp(this, &EditorVisualProfiler::_update_plot));
 
 	hb->add_spacer();
-
-	autostart_button = memnew(Button);
-	autostart_button->set_toggle_mode(true);
-	autostart_button->set_text(TTR("Auto Start"));
-	autostart_button->set_pressed(GLOBAL_GET("debug/settings/profiler/autostart_profiler"));
-	autostart_button->connect("pressed", callable_mp(this, &EditorVisualProfiler::_autostart_pressed));
-	hb->add_child(autostart_button);
 
 	hb->add_child(memnew(Label(TTR("Frame #:"))));
 
