@@ -608,15 +608,6 @@
 		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack allowed for debugging GDScript.
 		</member>
-		<member name="debug/settings/profiler/autostart_network_profiler" type="bool" setter="" getter="" default="false">
-			If enabled, the Network Profiler will start automatically as soon as the project is run from the editor.
-		</member>
-		<member name="debug/settings/profiler/autostart_profiler" type="bool" setter="" getter="" default="false">
-			If enabled, the Profiler will start automatically as soon as the project is run from the editor.
-		</member>
-		<member name="debug/settings/profiler/autostart_visual_profiler" type="bool" setter="" getter="" default="false">
-			If enabled, the Visual Profiler will start automatically as soon as the project is run from the editor.
-		</member>
 		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="" default="16384">
 			Maximum number of functions per frame allowed when profiling.
 		</member>

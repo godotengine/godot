@@ -132,8 +132,6 @@ private:
 
 	void _combo_changed(int);
 
-	void _project_settings_changed();
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

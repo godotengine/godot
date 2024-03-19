@@ -101,7 +101,6 @@ private:
 	void _refresh();
 	void _update_button_text();
 	void _replication_button_clicked(TreeItem *p_item, int p_column, int p_idx, MouseButton p_button);
-	void _project_settings_changed();
 
 protected:
 	virtual void _update_theme_item_cache() override;
