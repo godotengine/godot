@@ -266,6 +266,12 @@ void Engine::print_header(const String &p_string) const {
 	}
 }
 
+void Engine::print_header_rich(const String &p_string) const {
+	if (_print_header) {
+		print_line_rich(p_string);
+	}
+}
+
 void Engine::add_singleton(const Singleton &p_singleton) {
 	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), vformat("Can't register singleton '%s' because it already exists.", p_singleton.name));
 	singletons.push_back(p_singleton);
