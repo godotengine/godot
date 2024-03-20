@@ -978,6 +978,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	packed_data->add_pack_source(zip_packed_data);
 #endif
 
+#ifdef TOOLS_ENABLED
+#define FORWARD_TOOL_ARGUMENT(argument) forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(argument)
+#else
+#define FORWARD_TOOL_ARGUMENT(argument)
+#endif
+
 	// Default exit code, can be modified for certain errors.
 	Error exit_code = ERR_INVALID_PARAMETER;
 
@@ -1155,12 +1161,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-f" || I->get() == "--fullscreen") { // force fullscreen
 			init_fullscreen = true;
 			window_mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+			FORWARD_TOOL_ARGUMENT(I->get());
 		} else if (I->get() == "-m" || I->get() == "--maximized") { // force maximized window
 			init_maximized = true;
 			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+			FORWARD_TOOL_ARGUMENT(I->get());
 		} else if (I->get() == "-w" || I->get() == "--windowed") { // force windowed window
-
 			init_windowed = true;
+			FORWARD_TOOL_ARGUMENT(I->get());
 		} else if (I->get() == "--gpu-index") {
 			if (I->next()) {
 				Engine::singleton->gpu_idx = I->next()->get().to_int();
@@ -1238,6 +1246,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				window_size.width = w;
 				window_size.height = h;
 				force_res = true;
+				FORWARD_TOOL_ARGUMENT(I->get());
+				FORWARD_TOOL_ARGUMENT(I->next()->get());
 
 				N = I->next()->next();
 			} else {
@@ -1250,6 +1260,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (I->next()) {
 				init_screen = I->next()->get().to_int();
 				init_use_custom_screen = true;
+				FORWARD_TOOL_ARGUMENT(I->get());
+				FORWARD_TOOL_ARGUMENT(I->next()->get());
 
 				N = I->next()->next();
 			} else {
@@ -1274,6 +1286,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 				init_custom_pos = Point2(x, y);
 				init_use_custom_pos = true;
+				FORWARD_TOOL_ARGUMENT(I->get());
+				FORWARD_TOOL_ARGUMENT(I->next()->get());
 
 				N = I->next()->next();
 			} else {
