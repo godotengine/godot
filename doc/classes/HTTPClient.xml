@@ -156,9 +156,9 @@
 				[/gdscript]
 				[csharp]
 				var fields = new Godot.Collections.Dictionary { { "username", "user" }, { "password", "pass" } };
-				string queryString = new HTTPClient().QueryStringFromDict(fields);
+				string queryString = new HttpClient().QueryStringFromDict(fields);
 				string[] headers = { "Content-Type: application/x-www-form-urlencoded", $"Content-Length: {queryString.Length}" };
-				var result = new HTTPClient().Request(HTTPClient.Method.Post, "index.php", headers, queryString);
+				var result = new HttpClient().Request(HttpClient.Method.Post, "index.php", headers, queryString);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] The [param body] parameter is ignored if [param method] is [constant HTTPClient.METHOD_GET]. This is because GET methods can't contain request data. As a workaround, you can pass request data as a query string in the URL. See [method String.uri_encode] for an example.
