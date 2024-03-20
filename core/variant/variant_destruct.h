@@ -31,9 +31,9 @@
 #ifndef VARIANT_DESTRUCT_H
 #define VARIANT_DESTRUCT_H
 
-#include "core/variant/variant.h"
-
-#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/variant/type_info.h"
 
 template <typename T>
 struct VariantDestruct {};

@@ -30,6 +30,8 @@
 
 #include "variant_setget.h"
 
+#include "core/core_string_names.h"
+#include "core/debugger/engine_debugger.h"
 #include "variant_callable.h"
 
 struct VariantSetterGetterInfo {

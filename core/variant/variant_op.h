@@ -33,9 +33,11 @@
 
 #include "variant.h"
 
-#include "core/core_string_names.h"
-#include "core/debugger/engine_debugger.h"
 #include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/type_info.h"
+#include "core/variant/variant_internal.h"
 
 template <typename R, typename A, typename B>
 class OperatorEvaluatorAdd {

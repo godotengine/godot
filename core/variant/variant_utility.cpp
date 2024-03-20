@@ -30,7 +30,6 @@
 
 #include "variant_utility.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/object/ref_counted.h"
 #include "core/os/os.h"

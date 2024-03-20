@@ -30,10 +30,8 @@
 
 #include "variant_parser.h"
 
-#include "core/input/input_event.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
-#include "core/os/keyboard.h"
 #include "core/string/string_buffer.h"
 
 char32_t VariantParser::Stream::get_char() {

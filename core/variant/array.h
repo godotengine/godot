@@ -37,7 +37,6 @@
 
 class Variant;
 class ArrayPrivate;
-class Object;
 class StringName;
 class Callable;
 

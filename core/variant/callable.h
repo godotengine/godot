@@ -33,11 +33,12 @@
 
 #include "core/object/object_id.h"
 #include "core/string/string_name.h"
-#include "core/templates/list.h"
 
 class Object;
 class Variant;
 class CallableCustom;
+template <class T>
+class Vector;
 
 // This is an abstraction of things that can be called.
 // It is used for signals and other cases where efficient calling of functions
