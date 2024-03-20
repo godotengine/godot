@@ -5210,7 +5210,7 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 			if (g_set_icon_error) {
 				g_set_icon_error = false;
 
-				WARN_PRINT("Icon too large, attempting to resize icon.");
+				WARN_PRINT(vformat("Icon too large (%dx%d), attempting to downscale icon.", w, h));
 
 				int new_width, new_height;
 				if (w > h) {
