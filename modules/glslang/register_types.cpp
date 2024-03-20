@@ -171,9 +171,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	spv::SpvBuildLogger logger;
 	glslang::SpvOptions spvOptions;	
 
-#if !defined(DEBUG_ENABLED) && !defined(DEV_ENABLED)
-	spvOptions.stripDebugInfo = true;
-#else
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		spvOptions.generateDebugInfo = true;
 		spvOptions.emitNonSemanticShaderDebugInfo = true;
@@ -181,10 +179,8 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	}
 #endif
 	if (GLOBAL_GET("rendering/shader_compiler/shader_compilation/optimize")) {
-		spvOptions.disableOptimizer = true;
-		spvOptions.optimizeSize = true;
+		spvOptions.disableOptimizer = false;
 	}
-	
 
 	glslang::GlslangToSpv(*program.getIntermediate(stages[p_stage]), SpirV, &logger, &spvOptions);
 
