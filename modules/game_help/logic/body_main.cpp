@@ -153,13 +153,3 @@ CharacterBodyMain::~CharacterBodyMain()
 
 
 
-
-void BTPlaySkill::_bind_methods()
-{
-    ClassDB::bind_method(D_METHOD("set_skill", "skill"), &BTPlaySkill::set_skill);
-    ClassDB::bind_method(D_METHOD("get_skill"), &BTPlaySkill::get_skill);
-
-
-    
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "skill"), "set_skill", "get_skill");
-}

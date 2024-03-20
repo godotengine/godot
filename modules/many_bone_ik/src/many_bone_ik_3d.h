@@ -58,8 +58,7 @@ class ManyBoneIK3D : public Node3D {
 	Vector<Vector<Vector4>> kusudama_limit_cones;
 	Vector<int> kusudama_limit_cone_count;
 	float MAX_KUSUDAMA_LIMIT_CONES = 10;
-	int32_t iterations_per_frame = 10;
-	float default_damp = Math::deg_to_rad(0.5f);
+	float default_damp = Math::deg_to_rad(5.0f);
 	bool queue_debug_skeleton = false;
 	Ref<IKNode3D> godot_skeleton_transform;
 	Transform3D godot_skeleton_transform_inverse;
@@ -112,8 +111,6 @@ public:
 	Skeleton3D *get_skeleton() const;
 	Vector<Ref<IKBone3D>> get_bone_list() const;
 	Vector<Ref<IKBoneSegment3D>> get_segmented_skeletons();
-	float get_iterations_per_frame() const;
-	void set_iterations_per_frame(const float &p_iterations_per_frame);
 	void queue_print_skeleton();
 	int32_t get_pin_count() const;
 	void remove_constraint(int32_t p_index);
@@ -133,6 +130,7 @@ public:
 	real_t get_default_damp() const;
 	void set_default_damp(float p_default_damp);
 	int32_t find_constraint(String p_string) const;
+	int32_t find_pin(String p_string) const;
 	int32_t get_constraint_count() const;
 	StringName get_constraint_name(int32_t p_index) const;
 	void set_constraint_twist_transform(int32_t p_index, Transform3D p_transform);

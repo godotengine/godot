@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="IKEffectorTemplate3D" inherits="Resource" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="IKEffectorTemplate3D" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		A template class for creating 3D effectors in an Inverse Kinematics system.
 	</brief_description>
@@ -20,7 +20,7 @@
 		<member name="target_node" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The NodePath of the target node that the effector aims to reach.
 		</member>
-		<member name="weight" type="float" setter="set_weight" getter="get_weight" default="1.0">
+		<member name="weight" type="float" setter="set_weight" getter="get_weight" default="0.0">
 			The weight of the effector. This determines how much the effector's position influences the IK calculation. Higher values result in greater influence.
 		</member>
 	</members>

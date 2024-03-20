@@ -137,15 +137,15 @@ public:
     {
         String delim;
         if(p_options.has("delimiter")){
-            delim = p_options["delimiter"];
+            int del = p_options["delimiter"];
 
-            if(delim=="Comma"){
+            if(del == 0){
                 delim = ",";
             }
-            if(delim=="Tab"){
+            if(del == 1){
                 delim = "\t";
             }
-            if(delim=="Semicolon"){
+            if(del == 2){
                 delim = ";";
             }
         }
@@ -171,7 +171,7 @@ public:
 
         Ref<CSVData> csv = Ref<CSVData>(memnew(CSVData));
         csv->set_headers(meta["headers"]);
-        csv->setup(meta["headers"],lines.data);
+        csv->setup(headers,lines.data);
 
         String file_name = p_save_path + ".tres";
         Error err =  ResourceSaver::save(csv,file_name);

@@ -82,6 +82,7 @@
 #include "bt/tasks/decorators/bt_run_limit.h"
 #include "bt/tasks/decorators/bt_subtree.h"
 #include "bt/tasks/decorators/bt_time_limit.h"
+#include "bt/tasks/decorators/bt_skill_play.h"
 #include "bt/tasks/scene/bt_await_animation.h"
 #include "bt/tasks/scene/bt_check_agent_property.h"
 #include "bt/tasks/scene/bt_pause_animation.h"
@@ -196,7 +197,8 @@ void initialize_limboai_module(ModuleInitializationLevel p_level) {
 		LIMBO_REGISTER_TASK(BTWaitTicks);
 		LIMBO_REGISTER_TASK(BTCheckAgentProperty);
 		LIMBO_REGISTER_TASK(BTCheckTrigger);
-		LIMBO_REGISTER_TASK(BTCheckVar);
+		LIMBO_REGISTER_TASK(BTCheckVar);		
+		LIMBO_REGISTER_TASK(BTPlaySkill);
 
 		GDREGISTER_ABSTRACT_CLASS(BBParam);
 		GDREGISTER_CLASS(BBAabb);

@@ -91,7 +91,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	
 	ClassDB::register_class<CharacterBodyMain>();
 	ClassDB::register_class<CharacterBodyPart>();
-	ClassDB::register_class<BTPlaySkill>();
+	//ClassDB::register_class<BTPlaySkill>();
 
 	
 	ClassDB::register_class<CharacterAnimatorMask>();
@@ -128,7 +128,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 
 
 	// 技能释放
-	LimboTaskDB::register_task<BTPlaySkill>();
+	//LimboTaskDB::register_task<BTPlaySkill>();
 
 }
 

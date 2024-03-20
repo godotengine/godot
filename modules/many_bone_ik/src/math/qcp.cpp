@@ -69,12 +69,12 @@ Quaternion QCP::calculate_rotation() {
 
 		if (dot < ((2.0e-15 - 1.0) * norm_product)) {
 			Vector3 w = u.normalized();
-			result = Quaternion(-w.x, -w.y, -w.z, 0.0f).normalized();
+			result = Quaternion(w.x, w.y, w.z, 0.0f).normalized();
 		} else {
 			double q0 = Math::sqrt(0.5 * (1.0 + dot / norm_product));
 			double coeff = 1.0 / (2.0 * q0 * norm_product);
 			Vector3 q = v.cross(u).normalized();
-			result = Quaternion(-coeff * q.x, -coeff * q.y, -coeff * q.z, q0).normalized();
+			result = Quaternion(coeff * q.x, coeff * q.y, coeff * q.z, q0).normalized();
 		}
 	} else {
 		double a13 = -sum_xz_minus_zx;
@@ -106,22 +106,21 @@ Quaternion QCP::calculate_rotation() {
 		double qsqr = quaternion_w * quaternion_w + quaternion_x * quaternion_x + quaternion_y * quaternion_y + quaternion_z * quaternion_z;
 
 		if (qsqr < eigenvector_precision) {
-			return Quaternion();
+			result = Quaternion();
+		} else {
+			quaternion_x *= -1;
+			quaternion_y *= -1;
+			quaternion_z *= -1;
+			double min = quaternion_w;
+			min = quaternion_x < min ? quaternion_x : min;
+			min = quaternion_y < min ? quaternion_y : min;
+			min = quaternion_z < min ? quaternion_z : min;
+			quaternion_w /= min;
+			quaternion_x /= min;
+			quaternion_y /= min;
+			quaternion_z /= min;
+			result = Quaternion(quaternion_x, quaternion_y, quaternion_z, quaternion_w).normalized();
 		}
-
-		quaternion_x *= -1;
-		quaternion_y *= -1;
-		quaternion_z *= -1;
-		double min = quaternion_w;
-		min = quaternion_x < min ? quaternion_x : min;
-		min = quaternion_y < min ? quaternion_y : min;
-		min = quaternion_z < min ? quaternion_z : min;
-		quaternion_w /= min;
-		quaternion_x /= min;
-		quaternion_y /= min;
-		quaternion_z /= min;
-
-		result = Quaternion(quaternion_x, quaternion_y, quaternion_z, quaternion_w).normalized();
 	}
 
 	return result;

@@ -40,7 +40,7 @@ class IKEffectorTemplate3D : public Resource {
 	StringName root_bone;
 	NodePath target_node;
 	real_t passthrough_factor = 0.0f;
-	real_t weight = 1.0f;
+	real_t weight = 0.0f;
 	Vector3 priority_direction = Vector3(0.2f, 0.0f, 0.2f); // Purported ideal values are 1.0 / 3.0 for one direction, 1.0 / 5.0 for two directions and 1.0 / 7.0 for three directions.
 protected:
 	static void _bind_methods();
