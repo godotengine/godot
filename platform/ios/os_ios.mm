@@ -179,7 +179,6 @@ bool OS_IOS::iterate() {
 void OS_IOS::start() {
 	if (Main::start()) {
 		main_loop->initialize();
-		
 	}
 
 	if (joypad_ios) {
