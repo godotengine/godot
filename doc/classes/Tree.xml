@@ -414,7 +414,7 @@
 			</description>
 		</signal>
 		<signal name="empty_clicked">
-			<param index="0" name="position" type="Vector2" />
+			<param index="0" name="click_position" type="Vector2" />
 			<param index="1" name="mouse_button_index" type="int" />
 			<description>
 				Emitted when a mouse button is clicked in the empty space of the tree.
@@ -442,7 +442,7 @@
 			</description>
 		</signal>
 		<signal name="item_mouse_selected">
-			<param index="0" name="position" type="Vector2" />
+			<param index="0" name="mouse_position" type="Vector2" />
 			<param index="1" name="mouse_button_index" type="int" />
 			<description>
 				Emitted when an item is selected with a mouse button.
