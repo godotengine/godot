@@ -175,6 +175,7 @@ public:
 	static void initialize(int p_driver);
 	static int get_driver_count();
 	static AudioDriver *get_driver(int p_driver);
+	static void reset();
 };
 
 class AudioBusLayout;

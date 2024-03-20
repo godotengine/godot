@@ -4530,4 +4530,5 @@ void Main::cleanup(bool p_force) {
 	FramebufferCacheRD::reset();
 	Object::initialized = false; // TODO: create a proper Object::finalize() method
 	Main::version++;
+	AudioDriverManager::reset();
 }

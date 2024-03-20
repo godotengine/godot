@@ -213,6 +213,16 @@ int AudioDriverManager::get_driver_count() {
 	return driver_count;
 }
 
+void AudioDriverManager::reset() {
+	AudioDriverManager::driver_count = 1;
+
+	for (int i = 0; i < driver_count; i++) {
+		drivers[i] = nullptr;
+	}
+
+	drivers[0] = &AudioDriverManager::dummy_driver;
+}
+
 void AudioDriverManager::initialize(int p_driver) {
 	GLOBAL_DEF_RST("audio/driver/enable_input", false);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate", PROPERTY_HINT_RANGE, "11025,192000,1,or_greater,suffix:Hz"), DEFAULT_MIX_RATE);
