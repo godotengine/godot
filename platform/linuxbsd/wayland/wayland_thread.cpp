@@ -2454,7 +2454,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 		mm->set_relative_screen_position(mm->get_relative());
 
 		Vector2i pos_delta = td.position - old_td.position;
-		uint32_t time_delta = td.motion_time - td.motion_time;
+		uint32_t time_delta = td.motion_time - old_td.motion_time;
 		mm->set_velocity((Vector2)pos_delta / time_delta);
 
 		Ref<InputEventMessage> inputev_msg;
