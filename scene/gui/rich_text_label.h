@@ -43,6 +43,15 @@ class RichTextEffect;
 class RichTextLabel : public Control {
 	GDCLASS(RichTextLabel, Control);
 
+	enum RTLDrawStep {
+		DRAW_STEP_BACKGROUND,
+		DRAW_STEP_SHADOW,
+		DRAW_STEP_OUTLINE,
+		DRAW_STEP_TEXT,
+		DRAW_STEP_FOREGROUND,
+		DRAW_STEP_MAX,
+	};
+
 public:
 	enum ListType {
 		LIST_NUMBERS,
@@ -596,7 +605,6 @@ private:
 
 	Size2 _get_image_size(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Rect2 &p_region = Rect2());
 
-	void _draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item *it_from, Item *it_to, int start, int end, int fbg_flag);
 #ifndef DISABLE_DEPRECATED
 	// Kept for compatibility from 3.x to 4.0.
 	bool _set(const StringName &p_name, const Variant &p_value);
