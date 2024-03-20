@@ -137,4 +137,10 @@ typedef double real_t;
 typedef float real_t;
 #endif
 
+/**
+ * Custom literal suffix for floating-point values to ensure they're cast
+ * as the expected "Real" type.
+ */
+constexpr real_t operator""_R(long double p_value) { return static_cast<real_t>(p_value); }
+
 #endif // MATH_DEFS_H

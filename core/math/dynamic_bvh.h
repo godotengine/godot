@@ -431,10 +431,10 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 
 	///what about division by zero? --> just set rayDirection[i] to INF/B3_LARGE_FLOAT
 	Vector3 inv_dir;
-	inv_dir[0] = ray_dir[0] == real_t(0.0) ? real_t(1e20) : real_t(1.0) / ray_dir[0];
-	inv_dir[1] = ray_dir[1] == real_t(0.0) ? real_t(1e20) : real_t(1.0) / ray_dir[1];
-	inv_dir[2] = ray_dir[2] == real_t(0.0) ? real_t(1e20) : real_t(1.0) / ray_dir[2];
-	unsigned int signs[3] = { inv_dir[0] < 0.0, inv_dir[1] < 0.0, inv_dir[2] < 0.0 };
+	inv_dir[0] = ray_dir[0] == 0.0_R ? 1e20_R : 1.0_R / ray_dir[0];
+	inv_dir[1] = ray_dir[1] == 0.0_R ? 1e20_R : 1.0_R / ray_dir[1];
+	inv_dir[2] = ray_dir[2] == 0.0_R ? 1e20_R : 1.0_R / ray_dir[2];
+	unsigned int signs[3] = { inv_dir[0] < 0.0_R, inv_dir[1] < 0.0_R, inv_dir[2] < 0.0_R };
 
 	real_t lambda_max = ray_dir.dot(p_to - p_from);
 
@@ -453,7 +453,7 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 		const Node *node = stack[depth];
 		bounds[0] = node->volume.min;
 		bounds[1] = node->volume.max;
-		real_t tmin = 1.f, lambda_min = 0.f;
+		real_t tmin = 1.0_R, lambda_min = 0.0_R;
 		unsigned int result1 = false;
 		result1 = _ray_aabb(p_from, inv_dir, signs, bounds, tmin, lambda_min, lambda_max);
 		if (result1) {

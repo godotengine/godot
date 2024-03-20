@@ -43,7 +43,7 @@ struct _NO_DISCARD_ Quaternion {
 			real_t z;
 			real_t w;
 		};
-		real_t components[4] = { 0, 0, 0, 1.0 };
+		real_t components[4] = { 0, 0, 0, 1.0_R };
 	};
 
 	_FORCE_INLINE_ real_t &operator[](int p_idx) {
@@ -78,7 +78,7 @@ struct _NO_DISCARD_ Quaternion {
 
 	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
-		real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
+		real_t r = 1.0_R / Math::sqrt(1 - w * w);
 		r_axis.x = x * r;
 		r_axis.y = y * r;
 		r_axis.z = z * r;
@@ -93,7 +93,7 @@ struct _NO_DISCARD_ Quaternion {
 #endif
 		Vector3 u(x, y, z);
 		Vector3 uv = u.cross(p_v);
-		return p_v + ((uv * w) + u.cross(uv)) * ((real_t)2);
+		return p_v + ((uv * w) + u.cross(uv)) * 2.0_R;
 	}
 
 	_FORCE_INLINE_ Vector3 xform_inv(const Vector3 &p_v) const {
@@ -144,19 +144,19 @@ struct _NO_DISCARD_ Quaternion {
 		Vector3 c = p_v0.cross(p_v1);
 		real_t d = p_v0.dot(p_v1);
 
-		if (d < -1.0f + (real_t)CMP_EPSILON) {
+		if (d < -1.0_R + (real_t)CMP_EPSILON) {
 			x = 0;
 			y = 1;
 			z = 0;
 			w = 0;
 		} else {
-			real_t s = Math::sqrt((1.0f + d) * 2.0f);
-			real_t rs = 1.0f / s;
+			real_t s = Math::sqrt((1.0_R + d) * 2.0_R);
+			real_t rs = 1.0_R / s;
 
 			x = c.x * rs;
 			y = c.y * rs;
 			z = c.z * rs;
-			w = s * 0.5f;
+			w = s * 0.5_R;
 		}
 	}
 };
@@ -191,7 +191,7 @@ void Quaternion::operator*=(real_t p_s) {
 }
 
 void Quaternion::operator/=(real_t p_s) {
-	*this *= 1.0f / p_s;
+	*this *= 1.0_R / p_s;
 }
 
 Quaternion Quaternion::operator+(const Quaternion &p_q2) const {
@@ -214,7 +214,7 @@ Quaternion Quaternion::operator*(real_t p_s) const {
 }
 
 Quaternion Quaternion::operator/(real_t p_s) const {
-	return *this * (1.0f / p_s);
+	return *this * (1.0_R / p_s);
 }
 
 bool Quaternion::operator==(const Quaternion &p_quaternion) const {

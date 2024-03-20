@@ -80,7 +80,7 @@ private:
 
 		bool solid = false;
 		Vector2 pos;
-		real_t weight_scale = 1.0;
+		real_t weight_scale = 1.0_R;
 
 		// Used for pathfinding.
 		Point *prev_point = nullptr;

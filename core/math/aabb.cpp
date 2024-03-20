@@ -190,7 +190,7 @@ bool AABB::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector
 			real_t length = seg_to - seg_from;
 			cmin = (seg_from < box_begin) ? ((box_begin - seg_from) / length) : 0;
 			cmax = (seg_to > box_end) ? ((box_end - seg_from) / length) : 1;
-			csign = -1.0;
+			csign = -1.0_R;
 
 		} else {
 			if (seg_to > box_end || seg_from < box_begin) {
@@ -199,7 +199,7 @@ bool AABB::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector
 			real_t length = seg_to - seg_from;
 			cmin = (seg_from > box_end) ? (box_end - seg_from) / length : 0;
 			cmax = (seg_to < box_begin) ? (box_begin - seg_from) / length : 1;
-			csign = 1.0;
+			csign = 1.0_R;
 		}
 
 		if (cmin > min) {

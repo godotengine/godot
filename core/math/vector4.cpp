@@ -92,7 +92,7 @@ Vector4 Vector4::normalized() const {
 }
 
 bool Vector4::is_normalized() const {
-	return Math::is_equal_approx(length_squared(), (real_t)1, (real_t)UNIT_EPSILON);
+	return Math::is_equal_approx(length_squared(), 1.0_R, (real_t)UNIT_EPSILON);
 }
 
 real_t Vector4::distance_to(const Vector4 &p_to) const {
@@ -178,7 +178,7 @@ Vector4 Vector4::snapped(const Vector4 &p_step) const {
 }
 
 Vector4 Vector4::inverse() const {
-	return Vector4(1.0f / x, 1.0f / y, 1.0f / z, 1.0f / w);
+	return Vector4(1.0_R / x, 1.0_R / y, 1.0_R / z, 1.0_R / w);
 }
 
 Vector4 Vector4::clamp(const Vector4 &p_min, const Vector4 &p_max) const {

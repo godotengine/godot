@@ -45,8 +45,8 @@ void Geometry3D::get_closest_points_between_segments(const Vector3 &p_p0, const 
 	real_t d = p.dot(r);
 	real_t e = q.dot(r);
 
-	real_t s = 0.0f;
-	real_t t = 0.0f;
+	real_t s = 0.0_R;
+	real_t t = 0.0_R;
 
 	real_t det = a * c - b * b;
 	if (det > CMP_EPSILON) {
@@ -55,56 +55,56 @@ void Geometry3D::get_closest_points_between_segments(const Vector3 &p_p0, const 
 		real_t ctd = c * d;
 
 		if (bte <= ctd) {
-			// s <= 0.0f
-			if (e <= 0.0f) {
-				// t <= 0.0f
-				s = (-d >= a ? 1 : (-d > 0.0f ? -d / a : 0.0f));
-				t = 0.0f;
+			// s <= 0.0_R
+			if (e <= 0.0_R) {
+				// t <= 0.0_R
+				s = (-d >= a ? 1 : (-d > 0.0_R ? -d / a : 0.0_R));
+				t = 0.0_R;
 			} else if (e < c) {
-				// 0.0f < t < 1
-				s = 0.0f;
+				// 0.0_R < t < 1
+				s = 0.0_R;
 				t = e / c;
 			} else {
 				// t >= 1
-				s = (b - d >= a ? 1 : (b - d > 0.0f ? (b - d) / a : 0.0f));
+				s = (b - d >= a ? 1 : (b - d > 0.0_R ? (b - d) / a : 0.0_R));
 				t = 1;
 			}
 		} else {
-			// s > 0.0f
+			// s > 0.0_R
 			s = bte - ctd;
 			if (s >= det) {
 				// s >= 1
-				if (b + e <= 0.0f) {
-					// t <= 0.0f
-					s = (-d <= 0.0f ? 0.0f : (-d < a ? -d / a : 1));
-					t = 0.0f;
+				if (b + e <= 0.0_R) {
+					// t <= 0.0_R
+					s = (-d <= 0.0_R ? 0.0_R : (-d < a ? -d / a : 1));
+					t = 0.0_R;
 				} else if (b + e < c) {
-					// 0.0f < t < 1
+					// 0.0_R < t < 1
 					s = 1;
 					t = (b + e) / c;
 				} else {
 					// t >= 1
-					s = (b - d <= 0.0f ? 0.0f : (b - d < a ? (b - d) / a : 1));
+					s = (b - d <= 0.0_R ? 0.0_R : (b - d < a ? (b - d) / a : 1));
 					t = 1;
 				}
 			} else {
-				// 0.0f < s < 1
+				// 0.0_R < s < 1
 				real_t ate = a * e;
 				real_t btd = b * d;
 
 				if (ate <= btd) {
-					// t <= 0.0f
-					s = (-d <= 0.0f ? 0.0f : (-d >= a ? 1 : -d / a));
-					t = 0.0f;
+					// t <= 0.0_R
+					s = (-d <= 0.0_R ? 0.0_R : (-d >= a ? 1 : -d / a));
+					t = 0.0_R;
 				} else {
-					// t > 0.0f
+					// t > 0.0_R
 					t = ate - btd;
 					if (t >= det) {
 						// t >= 1
-						s = (b - d <= 0.0f ? 0.0f : (b - d >= a ? 1 : (b - d) / a));
+						s = (b - d <= 0.0_R ? 0.0_R : (b - d >= a ? 1 : (b - d) / a));
 						t = 1;
 					} else {
-						// 0.0f < t < 1
+						// 0.0_R < t < 1
 						s /= det;
 						t /= det;
 					}
@@ -113,14 +113,14 @@ void Geometry3D::get_closest_points_between_segments(const Vector3 &p_p0, const 
 		}
 	} else {
 		// Parallel segments
-		if (e <= 0.0f) {
-			s = (-d <= 0.0f ? 0.0f : (-d >= a ? 1 : -d / a));
-			t = 0.0f;
+		if (e <= 0.0_R) {
+			s = (-d <= 0.0_R ? 0.0_R : (-d >= a ? 1 : -d / a));
+			t = 0.0_R;
 		} else if (e >= c) {
-			s = (b - d <= 0.0f ? 0.0f : (b - d >= a ? 1 : (b - d) / a));
+			s = (b - d <= 0.0_R ? 0.0_R : (b - d >= a ? 1 : (b - d) / a));
 			t = 1;
 		} else {
-			s = 0.0f;
+			s = 0.0_R;
 			t = e / c;
 		}
 	}
@@ -589,14 +589,14 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 
 #define SUBPLANE_SIZE 1024.0
 
-	real_t subplane_size = 1024.0; // Should compute this from the actual plane.
+	real_t subplane_size = 1024.0_R; // Should compute this from the actual plane.
 	for (int i = 0; i < p_planes.size(); i++) {
 		Plane p = p_planes[i];
 
 		Vector3 ref = Vector3(0.0, 1.0, 0.0);
 
-		if (ABS(p.normal.dot(ref)) > 0.95f) {
-			ref = Vector3(0.0, 0.0, 1.0); // Change axis.
+		if (ABS(p.normal.dot(ref)) > 0.95_R) {
+			ref = Vector3(0.0_R, 0.0_R, 1.0_R); // Change axis.
 		}
 
 		Vector3 right = p.normal.cross(ref).normalized();
@@ -620,7 +620,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 			LocalVector<Vector3> new_vertices;
 			Plane clip = p_planes[j];
 
-			if (clip.normal.dot(p.normal) > 0.95f) {
+			if (clip.normal.dot(p.normal) > 0.95_R) {
 				continue;
 			}
 
@@ -673,7 +673,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 		for (const Vector3 &vertex : vertices) {
 			int idx = -1;
 			for (uint32_t k = 0; k < mesh.vertices.size(); k++) {
-				if (mesh.vertices[k].distance_to(vertex) < 0.001f) {
+				if (mesh.vertices[k].distance_to(vertex) < 0.001_R) {
 					idx = k;
 					break;
 				}
@@ -754,10 +754,10 @@ Vector<Plane> Geometry3D::build_cylinder_planes(real_t p_radius, real_t p_height
 	}
 
 	Vector3 axis;
-	axis[p_axis] = 1.0;
+	axis[p_axis] = 1.0_R;
 
-	planes.push_back(Plane(axis, p_height * 0.5f));
-	planes.push_back(Plane(-axis, p_height * 0.5f));
+	planes.push_back(Plane(axis, p_height * 0.5_R));
+	planes.push_back(Plane(-axis, p_height * 0.5_R));
 
 	return planes;
 }
@@ -768,12 +768,12 @@ Vector<Plane> Geometry3D::build_sphere_planes(real_t p_radius, int p_lats, int p
 	Vector<Plane> planes;
 
 	Vector3 axis;
-	axis[p_axis] = 1.0;
+	axis[p_axis] = 1.0_R;
 
 	Vector3 axis_neg;
-	axis_neg[(p_axis + 1) % 3] = 1.0;
-	axis_neg[(p_axis + 2) % 3] = 1.0;
-	axis_neg[p_axis] = -1.0;
+	axis_neg[(p_axis + 1) % 3] = 1.0_R;
+	axis_neg[(p_axis + 2) % 3] = 1.0_R;
+	axis_neg[p_axis] = -1.0_R;
 
 	const double lon_step = Math_TAU / p_lons;
 	for (int i = 0; i < p_lons; i++) {
@@ -799,12 +799,12 @@ Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height,
 	Vector<Plane> planes;
 
 	Vector3 axis;
-	axis[p_axis] = 1.0;
+	axis[p_axis] = 1.0_R;
 
 	Vector3 axis_neg;
-	axis_neg[(p_axis + 1) % 3] = 1.0;
-	axis_neg[(p_axis + 2) % 3] = 1.0;
-	axis_neg[p_axis] = -1.0;
+	axis_neg[(p_axis + 1) % 3] = 1.0_R;
+	axis_neg[(p_axis + 2) % 3] = 1.0_R;
+	axis_neg[p_axis] = -1.0_R;
 
 	const double sides_step = Math_TAU / p_sides;
 	for (int i = 0; i < p_sides; i++) {
@@ -816,7 +816,7 @@ Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height,
 
 		for (int j = 1; j <= p_lats; j++) {
 			Vector3 plane_normal = normal.lerp(axis, j / (real_t)p_lats).normalized();
-			Vector3 position = axis * p_height * 0.5f + plane_normal * p_radius;
+			Vector3 position = axis * p_height * 0.5_R + plane_normal * p_radius;
 			planes.push_back(Plane(plane_normal, position));
 			planes.push_back(Plane(plane_normal * axis_neg, position * axis_neg));
 		}

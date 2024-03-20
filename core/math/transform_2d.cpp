@@ -50,7 +50,7 @@ void Transform2D::affine_invert() {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(det == 0);
 #endif
-	real_t idet = 1.0f / det;
+	real_t idet = 1.0_R / det;
 
 	SWAP(columns[0][0], columns[1][1]);
 	columns[0] *= Vector2(idet, -idet);
@@ -71,12 +71,12 @@ void Transform2D::rotate(real_t p_angle) {
 
 real_t Transform2D::get_skew() const {
 	real_t det = determinant();
-	return Math::acos(columns[0].normalized().dot(SIGN(det) * columns[1].normalized())) - (real_t)Math_PI * 0.5f;
+	return Math::acos(columns[0].normalized().dot(SIGN(det) * columns[1].normalized())) - (real_t)Math_PI * 0.5_R;
 }
 
 void Transform2D::set_skew(real_t p_angle) {
 	real_t det = determinant();
-	columns[1] = SIGN(det) * columns[0].rotated(((real_t)Math_PI * 0.5f + p_angle)).normalized() * columns[1].length();
+	columns[1] = SIGN(det) * columns[0].rotated(((real_t)Math_PI * 0.5_R + p_angle)).normalized() * columns[1].length();
 }
 
 real_t Transform2D::get_rotation() const {

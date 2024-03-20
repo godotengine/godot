@@ -49,7 +49,7 @@ struct _NO_DISCARD_ Rect2 {
 
 	real_t get_area() const { return size.width * size.height; }
 
-	_FORCE_INLINE_ Vector2 get_center() const { return position + (size * 0.5f); }
+	_FORCE_INLINE_ Vector2 get_center() const { return position + (size * 0.5_R); }
 
 	inline bool intersects(const Rect2 &p_rect, bool p_include_borders = false) const {
 #ifdef MATH_CHECKS
@@ -94,7 +94,7 @@ struct _NO_DISCARD_ Rect2 {
 			ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
 		}
 #endif
-		real_t dist = 0.0;
+		real_t dist = 0.0_R;
 		bool inside = true;
 
 		if (p_point.x < position.x) {
@@ -141,7 +141,7 @@ struct _NO_DISCARD_ Rect2 {
 	}
 
 	_FORCE_INLINE_ bool has_area() const {
-		return size.x > 0.0f && size.y > 0.0f;
+		return size.x > 0.0_R && size.y > 0.0_R;
 	}
 
 	// Returns the intersection between two Rect2s or an empty Rect2 if there is no intersection.
@@ -282,7 +282,7 @@ struct _NO_DISCARD_ Rect2 {
 	}
 
 	_FORCE_INLINE_ Rect2 abs() const {
-		return Rect2(Point2(position.x + MIN(size.x, (real_t)0), position.y + MIN(size.y, (real_t)0)), size.abs());
+		return Rect2(Point2(position.x + MIN(size.x, 0.0_R), position.y + MIN(size.y, 0.0_R)), size.abs());
 	}
 
 	_FORCE_INLINE_ Rect2 round() const {
@@ -290,7 +290,7 @@ struct _NO_DISCARD_ Rect2 {
 	}
 
 	Vector2 get_support(const Vector2 &p_normal) const {
-		Vector2 half_extents = size * 0.5f;
+		Vector2 half_extents = size * 0.5_R;
 		Vector2 ofs = position + half_extents;
 		return Vector2(
 					   (p_normal.x > 0) ? -half_extents.x : half_extents.x,
@@ -327,7 +327,7 @@ struct _NO_DISCARD_ Rect2 {
 
 			// Check ray box.
 			r /= l;
-			Vector2 ir(1.0f / r.x, 1.0f / r.y);
+			Vector2 ir(1.0_R / r.x, 1.0_R / r.y);
 
 			// lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
 			// r.org is origin of ray

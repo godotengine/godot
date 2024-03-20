@@ -83,7 +83,7 @@ struct _NO_DISCARD_ Vector2 {
 
 	real_t length() const;
 	real_t length_squared() const;
-	Vector2 limit_length(real_t p_len = 1.0) const;
+	Vector2 limit_length(real_t p_len = 1.0_R) const;
 
 	Vector2 min(const Vector2 &p_vector2) const {
 		return Vector2(MIN(x, p_vector2.x), MIN(y, p_vector2.y));
@@ -251,7 +251,7 @@ Vector2 Vector2::lerp(const Vector2 &p_to, real_t p_weight) const {
 Vector2 Vector2::slerp(const Vector2 &p_to, real_t p_weight) const {
 	real_t start_length_sq = length_squared();
 	real_t end_length_sq = p_to.length_squared();
-	if (unlikely(start_length_sq == 0.0f || end_length_sq == 0.0f)) {
+	if (unlikely(start_length_sq == 0.0_R || end_length_sq == 0.0_R)) {
 		// Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
 		return lerp(p_to, p_weight);
 	}

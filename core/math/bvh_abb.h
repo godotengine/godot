@@ -93,7 +93,7 @@ struct BVH_ABB {
 
 	real_t get_proximity_to(const BVH_ABB &p_b) const {
 		const POINT d = (min - neg_max) - (p_b.min - p_b.neg_max);
-		real_t proximity = 0.0;
+		real_t proximity = 0.0_R;
 		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
 			proximity += Math::abs(d[axis]);
 		}

@@ -85,7 +85,7 @@ struct _NO_DISCARD_ Plane {
 			normal(p_a, p_b, p_c),
 			d(p_d) {}
 
-	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d = 0.0);
+	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d = 0.0_R);
 	_FORCE_INLINE_ Plane(const Vector3 &p_normal, const Vector3 &p_point);
 	_FORCE_INLINE_ Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_point3, ClockDirection p_dir = CLOCKWISE);
 };

@@ -86,21 +86,21 @@ Vector2 Vector3::octahedron_encode() const {
 	Vector3 n = *this;
 	n /= Math::abs(n.x) + Math::abs(n.y) + Math::abs(n.z);
 	Vector2 o;
-	if (n.z >= 0.0f) {
+	if (n.z >= 0.0_R) {
 		o.x = n.x;
 		o.y = n.y;
 	} else {
-		o.x = (1.0f - Math::abs(n.y)) * (n.x >= 0.0f ? 1.0f : -1.0f);
-		o.y = (1.0f - Math::abs(n.x)) * (n.y >= 0.0f ? 1.0f : -1.0f);
+		o.x = (1.0_R - Math::abs(n.y)) * (n.x >= 0.0_R ? 1.0_R : -1.0_R);
+		o.y = (1.0_R - Math::abs(n.x)) * (n.y >= 0.0_R ? 1.0_R : -1.0_R);
 	}
-	o.x = o.x * 0.5f + 0.5f;
-	o.y = o.y * 0.5f + 0.5f;
+	o.x = o.x * 0.5_R + 0.5_R;
+	o.y = o.y * 0.5_R + 0.5_R;
 	return o;
 }
 
 Vector3 Vector3::octahedron_decode(const Vector2 &p_oct) {
-	Vector2 f(p_oct.x * 2.0f - 1.0f, p_oct.y * 2.0f - 1.0f);
-	Vector3 n(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
+	Vector2 f(p_oct.x * 2.0_R - 1.0_R, p_oct.y * 2.0_R - 1.0_R);
+	Vector3 n(f.x, f.y, 1.0_R - Math::abs(f.x) - Math::abs(f.y));
 	float t = CLAMP(-n.z, 0.0f, 1.0f);
 	n.x += n.x >= 0 ? -t : t;
 	n.y += n.y >= 0 ? -t : t;

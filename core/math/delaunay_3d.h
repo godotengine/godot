@@ -199,10 +199,10 @@ class Delaunay3D {
 		cm.columns[2][2] = p_points[p_simplex.points[2]].z;
 		cm.columns[2][3] = p_points[p_simplex.points[3]].z;
 
-		cm.columns[3][0] = 1.0;
-		cm.columns[3][1] = 1.0;
-		cm.columns[3][2] = 1.0;
-		cm.columns[3][3] = 1.0;
+		cm.columns[3][0] = 1.0_R;
+		cm.columns[3][1] = 1.0_R;
+		cm.columns[3][2] = 1.0_R;
+		cm.columns[3][3] = 1.0_R;
 
 		return ABS(cm.determinant()) <= CMP_EPSILON;
 	}
@@ -234,7 +234,7 @@ public:
 			}
 
 			float delta_max = Math::sqrt(2.0) * 20.0;
-			Vector3 center = Vector3(0.5, 0.5, 0.5);
+			Vector3 center = Vector3(0.5_R, 0.5_R, 0.5_R);
 
 			// any simplex that contains everything is good
 			points[point_count + 0] = center + Vector3(0, 1, 0) * delta_max;

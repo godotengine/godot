@@ -46,7 +46,7 @@ void Basis::invert() {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(det == 0);
 #endif
-	real_t s = 1.0f / det;
+	real_t s = 1.0_R / det;
 
 	set(co[0] * s, cofac(0, 2, 2, 1) * s, cofac(0, 1, 1, 2) * s,
 			co[1] * s, cofac(0, 0, 2, 2) * s, cofac(0, 2, 1, 0) * s,
@@ -188,7 +188,7 @@ Basis Basis::diagonalize() {
 		if (Math::is_equal_approx(rows[j][j], rows[i][i])) {
 			angle = Math_PI / 4;
 		} else {
-			angle = 0.5f * Math::atan(2 * rows[i][j] / (rows[j][j] - rows[i][i]));
+			angle = 0.5_R * Math::atan(2 * rows[i][j] / (rows[j][j] - rows[i][i]));
 		}
 
 		// Compute the rotation matrix
@@ -279,7 +279,7 @@ Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
 }
 
 float Basis::get_uniform_scale() const {
-	return (rows[0].length() + rows[1].length() + rows[2].length()) / 3.0f;
+	return (rows[0].length() + rows[1].length() + rows[2].length()) / 3.0_R;
 }
 
 Basis Basis::scaled_local(const Vector3 &p_scale) const {
@@ -418,7 +418,7 @@ void Basis::rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction) 
 	const Vector3 axis = p_start_direction.cross(p_end_direction).normalized();
 	if (axis.length_squared() != 0) {
 		real_t dot = p_start_direction.dot(p_end_direction);
-		dot = CLAMP(dot, -1.0f, 1.0f);
+		dot = CLAMP(dot, -1.0_R, 1.0_R);
 		const real_t angle_rads = Math::acos(dot);
 		*this = Basis(axis, angle_rads) * (*this);
 	}
@@ -466,8 +466,8 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 
 			Vector3 euler;
 			real_t sy = rows[0][2];
-			if (sy < (1.0f - (real_t)CMP_EPSILON)) {
-				if (sy > -(1.0f - (real_t)CMP_EPSILON)) {
+			if (sy < (1.0_R - (real_t)CMP_EPSILON)) {
+				if (sy > -(1.0_R - (real_t)CMP_EPSILON)) {
 					// is this a pure Y rotation?
 					if (rows[1][0] == 0 && rows[0][1] == 0 && rows[1][2] == 0 && rows[2][1] == 0 && rows[1][1] == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
@@ -481,13 +481,13 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 					}
 				} else {
 					euler.x = Math::atan2(rows[2][1], rows[1][1]);
-					euler.y = -Math_PI / 2.0f;
-					euler.z = 0.0f;
+					euler.y = -Math_PI / 2.0_R;
+					euler.z = 0.0_R;
 				}
 			} else {
 				euler.x = Math::atan2(rows[2][1], rows[1][1]);
-				euler.y = Math_PI / 2.0f;
-				euler.z = 0.0f;
+				euler.y = Math_PI / 2.0_R;
+				euler.z = 0.0_R;
 			}
 			return euler;
 		}
@@ -501,22 +501,22 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 
 			Vector3 euler;
 			real_t sz = rows[0][1];
-			if (sz < (1.0f - (real_t)CMP_EPSILON)) {
-				if (sz > -(1.0f - (real_t)CMP_EPSILON)) {
+			if (sz < (1.0_R - (real_t)CMP_EPSILON)) {
+				if (sz > -(1.0_R - (real_t)CMP_EPSILON)) {
 					euler.x = Math::atan2(rows[2][1], rows[1][1]);
 					euler.y = Math::atan2(rows[0][2], rows[0][0]);
 					euler.z = Math::asin(-sz);
 				} else {
 					// It's -1
 					euler.x = -Math::atan2(rows[1][2], rows[2][2]);
-					euler.y = 0.0f;
-					euler.z = Math_PI / 2.0f;
+					euler.y = 0.0_R;
+					euler.z = Math_PI / 2.0_R;
 				}
 			} else {
 				// It's 1
 				euler.x = -Math::atan2(rows[1][2], rows[2][2]);
-				euler.y = 0.0f;
-				euler.z = -Math_PI / 2.0f;
+				euler.y = 0.0_R;
+				euler.z = -Math_PI / 2.0_R;
 			}
 			return euler;
 		}
@@ -546,12 +546,12 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 						euler.z = atan2(rows[1][0], rows[1][1]);
 					}
 				} else { // m12 == -1
-					euler.x = Math_PI * 0.5f;
+					euler.x = Math_PI * 0.5_R;
 					euler.y = atan2(rows[0][1], rows[0][0]);
 					euler.z = 0;
 				}
 			} else { // m12 == 1
-				euler.x = -Math_PI * 0.5f;
+				euler.x = -Math_PI * 0.5_R;
 				euler.y = -atan2(rows[0][1], rows[0][0]);
 				euler.z = 0;
 			}
@@ -568,22 +568,22 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 
 			Vector3 euler;
 			real_t sz = rows[1][0];
-			if (sz < (1.0f - (real_t)CMP_EPSILON)) {
-				if (sz > -(1.0f - (real_t)CMP_EPSILON)) {
+			if (sz < (1.0_R - (real_t)CMP_EPSILON)) {
+				if (sz > -(1.0_R - (real_t)CMP_EPSILON)) {
 					euler.x = Math::atan2(-rows[1][2], rows[1][1]);
 					euler.y = Math::atan2(-rows[2][0], rows[0][0]);
 					euler.z = Math::asin(sz);
 				} else {
 					// It's -1
 					euler.x = Math::atan2(rows[2][1], rows[2][2]);
-					euler.y = 0.0f;
-					euler.z = -Math_PI / 2.0f;
+					euler.y = 0.0_R;
+					euler.z = -Math_PI / 2.0_R;
 				}
 			} else {
 				// It's 1
 				euler.x = Math::atan2(rows[2][1], rows[2][2]);
-				euler.y = 0.0f;
-				euler.z = Math_PI / 2.0f;
+				euler.y = 0.0_R;
+				euler.z = Math_PI / 2.0_R;
 			}
 			return euler;
 		} break;
@@ -596,20 +596,20 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			//        -cx*sy            sx                    cx*cy
 			Vector3 euler;
 			real_t sx = rows[2][1];
-			if (sx < (1.0f - (real_t)CMP_EPSILON)) {
-				if (sx > -(1.0f - (real_t)CMP_EPSILON)) {
+			if (sx < (1.0_R - (real_t)CMP_EPSILON)) {
+				if (sx > -(1.0_R - (real_t)CMP_EPSILON)) {
 					euler.x = Math::asin(sx);
 					euler.y = Math::atan2(-rows[2][0], rows[2][2]);
 					euler.z = Math::atan2(-rows[0][1], rows[1][1]);
 				} else {
 					// It's -1
-					euler.x = -Math_PI / 2.0f;
+					euler.x = -Math_PI / 2.0_R;
 					euler.y = Math::atan2(rows[0][2], rows[0][0]);
 					euler.z = 0;
 				}
 			} else {
 				// It's 1
-				euler.x = Math_PI / 2.0f;
+				euler.x = Math_PI / 2.0_R;
 				euler.y = Math::atan2(rows[0][2], rows[0][0]);
 				euler.z = 0;
 			}
@@ -624,21 +624,21 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			//        -sy               cy*sx                 cy*cx
 			Vector3 euler;
 			real_t sy = rows[2][0];
-			if (sy < (1.0f - (real_t)CMP_EPSILON)) {
-				if (sy > -(1.0f - (real_t)CMP_EPSILON)) {
+			if (sy < (1.0_R - (real_t)CMP_EPSILON)) {
+				if (sy > -(1.0_R - (real_t)CMP_EPSILON)) {
 					euler.x = Math::atan2(rows[2][1], rows[2][2]);
 					euler.y = Math::asin(-sy);
 					euler.z = Math::atan2(rows[1][0], rows[0][0]);
 				} else {
 					// It's -1
 					euler.x = 0;
-					euler.y = Math_PI / 2.0f;
+					euler.y = Math_PI / 2.0_R;
 					euler.z = -Math::atan2(rows[0][1], rows[1][1]);
 				}
 			} else {
 				// It's 1
 				euler.x = 0;
-				euler.y = -Math_PI / 2.0f;
+				euler.y = -Math_PI / 2.0_R;
 				euler.z = -Math::atan2(rows[0][1], rows[1][1]);
 			}
 			return euler;
@@ -729,10 +729,10 @@ Quaternion Basis::get_quaternion() const {
 	real_t trace = m.rows[0][0] + m.rows[1][1] + m.rows[2][2];
 	real_t temp[4];
 
-	if (trace > 0.0f) {
-		real_t s = Math::sqrt(trace + 1.0f);
-		temp[3] = (s * 0.5f);
-		s = 0.5f / s;
+	if (trace > 0.0_R) {
+		real_t s = Math::sqrt(trace + 1.0_R);
+		temp[3] = s * 0.5_R;
+		s = 0.5_R / s;
 
 		temp[0] = ((m.rows[2][1] - m.rows[1][2]) * s);
 		temp[1] = ((m.rows[0][2] - m.rows[2][0]) * s);
@@ -744,9 +744,9 @@ Quaternion Basis::get_quaternion() const {
 		int j = (i + 1) % 3;
 		int k = (i + 2) % 3;
 
-		real_t s = Math::sqrt(m.rows[i][i] - m.rows[j][j] - m.rows[k][k] + 1.0f);
-		temp[i] = s * 0.5f;
-		s = 0.5f / s;
+		real_t s = Math::sqrt(m.rows[i][i] - m.rows[j][j] - m.rows[k][k] + 1.0_R);
+		temp[i] = s * 0.5_R;
+		s = 0.5_R / s;
 
 		temp[3] = (m.rows[k][j] - m.rows[j][k]) * s;
 		temp[j] = (m.rows[j][i] + m.rows[i][j]) * s;
@@ -836,14 +836,14 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 
 void Basis::set_quaternion(const Quaternion &p_quaternion) {
 	real_t d = p_quaternion.length_squared();
-	real_t s = 2.0f / d;
+	real_t s = 2.0_R / d;
 	real_t xs = p_quaternion.x * s, ys = p_quaternion.y * s, zs = p_quaternion.z * s;
 	real_t wx = p_quaternion.w * xs, wy = p_quaternion.w * ys, wz = p_quaternion.w * zs;
 	real_t xx = p_quaternion.x * xs, xy = p_quaternion.x * ys, xz = p_quaternion.x * zs;
 	real_t yy = p_quaternion.y * ys, yz = p_quaternion.y * zs, zz = p_quaternion.z * zs;
-	set(1.0f - (yy + zz), xy - wz, xz + wy,
-			xy + wz, 1.0f - (xx + zz), yz - wx,
-			xz - wy, yz + wx, 1.0f - (xx + yy));
+	set(1.0_R - (yy + zz), xy - wz, xz + wy,
+			xy + wz, 1.0_R - (xx + zz), yz - wx,
+			xz - wy, yz + wx, 1.0_R - (xx + yy));
 }
 
 void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_angle) {
@@ -853,9 +853,9 @@ void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_angle) {
 #endif
 	Vector3 axis_sq(p_axis.x * p_axis.x, p_axis.y * p_axis.y, p_axis.z * p_axis.z);
 	real_t cosine = Math::cos(p_angle);
-	rows[0][0] = axis_sq.x + cosine * (1.0f - axis_sq.x);
-	rows[1][1] = axis_sq.y + cosine * (1.0f - axis_sq.y);
-	rows[2][2] = axis_sq.z + cosine * (1.0f - axis_sq.z);
+	rows[0][0] = axis_sq.x + cosine * (1.0_R - axis_sq.x);
+	rows[1][1] = axis_sq.y + cosine * (1.0_R - axis_sq.y);
+	rows[2][2] = axis_sq.z + cosine * (1.0_R - axis_sq.z);
 
 	real_t sine = Math::sin(p_angle);
 	real_t t = 1 - cosine;
@@ -934,16 +934,16 @@ void Basis::rotate_sh(real_t *p_values) {
 	// http://filmicworlds.com/blog/simple-and-fast-spherical-harmonic-rotation/
 	// this code is Public Domain
 
-	const static real_t s_c3 = 0.94617469575; // (3*sqrt(5))/(4*sqrt(pi))
-	const static real_t s_c4 = -0.31539156525; // (-sqrt(5))/(4*sqrt(pi))
-	const static real_t s_c5 = 0.54627421529; // (sqrt(15))/(4*sqrt(pi))
+	const static real_t s_c3 = 0.94617469575_R; // (3*sqrt(5))/(4*sqrt(pi))
+	const static real_t s_c4 = -0.31539156525_R; // (-sqrt(5))/(4*sqrt(pi))
+	const static real_t s_c5 = 0.54627421529_R; // (sqrt(15))/(4*sqrt(pi))
 
-	const static real_t s_c_scale = 1.0 / 0.91529123286551084;
-	const static real_t s_c_scale_inv = 0.91529123286551084;
+	const static real_t s_c_scale = 1.0_R / 0.91529123286551084_R;
+	const static real_t s_c_scale_inv = 0.91529123286551084_R;
 
-	const static real_t s_rc2 = 1.5853309190550713 * s_c_scale;
+	const static real_t s_rc2 = 1.5853309190550713_R * s_c_scale;
 	const static real_t s_c4_div_c3 = s_c4 / s_c3;
-	const static real_t s_c4_div_c3_x2 = (s_c4 / s_c3) * 2.0;
+	const static real_t s_c4_div_c3_x2 = (s_c4 / s_c3) * 2.0_R;
 
 	const static real_t s_scale_dst2 = s_c3 * s_c_scale_inv;
 	const static real_t s_scale_dst4 = s_c5 * s_c_scale_inv;
