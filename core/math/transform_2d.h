@@ -145,8 +145,8 @@ struct _NO_DISCARD_ Transform2D {
 	Transform2D(real_t p_rot, const Size2 &p_scale, real_t p_skew, const Vector2 &p_pos);
 
 	Transform2D() {
-		columns[0][0] = 1.0;
-		columns[1][1] = 1.0;
+		columns[0][0] = 1.0_R;
+		columns[1][1] = 1.0_R;
 	}
 };
 

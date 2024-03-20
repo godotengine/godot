@@ -175,7 +175,7 @@ Vector2 Vector2::reflect(const Vector2 &p_normal) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector2(), "The normal Vector2 " + p_normal.operator String() + "must be normalized.");
 #endif
-	return 2.0f * p_normal * dot(p_normal) - *this;
+	return 2.0_R * p_normal * dot(p_normal) - *this;
 }
 
 bool Vector2::is_equal_approx(const Vector2 &p_v) const {

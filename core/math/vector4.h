@@ -197,7 +197,7 @@ void Vector4::operator*=(real_t p_s) {
 }
 
 void Vector4::operator/=(real_t p_s) {
-	*this *= 1.0f / p_s;
+	*this *= 1.0_R / p_s;
 }
 
 Vector4 Vector4::operator+(const Vector4 &p_vec4) const {
@@ -225,7 +225,7 @@ Vector4 Vector4::operator*(real_t p_s) const {
 }
 
 Vector4 Vector4::operator/(real_t p_s) const {
-	return *this * (1.0f / p_s);
+	return *this * (1.0_R / p_s);
 }
 
 bool Vector4::operator==(const Vector4 &p_vec4) const {

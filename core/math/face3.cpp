@@ -121,13 +121,13 @@ bool Face3::is_degenerate() const {
 }
 
 Vector3 Face3::get_random_point_inside() const {
-	real_t a = Math::random(0.0, 1.0);
-	real_t b = Math::random(0.0, 1.0);
+	real_t a = Math::random(0.0_R, 1.0_R);
+	real_t b = Math::random(0.0_R, 1.0_R);
 	if (a > b) {
 		SWAP(a, b);
 	}
 
-	return vertex[0] * a + vertex[1] * (b - a) + vertex[2] * (1.0f - b);
+	return vertex[0] * a + vertex[1] * (b - a) + vertex[2] * (1.0_R - b);
 }
 
 Plane Face3::get_plane(ClockDirection p_dir) const {
@@ -135,7 +135,7 @@ Plane Face3::get_plane(ClockDirection p_dir) const {
 }
 
 real_t Face3::get_area() const {
-	return vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]).length() * 0.5f;
+	return vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]).length() * 0.5_R;
 }
 
 bool Face3::intersects_aabb(const AABB &p_aabb) const {
@@ -183,7 +183,7 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 
 			Vector3 axis = vec3_cross(e1, e2);
 
-			if (axis.length_squared() < 0.0001f) {
+			if (axis.length_squared() < 0.0001_R) {
 				continue; // coplanar
 			}
 			axis.normalize();
@@ -312,7 +312,7 @@ Vector3 Face3::get_closest_point_to(const Vector3 &p_point) const {
 			s = CLAMP(-d / a, 0.f, 1.f);
 			t = 0.f;
 		} else {
-			real_t invDet = 1.f / det;
+			real_t invDet = 1.0_R / det;
 			s *= invDet;
 			t *= invDet;
 		}

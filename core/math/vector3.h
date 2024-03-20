@@ -91,7 +91,7 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ Vector3 normalized() const;
 	_FORCE_INLINE_ bool is_normalized() const;
 	_FORCE_INLINE_ Vector3 inverse() const;
-	Vector3 limit_length(real_t p_len = 1.0) const;
+	Vector3 limit_length(real_t p_len = 1.0_R) const;
 
 	_FORCE_INLINE_ void zero();
 
@@ -229,13 +229,13 @@ Vector3 Vector3::slerp(const Vector3 &p_to, real_t p_weight) const {
 	// the internals of some methods for efficiency (mainly, checking length).
 	real_t start_length_sq = length_squared();
 	real_t end_length_sq = p_to.length_squared();
-	if (unlikely(start_length_sq == 0.0f || end_length_sq == 0.0f)) {
+	if (unlikely(start_length_sq == 0.0_R || end_length_sq == 0.0_R)) {
 		// Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
 		return lerp(p_to, p_weight);
 	}
 	Vector3 axis = cross(p_to);
 	real_t axis_length_sq = axis.length_squared();
-	if (unlikely(axis_length_sq == 0.0f)) {
+	if (unlikely(axis_length_sq == 0.0_R)) {
 		// Colinear vectors have no rotation axis or angle between them, so the best we can do is lerp.
 		return lerp(p_to, p_weight);
 	}
@@ -502,7 +502,7 @@ bool Vector3::is_normalized() const {
 }
 
 Vector3 Vector3::inverse() const {
-	return Vector3(1.0f / x, 1.0f / y, 1.0f / z);
+	return Vector3(1.0_R / x, 1.0_R / y, 1.0_R / z);
 }
 
 void Vector3::zero() {
@@ -525,7 +525,7 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!p_normal.is_normalized(), Vector3(), "The normal Vector3 " + p_normal.operator String() + " must be normalized.");
 #endif
-	return 2.0f * p_normal * dot(p_normal) - *this;
+	return 2.0_R * p_normal * dot(p_normal) - *this;
 }
 
 #endif // VECTOR3_H

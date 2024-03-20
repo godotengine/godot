@@ -2249,7 +2249,7 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 	}
 
 	ConvexHullComputer ch;
-	ch.compute(p_points.ptr(), p_points.size(), -1.0, -1.0);
+	ch.compute(p_points.ptr(), p_points.size(), -1.0_R, -1.0_R);
 
 	r_mesh.vertices = ch.vertices;
 

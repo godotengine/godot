@@ -214,7 +214,7 @@ bool AStarGrid2D::is_point_solid(const Vector2i &p_id) const {
 void AStarGrid2D::set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale) {
 	ERR_FAIL_COND_MSG(dirty, "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_MSG(!is_in_boundsv(p_id), vformat("Can't set point's weight scale. Point %s out of bounds %s.", p_id, region));
-	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't set point's weight scale less than 0.0: %f.", p_weight_scale));
+	ERR_FAIL_COND_MSG(p_weight_scale < 0.0_R, vformat("Can't set point's weight scale less than 0.0: %f.", p_weight_scale));
 	_get_point_unchecked(p_id)->weight_scale = p_weight_scale;
 }
 
@@ -240,7 +240,7 @@ void AStarGrid2D::fill_solid_region(const Rect2i &p_region, bool p_solid) {
 
 void AStarGrid2D::fill_weight_scale_region(const Rect2i &p_region, real_t p_weight_scale) {
 	ERR_FAIL_COND_MSG(dirty, "Grid is not initialized. Call the update method.");
-	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't set point's weight scale less than 0.0: %f.", p_weight_scale));
+	ERR_FAIL_COND_MSG(p_weight_scale < 0.0_R, vformat("Can't set point's weight scale less than 0.0: %f.", p_weight_scale));
 
 	const Rect2i safe_region = p_region.intersection(region);
 	const int32_t end_x = safe_region.get_end().x;
@@ -478,7 +478,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 		_get_nbors(p, nbors);
 
 		for (Point *e : nbors) {
-			real_t weight_scale = 1.0;
+			real_t weight_scale = 1.0_R;
 
 			if (jumping_enabled) {
 				// TODO: Make it works with weight_scale.

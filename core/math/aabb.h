@@ -47,11 +47,11 @@ struct _NO_DISCARD_ AABB {
 
 	real_t get_volume() const;
 	_FORCE_INLINE_ bool has_volume() const {
-		return size.x > 0.0f && size.y > 0.0f && size.z > 0.0f;
+		return size.x > 0.0_R && size.y > 0.0_R && size.z > 0.0_R;
 	}
 
 	_FORCE_INLINE_ bool has_surface() const {
-		return size.x > 0.0f || size.y > 0.0f || size.z > 0.0f;
+		return size.x > 0.0_R || size.y > 0.0_R || size.z > 0.0_R;
 	}
 
 	const Vector3 &get_position() const { return position; }
@@ -101,7 +101,7 @@ struct _NO_DISCARD_ AABB {
 	_FORCE_INLINE_ void expand_to(const Vector3 &p_vector); /** expand to contain a point if necessary */
 
 	_FORCE_INLINE_ AABB abs() const {
-		return AABB(Vector3(position.x + MIN(size.x, (real_t)0), position.y + MIN(size.y, (real_t)0), position.z + MIN(size.z, (real_t)0)), size.abs());
+		return AABB(Vector3(position.x + MIN(size.x, 0.0_R), position.y + MIN(size.y, 0.0_R), position.z + MIN(size.z, 0.0_R)), size.abs());
 	}
 
 	Variant intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const;
@@ -119,7 +119,7 @@ struct _NO_DISCARD_ AABB {
 	}
 
 	_FORCE_INLINE_ Vector3 get_center() const {
-		return position + (size * 0.5f);
+		return position + (size * 0.5_R);
 	}
 
 	operator String() const;
@@ -407,9 +407,9 @@ bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
 	}
 #endif
-	real_t divx = 1.0f / p_dir.x;
-	real_t divy = 1.0f / p_dir.y;
-	real_t divz = 1.0f / p_dir.z;
+	real_t divx = 1.0_R / p_dir.x;
+	real_t divy = 1.0_R / p_dir.y;
+	real_t divz = 1.0_R / p_dir.z;
 
 	Vector3 upbound = position + size;
 	real_t tmin, tmax, tymin, tymax, tzmin, tzmax;

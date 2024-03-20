@@ -191,7 +191,7 @@ public:
 		// In many cases you may want to change this default in the client code,
 		// or expose this value to the user.
 		// This default may make sense for a typically scaled 3d game, but maybe not for 2d on a pixel scale.
-		params_set_pairing_expansion(0.1);
+		params_set_pairing_expansion(0.1_R);
 	}
 
 private:
@@ -337,7 +337,7 @@ private:
 		// which are important in determining the bound. Any other aabb
 		// within this can be removed and not affect the overall bound.
 		BVHABB_CLASS node_bound = tnode.aabb;
-		node_bound.expand(-_node_expansion - 0.001f);
+		node_bound.expand(-_node_expansion - 0.001_R);
 		bool refit = true;
 
 		if (node_bound.is_other_within(old_aabb)) {

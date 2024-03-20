@@ -284,7 +284,7 @@ Vector3 Quaternion::get_axis() const {
 	if (Math::abs(w) > 1 - CMP_EPSILON) {
 		return Vector3(x, y, z);
 	}
-	real_t r = ((real_t)1) / Math::sqrt(1 - w * w);
+	real_t r = 1.0_R / Math::sqrt(1 - w * w);
 	return Vector3(x * r, y * r, z * r);
 }
 
@@ -303,8 +303,8 @@ Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
 		z = 0;
 		w = 0;
 	} else {
-		real_t sin_angle = Math::sin(p_angle * 0.5f);
-		real_t cos_angle = Math::cos(p_angle * 0.5f);
+		real_t sin_angle = Math::sin(p_angle * 0.5_R);
+		real_t cos_angle = Math::cos(p_angle * 0.5_R);
 		real_t s = sin_angle / d;
 		x = p_axis.x * s;
 		y = p_axis.y * s;
@@ -318,9 +318,9 @@ Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
 // and similar for other axes.
 // This implementation uses YXZ convention (Z is the first rotation).
 Quaternion Quaternion::from_euler(const Vector3 &p_euler) {
-	real_t half_a1 = p_euler.y * 0.5f;
-	real_t half_a2 = p_euler.x * 0.5f;
-	real_t half_a3 = p_euler.z * 0.5f;
+	real_t half_a1 = p_euler.y * 0.5_R;
+	real_t half_a2 = p_euler.x * 0.5_R;
+	real_t half_a3 = p_euler.z * 0.5_R;
 
 	// R = Y(a1).X(a2).Z(a3) convention for Euler angles.
 	// Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)

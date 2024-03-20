@@ -67,7 +67,7 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 			real_t length = seg_to - seg_from;
 			cmin = (seg_from < box_begin) ? ((box_begin - seg_from) / length) : 0;
 			cmax = (seg_to > box_end) ? ((box_end - seg_from) / length) : 1;
-			csign = -1.0;
+			csign = -1.0_R;
 
 		} else {
 			if (seg_to > box_end || seg_from < box_begin) {
@@ -76,7 +76,7 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 			real_t length = seg_to - seg_from;
 			cmin = (seg_from > box_end) ? (box_end - seg_from) / length : 0;
 			cmax = (seg_to < box_begin) ? (box_begin - seg_from) / length : 1;
-			csign = 1.0;
+			csign = 1.0_R;
 		}
 
 		if (cmin > min) {

@@ -71,7 +71,7 @@ public:
 		Vector2 a = p_vertices[p_b] - p_vertices[p_a];
 		Vector2 b = p_vertices[p_c] - p_vertices[p_a];
 
-		Vector2 O = (b * a.length_squared() - a * b.length_squared()).orthogonal() / (a.cross(b) * 2.0f);
+		Vector2 O = (b * a.length_squared() - a * b.length_squared()).orthogonal() / (a.cross(b) * 2.0_R);
 
 		triangle.circum_radius_squared = O.length_squared();
 		triangle.circum_center = O + p_vertices[p_a];

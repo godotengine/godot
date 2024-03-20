@@ -34,12 +34,12 @@ real_t Triangulate::get_area(const Vector<Vector2> &contour) {
 	int n = contour.size();
 	const Vector2 *c = &contour[0];
 
-	real_t A = 0.0;
+	real_t A = 0.0_R;
 
 	for (int p = n - 1, q = 0; q < n; p = q++) {
 		A += c[p].cross(c[q]);
 	}
-	return A * 0.5f;
+	return A * 0.5_R;
 }
 
 /* `is_inside_triangle` decides if a point P is inside the triangle
@@ -70,9 +70,9 @@ bool Triangulate::is_inside_triangle(real_t Ax, real_t Ay,
 	bCROSScp = bx * cpy - by * cpx;
 
 	if (include_edges) {
-		return ((aCROSSbp > 0.0f) && (bCROSScp > 0.0f) && (cCROSSap > 0.0f));
+		return ((aCROSSbp > 0.0_R) && (bCROSScp > 0.0_R) && (cCROSSap > 0.0_R));
 	} else {
-		return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
+		return ((aCROSSbp >= 0.0_R) && (bCROSScp >= 0.0_R) && (cCROSSap >= 0.0_R));
 	}
 }
 
@@ -128,7 +128,7 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 
 	/* we want a counter-clockwise polygon in V */
 
-	if (0.0f < get_area(contour)) {
+	if (0.0_R < get_area(contour)) {
 		for (int v = 0; v < n; v++) {
 			V.write[v] = v;
 		}
