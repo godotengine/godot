@@ -1190,6 +1190,32 @@ void DisplayServerWayland::swap_buffers() {
 #endif
 }
 
+DisplayServer::IndicatorID DisplayServerWayland::create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+	IndicatorID id = indicator_id_counter++;
+	indicators.insert(id);
+
+	portal_desktop->indicator_create(id, p_icon);
+	portal_desktop->indicator_set_callback(id, p_callback);
+
+	return id;
+}
+
+void DisplayServerWayland::status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) {
+	portal_desktop->indicator_set_icon(p_id, p_icon);
+}
+
+void DisplayServerWayland::status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) {
+	portal_desktop->indicator_set_tooltip(p_id, p_tooltip);
+}
+
+void DisplayServerWayland::status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) {
+	portal_desktop->indicator_set_callback(p_id, p_callback);
+}
+
+void DisplayServerWayland::delete_status_indicator(IndicatorID p_id) {
+	portal_desktop->indicator_destroy(p_id);
+}
+
 void DisplayServerWayland::set_context(Context p_context) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
