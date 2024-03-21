@@ -252,11 +252,6 @@ void XRBodyModifier3D::_get_joint_data() {
 		}
 	}
 
-	// If the root bone is not found then use the skeleton root bone.
-	if (bones[XRBodyTracker::JOINT_ROOT] == -1) {
-		bones[XRBodyTracker::JOINT_ROOT] = 0;
-	}
-
 	// Assemble the joint relationship to the available skeleton bones.
 	for (int i = 0; i < XRBodyTracker::JOINT_MAX; i++) {
 		// Get the skeleton bone (skip if not found).
