@@ -232,7 +232,6 @@ TEST_CASE("[XMLParser] CDATA") {
 }
 
 TEST_CASE("[XMLParser] Tag starting character(s)") {
-
 	SUBCASE("First character is a number") {
 		XMLParser parser;
 		const String input = "<1first></first>";
