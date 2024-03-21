@@ -753,11 +753,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR);
 	if (RenderingDeviceCommons::render_pass_opts_enabled) {
 		render_list[RENDER_LIST_OPAQUE].sort_for_rendering();
-		render_list[RENDER_LIST_ALPHA].sort_for_rendering();
 	} else {
 		render_list[RENDER_LIST_OPAQUE].sort_by_key();
-		render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
 	}
+
+	render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
+
 	
 	_fill_instance_data(RENDER_LIST_OPAQUE);
 	_fill_instance_data(RENDER_LIST_ALPHA);
