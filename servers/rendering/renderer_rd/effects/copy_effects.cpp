@@ -66,8 +66,14 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 			blur_raster.pipelines[i].setup(blur_raster.shader.version_get_shader(blur_raster.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 		}
 
+	} else {
+		// not used in clustered
+		for (int i = 0; i < BLUR_MODE_MAX; i++) {
+			blur_raster.pipelines[i].clear();
+		}
+	}
 
-// <TF>
+	// <TF>
 // @ShadyTF
 // replace push constants with UBO
 // prepare uniform set and buffer
@@ -81,13 +87,6 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 		params_uniforms.push_back(u);
 		blur_raster.params_uniform_set = RD::RenderingDevice::get_singleton()->uniform_set_create(params_uniforms, blur_raster.shader.version_get_shader(blur_raster.shader_version, 0), 4);
 // </TF>
-
-	} else {
-		// not used in clustered
-		for (int i = 0; i < BLUR_MODE_MAX; i++) {
-			blur_raster.pipelines[i].clear();
-		}
-	}
 
 	{
 		Vector<String> copy_modes;
@@ -1014,7 +1013,14 @@ void CopyEffects::make_mipmap_raster(RID p_source_rd_texture, RID p_dest_texture
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur_raster.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+
+	// <TF>
+	// @ShadyTF
+	// replace push constants with UBO
+	// Was:
+	//	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur_raster.push_constant, sizeof(BlurRasterPushConstant));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, blur_raster.params_uniform_set, 4);
+	// </TF>
 
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 	RD::get_singleton()->draw_list_end();
