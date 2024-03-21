@@ -3029,6 +3029,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	light_culler->prepare_camera(p_camera_data->main_transform, p_camera_data->main_projection);
 
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
+	Vector3 camera_position = p_camera_data->main_transform.origin;
 
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
@@ -3038,7 +3039,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 	if (p_reflection_probe.is_null()) {
 		//no rendering code here, this is only to set up what needs to be done, request regions, etc.
-		scene_render->sdfgi_update(p_render_buffers, p_environment, p_camera_data->main_transform.origin); //update conditions for SDFGI (whether its used or not)
+		scene_render->sdfgi_update(p_render_buffers, p_environment, camera_position); //update conditions for SDFGI (whether its used or not)
 	}
 
 	RENDER_TIMESTAMP("Update Visibility Dependencies");
@@ -3051,7 +3052,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		VisibilityCullData visibility_cull_data;
 		visibility_cull_data.scenario = scenario;
 		visibility_cull_data.viewport_mask = scenario->viewport_visibility_masks[p_viewport];
-		visibility_cull_data.camera_position = p_camera_data->main_transform.origin;
+		visibility_cull_data.camera_position = camera_position;
 
 		for (int i = scenario->instance_visibility.get_bin_count() - 1; i > 0; i--) { // We skip bin 0
 			visibility_cull_data.cull_offset = scenario->instance_visibility.get_bin_start(i);
@@ -3220,15 +3221,19 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			}
 		}
 
-		// Positional Shadowss
+		// Positional Shadows
 		for (uint32_t i = 0; i < (uint32_t)scene_cull_result.lights.size(); i++) {
 			Instance *ins = scene_cull_result.lights[i];
 
-			if (!p_shadow_atlas.is_valid() || !RSG::light_storage->light_has_shadow(ins->base)) {
+			if (!p_shadow_atlas.is_valid()) {
 				continue;
 			}
 
 			InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
+
+			if (!RSG::light_storage->light_instance_is_shadow_visible_at_position(light->instance, camera_position)) {
+				continue;
+			}
 
 			float coverage = 0.f;
 

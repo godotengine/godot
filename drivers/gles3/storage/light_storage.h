@@ -441,6 +441,29 @@ public:
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
 	virtual void light_instance_mark_visible(RID p_light_instance) override;
 
+	virtual bool light_instance_is_shadow_visible_at_position(RID p_light_instance, const Vector3 &p_position) const override {
+		const LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
+		ERR_FAIL_NULL_V(light_instance, false);
+		const Light *light = light_owner.get_or_null(light_instance->light);
+		ERR_FAIL_NULL_V(light, false);
+
+		if (!light->shadow) {
+			return false;
+		}
+
+		if (!light->distance_fade) {
+			return true;
+		}
+
+		real_t distance = p_position.distance_to(light_instance->transform.origin);
+
+		if (distance > light->distance_fade_shadow + light->distance_fade_length) {
+			return false;
+		}
+
+		return true;
+	}
+
 	_FORCE_INLINE_ RID light_instance_get_base_light(RID p_light_instance) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		return li->light;
