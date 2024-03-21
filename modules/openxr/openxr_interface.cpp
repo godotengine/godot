@@ -43,6 +43,8 @@ void OpenXRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("session_stopping"));
 	ADD_SIGNAL(MethodInfo("session_focussed"));
 	ADD_SIGNAL(MethodInfo("session_visible"));
+	ADD_SIGNAL(MethodInfo("session_loss_pending"));
+	ADD_SIGNAL(MethodInfo("instance_exiting"));
 	ADD_SIGNAL(MethodInfo("pose_recentered"));
 	ADD_SIGNAL(MethodInfo("refresh_rate_changed", PropertyInfo(Variant::FLOAT, "refresh_rate")));
 
@@ -1256,6 +1258,14 @@ void OpenXRInterface::on_state_focused() {
 
 void OpenXRInterface::on_state_stopping() {
 	emit_signal(SNAME("session_stopping"));
+}
+
+void OpenXRInterface::on_state_loss_pending() {
+	emit_signal(SNAME("session_loss_pending"));
+}
+
+void OpenXRInterface::on_state_exiting() {
+	emit_signal(SNAME("instance_exiting"));
 }
 
 void OpenXRInterface::on_pose_recentered() {

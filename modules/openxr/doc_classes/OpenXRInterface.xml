@@ -147,6 +147,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="instance_exiting">
+			<description>
+				Informs our OpenXR instance is exiting.
+			</description>
+		</signal>
 		<signal name="pose_recentered">
 			<description>
 				Informs the user queued a recenter of the player position.
@@ -167,6 +172,11 @@
 		<signal name="session_focussed">
 			<description>
 				Informs our OpenXR session now has focus.
+			</description>
+		</signal>
+		<signal name="session_loss_pending">
+			<description>
+				Informs our OpenXR session is in the process of being lost.
 			</description>
 		</signal>
 		<signal name="session_stopping">

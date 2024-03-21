@@ -274,7 +274,7 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 		if (swapchain_size == viewport_size && !p_static_image && !static_image) {
 			// We're all good! Just acquire it.
 			// We can ignore should_render here, return will be false.
-			XrBool32 should_render = true;
+			bool should_render = true;
 			return swapchain_info.acquire(should_render);
 		}
 
@@ -296,7 +296,7 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 
 	// Acquire our image so we can start rendering into it,
 	// we can ignore should_render here, ret will be false.
-	XrBool32 should_render = true;
+	bool should_render = true;
 	bool ret = swapchain_info.acquire(should_render);
 
 	swapchain_size = viewport_size;
