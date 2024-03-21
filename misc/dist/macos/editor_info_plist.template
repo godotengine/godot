@@ -47,6 +47,19 @@
 	</dict>
 	<key>NSHighResolutionCapable</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>godoteditorargs</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>org.godotengine.godoteditorargs</string>
+		</dict>
+	</array>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

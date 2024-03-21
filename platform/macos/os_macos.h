@@ -57,10 +57,17 @@ class OS_MacOS : public OS_Unix {
 	MainLoop *main_loop = nullptr;
 
 	List<String> launch_service_args;
+#ifdef TOOLS_ENABLED
+	String url_schema = "godoteditorargs";
+#else
+	String url_schema = "godotargs";
+#endif
 
 	CGFloat _weight_to_ct(int p_weight) const;
 	CGFloat _stretch_to_ct(int p_stretch) const;
 	String _get_default_fontname(const String &p_font_name) const;
+
+	Error _create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false, bool p_instance = false);
 
 	static _FORCE_INLINE_ String get_framework_executable(const String &p_path);
 	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
@@ -114,6 +121,9 @@ public:
 	virtual String get_processor_name() const override;
 
 	virtual bool is_sandboxed() const override;
+	virtual void sandbox_use_url_for_instance_argumments(const String &p_schema) override;
+	String sandbox_get_url_schema() const { return url_schema; }
+
 	virtual Vector<String> get_granted_permissions() const override;
 	virtual void revoke_granted_permissions() override;
 
