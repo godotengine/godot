@@ -881,6 +881,7 @@ void EditorPropertyArray::_reorder_button_up() {
 		array.call("remove_at", reorder_slot.index);
 		array.call("insert", reorder_to_index, value_to_move);
 
+		slots[reorder_to_index % page_length].reorder_button->grab_focus();
 		emit_changed(get_edited_property(), array);
 	}
 
