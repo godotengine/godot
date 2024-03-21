@@ -1623,7 +1623,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						double at_anim_pos = 0.0;
 						switch (anim->get_loop_mode()) {
 							case Animation::LOOP_NONE: {
-								at_anim_pos = MAX((double)anim->get_length(), time - pos); //seek to end
+								at_anim_pos = MIN((double)anim->get_length(), time - pos); //seek to end
 							} break;
 							case Animation::LOOP_LINEAR: {
 								at_anim_pos = Math::fposmod(time - pos, (double)anim->get_length()); //seek to loop
@@ -1658,6 +1658,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							} else {
 								player2->play(anim_name);
+								player2->seek(0.0, true);
 								t->playing = true;
 								playing_caches.insert(t);
 							}
