@@ -348,6 +348,18 @@ public:
 		return light->shadow;
 	}
 
+	// Return -1 if distance fade not active..
+	virtual float light_get_shadow_camera_distance_max(RID p_light) const override {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_NULL_V(light, -1.0f);
+
+		if (!light->shadow || !light->distance_fade) {
+			return -1.0f;
+		}
+
+		return light->distance_fade_shadow + light->distance_fade_length;
+	}
+
 	virtual bool light_has_projector(RID p_light) const override {
 		const Light *light = light_owner.get_or_null(p_light);
 		ERR_FAIL_NULL_V(light, RS::LIGHT_DIRECTIONAL);

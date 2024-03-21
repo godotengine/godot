@@ -44,7 +44,7 @@ struct Transform3D;
 // Uncomment LIGHT_CULLER_DEBUG_LOGGING to get periodic print of the number of casters culled before / after.
 // Uncomment LIGHT_CULLER_DEBUG_DIRECTIONAL_LIGHT to get periodic print of the number of casters culled for the directional light..
 
-//  #define LIGHT_CULLER_DEBUG_LOGGING
+// #define LIGHT_CULLER_DEBUG_LOGGING
 // #define LIGHT_CULLER_DEBUG_DIRECTIONAL_LIGHT
 // #define LIGHT_CULLER_DEBUG_REGULAR_LIGHT
 // #define LIGHT_CULLER_DEBUG_FLASH
@@ -208,6 +208,13 @@ private:
 
 	// Do we want to log some debug output?
 	bool is_logging() const { return data.debug_count == 0; }
+
+	struct DistanceFadeData {
+		Vector3 camera_pos;
+		float cutoff_distance_from_camera = 0;
+		float cutoff_distance_from_camera_squared = 0;
+		bool distance_fade_enabled = false;
+	} distance_fade_data;
 
 	struct Data {
 		// Camera frustum planes (world space) - order ePlane.

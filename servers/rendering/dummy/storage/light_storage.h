@@ -71,6 +71,8 @@ public:
 	virtual RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) override { return RS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID; }
 
 	virtual bool light_has_shadow(RID p_light) const override { return false; }
+	// Return -1 if distance fade not active..
+	virtual float light_get_shadow_camera_distance_max(RID p_light) const override { return -1.0f; }
 	virtual bool light_has_projector(RID p_light) const override { return false; }
 
 	virtual RS::LightType light_get_type(RID p_light) const override { return RS::LIGHT_OMNI; }

@@ -109,6 +109,17 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 	lsource.dir = -p_instance.transform.basis.get_column(2);
 	lsource.dir.normalize();
 
+	// Distance fade.
+	distance_fade_data.cutoff_distance_from_camera = RSG::light_storage->light_get_shadow_camera_distance_max(p_instance.base);
+	distance_fade_data.distance_fade_enabled = distance_fade_data.cutoff_distance_from_camera >= 0.0f;
+	if (distance_fade_data.distance_fade_enabled) {
+		// Don't allow cutoff to be absolute zero, to prevent divide by zero in later routine.
+		distance_fade_data.cutoff_distance_from_camera = MAX(distance_fade_data.cutoff_distance_from_camera, 0.001f);
+
+		// Use distance squared for faster calculations.
+		distance_fade_data.cutoff_distance_from_camera_squared = distance_fade_data.cutoff_distance_from_camera * distance_fade_data.cutoff_distance_from_camera;
+	}
+
 	bool visible;
 	if (p_directional_light_id == -1) {
 		visible = _add_light_camera_planes(data.regular_cull_planes, lsource);
@@ -195,6 +206,35 @@ void RenderingLightCuller::cull_regular_light(PagedArray<RendererSceneCull::Inst
 			if (r_min > 0.0f) {
 				show = false;
 				break;
+			}
+		}
+
+		// Apply distance fade.
+		if (show && distance_fade_data.distance_fade_enabled) {
+			// Ideally we would use bounding sphere, but here we will just create plane from camera to
+			// instance, and find r_min and r_max.
+			Vector3 offset = bb.get_center() - distance_fade_data.camera_pos;
+
+			float dist_from_camera = offset.length_squared();
+
+			// If the center is within range, no need to check further.
+			if (dist_from_camera > distance_fade_data.cutoff_distance_from_camera_squared) {
+				dist_from_camera = Math::sqrt(dist_from_camera);
+
+				// This should be ensured when setting up the light, we need a minimum distance
+				// to get a decent normalized camera direction.
+				DEV_ASSERT(dist_from_camera > 0);
+
+				// Normalize.
+				offset *= 1.0f / dist_from_camera;
+
+				// Do more detailed check.
+				Plane cam_plane(offset, distance_fade_data.camera_pos);
+				bb.project_range_in_plane(cam_plane, r_min, r_max);
+
+				if (r_min >= distance_fade_data.cutoff_distance_from_camera) {
+					show = false;
+				}
 			}
 		}
 
@@ -489,6 +529,9 @@ bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, co
 	if (!data.is_active()) {
 		return false;
 	}
+
+	// Store camera position in case we are using distance fade for shadows.
+	distance_fade_data.camera_pos = p_cam_transform.origin;
 
 	// Get the camera frustum planes in world space.
 	data.frustum_planes = p_cam_matrix.get_projection_planes(p_cam_transform);
