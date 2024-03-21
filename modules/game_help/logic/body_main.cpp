@@ -17,6 +17,9 @@ void CharacterBodyMain::_bind_methods()
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
 
+    ClassDB::bind_method(D_METHOD("set_controller", "controller"), &CharacterBodyMain::set_controller);
+    ClassDB::bind_method(D_METHOD("get_controller"), &CharacterBodyMain::get_controller);
+
     
 
 
@@ -25,6 +28,8 @@ void CharacterBodyMain::_bind_methods()
 	
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_NONE, "Blackboard", 0), "set_blackboard", "get_blackboard");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_blackboard_plan", "get_blackboard_plan");
+
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "controller", PROPERTY_HINT_RESOURCE_TYPE, "CharacterController", 0), "set_controller", "get_controller");
 
 
 	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "status")));
@@ -138,6 +143,16 @@ BTPlayer * CharacterBodyMain::get_bt_player()
         add_child(btPlayer);
     }
     return btPlayer;
+}
+
+
+void CharacterBodyMain::set_controller(const Ref<CharacterController> &p_controller) 
+{
+    controller = p_controller; 
+}
+Ref<CharacterController> CharacterBodyMain::get_controller()
+{
+    return controller; 
 }
 
 CharacterBodyMain::CharacterBodyMain()

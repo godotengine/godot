@@ -152,20 +152,24 @@ public:
         
         Ref<FileAccess> file = FileAccess::open(p_source_file, FileAccess::READ);
 
-	    ERR_FAIL_COND_V_MSG(file.is_null(), ERR_CANT_OPEN, "Cannot open file from path '" + p_source_file + "'.");
+	    ERR_FAIL_COND_V_MSG(file.is_null(), ERR_CANT_OPEN, "Cannot open file from path :'" + p_source_file + "'.");
 
         CSVDataArray lines ;
-        Dictionary meta = parse_headers(file, p_options,delim);
+        Dictionary meta = parse_headers(file, p_options,delim,p_source_file);
+        if(meta.size()==0){
+            return ERR_FILE_UNRECOGNIZED;
+        }
         
         PackedStringArray headers = meta["headers"];
         Dictionary field_indexs = meta["field_indexs"];
         Dictionary field_types = meta["field_types"];
-
+        int line_index = 3;
         while(file->eof_reached()==false){
 		    PackedStringArray line = file->get_csv_line(delim);
-            Vector<Variant> row = parse_type(line, headers, field_indexs,field_types);
+            Vector<Variant> row = parse_type(line, headers, field_indexs,field_types,line_index,p_source_file);
             if(row.size()>0)
                 lines.append_row(row);
+            ++line_index;
         }
         file->close();
 
@@ -180,7 +184,7 @@ public:
 
     }
 
-    Dictionary parse_headers(const Ref<FileAccess> & f,const HashMap<StringName, Variant> &p_options,const String& delim)
+    Dictionary parse_headers(const Ref<FileAccess> & f,const HashMap<StringName, Variant> &p_options,const String& delim,const String& file_name)
     {
         String model_name = "";
         if (p_options["describe_headers"])
@@ -191,8 +195,9 @@ public:
         }
         
         PackedStringArray headers  = f->get_csv_line(delim);
-        ERR_FAIL_COND_V_MSG(headers[0] != "id", Dictionary(), "First column must be 'id'");
+        ERR_FAIL_COND_V_MSG(headers[0] != "id", Dictionary(),file_name + " : First column must be 'id'");
         PackedStringArray types  = f->get_csv_line(delim);
+        ERR_FAIL_COND_V_MSG(headers.size() != types.size(), Dictionary(),file_name + " : Headers and types must be the same size");
 
         Dictionary field_indexs;
         Dictionary field_types;
@@ -214,11 +219,11 @@ public:
 
         return ret;
     }
-    Vector<Variant> parse_type(const PackedStringArray & csv_row,const PackedStringArray& headers,const Dictionary& field_indexs,const Dictionary& field_types)
+    Vector<Variant> parse_type(const PackedStringArray & csv_row,const PackedStringArray& headers,const Dictionary& field_indexs,const Dictionary& field_types,int line_index,const String& file_name)
     {
         int column_count = headers.size();
         if(column_count!=csv_row.size()){
-            WARN_PRINT("[csv-importer]:csv row data not enough " + itos(column_count) + " - > " + itos(csv_row.size()) +" = " + VariantUtilityFunctions::var_to_str( csv_row));
+            WARN_PRINT("[csv-importer]:csv row data not enough file:" + file_name + " line:\n" + itos(line_index) + itos(column_count) + " - > " + itos(csv_row.size()) +" = " + VariantUtilityFunctions::var_to_str( csv_row));
             return  Vector<Variant>();
         }
 
