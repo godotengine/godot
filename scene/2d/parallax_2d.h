@@ -38,7 +38,7 @@ class Parallax2D : public Node2D {
 
 	static constexpr real_t DEFAULT_LIMIT = 10000000;
 
-	String group_name;
+	StringName group_name;
 	Size2 scroll_scale = Size2(1, 1);
 	Point2 scroll_offset;
 	Point2 screen_offset;
