@@ -691,7 +691,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 // <TF>
 // @ShadyTF
 // replace push constants with UBO
-void RendererSceneRenderRD::_post_process_prepare_params(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data) {
+void RendererSceneRenderRD::_post_process_prepare_params(RID p_source_texture, const RenderDataRD *p_render_data) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 
@@ -742,7 +742,7 @@ void RendererSceneRenderRD::_post_process_prepare_params(RID p_source_texture, R
 	tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(rb->get_render_target());
 
 
-	tone_mapper->prepare_params( p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
+	tone_mapper->prepare_params(p_source_texture, texture_storage->render_target_get_format(rb->get_render_target()), tonemap);
 }
 // </TF>
 

@@ -2298,6 +2298,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		RENDER_TIMESTAMP("Tonemap");
 
+		_post_process_prepare_params(p_render_data->render_buffers->get_internal_texture(), p_render_data);
 		_render_buffers_post_process_and_tonemap(p_render_data);
 	}
 

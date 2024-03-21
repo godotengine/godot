@@ -2583,6 +2583,13 @@ bool TextureStorage::render_target_is_using_hdr(RID p_render_target) const {
 	return rt->hdr;
 }
 
+int64_t TextureStorage::render_target_get_format(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return RenderingDevice::get_singleton()->framebuffer_get_format(rt->texture);
+}
+
 GLuint TextureStorage::render_target_get_color_internal_format(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, GL_RGBA8);

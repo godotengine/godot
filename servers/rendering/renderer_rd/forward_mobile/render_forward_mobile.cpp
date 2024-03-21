@@ -1007,7 +1007,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			sky.draw_sky_prepare_params(p_render_data->environment, time, sky_energy_multiplier);
 		}
 		if (!is_reflection_probe) {
-			_post_process_prepare_params(p_render_data->render_buffers->get_internal_texture(), framebuffer, p_render_data);
+			_post_process_prepare_params(p_render_data->render_buffers->get_internal_texture(), p_render_data);
 		}
 // </TF>
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, load_color ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, c, 1.0, 0, Rect2(), breadcrumb);

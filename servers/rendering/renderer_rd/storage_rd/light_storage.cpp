@@ -565,7 +565,7 @@ void LightStorage::set_max_lights(const uint32_t p_max_lights) {
 	max_directional_lights = RendererSceneRender::MAX_DIRECTIONAL_LIGHTS;
 	uint32_t directional_light_buffer_size = max_directional_lights * sizeof(DirectionalLightData);
 	directional_lights = memnew_arr(DirectionalLightData, max_directional_lights);
-	directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size, Vector<uint8_t>(), RD::BUFFER_CREATION_PERSISTENT_BIT);
+	directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
 }
 
 void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {

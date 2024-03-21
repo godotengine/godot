@@ -194,7 +194,7 @@ public:
 		uint64_t size = 0;
 		// <TF>
 		// persistent mapped address
-		uint8_t* pMappedAddress = VK_NULL_HANDLE;
+		uint8_t* mapped_address = VK_NULL_HANDLE;
 		// </TF>
 		VkBufferView vk_view = VK_NULL_HANDLE; // For texel buffers.
 	};

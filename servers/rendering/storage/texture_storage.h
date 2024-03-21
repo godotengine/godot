@@ -156,6 +156,7 @@ public:
 	virtual void render_target_do_msaa_resolve(RID p_render_target) = 0;
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) = 0;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const = 0;
+	virtual int64_t render_target_get_format(RID p_render_target) const = 0;
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) = 0;
 	virtual bool render_target_is_clear_requested(RID p_render_target) = 0;

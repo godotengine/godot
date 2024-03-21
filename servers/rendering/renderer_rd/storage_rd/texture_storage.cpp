@@ -3408,6 +3408,13 @@ bool TextureStorage::render_target_is_using_hdr(RID p_render_target) const {
 	return rt->use_hdr;
 }
 
+int64_t TextureStorage::render_target_get_format(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, 0);
+
+	return RenderingDevice::get_singleton()->framebuffer_get_format(rt->get_framebuffer());
+}
+
 RID TextureStorage::render_target_get_rd_framebuffer(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, RID());

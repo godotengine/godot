@@ -111,7 +111,7 @@ protected:
 // <TF>
 // @ShadyTF
 // replace push constants with UBO
-	void _post_process_prepare_params(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data);
+	void _post_process_prepare_params(RID p_source_texture, const RenderDataRD *p_render_data);
 // </TF>
 
 	// needed for a single argument calls (material and uv2)
