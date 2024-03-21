@@ -98,7 +98,6 @@
 #include "tests/core/variant/test_variant.h"
 #include "tests/core/variant/test_variant_utility.h"
 #include "tests/scene/test_animation.h"
-#include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_code_edit.h"
@@ -124,6 +123,7 @@
 #include "tests/test_validate_testing.h"
 
 #ifndef _3D_DISABLED
+#include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_camera_3d.h"
 #include "tests/scene/test_navigation_agent_2d.h"
 #include "tests/scene/test_navigation_agent_3d.h"
