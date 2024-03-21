@@ -38,6 +38,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/memory.h"
 #include "core/version.h"
+#include "servers/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -809,7 +810,7 @@ bool OpenXRAPI::reset_emulated_floor_height() {
 		identityPose, // pose
 	};
 
-	result = xrLocateSpace(stage_space, local_space, get_next_frame_time(), &stage_location);
+	result = xrLocateSpace(stage_space, local_space, get_predicted_display_time(), &stage_location);
 
 	xrDestroySpace(local_space);
 	xrDestroySpace(stage_space);
@@ -1259,8 +1260,6 @@ bool OpenXRAPI::on_state_exiting() {
 		wrapper->on_state_exiting();
 	}
 
-	// TODO need to look into the correct action here, read up on the spec but we may need to signal Godot to exit (if it's not already exiting)
-
 	return true;
 }
 
@@ -1567,13 +1566,11 @@ XRPose::TrackingConfidence OpenXRAPI::get_head_center(Transform3D &r_transform, 
 		return XRPose::XR_TRACKING_CONFIDENCE_NONE;
 	}
 
-	// xrWaitFrame not run yet
-	if (frame_state.predictedDisplayTime == 0) {
+	// Get display time
+	XrTime display_time = get_predicted_display_time();
+	if (display_time == 0) {
 		return XRPose::XR_TRACKING_CONFIDENCE_NONE;
 	}
-
-	// Get timing for the next frame, as that is the current frame we're processing
-	XrTime display_time = get_next_frame_time();
 
 	XrSpaceVelocity velocity = {
 		XR_TYPE_SPACE_VELOCITY, // type
@@ -1622,11 +1619,6 @@ bool OpenXRAPI::get_view_transform(uint32_t p_view, Transform3D &r_transform) {
 		return false;
 	}
 
-	// xrWaitFrame not run yet
-	if (frame_state.predictedDisplayTime == 0) {
-		return false;
-	}
-
 	// we don't have valid view info
 	if (views == nullptr || !view_pose_valid) {
 		return false;
@@ -1642,11 +1634,6 @@ bool OpenXRAPI::get_view_projection(uint32_t p_view, double p_z_near, double p_z
 	ERR_FAIL_NULL_V(graphics_extension, false);
 
 	if (!running) {
-		return false;
-	}
-
-	// xrWaitFrame not run yet
-	if (frame_state.predictedDisplayTime == 0) {
 		return false;
 	}
 
@@ -1787,6 +1774,17 @@ bool OpenXRAPI::poll_events() {
 	}
 }
 
+void OpenXRAPI::_set_render_display_time(XrTime p_predicted_display_time) {
+	// Must be called from rendering thread!
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+	ERR_FAIL_COND(!rendering_server->is_on_render_thread());
+
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_NULL(openxr_api);
+	openxr_api->render_state.predicted_display_time = p_predicted_display_time;
+}
+
 bool OpenXRAPI::process() {
 	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, false);
 
@@ -1796,6 +1794,40 @@ bool OpenXRAPI::process() {
 
 	if (!running) {
 		return false;
+	}
+
+	// We call xrWaitFrame as early as possible, this will allow OpenXR to get
+	// proper timing info between this point, and when we're ready to start rendering.
+	// As the name suggests, OpenXR can pause the thread to minimize the time between
+	// retrieving tracking data and using that tracking data to render.
+	// OpenXR thus works best if rendering is performed on a separate thread.
+	XrFrameWaitInfo frame_wait_info = { XR_TYPE_FRAME_WAIT_INFO, nullptr };
+	frame_state.predictedDisplayTime = 0;
+	frame_state.predictedDisplayPeriod = 0;
+	frame_state.shouldRender = false;
+
+	XrResult result = xrWaitFrame(session, &frame_wait_info, &frame_state);
+	if (XR_FAILED(result)) {
+		print_line("OpenXR: xrWaitFrame() was not successful [", get_error_string(result), "]");
+
+		// reset just in case
+		frame_state.predictedDisplayTime = 0;
+		frame_state.predictedDisplayPeriod = 0;
+		frame_state.shouldRender = false;
+
+		return false;
+	}
+
+	if (frame_state.predictedDisplayPeriod > 500000000) {
+		// display period more then 0.5 seconds? must be wrong data
+		print_verbose(String("OpenXR resetting invalid display period ") + rtos(frame_state.predictedDisplayPeriod));
+		frame_state.predictedDisplayPeriod = 0;
+	}
+
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	if (rendering_server) {
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_display_time).bind(frame_state.predictedDisplayTime));
 	}
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
@@ -1874,37 +1906,15 @@ bool OpenXRAPI::release_image(OpenXRSwapChainInfo &p_swapchain) {
 }
 
 void OpenXRAPI::pre_render() {
-	ERR_FAIL_COND(instance == XR_NULL_HANDLE);
+	ERR_FAIL_COND(session == XR_NULL_HANDLE);
+
+	// Must be called from rendering thread!
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+	ERR_FAIL_COND(!rendering_server->is_on_render_thread());
 
 	if (!running) {
 		return;
-	}
-
-	// Waitframe does 2 important things in our process:
-	// 1) It provides us with predictive timing, telling us when OpenXR expects to display the frame we're about to commit
-	// 2) It will use the previous timing to pause our thread so that rendering starts as close to displaying as possible
-	// This must thus be called as close to when we start rendering as possible
-	XrFrameWaitInfo frame_wait_info = { XR_TYPE_FRAME_WAIT_INFO, nullptr };
-	frame_state.predictedDisplayTime = 0;
-	frame_state.predictedDisplayPeriod = 0;
-	frame_state.shouldRender = false;
-
-	XrResult result = xrWaitFrame(session, &frame_wait_info, &frame_state);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: xrWaitFrame() was not successful [", get_error_string(result), "]");
-
-		// reset just in case
-		frame_state.predictedDisplayTime = 0;
-		frame_state.predictedDisplayPeriod = 0;
-		frame_state.shouldRender = false;
-
-		return;
-	}
-
-	if (frame_state.predictedDisplayPeriod > 500000000) {
-		// display period more then 0.5 seconds? must be wrong data
-		print_verbose(String("OpenXR resetting invalid display period ") + rtos(frame_state.predictedDisplayPeriod));
-		frame_state.predictedDisplayPeriod = 0;
 	}
 
 	if (unlikely(should_reset_emulated_floor_height)) {
@@ -1931,7 +1941,7 @@ void OpenXRAPI::pre_render() {
 		XR_TYPE_VIEW_LOCATE_INFO, // type
 		nullptr, // next
 		view_configuration, // viewConfigurationType
-		frame_state.predictedDisplayTime, // displayTime
+		render_state.predicted_display_time, // displayTime
 		play_space // space
 	};
 	XrViewState view_state = {
@@ -1940,7 +1950,7 @@ void OpenXRAPI::pre_render() {
 		0 // viewStateFlags
 	};
 	uint32_t view_count_output;
-	result = xrLocateViews(session, &view_locate_info, &view_state, view_count, &view_count_output, views);
+	XrResult result = xrLocateViews(session, &view_locate_info, &view_state, view_count, &view_count_output, views);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: Couldn't locate views [", get_error_string(result), "]");
 		return;
@@ -1975,6 +1985,11 @@ void OpenXRAPI::pre_render() {
 }
 
 bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
+	// Must be called from rendering thread!
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL_V(rendering_server, false);
+	ERR_FAIL_COND_V(!rendering_server->is_on_render_thread(), false);
+
 	if (!can_render()) {
 		return false;
 	}
@@ -2020,6 +2035,11 @@ RID OpenXRAPI::get_depth_texture() {
 }
 
 void OpenXRAPI::post_draw_viewport(RID p_render_target) {
+	// Must be called from rendering thread!
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+	ERR_FAIL_COND(!rendering_server->is_on_render_thread());
+
 	if (!can_render()) {
 		return;
 	}
@@ -2032,7 +2052,12 @@ void OpenXRAPI::post_draw_viewport(RID p_render_target) {
 void OpenXRAPI::end_frame() {
 	XrResult result;
 
-	ERR_FAIL_COND(instance == XR_NULL_HANDLE);
+	ERR_FAIL_COND(session == XR_NULL_HANDLE);
+
+	// Must be called from rendering thread!
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+	ERR_FAIL_COND(!rendering_server->is_on_render_thread());
 
 	if (!running) {
 		return;
@@ -2051,7 +2076,7 @@ void OpenXRAPI::end_frame() {
 		XrFrameEndInfo frame_end_info = {
 			XR_TYPE_FRAME_END_INFO, // type
 			nullptr, // next
-			frame_state.predictedDisplayTime, // displayTime
+			render_state.predicted_display_time, // displayTime
 			environment_blend_mode, // environmentBlendMode
 			0, // layerCount
 			nullptr // layers
@@ -2128,7 +2153,7 @@ void OpenXRAPI::end_frame() {
 	XrFrameEndInfo frame_end_info = {
 		XR_TYPE_FRAME_END_INFO, // type
 		nullptr, // next
-		frame_state.predictedDisplayTime, // displayTime
+		render_state.predicted_display_time, // displayTime
 		environment_blend_mode, // environmentBlendMode
 		static_cast<uint32_t>(layers_list.size()), // layerCount
 		layers_list.ptr() // layers
@@ -2314,10 +2339,6 @@ OpenXRAPI::OpenXRAPI() {
 
 		submit_depth_buffer = GLOBAL_GET("xr/openxr/submit_depth_buffer");
 	}
-
-	// reset a few things that can't be done in our class definition
-	frame_state.predictedDisplayTime = 0;
-	frame_state.predictedDisplayPeriod = 0;
 }
 
 OpenXRAPI::~OpenXRAPI() {
@@ -3032,7 +3053,7 @@ XRPose::TrackingConfidence OpenXRAPI::get_action_pose(RID p_action, RID p_tracke
 		return XRPose::XR_TRACKING_CONFIDENCE_NONE;
 	}
 
-	XrTime display_time = get_next_frame_time();
+	XrTime display_time = get_predicted_display_time();
 	if (display_time == 0) {
 		return XRPose::XR_TRACKING_CONFIDENCE_NONE;
 	}

@@ -48,6 +48,7 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_running"), &OpenXRAPIExtension::is_running);
 
 	ClassDB::bind_method(D_METHOD("get_play_space"), &OpenXRAPIExtension::get_play_space);
+	ClassDB::bind_method(D_METHOD("get_predicted_display_time"), &OpenXRAPIExtension::get_predicted_display_time);
 	ClassDB::bind_method(D_METHOD("get_next_frame_time"), &OpenXRAPIExtension::get_next_frame_time);
 	ClassDB::bind_method(D_METHOD("can_render"), &OpenXRAPIExtension::can_render);
 
@@ -128,6 +129,11 @@ bool OpenXRAPIExtension::is_running() {
 uint64_t OpenXRAPIExtension::get_play_space() {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
 	return (uint64_t)OpenXRAPI::get_singleton()->get_play_space();
+}
+
+int64_t OpenXRAPIExtension::get_predicted_display_time() {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (XrTime)OpenXRAPI::get_singleton()->get_predicted_display_time();
 }
 
 int64_t OpenXRAPIExtension::get_next_frame_time() {
