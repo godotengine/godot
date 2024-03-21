@@ -41,7 +41,7 @@ static inline bool _is_white_space(char c) {
 }
 
 static inline bool _is_punctuation(char c) {
-	return ((c == ',') || (c == '’') || (c == '\'') || (c == '"') || (c == '?') || (c == '!') || (c == '–') || (c == '—') || (c == '(') || (c == '[') || (c == '{') || (c == '.') || (c == ':') || (c == ';'));
+	return ((c == ',') || (c == "’") || (c == '\'') || (c == '"') || (c == '?') || (c == '!') || (c == "-") || (c == "—") || (c == '(') || (c == '[') || (c == '{') || (c == '.') || (c == ':') || (c == ';'));
 }
 
 //! sets the state that text was found. Returns true if set should be set
