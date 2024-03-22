@@ -374,7 +374,7 @@ TEST_CASE("[Vector2] Plane methods") {
 			vector.project(vector_normal).is_equal_approx(Vector2(2.0292559899117276166, 0.60126103404791929382)),
 			"Vector2 projected on a normal should return expected value.");
 	CHECK_MESSAGE(
-			vector.plane_project(p_d, vector_normal).is_equal_approx(Vector2(117.339048445267494, 330.028130938608797)),
+			vector_normal.plane_project(p_d, vector).is_equal_approx(Vector2(94.187635516479631, 30.951892004882851)),
 			"Vector2 plane proeject should return expected value.");
 	CHECK_MESSAGE(
 			vector.slide(vector_y) == Vector2(1.2, 0),
