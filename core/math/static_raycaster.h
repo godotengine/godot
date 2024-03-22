@@ -34,9 +34,6 @@
 #include "core/object/ref_counted.h"
 #include "core/templates/hash_set.h"
 
-template <typename T>
-class Vector;
-
 #if !defined(__aligned)
 
 #if defined(_WIN32) && defined(_MSC_VER)

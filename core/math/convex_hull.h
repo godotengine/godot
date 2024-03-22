@@ -44,7 +44,6 @@ subject to the following restrictions:
 */
 
 #include "core/math/geometry_3d.h"
-#include "core/math/math_defs.h"
 #include "core/math/vector3.h"
 #include "core/templates/local_vector.h"
 

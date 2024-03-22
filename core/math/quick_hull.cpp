@@ -31,7 +31,6 @@
 #include "quick_hull.h"
 
 #include "core/math/aabb.h"
-#include "core/math/math_funcs.h"
 #include "core/math/vector3.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"

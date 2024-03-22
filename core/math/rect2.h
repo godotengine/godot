@@ -31,7 +31,6 @@
 #ifndef RECT2_H
 #define RECT2_H
 
-#include "core/math/math_defs.h"
 #include "core/math/vector2.h"
 
 class String;

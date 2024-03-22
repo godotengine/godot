@@ -34,7 +34,6 @@
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/vector.h"
 
 template <typename T>
 class TypedArray;

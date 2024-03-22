@@ -31,7 +31,6 @@
 #ifndef PROJECTION_H
 #define PROJECTION_H
 
-#include "core/math/math_funcs.h"
 #include "core/math/vector3.h"
 #include "core/math/vector4.h"
 #include "core/string/ustring.h"

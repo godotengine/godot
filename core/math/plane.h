@@ -31,10 +31,8 @@
 #ifndef PLANE_H
 #define PLANE_H
 
-#include "core/math/math_defs.h"
 #include "core/math/vector3.h"
 #include "core/string/ustring.h"
-#include "core/typedefs.h"
 
 class Variant;
 

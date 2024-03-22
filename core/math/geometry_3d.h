@@ -34,7 +34,6 @@
 #include "core/math/color.h"
 #include "core/math/delaunay_3d.h"
 #include "core/math/face3.h"
-#include "core/math/math_funcs.h"
 #include "core/math/plane.h"
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
