@@ -243,6 +243,25 @@ Error XMLParser::_parse_opening_xml_element() {
 	// find name
 	const char *startName = P;
 
+	// check if there is a closing tag
+	auto P_copy = P;
+	int i = length;
+	bool found = false;
+	while(i>0 && *P_copy){
+		if(*P_copy == '>'){
+			found = true;
+			break;
+		}
+		if(*P_copy == '<'){
+			ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Malformatted XML, missing closing tag.");
+		}
+		i--;
+		P_copy++;
+	}
+	if(!found){
+		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Malformatted XML, missing closing tag.");
+	}
+
 	// find end of element
 	while (*P && *P != '>' && !_is_white_space(*P)) {
 		next_char();
