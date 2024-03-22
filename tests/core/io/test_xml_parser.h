@@ -246,7 +246,7 @@ TEST_CASE("[XMLParser] Tag starting character(s)") {
 	}
 	SUBCASE("First characters are 'xml") {
 		XMLParser parser;
-		const String input = "<xmlfirst></first>";
+		const String input = "<xmlfirst></xmlfirst>";
 		REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
 		REQUIRE_EQ(parser.read(), ERR_INVALID_DATA);
 	}
