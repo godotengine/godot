@@ -354,6 +354,21 @@ bool GDScript::has_static_method(const StringName &p_method) const {
 	return member_functions.has(p_method) && member_functions[p_method]->is_static();
 }
 
+int GDScript::get_script_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	HashMap<StringName, GDScriptFunction *>::ConstIterator E = member_functions.find(p_method);
+	if (!E) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = true;
+	}
+	return E->value->get_argument_count();
+}
+
 MethodInfo GDScript::get_method_info(const StringName &p_method) const {
 	HashMap<StringName, GDScriptFunction *>::ConstIterator E = member_functions.find(p_method);
 	if (!E) {
@@ -1405,16 +1420,11 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 }
 #endif
 
-bool GDScript::is_equal_gdscript_paths(const String &p_path_a, const String &p_path_b) {
-	String path_a = p_path_a;
-	if (path_a.get_extension() == "gdc") {
-		path_a = path_a.get_basename() + ".gd";
+String GDScript::canonicalize_path(const String &p_path) {
+	if (p_path.get_extension() == "gdc") {
+		return p_path.get_basename() + ".gd";
 	}
-	String path_b = p_path_b;
-	if (path_b.get_extension() == "gdc") {
-		path_b = path_b.get_basename() + ".gd";
-	}
-	return path_a == path_b;
+	return p_path;
 }
 
 GDScript::UpdatableFuncPtr::UpdatableFuncPtr(GDScriptFunction *p_function) {
@@ -1919,6 +1929,25 @@ bool GDScriptInstance::has_method(const StringName &p_method) const {
 	}
 
 	return false;
+}
+
+int GDScriptInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(p_method);
+		if (E) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return E->value->get_argument_count();
+		}
+		sptr = sptr->_base;
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
 }
 
 Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -2822,11 +2851,12 @@ Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String 
 
 Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Error err;
-	Ref<GDScript> scr = GDScriptCache::get_full_script(p_path, err, "", p_cache_mode == CACHE_MODE_IGNORE);
+	bool ignoring = p_cache_mode == CACHE_MODE_IGNORE || p_cache_mode == CACHE_MODE_IGNORE_DEEP;
+	Ref<GDScript> scr = GDScriptCache::get_full_script(p_original_path, err, "", ignoring);
 
 	if (err && scr.is_valid()) {
 		// If !scr.is_valid(), the error was likely from scr->load_source_code(), which already generates an error.
-		ERR_PRINT_ED(vformat(R"(Failed to load script "%s" with error "%s".)", p_path, error_names[err]));
+		ERR_PRINT_ED(vformat(R"(Failed to load script "%s" with error "%s".)", p_original_path, error_names[err]));
 	}
 
 	if (r_error) {

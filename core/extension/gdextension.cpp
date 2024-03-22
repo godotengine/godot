@@ -431,7 +431,7 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 			//inheriting from engine class
 		}
 	} else {
-		ERR_FAIL_MSG("Attempt to register an extension class '" + String(class_name) + "' using non-existing parent class '" + String(parent_class_name) + "'");
+		ERR_FAIL_MSG("Attempt to register an extension class '" + String(class_name) + "' using non-existing parent class '" + String(parent_class_name) + "'.");
 	}
 
 #ifdef TOOLS_ENABLED

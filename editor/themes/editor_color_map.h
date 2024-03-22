@@ -47,7 +47,7 @@ class EditorColorMap {
 	static HashSet<StringName> color_conversion_exceptions;
 
 public:
-	static void add_conversion_color_pair(const String p_from_color, const String p_to_color);
+	static void add_conversion_color_pair(const String &p_from_color, const String &p_to_color);
 	static void add_conversion_exception(const StringName &p_icon_name);
 
 	static HashMap<Color, Color> &get_color_conversion_map() { return color_conversion_map; };

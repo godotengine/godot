@@ -77,8 +77,10 @@ struct MVAR
   {
     TRACE_SANITIZE (this);
     return_trace (version.sanitize (c) &&
+		  hb_barrier () &&
 		  likely (version.major == 1) &&
 		  c->check_struct (this) &&
+		  hb_barrier () &&
 		  valueRecordSize >= VariationValueRecord::static_size &&
 		  varStore.sanitize (c, this) &&
 		  c->check_range (valuesZ.arrayZ,

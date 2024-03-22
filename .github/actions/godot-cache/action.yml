@@ -12,7 +12,7 @@ runs:
   steps:
     # Upload cache on completion and check it out now
     - name: Load .scons_cache directory
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{inputs.scons-cache}}
         key: ${{inputs.cache-name}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}

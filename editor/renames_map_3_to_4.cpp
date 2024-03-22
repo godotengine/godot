@@ -1514,7 +1514,7 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "DynamicFontData", "FontFile" },
 	{ "EditorNavigationMeshGenerator", "NavigationMeshGenerator" },
 	{ "EditorSceneImporter", "EditorSceneFormatImporter" },
-	{ "EditorSceneImporterFBX", "EditorSceneFormatImporterFBX" },
+	{ "EditorSceneImporterFBX", "EditorSceneFormatImporterFBX2GLTF" },
 	{ "EditorSceneImporterGLTF", "EditorSceneFormatImporterGLTF" },
 	{ "EditorSpatialGizmo", "EditorNode3DGizmo" },
 	{ "EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin" },

@@ -60,7 +60,11 @@ void PluginConfigDialog::_on_confirmed() {
 	}
 
 	int lang_idx = script_option_edit->get_selected();
-	String ext = ScriptServer::get_language(lang_idx)->get_extension();
+	ScriptLanguage *language = ScriptServer::get_language(lang_idx);
+	if (language == nullptr) {
+		return;
+	}
+	String ext = language->get_extension();
 	String script_name = script_edit->get_text().is_empty() ? _get_subfolder() : script_edit->get_text();
 	if (script_name.get_extension() != ext) {
 		script_name += "." + ext;
@@ -79,11 +83,11 @@ void PluginConfigDialog::_on_confirmed() {
 	if (!_edit_mode) {
 		String class_name = script_name.get_basename();
 		String template_content = "";
-		Vector<ScriptLanguage::ScriptTemplate> templates = ScriptServer::get_language(lang_idx)->get_built_in_templates("EditorPlugin");
+		Vector<ScriptLanguage::ScriptTemplate> templates = language->get_built_in_templates("EditorPlugin");
 		if (!templates.is_empty()) {
 			template_content = templates[0].content;
 		}
-		Ref<Script> scr = ScriptServer::get_language(lang_idx)->make_template(template_content, class_name, "EditorPlugin");
+		Ref<Script> scr = language->make_template(template_content, class_name, "EditorPlugin");
 		scr->set_path(script_path, true);
 		ResourceSaver::save(scr);
 
@@ -101,6 +105,9 @@ void PluginConfigDialog::_on_canceled() {
 void PluginConfigDialog::_on_required_text_changed() {
 	int lang_idx = script_option_edit->get_selected();
 	ScriptLanguage *language = ScriptServer::get_language(lang_idx);
+	if (language == nullptr) {
+		return;
+	}
 	String ext = language->get_extension();
 
 	if (name_edit->get_text().is_empty()) {

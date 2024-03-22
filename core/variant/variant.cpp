@@ -1697,7 +1697,7 @@ String stringify_variant_clean(const Variant &p_variant, int recursion_count) {
 	return s;
 }
 
-template <class T>
+template <typename T>
 String stringify_vector(const T &vec, int recursion_count) {
 	String str("[");
 	for (int i = 0; i < vec.size(); i++) {
@@ -2188,7 +2188,7 @@ Variant::operator Signal() const {
 	}
 }
 
-template <class DA, class SA>
+template <typename DA, typename SA>
 inline DA _convert_array(const SA &p_array) {
 	DA da;
 	da.resize(p_array.size());
@@ -2200,7 +2200,7 @@ inline DA _convert_array(const SA &p_array) {
 	return da;
 }
 
-template <class DA>
+template <typename DA>
 inline DA _convert_array_from_variant(const Variant &p_variant) {
 	switch (p_variant.get_type()) {
 		case Variant::ARRAY: {

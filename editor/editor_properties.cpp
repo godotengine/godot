@@ -254,7 +254,7 @@ void EditorPropertyTextEnum::_set_read_only(bool p_read_only) {
 	edit_button->set_disabled(p_read_only);
 }
 
-void EditorPropertyTextEnum::_emit_changed_value(String p_string) {
+void EditorPropertyTextEnum::_emit_changed_value(const String &p_string) {
 	if (string_name) {
 		emit_changed(get_edited_property(), StringName(p_string));
 	} else {
@@ -272,7 +272,7 @@ void EditorPropertyTextEnum::_edit_custom_value() {
 	custom_value_edit->grab_focus();
 }
 
-void EditorPropertyTextEnum::_custom_value_submitted(String p_value) {
+void EditorPropertyTextEnum::_custom_value_submitted(const String &p_value) {
 	edit_custom_layout->hide();
 	default_layout->show();
 
@@ -534,7 +534,11 @@ void EditorPropertyPath::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			path_edit->set_icon(get_editor_theme_icon(SNAME("Folder")));
+			if (folder) {
+				path_edit->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
+			} else {
+				path_edit->set_icon(get_editor_theme_icon(SNAME("FileBrowse")));
+			}
 		} break;
 	}
 }
@@ -2897,7 +2901,7 @@ void EditorPropertyNodePath::update_property() {
 	assign->set_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
 }
 
-void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
+void EditorPropertyNodePath::setup(const NodePath &p_base_hint, const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
 	base_hint = p_base_hint;
 	valid_types = p_valid_types;
 	editing_node = p_editing_node;
@@ -3341,6 +3345,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_use_folding(is_using_folding());
 
 				sub_inspector_vbox = memnew(VBoxContainer);
+				sub_inspector_vbox->set_mouse_filter(MOUSE_FILTER_STOP);
 				add_child(sub_inspector_vbox);
 				set_bottom_editor(sub_inspector_vbox);
 
@@ -3868,27 +3873,27 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_BYTE_ARRAY);
+			editor->setup(Variant::PACKED_BYTE_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_INT32_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_INT32_ARRAY);
+			editor->setup(Variant::PACKED_INT32_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_INT64_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_INT64_ARRAY);
+			editor->setup(Variant::PACKED_INT64_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_FLOAT32_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_FLOAT32_ARRAY);
+			editor->setup(Variant::PACKED_FLOAT32_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_FLOAT64_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_FLOAT64_ARRAY);
+			editor->setup(Variant::PACKED_FLOAT64_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
@@ -3898,17 +3903,17 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::PACKED_VECTOR2_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_VECTOR2_ARRAY);
+			editor->setup(Variant::PACKED_VECTOR2_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_VECTOR3_ARRAY);
+			editor->setup(Variant::PACKED_VECTOR3_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_COLOR_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_COLOR_ARRAY);
+			editor->setup(Variant::PACKED_COLOR_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		default: {

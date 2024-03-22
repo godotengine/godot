@@ -32,8 +32,8 @@
 #define POLYGON_3D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-#include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/physics/collision_polygon_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/resources/immediate_mesh.h"
 
@@ -82,7 +82,7 @@ class Polygon3DEditor : public HBoxContainer {
 
 	float _get_depth();
 	PackedVector2Array _get_polygon();
-	void _set_polygon(PackedVector2Array p_poly);
+	void _set_polygon(const PackedVector2Array &p_poly);
 
 protected:
 	void _notification(int p_what);

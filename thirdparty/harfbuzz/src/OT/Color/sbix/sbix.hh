@@ -368,6 +368,7 @@ struct sbix
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version >= 1 &&
 			  strikes.sanitize (c, this)));
   }

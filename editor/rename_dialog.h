@@ -52,7 +52,7 @@ class RenameDialog : public ConfirmationDialog {
 	virtual void ok_pressed() override { rename(); };
 	void _cancel_pressed() {}
 	void _features_toggled(bool pressed);
-	void _insert_text(String text);
+	void _insert_text(const String &text);
 	void _update_substitute();
 	bool _is_main_field(LineEdit *line_edit);
 
@@ -61,7 +61,7 @@ class RenameDialog : public ConfirmationDialog {
 	String _substitute(const String &subject, const Node *node, int count);
 	String _regex(const String &pattern, const String &subject, const String &replacement);
 	String _postprocess(const String &subject);
-	void _update_preview(String new_text = "");
+	void _update_preview(const String &new_text = "");
 	void _update_preview_int(int new_value = 0);
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
 

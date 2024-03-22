@@ -577,9 +577,11 @@ PackedStringArray AnimatedSprite2D::get_configuration_warnings() const {
 	return warnings;
 }
 
+#ifdef TOOLS_ENABLED
 void AnimatedSprite2D::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
 	if (p_idx == 0 && frames.is_valid()) {
-		if (p_function == "play" || p_function == "play_backwards" || p_function == "set_animation" || p_function == "set_autoplay") {
+		if (pf == "play" || pf == "play_backwards" || pf == "set_animation" || pf == "set_autoplay") {
 			List<StringName> al;
 			frames->get_animation_list(&al);
 			for (const StringName &name : al) {
@@ -589,6 +591,7 @@ void AnimatedSprite2D::get_argument_options(const StringName &p_function, int p_
 	}
 	Node2D::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 #ifndef DISABLE_DEPRECATED
 bool AnimatedSprite2D::_set(const StringName &p_name, const Variant &p_value) {

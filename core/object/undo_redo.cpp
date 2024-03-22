@@ -71,7 +71,14 @@ bool UndoRedo::_redo(bool p_execute) {
 	}
 
 	current_action++;
-	_process_operation_list(actions.write[current_action].do_ops.front(), p_execute);
+
+	List<Operation>::Element *start_doops_element = actions.write[current_action].do_ops.front();
+	while (merge_total > 0 && start_doops_element) {
+		start_doops_element = start_doops_element->next();
+		merge_total--;
+	}
+
+	_process_operation_list(start_doops_element, p_execute);
 	version++;
 	emit_signal(SNAME("version_changed"));
 
@@ -104,6 +111,12 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 				}
 			}
 
+			if (p_mode == MERGE_ALL) {
+				merge_total = actions.write[current_action + 1].do_ops.size();
+			} else {
+				merge_total = 0;
+			}
+
 			actions.write[actions.size() - 1].last_tick = ticks;
 
 			// Revert reverse from previous commit.
@@ -121,6 +134,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 			actions.push_back(new_action);
 
 			merge_mode = MERGE_DISABLE;
+			merge_total = 0;
 		}
 	}
 

@@ -100,7 +100,7 @@ class AnimationLibraryEditor : public AcceptDialog {
 	void _add_library_validate(const String &p_name);
 	void _add_library_confirm();
 	void _load_library();
-	void _load_file(String p_path);
+	void _load_file(const String &p_path);
 	void _load_files(const PackedStringArray &p_paths);
 
 	void _item_renamed();

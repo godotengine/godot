@@ -125,7 +125,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			classes.sort_custom<StringName::AlphCompare>();
 
 			ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
-			menu->add_submenu_item(TTR("Add Animation"), "AddAnimations");
+			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
 			List<StringName> names;
 			tree->get_animation_list(&names);
@@ -1081,9 +1081,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	menu->connect("id_pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_add_menu_type));
 
 	animations_menu = memnew(PopupMenu);
-	menu->add_child(animations_menu);
-	animations_menu->set_name("AddAnimations");
 	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	menu->add_child(animations_menu);
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_add_animation_type));
 
 	open_file = memnew(EditorFileDialog);

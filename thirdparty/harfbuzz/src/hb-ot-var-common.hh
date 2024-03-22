@@ -119,6 +119,7 @@ struct DeltaSetIndexMapFormat01
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
                   c->check_range (mapDataZ.arrayZ,
                                   mapCount,
                                   get_width ()));
@@ -191,6 +192,7 @@ struct DeltaSetIndexMap
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 0: return_trace (u.format0.sanitize (c));
     case 1: return_trace (u.format1.sanitize (c));
@@ -434,6 +436,8 @@ enum packed_delta_flag_t
 
 struct tuple_delta_t
 {
+  static constexpr bool realloc_move = true;  // Watch out when adding new members!
+
   public:
   hb_hashmap_t<hb_tag_t, Triple> axis_tuples;
 
@@ -514,14 +518,19 @@ struct tuple_delta_t
       return *this;
 
     unsigned num = indices.length;
-    for (unsigned i = 0; i < num; i++)
-    {
-      if (!indices.arrayZ[i]) continue;
-
-      deltas_x[i] *= scalar;
-      if (deltas_y)
-        deltas_y[i] *= scalar;
-    }
+    if (deltas_y)
+      for (unsigned i = 0; i < num; i++)
+      {
+	if (!indices.arrayZ[i]) continue;
+	deltas_x[i] *= scalar;
+	deltas_y[i] *= scalar;
+      }
+    else
+      for (unsigned i = 0; i < num; i++)
+      {
+	if (!indices.arrayZ[i]) continue;
+	deltas_x[i] *= scalar;
+      }
     return *this;
   }
 
@@ -767,7 +776,7 @@ struct tuple_delta_t
     unsigned encoded_len = 0;
     while (i < num_deltas)
     {
-      int val = deltas[i];
+      int val = deltas.arrayZ[i];
       if (val == 0)
         encoded_len += encode_delta_run_as_zeroes (i, encoded_bytes.sub_array (encoded_len), deltas);
       else if (val >= -128 && val <= 127)
@@ -786,7 +795,7 @@ struct tuple_delta_t
     unsigned run_length = 0;
     auto it = encoded_bytes.iter ();
     unsigned encoded_len = 0;
-    while (i < num_deltas && deltas[i] == 0)
+    while (i < num_deltas && deltas.arrayZ[i] == 0)
     {
       i++;
       run_length++;
@@ -815,13 +824,13 @@ struct tuple_delta_t
     unsigned num_deltas = deltas.length;
     while (i < num_deltas)
     {
-      int val = deltas[i];
+      int val = deltas.arrayZ[i];
       if (val > 127 || val < -128)
         break;
 
       /* from fonttools: if there're 2 or more zeros in a sequence,
        * it is better to start a new run to save bytes. */
-      if (val == 0 && i + 1 < num_deltas && deltas[i+1] == 0)
+      if (val == 0 && i + 1 < num_deltas && deltas.arrayZ[i+1] == 0)
         break;
 
       i++;
@@ -838,7 +847,7 @@ struct tuple_delta_t
 
       for (unsigned j = 0; j < 64; j++)
       {
-        *it++ = static_cast<char> (deltas[start + j]);
+        *it++ = static_cast<char> (deltas.arrayZ[start + j]);
         encoded_len++;
       }
 
@@ -853,7 +862,7 @@ struct tuple_delta_t
 
       while (start < i)
       {
-        *it++ = static_cast<char> (deltas[start++]);
+        *it++ = static_cast<char> (deltas.arrayZ[start++]);
         encoded_len++;
       }
     }
@@ -869,8 +878,8 @@ struct tuple_delta_t
     unsigned num_deltas = deltas.length;
     while (i < num_deltas)
     {
-      int val = deltas[i];
-      
+      int val = deltas.arrayZ[i];
+
       /* start a new run for a single zero value*/
       if (val == 0) break;
 
@@ -879,7 +888,7 @@ struct tuple_delta_t
        * Only start a new run when there're 2 continuous such values. */
       if (val >= -128 && val <= 127 &&
           i + 1 < num_deltas &&
-          deltas[i+1] >= -128 && deltas[i+1] <= 127)
+          deltas.arrayZ[i+1] >= -128 && deltas.arrayZ[i+1] <= 127)
         break;
 
       i++;
@@ -895,7 +904,7 @@ struct tuple_delta_t
 
       for (unsigned j = 0; j < 64; j++)
       {
-        int16_t delta_val = deltas[start + j];
+        int16_t delta_val = deltas.arrayZ[start + j];
         *it++ = static_cast<char> (delta_val >> 8);
         *it++ = static_cast<char> (delta_val & 0xFF);
 
@@ -912,7 +921,7 @@ struct tuple_delta_t
       encoded_len++;
       while (start < i)
       {
-        int16_t delta_val = deltas[start++];
+        int16_t delta_val = deltas.arrayZ[start++];
         *it++ = static_cast<char> (delta_val >> 8);
         *it++ = static_cast<char> (delta_val & 0xFF);
 
@@ -1175,6 +1184,7 @@ struct TupleVariationData
     bool create_from_item_var_data (const VarData &var_data,
                                     const hb_vector_t<hb_hashmap_t<hb_tag_t, Triple>>& regions,
                                     const hb_map_t& axes_old_index_tag_map,
+                                    unsigned& item_count,
                                     const hb_inc_bimap_t* inner_map = nullptr)
     {
       /* NULL offset, to keep original varidx valid, just return */
@@ -1184,7 +1194,8 @@ struct TupleVariationData
       unsigned num_regions = var_data.get_region_index_count ();
       if (!tuple_vars.alloc (num_regions)) return false;
   
-      unsigned item_count = inner_map ? inner_map->get_population () : var_data.get_item_count ();
+      item_count = inner_map ? inner_map->get_population () : var_data.get_item_count ();
+      if (!item_count) return true;
       unsigned row_size = var_data.get_row_size ();
       const HBUINT8 *delta_bytes = var_data.get_delta_bytes ();
   
@@ -1775,6 +1786,14 @@ struct item_variations_t
    * have the same num of deltas (rows) */
   hb_vector_t<tuple_variations_t> vars;
 
+  /* num of retained rows for each subtable, there're 2 cases when var_data is empty:
+   * 1. retained item_count is zero
+   * 2. regions is empty and item_count is non-zero.
+   * when converting to tuples, both will be dropped because the tuple is empty,
+   * however, we need to retain 2. as all-zero rows to keep original varidx
+   * valid, so we need a way to remember the num of rows for each subtable */
+  hb_vector_t<unsigned> var_data_num_rows;
+
   /* original region list, decompiled from item varstore, used when rebuilding
    * region list after instantiation */
   hb_vector_t<hb_hashmap_t<hb_tag_t, Triple>> orig_region_list;
@@ -1836,22 +1855,26 @@ struct item_variations_t
 
     unsigned num_var_data = varStore.get_sub_table_count ();
     if (inner_maps && inner_maps.length != num_var_data) return false;
-    if (!vars.alloc (num_var_data)) return false;
+    if (!vars.alloc (num_var_data) ||
+        !var_data_num_rows.alloc (num_var_data)) return false;
 
     for (unsigned i = 0; i < num_var_data; i++)
     {
       if (inner_maps && !inner_maps.arrayZ[i].get_population ())
           continue;
       tuple_variations_t var_data_tuples;
+      unsigned item_count = 0;
       if (!var_data_tuples.create_from_item_var_data (varStore.get_sub_table (i),
                                                       orig_region_list,
                                                       axes_old_index_tag_map,
+                                                      item_count,
                                                       inner_maps ? &(inner_maps.arrayZ[i]) : nullptr))
         return false;
 
+      var_data_num_rows.push (item_count);
       vars.push (std::move (var_data_tuples));
     }
-    return !vars.in_error ();
+    return !vars.in_error () && !var_data_num_rows.in_error () && vars.length == var_data_num_rows.length;
   }
 
   bool instantiate_tuple_vars (const hb_hashmap_t<hb_tag_t, Triple>& normalized_axes_location,
@@ -1973,12 +1996,8 @@ struct item_variations_t
     unsigned num_cols = region_list.length;
     /* pre-alloc a 2D vector for all sub_table's VarData rows */
     unsigned total_rows = 0;
-    for (unsigned major = 0; major < vars.length; major++)
-    {
-      const tuple_variations_t& tuples = vars[major];
-      /* all tuples in each sub_table should have same num of deltas(num rows) */
-      total_rows += tuples.tuple_vars[0].deltas_x.length;
-    }
+    for (unsigned major = 0; major < var_data_num_rows.length; major++)
+      total_rows += var_data_num_rows[major];
 
     if (!delta_rows.resize (total_rows)) return false;
     /* init all rows to [0]*num_cols */
@@ -1998,7 +2017,7 @@ struct item_variations_t
       /* deltas are stored in tuples(column based), convert them back into items
        * (row based) delta */
       const tuple_variations_t& tuples = vars[major];
-      unsigned num_rows = tuples.tuple_vars[0].deltas_x.length;
+      unsigned num_rows = var_data_num_rows[major];
       for (const tuple_delta_t& tuple: tuples.tuple_vars)
       {
         if (tuple.deltas_x.length != num_rows)

@@ -55,6 +55,9 @@ struct hb_priority_queue_t
 
   bool in_error () const { return heap.in_error (); }
 
+  bool alloc (unsigned size)
+  { return heap.alloc (size); }
+
 #ifndef HB_OPTIMIZE_SIZE
   HB_ALWAYS_INLINE
 #endif

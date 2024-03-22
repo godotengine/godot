@@ -96,10 +96,7 @@ class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light_instance2;
 	RID camera;
 	RID camera_attributes;
-	Semaphore preview_done;
-
-	void _generate_frame_started();
-	void _preview_done();
+	DrawRequester draw_requester;
 
 public:
 	virtual bool handles(const String &p_type) const override;
@@ -147,10 +144,7 @@ class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light_instance2;
 	RID camera;
 	RID camera_attributes;
-	Semaphore preview_done;
-
-	void _generate_frame_started();
-	void _preview_done();
+	DrawRequester draw_requester;
 
 public:
 	virtual bool handles(const String &p_type) const override;
@@ -168,10 +162,7 @@ class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID viewport_texture;
 	RID canvas;
 	RID canvas_item;
-	Semaphore preview_done;
-
-	void _generate_frame_started();
-	void _preview_done();
+	DrawRequester draw_requester;
 
 public:
 	virtual bool handles(const String &p_type) const override;

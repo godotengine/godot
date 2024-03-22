@@ -31,7 +31,7 @@
 #ifndef TEST_PRIMITIVES_H
 #define TEST_PRIMITIVES_H
 
-#include "scene/resources/primitive_meshes.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
 #include "tests/test_macros.h"
 
@@ -68,8 +68,10 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 	}
 
 	SUBCASE("[SceneTree][Primitive][Capsule] If set segments negative, default to at least 0") {
+		ERR_PRINT_OFF;
 		capsule->set_radial_segments(-5);
 		capsule->set_rings(-17);
+		ERR_PRINT_ON;
 
 		CHECK_MESSAGE(capsule->get_radial_segments() >= 0,
 				"Ensure number of radial segments is >= 0.");
@@ -165,9 +167,11 @@ TEST_CASE("[SceneTree][Primitive][Box] Box Primitive") {
 	}
 
 	SUBCASE("[SceneTree][Primitive][Box] Set subdivides to negative and ensure they are >= 0") {
+		ERR_PRINT_OFF;
 		box->set_subdivide_width(-2);
 		box->set_subdivide_height(-2);
 		box->set_subdivide_depth(-2);
+		ERR_PRINT_ON;
 
 		CHECK(box->get_subdivide_width() >= 0);
 		CHECK(box->get_subdivide_height() >= 0);
@@ -254,8 +258,10 @@ TEST_CASE("[SceneTree][Primitive][Cylinder] Cylinder Primitive") {
 	}
 
 	SUBCASE("[SceneTree][Primitive][Cylinder] Ensure num segments is >= 0") {
+		ERR_PRINT_OFF;
 		cylinder->set_radial_segments(-12);
 		cylinder->set_rings(-16);
+		ERR_PRINT_ON;
 
 		CHECK(cylinder->get_radial_segments() >= 0);
 		CHECK(cylinder->get_rings() >= 0);
@@ -441,8 +447,10 @@ TEST_CASE("[SceneTree][Primitive][Plane] Plane Primitive") {
 	}
 
 	SUBCASE("[SceneTree][Primitive][Plane] Ensure number of segments is >= 0.") {
+		ERR_PRINT_OFF;
 		plane->set_subdivide_width(-15);
 		plane->set_subdivide_depth(-29);
+		ERR_PRINT_ON;
 
 		CHECK(plane->get_subdivide_width() >= 0);
 		CHECK(plane->get_subdivide_depth() >= 0);
@@ -486,9 +494,11 @@ TEST_CASE("[SceneTree][Primitive][Prism] Prism Primitive") {
 	}
 
 	SUBCASE("[Primitive][Prism] Ensure number of segments always >= 0") {
+		ERR_PRINT_OFF;
 		prism->set_subdivide_width(-36);
 		prism->set_subdivide_height(-5);
 		prism->set_subdivide_depth(-64);
+		ERR_PRINT_ON;
 
 		CHECK(prism->get_subdivide_width() >= 0);
 		CHECK(prism->get_subdivide_height() >= 0);
@@ -521,8 +531,10 @@ TEST_CASE("[SceneTree][Primitive][Sphere] Sphere Primitive") {
 	}
 
 	SUBCASE("[Primitive][Sphere] Ensure number of segments always >= 0") {
+		ERR_PRINT_OFF;
 		sphere->set_radial_segments(-36);
 		sphere->set_rings(-5);
+		ERR_PRINT_ON;
 
 		CHECK(sphere->get_radial_segments() >= 0);
 		CHECK(sphere->get_rings() >= 0);

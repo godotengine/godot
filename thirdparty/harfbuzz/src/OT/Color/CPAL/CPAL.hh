@@ -214,13 +214,17 @@ struct CPAL
                          hb_set_t *nameids_to_retain /* OUT */) const
   {
     if (version == 1)
+    {
+      hb_barrier ();
       v1 ().collect_name_ids (this, numPalettes, numColors, color_index_map, nameids_to_retain);
+    }
   }
 
   private:
   const CPALV1Tail& v1 () const
   {
     if (version == 0) return Null (CPALV1Tail);
+    hb_barrier ();
     return StructAfter<CPALV1Tail> (*this);
   }
 
@@ -312,7 +316,10 @@ struct CPAL
       return_trace (false);
 
     if (version == 1)
+    {
+      hb_barrier ();
       return_trace (v1 ().serialize (c->serializer, numPalettes, numColors, this, color_index_map));
+    }
 
     return_trace (true);
   }
@@ -321,6 +328,7 @@ struct CPAL
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  (this+colorRecordsZ).sanitize (c, numColorRecords) &&
 		  colorRecordIndicesZ.sanitize (c, numPalettes) &&
 		  (version == 0 || v1 ().sanitize (c, this, numPalettes, numColors)));

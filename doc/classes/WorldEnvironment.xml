@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WorldEnvironment" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="WorldEnvironment" inherits="Node" keywords="background, sky" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Default environment properties for the entire scene (post-processing effects, lighting and background settings).
 	</brief_description>
@@ -17,6 +17,9 @@
 	<members>
 		<member name="camera_attributes" type="CameraAttributes" setter="set_camera_attributes" getter="get_camera_attributes">
 			The default [CameraAttributes] resource to use if none set on the [Camera3D].
+		</member>
+		<member name="compositor" type="Compositor" setter="set_compositor" getter="get_compositor">
+			The default [Compositor] resource to use if none set on the [Camera3D].
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] resource used by this [WorldEnvironment], defining the default properties.

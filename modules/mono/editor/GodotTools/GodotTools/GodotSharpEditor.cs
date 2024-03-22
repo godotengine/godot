@@ -511,6 +511,7 @@ namespace GodotTools
                 FocusMode = Control.FocusModeEnum.None,
                 Shortcut = EditorDefShortcut("mono/build_solution", "Build Project".TTR(), (Key)KeyModifierMask.MaskAlt | Key.B),
                 ShortcutInTooltip = true,
+                ThemeTypeVariation = "RunBarButton",
             };
             EditorShortcutOverride("mono/build_solution", "macos", (Key)KeyModifierMask.MaskMeta | (Key)KeyModifierMask.MaskCtrl | Key.B);
 

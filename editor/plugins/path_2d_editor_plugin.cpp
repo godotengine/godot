@@ -86,6 +86,8 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->is_pressed() && action == ACTION_NONE) {
 			Ref<Curve2D> curve = node->get_curve();
 
+			original_mouse_pos = gpoint;
+
 			for (int i = 0; i < curve->get_point_count(); i++) {
 				real_t dist_to_p = gpoint.distance_to(xform.xform(curve->get_point_position(i)));
 				real_t dist_to_p_out = gpoint.distance_to(xform.xform(curve->get_point_position(i) + curve->get_point_out(i)));
@@ -224,45 +226,48 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 				case ACTION_MOVING_POINT:
 				case ACTION_MOVING_NEW_POINT: {
-					if (action == ACTION_MOVING_POINT) {
-						undo_redo->create_action(TTR("Move Point in Curve"));
-						undo_redo->add_undo_method(curve.ptr(), "set_point_position", action_point, moving_from);
+					if (original_mouse_pos != gpoint) {
+						if (action == ACTION_MOVING_POINT) {
+							undo_redo->create_action(TTR("Move Point in Curve"));
+							undo_redo->add_undo_method(curve.ptr(), "set_point_position", action_point, moving_from);
+						}
+						undo_redo->add_do_method(curve.ptr(), "set_point_position", action_point, cpoint);
+						undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+						undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+						undo_redo->commit_action(false);
 					}
-					undo_redo->add_do_method(curve.ptr(), "set_point_position", action_point, cpoint);
-					undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-					undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-					undo_redo->commit_action(false);
-
 				} break;
 
 				case ACTION_MOVING_IN: {
-					undo_redo->create_action(TTR("Move In-Control in Curve"));
-					undo_redo->add_do_method(curve.ptr(), "set_point_in", action_point, new_pos);
-					undo_redo->add_undo_method(curve.ptr(), "set_point_in", action_point, moving_from);
+					if (original_mouse_pos != gpoint) {
+						undo_redo->create_action(TTR("Move In-Control in Curve"));
+						undo_redo->add_do_method(curve.ptr(), "set_point_in", action_point, new_pos);
+						undo_redo->add_undo_method(curve.ptr(), "set_point_in", action_point, moving_from);
 
-					if (mirror_handle_angle) {
-						undo_redo->add_do_method(curve.ptr(), "set_point_out", action_point, mirror_handle_length ? -new_pos : (-new_pos.normalized() * orig_out_length));
-						undo_redo->add_undo_method(curve.ptr(), "set_point_out", action_point, mirror_handle_length ? -moving_from : (-moving_from.normalized() * orig_out_length));
+						if (mirror_handle_angle) {
+							undo_redo->add_do_method(curve.ptr(), "set_point_out", action_point, mirror_handle_length ? -new_pos : (-new_pos.normalized() * orig_out_length));
+							undo_redo->add_undo_method(curve.ptr(), "set_point_out", action_point, mirror_handle_length ? -moving_from : (-moving_from.normalized() * orig_out_length));
+						}
+						undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+						undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+						undo_redo->commit_action();
 					}
-					undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-					undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-					undo_redo->commit_action();
-
 				} break;
 
 				case ACTION_MOVING_OUT: {
-					undo_redo->create_action(TTR("Move Out-Control in Curve"));
-					undo_redo->add_do_method(curve.ptr(), "set_point_out", action_point, new_pos);
-					undo_redo->add_undo_method(curve.ptr(), "set_point_out", action_point, moving_from);
+					if (original_mouse_pos != gpoint) {
+						undo_redo->create_action(TTR("Move Out-Control in Curve"));
+						undo_redo->add_do_method(curve.ptr(), "set_point_out", action_point, new_pos);
+						undo_redo->add_undo_method(curve.ptr(), "set_point_out", action_point, moving_from);
 
-					if (mirror_handle_angle) {
-						undo_redo->add_do_method(curve.ptr(), "set_point_in", action_point, mirror_handle_length ? -new_pos : (-new_pos.normalized() * orig_in_length));
-						undo_redo->add_undo_method(curve.ptr(), "set_point_in", action_point, mirror_handle_length ? -moving_from : (-moving_from.normalized() * orig_in_length));
+						if (mirror_handle_angle) {
+							undo_redo->add_do_method(curve.ptr(), "set_point_in", action_point, mirror_handle_length ? -new_pos : (-new_pos.normalized() * orig_in_length));
+							undo_redo->add_undo_method(curve.ptr(), "set_point_in", action_point, mirror_handle_length ? -moving_from : (-moving_from.normalized() * orig_in_length));
+						}
+						undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+						undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+						undo_redo->commit_action();
 					}
-					undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-					undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-					undo_redo->commit_action();
-
 				} break;
 			}
 

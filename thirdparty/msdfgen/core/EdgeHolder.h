@@ -22,14 +22,14 @@ public:
     EdgeHolder(EdgeHolder &&orig);
 #endif
     ~EdgeHolder();
-    EdgeHolder & operator=(const EdgeHolder &orig);
+    EdgeHolder &operator=(const EdgeHolder &orig);
 #ifdef MSDFGEN_USE_CPP11
-    EdgeHolder & operator=(EdgeHolder &&orig);
+    EdgeHolder &operator=(EdgeHolder &&orig);
 #endif
-    EdgeSegment & operator*();
-    const EdgeSegment & operator*() const;
-    EdgeSegment * operator->();
-    const EdgeSegment * operator->() const;
+    EdgeSegment &operator*();
+    const EdgeSegment &operator*() const;
+    EdgeSegment *operator->();
+    const EdgeSegment *operator->() const;
     operator EdgeSegment *();
     operator const EdgeSegment *() const;
 

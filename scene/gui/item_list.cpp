@@ -1150,10 +1150,6 @@ void ItemList::_notification(int p_what) {
 				if (should_draw_selected_bg || should_draw_hovered_bg || should_draw_custom_bg) {
 					Rect2 r = rcache;
 					r.position += base_ofs;
-					r.position.y -= theme_cache.v_separation / 2;
-					r.size.y += theme_cache.v_separation;
-					r.position.x -= theme_cache.h_separation / 2;
-					r.size.x += theme_cache.h_separation;
 
 					if (rtl) {
 						r.position.x = size.width - r.position.x - r.size.x;
@@ -1184,6 +1180,12 @@ void ItemList::_notification(int p_what) {
 					Vector2 icon_ofs;
 
 					Point2 pos = items[i].rect_cache.position + icon_ofs + base_ofs;
+
+					if (icon_mode == ICON_MODE_TOP) {
+						pos.y += theme_cache.v_separation / 2;
+					} else {
+						pos.x += theme_cache.h_separation / 2;
+					}
 
 					if (icon_mode == ICON_MODE_TOP) {
 						pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width) / 2);
@@ -1224,6 +1226,8 @@ void ItemList::_notification(int p_what) {
 
 				if (items[i].tag_icon.is_valid()) {
 					Point2 draw_pos = items[i].rect_cache.position;
+					draw_pos.x += theme_cache.h_separation / 2;
+					draw_pos.y += theme_cache.v_separation / 2;
 					if (rtl) {
 						draw_pos.x = size.width - draw_pos.x - items[i].tag_icon->get_width();
 					}
@@ -1261,11 +1265,17 @@ void ItemList::_notification(int p_what) {
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
+						text_ofs.x += theme_cache.h_separation / 2;
+						text_ofs.y += theme_cache.v_separation / 2;
+
 						if (rtl) {
 							text_ofs.x = size.width - text_ofs.x - max_len;
 						}
 
 						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+
+						float text_w = items[i].rect_cache.size.width - theme_cache.h_separation;
+						items.write[i].text_buf->set_width(text_w);
 
 						if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
@@ -1279,14 +1289,17 @@ void ItemList::_notification(int p_what) {
 
 						if (icon_mode == ICON_MODE_TOP) {
 							text_ofs.x += (items[i].rect_cache.size.width - size2.x) / 2;
+							text_ofs.x += theme_cache.h_separation / 2;
+							text_ofs.y += theme_cache.v_separation / 2;
 						} else {
 							text_ofs.y += (items[i].rect_cache.size.height - size2.y) / 2;
+							text_ofs.x += theme_cache.h_separation / 2;
 						}
 
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						float text_w = width - text_ofs.x;
+						float text_w = width - text_ofs.x - theme_cache.h_separation;
 						items.write[i].text_buf->set_width(text_w);
 
 						if (rtl) {
@@ -1309,10 +1322,6 @@ void ItemList::_notification(int p_what) {
 				if (select_mode == SELECT_MULTI && i == current) {
 					Rect2 r = rcache;
 					r.position += base_ofs;
-					r.position.y -= theme_cache.v_separation / 2;
-					r.size.y += theme_cache.v_separation;
-					r.position.x -= theme_cache.h_separation / 2;
-					r.size.x += theme_cache.h_separation;
 
 					if (rtl) {
 						r.position.x = size.width - r.position.x - r.size.x;
@@ -1382,9 +1391,10 @@ void ItemList::force_update_list_size() {
 		}
 		max_column_width = MAX(max_column_width, minsize.x);
 
-		// elements need to adapt to the selected size
+		// Elements need to adapt to the selected size.
 		minsize.y += theme_cache.v_separation;
 		minsize.x += theme_cache.h_separation;
+
 		items.write[i].rect_cache.size = minsize;
 		items.write[i].min_rect_cache.size = minsize;
 	}
@@ -1415,18 +1425,18 @@ void ItemList::force_update_list_size() {
 			}
 
 			if (same_column_width) {
-				items.write[i].rect_cache.size.x = max_column_width;
+				items.write[i].rect_cache.size.x = max_column_width + theme_cache.h_separation;
 			}
 			items.write[i].rect_cache.position = ofs;
 
 			max_h = MAX(max_h, items[i].rect_cache.size.y);
-			ofs.x += items[i].rect_cache.size.x + theme_cache.h_separation;
+			ofs.x += items[i].rect_cache.size.x;
 
 			items.write[i].column = col;
 			col++;
 			if (col == current_columns) {
 				if (i < items.size() - 1) {
-					separators.push_back(ofs.y + max_h + theme_cache.v_separation / 2);
+					separators.push_back(ofs.y + max_h);
 				}
 
 				for (int j = i; j >= 0 && col > 0; j--, col--) {
@@ -1434,7 +1444,7 @@ void ItemList::force_update_list_size() {
 				}
 
 				ofs.x = 0;
-				ofs.y += max_h + theme_cache.v_separation;
+				ofs.y += max_h;
 				col = 0;
 				max_h = 0;
 			}
@@ -1495,12 +1505,6 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 
 	for (int i = 0; i < items.size(); i++) {
 		Rect2 rc = items[i].rect_cache;
-
-		// Grow the detection rectangle to match the grown selection indicator.
-		rc.position.y -= theme_cache.v_separation / 2;
-		rc.size.y += theme_cache.v_separation;
-		rc.position.x -= theme_cache.h_separation / 2;
-		rc.size.x += theme_cache.h_separation;
 
 		if (i % current_columns == current_columns - 1) {
 			rc.size.width = get_size().width - rc.position.x; // Make sure you can still select the last item when clicking past the column.

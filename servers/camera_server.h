@@ -71,7 +71,7 @@ protected:
 
 	static void _bind_methods();
 
-	template <class T>
+	template <typename T>
 	static CameraServer *_create_builtin() {
 		return memnew(T);
 	}
@@ -79,7 +79,7 @@ protected:
 public:
 	static CameraServer *get_singleton();
 
-	template <class T>
+	template <typename T>
 	static void make_default() {
 		create_func = _create_builtin<T>;
 	}

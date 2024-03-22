@@ -59,6 +59,7 @@ public:
 	TypedArray<RID> map_get_obstacles(RID p_map) const override { return TypedArray<RID>(); }
 	void map_force_update(RID p_map) override {}
 	Vector2 map_get_random_point(RID p_map, uint32_t p_naviation_layers, bool p_uniformly) const override { return Vector2(); };
+	uint32_t map_get_iteration_id(RID p_map) const override { return 0; }
 
 	RID region_create() override { return RID(); }
 	void region_set_enabled(RID p_region, bool p_enabled) override {}

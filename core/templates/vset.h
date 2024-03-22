@@ -34,7 +34,7 @@
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
 
-template <class T>
+template <typename T>
 class VSet {
 	Vector<T> _data;
 

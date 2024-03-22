@@ -68,3 +68,4 @@ namespace tvg {
 #endif //THORVG_THREAD_SUPPORT
 
 #endif //_TVG_LOCK_H_
+

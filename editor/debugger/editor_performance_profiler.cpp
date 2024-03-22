@@ -38,7 +38,7 @@
 
 EditorPerformanceProfiler::Monitor::Monitor() {}
 
-EditorPerformanceProfiler::Monitor::Monitor(String p_name, String p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
+EditorPerformanceProfiler::Monitor::Monitor(const String &p_name, const String &p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
 	type = p_type;
 	item = p_item;
 	frame_index = p_frame_index;

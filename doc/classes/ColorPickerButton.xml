@@ -29,7 +29,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(0, 0, 0, 1)">
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(0, 0, 0, 1)" keywords="colour">
 			The currently selected color.
 		</member>
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">

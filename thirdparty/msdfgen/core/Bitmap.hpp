@@ -40,7 +40,7 @@ Bitmap<T, N>::~Bitmap() {
 }
 
 template <typename T, int N>
-Bitmap<T, N> & Bitmap<T, N>::operator=(const BitmapConstRef<T, N> &orig) {
+Bitmap<T, N> &Bitmap<T, N>::operator=(const BitmapConstRef<T, N> &orig) {
     if (pixels != orig.pixels) {
         delete [] pixels;
         w = orig.width, h = orig.height;
@@ -51,7 +51,7 @@ Bitmap<T, N> & Bitmap<T, N>::operator=(const BitmapConstRef<T, N> &orig) {
 }
 
 template <typename T, int N>
-Bitmap<T, N> & Bitmap<T, N>::operator=(const Bitmap<T, N> &orig) {
+Bitmap<T, N> &Bitmap<T, N>::operator=(const Bitmap<T, N> &orig) {
     if (this != &orig) {
         delete [] pixels;
         w = orig.w, h = orig.h;
@@ -63,7 +63,7 @@ Bitmap<T, N> & Bitmap<T, N>::operator=(const Bitmap<T, N> &orig) {
 
 #ifdef MSDFGEN_USE_CPP11
 template <typename T, int N>
-Bitmap<T, N> & Bitmap<T, N>::operator=(Bitmap<T, N> &&orig) {
+Bitmap<T, N> &Bitmap<T, N>::operator=(Bitmap<T, N> &&orig) {
     if (this != &orig) {
         delete [] pixels;
         pixels = orig.pixels;
@@ -85,12 +85,12 @@ int Bitmap<T, N>::height() const {
 }
 
 template <typename T, int N>
-T * Bitmap<T, N>::operator()(int x, int y) {
+T *Bitmap<T, N>::operator()(int x, int y) {
     return pixels+N*(w*y+x);
 }
 
 template <typename T, int N>
-const T * Bitmap<T, N>::operator()(int x, int y) const {
+const T *Bitmap<T, N>::operator()(int x, int y) const {
     return pixels+N*(w*y+x);
 }
 

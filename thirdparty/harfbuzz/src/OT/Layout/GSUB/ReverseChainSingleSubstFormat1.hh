@@ -33,9 +33,11 @@ struct ReverseChainSingleSubstFormat1
     TRACE_SANITIZE (this);
     if (!(coverage.sanitize (c, this) && backtrack.sanitize (c, this)))
       return_trace (false);
+    hb_barrier ();
     const auto &lookahead = StructAfter<decltype (lookaheadX)> (backtrack);
     if (!lookahead.sanitize (c, this))
       return_trace (false);
+    hb_barrier ();
     const auto &substitute = StructAfter<decltype (substituteX)> (lookahead);
     return_trace (substitute.sanitize (c));
   }
@@ -109,11 +111,11 @@ struct ReverseChainSingleSubstFormat1
   bool apply (hb_ot_apply_context_t *c) const
   {
     TRACE_APPLY (this);
-    if (unlikely (c->nesting_level_left != HB_MAX_NESTING_LEVEL))
-      return_trace (false); /* No chaining to this type */
-
     unsigned int index = (this+coverage).get_coverage (c->buffer->cur ().codepoint);
     if (likely (index == NOT_COVERED)) return_trace (false);
+
+    if (unlikely (c->nesting_level_left != HB_MAX_NESTING_LEVEL))
+      return_trace (false); /* No chaining to this type */
 
     const auto &lookahead = StructAfter<decltype (lookaheadX)> (backtrack);
     const auto &substitute = StructAfter<decltype (substituteX)> (lookahead);

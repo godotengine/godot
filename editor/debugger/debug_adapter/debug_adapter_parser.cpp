@@ -485,6 +485,7 @@ Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
 
 	String value = EditorDebuggerNode::get_singleton()->get_var_value(args["expression"]);
 	body["result"] = value;
+	body["variablesReference"] = 0;
 
 	return response;
 }
@@ -600,12 +601,12 @@ Dictionary DebugAdapterParser::ev_continued() const {
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_output(const String &p_message) const {
+Dictionary DebugAdapterParser::ev_output(const String &p_message, RemoteDebugger::MessageType p_type) const {
 	Dictionary event = prepare_base_event(), body;
 	event["event"] = "output";
 	event["body"] = body;
 
-	body["category"] = "stdout";
+	body["category"] = (p_type == RemoteDebugger::MessageType::MESSAGE_TYPE_ERROR) ? "stderr" : "stdout";
 	body["output"] = p_message + "\r\n";
 
 	return event;

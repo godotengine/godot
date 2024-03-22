@@ -92,6 +92,7 @@ class Path2DEditor : public HBoxContainer {
 	float orig_in_length = 0.0f;
 	float orig_out_length = 0.0f;
 	Vector2 edge_point;
+	Vector2 original_mouse_pos;
 
 	void _mode_selected(int p_mode);
 	void _handle_option_pressed(int p_option);

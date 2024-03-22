@@ -1692,6 +1692,19 @@ void AudioServer::set_enable_tagging_used_audio_streams(bool p_enable) {
 	tag_used_audio_streams = p_enable;
 }
 
+#ifdef TOOLS_ENABLED
+void AudioServer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if ((p_idx == 0 && pf == "get_bus_index") || (p_idx == 1 && pf == "set_bus_send")) {
+		for (const AudioServer::Bus *E : buses) {
+			r_options->push_back(String(E->name).quote());
+		}
+	}
+
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
+
 void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus_count", "amount"), &AudioServer::set_bus_count);
 	ClassDB::bind_method(D_METHOD("get_bus_count"), &AudioServer::get_bus_count);

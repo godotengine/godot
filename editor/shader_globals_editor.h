@@ -61,6 +61,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	LineEdit *get_name_box() const;
+
 	ShaderGlobalsEditor();
 	~ShaderGlobalsEditor();
 };

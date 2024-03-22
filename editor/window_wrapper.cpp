@@ -286,7 +286,7 @@ void WindowWrapper::enable_window_on_screen(int p_screen, bool p_auto_scale) {
 	}
 }
 
-void WindowWrapper::set_window_title(const String p_title) {
+void WindowWrapper::set_window_title(const String &p_title) {
 	if (!is_window_available()) {
 		return;
 	}

@@ -124,7 +124,7 @@
 			<param index="0" name="nd_threshold" type="float" />
 			<param index="1" name="target_index_count" type="int" default="3" />
 			<description>
-				Generates a LOD for a given [param nd_threshold] in linear units (square root of quadric error metric), using at most [param target_index_count] indices.
+				Generates an LOD for a given [param nd_threshold] in linear units (square root of quadric error metric), using at most [param target_index_count] indices.
 			</description>
 		</method>
 		<method name="generate_normals">

@@ -41,7 +41,6 @@
 #include "core/string/ustring.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
-#include "scene/resources/atlas_texture.h"
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -110,6 +109,11 @@ static String get_atom_name(Display *p_disp, Atom p_atom) {
 
 bool DisplayServerX11::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		case FEATURE_SUBWINDOWS:
 #ifdef TOUCH_ENABLED
 		case FEATURE_TOUCHSCREEN:
@@ -3064,39 +3068,10 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 			cursors_cache.erase(p_shape);
 		}
 
-		Ref<Texture2D> texture = p_cursor;
-		ERR_FAIL_COND(!texture.is_valid());
-		Ref<AtlasTexture> atlas_texture = p_cursor;
-		Size2i texture_size;
-		Rect2i atlas_rect;
-
-		if (atlas_texture.is_valid()) {
-			texture = atlas_texture->get_atlas();
-
-			atlas_rect.size.width = texture->get_width();
-			atlas_rect.size.height = texture->get_height();
-			atlas_rect.position.x = atlas_texture->get_region().position.x;
-			atlas_rect.position.y = atlas_texture->get_region().position.y;
-
-			texture_size.width = atlas_texture->get_region().size.x;
-			texture_size.height = atlas_texture->get_region().size.y;
-		} else {
-			texture_size.width = texture->get_width();
-			texture_size.height = texture->get_height();
-		}
-
-		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
-		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
-		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
-
-		Ref<Image> image = texture->get_image();
-
-		ERR_FAIL_COND(!image.is_valid());
-		if (image->is_compressed()) {
-			image = image->duplicate(true);
-			Error err = image->decompress();
-			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
-		}
+		Rect2 atlas_rect;
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot, atlas_rect);
+		ERR_FAIL_COND(image.is_null());
+		Vector2i texture_size = image->get_size();
 
 		// Create the cursor structure
 		XcursorImage *cursor_image = XcursorImageCreate(texture_size.width, texture_size.height);
@@ -3115,7 +3090,7 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
 			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
 
-			if (atlas_texture.is_valid()) {
+			if (atlas_rect.has_area()) {
 				column_index = MIN(column_index, atlas_rect.size.width - 1);
 				row_index = MIN(row_index, atlas_rect.size.height - 1);
 			}
@@ -4731,19 +4706,6 @@ void DisplayServerX11::process_events() {
 					break;
 				}
 
-				const WindowData &wd = windows[window_id];
-
-				XWindowAttributes xwa;
-				XSync(x11_display, False);
-				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
-
-				// Set focus when menu window is re-used.
-				// RevertToPointerRoot is used to make sure we don't lose all focus in case
-				// a subwindow and its parent are both destroyed.
-				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup && _window_focus_check()) {
-					_set_input_focus(wd.x11_window, RevertToPointerRoot);
-				}
-
 				_window_changed(&event);
 			} break;
 
@@ -5795,6 +5757,8 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
 	KeyMappingX11::initialize();
 
+	native_menu = memnew(NativeMenu);
+
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
@@ -6386,6 +6350,11 @@ DisplayServerX11::~DisplayServerX11() {
 
 	events_thread_done.set();
 	events_thread.wait_to_finish();
+
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
 
 	//destroy all windows
 	for (KeyValue<WindowID, WindowData> &E : windows) {

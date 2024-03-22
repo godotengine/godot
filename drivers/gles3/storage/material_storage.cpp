@@ -2607,7 +2607,7 @@ void CanvasShaderData::set_code(const String &p_code) {
 	MaterialStorage::get_singleton()->shaders.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
 	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.canvas_shader.version_is_valid(version));
 
-	vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_COLOR | RS::ARRAY_TEX_UV;
+	vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_COLOR | RS::ARRAY_FORMAT_TEX_UV;
 	vertex_input_mask |= uses_custom0 << RS::ARRAY_CUSTOM0;
 	vertex_input_mask |= uses_custom1 << RS::ARRAY_CUSTOM1;
 

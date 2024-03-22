@@ -11,7 +11,7 @@
 		<link title="RichTextEffect test project (third-party)">https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)" keywords="colour">
 			The color the character will be drawn with.
 		</member>
 		<member name="elapsed_time" type="float" setter="set_elapsed_time" getter="get_elapsed_time" default="0.0">

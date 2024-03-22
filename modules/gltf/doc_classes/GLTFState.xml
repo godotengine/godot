@@ -289,8 +289,13 @@
 			The file name associated with this GLTF data. If it ends with [code].gltf[/code], this is text-based GLTF, otherwise this is binary GLB. This will be set during import when appending from a file, and will be set during export when writing to a file. If writing to a buffer, this will be an empty string.
 		</member>
 		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray()">
+			The binary buffer attached to a .glb file.
+		</member>
+		<member name="import_as_skeleton_bones" type="bool" setter="set_import_as_skeleton_bones" getter="get_import_as_skeleton_bones" default="false">
+			True to force all GLTFNodes in the document to be bones of a single Skeleton3D godot node.
 		</member>
 		<member name="json" type="Dictionary" setter="set_json" getter="get_json" default="{}">
+			The original raw JSON document corresponding to this GLTFState.
 		</member>
 		<member name="major_version" type="int" setter="set_major_version" getter="get_major_version" default="0">
 		</member>

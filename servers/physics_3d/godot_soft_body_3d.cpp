@@ -595,7 +595,7 @@ void GodotSoftBody3D::generate_bending_constraints(int p_distance) {
 		const uint32_t adj_size = n * n;
 		unsigned *adj = memnew_arr(unsigned, adj_size);
 
-#define IDX(_x_, _y_) ((_y_)*n + (_x_))
+#define IDX(_x_, _y_) ((_y_) * n + (_x_))
 		for (j = 0; j < n; ++j) {
 			for (i = 0; i < n; ++i) {
 				int idx_ij = j * n + i;

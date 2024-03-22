@@ -614,8 +614,6 @@ void OptionButton::set_disable_shortcuts(bool p_disabled) {
 
 OptionButton::OptionButton(const String &p_text) :
 		Button(p_text) {
-	_set_h_separation_is_valid_when_no_text(true);
-
 	set_toggle_mode(true);
 	set_process_shortcut_input(true);
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);

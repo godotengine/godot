@@ -1836,8 +1836,8 @@ namespace Godot
             return Uri.EscapeDataString(instance);
         }
 
-        private const string _uniqueNodePrefix = "%";
-        private static readonly string[] _invalidNodeNameCharacters = { ".", ":", "@", "/", "\"", _uniqueNodePrefix };
+        private const string UniqueNodePrefix = "%";
+        private static readonly string[] _invalidNodeNameCharacters = { ".", ":", "@", "/", "\"", UniqueNodePrefix };
 
         /// <summary>
         /// Removes any characters from the string that are prohibited in

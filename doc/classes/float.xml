@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="float" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A built-in type for floating point numbers.
+		A built-in type for floating-point numbers.
 	</brief_description>
 	<description>
 		The [float] built-in type is a 64-bit double-precision floating-point number, equivalent to [code]double[/code] in C++. This type has 14 reliable decimal digits of precision. The maximum value of [float] is approximately [code]1.79769e308[/code], and the minimum is approximately [code]-1.79769e308[/code].

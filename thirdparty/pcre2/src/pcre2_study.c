@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2021 University of Cambridge
+          New API code Copyright (c) 2016-2023 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -256,6 +256,7 @@ for (;;)
     /* Skip over things that don't match chars */
 
     case OP_REVERSE:
+    case OP_VREVERSE:
     case OP_CREF:
     case OP_DNCREF:
     case OP_RREF:
@@ -273,6 +274,8 @@ for (;;)
     case OP_DOLLM:
     case OP_NOT_WORD_BOUNDARY:
     case OP_WORD_BOUNDARY:
+    case OP_NOT_UCP_WORD_BOUNDARY:
+    case OP_UCP_WORD_BOUNDARY:
     cc += PRIV(OP_lengths)[*cc];
     break;
 
@@ -976,6 +979,7 @@ do
   while (try_next)    /* Loop for items in this branch */
     {
     int rc;
+    PCRE2_SPTR ncode;
     uint8_t *classmap = NULL;
 #ifdef SUPPORT_WIDE_CHARS
     PCRE2_UCHAR xclassflags;
@@ -1054,6 +1058,7 @@ do
       case OP_REF:
       case OP_REFI:
       case OP_REVERSE:
+      case OP_VREVERSE:
       case OP_RREF:
       case OP_SCOND:
       case OP_SET_SOM:
@@ -1101,13 +1106,100 @@ do
 
       case OP_WORD_BOUNDARY:
       case OP_NOT_WORD_BOUNDARY:
+      case OP_UCP_WORD_BOUNDARY:
+      case OP_NOT_UCP_WORD_BOUNDARY:
       tcode++;
       break;
 
-      /* If we hit a bracket or a positive lookahead assertion, recurse to set
-      bits from within the subpattern. If it can't find anything, we have to
-      give up. If it finds some mandatory character(s), we are done for this
-      branch. Otherwise, carry on scanning after the subpattern. */
+      /* For a positive lookahead assertion, inspect what immediately follows,
+      ignoring intermediate assertions and callouts. If the next item is one
+      that sets a mandatory character, skip this assertion. Otherwise, treat it
+      the same as other bracket groups. */
+
+      case OP_ASSERT:
+      case OP_ASSERT_NA:
+      ncode = tcode + GET(tcode, 1);
+      while (*ncode == OP_ALT) ncode += GET(ncode, 1);
+      ncode += 1 + LINK_SIZE;
+
+      /* Skip irrelevant items */
+
+      for (BOOL done = FALSE; !done;)
+        {
+        switch (*ncode)
+          {
+          case OP_ASSERT:
+          case OP_ASSERT_NOT:
+          case OP_ASSERTBACK:
+          case OP_ASSERTBACK_NOT:
+          case OP_ASSERT_NA:
+          case OP_ASSERTBACK_NA:
+          ncode += GET(ncode, 1);
+          while (*ncode == OP_ALT) ncode += GET(ncode, 1);
+          ncode += 1 + LINK_SIZE;
+          break;
+
+          case OP_WORD_BOUNDARY:
+          case OP_NOT_WORD_BOUNDARY:
+          case OP_UCP_WORD_BOUNDARY:
+          case OP_NOT_UCP_WORD_BOUNDARY:
+          ncode++;
+          break;
+
+          case OP_CALLOUT:
+          ncode += PRIV(OP_lengths)[OP_CALLOUT];
+          break;
+
+          case OP_CALLOUT_STR:
+          ncode += GET(ncode, 1 + 2*LINK_SIZE);
+          break;
+
+          default:
+          done = TRUE;
+          break;
+          }
+        }
+
+      /* Now check the next significant item. */
+
+      switch(*ncode)
+        {
+        default:
+        break;
+
+        case OP_PROP:
+        if (ncode[1] != PT_CLIST) break;
+        /* Fall through */
+        case OP_ANYNL:
+        case OP_CHAR:
+        case OP_CHARI:
+        case OP_EXACT:
+        case OP_EXACTI:
+        case OP_HSPACE:
+        case OP_MINPLUS:
+        case OP_MINPLUSI:
+        case OP_PLUS:
+        case OP_PLUSI:
+        case OP_POSPLUS:
+        case OP_POSPLUSI:
+        case OP_VSPACE:
+        /* Note that these types will only be present in non-UCP mode. */
+        case OP_DIGIT:
+        case OP_NOT_DIGIT:
+        case OP_WORDCHAR:
+        case OP_NOT_WORDCHAR:
+        case OP_WHITESPACE:
+        case OP_NOT_WHITESPACE:
+        tcode = ncode;
+        continue;   /* With the following significant opcode */
+        }
+      /* Fall through */
+
+      /* For a group bracket or a positive assertion without an immediately
+      following mandatory setting, recurse to set bits from within the
+      subpattern. If it can't find anything, we have to give up. If it finds
+      some mandatory character(s), we are done for this branch. Otherwise,
+      carry on scanning after the subpattern. */
 
       case OP_BRA:
       case OP_SBRA:
@@ -1119,8 +1211,6 @@ do
       case OP_SCBRAPOS:
       case OP_ONCE:
       case OP_SCRIPT_RUN:
-      case OP_ASSERT:
-      case OP_ASSERT_NA:
       rc = set_start_bits(re, tcode, utf, ucp, depthptr);
       if (rc == SSB_DONE)
         {

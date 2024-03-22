@@ -541,5 +541,3 @@ void NavigationPolygon::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 }
-
-NavigationPolygon::NavigationPolygon() {}

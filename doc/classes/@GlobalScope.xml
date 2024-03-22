@@ -362,7 +362,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="ease">
+		<method name="ease" keywords="smooth">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<param index="1" name="curve" type="float" />
@@ -518,7 +518,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="inverse_lerp">
+		<method name="inverse_lerp" keywords="interpolate">
 			<return type="float" />
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
@@ -537,7 +537,7 @@
 				See also [method lerp], which performs the reverse of this operation, and [method remap] to map a continuous series of values to another.
 			</description>
 		</method>
-		<method name="is_equal_approx">
+		<method name="is_equal_approx" keywords="roughly">
 			<return type="bool" />
 			<param index="0" name="a" type="float" />
 			<param index="1" name="b" type="float" />
@@ -615,7 +615,7 @@
 				This function is faster than using [method is_equal_approx] with one value as zero.
 			</description>
 		</method>
-		<method name="lerp">
+		<method name="lerp" keywords="interpolate">
 			<return type="Variant" />
 			<param index="0" name="from" type="Variant" />
 			<param index="1" name="to" type="Variant" />
@@ -630,7 +630,7 @@
 				[b]Note:[/b] For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp].
 			</description>
 		</method>
-		<method name="lerp_angle">
+		<method name="lerp_angle" keywords="interpolate">
 			<return type="float" />
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
@@ -999,7 +999,7 @@
 		<method name="randf">
 			<return type="float" />
 			<description>
-				Returns a random floating point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+				Returns a random floating-point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 				[codeblocks]
 				[gdscript]
 				randf() # Returns e.g. 0.375671
@@ -1015,7 +1015,7 @@
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
 			<description>
-				Returns a random floating point value between [param from] and [param to] (inclusive).
+				Returns a random floating-point value between [param from] and [param to] (inclusive).
 				[codeblocks]
 				[gdscript]
 				randf_range(0, 20.5) # Returns e.g. 7.45315
@@ -1033,7 +1033,8 @@
 			<param index="0" name="mean" type="float" />
 			<param index="1" name="deviation" type="float" />
 			<description>
-				Returns a normally-distributed pseudo-random floating point value using Box-Muller transform with the specified [param mean] and a standard [param deviation]. This is also called Gaussian distribution.
+				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url], pseudo-random floating-point value from the specified [param mean] and a standard [param deviation]. This is also known as a Gaussian distribution.
+				[b]Note:[/b] This method uses the [url=https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform]Box-Muller transform[/url] algorithm.
 			</description>
 		</method>
 		<method name="randi">
@@ -1080,7 +1081,7 @@
 				[b]Note:[/b] This function is called automatically when the project is run. If you need to fix the seed to have consistent, reproducible results, use [method seed] to initialize the random number generator.
 			</description>
 		</method>
-		<method name="remap" keywords="range, lerp">
+		<method name="remap" keywords="range, lerp, interpolate">
 			<return type="float" />
 			<param index="0" name="value" type="float" />
 			<param index="1" name="istart" type="float" />
@@ -1098,14 +1099,14 @@
 		<method name="rid_allocate_id">
 			<return type="int" />
 			<description>
-				Allocates a unique ID which can be used by the implementation to construct a RID. This is used mainly from native extensions to implement servers.
+				Allocates a unique ID which can be used by the implementation to construct an RID. This is used mainly from native extensions to implement servers.
 			</description>
 		</method>
 		<method name="rid_from_int64">
 			<return type="RID" />
 			<param index="0" name="base" type="int" />
 			<description>
-				Creates a RID from a [param base]. This is used mainly from native extensions to build servers.
+				Creates an RID from a [param base]. This is used mainly from native extensions to build servers.
 			</description>
 		</method>
 		<method name="rotate_toward">
@@ -1261,7 +1262,7 @@
 			<param index="0" name="x" type="Variant" />
 			<param index="1" name="step" type="Variant" />
 			<description>
-				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating-point number to an arbitrary number of decimals.
 				The returned value is the same type of [Variant] as [param step]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				snapped(100, 32)  # Returns 96
@@ -1278,7 +1279,7 @@
 			<param index="0" name="x" type="float" />
 			<param index="1" name="step" type="float" />
 			<description>
-				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating-point number to an arbitrary number of decimals.
 				A type-safe version of [method snapped], returning a [float].
 				[codeblock]
 				snappedf(32.0, 2.5)  # Returns 32.5
@@ -1588,6 +1589,10 @@
 		</member>
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
+		</member>
+		<member name="NativeMenu" type="NativeMenu" setter="" getter="">
+			The [NativeMenu] singleton.
+			[b]Note:[/b] Only implemented on macOS.
 		</member>
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.

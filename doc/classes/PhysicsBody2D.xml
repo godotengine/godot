@@ -50,7 +50,7 @@
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
-		<method name="test_move">
+		<method name="test_move" keywords="check, collision, sweep">
 			<return type="bool" />
 			<param index="0" name="from" type="Transform2D" />
 			<param index="1" name="motion" type="Vector2" />

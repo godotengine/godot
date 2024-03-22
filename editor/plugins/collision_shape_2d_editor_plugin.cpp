@@ -35,14 +35,14 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "scene/resources/capsule_shape_2d.h"
-#include "scene/resources/circle_shape_2d.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/rectangle_shape_2d.h"
-#include "scene/resources/segment_shape_2d.h"
-#include "scene/resources/separation_ray_shape_2d.h"
-#include "scene/resources/world_boundary_shape_2d.h"
+#include "scene/resources/2d/capsule_shape_2d.h"
+#include "scene/resources/2d/circle_shape_2d.h"
+#include "scene/resources/2d/concave_polygon_shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/rectangle_shape_2d.h"
+#include "scene/resources/2d/segment_shape_2d.h"
+#include "scene/resources/2d/separation_ray_shape_2d.h"
+#include "scene/resources/2d/world_boundary_shape_2d.h"
 #include "scene/scene_string_names.h"
 
 CollisionShape2DEditor::CollisionShape2DEditor() {
@@ -326,6 +326,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 					return false;
 				}
 
+				original_mouse_pos = gpoint;
 				original_point = handles[edit_handle];
 				original = get_handle_value(edit_handle);
 				original_transform = node->get_global_transform();
@@ -336,7 +337,9 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 
 			} else {
 				if (pressed) {
-					commit_handle(edit_handle, original);
+					if (original_mouse_pos != gpoint) {
+						commit_handle(edit_handle, original);
+					}
 
 					edit_handle = -1;
 					pressed = false;

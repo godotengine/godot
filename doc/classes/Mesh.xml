@@ -237,16 +237,16 @@
 			[PackedVector2Array] for second UV coordinates.
 		</constant>
 		<constant name="ARRAY_CUSTOM0" value="6" enum="ArrayType">
-			Contains custom color channel 0. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 0. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM1" value="7" enum="ArrayType">
-			Contains custom color channel 1. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 1. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM2" value="8" enum="ArrayType">
-			Contains custom color channel 2. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM2_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 2. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM2_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM3" value="9" enum="ArrayType">
-			Contains custom color channel 3. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM3_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 3. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM3_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_BONES" value="10" enum="ArrayType">
 			[PackedFloat32Array] or [PackedInt32Array] of bone indices. Contains either 4 or 8 numbers per vertex depending on the presence of the [constant ARRAY_FLAG_USE_8_BONE_WEIGHTS] flag.

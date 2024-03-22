@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2023 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* This module contains a single function that scans through a compiled pattern
 until it finds a capturing bracket with the given number, or, if the number is
-negative, an instance of OP_REVERSE for a lookbehind. The function is called
-from pcre2_compile.c and also from pcre2_study.c when finding the minimum
-matching length. */
+negative, an instance of OP_REVERSE or OP_VREVERSE for a lookbehind. The
+function is called from pcre2_compile.c and also from pcre2_study.c when
+finding the minimum matching length. */
 
 
 #ifdef HAVE_CONFIG_H
@@ -85,7 +85,7 @@ for (;;)
 
   /* Handle lookbehind */
 
-  else if (c == OP_REVERSE)
+  else if (c == OP_REVERSE || c == OP_VREVERSE)
     {
     if (number < 0) return (PCRE2_UCHAR *)code;
     code += PRIV(OP_lengths)[c];

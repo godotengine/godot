@@ -32,7 +32,9 @@
 
 #include "../action_map/openxr_action_map.h"
 
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
+#include "editor/gui/editor_bottom_panel.h"
 
 void OpenXREditorPlugin::edit(Object *p_node) {
 	if (Object::cast_to<OpenXRActionMap>(p_node)) {
@@ -52,7 +54,7 @@ void OpenXREditorPlugin::make_visible(bool p_visible) {
 
 OpenXREditorPlugin::OpenXREditorPlugin() {
 	action_map_editor = memnew(OpenXRActionMapEditor);
-	EditorNode::get_singleton()->add_bottom_panel_item(TTR("OpenXR Action Map"), action_map_editor);
+	EditorNode::get_bottom_panel()->add_item(TTR("OpenXR Action Map"), action_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTR("Toggle OpenXR Action Map Bottom Panel")));
 
 #ifndef ANDROID_ENABLED
 	select_runtime = memnew(OpenXRSelectRuntime);

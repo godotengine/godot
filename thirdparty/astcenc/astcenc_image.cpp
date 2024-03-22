@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2022 Arm Limited
+// Copyright 2011-2024 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -109,7 +109,7 @@ static vfloat4 swz_texel(
 	vfloat4 data,
 	const astcenc_swizzle& swz
 ) {
-	alignas(16) float datas[6];
+	ASTCENC_ALIGNAS float datas[6];
 
 	storea(data, datas);
 	datas[ASTCENC_SWZ_0] = 0.0f;
@@ -433,7 +433,7 @@ void store_image_block(
 
 					vint data_rgbai = interleave_rgba8(data_ri, data_gi, data_bi, data_ai);
 					vmask store_mask = vint::lane_id() < vint(used_texels);
-					store_lanes_masked(reinterpret_cast<int*>(data8_row), data_rgbai, store_mask);
+					store_lanes_masked(data8_row, data_rgbai, store_mask);
 
 					data8_row += ASTCENC_SIMD_WIDTH * 4;
 					idx += used_texels;

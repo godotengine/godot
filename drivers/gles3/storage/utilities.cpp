@@ -160,6 +160,8 @@ RS::InstanceType Utilities::get_base_type(RID p_rid) const {
 		return RS::INSTANCE_PARTICLES;
 	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles_collision(p_rid)) {
 		return RS::INSTANCE_PARTICLES_COLLISION;
+	} else if (owns_visibility_notifier(p_rid)) {
+		return RS::INSTANCE_VISIBLITY_NOTIFIER;
 	}
 	return RS::INSTANCE_NONE;
 }
@@ -207,6 +209,9 @@ bool Utilities::free(RID p_rid) {
 	} else if (GLES3::MeshStorage::get_singleton()->owns_skeleton(p_rid)) {
 		GLES3::MeshStorage::get_singleton()->skeleton_free(p_rid);
 		return true;
+	} else if (owns_visibility_notifier(p_rid)) {
+		visibility_notifier_free(p_rid);
+		return true;
 	} else {
 		return false;
 	}
@@ -233,32 +238,69 @@ void Utilities::base_update_dependency(RID p_base, DependencyTracker *p_instance
 	} else if (ParticlesStorage::get_singleton()->owns_particles_collision(p_base)) {
 		Dependency *dependency = ParticlesStorage::get_singleton()->particles_collision_get_dependency(p_base);
 		p_instance->update_dependency(dependency);
+	} else if (owns_visibility_notifier(p_base)) {
+		VisibilityNotifier *vn = get_visibility_notifier(p_base);
+		p_instance->update_dependency(&vn->dependency);
 	}
 }
 
 /* VISIBILITY NOTIFIER */
 
 RID Utilities::visibility_notifier_allocate() {
-	return RID();
+	return visibility_notifier_owner.allocate_rid();
 }
 
 void Utilities::visibility_notifier_initialize(RID p_notifier) {
+	visibility_notifier_owner.initialize_rid(p_notifier, VisibilityNotifier());
 }
 
 void Utilities::visibility_notifier_free(RID p_notifier) {
+	VisibilityNotifier *vn = visibility_notifier_owner.get_or_null(p_notifier);
+	vn->dependency.deleted_notify(p_notifier);
+	visibility_notifier_owner.free(p_notifier);
 }
 
 void Utilities::visibility_notifier_set_aabb(RID p_notifier, const AABB &p_aabb) {
+	VisibilityNotifier *vn = visibility_notifier_owner.get_or_null(p_notifier);
+	ERR_FAIL_NULL(vn);
+	vn->aabb = p_aabb;
+	vn->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 void Utilities::visibility_notifier_set_callbacks(RID p_notifier, const Callable &p_enter_callbable, const Callable &p_exit_callable) {
+	VisibilityNotifier *vn = visibility_notifier_owner.get_or_null(p_notifier);
+	ERR_FAIL_NULL(vn);
+	vn->enter_callback = p_enter_callbable;
+	vn->exit_callback = p_exit_callable;
 }
 
 AABB Utilities::visibility_notifier_get_aabb(RID p_notifier) const {
-	return AABB();
+	const VisibilityNotifier *vn = visibility_notifier_owner.get_or_null(p_notifier);
+	ERR_FAIL_NULL_V(vn, AABB());
+	return vn->aabb;
 }
 
 void Utilities::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_deferred) {
+	VisibilityNotifier *vn = visibility_notifier_owner.get_or_null(p_notifier);
+	ERR_FAIL_NULL(vn);
+
+	if (p_enter) {
+		if (!vn->enter_callback.is_null()) {
+			if (p_deferred) {
+				vn->enter_callback.call_deferred();
+			} else {
+				vn->enter_callback.call();
+			}
+		}
+	} else {
+		if (!vn->exit_callback.is_null()) {
+			if (p_deferred) {
+				vn->exit_callback.call_deferred();
+			} else {
+				vn->exit_callback.call();
+			}
+		}
+	}
 }
 
 /* TIMING */

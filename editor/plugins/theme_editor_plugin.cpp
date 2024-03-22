@@ -31,11 +31,13 @@
 #include "theme_editor_plugin.h"
 
 #include "core/os/keyboard.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector_dock.h"
 #include "editor/progress_dialog.h"
@@ -3760,10 +3762,10 @@ bool ThemeEditorPlugin::handles(Object *p_object) const {
 void ThemeEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(theme_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(theme_editor);
 	} else {
 		if (theme_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 
 		button->hide();
@@ -3843,6 +3845,6 @@ ThemeEditorPlugin::ThemeEditorPlugin() {
 	theme_editor->plugin = this;
 	theme_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Theme"), theme_editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("Theme"), theme_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_theme_bottom_panel", TTR("Toggle Theme Bottom Panel")));
 	button->hide();
 }

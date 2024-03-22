@@ -185,6 +185,7 @@ struct ActionSubrecord
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
+    hb_barrier ();
 
     switch (u.header.actionType)
     {
@@ -220,6 +221,7 @@ struct PostcompensationActionChain
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
+    hb_barrier ();
 
     unsigned int offset = min_size;
     for (unsigned int i = 0; i < count; i++)
@@ -389,6 +391,7 @@ struct just
     TRACE_SANITIZE (this);
 
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version.major == 1 &&
 			  horizData.sanitize (c, this, this) &&
 			  vertData.sanitize (c, this, this)));

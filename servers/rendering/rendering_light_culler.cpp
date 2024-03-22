@@ -33,7 +33,6 @@
 #include "core/math/plane.h"
 #include "core/math/projection.h"
 #include "rendering_server_globals.h"
-#include "scene/3d/camera_3d.h"
 
 #ifdef RENDERING_LIGHT_CULLER_DEBUG_STRINGS
 const char *RenderingLightCuller::Data::string_planes[] = {

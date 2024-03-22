@@ -387,7 +387,7 @@ using Godot.NativeInterop;
     }
 
     private static bool IsGodotInteropStruct(ITypeSymbol type) =>
-        GodotInteropStructs.Contains(type.FullQualifiedNameOmitGlobal());
+        _godotInteropStructs.Contains(type.FullQualifiedNameOmitGlobal());
 
     private static bool IsByRefParameter(IParameterSymbol parameter) =>
         parameter.RefKind is RefKind.In or RefKind.Out or RefKind.Ref;
@@ -448,7 +448,7 @@ using Godot.NativeInterop;
         source.Append(";\n");
     }
 
-    private static readonly string[] GodotInteropStructs =
+    private static readonly string[] _godotInteropStructs =
     {
         "Godot.NativeInterop.godot_ref",
         "Godot.NativeInterop.godot_variant_call_error",

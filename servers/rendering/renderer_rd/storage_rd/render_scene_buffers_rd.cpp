@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "render_scene_buffers_rd.h"
+#include "render_scene_buffers_rd.compat.inc"
+
 #include "core/config/project_settings.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
@@ -57,17 +59,18 @@ void RenderSceneBuffersRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_context", "context"), &RenderSceneBuffersRD::clear_context);
 
 	// Access to some core buffers so users don't need to know their names.
-	ClassDB::bind_method(D_METHOD("get_color_texture"), &RenderSceneBuffersRD::_get_color_texture);
-	ClassDB::bind_method(D_METHOD("get_color_layer", "layer"), &RenderSceneBuffersRD::_get_color_layer);
-	ClassDB::bind_method(D_METHOD("get_depth_texture"), &RenderSceneBuffersRD::_get_depth_texture);
-	ClassDB::bind_method(D_METHOD("get_depth_layer", "layer"), &RenderSceneBuffersRD::_get_depth_layer);
-	ClassDB::bind_method(D_METHOD("get_velocity_texture"), &RenderSceneBuffersRD::_get_velocity_texture);
-	ClassDB::bind_method(D_METHOD("get_velocity_layer", "layer"), &RenderSceneBuffersRD::_get_velocity_layer);
+	ClassDB::bind_method(D_METHOD("get_color_texture", "msaa"), &RenderSceneBuffersRD::_get_color_texture, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_color_layer", "layer", "msaa"), &RenderSceneBuffersRD::_get_color_layer, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_depth_texture", "msaa"), &RenderSceneBuffersRD::_get_depth_texture, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_depth_layer", "layer", "msaa"), &RenderSceneBuffersRD::_get_depth_layer, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_velocity_texture", "msaa"), &RenderSceneBuffersRD::_get_velocity_texture, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_velocity_layer", "layer", "msaa"), &RenderSceneBuffersRD::_get_velocity_layer, DEFVAL(false));
 
 	// Expose a few properties we're likely to use externally
 	ClassDB::bind_method(D_METHOD("get_render_target"), &RenderSceneBuffersRD::get_render_target);
 	ClassDB::bind_method(D_METHOD("get_view_count"), &RenderSceneBuffersRD::get_view_count);
 	ClassDB::bind_method(D_METHOD("get_internal_size"), &RenderSceneBuffersRD::get_internal_size);
+	ClassDB::bind_method(D_METHOD("get_msaa_3d"), &RenderSceneBuffersRD::get_msaa_3d);
 	ClassDB::bind_method(D_METHOD("get_use_taa"), &RenderSceneBuffersRD::get_use_taa);
 }
 

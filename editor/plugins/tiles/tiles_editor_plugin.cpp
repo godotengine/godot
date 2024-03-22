@@ -34,10 +34,12 @@
 
 #include "core/os/mutex.h"
 
+#include "editor/editor_command_palette.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"
@@ -46,8 +48,8 @@
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/2d/tile_set.h"
 #include "scene/resources/image_texture.h"
-#include "scene/resources/tile_set.h"
 
 TilesEditorUtils *TilesEditorUtils::singleton = nullptr;
 TileMapEditorPlugin *tile_map_plugin_singleton = nullptr;
@@ -68,9 +70,6 @@ void TilesEditorUtils::_thread_func(void *ud) {
 }
 
 void TilesEditorUtils::_thread() {
-	CallQueue queue;
-	MessageQueue::set_thread_singleton_override(&queue);
-
 	pattern_thread_exited.clear();
 	while (!pattern_thread_exit.is_set()) {
 		pattern_preview_sem.wait();
@@ -130,8 +129,6 @@ void TilesEditorUtils::_thread() {
 				// Add the viewport at the last moment to avoid rendering too early.
 				callable_mp((Node *)EditorNode::get_singleton(), &Node::add_child).call_deferred(viewport, false, Node::INTERNAL_MODE_DISABLED);
 
-				MessageQueue::get_singleton()->flush();
-
 				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorUtils *>(this), &TilesEditorUtils::_preview_frame_started), Object::CONNECT_ONE_SHOT);
 
 				pattern_preview_done.wait();
@@ -144,11 +141,7 @@ void TilesEditorUtils::_thread() {
 				viewport->queue_free();
 			}
 		}
-
-		MessageQueue::get_singleton()->flush();
 	}
-
-	MessageQueue::get_singleton()->flush();
 	pattern_thread_exited.set();
 }
 
@@ -479,11 +472,11 @@ bool TileMapEditorPlugin::handles(Object *p_object) const {
 void TileMapEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(editor);
+		EditorNode::get_bottom_panel()->make_item_visible(editor);
 	} else {
 		button->hide();
 		if (editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 	}
 }
@@ -498,7 +491,7 @@ void TileMapEditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) 
 
 void TileMapEditorPlugin::hide_editor() {
 	if (editor->is_visible_in_tree()) {
-		EditorNode::get_singleton()->hide_bottom_panel();
+		EditorNode::get_bottom_panel()->hide_bottom_panel();
 	}
 }
 
@@ -519,7 +512,7 @@ TileMapEditorPlugin::TileMapEditorPlugin() {
 	editor->connect("change_selected_layer_request", callable_mp(this, &TileMapEditorPlugin::_select_layer));
 	editor->hide();
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("TileMap"), editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("TileMap"), editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_map_bottom_panel", TTR("Toggle TileMap Bottom Panel")));
 	button->hide();
 }
 
@@ -544,12 +537,12 @@ void TileSetEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
 		if (!tile_map_plugin_singleton->is_editor_visible()) {
-			EditorNode::get_singleton()->make_bottom_panel_item_visible(editor);
+			EditorNode::get_bottom_panel()->make_item_visible(editor);
 		}
 	} else {
 		button->hide();
 		if (editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 	}
 }
@@ -570,7 +563,7 @@ TileSetEditorPlugin::TileSetEditorPlugin() {
 	editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	editor->hide();
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("TileSet"), editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("TileSet"), editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_set_bottom_panel", TTR("Toggle TileSet Bottom Panel")));
 	button->hide();
 }
 

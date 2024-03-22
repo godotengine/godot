@@ -4,9 +4,15 @@
 		A countdown timer.
 	</brief_description>
 	<description>
-		Counts down a specified interval and emits a signal on reaching 0. Can be set to repeat or "one-shot" mode.
-		[b]Note:[/b] Timers are affected by [member Engine.time_scale], a higher scale means quicker timeouts, and vice versa.
+		The [Timer] node is a countdown timer and is the simplest way to handle time-based logic in the engine. When a timer reaches the end of its [member wait_time], it will emit the [signal timeout] signal.
+		After a timer enters the tree, it can be manually started with [method start]. A timer node is also started automatically if [member autostart] is [code]true[/code].
+		Without requiring much code, a timer node can be added and configured in the editor. The [signal timeout] signal it emits can also be connected through the Node dock in the editor:
+		[codeblock]
+		func _on_timer_timeout():
+		    print("Time to attack!")
+		[/codeblock]
 		[b]Note:[/b] To create a one-shot timer without instantiating a node, use [method SceneTree.create_timer].
+		[b]Note:[/b] Timers are affected by [member Engine.time_scale]. The higher the time scale, the sooner timers will end. How often a timer processes may depend on the framerate or [member Engine.physics_ticks_per_second].
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>

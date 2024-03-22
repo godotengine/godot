@@ -255,6 +255,37 @@ VARIANT_ENUM_CAST(VisualShader::VaryingType)
 class VisualShaderNode : public Resource {
 	GDCLASS(VisualShaderNode, Resource);
 
+public:
+	enum PortType {
+		PORT_TYPE_SCALAR,
+		PORT_TYPE_SCALAR_INT,
+		PORT_TYPE_SCALAR_UINT,
+		PORT_TYPE_VECTOR_2D,
+		PORT_TYPE_VECTOR_3D,
+		PORT_TYPE_VECTOR_4D,
+		PORT_TYPE_BOOLEAN,
+		PORT_TYPE_TRANSFORM,
+		PORT_TYPE_SAMPLER,
+		PORT_TYPE_MAX,
+	};
+
+	enum Category {
+		CATEGORY_NONE,
+		CATEGORY_OUTPUT,
+		CATEGORY_COLOR,
+		CATEGORY_CONDITIONAL,
+		CATEGORY_INPUT,
+		CATEGORY_SCALAR,
+		CATEGORY_TEXTURES,
+		CATEGORY_TRANSFORM,
+		CATEGORY_UTILITY,
+		CATEGORY_VECTOR,
+		CATEGORY_SPECIAL,
+		CATEGORY_PARTICLE,
+		CATEGORY_MAX
+	};
+
+private:
 	int port_preview = -1;
 
 	HashMap<int, bool> connected_input_ports;
@@ -270,19 +301,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum PortType {
-		PORT_TYPE_SCALAR,
-		PORT_TYPE_SCALAR_INT,
-		PORT_TYPE_SCALAR_UINT,
-		PORT_TYPE_VECTOR_2D,
-		PORT_TYPE_VECTOR_3D,
-		PORT_TYPE_VECTOR_4D,
-		PORT_TYPE_BOOLEAN,
-		PORT_TYPE_TRANSFORM,
-		PORT_TYPE_SAMPLER,
-		PORT_TYPE_MAX,
-	};
-
 	bool is_simple_decl() const;
 
 	virtual String get_caption() const = 0;
@@ -347,6 +365,8 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const = 0;
 
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
+
+	virtual Category get_category() const;
 
 	VisualShaderNode();
 };
@@ -507,6 +527,8 @@ public:
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
+	virtual Category get_category() const override { return CATEGORY_INPUT; }
+
 	VisualShaderNodeInput();
 };
 
@@ -545,6 +567,8 @@ public:
 	virtual String get_caption() const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual Category get_category() const override { return CATEGORY_OUTPUT; }
 
 	VisualShaderNodeOutput();
 };
@@ -588,6 +612,8 @@ public:
 
 	virtual Vector<StringName> get_editable_properties() const override;
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
+
+	virtual Category get_category() const override { return CATEGORY_INPUT; }
 
 	VisualShaderNodeParameter();
 };
@@ -661,6 +687,8 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
+	virtual Category get_category() const override { return CATEGORY_INPUT; }
+
 	VisualShaderNodeParameterRef();
 };
 
@@ -712,6 +740,8 @@ public:
 
 	void set_description(const String &p_description);
 	String get_description() const;
+
+	virtual Category get_category() const override { return CATEGORY_SPECIAL; }
 
 	VisualShaderNodeComment();
 };
@@ -780,6 +810,8 @@ public:
 	bool is_editable() const;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual Category get_category() const override { return CATEGORY_SPECIAL; }
 
 	VisualShaderNodeGroupBase();
 };
@@ -887,6 +919,8 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
+	virtual Category get_category() const override { return CATEGORY_OUTPUT; }
+
 	VisualShaderNodeVaryingSetter();
 };
 
@@ -906,6 +940,8 @@ public:
 	virtual bool has_output_port_preview(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual Category get_category() const override { return CATEGORY_INPUT; }
 
 	VisualShaderNodeVaryingGetter();
 };

@@ -32,7 +32,7 @@
 
 #include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/collision_polygon_3d.h"
+#include "scene/3d/physics/collision_polygon_3d.h"
 
 CollisionPolygon3DGizmoPlugin::CollisionPolygon3DGizmoPlugin() {
 	const Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");

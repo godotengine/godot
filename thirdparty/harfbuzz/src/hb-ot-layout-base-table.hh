@@ -135,6 +135,7 @@ struct BaseCoord
   {
     TRACE_SANITIZE (this);
     if (unlikely (!u.format.sanitize (c))) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 1: return_trace (u.format1.sanitize (c));
     case 2: return_trace (u.format2.sanitize (c));
@@ -496,6 +497,7 @@ struct BASE
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  likely (version.major == 1) &&
 			  hAxis.sanitize (c, this) &&
 			  vAxis.sanitize (c, this) &&

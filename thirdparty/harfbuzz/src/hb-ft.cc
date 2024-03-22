@@ -225,7 +225,7 @@ _hb_ft_hb_font_check_changed (hb_font_t *font,
  * Sets the FT_Load_Glyph load flags for the specified #hb_font_t.
  *
  * For more information, see 
- * https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_load_xxx
+ * <https://freetype.org/freetype2/docs/reference/ft2-glyph_retrieval.html#ft_load_xxx>
  *
  * This function works with #hb_font_t objects created by
  * hb_ft_font_create() or hb_ft_font_create_referenced().
@@ -253,7 +253,7 @@ hb_ft_font_set_load_flags (hb_font_t *font, int load_flags)
  * Fetches the FT_Load_Glyph load flags of the specified #hb_font_t.
  *
  * For more information, see 
- * https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_load_xxx
+ * <https://freetype.org/freetype2/docs/reference/ft2-glyph_retrieval.html#ft_load_xxx>
  *
  * This function works with #hb_font_t objects created by
  * hb_ft_font_create() or hb_ft_font_create_referenced().

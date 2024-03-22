@@ -69,7 +69,7 @@
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif
 
-template <class T>
+template <typename T>
 class ComAutoreleaseRef {
 public:
 	T *reference = nullptr;

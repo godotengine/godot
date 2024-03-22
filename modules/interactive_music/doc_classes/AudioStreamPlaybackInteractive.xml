@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamPlaybackInteractive" inherits="AudioStreamPlayback" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Playback component of [AudioStreamInteractive].
+	</brief_description>
+	<description>
+		Playback component of [AudioStreamInteractive]. Contains functions to change the currently played clip.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="switch_to_clip">
+			<return type="void" />
+			<param index="0" name="clip_index" type="int" />
+			<description>
+				Switch to a clip (by index).
+			</description>
+		</method>
+		<method name="switch_to_clip_by_name">
+			<return type="void" />
+			<param index="0" name="clip_name" type="StringName" />
+			<description>
+				Switch to a clip (by name).
+			</description>
+		</method>
+	</methods>
+</class>

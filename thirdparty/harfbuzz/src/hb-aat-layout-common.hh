@@ -191,6 +191,7 @@ struct LookupSegmentArray
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  first <= last &&
 		  valuesZ.sanitize (c, base, last - first + 1));
   }
@@ -199,6 +200,7 @@ struct LookupSegmentArray
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  first <= last &&
 		  valuesZ.sanitize (c, base, last - first + 1, std::forward<Ts> (ds)...));
   }
@@ -360,6 +362,7 @@ struct LookupFormat10
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  valueSize <= 4 &&
 		  valueArrayZ.sanitize (c, glyphCount * valueSize));
   }
@@ -415,6 +418,7 @@ struct Lookup
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 0: return_trace (u.format0.sanitize (c));
     case 2: return_trace (u.format2.sanitize (c));
@@ -429,6 +433,7 @@ struct Lookup
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 0: return_trace (u.format0.sanitize (c, base));
     case 2: return_trace (u.format2.sanitize (c, base));
@@ -558,6 +563,7 @@ struct StateTable
   {
     TRACE_SANITIZE (this);
     if (unlikely (!(c->check_struct (this) &&
+		    hb_barrier () &&
 		    nClasses >= 4 /* Ensure pre-defined classes fit.  */ &&
 		    classTable.sanitize (c, this)))) return_trace (false);
 

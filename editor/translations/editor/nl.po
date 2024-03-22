@@ -78,7 +78,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-28 14:02+0000\n"
+"PO-Revision-Date: 2024-02-26 06:02+0000\n"
 "Last-Translator: Luka van der Plas <lukavdplas@users.noreply.hosted.weblate."
 "org>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
@@ -88,7 +88,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Main Thread"
 msgstr "Hoofdthread"
@@ -532,9 +532,6 @@ msgstr "Gebeurtenis bewerken"
 msgid "Remove Event"
 msgstr "Gebeurtenis verwijderen"
 
-msgid "Filter by name..."
-msgstr "Op naam filteren..."
-
 msgid "Clear All"
 msgstr "Alles verwijderen"
 
@@ -660,33 +657,6 @@ msgstr ""
 msgid "Can't change loop mode on animation embedded in another scene."
 msgstr ""
 "Kan lusmodus niet wijzigen voor animatie die ingebed is in een andere scène."
-
-msgid "Property Track"
-msgstr "Eigenschappen-track"
-
-msgid "3D Position Track"
-msgstr "3D-positie-track"
-
-msgid "3D Rotation Track"
-msgstr "3D-rotatie-track"
-
-msgid "3D Scale Track"
-msgstr "3D-schaal-track"
-
-msgid "Blend Shape Track"
-msgstr "Blend-vorm-track"
-
-msgid "Call Method Track"
-msgstr "Methode-oproep-track"
-
-msgid "Bezier Curve Track"
-msgstr "Bézier-curve-track"
-
-msgid "Audio Playback Track"
-msgstr "Audio-afspelen-track"
-
-msgid "Animation Playback Track"
-msgstr "Animatie-afspelen-track"
 
 msgid "Animation length (frames)"
 msgstr "Animatielengte (frames)"
@@ -819,9 +789,6 @@ msgstr "Lusinterpolatie begrenzen"
 
 msgid "Wrap Loop Interp"
 msgstr "Lusinterpolatie naadloos maken"
-
-msgid "Insert Key"
-msgstr "Sleutel invoegen"
 
 msgid "Duplicate Key(s)"
 msgstr "Sleutel(s) dupliceren"
@@ -983,12 +950,6 @@ msgstr "Animatie-schaal-sleutels"
 msgid "Make Easing Keys"
 msgstr "Verzachtingssleutels toevoegen"
 
-msgid ""
-"This option does not work for Bezier editing, as it's only a single track."
-msgstr ""
-"Deze optie werkt niet in de Bézier-bewerkmodus omdat deze slechts uit één "
-"spoor bestaat."
-
 msgid "Animation Add RESET Keys"
 msgstr "Animatie-RESET-sleutels toevoegen"
 
@@ -1080,24 +1041,6 @@ msgstr "Bewerken"
 msgid "Animation properties."
 msgstr "Animatie-eigenschappen."
 
-msgid "Copy Tracks"
-msgstr "Sporen kopiëren"
-
-msgid "Scale Selection"
-msgstr "Selectie schalen"
-
-msgid "Scale From Cursor"
-msgstr "Schalen vanuit cursor"
-
-msgid "Make Easing Selection"
-msgstr "Verzachtingsselectie maken"
-
-msgid "Duplicate Selection"
-msgstr "Selectie dupliceren"
-
-msgid "Duplicate Transposed"
-msgstr "Getransponeerde dupliceren"
-
 msgid "Delete Selection"
 msgstr "Selectie verwijderen"
 
@@ -1109,15 +1052,6 @@ msgstr "Naar vorige stap gaan"
 
 msgid "Apply Reset"
 msgstr "Reset doorvoeren"
-
-msgid "Bake Animation"
-msgstr "Animatie bakken"
-
-msgid "Optimize Animation (no undo)"
-msgstr "Animatie optimaliseren (onomkeerbaar)"
-
-msgid "Clean-Up Animation (no undo)"
-msgstr "Animatie opschonen (onomkeerbaar)"
 
 msgid "Pick a node to animate:"
 msgstr "Kies een knoop om te animeren:"
@@ -1946,9 +1880,6 @@ msgstr "Mapnaam is ongeldig."
 msgid "Thanks from the Godot community!"
 msgstr "Bedankt van de Godot-gemeenschap!"
 
-msgid "Click to copy."
-msgstr "Klik om te kopiëren."
-
 msgid "Godot Engine contributors"
 msgstr "Bijdragers aan Godot Engine"
 
@@ -2460,9 +2391,6 @@ msgstr "Profiel laden"
 msgid "Export Profile"
 msgstr "Profiel exporteren"
 
-msgid "Forced classes on detect:"
-msgstr "Klassen geforceerd bij detectie:"
-
 msgid "Edit Build Configuration Profile"
 msgstr "Bouwconfiguratieprofiel bewerken"
 
@@ -2493,6 +2421,12 @@ msgstr "[leeg]"
 
 msgid "[unsaved]"
 msgstr "[niet opgeslagen]"
+
+msgid "%s - Godot Engine"
+msgstr "%s - Godot Engine"
+
+msgid "Dock Position"
+msgstr "Tabbladpositie"
 
 msgid "3D Editor"
 msgstr "3D-bewerker"
@@ -2708,6 +2642,21 @@ msgstr ""
 "Deze methode heeft geen instantie nodig om aangeroepen te kunnen worden.\n"
 "Hij kan rechtstreeks aangeroepen worden via de naam van de klasse."
 
+msgid "Constructors"
+msgstr "Constructors"
+
+msgid "Operators"
+msgstr "Operatoren"
+
+msgid "Method Descriptions"
+msgstr "Methode-beschrijvingen"
+
+msgid "Constructor Descriptions"
+msgstr "Constructor-beschrijvingen"
+
+msgid "Operator Descriptions"
+msgstr "Operator-beschrijvingen"
+
 msgid "Error codes returned:"
 msgstr "Foutcodes teruggegeven:"
 
@@ -2753,19 +2702,6 @@ msgstr "Erft:"
 msgid "Inherited by:"
 msgstr "Geërfd door:"
 
-msgid ""
-"This class is marked as deprecated. It will be removed in future versions."
-msgstr ""
-"Deze klasse is gemarkeerd als verouderd en zal in een toekomstige versie "
-"verwijderd worden."
-
-msgid ""
-"This class is marked as experimental. It is subject to likely change or "
-"possible removal in future versions. Use at your own discretion."
-msgstr ""
-"Deze klasse is gemarkeerd als experimenteel en kan plots wijzigen of "
-"verwijderd worden in toekomstige versies. Gebruik op eigen risico."
-
 msgid "Description"
 msgstr "Beschrijving"
 
@@ -2803,12 +2739,6 @@ msgstr "standaard:"
 
 msgid "property:"
 msgstr "eigenschap:"
-
-msgid "Constructors"
-msgstr "Constructors"
-
-msgid "Operators"
-msgstr "Operatoren"
 
 msgid "Theme Properties"
 msgstr "Thema-eigenschappen"
@@ -2863,15 +2793,6 @@ msgstr ""
 "Er is momenteel geen beschrijving voor deze eigenschap. Help ons alstublieft "
 "door [color=$color][url=$url]een bijdrage te leveren[/url][/color]!"
 
-msgid "Constructor Descriptions"
-msgstr "Constructor-beschrijvingen"
-
-msgid "Method Descriptions"
-msgstr "Methode-beschrijvingen"
-
-msgid "Operator Descriptions"
-msgstr "Operator-beschrijvingen"
-
 msgid "Metadata:"
 msgstr "Metadata:"
 
@@ -2884,9 +2805,6 @@ msgstr "Methode:"
 msgid "Signal:"
 msgstr "Signaal:"
 
-msgid "Theme Item:"
-msgstr "Thema-item:"
-
 msgid "No description available."
 msgstr "Geen beschrijving beschikbaar."
 
@@ -2895,6 +2813,24 @@ msgstr "%d overeenkomst."
 
 msgid "%d matches."
 msgstr "%d overeenkomst(en)."
+
+msgid "Method"
+msgstr "Methode"
+
+msgid "Signal"
+msgstr "Signaal"
+
+msgid "Constant"
+msgstr "Constante"
+
+msgid "Property"
+msgstr "Eigenschap"
+
+msgid "Theme Property"
+msgstr "Thema-eigenschap"
+
+msgid "Annotation"
+msgstr "Annotatie"
 
 msgid "Search Help"
 msgstr "Hulp zoeken"
@@ -2943,24 +2879,6 @@ msgstr "(constructors)"
 
 msgid "Class"
 msgstr "Klasse"
-
-msgid "Method"
-msgstr "Methode"
-
-msgid "Signal"
-msgstr "Signaal"
-
-msgid "Annotation"
-msgstr "Annotatie"
-
-msgid "Constant"
-msgstr "Constante"
-
-msgid "Property"
-msgstr "Eigenschap"
-
-msgid "Theme Property"
-msgstr "Thema-eigenschap"
 
 msgid "This member is marked as deprecated."
 msgstr "Dit lid is gemarkeerd als verouderd."
@@ -3434,9 +3352,6 @@ msgstr "Recente scènes wissen"
 msgid "There is no defined scene to run."
 msgstr "Er is geen startscène ingesteld."
 
-msgid "%s - Godot Engine"
-msgstr "%s - Godot Engine"
-
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -3461,14 +3376,14 @@ msgstr ""
 "De geselecteerde scene '%s' is geen scènebestand, selecteer een andere?\n"
 "Je kan dit later nog aanpassen in Project→Projectinstellingen→Application."
 
+msgid "Default"
+msgstr "Standaard"
+
 msgid "Save Layout"
 msgstr "Indeling opslaan"
 
 msgid "Delete Layout"
 msgstr "Indeling verwijderen"
-
-msgid "Default"
-msgstr "Standaard"
 
 msgid "%d second ago"
 msgid_plural "%d seconds ago"
@@ -3519,9 +3434,6 @@ msgstr "Compatibiliteit"
 msgid "Pan View"
 msgstr "Panweergave"
 
-msgid "Dock Position"
-msgstr "Tabbladpositie"
-
 msgid "Distraction Free Mode"
 msgstr "Afleidingsvrijemodus"
 
@@ -3564,6 +3476,9 @@ msgstr "Scène sluiten"
 msgid "Quit"
 msgstr "Afsluiten"
 
+msgid "Editor Settings..."
+msgstr "Editor Instellingen..."
+
 msgid "Project"
 msgstr "Project"
 
@@ -3595,13 +3510,10 @@ msgid "Reload Current Project"
 msgstr "Huidig Project Herladen"
 
 msgid "Quit to Project List"
-msgstr "Terug naar Project Overzicht"
+msgstr "Terug naar Projectoverzicht"
 
 msgid "Editor"
 msgstr "Editor"
-
-msgid "Editor Settings..."
-msgstr "Editor Instellingen..."
 
 msgid "Editor Layout"
 msgstr "Editorindeling"
@@ -3658,9 +3570,6 @@ msgstr "Stel een Feature voor"
 msgid "Send Docs Feedback"
 msgstr "Suggesties voor documentatie verzenden"
 
-msgid "About Godot"
-msgstr "Over Godot"
-
 msgid "Support Godot Development"
 msgstr "Ondersteun Godot Development"
 
@@ -3679,9 +3588,6 @@ msgstr "Inspecteur"
 msgid "Node"
 msgstr "Node"
 
-msgid "Expand Bottom Panel"
-msgstr "Vergroot Onderste Paneel"
-
 msgid "Output"
 msgstr "Uitvoer"
 
@@ -3698,17 +3604,6 @@ msgstr "Sjablonen beheren"
 
 msgid "Install from file"
 msgstr "Installeer Vanuit Bestand"
-
-msgid ""
-"The Android build template is already installed in this project and it won't "
-"be overwritten.\n"
-"Remove the \"res://android/build\" directory manually before attempting this "
-"operation again."
-msgstr ""
-"De sjabloon voor Android-build is al in dit project geïnstalleerd en zal niet "
-"overschreven worden.\n"
-"Verwijder de map \"res://android/build\" handmatig voordat je deze bewerking "
-"opnieuw probeert."
 
 msgid "Show in File Manager"
 msgstr "Weergeven in Bestandsbeheer"
@@ -3774,8 +3669,8 @@ msgstr "OK"
 msgid "Warning!"
 msgstr "Waarschuwing!"
 
-msgid "Main Script:"
-msgstr "Hoofdscript:"
+msgid "On"
+msgstr "Aan"
 
 msgid "Edit Plugin"
 msgstr "Bewerk Plugin"
@@ -3789,14 +3684,8 @@ msgstr "Versie"
 msgid "Author"
 msgstr "Auteur"
 
-msgid "Status"
-msgstr "Status"
-
 msgid "Edit Text:"
 msgstr "Tekst bewerken:"
-
-msgid "On"
-msgstr "Aan"
 
 msgid "No name provided."
 msgstr "Geen naam opgegeven."
@@ -3875,8 +3764,8 @@ msgstr ""
 "De geselecteerde hulpbron (%s) komt niet overeen met het verwachte type van "
 "deze eigenschap (%s)."
 
-msgid "Quick Load"
-msgstr "Snel Laden"
+msgid "Load..."
+msgstr "Laden..."
 
 msgid "Make Unique"
 msgstr "Maak Uniek"
@@ -3893,11 +3782,8 @@ msgstr "Omzetten naar %s"
 msgid "New %s"
 msgstr "Nieuw %s"
 
-msgid "New Script"
-msgstr "Nieuw Script"
-
-msgid "Extend Script"
-msgstr "Script uitbreiden"
+msgid "New Script..."
+msgstr "Nieuw Script..."
 
 msgid "No Remote Debug export presets configured."
 msgstr "Geen remote debugging exporteerpresets ingesteld."
@@ -4167,6 +4053,9 @@ msgstr ""
 "Indien aangevinkt, zal deze preset beschikbaar zijn voor one-click deploy.\n"
 "Per platform kan maar een preset als runnable gekozen worden."
 
+msgid "Advanced Options"
+msgstr "Geavanceerde opties"
+
 msgid "Export Path"
 msgstr "Export Pad"
 
@@ -4313,9 +4202,6 @@ msgstr "Nieuwe map..."
 msgid "New Scene..."
 msgstr "Nieuwe scène..."
 
-msgid "New Script..."
-msgstr "Nieuw Script..."
-
 msgid "New Resource..."
 msgstr "Nieuwe bron..."
 
@@ -4393,50 +4279,20 @@ msgstr "Vervang..."
 msgid "Searching..."
 msgstr "Aan het zoeken..."
 
+msgid "Rename Group"
+msgstr "Groepen hernoemen"
+
 msgid "Add to Group"
 msgstr "Toevoegen aan Groep"
 
 msgid "Remove from Group"
 msgstr "Verwijderen uit Groep"
 
-msgid "Invalid group name."
-msgstr "Ongeldige groepnaam."
-
-msgid "Group name already exists."
-msgstr "Groepnaam bestaat al."
-
-msgid "Rename Group"
-msgstr "Groepen hernoemen"
-
-msgid "Delete Group"
-msgstr "Groep Verwijderen"
-
-msgid "Groups"
-msgstr "Groepen"
-
-msgid "Nodes Not in Group"
-msgstr "Knopen niet in de groep"
-
-msgid "Nodes in Group"
-msgstr "Knopen in de groep"
-
-msgid "Empty groups will be automatically removed."
-msgstr "Lege groepen worden automatisch verwijderd."
-
-msgid "Group Editor"
-msgstr "Groep Bewerker"
-
-msgid "Manage Groups"
-msgstr "Groepen beheren"
+msgid "Expand Bottom Panel"
+msgstr "Vergroot Onderste Paneel"
 
 msgid "Move"
 msgstr "Verplaatsen"
-
-msgid "Please select a base directory first."
-msgstr "Kies eerst een basismap."
-
-msgid "Choose a Directory"
-msgstr "Kies een map"
 
 msgid "Network"
 msgstr "Netwerk"
@@ -4571,9 +4427,6 @@ msgstr "Toggle Zichtbaarheid"
 msgid "Unlock Node"
 msgstr "Knoop ontgrendelen"
 
-msgid "Button Group"
-msgstr "Knoppen Groep"
-
 msgid "(Connecting From)"
 msgstr "(Verbonden vanaf)"
 
@@ -4589,9 +4442,6 @@ msgid "Node is in this group:"
 msgid_plural "Node is in the following groups:"
 msgstr[0] "Node is in deze groep:"
 msgstr[1] "Node is in de volgende groepen:"
-
-msgid "Open in Editor"
-msgstr "Openen in Editor"
 
 msgid "Open Script:"
 msgstr "Open Script:"
@@ -4610,6 +4460,9 @@ msgstr ""
 "AnimationPlayer is vastgezet.\n"
 "Klik om los te maken."
 
+msgid "Open in Editor"
+msgstr "Openen in Editor"
+
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Ongeldige knoopnaam, deze karakters zijn niet toegestaan:"
 
@@ -4621,9 +4474,6 @@ msgstr "Knoop configuratie waarschuwing!"
 
 msgid "Select a Node"
 msgstr "Knoop uitkiezen"
-
-msgid "Offset:"
-msgstr "Afstand:"
 
 msgid "Importing Scene..."
 msgstr "Scène wordt geïmporteerd..."
@@ -4645,6 +4495,12 @@ msgstr "Fout bij uitvoeren post-import script:"
 
 msgid "Saving..."
 msgstr "Opslaan..."
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Offset:"
+msgstr "Afstand:"
 
 msgid "Importer:"
 msgstr "Lader:"
@@ -4736,6 +4592,9 @@ msgstr "Localisatie"
 msgid "Set %s on %d nodes"
 msgstr "Verwijder %d knopen"
 
+msgid "Groups"
+msgstr "Groepen"
+
 msgid "Select a single node to edit its signals and groups."
 msgstr "Selecteer één knoop om zijn signalen groepen aan te passen."
 
@@ -4801,9 +4660,6 @@ msgstr "Animatie toevoegen"
 
 msgid "Add %s"
 msgstr "Voeg %s Toe"
-
-msgid "Load..."
-msgstr "Laden..."
 
 msgid "Move Node Point"
 msgstr "Knooppunt bewegen"
@@ -5440,12 +5296,6 @@ msgstr "Relatief kleven"
 msgid "Use Pixel Snap"
 msgstr "Aan pixelraster kleven"
 
-msgid "Smart Snapping"
-msgstr "Slim Kleven"
-
-msgid "Configure Snap..."
-msgstr "Kleefinstellingen..."
-
 msgid "Snap to Parent"
 msgstr "Aan ouder kleven"
 
@@ -5463,6 +5313,12 @@ msgstr "Aan andere knopen kleven"
 
 msgid "Snap to Guides"
 msgstr "Aan gidslijnen kleven"
+
+msgid "Smart Snapping"
+msgstr "Slim Kleven"
+
+msgid "Configure Snap..."
+msgstr "Kleefinstellingen..."
 
 msgid "Skeleton Options"
 msgstr "Skeletinstellingen"
@@ -5491,8 +5347,8 @@ msgstr "Toon Oorsprongspunt"
 msgid "Show Viewport"
 msgstr "Toon beeldvenster"
 
-msgid "Show Group And Lock Icons"
-msgstr "Toon Groep en Slot Iconen"
+msgid "Gizmos"
+msgstr "Gizmos"
 
 msgid "Center Selection"
 msgstr "Midden Selectie"
@@ -5514,6 +5370,9 @@ msgstr "Schaalmasker voor sleutelinvoer."
 
 msgid "Insert keys (based on mask)."
 msgstr "Sleutel invoegen (gebaseerd op masker)."
+
+msgid "Insert Key"
+msgstr "Sleutel invoegen"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -5632,8 +5491,14 @@ msgstr "Randpixels"
 msgid "Directed Border Pixels"
 msgstr "Gerichte randpixels"
 
+msgid "Generate Visibility AABB"
+msgstr "Genereer Zichtbaarheid AABB"
+
 msgid "Create Emission Points From Node"
 msgstr "Produceer emissiepunt vanuit knoop"
+
+msgid "Generation Time (sec):"
+msgstr "Genereer Tijd (sec):"
 
 msgid "Load Curve Preset"
 msgstr "Curvevoorinstelling laden"
@@ -5742,11 +5607,6 @@ msgstr ""
 "Wanneer dit op afstand wordt gebruikt op een andere machine, is dit "
 "efficiënter met de netwerk bestandssysteem optie aan."
 
-msgid "Run %d Instance"
-msgid_plural "Run %d Instances"
-msgstr[0] "Run %d Instantie"
-msgstr[1] "Run %d Instanties"
-
 msgid " - Variation"
 msgstr " - Variatie"
 
@@ -5795,9 +5655,6 @@ msgstr "Emissiemasker wissen"
 msgid "GPUParticles2D"
 msgstr "GPUParticles2D"
 
-msgid "Generation Time (sec):"
-msgstr "Genereer Tijd (sec):"
-
 msgid "The geometry's faces don't contain any area."
 msgstr "De vlakken van de geometrie bevatten geen enkel gebied."
 
@@ -5827,9 +5684,6 @@ msgstr "Volume"
 
 msgid "Emission Source:"
 msgstr "Emissiebron:"
-
-msgid "Generate Visibility AABB"
-msgstr "Genereer Zichtbaarheid AABB"
 
 msgid "GPUParticles3D"
 msgstr "GPUParticles3D"
@@ -6144,6 +5998,9 @@ msgstr "Bekijk Omgeving"
 msgid "View Gizmos"
 msgstr "Toon Gizmos"
 
+msgid "View Grid"
+msgstr "Bekijk Raster"
+
 msgid "View Information"
 msgstr "Bekijk Informatie"
 
@@ -6280,14 +6137,8 @@ msgstr "3 Beeldvensters (Alt)"
 msgid "4 Viewports"
 msgstr "4 Beeldvensters"
 
-msgid "Gizmos"
-msgstr "Gizmos"
-
 msgid "View Origin"
 msgstr "Bekijk Oorsprongspunt"
-
-msgid "View Grid"
-msgstr "Bekijk Raster"
 
 msgid "Settings..."
 msgstr "Instellingen..."
@@ -6306,9 +6157,6 @@ msgstr "Schaal-stapgrootte (%):"
 
 msgid "Viewport Settings"
 msgstr "Beeldvensterinstellingen"
-
-msgid "Perspective FOV (deg.):"
-msgstr "Gezichtsveld (graden):"
 
 msgid "View Z-Near:"
 msgstr "Bekijk Z-Near:"
@@ -6388,6 +6236,9 @@ msgstr "Verwijder Punt"
 msgid "Close Curve"
 msgstr "Sluit Curve"
 
+msgid "Please Confirm..."
+msgstr "Bevestig alstublieft..."
+
 msgid "Mirror Handle Angles"
 msgstr "Spiegel Hoekhendels"
 
@@ -6396,9 +6247,6 @@ msgstr "Spiegel Lengtehendels"
 
 msgid "Curve Point #"
 msgstr "Curve Punt #"
-
-msgid "Set Curve Point Position"
-msgstr "Zet Curve Punt Positie"
 
 msgid "Set Curve Out Position"
 msgstr "Set Curve Uit Positie"
@@ -6414,6 +6262,9 @@ msgstr "Verwijder Pad Punt"
 
 msgid "Split Segment (in curve)"
 msgstr "Splits Segment (in curve)"
+
+msgid "Set Curve Point Position"
+msgstr "Zet Curve Punt Positie"
 
 msgid "Move Joint"
 msgstr "Beweeg Punt"
@@ -6678,14 +6529,14 @@ msgstr "Geschiedenis Vorige"
 msgid "History Next"
 msgstr "Geschiedenis Volgende"
 
-msgid "Theme"
-msgstr "Thema"
-
 msgid "Import Theme..."
 msgstr "Thema importeren..."
 
 msgid "Reload Theme"
 msgstr "Thema herladen"
+
+msgid "Theme"
+msgstr "Thema"
 
 msgid "Save Theme"
 msgstr "Thema Opslaan"
@@ -6800,6 +6651,9 @@ msgstr "Vouw Alle Regels"
 msgid "Unfold All Lines"
 msgstr "Ontvouw Alle Regels"
 
+msgid "Duplicate Selection"
+msgstr "Selectie dupliceren"
+
 msgid "Evaluate Selection"
 msgstr "Evalueer selectie"
 
@@ -6887,10 +6741,6 @@ msgstr "Creëer LightOccluder2D"
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D Voorbeeldweergave"
 
-msgid "Can't convert a sprite using animation frames to mesh."
-msgstr ""
-"Een sprite die animatiebeelden gebruikt kan niet naar een Mesh omgezet worden."
-
 msgid "Invalid geometry, can't replace by mesh."
 msgstr "Ongeldige geometrie, kan niet worden vervangen door Mesh."
 
@@ -6941,12 +6791,6 @@ msgstr "Afbeeldingen laden mislukt"
 
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "FOUT: Kan framebron niet laden!"
-
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Klembord voor bronnen is leeg of bevat geen textuur!"
-
-msgid "Paste Frame"
-msgstr "Frame Plakken"
 
 msgid "Add Empty"
 msgstr "Lege Toevoegen"
@@ -7755,6 +7599,49 @@ msgstr ""
 msgid "Visual Shader Mode Changed"
 msgstr "VisualShader-modus aangepast"
 
+msgid "Are you sure to run %d projects at once?"
+msgstr "Weet je zeker dat je %d projecten wilt uitvoeren?"
+
+msgid "Remove %d projects from the list?"
+msgstr "%d projecten uit de lijst verwijderen?"
+
+msgid "Remove this project from the list?"
+msgstr "Dit project van de lijst verwijderen?"
+
+msgid ""
+"Remove all missing projects from the list?\n"
+"The project folders' contents won't be modified."
+msgstr ""
+"Alle ontbrekende projecten uit de lijst verwijderen?\n"
+"De inhoud van de projectmap wordt niet veranderd."
+
+msgid "New Project"
+msgstr "Nieuw Project"
+
+msgid "Scan"
+msgstr "Inlezen"
+
+msgid "Loading, please wait..."
+msgstr "Aan het laden, even wachten a.u.b..."
+
+msgid "Create New Project"
+msgstr "Creëer Nieuw Project"
+
+msgid "Import Existing Project"
+msgstr "Bestaand project importeren"
+
+msgid "Rename Project"
+msgstr "Project hernoemen"
+
+msgid "Remove Missing"
+msgstr "Lijst opruimen"
+
+msgid "Select a Folder to Scan"
+msgstr "Selecteer een map om te doorzoeken"
+
+msgid "Remove All"
+msgstr "Verwijder Alles"
+
 msgid "The path specified doesn't exist."
 msgstr "Dit pad bestaat niet."
 
@@ -7764,12 +7651,6 @@ msgstr "Fout bij het openen van het pakketbestand, geen zip-formaat."
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr "Ongeldig '.zip' projectbestand, bevat geen 'project.godot' bestand."
-
-msgid "Please choose an empty folder."
-msgstr "Kies alstublieft een lege map."
-
-msgid "This directory already contains a Godot project."
-msgstr "In deze map staat al een Godot project."
 
 msgid "New Game Project"
 msgstr "Nieuw spelproject"
@@ -7804,17 +7685,8 @@ msgstr "De volgende bestanden konden niet worden uitgepakt:"
 msgid "Package installed successfully!"
 msgstr "Pakket succesvol geïnstalleerd!"
 
-msgid "Rename Project"
-msgstr "Project hernoemen"
-
-msgid "Import Existing Project"
-msgstr "Bestaand project importeren"
-
 msgid "Import & Edit"
 msgstr "Importeer & Bewerk"
-
-msgid "Create New Project"
-msgstr "Creëer Nieuw Project"
 
 msgid "Create & Edit"
 msgstr "Creëer en bewerk"
@@ -7843,84 +7715,8 @@ msgstr "Error: Project ontbreekt in het bestandssysteem."
 msgid "Missing Project"
 msgstr "Bestanden ontbreken"
 
-msgid "Local"
-msgstr "Lokaal"
-
-msgid "Can't open project at '%s'."
-msgstr "Kan project niet openen op '%s'."
-
-msgid ""
-"Can't run project: no main scene defined.\n"
-"Please edit the project and set the main scene in the Project Settings under "
-"the \"Application\" category."
-msgstr ""
-"Kan project niet uitvoeren: geen startscène gedefinieerd.\n"
-"Bewerk het project en stel de startscène in "
-"Project→Projectinstellingen→Application."
-
-msgid ""
-"Can't run project: Assets need to be imported.\n"
-"Please edit the project to trigger the initial import."
-msgstr ""
-"Kan project niet starten: Assets moeten worden geïmporteerd.\n"
-"Wijzig het project om de initiële import te starten."
-
-msgid "Are you sure to run %d projects at once?"
-msgstr "Weet je zeker dat je %d projecten wilt uitvoeren?"
-
-msgid "Remove %d projects from the list?"
-msgstr "%d projecten uit de lijst verwijderen?"
-
-msgid "Remove this project from the list?"
-msgstr "Dit project van de lijst verwijderen?"
-
-msgid ""
-"Remove all missing projects from the list?\n"
-"The project folders' contents won't be modified."
-msgstr ""
-"Alle ontbrekende projecten uit de lijst verwijderen?\n"
-"De inhoud van de projectmap wordt niet veranderd."
-
-msgid ""
-"Language changed.\n"
-"The interface will update after restarting the editor or project manager."
-msgstr ""
-"De taal is veranderd.\n"
-"De gebruikersomgeving wordt bijgewerkt na het herstarten."
-
-msgid "New Project"
-msgstr "Nieuw Project"
-
-msgid "Scan"
-msgstr "Inlezen"
-
-msgid "Loading, please wait..."
-msgstr "Aan het laden, even wachten a.u.b..."
-
-msgid "Remove Missing"
-msgstr "Lijst opruimen"
-
-msgid "About"
-msgstr "Over"
-
 msgid "Restart Now"
 msgstr "Nu herstarten"
-
-msgid "Select a Folder to Scan"
-msgstr "Selecteer een map om te doorzoeken"
-
-msgid "Remove All"
-msgstr "Verwijder Alles"
-
-msgid "Can't run project"
-msgstr "Kan project niet uitvoeren"
-
-msgid ""
-"You currently don't have any projects.\n"
-"Would you like to explore official example projects in the Asset Library?"
-msgstr ""
-"U heeft momenteel geen projecten.\n"
-"Wilt u officiële voorbeeldprojecten verkennen in de Materiaalbibliotheek?"
 
 msgid "Delete Item"
 msgstr "Verwijder Voorwerp"
@@ -7966,9 +7762,6 @@ msgstr "Achtervoegsel:"
 
 msgid "Use Regular Expressions"
 msgstr "Reguliere expressies gebruiken"
-
-msgid "Advanced Options"
-msgstr "Geavanceerde opties"
 
 msgid "Substitute"
 msgstr "Plaatsvervanger"
@@ -8063,12 +7856,6 @@ msgstr "Script losmaken"
 
 msgid "This operation can't be done on the tree root."
 msgstr "Deze bewerking kan niet op de wortelknoop worden uitgevoerd."
-
-msgid "Move Node In Parent"
-msgstr "Knoop in ouder verplaatsen"
-
-msgid "Move Nodes In Parent"
-msgstr "Knopen in ouder verplaatsen"
 
 msgid "Duplicate Node(s)"
 msgstr "Dupliceer knoop/knopen"
@@ -8178,9 +7965,6 @@ msgstr ""
 msgid "Can't paste root node into the same scene."
 msgstr "Kan de wortelknoop niet in dezelfde scène plakken."
 
-msgid "Reparent to New Node"
-msgstr "Onder nieuwe knoop hangen"
-
 msgid "Make Scene Root"
 msgstr "Als scènewortel instellen"
 
@@ -8198,6 +7982,9 @@ msgstr "Script van geselecteerde knoop losmaken."
 
 msgid "Remote"
 msgstr "Remote"
+
+msgid "Local"
+msgstr "Lokaal"
 
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Erfenis wissen? (Kan niet ongedaan worden gemaakt!)"
@@ -8502,14 +8289,6 @@ msgstr "APK Expansion werkt niet samen met Android App Bundle."
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Bestandsnaam niet toegestaan! Android APK vereist een *.apk extensie."
 
-msgid ""
-"Android build version mismatch: Template installed: %s, Godot version: %s. "
-"Please reinstall Android build template from 'Project' menu."
-msgstr ""
-"Android build versie mismatch: Template geïnstalleerd: %s, Godot versie: %s. "
-"Gelieve het Android build template vanuit het 'Project' menu te "
-"Herinstalleren."
-
 msgid "Building Android Project (gradle)"
 msgstr "Bouwen van Android Project (gradle)"
 
@@ -8538,32 +8317,6 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Voer de geëxporteerde HTML uit in de standaard browser van het systeem."
 
 msgid ""
-"This node has no shape, so it can't collide or interact with other objects.\n"
-"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
-"its shape."
-msgstr ""
-"Deze knoop heeft geen botsingsvorm als onderliggende knoop en kan dus niet "
-"met andere objecten botsen of interageren.\n"
-"Plaats hieronder een knoop als CollisionShape2D of CollisionPolygon2D om deze "
-"vorm vast te leggen."
-
-msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "Lege CollisionPolygon2D hebben geen botsingsfunctie."
-
-msgid ""
-"A shape must be provided for CollisionShape2D to function. Please create a "
-"shape resource for it!"
-msgstr "Een CollisionShape2D heeft een vorm nodig."
-
-msgid ""
-"Polygon-based shapes are not meant be used nor edited directly through the "
-"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
-msgstr ""
-"Op polygonen gebaseerde vormen zijn niet bedoeld om rechtstreeks via het "
-"CollisionShape2D-knooppunt te worden gebruikt of bewerkt. Gebruik in plaats "
-"daarvan het CollisionPolygon2D-knooppunt."
-
-msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
@@ -8583,18 +8336,6 @@ msgid ""
 msgstr ""
 "Particles2D animatie heeft een CanvasItemMaterial nodig met \"Particles "
 "Animation\" aan."
-
-msgid "Node A and Node B must be PhysicsBody2Ds"
-msgstr "Knoop A en Knoop B moeten PhysicsBody2D zijn"
-
-msgid "Node A must be a PhysicsBody2D"
-msgstr "Knoop A moet een PhysicsBody2D zijn"
-
-msgid "Node B must be a PhysicsBody2D"
-msgstr "Knoop B moet een PhysicsBody2D zijn"
-
-msgid "Node A and Node B must be different PhysicsBody2Ds"
-msgstr "Knoop A en Knoop B moeten verschillende PhysicsBody2D's zijn"
 
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -8621,6 +8362,44 @@ msgstr ""
 
 msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr "PathFollow2D werkt alleen als kind van een Path2D-knoop."
+
+msgid ""
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to define "
+"its shape."
+msgstr ""
+"Deze knoop heeft geen botsingsvorm als onderliggende knoop en kan dus niet "
+"met andere objecten botsen of interageren.\n"
+"Plaats hieronder een knoop als CollisionShape2D of CollisionPolygon2D om deze "
+"vorm vast te leggen."
+
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "Lege CollisionPolygon2D hebben geen botsingsfunctie."
+
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr "Een CollisionShape2D heeft een vorm nodig."
+
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
+"Op polygonen gebaseerde vormen zijn niet bedoeld om rechtstreeks via het "
+"CollisionShape2D-knooppunt te worden gebruikt of bewerkt. Gebruik in plaats "
+"daarvan het CollisionPolygon2D-knooppunt."
+
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr "Knoop A en Knoop B moeten PhysicsBody2D zijn"
+
+msgid "Node A must be a PhysicsBody2D"
+msgstr "Knoop A moet een PhysicsBody2D zijn"
+
+msgid "Node B must be a PhysicsBody2D"
+msgstr "Knoop B moet een PhysicsBody2D zijn"
+
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr "Knoop A en Knoop B moeten verschillende PhysicsBody2D's zijn"
 
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
@@ -8681,9 +8460,6 @@ msgstr "Er is geen AnimationNode-wortelknoop voor dit diagram aangegeven."
 msgid "Switch between hexadecimal and code values."
 msgstr "Wissel tussen hexadecimaal en codewaarden."
 
-msgid "Add current color as a preset."
-msgstr "Huidige kleur als voorkeuze toevoegen."
-
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
 "placement behavior.\n"
@@ -8705,9 +8481,6 @@ msgstr ""
 msgid "Alert!"
 msgstr "Alarm!"
 
-msgid "Please Confirm..."
-msgstr "Bevestig alstublieft..."
-
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Als \"Exp Edit\" aanstaat, moet \"Min Value\" groter zijn dan nul."
 
@@ -8719,9 +8492,6 @@ msgstr ""
 "ScrollContainer hoort te werken met een enkel Control kind.\n"
 "Gebruik een houder (VBox, Hbox, enz.) of een Control als kind en zet de "
 "minimale grootte handmatig."
-
-msgid "(Other)"
-msgstr "(Andere)"
 
 msgid "Invalid source for preview."
 msgstr "Ongeldige bron voor voorvertoning."

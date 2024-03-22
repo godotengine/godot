@@ -179,12 +179,14 @@ def get_version_info(module_version_string="", silent=False):
     gitfolder = ".git"
 
     if os.path.isfile(".git"):
-        module_folder = open(".git", "r").readline().strip()
+        with open(".git", "r") as file:
+            module_folder = file.readline().strip()
         if module_folder.startswith("gitdir: "):
             gitfolder = module_folder[8:]
 
     if os.path.isfile(os.path.join(gitfolder, "HEAD")):
-        head = open(os.path.join(gitfolder, "HEAD"), "r", encoding="utf8").readline().strip()
+        with open(os.path.join(gitfolder, "HEAD"), "r", encoding="utf8") as file:
+            head = file.readline().strip()
         if head.startswith("ref: "):
             ref = head[5:]
             # If this directory is a Git worktree instead of a root clone.
@@ -194,7 +196,8 @@ def get_version_info(module_version_string="", silent=False):
             head = os.path.join(gitfolder, ref)
             packedrefs = os.path.join(gitfolder, "packed-refs")
             if os.path.isfile(head):
-                githash = open(head, "r").readline().strip()
+                with open(head, "r") as file:
+                    githash = file.readline().strip()
             elif os.path.isfile(packedrefs):
                 # Git may pack refs into a single file. This code searches .git/packed-refs file for the current ref's hash.
                 # https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-pack-refs.html
@@ -209,6 +212,18 @@ def get_version_info(module_version_string="", silent=False):
             githash = head
 
     version_info["git_hash"] = githash
+    # Fallback to 0 as a timestamp (will be treated as "unknown" in the engine).
+    version_info["git_timestamp"] = 0
+
+    # Get the UNIX timestamp of the build commit.
+    if os.path.exists(".git"):
+        try:
+            version_info["git_timestamp"] = subprocess.check_output(
+                ["git", "log", "-1", "--pretty=format:%ct", githash]
+            ).decode("utf-8")
+        except (subprocess.CalledProcessError, OSError):
+            # `git` not found in PATH.
+            pass
 
     return version_info
 
@@ -218,9 +233,10 @@ def generate_version_header(module_version_string=""):
 
     # NOTE: It is safe to generate these files here, since this is still executed serially.
 
-    f = open("core/version_generated.gen.h", "w")
-    f.write(
-        """/* THIS FILE IS GENERATED DO NOT EDIT */
+    with open("core/version_generated.gen.h", "w", encoding="utf-8", newline="\n") as f:
+        f.write(
+            """\
+/* THIS FILE IS GENERATED DO NOT EDIT */
 #ifndef VERSION_GENERATED_GEN_H
 #define VERSION_GENERATED_GEN_H
 #define VERSION_SHORT_NAME "{short_name}"
@@ -236,51 +252,49 @@ def generate_version_header(module_version_string=""):
 #define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
 #endif // VERSION_GENERATED_GEN_H
 """.format(
-            **version_info
+                **version_info
+            )
         )
-    )
-    f.close()
 
-    fhash = open("core/version_hash.gen.cpp", "w")
-    fhash.write(
-        """/* THIS FILE IS GENERATED DO NOT EDIT */
+    with open("core/version_hash.gen.cpp", "w", encoding="utf-8", newline="\n") as fhash:
+        fhash.write(
+            """\
+/* THIS FILE IS GENERATED DO NOT EDIT */
 #include "core/version.h"
 const char *const VERSION_HASH = "{git_hash}";
+const uint64_t VERSION_TIMESTAMP = {git_timestamp};
 """.format(
-            **version_info
+                **version_info
+            )
         )
-    )
-    fhash.close()
 
 
 def parse_cg_file(fname, uniforms, sizes, conditionals):
-    fs = open(fname, "r")
-    line = fs.readline()
-
-    while line:
-        if re.match(r"^\s*uniform", line):
-            res = re.match(r"uniform ([\d\w]*) ([\d\w]*)")
-            type = res.groups(1)
-            name = res.groups(2)
-
-            uniforms.append(name)
-
-            if type.find("texobj") != -1:
-                sizes.append(1)
-            else:
-                t = re.match(r"float(\d)x(\d)", type)
-                if t:
-                    sizes.append(int(t.groups(1)) * int(t.groups(2)))
-                else:
-                    t = re.match(r"float(\d)", type)
-                    sizes.append(int(t.groups(1)))
-
-            if line.find("[branch]") != -1:
-                conditionals.append(name)
-
+    with open(fname, "r") as fs:
         line = fs.readline()
 
-    fs.close()
+        while line:
+            if re.match(r"^\s*uniform", line):
+                res = re.match(r"uniform ([\d\w]*) ([\d\w]*)")
+                type = res.groups(1)
+                name = res.groups(2)
+
+                uniforms.append(name)
+
+                if type.find("texobj") != -1:
+                    sizes.append(1)
+                else:
+                    t = re.match(r"float(\d)x(\d)", type)
+                    if t:
+                        sizes.append(int(t.groups(1)) * int(t.groups(2)))
+                    else:
+                        t = re.match(r"float(\d)", type)
+                        sizes.append(int(t.groups(1)))
+
+                if line.find("[branch]") != -1:
+                    conditionals.append(name)
+
+            line = fs.readline()
 
 
 def get_cmdline_bool(option, default):
@@ -371,15 +385,15 @@ def is_module(path):
 
 
 def write_disabled_classes(class_list):
-    f = open("core/disabled_classes.gen.h", "w")
-    f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    f.write("#ifndef DISABLED_CLASSES_GEN_H\n")
-    f.write("#define DISABLED_CLASSES_GEN_H\n\n")
-    for c in class_list:
-        cs = c.strip()
-        if cs != "":
-            f.write("#define ClassDB_Disable_" + cs + " 1\n")
-    f.write("\n#endif\n")
+    with open("core/disabled_classes.gen.h", "w", encoding="utf-8", newline="\n") as f:
+        f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        f.write("#ifndef DISABLED_CLASSES_GEN_H\n")
+        f.write("#define DISABLED_CLASSES_GEN_H\n\n")
+        for c in class_list:
+            cs = c.strip()
+            if cs != "":
+                f.write("#define ClassDB_Disable_" + cs + " 1\n")
+        f.write("\n#endif\n")
 
 
 def write_modules(modules):
@@ -422,7 +436,7 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {
     )
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    with open("modules/register_module_types.gen.cpp", "w") as f:
+    with open("modules/register_module_types.gen.cpp", "w", encoding="utf-8", newline="\n") as f:
         f.write(modules_cpp)
 
 
@@ -594,6 +608,12 @@ def no_verbose(sys, env):
     java_library_message = "{}Creating Java Archive {}$TARGET{} ...{}".format(
         colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
+    compiled_resource_message = "{}Creating Compiled Resource {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+    )
+    generated_file_message = "{}Generating {}$TARGET{} ...{}".format(
+        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
+    )
 
     env.Append(CXXCOMSTR=[compile_source_message])
     env.Append(CCCOMSTR=[compile_source_message])
@@ -605,6 +625,8 @@ def no_verbose(sys, env):
     env.Append(LINKCOMSTR=[link_program_message])
     env.Append(JARCOMSTR=[java_library_message])
     env.Append(JAVACCOMSTR=[java_compile_source_message])
+    env.Append(RCCOMSTR=[compiled_resource_message])
+    env.Append(GENCOMSTR=[generated_file_message])
 
 
 def detect_visual_c_compiler_version(tools_env):
@@ -736,7 +758,7 @@ def generate_cpp_hint_file(filename):
         pass
     else:
         try:
-            with open(filename, "w") as fd:
+            with open(filename, "w", encoding="utf-8", newline="\n") as fd:
                 fd.write("#define GDCLASS(m_class, m_inherits)\n")
         except OSError:
             print("Could not write cpp.hint file.")
@@ -804,15 +826,10 @@ def CommandNoCache(env, target, sources, command, **args):
     return result
 
 
-def Run(env, function, short_message, subprocess=True):
+def Run(env, function):
     from SCons.Script import Action
-    from platform_methods import run_in_subprocess
 
-    output_print = short_message if not env["verbose"] else ""
-    if not subprocess:
-        return Action(function, output_print)
-    else:
-        return Action(run_in_subprocess(function), output_print)
+    return Action(function, "$GENCOMSTR")
 
 
 def detect_darwin_sdk_path(platform, env):
@@ -1042,7 +1059,7 @@ def show_progress(env):
     def progress_finish(target, source, env):
         nonlocal node_count, progressor
         try:
-            with open(node_count_fname, "w") as f:
+            with open(node_count_fname, "w", encoding="utf-8", newline="\n") as f:
                 f.write("%d\n" % node_count)
             progressor.delete(progressor.file_list())
         except Exception:
@@ -1072,7 +1089,7 @@ def dump(env):
     def non_serializable(obj):
         return "<<non-serializable: %s>>" % (type(obj).__qualname__)
 
-    with open(".scons_env.json", "w") as f:
+    with open(".scons_env.json", "w", encoding="utf-8", newline="\n") as f:
         dump(env.Dictionary(), f, indent=4, default=non_serializable)
 
 
@@ -1141,6 +1158,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
     # This flag allows users to regenerate the proj files but skip the building process.
     # This lets projects be regenerated even if there are build errors.
     filtered_args.pop("vsproj_gen_only", None)
+
+    # This flag allows users to regenerate only the props file without touching the sln or vcxproj files.
+    # This preserves any customizations users have done to the solution, while still updating the file list
+    # and build commands.
+    filtered_args.pop("vsproj_props_only", None)
 
     # The "progress" option is ignored as the current compilation progress indication doesn't work in VS
     filtered_args.pop("progress", None)
@@ -1221,7 +1243,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
     ).hexdigest()
 
     if os.path.exists(f"{project_name}.vcxproj.filters"):
-        existing_filters = open(f"{project_name}.vcxproj.filters", "r").read()
+        with open(f"{project_name}.vcxproj.filters", "r") as file:
+            existing_filters = file.read()
         match = re.search(r"(?ms)^<!-- CHECKSUM$.([0-9a-f]{32})", existing_filters)
         if match is not None and md5 == match.group(1):
             skip_filters = True
@@ -1232,7 +1255,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
     if not skip_filters:
         print(f"Regenerating {project_name}.vcxproj.filters")
 
-        filters_template = open("misc/msvs/vcxproj.filters.template", "r").read()
+        with open("misc/msvs/vcxproj.filters.template", "r") as file:
+            filters_template = file.read()
         for i in range(1, 10):
             filters_template = filters_template.replace(f"%%UUID{i}%%", str(uuid.uuid4()))
 
@@ -1269,7 +1293,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         filters_template = filters_template.replace("%%HASH%%", md5)
 
-        with open(f"{project_name}.vcxproj.filters", "w") as f:
+        with open(f"{project_name}.vcxproj.filters", "w", encoding="utf-8", newline="\n") as f:
             f.write(filters_template)
 
     envsources = []
@@ -1334,27 +1358,30 @@ def generate_vs_project(env, original_args, project_name="godot"):
     set_sources = set(sources_active)
     set_others = set(others_active)
     for file in headers:
+        base_path = os.path.dirname(file).replace("\\", "_")
         all_items.append(f'<ClInclude Include="{file}">')
         all_items.append(
-            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList.Contains(';{file};'))\">true</ExcludedFromBuild>"
+            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
         )
         all_items.append("</ClInclude>")
         if file in set_headers:
             activeItems.append(file)
 
     for file in sources:
+        base_path = os.path.dirname(file).replace("\\", "_")
         all_items.append(f'<ClCompile Include="{file}">')
         all_items.append(
-            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList.Contains(';{file};'))\">true</ExcludedFromBuild>"
+            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
         )
         all_items.append("</ClCompile>")
         if file in set_sources:
             activeItems.append(file)
 
     for file in others:
+        base_path = os.path.dirname(file).replace("\\", "_")
         all_items.append(f'<None Include="{file}">')
         all_items.append(
-            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList.Contains(';{file};'))\">true</ExcludedFromBuild>"
+            f"  <ExcludedFromBuild Condition=\"!$(ActiveProjectItemList_{base_path}.Contains(';{file};'))\">true</ExcludedFromBuild>"
         )
         all_items.append("</None>")
         if file in set_others:
@@ -1368,10 +1395,22 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 break
 
         condition = "'$(GodotConfiguration)|$(GodotPlatform)'=='" + vsconf + "'"
-        properties.append("<ActiveProjectItemList>;" + ";".join(activeItems) + ";</ActiveProjectItemList>")
+        itemlist = {}
+        for item in activeItems:
+            key = os.path.dirname(item).replace("\\", "_")
+            if not key in itemlist:
+                itemlist[key] = [item]
+            else:
+                itemlist[key] += [item]
+
+        for x in itemlist.keys():
+            properties.append(
+                "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
+            )
         output = f'bin\\godot{env["PROGSUFFIX"]}'
 
-        props_template = open("misc/msvs/props.template", "r").read()
+        with open("misc/msvs/props.template", "r") as file:
+            props_template = file.read()
 
         props_template = props_template.replace("%%VSCONF%%", vsconf)
         props_template = props_template.replace("%%CONDITION%%", condition)
@@ -1406,6 +1445,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         cmd_rebuild = [
             "vsproj=yes",
+            "vsproj_props_only=yes",
+            "vsproj_gen_only=no",
             f"vsproj_name={project_name}",
         ] + common_build_postfix
 
@@ -1428,7 +1469,9 @@ def generate_vs_project(env, original_args, project_name="godot"):
         cmd = " ^&amp; ".join(common_build_prefix + [" ".join([commands] + cmd_clean)])
         props_template = props_template.replace("%%CLEAN%%", cmd)
 
-        with open(f"{project_name}.{platform}.{target}.{arch}.generated.props", "w") as f:
+        with open(
+            f"{project_name}.{platform}.{target}.{arch}.generated.props", "w", encoding="utf-8", newline="\n"
+        ) as f:
             f.write(props_template)
 
     proj_uuid = str(uuid.uuid4())
@@ -1523,25 +1566,29 @@ def generate_vs_project(env, original_args, project_name="godot"):
     section1 = sorted(section1)
     section2 = sorted(section2)
 
-    proj_template = open("misc/msvs/vcxproj.template", "r").read()
+    if not get_bool(original_args, "vsproj_props_only", False):
+        with open("misc/msvs/vcxproj.template", "r") as file:
+            proj_template = file.read()
+        proj_template = proj_template.replace("%%UUID%%", proj_uuid)
+        proj_template = proj_template.replace("%%CONFS%%", "\n    ".join(configurations))
+        proj_template = proj_template.replace("%%IMPORTS%%", "\n  ".join(imports))
+        proj_template = proj_template.replace("%%DEFAULT_ITEMS%%", "\n    ".join(all_items))
+        proj_template = proj_template.replace("%%PROPERTIES%%", "\n  ".join(properties))
 
-    proj_template = proj_template.replace("%%UUID%%", proj_uuid)
-    proj_template = proj_template.replace("%%CONFS%%", "\n    ".join(configurations))
-    proj_template = proj_template.replace("%%IMPORTS%%", "\n  ".join(imports))
-    proj_template = proj_template.replace("%%DEFAULT_ITEMS%%", "\n    ".join(all_items))
-    proj_template = proj_template.replace("%%PROPERTIES%%", "\n  ".join(properties))
+        with open(f"{project_name}.vcxproj", "w", encoding="utf-8", newline="\n") as f:
+            f.write(proj_template)
 
-    with open(f"{project_name}.vcxproj", "w") as f:
-        f.write(proj_template)
+    if not get_bool(original_args, "vsproj_props_only", False):
+        with open("misc/msvs/sln.template", "r") as file:
+            sln_template = file.read()
+        sln_template = sln_template.replace("%%NAME%%", project_name)
+        sln_template = sln_template.replace("%%UUID%%", proj_uuid)
+        sln_template = sln_template.replace("%%SLNUUID%%", sln_uuid)
+        sln_template = sln_template.replace("%%SECTION1%%", "\n    ".join(section1))
+        sln_template = sln_template.replace("%%SECTION2%%", "\n    ".join(section2))
 
-    sln_template = open("misc/msvs/sln.template", "r").read()
-    sln_template = sln_template.replace("%%NAME%%", project_name)
-    sln_template = sln_template.replace("%%UUID%%", proj_uuid)
-    sln_template = sln_template.replace("%%SLNUUID%%", sln_uuid)
-    sln_template = sln_template.replace("%%SECTION1%%", "\n    ".join(section1))
-    sln_template = sln_template.replace("%%SECTION2%%", "\n    ".join(section2))
-    with open(f"{project_name}.sln", "w") as f:
-        f.write(sln_template)
+        with open(f"{project_name}.sln", "w", encoding="utf-8", newline="\n") as f:
+            f.write(sln_template)
 
     if get_bool(original_args, "vsproj_gen_only", True):
         sys.exit()

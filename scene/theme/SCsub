@@ -2,7 +2,6 @@
 
 Import("env")
 
-from platform_methods import run_in_subprocess
 import default_theme_builders
 
 
@@ -14,5 +13,5 @@ env.Depends("#scene/theme/default_font.gen.h", "#thirdparty/fonts/OpenSans_SemiB
 env.CommandNoCache(
     "#scene/theme/default_font.gen.h",
     "#thirdparty/fonts/OpenSans_SemiBold.woff2",
-    run_in_subprocess(default_theme_builders.make_fonts_header),
+    env.Run(default_theme_builders.make_fonts_header),
 )

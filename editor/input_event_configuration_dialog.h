@@ -104,7 +104,6 @@ private:
 
 	void _set_event(const Ref<InputEvent> &p_event, const Ref<InputEvent> &p_original_event, bool p_update_input_list_selection = true);
 	void _on_listen_input_changed(const Ref<InputEvent> &p_event);
-	void _on_listen_focus_changed();
 
 	void _search_term_updated(const String &p_term);
 	void _update_input_list();

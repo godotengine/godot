@@ -639,7 +639,9 @@ void ExportTemplateManager::_open_template_folder(const String &p_version) {
 
 void ExportTemplateManager::popup_manager() {
 	_update_template_status();
-	_refresh_mirrors();
+	if (downloads_available) {
+		_refresh_mirrors();
+	}
 	popup_centered(Size2(720, 280) * EDSCALE);
 }
 
@@ -897,7 +899,11 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	current_missing_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	current_missing_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-	current_missing_label->set_text(TTR("Export templates are missing. Download them or install from a file."));
+	if (downloads_available) {
+		current_missing_label->set_text(TTR("Export templates are missing. Download them or install from a file."));
+	} else {
+		current_missing_label->set_text(TTR("Export templates are missing. Install them from a file."));
+	}
 	current_hb->add_child(current_missing_label);
 
 	// Status: Current version is installed.
@@ -950,8 +956,13 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	mirrors_list = memnew(OptionButton);
 	mirrors_list->set_custom_minimum_size(Size2(280, 0) * EDSCALE);
+	if (downloads_available) {
+		mirrors_list->add_item(TTR("Best available mirror"), 0);
+	} else {
+		mirrors_list->add_item(TTR("(no templates for development builds)"), 0);
+		mirrors_list->set_disabled(true);
+	}
 	download_install_hb->add_child(mirrors_list);
-	mirrors_list->add_item(TTR("Best available mirror"), 0);
 
 	request_mirrors = memnew(HTTPRequest);
 	mirrors_list->add_child(request_mirrors);
@@ -960,6 +971,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	mirror_options_button = memnew(MenuButton);
 	mirror_options_button->get_popup()->add_item(TTR("Open in Web Browser"), VISIT_WEB_MIRROR);
 	mirror_options_button->get_popup()->add_item(TTR("Copy Mirror URL"), COPY_MIRROR_URL);
+	mirror_options_button->set_disabled(!downloads_available);
 	download_install_hb->add_child(mirror_options_button);
 	mirror_options_button->get_popup()->connect("id_pressed", callable_mp(this, &ExportTemplateManager::_mirror_options_button_cbk));
 

@@ -37,16 +37,14 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                             {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
                                 {
-                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
                                     return false;
                                 }
 
                                 return true;
                             }
 
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -227,7 +225,7 @@ namespace Godot.SourceGenerators
 
             if (godotSignalDelegates.Count > 0)
             {
-                const string listType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
+                const string ListType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the signal information for all the signals declared in this class.\n")
@@ -238,11 +236,11 @@ namespace Godot.SourceGenerators
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
-                    .Append(listType)
+                    .Append(ListType)
                     .Append(" GetGodotSignalList()\n    {\n");
 
                 source.Append("        var signals = new ")
-                    .Append(listType)
+                    .Append(ListType)
                     .Append("(")
                     .Append(godotSignalDelegates.Count)
                     .Append(");\n");

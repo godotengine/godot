@@ -6,13 +6,13 @@ static var test_static_var_hard_int: int
 var test_var_untyped: Variant
 var test_var_weak_null: Variant
 var test_var_weak_int: Variant
-@export var test_var_weak_int_exported: int
+var test_var_weak_int_exported: int
 var test_var_weak_variant_type: Variant
-@export var test_var_weak_variant_type_exported: Variant.Type
+var test_var_weak_variant_type_exported: Variant.Type
 var test_var_hard_variant: Variant
 var test_var_hard_int: int
 var test_var_hard_variant_type: Variant.Type
-@export var test_var_hard_variant_type_exported: Variant.Type
+var test_var_hard_variant_type_exported: Variant.Type
 var test_var_hard_node_process_mode: Node.ProcessMode
 var test_var_hard_my_enum: TestMemberInfo.MyEnum
 var test_var_hard_array: Array

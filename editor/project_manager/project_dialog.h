@@ -34,6 +34,7 @@
 #include "scene/gui/dialogs.h"
 
 class Button;
+class CheckButton;
 class EditorFileDialog;
 class LineEdit;
 class OptionButton;
@@ -65,11 +66,11 @@ private:
 	Mode mode = MODE_NEW;
 	bool is_folder_empty = true;
 
-	Button *browse = nullptr;
+	CheckButton *create_dir = nullptr;
+	Button *project_browse = nullptr;
 	Button *install_browse = nullptr;
-	Button *create_dir = nullptr;
 	VBoxContainer *name_container = nullptr;
-	VBoxContainer *path_container = nullptr;
+	VBoxContainer *project_path_container = nullptr;
 	VBoxContainer *install_path_container = nullptr;
 
 	VBoxContainer *renderer_container = nullptr;
@@ -78,54 +79,64 @@ private:
 	Ref<ButtonGroup> renderer_button_group;
 
 	Label *msg = nullptr;
-	LineEdit *project_path = nullptr;
 	LineEdit *project_name = nullptr;
+	LineEdit *project_path = nullptr;
 	LineEdit *install_path = nullptr;
-	TextureRect *status_rect = nullptr;
+	TextureRect *project_status_rect = nullptr;
 	TextureRect *install_status_rect = nullptr;
 
 	OptionButton *vcs_metadata_selection = nullptr;
 
-	EditorFileDialog *fdialog = nullptr;
+	EditorFileDialog *fdialog_project = nullptr;
 	EditorFileDialog *fdialog_install = nullptr;
 	AcceptDialog *dialog_error = nullptr;
 
 	String zip_path;
 	String zip_title;
-	String fav_dir;
 
-	String created_folder_path;
+	void _set_message(const String &p_msg, MessageType p_type, InputType input_type = PROJECT_PATH);
+	void _validate_path();
 
-	void _set_message(const String &p_msg, MessageType p_type = MESSAGE_SUCCESS, InputType input_type = PROJECT_PATH);
+	// Project path for MODE_NEW and MODE_INSTALL. Install path for MODE_IMPORT.
+	// Install path is only visible when importing a ZIP.
+	String _get_target_path();
+	void _set_target_path(const String &p_text);
 
-	String _test_path();
-	void _update_path(const String &p_path);
-	void _path_text_changed(const String &p_path);
-	void _path_selected(const String &p_path);
-	void _file_selected(const String &p_path);
+	// Calculated from project name / ZIP name.
+	String auto_dir;
+
+	// Updates `auto_dir`. If the target path dir name is equal to `auto_dir` (the default state), the target path is also updated.
+	void _update_target_auto_dir();
+
+	// While `create_dir` is disabled, stores the last target path dir name, or an empty string if equal to `auto_dir`.
+	String last_custom_target_dir;
+	void _create_dir_toggled(bool p_pressed);
+
+	void _project_name_changed();
+	void _project_path_changed();
+	void _install_path_changed();
+
+	void _browse_project_path();
+	void _browse_install_path();
+
+	void _project_path_selected(const String &p_path);
 	void _install_path_selected(const String &p_path);
 
-	void _browse_path();
-	void _browse_install_path();
-	void _create_folder();
-
-	void _text_changed(const String &p_text);
-	void _nonempty_confirmation_ok_pressed();
 	void _renderer_selected();
-	void _remove_created_folder();
+	void _nonempty_confirmation_ok_pressed();
 
 	void ok_pressed() override;
-	void cancel_pressed() override;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
+	void set_mode(Mode p_mode);
+	void set_project_name(const String &p_name);
+	void set_project_path(const String &p_path);
 	void set_zip_path(const String &p_path);
 	void set_zip_title(const String &p_title);
-	void set_mode(Mode p_mode);
-	void set_project_path(const String &p_path);
 
 	void ask_for_path_and_show();
 	void show_dialog();

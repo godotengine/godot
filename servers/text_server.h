@@ -43,6 +43,8 @@ class TypedArray;
 struct Glyph;
 struct CaretInfo;
 
+#define OT_TAG(m_c1, m_c2, m_c3, m_c4) ((int32_t)((((uint32_t)(m_c1) & 0xff) << 24) | (((uint32_t)(m_c2) & 0xff) << 16) | (((uint32_t)(m_c3) & 0xff) << 8) | ((uint32_t)(m_c4) & 0xff)))
+
 class TextServer : public RefCounted {
 	GDCLASS(TextServer, RefCounted);
 
@@ -108,6 +110,7 @@ public:
 		BREAK_GRAPHEME_BOUND = 1 << 2,
 		BREAK_ADAPTIVE = 1 << 3,
 		BREAK_TRIM_EDGE_SPACES = 1 << 4,
+		BREAK_TRIM_INDENT = 1 << 5,
 	};
 
 	enum OverrunBehavior {
@@ -141,6 +144,7 @@ public:
 		GRAPHEME_IS_CONNECTED = 1 << 10, // Connected to previous grapheme.
 		GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL = 1 << 11, // It is safe to insert a U+0640 before this grapheme for elongation.
 		GRAPHEME_IS_EMBEDDED_OBJECT = 1 << 12, // Grapheme is an object replacement character for the embedded object.
+		GRAPHEME_IS_SOFT_HYPHEN = 1 << 13, // Grapheme is a soft hyphen.
 	};
 
 	enum Hinting {
@@ -237,8 +241,8 @@ public:
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const = 0;
 
-	virtual int64_t name_to_tag(const String &p_name) const { return 0; };
-	virtual String tag_to_name(int64_t p_tag) const { return ""; };
+	virtual int64_t name_to_tag(const String &p_name) const;
+	virtual String tag_to_name(int64_t p_tag) const;
 
 	/* Font interface */
 
@@ -271,6 +275,9 @@ public:
 
 	virtual void font_set_antialiasing(const RID &p_font_rid, FontAntialiasing p_antialiasing) = 0;
 	virtual FontAntialiasing font_get_antialiasing(const RID &p_font_rid) const = 0;
+
+	virtual void font_set_disable_embedded_bitmaps(const RID &p_font_rid, bool p_disable_embedded_bitmaps) = 0;
+	virtual bool font_get_disable_embedded_bitmaps(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) = 0;
 	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const = 0;
@@ -488,6 +495,8 @@ public:
 
 	virtual Array shaped_text_get_objects(const RID &p_shaped) const = 0;
 	virtual Rect2 shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const = 0;
+	virtual Vector2i shaped_text_get_object_range(const RID &p_shaped, const Variant &p_key) const = 0;
+	virtual int64_t shaped_text_get_object_glyph(const RID &p_shaped, const Variant &p_key) const = 0;
 
 	virtual Size2 shaped_text_get_size(const RID &p_shaped) const = 0;
 	virtual double shaped_text_get_ascent(const RID &p_shaped) const = 0;

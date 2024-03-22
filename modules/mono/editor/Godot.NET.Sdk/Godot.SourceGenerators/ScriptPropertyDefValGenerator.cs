@@ -31,16 +31,14 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                             {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
                                 {
-                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
                                     return false;
                                 }
 
                                 return true;
                             }
 
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -66,10 +64,12 @@ namespace Godot.SourceGenerators
         )
         {
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
-            string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedNameOmitGlobal() :
-                string.Empty;
+            string classNs = namespaceSymbol is { IsGlobalNamespace: false }
+                ? namespaceSymbol.FullQualifiedNameOmitGlobal()
+                : string.Empty;
             bool hasNamespace = classNs.Length != 0;
+
+            bool isNode = symbol.InheritsFrom("GodotSharp", GodotClasses.Node);
 
             bool isInnerClass = symbol.ContainingType != null;
 
@@ -114,14 +114,14 @@ namespace Godot.SourceGenerators
             var members = symbol.GetMembers();
 
             var exportedProperties = members
-                .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)
+                .Where(s => s.Kind == SymbolKind.Property)
                 .Cast<IPropertySymbol>()
                 .Where(s => s.GetAttributes()
                     .Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false))
                 .ToArray();
 
             var exportedFields = members
-                .Where(s => !s.IsStatic && s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
+                .Where(s => s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
                 .Cast<IFieldSymbol>()
                 .Where(s => s.GetAttributes()
                     .Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false))
@@ -198,13 +198,13 @@ namespace Godot.SourceGenerators
 
                 if (marshalType == MarshalType.GodotObjectOrDerived)
                 {
-                    if (!symbol.InheritsFrom("GodotSharp", "Godot.Node") &&
-                        propertyType.InheritsFrom("GodotSharp", "Godot.Node"))
+                    if (!isNode && propertyType.InheritsFrom("GodotSharp", GodotClasses.Node))
                     {
                         context.ReportDiagnostic(Diagnostic.Create(
                             Common.OnlyNodesShouldExportNodesRule,
                             property.Locations.FirstLocationWithSourceTreeOrDefault()
                         ));
+                        continue;
                     }
                 }
 
@@ -317,13 +317,13 @@ namespace Godot.SourceGenerators
 
                 if (marshalType == MarshalType.GodotObjectOrDerived)
                 {
-                    if (!symbol.InheritsFrom("GodotSharp", "Godot.Node") &&
-                        fieldType.InheritsFrom("GodotSharp", "Godot.Node"))
+                    if (!isNode && fieldType.InheritsFrom("GodotSharp", GodotClasses.Node))
                     {
                         context.ReportDiagnostic(Diagnostic.Create(
                             Common.OnlyNodesShouldExportNodesRule,
                             field.Locations.FirstLocationWithSourceTreeOrDefault()
                         ));
+                        continue;
                     }
                 }
 
@@ -351,7 +351,7 @@ namespace Godot.SourceGenerators
             {
                 source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
-                const string dictionaryType =
+                const string DictionaryType =
                     "global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>";
 
                 source.Append("#if TOOLS\n");
@@ -366,11 +366,11 @@ namespace Godot.SourceGenerators
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ");
-                source.Append(dictionaryType);
+                source.Append(DictionaryType);
                 source.Append(" GetGodotPropertyDefaultValues()\n    {\n");
 
                 source.Append("        var values = new ");
-                source.Append(dictionaryType);
+                source.Append(DictionaryType);
                 source.Append("(");
                 source.Append(exportedMembers.Count);
                 source.Append(");\n");

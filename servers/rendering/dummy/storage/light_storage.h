@@ -135,6 +135,7 @@ public:
 	virtual RID reflection_probe_instance_create(RID p_probe) override { return RID(); }
 	virtual void reflection_probe_instance_free(RID p_instance) override {}
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override {}
+	virtual bool reflection_probe_has_atlas_index(RID p_instance) override { return false; }
 	virtual void reflection_probe_release_atlas_index(RID p_instance) override {}
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override { return false; }
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override { return false; }

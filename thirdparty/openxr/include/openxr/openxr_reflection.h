@@ -444,11 +444,19 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_EVENT_DATA_SPACE_LIST_SAVE_COMPLETE_FB, 1000238001) \
     _(XR_TYPE_SPACE_USER_CREATE_INFO_FB, 1000241001) \
     _(XR_TYPE_SYSTEM_HEADSET_ID_PROPERTIES_META, 1000245000) \
+    _(XR_TYPE_RECOMMENDED_LAYER_RESOLUTION_META, 1000254000) \
+    _(XR_TYPE_RECOMMENDED_LAYER_RESOLUTION_GET_INFO_META, 1000254001) \
     _(XR_TYPE_SYSTEM_PASSTHROUGH_COLOR_LUT_PROPERTIES_META, 1000266000) \
     _(XR_TYPE_PASSTHROUGH_COLOR_LUT_CREATE_INFO_META, 1000266001) \
     _(XR_TYPE_PASSTHROUGH_COLOR_LUT_UPDATE_INFO_META, 1000266002) \
     _(XR_TYPE_PASSTHROUGH_COLOR_MAP_LUT_META, 1000266100) \
     _(XR_TYPE_PASSTHROUGH_COLOR_MAP_INTERPOLATED_LUT_META, 1000266101) \
+    _(XR_TYPE_SPACE_TRIANGLE_MESH_GET_INFO_META, 1000269001) \
+    _(XR_TYPE_SPACE_TRIANGLE_MESH_META, 1000269002) \
+    _(XR_TYPE_SYSTEM_FACE_TRACKING_PROPERTIES2_FB, 1000287013) \
+    _(XR_TYPE_FACE_TRACKER_CREATE_INFO2_FB, 1000287014) \
+    _(XR_TYPE_FACE_EXPRESSION_INFO2_FB, 1000287015) \
+    _(XR_TYPE_FACE_EXPRESSION_WEIGHTS2_FB, 1000287016) \
     _(XR_TYPE_PASSTHROUGH_CREATE_INFO_HTC, 1000317001) \
     _(XR_TYPE_PASSTHROUGH_COLOR_HTC, 1000317002) \
     _(XR_TYPE_PASSTHROUGH_MESH_TRANSFORM_INFO_HTC, 1000317003) \
@@ -470,6 +478,8 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_PLANE_DETECTOR_LOCATION_EXT, 1000429005) \
     _(XR_TYPE_PLANE_DETECTOR_POLYGON_BUFFER_EXT, 1000429006) \
     _(XR_TYPE_SYSTEM_PLANE_DETECTION_PROPERTIES_EXT, 1000429007) \
+    _(XR_TYPE_EVENT_DATA_USER_PRESENCE_CHANGED_EXT, 1000470000) \
+    _(XR_TYPE_SYSTEM_USER_PRESENCE_PROPERTIES_EXT, 1000470001) \
     _(XR_STRUCTURE_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrFormFactor(_) \
@@ -555,6 +565,7 @@ XR_ENUM_STR(XrResult);
     _(XR_OBJECT_TYPE_VIRTUAL_KEYBOARD_META, 1000219000) \
     _(XR_OBJECT_TYPE_SPACE_USER_FB, 1000241000) \
     _(XR_OBJECT_TYPE_PASSTHROUGH_COLOR_LUT_META, 1000266000) \
+    _(XR_OBJECT_TYPE_FACE_TRACKER2_FB, 1000287012) \
     _(XR_OBJECT_TYPE_PASSTHROUGH_HTC, 1000317000) \
     _(XR_OBJECT_TYPE_PLANE_DETECTOR_EXT, 1000429000) \
     _(XR_OBJECT_TYPE_MAX_ENUM, 0x7FFFFFFF)
@@ -891,6 +902,7 @@ XR_ENUM_STR(XrResult);
     _(XR_SPACE_COMPONENT_TYPE_SEMANTIC_LABELS_FB, 5) \
     _(XR_SPACE_COMPONENT_TYPE_ROOM_LAYOUT_FB, 6) \
     _(XR_SPACE_COMPONENT_TYPE_SPACE_CONTAINER_FB, 7) \
+    _(XR_SPACE_COMPONENT_TYPE_TRIANGLE_MESH_META, 1000269000) \
     _(XR_SPACE_COMPONENT_TYPE_MAX_ENUM_FB, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrFoveationLevelFB(_) \
@@ -1209,6 +1221,95 @@ XR_ENUM_STR(XrResult);
     _(XR_PASSTHROUGH_COLOR_LUT_CHANNELS_RGBA_META, 2) \
     _(XR_PASSTHROUGH_COLOR_LUT_CHANNELS_MAX_ENUM_META, 0x7FFFFFFF)
 
+#define XR_LIST_ENUM_XrFaceExpression2FB(_) \
+    _(XR_FACE_EXPRESSION2_BROW_LOWERER_L_FB, 0) \
+    _(XR_FACE_EXPRESSION2_BROW_LOWERER_R_FB, 1) \
+    _(XR_FACE_EXPRESSION2_CHEEK_PUFF_L_FB, 2) \
+    _(XR_FACE_EXPRESSION2_CHEEK_PUFF_R_FB, 3) \
+    _(XR_FACE_EXPRESSION2_CHEEK_RAISER_L_FB, 4) \
+    _(XR_FACE_EXPRESSION2_CHEEK_RAISER_R_FB, 5) \
+    _(XR_FACE_EXPRESSION2_CHEEK_SUCK_L_FB, 6) \
+    _(XR_FACE_EXPRESSION2_CHEEK_SUCK_R_FB, 7) \
+    _(XR_FACE_EXPRESSION2_CHIN_RAISER_B_FB, 8) \
+    _(XR_FACE_EXPRESSION2_CHIN_RAISER_T_FB, 9) \
+    _(XR_FACE_EXPRESSION2_DIMPLER_L_FB, 10) \
+    _(XR_FACE_EXPRESSION2_DIMPLER_R_FB, 11) \
+    _(XR_FACE_EXPRESSION2_EYES_CLOSED_L_FB, 12) \
+    _(XR_FACE_EXPRESSION2_EYES_CLOSED_R_FB, 13) \
+    _(XR_FACE_EXPRESSION2_EYES_LOOK_DOWN_L_FB, 14) \
+    _(XR_FACE_EXPRESSION2_EYES_LOOK_DOWN_R_FB, 15) \
+    _(XR_FACE_EXPRESSION2_EYES_LOOK_LEFT_L_FB, 16) \
+    _(XR_FACE_EXPRESSION2_EYES_LOOK_LEFT_R_FB, 17) \
+    _(XR_FACE_EXPRESSION2_EYES_LOOK_RIGHT_L_FB, 18) \
+    _(XR_FACE_EXPRESSION2_EYES_LOOK_RIGHT_R_FB, 19) \
+    _(XR_FACE_EXPRESSION2_EYES_LOOK_UP_L_FB, 20) \
+    _(XR_FACE_EXPRESSION2_EYES_LOOK_UP_R_FB, 21) \
+    _(XR_FACE_EXPRESSION2_INNER_BROW_RAISER_L_FB, 22) \
+    _(XR_FACE_EXPRESSION2_INNER_BROW_RAISER_R_FB, 23) \
+    _(XR_FACE_EXPRESSION2_JAW_DROP_FB, 24) \
+    _(XR_FACE_EXPRESSION2_JAW_SIDEWAYS_LEFT_FB, 25) \
+    _(XR_FACE_EXPRESSION2_JAW_SIDEWAYS_RIGHT_FB, 26) \
+    _(XR_FACE_EXPRESSION2_JAW_THRUST_FB, 27) \
+    _(XR_FACE_EXPRESSION2_LID_TIGHTENER_L_FB, 28) \
+    _(XR_FACE_EXPRESSION2_LID_TIGHTENER_R_FB, 29) \
+    _(XR_FACE_EXPRESSION2_LIP_CORNER_DEPRESSOR_L_FB, 30) \
+    _(XR_FACE_EXPRESSION2_LIP_CORNER_DEPRESSOR_R_FB, 31) \
+    _(XR_FACE_EXPRESSION2_LIP_CORNER_PULLER_L_FB, 32) \
+    _(XR_FACE_EXPRESSION2_LIP_CORNER_PULLER_R_FB, 33) \
+    _(XR_FACE_EXPRESSION2_LIP_FUNNELER_LB_FB, 34) \
+    _(XR_FACE_EXPRESSION2_LIP_FUNNELER_LT_FB, 35) \
+    _(XR_FACE_EXPRESSION2_LIP_FUNNELER_RB_FB, 36) \
+    _(XR_FACE_EXPRESSION2_LIP_FUNNELER_RT_FB, 37) \
+    _(XR_FACE_EXPRESSION2_LIP_PRESSOR_L_FB, 38) \
+    _(XR_FACE_EXPRESSION2_LIP_PRESSOR_R_FB, 39) \
+    _(XR_FACE_EXPRESSION2_LIP_PUCKER_L_FB, 40) \
+    _(XR_FACE_EXPRESSION2_LIP_PUCKER_R_FB, 41) \
+    _(XR_FACE_EXPRESSION2_LIP_STRETCHER_L_FB, 42) \
+    _(XR_FACE_EXPRESSION2_LIP_STRETCHER_R_FB, 43) \
+    _(XR_FACE_EXPRESSION2_LIP_SUCK_LB_FB, 44) \
+    _(XR_FACE_EXPRESSION2_LIP_SUCK_LT_FB, 45) \
+    _(XR_FACE_EXPRESSION2_LIP_SUCK_RB_FB, 46) \
+    _(XR_FACE_EXPRESSION2_LIP_SUCK_RT_FB, 47) \
+    _(XR_FACE_EXPRESSION2_LIP_TIGHTENER_L_FB, 48) \
+    _(XR_FACE_EXPRESSION2_LIP_TIGHTENER_R_FB, 49) \
+    _(XR_FACE_EXPRESSION2_LIPS_TOWARD_FB, 50) \
+    _(XR_FACE_EXPRESSION2_LOWER_LIP_DEPRESSOR_L_FB, 51) \
+    _(XR_FACE_EXPRESSION2_LOWER_LIP_DEPRESSOR_R_FB, 52) \
+    _(XR_FACE_EXPRESSION2_MOUTH_LEFT_FB, 53) \
+    _(XR_FACE_EXPRESSION2_MOUTH_RIGHT_FB, 54) \
+    _(XR_FACE_EXPRESSION2_NOSE_WRINKLER_L_FB, 55) \
+    _(XR_FACE_EXPRESSION2_NOSE_WRINKLER_R_FB, 56) \
+    _(XR_FACE_EXPRESSION2_OUTER_BROW_RAISER_L_FB, 57) \
+    _(XR_FACE_EXPRESSION2_OUTER_BROW_RAISER_R_FB, 58) \
+    _(XR_FACE_EXPRESSION2_UPPER_LID_RAISER_L_FB, 59) \
+    _(XR_FACE_EXPRESSION2_UPPER_LID_RAISER_R_FB, 60) \
+    _(XR_FACE_EXPRESSION2_UPPER_LIP_RAISER_L_FB, 61) \
+    _(XR_FACE_EXPRESSION2_UPPER_LIP_RAISER_R_FB, 62) \
+    _(XR_FACE_EXPRESSION2_TONGUE_TIP_INTERDENTAL_FB, 63) \
+    _(XR_FACE_EXPRESSION2_TONGUE_TIP_ALVEOLAR_FB, 64) \
+    _(XR_FACE_EXPRESSION2_TONGUE_FRONT_DORSAL_PALATE_FB, 65) \
+    _(XR_FACE_EXPRESSION2_TONGUE_MID_DORSAL_PALATE_FB, 66) \
+    _(XR_FACE_EXPRESSION2_TONGUE_BACK_DORSAL_VELAR_FB, 67) \
+    _(XR_FACE_EXPRESSION2_TONGUE_OUT_FB, 68) \
+    _(XR_FACE_EXPRESSION2_TONGUE_RETREAT_FB, 69) \
+    _(XR_FACE_EXPRESSION2_COUNT_FB, 70) \
+    _(XR_FACE_EXPRESSION_2FB_MAX_ENUM_FB, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrFaceExpressionSet2FB(_) \
+    _(XR_FACE_EXPRESSION_SET2_DEFAULT_FB, 0) \
+    _(XR_FACE_EXPRESSION_SET_2FB_MAX_ENUM_FB, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrFaceTrackingDataSource2FB(_) \
+    _(XR_FACE_TRACKING_DATA_SOURCE2_VISUAL_FB, 0) \
+    _(XR_FACE_TRACKING_DATA_SOURCE2_AUDIO_FB, 1) \
+    _(XR_FACE_TRACKING_DATA_SOURCE_2FB_MAX_ENUM_FB, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrFaceConfidence2FB(_) \
+    _(XR_FACE_CONFIDENCE2_LOWER_FACE_FB, 0) \
+    _(XR_FACE_CONFIDENCE2_UPPER_FACE_FB, 1) \
+    _(XR_FACE_CONFIDENCE2_COUNT_FB, 2) \
+    _(XR_FACE_CONFIDENCE_2FB_MAX_ENUM_FB, 0x7FFFFFFF)
+
 #define XR_LIST_ENUM_XrTrackingOptimizationSettingsDomainQCOM(_) \
     _(XR_TRACKING_OPTIMIZATION_SETTINGS_DOMAIN_ALL_QCOM, 1) \
     _(XR_TRACKING_OPTIMIZATION_SETTINGS_DOMAIN_MAX_ENUM_QCOM, 0x7FFFFFFF)
@@ -1437,6 +1538,7 @@ XR_ENUM_STR(XrResult);
 #define XR_LIST_BITS_XrSemanticLabelsSupportFlagsFB(_) \
     _(XR_SEMANTIC_LABELS_SUPPORT_MULTIPLE_SEMANTIC_LABELS_BIT_FB, 0x00000001) \
     _(XR_SEMANTIC_LABELS_SUPPORT_ACCEPT_DESK_TO_TABLE_MIGRATION_BIT_FB, 0x00000002) \
+    _(XR_SEMANTIC_LABELS_SUPPORT_ACCEPT_INVISIBLE_WALL_FACE_BIT_FB, 0x00000004) \
 
 #define XR_LIST_BITS_XrDigitalLensControlFlagsALMALENCE(_) \
     _(XR_DIGITAL_LENS_CONTROL_PROCESSING_DISABLE_BIT_ALMALENCE, 0x00000001) \
@@ -1451,6 +1553,7 @@ XR_ENUM_STR(XrResult);
     _(XR_COMPOSITION_LAYER_SETTINGS_QUALITY_SUPER_SAMPLING_BIT_FB, 0x00000002) \
     _(XR_COMPOSITION_LAYER_SETTINGS_NORMAL_SHARPENING_BIT_FB, 0x00000004) \
     _(XR_COMPOSITION_LAYER_SETTINGS_QUALITY_SHARPENING_BIT_FB, 0x00000008) \
+    _(XR_COMPOSITION_LAYER_SETTINGS_AUTO_LAYER_FILTER_BIT_META, 0x00000020) \
 
 #define XR_LIST_BITS_XrPassthroughPreferenceFlagsMETA(_) \
     _(XR_PASSTHROUGH_PREFERENCE_DEFAULT_TO_ACTIVE_BIT_META, 0x00000001) \
@@ -4141,6 +4244,20 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(id) \
 
+/// Calls your macro with the name of each member of XrRecommendedLayerResolutionMETA, in order.
+#define XR_LIST_STRUCT_XrRecommendedLayerResolutionMETA(_) \
+    _(type) \
+    _(next) \
+    _(recommendedImageDimensions) \
+    _(isValid) \
+
+/// Calls your macro with the name of each member of XrRecommendedLayerResolutionGetInfoMETA, in order.
+#define XR_LIST_STRUCT_XrRecommendedLayerResolutionGetInfoMETA(_) \
+    _(type) \
+    _(next) \
+    _(layer) \
+    _(predictedDisplayTime) \
+
 /// Calls your macro with the name of each member of XrPassthroughColorLutDataMETA, in order.
 #define XR_LIST_STRUCT_XrPassthroughColorLutDataMETA(_) \
     _(bufferSize) \
@@ -4180,6 +4297,56 @@ XR_ENUM_STR(XrResult);
     _(type) \
     _(next) \
     _(maxColorLutResolution) \
+
+/// Calls your macro with the name of each member of XrSpaceTriangleMeshGetInfoMETA, in order.
+#define XR_LIST_STRUCT_XrSpaceTriangleMeshGetInfoMETA(_) \
+    _(type) \
+    _(next) \
+
+/// Calls your macro with the name of each member of XrSpaceTriangleMeshMETA, in order.
+#define XR_LIST_STRUCT_XrSpaceTriangleMeshMETA(_) \
+    _(type) \
+    _(next) \
+    _(vertexCapacityInput) \
+    _(vertexCountOutput) \
+    _(vertices) \
+    _(indexCapacityInput) \
+    _(indexCountOutput) \
+    _(indices) \
+
+/// Calls your macro with the name of each member of XrSystemFaceTrackingProperties2FB, in order.
+#define XR_LIST_STRUCT_XrSystemFaceTrackingProperties2FB(_) \
+    _(type) \
+    _(next) \
+    _(supportsVisualFaceTracking) \
+    _(supportsAudioFaceTracking) \
+
+/// Calls your macro with the name of each member of XrFaceTrackerCreateInfo2FB, in order.
+#define XR_LIST_STRUCT_XrFaceTrackerCreateInfo2FB(_) \
+    _(type) \
+    _(next) \
+    _(faceExpressionSet) \
+    _(requestedDataSourceCount) \
+    _(requestedDataSources) \
+
+/// Calls your macro with the name of each member of XrFaceExpressionInfo2FB, in order.
+#define XR_LIST_STRUCT_XrFaceExpressionInfo2FB(_) \
+    _(type) \
+    _(next) \
+    _(time) \
+
+/// Calls your macro with the name of each member of XrFaceExpressionWeights2FB, in order.
+#define XR_LIST_STRUCT_XrFaceExpressionWeights2FB(_) \
+    _(type) \
+    _(next) \
+    _(weightCount) \
+    _(weights) \
+    _(confidenceCount) \
+    _(confidences) \
+    _(isValid) \
+    _(isEyeFollowingBlendshapesValid) \
+    _(dataSource) \
+    _(time) \
 
 /// Calls your macro with the name of each member of XrPassthroughCreateInfoHTC, in order.
 #define XR_LIST_STRUCT_XrPassthroughCreateInfoHTC(_) \
@@ -4371,6 +4538,19 @@ XR_ENUM_STR(XrResult);
     _(vertexCapacityInput) \
     _(vertexCountOutput) \
     _(vertices) \
+
+/// Calls your macro with the name of each member of XrEventDataUserPresenceChangedEXT, in order.
+#define XR_LIST_STRUCT_XrEventDataUserPresenceChangedEXT(_) \
+    _(type) \
+    _(next) \
+    _(session) \
+    _(isUserPresent) \
+
+/// Calls your macro with the name of each member of XrSystemUserPresencePropertiesEXT, in order.
+#define XR_LIST_STRUCT_XrSystemUserPresencePropertiesEXT(_) \
+    _(type) \
+    _(next) \
+    _(supportsUserPresence) \
 
 /// Calls your macro with the name of each member of XrEventDataHeadsetFitChangedML, in order.
 #define XR_LIST_STRUCT_XrEventDataHeadsetFitChangedML(_) \
@@ -4680,11 +4860,19 @@ XR_ENUM_STR(XrResult);
     _(XrEventDataSpaceListSaveCompleteFB, XR_TYPE_EVENT_DATA_SPACE_LIST_SAVE_COMPLETE_FB) \
     _(XrSpaceUserCreateInfoFB, XR_TYPE_SPACE_USER_CREATE_INFO_FB) \
     _(XrSystemHeadsetIdPropertiesMETA, XR_TYPE_SYSTEM_HEADSET_ID_PROPERTIES_META) \
+    _(XrRecommendedLayerResolutionMETA, XR_TYPE_RECOMMENDED_LAYER_RESOLUTION_META) \
+    _(XrRecommendedLayerResolutionGetInfoMETA, XR_TYPE_RECOMMENDED_LAYER_RESOLUTION_GET_INFO_META) \
     _(XrPassthroughColorLutCreateInfoMETA, XR_TYPE_PASSTHROUGH_COLOR_LUT_CREATE_INFO_META) \
     _(XrPassthroughColorLutUpdateInfoMETA, XR_TYPE_PASSTHROUGH_COLOR_LUT_UPDATE_INFO_META) \
     _(XrPassthroughColorMapLutMETA, XR_TYPE_PASSTHROUGH_COLOR_MAP_LUT_META) \
     _(XrPassthroughColorMapInterpolatedLutMETA, XR_TYPE_PASSTHROUGH_COLOR_MAP_INTERPOLATED_LUT_META) \
     _(XrSystemPassthroughColorLutPropertiesMETA, XR_TYPE_SYSTEM_PASSTHROUGH_COLOR_LUT_PROPERTIES_META) \
+    _(XrSpaceTriangleMeshGetInfoMETA, XR_TYPE_SPACE_TRIANGLE_MESH_GET_INFO_META) \
+    _(XrSpaceTriangleMeshMETA, XR_TYPE_SPACE_TRIANGLE_MESH_META) \
+    _(XrSystemFaceTrackingProperties2FB, XR_TYPE_SYSTEM_FACE_TRACKING_PROPERTIES2_FB) \
+    _(XrFaceTrackerCreateInfo2FB, XR_TYPE_FACE_TRACKER_CREATE_INFO2_FB) \
+    _(XrFaceExpressionInfo2FB, XR_TYPE_FACE_EXPRESSION_INFO2_FB) \
+    _(XrFaceExpressionWeights2FB, XR_TYPE_FACE_EXPRESSION_WEIGHTS2_FB) \
     _(XrPassthroughCreateInfoHTC, XR_TYPE_PASSTHROUGH_CREATE_INFO_HTC) \
     _(XrPassthroughColorHTC, XR_TYPE_PASSTHROUGH_COLOR_HTC) \
     _(XrPassthroughMeshTransformInfoHTC, XR_TYPE_PASSTHROUGH_MESH_TRANSFORM_INFO_HTC) \
@@ -4706,6 +4894,8 @@ XR_ENUM_STR(XrResult);
     _(XrPlaneDetectorLocationEXT, XR_TYPE_PLANE_DETECTOR_LOCATION_EXT) \
     _(XrPlaneDetectorLocationsEXT, XR_TYPE_PLANE_DETECTOR_LOCATIONS_EXT) \
     _(XrPlaneDetectorPolygonBufferEXT, XR_TYPE_PLANE_DETECTOR_POLYGON_BUFFER_EXT) \
+    _(XrEventDataUserPresenceChangedEXT, XR_TYPE_EVENT_DATA_USER_PRESENCE_CHANGED_EXT) \
+    _(XrSystemUserPresencePropertiesEXT, XR_TYPE_SYSTEM_USER_PRESENCE_PROPERTIES_EXT) \
     _(XrEventDataHeadsetFitChangedML, XR_TYPE_EVENT_DATA_HEADSET_FIT_CHANGED_ML) \
     _(XrEventDataEyeCalibrationChangedML, XR_TYPE_EVENT_DATA_EYE_CALIBRATION_CHANGED_ML) \
     _(XrUserCalibrationEnableEventsInfoML, XR_TYPE_USER_CALIBRATION_ENABLE_EVENTS_INFO_ML) \
@@ -4960,6 +5150,7 @@ XR_ENUM_STR(XrResult);
     _(XR_VARJO_environment_depth_estimation, 124) \
     _(XR_VARJO_marker_tracking, 125) \
     _(XR_VARJO_view_offset, 126) \
+    _(XR_VARJO_xr4_controller_interaction, 130) \
     _(XR_ML_ml2_controller_interaction, 135) \
     _(XR_ML_frame_end_info, 136) \
     _(XR_ML_global_dimmer, 137) \
@@ -5003,8 +5194,12 @@ XR_ENUM_STR(XrResult);
     _(XR_FB_spatial_entity_storage_batch, 239) \
     _(XR_FB_spatial_entity_user, 242) \
     _(XR_META_headset_id, 246) \
+    _(XR_META_recommended_layer_resolution, 255) \
     _(XR_META_passthrough_color_lut, 267) \
+    _(XR_META_spatial_entity_mesh, 270) \
+    _(XR_META_automatic_layer_filter, 272) \
     _(XR_META_touch_controller_plus, 280) \
+    _(XR_FB_face_tracking2, 288) \
     _(XR_EXT_uuid, 300) \
     _(XR_EXT_hand_interaction, 303) \
     _(XR_QCOM_tracking_optimization_settings, 307) \
@@ -5018,8 +5213,829 @@ XR_ENUM_STR(XrResult);
     _(XR_EXT_hand_tracking_data_source, 429) \
     _(XR_EXT_plane_detection, 430) \
     _(XR_OPPO_controller_interaction, 454) \
+    _(XR_EXT_user_presence, 471) \
     _(XR_ML_user_calibration, 473) \
     _(XR_YVR_controller_interaction, 498) \
+
+
+
+/// For every function defined by XR_VERSION_1_0 in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_VERSION_1_0(_) \
+    _(GetInstanceProcAddr, VERSION_1_0) \
+    _(EnumerateApiLayerProperties, VERSION_1_0) \
+    _(EnumerateInstanceExtensionProperties, VERSION_1_0) \
+    _(CreateInstance, VERSION_1_0) \
+    _(DestroyInstance, VERSION_1_0) \
+    _(GetInstanceProperties, VERSION_1_0) \
+    _(PollEvent, VERSION_1_0) \
+    _(ResultToString, VERSION_1_0) \
+    _(StructureTypeToString, VERSION_1_0) \
+    _(GetSystem, VERSION_1_0) \
+    _(GetSystemProperties, VERSION_1_0) \
+    _(EnumerateEnvironmentBlendModes, VERSION_1_0) \
+    _(CreateSession, VERSION_1_0) \
+    _(DestroySession, VERSION_1_0) \
+    _(EnumerateReferenceSpaces, VERSION_1_0) \
+    _(CreateReferenceSpace, VERSION_1_0) \
+    _(GetReferenceSpaceBoundsRect, VERSION_1_0) \
+    _(CreateActionSpace, VERSION_1_0) \
+    _(LocateSpace, VERSION_1_0) \
+    _(DestroySpace, VERSION_1_0) \
+    _(EnumerateViewConfigurations, VERSION_1_0) \
+    _(GetViewConfigurationProperties, VERSION_1_0) \
+    _(EnumerateViewConfigurationViews, VERSION_1_0) \
+    _(EnumerateSwapchainFormats, VERSION_1_0) \
+    _(CreateSwapchain, VERSION_1_0) \
+    _(DestroySwapchain, VERSION_1_0) \
+    _(EnumerateSwapchainImages, VERSION_1_0) \
+    _(AcquireSwapchainImage, VERSION_1_0) \
+    _(WaitSwapchainImage, VERSION_1_0) \
+    _(ReleaseSwapchainImage, VERSION_1_0) \
+    _(BeginSession, VERSION_1_0) \
+    _(EndSession, VERSION_1_0) \
+    _(RequestExitSession, VERSION_1_0) \
+    _(WaitFrame, VERSION_1_0) \
+    _(BeginFrame, VERSION_1_0) \
+    _(EndFrame, VERSION_1_0) \
+    _(LocateViews, VERSION_1_0) \
+    _(StringToPath, VERSION_1_0) \
+    _(PathToString, VERSION_1_0) \
+    _(CreateActionSet, VERSION_1_0) \
+    _(DestroyActionSet, VERSION_1_0) \
+    _(CreateAction, VERSION_1_0) \
+    _(DestroyAction, VERSION_1_0) \
+    _(SuggestInteractionProfileBindings, VERSION_1_0) \
+    _(AttachSessionActionSets, VERSION_1_0) \
+    _(GetCurrentInteractionProfile, VERSION_1_0) \
+    _(GetActionStateBoolean, VERSION_1_0) \
+    _(GetActionStateFloat, VERSION_1_0) \
+    _(GetActionStateVector2f, VERSION_1_0) \
+    _(GetActionStatePose, VERSION_1_0) \
+    _(SyncActions, VERSION_1_0) \
+    _(EnumerateBoundSourcesForAction, VERSION_1_0) \
+    _(GetInputSourceLocalizedName, VERSION_1_0) \
+    _(ApplyHapticFeedback, VERSION_1_0) \
+    _(StopHapticFeedback, VERSION_1_0) \
+
+
+/// For every function defined by XR_LOADER_VERSION_1_0 in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_LOADER_VERSION_1_0(_) \
+    _(CreateApiLayerInstance, LOADER_VERSION_1_0) \
+    _(NegotiateLoaderRuntimeInterface, LOADER_VERSION_1_0) \
+    _(NegotiateLoaderApiLayerInterface, LOADER_VERSION_1_0) \
+
+
+/// For every function defined by XR_KHR_android_thread_settings in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_android_thread_settings(_) \
+    _(SetAndroidApplicationThreadKHR, KHR_android_thread_settings) \
+
+
+/// For every function defined by XR_KHR_android_surface_swapchain in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_android_surface_swapchain(_) \
+    _(CreateSwapchainAndroidSurfaceKHR, KHR_android_surface_swapchain) \
+
+
+/// For every function defined by XR_KHR_opengl_enable in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_opengl_enable(_) \
+    _(GetOpenGLGraphicsRequirementsKHR, KHR_opengl_enable) \
+
+
+/// For every function defined by XR_KHR_opengl_es_enable in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_opengl_es_enable(_) \
+    _(GetOpenGLESGraphicsRequirementsKHR, KHR_opengl_es_enable) \
+
+
+/// For every function defined by XR_KHR_vulkan_enable in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_vulkan_enable(_) \
+    _(GetVulkanInstanceExtensionsKHR, KHR_vulkan_enable) \
+    _(GetVulkanDeviceExtensionsKHR, KHR_vulkan_enable) \
+    _(GetVulkanGraphicsDeviceKHR, KHR_vulkan_enable) \
+    _(GetVulkanGraphicsRequirementsKHR, KHR_vulkan_enable) \
+
+
+/// For every function defined by XR_KHR_D3D11_enable in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_D3D11_enable(_) \
+    _(GetD3D11GraphicsRequirementsKHR, KHR_D3D11_enable) \
+
+
+/// For every function defined by XR_KHR_D3D12_enable in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_D3D12_enable(_) \
+    _(GetD3D12GraphicsRequirementsKHR, KHR_D3D12_enable) \
+
+
+/// For every function defined by XR_KHR_visibility_mask in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_visibility_mask(_) \
+    _(GetVisibilityMaskKHR, KHR_visibility_mask) \
+
+
+/// For every function defined by XR_KHR_win32_convert_performance_counter_time in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_win32_convert_performance_counter_time(_) \
+    _(ConvertWin32PerformanceCounterToTimeKHR, KHR_win32_convert_performance_counter_time) \
+    _(ConvertTimeToWin32PerformanceCounterKHR, KHR_win32_convert_performance_counter_time) \
+
+
+/// For every function defined by XR_KHR_convert_timespec_time in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_convert_timespec_time(_) \
+    _(ConvertTimespecTimeToTimeKHR, KHR_convert_timespec_time) \
+    _(ConvertTimeToTimespecTimeKHR, KHR_convert_timespec_time) \
+
+
+/// For every function defined by XR_KHR_loader_init in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_loader_init(_) \
+    _(InitializeLoaderKHR, KHR_loader_init) \
+
+
+/// For every function defined by XR_KHR_vulkan_enable2 in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_KHR_vulkan_enable2(_) \
+    _(CreateVulkanInstanceKHR, KHR_vulkan_enable2) \
+    _(CreateVulkanDeviceKHR, KHR_vulkan_enable2) \
+    _(GetVulkanGraphicsDevice2KHR, KHR_vulkan_enable2) \
+
+
+/// For every function defined by XR_EXT_performance_settings in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_performance_settings(_) \
+    _(PerfSettingsSetPerformanceLevelEXT, EXT_performance_settings) \
+
+
+/// For every function defined by XR_EXT_thermal_query in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_thermal_query(_) \
+    _(ThermalGetTemperatureTrendEXT, EXT_thermal_query) \
+
+
+/// For every function defined by XR_EXT_debug_utils in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_debug_utils(_) \
+    _(SetDebugUtilsObjectNameEXT, EXT_debug_utils) \
+    _(CreateDebugUtilsMessengerEXT, EXT_debug_utils) \
+    _(DestroyDebugUtilsMessengerEXT, EXT_debug_utils) \
+    _(SubmitDebugUtilsMessageEXT, EXT_debug_utils) \
+    _(SessionBeginDebugUtilsLabelRegionEXT, EXT_debug_utils) \
+    _(SessionEndDebugUtilsLabelRegionEXT, EXT_debug_utils) \
+    _(SessionInsertDebugUtilsLabelEXT, EXT_debug_utils) \
+
+
+/// For every function defined by XR_MSFT_spatial_anchor in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_MSFT_spatial_anchor(_) \
+    _(CreateSpatialAnchorMSFT, MSFT_spatial_anchor) \
+    _(CreateSpatialAnchorSpaceMSFT, MSFT_spatial_anchor) \
+    _(DestroySpatialAnchorMSFT, MSFT_spatial_anchor) \
+
+
+/// For every function defined by XR_EXT_conformance_automation in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_conformance_automation(_) \
+    _(SetInputDeviceActiveEXT, EXT_conformance_automation) \
+    _(SetInputDeviceStateBoolEXT, EXT_conformance_automation) \
+    _(SetInputDeviceStateFloatEXT, EXT_conformance_automation) \
+    _(SetInputDeviceStateVector2fEXT, EXT_conformance_automation) \
+    _(SetInputDeviceLocationEXT, EXT_conformance_automation) \
+
+
+/// For every function defined by XR_MSFT_spatial_graph_bridge in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_MSFT_spatial_graph_bridge(_) \
+    _(CreateSpatialGraphNodeSpaceMSFT, MSFT_spatial_graph_bridge) \
+    _(TryCreateSpatialGraphStaticNodeBindingMSFT, MSFT_spatial_graph_bridge) \
+    _(DestroySpatialGraphNodeBindingMSFT, MSFT_spatial_graph_bridge) \
+    _(GetSpatialGraphNodeBindingPropertiesMSFT, MSFT_spatial_graph_bridge) \
+
+
+/// For every function defined by XR_EXT_hand_tracking in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_hand_tracking(_) \
+    _(CreateHandTrackerEXT, EXT_hand_tracking) \
+    _(DestroyHandTrackerEXT, EXT_hand_tracking) \
+    _(LocateHandJointsEXT, EXT_hand_tracking) \
+
+
+/// For every function defined by XR_MSFT_hand_tracking_mesh in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_MSFT_hand_tracking_mesh(_) \
+    _(CreateHandMeshSpaceMSFT, MSFT_hand_tracking_mesh) \
+    _(UpdateHandMeshMSFT, MSFT_hand_tracking_mesh) \
+
+
+/// For every function defined by XR_MSFT_controller_model in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_MSFT_controller_model(_) \
+    _(GetControllerModelKeyMSFT, MSFT_controller_model) \
+    _(LoadControllerModelMSFT, MSFT_controller_model) \
+    _(GetControllerModelPropertiesMSFT, MSFT_controller_model) \
+    _(GetControllerModelStateMSFT, MSFT_controller_model) \
+
+
+/// For every function defined by XR_MSFT_perception_anchor_interop in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_MSFT_perception_anchor_interop(_) \
+    _(CreateSpatialAnchorFromPerceptionAnchorMSFT, MSFT_perception_anchor_interop) \
+    _(TryGetPerceptionAnchorFromSpatialAnchorMSFT, MSFT_perception_anchor_interop) \
+
+
+/// For every function defined by XR_MSFT_composition_layer_reprojection in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_MSFT_composition_layer_reprojection(_) \
+    _(EnumerateReprojectionModesMSFT, MSFT_composition_layer_reprojection) \
+
+
+/// For every function defined by XR_FB_swapchain_update_state in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_swapchain_update_state(_) \
+    _(UpdateSwapchainFB, FB_swapchain_update_state) \
+    _(GetSwapchainStateFB, FB_swapchain_update_state) \
+
+
+/// For every function defined by XR_FB_body_tracking in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_body_tracking(_) \
+    _(CreateBodyTrackerFB, FB_body_tracking) \
+    _(DestroyBodyTrackerFB, FB_body_tracking) \
+    _(LocateBodyJointsFB, FB_body_tracking) \
+    _(GetBodySkeletonFB, FB_body_tracking) \
+
+
+/// For every function defined by XR_MSFT_scene_understanding in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_MSFT_scene_understanding(_) \
+    _(EnumerateSceneComputeFeaturesMSFT, MSFT_scene_understanding) \
+    _(CreateSceneObserverMSFT, MSFT_scene_understanding) \
+    _(DestroySceneObserverMSFT, MSFT_scene_understanding) \
+    _(CreateSceneMSFT, MSFT_scene_understanding) \
+    _(DestroySceneMSFT, MSFT_scene_understanding) \
+    _(ComputeNewSceneMSFT, MSFT_scene_understanding) \
+    _(GetSceneComputeStateMSFT, MSFT_scene_understanding) \
+    _(GetSceneComponentsMSFT, MSFT_scene_understanding) \
+    _(LocateSceneComponentsMSFT, MSFT_scene_understanding) \
+    _(GetSceneMeshBuffersMSFT, MSFT_scene_understanding) \
+
+
+/// For every function defined by XR_MSFT_scene_understanding_serialization in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_MSFT_scene_understanding_serialization(_) \
+    _(DeserializeSceneMSFT, MSFT_scene_understanding_serialization) \
+    _(GetSerializedSceneFragmentDataMSFT, MSFT_scene_understanding_serialization) \
+
+
+/// For every function defined by XR_FB_display_refresh_rate in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_display_refresh_rate(_) \
+    _(EnumerateDisplayRefreshRatesFB, FB_display_refresh_rate) \
+    _(GetDisplayRefreshRateFB, FB_display_refresh_rate) \
+    _(RequestDisplayRefreshRateFB, FB_display_refresh_rate) \
+
+
+/// For every function defined by XR_HTCX_vive_tracker_interaction in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_HTCX_vive_tracker_interaction(_) \
+    _(EnumerateViveTrackerPathsHTCX, HTCX_vive_tracker_interaction) \
+
+
+/// For every function defined by XR_HTC_facial_tracking in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_HTC_facial_tracking(_) \
+    _(CreateFacialTrackerHTC, HTC_facial_tracking) \
+    _(DestroyFacialTrackerHTC, HTC_facial_tracking) \
+    _(GetFacialExpressionsHTC, HTC_facial_tracking) \
+
+
+/// For every function defined by XR_FB_color_space in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_color_space(_) \
+    _(EnumerateColorSpacesFB, FB_color_space) \
+    _(SetColorSpaceFB, FB_color_space) \
+
+
+/// For every function defined by XR_FB_hand_tracking_mesh in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_hand_tracking_mesh(_) \
+    _(GetHandMeshFB, FB_hand_tracking_mesh) \
+
+
+/// For every function defined by XR_FB_spatial_entity in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_spatial_entity(_) \
+    _(CreateSpatialAnchorFB, FB_spatial_entity) \
+    _(GetSpaceUuidFB, FB_spatial_entity) \
+    _(EnumerateSpaceSupportedComponentsFB, FB_spatial_entity) \
+    _(SetSpaceComponentStatusFB, FB_spatial_entity) \
+    _(GetSpaceComponentStatusFB, FB_spatial_entity) \
+
+
+/// For every function defined by XR_FB_foveation in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_foveation(_) \
+    _(CreateFoveationProfileFB, FB_foveation) \
+    _(DestroyFoveationProfileFB, FB_foveation) \
+
+
+/// For every function defined by XR_FB_keyboard_tracking in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_keyboard_tracking(_) \
+    _(QuerySystemTrackedKeyboardFB, FB_keyboard_tracking) \
+    _(CreateKeyboardSpaceFB, FB_keyboard_tracking) \
+
+
+/// For every function defined by XR_FB_triangle_mesh in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_triangle_mesh(_) \
+    _(CreateTriangleMeshFB, FB_triangle_mesh) \
+    _(DestroyTriangleMeshFB, FB_triangle_mesh) \
+    _(TriangleMeshGetVertexBufferFB, FB_triangle_mesh) \
+    _(TriangleMeshGetIndexBufferFB, FB_triangle_mesh) \
+    _(TriangleMeshBeginUpdateFB, FB_triangle_mesh) \
+    _(TriangleMeshEndUpdateFB, FB_triangle_mesh) \
+    _(TriangleMeshBeginVertexBufferUpdateFB, FB_triangle_mesh) \
+    _(TriangleMeshEndVertexBufferUpdateFB, FB_triangle_mesh) \
+
+
+/// For every function defined by XR_FB_passthrough in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_passthrough(_) \
+    _(CreatePassthroughFB, FB_passthrough) \
+    _(DestroyPassthroughFB, FB_passthrough) \
+    _(PassthroughStartFB, FB_passthrough) \
+    _(PassthroughPauseFB, FB_passthrough) \
+    _(CreatePassthroughLayerFB, FB_passthrough) \
+    _(DestroyPassthroughLayerFB, FB_passthrough) \
+    _(PassthroughLayerPauseFB, FB_passthrough) \
+    _(PassthroughLayerResumeFB, FB_passthrough) \
+    _(PassthroughLayerSetStyleFB, FB_passthrough) \
+    _(CreateGeometryInstanceFB, FB_passthrough) \
+    _(DestroyGeometryInstanceFB, FB_passthrough) \
+    _(GeometryInstanceSetTransformFB, FB_passthrough) \
+
+
+/// For every function defined by XR_FB_render_model in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_render_model(_) \
+    _(EnumerateRenderModelPathsFB, FB_render_model) \
+    _(GetRenderModelPropertiesFB, FB_render_model) \
+    _(LoadRenderModelFB, FB_render_model) \
+
+
+/// For every function defined by XR_VARJO_environment_depth_estimation in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_VARJO_environment_depth_estimation(_) \
+    _(SetEnvironmentDepthEstimationVARJO, VARJO_environment_depth_estimation) \
+
+
+/// For every function defined by XR_VARJO_marker_tracking in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_VARJO_marker_tracking(_) \
+    _(SetMarkerTrackingVARJO, VARJO_marker_tracking) \
+    _(SetMarkerTrackingTimeoutVARJO, VARJO_marker_tracking) \
+    _(SetMarkerTrackingPredictionVARJO, VARJO_marker_tracking) \
+    _(GetMarkerSizeVARJO, VARJO_marker_tracking) \
+    _(CreateMarkerSpaceVARJO, VARJO_marker_tracking) \
+
+
+/// For every function defined by XR_VARJO_view_offset in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_VARJO_view_offset(_) \
+    _(SetViewOffsetVARJO, VARJO_view_offset) \
+
+
+/// For every function defined by XR_ML_compat in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_ML_compat(_) \
+    _(CreateSpaceFromCoordinateFrameUIDML, ML_compat) \
+
+
+/// For every function defined by XR_ML_marker_understanding in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_ML_marker_understanding(_) \
+    _(CreateMarkerDetectorML, ML_marker_understanding) \
+    _(DestroyMarkerDetectorML, ML_marker_understanding) \
+    _(SnapshotMarkerDetectorML, ML_marker_understanding) \
+    _(GetMarkerDetectorStateML, ML_marker_understanding) \
+    _(GetMarkersML, ML_marker_understanding) \
+    _(GetMarkerReprojectionErrorML, ML_marker_understanding) \
+    _(GetMarkerLengthML, ML_marker_understanding) \
+    _(GetMarkerNumberML, ML_marker_understanding) \
+    _(GetMarkerStringML, ML_marker_understanding) \
+    _(CreateMarkerSpaceML, ML_marker_understanding) \
+
+
+/// For every function defined by XR_ML_localization_map in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_ML_localization_map(_) \
+    _(EnableLocalizationEventsML, ML_localization_map) \
+    _(QueryLocalizationMapsML, ML_localization_map) \
+    _(RequestMapLocalizationML, ML_localization_map) \
+    _(ImportLocalizationMapML, ML_localization_map) \
+    _(CreateExportedLocalizationMapML, ML_localization_map) \
+    _(DestroyExportedLocalizationMapML, ML_localization_map) \
+    _(GetExportedLocalizationMapDataML, ML_localization_map) \
+
+
+/// For every function defined by XR_MSFT_spatial_anchor_persistence in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_MSFT_spatial_anchor_persistence(_) \
+    _(CreateSpatialAnchorStoreConnectionMSFT, MSFT_spatial_anchor_persistence) \
+    _(DestroySpatialAnchorStoreConnectionMSFT, MSFT_spatial_anchor_persistence) \
+    _(PersistSpatialAnchorMSFT, MSFT_spatial_anchor_persistence) \
+    _(EnumeratePersistedSpatialAnchorNamesMSFT, MSFT_spatial_anchor_persistence) \
+    _(CreateSpatialAnchorFromPersistedNameMSFT, MSFT_spatial_anchor_persistence) \
+    _(UnpersistSpatialAnchorMSFT, MSFT_spatial_anchor_persistence) \
+    _(ClearSpatialAnchorStoreMSFT, MSFT_spatial_anchor_persistence) \
+
+
+/// For every function defined by XR_MSFT_scene_marker in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_MSFT_scene_marker(_) \
+    _(GetSceneMarkerRawDataMSFT, MSFT_scene_marker) \
+    _(GetSceneMarkerDecodedStringMSFT, MSFT_scene_marker) \
+
+
+/// For every function defined by XR_FB_spatial_entity_query in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_spatial_entity_query(_) \
+    _(QuerySpacesFB, FB_spatial_entity_query) \
+    _(RetrieveSpaceQueryResultsFB, FB_spatial_entity_query) \
+
+
+/// For every function defined by XR_FB_spatial_entity_storage in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_spatial_entity_storage(_) \
+    _(SaveSpaceFB, FB_spatial_entity_storage) \
+    _(EraseSpaceFB, FB_spatial_entity_storage) \
+
+
+/// For every function defined by XR_OCULUS_audio_device_guid in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_OCULUS_audio_device_guid(_) \
+    _(GetAudioOutputDeviceGuidOculus, OCULUS_audio_device_guid) \
+    _(GetAudioInputDeviceGuidOculus, OCULUS_audio_device_guid) \
+
+
+/// For every function defined by XR_FB_spatial_entity_sharing in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_spatial_entity_sharing(_) \
+    _(ShareSpacesFB, FB_spatial_entity_sharing) \
+
+
+/// For every function defined by XR_FB_scene in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_scene(_) \
+    _(GetSpaceBoundingBox2DFB, FB_scene) \
+    _(GetSpaceBoundingBox3DFB, FB_scene) \
+    _(GetSpaceSemanticLabelsFB, FB_scene) \
+    _(GetSpaceBoundary2DFB, FB_scene) \
+    _(GetSpaceRoomLayoutFB, FB_scene) \
+
+
+/// For every function defined by XR_ALMALENCE_digital_lens_control in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_ALMALENCE_digital_lens_control(_) \
+    _(SetDigitalLensControlALMALENCE, ALMALENCE_digital_lens_control) \
+
+
+/// For every function defined by XR_FB_scene_capture in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_scene_capture(_) \
+    _(RequestSceneCaptureFB, FB_scene_capture) \
+
+
+/// For every function defined by XR_FB_spatial_entity_container in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_spatial_entity_container(_) \
+    _(GetSpaceContainerFB, FB_spatial_entity_container) \
+
+
+/// For every function defined by XR_META_foveation_eye_tracked in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_META_foveation_eye_tracked(_) \
+    _(GetFoveationEyeTrackedStateMETA, META_foveation_eye_tracked) \
+
+
+/// For every function defined by XR_FB_face_tracking in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_face_tracking(_) \
+    _(CreateFaceTrackerFB, FB_face_tracking) \
+    _(DestroyFaceTrackerFB, FB_face_tracking) \
+    _(GetFaceExpressionWeightsFB, FB_face_tracking) \
+
+
+/// For every function defined by XR_FB_eye_tracking_social in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_eye_tracking_social(_) \
+    _(CreateEyeTrackerFB, FB_eye_tracking_social) \
+    _(DestroyEyeTrackerFB, FB_eye_tracking_social) \
+    _(GetEyeGazesFB, FB_eye_tracking_social) \
+
+
+/// For every function defined by XR_FB_passthrough_keyboard_hands in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_passthrough_keyboard_hands(_) \
+    _(PassthroughLayerSetKeyboardHandsIntensityFB, FB_passthrough_keyboard_hands) \
+
+
+/// For every function defined by XR_FB_haptic_pcm in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_haptic_pcm(_) \
+    _(GetDeviceSampleRateFB, FB_haptic_pcm) \
+
+
+/// For every function defined by XR_META_passthrough_preferences in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_META_passthrough_preferences(_) \
+    _(GetPassthroughPreferencesMETA, META_passthrough_preferences) \
+
+
+/// For every function defined by XR_META_virtual_keyboard in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_META_virtual_keyboard(_) \
+    _(CreateVirtualKeyboardMETA, META_virtual_keyboard) \
+    _(DestroyVirtualKeyboardMETA, META_virtual_keyboard) \
+    _(CreateVirtualKeyboardSpaceMETA, META_virtual_keyboard) \
+    _(SuggestVirtualKeyboardLocationMETA, META_virtual_keyboard) \
+    _(GetVirtualKeyboardScaleMETA, META_virtual_keyboard) \
+    _(SetVirtualKeyboardModelVisibilityMETA, META_virtual_keyboard) \
+    _(GetVirtualKeyboardModelAnimationStatesMETA, META_virtual_keyboard) \
+    _(GetVirtualKeyboardDirtyTexturesMETA, META_virtual_keyboard) \
+    _(GetVirtualKeyboardTextureDataMETA, META_virtual_keyboard) \
+    _(SendVirtualKeyboardInputMETA, META_virtual_keyboard) \
+    _(ChangeVirtualKeyboardTextContextMETA, META_virtual_keyboard) \
+
+
+/// For every function defined by XR_OCULUS_external_camera in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_OCULUS_external_camera(_) \
+    _(EnumerateExternalCamerasOCULUS, OCULUS_external_camera) \
+
+
+/// For every function defined by XR_META_performance_metrics in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_META_performance_metrics(_) \
+    _(EnumeratePerformanceMetricsCounterPathsMETA, META_performance_metrics) \
+    _(SetPerformanceMetricsStateMETA, META_performance_metrics) \
+    _(GetPerformanceMetricsStateMETA, META_performance_metrics) \
+    _(QueryPerformanceMetricsCounterMETA, META_performance_metrics) \
+
+
+/// For every function defined by XR_FB_spatial_entity_storage_batch in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_spatial_entity_storage_batch(_) \
+    _(SaveSpaceListFB, FB_spatial_entity_storage_batch) \
+
+
+/// For every function defined by XR_FB_spatial_entity_user in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_spatial_entity_user(_) \
+    _(CreateSpaceUserFB, FB_spatial_entity_user) \
+    _(GetSpaceUserIdFB, FB_spatial_entity_user) \
+    _(DestroySpaceUserFB, FB_spatial_entity_user) \
+
+
+/// For every function defined by XR_META_recommended_layer_resolution in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_META_recommended_layer_resolution(_) \
+    _(GetRecommendedLayerResolutionMETA, META_recommended_layer_resolution) \
+
+
+/// For every function defined by XR_META_passthrough_color_lut in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_META_passthrough_color_lut(_) \
+    _(CreatePassthroughColorLutMETA, META_passthrough_color_lut) \
+    _(DestroyPassthroughColorLutMETA, META_passthrough_color_lut) \
+    _(UpdatePassthroughColorLutMETA, META_passthrough_color_lut) \
+
+
+/// For every function defined by XR_META_spatial_entity_mesh in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_META_spatial_entity_mesh(_) \
+    _(GetSpaceTriangleMeshMETA, META_spatial_entity_mesh) \
+
+
+/// For every function defined by XR_FB_face_tracking2 in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_FB_face_tracking2(_) \
+    _(CreateFaceTracker2FB, FB_face_tracking2) \
+    _(DestroyFaceTracker2FB, FB_face_tracking2) \
+    _(GetFaceExpressionWeights2FB, FB_face_tracking2) \
+
+
+/// For every function defined by XR_QCOM_tracking_optimization_settings in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_QCOM_tracking_optimization_settings(_) \
+    _(SetTrackingOptimizationSettingsHintQCOM, QCOM_tracking_optimization_settings) \
+
+
+/// For every function defined by XR_HTC_passthrough in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_HTC_passthrough(_) \
+    _(CreatePassthroughHTC, HTC_passthrough) \
+    _(DestroyPassthroughHTC, HTC_passthrough) \
+
+
+/// For every function defined by XR_HTC_foveation in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_HTC_foveation(_) \
+    _(ApplyFoveationHTC, HTC_foveation) \
+
+
+/// For every function defined by XR_HTC_anchor in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_HTC_anchor(_) \
+    _(CreateSpatialAnchorHTC, HTC_anchor) \
+    _(GetSpatialAnchorNameHTC, HTC_anchor) \
+
+
+/// For every function defined by XR_MNDX_force_feedback_curl in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_MNDX_force_feedback_curl(_) \
+    _(ApplyForceFeedbackCurlMNDX, MNDX_force_feedback_curl) \
+
+
+/// For every function defined by XR_EXT_plane_detection in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_plane_detection(_) \
+    _(CreatePlaneDetectorEXT, EXT_plane_detection) \
+    _(DestroyPlaneDetectorEXT, EXT_plane_detection) \
+    _(BeginPlaneDetectionEXT, EXT_plane_detection) \
+    _(GetPlaneDetectionStateEXT, EXT_plane_detection) \
+    _(GetPlaneDetectionsEXT, EXT_plane_detection) \
+    _(GetPlanePolygonBufferEXT, EXT_plane_detection) \
+
+
+/// For every function defined by XR_ML_user_calibration in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_ML_user_calibration(_) \
+    _(EnableUserCalibrationEventsML, ML_user_calibration) \
+
+
 
 
 #endif

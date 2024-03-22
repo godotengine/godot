@@ -126,7 +126,7 @@
 		<member name="anim_speed_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum equivalent of [member anim_speed_max].
 		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			Each particle's initial color. If [member texture] is defined, it will be multiplied by this color.
 		</member>
 		<member name="color_initial_ramp" type="Gradient" setter="set_color_initial_ramp" getter="get_color_initial_ramp">

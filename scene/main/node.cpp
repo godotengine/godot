@@ -2958,17 +2958,24 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		remove_child(child);
 		if (!child->is_owned_by_parent()) {
 			// add the custom children to the p_node
+			Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
+			child->set_owner(nullptr);
 			p_node->add_child(child);
+			child->set_owner(child_owner);
 		}
 	}
 
 	p_node->set_owner(owner);
-	for (int i = 0; i < owned.size(); i++) {
-		owned[i]->set_owner(p_node);
+	for (Node *E : owned) {
+		if (E->data.owner != p_node) {
+			E->set_owner(p_node);
+		}
 	}
 
-	for (int i = 0; i < owned_by_owner.size(); i++) {
-		owned_by_owner[i]->set_owner(owner);
+	for (Node *E : owned_by_owner) {
+		if (E->data.owner != owner) {
+			E->set_owner(owner);
+		}
 	}
 
 	p_node->set_scene_file_path(get_scene_file_path());
@@ -3167,6 +3174,7 @@ NodePath Node::get_import_path() const {
 #endif
 }
 
+#ifdef TOOLS_ENABLED
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 	if (p_node != p_base && !p_node->get_owner()) {
 		return;
@@ -3183,7 +3191,7 @@ static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<S
 }
 
 void Node::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 	if (p_idx == 0 && (pf == "has_node" || pf == "get_node" || pf == "get_node_or_null")) {
 		_add_nodes_to_options(this, this, r_options);
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
@@ -3194,6 +3202,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void Node::clear_internal_tree_resource_paths() {
 	clear_internal_resource_paths();

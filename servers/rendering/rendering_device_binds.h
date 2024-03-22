@@ -134,6 +134,7 @@ protected:
 class RDFramebufferPass : public RefCounted {
 	GDCLASS(RDFramebufferPass, RefCounted)
 	friend class RenderingDevice;
+	friend class FramebufferCacheRD;
 
 	RD::FramebufferPass base;
 
@@ -443,6 +444,7 @@ protected:
 class RDUniform : public RefCounted {
 	GDCLASS(RDUniform, RefCounted)
 	friend class RenderingDevice;
+	friend class UniformSetCacheRD;
 	RD::Uniform base;
 
 public:

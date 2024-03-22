@@ -43,9 +43,9 @@
 #include "scene/gui/color_rect.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"
-#include "scene/resources/fog_material.h"
+#include "scene/resources/3d/fog_material.h"
+#include "scene/resources/3d/sky_material.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/resources/sky_material.h"
 
 void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
@@ -303,7 +303,7 @@ void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
+void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value) {
 	EditorUndoRedoManager *undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo);
 

@@ -429,6 +429,9 @@
 		<member name="editors/panning/warped_mouse_panning" type="bool" setter="" getter="">
 			If [code]true[/code], warps the mouse around the 2D viewport while panning in the 2D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
 		</member>
+		<member name="editors/polygon_editor/auto_bake_delay" type="float" setter="" getter="">
+			The delay in seconds until more complex and performance costly polygon editors commit their outlines, e.g. the 2D navigation polygon editor rebakes the navigation mesh polygons. A negative value stops the auto bake.
+		</member>
 		<member name="editors/polygon_editor/point_grab_radius" type="int" setter="" getter="">
 			The radius in which points can be selected in the [Polygon2D] and [CollisionPolygon2D] editors (in pixels). Higher values make it easier to select points quickly, but can make it more difficult to select the expected point when several points are located close to each other.
 		</member>
@@ -444,6 +447,66 @@
 		<member name="editors/tiles_editor/grid_color" type="Color" setter="" getter="">
 			The color to use for the TileMap editor's grid.
 			[b]Note:[/b] Only effective if [member editors/tiles_editor/display_grid] is [code]true[/code].
+		</member>
+		<member name="editors/visual_editors/category_colors/color_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Color" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/conditional_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Conditional" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/input_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Input" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/output_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Output" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/particle_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Particle" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/scalar_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Scalar" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/special_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Special" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/textures_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Textures" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/transform_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Transform" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/utility_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Utility" category.
+		</member>
+		<member name="editors/visual_editors/category_colors/vector_color" type="Color" setter="" getter="">
+			The color of a graph node's header when it belongs to the "Vector" category.
+		</member>
+		<member name="editors/visual_editors/color_theme" type="String" setter="" getter="">
+			The color theme to use in the visual shader editor.
+		</member>
+		<member name="editors/visual_editors/connection_colors/boolean_color" type="Color" setter="" getter="">
+			The color of a port/connection of boolean type.
+		</member>
+		<member name="editors/visual_editors/connection_colors/sampler_color" type="Color" setter="" getter="">
+			The color of a port/connection of sampler type.
+		</member>
+		<member name="editors/visual_editors/connection_colors/scalar_color" type="Color" setter="" getter="">
+			The color of a port/connection of scalar type (float, int, unsigned int).
+		</member>
+		<member name="editors/visual_editors/connection_colors/transform_color" type="Color" setter="" getter="">
+			The color of a port/connection of transform type.
+		</member>
+		<member name="editors/visual_editors/connection_colors/vector2_color" type="Color" setter="" getter="">
+			The color of a port/connection of Vector2 type.
+		</member>
+		<member name="editors/visual_editors/connection_colors/vector3_color" type="Color" setter="" getter="">
+			The color of a port/connection of Vector3 type.
+		</member>
+		<member name="editors/visual_editors/connection_colors/vector4_color" type="Color" setter="" getter="">
+			The color of a port/connection of Vector4 type.
+		</member>
+		<member name="editors/visual_editors/grid_pattern" type="int" setter="" getter="">
+			The pattern used for the background grid.
 		</member>
 		<member name="editors/visual_editors/lines_curvature" type="float" setter="" getter="">
 			The curvature to use for connection lines in the visual shader editor. Higher values will make connection lines appear more curved, with values above [code]0.5[/code] resulting in more "angular" turns in the middle of connection lines.
@@ -511,9 +574,9 @@
 			The maximum idle uptime (in seconds) of the Blender process.
 			This prevents Godot from having to create a new process for each import within the given seconds.
 		</member>
-		<member name="filesystem/import/fbx/fbx2gltf_path" type="String" setter="" getter="">
+		<member name="filesystem/import/fbx2gltf/fbx2gltf_path" type="String" setter="" getter="">
 			The path to the FBX2glTF executable used for converting Autodesk FBX 3D scene files [code].fbx[/code] to glTF 2.0 format during import.
-			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/fbx/enabled].
+			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/fbx2gltf/enabled].
 		</member>
 		<member name="filesystem/on_save/compress_binary_resources" type="bool" setter="" getter="">
 			If [code]true[/code], uses lossless compression for binary resources.
@@ -591,8 +654,8 @@
 			The subpixel positioning mode to use when rendering editor font glyphs. This affects both the main and code fonts. [b]Disabled[/b] is the fastest to render and uses the least memory. [b]Auto[/b] only uses subpixel positioning for small font sizes (where the benefit is the most noticeable). [b]One Half of a Pixel[/b] and [b]One Quarter of a Pixel[/b] force the same subpixel positioning mode for all editor fonts, regardless of their size (with [b]One Quarter of a Pixel[/b] being the highest-quality option).
 		</member>
 		<member name="interface/editor/localize_settings" type="bool" setter="" getter="">
-			If [code]true[/code], setting names in the Editor Settings are localized when possible. This is disabled by default, since localization can make it difficult to look up setting names online.
-			[b]Note:[/b] This setting does not control property name localization in the inspector. To show translated property names in the inspector, set [member interface/inspector/default_property_name_style] to [b]Localized[/b].
+			If [code]true[/code], setting names in the editor are localized when possible.
+			[b]Note:[/b] This setting affects most [EditorInspector]s in the editor UI, primarily Project Settings and Editor Settings. To control names displayed in the Inspector dock, use [member interface/inspector/default_property_name_style] instead.
 		</member>
 		<member name="interface/editor/low_processor_mode_sleep_usec" type="int" setter="" getter="">
 			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].
@@ -669,11 +732,11 @@
 			The floating-point precision to use for properties that don't define an explicit precision step. Lower values allow entering more precise values.
 		</member>
 		<member name="interface/inspector/default_property_name_style" type="int" setter="" getter="">
-			The property name style to display in the inspector.
-			- [b]Raw:[/b] Displays properties as they are defined in the script (typically in [code]snake_case[/code] for GDScript and [code]PascalCase[/code] for C#).
-			- [b]Capitalized:[/b] Displays properties using [method String.capitalize].
+			The default property name style to display in the Inspector dock. This style can be temporarily adjusted in the Inspector dock's menu.
+			- [b]Raw:[/b] Displays properties in [code]snake_case[/code].
+			- [b]Capitalized:[/b] Displays properties capitalized.
 			- [b]Localized:[/b] Displays the localized string for the current editor language if a translation is available for the given property. If no translation is available, falls back to [b]Capitalized[/b].
-			[b]Note:[/b] This setting does not control editor setting name display. To display translated editor setting names, enable [member interface/editor/localize_settings] instead.
+			[b]Note:[/b] To display translated setting names in Project Settings and Editor Settings, use [member interface/editor/localize_settings] instead.
 		</member>
 		<member name="interface/inspector/disable_folding" type="bool" setter="" getter="">
 			If [code]true[/code], forces all property groups to be expanded in the Inspector dock and prevents collapsing them.
@@ -755,6 +818,9 @@
 		<member name="interface/theme/draw_extra_borders" type="bool" setter="" getter="">
 			If [code]true[/code], draws additional borders around interactive UI elements in the editor. This is automatically enabled when using the [b]Black (OLED)[/b] theme preset, as this theme preset uses a fully black background.
 		</member>
+		<member name="interface/theme/follow_system_theme" type="bool" setter="" getter="">
+			If [code]true[/code], the editor theme preset will attempt to automatically match the system theme.
+		</member>
 		<member name="interface/theme/icon_and_font_color" type="int" setter="" getter="">
 			The icon and font color scheme to use in the editor.
 			- [b]Auto[/b] determines the color scheme to use automatically based on [member interface/theme/base_color].
@@ -773,6 +839,10 @@
 		</member>
 		<member name="interface/theme/spacing_preset" type="String" setter="" getter="">
 			The editor theme spacing preset to use. See also [member interface/theme/base_spacing] and [member interface/theme/additional_spacing].
+		</member>
+		<member name="interface/theme/use_system_accent_color" type="bool" setter="" getter="">
+			If [code]true[/code], set accent color based on system settings.
+			[b]Note:[/b] This setting is only effective on Windows and MacOS.
 		</member>
 		<member name="interface/touchscreen/enable_long_press_as_right_click" type="bool" setter="" getter="">
 			If [code]true[/code], long press on touchscreen is treated as right click.
@@ -812,6 +882,9 @@
 		</member>
 		<member name="project_manager/default_renderer" type="String" setter="" getter="">
 			The renderer type that will be checked off by default when creating a new project. Accepted strings are "forward_plus", "mobile" or "gl_compatibility".
+		</member>
+		<member name="project_manager/directory_naming_convention" type="int" setter="" getter="">
+			Directory naming convention for the project manager. Options are "No convention" (project name is directory name), "kebab-case" (default), "snake_case", "camelCase", "PascalCase", or "Title Case".
 		</member>
 		<member name="project_manager/sorting_order" type="int" setter="" getter="">
 			The sorting order to use in the project manager. When changing the sorting order in the project manager, this setting is set permanently in the editor settings.
@@ -925,6 +998,9 @@
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 			If [code]true[/code], automatically indents code when pressing the [kbd]Enter[/kbd] key based on blocks above the new line.
 		</member>
+		<member name="text_editor/behavior/indent/indent_wrapped_lines" type="bool" setter="" getter="">
+			If [code]true[/code], all wrapped lines are indented to the same amount as the unwrapped line.
+		</member>
 		<member name="text_editor/behavior/indent/size" type="int" setter="" getter="">
 			When using tab indentation, determines the length of each tab. When using space indentation, determines how many spaces are inserted when pressing [kbd]Tab[/kbd] and when automatic indentation is performed.
 		</member>
@@ -937,6 +1013,9 @@
 		</member>
 		<member name="text_editor/behavior/navigation/move_caret_on_right_click" type="bool" setter="" getter="">
 			If [code]true[/code], the caret will be moved when right-clicking somewhere in the script editor (like when left-clicking or middle-clicking). If [code]false[/code], the caret will only be moved when left-clicking or middle-clicking somewhere.
+		</member>
+		<member name="text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method" type="bool" setter="" getter="">
+			If [code]true[/code], opens the script editor when connecting a signal to an existing script method from the Node dock.
 		</member>
 		<member name="text_editor/behavior/navigation/scroll_past_end_of_file" type="bool" setter="" getter="">
 			If [code]true[/code], allows scrolling past the end of the file.

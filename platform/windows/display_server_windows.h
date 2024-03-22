@@ -61,6 +61,8 @@
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
+#include "native_menu_windows.h"
+
 #include <io.h>
 #include <stdio.h>
 
@@ -152,11 +154,23 @@ typedef UINT(WINAPI *WTInfoPtr)(UINT p_category, UINT p_index, LPVOID p_output);
 typedef BOOL(WINAPI *WTPacketPtr)(HANDLE p_ctx, UINT p_param, LPVOID p_packets);
 typedef BOOL(WINAPI *WTEnablePtr)(HANDLE p_ctx, BOOL p_enable);
 
+enum PreferredAppMode {
+	APPMODE_DEFAULT = 0,
+	APPMODE_ALLOWDARK = 1,
+	APPMODE_FORCEDARK = 2,
+	APPMODE_FORCELIGHT = 3,
+	APPMODE_MAX = 4
+};
+
 typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
 typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
 typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);
 typedef int(WINAPI *GetImmersiveUserColorSetPreferencePtr)(bool bForceCheckRegistry, bool bSkipCheckOnFail);
 typedef HRESULT(WINAPI *RtlGetVersionPtr)(OSVERSIONINFOW *lpVersionInformation);
+typedef bool(WINAPI *AllowDarkModeForAppPtr)(bool darkMode);
+typedef PreferredAppMode(WINAPI *SetPreferredAppModePtr)(PreferredAppMode appMode);
+typedef void(WINAPI *RefreshImmersiveColorPolicyStatePtr)();
+typedef void(WINAPI *FlushMenuThemesPtr)();
 
 // Windows Ink API
 #ifndef POINTER_STRUCTURES
@@ -192,6 +206,7 @@ typedef UINT32 PEN_MASK;
 #define POINTER_MESSAGE_FLAG_FIRSTBUTTON 0x00000010
 #endif
 
+#if WINVER < 0x0602
 enum tagPOINTER_INPUT_TYPE {
 	PT_POINTER = 0x00000001,
 	PT_TOUCH = 0x00000002,
@@ -242,6 +257,7 @@ typedef struct tagPOINTER_PEN_INFO {
 	INT32 tiltX;
 	INT32 tiltY;
 } POINTER_PEN_INFO;
+#endif
 
 #endif //POINTER_STRUCTURES
 
@@ -356,6 +372,7 @@ class DisplayServerWindows : public DisplayServer {
 	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
+	NativeMenuWindows *native_menu = nullptr;
 
 	struct WindowData {
 		HWND hWnd;
@@ -641,6 +658,9 @@ public:
 	virtual bool get_swap_cancel_ok() override;
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
+
+	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
+	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
 
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;

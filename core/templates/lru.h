@@ -35,7 +35,7 @@
 #include "hash_map.h"
 #include "list.h"
 
-template <class TKey, class TData, class Hasher = HashMapHasherDefault, class Comparator = HashMapComparatorDefault<TKey>>
+template <typename TKey, typename TData, typename Hasher = HashMapHasherDefault, typename Comparator = HashMapComparatorDefault<TKey>>
 class LRUCache {
 private:
 	struct Pair {

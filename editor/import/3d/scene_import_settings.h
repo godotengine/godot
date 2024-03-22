@@ -46,7 +46,7 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
-#include "scene/resources/primitive_meshes.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
 class EditorFileDialog;
 class EditorInspector;
@@ -96,6 +96,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	Button *animation_stop_button = nullptr;
 	Animation::LoopMode animation_loop_mode = Animation::LOOP_NONE;
 	bool animation_pingpong = false;
+	bool previous_import_as_skeleton = false;
 
 	Ref<StandardMaterial3D> collider_mat;
 
@@ -162,7 +163,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	void _update_view_gizmos();
 	void _update_camera();
-	void _select(Tree *p_from, String p_type, String p_id);
+	void _select(Tree *p_from, const String &p_type, const String &p_id);
 	void _inspector_property_edited(const String &p_name);
 	void _reset_bone_transforms();
 	void _play_animation();

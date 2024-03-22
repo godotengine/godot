@@ -44,6 +44,8 @@ void bezSplitAt(const Bezier& cur, float at, Bezier& left, Bezier& right);
 Point bezPointAt(const Bezier& bz, float t);
 float bezAngleAt(const Bezier& bz, float t);
 
+float bezLengthApprox(const Bezier& cur);
+float bezAtApprox(const Bezier& bz, float at, float length);
 }
 
 #endif //_TVG_BEZIER_H_

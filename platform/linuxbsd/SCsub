@@ -2,7 +2,6 @@
 
 Import("env")
 
-from platform_methods import run_in_subprocess
 import platform_linuxbsd_builders
 
 common_linuxbsd = [
@@ -42,4 +41,4 @@ if env["dbus"]:
 prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
-    env.AddPostAction(prog, run_in_subprocess(platform_linuxbsd_builders.make_debug_linuxbsd))
+    env.AddPostAction(prog, env.Run(platform_linuxbsd_builders.make_debug_linuxbsd))

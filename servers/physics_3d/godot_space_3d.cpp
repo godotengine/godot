@@ -655,7 +655,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 	//this took about a week to get right..
 	//but is it right? who knows at this point..
 
-	ERR_FAIL_INDEX_V(p_parameters.max_collisions, PhysicsServer3D::MotionResult::MAX_COLLISIONS, false);
+	ERR_FAIL_COND_V(p_parameters.max_collisions < 0 || p_parameters.max_collisions > PhysicsServer3D::MotionResult::MAX_COLLISIONS, false);
 
 	if (r_result) {
 		*r_result = PhysicsServer3D::MotionResult();

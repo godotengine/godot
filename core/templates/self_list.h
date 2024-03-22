@@ -34,7 +34,7 @@
 #include "core/error/error_macros.h"
 #include "core/typedefs.h"
 
-template <class T>
+template <typename T>
 class SelfList {
 public:
 	class List {
@@ -109,7 +109,7 @@ public:
 			sort_custom<Comparator<T>>();
 		}
 
-		template <class C>
+		template <typename C>
 		void sort_custom() {
 			if (_first == _last) {
 				return;

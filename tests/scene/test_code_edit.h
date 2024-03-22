@@ -3048,6 +3048,28 @@ TEST_CASE("[SceneTree][CodeEdit] region folding") {
 		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 4);
 		code_edit->unfold_line(1);
 		CHECK_FALSE(code_edit->is_line_folded(0));
+
+		// Region start and end tags are ignored if in a string and at the start of the line.
+		code_edit->clear_comment_delimiters();
+		code_edit->add_comment_delimiter("#", "");
+		code_edit->clear_string_delimiters();
+		code_edit->add_string_delimiter("\"", "\"");
+		code_edit->set_text("#region region_name1\nline2\n\"\n#region region_name2\n#endregion\n\"\n#endregion\nvisible");
+		CHECK(code_edit->is_line_code_region_start(0));
+		CHECK(code_edit->is_line_code_region_end(6));
+		CHECK(code_edit->can_fold_line(0));
+		for (int i = 1; i < 7; i++) {
+			if (i == 2) {
+				continue;
+			}
+			CHECK_FALSE(code_edit->can_fold_line(i));
+		}
+		for (int i = 0; i < 7; i++) {
+			CHECK_FALSE(code_edit->is_line_folded(i));
+		}
+		code_edit->fold_line(0);
+		CHECK(code_edit->is_line_folded(0));
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 7);
 	}
 
 	memdelete(code_edit);

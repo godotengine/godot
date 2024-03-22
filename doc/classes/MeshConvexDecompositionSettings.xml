@@ -10,7 +10,7 @@
 	</tutorials>
 	<members>
 		<member name="convex_hull_approximation" type="bool" setter="set_convex_hull_approximation" getter="get_convex_hull_approximation" default="true">
-			If enabled uses approximation for computing convex hulls.
+			If [code]true[/code], uses approximation for computing convex hulls.
 		</member>
 		<member name="convex_hull_downsampling" type="int" setter="set_convex_hull_downsampling" getter="get_convex_hull_downsampling" default="4">
 			Controls the precision of the convex-hull generation process during the clipping plane selection stage. Ranges from [code]1[/code] to [code]16[/code].
@@ -31,13 +31,13 @@
 			Mode for the approximate convex decomposition.
 		</member>
 		<member name="normalize_mesh" type="bool" setter="set_normalize_mesh" getter="get_normalize_mesh" default="false">
-			If enabled normalizes the mesh before applying the convex decomposition.
+			If [code]true[/code], normalizes the mesh before applying the convex decomposition.
 		</member>
 		<member name="plane_downsampling" type="int" setter="set_plane_downsampling" getter="get_plane_downsampling" default="4">
 			Controls the granularity of the search for the "best" clipping plane. Ranges from [code]1[/code] to [code]16[/code].
 		</member>
 		<member name="project_hull_vertices" type="bool" setter="set_project_hull_vertices" getter="get_project_hull_vertices" default="true">
-			If enabled projects output convex hull vertices onto original source mesh to increase floating point accuracy of the results.
+			If [code]true[/code], projects output convex hull vertices onto the original source mesh to increase floating-point accuracy of the results.
 		</member>
 		<member name="resolution" type="int" setter="set_resolution" getter="get_resolution" default="10000">
 			Maximum number of voxels generated during the voxelization stage.

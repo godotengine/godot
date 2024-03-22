@@ -38,7 +38,10 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_uid.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
+#include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
@@ -475,6 +478,14 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 
 	if (!ok) {
 		return false;
+	}
+
+	if (project_loaded) {
+		// This pack may have declared new global classes (make sure they are picked up).
+		refresh_global_class_list();
+
+		// This pack may have defined new UIDs, make sure they are cached.
+		ResourceUID::get_singleton()->load_from_cache(false);
 	}
 
 	//if data.pck is found, all directory access will be from here
@@ -1093,7 +1104,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	} else if (p_path.ends_with(".binary")) {
 		return _save_settings_binary(p_path, save_props, p_custom, save_features);
 	} else {
-		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown config file format: " + p_path + ".");
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown config file format: " + p_path);
 	}
 }
 
@@ -1185,6 +1196,19 @@ Variant ProjectSettings::get_setting(const String &p_setting, const Variant &p_d
 		return get(p_setting);
 	} else {
 		return p_default_value;
+	}
+}
+
+void ProjectSettings::refresh_global_class_list() {
+	// This is called after mounting a new PCK file to pick up class changes.
+	is_global_class_list_loaded = false; // Make sure we read from the freshly mounted PCK.
+	Array script_classes = get_global_class_list();
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary c = script_classes[i];
+		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+			continue;
+		}
+		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"]);
 	}
 }
 
@@ -1317,6 +1341,26 @@ void ProjectSettings::load_scene_groups_cache() {
 const HashMap<StringName, HashSet<StringName>> &ProjectSettings::get_scene_groups_cache() const {
 	return scene_groups_cache;
 }
+
+#ifdef TOOLS_ENABLED
+void ProjectSettings::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0) {
+		if (pf == "has_setting" || pf == "set_setting" || pf == "get_setting" || pf == "get_setting_with_override" ||
+				pf == "set_order" || pf == "get_order" || pf == "set_initial_value" || pf == "set_as_basic" ||
+				pf == "set_as_internal" || pf == "set_restart_if_changed" || pf == "clear") {
+			for (const KeyValue<StringName, VariantContainer> &E : props) {
+				if (E.value.hide_from_editor) {
+					continue;
+				}
+
+				r_options->push_back(String(E.key).quote());
+			}
+		}
+	}
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
 
 void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
@@ -1514,6 +1558,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_remaps", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations_pot_files", PackedStringArray());
+	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_add_builtin_strings_to_pot", false);
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
 }

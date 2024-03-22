@@ -403,6 +403,11 @@ String VisualShaderNode::get_warning(Shader::Mode p_mode, VisualShader::Type p_t
 	return String();
 }
 
+VisualShaderNode::Category VisualShaderNode::get_category() const {
+	WARN_PRINT(get_caption() + " is missing a category.");
+	return CATEGORY_NONE;
+}
+
 bool VisualShaderNode::is_input_port_default(int p_port, Shader::Mode p_mode) const {
 	return false;
 }

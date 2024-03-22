@@ -32,7 +32,7 @@
 #define TILE_MAP_H
 
 #include "scene/2d/tile_map_layer_group.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class Control;
 class TileMapLayer;
@@ -46,9 +46,10 @@ enum TileMapDataFormat {
 };
 
 class TileMap : public TileMapLayerGroup {
-	GDCLASS(TileMap, TileMapLayerGroup);
+	GDCLASS(TileMap, TileMapLayerGroup)
 
 public:
+	// Kept for compatibility, but should use TileMapLayer::VisibilityMode instead.
 	enum VisibilityMode {
 		VISIBILITY_MODE_DEFAULT,
 		VISIBILITY_MODE_FORCE_SHOW,
@@ -187,8 +188,7 @@ public:
 
 	// Override some methods of the CanvasItem class to pass the changes to the quadrants CanvasItems.
 	virtual void set_light_mask(int p_light_mask) override;
-	virtual void set_material(const Ref<Material> &p_material) override;
-	virtual void set_use_parent_material(bool p_use_parent_material) override;
+	virtual void set_self_modulate(const Color &p_self_modulate) override;
 	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
 	virtual void set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) override;
 

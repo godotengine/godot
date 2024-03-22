@@ -151,7 +151,6 @@ namespace Godot.Collections
         // from derived types (e.g.: Node[]). Implicit conversion from Derived[] to Base[] are
         // fine as long as the array is not mutated. However, Span does this type checking at
         // instantiation, so it's not possible to use it even when not mutating anything.
-        // ReSharper disable once RedundantNameQualifier
         /// <summary>
         /// Constructs a new <see cref="Array"/> from the given ReadOnlySpan's elements.
         /// </summary>

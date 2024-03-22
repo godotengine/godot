@@ -108,7 +108,7 @@ protected:
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _remove(Object *p_button, const String &p_key);
 	void _add_menu();
 	void _add_script(int p_option);
@@ -144,7 +144,7 @@ protected:
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
 public:
@@ -193,7 +193,7 @@ protected:
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _remove(Object *p_button, int p_key);
 	void _add_menu();
 	void _add_feature(int p_option);

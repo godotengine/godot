@@ -66,6 +66,8 @@ public:
 	TypedArray<RID> map_get_agents(RID p_map) const override { return TypedArray<RID>(); }
 	TypedArray<RID> map_get_obstacles(RID p_map) const override { return TypedArray<RID>(); }
 	void map_force_update(RID p_map) override {}
+	uint32_t map_get_iteration_id(RID p_map) const override { return 0; }
+
 	RID region_create() override { return RID(); }
 	void region_set_enabled(RID p_region, bool p_enabled) override {}
 	bool region_get_enabled(RID p_region) const override { return false; }
@@ -92,6 +94,7 @@ public:
 	Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override { return Vector3(); }
 	Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override { return Vector3(); }
 	Vector3 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override { return Vector3(); }
+
 	RID link_create() override { return RID(); }
 	void link_set_map(RID p_link, RID p_map) override {}
 	RID link_get_map(RID p_link) const override { return RID(); }
@@ -111,6 +114,7 @@ public:
 	real_t link_get_travel_cost(RID p_link) const override { return 0; }
 	void link_set_owner_id(RID p_link, ObjectID p_owner_id) override {}
 	ObjectID link_get_owner_id(RID p_link) const override { return ObjectID(); }
+
 	RID agent_create() override { return RID(); }
 	void agent_set_map(RID p_agent, RID p_map) override {}
 	RID agent_get_map(RID p_agent) const override { return RID(); }
@@ -148,6 +152,7 @@ public:
 	uint32_t agent_get_avoidance_mask(RID p_agent) const override { return 0; }
 	void agent_set_avoidance_priority(RID p_agent, real_t p_priority) override {}
 	real_t agent_get_avoidance_priority(RID p_agent) const override { return 0; }
+
 	RID obstacle_create() override { return RID(); }
 	void obstacle_set_map(RID p_obstacle, RID p_map) override {}
 	RID obstacle_get_map(RID p_obstacle) const override { return RID(); }
@@ -169,6 +174,7 @@ public:
 	Vector<Vector3> obstacle_get_vertices(RID p_obstacle) const override { return Vector<Vector3>(); }
 	void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) override {}
 	uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const override { return 0; }
+
 	void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override {}
 	void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
 	void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
@@ -180,8 +186,10 @@ public:
 	void init() override {}
 	void sync() override {}
 	void finish() override {}
+
 	NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override { return NavigationUtilities::PathQueryResult(); }
 	int get_process_info(ProcessInfo p_info) const override { return 0; }
+
 	void set_debug_enabled(bool p_enabled) {}
 	bool get_debug_enabled() const { return false; }
 };

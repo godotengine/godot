@@ -65,6 +65,15 @@
 				Returns an array with the names all the integer constants of [param class] or its ancestry.
 			</description>
 		</method>
+		<method name="class_get_method_argument_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="method" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns the number of arguments of the method [param method] of [param class] or its ancestry if [param no_inheritance] is [code]false[/code].
+			</description>
+		</method>
 		<method name="class_get_method_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="class" type="StringName" />

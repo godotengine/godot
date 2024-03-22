@@ -58,7 +58,7 @@
 		<member name="can_add_swatches" type="bool" setter="set_can_add_swatches" getter="are_swatches_enabled" default="true">
 			If [code]true[/code], it's possible to add presets under Swatches. If [code]false[/code], the button to add presets is disabled.
 		</member>
-		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			The currently selected color.
 		</member>
 		<member name="color_mode" type="int" setter="set_color_mode" getter="get_color_mode" enum="ColorPicker.ColorModeType" default="0">

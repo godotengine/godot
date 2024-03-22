@@ -34,11 +34,13 @@
 #include "core/input/input.h"
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
@@ -1040,7 +1042,7 @@ void EditorAudioBuses::_rebuild_buses() {
 
 EditorAudioBuses *EditorAudioBuses::register_editor() {
 	EditorAudioBuses *audio_buses = memnew(EditorAudioBuses);
-	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Audio"), audio_buses);
+	EditorNode::get_bottom_panel()->add_item(TTR("Audio"), audio_buses, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTR("Toggle Audio Bottom Panel"), KeyModifierMask::ALT | Key::A));
 	return audio_buses;
 }
 
@@ -1357,7 +1359,7 @@ EditorAudioBuses::EditorAudioBuses() {
 }
 
 void EditorAudioBuses::open_layout(const String &p_path) {
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+	EditorNode::get_bottom_panel()->make_item_visible(this);
 
 	Ref<AudioBusLayout> state = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 	if (state.is_null()) {

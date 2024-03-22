@@ -627,6 +627,10 @@ void TabBar::set_tab_count(int p_count) {
 		offset = MIN(offset, p_count - 1);
 		max_drawn_tab = MIN(max_drawn_tab, p_count - 1);
 		current = MIN(current, p_count - 1);
+		// Fix range if unable to deselect.
+		if (current == -1 && !_can_deselect()) {
+			current = 0;
+		}
 
 		_update_cache();
 		_ensure_no_over_offset();
@@ -1557,10 +1561,7 @@ bool TabBar::_can_deselect() const {
 }
 
 void TabBar::ensure_tab_visible(int p_idx) {
-	if (!is_inside_tree() || !buttons_visible) {
-		return;
-	}
-	if (p_idx == -1 && _can_deselect()) {
+	if (p_idx == -1 || !is_inside_tree() || !buttons_visible) {
 		return;
 	}
 	ERR_FAIL_INDEX(p_idx, tabs.size());

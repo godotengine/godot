@@ -30,8 +30,11 @@
 
 #include "gltf_physics_body.h"
 
-#include "scene/3d/area_3d.h"
-#include "scene/3d/vehicle_body_3d.h"
+#include "scene/3d/physics/animatable_body_3d.h"
+#include "scene/3d/physics/area_3d.h"
+#include "scene/3d/physics/character_body_3d.h"
+#include "scene/3d/physics/static_body_3d.h"
+#include "scene/3d/physics/vehicle_body_3d.h"
 
 void GLTFPhysicsBody::_bind_methods() {
 	ClassDB::bind_static_method("GLTFPhysicsBody", D_METHOD("from_node", "body_node"), &GLTFPhysicsBody::from_node);

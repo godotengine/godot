@@ -27,7 +27,7 @@
 		<method name="_get_child_nodes" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<description>
-				When inheriting from [AnimationRootNode], implement this virtual method to return all children animation nodes in order as a [code]name: node[/code] dictionary.
+				When inheriting from [AnimationRootNode], implement this virtual method to return all child animation nodes in order as a [code]name: node[/code] dictionary.
 			</description>
 		</method>
 		<method name="_get_parameter_default_value" qualifiers="virtual const">
@@ -115,7 +115,7 @@
 			<param index="7" name="sync" type="bool" default="true" />
 			<param index="8" name="test_only" type="bool" default="false" />
 			<description>
-				Blend another animation node (in case this animation node contains children animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, else editors will not display your animation node for addition.
+				Blend another animation node (in case this animation node contains child animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, otherwise editors will not display your animation node for addition.
 			</description>
 		</method>
 		<method name="find_input" qualifiers="const">

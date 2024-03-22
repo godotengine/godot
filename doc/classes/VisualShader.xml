@@ -245,10 +245,10 @@
 			Represents the size of the [enum VaryingType] enum.
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">
-			Denotes invalid [VisualShader] node.
+			Indicates an invalid [VisualShader] node.
 		</constant>
 		<constant name="NODE_ID_OUTPUT" value="0">
-			Denotes output node of [VisualShader].
+			Indicates an output node of [VisualShader].
 		</constant>
 	</constants>
 </class>

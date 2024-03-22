@@ -80,7 +80,7 @@ enum Metadata {
 // If 'T' is a class that inherits 'Object', make sure it can see the actual class declaration
 // instead of a forward declaration. You can always forward declare 'T' in a header file, and then
 // include the actual declaration of 'T' in the source file where 'GetTypeInfo<T>' is instantiated.
-template <class T, typename = void>
+template <typename T, typename = void>
 struct GetTypeInfo;
 
 #define MAKE_TYPE_INFO(m_type, m_var_type)                                            \
@@ -278,7 +278,7 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 
-template <class T>
+template <typename T>
 class BitField {
 	int64_t value = 0;
 

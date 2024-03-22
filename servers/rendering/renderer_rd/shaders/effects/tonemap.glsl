@@ -4,7 +4,7 @@
 
 #VERSION_DEFINES
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #endif
@@ -24,27 +24,27 @@ void main() {
 
 #VERSION_DEFINES
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
 #else // has_VK_KHR_multiview
 #define ViewIndex 0
 #endif // has_VK_KHR_multiview
-#endif //MULTIVIEW
+#endif //USE_MULTIVIEW
 
 layout(location = 0) in vec2 uv_interp;
 
 #ifdef SUBPASS
 layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput input_color;
-#elif defined(MULTIVIEW)
+#elif defined(USE_MULTIVIEW)
 layout(set = 0, binding = 0) uniform sampler2DArray source_color;
 #else
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 #endif
 
 layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 layout(set = 2, binding = 0) uniform sampler2DArray source_glow;
 #else
 layout(set = 2, binding = 0) uniform sampler2D source_glow;
@@ -125,7 +125,7 @@ float h1(float a) {
 	return 1.0f + w3(a) / (w2(a) + w3(a));
 }
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 vec4 texture2D_bicubic(sampler2DArray tex, vec2 uv, int p_lod) {
 	float lod = float(p_lod);
 	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
@@ -153,7 +153,7 @@ vec4 texture2D_bicubic(sampler2DArray tex, vec2 uv, int p_lod) {
 }
 
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
-#else // MULTIVIEW
+#else // USE_MULTIVIEW
 
 vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	float lod = float(p_lod);
@@ -182,15 +182,15 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 }
 
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
-#endif // !MULTIVIEW
+#endif // !USE_MULTIVIEW
 
 #else // USE_GLOW_FILTER_BICUBIC
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, vec3(m_uv, ViewIndex), float(m_lod))
-#else // MULTIVIEW
+#else // USE_MULTIVIEW
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, m_uv, float(m_lod))
-#endif // !MULTIVIEW
+#endif // !USE_MULTIVIEW
 
 #endif // !USE_GLOW_FILTER_BICUBIC
 
@@ -273,11 +273,11 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always o
 	}
 }
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 vec3 gather_glow(sampler2DArray tex, vec2 uv) { // sample all selected glow levels, view is added to uv later
 #else
 vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
-#endif // defined(MULTIVIEW)
+#endif // defined(USE_MULTIVIEW)
 	vec3 glow = vec3(0.0f);
 
 	if (params.glow_levels[0] > 0.0001) {
@@ -364,7 +364,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	const float FXAA_REDUCE_MUL = (1.0 / 8.0);
 	const float FXAA_SPAN_MAX = 8.0;
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 	vec3 rgbNW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
 	vec3 rgbNE = textureLod(source_color, vec3(uv_interp + vec2(0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
 	vec3 rgbSW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, 0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
@@ -399,7 +399,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 						  dir * rcpDirMin)) *
 			params.pixel_size;
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 	vec3 rgbA = 0.5 * exposure * (textureLod(source_color, vec3(uv_interp + dir * (1.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * (2.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz) * params.luminance_multiplier;
 	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source_color, vec3(uv_interp + dir * -0.5, ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * 0.5, ViewIndex), 0.0).xyz) * params.luminance_multiplier;
 #else
@@ -430,9 +430,9 @@ vec3 screen_space_dither(vec2 frag_coord) {
 
 void main() {
 #ifdef SUBPASS
-	// SUBPASS and MULTIVIEW can be combined but in that case we're already reading from the correct layer
+	// SUBPASS and USE_MULTIVIEW can be combined but in that case we're already reading from the correct layer
 	vec4 color = subpassLoad(input_color);
-#elif defined(MULTIVIEW)
+#elif defined(USE_MULTIVIEW)
 	vec4 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f);
 #else
 	vec4 color = textureLod(source_color, uv_interp, 0.0f);

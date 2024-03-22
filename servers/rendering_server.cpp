@@ -340,7 +340,7 @@ void _get_axis_angle(const Vector3 &p_normal, const Vector4 &p_tangent, float &r
 	if (d < 0.0) {
 		r_angle = CLAMP((1.0 - r_angle / Math_PI) * 0.5, 0.0, 0.49999);
 	} else {
-		r_angle = (r_angle / Math_PI) * 0.5 + 0.5;
+		r_angle = CLAMP((r_angle / Math_PI) * 0.5 + 0.5, 0.500008, 1.0);
 	}
 }
 
@@ -566,7 +566,8 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 								float angle;
 								Vector3 axis;
 								// Generate an arbitrary vector that is tangential to normal.
-								Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normal_src[i].normalized());
+								// This assumes that the normal is never (0,0,0).
+								Vector3 tan = Vector3(normal_src[i].z, -normal_src[i].x, normal_src[i].y).cross(normal_src[i].normalized()).normalized();
 								Vector4 tangent = Vector4(tan.x, tan.y, tan.z, 1.0);
 								_get_axis_angle(normal_src[i], tangent, angle, axis);
 
@@ -689,7 +690,8 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						// Set data for tangent.
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							// Generate an arbitrary vector that is tangential to normal.
-							Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normal_src[i].normalized());
+							// This assumes that the normal is never (0,0,0).
+							Vector3 tan = Vector3(normal_src[i].z, -normal_src[i].x, normal_src[i].y).cross(normal_src[i].normalized()).normalized();
 							Vector2 res = tan.octahedron_tangent_encode(1.0);
 							uint16_t vector[2] = {
 								(uint16_t)CLAMP(res.x * 65535, 0, 65535),
@@ -2207,15 +2209,15 @@ void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const St
 
 #ifdef TOOLS_ENABLED
 void RenderingServer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "global_shader_parameter_set" || pf == "global_shader_parameter_set_override" ||
 				pf == "global_shader_parameter_get" || pf == "global_shader_parameter_get_type" || pf == "global_shader_parameter_remove") {
-			for (StringName E : global_shader_parameter_get_list()) {
+			for (const StringName &E : global_shader_parameter_get_list()) {
 				r_options->push_back(E.operator String().quote());
 			}
 		} else if (pf == "has_os_feature") {
-			for (String E : { "\"rgtc\"", "\"s3tc\"", "\"bptc\"", "\"etc\"", "\"etc2\"", "\"astc\"" }) {
+			for (const String E : { "\"rgtc\"", "\"s3tc\"", "\"bptc\"", "\"etc\"", "\"etc2\"", "\"astc\"" }) {
 				r_options->push_back(E);
 			}
 		}
@@ -2762,6 +2764,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("camera_set_cull_mask", "camera", "layers"), &RenderingServer::camera_set_cull_mask);
 	ClassDB::bind_method(D_METHOD("camera_set_environment", "camera", "env"), &RenderingServer::camera_set_environment);
 	ClassDB::bind_method(D_METHOD("camera_set_camera_attributes", "camera", "effects"), &RenderingServer::camera_set_camera_attributes);
+	ClassDB::bind_method(D_METHOD("camera_set_compositor", "camera", "compositor"), &RenderingServer::camera_set_compositor);
 	ClassDB::bind_method(D_METHOD("camera_set_use_vertical_aspect", "camera", "enable"), &RenderingServer::camera_set_use_vertical_aspect);
 
 	/* VIEWPORT */
@@ -2928,6 +2931,32 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SKY_MODE_INCREMENTAL);
 	BIND_ENUM_CONSTANT(SKY_MODE_REALTIME);
 
+	/* COMPOSITOR EFFECT API */
+
+	ClassDB::bind_method(D_METHOD("compositor_effect_create"), &RenderingServer::compositor_effect_create);
+	ClassDB::bind_method(D_METHOD("compositor_effect_set_enabled", "effect", "enabled"), &RenderingServer::compositor_effect_set_enabled);
+	ClassDB::bind_method(D_METHOD("compositor_effect_set_callback", "effect", "callback_type", "callback"), &RenderingServer::compositor_effect_set_callback);
+	ClassDB::bind_method(D_METHOD("compositor_effect_set_flag", "effect", "flag", "set"), &RenderingServer::compositor_effect_set_flag);
+
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_COLOR);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_NEEDS_ROUGHNESS);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_NEEDS_SEPARATE_SPECULAR);
+
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_OPAQUE);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_SKY);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY);
+
+	/* COMPOSITOR */
+
+	ClassDB::bind_method(D_METHOD("compositor_create"), &RenderingServer::compositor_create);
+
+	ClassDB::bind_method(D_METHOD("compositor_set_compositor_effects", "compositor", "effects"), &RenderingServer::compositor_set_compositor_effects);
+
 	/* ENVIRONMENT */
 
 	ClassDB::bind_method(D_METHOD("environment_create"), &RenderingServer::environment_create);
@@ -3071,6 +3100,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("scenario_set_environment", "scenario", "environment"), &RenderingServer::scenario_set_environment);
 	ClassDB::bind_method(D_METHOD("scenario_set_fallback_environment", "scenario", "environment"), &RenderingServer::scenario_set_fallback_environment);
 	ClassDB::bind_method(D_METHOD("scenario_set_camera_attributes", "scenario", "effects"), &RenderingServer::scenario_set_camera_attributes);
+	ClassDB::bind_method(D_METHOD("scenario_set_compositor", "scenario", "compositor"), &RenderingServer::scenario_set_compositor);
 
 	/* INSTANCE */
 
@@ -3156,6 +3186,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("canvas_create"), &RenderingServer::canvas_create);
 	ClassDB::bind_method(D_METHOD("canvas_set_item_mirroring", "canvas", "item", "mirroring"), &RenderingServer::canvas_set_item_mirroring);
+	ClassDB::bind_method(D_METHOD("canvas_set_item_repeat", "item", "repeat_size", "repeat_times"), &RenderingServer::canvas_set_item_repeat);
 	ClassDB::bind_method(D_METHOD("canvas_set_modulate", "canvas", "color"), &RenderingServer::canvas_set_modulate);
 	ClassDB::bind_method(D_METHOD("canvas_set_disable_scale", "disable"), &RenderingServer::canvas_set_disable_scale);
 

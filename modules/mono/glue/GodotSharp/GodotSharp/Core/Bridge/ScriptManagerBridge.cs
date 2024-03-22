@@ -30,7 +30,8 @@ namespace Godot.Bridge
                 foreach (var type in typesInAlc.Keys)
                 {
                     if (_scriptTypeBiMap.RemoveByScriptType(type, out IntPtr scriptPtr) &&
-                        (!_pathTypeBiMap.TryGetScriptPath(type, out string? scriptPath) || scriptPath.StartsWith("csharp://")))
+                        (!_pathTypeBiMap.TryGetScriptPath(type, out string? scriptPath) ||
+                         scriptPath.StartsWith("csharp://", StringComparison.Ordinal)))
                     {
                         // For scripts without a path, we need to keep the class qualified name for reloading
                         _scriptDataForReload.TryAdd(scriptPtr,
@@ -584,7 +585,7 @@ namespace Godot.Bridge
                 // (every Resource must have a unique path). So we create a unique "virtual" path
                 // for each type.
 
-                if (!scriptPath.StartsWith("res://"))
+                if (!scriptPath.StartsWith("res://", StringComparison.Ordinal))
                 {
                     throw new ArgumentException("Script path must start with 'res://'.", nameof(scriptPath));
                 }
@@ -597,7 +598,7 @@ namespace Godot.Bridge
             {
                 // This path is slower, but it's only executed for the first instantiation of the type
 
-                if (scriptType.IsConstructedGenericType && !scriptPath.StartsWith("csharp://"))
+                if (scriptType.IsConstructedGenericType && !scriptPath.StartsWith("csharp://", StringComparison.Ordinal))
                 {
                     // If the script type is generic it can't be loaded using the real script path.
                     // Construct a virtual path unique to this constructed generic type and add it
@@ -700,7 +701,6 @@ namespace Godot.Bridge
                         return godot_bool.False;
                     }
 
-                    // ReSharper disable once RedundantNameQualifier
                     if (!typeof(GodotObject).IsAssignableFrom(scriptType))
                     {
                         // The class no longer inherits GodotObject, can't reload
@@ -1007,8 +1007,9 @@ namespace Godot.Bridge
             return (List<MethodInfo>?)getGodotMethodListMethod.Invoke(null, null);
         }
 
+#pragma warning disable IDE1006 // Naming rule violation
         // ReSharper disable once InconsistentNaming
-        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
+        // ReSharper disable once NotAccessedField.Local
         [StructLayout(LayoutKind.Sequential)]
         private ref struct godotsharp_property_info
         {
@@ -1025,6 +1026,7 @@ namespace Godot.Bridge
                 HintString.Dispose();
             }
         }
+#pragma warning restore IDE1006
 
         [UnmanagedCallersOnly]
         internal static unsafe void GetPropertyInfoList(IntPtr scriptPtr,
@@ -1063,9 +1065,9 @@ namespace Godot.Bridge
                 int length = properties.Count;
 
                 // There's no recursion here, so it's ok to go with a big enough number for most cases
-                // stackMaxSize = stackMaxLength * sizeof(godotsharp_property_info)
-                const int stackMaxLength = 32;
-                bool useStack = length < stackMaxLength;
+                // StackMaxSize = StackMaxLength * sizeof(godotsharp_property_info)
+                const int StackMaxLength = 32;
+                bool useStack = length < StackMaxLength;
 
                 godotsharp_property_info* interopProperties;
 
@@ -1073,7 +1075,7 @@ namespace Godot.Bridge
                 {
                     // Weird limitation, hence the need for aux:
                     // "In the case of pointer types, you can use a stackalloc expression only in a local variable declaration to initialize the variable."
-                    var aux = stackalloc godotsharp_property_info[stackMaxLength];
+                    var aux = stackalloc godotsharp_property_info[StackMaxLength];
                     interopProperties = aux;
                 }
                 else
@@ -1124,8 +1126,9 @@ namespace Godot.Bridge
             }
         }
 
+#pragma warning disable IDE1006 // Naming rule violation
         // ReSharper disable once InconsistentNaming
-        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
+        // ReSharper disable once NotAccessedField.Local
         [StructLayout(LayoutKind.Sequential)]
         private ref struct godotsharp_property_def_val_pair
         {
@@ -1133,6 +1136,7 @@ namespace Godot.Bridge
             public godot_string_name Name; // Not owned
             public godot_variant Value; // Not owned
         }
+#pragma warning restore IDE1006
 
         private delegate bool InvokeGodotClassStaticMethodDelegate(in godot_string_name method, NativeVariantPtrArgs args, out godot_variant ret);
 
@@ -1252,9 +1256,9 @@ namespace Godot.Bridge
                 int length = defaultValues.Count;
 
                 // There's no recursion here, so it's ok to go with a big enough number for most cases
-                // stackMaxSize = stackMaxLength * sizeof(godotsharp_property_def_val_pair)
-                const int stackMaxLength = 32;
-                bool useStack = length < stackMaxLength;
+                // StackMaxSize = StackMaxLength * sizeof(godotsharp_property_def_val_pair)
+                const int StackMaxLength = 32;
+                bool useStack = length < StackMaxLength;
 
                 godotsharp_property_def_val_pair* interopDefaultValues;
 
@@ -1262,7 +1266,7 @@ namespace Godot.Bridge
                 {
                     // Weird limitation, hence the need for aux:
                     // "In the case of pointer types, you can use a stackalloc expression only in a local variable declaration to initialize the variable."
-                    var aux = stackalloc godotsharp_property_def_val_pair[stackMaxLength];
+                    var aux = stackalloc godotsharp_property_def_val_pair[StackMaxLength];
                     interopDefaultValues = aux;
                 }
                 else

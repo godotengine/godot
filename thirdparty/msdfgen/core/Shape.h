@@ -32,7 +32,7 @@ public:
     void addContour(Contour &&contour);
 #endif
     /// Adds a blank contour and returns its reference.
-    Contour & addContour();
+    Contour &addContour();
     /// Normalizes the shape geometry for distance field generation.
     void normalize();
     /// Performs basic checks to determine if the object represents a valid shape.

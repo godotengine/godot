@@ -28,6 +28,7 @@ LIGHT_USE_PSSM4 = false
 LIGHT_USE_PSSM_BLEND = false
 BASE_PASS = true
 USE_ADDITIVE_LIGHTING = false
+APPLY_TONEMAPPING = true
 // We can only use one type of light per additive pass. This means that if USE_ADDITIVE_LIGHTING is defined, and
 // these are false, we are doing a directional light pass.
 ADDITIVE_OMNI = false
@@ -185,18 +186,17 @@ layout(std140) uniform SceneData { // ubo:2
 	uint fog_mode;
 	float fog_density;
 	float fog_height;
-	float fog_height_density;
 
+	float fog_height_density;
 	float fog_depth_curve;
-	float pad;
+	float fog_sun_scatter;
 	float fog_depth_begin;
 
 	vec3 fog_light_color;
 	float fog_depth_end;
 
-	float fog_sun_scatter;
-
 	float shadow_bias;
+	float luminance_multiplier;
 	uint camera_visible_layers;
 	bool pancake_shadows;
 }
@@ -676,18 +676,17 @@ layout(std140) uniform SceneData { // ubo:2
 	uint fog_mode;
 	float fog_density;
 	float fog_height;
-	float fog_height_density;
 
+	float fog_height_density;
 	float fog_depth_curve;
-	float pad;
+	float fog_sun_scatter;
 	float fog_depth_begin;
 
 	vec3 fog_light_color;
 	float fog_depth_end;
 
-	float fog_sun_scatter;
-
 	float shadow_bias;
+	float luminance_multiplier;
 	uint camera_visible_layers;
 	bool pancake_shadows;
 }
@@ -914,8 +913,7 @@ ivec2 multiview_uv(ivec2 uv) {
 uniform highp mat4 world_transform;
 uniform mediump float opaque_prepass_threshold;
 
-#ifndef MODE_RENDER_DEPTH
-#ifdef RENDER_MATERIAL
+#if defined(RENDER_MATERIAL)
 layout(location = 0) out vec4 albedo_output_buffer;
 layout(location = 1) out vec4 normal_output_buffer;
 layout(location = 2) out vec4 orm_output_buffer;
@@ -926,7 +924,6 @@ layout(location = 3) out vec4 emission_output_buffer;
 layout(location = 0) out vec4 frag_color;
 
 #endif // !RENDER_MATERIAL
-#endif // !MODE_RENDER_DEPTH
 
 vec3 F0(float metallic, float specular, vec3 albedo) {
 	float dielectric = 0.16 * specular * specular;
@@ -1201,7 +1198,10 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	vec3 spot_dir = spot_lights[idx].direction;
 	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_lights[idx].cone_angle);
 	float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_lights[idx].cone_angle));
-	spot_attenuation *= 1.0 - pow(spot_rim, spot_lights[idx].cone_attenuation);
+
+	mediump float cone_attenuation = spot_lights[idx].cone_attenuation;
+	spot_attenuation *= 1.0 - pow(spot_rim, cone_attenuation);
+
 	vec3 color = spot_lights[idx].color;
 
 	float size_A = 0.0;
@@ -1269,7 +1269,7 @@ vec4 fog_process(vec3 vertex) {
 	float fog_z = smoothstep(scene_data.fog_depth_begin, scene_data.fog_depth_end, length(vertex));
 	fog_amount = pow(fog_z, scene_data.fog_depth_curve) * scene_data.fog_density;
 #else
-	fog_amount = 1 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
+	fog_amount = 1.0 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
 #endif // USE_DEPTH_FOG
 
 	if (abs(scene_data.fog_height_density) >= 0.0001) {
@@ -1758,7 +1758,9 @@ void main() {
 
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	frag_color.rgb *= exposure;
+#ifdef APPLY_TONEMAPPING
 	frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
+#endif
 	frag_color.rgb = linear_to_srgb(frag_color.rgb);
 
 #ifdef USE_BCS
@@ -1973,7 +1975,9 @@ void main() {
 
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	additive_light_color *= exposure;
+#ifdef APPLY_TONEMAPPING
 	additive_light_color = apply_tonemapping(additive_light_color, white);
+#endif
 	additive_light_color = linear_to_srgb(additive_light_color);
 
 #ifdef USE_BCS
@@ -1986,6 +1990,9 @@ void main() {
 
 	frag_color.rgb += additive_light_color;
 #endif // USE_ADDITIVE_LIGHTING
+
+	frag_color.rgb *= scene_data.luminance_multiplier;
+
 #endif // !RENDER_MATERIAL
-#endif //!MODE_RENDER_DEPTH
+#endif // !MODE_RENDER_DEPTH
 }

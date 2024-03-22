@@ -1113,11 +1113,11 @@ void RenderingDeviceDriverVulkan::_set_object_name(VkObjectType p_object_type, u
 }
 
 Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t p_frame_count) {
-	// Frame count is not required for the Vulkan driver, so we just ignore it.
-
 	context_device = context_driver->device_get(p_device_index);
 	physical_device = context_driver->physical_device_get(p_device_index);
 	vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
+
+	frame_count = p_frame_count;
 
 	// Copy the queue family properties the context already retrieved.
 	uint32_t queue_family_count = context_driver->queue_family_get_count(p_device_index);
@@ -2131,21 +2131,18 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 	return CommandQueueID(command_queue);
 }
 
-Error RenderingDeviceDriverVulkan::command_queue_execute(CommandQueueID p_cmd_queue, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_wait_semaphores, VectorView<SemaphoreID> p_signal_semaphores, FenceID p_signal_fence) {
+Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) {
 	DEV_ASSERT(p_cmd_queue.id != 0);
 
+	VkResult err;
 	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
 	Queue &device_queue = queue_families[command_queue->queue_family][command_queue->queue_index];
-	Fence *fence = (Fence *)(p_signal_fence.id);
+	Fence *fence = (Fence *)(p_cmd_fence.id);
 	VkFence vk_fence = (fence != nullptr) ? fence->vk_fence : VK_NULL_HANDLE;
 
-	thread_local LocalVector<VkCommandBuffer> command_buffers;
 	thread_local LocalVector<VkSemaphore> wait_semaphores;
-	thread_local LocalVector<VkSemaphore> signal_semaphores;
 	thread_local LocalVector<VkPipelineStageFlags> wait_semaphores_stages;
-	command_buffers.clear();
 	wait_semaphores.clear();
-	signal_semaphores.clear();
 	wait_semaphores_stages.clear();
 
 	if (!command_queue->pending_semaphores_for_execute.is_empty()) {
@@ -2158,117 +2155,142 @@ Error RenderingDeviceDriverVulkan::command_queue_execute(CommandQueueID p_cmd_qu
 		command_queue->pending_semaphores_for_execute.clear();
 	}
 
-	for (uint32_t i = 0; i < p_cmd_buffers.size(); i++) {
-		command_buffers.push_back(VkCommandBuffer(p_cmd_buffers[i].id));
-	}
-
 	for (uint32_t i = 0; i < p_wait_semaphores.size(); i++) {
 		// FIXME: Allow specifying the stage mask in more detail.
 		wait_semaphores.push_back(VkSemaphore(p_wait_semaphores[i].id));
 		wait_semaphores_stages.push_back(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 	}
 
-	for (uint32_t i = 0; i < p_signal_semaphores.size(); i++) {
-		signal_semaphores.push_back(VkSemaphore(p_signal_semaphores[i].id));
-	}
+	if (p_cmd_buffers.size() > 0) {
+		thread_local LocalVector<VkCommandBuffer> command_buffers;
+		thread_local LocalVector<VkSemaphore> signal_semaphores;
+		command_buffers.clear();
+		signal_semaphores.clear();
 
-	VkSubmitInfo submit_info = {};
-	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submit_info.waitSemaphoreCount = wait_semaphores.size();
-	submit_info.pWaitSemaphores = wait_semaphores.ptr();
-	submit_info.pWaitDstStageMask = wait_semaphores_stages.ptr();
-	submit_info.commandBufferCount = command_buffers.size();
-	submit_info.pCommandBuffers = command_buffers.ptr();
-	submit_info.signalSemaphoreCount = signal_semaphores.size();
-	submit_info.pSignalSemaphores = signal_semaphores.ptr();
-
-	device_queue.submit_mutex.lock();
-	VkResult err = vkQueueSubmit(device_queue.queue, 1, &submit_info, vk_fence);
-	device_queue.submit_mutex.unlock();
-	ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
-
-	if (fence != nullptr && !command_queue->pending_semaphores_for_fence.is_empty()) {
-		fence->queue_signaled_from = command_queue;
-
-		// Indicate to the fence that it should release the semaphores that were waited on this submission the next time the fence is waited on.
-		for (uint32_t i = 0; i < command_queue->pending_semaphores_for_fence.size(); i++) {
-			command_queue->image_semaphores_for_fences.push_back({ fence, command_queue->pending_semaphores_for_fence[i] });
+		for (uint32_t i = 0; i < p_cmd_buffers.size(); i++) {
+			command_buffers.push_back(VkCommandBuffer(p_cmd_buffers[i].id));
 		}
 
-		command_queue->pending_semaphores_for_fence.clear();
-	}
+		for (uint32_t i = 0; i < p_cmd_semaphores.size(); i++) {
+			signal_semaphores.push_back(VkSemaphore(p_cmd_semaphores[i].id));
+		}
 
-	return OK;
-}
+		VkSemaphore present_semaphore = VK_NULL_HANDLE;
+		if (p_swap_chains.size() > 0) {
+			if (command_queue->present_semaphores.is_empty()) {
+				// Create the semaphores used for presentation if they haven't been created yet.
+				VkSemaphore semaphore = VK_NULL_HANDLE;
+				VkSemaphoreCreateInfo create_info = {};
+				create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-Error RenderingDeviceDriverVulkan::command_queue_present(CommandQueueID p_cmd_queue, VectorView<SwapChainID> p_swap_chains, VectorView<SemaphoreID> p_wait_semaphores) {
-	DEV_ASSERT(p_cmd_queue.id != 0);
+				for (uint32_t i = 0; i < frame_count; i++) {
+					err = vkCreateSemaphore(vk_device, &create_info, nullptr, &semaphore);
+					ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+					command_queue->present_semaphores.push_back(semaphore);
+				}
+			}
 
-	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
-	Queue &device_queue = queue_families[command_queue->queue_family][command_queue->queue_index];
+			// If a presentation semaphore is required, cycle across the ones available on the queue. It is technically possible
+			// and valid to reuse the same semaphore for this particular operation, but we create multiple ones anyway in case
+			// some hardware expects multiple semaphores to be used.
+			present_semaphore = command_queue->present_semaphores[command_queue->present_semaphore_index];
+			signal_semaphores.push_back(present_semaphore);
+			command_queue->present_semaphore_index = (command_queue->present_semaphore_index + 1) % command_queue->present_semaphores.size();
+		}
 
-	thread_local LocalVector<VkSwapchainKHR> swapchains;
-	thread_local LocalVector<uint32_t> image_indices;
-	thread_local LocalVector<VkSemaphore> wait_semaphores;
-	thread_local LocalVector<VkResult> results;
-	swapchains.clear();
-	image_indices.clear();
-	for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
-		SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
-		swapchains.push_back(swap_chain->vk_swapchain);
-		DEV_ASSERT(swap_chain->image_index < swap_chain->images.size());
-		image_indices.push_back(swap_chain->image_index);
-	}
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.waitSemaphoreCount = wait_semaphores.size();
+		submit_info.pWaitSemaphores = wait_semaphores.ptr();
+		submit_info.pWaitDstStageMask = wait_semaphores_stages.ptr();
+		submit_info.commandBufferCount = command_buffers.size();
+		submit_info.pCommandBuffers = command_buffers.ptr();
+		submit_info.signalSemaphoreCount = signal_semaphores.size();
+		submit_info.pSignalSemaphores = signal_semaphores.ptr();
 
-	wait_semaphores.clear();
-	for (uint32_t i = 0; i < p_wait_semaphores.size(); i++) {
-		wait_semaphores.push_back(VkSemaphore(p_wait_semaphores[i].id));
-	}
+		device_queue.submit_mutex.lock();
+		err = vkQueueSubmit(device_queue.queue, 1, &submit_info, vk_fence);
+		device_queue.submit_mutex.unlock();
+		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
 
-	results.resize(swapchains.size());
+		if (fence != nullptr && !command_queue->pending_semaphores_for_fence.is_empty()) {
+			fence->queue_signaled_from = command_queue;
 
-	VkPresentInfoKHR present_info = {};
-	present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	present_info.waitSemaphoreCount = wait_semaphores.size();
-	present_info.pWaitSemaphores = wait_semaphores.ptr();
-	present_info.swapchainCount = swapchains.size();
-	present_info.pSwapchains = swapchains.ptr();
-	present_info.pImageIndices = image_indices.ptr();
-	present_info.pResults = results.ptr();
-	device_queue.submit_mutex.lock();
-	VkResult err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
-	device_queue.submit_mutex.unlock();
+			// Indicate to the fence that it should release the semaphores that were waited on this submission the next time the fence is waited on.
+			for (uint32_t i = 0; i < command_queue->pending_semaphores_for_fence.size(); i++) {
+				command_queue->image_semaphores_for_fences.push_back({ fence, command_queue->pending_semaphores_for_fence[i] });
+			}
 
-	// Set the index to an invalid value. If any of the swap chains returned out of date, indicate it should be resized the next time it's acquired.
-	bool any_result_is_out_of_date = false;
-	for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
-		SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
-		swap_chain->image_index = UINT_MAX;
-		if (results[i] == VK_ERROR_OUT_OF_DATE_KHR) {
-			context_driver->surface_set_needs_resize(swap_chain->surface, true);
-			any_result_is_out_of_date = true;
+			command_queue->pending_semaphores_for_fence.clear();
+		}
+
+		if (present_semaphore != VK_NULL_HANDLE) {
+			// If command buffers were executed, swap chains must wait on the present semaphore used by the command queue.
+			wait_semaphores.clear();
+			wait_semaphores.push_back(present_semaphore);
 		}
 	}
 
-	if (any_result_is_out_of_date || err == VK_ERROR_OUT_OF_DATE_KHR) {
-		// It is possible for presentation to fail with out of date while acquire might've succeeded previously. This case
-		// will be considered a silent failure as it can be triggered easily by resizing a window in the OS natively.
-		return FAILED;
+	if (p_swap_chains.size() > 0) {
+		thread_local LocalVector<VkSwapchainKHR> swapchains;
+		thread_local LocalVector<uint32_t> image_indices;
+		thread_local LocalVector<VkResult> results;
+		swapchains.clear();
+		image_indices.clear();
+
+		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
+			SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
+			swapchains.push_back(swap_chain->vk_swapchain);
+			DEV_ASSERT(swap_chain->image_index < swap_chain->images.size());
+			image_indices.push_back(swap_chain->image_index);
+		}
+
+		results.resize(swapchains.size());
+
+		VkPresentInfoKHR present_info = {};
+		present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		present_info.waitSemaphoreCount = wait_semaphores.size();
+		present_info.pWaitSemaphores = wait_semaphores.ptr();
+		present_info.swapchainCount = swapchains.size();
+		present_info.pSwapchains = swapchains.ptr();
+		present_info.pImageIndices = image_indices.ptr();
+		present_info.pResults = results.ptr();
+
+		device_queue.submit_mutex.lock();
+		err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
+		device_queue.submit_mutex.unlock();
+
+		// Set the index to an invalid value. If any of the swap chains returned out of date, indicate it should be resized the next time it's acquired.
+		bool any_result_is_out_of_date = false;
+		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
+			SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
+			swap_chain->image_index = UINT_MAX;
+			if (results[i] == VK_ERROR_OUT_OF_DATE_KHR) {
+				context_driver->surface_set_needs_resize(swap_chain->surface, true);
+				any_result_is_out_of_date = true;
+			}
+		}
+
+		if (any_result_is_out_of_date || err == VK_ERROR_OUT_OF_DATE_KHR) {
+			// It is possible for presentation to fail with out of date while acquire might've succeeded previously. This case
+			// will be considered a silent failure as it can be triggered easily by resizing a window in the OS natively.
+			return FAILED;
+		}
+
+		// Handling VK_SUBOPTIMAL_KHR the same as VK_SUCCESS is completely intentional.
+		//
+		// Godot does not currently support native rotation in Android when creating the swap chain. It intentionally uses
+		// VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR instead of the current transform bits available in the surface capabilities.
+		// Choosing the transform that leads to optimal presentation leads to distortion that makes the application unusable,
+		// as the rotation of all the content is not handled at the moment.
+		//
+		// VK_SUBOPTIMAL_KHR is accepted as a successful case even if it's not the most efficient solution to work around this
+		// problem. This behavior should not be changed unless the swap chain recreation uses the current transform bits, as
+		// it'll lead to very low performance in Android by entering an endless loop where it'll always resize the swap chain
+		// every frame.
+
+		ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR, FAILED);
 	}
-
-	// Handling VK_SUBOPTIMAL_KHR the same as VK_SUCCESS is completely intentional.
-	//
-	// Godot does not currently support native rotation in Android when creating the swap chain. It intentionally uses
-	// VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR instead of the current transform bits available in the surface capabilities.
-	// Choosing the transform that leads to optimal presentation leads to distortion that makes the application unusable,
-	// as the rotation of all the content is not handled at the moment.
-	//
-	// VK_SUBOPTIMAL_KHR is accepted as a successful case even if it's not the most efficient solution to work around this
-	// problem. This behavior should not be changed unless the swap chain recreation uses the current transform bits, as
-	// it'll lead to very low performance in Android by entering an endless loop where it'll always resize the swap chain
-	// every frame.
-
-	ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR, FAILED);
 
 	return OK;
 }
@@ -2277,6 +2299,11 @@ void RenderingDeviceDriverVulkan::command_queue_free(CommandQueueID p_cmd_queue)
 	DEV_ASSERT(p_cmd_queue);
 
 	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
+
+	// Erase all the semaphores used for presentation.
+	for (VkSemaphore semaphore : command_queue->present_semaphores) {
+		vkDestroySemaphore(vk_device, semaphore, nullptr);
+	}
 
 	// Erase all the semaphores used for image acquisition.
 	for (VkSemaphore semaphore : command_queue->image_semaphores) {
@@ -2930,10 +2957,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 			}
 		}
 		uint32_t s = compressed_stages[i].size();
-		if (s % 4 != 0) {
-			s += 4 - (s % 4);
-		}
-		stages_binary_size += s;
+		stages_binary_size += STEPIFY(s, 4);
 	}
 
 	binary_data.specialization_constants_count = specialization_constants.size();
@@ -2947,11 +2971,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 	uint32_t total_size = sizeof(uint32_t) * 3; // Header + version + main datasize;.
 	total_size += sizeof(ShaderBinary::Data);
 
-	total_size += binary_data.shader_name_len;
-
-	if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-		total_size += 4 - (binary_data.shader_name_len % 4);
-	}
+	total_size += STEPIFY(binary_data.shader_name_len, 4);
 
 	for (int i = 0; i < uniforms.size(); i++) {
 		total_size += sizeof(uint32_t);
@@ -2980,13 +3000,17 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 		memcpy(binptr + offset, &binary_data, sizeof(ShaderBinary::Data));
 		offset += sizeof(ShaderBinary::Data);
 
+#define ADVANCE_OFFSET_WITH_ALIGNMENT(m_bytes)                         \
+	{                                                                  \
+		offset += m_bytes;                                             \
+		uint32_t padding = STEPIFY(m_bytes, 4) - m_bytes;              \
+		memset(binptr + offset, 0, padding); /* Avoid garbage data. */ \
+		offset += padding;                                             \
+	}
+
 		if (binary_data.shader_name_len > 0) {
 			memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
-			offset += binary_data.shader_name_len;
-
-			if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-				offset += 4 - (binary_data.shader_name_len % 4);
-			}
+			ADVANCE_OFFSET_WITH_ALIGNMENT(binary_data.shader_name_len);
 		}
 
 		for (int i = 0; i < uniforms.size(); i++) {
@@ -3012,14 +3036,7 @@ Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Ve
 			encode_uint32(zstd_size[i], binptr + offset);
 			offset += sizeof(uint32_t);
 			memcpy(binptr + offset, compressed_stages[i].ptr(), compressed_stages[i].size());
-
-			uint32_t s = compressed_stages[i].size();
-
-			if (s % 4 != 0) {
-				s += 4 - (s % 4);
-			}
-
-			offset += s;
+			ADVANCE_OFFSET_WITH_ALIGNMENT(compressed_stages[i].size());
 		}
 
 		DEV_ASSERT(offset == (uint32_t)ret.size());
@@ -3063,10 +3080,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 
 	if (binary_data.shader_name_len) {
 		r_name.parse_utf8((const char *)(binptr + read_offset), binary_data.shader_name_len);
-		read_offset += binary_data.shader_name_len;
-		if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-			read_offset += 4 - (binary_data.shader_name_len % 4);
-		}
+		read_offset += STEPIFY(binary_data.shader_name_len, 4);
 	}
 
 	Vector<Vector<VkDescriptorSetLayoutBinding>> vk_set_bindings;
@@ -3165,6 +3179,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 
 	for (uint32_t i = 0; i < binary_data.stage_count; i++) {
 		ERR_FAIL_COND_V(read_offset + sizeof(uint32_t) * 3 >= binsize, ShaderID());
+
 		uint32_t stage = decode_uint32(binptr + read_offset);
 		read_offset += sizeof(uint32_t);
 		uint32_t smolv_size = decode_uint32(binptr + read_offset);
@@ -3196,16 +3211,12 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 
 		r_shader_desc.stages.set(i, ShaderStage(stage));
 
-		if (buf_size % 4 != 0) {
-			buf_size += 4 - (buf_size % 4);
-		}
-
-		DEV_ASSERT(read_offset + buf_size <= binsize);
-
+		buf_size = STEPIFY(buf_size, 4);
 		read_offset += buf_size;
+		ERR_FAIL_COND_V(read_offset > binsize, ShaderID());
 	}
 
-	DEV_ASSERT(read_offset == binsize);
+	ERR_FAIL_COND_V(read_offset != binsize, ShaderID());
 
 	// Modules.
 
@@ -3801,7 +3812,9 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 
 	// Parse.
 	{
-		if (p_data.size() <= (int)sizeof(PipelineCacheHeader)) {
+		if (p_data.is_empty()) {
+			// No pre-existing cache, just create it.
+		} else if (p_data.size() <= (int)sizeof(PipelineCacheHeader)) {
 			WARN_PRINT("Invalid/corrupt pipelines cache.");
 		} else {
 			const PipelineCacheHeader *loaded_header = reinterpret_cast<const PipelineCacheHeader *>(p_data.ptr());

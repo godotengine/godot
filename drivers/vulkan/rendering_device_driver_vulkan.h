@@ -115,6 +115,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	VkDevice vk_device = VK_NULL_HANDLE;
 	RenderingContextDriverVulkan *context_driver = nullptr;
 	RenderingContextDriver::Device context_device = {};
+	uint32_t frame_count = 1;
 	VkPhysicalDevice physical_device = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties physical_device_properties = {};
 	VkPhysicalDeviceFeatures physical_device_features = {};
@@ -276,6 +277,7 @@ public:
 	// ----- QUEUE -----
 private:
 	struct CommandQueue {
+		LocalVector<VkSemaphore> present_semaphores;
 		LocalVector<VkSemaphore> image_semaphores;
 		LocalVector<SwapChain *> image_semaphores_swap_chains;
 		LocalVector<uint32_t> pending_semaphores_for_execute;
@@ -284,12 +286,12 @@ private:
 		LocalVector<Pair<Fence *, uint32_t>> image_semaphores_for_fences;
 		uint32_t queue_family = 0;
 		uint32_t queue_index = 0;
+		uint32_t present_semaphore_index = 0;
 	};
 
 public:
 	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) override final;
-	virtual Error command_queue_execute(CommandQueueID p_cmd_queue, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_wait_semaphores, VectorView<SemaphoreID> p_signal_semaphores, FenceID p_signal_fence) override final;
-	virtual Error command_queue_present(CommandQueueID p_cmd_queue, VectorView<SwapChainID> p_swap_chains, VectorView<SemaphoreID> p_wait_semaphores) override final;
+	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) override final;
 	virtual void command_queue_free(CommandQueueID p_cmd_queue) override final;
 
 private:

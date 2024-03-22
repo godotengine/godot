@@ -32,7 +32,6 @@
 #define WORLD_2D_H
 
 #include "core/io/resource.h"
-#include "scene/resources/world_2d.h"
 #include "servers/physics_server_2d.h"
 
 class VisibleOnScreenNotifier2D;

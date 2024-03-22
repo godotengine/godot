@@ -153,7 +153,7 @@ public:
 
 	void clear();
 
-	NavigationPolygon();
+	NavigationPolygon() {}
 	~NavigationPolygon() {}
 };
 

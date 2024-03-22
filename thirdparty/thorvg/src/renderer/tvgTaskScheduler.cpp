@@ -123,14 +123,14 @@ struct TaskSchedulerImpl
 
     ~TaskSchedulerImpl()
     {
-        for (auto tq = taskQueues.data; tq < taskQueues.end(); ++tq) {
+        for (auto tq = taskQueues.begin(); tq < taskQueues.end(); ++tq) {
             (*tq)->complete();
         }
-        for (auto thread = threads.data; thread < threads.end(); ++thread) {
+        for (auto thread = threads.begin(); thread < threads.end(); ++thread) {
             (*thread)->join();
             delete(*thread);
         }
-        for (auto tq = taskQueues.data; tq < taskQueues.end(); ++tq) {
+        for (auto tq = taskQueues.begin(); tq < taskQueues.end(); ++tq) {
             delete(*tq);
         }
     }

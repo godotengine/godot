@@ -90,6 +90,7 @@ struct CFF2FDSelect
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
+    hb_barrier ();
 
     switch (format)
     {
@@ -115,7 +116,10 @@ struct CFF2VariationStore
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)) && c->check_range (&varStore, size) && varStore.sanitize (c));
+    return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
+		  c->check_range (&varStore, size) &&
+		  varStore.sanitize (c));
   }
 
   bool serialize (hb_serialize_context_t *c, const CFF2VariationStore *varStore)
@@ -384,6 +388,7 @@ struct cff2
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  likely (version.major == 2));
   }
 
@@ -414,6 +419,7 @@ struct cff2
       { /* parse top dict */
 	hb_ubytes_t topDictStr = (cff2 + cff2->topDict).as_ubytes (cff2->topDictSize);
 	if (unlikely (!topDictStr.sanitize (&sc))) goto fail;
+	hb_barrier ();
 	num_interp_env_t env (topDictStr);
 	cff2_top_dict_interpreter_t top_interp (env);
 	topDict.init ();
@@ -430,6 +436,7 @@ struct cff2
 	  (charStrings == &Null (CFF2CharStrings)) || unlikely (!charStrings->sanitize (&sc)) ||
 	  (globalSubrs == &Null (CFF2Subrs)) || unlikely (!globalSubrs->sanitize (&sc)) ||
 	  (fdArray == &Null (CFF2FDArray)) || unlikely (!fdArray->sanitize (&sc)) ||
+	  !hb_barrier () ||
 	  (((fdSelect != &Null (CFF2FDSelect)) && unlikely (!fdSelect->sanitize (&sc, fdArray->count)))))
         goto fail;
 
@@ -446,6 +453,7 @@ struct cff2
       {
 	const hb_ubytes_t fontDictStr = (*fdArray)[i];
 	if (unlikely (!fontDictStr.sanitize (&sc))) goto fail;
+	hb_barrier ();
 	cff2_font_dict_values_t  *font;
 	num_interp_env_t env (fontDictStr);
 	cff2_font_dict_interpreter_t font_interp (env);
@@ -456,6 +464,7 @@ struct cff2
 
 	const hb_ubytes_t privDictStr = StructAtOffsetOrNull<UnsizedByteStr> (cff2, font->privateDictInfo.offset).as_ubytes (font->privateDictInfo.size);
 	if (unlikely (!privDictStr.sanitize (&sc))) goto fail;
+	hb_barrier ();
 	cff2_priv_dict_interp_env_t env2 (privDictStr);
 	dict_interpreter_t<PRIVOPSET, PRIVDICTVAL, cff2_priv_dict_interp_env_t> priv_interp (env2);
 	privateDicts[i].init ();
@@ -465,6 +474,7 @@ struct cff2
 	if (privateDicts[i].localSubrs != &Null (CFF2Subrs) &&
 	  unlikely (!privateDicts[i].localSubrs->sanitize (&sc)))
 	  goto fail;
+	hb_barrier ();
       }
 
       return;

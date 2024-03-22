@@ -214,7 +214,7 @@ void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_bind_methods() 
 	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
 }
 
-void TileSetScenesCollectionSourceEditor::_scenes_collection_source_proxy_object_changed(String p_what) {
+void TileSetScenesCollectionSourceEditor::_scenes_collection_source_proxy_object_changed(const String &p_what) {
 	if (p_what == "id") {
 		emit_signal(SNAME("source_id_changed"), scenes_collection_source_proxy_object->get_id());
 	}
@@ -224,7 +224,7 @@ void TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_cha
 	tile_set_scenes_collection_source_changed_needs_update = true;
 }
 
-void TileSetScenesCollectionSourceEditor::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, Variant p_ud) {
+void TileSetScenesCollectionSourceEditor::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_ud) {
 	int index = p_ud;
 
 	if (index >= 0 && index < scene_tiles_list->get_item_count()) {

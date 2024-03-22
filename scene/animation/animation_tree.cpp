@@ -140,6 +140,7 @@ double AnimationNode::blend_input(int p_input, AnimationMixer::PlaybackInfo p_pl
 	}
 
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
+	ERR_FAIL_COND_V(node.is_null(), 0);
 
 	real_t activity = 0.0;
 	Vector<AnimationTree::Activity> *activity_ptr = process_state->tree->input_activity_map.getptr(node_state.base_path);
@@ -153,12 +154,13 @@ double AnimationNode::blend_input(int p_input, AnimationMixer::PlaybackInfo p_pl
 }
 
 double AnimationNode::blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter, bool p_sync, bool p_test_only) {
+	ERR_FAIL_COND_V(p_node.is_null(), 0);
+
 	p_node->node_state.connections.clear();
 	return _blend_node(p_node, p_subpath, this, p_playback_info, p_filter, p_sync, p_test_only, nullptr);
 }
 
 double AnimationNode::_blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter, bool p_sync, bool p_test_only, real_t *r_activity) {
-	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
 	ERR_FAIL_NULL_V(process_state, 0);
 
 	int blend_count = node_state.track_weights.size();

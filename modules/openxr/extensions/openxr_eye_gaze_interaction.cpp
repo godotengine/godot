@@ -30,6 +30,7 @@
 
 #include "openxr_eye_gaze_interaction.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
 
 #include "../action_map/openxr_interaction_profile_metadata.h"
@@ -52,7 +53,11 @@ OpenXREyeGazeInteractionExtension::~OpenXREyeGazeInteractionExtension() {
 HashMap<String, bool *> OpenXREyeGazeInteractionExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
 
-	request_extensions[XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME] = &available;
+	// Only enable this extension when requested.
+	// We still register our meta data or the action map editor will fail.
+	if (GLOBAL_GET("xr/openxr/extensions/eye_gaze_interaction") && (!OS::get_singleton()->has_feature("mobile") || OS::get_singleton()->has_feature(XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME))) {
+		request_extensions[XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME] = &available;
+	}
 
 	return request_extensions;
 }

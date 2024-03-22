@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 
@@ -356,7 +357,7 @@ void OpenXRActionMapEditor::_do_remove_interaction_profile_editor(OpenXRInteract
 }
 
 void OpenXRActionMapEditor::open_action_map(String p_path) {
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+	EditorNode::get_bottom_panel()->make_item_visible(this);
 
 	// out with the old...
 	_clear_action_map();

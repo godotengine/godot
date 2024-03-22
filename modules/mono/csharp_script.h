@@ -278,6 +278,7 @@ public:
 
 	void get_script_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
+	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 	MethodInfo get_method_info(const StringName &p_method) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
@@ -346,6 +347,7 @@ public:
 
 	void get_method_list(List<MethodInfo> *p_list) const override;
 	bool has_method(const StringName &p_method) const override;
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	void mono_object_disposed(GCHandleIntPtr p_gchandle_to_free);
@@ -518,6 +520,7 @@ public:
 	virtual String _get_indentation() const;
 	/* TODO? */ void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {}
 	/* TODO */ void add_global_constant(const StringName &p_variable, const Variant &p_value) override {}
+	virtual ScriptNameCasing preferred_file_name_casing() const override;
 
 	/* SCRIPT GLOBAL CLASS FUNCTIONS */
 	virtual bool handles_global_class_type(const String &p_type) const override;

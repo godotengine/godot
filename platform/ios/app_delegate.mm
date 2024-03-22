@@ -105,11 +105,17 @@ static ViewController *mainViewController = nil;
 
 	// Initialize with default Ambient category.
 	AVAudioSessionCategory category = AVAudioSessionCategoryAmbient;
+	AVAudioSessionCategoryOptions options = 0;
+
+	if (GLOBAL_GET("audio/general/ios/mix_with_others")) {
+		options |= AVAudioSessionCategoryOptionMixWithOthers;
+	}
 
 	if (sessionCategorySetting == SESSION_CATEGORY_MULTI_ROUTE) {
 		category = AVAudioSessionCategoryMultiRoute;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_PLAY_AND_RECORD) {
 		category = AVAudioSessionCategoryPlayAndRecord;
+		options |= AVAudioSessionCategoryOptionDefaultToSpeaker;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_PLAYBACK) {
 		category = AVAudioSessionCategoryPlayback;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_RECORD) {
@@ -118,11 +124,7 @@ static ViewController *mainViewController = nil;
 		category = AVAudioSessionCategorySoloAmbient;
 	}
 
-	if (GLOBAL_GET("audio/general/ios/mix_with_others")) {
-		[[AVAudioSession sharedInstance] setCategory:category withOptions:AVAudioSessionCategoryOptionMixWithOthers error:nil];
-	} else {
-		[[AVAudioSession sharedInstance] setCategory:category error:nil];
-	}
+	[[AVAudioSession sharedInstance] setCategory:category withOptions:options error:nil];
 
 	return YES;
 }

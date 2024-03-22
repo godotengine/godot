@@ -248,7 +248,7 @@ static _FORCE_INLINE_ uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev 
 	return ((p_prev << 5) + p_prev) + hash_one_uint64(u.i);
 }
 
-template <class T>
+template <typename T>
 static _FORCE_INLINE_ uint32_t hash_make_uint32_t(T p_in) {
 	union {
 		T t;
@@ -281,7 +281,7 @@ static _FORCE_INLINE_ uint64_t hash_djb2_one_64(uint64_t p_in, uint64_t p_prev =
 	return ((p_prev << 5) + p_prev) ^ p_in;
 }
 
-template <class T>
+template <typename T>
 static _FORCE_INLINE_ uint64_t hash_make_uint64_t(T p_in) {
 	union {
 		T t;
@@ -293,15 +293,15 @@ static _FORCE_INLINE_ uint64_t hash_make_uint64_t(T p_in) {
 	return _u._u64;
 }
 
-template <class T>
+template <typename T>
 class Ref;
 
 struct HashMapHasherDefault {
 	// Generic hash function for any type.
-	template <class T>
+	template <typename T>
 	static _FORCE_INLINE_ uint32_t hash(const T *p_pointer) { return hash_one_uint64((uint64_t)p_pointer); }
 
-	template <class T>
+	template <typename T>
 	static _FORCE_INLINE_ uint32_t hash(const Ref<T> &p_ref) { return hash_one_uint64((uint64_t)p_ref.operator->()); }
 
 	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
@@ -387,7 +387,7 @@ struct HashMapHasherDefault {
 };
 
 // TODO: Fold this into HashMapHasherDefault once C++20 concepts are allowed
-template <class T>
+template <typename T>
 struct HashableHasher {
 	static _FORCE_INLINE_ uint32_t hash(const T &hashable) { return hashable.hash(); }
 };

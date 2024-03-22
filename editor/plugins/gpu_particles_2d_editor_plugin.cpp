@@ -115,7 +115,7 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 			cpu_particles->set_z_index(particles->get_z_index());
 
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(TTR("Convert to CPUParticles2D"));
+			ur->create_action(TTR("Convert to CPUParticles2D"), UndoRedo::MERGE_DISABLE, particles);
 			SceneTreeDock::get_singleton()->replace_node(particles, cpu_particles);
 			ur->commit_action(false);
 

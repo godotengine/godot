@@ -33,7 +33,7 @@
 
 #ifdef GLES3_ENABLED
 
-#include "drivers/gles3/shaders/copy.glsl.gen.h"
+#include "drivers/gles3/shaders/effects/copy.glsl.gen.h"
 
 namespace GLES3 {
 
@@ -64,7 +64,7 @@ public:
 	void copy_to_rect(const Rect2 &p_rect);
 	void copy_to_rect_3d(const Rect2 &p_rect, float p_layer, int p_type, float p_lod = 0.0f);
 	void copy_to_and_from_rect(const Rect2 &p_rect);
-	void copy_screen();
+	void copy_screen(float p_multiply = 1.0);
 	void copy_cube_to_rect(const Rect2 &p_rect);
 	void copy_cube_to_panorama(float p_mip_level);
 	void bilinear_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region);

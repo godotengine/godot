@@ -442,6 +442,8 @@ typedef GDExtensionBool (*GDExtensionCallableCustomLessThan)(void *callable_user
 
 typedef void (*GDExtensionCallableCustomToString)(void *callable_userdata, GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out);
 
+typedef GDExtensionInt (*GDExtensionCallableCustomGetArgumentCount)(void *callable_userdata, GDExtensionBool *r_is_valid);
+
 typedef struct {
 	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
 	 *
@@ -471,7 +473,40 @@ typedef struct {
 	GDExtensionCallableCustomLessThan less_than_func;
 
 	GDExtensionCallableCustomToString to_string_func;
-} GDExtensionCallableCustomInfo;
+} GDExtensionCallableCustomInfo; // Deprecated. Use GDExtensionCallableCustomInfo2 instead.
+
+typedef struct {
+	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
+	 *
+	 * `token` should point to an address that uniquely identifies the GDExtension (for example, the
+	 * `GDExtensionClassLibraryPtr` passed to the entry symbol function.
+	 *
+	 * `hash_func`, `equal_func`, and `less_than_func` are optional. If not provided both `call_func` and
+	 * `callable_userdata` together are used as the identity of the callable for hashing and comparison purposes.
+	 *
+	 * The hash returned by `hash_func` is cached, `hash_func` will not be called more than once per callable.
+	 *
+	 * `is_valid_func` is necessary if the validity of the callable can change before destruction.
+	 *
+	 * `free_func` is necessary if `callable_userdata` needs to be cleaned up when the callable is freed.
+	 */
+	void *callable_userdata;
+	void *token;
+
+	GDObjectInstanceID object_id;
+
+	GDExtensionCallableCustomCall call_func;
+	GDExtensionCallableCustomIsValid is_valid_func;
+	GDExtensionCallableCustomFree free_func;
+
+	GDExtensionCallableCustomHash hash_func;
+	GDExtensionCallableCustomEqual equal_func;
+	GDExtensionCallableCustomLessThan less_than_func;
+
+	GDExtensionCallableCustomToString to_string_func;
+
+	GDExtensionCallableCustomGetArgumentCount get_argument_count_func;
+} GDExtensionCallableCustomInfo2;
 
 /* SCRIPT INSTANCE EXTENSION */
 
@@ -480,7 +515,8 @@ typedef void *GDExtensionScriptInstanceDataPtr; // Pointer to custom ScriptInsta
 typedef GDExtensionBool (*GDExtensionScriptInstanceSet)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value);
 typedef GDExtensionBool (*GDExtensionScriptInstanceGet)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
 typedef const GDExtensionPropertyInfo *(*GDExtensionScriptInstanceGetPropertyList)(GDExtensionScriptInstanceDataPtr p_instance, uint32_t *r_count);
-typedef void (*GDExtensionScriptInstanceFreePropertyList)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionPropertyInfo *p_list);
+typedef void (*GDExtensionScriptInstanceFreePropertyList)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionPropertyInfo *p_list); // Deprecated. Use GDExtensionScriptInstanceFreePropertyList2 instead.
+typedef void (*GDExtensionScriptInstanceFreePropertyList2)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionPropertyInfo *p_list, uint32_t p_count);
 typedef GDExtensionBool (*GDExtensionScriptInstanceGetClassCategory)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionPropertyInfo *p_class_category);
 
 typedef GDExtensionVariantType (*GDExtensionScriptInstanceGetPropertyType)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionBool *r_is_valid);
@@ -494,9 +530,12 @@ typedef void (*GDExtensionScriptInstancePropertyStateAdd)(GDExtensionConstString
 typedef void (*GDExtensionScriptInstanceGetPropertyState)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionScriptInstancePropertyStateAdd p_add_func, void *p_userdata);
 
 typedef const GDExtensionMethodInfo *(*GDExtensionScriptInstanceGetMethodList)(GDExtensionScriptInstanceDataPtr p_instance, uint32_t *r_count);
-typedef void (*GDExtensionScriptInstanceFreeMethodList)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionMethodInfo *p_list);
+typedef void (*GDExtensionScriptInstanceFreeMethodList)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionMethodInfo *p_list); // Deprecated. Use GDExtensionScriptInstanceFreeMethodList2 instead.
+typedef void (*GDExtensionScriptInstanceFreeMethodList2)(GDExtensionScriptInstanceDataPtr p_instance, const GDExtensionMethodInfo *p_list, uint32_t p_count);
 
 typedef GDExtensionBool (*GDExtensionScriptInstanceHasMethod)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name);
+
+typedef GDExtensionInt (*GDExtensionScriptInstanceGetMethodArgumentCount)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionBool *r_is_valid);
 
 typedef void (*GDExtensionScriptInstanceCall)(GDExtensionScriptInstanceDataPtr p_self, GDExtensionConstStringNamePtr p_method, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error);
 typedef void (*GDExtensionScriptInstanceNotification)(GDExtensionScriptInstanceDataPtr p_instance, int32_t p_what); // Deprecated. Use GDExtensionScriptInstanceNotification2 instead.
@@ -554,7 +593,7 @@ typedef struct {
 
 	GDExtensionScriptInstanceFree free_func;
 
-} GDExtensionScriptInstanceInfo; // Deprecated. Use GDExtensionScriptInstanceInfo2 instead.
+} GDExtensionScriptInstanceInfo; // Deprecated. Use GDExtensionScriptInstanceInfo3 instead.
 
 typedef struct {
 	GDExtensionScriptInstanceSet set_func;
@@ -595,7 +634,50 @@ typedef struct {
 
 	GDExtensionScriptInstanceFree free_func;
 
-} GDExtensionScriptInstanceInfo2;
+} GDExtensionScriptInstanceInfo2; // Deprecated. Use GDExtensionScriptInstanceInfo3 instead.
+
+typedef struct {
+	GDExtensionScriptInstanceSet set_func;
+	GDExtensionScriptInstanceGet get_func;
+	GDExtensionScriptInstanceGetPropertyList get_property_list_func;
+	GDExtensionScriptInstanceFreePropertyList2 free_property_list_func;
+	GDExtensionScriptInstanceGetClassCategory get_class_category_func; // Optional. Set to NULL for the default behavior.
+
+	GDExtensionScriptInstancePropertyCanRevert property_can_revert_func;
+	GDExtensionScriptInstancePropertyGetRevert property_get_revert_func;
+
+	GDExtensionScriptInstanceGetOwner get_owner_func;
+	GDExtensionScriptInstanceGetPropertyState get_property_state_func;
+
+	GDExtensionScriptInstanceGetMethodList get_method_list_func;
+	GDExtensionScriptInstanceFreeMethodList2 free_method_list_func;
+	GDExtensionScriptInstanceGetPropertyType get_property_type_func;
+	GDExtensionScriptInstanceValidateProperty validate_property_func;
+
+	GDExtensionScriptInstanceHasMethod has_method_func;
+
+	GDExtensionScriptInstanceGetMethodArgumentCount get_method_argument_count_func;
+
+	GDExtensionScriptInstanceCall call_func;
+	GDExtensionScriptInstanceNotification2 notification_func;
+
+	GDExtensionScriptInstanceToString to_string_func;
+
+	GDExtensionScriptInstanceRefCountIncremented refcount_incremented_func;
+	GDExtensionScriptInstanceRefCountDecremented refcount_decremented_func;
+
+	GDExtensionScriptInstanceGetScript get_script_func;
+
+	GDExtensionScriptInstanceIsPlaceholder is_placeholder_func;
+
+	GDExtensionScriptInstanceSet set_fallback_func;
+	GDExtensionScriptInstanceGet get_fallback_func;
+
+	GDExtensionScriptInstanceGetLanguage get_language_func;
+
+	GDExtensionScriptInstanceFree free_func;
+
+} GDExtensionScriptInstanceInfo3;
 
 /* INITIALIZATION */
 
@@ -2380,7 +2462,7 @@ typedef void (*GDExtensionInterfaceRefSetObject)(GDExtensionRefPtr p_ref, GDExte
 /**
  * @name script_instance_create
  * @since 4.1
- * @deprecated in Godot 4.2. Use `script_instance_create2` instead.
+ * @deprecated in Godot 4.2. Use `script_instance_create3` instead.
  *
  * Creates a script instance that contains the given info and instance data.
  *
@@ -2394,6 +2476,7 @@ typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate)
 /**
  * @name script_instance_create2
  * @since 4.2
+ * @deprecated in Godot 4.3. Use `script_instance_create3` instead.
  *
  * Creates a script instance that contains the given info and instance data.
  *
@@ -2403,6 +2486,19 @@ typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate)
  * @return A pointer to a ScriptInstanceExtension object.
  */
 typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate2)(const GDExtensionScriptInstanceInfo2 *p_info, GDExtensionScriptInstanceDataPtr p_instance_data);
+
+/**
+ * @name script_instance_create3
+ * @since 4.3
+ *
+ * Creates a script instance that contains the given info and instance data.
+ *
+ * @param p_info A pointer to a GDExtensionScriptInstanceInfo3 struct.
+ * @param p_instance_data A pointer to a data representing the script instance in the GDExtension. This will be passed to all the function pointers on p_info.
+ *
+ * @return A pointer to a ScriptInstanceExtension object.
+ */
+typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate3)(const GDExtensionScriptInstanceInfo3 *p_info, GDExtensionScriptInstanceDataPtr p_instance_data);
 
 /**
  * @name placeholder_script_instance_create
@@ -2453,6 +2549,7 @@ typedef GDExtensionScriptInstanceDataPtr (*GDExtensionInterfaceObjectGetScriptIn
 /**
  * @name callable_custom_create
  * @since 4.2
+ * @deprecated in Godot 4.3. Use `callable_custom_create2` instead.
  *
  * Creates a custom Callable object from a function pointer.
  *
@@ -2462,6 +2559,19 @@ typedef GDExtensionScriptInstanceDataPtr (*GDExtensionInterfaceObjectGetScriptIn
  * @param p_callable_custom_info The info required to construct a Callable.
  */
 typedef void (*GDExtensionInterfaceCallableCustomCreate)(GDExtensionUninitializedTypePtr r_callable, GDExtensionCallableCustomInfo *p_callable_custom_info);
+
+/**
+ * @name callable_custom_create2
+ * @since 4.3
+ *
+ * Creates a custom Callable object from a function pointer.
+ *
+ * Provided struct can be safely freed once the function returns.
+ *
+ * @param r_callable A pointer that will receive the new Callable.
+ * @param p_callable_custom_info The info required to construct a Callable.
+ */
+typedef void (*GDExtensionInterfaceCallableCustomCreate2)(GDExtensionUninitializedTypePtr r_callable, GDExtensionCallableCustomInfo2 *p_callable_custom_info);
 
 /**
  * @name callable_custom_get_userdata

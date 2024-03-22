@@ -239,7 +239,7 @@
 			<description>
 				Override this method in your plugin to return a [Texture2D] in order to give it an icon.
 				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
-				Ideally, the plugin icon should be white with a transparent background and 16x16 pixels in size.
+				Ideally, the plugin icon should be white with a transparent background and 16×16 pixels in size.
 				[codeblocks]
 				[gdscript]
 				func _get_plugin_icon():
@@ -409,8 +409,10 @@
 			<return type="Button" />
 			<param index="0" name="control" type="Control" />
 			<param index="1" name="title" type="String" />
+			<param index="2" name="shortcut" type="Shortcut" default="null" />
 			<description>
 				Adds a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
+				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will toggle the bottom panel's visibility. See the default editor bottom panel shortcuts in the Editor Settings for inspiration. Per convention, they all use [kbd]Alt[/kbd] modifier.
 			</description>
 		</method>
 		<method name="add_control_to_container">
@@ -427,10 +429,12 @@
 			<return type="void" />
 			<param index="0" name="slot" type="int" enum="EditorPlugin.DockSlot" />
 			<param index="1" name="control" type="Control" />
+			<param index="2" name="shortcut" type="Shortcut" default="null" />
 			<description>
 				Adds the control to a specific dock slot (see [enum DockSlot] for options).
 				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_docks] and free it with [method Node.queue_free].
+				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will toggle the dock's visibility once it's moved to the bottom panel (this shortcut does not affect the dock otherwise). See the default editor bottom panel shortcuts in the Editor Settings for inspiration. Per convention, they all use [kbd]Alt[/kbd] modifier.
 			</description>
 		</method>
 		<method name="add_custom_type">

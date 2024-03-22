@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		NavigationServer2D is the server that handles navigation maps, regions and agents. It does not handle A* navigation from [AStar2D] or [AStarGrid2D].
-		Maps are made up of regions, which are made of navigation polygons. Together, they define the traversable areas in the 2D world.
+		Maps are divided into regions, which are composed of navigation polygons. Together, they define the traversable areas in the 2D world.
 		[b]Note:[/b] Most [NavigationServer2D] changes take effect after the next physics frame and not immediately. This includes all changes made to maps, regions or agents by navigation-related nodes in the scene tree or made through scripts.
 		For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
 		You may assign navigation layers to regions with [method NavigationServer2D.region_set_navigation_layers], which then can be checked upon when requesting a path with [method NavigationServer2D.map_get_path]. This can be used to allow or deny certain areas for some objects.
@@ -175,7 +175,7 @@
 			<param index="1" name="priority" type="float" />
 			<description>
 				Set the agent's [code]avoidance_priority[/code] with a [param priority] between 0.0 (lowest priority) to 1.0 (highest priority).
-				The specified [param agent] does not adjust the velocity for other agents that would match the [code]avoidance_mask[/code] but have a lower [code] avoidance_priority[/code]. This in turn makes the other agents with lower priority adjust their velocities even more to avoid collision with this agent.
+				The specified [param agent] does not adjust the velocity for other agents that would match the [code]avoidance_mask[/code] but have a lower [code]avoidance_priority[/code]. This in turn makes the other agents with lower priority adjust their velocities even more to avoid collision with this agent.
 			</description>
 		</method>
 		<method name="agent_set_map">
@@ -502,6 +502,14 @@
 			<param index="0" name="map" type="RID" />
 			<description>
 				Returns the edge connection margin of the map. The edge connection margin is a distance used to connect two regions.
+			</description>
+		</method>
+		<method name="map_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns the current iteration id of the navigation map. Every time the navigation map changes and synchronizes the iteration id increases. An iteration id of 0 means the navigation map has never synchronized.
+				[b]Note:[/b] The iteration id will wrap back to 1 after reaching its range limit.
 			</description>
 		</method>
 		<method name="map_get_link_connection_radius" qualifiers="const">

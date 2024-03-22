@@ -59,8 +59,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "scene/resources/atlas_texture.h"
-#include "scene/resources/texture.h"
 #include "servers/display_server.h"
 
 #include <limits.h>
@@ -134,6 +132,7 @@ class DisplayServerWayland : public DisplayServer {
 #ifdef SPEECHD_ENABLED
 	TTS_Linux *tts = nullptr;
 #endif
+	NativeMenu *native_menu = nullptr;
 
 #if DBUS_ENABLED
 	FreeDesktopPortalDesktop *portal_desktop = nullptr;

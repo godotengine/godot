@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Godot.SourceGenerators
 {
-    static class ExtensionMethods
+    internal static class ExtensionMethods
     {
         public static bool TryGetGlobalAnalyzerProperty(
             this GeneratorExecutionContext context, string property, out string? value
@@ -208,7 +208,17 @@ namespace Godot.SourceGenerators
 
                 if (child.IsNode)
                 {
-                    FullQualifiedSyntax(child.AsNode()!, sm, sb, isFirstNode: innerIsFirstNode);
+                    var childNode = child.AsNode()!;
+
+                    if (node is InterpolationSyntax && childNode is ExpressionSyntax)
+                    {
+                        ParenEnclosedFullQualifiedSyntax(childNode, sm, sb, isFirstNode: innerIsFirstNode);
+                    }
+                    else
+                    {
+                        FullQualifiedSyntax(childNode, sm, sb, isFirstNode: innerIsFirstNode);
+                    }
+
                     innerIsFirstNode = false;
                 }
                 else
@@ -220,6 +230,13 @@ namespace Godot.SourceGenerators
                 {
                     sb.Append(child.GetTrailingTrivia());
                 }
+            }
+
+            static void ParenEnclosedFullQualifiedSyntax(SyntaxNode node, SemanticModel sm, StringBuilder sb, bool isFirstNode)
+            {
+                sb.Append(SyntaxFactory.Token(SyntaxKind.OpenParenToken));
+                FullQualifiedSyntax(node, sm, sb, isFirstNode);
+                sb.Append(SyntaxFactory.Token(SyntaxKind.CloseParenToken));
             }
         }
 

@@ -214,7 +214,7 @@
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The [Material] to use for this [TileData]. This can be a [CanvasItemMaterial] to use the default shader, or a [ShaderMaterial] to use a custom shader.
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Color modulation of the tile.
 		</member>
 		<member name="probability" type="float" setter="set_probability" getter="get_probability" default="1.0">

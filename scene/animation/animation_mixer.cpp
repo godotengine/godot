@@ -33,13 +33,16 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
+
+#ifndef _3D_DISABLED
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_3d.h"
+#endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
@@ -692,6 +695,9 @@ bool AnimationMixer::_update_caches() {
 
 						track_value->init_value = anim->track_get_key_value(i, 0);
 						track_value->init_value.zero();
+
+						// Can't interpolate them, need to convert.
+						track_value->is_variant_interpolatable = Animation::is_variant_interpolatable(track_value->init_value);
 
 						// If there is a Reset Animation, it takes precedence by overwriting.
 						if (has_reset_anim) {
@@ -1414,7 +1420,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					bool is_value = ttype == Animation::TYPE_VALUE;
 					bool is_discrete = is_value && a->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE;
 					bool force_continuous = callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS;
-					if (!is_discrete || force_continuous) {
+					if (t->is_variant_interpolatable && (!is_discrete || force_continuous)) {
 						Variant value = is_value ? a->value_track_interpolate(i, time, is_discrete && force_continuous ? backward : false) : Variant(a->bezier_track_interpolate(i, time));
 						value = post_process_key_value(a, i, value, t->object_id);
 						if (value == Variant()) {
@@ -1450,6 +1456,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							t->value = Animation::blend_variant(t->value, value, blend);
 						}
 					} else {
+						t->use_discrete = true;
 						if (seeked) {
 							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
 							if (idx < 0) {
@@ -1473,7 +1480,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							}
 						}
-						t->use_discrete = true;
 					}
 				} break;
 				case Animation::TYPE_METHOD: {
@@ -1727,7 +1733,7 @@ void AnimationMixer::_blend_apply() {
 			case Animation::TYPE_VALUE: {
 				TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-				if (callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT && t->use_discrete) {
+				if (!t->is_variant_interpolatable || (callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT && t->use_discrete)) {
 					break; // Don't overwrite the value set by UPDATE_DISCRETE.
 				}
 
@@ -2149,8 +2155,9 @@ void AnimationMixer::_notification(int p_what) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 void AnimationMixer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	String pf = p_function;
+	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "get_animation" || pf == "has_animation") {
 			List<StringName> al;
@@ -2168,6 +2175,7 @@ void AnimationMixer::get_argument_options(const StringName &p_function, int p_id
 	}
 	Node::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
 void AnimationMixer::_bind_methods() {
 	/* ---- Data lists ---- */

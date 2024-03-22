@@ -364,7 +364,7 @@ PackedVector2Array Polygon3DEditor::_get_polygon() {
 	return PackedVector2Array(obj->call("get_polygon"));
 }
 
-void Polygon3DEditor::_set_polygon(PackedVector2Array p_poly) {
+void Polygon3DEditor::_set_polygon(const PackedVector2Array &p_poly) {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
 	ERR_FAIL_NULL_MSG(obj, "Edited object is not valid.");
 	obj->call("set_polygon", p_poly);

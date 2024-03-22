@@ -101,6 +101,19 @@ public:
 	EXBIND1RC(bool, has_method, const StringName &)
 	EXBIND1RC(bool, has_static_method, const StringName &)
 
+	GDVIRTUAL1RC(Variant, _get_script_method_argument_count, const StringName &)
+	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		Variant ret;
+		if (GDVIRTUAL_CALL(_get_script_method_argument_count, p_method, ret) && ret.get_type() == Variant::INT) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret.operator int();
+		}
+		// Fallback to default.
+		return Script::get_script_method_argument_count(p_method, r_is_valid);
+	}
+
 	GDVIRTUAL1RC(Dictionary, _get_method_info, const StringName &)
 	virtual MethodInfo get_method_info(const StringName &p_method) const override {
 		Dictionary mi;
@@ -376,6 +389,7 @@ public:
 	EXBIND0RC(bool, can_make_function)
 	EXBIND3R(Error, open_in_external_editor, const Ref<Script> &, int, int)
 	EXBIND0R(bool, overrides_external_editor)
+	EXBIND0RC(ScriptNameCasing, preferred_file_name_casing)
 
 	GDVIRTUAL3RC(Dictionary, _complete_code, const String &, const String &, Object *)
 
@@ -655,11 +669,17 @@ VARIANT_ENUM_CAST(ScriptLanguageExtension::CodeCompletionLocation)
 
 class ScriptInstanceExtension : public ScriptInstance {
 public:
-	const GDExtensionScriptInstanceInfo2 *native_info;
+	const GDExtensionScriptInstanceInfo3 *native_info;
+
+#ifndef DISABLE_DEPRECATED
 	bool free_native_info = false;
-	struct {
+	struct DeprecatedNativeInfo {
 		GDExtensionScriptInstanceNotification notification_func = nullptr;
-	} deprecated_native_info;
+		GDExtensionScriptInstanceFreePropertyList free_property_list_func = nullptr;
+		GDExtensionScriptInstanceFreeMethodList free_method_list_func = nullptr;
+	};
+	DeprecatedNativeInfo *deprecated_native_info = nullptr;
+#endif // DISABLE_DEPRECATED
 
 	GDExtensionScriptInstanceDataPtr instance = nullptr;
 
@@ -706,7 +726,11 @@ public:
 				p_list->push_back(PropertyInfo(pinfo[i]));
 			}
 			if (native_info->free_property_list_func) {
-				native_info->free_property_list_func(instance, pinfo);
+				native_info->free_property_list_func(instance, pinfo, pcount);
+#ifndef DISABLE_DEPRECATED
+			} else if (deprecated_native_info && deprecated_native_info->free_property_list_func) {
+				deprecated_native_info->free_property_list_func(instance, pinfo);
+#endif // DISABLE_DEPRECATED
 			}
 		}
 	}
@@ -781,7 +805,11 @@ public:
 				p_list->push_back(MethodInfo(minfo[i]));
 			}
 			if (native_info->free_method_list_func) {
-				native_info->free_method_list_func(instance, minfo);
+				native_info->free_method_list_func(instance, minfo, mcount);
+#ifndef DISABLE_DEPRECATED
+			} else if (deprecated_native_info && deprecated_native_info->free_method_list_func) {
+				deprecated_native_info->free_method_list_func(instance, minfo);
+#endif // DISABLE_DEPRECATED
 			}
 		}
 	}
@@ -790,6 +818,19 @@ public:
 			return native_info->has_method_func(instance, (GDExtensionStringNamePtr)&p_method);
 		}
 		return false;
+	}
+
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		if (native_info->get_method_argument_count_func) {
+			GDExtensionBool is_valid = 0;
+			GDExtensionInt ret = native_info->get_method_argument_count_func(instance, (GDExtensionStringNamePtr)&p_method, &is_valid);
+			if (r_is_valid) {
+				*r_is_valid = is_valid != 0;
+			}
+			return ret;
+		}
+		// Fallback to default.
+		return ScriptInstance::get_method_argument_count(p_method, r_is_valid);
 	}
 
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
@@ -808,8 +849,8 @@ public:
 		if (native_info->notification_func) {
 			native_info->notification_func(instance, p_notification, p_reversed);
 #ifndef DISABLE_DEPRECATED
-		} else if (deprecated_native_info.notification_func) {
-			deprecated_native_info.notification_func(instance, p_notification);
+		} else if (deprecated_native_info && deprecated_native_info->notification_func) {
+			deprecated_native_info->notification_func(instance, p_notification);
 #endif // DISABLE_DEPRECATED
 		}
 	}
@@ -879,15 +920,19 @@ public:
 			return reinterpret_cast<ScriptLanguage *>(lang);
 		}
 		return nullptr;
-		;
 	}
 	virtual ~ScriptInstanceExtension() {
 		if (native_info->free_func) {
 			native_info->free_func(instance);
 		}
+#ifndef DISABLE_DEPRECATED
 		if (free_native_info) {
-			memfree(const_cast<GDExtensionScriptInstanceInfo2 *>(native_info));
+			memfree(const_cast<GDExtensionScriptInstanceInfo3 *>(native_info));
 		}
+		if (deprecated_native_info) {
+			memfree(deprecated_native_info);
+		}
+#endif // DISABLE_DEPRECATED
 	}
 
 #if defined(__GNUC__) && !defined(__clang__)

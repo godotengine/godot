@@ -120,7 +120,7 @@ private:
 	};
 
 	// Transform key holds either Vector3 or Quaternion.
-	template <class T>
+	template <typename T>
 	struct TKey : public Key {
 		T value;
 	};
@@ -235,13 +235,13 @@ private:
 
 	Vector<Track *> tracks;
 
-	template <class T>
+	template <typename T>
 	void _clear(T &p_keys);
 
-	template <class T, class V>
+	template <typename T, typename V>
 	int _insert(double p_time, T &p_keys, const V &p_value);
 
-	template <class K>
+	template <typename K>
 
 	inline int _find(const Vector<K> &p_keys, double p_time, bool p_backward = false, bool p_limit = false) const;
 
@@ -257,10 +257,10 @@ private:
 	_FORCE_INLINE_ real_t _cubic_interpolate_in_time(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 	_FORCE_INLINE_ Variant _cubic_interpolate_angle_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 
-	template <class T>
+	template <typename T>
 	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
 
-	template <class T>
+	template <typename T>
 	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
 
 	double length = 1.0;

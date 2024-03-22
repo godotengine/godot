@@ -421,7 +421,7 @@ Error SceneReplicationInterface::_update_spawn_visibility(int p_peer, const Obje
 		// Check visibility for each peers.
 		for (const KeyValue<int, PeerInfo> &E : peers_info) {
 			if (is_visible) {
-				// This is fast, since the the object is visible to everyone, we don't need to check each peer.
+				// This is fast, since the object is visible to everyone, we don't need to check each peer.
 				if (E.value.spawn_nodes.has(p_oid)) {
 					// Already spawned.
 					continue;

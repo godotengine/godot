@@ -540,6 +540,14 @@ Returns:   !0 => character is found in the class
 static BOOL
 convert_glob_char_in_class(int class_index, PCRE2_UCHAR c)
 {
+#if PCRE2_CODE_UNIT_WIDTH != 8
+if (c > 0xff)
+  {
+  /* ctype functions are not sane for c > 0xff */
+  return 0;
+  }
+#endif
+
 switch (class_index)
   {
   case 1: return isalnum(c);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 4D vector using floating point coordinates.
+		A 4D vector using floating-point coordinates.
 	</brief_description>
 	<description>
 		A 4-element structure that can be used to represent 4D coordinates or any other quadruplet of numeric values.
@@ -155,7 +155,7 @@
 				This method is faster than using [method is_equal_approx] with one value as a zero vector.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -168,7 +168,7 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
-		<method name="lerp" qualifiers="const">
+		<method name="lerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector4" />
 			<param index="0" name="to" type="Vector4" />
 			<param index="1" name="weight" type="float" />

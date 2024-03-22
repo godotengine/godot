@@ -132,7 +132,7 @@
 		<theme_item name="font_hover_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the menu item is being hovered and pressed.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the menu item.
 		</theme_item>
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
@@ -151,7 +151,7 @@
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the menu item's text.
 		</theme_item>
-		<theme_item name="disabled" data_type="style" type="StyleBox">
+		<theme_item name="disabled" data_type="style" type="StyleBox" keywords="enabled">
 			[StyleBox] used when the menu item is disabled.
 		</theme_item>
 		<theme_item name="disabled_mirrored" data_type="style" type="StyleBox">

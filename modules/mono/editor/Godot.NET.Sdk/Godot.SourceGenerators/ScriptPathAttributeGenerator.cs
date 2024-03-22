@@ -48,7 +48,6 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                                 return true;
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                 )

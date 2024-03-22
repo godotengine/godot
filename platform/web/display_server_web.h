@@ -104,6 +104,7 @@ private:
 
 	bool swap_cancel_ok = false;
 	bool tts = false;
+	NativeMenu *native_menu = nullptr;
 
 	// utilities
 	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod, Key p_keycode);

@@ -86,7 +86,7 @@ private:
 	void on_client_disconnected(const Ref<DAPeer> &p_peer);
 	void on_debug_paused();
 	void on_debug_stopped();
-	void on_debug_output(const String &p_message);
+	void on_debug_output(const String &p_message, int p_type);
 	void on_debug_breaked(const bool &p_reallydid, const bool &p_can_debug, const String &p_reason, const bool &p_has_stackdump);
 	void on_debug_breakpoint_toggled(const String &p_path, const int &p_line, const bool &p_enabled);
 	void on_debug_stack_dump(const Array &p_stack_dump);
@@ -139,7 +139,7 @@ public:
 	void notify_stopped_breakpoint(const int &p_id);
 	void notify_stopped_step();
 	void notify_continued();
-	void notify_output(const String &p_message);
+	void notify_output(const String &p_message, RemoteDebugger::MessageType p_type);
 	void notify_custom_data(const String &p_msg, const Array &p_data);
 	void notify_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled);
 

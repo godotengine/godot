@@ -230,7 +230,10 @@ public:
 	static String debug_get_script_name(const Ref<Script> &p_script);
 #endif
 
-	static bool is_equal_gdscript_paths(const String &p_path_a, const String &p_path_b);
+	static String canonicalize_path(const String &p_path);
+	_FORCE_INLINE_ static bool is_canonically_equal_paths(const String &p_path_a, const String &p_path_b) {
+		return canonicalize_path(p_path_a) == canonicalize_path(p_path_b);
+	}
 
 	_FORCE_INLINE_ StringName get_local_name() const { return local_name; }
 
@@ -309,6 +312,9 @@ public:
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
 	virtual bool has_static_method(const StringName &p_method) const override;
+
+	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
+
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
@@ -373,6 +379,9 @@ public:
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
+
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
+
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }

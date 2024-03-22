@@ -41,7 +41,12 @@
 #include <stdio.h>
 
 void Resource::emit_changed() {
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
+		// Let the connection happen on the main thread, later, since signals are not thread-safe.
+		call_deferred("emit_signal", CoreStringNames::get_singleton()->changed);
+	} else {
+		emit_signal(CoreStringNames::get_singleton()->changed);
+	}
 }
 
 void Resource::_resource_path_changed() {
@@ -125,6 +130,16 @@ String Resource::generate_scene_unique_id() {
 }
 
 void Resource::set_scene_unique_id(const String &p_id) {
+	bool is_valid = true;
+	for (int i = 0; i < p_id.length(); i++) {
+		if (!is_ascii_identifier_char(p_id[i])) {
+			is_valid = false;
+			scene_unique_id = Resource::generate_scene_unique_id();
+			break;
+		}
+	}
+
+	ERR_FAIL_COND_MSG(!is_valid, "The scene unique ID must contain only letters, numbers, and underscores.");
 	scene_unique_id = p_id;
 }
 
@@ -152,12 +167,22 @@ bool Resource::editor_can_reload_from_file() {
 }
 
 void Resource::connect_changed(const Callable &p_callable, uint32_t p_flags) {
+	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
+		// Let the check and connection happen on the main thread, later, since signals are not thread-safe.
+		callable_mp(this, &Resource::connect_changed).call_deferred(p_callable, p_flags);
+		return;
+	}
 	if (!is_connected(CoreStringNames::get_singleton()->changed, p_callable) || p_flags & CONNECT_REFERENCE_COUNTED) {
 		connect(CoreStringNames::get_singleton()->changed, p_callable, p_flags);
 	}
 }
 
 void Resource::disconnect_changed(const Callable &p_callable) {
+	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
+		// Let the check and disconnection happen on the main thread, later, since signals are not thread-safe.
+		callable_mp(this, &Resource::disconnect_changed).call_deferred(p_callable);
+		return;
+	}
 	if (is_connected(CoreStringNames::get_singleton()->changed, p_callable)) {
 		disconnect(CoreStringNames::get_singleton()->changed, p_callable);
 	}
@@ -410,7 +435,7 @@ RID Resource::get_rid() const {
 
 #ifdef TOOLS_ENABLED
 
-uint32_t Resource::hash_edited_version() const {
+uint32_t Resource::hash_edited_version_for_preview() const {
 	uint32_t hash = hash_murmur3_one_32(get_edited_version());
 
 	List<PropertyInfo> plist;
@@ -420,7 +445,7 @@ uint32_t Resource::hash_edited_version() const {
 		if (E.usage & PROPERTY_USAGE_STORAGE && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			Ref<Resource> res = get(E.name);
 			if (res.is_valid()) {
-				hash = hash_murmur3_one_32(res->hash_edited_version(), hash);
+				hash = hash_murmur3_one_32(res->hash_edited_version_for_preview(), hash);
 			}
 		}
 	}
@@ -517,6 +542,10 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_scene"), &Resource::get_local_scene);
 	ClassDB::bind_method(D_METHOD("setup_local_to_scene"), &Resource::setup_local_to_scene);
 
+	ClassDB::bind_static_method("Resource", D_METHOD("generate_scene_unique_id"), &Resource::generate_scene_unique_id);
+	ClassDB::bind_method(D_METHOD("set_scene_unique_id", "id"), &Resource::set_scene_unique_id);
+	ClassDB::bind_method(D_METHOD("get_scene_unique_id"), &Resource::get_scene_unique_id);
+
 	ClassDB::bind_method(D_METHOD("emit_changed"), &Resource::emit_changed);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "subresources"), &Resource::duplicate, DEFVAL(false));
@@ -527,6 +556,7 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_scene_unique_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_unique_id", "get_scene_unique_id");
 
 	MethodInfo get_rid_bind("_get_rid");
 	get_rid_bind.return_val.type = Variant::RID;

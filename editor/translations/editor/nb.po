@@ -482,9 +482,6 @@ msgstr "Rediger Hendelse"
 msgid "Remove Event"
 msgstr "Fjern Hendelse"
 
-msgid "Filter by name..."
-msgstr "Filtrer etter navn..."
-
 msgid "Clear All"
 msgstr "Tøm alt"
 
@@ -563,21 +560,6 @@ msgstr "Endre Animasjonslengde"
 msgid "Change Animation Loop"
 msgstr "Endre Animasjonsløkke"
 
-msgid "Property Track"
-msgstr "Egenskapsspor"
-
-msgid "Call Method Track"
-msgstr "Kall Metodespor"
-
-msgid "Bezier Curve Track"
-msgstr "Bézier-kurvespor"
-
-msgid "Audio Playback Track"
-msgstr "Lydavspillingsspor"
-
-msgid "Animation Playback Track"
-msgstr "Animasjonavspillingspor"
-
 msgid "Animation length (frames)"
 msgstr "Animasjonslengde (bilder)"
 
@@ -628,9 +610,6 @@ msgstr "Klem Sløyfeinterp"
 
 msgid "Wrap Loop Interp"
 msgstr "Pakk Inn Sløyfeinterp"
-
-msgid "Insert Key"
-msgstr "Sett Inn Nøkkel"
 
 msgid "Duplicate Key(s)"
 msgstr "Dupliser Nøkler"
@@ -721,11 +700,6 @@ msgstr "Utklippsbordet er tomt!"
 msgid "Paste Tracks"
 msgstr "Sett in spor"
 
-msgid ""
-"This option does not work for Bezier editing, as it's only a single track."
-msgstr ""
-"Dette valget virker ikke på Bézier-redigering, da det kun er ett enkelt spor."
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Velg en AnimationPlayer-node for å lage og redigere animasjoner."
 
@@ -752,21 +726,6 @@ msgstr "Rediger"
 
 msgid "Animation properties."
 msgstr "Animasjon egenskaper."
-
-msgid "Copy Tracks"
-msgstr "Kopier Spor"
-
-msgid "Scale Selection"
-msgstr "Skaler Utvalg"
-
-msgid "Scale From Cursor"
-msgstr "Skaler Fra Peker"
-
-msgid "Duplicate Selection"
-msgstr "Dupliser utvalg"
-
-msgid "Duplicate Transposed"
-msgstr "Dupliser transponert"
 
 msgid "Delete Selection"
 msgstr "Slett valgte"
@@ -1339,6 +1298,9 @@ msgstr "[blank]"
 msgid "[unsaved]"
 msgstr "[ulagret]"
 
+msgid "Dock Position"
+msgstr "Dock-posisjon"
+
 msgid "3D Editor"
 msgstr "3D Redigeringsverktøy"
 
@@ -1442,6 +1404,18 @@ msgstr "%d samsvarer."
 msgid "%d matches."
 msgstr "%d sammsvarer."
 
+msgid "Method"
+msgstr "Metode"
+
+msgid "Signal"
+msgstr "Signal"
+
+msgid "Constant"
+msgstr "Konstant"
+
+msgid "Property"
+msgstr "Egenskap"
+
 msgid "Search Help"
 msgstr "Søk Hjelp"
 
@@ -1456,18 +1430,6 @@ msgstr "Vis alle"
 
 msgid "Class"
 msgstr "Klasse"
-
-msgid "Method"
-msgstr "Metode"
-
-msgid "Signal"
-msgstr "Signal"
-
-msgid "Constant"
-msgstr "Konstant"
-
-msgid "Property"
-msgstr "Egenskap"
 
 msgid "Move Up"
 msgstr "Flytt opp"
@@ -1668,14 +1630,14 @@ msgstr ""
 "Du kan endre dette senere i \"Prosjektinnstillinger\" under kategorien "
 "'applikasjon'."
 
+msgid "Default"
+msgstr "Standard"
+
 msgid "Save Layout"
 msgstr "Lagre Layout"
 
 msgid "Delete Layout"
 msgstr "Slett Layout"
-
-msgid "Default"
-msgstr "Standard"
 
 msgid "Save & Close"
 msgstr "Lagre og Lukk"
@@ -1691,9 +1653,6 @@ msgstr "%d flere filer"
 
 msgid "Pan View"
 msgstr "Panoreringsvisning"
-
-msgid "Dock Position"
-msgstr "Dock-posisjon"
 
 msgid "Distraction Free Mode"
 msgstr "Distraksjonsfri Modus"
@@ -1734,6 +1693,9 @@ msgstr "Lukk Scene"
 msgid "Quit"
 msgstr "Avslutt"
 
+msgid "Editor Settings..."
+msgstr "Innstillinger for redigeringsverktøy …"
+
 msgid "Project"
 msgstr "Prosjekt"
 
@@ -1751,9 +1713,6 @@ msgstr "Avslutt til Prosjektliste"
 
 msgid "Editor"
 msgstr "Editor"
-
-msgid "Editor Settings..."
-msgstr "Innstillinger for redigeringsverktøy …"
 
 msgid "Editor Layout"
 msgstr "Redigeringsverktøy Layout"
@@ -1790,9 +1749,6 @@ msgstr "Inspektør"
 
 msgid "Node"
 msgstr "Node"
-
-msgid "Expand Bottom Panel"
-msgstr "Utvid Nederste Panel"
 
 msgid "Output"
 msgstr "Utgang"
@@ -1849,6 +1805,9 @@ msgstr "Åpne det forrige redigeringsverktøy"
 msgid "Warning!"
 msgstr "Advarsel!"
 
+msgid "On"
+msgstr "På"
+
 msgid "Installed Plugins:"
 msgstr "Installerte Plugins:"
 
@@ -1857,12 +1816,6 @@ msgstr "Versjon"
 
 msgid "Author"
 msgstr "Forfatter"
-
-msgid "Status"
-msgstr "Status"
-
-msgid "On"
-msgstr "På"
 
 msgid "No name provided."
 msgstr "Ingen navn gitt."
@@ -1894,6 +1847,9 @@ msgstr "Fjern Gjenstand"
 msgid "Add Key/Value Pair"
 msgstr "Legg Til Nøkkel/Verdi Par"
 
+msgid "Load..."
+msgstr "Last..."
+
 msgid "Make Unique"
 msgstr "Gjør Unik"
 
@@ -1902,9 +1858,6 @@ msgstr "Lagre Som..."
 
 msgid "New %s"
 msgstr "Ny %s"
-
-msgid "New Script"
-msgstr "Nytt Skript"
 
 msgid "Write your logic in the _run() method."
 msgstr "Skriv logikken din i _run() metoden."
@@ -2045,6 +1998,9 @@ msgstr "Legg til…"
 msgid "Duplicate"
 msgstr "Dupliser"
 
+msgid "Advanced Options"
+msgstr "Avanserte alternativer"
+
 msgid "Options"
 msgstr "Innstillinger"
 
@@ -2155,26 +2111,11 @@ msgstr "Legg til i Gruppe"
 msgid "Remove from Group"
 msgstr "Fjern fra Gruppe"
 
-msgid "Group name already exists."
-msgstr "Gruppenavnet finnes allerede."
-
-msgid "Groups"
-msgstr "Grupper"
-
-msgid "Empty groups will be automatically removed."
-msgstr "Tomme grupper vil automatisk bli fjernet."
-
-msgid "Group Editor"
-msgstr "Redigeringsverktøy for grupper"
-
-msgid "Manage Groups"
-msgstr "Håndter grupper"
+msgid "Expand Bottom Panel"
+msgstr "Utvid Nederste Panel"
 
 msgid "Move"
 msgstr "Flytt"
-
-msgid "Choose a Directory"
-msgstr "Velg en Mappe"
 
 msgid "Network"
 msgstr "Nettverk"
@@ -2278,9 +2219,6 @@ msgstr "Legg til ny scene."
 msgid "Open in Editor"
 msgstr "Åpne i Redigeringsverktøy"
 
-msgid "Offset:"
-msgstr "Avstand:"
-
 msgid "Importing Scene..."
 msgstr "Importerer Scene..."
 
@@ -2298,6 +2236,12 @@ msgstr "Feil ved kjøring av post-import script:"
 
 msgid "Saving..."
 msgstr "Lagrer..."
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Offset:"
+msgstr "Avstand:"
 
 msgid "2D"
 msgstr "2D"
@@ -2359,6 +2303,9 @@ msgstr "Oversettelser:"
 msgid "Locale"
 msgstr "Språk"
 
+msgid "Groups"
+msgstr "Grupper"
+
 msgid "Update"
 msgstr "Oppdater"
 
@@ -2394,9 +2341,6 @@ msgstr "Legg til Animasjon"
 
 msgid "Add %s"
 msgstr "Legg til %s"
-
-msgid "Load..."
-msgstr "Last..."
 
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr "Denne typen node kan ikke bli brukt. Kun rotnoder er tillatt."
@@ -2713,6 +2657,9 @@ msgstr "Vis Veiledere"
 msgid "Frame Selection"
 msgstr "Bildeutvalg"
 
+msgid "Insert Key"
+msgstr "Sett Inn Nøkkel"
+
 msgid "Insert Key (Existing Tracks)"
 msgstr "Sett inn Nøkkel (Eksisterende Spor)"
 
@@ -2917,9 +2864,6 @@ msgstr "Snap Objekt til Gulv"
 msgid "Settings..."
 msgstr "Innstillinger…"
 
-msgid "Perspective FOV (deg.):"
-msgstr "Perspektiv-synsv. (deg.):"
-
 msgid "Pre"
 msgstr "Pre"
 
@@ -3088,11 +3032,11 @@ msgstr "Kopier Skript-Sti"
 msgid "History Previous"
 msgstr "Historie Forrige"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Reload Theme"
 msgstr "Gjeninnlast drakt"
+
+msgid "Theme"
+msgstr "Tema"
 
 msgid "Save Theme"
 msgstr "Lagre drakt"
@@ -3174,6 +3118,9 @@ msgstr "Fold sammen alle linjer"
 
 msgid "Unfold All Lines"
 msgstr "Brett ut alle linjer"
+
+msgid "Duplicate Selection"
+msgstr "Dupliser utvalg"
 
 msgid "Evaluate Selection"
 msgstr "Evaluer Seleksjon"
@@ -3307,63 +3254,6 @@ msgstr "Legg til node"
 msgid "Bake VoxelGI"
 msgstr "Bak VoxelGI"
 
-msgid "Please choose an empty folder."
-msgstr "Velg en tom mappe."
-
-msgid "New Game Project"
-msgstr "Nytt Spill-Prosjekt"
-
-msgid "Couldn't create project.godot in project path."
-msgstr "Kunne ikke lage project.godot i prosjektstien."
-
-msgid "The following files failed extraction from package:"
-msgstr "De følgende filene feilet ekstrahering fra pakke:"
-
-msgid "Rename Project"
-msgstr "Endre Navn på Prosjekt"
-
-msgid "Import Existing Project"
-msgstr "Importer Eksisterende Prosjekt"
-
-msgid "Import & Edit"
-msgstr "Importer & Endre"
-
-msgid "Create New Project"
-msgstr "Opprett Nytt Prosjekt"
-
-msgid "Create & Edit"
-msgstr "Opprett og rediger"
-
-msgid "Install Project:"
-msgstr "Installer Prosjekt:"
-
-msgid "Install & Edit"
-msgstr "Installer & Endre"
-
-msgid "Project Name:"
-msgstr "Prosjektnavn:"
-
-msgid "Project Path:"
-msgstr "Prosjektsti:"
-
-msgid "Project Installation Path:"
-msgstr "Prosjekt installasjonsti:"
-
-msgid "Renderer:"
-msgstr "Opptegner:"
-
-msgid "Missing Project"
-msgstr "Manglede Prosjekt"
-
-msgid "Local"
-msgstr "Lokal"
-
-msgid "Local Projects"
-msgstr "Lokale prosjekter"
-
-msgid "Can't open project at '%s'."
-msgstr "Kan ikke åpne prosjektet i '%s'."
-
 msgid "Remove %d projects from the list?"
 msgstr "Fjern %d prosjekter fra listen?"
 
@@ -3389,20 +3279,23 @@ msgstr "Søk"
 msgid "Scan Projects"
 msgstr "Søk etter prosjekter"
 
+msgid "Create New Project"
+msgstr "Opprett Nytt Prosjekt"
+
+msgid "Import Existing Project"
+msgstr "Importer Eksisterende Prosjekt"
+
 msgid "Edit Project"
 msgstr "Rediger Prosjekt"
+
+msgid "Rename Project"
+msgstr "Endre Navn på Prosjekt"
 
 msgid "Remove Project"
 msgstr "Fjern prosjekt"
 
 msgid "Remove Missing"
 msgstr "Fjern manglende"
-
-msgid "About"
-msgstr "Om"
-
-msgid "Restart Now"
-msgstr "Start på nytt nå"
 
 msgid "Select a Folder to Scan"
 msgstr "Velg en mappe å søke gjennom"
@@ -3413,8 +3306,44 @@ msgstr "Fjern alle"
 msgid "Also delete project contents (no undo!)"
 msgstr "Slett også prosjektets innhold (kan ikke reverseres!)"
 
-msgid "Can't run project"
-msgstr "Kan ikke kjøre prosjekt"
+msgid "New Game Project"
+msgstr "Nytt Spill-Prosjekt"
+
+msgid "Couldn't create project.godot in project path."
+msgstr "Kunne ikke lage project.godot i prosjektstien."
+
+msgid "The following files failed extraction from package:"
+msgstr "De følgende filene feilet ekstrahering fra pakke:"
+
+msgid "Import & Edit"
+msgstr "Importer & Endre"
+
+msgid "Create & Edit"
+msgstr "Opprett og rediger"
+
+msgid "Install Project:"
+msgstr "Installer Prosjekt:"
+
+msgid "Install & Edit"
+msgstr "Installer & Endre"
+
+msgid "Project Name:"
+msgstr "Prosjektnavn:"
+
+msgid "Project Path:"
+msgstr "Prosjektsti:"
+
+msgid "Project Installation Path:"
+msgstr "Prosjekt installasjonsti:"
+
+msgid "Renderer:"
+msgstr "Opptegner:"
+
+msgid "Missing Project"
+msgstr "Manglede Prosjekt"
+
+msgid "Restart Now"
+msgstr "Start på nytt nå"
 
 msgid "Delete Item"
 msgstr "Slett objektet"
@@ -3430,9 +3359,6 @@ msgstr "Plugins"
 
 msgid "Batch Rename"
 msgstr "Endre Navn på Parti"
-
-msgid "Advanced Options"
-msgstr "Avanserte alternativer"
 
 msgid "Step"
 msgstr "Steg"
@@ -3472,6 +3398,9 @@ msgstr "Denne operasjonen krever én valgt node."
 
 msgid "Remote"
 msgstr "Ekstern"
+
+msgid "Local"
+msgstr "Lokal"
 
 msgid "Path is empty."
 msgstr "Stien er tom."
@@ -3526,9 +3455,6 @@ msgstr "Velg enhet fra listen"
 
 msgid "Uninstalling..."
 msgstr "Avinstallerer …"
-
-msgid "(Other)"
-msgstr "(Annet)"
 
 msgid "Invalid comparison function for that type."
 msgstr "Ugyldig sammenligningsfunksjon for den typen."

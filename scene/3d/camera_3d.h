@@ -34,6 +34,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/resources/camera_attributes.h"
+#include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
 
 class Camera3D : public Node3D {
@@ -83,6 +84,7 @@ private:
 
 	Ref<Environment> environment;
 	Ref<CameraAttributes> attributes;
+	Ref<Compositor> compositor;
 	void _attributes_changed();
 
 	// void _camera_make_current(Node *p_camera);
@@ -166,6 +168,9 @@ public:
 
 	void set_attributes(const Ref<CameraAttributes> &p_effects);
 	Ref<CameraAttributes> get_attributes() const;
+
+	void set_compositor(const Ref<Compositor> &p_compositor);
+	Ref<Compositor> get_compositor() const;
 
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;

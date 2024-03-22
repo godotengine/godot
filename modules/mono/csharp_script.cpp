@@ -405,6 +405,10 @@ bool CSharpLanguage::supports_builtin_mode() const {
 	return false;
 }
 
+ScriptLanguage::ScriptNameCasing CSharpLanguage::preferred_file_name_casing() const {
+	return SCRIPT_NAME_CASING_PASCAL_CASE;
+}
+
 #ifdef TOOLS_ENABLED
 struct VariantCsName {
 	Variant::Type variant_type;
@@ -1731,6 +1735,34 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 			gchandle.get_intptr(), &p_method);
 }
 
+int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	if (!script->is_valid() || !script->valid) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
+
+	const CSharpScript *top = script.ptr();
+	while (top != nullptr) {
+		for (const CSharpScript::CSharpMethodInfo &E : top->methods) {
+			if (E.name == p_method) {
+				if (r_is_valid) {
+					*r_is_valid = true;
+				}
+				return E.method_info.arguments.size();
+			}
+		}
+
+		top = top->base_script.ptr();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
+}
+
 Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	ERR_FAIL_COND_V(!script.is_valid(), Variant());
 
@@ -2575,6 +2607,29 @@ bool CSharpScript::has_method(const StringName &p_method) const {
 	return false;
 }
 
+int CSharpScript::get_script_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	if (!valid) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
+
+	for (const CSharpMethodInfo &E : methods) {
+		if (E.name == p_method) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return E.method_info.arguments.size();
+		}
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
+}
+
 MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 	if (!valid) {
 		return MethodInfo();
@@ -2851,7 +2906,24 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 	ERR_FAIL_COND_V_MSG(!scr->get_path().is_empty() && scr->get_path() != p_original_path, Ref<Resource>(),
 			"The C# script path is different from the path it was registered in the C# dictionary.");
 
-	scr->set_path(p_original_path, true);
+	Ref<Resource> existing = ResourceCache::get_ref(p_path);
+	switch (p_cache_mode) {
+		case ResourceFormatLoader::CACHE_MODE_IGNORE:
+		case ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP:
+			break;
+		case ResourceFormatLoader::CACHE_MODE_REUSE:
+			if (existing.is_null()) {
+				scr->set_path(p_original_path);
+			} else {
+				scr = existing;
+			}
+			break;
+		case ResourceFormatLoader::CACHE_MODE_REPLACE:
+		case ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP:
+			scr->set_path(p_original_path, true);
+			break;
+	}
+
 	scr->reload();
 
 	if (r_error) {

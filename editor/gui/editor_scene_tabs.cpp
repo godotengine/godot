@@ -202,22 +202,23 @@ void EditorSceneTabs::update_scene_tabs() {
 	}
 	menu_initialized = true;
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
-		DisplayServer::get_singleton()->global_menu_clear("_dock");
+	if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+		RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
+		NativeMenu::get_singleton()->clear(dock_rid);
 	}
 
 	scene_tabs->set_block_signals(true);
 	scene_tabs->set_tab_count(EditorNode::get_editor_data().get_edited_scene_count());
 	scene_tabs->set_block_signals(false);
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+	if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+		RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
 		for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
-			int global_menu_index = DisplayServer::get_singleton()->global_menu_add_item("_dock", EditorNode::get_editor_data().get_scene_title(i), callable_mp(this, &EditorSceneTabs::_global_menu_scene), Callable(), i);
+			int global_menu_index = NativeMenu::get_singleton()->add_item(dock_rid, EditorNode::get_editor_data().get_scene_title(i), callable_mp(this, &EditorSceneTabs::_global_menu_scene), Callable(), i);
 			scene_tabs->set_tab_metadata(i, global_menu_index);
 		}
-
-		DisplayServer::get_singleton()->global_menu_add_separator("_dock");
-		DisplayServer::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), callable_mp(this, &EditorSceneTabs::_global_menu_new_window));
+		NativeMenu::get_singleton()->add_separator(dock_rid);
+		NativeMenu::get_singleton()->add_item(dock_rid, TTR("New Window"), callable_mp(this, &EditorSceneTabs::_global_menu_new_window));
 	}
 
 	_update_tab_titles();
@@ -247,10 +248,11 @@ void EditorSceneTabs::_update_tab_titles() {
 		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(EditorNode::get_editor_data().get_scene_history_id(i));
 		scene_tabs->set_tab_title(i, disambiguated_scene_names[i] + (unsaved ? "(*)" : ""));
 
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
+		if (NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU)) {
+			RID dock_rid = NativeMenu::get_singleton()->get_system_menu(NativeMenu::DOCK_MENU_ID);
 			int global_menu_index = scene_tabs->get_tab_metadata(i);
-			DisplayServer::get_singleton()->global_menu_set_item_text("_dock", global_menu_index, EditorNode::get_editor_data().get_scene_title(i) + (unsaved ? "(*)" : ""));
-			DisplayServer::get_singleton()->global_menu_set_item_tag("_dock", global_menu_index, i);
+			NativeMenu::get_singleton()->set_item_text(dock_rid, global_menu_index, EditorNode::get_editor_data().get_scene_title(i) + (unsaved ? "(*)" : ""));
+			NativeMenu::get_singleton()->set_item_tag(dock_rid, global_menu_index, i);
 		}
 
 		if (show_rb && EditorNode::get_editor_data().get_scene_root_script(i).is_valid()) {

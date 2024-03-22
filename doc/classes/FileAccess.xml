@@ -257,7 +257,7 @@
 			<return type="String" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns a SHA-256 [String] representing the file at the given path or an empty [String] on failure.
+				Returns an SHA-256 [String] representing the file at the given path or an empty [String] on failure.
 			</description>
 		</method>
 		<method name="get_unix_permissions" qualifiers="static">
@@ -517,12 +517,14 @@
 		</constant>
 		<constant name="WRITE" value="2" enum="ModeFlags">
 			Opens the file for write operations. The file is created if it does not exist, and truncated if it does.
+			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive]).
 		</constant>
 		<constant name="READ_WRITE" value="3" enum="ModeFlags">
 			Opens the file for read and write operations. Does not truncate the file. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE_READ" value="7" enum="ModeFlags">
 			Opens the file for read and write operations. The file is created if it does not exist, and truncated if it does. The cursor is positioned at the beginning of the file.
+			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive]).
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
 			Uses the [url=https://fastlz.org/]FastLZ[/url] compression method.

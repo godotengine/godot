@@ -76,6 +76,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String name;
 		String description;
 		int api_level = 0;
+		String architecture;
 	};
 
 	struct APKExportData {
@@ -220,6 +221,8 @@ public:
 	virtual String get_option_label(int p_index) const override;
 
 	virtual String get_option_tooltip(int p_index) const override;
+
+	virtual String get_device_architecture(int p_index) const override;
 
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) override;
 

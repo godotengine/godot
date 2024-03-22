@@ -33,7 +33,7 @@
 HashMap<Color, Color> EditorColorMap::color_conversion_map;
 HashSet<StringName> EditorColorMap::color_conversion_exceptions;
 
-void EditorColorMap::add_conversion_color_pair(const String p_from_color, const String p_to_color) {
+void EditorColorMap::add_conversion_color_pair(const String &p_from_color, const String &p_to_color) {
 	color_conversion_map[Color::html(p_from_color)] = Color::html(p_to_color);
 }
 

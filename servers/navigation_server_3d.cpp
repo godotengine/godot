@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "navigation_server_3d.h"
+
 #include "core/config/project_settings.h"
+#include "scene/main/node.h"
 
 NavigationServer3D *NavigationServer3D::singleton = nullptr;
 
@@ -65,6 +67,7 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_get_obstacles", "map"), &NavigationServer3D::map_get_obstacles);
 
 	ClassDB::bind_method(D_METHOD("map_force_update", "map"), &NavigationServer3D::map_force_update);
+	ClassDB::bind_method(D_METHOD("map_get_iteration_id", "map"), &NavigationServer3D::map_get_iteration_id);
 
 	ClassDB::bind_method(D_METHOD("map_get_random_point", "map", "navigation_layers", "uniformly"), &NavigationServer3D::map_get_random_point);
 

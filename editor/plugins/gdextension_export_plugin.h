@@ -93,7 +93,7 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 	for (const String &arch_tag : archs) {
 		PackedStringArray tags;
 		String library_path = GDExtension::find_extension_library(
-				p_path, config, [features_wo_arch, arch_tag](String p_feature) { return features_wo_arch.has(p_feature) || (p_feature == arch_tag); }, &tags);
+				p_path, config, [features_wo_arch, arch_tag](const String &p_feature) { return features_wo_arch.has(p_feature) || (p_feature == arch_tag); }, &tags);
 		if (libs_added.has(library_path)) {
 			continue; // Universal library, already added for another arch, do not duplicate.
 		}

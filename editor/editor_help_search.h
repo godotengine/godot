@@ -117,7 +117,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	};
 	int phase = 0;
 
-	template <class T>
+	template <typename T>
 	struct MemberMatch {
 		T *doc = nullptr;
 		bool name = false;

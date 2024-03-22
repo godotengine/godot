@@ -74,12 +74,15 @@
 #include "servers/navigation_server_3d.h"
 #include "servers/navigation_server_3d_dummy.h"
 #include "servers/physics_server_2d.h"
-#include "servers/physics_server_3d.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server_dummy.h"
 #include "servers/text_server.h"
+
+#ifndef _3D_DISABLED
+#include "servers/physics_server_3d.h"
 #include "servers/xr_server.h"
+#endif // _3D_DISABLED
 
 #ifdef TESTS_ENABLED
 #include "tests/test_main.h"
@@ -142,15 +145,17 @@ static AudioServer *audio_server = nullptr;
 static DisplayServer *display_server = nullptr;
 static RenderingServer *rendering_server = nullptr;
 static CameraServer *camera_server = nullptr;
-static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
-static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
-static PhysicsServer3D *physics_server_3d = nullptr;
 static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
 static ThemeDB *theme_db = nullptr;
+#ifndef _3D_DISABLED
+static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
+static PhysicsServer3D *physics_server_3d = nullptr;
+static XRServer *xr_server = nullptr;
+#endif // _3D_DISABLED
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -293,6 +298,7 @@ static Vector<String> get_files_with_extension(const String &p_root, const Strin
 
 // FIXME: Could maybe be moved to have less code in main.cpp.
 void initialize_physics() {
+#ifndef _3D_DISABLED
 	/// 3D Physics Server
 	physics_server_3d = PhysicsServer3DManager::get_singleton()->new_server(
 			GLOBAL_GET(PhysicsServer3DManager::setting_property_name));
@@ -302,6 +308,7 @@ void initialize_physics() {
 	}
 	ERR_FAIL_NULL(physics_server_3d);
 	physics_server_3d->init();
+#endif // _3D_DISABLED
 
 	// 2D Physics server
 	physics_server_2d = PhysicsServer2DManager::get_singleton()->new_server(
@@ -315,8 +322,10 @@ void initialize_physics() {
 }
 
 void finalize_physics() {
+#ifndef _3D_DISABLED
 	physics_server_3d->finish();
 	memdelete(physics_server_3d);
+#endif // _3D_DISABLED
 
 	physics_server_2d->finish();
 	memdelete(physics_server_2d);
@@ -384,6 +393,23 @@ void finalize_theme_db() {
 #else
 #define MAIN_PRINT(m_txt)
 #endif
+
+void Main::print_header(bool p_rich) {
+	if (VERSION_TIMESTAMP > 0) {
+		// Version timestamp available.
+		if (p_rich) {
+			print_line_rich("\u001b[38;5;39m" + String(VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " (" + Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC) - \u001b[4m" + String(VERSION_WEBSITE));
+		} else {
+			print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " (" + Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC) - " + String(VERSION_WEBSITE));
+		}
+	} else {
+		if (p_rich) {
+			print_line_rich("\u001b[38;5;39m" + String(VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " - \u001b[4m" + String(VERSION_WEBSITE));
+		} else {
+			print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+		}
+	}
+}
 
 /**
  * Prints a copyright notice in the command-line help with colored text. A newline is
@@ -455,7 +481,7 @@ void Main::print_help_option(const char *p_option, const char *p_description, CL
 }
 
 void Main::print_help(const char *p_binary) {
-	print_line("\u001b[38;5;39m" + String(VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " - \u001b[4m" + String(VERSION_WEBSITE) + "\u001b[0m");
+	print_header(true);
 	print_help_copyright("Free and open source software under the terms of the MIT license.");
 	print_help_copyright("(c) 2014-present Godot Engine contributors. (c) 2007-present Juan Linietsky, Ariel Manzur.");
 
@@ -655,7 +681,9 @@ Error Main::test_setup() {
 		tsman->add_interface(ts);
 	}
 
+#ifndef _3D_DISABLED
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
+#endif // _3D_DISABLED
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 
 	// From `Main::setup2()`.
@@ -783,9 +811,11 @@ void Main::test_cleanup() {
 	if (tsman) {
 		memdelete(tsman);
 	}
+#ifndef _3D_DISABLED
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
 	}
+#endif // _3D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
 	}
@@ -1617,6 +1647,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->disable_crash_handler();
 		} else if (I->get() == "--skip-breakpoints") {
 			skip_breakpoints = true;
+#ifndef _3D_DISABLED
 		} else if (I->get() == "--xr-mode") {
 			if (I->next()) {
 				String xr_mode = I->next()->get().to_lower();
@@ -1635,7 +1666,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
 				goto error;
 			}
-
+#endif // _3D_DISABLED
 		} else if (I->get() == "--benchmark") {
 			OS::get_singleton()->set_use_benchmark(true);
 		} else if (I->get() == "--benchmark-file") {
@@ -1742,7 +1773,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions(); // core extensions must be registered after globals setup and before display
 
-	ResourceUID::get_singleton()->load_from_cache(); // load UUIDs from cache.
+	ResourceUID::get_singleton()->load_from_cache(true); // load UUIDs from cache.
 
 	if (ProjectSettings::get_singleton()->has_custom_feature("dedicated_server")) {
 		audio_driver = NULL_AUDIO_DRIVER;
@@ -2456,8 +2487,8 @@ Error Main::setup2() {
 	Thread::make_main_thread(); // Make whatever thread call this the main thread.
 	set_current_thread_safe_for_nodes(true);
 
-	// Print engine name and version
-	Engine::get_singleton()->print_header(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+	// Don't use rich formatting to prevent ANSI escape codes from being written to log files.
+	print_header(false);
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager || cmdline_tool) {
@@ -2561,7 +2592,9 @@ Error Main::setup2() {
 		tsman->add_interface(ts);
 	}
 
+#ifndef _3D_DISABLED
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
+#endif // _3D_DISABLED
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 
 	register_server_types();
@@ -2757,6 +2790,7 @@ Error Main::setup2() {
 		OS::get_singleton()->benchmark_end_measure("Servers", "Audio");
 	}
 
+#ifndef _3D_DISABLED
 	/* Initialize XR Server */
 
 	{
@@ -2766,6 +2800,7 @@ Error Main::setup2() {
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "XR");
 	}
+#endif // _3D_DISABLED
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Servers");
 
@@ -2854,7 +2889,7 @@ Error Main::setup2() {
 			}
 
 #if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
-			if (OS::get_singleton()->get_bundle_icon_path().is_empty()) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
 				Ref<Image> icon = memnew(Image(app_icon_png));
 				DisplayServer::get_singleton()->set_icon(icon);
 			}
@@ -3771,7 +3806,7 @@ bool Main::start() {
 
 #ifdef MACOS_ENABLED
 				String mac_icon_path = GLOBAL_GET("application/config/macos_native_icon");
-				if (!mac_icon_path.is_empty()) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_ICON) && !mac_icon_path.is_empty()) {
 					DisplayServer::get_singleton()->set_native_icon(mac_icon_path);
 					has_icon = true;
 				}
@@ -3779,14 +3814,14 @@ bool Main::start() {
 
 #ifdef WINDOWS_ENABLED
 				String win_icon_path = GLOBAL_GET("application/config/windows_native_icon");
-				if (!win_icon_path.is_empty()) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_ICON) && !win_icon_path.is_empty()) {
 					DisplayServer::get_singleton()->set_native_icon(win_icon_path);
 					has_icon = true;
 				}
 #endif
 
 				String icon_path = GLOBAL_GET("application/config/icon");
-				if ((!icon_path.is_empty()) && (!has_icon)) {
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && !icon_path.is_empty() && !has_icon) {
 					Ref<Image> icon;
 					icon.instantiate();
 					if (ImageLoader::load_image(icon_path, icon) == OK) {
@@ -3819,7 +3854,7 @@ bool Main::start() {
 #endif
 	}
 
-	if (!has_icon && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && !has_icon && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
 		Ref<Image> icon = memnew(Image(app_icon_png));
 		DisplayServer::get_singleton()->set_icon(icon);
 	}
@@ -3911,7 +3946,9 @@ bool Main::iteration() {
 	bool exit = false;
 
 	// process all our active interfaces
+#ifndef _3D_DISABLED
 	XRServer::get_singleton()->_process();
+#endif // _3D_DISABLED
 
 	NavigationServer2D::get_singleton()->sync();
 	NavigationServer3D::get_singleton()->sync();
@@ -3925,14 +3962,18 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
+#ifndef _3D_DISABLED
 		PhysicsServer3D::get_singleton()->sync();
 		PhysicsServer3D::get_singleton()->flush_queries();
+#endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
 
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
+#ifndef _3D_DISABLED
 			PhysicsServer3D::get_singleton()->end_sync();
+#endif // _3D_DISABLED
 			PhysicsServer2D::get_singleton()->end_sync();
 
 			exit = true;
@@ -3948,8 +3989,10 @@ bool Main::iteration() {
 
 		message_queue->flush();
 
+#ifndef _3D_DISABLED
 		PhysicsServer3D::get_singleton()->end_sync();
 		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
+#endif // _3D_DISABLED
 
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
@@ -4124,11 +4167,13 @@ void Main::cleanup(bool p_force) {
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
 	rendering_server->global_shader_parameters_clear();
 
+#ifndef _3D_DISABLED
 	if (xr_server) {
 		// Now that we're unregistering properly in plugins we need to keep access to xr_server for a little longer
 		// We do however unset our primary interface
 		xr_server->set_primary_interface(Ref<XRInterface>());
 	}
+#endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
@@ -4158,9 +4203,11 @@ void Main::cleanup(bool p_force) {
 
 	EngineDebugger::deinitialize();
 
+#ifndef _3D_DISABLED
 	if (xr_server) {
 		memdelete(xr_server);
 	}
+#endif // _3D_DISABLED
 
 	if (audio_server) {
 		audio_server->finish();
@@ -4194,9 +4241,11 @@ void Main::cleanup(bool p_force) {
 	if (tsman) {
 		memdelete(tsman);
 	}
+#ifndef _3D_DISABLED
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
 	}
+#endif // _3D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
 	}

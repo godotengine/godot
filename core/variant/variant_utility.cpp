@@ -1235,7 +1235,7 @@ bool VariantUtilityFunctions::is_same(const Variant &p_a, const Variant &p_b) {
 #define VCALL p_func(VariantCaster<P>::cast(*p_args[Is])...)
 #endif
 
-template <class R, class... P, size_t... Is>
+template <typename R, typename... P, size_t... Is>
 static _FORCE_INLINE_ void call_helperpr(R (*p_func)(P...), Variant *ret, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 	VCALLR;
@@ -1243,51 +1243,51 @@ static _FORCE_INLINE_ void call_helperpr(R (*p_func)(P...), Variant *ret, const 
 	(void)r_error;
 }
 
-template <class R, class... P, size_t... Is>
+template <typename R, typename... P, size_t... Is>
 static _FORCE_INLINE_ void validated_call_helperpr(R (*p_func)(P...), Variant *ret, const Variant **p_args, IndexSequence<Is...>) {
 	*ret = p_func(VariantCaster<P>::cast(*p_args[Is])...);
 	(void)p_args;
 }
 
-template <class R, class... P, size_t... Is>
+template <typename R, typename... P, size_t... Is>
 static _FORCE_INLINE_ void ptr_call_helperpr(R (*p_func)(P...), void *ret, const void **p_args, IndexSequence<Is...>) {
 	PtrToArg<R>::encode(p_func(PtrToArg<P>::convert(p_args[Is])...), ret);
 	(void)p_args;
 }
 
-template <class R, class... P>
+template <typename R, typename... P>
 static _FORCE_INLINE_ void call_helperr(R (*p_func)(P...), Variant *ret, const Variant **p_args, Callable::CallError &r_error) {
 	call_helperpr(p_func, ret, p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
 }
 
-template <class R, class... P>
+template <typename R, typename... P>
 static _FORCE_INLINE_ void validated_call_helperr(R (*p_func)(P...), Variant *ret, const Variant **p_args) {
 	validated_call_helperpr(p_func, ret, p_args, BuildIndexSequence<sizeof...(P)>{});
 }
 
-template <class R, class... P>
+template <typename R, typename... P>
 static _FORCE_INLINE_ void ptr_call_helperr(R (*p_func)(P...), void *ret, const void **p_args) {
 	ptr_call_helperpr(p_func, ret, p_args, BuildIndexSequence<sizeof...(P)>{});
 }
 
-template <class R, class... P>
+template <typename R, typename... P>
 static _FORCE_INLINE_ int get_arg_count_helperr(R (*p_func)(P...)) {
 	return sizeof...(P);
 }
 
-template <class R, class... P>
+template <typename R, typename... P>
 static _FORCE_INLINE_ Variant::Type get_arg_type_helperr(R (*p_func)(P...), int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
 }
 
-template <class R, class... P>
+template <typename R, typename... P>
 static _FORCE_INLINE_ Variant::Type get_ret_type_helperr(R (*p_func)(P...)) {
 	return GetTypeInfo<R>::VARIANT_TYPE;
 }
 
 // WITHOUT RET
 
-template <class... P, size_t... Is>
+template <typename... P, size_t... Is>
 static _FORCE_INLINE_ void call_helperp(void (*p_func)(P...), const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 	VCALL;
@@ -1295,44 +1295,44 @@ static _FORCE_INLINE_ void call_helperp(void (*p_func)(P...), const Variant **p_
 	(void)r_error;
 }
 
-template <class... P, size_t... Is>
+template <typename... P, size_t... Is>
 static _FORCE_INLINE_ void validated_call_helperp(void (*p_func)(P...), const Variant **p_args, IndexSequence<Is...>) {
 	p_func(VariantCaster<P>::cast(*p_args[Is])...);
 	(void)p_args;
 }
 
-template <class... P, size_t... Is>
+template <typename... P, size_t... Is>
 static _FORCE_INLINE_ void ptr_call_helperp(void (*p_func)(P...), const void **p_args, IndexSequence<Is...>) {
 	p_func(PtrToArg<P>::convert(p_args[Is])...);
 	(void)p_args;
 }
 
-template <class... P>
+template <typename... P>
 static _FORCE_INLINE_ void call_helper(void (*p_func)(P...), const Variant **p_args, Callable::CallError &r_error) {
 	call_helperp(p_func, p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
 }
 
-template <class... P>
+template <typename... P>
 static _FORCE_INLINE_ void validated_call_helper(void (*p_func)(P...), const Variant **p_args) {
 	validated_call_helperp(p_func, p_args, BuildIndexSequence<sizeof...(P)>{});
 }
 
-template <class... P>
+template <typename... P>
 static _FORCE_INLINE_ void ptr_call_helper(void (*p_func)(P...), const void **p_args) {
 	ptr_call_helperp(p_func, p_args, BuildIndexSequence<sizeof...(P)>{});
 }
 
-template <class... P>
+template <typename... P>
 static _FORCE_INLINE_ int get_arg_count_helper(void (*p_func)(P...)) {
 	return sizeof...(P);
 }
 
-template <class... P>
+template <typename... P>
 static _FORCE_INLINE_ Variant::Type get_arg_type_helper(void (*p_func)(P...), int p_arg) {
 	return call_get_argument_type<P...>(p_arg);
 }
 
-template <class... P>
+template <typename... P>
 static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 	return Variant::NIL;
 }
@@ -1645,7 +1645,7 @@ struct VariantUtilityFunctionInfo {
 static OAHashMap<StringName, VariantUtilityFunctionInfo> utility_function_table;
 static List<StringName> utility_function_name_table;
 
-template <class T>
+template <typename T>
 static void register_utility_function(const String &p_name, const Vector<String> &argnames) {
 	String name = p_name;
 	if (name.begins_with("_")) {

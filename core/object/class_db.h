@@ -133,13 +133,14 @@ public:
 		bool exposed = false;
 		bool reloadable = false;
 		bool is_virtual = false;
+		bool is_runtime = false;
 		Object *(*creation_func)() = nullptr;
 
 		ClassInfo() {}
 		~ClassInfo() {}
 	};
 
-	template <class T>
+	template <typename T>
 	static Object *creator() {
 		return memnew(T);
 	}
@@ -186,12 +187,12 @@ private:
 
 public:
 	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
-	template <class T>
+	template <typename T>
 	static void _add_class() {
 		_add_class2(T::get_class_static(), T::get_parent_class_static());
 	}
 
-	template <class T>
+	template <typename T>
 	static void register_class(bool p_virtual = false) {
 		GLOBAL_LOCK_FUNCTION;
 		static_assert(types_are_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
@@ -206,7 +207,7 @@ public:
 		T::register_custom_data_to_otdb();
 	}
 
-	template <class T>
+	template <typename T>
 	static void register_abstract_class() {
 		GLOBAL_LOCK_FUNCTION;
 		static_assert(types_are_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
@@ -219,7 +220,7 @@ public:
 		//nothing
 	}
 
-	template <class T>
+	template <typename T>
 	static void register_internal_class() {
 		GLOBAL_LOCK_FUNCTION;
 		static_assert(types_are_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
@@ -234,15 +235,32 @@ public:
 		T::register_custom_data_to_otdb();
 	}
 
+	template <typename T>
+	static void register_runtime_class() {
+		GLOBAL_LOCK_FUNCTION;
+		static_assert(types_are_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
+		T::initialize_class();
+		ClassInfo *t = classes.getptr(T::get_class_static());
+		ERR_FAIL_NULL(t);
+		ERR_FAIL_COND_MSG(t->inherits_ptr && !t->inherits_ptr->creation_func, vformat("Cannot register runtime class '%s' that descends from an abstract parent class.", T::get_class_static()));
+		t->creation_func = &creator<T>;
+		t->exposed = true;
+		t->is_virtual = false;
+		t->is_runtime = true;
+		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
+		T::register_custom_data_to_otdb();
+	}
+
 	static void register_extension_class(ObjectGDExtension *p_extension);
 	static void unregister_extension_class(const StringName &p_class, bool p_free_method_binds = true);
 
-	template <class T>
+	template <typename T>
 	static Object *_create_ptr_func() {
 		return T::create();
 	}
 
-	template <class T>
+	template <typename T>
 	static void register_custom_instance_class() {
 		GLOBAL_LOCK_FUNCTION;
 		static_assert(types_are_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
@@ -296,7 +314,7 @@ public:
 		using return_type = R;
 	};
 
-	template <class N, class M, typename... VarArgs>
+	template <typename N, typename M, typename... VarArgs>
 	static MethodBind *bind_method(N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 		const Variant *argptrs[sizeof...(p_args) + 1];
@@ -310,7 +328,7 @@ public:
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, false, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	template <class N, class M, typename... VarArgs>
+	template <typename N, typename M, typename... VarArgs>
 	static MethodBind *bind_static_method(const StringName &p_class, N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 		const Variant *argptrs[sizeof...(p_args) + 1];
@@ -325,7 +343,7 @@ public:
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, false, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	template <class N, class M, typename... VarArgs>
+	template <typename N, typename M, typename... VarArgs>
 	static MethodBind *bind_compatibility_method(N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 		const Variant *argptrs[sizeof...(p_args) + 1];
@@ -339,7 +357,7 @@ public:
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, true, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	template <class N, class M, typename... VarArgs>
+	template <typename N, typename M, typename... VarArgs>
 	static MethodBind *bind_compatibility_static_method(const StringName &p_class, N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 		const Variant *argptrs[sizeof...(p_args) + 1];
@@ -354,7 +372,7 @@ public:
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, true, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	template <class M>
+	template <typename M>
 	static MethodBind *bind_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
 		GLOBAL_LOCK_FUNCTION;
 
@@ -367,7 +385,7 @@ public:
 		return _bind_vararg_method(bind, p_name, p_default_args, false);
 	}
 
-	template <class M>
+	template <typename M>
 	static MethodBind *bind_compatibility_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
 		GLOBAL_LOCK_FUNCTION;
 
@@ -412,6 +430,7 @@ public:
 	static void get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static void get_method_list_with_compatibility(const StringName &p_class, List<Pair<MethodInfo, uint32_t>> *p_methods_with_hash, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
 	static bool get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static int get_method_argument_count(const StringName &p_class, const StringName &p_method, bool *r_is_valid = nullptr, bool p_no_inheritance = false);
 	static MethodBind *get_method(const StringName &p_class, const StringName &p_name);
 	static MethodBind *get_method_with_compatibility(const StringName &p_class, const StringName &p_name, uint64_t p_hash, bool *r_method_exists = nullptr, bool *r_is_deprecated = nullptr);
 	static Vector<uint32_t> get_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
@@ -479,13 +498,13 @@ _FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err) {
 	arr.push_back(p_err);
 }
 
-template <class... P>
+template <typename... P>
 _FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr, const Error &p_err, P... p_args) {
 	arr.push_back(p_err);
 	errarray_add_str(arr, p_args...);
 }
 
-template <class... P>
+template <typename... P>
 _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 	Vector<Error> arr;
 	errarray_add_str(arr, p_args...);
@@ -516,6 +535,11 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 #define GDREGISTER_INTERNAL_CLASS(m_class)             \
 	if (m_class::_class_is_enabled) {                  \
 		::ClassDB::register_internal_class<m_class>(); \
+	}
+
+#define GDREGISTER_RUNTIME_CLASS(m_class)             \
+	if (m_class::_class_is_enabled) {                 \
+		::ClassDB::register_runtime_class<m_class>(); \
 	}
 
 #define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))

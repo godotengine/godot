@@ -285,18 +285,8 @@ EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
 
 //////////////////////////////////////////////////////////////////
 
-void EditorMaterialPreviewPlugin::_generate_frame_started() {
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
-
-	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorMaterialPreviewPlugin *>(this), &EditorMaterialPreviewPlugin::_preview_done));
-}
-
-void EditorMaterialPreviewPlugin::_preview_done() {
-	preview_done.post();
-}
-
 void EditorMaterialPreviewPlugin::abort() {
-	preview_done.post();
+	draw_requester.abort();
 }
 
 bool EditorMaterialPreviewPlugin::handles(const String &p_type) const {
@@ -314,9 +304,7 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const Ref<Resource> &p_from
 	if (material->get_shader_mode() == Shader::MODE_SPATIAL) {
 		RS::get_singleton()->mesh_surface_set_material(sphere, 0, material->get_rid());
 
-		RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorMaterialPreviewPlugin *>(this), &EditorMaterialPreviewPlugin::_generate_frame_started), Object::CONNECT_ONE_SHOT);
-
-		preview_done.wait();
+		draw_requester.request_and_wait(viewport);
 
 		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 		RS::get_singleton()->mesh_surface_set_material(sphere, 0, RID());
@@ -701,18 +689,8 @@ EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-void EditorMeshPreviewPlugin::_generate_frame_started() {
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
-
-	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorMeshPreviewPlugin *>(this), &EditorMeshPreviewPlugin::_preview_done));
-}
-
-void EditorMeshPreviewPlugin::_preview_done() {
-	preview_done.post();
-}
-
 void EditorMeshPreviewPlugin::abort() {
-	preview_done.post();
+	draw_requester.abort();
 }
 
 bool EditorMeshPreviewPlugin::handles(const String &p_type) const {
@@ -743,9 +721,7 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const Ref<Resource> &p_from, co
 	xform.origin.z -= rot_aabb.size.z * 2;
 	RS::get_singleton()->instance_set_transform(mesh_instance, xform);
 
-	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorMeshPreviewPlugin *>(this), &EditorMeshPreviewPlugin::_generate_frame_started), Object::CONNECT_ONE_SHOT);
-
-	preview_done.wait();
+	draw_requester.request_and_wait(viewport);
 
 	Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 	ERR_FAIL_COND_V(img.is_null(), Ref<ImageTexture>());
@@ -822,18 +798,8 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-void EditorFontPreviewPlugin::_generate_frame_started() {
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
-
-	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_preview_done));
-}
-
-void EditorFontPreviewPlugin::_preview_done() {
-	preview_done.post();
-}
-
 void EditorFontPreviewPlugin::abort() {
-	preview_done.post();
+	draw_requester.abort();
 }
 
 bool EditorFontPreviewPlugin::handles(const String &p_type) const {
@@ -865,9 +831,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 	const float fg = c.get_luminance() < 0.5 ? 1.0 : 0.0;
 	sampled_font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(fg, fg, fg));
 
-	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_generate_frame_started), Object::CONNECT_ONE_SHOT);
-
-	preview_done.wait();
+	draw_requester.request_and_wait(viewport);
 
 	RS::get_singleton()->canvas_item_clear(canvas_item);
 

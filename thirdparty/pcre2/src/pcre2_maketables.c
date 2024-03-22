@@ -52,8 +52,6 @@ PCRE2_DFTABLES is defined. */
 #  include "pcre2_internal.h"
 #endif
 
-
-
 /*************************************************
 *           Create PCRE2 character tables        *
 *************************************************/
@@ -98,7 +96,11 @@ for (i = 0; i < 256; i++) *p++ = tolower(i);
 
 /* Next the case-flipping table */
 
-for (i = 0; i < 256; i++) *p++ = islower(i)? toupper(i) : tolower(i);
+for (i = 0; i < 256; i++)
+  {
+  int c = islower(i)? toupper(i) : tolower(i);
+  *p++ = (c < 256)? c : i;
+  }
 
 /* Then the character class tables. Don't try to be clever and save effort on
 exclusive ones - in some locales things may be different.

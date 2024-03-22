@@ -50,6 +50,7 @@ public:
 	bool is_valid() const override;
 	StringName get_method() const override;
 	ObjectID get_object() const override;
+	int get_argument_count(bool &r_is_valid) const override;
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
 	VariantCallable(const Variant &p_variant, const StringName &p_method);

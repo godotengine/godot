@@ -46,12 +46,15 @@ void GLTFBufferView::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_byte_stride", "byte_stride"), &GLTFBufferView::set_byte_stride);
 	ClassDB::bind_method(D_METHOD("get_indices"), &GLTFBufferView::get_indices);
 	ClassDB::bind_method(D_METHOD("set_indices", "indices"), &GLTFBufferView::set_indices);
+	ClassDB::bind_method(D_METHOD("get_vertex_attributes"), &GLTFBufferView::get_vertex_attributes);
+	ClassDB::bind_method(D_METHOD("set_vertex_attributes", "is_attributes"), &GLTFBufferView::set_vertex_attributes);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffer"), "set_buffer", "get_buffer"); // GLTFBufferIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "byte_offset"), "set_byte_offset", "get_byte_offset"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "byte_length"), "set_byte_length", "get_byte_length"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "byte_stride"), "set_byte_stride", "get_byte_stride"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indices"), "set_indices", "get_indices"); // bool
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertex_attributes"), "set_vertex_attributes", "get_vertex_attributes"); // bool
 }
 
 GLTFBufferIndex GLTFBufferView::get_buffer() const {
@@ -92,6 +95,14 @@ bool GLTFBufferView::get_indices() const {
 
 void GLTFBufferView::set_indices(bool p_indices) {
 	indices = p_indices;
+}
+
+bool GLTFBufferView::get_vertex_attributes() const {
+	return vertex_attributes;
+}
+
+void GLTFBufferView::set_vertex_attributes(bool p_attributes) {
+	vertex_attributes = p_attributes;
 }
 
 Vector<uint8_t> GLTFBufferView::load_buffer_view_data(const Ref<GLTFState> p_state) const {

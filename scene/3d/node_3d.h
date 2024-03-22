@@ -32,7 +32,7 @@
 #define NODE_3D_H
 
 #include "scene/main/node.h"
-#include "scene/resources/world_3d.h"
+#include "scene/resources/3d/world_3d.h"
 
 class Node3DGizmo : public RefCounted {
 	GDCLASS(Node3DGizmo, RefCounted);

@@ -1370,6 +1370,17 @@ void LightStorage::reflection_probe_instance_set_transform(RID p_instance, const
 	rpi->dirty = true;
 }
 
+bool LightStorage::reflection_probe_has_atlas_index(RID p_instance) {
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, false);
+
+	if (rpi->atlas.is_null()) {
+		return false;
+	}
+
+	return rpi->atlas_index >= 0;
+}
+
 void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(rpi);
@@ -1383,6 +1394,14 @@ void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 	atlas->reflections.write[rpi->atlas_index].owner = RID();
 
 	// TODO investigate if this is enough? shouldn't we be freeing our textures and framebuffers?
+
+	if (rpi->rendering) {
+		// We were cancelled mid rendering, trigger refresh.
+		rpi->rendering = false;
+		rpi->dirty = true;
+		rpi->processing_layer = 1;
+		rpi->processing_side = 0;
+	}
 
 	rpi->atlas_index = -1;
 	rpi->atlas = RID();
@@ -1535,11 +1554,10 @@ bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 	ERR_FAIL_COND_V(!rpi->rendering, false);
-	ERR_FAIL_COND_V(rpi->atlas.is_null(), false);
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	if (!atlas || rpi->atlas_index == -1) {
-		//does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering)
+		// Does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering).
 		rpi->rendering = false;
 		return false;
 	}

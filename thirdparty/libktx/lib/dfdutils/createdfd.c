@@ -15,7 +15,9 @@
  * Author: Andrew Garrard
  */
 
+#include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include <KHR/khr_df.h>
 
 #include "dfd.h"
@@ -228,6 +230,8 @@ uint32_t *createDFDUnpacked(int bigEndian, int numChannels, int bytes,
  * @param bits[] An array of length numChannels.
  *               Each entry is the number of bits composing the channel, in
  *               order starting at bit 0 of the packed type.
+ * @param paddings[] An array of length numChannels.
+ *                   Each entry is the number of padding bits after each channel.
  * @param channels[] An array of length numChannels.
  *                   Each entry enumerates the channel type: 0 = red, 1 = green,
  *                   2 = blue, 15 = alpha, in order starting at bit 0 of the
@@ -239,9 +243,9 @@ uint32_t *createDFDUnpacked(int bigEndian, int numChannels, int bytes,
  * @return A data format descriptor in malloc'd data. The caller is responsible
  *         for freeing the descriptor.
  **/
-uint32_t *createDFDPacked(int bigEndian, int numChannels,
-                          int bits[], int channels[],
-                          enum VkSuffix suffix)
+uint32_t *createDFDPackedPadded(int bigEndian, int numChannels,
+                                int bits[], int paddings[], int channels[],
+                                enum VkSuffix suffix)
 {
     uint32_t *DFD = 0;
     if (numChannels == 6) {
@@ -287,7 +291,7 @@ uint32_t *createDFDPacked(int bigEndian, int numChannels,
         int sampleCounter;
         for (channelCounter = 0; channelCounter < numChannels; ++channelCounter) {
             beChannelStart[channelCounter] = totalBits;
-            totalBits += bits[channelCounter];
+            totalBits += bits[channelCounter] + paddings[channelCounter];
         }
         BEMask = (totalBits - 1) & 0x18;
         for (channelCounter = 0; channelCounter < numChannels; ++channelCounter) {
@@ -297,7 +301,7 @@ uint32_t *createDFDPacked(int bigEndian, int numChannels,
                 bitChannel[((bitOffset + bits[channelCounter] - 1) & ~7) ^ BEMask] = channelCounter;
                 numSamples++;
             }
-            bitOffset += bits[channelCounter];
+            bitOffset += bits[channelCounter] + paddings[channelCounter];
         }
         DFD = writeHeader(numSamples, totalBits >> 3, suffix, i_COLOR);
 
@@ -339,7 +343,7 @@ uint32_t *createDFDPacked(int bigEndian, int numChannels,
         int totalBits = 0;
         int bitOffset = 0;
         for (sampleCounter = 0; sampleCounter < numChannels; ++sampleCounter) {
-            totalBits += bits[sampleCounter];
+            totalBits += bits[sampleCounter] + paddings[sampleCounter];
         }
 
         /* One sample per channel */
@@ -348,9 +352,95 @@ uint32_t *createDFDPacked(int bigEndian, int numChannels,
             writeSample(DFD, sampleCounter, channels[sampleCounter],
                         bits[sampleCounter], bitOffset,
                         1, 1, suffix);
-            bitOffset += bits[sampleCounter];
+            bitOffset += bits[sampleCounter] + paddings[sampleCounter];
         }
     }
+    return DFD;
+}
+
+/**
+ * @~English
+ * @brief Create a Data Format Descriptor for a packed format.
+ *
+ * @param bigEndian Big-endian flag: Set to 1 for big-endian byte ordering and
+ *                  0 for little-endian byte ordering.
+ * @param numChannels The number of color channels.
+ * @param bits[] An array of length numChannels.
+ *               Each entry is the number of bits composing the channel, in
+ *               order starting at bit 0 of the packed type.
+ * @param channels[] An array of length numChannels.
+ *                   Each entry enumerates the channel type: 0 = red, 1 = green,
+ *                   2 = blue, 15 = alpha, in order starting at bit 0 of the
+ *                   packed type. These values match channel IDs for RGBSDA in
+ *                   the Khronos Data Format header. To simplify iteration
+ *                   through channels, channel id 3 is a synonym for alpha.
+ * @param suffix Indicates the format suffix for the type.
+ *
+ * @return A data format descriptor in malloc'd data. The caller is responsible
+ *         for freeing the descriptor.
+ **/
+uint32_t *createDFDPacked(int bigEndian, int numChannels,
+                          int bits[], int channels[],
+                          enum VkSuffix suffix) {
+    assert(numChannels <= 6);
+    int paddings[] = {0, 0, 0, 0, 0, 0};
+    return createDFDPackedPadded(bigEndian, numChannels, bits, paddings, channels, suffix);
+}
+
+uint32_t *createDFD422(int bigEndian, int numSamples,
+                       int bits[], int paddings[], int channels[],
+                       int position_xs[], int position_ys[],
+                       enum VkSuffix suffix) {
+    assert(!bigEndian); (void) bigEndian;
+    assert(suffix == s_UNORM); (void) suffix;
+
+    int totalBits = 0;
+    for (int i = 0; i < numSamples; ++i)
+        totalBits += bits[i] + paddings[i];
+    assert(totalBits % 8 == 0);
+
+    uint32_t BDFDSize = sizeof(uint32_t) * (KHR_DF_WORD_SAMPLESTART + numSamples * KHR_DF_WORD_SAMPLEWORDS);
+    uint32_t DFDSize = sizeof(uint32_t) + BDFDSize;
+    uint32_t *DFD = (uint32_t *) malloc(DFDSize);
+    memset(DFD, 0, DFDSize);
+    DFD[0] = DFDSize;
+    uint32_t *BDFD = DFD + 1;
+    KHR_DFDSETVAL(BDFD, VENDORID, KHR_DF_VENDORID_KHRONOS);
+    KHR_DFDSETVAL(BDFD, DESCRIPTORTYPE, KHR_DF_KHR_DESCRIPTORTYPE_BASICFORMAT);
+    KHR_DFDSETVAL(BDFD, VERSIONNUMBER, KHR_DF_VERSIONNUMBER_LATEST);
+    KHR_DFDSETVAL(BDFD, DESCRIPTORBLOCKSIZE, BDFDSize);
+    KHR_DFDSETVAL(BDFD, MODEL, KHR_DF_MODEL_YUVSDA);
+    KHR_DFDSETVAL(BDFD, PRIMARIES, KHR_DF_PRIMARIES_UNSPECIFIED);
+    KHR_DFDSETVAL(BDFD, TRANSFER, KHR_DF_TRANSFER_LINEAR);
+    KHR_DFDSETVAL(BDFD, FLAGS, KHR_DF_FLAG_ALPHA_STRAIGHT);
+    KHR_DFDSETVAL(BDFD, TEXELBLOCKDIMENSION0, 2 - 1); // 422 contains 2 x 1 blocks
+    KHR_DFDSETVAL(BDFD, TEXELBLOCKDIMENSION1, 1 - 1);
+    KHR_DFDSETVAL(BDFD, TEXELBLOCKDIMENSION2, 1 - 1);
+    KHR_DFDSETVAL(BDFD, TEXELBLOCKDIMENSION3, 1 - 1);
+    KHR_DFDSETVAL(BDFD, BYTESPLANE0, totalBits / 8);
+    KHR_DFDSETVAL(BDFD, BYTESPLANE1, 0);
+    KHR_DFDSETVAL(BDFD, BYTESPLANE2, 0);
+    KHR_DFDSETVAL(BDFD, BYTESPLANE3, 0);
+    KHR_DFDSETVAL(BDFD, BYTESPLANE4, 0);
+    KHR_DFDSETVAL(BDFD, BYTESPLANE5, 0);
+    KHR_DFDSETVAL(BDFD, BYTESPLANE6, 0);
+    KHR_DFDSETVAL(BDFD, BYTESPLANE7, 0);
+
+    int bitOffset = 0;
+    for (int i = 0; i < numSamples; ++i) {
+        KHR_DFDSETSVAL(BDFD, i, BITOFFSET, bitOffset);
+        KHR_DFDSETSVAL(BDFD, i, BITLENGTH, bits[i] - 1);
+        KHR_DFDSETSVAL(BDFD, i, CHANNELID, channels[i]);
+        KHR_DFDSETSVAL(BDFD, i, QUALIFIERS, 0); // None of: FLOAT, SIGNED, EXPONENT, LINEAR
+        KHR_DFDSETSVAL(BDFD, i, SAMPLEPOSITION0, position_xs[i]);
+        KHR_DFDSETSVAL(BDFD, i, SAMPLEPOSITION1, position_ys[i]);
+        KHR_DFDSETSVAL(BDFD, i, SAMPLEPOSITION2, 0);
+        KHR_DFDSETSVAL(BDFD, i, SAMPLEPOSITION3, 0);
+        KHR_DFDSETSVAL(BDFD, i, SAMPLELOWER, 0);
+        KHR_DFDSETSVAL(BDFD, i, SAMPLEUPPER, (1u << bits[i]) - 1u);
+        bitOffset += bits[i] + paddings[i];
+    }
+
     return DFD;
 }
 
@@ -654,6 +744,42 @@ uint32_t *createDFDDepthStencil(int depthBits,
                         stencilBits, 0,
                         1, 1, s_UINT);
         }
+    }
+    return DFD;
+}
+
+/**
+ * @~English
+ * @brief Create a Data Format Descriptor for an alpha-only format.
+ *
+ * @param bigEndian Set to 1 for big-endian byte ordering and
+                    0 for little-endian byte ordering.
+ * @param bytes     The number of bytes per channel.
+ * @param suffix    Indicates the format suffix for the type.
+ *
+ * @return A data format descriptor in malloc'd data. The caller is responsible
+ *         for freeing the descriptor.
+ **/
+uint32_t *createDFDAlpha(int bigEndian, int bytes,
+                         enum VkSuffix suffix) {
+    uint32_t *DFD;
+    int channel = 3; /* alpha channel */
+    if (bigEndian) {
+        int channelByte;
+        /* Number of samples = number of channels * bytes per channel */
+        DFD = writeHeader(bytes, bytes, suffix, i_COLOR);
+        /* Loop over the bytes that constitute a channel */
+        for (channelByte = 0; channelByte < bytes; ++channelByte) {
+            writeSample(DFD, channelByte, channel,
+                        8, 8 * (bytes - channelByte - 1),
+                        channelByte == bytes-1, channelByte == 0, suffix);
+        }
+    } else { /* Little-endian */
+        /* One sample per channel */
+        DFD = writeHeader(1, bytes, suffix, i_COLOR);
+        writeSample(DFD, 0, channel,
+                    8 * bytes, 0,
+                    1, 1, suffix);
     }
     return DFD;
 }

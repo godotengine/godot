@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "control.h"
+#include "control.compat.inc"
 
 #include "container.h"
 #include "core/config/project_settings.h"
@@ -187,10 +188,12 @@ Size2 Control::_edit_get_minimum_size() const {
 
 void Control::reparent(Node *p_parent, bool p_keep_global_transform) {
 	ERR_MAIN_THREAD_GUARD;
-	Transform2D temp = get_global_transform();
-	Node::reparent(p_parent);
 	if (p_keep_global_transform) {
+		Transform2D temp = get_global_transform();
+		Node::reparent(p_parent);
 		set_global_position(temp.get_origin());
+	} else {
+		Node::reparent(p_parent);
 	}
 }
 
@@ -202,13 +205,14 @@ void Control::set_root_layout_direction(int p_root_dir) {
 	root_layout_direction = p_root_dir;
 }
 
+#ifdef TOOLS_ENABLED
 void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	ERR_READ_THREAD_GUARD;
 	CanvasItem::get_argument_options(p_function, p_idx, r_options);
 
 	if (p_idx == 0) {
 		List<StringName> sn;
-		String pf = p_function;
+		const String pf = p_function;
 		if (pf == "add_theme_color_override" || pf == "has_theme_color" || pf == "has_theme_color_override" || pf == "get_theme_color") {
 			ThemeDB::get_singleton()->get_default_theme()->get_color_list(get_class(), &sn);
 		} else if (pf == "add_theme_style_override" || pf == "has_theme_style" || pf == "has_theme_style_override" || pf == "get_theme_style") {
@@ -227,6 +231,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 		}
 	}
 }
+#endif
 
 PackedStringArray Control::get_configuration_warnings() const {
 	ERR_READ_THREAD_GUARD_V(PackedStringArray());
@@ -1401,15 +1406,11 @@ void Control::_set_global_position(const Point2 &p_point) {
 
 void Control::set_global_position(const Point2 &p_point, bool p_keep_offsets) {
 	ERR_MAIN_THREAD_GUARD;
-
-	Transform2D global_transform_cache = get_global_transform();
-	if (p_point == global_transform_cache.get_origin()) {
-		return; // Edge case, but avoids calculation.
-	}
-
-	Point2 internal_position = global_transform_cache.affine_inverse().xform(p_point);
-
-	set_position(internal_position + data.pos_cache, p_keep_offsets);
+	// (parent_global_transform * T(new_position) * internal_transform).origin == new_global_position
+	// (T(new_position) * internal_transform).origin == new_position_in_parent_space
+	// new_position == new_position_in_parent_space - internal_transform.origin
+	Point2 position_in_parent_space = data.parent_canvas_item ? data.parent_canvas_item->get_global_transform().affine_inverse().xform(p_point) : p_point;
+	set_position(position_in_parent_space - _get_internal_transform().get_origin(), p_keep_offsets);
 }
 
 Point2 Control::get_global_position() const {
@@ -3418,12 +3419,12 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_theme_color_override", "name"), &Control::remove_theme_color_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_constant_override", "name"), &Control::remove_theme_constant_override);
 
-	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Control::get_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Control::get_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "theme_type"), &Control::get_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Control::get_theme_font_size, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Control::get_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Control::get_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Control::get_theme_icon, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Control::get_theme_stylebox, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "theme_type"), &Control::get_theme_font, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Control::get_theme_font_size, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Control::get_theme_color, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Control::get_theme_constant, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon_override", "name"), &Control::has_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox_override", "name"), &Control::has_theme_stylebox_override);
@@ -3432,12 +3433,12 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_theme_color_override", "name"), &Control::has_theme_color_override);
 	ClassDB::bind_method(D_METHOD("has_theme_constant_override", "name"), &Control::has_theme_constant_override);
 
-	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Control::has_theme_icon, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Control::has_theme_stylebox, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "theme_type"), &Control::has_theme_font, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Control::has_theme_font_size, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Control::has_theme_color, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Control::has_theme_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Control::has_theme_icon, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Control::has_theme_stylebox, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "theme_type"), &Control::has_theme_font, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Control::has_theme_font_size, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Control::has_theme_color, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Control::has_theme_constant, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("get_theme_default_base_scale"), &Control::get_theme_default_base_scale);
 	ClassDB::bind_method(D_METHOD("get_theme_default_font"), &Control::get_theme_default_font);

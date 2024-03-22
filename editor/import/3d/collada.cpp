@@ -834,7 +834,7 @@ void Collada::_parse_light(XMLParser &p_parser) {
 	COLLADA_PRINT("Light ID:" + id);
 }
 
-void Collada::_parse_curve_geometry(XMLParser &p_parser, String p_id, String p_name) {
+void Collada::_parse_curve_geometry(XMLParser &p_parser, const String &p_id, const String &p_name) {
 	if (!(state.import_flags & IMPORT_FLAG_SCENE)) {
 		if (!p_parser.is_empty()) {
 			p_parser.skip_section();
@@ -916,7 +916,7 @@ void Collada::_parse_curve_geometry(XMLParser &p_parser, String p_id, String p_n
 	}
 }
 
-void Collada::_parse_mesh_geometry(XMLParser &p_parser, String p_id, String p_name) {
+void Collada::_parse_mesh_geometry(XMLParser &p_parser, const String &p_id, const String &p_name) {
 	if (!(state.import_flags & IMPORT_FLAG_SCENE)) {
 		if (!p_parser.is_empty()) {
 			p_parser.skip_section();
@@ -1070,7 +1070,7 @@ void Collada::_parse_mesh_geometry(XMLParser &p_parser, String p_id, String p_na
 	}
 }
 
-void Collada::_parse_skin_controller(XMLParser &p_parser, String p_id) {
+void Collada::_parse_skin_controller(XMLParser &p_parser, const String &p_id) {
 	state.skin_controller_data_map[p_id] = SkinControllerData();
 	SkinControllerData &skindata = state.skin_controller_data_map[p_id];
 
@@ -1224,7 +1224,7 @@ void Collada::_parse_skin_controller(XMLParser &p_parser, String p_id) {
 	}
 }
 
-void Collada::_parse_morph_controller(XMLParser &p_parser, String p_id) {
+void Collada::_parse_morph_controller(XMLParser &p_parser, const String &p_id) {
 	state.morph_controller_data_map[p_id] = MorphControllerData();
 	MorphControllerData &morphdata = state.morph_controller_data_map[p_id];
 
@@ -2311,7 +2311,7 @@ void Collada::_optimize() {
 	}
 }
 
-int Collada::get_uv_channel(String p_name) {
+int Collada::get_uv_channel(const String &p_name) {
 	if (!channel_map.has(p_name)) {
 		ERR_FAIL_COND_V(channel_map.size() == 2, 0);
 

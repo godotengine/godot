@@ -1,6 +1,6 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  28 January 2023                                                 *
+* Date      :  1 November 2023                                                 *
 * Website   :  http://www.angusj.com                                           *
 * Copyright :  Angus Johnson 2010-2023                                         *
 * Purpose   :  Minkowski Sum and Difference                                    *
@@ -13,7 +13,7 @@
 #include <cstdlib>
 #include <vector>
 #include <string>
-#include "clipper.core.h"
+#include "clipper2/clipper.core.h"
 
 namespace Clipper2Lib 
 {

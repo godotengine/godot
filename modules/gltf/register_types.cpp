@@ -36,12 +36,12 @@
 #include "extensions/gltf_spec_gloss.h"
 #include "extensions/physics/gltf_document_extension_physics.h"
 #include "gltf_document.h"
+#include "gltf_state.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_import_blend_runner.h"
 #include "editor/editor_scene_exporter_gltf_plugin.h"
 #include "editor/editor_scene_importer_blend.h"
-#include "editor/editor_scene_importer_fbx.h"
 #include "editor/editor_scene_importer_gltf.h"
 
 #include "core/config/project_settings.h"
@@ -91,19 +91,6 @@ static void _editor_init() {
 	}
 	memnew(EditorImportBlendRunner);
 	EditorNode::get_singleton()->add_child(EditorImportBlendRunner::get_singleton());
-
-	// FBX to glTF importer.
-
-	bool fbx_enabled = GLOBAL_GET("filesystem/import/fbx/enabled");
-	if (fbx_enabled) {
-		Ref<EditorSceneFormatImporterFBX> importer;
-		importer.instantiate();
-		ResourceImporterScene::add_scene_importer(importer);
-
-		Ref<EditorFileSystemImportFormatSupportQueryFBX> fbx_import_query;
-		fbx_import_query.instantiate();
-		EditorFileSystem::get_singleton()->add_import_format_support_query(fbx_import_query);
-	}
 }
 #endif // TOOLS_ENABLED
 
@@ -138,7 +125,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionPhysics);
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureKTX);
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureWebP);
-		bool is_editor = ::Engine::get_singleton()->is_editor_hint();
+		bool is_editor = Engine::get_singleton()->is_editor_hint();
 		if (!is_editor) {
 			GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionConvertImporterMesh);
 		}
@@ -155,14 +142,10 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 
 		// Project settings defined here so doctool finds them.
 		GLOBAL_DEF_RST_BASIC("filesystem/import/blender/enabled", true);
-		GLOBAL_DEF_RST_BASIC("filesystem/import/fbx/enabled", true);
 		GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
-		GDREGISTER_CLASS(EditorSceneFormatImporterFBX);
 		// Can't (a priori) run external app on these platforms.
 		GLOBAL_DEF_RST("filesystem/import/blender/enabled.android", false);
 		GLOBAL_DEF_RST("filesystem/import/blender/enabled.web", false);
-		GLOBAL_DEF_RST("filesystem/import/fbx/enabled.android", false);
-		GLOBAL_DEF_RST("filesystem/import/fbx/enabled.web", false);
 
 		ClassDB::set_current_api(prev_api);
 		EditorNode::add_init_callback(_editor_init);

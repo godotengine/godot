@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="albedo" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)">
+		<member name="albedo" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			The single-scattering [Color] of the [FogVolume]. Internally, [member albedo] is converted into single-scattering, which is additively blended with other [FogVolume]s and the [member Environment.volumetric_fog_albedo].
 		</member>
 		<member name="density" type="float" setter="set_density" getter="get_density" default="1.0">

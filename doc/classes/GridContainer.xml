@@ -18,10 +18,10 @@
 	</members>
 	<theme_items>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
-			The horizontal separation of children nodes.
+			The horizontal separation of child nodes.
 		</theme_item>
 		<theme_item name="v_separation" data_type="constant" type="int" default="4">
-			The vertical separation of children nodes.
+			The vertical separation of child nodes.
 		</theme_item>
 	</theme_items>
 </class>

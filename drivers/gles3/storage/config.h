@@ -91,6 +91,8 @@ public:
 	bool rt_msaa_multiview_supported = false;
 	bool multiview_supported = false;
 
+	bool adreno_3xx_compatibility = false;
+
 #ifdef ANDROID_ENABLED
 	PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC eglFramebufferTextureMultiviewOVR = nullptr;
 	PFNGLTEXSTORAGE3DMULTISAMPLEPROC eglTexStorage3DMultisample = nullptr;

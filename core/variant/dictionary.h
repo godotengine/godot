@@ -64,6 +64,7 @@ public:
 	bool is_empty() const;
 	void clear();
 	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);
+	Dictionary merged(const Dictionary &p_dictionary, bool p_overwrite = false) const;
 
 	bool has(const Variant &p_key) const;
 	bool has_all(const Array &p_keys) const;

@@ -32,6 +32,7 @@
 #define DEBUG_ADAPTER_PARSER_H
 
 #include "core/config/project_settings.h"
+#include "core/debugger/remote_debugger.h"
 #include "debug_adapter_protocol.h"
 #include "debug_adapter_types.h"
 
@@ -98,7 +99,7 @@ public:
 	Dictionary ev_stopped_breakpoint(const int &p_id) const;
 	Dictionary ev_stopped_step() const;
 	Dictionary ev_continued() const;
-	Dictionary ev_output(const String &p_message) const;
+	Dictionary ev_output(const String &p_message, RemoteDebugger::MessageType p_type) const;
 	Dictionary ev_custom_data(const String &p_msg, const Array &p_data) const;
 	Dictionary ev_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) const;
 };

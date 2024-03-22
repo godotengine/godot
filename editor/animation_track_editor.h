@@ -440,7 +440,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _add_track(int p_type);
 	void _new_track_node_selected(NodePath p_path);
-	void _new_track_property_selected(String p_name);
+	void _new_track_property_selected(const String &p_name);
 
 	void _update_step_spinbox();
 
@@ -699,7 +699,7 @@ public:
 	void set_anim_pos(float p_pos);
 	void insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists = false);
 	void insert_value_key(const String &p_property, const Variant &p_value, bool p_advance);
-	void insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant p_value);
+	void insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value);
 	bool has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type);
 	void make_insert_queue();
 	void commit_insert_queue();

@@ -42,6 +42,7 @@ struct PairPosFormat1 : public OT::Layout::GPOS_impl::PairPosFormat1_3<SmallType
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     unsigned min_size = OT::Layout::GPOS_impl::PairPosFormat1_3<SmallTypes>::min_size;
     if (vertex_len < min_size) return false;
+    hb_barrier ();
 
     return vertex_len >=
         min_size + pairSet.get_size () - pairSet.len.get_size();
@@ -198,6 +199,7 @@ struct PairPosFormat2 : public OT::Layout::GPOS_impl::PairPosFormat2_4<SmallType
     size_t vertex_len = vertex.table_size ();
     unsigned min_size = OT::Layout::GPOS_impl::PairPosFormat2_4<SmallTypes>::min_size;
     if (vertex_len < min_size) return false;
+    hb_barrier ();
 
     const unsigned class1_count = class1Count;
     return vertex_len >=
@@ -625,6 +627,7 @@ struct PairPos : public OT::Layout::GPOS_impl::PairPos
   {
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < u.format.get_size ()) return false;
+    hb_barrier ();
 
     switch (u.format) {
     case 1:

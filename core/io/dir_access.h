@@ -70,7 +70,7 @@ protected:
 	AccessType get_access_type() const;
 	virtual String fix_path(const String &p_path) const;
 
-	template <class T>
+	template <typename T>
 	static Ref<DirAccess> _create_builtin() {
 		return memnew(T);
 	}
@@ -130,7 +130,7 @@ public:
 	static Ref<DirAccess> create(AccessType p_access);
 	static Error get_open_error();
 
-	template <class T>
+	template <typename T>
 	static void make_default(AccessType p_access) {
 		create_func[p_access] = _create_builtin<T>;
 	}

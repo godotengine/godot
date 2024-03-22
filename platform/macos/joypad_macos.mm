@@ -136,6 +136,10 @@
 JoypadMacOS::JoypadMacOS() {
 	observer = [[JoypadMacOSObserver alloc] init];
 	[observer startObserving];
+
+	if (@available(macOS 11.3, *)) {
+		GCController.shouldMonitorBackgroundEvents = YES;
+	}
 }
 
 JoypadMacOS::~JoypadMacOS() {

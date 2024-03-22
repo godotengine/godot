@@ -13,7 +13,7 @@
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
 			Length that the resulting collision extends in either direction perpendicular to its 2D polygon.
 		</member>
-		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false" keywords="enabled">
 			If [code]true[/code], no collision will be produced.
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.04">

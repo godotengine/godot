@@ -429,7 +429,7 @@ void GDScriptByteCodeGenerator::set_initial_line(int p_line) {
 	(m_var.type.has_type && m_var.type.kind == GDScriptDataType::BUILTIN)
 
 #define IS_BUILTIN_TYPE(m_var, m_type) \
-	(m_var.type.has_type && m_var.type.kind == GDScriptDataType::BUILTIN && m_var.type.builtin_type == m_type)
+	(m_var.type.has_type && m_var.type.kind == GDScriptDataType::BUILTIN && m_var.type.builtin_type == m_type && m_type != Variant::NIL)
 
 void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Variant::Type p_new_type) {
 	switch (p_new_type) {

@@ -6,9 +6,7 @@ import default_theme_icons_builders
 
 
 env["BUILDERS"]["MakeDefaultThemeIconsBuilder"] = Builder(
-    action=env.Run(
-        default_theme_icons_builders.make_default_theme_icons_action, "Generating default project theme icons header."
-    ),
+    action=env.Run(default_theme_icons_builders.make_default_theme_icons_action),
     suffix=".h",
     src_suffix=".svg",
 )

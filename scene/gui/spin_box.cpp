@@ -83,6 +83,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 
 		err = expr->parse(text);
 		if (err != OK) {
+			_update_text();
 			return;
 		}
 	}

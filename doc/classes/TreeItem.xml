@@ -438,6 +438,12 @@
 				Returns [code]true[/code] if the given [param column] is selected.
 			</description>
 		</method>
+		<method name="is_visible_in_tree" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member visible] is [code]true[/code] and all its ancestors are also visible.
+			</description>
+		</method>
 		<method name="move_after">
 			<return type="void" />
 			<param index="0" name="item" type="TreeItem" />

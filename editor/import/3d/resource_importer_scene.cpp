@@ -37,24 +37,25 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/import/3d/scene_import_settings.h"
-#include "scene/3d/area_3d.h"
-#include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
-#include "scene/3d/physics_body_3d.h"
-#include "scene/3d/vehicle_body_3d.h"
+#include "scene/3d/physics/area_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/physics_body_3d.h"
+#include "scene/3d/physics/static_body_3d.h"
+#include "scene/3d/physics/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/separation_ray_shape_3d.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
+#include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/animation.h"
-#include "scene/resources/box_shape_3d.h"
-#include "scene/resources/importer_mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/resource_format_text.h"
-#include "scene/resources/separation_ray_shape_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/resources/world_boundary_shape_3d.h"
 
 uint32_t EditorSceneFormatImporter::get_import_flags() const {
 	uint32_t ret;
@@ -156,11 +157,11 @@ Variant EditorScenePostImportPlugin::get_option_value(const StringName &p_name) 
 	}
 	return Variant();
 }
-void EditorScenePostImportPlugin::add_import_option(const String &p_name, Variant p_default_value) {
+void EditorScenePostImportPlugin::add_import_option(const String &p_name, const Variant &p_default_value) {
 	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option() can only be called from get_import_options().");
 	add_import_option_advanced(p_default_value.get_type(), p_name, p_default_value);
 }
-void EditorScenePostImportPlugin::add_import_option_advanced(Variant::Type p_type, const String &p_name, Variant p_default_value, PropertyHint p_hint, const String &p_hint_string, int p_usage_flags) {
+void EditorScenePostImportPlugin::add_import_option_advanced(Variant::Type p_type, const String &p_name, const Variant &p_default_value, PropertyHint p_hint, const String &p_hint_string, int p_usage_flags) {
 	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option_advanced() can only be called from get_import_options().");
 	current_option_list->push_back(ResourceImporter::ImportOption(PropertyInfo(p_type, p_name, p_hint, p_hint_string, p_usage_flags), p_default_value));
 }
@@ -488,8 +489,9 @@ void _apply_scale_to_scalable_node_collection(ScalableNodeCollection &p_collecti
 		if (skeleton_3d) {
 			for (int i = 0; i < skeleton_3d->get_bone_count(); i++) {
 				Transform3D rest = skeleton_3d->get_bone_rest(i);
+				Vector3 position = skeleton_3d->get_bone_pose_position(i);
 				skeleton_3d->set_bone_rest(i, Transform3D(rest.basis, p_scale * rest.origin));
-				skeleton_3d->set_bone_pose_position(i, p_scale * rest.origin);
+				skeleton_3d->set_bone_pose_position(i, p_scale * position);
 			}
 		}
 	}
@@ -1444,7 +1446,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 	return p_node;
 }
 
-Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, String p_save_to_path, bool p_keep_custom_tracks) {
+Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, const String &p_save_to_path, bool p_keep_custom_tracks) {
 	if (!p_save_to_file || !p_save_to_path.is_resource_file()) {
 		return anim;
 	}
@@ -1931,6 +1933,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/import_as_skeleton_bones"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));

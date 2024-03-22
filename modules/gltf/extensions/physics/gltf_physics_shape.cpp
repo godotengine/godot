@@ -33,14 +33,14 @@
 #include "../../gltf_state.h"
 
 #include "core/math/convex_hull.h"
-#include "scene/3d/area_3d.h"
-#include "scene/resources/box_shape_3d.h"
-#include "scene/resources/capsule_shape_3d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
-#include "scene/resources/cylinder_shape_3d.h"
-#include "scene/resources/importer_mesh.h"
-#include "scene/resources/sphere_shape_3d.h"
+#include "scene/3d/physics/area_3d.h"
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/capsule_shape_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
+#include "scene/resources/3d/cylinder_shape_3d.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
 
 void GLTFPhysicsShape::_bind_methods() {
 	ClassDB::bind_static_method("GLTFPhysicsShape", D_METHOD("from_node", "shape_node"), &GLTFPhysicsShape::from_node);

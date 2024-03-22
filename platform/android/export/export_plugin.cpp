@@ -379,14 +379,15 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 							} else if (p.begins_with("ro.build.version.sdk=")) {
 								d.api_level = p.get_slice("=", 1).to_int();
 							} else if (p.begins_with("ro.product.cpu.abi=")) {
-								d.description += "CPU: " + p.get_slice("=", 1).strip_edges() + "\n";
+								d.architecture = p.get_slice("=", 1).strip_edges();
+								d.description += "CPU: " + d.architecture + "\n";
 							} else if (p.begins_with("ro.product.manufacturer=")) {
 								d.description += "Manufacturer: " + p.get_slice("=", 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.board.platform=")) {
 								d.description += "Chipset: " + p.get_slice("=", 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.opengles.version=")) {
 								uint32_t opengl = p.get_slice("=", 1).to_int();
-								d.description += "OpenGL: " + itos(opengl >> 16) + "." + itos((opengl >> 8) & 0xFF) + "." + itos((opengl)&0xFF) + "\n";
+								d.description += "OpenGL: " + itos(opengl >> 16) + "." + itos((opengl >> 8) & 0xFF) + "." + itos((opengl) & 0xFF) + "\n";
 							}
 						}
 
@@ -415,7 +416,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 		}
 	}
 
-	if (EDITOR_GET("export/android/shutdown_adb_on_exit")) {
+	if (ea->has_runnable_preset.is_set() && EDITOR_GET("export/android/shutdown_adb_on_exit")) {
 		String adb = get_adb_path();
 		if (!FileAccess::exists(adb)) {
 			return; //adb not configured
@@ -1992,6 +1993,12 @@ String EditorExportPlatformAndroid::get_option_tooltip(int p_index) const {
 	return s;
 }
 
+String EditorExportPlatformAndroid::get_device_architecture(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, devices.size(), "");
+	MutexLock lock(device_lock);
+	return devices[p_index].architecture;
+}
+
 Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
 	ERR_FAIL_INDEX_V(p_device, devices.size(), ERR_INVALID_PARAMETER);
 
@@ -2401,9 +2408,22 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			err += template_err;
 		}
 	} else {
+		// Validate the custom gradle android source template.
+		bool android_source_template_valid = false;
+		const String android_source_template = p_preset->get("gradle_build/android_source_template");
+		if (!android_source_template.is_empty()) {
+			android_source_template_valid = FileAccess::exists(android_source_template);
+			if (!android_source_template_valid) {
+				err += TTR("Custom Android source template not found.") + "\n";
+			}
+		}
+
+		// Validate the installed build template.
 		bool installed_android_build_template = FileAccess::exists(ExportTemplateManager::get_android_build_directory(p_preset).path_join("build.gradle"));
 		if (!installed_android_build_template) {
-			r_missing_templates = !exists_export_template("android_source.zip", &err);
+			if (!android_source_template_valid) {
+				r_missing_templates = !exists_export_template("android_source.zip", &err);
+			}
 			err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
 		} else {
 			r_missing_templates = false;
@@ -2623,7 +2643,7 @@ String EditorExportPlatformAndroid::get_apk_expansion_fullpath(const Ref<EditorE
 
 Error EditorExportPlatformAndroid::save_apk_expansion_file(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
 	String fullpath = get_apk_expansion_fullpath(p_preset, p_path);
-	Error err = save_pack(p_preset, p_debug, fullpath);
+	Error err = save_pack(false, p_preset, p_debug, fullpath);
 	return err;
 }
 
@@ -3067,9 +3087,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			user_data.libs_directory = gradle_build_directory.path_join("libs");
 			user_data.debug = p_debug;
 			if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
-				err = export_project_files(p_preset, p_debug, ignore_apk_file, &user_data, copy_gradle_so);
+				err = export_project_files(true, p_preset, p_debug, ignore_apk_file, &user_data, copy_gradle_so);
 			} else {
-				err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
+				err = export_project_files(true, p_preset, p_debug, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
 			}
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not export project files to gradle project."));
@@ -3454,7 +3474,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		APKExportData ed;
 		ed.ep = &ep;
 		ed.apk = unaligned_apk;
-		err = export_project_files(p_preset, p_debug, ignore_apk_file, &ed, save_apk_so);
+		err = export_project_files(true, p_preset, p_debug, ignore_apk_file, &ed, save_apk_so);
 	} else {
 		if (apk_expansion) {
 			err = save_apk_expansion_file(p_preset, p_debug, p_path);
@@ -3466,7 +3486,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			APKExportData ed;
 			ed.ep = &ep;
 			ed.apk = unaligned_apk;
-			err = export_project_files(p_preset, p_debug, save_apk_file, &ed, save_apk_so);
+			err = export_project_files(true, p_preset, p_debug, save_apk_file, &ed, save_apk_so);
 		}
 	}
 

@@ -79,6 +79,7 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	Vertex hover_point; // point under mouse cursor
 	Vertex selected_point; // currently selected
 	PosVertex edge_point; // adding an edge point?
+	Vector2 original_mouse_pos;
 
 	Vector<Vector2> pre_move_edit;
 	Vector<Vector2> wip;
@@ -137,7 +138,7 @@ protected:
 	virtual void _create_resource();
 
 public:
-	void disable_polygon_editing(bool p_disable, String p_reason);
+	void disable_polygon_editing(bool p_disable, const String &p_reason);
 
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
@@ -162,7 +163,7 @@ public:
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, String p_class);
+	AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, const String &p_class);
 	~AbstractPolygon2DEditorPlugin();
 };
 

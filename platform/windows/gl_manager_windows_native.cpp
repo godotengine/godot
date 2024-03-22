@@ -107,22 +107,22 @@ static bool nvapi_err_check(const char *msg, int status) {
 // to avoid stuttering, see https://stackoverflow.com/questions/36959508/nvidia-graphics-driver-causing-noticeable-frame-stuttering/37632948
 // also see https://github.com/Ryujinx/Ryujinx/blob/master/src/Ryujinx.Common/GraphicsDriver/NVThreadedOptimization.cs
 void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
-	HMODULE nvapi = 0;
+	HMODULE nvapi = nullptr;
 #ifdef _WIN64
 	nvapi = LoadLibraryA("nvapi64.dll");
 #else
 	nvapi = LoadLibraryA("nvapi.dll");
 #endif
 
-	if (nvapi == NULL) {
+	if (nvapi == nullptr) {
 		return;
 	}
 
-	void *(__cdecl * NvAPI_QueryInterface)(unsigned int interface_id) = 0;
+	void *(__cdecl * NvAPI_QueryInterface)(unsigned int interface_id) = nullptr;
 
 	NvAPI_QueryInterface = (void *(__cdecl *)(unsigned int))(void *)GetProcAddress(nvapi, "nvapi_QueryInterface");
 
-	if (NvAPI_QueryInterface == NULL) {
+	if (NvAPI_QueryInterface == nullptr) {
 		print_verbose("Error getting NVAPI NvAPI_QueryInterface");
 		return;
 	}
@@ -176,7 +176,7 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	Char16String app_executable_name_u16 = app_executable_name.utf16();
 	Char16String app_friendly_name_u16 = app_friendly_name.utf16();
 
-	NvDRSProfileHandle profile_handle = 0;
+	NvDRSProfileHandle profile_handle = nullptr;
 
 	int profile_status = NvAPI_DRS_FindProfileByName(session_handle, (NvU16 *)(app_profile_name_u16.ptrw()), &profile_handle);
 
@@ -195,7 +195,7 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 		}
 	}
 
-	NvDRSProfileHandle app_profile_handle = 0;
+	NvDRSProfileHandle app_profile_handle = nullptr;
 	NVDRS_APPLICATION_V4 app;
 	app.version = NVDRS_APPLICATION_VER_V4;
 
@@ -362,14 +362,14 @@ Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_disp
 	if (wglCreateContextAttribsARB == nullptr) //OpenGL 3.0 is not supported
 	{
 		gd_wglDeleteContext(gl_display.hRC);
-		gl_display.hRC = 0;
+		gl_display.hRC = nullptr;
 		return ERR_CANT_CREATE;
 	}
 
-	HGLRC new_hRC = wglCreateContextAttribsARB(win.hDC, 0, attribs);
+	HGLRC new_hRC = wglCreateContextAttribsARB(win.hDC, nullptr, attribs);
 	if (!new_hRC) {
 		gd_wglDeleteContext(gl_display.hRC);
-		gl_display.hRC = 0;
+		gl_display.hRC = nullptr;
 		return ERR_CANT_CREATE;
 	}
 
@@ -384,7 +384,7 @@ Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_disp
 	{
 		ERR_PRINT("Could not attach OpenGL context to newly created window with replaced OpenGL context: " + format_error_message(GetLastError()));
 		gd_wglDeleteContext(gl_display.hRC);
-		gl_display.hRC = 0;
+		gl_display.hRC = nullptr;
 		return ERR_CANT_CREATE;
 	}
 

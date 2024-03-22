@@ -344,6 +344,10 @@ protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif
+
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
@@ -406,8 +410,10 @@ public:
 
 	static void set_root_layout_direction(int p_root_dir);
 
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	virtual bool is_text_field() const;
 

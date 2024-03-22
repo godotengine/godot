@@ -91,8 +91,8 @@ public:
 		HashMap<StringName, String> render_mode_defines;
 		HashMap<StringName, String> usage_defines;
 		HashMap<StringName, String> custom_samplers;
-		ShaderLanguage::TextureFilter default_filter = ShaderLanguage::TextureFilter::FILTER_DEFAULT;
-		ShaderLanguage::TextureRepeat default_repeat = ShaderLanguage::TextureRepeat::REPEAT_DEFAULT;
+		ShaderLanguage::TextureFilter default_filter = ShaderLanguage::TextureFilter::FILTER_NEAREST;
+		ShaderLanguage::TextureRepeat default_repeat = ShaderLanguage::TextureRepeat::REPEAT_DISABLE;
 		int base_texture_binding_index = 0;
 		int texture_layout_set = 0;
 		String base_uniform_string;

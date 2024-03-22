@@ -44,14 +44,14 @@
 		</method>
 		<method name="register_text_enter">
 			<return type="void" />
-			<param index="0" name="line_edit" type="Control" />
+			<param index="0" name="line_edit" type="LineEdit" />
 			<description>
 				Registers a [LineEdit] in the dialog. When the enter key is pressed, the dialog will be accepted.
 			</description>
 		</method>
 		<method name="remove_button">
 			<return type="void" />
-			<param index="0" name="button" type="Control" />
+			<param index="0" name="button" type="Button" />
 			<description>
 				Removes the [param button] from the dialog. Does NOT free the [param button]. The [param button] must be a [Button] added with [method add_button] or [method add_cancel_button] method. After removal, pressing the [param button] will no longer emit this dialog's [signal custom_action] or [signal canceled] signals.
 			</description>

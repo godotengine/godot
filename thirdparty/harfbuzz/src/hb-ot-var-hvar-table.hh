@@ -288,6 +288,7 @@ struct HVARVVAR
   {
     TRACE_SANITIZE (this);
     return_trace (version.sanitize (c) &&
+		  hb_barrier () &&
 		  likely (version.major == 1) &&
 		  varStore.sanitize (c, this) &&
 		  advMap.sanitize (c, this) &&

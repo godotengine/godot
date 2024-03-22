@@ -90,6 +90,16 @@ struct Array
         return data[idx];
     }
 
+    const T* begin() const
+    {
+        return data;
+    }
+
+    T* begin()
+    {
+        return data;
+    }
+
     T* end()
     {
         return data + count;
