@@ -303,7 +303,7 @@ bool RenderForwardMobile::_render_buffers_can_be_storage() {
 	return false;
 }
 
-RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, const RendererRD::MaterialStorage::Samplers &p_samplers, bool p_use_directional_shadow_atlas, int p_index) {
+RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, const RendererRD::MaterialStorage::Samplers &p_samplers, uint32_t p_frame_idx, bool p_use_directional_shadow_atlas, int p_index) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -324,6 +324,9 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		}
 	}
 
+	uint32_t frame = RD::get_singleton()->get_current_frame_index();
+	uint32_t frame_count = RD::get_singleton()->get_frame_delay();
+
 	// default render buffer and scene state uniform set
 	// loaded into set 1
 
@@ -333,7 +336,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		RD::Uniform u;
 		u.binding = 0;
 		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-		u.append_id(scene_state.uniform_buffers[p_index]);
+		u.append_id(scene_state.uniform_buffers[p_index * frame_count + frame]);
 		uniforms.push_back(u);
 	}
 
@@ -653,6 +656,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	ERR_FAIL_NULL(p_render_data);
+
+	uint32_t frame = RD::get_singleton()->get_current_frame_index();
 
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
@@ -979,7 +984,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RENDER_TIMESTAMP("Render Opaque");
 		}
 
-		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, samplers, true);
+		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, samplers, frame, true);
 
 		// Set clear colors.
 		Vector<Color> c;
@@ -1056,7 +1061,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 				RD::get_singleton()->draw_command_begin_label("Render Transparent");
 
-				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
+				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, frame, true);
 
 				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR_TRANSPARENT, rp_uniform_set, spec_constant_base_flags, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 				render_list_params.framebuffer_format = fb_format;
@@ -1099,7 +1104,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				RD::get_singleton()->draw_command_begin_label("Render Transparent Pass");
 				RENDER_TIMESTAMP("Render Transparent");
 
-				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
+				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, frame, true);
 
 				// this may be needed if we re-introduced steps that change info, not sure which do so in the previous implementation
 				//_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, false);
@@ -1405,7 +1410,7 @@ void RenderForwardMobile::_render_shadow_process() {
 	for (uint32_t i = 0; i < scene_state.shadow_passes.size(); i++) {
 		//render passes need to be configured after instance buffer is done, since they need the latest version
 		SceneState::ShadowPass &shadow_pass = scene_state.shadow_passes[i];
-		shadow_pass.rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), false, i);
+		shadow_pass.rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), RD::get_singleton()->get_current_frame_index(), false, i);
 	}
 
 	RD::get_singleton()->draw_command_end_label();
@@ -1499,6 +1504,8 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 	render_data.scene_data = &scene_data;
 	render_data.instances = &p_instances;
 
+	uint32_t frame = RD::get_singleton()->get_current_frame_index();
+
 	_setup_environment(&render_data, true, Vector2(1, 1), false, Color());
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
@@ -1508,7 +1515,7 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 	}
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
+	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), frame);
 
 	RENDER_TIMESTAMP("Render 3D Material");
 
@@ -1534,6 +1541,7 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 	RENDER_TIMESTAMP("Setup Rendering UV2");
 
 	RD::get_singleton()->draw_command_begin_label("Render UV2");
+	uint32_t frame = RD::get_singleton()->get_current_frame_index();
 
 	_update_render_base_uniform_set();
 
@@ -1555,7 +1563,7 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 	}
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
+	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), frame);
 
 	RENDER_TIMESTAMP("Render 3D Material");
 
@@ -1610,6 +1618,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	RENDER_TIMESTAMP("Setup GPUParticlesCollisionHeightField3D");
 
 	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
+	uint32_t frame = RD::get_singleton()->get_current_frame_index();
 
 	_update_render_base_uniform_set();
 
@@ -1639,7 +1648,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	}
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
-	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default());
+	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), frame);
 
 	RENDER_TIMESTAMP("Render Collider Heightfield");
 
@@ -1661,7 +1670,7 @@ void RenderForwardMobile::base_uniforms_changed() {
 void RenderForwardMobile::_update_render_base_uniform_set() {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
-	if (render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set) || (lightmap_texture_array_version != light_storage->lightmap_array_get_version())) {
+	if (true) {
 		if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
 			RD::get_singleton()->free(render_base_uniform_set);
 		}
@@ -1767,7 +1776,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 			uniforms.push_back(u);
 		}
 
-		render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET);
+		render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET, true);
 	}
 }
 
@@ -2072,16 +2081,19 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 	RID env = is_environment(p_render_data->environment) ? p_render_data->environment : RID();
 	RID reflection_probe_instance = p_render_data->reflection_probe.is_valid() ? RendererRD::LightStorage::get_singleton()->reflection_probe_instance_get_probe(p_render_data->reflection_probe) : RID();
 
+	uint32_t frame_count = RD::get_singleton()->get_frame_delay();
+	uint32_t frame = RD::get_singleton()->get_current_frame_index();
+
 	// May do this earlier in RenderSceneRenderRD::render_scene
-	if (p_index >= (int)scene_state.uniform_buffers.size()) {
+	if (p_index * frame_count >= (int)scene_state.uniform_buffers.size()) {
 		uint32_t from = scene_state.uniform_buffers.size();
-		scene_state.uniform_buffers.resize(p_index + 1);
+		scene_state.uniform_buffers.resize(p_index * frame_count + frame_count);
 		for (uint32_t i = from; i < scene_state.uniform_buffers.size(); i++) {
 			scene_state.uniform_buffers[i] = p_render_data->scene_data->create_uniform_buffer();
 		}
 	}
 
-	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers[p_index], get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_flip_y, p_pancake_shadows, p_screen_size, p_default_bg_color, _render_buffers_get_luminance_multiplier(), p_opaque_render_buffers, false);
+	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers[p_index * frame_count + frame], get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_flip_y, p_pancake_shadows, p_screen_size, p_default_bg_color, _render_buffers_get_luminance_multiplier(), p_opaque_render_buffers, false);
 }
 
 /// RENDERING ///

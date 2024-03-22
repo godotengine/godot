@@ -230,10 +230,8 @@ RenderingDevice::Buffer *RenderingDevice::_get_buffer_from_owner(RID p_buffer) {
 		// @ShadyTF persistently mapped buffers
 	} else if (persistent_buffer_owner.owns(p_buffer)) {
 		PersistentBuffer* linear_buffer = persistent_buffer_owner.get_or_null(p_buffer);
-		if (linear_buffer) {
-			PersistentBufferSet *curr_buffer = linear_buffer->buffer_set.ptrw() + frame;
-			buffer = curr_buffer->buffers.ptrw() + curr_buffer->usage_index;
-		}
+		DEV_ASSERT(linear_buffer->usage_index != -1);
+		buffer = linear_buffer->buffers.ptrw() + linear_buffer->usage_index;
 		// </TF>
 	} else if (uniform_buffer_owner.owns(p_buffer)) {
 		buffer = uniform_buffer_owner.get_or_null(p_buffer);
@@ -553,16 +551,15 @@ String RenderingDevice::get_perf_report() const {
 void RenderingDevice::persistent_uniform_buffer_advance(RID p_buffer) {
 	PersistentBuffer *linear_buffer = persistent_buffer_owner.get_or_null(p_buffer);
 	if (linear_buffer) {
-		PersistentBufferSet* curr_buffer = linear_buffer->buffer_set.ptrw() + frame;
-		if (curr_buffer->buffers.size() <= (curr_buffer->usage_index + 1)) {
+		if (linear_buffer->buffers.size() <= (linear_buffer->usage_index + 1)) {
 			Buffer buffer;
 			buffer.size = linear_buffer->size;
 			buffer.usage = linear_buffer->usage;
 			buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
 			buffer_memory += buffer.size;
-			curr_buffer->buffers.append(buffer);
+			linear_buffer->buffers.append(buffer);
 		}
-		curr_buffer->usage_index++;
+		linear_buffer->usage_index++;
 	}
 }
 
@@ -571,7 +568,7 @@ void RenderingDevice::persistent_uniform_buffers_reset() {
 	persistent_buffer_owner.get_owned_list(&owned);
 	for (const RID& curr : owned) {
 		PersistentBuffer* curr_linear_buffer = persistent_buffer_owner.get_or_null(curr);
-		curr_linear_buffer->buffer_set.ptrw()[frame].usage_index = -1;
+		curr_linear_buffer->usage_index = -1;
 	}
 }
 
@@ -2752,19 +2749,14 @@ RID RenderingDevice::linear_buffer_create(uint32_t p_size_bytes, bool p_storage,
 		buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
 		ERR_FAIL_COND_V(!buffer.driver_id, RID());
 		buffer_memory += buffer.size;
-		PersistentBufferSet buffer_set;
-		buffer_set.buffers.append(buffer);
-		buffer_set.usage_index = -1;
-		linear_buffer.buffer_set.append(buffer_set);
+
+		linear_buffer.buffers.append(buffer);
+		linear_buffer.usage_index = -1;
 	}
 	
 	linear_buffer.size = p_size_bytes;
 	
 	RID id = persistent_buffer_owner.make_rid(linear_buffer);
-
-#ifdef DEV_ENABLED
-	set_resource_name(id, "RID:" + itos(id.get_id()));
-#endif
 	return id;
 }
 // </TF>
@@ -3041,9 +3033,8 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 				// <TF>
 				// @ShadyTF persistently mapped buffers
 				if (buffer == nullptr) {
-					PersistentBuffer* linear_buffer = persistent_buffer_owner.get_or_null(uniform.get_id(0));
-					PersistentBufferSet *curr_buffer = linear_buffer->buffer_set.ptrw() + frame;
-					buffer = curr_buffer->buffers.ptrw() + curr_buffer->usage_index;
+					PersistentBuffer *linear_buffer = persistent_buffer_owner.get_or_null(uniform.get_id(0));
+					buffer = linear_buffer->buffers.ptrw() + MAX(0, linear_buffer->usage_index);
 				}
 				// </TF>
 				ERR_FAIL_NULL_V_MSG(buffer, RID(), "Uniform buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
@@ -5038,10 +5029,8 @@ void RenderingDevice::_free_internal(RID p_id) {
 		// @ShadyTF persistently mapped buffers
 	} else if (persistent_buffer_owner.owns(p_id)) {
 		PersistentBuffer *linear_uniform_buffer = persistent_buffer_owner.get_or_null(p_id);
-		for (const PersistentBufferSet& buffer_set : linear_uniform_buffer->buffer_set) {
-			for (const Buffer &buffer : buffer_set.buffers) {
-				frames[frame].buffers_to_dispose_of.push_back(buffer);
-			}
+		for (const Buffer &buffer : linear_uniform_buffer->buffers) {
+			frames[frame].buffers_to_dispose_of.push_back(buffer);
 		}
 		persistent_buffer_owner.free(p_id);
 		// </TF>
@@ -5104,13 +5093,7 @@ void RenderingDevice::set_resource_name(RID p_id, const String &p_name) {
 	} else if (uniform_buffer_owner.owns(p_id)) {
 		Buffer *uniform_buffer = uniform_buffer_owner.get_or_null(p_id);
 		driver->set_object_name(RDD::OBJECT_TYPE_BUFFER, uniform_buffer->driver_id, p_name);
-		// <TF>
-		// @ShadyTF persistently mapped buffers
-	} else if (persistent_buffer_owner.owns(p_id)) {
-		PersistentBuffer *linear_uniform_buffer = persistent_buffer_owner.get_or_null(p_id);
-		driver->set_object_name(RDD::OBJECT_TYPE_BUFFER, linear_uniform_buffer->buffer_set[0].buffers[0].driver_id, p_name);
-		// </TF>
-	} else if (texture_buffer_owner.owns(p_id)) {
+	}  else if (texture_buffer_owner.owns(p_id)) {
 		Buffer *texture_buffer = texture_buffer_owner.get_or_null(p_id);
 		driver->set_object_name(RDD::OBJECT_TYPE_BUFFER, texture_buffer->driver_id, p_name);
 	} else if (storage_buffer_owner.owns(p_id)) {
@@ -5289,6 +5272,10 @@ void RenderingDevice::_free_pending_resources(int p_frame) {
 
 uint32_t RenderingDevice::get_frame_delay() const {
 	return frames.size();
+}
+
+uint32_t RenderingDevice::get_current_frame_index() const {
+	return frame;
 }
 
 uint64_t RenderingDevice::get_memory_usage(MemoryType p_type) const {
@@ -5809,8 +5796,7 @@ uint64_t RenderingDevice::get_driver_resource(DriverResource p_resource, RID p_r
 			// @ShadyTF persistently mapped buffers
 			} else if (persistent_buffer_owner.owns(p_rid)) {
 				PersistentBuffer* linear_buffer = persistent_buffer_owner.get_or_null(p_rid);
-				PersistentBufferSet* linear_buffer_frame = linear_buffer->buffer_set.ptrw() + frame;
-				buffer = linear_buffer_frame->buffers.ptrw() + linear_buffer_frame->usage_index;
+				buffer = linear_buffer->buffers.ptrw() + linear_buffer->usage_index;
 			// </TF>
 			} else if (texture_buffer_owner.owns(p_rid)) {
 				buffer = texture_buffer_owner.get_or_null(p_rid);

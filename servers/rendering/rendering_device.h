@@ -183,14 +183,11 @@ private:
 
 	// <TF>
 	// @ShadyTF persistently mapped buffers
-	struct PersistentBufferSet {
-		int usage_index;
-		Vector<Buffer> buffers;
-	};
 	struct PersistentBuffer {
 		uint32_t size;
 		BitField<RDD::BufferUsageBits> usage;
-		Vector<PersistentBufferSet> buffer_set;
+		int usage_index;
+		Vector<Buffer> buffers;
 	};
 	RID_Owner<PersistentBuffer> persistent_buffer_owner;
 	void persistent_uniform_buffer_advance(RID p_buffer);
@@ -1420,6 +1417,7 @@ public:
 	void swap_buffers();
 
 	uint32_t get_frame_delay() const;
+	uint32_t get_current_frame_index() const;
 
 	void submit();
 	void sync();

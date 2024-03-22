@@ -48,6 +48,7 @@ LightStorage::LightStorage() {
 
 	directional_shadow.size = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size");
 	directional_shadow.use_16_bits = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/16_bits");
+	directional_light_buffer = (RID *)memalloc(sizeof(RID) * RD::get_singleton()->get_frame_delay());
 
 	using_lightmap_array = true; // high end
 	if (using_lightmap_array) {
@@ -75,6 +76,7 @@ LightStorage::~LightStorage() {
 		RD::get_singleton()->free(E.value.cubemap);
 	}
 
+	memfree(directional_light_buffer);
 	singleton = nullptr;
 }
 
@@ -509,9 +511,11 @@ void LightStorage::light_instance_mark_visible(RID p_light_instance) {
 /* LIGHT DATA */
 
 void LightStorage::free_light_data() {
-	if (directional_light_buffer.is_valid()) {
-		RD::get_singleton()->free(directional_light_buffer);
-		directional_light_buffer = RID();
+	for (uint32_t i = 0; i < RD::get_singleton()->get_frame_delay(); i++) {
+		if (directional_light_buffer[i].is_valid()) {
+			RD::get_singleton()->free(directional_light_buffer[i]);
+			directional_light_buffer[i] = RID();
+		}
 	}
 
 	if (omni_light_buffer.is_valid()) {
@@ -565,7 +569,8 @@ void LightStorage::set_max_lights(const uint32_t p_max_lights) {
 	max_directional_lights = RendererSceneRender::MAX_DIRECTIONAL_LIGHTS;
 	uint32_t directional_light_buffer_size = max_directional_lights * sizeof(DirectionalLightData);
 	directional_lights = memnew_arr(DirectionalLightData, max_directional_lights);
-	directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
+	for (uint32_t i=0; i<2; i++)
+		directional_light_buffer[i] = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size, Vector<uint8_t>(), RD::BUFFER_CREATION_LINEAR_BIT | RD::BUFFER_CREATION_PERSISTENT_BIT);
 }
 
 void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
@@ -1003,7 +1008,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 	}
 
 	if (r_directional_light_count) {
-		RD::get_singleton()->buffer_update(directional_light_buffer, 0, sizeof(DirectionalLightData) * r_directional_light_count, directional_lights);
+		RD::get_singleton()->buffer_update(directional_light_buffer[RD::get_singleton()->get_current_frame_index()], 0, sizeof(DirectionalLightData) * r_directional_light_count, directional_lights);
 	}
 }
 

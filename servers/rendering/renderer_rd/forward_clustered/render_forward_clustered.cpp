@@ -595,7 +595,7 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 	// May do this earlier in RenderSceneRenderRD::render_scene
 	if (p_index >= (int)scene_state.uniform_buffers.size()) {
 		uint32_t from = scene_state.uniform_buffers.size();
-		scene_state.uniform_buffers.resize(p_index + 1);
+		scene_state.uniform_buffers.resize(p_index + RD::get_singleton()->get_frame_delay());
 		for (uint32_t i = from; i < scene_state.uniform_buffers.size(); i++) {
 			scene_state.uniform_buffers[i] = p_render_data->scene_data->create_uniform_buffer();
 		}

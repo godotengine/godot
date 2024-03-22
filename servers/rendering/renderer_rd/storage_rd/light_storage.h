@@ -214,7 +214,7 @@ private:
 
 	uint32_t max_directional_lights;
 	DirectionalLightData *directional_lights = nullptr;
-	RID directional_light_buffer;
+	RID* directional_light_buffer;
 
 	/* REFLECTION PROBE */
 
@@ -766,7 +766,7 @@ public:
 	void set_max_lights(const uint32_t p_max_lights);
 	RID get_omni_light_buffer() { return omni_light_buffer; }
 	RID get_spot_light_buffer() { return spot_light_buffer; }
-	RID get_directional_light_buffer() { return directional_light_buffer; }
+	RID get_directional_light_buffer() { return directional_light_buffer[RD::get_singleton()->get_current_frame_index()]; }
 	uint32_t get_max_directional_lights() { return max_directional_lights; }
 	bool has_directional_shadows(const uint32_t p_directional_light_count) {
 		for (uint32_t i = 0; i < p_directional_light_count; i++) {
