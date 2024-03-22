@@ -1,0 +1,366 @@
+diff --git a/thirdparty/oboe/include/oboe/Oboe.h b/thirdparty/oboe/include/oboe/Oboe.h
+index b9c948af86b..e59fa892597 100644
+--- a/thirdparty/oboe/include/oboe/Oboe.h
++++ b/thirdparty/oboe/include/oboe/Oboe.h
+@@ -32,9 +32,5 @@
+ #include "oboe/AudioStreamBuilder.h"
+ #include "oboe/Utilities.h"
+ #include "oboe/Version.h"
+-#include "oboe/StabilizedCallback.h"
+-#include "oboe/FifoBuffer.h"
+-#include "oboe/OboeExtensions.h"
+-#include "oboe/FullDuplexStream.h"
+ 
+ #endif //OBOE_OBOE_H
+diff --git a/thirdparty/oboe/src/common/AudioStreamBuilder.cpp b/thirdparty/oboe/src/common/AudioStreamBuilder.cpp
+index f655f9fc73a..003761ca365 100644
+--- a/thirdparty/oboe/src/common/AudioStreamBuilder.cpp
++++ b/thirdparty/oboe/src/common/AudioStreamBuilder.cpp
+@@ -19,7 +19,6 @@
+ 
+ #include "aaudio/AAudioExtensions.h"
+ #include "aaudio/AudioStreamAAudio.h"
+-#include "FilterAudioStream.h"
+ #include "OboeDebug.h"
+ #include "oboe/Oboe.h"
+ #include "oboe/AudioStreamBuilder.h"
+@@ -110,51 +109,8 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
+ 
+     AudioStream *streamP = nullptr;
+ 
+-    // Maybe make a FilterInputStream.
+-    AudioStreamBuilder childBuilder(*this);
+-    // Check need for conversion and modify childBuilder for optimal stream.
+-    bool conversionNeeded = QuirksManager::getInstance().isConversionNeeded(*this, childBuilder);
+-    // Do we need to make a child stream and convert.
+-    if (conversionNeeded) {
+-        AudioStream *tempStream;
+-        result = childBuilder.openStream(&tempStream);
+-        if (result != Result::OK) {
+-            return result;
+-        }
+-
+-        if (isCompatible(*tempStream)) {
+-            // The child stream would work as the requested stream so we can just use it directly.
+-            *streamPP = tempStream;
+-            return result;
+-        } else {
+-            AudioStreamBuilder parentBuilder = *this;
+-            // Build a stream that is as close as possible to the childStream.
+-            if (getFormat() == oboe::AudioFormat::Unspecified) {
+-                parentBuilder.setFormat(tempStream->getFormat());
+-            }
+-            if (getChannelCount() == oboe::Unspecified) {
+-                parentBuilder.setChannelCount(tempStream->getChannelCount());
+-            }
+-            if (getSampleRate() == oboe::Unspecified) {
+-                parentBuilder.setSampleRate(tempStream->getSampleRate());
+-            }
+-            if (getFramesPerDataCallback() == oboe::Unspecified) {
+-                parentBuilder.setFramesPerCallback(tempStream->getFramesPerDataCallback());
+-            }
+-
+-            // Use childStream in a FilterAudioStream.
+-            LOGI("%s() create a FilterAudioStream for data conversion.", __func__);
+-            FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, tempStream);
+-            result = filterStream->configureFlowGraph();
+-            if (result !=  Result::OK) {
+-                filterStream->close();
+-                delete filterStream;
+-                // Just open streamP the old way.
+-            } else {
+-                streamP = static_cast<AudioStream *>(filterStream);
+-            }
+-        }
+-    }
++    // Modify for optimal stream.
++    QuirksManager::getInstance().convert(*this);
+ 
+     if (streamP == nullptr) {
+         streamP = build();
+@@ -167,7 +123,7 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
+     bool wasMMapOriginallyEnabled = AAudioExtensions::getInstance().isMMapEnabled();
+     bool wasMMapTemporarilyDisabled = false;
+     if (wasMMapOriginallyEnabled) {
+-        bool isMMapSafe = QuirksManager::getInstance().isMMapSafe(childBuilder);
++        bool isMMapSafe = QuirksManager::getInstance().isMMapSafe(*this);
+         if (!isMMapSafe) {
+             AAudioExtensions::getInstance().setMMapEnabled(false);
+             wasMMapTemporarilyDisabled = true;
+diff --git a/thirdparty/oboe/src/common/QuirksManager.cpp b/thirdparty/oboe/src/common/QuirksManager.cpp
+index f9890be5a31..d8c26e3d0e6 100644
+--- a/thirdparty/oboe/src/common/QuirksManager.cpp
++++ b/thirdparty/oboe/src/common/QuirksManager.cpp
+@@ -193,10 +193,7 @@ QuirksManager::QuirksManager() {
+     }
+ }
+ 
+-bool QuirksManager::isConversionNeeded(
+-        const AudioStreamBuilder &builder,
+-        AudioStreamBuilder &childBuilder) {
+-    bool conversionNeeded = false;
++void QuirksManager::convert(AudioStreamBuilder &builder) {
+     const bool isLowLatency = builder.getPerformanceMode() == PerformanceMode::LowLatency;
+     const bool isInput = builder.getDirection() == Direction::Input;
+     const bool isFloat = builder.getFormat() == AudioFormat::Float;
+@@ -205,7 +202,7 @@ bool QuirksManager::isConversionNeeded(
+     // There should be no conversion for IEC61937. Sample rates and channel counts must be set explicitly.
+     if (isIEC61937) {
+         LOGI("QuirksManager::%s() conversion not needed for IEC61937", __func__);
+-        return false;
++        return;
+     }
+ 
+     // There are multiple bugs involving using callback with a specified callback size.
+@@ -226,8 +223,7 @@ bool QuirksManager::isConversionNeeded(
+             && builder.getFramesPerDataCallback() != 0
+             && getSdkVersion() <= __ANDROID_API_R__) {
+         LOGI("QuirksManager::%s() avoid setFramesPerCallback(n>0)", __func__);
+-        childBuilder.setFramesPerCallback(oboe::Unspecified);
+-        conversionNeeded = true;
++        builder.setFramesPerCallback(oboe::Unspecified);
+     }
+ 
+     // If a SAMPLE RATE is specified for low latency, let the native code choose an optimal rate.
+@@ -238,8 +234,7 @@ bool QuirksManager::isConversionNeeded(
+             && builder.getSampleRateConversionQuality() != SampleRateConversionQuality::None
+             && isLowLatency
+             ) {
+-        childBuilder.setSampleRate(oboe::Unspecified); // native API decides the best sample rate
+-        conversionNeeded = true;
++        builder.setSampleRate(oboe::Unspecified); // native API decides the best sample rate
+     }
+ 
+     // Data Format
+@@ -251,9 +246,8 @@ bool QuirksManager::isConversionNeeded(
+             && isLowLatency
+             && (!builder.willUseAAudio() || (getSdkVersion() < __ANDROID_API_P__))
+             ) {
+-        childBuilder.setFormat(AudioFormat::I16); // needed for FAST track
+-        conversionNeeded = true;
+-        LOGI("QuirksManager::%s() forcing internal format to I16 for low latency", __func__);
++        builder.setFormat(AudioFormat::I16); // needed for FAST track
++        LOGI("QuirksManager::%s() forcing format to I16 for low latency", __func__);
+     }
+ 
+     // Add quirk for float output when needed.
+@@ -263,12 +257,10 @@ bool QuirksManager::isConversionNeeded(
+             && builder.isFormatConversionAllowed()
+             && mDeviceQuirks->shouldConvertFloatToI16ForOutputStreams()
+             ) {
+-        childBuilder.setFormat(AudioFormat::I16);
+-        conversionNeeded = true;
++        builder.setFormat(AudioFormat::I16);
+         LOGI("QuirksManager::%s() float was requested but not supported on pre-L devices "
+              "and some devices like Vivo devices may have issues on L devices, "
+-             "creating an underlying I16 stream and using format conversion to provide a float "
+-             "stream", __func__);
++             "forcing format to I16", __func__);
+     }
+ 
+     // Channel Count conversions
+@@ -281,9 +273,8 @@ bool QuirksManager::isConversionNeeded(
+             ) {
+         // Workaround for heap size regression in O.
+         // b/66967812 AudioRecord does not allow FAST track for stereo capture in O
+-        childBuilder.setChannelCount(kChannelCountMono);
+-        conversionNeeded = true;
+-        LOGI("QuirksManager::%s() using mono internally for low latency on O", __func__);
++        builder.setChannelCount(kChannelCountMono);
++        LOGI("QuirksManager::%s() using mono for low latency on O", __func__);
+     } else if (OboeGlobals::areWorkaroundsEnabled()
+                && builder.getChannelCount() == kChannelCountMono
+                && isInput
+@@ -295,14 +286,11 @@ bool QuirksManager::isConversionNeeded(
+                && mDeviceQuirks->isAAudioMMapPossible(builder)
+                ) {
+         // Workaround for mono actually running in stereo mode.
+-        childBuilder.setChannelCount(kChannelCountStereo); // Use stereo and extract first channel.
+-        conversionNeeded = true;
+-        LOGI("QuirksManager::%s() using stereo internally to avoid broken mono", __func__);
++        builder.setChannelCount(kChannelCountStereo); // Use stereo and extract first channel.
++        LOGI("QuirksManager::%s() using stereo to avoid broken mono", __func__);
+     }
+     // Note that MMAP does not support mono in 8.1. But that would only matter on Pixel 1
+     // phones and they have almost all been updated to 9.0.
+-
+-    return conversionNeeded;
+ }
+ 
+ bool QuirksManager::isMMapSafe(AudioStreamBuilder &builder) {
+diff --git a/thirdparty/oboe/src/common/QuirksManager.h b/thirdparty/oboe/src/common/QuirksManager.h
+index c24e974981a..1dd5c43fcda 100644
+--- a/thirdparty/oboe/src/common/QuirksManager.h
++++ b/thirdparty/oboe/src/common/QuirksManager.h
+@@ -56,7 +56,7 @@ public:
+      * @param childBuilder modified builder appropriate for the underlying device
+      * @return true if conversion is needed
+      */
+-    bool isConversionNeeded(const AudioStreamBuilder &builder, AudioStreamBuilder &childBuilder);
++    void convert(AudioStreamBuilder &builder);
+ 
+     static bool isMMapUsed(AudioStream &stream) {
+         bool answer = false;
+diff --git a/thirdparty/oboe/src/opensles/AudioInputStreamOpenSLES.cpp b/thirdparty/oboe/src/opensles/AudioInputStreamOpenSLES.cpp
+index 3653d964ef0..78770e40dbf 100644
+--- a/thirdparty/oboe/src/opensles/AudioInputStreamOpenSLES.cpp
++++ b/thirdparty/oboe/src/opensles/AudioInputStreamOpenSLES.cpp
+@@ -328,11 +328,7 @@ Result AudioInputStreamOpenSLES::requestStop_l() {
+ }
+ 
+ void AudioInputStreamOpenSLES::updateFramesWritten() {
+-    if (usingFIFO()) {
+-        AudioStreamBuffered::updateFramesWritten();
+-    } else {
+-        mFramesWritten = getFramesProcessedByServer();
+-    }
++    mFramesWritten = getFramesProcessedByServer();
+ }
+ 
+ Result AudioInputStreamOpenSLES::updateServiceFrameCounter() {
+diff --git a/thirdparty/oboe/src/opensles/AudioInputStreamOpenSLES.h b/thirdparty/oboe/src/opensles/AudioInputStreamOpenSLES.h
+index 08e7a056464..3a15bce1f3b 100644
+--- a/thirdparty/oboe/src/opensles/AudioInputStreamOpenSLES.h
++++ b/thirdparty/oboe/src/opensles/AudioInputStreamOpenSLES.h
+@@ -51,6 +51,7 @@ protected:
+     Result updateServiceFrameCounter() override;
+ 
+     void updateFramesWritten() override;
++    void updateFramesRead() override {}
+ 
+ private:
+ 
+diff --git a/thirdparty/oboe/src/opensles/AudioOutputStreamOpenSLES.cpp b/thirdparty/oboe/src/opensles/AudioOutputStreamOpenSLES.cpp
+index 0ef87dd0196..d893505aae0 100644
+--- a/thirdparty/oboe/src/opensles/AudioOutputStreamOpenSLES.cpp
++++ b/thirdparty/oboe/src/opensles/AudioOutputStreamOpenSLES.cpp
+@@ -428,11 +428,7 @@ void AudioOutputStreamOpenSLES::setFramesRead(int64_t framesRead) {
+ }
+ 
+ void AudioOutputStreamOpenSLES::updateFramesRead() {
+-    if (usingFIFO()) {
+-        AudioStreamBuffered::updateFramesRead();
+-    } else {
+-        mFramesRead = getFramesProcessedByServer();
+-    }
++    mFramesRead = getFramesProcessedByServer();
+ }
+ 
+ Result AudioOutputStreamOpenSLES::updateServiceFrameCounter() {
+diff --git a/thirdparty/oboe/src/opensles/AudioOutputStreamOpenSLES.h b/thirdparty/oboe/src/opensles/AudioOutputStreamOpenSLES.h
+index fc57fd374f8..0bd4840639c 100644
+--- a/thirdparty/oboe/src/opensles/AudioOutputStreamOpenSLES.h
++++ b/thirdparty/oboe/src/opensles/AudioOutputStreamOpenSLES.h
+@@ -52,6 +52,7 @@ protected:
+     Result updateServiceFrameCounter() override;
+ 
+     void updateFramesRead() override;
++    void updateFramesWritten() override {}
+ 
+ private:
+ 
+diff --git a/thirdparty/oboe/src/opensles/AudioStreamOpenSLES.cpp b/thirdparty/oboe/src/opensles/AudioStreamOpenSLES.cpp
+index 9013d61c551..2481aea3b55 100644
+--- a/thirdparty/oboe/src/opensles/AudioStreamOpenSLES.cpp
++++ b/thirdparty/oboe/src/opensles/AudioStreamOpenSLES.cpp
+@@ -29,7 +29,7 @@
+ using namespace oboe;
+ 
+ AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
+-    : AudioStreamBuffered(builder) {
++    : AudioStream(builder) {
+     // OpenSL ES does not support device IDs. So overwrite value from builder.
+     mDeviceId = kUnspecified;
+     // OpenSL ES does not support session IDs. So overwrite value from builder.
+@@ -82,7 +82,7 @@ Result AudioStreamOpenSLES::open() {
+         return Result::ErrorInternal;
+     }
+ 
+-    Result oboeResult = AudioStreamBuffered::open();
++    Result oboeResult = AudioStream::open();
+     if (oboeResult != Result::OK) {
+         EngineOpenSLES::getInstance().close();
+         return oboeResult;
+@@ -130,8 +130,6 @@ SLresult AudioStreamOpenSLES::finishCommonOpen(SLAndroidConfigurationItf configI
+         return (SLresult) oboeResult;
+     }
+ 
+-    allocateFifo();
+-
+     calculateDefaultDelayBeforeCloseMillis();
+ 
+     return SL_RESULT_SUCCESS;
+@@ -209,17 +207,15 @@ Result AudioStreamOpenSLES::configureBufferSizes(int32_t sampleRate) {
+         mCallbackBuffer[i] = std::make_unique<uint8_t[]>(mBytesPerCallback);
+     }
+ 
+-    if (!usingFIFO()) {
+-        mBufferCapacityInFrames = mFramesPerBurst * mBufferQueueLength;
+-        // Check for overflow.
+-        if (mBufferCapacityInFrames <= 0) {
+-            mBufferCapacityInFrames = 0;
+-            LOGE("AudioStreamOpenSLES::open() numeric overflow because mFramesPerBurst = %d",
+-                 mFramesPerBurst);
+-            return Result::ErrorOutOfRange;
+-        }
+-        mBufferSizeInFrames = mBufferCapacityInFrames;
++    mBufferCapacityInFrames = mFramesPerBurst * mBufferQueueLength;
++    // Check for overflow.
++    if (mBufferCapacityInFrames <= 0) {
++        mBufferCapacityInFrames = 0;
++        LOGE("AudioStreamOpenSLES::open() numeric overflow because mFramesPerBurst = %d",
++                mFramesPerBurst);
++        return Result::ErrorOutOfRange;
+     }
++    mBufferSizeInFrames = mBufferCapacityInFrames;
+ 
+     return Result::OK;
+ }
+@@ -368,7 +364,7 @@ Result AudioStreamOpenSLES::close_l() {
+         return Result::ErrorClosed;
+     }
+ 
+-    AudioStreamBuffered::close();
++    AudioStream::close();
+ 
+     onBeforeDestroy();
+ 
+diff --git a/thirdparty/oboe/src/opensles/AudioStreamOpenSLES.h b/thirdparty/oboe/src/opensles/AudioStreamOpenSLES.h
+index 0164b839ac4..d2a6d5f59af 100644
+--- a/thirdparty/oboe/src/opensles/AudioStreamOpenSLES.h
++++ b/thirdparty/oboe/src/opensles/AudioStreamOpenSLES.h
+@@ -24,7 +24,6 @@
+ 
+ #include "oboe/Oboe.h"
+ #include "common/MonotonicCounter.h"
+-#include "opensles/AudioStreamBuffered.h"
+ #include "opensles/EngineOpenSLES.h"
+ 
+ namespace oboe {
+@@ -42,7 +41,7 @@ constexpr int kBufferQueueLengthMax = 8; // AudioFlinger won't use more than 8
+  * Use an OboeStreamBuilder to create one.
+  */
+ 
+-class AudioStreamOpenSLES : public AudioStreamBuffered {
++class AudioStreamOpenSLES : public AudioStream {
+ public:
+ 
+     AudioStreamOpenSLES();
+@@ -77,6 +76,8 @@ public:
+                               StreamState *nextState,
+                               int64_t timeoutNanoseconds) override;
+ 
++    bool isXRunCountSupported() const override { return false; }
++
+ protected:
+ 
+     /**
+@@ -95,6 +96,8 @@ protected:
+     virtual Result onBeforeDestroy() { return Result::OK; }
+     virtual Result onAfterDestroy() { return Result::OK; }
+ 
++    virtual Result updateServiceFrameCounter() = 0;
++
+     static SLuint32 getDefaultByteOrder();
+ 
+     int32_t getBufferDepth(SLAndroidSimpleBufferQueueItf bq);

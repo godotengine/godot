@@ -328,11 +328,7 @@ Result AudioInputStreamOpenSLES::requestStop_l() {
 }
 
 void AudioInputStreamOpenSLES::updateFramesWritten() {
-    if (usingFIFO()) {
-        AudioStreamBuffered::updateFramesWritten();
-    } else {
-        mFramesWritten = getFramesProcessedByServer();
-    }
+    mFramesWritten = getFramesProcessedByServer();
 }
 
 Result AudioInputStreamOpenSLES::updateServiceFrameCounter() {

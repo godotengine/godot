@@ -52,6 +52,7 @@ protected:
     Result updateServiceFrameCounter() override;
 
     void updateFramesRead() override;
+    void updateFramesWritten() override {}
 
 private:
 

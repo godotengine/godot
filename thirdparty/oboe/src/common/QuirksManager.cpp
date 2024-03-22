@@ -193,10 +193,7 @@ QuirksManager::QuirksManager() {
     }
 }
 
-bool QuirksManager::isConversionNeeded(
-        const AudioStreamBuilder &builder,
-        AudioStreamBuilder &childBuilder) {
-    bool conversionNeeded = false;
+void QuirksManager::convert(AudioStreamBuilder &builder) {
     const bool isLowLatency = builder.getPerformanceMode() == PerformanceMode::LowLatency;
     const bool isInput = builder.getDirection() == Direction::Input;
     const bool isFloat = builder.getFormat() == AudioFormat::Float;
@@ -205,7 +202,7 @@ bool QuirksManager::isConversionNeeded(
     // There should be no conversion for IEC61937. Sample rates and channel counts must be set explicitly.
     if (isIEC61937) {
         LOGI("QuirksManager::%s() conversion not needed for IEC61937", __func__);
-        return false;
+        return;
     }
 
     // There are multiple bugs involving using callback with a specified callback size.
@@ -226,8 +223,7 @@ bool QuirksManager::isConversionNeeded(
             && builder.getFramesPerDataCallback() != 0
             && getSdkVersion() <= __ANDROID_API_R__) {
         LOGI("QuirksManager::%s() avoid setFramesPerCallback(n>0)", __func__);
-        childBuilder.setFramesPerCallback(oboe::Unspecified);
-        conversionNeeded = true;
+        builder.setFramesPerCallback(oboe::Unspecified);
     }
 
     // If a SAMPLE RATE is specified for low latency, let the native code choose an optimal rate.
@@ -238,8 +234,7 @@ bool QuirksManager::isConversionNeeded(
             && builder.getSampleRateConversionQuality() != SampleRateConversionQuality::None
             && isLowLatency
             ) {
-        childBuilder.setSampleRate(oboe::Unspecified); // native API decides the best sample rate
-        conversionNeeded = true;
+        builder.setSampleRate(oboe::Unspecified); // native API decides the best sample rate
     }
 
     // Data Format
@@ -251,9 +246,8 @@ bool QuirksManager::isConversionNeeded(
             && isLowLatency
             && (!builder.willUseAAudio() || (getSdkVersion() < __ANDROID_API_P__))
             ) {
-        childBuilder.setFormat(AudioFormat::I16); // needed for FAST track
-        conversionNeeded = true;
-        LOGI("QuirksManager::%s() forcing internal format to I16 for low latency", __func__);
+        builder.setFormat(AudioFormat::I16); // needed for FAST track
+        LOGI("QuirksManager::%s() forcing format to I16 for low latency", __func__);
     }
 
     // Add quirk for float output when needed.
@@ -263,12 +257,10 @@ bool QuirksManager::isConversionNeeded(
             && builder.isFormatConversionAllowed()
             && mDeviceQuirks->shouldConvertFloatToI16ForOutputStreams()
             ) {
-        childBuilder.setFormat(AudioFormat::I16);
-        conversionNeeded = true;
+        builder.setFormat(AudioFormat::I16);
         LOGI("QuirksManager::%s() float was requested but not supported on pre-L devices "
              "and some devices like Vivo devices may have issues on L devices, "
-             "creating an underlying I16 stream and using format conversion to provide a float "
-             "stream", __func__);
+             "forcing format to I16", __func__);
     }
 
     // Channel Count conversions
@@ -281,9 +273,8 @@ bool QuirksManager::isConversionNeeded(
             ) {
         // Workaround for heap size regression in O.
         // b/66967812 AudioRecord does not allow FAST track for stereo capture in O
-        childBuilder.setChannelCount(kChannelCountMono);
-        conversionNeeded = true;
-        LOGI("QuirksManager::%s() using mono internally for low latency on O", __func__);
+        builder.setChannelCount(kChannelCountMono);
+        LOGI("QuirksManager::%s() using mono for low latency on O", __func__);
     } else if (OboeGlobals::areWorkaroundsEnabled()
                && builder.getChannelCount() == kChannelCountMono
                && isInput
@@ -295,14 +286,11 @@ bool QuirksManager::isConversionNeeded(
                && mDeviceQuirks->isAAudioMMapPossible(builder)
                ) {
         // Workaround for mono actually running in stereo mode.
-        childBuilder.setChannelCount(kChannelCountStereo); // Use stereo and extract first channel.
-        conversionNeeded = true;
-        LOGI("QuirksManager::%s() using stereo internally to avoid broken mono", __func__);
+        builder.setChannelCount(kChannelCountStereo); // Use stereo and extract first channel.
+        LOGI("QuirksManager::%s() using stereo to avoid broken mono", __func__);
     }
     // Note that MMAP does not support mono in 8.1. But that would only matter on Pixel 1
     // phones and they have almost all been updated to 9.0.
-
-    return conversionNeeded;
 }
 
 bool QuirksManager::isMMapSafe(AudioStreamBuilder &builder) {

@@ -56,7 +56,7 @@ public:
      * @param childBuilder modified builder appropriate for the underlying device
      * @return true if conversion is needed
      */
-    bool isConversionNeeded(const AudioStreamBuilder &builder, AudioStreamBuilder &childBuilder);
+    void convert(AudioStreamBuilder &builder);
 
     static bool isMMapUsed(AudioStream &stream) {
         bool answer = false;

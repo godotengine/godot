@@ -29,7 +29,7 @@
 using namespace oboe;
 
 AudioStreamOpenSLES::AudioStreamOpenSLES(const AudioStreamBuilder &builder)
-    : AudioStreamBuffered(builder) {
+    : AudioStream(builder) {
     // OpenSL ES does not support device IDs. So overwrite value from builder.
     mDeviceId = kUnspecified;
     // OpenSL ES does not support session IDs. So overwrite value from builder.
@@ -82,7 +82,7 @@ Result AudioStreamOpenSLES::open() {
         return Result::ErrorInternal;
     }
 
-    Result oboeResult = AudioStreamBuffered::open();
+    Result oboeResult = AudioStream::open();
     if (oboeResult != Result::OK) {
         EngineOpenSLES::getInstance().close();
         return oboeResult;
@@ -129,8 +129,6 @@ SLresult AudioStreamOpenSLES::finishCommonOpen(SLAndroidConfigurationItf configI
     if (Result::OK != oboeResult) {
         return (SLresult) oboeResult;
     }
-
-    allocateFifo();
 
     calculateDefaultDelayBeforeCloseMillis();
 
@@ -209,17 +207,15 @@ Result AudioStreamOpenSLES::configureBufferSizes(int32_t sampleRate) {
         mCallbackBuffer[i] = std::make_unique<uint8_t[]>(mBytesPerCallback);
     }
 
-    if (!usingFIFO()) {
-        mBufferCapacityInFrames = mFramesPerBurst * mBufferQueueLength;
-        // Check for overflow.
-        if (mBufferCapacityInFrames <= 0) {
-            mBufferCapacityInFrames = 0;
-            LOGE("AudioStreamOpenSLES::open() numeric overflow because mFramesPerBurst = %d",
-                 mFramesPerBurst);
-            return Result::ErrorOutOfRange;
-        }
-        mBufferSizeInFrames = mBufferCapacityInFrames;
+    mBufferCapacityInFrames = mFramesPerBurst * mBufferQueueLength;
+    // Check for overflow.
+    if (mBufferCapacityInFrames <= 0) {
+        mBufferCapacityInFrames = 0;
+        LOGE("AudioStreamOpenSLES::open() numeric overflow because mFramesPerBurst = %d",
+                mFramesPerBurst);
+        return Result::ErrorOutOfRange;
     }
+    mBufferSizeInFrames = mBufferCapacityInFrames;
 
     return Result::OK;
 }
@@ -368,7 +364,7 @@ Result AudioStreamOpenSLES::close_l() {
         return Result::ErrorClosed;
     }
 
-    AudioStreamBuffered::close();
+    AudioStream::close();
 
     onBeforeDestroy();
 

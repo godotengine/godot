@@ -19,7 +19,6 @@
 
 #include "aaudio/AAudioExtensions.h"
 #include "aaudio/AudioStreamAAudio.h"
-#include "FilterAudioStream.h"
 #include "OboeDebug.h"
 #include "oboe/Oboe.h"
 #include "oboe/AudioStreamBuilder.h"
@@ -110,51 +109,8 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
 
     AudioStream *streamP = nullptr;
 
-    // Maybe make a FilterInputStream.
-    AudioStreamBuilder childBuilder(*this);
-    // Check need for conversion and modify childBuilder for optimal stream.
-    bool conversionNeeded = QuirksManager::getInstance().isConversionNeeded(*this, childBuilder);
-    // Do we need to make a child stream and convert.
-    if (conversionNeeded) {
-        AudioStream *tempStream;
-        result = childBuilder.openStream(&tempStream);
-        if (result != Result::OK) {
-            return result;
-        }
-
-        if (isCompatible(*tempStream)) {
-            // The child stream would work as the requested stream so we can just use it directly.
-            *streamPP = tempStream;
-            return result;
-        } else {
-            AudioStreamBuilder parentBuilder = *this;
-            // Build a stream that is as close as possible to the childStream.
-            if (getFormat() == oboe::AudioFormat::Unspecified) {
-                parentBuilder.setFormat(tempStream->getFormat());
-            }
-            if (getChannelCount() == oboe::Unspecified) {
-                parentBuilder.setChannelCount(tempStream->getChannelCount());
-            }
-            if (getSampleRate() == oboe::Unspecified) {
-                parentBuilder.setSampleRate(tempStream->getSampleRate());
-            }
-            if (getFramesPerDataCallback() == oboe::Unspecified) {
-                parentBuilder.setFramesPerCallback(tempStream->getFramesPerDataCallback());
-            }
-
-            // Use childStream in a FilterAudioStream.
-            LOGI("%s() create a FilterAudioStream for data conversion.", __func__);
-            FilterAudioStream *filterStream = new FilterAudioStream(parentBuilder, tempStream);
-            result = filterStream->configureFlowGraph();
-            if (result !=  Result::OK) {
-                filterStream->close();
-                delete filterStream;
-                // Just open streamP the old way.
-            } else {
-                streamP = static_cast<AudioStream *>(filterStream);
-            }
-        }
-    }
+    // Modify for optimal stream.
+    QuirksManager::getInstance().convert(*this);
 
     if (streamP == nullptr) {
         streamP = build();
@@ -167,7 +123,7 @@ Result AudioStreamBuilder::openStreamInternal(AudioStream **streamPP) {
     bool wasMMapOriginallyEnabled = AAudioExtensions::getInstance().isMMapEnabled();
     bool wasMMapTemporarilyDisabled = false;
     if (wasMMapOriginallyEnabled) {
-        bool isMMapSafe = QuirksManager::getInstance().isMMapSafe(childBuilder);
+        bool isMMapSafe = QuirksManager::getInstance().isMMapSafe(*this);
         if (!isMMapSafe) {
             AAudioExtensions::getInstance().setMMapEnabled(false);
             wasMMapTemporarilyDisabled = true;

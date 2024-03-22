@@ -24,7 +24,6 @@
 
 #include "oboe/Oboe.h"
 #include "common/MonotonicCounter.h"
-#include "opensles/AudioStreamBuffered.h"
 #include "opensles/EngineOpenSLES.h"
 
 namespace oboe {
@@ -42,7 +41,7 @@ constexpr int kBufferQueueLengthMax = 8; // AudioFlinger won't use more than 8
  * Use an OboeStreamBuilder to create one.
  */
 
-class AudioStreamOpenSLES : public AudioStreamBuffered {
+class AudioStreamOpenSLES : public AudioStream {
 public:
 
     AudioStreamOpenSLES();
@@ -77,6 +76,8 @@ public:
                               StreamState *nextState,
                               int64_t timeoutNanoseconds) override;
 
+    bool isXRunCountSupported() const override { return false; }
+
 protected:
 
     /**
@@ -94,6 +95,8 @@ protected:
 
     virtual Result onBeforeDestroy() { return Result::OK; }
     virtual Result onAfterDestroy() { return Result::OK; }
+
+    virtual Result updateServiceFrameCounter() = 0;
 
     static SLuint32 getDefaultByteOrder();
 
