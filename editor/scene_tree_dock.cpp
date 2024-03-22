@@ -976,58 +976,60 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
-			if (selection.size() != 1) {
-				accept->set_text(vformat(TTR("Saving the branch as a scene requires selecting only one node, but you have selected %d nodes."), selection.size()));
-				accept->popup_centered();
-				break;
+			for(Node* tocopy : selection){
+				if (tocopy == scene) {
+					accept->set_text(TTR("Can't save the root node branch as an instantiated scene.\nTo create an editable copy of the current scene, duplicate it using the FileSystem dock context menu\nor create an inherited scene using Scene > New Inherited Scene... instead."));
+					accept->popup_centered();
+					continue;
+				}
+
+				if (tocopy != editor_data->get_edited_scene_root() && !tocopy->get_scene_file_path().is_empty()) {
+					accept->set_text(TTR("Can't save the branch of an already instantiated scene.\nTo create a variation of a scene, you can make an inherited scene based on the instantiated scene using Scene > New Inherited Scene... instead. Fucker."));
+					accept->popup_centered();
+					continue;
+				}
+
+				if (tocopy->get_owner() != scene) {
+					accept->set_text(TTR("Can't save a branch which is a child of an already instantiated scene.\nTo save this branch into its own scene, open the original scene, right click on this branch, and select \"Save Branch as Scene\"."));
+					accept->popup_centered();
+					continue;
+				}
+
+				if (scene->get_scene_inherited_state().is_valid() && scene->get_scene_inherited_state()->find_node_by_path(scene->get_path_to(tocopy)) >= 0) {
+					accept->set_text(TTR("Can't save a branch which is part of an inherited scene.\nTo save this branch into its own scene, open the original scene, right click on this branch, and select \"Save Branch as Scene\"."));
+					accept->popup_centered();
+					continue;
+				}
+
+				new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+
+				List<String> extensions;
+				Ref<PackedScene> sd = memnew(PackedScene);
+				ResourceSaver::get_recognized_extensions(sd, &extensions);
+				new_scene_from_dialog->clear_filters();
+				for (int i = 0; i < extensions.size(); i++) {
+					new_scene_from_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
+				}
+
+				String existing;
+				if (extensions.size()) {
+					String root_name(tocopy->get_name());
+					root_name = EditorNode::adjust_scene_name_casing(root_name);
+					existing = root_name + "." + extensions.front()->get().to_lower();
+				}
+
+				if(selection.size() == 1){
+					new_scene_from_dialog->set_current_path(existing);
+					new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
+					new_scene_from_dialog->popup_file_dialog();
+
+				}else{
+					_new_scene_from_node(current_dir + existing, tocopy);
+				}
+
 			}
 
-			Node *tocopy = selection.front()->get();
 
-			if (tocopy == scene) {
-				accept->set_text(TTR("Can't save the root node branch as an instantiated scene.\nTo create an editable copy of the current scene, duplicate it using the FileSystem dock context menu\nor create an inherited scene using Scene > New Inherited Scene... instead."));
-				accept->popup_centered();
-				break;
-			}
-
-			if (tocopy != editor_data->get_edited_scene_root() && !tocopy->get_scene_file_path().is_empty()) {
-				accept->set_text(TTR("Can't save the branch of an already instantiated scene.\nTo create a variation of a scene, you can make an inherited scene based on the instantiated scene using Scene > New Inherited Scene... instead."));
-				accept->popup_centered();
-				break;
-			}
-
-			if (tocopy->get_owner() != scene) {
-				accept->set_text(TTR("Can't save a branch which is a child of an already instantiated scene.\nTo save this branch into its own scene, open the original scene, right click on this branch, and select \"Save Branch as Scene\"."));
-				accept->popup_centered();
-				break;
-			}
-
-			if (scene->get_scene_inherited_state().is_valid() && scene->get_scene_inherited_state()->find_node_by_path(scene->get_path_to(tocopy)) >= 0) {
-				accept->set_text(TTR("Can't save a branch which is part of an inherited scene.\nTo save this branch into its own scene, open the original scene, right click on this branch, and select \"Save Branch as Scene\"."));
-				accept->popup_centered();
-				break;
-			}
-
-			new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-
-			List<String> extensions;
-			Ref<PackedScene> sd = memnew(PackedScene);
-			ResourceSaver::get_recognized_extensions(sd, &extensions);
-			new_scene_from_dialog->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
-				new_scene_from_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
-			}
-
-			String existing;
-			if (extensions.size()) {
-				String root_name(tocopy->get_name());
-				root_name = EditorNode::adjust_scene_name_casing(root_name);
-				existing = root_name + "." + extensions.front()->get().to_lower();
-			}
-			new_scene_from_dialog->set_current_path(existing);
-
-			new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
-			new_scene_from_dialog->popup_file_dialog();
 		} break;
 		case TOOL_COPY_NODE_PATH: {
 			List<Node *> selection = editor_selection->get_selected_node_list();
@@ -3032,6 +3034,61 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 	}
 }
 
+void SceneTreeDock::_new_scene_from_node(const String &p_file, Node *p_node) {
+
+	if (EditorNode::get_singleton()->is_scene_open(p_file)) {
+		accept->set_text(TTR("Can't overwrite scene that is still open!"));
+		accept->popup_centered();
+		return;
+	}
+
+	Node *base = p_node;
+
+	HashMap<const Node *, Node *> duplimap;
+	HashMap<const Node *, Node *> inverse_duplimap;
+	Node *copy = base->duplicate_from_editor(duplimap);
+
+	for (const KeyValue<const Node *, Node *> &item : duplimap) {
+		inverse_duplimap[item.value] = const_cast<Node *>(item.key);
+	}
+
+	if (copy) {
+		// Handle Unique Nodes.
+		for (int i = 0; i < copy->get_child_count(false); i++) {
+			_set_node_owner_recursive(copy->get_child(i, false), copy, inverse_duplimap);
+		}
+		// Root node cannot ever be unique name in its own Scene!
+		copy->set_unique_name_in_owner(false);
+
+		Ref<PackedScene> sdata = memnew(PackedScene);
+		Error err = sdata->pack(copy);
+		memdelete(copy);
+
+		if (err != OK) {
+			accept->set_text(TTR("Couldn't save new scene. Likely dependencies (instances) couldn't be satisfied."));
+			accept->popup_centered();
+			return;
+		}
+
+		int flg = 0;
+		if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+			flg |= ResourceSaver::FLAG_COMPRESS;
+		}
+
+		err = ResourceSaver::save(sdata, p_file, flg);
+		if (err != OK) {
+			accept->set_text(TTR("Error saving scene."));
+			accept->popup_centered();
+			return;
+		}
+		_replace_with_branch_scene(p_file, base);
+	} else {
+		accept->set_text(TTR("Error duplicating scene to save it."));
+		accept->popup_centered();
+		return;
+	}
+}
+
 void SceneTreeDock::_set_node_owner_recursive(Node *p_node, Node *p_owner, const HashMap<const Node *, Node *> &p_inverse_duplimap) {
 	HashMap<const Node *, Node *>::ConstIterator E = p_inverse_duplimap.find(p_node);
 
@@ -3409,11 +3466,14 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			}
 		}
 	}
+
+	if (profile_allow_editing) {
+		menu->add_separator();
+		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
+	}
+
 	if (selection.size() == 1) {
-		if (profile_allow_editing) {
-			menu->add_separator();
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
-		}
+
 
 		if (full_selection.size() == 1) {
 			menu->add_separator();
@@ -3590,6 +3650,7 @@ void SceneTreeDock::set_filter(const String &p_filter) {
 
 void SceneTreeDock::save_branch_to_file(const String &p_directory) {
 	new_scene_from_dialog->set_current_dir(p_directory);
+	this->current_dir = p_directory;
 	_tool_selected(TOOL_NEW_SCENE_FROM);
 }
 
