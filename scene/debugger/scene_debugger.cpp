@@ -603,10 +603,7 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 
 		Ref<Resource> res = var;
 
-		Array prop;
-		prop.push_back(pi.name);
-		prop.push_back(pi.type);
-
+		Array prop = { pi.name, pi.type };
 		PropertyHint hint = pi.hint;
 		String hint_string = pi.hint_string;
 		if (res.is_valid() && !res->get_path().is_empty()) {

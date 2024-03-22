@@ -161,25 +161,13 @@ TEST_CASE("[JSON][Native] Conversion between native and JSON formats") {
 
 	// `Array`.
 
-	Array arr;
-	arr.push_back(true);
-	arr.push_back(1);
-	arr.push_back("abc");
-
+	Array arr = { true, 1, "abc" };
 	test(arr, R"([true,"i:1","s:abc"])");
 
-	TypedArray<int64_t> int_arr;
-	int_arr.push_back(1);
-	int_arr.push_back(2);
-	int_arr.push_back(3);
-
+	TypedArray<int64_t> int_arr = { 1, 2, 3 };
 	test(int_arr, R"({"type":"Array","elem_type":"int","args":["i:1","i:2","i:3"]})");
 
-	Array arr2;
-	arr2.push_back(1);
-	arr2.push_back(res);
-	arr2.push_back(9);
-
+	Array arr2 = { 1, res, 9 };
 	const String arr2_repr = vformat(R"(["i:1",%s,"i:9"])", res_repr);
 
 	test(arr2, arr2_repr, true);
@@ -188,9 +176,7 @@ TEST_CASE("[JSON][Native] Conversion between native and JSON formats") {
 	CHECK(decode(arr2_repr).get_construct_string() == "[1, null, 9]");
 	ERR_PRINT_ON;
 
-	TypedArray<Resource> res_arr;
-	res_arr.push_back(res);
-
+	TypedArray<Resource> res_arr = { res };
 	const String res_arr_repr = vformat(R"({"type":"Array","elem_type":"Resource","args":[%s]})", res_repr);
 
 	test(res_arr, res_arr_repr, true);

@@ -305,8 +305,7 @@ void TileSet::TerrainsPattern::from_array(Array p_terrains) {
 }
 
 Array TileSet::TerrainsPattern::as_array() const {
-	Array output;
-	output.push_back(get_terrain());
+	Array output = { get_terrain() };
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 		if (is_valid_bit[i]) {
 			output.push_back(bits[i]);
@@ -1177,42 +1176,26 @@ void TileSet::set_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_f
 	ERR_FAIL_COND(p_source_from == TileSet::INVALID_SOURCE || p_source_to == TileSet::INVALID_SOURCE);
 	ERR_FAIL_COND(p_coords_from == TileSetSource::INVALID_ATLAS_COORDS || p_coords_to == TileSetSource::INVALID_ATLAS_COORDS);
 
-	Array from;
-	from.push_back(p_source_from);
-	from.push_back(p_coords_from);
-
-	Array to;
-	to.push_back(p_source_to);
-	to.push_back(p_coords_to);
-
+	Array from = { p_source_from, p_coords_from };
+	Array to = { p_source_to, p_coords_to };
 	coords_level_proxies[from] = to;
 
 	emit_changed();
 }
 
 Array TileSet::get_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_from) {
-	Array from;
-	from.push_back(p_source_from);
-	from.push_back(p_coords_from);
-
+	Array from = { p_source_from, p_coords_from };
 	ERR_FAIL_COND_V(!coords_level_proxies.has(from), Array());
-
 	return coords_level_proxies[from];
 }
 
 bool TileSet::has_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_from) {
-	Array from;
-	from.push_back(p_source_from);
-	from.push_back(p_coords_from);
-
+	Array from = { p_source_from, p_coords_from };
 	return coords_level_proxies.has(from);
 }
 
 void TileSet::remove_coords_level_tile_proxy(int p_source_from, Vector2i p_coords_from) {
-	Array from;
-	from.push_back(p_source_from);
-	from.push_back(p_coords_from);
-
+	Array from = { p_source_from, p_coords_from };
 	ERR_FAIL_COND(!coords_level_proxies.has(from));
 
 	coords_level_proxies.erase(from);
@@ -1224,47 +1207,27 @@ void TileSet::set_alternative_level_tile_proxy(int p_source_from, Vector2i p_coo
 	ERR_FAIL_COND(p_source_from == TileSet::INVALID_SOURCE || p_source_to == TileSet::INVALID_SOURCE);
 	ERR_FAIL_COND(p_coords_from == TileSetSource::INVALID_ATLAS_COORDS || p_coords_to == TileSetSource::INVALID_ATLAS_COORDS);
 
-	Array from;
-	from.push_back(p_source_from);
-	from.push_back(p_coords_from);
-	from.push_back(p_alternative_from);
-
-	Array to;
-	to.push_back(p_source_to);
-	to.push_back(p_coords_to);
-	to.push_back(p_alternative_to);
-
+	Array from = { p_source_from, p_coords_from, p_alternative_from };
+	Array to = { p_source_to, p_coords_to, p_alternative_to };
 	alternative_level_proxies[from] = to;
 
 	emit_changed();
 }
 
 Array TileSet::get_alternative_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from) {
-	Array from;
-	from.push_back(p_source_from);
-	from.push_back(p_coords_from);
-	from.push_back(p_alternative_from);
-
+	Array from = { p_source_from, p_coords_from, p_alternative_from };
 	ERR_FAIL_COND_V(!alternative_level_proxies.has(from), Array());
 
 	return alternative_level_proxies[from];
 }
 
 bool TileSet::has_alternative_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from) {
-	Array from;
-	from.push_back(p_source_from);
-	from.push_back(p_coords_from);
-	from.push_back(p_alternative_from);
-
+	Array from = { p_source_from, p_coords_from, p_alternative_from };
 	return alternative_level_proxies.has(from);
 }
 
 void TileSet::remove_alternative_level_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from) {
-	Array from;
-	from.push_back(p_source_from);
-	from.push_back(p_coords_from);
-	from.push_back(p_alternative_from);
-
+	Array from = { p_source_from, p_coords_from, p_alternative_from };
 	ERR_FAIL_COND(!alternative_level_proxies.has(from));
 
 	alternative_level_proxies.erase(from);
@@ -1306,10 +1269,7 @@ Array TileSet::get_alternative_level_tile_proxies() const {
 }
 
 Array TileSet::map_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_alternative_from) const {
-	Array from;
-	from.push_back(p_source_from);
-	from.push_back(p_coords_from);
-	from.push_back(p_alternative_from);
+	Array from = { p_source_from, p_coords_from, p_alternative_from };
 
 	// Check if the tile is valid, and if so, don't map the tile and return the input.
 	if (has_source(p_source_from)) {
@@ -1334,17 +1294,11 @@ Array TileSet::map_tile_proxy(int p_source_from, Vector2i p_coords_from, int p_a
 
 	// Source matches.
 	if (source_level_proxies.has(p_source_from)) {
-		Array output;
-		output.push_back(source_level_proxies[p_source_from]);
-		output.push_back(p_coords_from);
-		output.push_back(p_alternative_from);
+		Array output = { source_level_proxies[p_source_from], p_coords_from, p_alternative_from };
 		return output;
 	}
 
-	Array output;
-	output.push_back(p_source_from);
-	output.push_back(p_coords_from);
-	output.push_back(p_alternative_from);
+	Array output = { p_source_from, p_coords_from, p_alternative_from };
 	return output;
 }
 
@@ -3423,15 +3377,8 @@ void TileSet::_compatibility_conversion() {
 					}
 
 					// Add to the mapping.
-					Array key_array;
-					key_array.push_back(flip_h);
-					key_array.push_back(flip_v);
-					key_array.push_back(transpose);
-
-					Array value_array;
-					value_array.push_back(source_id);
-					value_array.push_back(coords);
-					value_array.push_back(alternative_tile);
+					Array key_array = { flip_h, flip_v, transpose };
+					Array value_array = { source_id, coords, alternative_tile };
 
 					if (!compatibility_tilemap_mapping.has(E.key)) {
 						compatibility_tilemap_mapping[E.key] = RBMap<Array, Array>();
@@ -3539,16 +3486,8 @@ void TileSet::_compatibility_conversion() {
 							}
 
 							// Add to the mapping.
-							Array key_array;
-							key_array.push_back(coords);
-							key_array.push_back(flip_h);
-							key_array.push_back(flip_v);
-							key_array.push_back(transpose);
-
-							Array value_array;
-							value_array.push_back(source_id);
-							value_array.push_back(coords);
-							value_array.push_back(alternative_tile);
+							Array key_array = { coords, flip_h, flip_v, transpose };
+							Array value_array = { source_id, coords, alternative_tile };
 
 							if (!compatibility_tilemap_mapping.has(E.key)) {
 								compatibility_tilemap_mapping[E.key] = RBMap<Array, Array>();
@@ -3673,10 +3612,11 @@ void TileSet::_compatibility_conversion() {
 }
 
 Array TileSet::compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool p_flip_h, bool p_flip_v, bool p_transpose) {
-	Array cannot_convert_array;
-	cannot_convert_array.push_back(TileSet::INVALID_SOURCE);
-	cannot_convert_array.push_back(TileSetAtlasSource::INVALID_ATLAS_COORDS);
-	cannot_convert_array.push_back(TileSetAtlasSource::INVALID_TILE_ALTERNATIVE);
+	Array cannot_convert_array = {
+		TileSet::INVALID_SOURCE,
+		TileSetAtlasSource::INVALID_ATLAS_COORDS,
+		TileSetAtlasSource::INVALID_TILE_ALTERNATIVE
+	};
 
 	if (!compatibility_tilemap_mapping.has(p_tile_id)) {
 		return cannot_convert_array;
@@ -3685,21 +3625,14 @@ Array TileSet::compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool 
 	int tile_mode = compatibility_tilemap_mapping_tile_modes[p_tile_id];
 	switch (tile_mode) {
 		case COMPATIBILITY_TILE_MODE_SINGLE_TILE: {
-			Array a;
-			a.push_back(p_flip_h);
-			a.push_back(p_flip_v);
-			a.push_back(p_transpose);
+			Array a = { p_flip_h, p_flip_v, p_transpose };
 			return compatibility_tilemap_mapping[p_tile_id][a];
 		}
 		case COMPATIBILITY_TILE_MODE_AUTO_TILE:
 			return cannot_convert_array;
 			break;
 		case COMPATIBILITY_TILE_MODE_ATLAS_TILE: {
-			Array a;
-			a.push_back(p_coords);
-			a.push_back(p_flip_h);
-			a.push_back(p_flip_v);
-			a.push_back(p_transpose);
+			Array a = { p_coords, p_flip_h, p_flip_v, p_transpose };
 			return compatibility_tilemap_mapping[p_tile_id][a];
 		}
 		default:

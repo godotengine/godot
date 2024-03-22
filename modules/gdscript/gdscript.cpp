@@ -2697,8 +2697,7 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 }
 
 void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
-	Array scripts;
-	scripts.push_back(p_script);
+	Array scripts = { p_script };
 	reload_scripts(scripts, p_soft_reload);
 }
 

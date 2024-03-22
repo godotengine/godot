@@ -299,8 +299,7 @@ String OpenXRAPI::get_error_string(XrResult result) const {
 	}
 
 	if (instance == XR_NULL_HANDLE) {
-		Array args;
-		args.push_back(Variant(result));
+		Array args = { Variant(result) };
 		return String("Error code {0}").format(args);
 	}
 

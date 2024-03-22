@@ -59,8 +59,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 	text_edit->grab_focus();
 
-	Array empty_signal_args;
-	empty_signal_args.push_back(Array());
+	Array empty_signal_args = { {} };
 
 	SUBCASE("[TextEdit] text entry") {
 		SIGNAL_WATCH(text_edit, "text_set");
@@ -6445,8 +6444,7 @@ TEST_CASE("[SceneTree][TextEdit] versioning") {
 
 		CHECK(text_edit->get_caret_count() == 1);
 
-		Array caret_index;
-		caret_index.push_back(0);
+		Array caret_index = { 0 };
 
 		for (int i = 1; i < 4; i++) {
 			caret_index.push_back(text_edit->add_caret(i, 0));
@@ -6710,8 +6708,7 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 	text_edit->set_multiple_carets_enabled(true);
 
-	Array empty_signal_args;
-	empty_signal_args.push_back(Array());
+	Array empty_signal_args = { {} };
 
 	SIGNAL_WATCH(text_edit, "caret_changed");
 
@@ -8005,8 +8002,7 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
-	Array empty_signal_args;
-	empty_signal_args.push_back(Array());
+	Array empty_signal_args = { {} };
 
 	SIGNAL_WATCH(text_edit, "gutter_clicked");
 	SIGNAL_WATCH(text_edit, "gutter_added");

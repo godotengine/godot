@@ -1031,8 +1031,7 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 	p_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(p_resource.ptr()));
 	p_item->set_editable(0, true);
 
-	Array meta;
-	meta.append(p_resource);
+	Array meta = { p_resource };
 	p_item->set_metadata(0, meta);
 
 	if (!p_property_name.is_empty()) {

@@ -150,9 +150,7 @@ void MultiplayerDebugger::BandwidthProfiler::tick(double p_frame_time, double p_
 		int incoming_bandwidth = bandwidth_usage(bandwidth_in, bandwidth_in_ptr);
 		int outgoing_bandwidth = bandwidth_usage(bandwidth_out, bandwidth_out_ptr);
 
-		Array arr;
-		arr.push_back(incoming_bandwidth);
-		arr.push_back(outgoing_bandwidth);
+		Array arr = { incoming_bandwidth, outgoing_bandwidth };
 		EngineDebugger::get_singleton()->send_message("multiplayer:bandwidth", arr);
 	}
 }
@@ -160,8 +158,7 @@ void MultiplayerDebugger::BandwidthProfiler::tick(double p_frame_time, double p_
 // RPCProfiler
 
 Array MultiplayerDebugger::RPCFrame::serialize() {
-	Array arr;
-	arr.push_back(infos.size() * 6);
+	Array arr = { infos.size() * 6 };
 	for (int i = 0; i < infos.size(); ++i) {
 		arr.push_back(uint64_t(infos[i].node));
 		arr.push_back(infos[i].node_path);
@@ -270,8 +267,7 @@ bool MultiplayerDebugger::SyncInfo::read_from_array(const Array &p_arr, int p_of
 }
 
 Array MultiplayerDebugger::ReplicationFrame::serialize() {
-	Array arr;
-	arr.push_back(infos.size() * 7);
+	Array arr = { infos.size() * 7 };
 	for (const KeyValue<ObjectID, SyncInfo> &E : infos) {
 		E.value.write_to_array(arr);
 	}
