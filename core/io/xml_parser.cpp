@@ -86,23 +86,21 @@ Error XMLParser::_parse_closing_xml_element() {
 	node_name = String::utf8(pBeginClose, (int)(P - pBeginClose));
 
 	// remove possible white spaces at the beginning
-	while(true) {
-		if(node_name.begins_with(" ")) {
-			node_name = node_name.replace_first(" ","");
-		}
-		else {
+	while (true) {
+		if (node_name.begins_with(" ")) {
+			node_name = node_name.replace_first(" ", "");
+		} else {
 			break;
 		}
 	}
 
 	// remove possible white spaces at the end
-	while(true) {
-		if(node_name.ends_with(" ")) {
+	while (true) {
+		if (node_name.ends_with(" ")) {
 			node_name = node_name.reverse();
-			node_name = node_name.replace_first(" ","");
+			node_name = node_name.replace_first(" ", "");
 			node_name = node_name.reverse();
-		}
-		else {
+		} else {
 			break;
 		}
 	}
@@ -247,19 +245,19 @@ Error XMLParser::_parse_opening_xml_element() {
 	auto P_copy = P;
 	int i = length;
 	bool found = false;
-	while(i>0 && *P_copy){
-		if(*P_copy == '>'){
+	while (i > 0 && *P_copy) {
+		if (*P_copy == '>') {
 			found = true;
 			break;
 		}
-		if(*P_copy == '<'){
-			ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Malformatted XML, missing closing tag.");
+		if (*P_copy == '<') {
+			ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid element, missing closing tag.");
 		}
 		i--;
 		P_copy++;
 	}
-	if(!found){
-		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Malformatted XML, missing closing tag.");
+	if (!found) {
+		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid element, missing closing tag.");
 	}
 
 	// find end of element
@@ -328,7 +326,7 @@ Error XMLParser::_parse_opening_xml_element() {
 				// tag is closed directly
 				next_char();
 				// check if the ending char is a closing tag
-				if(*P != '>') {
+				if (*P != '>') {
 					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid tag name, a tag cannot contain any character after '/' except for '>'.");
 				}
 				node_empty = true;
