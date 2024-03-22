@@ -85,25 +85,7 @@ Error XMLParser::_parse_closing_xml_element() {
 
 	node_name = String::utf8(pBeginClose, (int)(P - pBeginClose));
 
-	// remove possible white spaces at the beginning
-	while (true) {
-		if (node_name.begins_with(" ")) {
-			node_name = node_name.replace_first(" ", "");
-		} else {
-			break;
-		}
-	}
-
-	// remove possible white spaces at the end
-	while (true) {
-		if (node_name.ends_with(" ")) {
-			node_name = node_name.reverse();
-			node_name = node_name.replace_first(" ", "");
-			node_name = node_name.reverse();
-		} else {
-			break;
-		}
-	}
+	node_name = node_name.strip_edges(true, true);
 
 #ifdef DEBUG_XML
 	print_line("XML CLOSE: " + node_name);
@@ -225,14 +207,10 @@ void XMLParser::_parse_comment() {
 
 Error XMLParser::_parse_opening_xml_element() {
 	// check if the first character is a digit
-	if (isdigit(*P)) {
-		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid tag name, a tag cannot begin with a number.");
-	}
+	ERR_FAIL_COND_V_MSG(isdigit(*P), ERR_INVALID_DATA, "Invalid tag name, a tag cannot begin with a number.");
 
 	// check if the first character is a punctuation
-	if (_is_punctuation(*P)) {
-		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid tag name, a tag cannot begin with a punctuation character.");
-	}
+	ERR_FAIL_COND_V_MSG(_is_punctuation(*P), ERR_INVALID_DATA, "Invalid tag name, a tag cannot begin with a punctuation character.");
 
 	node_type = NODE_ELEMENT;
 	node_empty = false;
