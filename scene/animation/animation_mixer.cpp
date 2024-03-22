@@ -1634,7 +1634,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							default:
 								break;
 						}
-						if (player2->is_playing() || seeked) {
+						if (player2->is_playing()) {
 							player2->seek(at_anim_pos);
 							player2->play(anim_name);
 							t->playing = true;
