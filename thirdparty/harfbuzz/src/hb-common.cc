@@ -815,7 +815,7 @@ parse_tag (const char **pp, const char *end, hb_tag_t *tag)
   }
 
   const char *p = *pp;
-  while (*pp < end && (ISALNUM(**pp) || **pp == '_'))
+  while (*pp < end && (**pp != ' ' && **pp != '=' && **pp != '[' && **pp != quote))
     (*pp)++;
 
   if (p == *pp || *pp - p > 4)

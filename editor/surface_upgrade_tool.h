@@ -31,19 +31,52 @@
 #ifndef SURFACE_UPGRADE_TOOL_H
 #define SURFACE_UPGRADE_TOOL_H
 
-#include "scene/main/node.h"
+#include "scene/gui/dialogs.h"
 
 class EditorFileSystemDirectory;
 
-class SurfaceUpgradeTool {
-	static void upgrade_all_meshes();
+class SurfaceUpgradeTool : public Object {
+	GDCLASS(SurfaceUpgradeTool, Object);
 
-	static void _show_popup();
-	static void _add_files(EditorFileSystemDirectory *p_dir, HashSet<String> &r_paths, PackedStringArray &r_files);
+	static SurfaceUpgradeTool *singleton;
+
+	Mutex mutex;
+
+	bool show_requested = false;
+	bool updating = false;
+
+	static void _try_show_popup();
+	void _show_popup();
+
+	void _add_files(EditorFileSystemDirectory *p_dir, Vector<String> &r_reimport_paths, Vector<String> &r_resave_paths);
+
+protected:
+	static void _bind_methods();
 
 public:
+	static SurfaceUpgradeTool *get_singleton() { return singleton; };
+
+	bool is_show_requested() const { return show_requested; };
+	void show_popup() { _show_popup(); }
+
+	void prepare_upgrade();
+	void begin_upgrade();
+	void finish_upgrade();
+
 	SurfaceUpgradeTool();
 	~SurfaceUpgradeTool();
+};
+
+class SurfaceUpgradeDialog : public ConfirmationDialog {
+	GDCLASS(SurfaceUpgradeDialog, ConfirmationDialog);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void popup_on_demand();
+
+	SurfaceUpgradeDialog();
 };
 
 #endif // SURFACE_UPGRADE_TOOL_H

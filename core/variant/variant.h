@@ -70,6 +70,7 @@ typedef Vector<int32_t> PackedInt32Array;
 typedef Vector<int64_t> PackedInt64Array;
 typedef Vector<float> PackedFloat32Array;
 typedef Vector<double> PackedFloat64Array;
+typedef Vector<real_t> PackedRealArray;
 typedef Vector<String> PackedStringArray;
 typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
@@ -175,7 +176,7 @@ private:
 	struct PackedArrayRefBase {
 		SafeRefCount refcount;
 		_FORCE_INLINE_ PackedArrayRefBase *reference() {
-			if (this->refcount.ref()) {
+			if (refcount.ref()) {
 				return this;
 			} else {
 				return nullptr;
@@ -203,7 +204,7 @@ private:
 		_FORCE_INLINE_ virtual ~PackedArrayRefBase() {} //needs virtual destructor, but make inline
 	};
 
-	template <class T>
+	template <typename T>
 	struct PackedArrayRef : public PackedArrayRefBase {
 		Vector<T> array;
 		static _FORCE_INLINE_ PackedArrayRef<T> *create() {
@@ -338,6 +339,9 @@ public:
 	_FORCE_INLINE_ bool is_num() const {
 		return type == INT || type == FLOAT;
 	}
+	_FORCE_INLINE_ bool is_string() const {
+		return type == STRING || type == STRING_NAME;
+	}
 	_FORCE_INLINE_ bool is_array() const {
 		return type >= ARRAY;
 	}
@@ -400,21 +404,21 @@ public:
 	operator Dictionary() const;
 	operator Array() const;
 
-	operator Vector<uint8_t>() const;
-	operator Vector<int32_t>() const;
-	operator Vector<int64_t>() const;
-	operator Vector<float>() const;
-	operator Vector<double>() const;
-	operator Vector<String>() const;
-	operator Vector<Vector3>() const;
-	operator Vector<Color>() const;
+	operator PackedByteArray() const;
+	operator PackedInt32Array() const;
+	operator PackedInt64Array() const;
+	operator PackedFloat32Array() const;
+	operator PackedFloat64Array() const;
+	operator PackedStringArray() const;
+	operator PackedVector3Array() const;
+	operator PackedVector2Array() const;
+	operator PackedColorArray() const;
+
+	operator Vector<::RID>() const;
 	operator Vector<Plane>() const;
 	operator Vector<Face3>() const;
-
 	operator Vector<Variant>() const;
 	operator Vector<StringName>() const;
-	operator Vector<::RID>() const;
-	operator Vector<Vector2>() const;
 
 	// some core type enums to convert to
 	operator Side() const;
@@ -469,21 +473,21 @@ public:
 	Variant(const Dictionary &p_dictionary);
 
 	Variant(const Array &p_array);
-	Variant(const Vector<Plane> &p_array); // helper
-	Variant(const Vector<uint8_t> &p_byte_array);
-	Variant(const Vector<int32_t> &p_int32_array);
-	Variant(const Vector<int64_t> &p_int64_array);
-	Variant(const Vector<float> &p_float32_array);
-	Variant(const Vector<double> &p_float64_array);
-	Variant(const Vector<String> &p_string_array);
-	Variant(const Vector<Vector3> &p_vector3_array);
-	Variant(const Vector<Color> &p_color_array);
-	Variant(const Vector<Face3> &p_face_array);
+	Variant(const PackedByteArray &p_byte_array);
+	Variant(const PackedInt32Array &p_int32_array);
+	Variant(const PackedInt64Array &p_int64_array);
+	Variant(const PackedFloat32Array &p_float32_array);
+	Variant(const PackedFloat64Array &p_float64_array);
+	Variant(const PackedStringArray &p_string_array);
+	Variant(const PackedVector2Array &p_vector2_array);
+	Variant(const PackedVector3Array &p_vector3_array);
+	Variant(const PackedColorArray &p_color_array);
 
+	Variant(const Vector<::RID> &p_array); // helper
+	Variant(const Vector<Plane> &p_array); // helper
+	Variant(const Vector<Face3> &p_face_array);
 	Variant(const Vector<Variant> &p_array);
 	Variant(const Vector<StringName> &p_array);
-	Variant(const Vector<::RID> &p_array); // helper
-	Variant(const Vector<Vector2> &p_array); // helper
 
 	Variant(const IPAddress &p_address);
 
@@ -498,6 +502,7 @@ public:
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(KeyLocation)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(MIDIMessage)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(MouseButton)
 
@@ -568,6 +573,7 @@ public:
 	static ValidatedBuiltInMethod get_validated_builtin_method(Variant::Type p_type, const StringName &p_method);
 	static PTRBuiltInMethod get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method);
 
+	static MethodInfo get_builtin_method_info(Variant::Type p_type, const StringName &p_method);
 	static int get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method);
 	static Variant::Type get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument);
 	static String get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument);
@@ -703,9 +709,20 @@ public:
 	bool has_key(const Variant &p_key, bool &r_valid) const;
 
 	/* Generic */
-
-	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr);
-	Variant get(const Variant &p_index, bool *r_valid = nullptr) const;
+	enum VariantSetError {
+		SET_OK,
+		SET_KEYED_ERR,
+		SET_NAMED_ERR,
+		SET_INDEXED_ERR
+	};
+	enum VariantGetError {
+		GET_OK,
+		GET_KEYED_ERR,
+		GET_NAMED_ERR,
+		GET_INDEXED_ERR
+	};
+	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr, VariantSetError *err_code = nullptr);
+	Variant get(const Variant &p_index, bool *r_valid = nullptr, VariantGetError *err_code = nullptr) const;
 	bool in(const Variant &p_index, bool *r_valid = nullptr) const;
 
 	bool iter_init(Variant &r_iter, bool &r_valid) const;
@@ -765,8 +782,8 @@ public:
 	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
 
 	static void get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums);
-	static void get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations);
-	static int get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid = nullptr);
+	static void get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations);
+	static int get_enum_value(Variant::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid = nullptr);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);
@@ -848,7 +865,7 @@ Variant Callable::call(VarArgs... p_args) const {
 }
 
 template <typename... VarArgs>
-Callable Callable::bind(VarArgs... p_args) {
+Callable Callable::bind(VarArgs... p_args) const {
 	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 	const Variant *argptrs[sizeof...(p_args) + 1];
 	for (uint32_t i = 0; i < sizeof...(p_args); i++) {

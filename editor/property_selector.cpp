@@ -34,7 +34,7 @@
 #include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tree.h"
@@ -569,5 +569,7 @@ PropertySelector::PropertySelector() {
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
+	help_bit->get_rich_text()->set_fit_content(false);
+	help_bit->get_rich_text()->set_custom_minimum_size(Size2(help_bit->get_rich_text()->get_minimum_size().x, 135 * EDSCALE));
 	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
 }

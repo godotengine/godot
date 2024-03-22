@@ -44,7 +44,7 @@ using namespace godot;
 
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
 
-#else
+#elif defined(GODOT_MODULE)
 // Headers for building as built-in module.
 
 #include "core/config/project_settings.h"
@@ -59,10 +59,16 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
+#ifdef _MSC_VER
+#pragma warning(disable : 4458)
+#endif
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>
 #include <msdfgen.h>
+#ifdef _MSC_VER
+#pragma warning(default : 4458)
+#endif
 #endif
 
 #ifdef MODULE_SVG_ENABLED
@@ -72,8 +78,6 @@ using namespace godot;
 #endif
 
 /*************************************************************************/
-
-#define OT_TAG(c1, c2, c3, c4) ((int32_t)((((uint32_t)(c1)&0xff) << 24) | (((uint32_t)(c2)&0xff) << 16) | (((uint32_t)(c3)&0xff) << 8) | ((uint32_t)(c4)&0xff)))
 
 bool TextServerFallback::_has_feature(Feature p_feature) const {
 	switch (p_feature) {
@@ -95,7 +99,7 @@ bool TextServerFallback::_has_feature(Feature p_feature) const {
 String TextServerFallback::_get_name() const {
 #ifdef GDEXTENSION
 	return "Fallback (GDExtension)";
-#else
+#elif defined(GODOT_MODULE)
 	return "Fallback (Built-in)";
 #endif
 }
@@ -242,7 +246,10 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 
 	ShelfPackTexture *ct = p_data->textures.ptrw();
 	for (int32_t i = 0; i < p_data->textures.size(); i++) {
-		if (p_image_format != ct[i].format) {
+		if (ct[i].image.is_null()) {
+			continue;
+		}
+		if (p_image_format != ct[i].image->get_format()) {
 			continue;
 		}
 		if (mw > ct[i].texture_w || mh > ct[i].texture_h) { // Too big for this texture.
@@ -274,12 +281,11 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 		}
 
 		ShelfPackTexture tex = ShelfPackTexture(texsize, texsize);
-		tex.format = p_image_format;
-		tex.imgdata.resize(texsize * texsize * p_color_size);
+		tex.image = Image::create_empty(texsize, texsize, false, p_image_format);
 		{
 			// Zero texture.
-			uint8_t *w = tex.imgdata.ptrw();
-			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.imgdata.size(), ret);
+			uint8_t *w = tex.image->ptrw();
+			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.image->data_size(), ret);
 			// Initialize the texture to all-white pixels to prevent artifacts when the
 			// font is displayed at a non-default scale with filtering enabled.
 			if (p_color_size == 2) {
@@ -456,12 +462,12 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 		msdfgen::msdfErrorCorrection(image, shape, projection, p_pixel_range, config);
 
 		{
-			uint8_t *wr = tex.imgdata.ptrw();
+			uint8_t *wr = tex.image->ptrw();
 
 			for (int i = 0; i < h; i++) {
 				for (int j = 0; j < w; j++) {
 					int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * 4;
-					ERR_FAIL_COND_V(ofs >= tex.imgdata.size(), FontGlyph());
+					ERR_FAIL_COND_V(ofs >= tex.image->data_size(), FontGlyph());
 					wr[ofs + 0] = (uint8_t)(CLAMP(image(j, i)[0] * 256.f, 0.f, 255.f));
 					wr[ofs + 1] = (uint8_t)(CLAMP(image(j, i)[1] * 256.f, 0.f, 255.f));
 					wr[ofs + 2] = (uint8_t)(CLAMP(image(j, i)[2] * 256.f, 0.f, 255.f));
@@ -521,12 +527,12 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 	ShelfPackTexture &tex = p_data->textures.write[tex_pos.index];
 
 	{
-		uint8_t *wr = tex.imgdata.ptrw();
+		uint8_t *wr = tex.image->ptrw();
 
 		for (int i = 0; i < h; i++) {
 			for (int j = 0; j < w; j++) {
 				int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * color_size;
-				ERR_FAIL_COND_V(ofs >= tex.imgdata.size(), FontGlyph());
+				ERR_FAIL_COND_V(ofs >= tex.image->data_size(), FontGlyph());
 				switch (bitmap.pixel_mode) {
 					case FT_PIXEL_MODE_MONO: {
 						int byte = i * bitmap.pitch + (j >> 3);
@@ -548,14 +554,14 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 					case FT_PIXEL_MODE_LCD: {
 						int ofs_color = i * bitmap.pitch + (j * 3);
 						if (p_bgra) {
-							wr[ofs + 0] = bitmap.buffer[ofs_color + 0];
-							wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
-							wr[ofs + 2] = bitmap.buffer[ofs_color + 2];
-							wr[ofs + 3] = 255;
-						} else {
 							wr[ofs + 0] = bitmap.buffer[ofs_color + 2];
 							wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
 							wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
+							wr[ofs + 3] = 255;
+						} else {
+							wr[ofs + 0] = bitmap.buffer[ofs_color + 0];
+							wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
+							wr[ofs + 2] = bitmap.buffer[ofs_color + 2];
 							wr[ofs + 3] = 255;
 						}
 					} break;
@@ -634,7 +640,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data,
 		if (p_font_data->force_autohinter) {
 			flags |= FT_LOAD_FORCE_AUTOHINT;
 		}
-		if (outline) {
+		if (outline || (p_font_data->disable_embedded_bitmaps && !FT_HAS_COLOR(fd->face))) {
 			flags |= FT_LOAD_NO_BITMAP;
 		} else if (FT_HAS_COLOR(fd->face)) {
 			flags |= FT_LOAD_COLOR;
@@ -905,8 +911,8 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 					coords.write[i] = CLAMP(var_value * 65536.0, amaster->axis[i].minimum, amaster->axis[i].maximum);
 				}
 
-				if (p_font_data->variation_coordinates.has(_tag_to_name(var_tag))) {
-					var_value = p_font_data->variation_coordinates[_tag_to_name(var_tag)];
+				if (p_font_data->variation_coordinates.has(tag_to_name(var_tag))) {
+					var_value = p_font_data->variation_coordinates[tag_to_name(var_tag)];
 					coords.write[i] = CLAMP(var_value * 65536.0, amaster->axis[i].minimum, amaster->axis[i].maximum);
 				}
 			}
@@ -1168,6 +1174,25 @@ TextServer::FontAntialiasing TextServerFallback::_font_get_antialiasing(const RI
 	return fd->antialiasing;
 }
 
+void TextServerFallback::_font_set_disable_embedded_bitmaps(const RID &p_font_rid, bool p_disable_embedded_bitmaps) {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->disable_embedded_bitmaps != p_disable_embedded_bitmaps) {
+		_font_clear_cache(fd);
+		fd->disable_embedded_bitmaps = p_disable_embedded_bitmaps;
+	}
+}
+
+bool TextServerFallback::_font_get_disable_embedded_bitmaps(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->disable_embedded_bitmaps;
+}
+
 void TextServerFallback::_font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) {
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
@@ -1400,6 +1425,37 @@ int64_t TextServerFallback::_font_get_spacing(const RID &p_font_rid, SpacingType
 
 		MutexLock lock(fd->mutex);
 		return fd->extra_spacing[p_spacing];
+	}
+}
+
+void TextServerFallback::_font_set_baseline_offset(const RID &p_font_rid, float p_baseline_offset) {
+	FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		if (fdv->baseline_offset != p_baseline_offset) {
+			fdv->baseline_offset = p_baseline_offset;
+		}
+	} else {
+		FontFallback *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL(fd);
+
+		MutexLock lock(fd->mutex);
+		if (fd->baseline_offset != p_baseline_offset) {
+			_font_clear_cache(fd);
+			fd->baseline_offset = p_baseline_offset;
+		}
+	}
+}
+
+float TextServerFallback::_font_get_baseline_offset(const RID &p_font_rid) const {
+	FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		return fdv->baseline_offset;
+	} else {
+		FontFallback *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL_V(fd, 0.0);
+
+		MutexLock lock(fd->mutex);
+		return fd->baseline_offset;
 	}
 }
 
@@ -1714,16 +1770,15 @@ void TextServerFallback::_font_set_texture_image(const RID &p_font_rid, const Ve
 
 	ShelfPackTexture &tex = fd->cache[size]->textures.write[p_texture_index];
 
-	tex.imgdata = p_image->get_data();
+	tex.image = p_image;
 	tex.texture_w = p_image->get_width();
 	tex.texture_h = p_image->get_height();
-	tex.format = p_image->get_format();
 
-	Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-	if (fd->mipmaps) {
+	Ref<Image> img = p_image;
+	if (fd->mipmaps && !img->has_mipmaps()) {
+		img = p_image->duplicate();
 		img->generate_mipmaps();
 	}
-
 	tex.texture = ImageTexture::create_from_image(img);
 	tex.dirty = false;
 }
@@ -1738,7 +1793,7 @@ Ref<Image> TextServerFallback::_font_get_texture_image(const RID &p_font_rid, co
 	ERR_FAIL_INDEX_V(p_texture_index, fd->cache[size]->textures.size(), Ref<Image>());
 
 	const ShelfPackTexture &tex = fd->cache[size]->textures[p_texture_index];
-	return Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+	return tex.image;
 }
 
 void TextServerFallback::_font_set_texture_offsets(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index, const PackedInt32Array &p_offsets) {
@@ -2093,8 +2148,9 @@ RID TextServerFallback::_font_get_glyph_texture_rid(const RID &p_font_rid, const
 		if (gl[p_glyph | mod].texture_idx != -1) {
 			if (fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].dirty) {
 				ShelfPackTexture &tex = fd->cache[size]->textures.write[gl[p_glyph | mod].texture_idx];
-				Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-				if (fd->mipmaps) {
+				Ref<Image> img = tex.image;
+				if (fd->mipmaps && !img->has_mipmaps()) {
+					img = tex.image->duplicate();
 					img->generate_mipmaps();
 				}
 				if (tex.texture.is_null()) {
@@ -2139,8 +2195,9 @@ Size2 TextServerFallback::_font_get_glyph_texture_size(const RID &p_font_rid, co
 		if (gl[p_glyph | mod].texture_idx != -1) {
 			if (fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].dirty) {
 				ShelfPackTexture &tex = fd->cache[size]->textures.write[gl[p_glyph | mod].texture_idx];
-				Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-				if (fd->mipmaps) {
+				Ref<Image> img = tex.image;
+				if (fd->mipmaps && !img->has_mipmaps()) {
+					img = tex.image->duplicate();
 					img->generate_mipmaps();
 				}
 				if (tex.texture.is_null()) {
@@ -2439,6 +2496,9 @@ void TextServerFallback::_font_render_glyph(const RID &p_font_rid, const Vector2
 }
 
 void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
+	if (p_index == 0) {
+		return; // Non visual character, skip.
+	}
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
 
@@ -2476,20 +2536,24 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[index];
 	if (gl.found) {
+		if (gl.uv_rect.size.x <= 2 || gl.uv_rect.size.y <= 2) {
+			return; // Nothing to draw.
+		}
 		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->textures.size());
 
 		if (gl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
-			if (fd->cache[size]->face && (fd->cache[size]->textures[gl.texture_idx].format == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
+			if (fd->cache[size]->face && fd->cache[size]->textures[gl.texture_idx].image.is_valid() && (fd->cache[size]->textures[gl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
 			if (RenderingServer::get_singleton() != nullptr) {
 				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
 					ShelfPackTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
-					Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-					if (fd->mipmaps) {
+					Ref<Image> img = tex.image;
+					if (fd->mipmaps && !img->has_mipmaps()) {
+						img = tex.image->duplicate();
 						img->generate_mipmaps();
 					}
 					if (tex.texture.is_null()) {
@@ -2543,6 +2607,9 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 }
 
 void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
+	if (p_index == 0) {
+		return; // Non visual character, skip.
+	}
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
 
@@ -2580,20 +2647,24 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[index];
 	if (gl.found) {
+		if (gl.uv_rect.size.x <= 2 || gl.uv_rect.size.y <= 2) {
+			return; // Nothing to draw.
+		}
 		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->textures.size());
 
 		if (gl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
-			if (fd->cache[size]->face && (fd->cache[size]->textures[gl.texture_idx].format == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
+			if (fd->cache[size]->face && fd->cache[size]->textures[gl.texture_idx].image.is_valid() && (fd->cache[size]->textures[gl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
 			if (RenderingServer::get_singleton() != nullptr) {
 				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
 					ShelfPackTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
-					Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-					if (fd->mipmaps) {
+					Ref<Image> img = tex.image;
+					if (fd->mipmaps && !img->has_mipmaps()) {
+						img = tex.image->duplicate();
 						img->generate_mipmaps();
 					}
 					if (tex.texture.is_null()) {
@@ -2826,7 +2897,7 @@ void TextServerFallback::full_copy(ShapedTextDataFallback *p_shaped) {
 	ShapedTextDataFallback *parent = shaped_owner.get_or_null(p_shaped->parent);
 
 	for (const KeyValue<Variant, ShapedTextDataFallback::EmbeddedObject> &E : parent->objects) {
-		if (E.value.pos >= p_shaped->start && E.value.pos < p_shaped->end) {
+		if (E.value.start >= p_shaped->start && E.value.start < p_shaped->end) {
 			p_shaped->objects[E.key] = E.value;
 		}
 	}
@@ -2903,6 +2974,20 @@ String TextServerFallback::_shaped_text_get_custom_punctuation(const RID &p_shap
 	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_NULL_V(sd, String());
 	return sd->custom_punct;
+}
+
+void TextServerFallback::_shaped_text_set_custom_ellipsis(const RID &p_shaped, int64_t p_char) {
+	_THREAD_SAFE_METHOD_
+	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL(sd);
+	sd->el_char = p_char;
+}
+
+int64_t TextServerFallback::_shaped_text_get_custom_ellipsis(const RID &p_shaped) const {
+	_THREAD_SAFE_METHOD_
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, 0);
+	return sd->el_char;
 }
 
 void TextServerFallback::_shaped_text_set_orientation(const RID &p_shaped, TextServer::Orientation p_orientation) {
@@ -3108,7 +3193,8 @@ bool TextServerFallback::_shaped_text_add_object(const RID &p_shaped, const Vari
 	ShapedTextDataFallback::EmbeddedObject obj;
 	obj.inline_align = p_inline_align;
 	obj.rect.size = p_size;
-	obj.pos = span.start;
+	obj.start = span.start;
+	obj.end = span.end;
 	obj.baseline = p_baseline;
 
 	sd->spans.push_back(span);
@@ -3143,7 +3229,7 @@ bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const V
 			Variant key;
 			if (gl.count == 1) {
 				for (const KeyValue<Variant, ShapedTextDataFallback::EmbeddedObject> &E : sd->objects) {
-					if (E.value.pos == gl.start) {
+					if (E.value.start == gl.start) {
 						key = E.key;
 						break;
 					}
@@ -3192,7 +3278,7 @@ void TextServerFallback::_realign(ShapedTextDataFallback *p_sd) const {
 	double full_ascent = p_sd->ascent;
 	double full_descent = p_sd->descent;
 	for (KeyValue<Variant, ShapedTextDataFallback::EmbeddedObject> &E : p_sd->objects) {
-		if ((E.value.pos >= p_sd->start) && (E.value.pos < p_sd->end)) {
+		if ((E.value.start >= p_sd->start) && (E.value.start < p_sd->end)) {
 			if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 				switch (E.value.inline_align & INLINE_ALIGNMENT_TEXT_MASK) {
 					case INLINE_ALIGNMENT_TO_TOP: {
@@ -3305,11 +3391,15 @@ RID TextServerFallback::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 		for (int i = 0; i < sd_size; i++) {
 			if ((sd_glyphs[i].start >= new_sd->start) && (sd_glyphs[i].end <= new_sd->end)) {
 				Glyph gl = sd_glyphs[i];
+				if (gl.end == p_start + p_length && ((gl.flags & GRAPHEME_IS_SOFT_HYPHEN) == GRAPHEME_IS_SOFT_HYPHEN)) {
+					gl.index = 0x00ad;
+					gl.advance = font_get_glyph_advance(gl.font_rid, gl.font_size, 0x00ad).x;
+				}
 				Variant key;
 				bool find_embedded = false;
 				if (gl.count == 1) {
 					for (const KeyValue<Variant, ShapedTextDataFallback::EmbeddedObject> &E : sd->objects) {
-						if (E.value.pos == gl.start) {
+						if (E.value.start == gl.start) {
 							find_embedded = true;
 							key = E.key;
 							new_sd->objects[key] = E.value;
@@ -3418,22 +3508,22 @@ double TextServerFallback::_shaped_text_fit_to_width(const RID &p_shaped, double
 
 	if (p_jst_flags.has_flag(JUSTIFICATION_TRIM_EDGE_SPACES)) {
 		// Trim spaces.
-		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			justification_width -= sd->glyphs[start_pos].advance * sd->glyphs[start_pos].repeat;
 			sd->glyphs.write[start_pos].advance = 0;
 			start_pos += sd->glyphs[start_pos].count;
 		}
-		while ((start_pos < end_pos) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+		while ((start_pos < end_pos) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			justification_width -= sd->glyphs[end_pos].advance * sd->glyphs[end_pos].repeat;
 			sd->glyphs.write[end_pos].advance = 0;
 			end_pos -= sd->glyphs[end_pos].count;
 		}
 	} else {
 		// Skip breaks, but do not reset size.
-		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD)) {
+		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			start_pos += sd->glyphs[start_pos].count;
 		}
-		while ((start_pos < end_pos) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD)) {
+		while ((start_pos < end_pos) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			end_pos -= sd->glyphs[end_pos].count;
 		}
 	}
@@ -3442,7 +3532,7 @@ double TextServerFallback::_shaped_text_fit_to_width(const RID &p_shaped, double
 	for (int i = start_pos; i <= end_pos; i++) {
 		const Glyph &gl = sd->glyphs[i];
 		if (gl.count > 0) {
-			if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE && (gl.flags & GRAPHEME_IS_PUNCTUATION) != GRAPHEME_IS_PUNCTUATION) {
+			if ((gl.flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN && (gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE && (gl.flags & GRAPHEME_IS_PUNCTUATION) != GRAPHEME_IS_PUNCTUATION) {
 				space_count++;
 			}
 		}
@@ -3453,7 +3543,7 @@ double TextServerFallback::_shaped_text_fit_to_width(const RID &p_shaped, double
 		for (int i = start_pos; i <= end_pos; i++) {
 			Glyph &gl = sd->glyphs.write[i];
 			if (gl.count > 0) {
-				if ((gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE && (gl.flags & GRAPHEME_IS_PUNCTUATION) != GRAPHEME_IS_PUNCTUATION) {
+				if ((gl.flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN && (gl.flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE && (gl.flags & GRAPHEME_IS_PUNCTUATION) != GRAPHEME_IS_PUNCTUATION) {
 					double old_adv = gl.advance;
 					gl.advance = MAX(gl.advance + delta_width_per_space, Math::round(0.1 * gl.font_size));
 					justification_width += (gl.advance - old_adv);
@@ -3551,6 +3641,7 @@ bool TextServerFallback::_shaped_text_update_breaks(const RID &p_shaped) {
 	for (int i = 0; i < sd_size; i++) {
 		if (sd_glyphs[i].count > 0) {
 			char32_t c = sd->text[sd_glyphs[i].start - sd->start];
+			char32_t c_next = i < sd_size ? sd->text[sd_glyphs[i].start - sd->start + 1] : 0x0000;
 			if (c_punct_size == 0) {
 				if (is_punct(c) && c != 0x005F && c != ' ') {
 					sd_glyphs[i].flags |= GRAPHEME_IS_PUNCTUATION;
@@ -3568,14 +3659,21 @@ bool TextServerFallback::_shaped_text_update_breaks(const RID &p_shaped) {
 			}
 			if (is_whitespace(c) && !is_linebreak(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
-				sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
+				if (c != 0x00A0 && c != 0x202F && c != 0x2060 && c != 0x2007) { // Skip for non-breaking space variants.
+					sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_SOFT;
+				}
 			}
 			if (is_linebreak(c)) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_SPACE;
-				sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_HARD;
+				if (c != 0x000D || c_next != 0x000A) { // Skip first hard break in CR-LF pair.
+					sd_glyphs[i].flags |= GRAPHEME_IS_BREAK_HARD;
+				}
 			}
 			if (c == 0x0009 || c == 0x000b) {
 				sd_glyphs[i].flags |= GRAPHEME_IS_TAB;
+			}
+			if (c == 0x00ad) {
+				sd_glyphs[i].flags |= GRAPHEME_IS_SOFT_HYPHEN;
 			}
 
 			i += (sd_glyphs[i].count - 1);
@@ -3599,6 +3697,169 @@ bool TextServerFallback::_shaped_text_update_justification_ops(const RID &p_shap
 
 	sd->justification_ops_valid = true; // Not supported by fallback server.
 	return true;
+}
+
+RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text) {
+	RID f;
+	// Try system fallback.
+	if (_font_is_allow_system_fallback(p_fdef)) {
+		String font_name = _font_get_name(p_fdef);
+		BitField<FontStyle> font_style = _font_get_style(p_fdef);
+		int font_weight = _font_get_weight(p_fdef);
+		int font_stretch = _font_get_stretch(p_fdef);
+		Dictionary dvar = _font_get_variation_coordinates(p_fdef);
+		static int64_t wgth_tag = name_to_tag("weight");
+		static int64_t wdth_tag = name_to_tag("width");
+		static int64_t ital_tag = name_to_tag("italic");
+		if (dvar.has(wgth_tag)) {
+			font_weight = dvar[wgth_tag].operator int();
+		}
+		if (dvar.has(wdth_tag)) {
+			font_stretch = dvar[wdth_tag].operator int();
+		}
+		if (dvar.has(ital_tag) && dvar[ital_tag].operator int() == 1) {
+			font_style.set_flag(TextServer::FONT_ITALIC);
+		}
+
+		String locale = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+		PackedStringArray fallback_font_name = OS::get_singleton()->get_system_font_path_for_text(font_name, p_text, locale, p_script_code, font_weight, font_stretch, font_style & TextServer::FONT_ITALIC);
+#ifdef GDEXTENSION
+		for (int fb = 0; fb < fallback_font_name.size(); fb++) {
+			const String &E = fallback_font_name[fb];
+#elif defined(GODOT_MODULE)
+		for (const String &E : fallback_font_name) {
+#endif
+			SystemFontKey key = SystemFontKey(E, font_style & TextServer::FONT_ITALIC, font_weight, font_stretch, p_fdef, this);
+			if (system_fonts.has(key)) {
+				const SystemFontCache &sysf_cache = system_fonts[key];
+				int best_score = 0;
+				int best_match = -1;
+				for (int face_idx = 0; face_idx < sysf_cache.var.size(); face_idx++) {
+					const SystemFontCacheRec &F = sysf_cache.var[face_idx];
+					if (unlikely(!_font_has_char(F.rid, p_text[0]))) {
+						continue;
+					}
+					BitField<FontStyle> style = _font_get_style(F.rid);
+					int weight = _font_get_weight(F.rid);
+					int stretch = _font_get_stretch(F.rid);
+					int score = (20 - Math::abs(weight - font_weight) / 50);
+					score += (20 - Math::abs(stretch - font_stretch) / 10);
+					if (bool(style & TextServer::FONT_ITALIC) == bool(font_style & TextServer::FONT_ITALIC)) {
+						score += 30;
+					}
+					if (score >= best_score) {
+						best_score = score;
+						best_match = face_idx;
+					}
+					if (best_score == 70) {
+						break;
+					}
+				}
+				if (best_match != -1) {
+					f = sysf_cache.var[best_match].rid;
+				}
+			}
+			if (!f.is_valid()) {
+				if (system_fonts.has(key)) {
+					const SystemFontCache &sysf_cache = system_fonts[key];
+					if (sysf_cache.max_var == sysf_cache.var.size()) {
+						// All subfonts already tested, skip.
+						continue;
+					}
+				}
+
+				if (!system_font_data.has(E)) {
+					system_font_data[E] = FileAccess::get_file_as_bytes(E);
+				}
+
+				const PackedByteArray &font_data = system_font_data[E];
+
+				SystemFontCacheRec sysf;
+				sysf.rid = _create_font();
+				_font_set_data_ptr(sysf.rid, font_data.ptr(), font_data.size());
+
+				Dictionary var = dvar;
+				// Select matching style from collection.
+				int best_score = 0;
+				int best_match = -1;
+				for (int face_idx = 0; face_idx < _font_get_face_count(sysf.rid); face_idx++) {
+					_font_set_face_index(sysf.rid, face_idx);
+					if (unlikely(!_font_has_char(sysf.rid, p_text[0]))) {
+						continue;
+					}
+					BitField<FontStyle> style = _font_get_style(sysf.rid);
+					int weight = _font_get_weight(sysf.rid);
+					int stretch = _font_get_stretch(sysf.rid);
+					int score = (20 - Math::abs(weight - font_weight) / 50);
+					score += (20 - Math::abs(stretch - font_stretch) / 10);
+					if (bool(style & TextServer::FONT_ITALIC) == bool(font_style & TextServer::FONT_ITALIC)) {
+						score += 30;
+					}
+					if (score >= best_score) {
+						best_score = score;
+						best_match = face_idx;
+					}
+					if (best_score == 70) {
+						break;
+					}
+				}
+				if (best_match == -1) {
+					_free_rid(sysf.rid);
+					continue;
+				} else {
+					_font_set_face_index(sysf.rid, best_match);
+				}
+				sysf.index = best_match;
+
+				// If it's a variable font, apply weight, stretch and italic coordinates to match requested style.
+				if (best_score != 70) {
+					Dictionary ftr = _font_supported_variation_list(sysf.rid);
+					if (ftr.has(wdth_tag)) {
+						var[wdth_tag] = font_stretch;
+						_font_set_stretch(sysf.rid, font_stretch);
+					}
+					if (ftr.has(wgth_tag)) {
+						var[wgth_tag] = font_weight;
+						_font_set_weight(sysf.rid, font_weight);
+					}
+					if ((font_style & TextServer::FONT_ITALIC) && ftr.has(ital_tag)) {
+						var[ital_tag] = 1;
+						_font_set_style(sysf.rid, _font_get_style(sysf.rid) | TextServer::FONT_ITALIC);
+					}
+				}
+
+				_font_set_antialiasing(sysf.rid, key.antialiasing);
+				_font_set_disable_embedded_bitmaps(sysf.rid, key.disable_embedded_bitmaps);
+				_font_set_generate_mipmaps(sysf.rid, key.mipmaps);
+				_font_set_multichannel_signed_distance_field(sysf.rid, key.msdf);
+				_font_set_msdf_pixel_range(sysf.rid, key.msdf_range);
+				_font_set_msdf_size(sysf.rid, key.msdf_source_size);
+				_font_set_fixed_size(sysf.rid, key.fixed_size);
+				_font_set_force_autohinter(sysf.rid, key.force_autohinter);
+				_font_set_hinting(sysf.rid, key.hinting);
+				_font_set_subpixel_positioning(sysf.rid, key.subpixel_positioning);
+				_font_set_variation_coordinates(sysf.rid, var);
+				_font_set_oversampling(sysf.rid, key.oversampling);
+				_font_set_embolden(sysf.rid, key.embolden);
+				_font_set_transform(sysf.rid, key.transform);
+				_font_set_spacing(sysf.rid, SPACING_TOP, key.extra_spacing[SPACING_TOP]);
+				_font_set_spacing(sysf.rid, SPACING_BOTTOM, key.extra_spacing[SPACING_BOTTOM]);
+				_font_set_spacing(sysf.rid, SPACING_SPACE, key.extra_spacing[SPACING_SPACE]);
+				_font_set_spacing(sysf.rid, SPACING_GLYPH, key.extra_spacing[SPACING_GLYPH]);
+
+				if (system_fonts.has(key)) {
+					system_fonts[key].var.push_back(sysf);
+				} else {
+					SystemFontCache &sysf_cache = system_fonts[key];
+					sysf_cache.max_var = _font_get_face_count(sysf.rid);
+					sysf_cache.var.push_back(sysf);
+				}
+				f = sysf.rid;
+			}
+			break;
+		}
+	}
+	return f;
 }
 
 void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_line, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) {
@@ -3643,20 +3904,52 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	int sd_size = sd->glyphs.size();
 	int last_gl_font_size = sd_glyphs[sd_size - 1].font_size;
+	bool found_el_char = false;
 
 	// Find usable fonts, if fonts from the last glyph do not have required chars.
 	RID dot_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
-	if (!_font_has_char(dot_gl_font_rid, '.')) {
+	if (!_font_has_char(dot_gl_font_rid, sd->el_char)) {
 		const Array &fonts = spans[spans.size() - 1].fonts;
 		for (int i = 0; i < fonts.size(); i++) {
-			if (_font_has_char(fonts[i], '.')) {
+			if (_font_has_char(fonts[i], sd->el_char)) {
 				dot_gl_font_rid = fonts[i];
+				found_el_char = true;
 				break;
+			}
+		}
+		if (!found_el_char && OS::get_singleton()->has_feature("system_fonts") && fonts.size() > 0 && _font_is_allow_system_fallback(fonts[0])) {
+			const char32_t u32str[] = { sd->el_char, 0 };
+			RID rid = _find_sys_font_for_text(fonts[0], String(), spans[spans.size() - 1].language, u32str);
+			if (rid.is_valid()) {
+				dot_gl_font_rid = rid;
+				found_el_char = true;
+			}
+		}
+	} else {
+		found_el_char = true;
+	}
+	if (!found_el_char) {
+		bool found_dot_char = false;
+		dot_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
+		if (!_font_has_char(dot_gl_font_rid, '.')) {
+			const Array &fonts = spans[spans.size() - 1].fonts;
+			for (int i = 0; i < fonts.size(); i++) {
+				if (_font_has_char(fonts[i], '.')) {
+					dot_gl_font_rid = fonts[i];
+					found_dot_char = true;
+					break;
+				}
+			}
+			if (!found_dot_char && OS::get_singleton()->has_feature("system_fonts") && fonts.size() > 0 && _font_is_allow_system_fallback(fonts[0])) {
+				RID rid = _find_sys_font_for_text(fonts[0], String(), spans[spans.size() - 1].language, ".");
+				if (rid.is_valid()) {
+					dot_gl_font_rid = rid;
+				}
 			}
 		}
 	}
 	RID whitespace_gl_font_rid = sd_glyphs[sd_size - 1].font_rid;
-	if (!_font_has_char(whitespace_gl_font_rid, '.')) {
+	if (!_font_has_char(whitespace_gl_font_rid, ' ')) {
 		const Array &fonts = spans[spans.size() - 1].fonts;
 		for (int i = 0; i < fonts.size(); i++) {
 			if (_font_has_char(fonts[i], ' ')) {
@@ -3666,14 +3959,14 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 		}
 	}
 
-	int32_t dot_gl_idx = dot_gl_font_rid.is_valid() ? _font_get_glyph_index(dot_gl_font_rid, last_gl_font_size, '.', 0) : -10;
+	int32_t dot_gl_idx = dot_gl_font_rid.is_valid() ? _font_get_glyph_index(dot_gl_font_rid, last_gl_font_size, (found_el_char ? sd->el_char : '.'), 0) : -1;
 	Vector2 dot_adv = dot_gl_font_rid.is_valid() ? _font_get_glyph_advance(dot_gl_font_rid, last_gl_font_size, dot_gl_idx) : Vector2();
-	int32_t whitespace_gl_idx = whitespace_gl_font_rid.is_valid() ? _font_get_glyph_index(whitespace_gl_font_rid, last_gl_font_size, ' ', 0) : -10;
+	int32_t whitespace_gl_idx = whitespace_gl_font_rid.is_valid() ? _font_get_glyph_index(whitespace_gl_font_rid, last_gl_font_size, ' ', 0) : -1;
 	Vector2 whitespace_adv = whitespace_gl_font_rid.is_valid() ? _font_get_glyph_advance(whitespace_gl_font_rid, last_gl_font_size, whitespace_gl_idx) : Vector2();
 
 	int ellipsis_width = 0;
 	if (add_ellipsis && whitespace_gl_font_rid.is_valid()) {
-		ellipsis_width = 3 * dot_adv.x + sd->extra_spacing[SPACING_GLYPH] + _font_get_spacing(dot_gl_font_rid, SPACING_GLYPH) + (cut_per_word ? whitespace_adv.x : 0);
+		ellipsis_width = (found_el_char ? 1 : 3) * dot_adv.x + sd->extra_spacing[SPACING_GLYPH] + _font_get_spacing(dot_gl_font_rid, SPACING_GLYPH) + (cut_per_word ? whitespace_adv.x : 0);
 	}
 
 	int ell_min_characters = 6;
@@ -3742,7 +4035,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 			if (dot_gl_idx != 0) {
 				Glyph gl;
 				gl.count = 1;
-				gl.repeat = 3;
+				gl.repeat = (found_el_char ? 1 : 3);
 				gl.advance = dot_adv.x;
 				gl.index = dot_gl_idx;
 				gl.font_rid = dot_gl_font_rid;
@@ -3873,161 +4166,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 					RID fdef = span.fonts[0];
 					if (_font_is_allow_system_fallback(fdef)) {
 						String text = sd->text.substr(j, 1);
-						String font_name = _font_get_name(fdef);
-						BitField<FontStyle> font_style = _font_get_style(fdef);
-						int font_weight = _font_get_weight(fdef);
-						int font_stretch = _font_get_stretch(fdef);
-						Dictionary dvar = _font_get_variation_coordinates(fdef);
-						static int64_t wgth_tag = _name_to_tag("weight");
-						static int64_t wdth_tag = _name_to_tag("width");
-						static int64_t ital_tag = _name_to_tag("italic");
-						if (dvar.has(wgth_tag)) {
-							font_weight = dvar[wgth_tag].operator int();
-						}
-						if (dvar.has(wdth_tag)) {
-							font_stretch = dvar[wdth_tag].operator int();
-						}
-						if (dvar.has(ital_tag) && dvar[ital_tag].operator int() == 1) {
-							font_style.set_flag(TextServer::FONT_ITALIC);
-						}
-
-						String locale = (span.language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : span.language;
-
-						PackedStringArray fallback_font_name = OS::get_singleton()->get_system_font_path_for_text(font_name, text, locale, String(), font_weight, font_stretch, font_style & TextServer::FONT_ITALIC);
-#ifdef GDEXTENSION
-						for (int fb = 0; fb < fallback_font_name.size(); fb++) {
-							const String &E = fallback_font_name[fb];
-#else
-						for (const String &E : fallback_font_name) {
-#endif
-							SystemFontKey key = SystemFontKey(E, font_style & TextServer::FONT_ITALIC, font_weight, font_stretch, fdef, this);
-							if (system_fonts.has(key)) {
-								const SystemFontCache &sysf_cache = system_fonts[key];
-								int best_score = 0;
-								int best_match = -1;
-								for (int face_idx = 0; face_idx < sysf_cache.var.size(); face_idx++) {
-									const SystemFontCacheRec &F = sysf_cache.var[face_idx];
-									if (unlikely(!_font_has_char(F.rid, text[0]))) {
-										continue;
-									}
-									BitField<FontStyle> style = _font_get_style(F.rid);
-									int weight = _font_get_weight(F.rid);
-									int stretch = _font_get_stretch(F.rid);
-									int score = (20 - Math::abs(weight - font_weight) / 50);
-									score += (20 - Math::abs(stretch - font_stretch) / 10);
-									if (bool(style & TextServer::FONT_ITALIC) == bool(font_style & TextServer::FONT_ITALIC)) {
-										score += 30;
-									}
-									if (score >= best_score) {
-										best_score = score;
-										best_match = face_idx;
-									}
-									if (best_score == 70) {
-										break;
-									}
-								}
-								if (best_match != -1) {
-									gl.font_rid = sysf_cache.var[best_match].rid;
-								}
-							}
-							if (!gl.font_rid.is_valid()) {
-								if (system_fonts.has(key)) {
-									const SystemFontCache &sysf_cache = system_fonts[key];
-									if (sysf_cache.max_var == sysf_cache.var.size()) {
-										// All subfonts already tested, skip.
-										continue;
-									}
-								}
-
-								if (!system_font_data.has(E)) {
-									system_font_data[E] = FileAccess::get_file_as_bytes(E);
-								}
-
-								const PackedByteArray &font_data = system_font_data[E];
-
-								SystemFontCacheRec sysf;
-								sysf.rid = _create_font();
-								_font_set_data_ptr(sysf.rid, font_data.ptr(), font_data.size());
-
-								Dictionary var = dvar;
-								// Select matching style from collection.
-								int best_score = 0;
-								int best_match = -1;
-								for (int face_idx = 0; face_idx < _font_get_face_count(sysf.rid); face_idx++) {
-									_font_set_face_index(sysf.rid, face_idx);
-									if (unlikely(!_font_has_char(sysf.rid, text[0]))) {
-										continue;
-									}
-									BitField<FontStyle> style = _font_get_style(sysf.rid);
-									int weight = _font_get_weight(sysf.rid);
-									int stretch = _font_get_stretch(sysf.rid);
-									int score = (20 - Math::abs(weight - font_weight) / 50);
-									score += (20 - Math::abs(stretch - font_stretch) / 10);
-									if (bool(style & TextServer::FONT_ITALIC) == bool(font_style & TextServer::FONT_ITALIC)) {
-										score += 30;
-									}
-									if (score >= best_score) {
-										best_score = score;
-										best_match = face_idx;
-									}
-									if (best_score == 70) {
-										break;
-									}
-								}
-								if (best_match == -1) {
-									_free_rid(sysf.rid);
-									continue;
-								} else {
-									_font_set_face_index(sysf.rid, best_match);
-								}
-								sysf.index = best_match;
-
-								// If it's a variable font, apply weight, stretch and italic coordinates to match requested style.
-								if (best_score != 70) {
-									Dictionary ftr = _font_supported_variation_list(sysf.rid);
-									if (ftr.has(wdth_tag)) {
-										var[wdth_tag] = font_stretch;
-										_font_set_stretch(sysf.rid, font_stretch);
-									}
-									if (ftr.has(wgth_tag)) {
-										var[wgth_tag] = font_weight;
-										_font_set_weight(sysf.rid, font_weight);
-									}
-									if ((font_style & TextServer::FONT_ITALIC) && ftr.has(ital_tag)) {
-										var[ital_tag] = 1;
-										_font_set_style(sysf.rid, _font_get_style(sysf.rid) | TextServer::FONT_ITALIC);
-									}
-								}
-
-								_font_set_antialiasing(sysf.rid, key.antialiasing);
-								_font_set_generate_mipmaps(sysf.rid, key.mipmaps);
-								_font_set_multichannel_signed_distance_field(sysf.rid, key.msdf);
-								_font_set_msdf_pixel_range(sysf.rid, key.msdf_range);
-								_font_set_msdf_size(sysf.rid, key.msdf_source_size);
-								_font_set_fixed_size(sysf.rid, key.fixed_size);
-								_font_set_force_autohinter(sysf.rid, key.force_autohinter);
-								_font_set_hinting(sysf.rid, key.hinting);
-								_font_set_subpixel_positioning(sysf.rid, key.subpixel_positioning);
-								_font_set_variation_coordinates(sysf.rid, var);
-								_font_set_oversampling(sysf.rid, key.oversampling);
-								_font_set_embolden(sysf.rid, key.embolden);
-								_font_set_transform(sysf.rid, key.transform);
-								_font_set_spacing(sysf.rid, SPACING_TOP, key.extra_spacing[SPACING_TOP]);
-								_font_set_spacing(sysf.rid, SPACING_BOTTOM, key.extra_spacing[SPACING_BOTTOM]);
-								_font_set_spacing(sysf.rid, SPACING_SPACE, key.extra_spacing[SPACING_SPACE]);
-								_font_set_spacing(sysf.rid, SPACING_GLYPH, key.extra_spacing[SPACING_GLYPH]);
-
-								if (system_fonts.has(key)) {
-									system_fonts[key].var.push_back(sysf);
-								} else {
-									SystemFontCache &sysf_cache = system_fonts[key];
-									sysf_cache.max_var = _font_get_face_count(sysf.rid);
-									sysf_cache.var.push_back(sysf);
-								}
-								gl.font_rid = sysf.rid;
-							}
-							break;
-						}
+						gl.font_rid = _find_sys_font_for_text(fdef, String(), span.language, text);
 					}
 				}
 				prev_font = gl.font_rid;
@@ -4039,12 +4178,12 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 						if (sd->orientation == ORIENTATION_HORIZONTAL) {
 							gl.advance = _font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x;
 							gl.x_off = 0;
-							gl.y_off = 0;
+							gl.y_off = _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
 							sd->ascent = MAX(sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP));
 							sd->descent = MAX(sd->descent, _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM));
 						} else {
 							gl.advance = _font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).y;
-							gl.x_off = -Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5);
+							gl.x_off = -Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5) + _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
 							gl.y_off = _font_get_ascent(gl.font_rid, gl.font_size);
 							sd->ascent = MAX(sd->ascent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
 							sd->descent = MAX(sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
@@ -4172,6 +4311,32 @@ Rect2 TextServerFallback::_shaped_text_get_object_rect(const RID &p_shaped, cons
 		const_cast<TextServerFallback *>(this)->_shaped_text_shape(p_shaped);
 	}
 	return sd->objects[p_key].rect;
+}
+
+Vector2i TextServerFallback::_shaped_text_get_object_range(const RID &p_shaped, const Variant &p_key) const {
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, Vector2i());
+
+	MutexLock lock(sd->mutex);
+	ERR_FAIL_COND_V(!sd->objects.has(p_key), Vector2i());
+	return Vector2i(sd->objects[p_key].start, sd->objects[p_key].end);
+}
+
+int64_t TextServerFallback::_shaped_text_get_object_glyph(const RID &p_shaped, const Variant &p_key) const {
+	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, -1);
+
+	MutexLock lock(sd->mutex);
+	ERR_FAIL_COND_V(!sd->objects.has(p_key), -1);
+	const ShapedTextDataFallback::EmbeddedObject &obj = sd->objects[p_key];
+	int sd_size = sd->glyphs.size();
+	const Glyph *sd_glyphs = sd->glyphs.ptr();
+	for (int i = 0; i < sd_size; i++) {
+		if (obj.start == sd_glyphs[i].start) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 Size2 TextServerFallback::_shaped_text_get_size(const RID &p_shaped) const {

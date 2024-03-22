@@ -8,7 +8,7 @@ namespace GodotTools.IdeMessaging
         private class DecodedMessage
         {
             public MessageKind? Kind;
-            public string Id;
+            public string? Id;
             public MessageStatus? Status;
             public readonly StringBuilder Body = new StringBuilder();
             public uint? PendingBodyLines;
@@ -41,7 +41,7 @@ namespace GodotTools.IdeMessaging
 
         private readonly DecodedMessage decodingMessage = new DecodedMessage();
 
-        public State Decode(string messageLine, out Message decodedMessage)
+        public State Decode(string messageLine, out Message? decodedMessage)
         {
             decodedMessage = null;
 

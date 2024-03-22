@@ -51,6 +51,7 @@ if (KHR_DFDVAL(dfd + 1, MODEL) == KHR_DF_MODEL_RGBSDA) {
       } else { /* Four channels, one-bit alpha */
         if (B.offset == 0) return VK_FORMAT_A1R5G5B5_UNORM_PACK16;
         if (B.offset == 1) return VK_FORMAT_R5G5B5A1_UNORM_PACK16;
+        if (B.offset == 10) return VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR;
         return VK_FORMAT_B5G5R5A1_UNORM_PACK16;
       }
     } else if (wordBytes == 4) { /* PACK32 */
@@ -74,6 +75,9 @@ if (KHR_DFDVAL(dfd + 1, MODEL) == KHR_DF_MODEL_RGBSDA) {
     }
   } else { /* Not a packed format */
     if (wordBytes == 1) {
+      if (A.size > 8 && R.size == 0 && G.size == 0 && B.size == 0 && (r & i_NORMALIZED_FORMAT_BIT) && !(r & i_SIGNED_FORMAT_BIT)) {
+          return VK_FORMAT_A8_UNORM_KHR;
+      }
       if (A.size > 0) { /* 4 channels */
         if (R.offset == 0) { /* RGBA */
           if ((r & i_SRGB_FORMAT_BIT)) return VK_FORMAT_R8G8B8A8_SRGB;

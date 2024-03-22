@@ -233,7 +233,7 @@ private:
 
 		Transform3D emission_transform;
 		Vector3 emitter_velocity;
-		float interp_to_end;
+		float interp_to_end = 0.0;
 
 		HashSet<RID> collisions;
 

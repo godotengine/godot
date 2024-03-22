@@ -36,17 +36,17 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 
 void ConnectionInfoDialog::ok_pressed() {
 }
 
-void ConnectionInfoDialog::popup_connections(String p_method, Vector<Node *> p_nodes) {
+void ConnectionInfoDialog::popup_connections(const String &p_method, const Vector<Node *> &p_nodes) {
 	method->set_text(p_method);
 
 	tree->clear();
@@ -269,7 +269,7 @@ void ScriptTextEditor::_show_warnings_panel(bool p_show) {
 	warnings_panel->set_visible(p_show);
 }
 
-void ScriptTextEditor::_warning_clicked(Variant p_line) {
+void ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		goto_line_centered(p_line.operator int64_t());
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
@@ -300,7 +300,7 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 	}
 }
 
-void ScriptTextEditor::_error_clicked(Variant p_line) {
+void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		code_editor->get_text_editor()->remove_secondary_carets();
 		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
@@ -341,18 +341,25 @@ void ScriptTextEditor::reload_text() {
 	te->tag_saved_version();
 
 	code_editor->update_line_and_column();
-	_validate_script();
+	if (editor_enabled) {
+		_validate_script();
+	}
 }
 
-void ScriptTextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
+void ScriptTextEditor::add_callback(const String &p_function, const PackedStringArray &p_args) {
+	ScriptLanguage *language = script->get_language();
+	if (!language->can_make_function()) {
+		return;
+	}
+
 	String code = code_editor->get_text_editor()->get_text();
-	int pos = script->get_language()->find_function(p_function, code);
+	int pos = language->find_function(p_function, code);
 	code_editor->get_text_editor()->remove_secondary_carets();
 	if (pos == -1) {
 		//does not exist
 		code_editor->get_text_editor()->deselect();
 		pos = code_editor->get_text_editor()->get_line_count() + 2;
-		String func = script->get_language()->make_function("", p_function, p_args);
+		String func = language->make_function("", p_function, p_args);
 		//code=code+func;
 		code_editor->get_text_editor()->set_caret_line(pos + 1);
 		code_editor->get_text_editor()->set_caret_column(1000000); //none shall be that big
@@ -500,11 +507,14 @@ void ScriptTextEditor::_validate_script() {
 	safe_lines.clear();
 
 	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
-		for (List<ScriptLanguage::ScriptError>::Element *E = errors.front(); E; E = E->next()) {
+		List<ScriptLanguage::ScriptError>::Element *E = errors.front();
+		while (E) {
+			List<ScriptLanguage::ScriptError>::Element *next_E = E->next();
 			if ((E->get().path.is_empty() && !script->get_path().is_empty()) || E->get().path != script->get_path()) {
 				depended_errors[E->get().path].push_back(E->get());
 				E->erase();
 			}
+			E = next_E;
 		}
 
 		if (errors.size() > 0) {
@@ -788,9 +798,7 @@ static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_curr
 }
 
 void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_for_script) {
-	if (!bool(EDITOR_GET("text_editor/external/use_external_editor"))) {
-		return;
-	}
+	bool use_external_editor = bool(EDITOR_GET("text_editor/external/use_external_editor"));
 
 	ERR_FAIL_NULL(get_tree());
 
@@ -803,6 +811,10 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 
 	for (const Ref<Script> &E : scripts) {
 		Ref<Script> scr = E;
+
+		if (!use_external_editor && !scr->get_language()->overrides_external_editor()) {
+			continue; // We're not using an external editor for this script.
+		}
 
 		if (p_for_script.is_valid() && p_for_script != scr) {
 			continue;
@@ -822,7 +834,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 			scr->set_last_modified_time(rel_scr->get_last_modified_time());
 			scr->update_exports();
 
-			trigger_live_script_reload();
+			trigger_live_script_reload(scr->get_path());
 		}
 	}
 }
@@ -884,7 +896,7 @@ void ScriptTextEditor::_breakpoint_item_pressed(int p_idx) {
 		_edit_option(breakpoints_menu->get_item_id(p_idx));
 	} else {
 		code_editor->goto_line(breakpoints_menu->get_item_metadata(p_idx));
-		code_editor->get_text_editor()->call_deferred(SNAME("center_viewport_to_caret")); //Need to be deferred, because goto uses call_deferred().
+		callable_mp((TextEdit *)code_editor->get_text_editor(), &TextEdit::center_viewport_to_caret).call_deferred(0); // Needs to be deferred, because goto uses call_deferred().
 	}
 }
 
@@ -1267,31 +1279,32 @@ void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 
 void ScriptTextEditor::_edit_option(int p_op) {
 	CodeEdit *tx = code_editor->get_text_editor();
+	tx->apply_ime();
 
 	switch (p_op) {
 		case EDIT_UNDO: {
 			tx->undo();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_REDO: {
 			tx->redo();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_CUT: {
 			tx->cut();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_COPY: {
 			tx->copy();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_PASTE: {
 			tx->paste();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_SELECT_ALL: {
 			tx->select_all();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_MOVE_LINE_UP: {
 			code_editor->move_lines_up();
@@ -1382,11 +1395,11 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			trim_trailing_whitespace();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
-			tx->set_indent_using_spaces(true);
+			code_editor->set_indent_using_spaces(true);
 			convert_indent();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_TABS: {
-			tx->set_indent_using_spaces(false);
+			code_editor->set_indent_using_spaces(false);
 			convert_indent();
 		} break;
 		case EDIT_PICK_COLOR: {
@@ -1409,7 +1422,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				PackedStringArray results;
 
 				for (int i = 0; i < lines.size(); i++) {
-					String line = lines[i];
+					const String &line = lines[i];
 					String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); // Extract the whitespace at the beginning.
 					if (expression.parse(line) == OK) {
 						Variant result = expression.execute(Array(), Variant(), false, true);
@@ -1650,7 +1663,7 @@ void ScriptTextEditor::reload(bool p_soft) {
 		return;
 	}
 	scr->set_source_code(te->get_text());
-	bool soft = p_soft || scr->get_instance_base_type() == "EditorPlugin"; // Always soft-reload editor plugins.
+	bool soft = p_soft || ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorPlugin"); // Always soft-reload editor plugins.
 
 	scr->get_language()->reload_tool_script(scr, soft);
 }
@@ -1678,6 +1691,10 @@ void ScriptTextEditor::set_debugger_active(bool p_active) {
 
 Control *ScriptTextEditor::get_base_editor() const {
 	return code_editor->get_text_editor();
+}
+
+CodeTextEditor *ScriptTextEditor::get_code_editor() const {
+	return code_editor;
 }
 
 Variant ScriptTextEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -1957,6 +1974,8 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	}
 
 	if (create_menu) {
+		tx->apply_ime();
+
 		Point2i pos = tx->get_line_column_at_pos(local_pos);
 		int row = pos.y;
 		int col = pos.x;
@@ -2238,7 +2257,6 @@ void ScriptTextEditor::_enable_code_editor() {
 	edit_menu->get_popup()->add_separator();
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
-		sub_menu->set_name("line_menu");
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_up"), EDIT_MOVE_LINE_UP);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_down"), EDIT_MOVE_LINE_DOWN);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent"), EDIT_INDENT);
@@ -2246,47 +2264,39 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_child(sub_menu);
-		edit_menu->get_popup()->add_submenu_item(TTR("Line"), "line_menu");
+		edit_menu->get_popup()->add_submenu_node_item(TTR("Line"), sub_menu);
 	}
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
-		sub_menu->set_name("folding_menu");
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/create_code_region"), EDIT_CREATE_CODE_REGION);
 		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_child(sub_menu);
-		edit_menu->get_popup()->add_submenu_item(TTR("Folding"), "folding_menu");
+		edit_menu->get_popup()->add_submenu_node_item(TTR("Folding"), sub_menu);
 	}
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
-		sub_menu->set_name("indent_menu");
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
 		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_child(sub_menu);
-		edit_menu->get_popup()->add_submenu_item(TTR("Indentation"), "indent_menu");
+		edit_menu->get_popup()->add_submenu_node_item(TTR("Indentation"), sub_menu);
 	}
 	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
 	edit_menu->get_popup()->add_separator();
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
-		sub_menu->set_name("convert_case");
 		sub_menu->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase"), KeyModifierMask::SHIFT | Key::F4), EDIT_TO_UPPERCASE);
 		sub_menu->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase"), KeyModifierMask::SHIFT | Key::F5), EDIT_TO_LOWERCASE);
 		sub_menu->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KeyModifierMask::SHIFT | Key::F6), EDIT_CAPITALIZE);
 		sub_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_edit_option));
-		edit_menu->get_popup()->add_child(sub_menu);
-		edit_menu->get_popup()->add_submenu_item(TTR("Convert Case"), "convert_case");
+		edit_menu->get_popup()->add_submenu_node_item(TTR("Convert Case"), sub_menu);
 	}
-	edit_menu->get_popup()->add_child(highlighter_menu);
-	edit_menu->get_popup()->add_submenu_item(TTR("Syntax Highlighter"), "highlighter_menu");
+	edit_menu->get_popup()->add_submenu_node_item(TTR("Syntax Highlighter"), highlighter_menu);
 	highlighter_menu->connect("id_pressed", callable_mp(this, &ScriptTextEditor::_change_syntax_highlighter));
 
 	edit_hb->add_child(search_menu);
@@ -2308,14 +2318,12 @@ void ScriptTextEditor::_enable_code_editor() {
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	goto_menu->get_popup()->add_separator();
 
-	goto_menu->get_popup()->add_child(bookmarks_menu);
-	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
+	goto_menu->get_popup()->add_submenu_node_item(TTR("Bookmarks"), bookmarks_menu);
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_bookmark_item_pressed));
 
-	goto_menu->get_popup()->add_child(breakpoints_menu);
-	goto_menu->get_popup()->add_submenu_item(TTR("Breakpoints"), "Breakpoints");
+	goto_menu->get_popup()->add_submenu_node_item(TTR("Breakpoints"), breakpoints_menu);
 	_update_breakpoint_list();
 	breakpoints_menu->connect("about_to_popup", callable_mp(this, &ScriptTextEditor::_update_breakpoint_list));
 	breakpoints_menu->connect("index_pressed", callable_mp(this, &ScriptTextEditor::_breakpoint_item_pressed));
@@ -2361,8 +2369,6 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	update_settings();
 
-	code_editor->get_text_editor()->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
-
 	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	code_editor->get_text_editor()->set_context_menu_enabled(false);
 
@@ -2378,7 +2384,6 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->set_shortcut_context(this);
 
 	highlighter_menu = memnew(PopupMenu);
-	highlighter_menu->set_name("highlighter_menu");
 
 	Ref<EditorPlainTextSyntaxHighlighter> plain_highlighter;
 	plain_highlighter.instantiate();
@@ -2400,10 +2405,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	goto_menu->set_shortcut_context(this);
 
 	bookmarks_menu = memnew(PopupMenu);
-	bookmarks_menu->set_name("Bookmarks");
-
 	breakpoints_menu = memnew(PopupMenu);
-	breakpoints_menu->set_name("Breakpoints");
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 
@@ -2447,7 +2449,7 @@ void ScriptTextEditor::register_editor() {
 
 	ED_SHORTCUT("script_text_editor/indent", TTR("Indent"), Key::NONE);
 	ED_SHORTCUT("script_text_editor/unindent", TTR("Unindent"), KeyModifierMask::SHIFT | Key::TAB);
-	ED_SHORTCUT_ARRAY("script_text_editor/toggle_comment", TTR("Toggle Comment"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::K), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::SLASH) });
+	ED_SHORTCUT_ARRAY("script_text_editor/toggle_comment", TTR("Toggle Comment"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::K), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::SLASH), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_DIVIDE), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::NUMBERSIGN) });
 	ED_SHORTCUT("script_text_editor/toggle_fold_line", TTR("Fold/Unfold Line"), KeyModifierMask::ALT | Key::F);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_fold_line", "macos", KeyModifierMask::CTRL | KeyModifierMask::META | Key::F);
 	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), Key::NONE);
@@ -2482,7 +2484,10 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT_OVERRIDE("script_text_editor/contextual_help", "macos", KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::SPACE);
 
 	ED_SHORTCUT("script_text_editor/toggle_bookmark", TTR("Toggle Bookmark"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::B);
+
 	ED_SHORTCUT("script_text_editor/goto_next_bookmark", TTR("Go to Next Bookmark"), KeyModifierMask::CMD_OR_CTRL | Key::B);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_next_bookmark", "macos", KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::B);
+
 	ED_SHORTCUT("script_text_editor/goto_previous_bookmark", TTR("Go to Previous Bookmark"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::B);
 	ED_SHORTCUT("script_text_editor/remove_all_bookmarks", TTR("Remove All Bookmarks"), Key::NONE);
 
@@ -2502,5 +2507,5 @@ void ScriptTextEditor::register_editor() {
 }
 
 void ScriptTextEditor::validate() {
-	this->code_editor->validate_script();
+	code_editor->validate_script();
 }

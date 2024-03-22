@@ -43,6 +43,8 @@ public:
 	virtual HashMap<String, bool *> get_requested_extensions() override;
 	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer) override;
 
+	PackedStringArray get_suggested_tracker_names() override;
+
 	bool is_available();
 	bool supports_eye_gaze_interaction();
 

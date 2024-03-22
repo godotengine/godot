@@ -78,7 +78,7 @@ class RenderingServerDefault : public RenderingServer {
 	static void _thread_callback(void *_instance);
 	void _thread_loop();
 
-	Thread::ID server_thread;
+	Thread::ID server_thread = 0;
 	SafeFlag exit;
 	Thread thread;
 	SafeFlag draw_thread_up;
@@ -315,6 +315,9 @@ public:
 	FUNC2(mesh_set_custom_aabb, RID, const AABB &)
 	FUNC1RC(AABB, mesh_get_custom_aabb, RID)
 
+	FUNC2(mesh_set_path, RID, const String &)
+	FUNC1RC(String, mesh_get_path, RID)
+
 	FUNC2(mesh_set_shadow_mesh, RID, RID)
 
 	FUNC1(mesh_clear, RID)
@@ -331,6 +334,9 @@ public:
 	FUNC3(multimesh_instance_set_transform_2d, RID, int, const Transform2D &)
 	FUNC3(multimesh_instance_set_color, RID, int, const Color &)
 	FUNC3(multimesh_instance_set_custom_data, RID, int, const Color &)
+
+	FUNC2(multimesh_set_custom_aabb, RID, const AABB &)
+	FUNC1RC(AABB, multimesh_get_custom_aabb, RID)
 
 	FUNC1RC(RID, multimesh_get_mesh, RID)
 	FUNC1RC(AABB, multimesh_get_aabb, RID)
@@ -401,6 +407,7 @@ public:
 	FUNC2(reflection_probe_set_enable_box_projection, RID, bool)
 	FUNC2(reflection_probe_set_enable_shadows, RID, bool)
 	FUNC2(reflection_probe_set_cull_mask, RID, uint32_t)
+	FUNC2(reflection_probe_set_reflection_mask, RID, uint32_t)
 	FUNC2(reflection_probe_set_resolution, RID, int)
 	FUNC2(reflection_probe_set_mesh_lod_threshold, RID, float)
 
@@ -475,6 +482,8 @@ public:
 	FUNC2(voxel_gi_set_normal_bias, RID, float)
 	FUNC2(voxel_gi_set_interior, RID, bool)
 	FUNC2(voxel_gi_set_use_two_bounces, RID, bool)
+
+	FUNC0(sdfgi_reset)
 
 	/* PARTICLES */
 
@@ -582,6 +591,7 @@ public:
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
 	FUNC2(camera_set_camera_attributes, RID, RID)
+	FUNC2(camera_set_compositor, RID, RID)
 	FUNC2(camera_set_use_vertical_aspect, RID, bool)
 
 	/* OCCLUDER */
@@ -667,13 +677,26 @@ public:
 	FUNC2(viewport_set_vrs_mode, RID, ViewportVRSMode)
 	FUNC2(viewport_set_vrs_texture, RID, RID)
 
-	/* ENVIRONMENT API */
+	/* COMPOSITOR EFFECT */
 
 #undef server_name
 #undef ServerName
 //from now on, calls forwarded to this singleton
 #define ServerName RenderingMethod
 #define server_name RSG::scene
+
+	FUNCRIDSPLIT(compositor_effect)
+	FUNC2(compositor_effect_set_enabled, RID, bool)
+	FUNC3(compositor_effect_set_callback, RID, CompositorEffectCallbackType, const Callable &)
+	FUNC3(compositor_effect_set_flag, RID, CompositorEffectFlags, bool)
+
+	/* COMPOSITOR */
+
+	FUNC2(compositor_set_compositor_effects, RID, const TypedArray<RID> &)
+
+	FUNCRIDSPLIT(compositor)
+
+	/* ENVIRONMENT API */
 
 	FUNC1(voxel_gi_set_quality, VoxelGIQuality)
 
@@ -684,6 +707,8 @@ public:
 	FUNC2(sky_set_mode, RID, SkyMode)
 	FUNC2(sky_set_material, RID, RID)
 	FUNC4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
+
+	/* ENVIRONMENT */
 
 	FUNCRIDSPLIT(environment)
 
@@ -716,7 +741,9 @@ public:
 
 	FUNC7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
-	FUNC10(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float)
+	FUNC11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, EnvironmentFogMode)
+
+	FUNC4(environment_set_fog_depth, RID, float, float, float)
 	FUNC14(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float, float)
 
 	FUNC2(environment_set_volumetric_fog_volume_size, int, int)
@@ -768,6 +795,7 @@ public:
 	FUNC2(scenario_set_environment, RID, RID)
 	FUNC2(scenario_set_camera_attributes, RID, RID)
 	FUNC2(scenario_set_fallback_environment, RID, RID)
+	FUNC2(scenario_set_compositor, RID, RID)
 
 	/* INSTANCING API */
 	FUNCRIDSPLIT(instance)
@@ -824,6 +852,7 @@ public:
 
 	FUNCRIDSPLIT(canvas)
 	FUNC3(canvas_set_item_mirroring, RID, RID, const Point2 &)
+	FUNC3(canvas_set_item_repeat, RID, const Point2 &, int)
 	FUNC2(canvas_set_modulate, RID, const Color &)
 	FUNC3(canvas_set_parent, RID, RID, float)
 	FUNC1(canvas_set_disable_scale, bool)
@@ -938,6 +967,8 @@ public:
 
 	FUNC1(canvas_set_shadow_texture_size, int)
 
+	FUNC1R(Rect2, _debug_canvas_item_get_rect, RID)
+
 	/* GLOBAL SHADER UNIFORMS */
 
 #undef server_name
@@ -1017,7 +1048,9 @@ public:
 	virtual Color get_default_clear_color() override;
 	virtual void set_default_clear_color(const Color &p_color) override;
 
+#ifndef DISABLE_DEPRECATED
 	virtual bool has_feature(Features p_feature) const override;
+#endif
 
 	virtual bool has_os_feature(const String &p_feature) const override;
 	virtual void set_debug_generate_wireframes(bool p_generate) override;

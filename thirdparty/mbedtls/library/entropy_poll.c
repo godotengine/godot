@@ -2,19 +2,7 @@
  *  Platform-specific and custom entropy polling functions
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #if defined(__linux__) && !defined(_GNU_SOURCE)
@@ -51,31 +39,33 @@
 
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
 
-#if !defined(_WIN32_WINNT)
-#define _WIN32_WINNT 0x0400
-#endif
 #include <windows.h>
-#include <wincrypt.h>
+#include <bcrypt.h>
+#include <intsafe.h>
 
 int mbedtls_platform_entropy_poll(void *data, unsigned char *output, size_t len,
                                   size_t *olen)
 {
-    HCRYPTPROV provider;
     ((void) data);
     *olen = 0;
 
-    if (CryptAcquireContext(&provider, NULL, NULL,
-                            PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) == FALSE) {
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
-    }
+    /*
+     * BCryptGenRandom takes ULONG for size, which is smaller than size_t on
+     * 64-bit Windows platforms. Extract entropy in chunks of len (dependent
+     * on ULONG_MAX) size.
+     */
+    while (len != 0) {
+        unsigned long ulong_bytes =
+            (len > ULONG_MAX) ? ULONG_MAX : (unsigned long) len;
 
-    if (CryptGenRandom(provider, (DWORD) len, output) == FALSE) {
-        CryptReleaseContext(provider, 0);
-        return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
-    }
+        if (!BCRYPT_SUCCESS(BCryptGenRandom(NULL, output, ulong_bytes,
+                                            BCRYPT_USE_SYSTEM_PREFERRED_RNG))) {
+            return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
+        }
 
-    CryptReleaseContext(provider, 0);
-    *olen = len;
+        *olen += ulong_bytes;
+        len -= ulong_bytes;
+    }
 
     return 0;
 }

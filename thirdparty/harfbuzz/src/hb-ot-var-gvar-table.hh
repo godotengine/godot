@@ -39,42 +39,255 @@
 
 namespace OT {
 
-struct contour_point_t
-{
-  void init (float x_ = 0.f, float y_ = 0.f, bool is_end_point_ = false)
-  { flag = 0; x = x_; y = y_; is_end_point = is_end_point_; }
-
-  void transform (const float (&matrix)[4])
-  {
-    float x_ = x * matrix[0] + y * matrix[2];
-	  y  = x * matrix[1] + y * matrix[3];
-    x  = x_;
-  }
-  HB_ALWAYS_INLINE
-  void translate (const contour_point_t &p) { x += p.x; y += p.y; }
-
-
-  float x;
-  float y;
-  uint8_t flag;
-  bool is_end_point;
-};
-
-struct contour_point_vector_t : hb_vector_t<contour_point_t>
-{
-  void extend (const hb_array_t<contour_point_t> &a)
-  {
-    unsigned int old_len = length;
-    if (unlikely (!resize (old_len + a.length, false)))
-      return;
-    auto arrayZ = this->arrayZ + old_len;
-    unsigned count = a.length;
-    hb_memcpy (arrayZ, a.arrayZ, count * sizeof (arrayZ[0]));
-  }
-};
-
 struct GlyphVariationData : TupleVariationData
 {};
+
+struct glyph_variations_t
+{
+  using tuple_variations_t = TupleVariationData::tuple_variations_t;
+  hb_vector_t<tuple_variations_t> glyph_variations;
+
+  hb_vector_t<char> compiled_shared_tuples;
+  private:
+  unsigned shared_tuples_count = 0;
+
+  /* shared coords-> index map after instantiation */
+  hb_hashmap_t<const hb_vector_t<char>*, unsigned> shared_tuples_idx_map;
+
+  public:
+  unsigned compiled_shared_tuples_count () const
+  { return shared_tuples_count; }
+
+  unsigned compiled_byte_size () const
+  {
+    unsigned byte_size = 0;
+    for (const auto& _ : glyph_variations)
+      byte_size += _.get_compiled_byte_size ();
+
+    return byte_size;
+  }
+
+  bool create_from_glyphs_var_data (unsigned axis_count,
+                                    const hb_array_t<const F2DOT14> shared_tuples,
+                                    const hb_subset_plan_t *plan,
+                                    const hb_hashmap_t<hb_codepoint_t, hb_bytes_t>& new_gid_var_data_map)
+  {
+    if (unlikely (!glyph_variations.alloc (plan->new_to_old_gid_list.length, true)))
+      return false;
+
+    auto it = hb_iter (plan->new_to_old_gid_list);
+    for (auto &_ : it)
+    {
+      hb_codepoint_t new_gid = _.first;
+      contour_point_vector_t *all_contour_points;
+      if (!new_gid_var_data_map.has (new_gid) ||
+          !plan->new_gid_contour_points_map.has (new_gid, &all_contour_points))
+        return false;
+      hb_bytes_t var_data = new_gid_var_data_map.get (new_gid);
+
+      const GlyphVariationData* p = reinterpret_cast<const GlyphVariationData*> (var_data.arrayZ);
+      hb_vector_t<unsigned> shared_indices;
+      GlyphVariationData::tuple_iterator_t iterator;
+      tuple_variations_t tuple_vars;
+
+      /* in case variation data is empty, push an empty struct into the vector,
+       * keep the vector in sync with the new_to_old_gid_list */
+      if (!var_data || ! p->has_data () || !all_contour_points->length ||
+          !GlyphVariationData::get_tuple_iterator (var_data, axis_count,
+                                                   var_data.arrayZ,
+                                                   shared_indices, &iterator))
+      {
+        glyph_variations.push (std::move (tuple_vars));
+        continue;
+      }
+
+      if (!p->decompile_tuple_variations (all_contour_points->length, true /* is_gvar */,
+                                          iterator, &(plan->axes_old_index_tag_map),
+                                          shared_indices, shared_tuples,
+                                          tuple_vars /* OUT */))
+        return false;
+      glyph_variations.push (std::move (tuple_vars));
+    }
+    return !glyph_variations.in_error () && glyph_variations.length == plan->new_to_old_gid_list.length;
+  }
+
+  bool instantiate (const hb_subset_plan_t *plan)
+  {
+    unsigned count = plan->new_to_old_gid_list.length;
+    for (unsigned i = 0; i < count; i++)
+    {
+      hb_codepoint_t new_gid = plan->new_to_old_gid_list[i].first;
+      contour_point_vector_t *all_points;
+      if (!plan->new_gid_contour_points_map.has (new_gid, &all_points))
+        return false;
+      if (!glyph_variations[i].instantiate (plan->axes_location, plan->axes_triple_distances, all_points))
+        return false;
+    }
+    return true;
+  }
+
+  bool compile_bytes (const hb_map_t& axes_index_map,
+                      const hb_map_t& axes_old_index_tag_map)
+  {
+    if (!compile_shared_tuples (axes_index_map, axes_old_index_tag_map))
+      return false;
+    for (tuple_variations_t& vars: glyph_variations)
+      if (!vars.compile_bytes (axes_index_map, axes_old_index_tag_map,
+                               true, /* use shared points*/
+                               &shared_tuples_idx_map))
+        return false;
+
+    return true;
+  }
+
+  bool compile_shared_tuples (const hb_map_t& axes_index_map,
+                              const hb_map_t& axes_old_index_tag_map)
+  {
+    /* key is pointer to compiled_peak_coords inside each tuple, hashing
+     * function will always deref pointers first */
+    hb_hashmap_t<const hb_vector_t<char>*, unsigned> coords_count_map;
+
+    /* count the num of shared coords */
+    for (tuple_variations_t& vars: glyph_variations)
+    {
+      for (tuple_delta_t& var : vars.tuple_vars)
+      {
+        if (!var.compile_peak_coords (axes_index_map, axes_old_index_tag_map))
+          return false;
+        unsigned* count;
+        if (coords_count_map.has (&(var.compiled_peak_coords), &count))
+          coords_count_map.set (&(var.compiled_peak_coords), *count + 1);
+        else
+          coords_count_map.set (&(var.compiled_peak_coords), 1);
+      }
+    }
+
+    if (!coords_count_map || coords_count_map.in_error ())
+      return false;
+
+    /* add only those coords that are used more than once into the vector and sort */
+    hb_vector_t<const hb_vector_t<char>*> shared_coords;
+    if (unlikely (!shared_coords.alloc (coords_count_map.get_population ())))
+      return false;
+
+    for (const auto _ : coords_count_map.iter ())
+    {
+      if (_.second == 1) continue;
+      shared_coords.push (_.first);
+    }
+
+    /* no shared tuples: no coords are used more than once */
+    if (!shared_coords) return true;
+    /* sorting based on the coords frequency first (high to low), then compare
+     * the coords bytes */
+    hb_qsort (shared_coords.arrayZ, shared_coords.length, sizeof (hb_vector_t<char>*), _cmp_coords, (void *) (&coords_count_map));
+
+    /* build shared_coords->idx map and shared tuples byte array */
+
+    shared_tuples_count = hb_min (0xFFFu + 1, shared_coords.length);
+    unsigned len = shared_tuples_count * (shared_coords[0]->length);
+    if (unlikely (!compiled_shared_tuples.alloc (len)))
+      return false;
+
+    for (unsigned i = 0; i < shared_tuples_count; i++)
+    {
+      shared_tuples_idx_map.set (shared_coords[i], i);
+      /* add a concat() in hb_vector_t? */
+      for (char c : shared_coords[i]->iter ())
+        compiled_shared_tuples.push (c);
+    }
+
+    return true;
+  }
+
+  static int _cmp_coords (const void *pa, const void *pb, void *arg)
+  {
+    const hb_hashmap_t<const hb_vector_t<char>*, unsigned>* coords_count_map =
+        reinterpret_cast<const hb_hashmap_t<const hb_vector_t<char>*, unsigned>*> (arg);
+
+    /* shared_coords is hb_vector_t<const hb_vector_t<char>*> so casting pa/pb
+     * to be a pointer to a pointer */
+    const hb_vector_t<char>** a = reinterpret_cast<const hb_vector_t<char>**> (const_cast<void*>(pa));
+    const hb_vector_t<char>** b = reinterpret_cast<const hb_vector_t<char>**> (const_cast<void*>(pb));
+
+    bool has_a = coords_count_map->has (*a);
+    bool has_b = coords_count_map->has (*b);
+
+    if (has_a && has_b)
+    {
+      unsigned a_num = coords_count_map->get (*a);
+      unsigned b_num = coords_count_map->get (*b);
+
+      if (a_num != b_num)
+        return b_num - a_num;
+
+      return (*b)->as_array().cmp ((*a)->as_array ());
+    }
+    else if (has_a) return -1;
+    else if (has_b) return 1;
+    else return 0;
+  }
+
+  template<typename Iterator,
+           hb_requires (hb_is_iterator (Iterator))>
+  bool serialize_glyph_var_data (hb_serialize_context_t *c,
+                                 Iterator it,
+                                 bool long_offset,
+                                 unsigned num_glyphs,
+                                 char* glyph_var_data_offsets /* OUT: glyph var data offsets array */) const
+  {
+    TRACE_SERIALIZE (this);
+
+    if (long_offset)
+    {
+      ((HBUINT32 *) glyph_var_data_offsets)[0] = 0;
+      glyph_var_data_offsets += 4;
+    }
+    else
+    {
+      ((HBUINT16 *) glyph_var_data_offsets)[0] = 0;
+      glyph_var_data_offsets += 2;
+    }
+    unsigned glyph_offset = 0;
+    hb_codepoint_t last_gid = 0;
+    unsigned idx = 0;
+
+    TupleVariationData* cur_glyph = c->start_embed<TupleVariationData> ();
+    if (!cur_glyph) return_trace (false);
+    for (auto &_ : it)
+    {
+      hb_codepoint_t gid = _.first;
+      if (long_offset)
+        for (; last_gid < gid; last_gid++)
+          ((HBUINT32 *) glyph_var_data_offsets)[last_gid] = glyph_offset;
+      else
+        for (; last_gid < gid; last_gid++)
+          ((HBUINT16 *) glyph_var_data_offsets)[last_gid] = glyph_offset / 2;
+
+      if (idx >= glyph_variations.length) return_trace (false);
+      if (!cur_glyph->serialize (c, true, glyph_variations[idx])) return_trace (false);
+      TupleVariationData* next_glyph = c->start_embed<TupleVariationData> ();
+      glyph_offset += (char *) next_glyph - (char *) cur_glyph;
+
+      if (long_offset)
+        ((HBUINT32 *) glyph_var_data_offsets)[gid] = glyph_offset;
+      else
+        ((HBUINT16 *) glyph_var_data_offsets)[gid] = glyph_offset / 2;
+
+      last_gid++;
+      idx++;
+      cur_glyph = next_glyph;
+    }
+
+    if (long_offset)
+      for (; last_gid < num_glyphs; last_gid++)
+        ((HBUINT32 *) glyph_var_data_offsets)[last_gid] = glyph_offset;
+    else
+      for (; last_gid < num_glyphs; last_gid++)
+        ((HBUINT16 *) glyph_var_data_offsets)[last_gid] = glyph_offset / 2;
+    return_trace (true);
+  }
+};
 
 struct gvar
 {
@@ -83,7 +296,9 @@ struct gvar
   bool sanitize_shallow (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) && (version.major == 1) &&
+    return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
+		  (version.major == 1) &&
 		  sharedTuples.sanitize (c, this, axisCount * sharedTupleCount) &&
 		  (is_long_offset () ?
 		     c->check_array (get_long_offset_array (), c->get_num_glyphs () + 1) :
@@ -94,9 +309,101 @@ struct gvar
   bool sanitize (hb_sanitize_context_t *c) const
   { return sanitize_shallow (c); }
 
+  bool decompile_glyph_variations (hb_subset_context_t *c,
+                                   glyph_variations_t& glyph_vars /* OUT */) const
+  {
+    hb_hashmap_t<hb_codepoint_t, hb_bytes_t> new_gid_var_data_map;
+    auto it = hb_iter (c->plan->new_to_old_gid_list);
+    if (it->first == 0 && !(c->plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
+    {
+      new_gid_var_data_map.set (0, hb_bytes_t ());
+      it++;
+    }
+
+    for (auto &_ : it)
+    {
+      hb_codepoint_t new_gid = _.first;
+      hb_codepoint_t old_gid = _.second;
+      hb_bytes_t var_data_bytes = get_glyph_var_data_bytes (c->source_blob, glyphCountX, old_gid);
+      new_gid_var_data_map.set (new_gid, var_data_bytes);
+    }
+
+    if (new_gid_var_data_map.in_error ()) return false;
+
+    hb_array_t<const F2DOT14> shared_tuples = (this+sharedTuples).as_array ((unsigned) sharedTupleCount * (unsigned) axisCount);
+    return glyph_vars.create_from_glyphs_var_data (axisCount, shared_tuples, c->plan, new_gid_var_data_map);
+  }
+
+  template<typename Iterator,
+           hb_requires (hb_is_iterator (Iterator))>
+  bool serialize (hb_serialize_context_t *c,
+                  const glyph_variations_t& glyph_vars,
+                  Iterator it,
+                  unsigned axis_count,
+                  unsigned num_glyphs) const
+  {
+    TRACE_SERIALIZE (this);
+    gvar *out = c->allocate_min<gvar> ();
+    if (unlikely (!out)) return_trace (false);
+
+    out->version.major = 1;
+    out->version.minor = 0;
+    out->axisCount = axis_count;
+    out->glyphCountX = hb_min (0xFFFFu, num_glyphs);
+
+    unsigned glyph_var_data_size = glyph_vars.compiled_byte_size ();
+    bool long_offset = glyph_var_data_size & ~0xFFFFu;
+    out->flags = long_offset ? 1 : 0;
+
+    HBUINT8 *glyph_var_data_offsets = c->allocate_size<HBUINT8> ((long_offset ? 4 : 2) * (num_glyphs + 1), false);
+    if (!glyph_var_data_offsets) return_trace (false);
+
+    /* shared tuples */
+    unsigned shared_tuple_count = glyph_vars.compiled_shared_tuples_count ();
+    out->sharedTupleCount = shared_tuple_count;
+
+    if (!shared_tuple_count)
+      out->sharedTuples = 0;
+    else
+    {
+      hb_array_t<const char> shared_tuples = glyph_vars.compiled_shared_tuples.as_array ().copy (c);
+      if (!shared_tuples.arrayZ) return_trace (false);
+      out->sharedTuples = shared_tuples.arrayZ - (char *) out;
+    }
+
+    char *glyph_var_data = c->start_embed<char> ();
+    if (!glyph_var_data) return_trace (false);
+    out->dataZ = glyph_var_data - (char *) out;
+
+    return_trace (glyph_vars.serialize_glyph_var_data (c, it, long_offset, num_glyphs,
+                                                       (char *) glyph_var_data_offsets));
+  }
+
+  bool instantiate (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    glyph_variations_t glyph_vars;
+    if (!decompile_glyph_variations (c, glyph_vars))
+      return_trace (false);
+
+    if (!glyph_vars.instantiate (c->plan)) return_trace (false);
+    if (!glyph_vars.compile_bytes (c->plan->axes_index_map, c->plan->axes_old_index_tag_map))
+      return_trace (false);
+
+    unsigned axis_count = c->plan->axes_index_map.get_population ();
+    unsigned num_glyphs = c->plan->num_output_glyphs ();
+    auto it = hb_iter (c->plan->new_to_old_gid_list);
+    return_trace (serialize (c->serializer, glyph_vars, it, axis_count, num_glyphs));
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
+    if (c->plan->all_axes_pinned)
+      return_trace (false);
+
+    if (c->plan->normalized_coords)
+      return_trace (instantiate (c));
 
     unsigned glyph_count = version.to_int () ? c->plan->source->get_num_glyphs () : 0;
 
@@ -121,7 +428,10 @@ struct gvar
       subset_data_size += get_glyph_var_data_bytes (c->source_blob, glyph_count, old_gid).length;
     }
 
-    bool long_offset = subset_data_size & ~0xFFFFu;
+    bool long_offset = (subset_data_size & ~0xFFFFu);
+ #ifdef HB_EXPERIMENTAL_API
+    long_offset = long_offset || (c->plan->flags & HB_SUBSET_FLAGS_IFTB_REQUIREMENTS);
+#endif
     out->flags = long_offset ? 1 : 0;
 
     HBUINT8 *subset_offsets = c->serializer->allocate_size<HBUINT8> ((long_offset ? 4 : 2) * (num_glyphs + 1), false);
@@ -139,6 +449,8 @@ struct gvar
       hb_memcpy (tuples, this+sharedTuples, shared_tuple_size);
     }
 
+    /* This ordering relative to the shared tuples array, which puts the glyphVariationData
+       last in the table, is required when HB_SUBSET_FLAGS_IFTB_REQUIREMENTS is set */
     char *subset_data = c->serializer->allocate_size<char> (subset_data_size, false);
     if (!subset_data) return_trace (false);
     out->dataZ = subset_data - (char *) out;

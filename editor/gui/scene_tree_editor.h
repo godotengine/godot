@@ -37,6 +37,7 @@
 
 class EditorSelection;
 class TextureRect;
+class Timer;
 
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);
@@ -78,7 +79,7 @@ class SceneTreeEditor : public Control {
 	void _add_nodes(Node *p_node, TreeItem *p_parent);
 	void _test_update_tree();
 	bool _update_filter(TreeItem *p_parent = nullptr, bool p_scroll_to_selected = false);
-	bool _item_matches_all_terms(TreeItem *p_item, PackedStringArray p_terms);
+	bool _item_matches_all_terms(TreeItem *p_item, const PackedStringArray &p_terms);
 	void _tree_changed();
 	void _tree_process_mode_changed();
 	void _node_removed(Node *p_node);
@@ -88,7 +89,6 @@ class SceneTreeEditor : public Control {
 	void _notification(int p_what);
 	void _selected_changed();
 	void _deselect_items();
-	void _rename_node(Node *p_node, const String &p_name);
 
 	void _cell_collapsed(Object *p_obj);
 
@@ -100,7 +100,8 @@ class SceneTreeEditor : public Control {
 	bool show_enabled_subscene = false;
 	bool is_scene_tree_dock = false;
 
-	void _renamed();
+	void _edited();
+	void _renamed(TreeItem *p_item, TreeItem *p_batch_item, Node *p_node = nullptr);
 
 	HashSet<Node *> marked;
 	bool marked_selectable = false;
@@ -108,6 +109,8 @@ class SceneTreeEditor : public Control {
 	bool display_foreign = false;
 	bool tree_dirty = true;
 	bool pending_test_update = false;
+	Timer *update_node_tooltip_delay = nullptr;
+
 	static void _bind_methods();
 
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
@@ -118,9 +121,11 @@ class SceneTreeEditor : public Control {
 	void _node_visibility_changed(Node *p_node);
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
 	void _set_item_custom_color(TreeItem *p_item, Color p_color);
+	void _update_node_tooltip(Node *p_node, TreeItem *p_item);
+	void _queue_update_node_tooltip(Node *p_node, TreeItem *p_item);
 
 	void _selection_changed();
-	Node *get_scene_node();
+	Node *get_scene_node() const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -141,6 +146,8 @@ class SceneTreeEditor : public Control {
 public:
 	// Public for use with callable_mp.
 	void _update_tree(bool p_scroll_to_selected = false);
+
+	void rename_node(Node *p_node, const String &p_name, TreeItem *p_item = nullptr);
 
 	void set_filter(const String &p_filter);
 	String get_filter() const;

@@ -155,6 +155,11 @@ struct Lightmap {
 	Dependency dependency;
 };
 
+struct LightmapInstance {
+	RID lightmap;
+	Transform3D transform;
+};
+
 class LightStorage : public RendererLightStorage {
 public:
 	enum ShadowAtlastQuadrant {
@@ -179,8 +184,13 @@ private:
 	/* LIGHTMAP */
 
 	Vector<RID> lightmap_textures;
+	float lightmap_probe_capture_update_speed = 4;
 
 	mutable RID_Owner<Lightmap, true> lightmap_owner;
+
+	/* LIGHTMAP INSTANCE */
+
+	mutable RID_Owner<LightmapInstance> lightmap_instance_owner;
 
 	/* SHADOW ATLAS */
 
@@ -565,6 +575,7 @@ public:
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) override;
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) override;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) override;
+	virtual void reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) override;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) override;
 	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override;
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override;
@@ -572,6 +583,7 @@ public:
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const override;
 	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override;
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const override;
+	virtual uint32_t reflection_probe_get_reflection_mask(RID p_probe) const override;
 	virtual Vector3 reflection_probe_get_size(RID p_probe) const override;
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const override;
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override;
@@ -589,6 +601,7 @@ public:
 	virtual RID reflection_probe_instance_create(RID p_probe) override;
 	virtual void reflection_probe_instance_free(RID p_instance) override;
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override;
+	virtual bool reflection_probe_has_atlas_index(RID p_instance) override;
 	virtual void reflection_probe_release_atlas_index(RID p_instance) override;
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override;
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override;
@@ -621,6 +634,9 @@ public:
 	virtual float lightmap_get_probe_capture_update_speed() const override;
 
 	/* LIGHTMAP INSTANCE */
+
+	LightmapInstance *get_lightmap_instance(RID p_rid) { return lightmap_instance_owner.get_or_null(p_rid); };
+	bool owns_lightmap_instance(RID p_rid) { return lightmap_instance_owner.owns(p_rid); };
 
 	virtual RID lightmap_instance_create(RID p_lightmap) override;
 	virtual void lightmap_instance_free(RID p_lightmap) override;
@@ -671,7 +687,7 @@ public:
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, atlas->debug_texture, 0);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 		return atlas->debug_fbo;
 	}

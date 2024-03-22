@@ -46,8 +46,9 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 	int todo = p_frames;
 
 	int beat_length_frames = -1;
-	bool beat_loop = vorbis_stream->has_loop();
-	if (beat_loop && vorbis_stream->get_bpm() > 0 && vorbis_stream->get_beat_count() > 0) {
+	bool use_loop = looping_override ? looping : vorbis_stream->loop;
+
+	if (use_loop && vorbis_stream->get_bpm() > 0 && vorbis_stream->get_beat_count() > 0) {
 		beat_length_frames = vorbis_stream->get_beat_count() * vorbis_data->get_sampling_rate() * 60 / vorbis_stream->get_bpm();
 	}
 
@@ -99,7 +100,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 			} else
 			**/
 
-			if (beat_loop && beat_length_frames <= (int)frames_mixed) {
+			if (use_loop && beat_length_frames <= (int)frames_mixed) {
 				// End of file when doing beat-based looping. <= used instead of == because importer editing
 				if (!have_packets_left && !have_samples_left) {
 					//Nothing remaining, so do nothing.
@@ -125,7 +126,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 		if (!have_packets_left && !have_samples_left) {
 			// Actual end of file!
 			bool is_not_empty = mixed > 0 || vorbis_stream->get_length() > 0;
-			if (vorbis_stream->loop && is_not_empty) {
+			if (use_loop && is_not_empty) {
 				//loop
 
 				seek(vorbis_stream->loop_offset);
@@ -144,7 +145,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 }
 
 int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p_frames) {
-	ERR_FAIL_COND_V(!ready, 0);
+	ERR_FAIL_COND_V(!ready, p_frames);
 	if (!have_samples_left) {
 		ogg_packet *packet = nullptr;
 		int err;
@@ -156,10 +157,10 @@ int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 		}
 
 		err = vorbis_synthesis(&block, packet);
-		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis synthesis " + itos(err));
+		ERR_FAIL_COND_V_MSG(err != 0, p_frames, "Error during vorbis synthesis " + itos(err));
 
 		err = vorbis_synthesis_blockin(&dsp_state, &block);
-		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis block processing " + itos(err));
+		ERR_FAIL_COND_V_MSG(err != 0, p_frames, "Error during vorbis block processing " + itos(err));
 
 		have_packets_left = !packet->e_o_s;
 	}
@@ -176,13 +177,13 @@ int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 
 	if (info.channels > 1) {
 		for (int frame = 0; frame < frames; frame++) {
-			p_buffer[frame].l = pcm[0][frame];
-			p_buffer[frame].r = pcm[1][frame];
+			p_buffer[frame].left = pcm[0][frame];
+			p_buffer[frame].right = pcm[1][frame];
 		}
 	} else {
 		for (int frame = 0; frame < frames; frame++) {
-			p_buffer[frame].l = pcm[0][frame];
-			p_buffer[frame].r = pcm[0][frame];
+			p_buffer[frame].left = pcm[0][frame];
+			p_buffer[frame].right = pcm[0][frame];
 		}
 	}
 	vorbis_synthesis_read(&dsp_state, frames);
@@ -255,6 +256,25 @@ double AudioStreamPlaybackOggVorbis::get_playback_position() const {
 
 void AudioStreamPlaybackOggVorbis::tag_used_streams() {
 	vorbis_stream->tag_used(get_playback_position());
+}
+
+void AudioStreamPlaybackOggVorbis::set_parameter(const StringName &p_name, const Variant &p_value) {
+	if (p_name == SNAME("looping")) {
+		if (p_value == Variant()) {
+			looping_override = false;
+			looping = false;
+		} else {
+			looping_override = true;
+			looping = p_value;
+		}
+	}
+}
+
+Variant AudioStreamPlaybackOggVorbis::get_parameter(const StringName &p_name) const {
+	if (looping_override && p_name == SNAME("looping")) {
+		return looping;
+	}
+	return Variant();
 }
 
 void AudioStreamPlaybackOggVorbis::seek(double p_time) {
@@ -491,6 +511,10 @@ int AudioStreamOggVorbis::get_bar_beats() const {
 
 bool AudioStreamOggVorbis::is_monophonic() const {
 	return false;
+}
+
+void AudioStreamOggVorbis::get_parameter_list(List<Parameter> *r_parameters) {
+	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
 }
 
 void AudioStreamOggVorbis::_bind_methods() {

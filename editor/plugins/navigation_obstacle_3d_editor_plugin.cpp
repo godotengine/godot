@@ -348,7 +348,7 @@ PackedVector2Array NavigationObstacle3DEditor::_get_polygon() {
 	return PackedVector2Array(obstacle_node->call("get_polygon"));
 }
 
-void NavigationObstacle3DEditor::_set_polygon(PackedVector2Array p_poly) {
+void NavigationObstacle3DEditor::_set_polygon(const PackedVector2Array &p_poly) {
 	ERR_FAIL_NULL_MSG(obstacle_node, "Edited object is not valid.");
 	obstacle_node->call("set_polygon", p_poly);
 }
@@ -503,7 +503,11 @@ void NavigationObstacle3DEditor::edit(Node *p_node) {
 		wip.clear();
 		wip_active = false;
 		edited_point = -1;
-		p_node->add_child(point_lines_meshinstance);
+		if (point_lines_meshinstance->get_parent()) {
+			point_lines_meshinstance->reparent(p_node, false);
+		} else {
+			p_node->add_child(point_lines_meshinstance);
+		}
 		_polygon_draw();
 
 	} else {

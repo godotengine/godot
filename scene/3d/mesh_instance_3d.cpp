@@ -30,10 +30,11 @@
 
 #include "mesh_instance_3d.h"
 
-#include "collision_shape_3d.h"
-#include "physics_body_3d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/static_body_3d.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
@@ -99,7 +100,7 @@ void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	if (mesh.is_valid()) {
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("%s/%d", PNAME("surface_material_override"), i), PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("%s/%d", PNAME("surface_material_override"), i), PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT));
 		}
 	}
 }
@@ -491,6 +492,23 @@ void MeshInstance3D::create_debug_tangents() {
 	} else {
 		mi->set_owner(get_owner());
 	}
+}
+
+bool MeshInstance3D::_property_can_revert(const StringName &p_name) const {
+	HashMap<StringName, int>::ConstIterator E = blend_shape_properties.find(p_name);
+	if (E) {
+		return true;
+	}
+	return false;
+}
+
+bool MeshInstance3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	HashMap<StringName, int>::ConstIterator E = blend_shape_properties.find(p_name);
+	if (E) {
+		r_property = 0.0f;
+		return true;
+	}
+	return false;
 }
 
 void MeshInstance3D::_bind_methods() {

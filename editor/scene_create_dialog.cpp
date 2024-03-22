@@ -33,9 +33,9 @@
 #include "core/io/dir_access.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_validation_panel.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/gui/box_container.h"
@@ -65,7 +65,7 @@ void SceneCreateDialog::config(const String &p_dir) {
 	directory = p_dir;
 	root_name_edit->set_text("");
 	scene_name_edit->set_text("");
-	scene_name_edit->call_deferred(SNAME("grab_focus"));
+	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred();
 	validation_panel->update();
 }
 
@@ -275,7 +275,7 @@ SceneCreateDialog::SceneCreateDialog() {
 		root_name_edit = memnew(LineEdit);
 		gc->add_child(root_name_edit);
 		root_name_edit->set_tooltip_text(TTR("When empty, the root node name is derived from the scene name based on the \"editor/naming/node_name_casing\" project setting."));
-		root_name_edit->set_auto_translate(false);
+		root_name_edit->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		root_name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		root_name_edit->connect("text_submitted", callable_mp(this, &SceneCreateDialog::accept_create).unbind(1));
 	}

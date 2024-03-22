@@ -32,11 +32,11 @@
 
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
@@ -80,7 +80,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 			ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
 			classes.sort_custom<StringName::AlphCompare>();
 
-			menu->add_submenu_item(TTR("Add Animation"), "animations");
+			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
 			List<StringName> names;
 			tree->get_animation_list(&names);
@@ -796,15 +796,14 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	error_label = memnew(Label);
 	error_panel->add_child(error_label);
-	error_label->set_text("hmmm");
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
 	menu->connect("id_pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_add_menu_type));
 
 	animations_menu = memnew(PopupMenu);
+	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	menu->add_child(animations_menu);
-	animations_menu->set_name("animations");
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_add_animation_type));
 
 	open_file = memnew(EditorFileDialog);

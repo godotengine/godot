@@ -383,6 +383,8 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 }
 
 void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
+	ERR_FAIL_COND_MSG(!p_xform.is_finite(), "Invalid mesh bake transform.");
+
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; //only triangles

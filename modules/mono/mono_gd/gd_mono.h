@@ -68,7 +68,9 @@ class GDMono {
 
 	String project_assembly_path;
 	uint64_t project_assembly_modified_time = 0;
+#ifdef GD_MONO_HOT_RELOAD
 	int project_load_failure_count = 0;
+#endif
 
 #ifdef TOOLS_ENABLED
 	bool _load_project_assembly();

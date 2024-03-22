@@ -32,7 +32,7 @@
 #define GPU_PARTICLES_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/skin.h"
+#include "scene/resources/3d/skin.h"
 
 class GPUParticles3D : public GeometryInstance3D {
 private:
@@ -95,6 +95,7 @@ private:
 	double emission_time = 0.0;
 	double active_time = 0.0;
 	float interp_to_end_factor = 0;
+	Vector3 previous_velocity;
 	Vector3 previous_position;
 
 	void _attach_sub_emitter();

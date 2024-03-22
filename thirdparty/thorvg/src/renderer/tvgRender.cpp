@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,12 +39,9 @@ void RenderTransform::override(const Matrix& m)
 }
 
 
-bool RenderTransform::update()
+void RenderTransform::update()
 {
-    if (overriding) return true;
-
-    //Init Status
-    if (mathZero(x) && mathZero(y) && mathZero(degree) && mathEqual(scale, 1)) return false;
+    if (overriding) return;
 
     mathIdentity(&m);
 
@@ -53,17 +50,13 @@ bool RenderTransform::update()
     if (!mathZero(degree)) mathRotate(&m, degree);
 
     mathTranslate(&m, x, y);
-
-    return true;
-}
-
-
-RenderTransform::RenderTransform()
-{
 }
 
 
 RenderTransform::RenderTransform(const RenderTransform* lhs, const RenderTransform* rhs)
 {
-    m = mathMultiply(&lhs->m, &rhs->m);
+    if (lhs && rhs) m = mathMultiply(&lhs->m, &rhs->m);
+    else if (lhs) m = lhs->m;
+    else if (rhs) m = rhs->m;
+    else mathIdentity(&m);
 }

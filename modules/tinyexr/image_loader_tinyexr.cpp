@@ -68,6 +68,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitF
 	if (ret != TINYEXR_SUCCESS) {
 		if (err) {
 			ERR_PRINT(String(err));
+			FreeEXRErrorMessage(err);
 		}
 		return ERR_FILE_CORRUPT;
 	}
@@ -86,6 +87,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitF
 	if (ret != TINYEXR_SUCCESS) {
 		if (err) {
 			ERR_PRINT(String(err));
+			FreeEXRErrorMessage(err);
 		}
 		return ERR_FILE_CORRUPT;
 	}

@@ -5,7 +5,7 @@ from methods import detect_darwin_sdk_path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from SCons import Environment
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -23,6 +23,7 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
+        ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
         (
             "IOS_TOOLCHAIN_PATH",
             "Path to iOS toolchain",
@@ -31,6 +32,7 @@ def get_opts():
         ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
         BoolVariable("ios_simulator", "Build for iOS Simulator", False),
         ("ios_triple", "Triple for ios toolchain", ""),
+        BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
     ]
 
 
@@ -49,10 +51,12 @@ def get_flags():
         ("arch", "arm64"),  # Default for convenience.
         ("target", "template_debug"),
         ("use_volk", False),
+        ("supported", ["mono"]),
+        ("builtin_pcre2_with_jit", False),
     ]
 
 
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     if env["arch"] not in supported_arches:
@@ -105,6 +109,7 @@ def configure(env: "Environment"):
         detect_darwin_sdk_path("iossimulator", env)
         env.Append(ASFLAGS=["-mios-simulator-version-min=12.0"])
         env.Append(CCFLAGS=["-mios-simulator-version-min=12.0"])
+        env.Append(CPPDEFINES=["IOS_SIMULATOR"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
         detect_darwin_sdk_path("ios", env)
@@ -151,7 +156,7 @@ def configure(env: "Environment"):
     env.Append(CPPDEFINES=["IOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])

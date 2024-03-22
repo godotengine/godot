@@ -1,5 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -838,7 +841,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Vector4 other && Equals(other);
         }
@@ -900,9 +903,11 @@ namespace Godot
         /// Converts this <see cref="Vector4"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
+#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
             return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)}, {W.ToString(format)})";
+#pragma warning restore CA1305
         }
     }
 }

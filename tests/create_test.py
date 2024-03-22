@@ -38,7 +38,7 @@ def main():
     if os.path.isfile(file_path):
         print(f'ERROR: The file "{file_path}" already exists.')
         sys.exit(1)
-    with open(file_path, "w") as file:
+    with open(file_path, "w", encoding="utf-8", newline="\n") as file:
         file.write(
             """/**************************************************************************/
 /*  test_{name_snake_case}.h {padding} */
@@ -108,7 +108,7 @@ TEST_CASE("[{name_pascal_case}] Example test case") {{
         if match:
             new_string = contents[: match.start()] + f'#include "tests/{file_path}"\n' + contents[match.start() :]
 
-            with open("test_main.cpp", "w") as file:
+            with open("test_main.cpp", "w", encoding="utf-8", newline="\n") as file:
                 file.write(new_string)
                 print("Done.")
             # Use clang format to sort include directives afster insertion.

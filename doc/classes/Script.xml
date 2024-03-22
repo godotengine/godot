@@ -24,6 +24,27 @@
 				Returns the script directly inherited by this script.
 			</description>
 		</method>
+		<method name="get_global_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the class name associated with the script, if there is one. Returns an empty string otherwise.
+				To give the script a global name, you can use the [code]class_name[/code] keyword in GDScript and the [code][GlobalClass][/code] attribute in C#.
+				[codeblocks]
+				[gdscript]
+				class_name MyNode
+				extends Node
+				[/gdscript]
+				[csharp]
+				using Godot;
+
+				[GlobalClass]
+				public partial class MyNode : Node
+				{
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="get_instance_base_type" qualifiers="const">
 			<return type="StringName" />
 			<description>

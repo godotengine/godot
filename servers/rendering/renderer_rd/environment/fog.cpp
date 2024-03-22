@@ -570,7 +570,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		RendererRD::MaterialStorage::store_transform(to_prev_cam_view, params.to_prev_view);
 		RendererRD::MaterialStorage::store_transform(p_cam_transform, params.transform);
 
-		RD::get_singleton()->buffer_update(volumetric_fog.volume_ubo, 0, sizeof(VolumetricFogShader::VolumeUBO), &params, RD::BARRIER_MASK_COMPUTE);
+		RD::get_singleton()->buffer_update(volumetric_fog.volume_ubo, 0, sizeof(VolumetricFogShader::VolumeUBO), &params);
 
 		if (fog->fog_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(fog->fog_uniform_set)) {
 			Vector<RD::Uniform> uniforms;
@@ -931,9 +931,10 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			uniforms.push_back(u);
 		}
 
-		if (fog->copy_uniform_set.is_null()) {
-			fog->copy_uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY), 0);
+		if (fog->copy_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(fog->copy_uniform_set)) {
+			RD::get_singleton()->free(fog->copy_uniform_set);
 		}
+		fog->copy_uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY), 0);
 
 		if (!gi_dependent_sets_valid) {
 			fog->gi_dependent_sets.process_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG), 0);
@@ -1069,8 +1070,8 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		uint32_t cluster_size = p_settings.cluster_builder->get_cluster_size();
 		params.cluster_shift = get_shift_from_power_of_2(cluster_size);
 
-		uint32_t cluster_screen_width = (p_settings.rb_size.x - 1) / cluster_size + 1;
-		uint32_t cluster_screen_height = (p_settings.rb_size.y - 1) / cluster_size + 1;
+		uint32_t cluster_screen_width = Math::division_round_up((uint32_t)p_settings.rb_size.x, cluster_size);
+		uint32_t cluster_screen_height = Math::division_round_up((uint32_t)p_settings.rb_size.y, cluster_size);
 		params.max_cluster_element_count_div_32 = p_settings.max_cluster_elements / 32;
 		params.cluster_type_size = cluster_screen_width * cluster_screen_height * (params.max_cluster_element_count_div_32 + 32);
 		params.cluster_width = cluster_screen_width;
@@ -1086,7 +1087,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	RD::get_singleton()->draw_command_begin_label("Render Volumetric Fog");
 
 	RENDER_TIMESTAMP("Render Fog");
-	RD::get_singleton()->buffer_update(volumetric_fog.params_ubo, 0, sizeof(VolumetricFogShader::ParamsUBO), &params, RD::BARRIER_MASK_COMPUTE);
+	RD::get_singleton()->buffer_update(volumetric_fog.params_ubo, 0, sizeof(VolumetricFogShader::ParamsUBO), &params);
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
@@ -1140,7 +1141,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.process_uniform_set, 0);
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, 1);
 
-	RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_RASTER);
+	RD::get_singleton()->compute_list_end();
 
 	RENDER_TIMESTAMP("< Volumetric Fog");
 	RD::get_singleton()->draw_command_end_label();

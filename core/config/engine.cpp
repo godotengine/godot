@@ -110,10 +110,11 @@ Dictionary Engine::get_version_info() const {
 	dict["hex"] = VERSION_HEX;
 	dict["status"] = VERSION_STATUS;
 	dict["build"] = VERSION_BUILD;
-	dict["year"] = VERSION_YEAR;
 
 	String hash = String(VERSION_HASH);
 	dict["hash"] = hash.is_empty() ? String("unknown") : hash;
+
+	dict["timestamp"] = VERSION_TIMESTAMP;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0) {
@@ -176,14 +177,14 @@ TypedArray<Dictionary> Engine::get_copyright_info() const {
 
 Dictionary Engine::get_donor_info() const {
 	Dictionary donors;
-	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSOR_PLATINUM);
-	donors["gold_sponsors"] = array_from_info(DONORS_SPONSOR_GOLD);
-	donors["silver_sponsors"] = array_from_info(DONORS_SPONSOR_SILVER);
-	donors["bronze_sponsors"] = array_from_info(DONORS_SPONSOR_BRONZE);
-	donors["mini_sponsors"] = array_from_info(DONORS_SPONSOR_MINI);
-	donors["gold_donors"] = array_from_info(DONORS_GOLD);
-	donors["silver_donors"] = array_from_info(DONORS_SILVER);
-	donors["bronze_donors"] = array_from_info(DONORS_BRONZE);
+	donors["patrons"] = array_from_info(DONORS_PATRONS);
+	donors["platinum_sponsors"] = array_from_info(DONORS_SPONSORS_PLATINUM);
+	donors["gold_sponsors"] = array_from_info(DONORS_SPONSORS_GOLD);
+	donors["silver_sponsors"] = array_from_info(DONORS_SPONSORS_SILVER);
+	donors["diamond_members"] = array_from_info(DONORS_MEMBERS_DIAMOND);
+	donors["titanium_members"] = array_from_info(DONORS_MEMBERS_TITANIUM);
+	donors["platinum_members"] = array_from_info(DONORS_MEMBERS_PLATINUM);
+	donors["gold_members"] = array_from_info(DONORS_MEMBERS_GOLD);
 	return donors;
 }
 
@@ -257,6 +258,12 @@ void Engine::set_print_error_messages(bool p_enabled) {
 
 bool Engine::is_printing_error_messages() const {
 	return CoreGlobals::print_error_enabled;
+}
+
+void Engine::print_header(const String &p_string) const {
+	if (_print_header) {
+		print_line(p_string);
+	}
 }
 
 void Engine::add_singleton(const Singleton &p_singleton) {

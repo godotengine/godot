@@ -1,5 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -121,6 +124,29 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the squared distance between this vector and <paramref name="to"/>.
+        /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
+        /// you need to compare vectors or need the squared distance for some formula.
+        /// </summary>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The squared distance between the two vectors.</returns>
+        public readonly int DistanceSquaredTo(Vector2I to)
+        {
+            return (to - this).LengthSquared();
+        }
+
+        /// <summary>
+        /// Returns the distance between this vector and <paramref name="to"/>.
+        /// </summary>
+        /// <seealso cref="DistanceSquaredTo(Vector2I)"/>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The distance between the two vectors.</returns>
+        public readonly real_t DistanceTo(Vector2I to)
+        {
+            return (to - this).Length();
+        }
+
+        /// <summary>
         /// Returns the length (magnitude) of this vector.
         /// </summary>
         /// <seealso cref="LengthSquared"/>
@@ -182,8 +208,8 @@ namespace Godot
         }
 
         // Constants
-        private static readonly Vector2I _min = new Vector2I(int.MinValue, int.MinValue);
-        private static readonly Vector2I _max = new Vector2I(int.MaxValue, int.MaxValue);
+        private static readonly Vector2I _minValue = new Vector2I(int.MinValue, int.MinValue);
+        private static readonly Vector2I _maxValue = new Vector2I(int.MaxValue, int.MaxValue);
 
         private static readonly Vector2I _zero = new Vector2I(0, 0);
         private static readonly Vector2I _one = new Vector2I(1, 1);
@@ -197,12 +223,12 @@ namespace Godot
         /// Min vector, a vector with all components equal to <see cref="int.MinValue"/>. Can be used as a negative integer equivalent of <see cref="Vector2.Inf"/>.
         /// </summary>
         /// <value>Equivalent to <c>new Vector2I(int.MinValue, int.MinValue)</c>.</value>
-        public static Vector2I Min { get { return _min; } }
+        public static Vector2I MinValue { get { return _minValue; } }
         /// <summary>
         /// Max vector, a vector with all components equal to <see cref="int.MaxValue"/>. Can be used as an integer equivalent of <see cref="Vector2.Inf"/>.
         /// </summary>
         /// <value>Equivalent to <c>new Vector2I(int.MaxValue, int.MaxValue)</c>.</value>
-        public static Vector2I Max { get { return _max; } }
+        public static Vector2I MaxValue { get { return _maxValue; } }
 
         /// <summary>
         /// Zero vector, a vector with all components set to <c>0</c>.
@@ -535,7 +561,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Vector2I other && Equals(other);
         }
@@ -572,9 +598,11 @@ namespace Godot
         /// Converts this <see cref="Vector2I"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
+#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
             return $"({X.ToString(format)}, {Y.ToString(format)})";
+#pragma warning restore CA1305
         }
     }
 }

@@ -33,9 +33,9 @@
     <Message Importance="normal" Text="Found XCode at $(XcodeSelect)"  Condition=" '$(FindXCode)' == 'true' "/>
     
     <ItemGroup>
-      <LinkerArg Include="-isysroot %22$(XCodePath)Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk%22"
+      <LinkerArg Include="-mios-simulator-version-min=12.0 -isysroot %22$(XCodePath)Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk%22"
                  Condition=" $(RuntimeIdentifier.Contains('simulator')) "/>
-      <LinkerArg Include="-isysroot %22$(XCodePath)Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk%22"
+      <LinkerArg Include="-miphoneos-version-min=12.0 -isysroot %22$(XCodePath)Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk%22"
                  Condition=" !$(RuntimeIdentifier.Contains('simulator')) "/>
     </ItemGroup>
 

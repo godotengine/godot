@@ -2,7 +2,7 @@
 #define VULKAN_ANDROID_H_ 1
 
 /*
-** Copyright 2015-2023 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -119,6 +119,32 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetMemoryAndroidHardwareBufferANDROID(
     const VkMemoryGetAndroidHardwareBufferInfoANDROID* pInfo,
     struct AHardwareBuffer**                    pBuffer);
 #endif
+
+
+// VK_ANDROID_external_format_resolve is a preprocessor guard. Do not pass it to API calls.
+#define VK_ANDROID_external_format_resolve 1
+#define VK_ANDROID_EXTERNAL_FORMAT_RESOLVE_SPEC_VERSION 1
+#define VK_ANDROID_EXTERNAL_FORMAT_RESOLVE_EXTENSION_NAME "VK_ANDROID_external_format_resolve"
+typedef struct VkPhysicalDeviceExternalFormatResolveFeaturesANDROID {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           externalFormatResolve;
+} VkPhysicalDeviceExternalFormatResolveFeaturesANDROID;
+
+typedef struct VkPhysicalDeviceExternalFormatResolvePropertiesANDROID {
+    VkStructureType     sType;
+    void*               pNext;
+    VkBool32            nullColorAttachmentWithExternalFormatResolve;
+    VkChromaLocation    externalFormatResolveChromaOffsetX;
+    VkChromaLocation    externalFormatResolveChromaOffsetY;
+} VkPhysicalDeviceExternalFormatResolvePropertiesANDROID;
+
+typedef struct VkAndroidHardwareBufferFormatResolvePropertiesANDROID {
+    VkStructureType    sType;
+    void*              pNext;
+    VkFormat           colorAttachmentFormat;
+} VkAndroidHardwareBufferFormatResolvePropertiesANDROID;
+
 
 #ifdef __cplusplus
 }

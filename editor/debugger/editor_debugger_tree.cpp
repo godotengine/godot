@@ -253,7 +253,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	}
 	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree
 	if (scroll_item) {
-		call_deferred(SNAME("scroll_to_item"), scroll_item);
+		callable_mp((Tree *)this, &Tree::scroll_to_item).call_deferred(scroll_item, false);
 	}
 	last_filter = filter;
 	updating_scene_tree = false;

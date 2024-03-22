@@ -69,7 +69,7 @@ void AStar3D::add_point(int64_t p_id, const Vector3 &p_pos, real_t p_weight_scal
 }
 
 Vector3 AStar3D::get_point_position(int64_t p_id) const {
-	Point *p;
+	Point *p = nullptr;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_V_MSG(!p_exists, Vector3(), vformat("Can't get point's position. Point with id: %d doesn't exist.", p_id));
 
@@ -77,7 +77,7 @@ Vector3 AStar3D::get_point_position(int64_t p_id) const {
 }
 
 void AStar3D::set_point_position(int64_t p_id, const Vector3 &p_pos) {
-	Point *p;
+	Point *p = nullptr;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point's position. Point with id: %d doesn't exist.", p_id));
 
@@ -85,7 +85,7 @@ void AStar3D::set_point_position(int64_t p_id, const Vector3 &p_pos) {
 }
 
 real_t AStar3D::get_point_weight_scale(int64_t p_id) const {
-	Point *p;
+	Point *p = nullptr;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_V_MSG(!p_exists, 0, vformat("Can't get point's weight scale. Point with id: %d doesn't exist.", p_id));
 
@@ -93,7 +93,7 @@ real_t AStar3D::get_point_weight_scale(int64_t p_id) const {
 }
 
 void AStar3D::set_point_weight_scale(int64_t p_id, real_t p_weight_scale) {
-	Point *p;
+	Point *p = nullptr;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set point's weight scale. Point with id: %d doesn't exist.", p_id));
 	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't set point's weight scale less than 0.0: %f.", p_weight_scale));
@@ -102,7 +102,7 @@ void AStar3D::set_point_weight_scale(int64_t p_id, real_t p_weight_scale) {
 }
 
 void AStar3D::remove_point(int64_t p_id) {
-	Point *p;
+	Point *p = nullptr;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't remove point. Point with id: %d doesn't exist.", p_id));
 
@@ -130,11 +130,11 @@ void AStar3D::remove_point(int64_t p_id) {
 void AStar3D::connect_points(int64_t p_id, int64_t p_with_id, bool bidirectional) {
 	ERR_FAIL_COND_MSG(p_id == p_with_id, vformat("Can't connect point with id: %d to itself.", p_id));
 
-	Point *a;
+	Point *a = nullptr;
 	bool from_exists = points.lookup(p_id, a);
 	ERR_FAIL_COND_MSG(!from_exists, vformat("Can't connect points. Point with id: %d doesn't exist.", p_id));
 
-	Point *b;
+	Point *b = nullptr;
 	bool to_exists = points.lookup(p_with_id, b);
 	ERR_FAIL_COND_MSG(!to_exists, vformat("Can't connect points. Point with id: %d doesn't exist.", p_with_id));
 
@@ -166,11 +166,11 @@ void AStar3D::connect_points(int64_t p_id, int64_t p_with_id, bool bidirectional
 }
 
 void AStar3D::disconnect_points(int64_t p_id, int64_t p_with_id, bool bidirectional) {
-	Point *a;
+	Point *a = nullptr;
 	bool a_exists = points.lookup(p_id, a);
 	ERR_FAIL_COND_MSG(!a_exists, vformat("Can't disconnect points. Point with id: %d doesn't exist.", p_id));
 
-	Point *b;
+	Point *b = nullptr;
 	bool b_exists = points.lookup(p_with_id, b);
 	ERR_FAIL_COND_MSG(!b_exists, vformat("Can't disconnect points. Point with id: %d doesn't exist.", p_with_id));
 
@@ -220,7 +220,7 @@ PackedInt64Array AStar3D::get_point_ids() {
 }
 
 Vector<int64_t> AStar3D::get_point_connections(int64_t p_id) {
-	Point *p;
+	Point *p = nullptr;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_V_MSG(!p_exists, Vector<int64_t>(), vformat("Can't get point's connections. Point with id: %d doesn't exist.", p_id));
 
@@ -386,11 +386,11 @@ real_t AStar3D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
 		return scost;
 	}
 
-	Point *from_point;
+	Point *from_point = nullptr;
 	bool from_exists = points.lookup(p_from_id, from_point);
 	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_from_id));
 
-	Point *to_point;
+	Point *to_point = nullptr;
 	bool to_exists = points.lookup(p_to_id, to_point);
 	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_to_id));
 
@@ -403,11 +403,11 @@ real_t AStar3D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 		return scost;
 	}
 
-	Point *from_point;
+	Point *from_point = nullptr;
 	bool from_exists = points.lookup(p_from_id, from_point);
 	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_from_id));
 
-	Point *to_point;
+	Point *to_point = nullptr;
 	bool to_exists = points.lookup(p_to_id, to_point);
 	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_to_id));
 
@@ -415,11 +415,11 @@ real_t AStar3D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 }
 
 Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
-	Point *a;
+	Point *a = nullptr;
 	bool from_exists = points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
 
-	Point *b;
+	Point *b = nullptr;
 	bool to_exists = points.lookup(p_to_id, b);
 	ERR_FAIL_COND_V_MSG(!to_exists, Vector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
 
@@ -464,11 +464,11 @@ Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
 }
 
 Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
-	Point *a;
+	Point *a = nullptr;
 	bool from_exists = points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
-	Point *b;
+	Point *b = nullptr;
 	bool to_exists = points.lookup(p_to_id, b);
 	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 
@@ -513,7 +513,7 @@ Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
 }
 
 void AStar3D::set_point_disabled(int64_t p_id, bool p_disabled) {
-	Point *p;
+	Point *p = nullptr;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't set if point is disabled. Point with id: %d doesn't exist.", p_id));
 
@@ -521,7 +521,7 @@ void AStar3D::set_point_disabled(int64_t p_id, bool p_disabled) {
 }
 
 bool AStar3D::is_point_disabled(int64_t p_id) const {
-	Point *p;
+	Point *p = nullptr;
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_V_MSG(!p_exists, false, vformat("Can't get if point is disabled. Point with id: %d doesn't exist.", p_id));
 
@@ -660,11 +660,11 @@ real_t AStar2D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
 		return scost;
 	}
 
-	AStar3D::Point *from_point;
+	AStar3D::Point *from_point = nullptr;
 	bool from_exists = astar.points.lookup(p_from_id, from_point);
 	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_from_id));
 
-	AStar3D::Point *to_point;
+	AStar3D::Point *to_point = nullptr;
 	bool to_exists = astar.points.lookup(p_to_id, to_point);
 	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_to_id));
 
@@ -677,11 +677,11 @@ real_t AStar2D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 		return scost;
 	}
 
-	AStar3D::Point *from_point;
+	AStar3D::Point *from_point = nullptr;
 	bool from_exists = astar.points.lookup(p_from_id, from_point);
 	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_from_id));
 
-	AStar3D::Point *to_point;
+	AStar3D::Point *to_point = nullptr;
 	bool to_exists = astar.points.lookup(p_to_id, to_point);
 	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't compute cost. Point with id: %d doesn't exist.", p_to_id));
 
@@ -689,11 +689,11 @@ real_t AStar2D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 }
 
 Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
-	AStar3D::Point *a;
+	AStar3D::Point *a = nullptr;
 	bool from_exists = astar.points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
 
-	AStar3D::Point *b;
+	AStar3D::Point *b = nullptr;
 	bool to_exists = astar.points.lookup(p_to_id, b);
 	ERR_FAIL_COND_V_MSG(!to_exists, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
 
@@ -737,11 +737,11 @@ Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
 }
 
 Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
-	AStar3D::Point *a;
+	AStar3D::Point *a = nullptr;
 	bool from_exists = astar.points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
 
-	AStar3D::Point *b;
+	AStar3D::Point *b = nullptr;
 	bool to_exists = astar.points.lookup(p_to_id, b);
 	ERR_FAIL_COND_V_MSG(!to_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 

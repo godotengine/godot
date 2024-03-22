@@ -255,6 +255,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="max_steps" type="int" setter="set_max_steps" getter="get_max_steps" default="0">
+			The maximum number of steps that can be stored in the undo/redo history. If the number of stored steps exceeds this limit, older steps are removed from history and can no longer be reached by calling [method undo]. A value of [code]0[/code] or lower means no limit.
+		</member>
+	</members>
 	<signals>
 		<signal name="version_changed">
 			<description>

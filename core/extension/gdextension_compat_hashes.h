@@ -50,7 +50,7 @@ public:
 	static void initialize();
 	static void finalize();
 	static bool lookup_current_hash(const StringName &p_class, const StringName &p_method, uint32_t p_legacy_hash, uint32_t *r_current_hash);
-	static bool get_legacy_hashes(const StringName &p_class, const StringName &p_method, Array &r_hashes);
+	static bool get_legacy_hashes(const StringName &p_class, const StringName &p_method, Array &r_hashes, bool p_check_valid = true);
 };
 
 #endif // DISABLE_DEPRECATED

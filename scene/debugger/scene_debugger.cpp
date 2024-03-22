@@ -95,22 +95,22 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		EngineDebugger::get_singleton()->send_message("filesystem:update_file", { arr });
 
 	} else if (p_msg == "inspect_object") { // Object Inspect
-		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		ObjectID id = p_args[0];
 		_send_object_id(id);
 
 	} else if (p_msg == "override_camera_2D:set") { // Camera
-		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		bool enforce = p_args[0];
 		scene_tree->get_root()->enable_canvas_transform_override(enforce);
 
 	} else if (p_msg == "override_camera_2D:transform") {
-		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		Transform2D transform = p_args[0];
 		scene_tree->get_root()->set_canvas_transform_override(transform);
 #ifndef _3D_DISABLED
 	} else if (p_msg == "override_camera_3D:set") {
-		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		bool enable = p_args[0];
 		scene_tree->get_root()->enable_camera_3d_override(enable);
 
@@ -119,12 +119,12 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		Transform3D transform = p_args[0];
 		bool is_perspective = p_args[1];
 		float size_or_fov = p_args[2];
-		float near = p_args[3];
-		float far = p_args[4];
+		float depth_near = p_args[3];
+		float depth_far = p_args[4];
 		if (is_perspective) {
-			scene_tree->get_root()->set_camera_3d_override_perspective(size_or_fov, near, far);
+			scene_tree->get_root()->set_camera_3d_override_perspective(size_or_fov, depth_near, depth_far);
 		} else {
-			scene_tree->get_root()->set_camera_3d_override_orthogonal(size_or_fov, near, far);
+			scene_tree->get_root()->set_camera_3d_override_orthogonal(size_or_fov, depth_near, depth_far);
 		}
 		scene_tree->get_root()->set_camera_3d_override_transform(transform);
 #endif // _3D_DISABLED
@@ -195,7 +195,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 		live_editor->_instance_node_func(p_args[0], p_args[1], p_args[2]);
 
 	} else if (p_msg == "live_remove_node") {
-		ERR_FAIL_COND_V(p_args.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 		live_editor->_remove_node_func(p_args[0]);
 
 	} else if (p_msg == "live_remove_and_keep_node") {
@@ -625,7 +625,34 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 		}
 		Node *n2 = n->get_node(np);
 
+		// Do not change transform of edited scene root, unless it's the scene being played.
+		// See GH-86659 for additional context.
+		bool keep_transform = (n2 == n) && (n2->get_parent() != scene_tree->root);
+		Variant orig_tf;
+
+		if (keep_transform) {
+			if (n2->is_class("Node3D")) {
+				orig_tf = n2->call("get_transform");
+			} else if (n2->is_class("CanvasItem")) {
+				orig_tf = n2->call("_edit_get_state");
+			}
+		}
+
 		n2->set(p_prop, p_value);
+
+		if (keep_transform) {
+			if (n2->is_class("Node3D")) {
+				Variant new_tf = n2->call("get_transform");
+				if (new_tf != orig_tf) {
+					n2->call("set_transform", orig_tf);
+				}
+			} else if (n2->is_class("CanvasItem")) {
+				Variant new_tf = n2->call("_edit_get_state");
+				if (new_tf != orig_tf) {
+					n2->call("_edit_set_state", orig_tf);
+				}
+			}
+		}
 	}
 }
 
@@ -669,8 +696,35 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, const Var
 		}
 		Node *n2 = n->get_node(np);
 
+		// Do not change transform of edited scene root, unless it's the scene being played.
+		// See GH-86659 for additional context.
+		bool keep_transform = (n2 == n) && (n2->get_parent() != scene_tree->root);
+		Variant orig_tf;
+
+		if (keep_transform) {
+			if (n2->is_class("Node3D")) {
+				orig_tf = n2->call("get_transform");
+			} else if (n2->is_class("CanvasItem")) {
+				orig_tf = n2->call("_edit_get_state");
+			}
+		}
+
 		Callable::CallError ce;
 		n2->callp(p_method, p_args, p_argcount, ce);
+
+		if (keep_transform) {
+			if (n2->is_class("Node3D")) {
+				Variant new_tf = n2->call("get_transform");
+				if (new_tf != orig_tf) {
+					n2->call("set_transform", orig_tf);
+				}
+			} else if (n2->is_class("CanvasItem")) {
+				Variant new_tf = n2->call("_edit_get_state");
+				if (new_tf != orig_tf) {
+					n2->call("_edit_set_state", orig_tf);
+				}
+			}
+		}
 	}
 }
 

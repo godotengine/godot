@@ -51,10 +51,21 @@ protected:
 	GDVIRTUAL0RC(bool, _generate_small_preview_automatically)
 	GDVIRTUAL0RC(bool, _can_generate_small_preview)
 
+	class DrawRequester : public Object {
+		Semaphore semaphore;
+
+		Variant _post_semaphore() const;
+
+	public:
+		void request_and_wait(RID p_viewport) const;
+		void abort() const;
+	};
+
 public:
 	virtual bool handles(const String &p_type) const;
 	virtual Ref<Texture2D> generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const;
 	virtual Ref<Texture2D> generate_from_path(const String &p_path, const Size2 &p_size, Dictionary &p_metadata) const;
+	virtual void abort(){};
 
 	virtual bool generate_small_preview_automatically() const;
 	virtual bool can_generate_small_preview() const;
@@ -80,7 +91,7 @@ class EditorResourcePreview : public Node {
 	Mutex preview_mutex;
 	Semaphore preview_sem;
 	Thread thread;
-	SafeFlag exit;
+	SafeFlag exiting;
 	SafeFlag exited;
 
 	struct Item {
@@ -102,10 +113,11 @@ class EditorResourcePreview : public Node {
 	int small_thumbnail_size = -1;
 
 	static void _thread_func(void *ud);
-	void _thread();
+	void _thread(); // For rendering drivers supporting async texture creation.
+	static void _idle_callback(); // For other rendering drivers (i.e., OpenGL).
 	void _iterate();
 
-	void _write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, String p_hash, const Dictionary &p_metadata);
+	void _write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, const String &p_hash, const Dictionary &p_metadata);
 	void _read_preview_cache(Ref<FileAccess> p_file, int *r_thumbnail_size, bool *r_has_small_texture, uint64_t *r_modified_time, String *r_hash, Dictionary *r_metadata);
 
 	Vector<Ref<EditorResourcePreviewGenerator>> preview_generators;
@@ -130,6 +142,7 @@ public:
 
 	void start();
 	void stop();
+	bool is_threaded() const;
 
 	EditorResourcePreview();
 	~EditorResourcePreview();

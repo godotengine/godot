@@ -39,6 +39,7 @@ class MissingNode : public Node {
 	HashMap<StringName, Variant> properties;
 
 	String original_class;
+	String original_scene;
 	bool recording_properties = false;
 
 protected:
@@ -51,6 +52,9 @@ protected:
 public:
 	void set_original_class(const String &p_class);
 	String get_original_class() const;
+
+	void set_original_scene(const String &p_scene);
+	String get_original_scene() const;
 
 	void set_recording_properties(bool p_enable);
 	bool is_recording_properties() const;

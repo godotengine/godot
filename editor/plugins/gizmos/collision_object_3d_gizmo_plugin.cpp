@@ -32,9 +32,9 @@
 
 #include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/collision_object_3d.h"
-#include "scene/3d/collision_polygon_3d.h"
-#include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/physics/collision_object_3d.h"
+#include "scene/3d/physics/collision_polygon_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/resources/surface_tool.h"
 
 CollisionObject3DGizmoPlugin::CollisionObject3DGizmoPlugin() {

@@ -1327,7 +1327,7 @@ hb_buffer_get_invisible_glyph (const hb_buffer_t *buffer)
  * Sets the #hb_codepoint_t that replaces characters not found in
  * the font during shaping.
  *
- * The not-found glyph defaults to zero, sometimes knows as the
+ * The not-found glyph defaults to zero, sometimes known as the
  * ".notdef" glyph.  This API allows for differentiating the two.
  *
  * Since: 3.1.0
@@ -2076,7 +2076,7 @@ hb_buffer_t::sort (unsigned int start, unsigned int end, int(*compar)(const hb_g
  * hb_buffer_diff:
  * @buffer: a buffer.
  * @reference: other buffer to compare to.
- * @dottedcircle_glyph: glyph id of U+25CC DOTTED CIRCLE, or (hb_codepont_t) -1.
+ * @dottedcircle_glyph: glyph id of U+25CC DOTTED CIRCLE, or (hb_codepoint_t) -1.
  * @position_fuzz: allowed absolute difference in position values.
  *
  * If dottedcircle_glyph is (hb_codepoint_t) -1 then #HB_BUFFER_DIFF_FLAG_DOTTED_CIRCLE_PRESENT

@@ -53,7 +53,7 @@ enum indic_syllable_type_t {
 };
 
 
-#line 54 "hb-ot-shaper-indic-machine.hh"
+#line 57 "hb-ot-shaper-indic-machine.hh"
 #define indic_syllable_machine_ex_A 9u
 #define indic_syllable_machine_ex_C 1u
 #define indic_syllable_machine_ex_CM 16u
@@ -76,7 +76,7 @@ enum indic_syllable_type_t {
 #define indic_syllable_machine_ex_ZWNJ 5u
 
 
-#line 75 "hb-ot-shaper-indic-machine.hh"
+#line 80 "hb-ot-shaper-indic-machine.hh"
 static const unsigned char _indic_syllable_machine_trans_keys[] = {
 	8u, 8u, 4u, 13u, 5u, 13u, 5u, 13u, 13u, 13u, 4u, 13u, 4u, 13u, 4u, 13u, 
 	8u, 8u, 5u, 13u, 5u, 13u, 13u, 13u, 4u, 13u, 4u, 13u, 4u, 13u, 4u, 13u, 
@@ -460,7 +460,7 @@ find_syllables_indic (hb_buffer_t *buffer)
   int cs;
   hb_glyph_info_t *info = buffer->info;
   
-#line 453 "hb-ot-shaper-indic-machine.hh"
+#line 464 "hb-ot-shaper-indic-machine.hh"
 	{
 	cs = indic_syllable_machine_start;
 	ts = 0;
@@ -476,7 +476,7 @@ find_syllables_indic (hb_buffer_t *buffer)
 
   unsigned int syllable_serial = 1;
   
-#line 465 "hb-ot-shaper-indic-machine.hh"
+#line 480 "hb-ot-shaper-indic-machine.hh"
 	{
 	int _slen;
 	int _trans;
@@ -490,7 +490,7 @@ _resume:
 #line 1 "NONE"
 	{ts = p;}
 	break;
-#line 477 "hb-ot-shaper-indic-machine.hh"
+#line 494 "hb-ot-shaper-indic-machine.hh"
 	}
 
 	_keys = _indic_syllable_machine_trans_keys + (cs<<1);
@@ -593,7 +593,7 @@ _eof_trans:
 #line 114 "hb-ot-shaper-indic-machine.rl"
 	{act = 6;}
 	break;
-#line 559 "hb-ot-shaper-indic-machine.hh"
+#line 597 "hb-ot-shaper-indic-machine.hh"
 	}
 
 _again:
@@ -602,7 +602,7 @@ _again:
 #line 1 "NONE"
 	{ts = 0;}
 	break;
-#line 566 "hb-ot-shaper-indic-machine.hh"
+#line 606 "hb-ot-shaper-indic-machine.hh"
 	}
 
 	if ( ++p != pe )

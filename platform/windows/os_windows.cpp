@@ -329,7 +329,7 @@ void debug_dynamic_library_check_dependencies(const String &p_root_path, const S
 					if (import_desc) {
 						for (; import_desc->Name && import_desc->FirstThunk; import_desc++) {
 							char16_t full_name_wc[MAX_PATH];
-							const char *name_cs = (const char *)ImageRvaToVa(loaded_image.FileHeader, loaded_image.MappedAddress, import_desc->Name, 0);
+							const char *name_cs = (const char *)ImageRvaToVa(loaded_image.FileHeader, loaded_image.MappedAddress, import_desc->Name, nullptr);
 							String name = String(name_cs);
 							if (name.begins_with("api-ms-win-")) {
 								r_checked.insert(name);
@@ -352,13 +352,15 @@ void debug_dynamic_library_check_dependencies(const String &p_root_path, const S
 }
 #endif
 
-Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.replace("/", "\\");
 
 	if (!FileAccess::exists(path)) {
 		//this code exists so gdextension can load .dll files from within the executable path
 		path = get_executable_path().get_base_dir().path_join(p_path.get_file());
 	}
+
+	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
 
 	typedef DLL_DIRECTORY_COOKIE(WINAPI * PAddDllDirectory)(PCWSTR);
 	typedef BOOL(WINAPI * PRemoveDllDirectory)(DLL_DIRECTORY_COOKIE);
@@ -416,7 +418,7 @@ Error OS_Windows::close_dynamic_library(void *p_library_handle) {
 	return OK;
 }
 
-Error OS_Windows::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
+Error OS_Windows::get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional) {
 	p_symbol_handle = (void *)GetProcAddress((HMODULE)p_library_handle, p_name.utf8().get_data());
 	if (!p_symbol_handle) {
 		if (!p_optional) {
@@ -461,9 +463,9 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 
 	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
 	REFIID uuid = IID_IWbemLocator; // Interface UUID
-	IWbemLocator *wbemLocator = NULL; // to get the services
-	IWbemServices *wbemServices = NULL; // to get the class
-	IEnumWbemClassObject *iter = NULL;
+	IWbemLocator *wbemLocator = nullptr; // to get the services
+	IWbemServices *wbemServices = nullptr; // to get the class
+	IEnumWbemClassObject *iter = nullptr;
 	IWbemClassObject *pnpSDriverObject[1]; // contains driver name, version, etc.
 	String driver_name;
 	String driver_version;
@@ -473,12 +475,12 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 		return Vector<String>();
 	}
 
-	HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
+	HRESULT hr = CoCreateInstance(clsid, nullptr, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
 	if (hr != S_OK) {
 		return Vector<String>();
 	}
 	BSTR resource_name = SysAllocString(L"root\\CIMV2");
-	hr = wbemLocator->ConnectServer(resource_name, NULL, NULL, NULL, 0, NULL, NULL, &wbemServices);
+	hr = wbemLocator->ConnectServer(resource_name, nullptr, nullptr, nullptr, 0, nullptr, nullptr, &wbemServices);
 	SysFreeString(resource_name);
 
 	SAFE_RELEASE(wbemLocator) // from now on, use `wbemServices`
@@ -490,7 +492,7 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	const String gpu_device_class_query = vformat("SELECT * FROM Win32_PnPSignedDriver WHERE DeviceName = \"%s\"", device_name);
 	BSTR query = SysAllocString((const WCHAR *)gpu_device_class_query.utf16().get_data());
 	BSTR query_lang = SysAllocString(L"WQL");
-	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, NULL, &iter);
+	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, nullptr, &iter);
 	SysFreeString(query_lang);
 	SysFreeString(query);
 	if (hr == S_OK) {
@@ -502,13 +504,13 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 			VariantInit(&dn);
 
 			BSTR object_name = SysAllocString(L"DriverName");
-			hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, NULL, NULL);
+			hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, nullptr, nullptr);
 			SysFreeString(object_name);
 			if (hr == S_OK) {
 				String d_name = String(V_BSTR(&dn));
 				if (d_name.is_empty()) {
 					object_name = SysAllocString(L"DriverProviderName");
-					hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, NULL, NULL);
+					hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, nullptr, nullptr);
 					SysFreeString(object_name);
 					if (hr == S_OK) {
 						driver_name = String(V_BSTR(&dn));
@@ -518,7 +520,7 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 				}
 			} else {
 				object_name = SysAllocString(L"DriverProviderName");
-				hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, NULL, NULL);
+				hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, nullptr, nullptr);
 				SysFreeString(object_name);
 				if (hr == S_OK) {
 					driver_name = String(V_BSTR(&dn));
@@ -528,7 +530,7 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 			VARIANT dv;
 			VariantInit(&dv);
 			object_name = SysAllocString(L"DriverVersion");
-			hr = pnpSDriverObject[0]->Get(object_name, 0, &dv, NULL, NULL);
+			hr = pnpSDriverObject[0]->Get(object_name, 0, &dv, nullptr, nullptr);
 			SysFreeString(object_name);
 			if (hr == S_OK) {
 				driver_version = String(V_BSTR(&dv));
@@ -781,7 +783,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		DWORD read = 0;
 		for (;;) { // Read StdOut and StdErr from pipe.
 			bytes.resize(bytes_in_buffer + CHUNK_SIZE);
-			const bool success = ReadFile(pipe[0], bytes.ptr() + bytes_in_buffer, CHUNK_SIZE, &read, NULL);
+			const bool success = ReadFile(pipe[0], bytes.ptr() + bytes_in_buffer, CHUNK_SIZE, &read, nullptr);
 			if (!success || read == 0) {
 				break;
 			}
@@ -871,7 +873,7 @@ Error OS_Windows::kill(const ProcessID &p_pid) {
 		CloseHandle(pi.hThread);
 	} else {
 		HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, (DWORD)p_pid);
-		if (hProcess != NULL) {
+		if (hProcess != nullptr) {
 			ret = TerminateProcess(hProcess, 0);
 
 			CloseHandle(hProcess);
@@ -1183,7 +1185,7 @@ Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_na
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]);
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
@@ -1262,7 +1264,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]);
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
@@ -1331,7 +1333,7 @@ String OS_Windows::get_stdin_string() {
 	return String();
 }
 
-Error OS_Windows::shell_open(String p_uri) {
+Error OS_Windows::shell_open(const String &p_uri) {
 	INT_PTR ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, (LPCWSTR)(p_uri.utf16().get_data()), nullptr, nullptr, SW_SHOWNORMAL);
 	if (ret > 32) {
 		return OK;
@@ -1453,7 +1455,7 @@ String OS_Windows::get_processor_name() const {
 	WCHAR buffer[256];
 	DWORD buffer_len = 256;
 	DWORD vtype = REG_SZ;
-	if (RegQueryValueExW(hkey, L"ProcessorNameString", NULL, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS) {
+	if (RegQueryValueExW(hkey, L"ProcessorNameString", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS) {
 		RegCloseKey(hkey);
 		return String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
 	} else {

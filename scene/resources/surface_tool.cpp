@@ -97,6 +97,10 @@ bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 		return false;
 	}
 
+	if (tangent != p_vertex.tangent) {
+		return false;
+	}
+
 	if (color != p_vertex.color) {
 		return false;
 	}
@@ -690,7 +694,7 @@ Array SurfaceTool::commit_to_arrays() {
 
 			} break;
 			case Mesh::ARRAY_INDEX: {
-				ERR_CONTINUE(index_array.size() == 0);
+				ERR_CONTINUE(index_array.is_empty());
 
 				Vector<int> array;
 				array.resize(index_array.size());
@@ -880,9 +884,9 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 			v.normal = narr[i];
 		}
 		if (lformat & RS::ARRAY_FORMAT_TANGENT) {
-			Plane p(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2], tarr[i * 4 + 3]);
-			v.tangent = p.normal;
-			v.binormal = p.normal.cross(v.tangent).normalized() * p.d;
+			v.tangent = Vector3(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2]);
+			float d = tarr[i * 4 + 3];
+			v.binormal = v.normal.cross(v.tangent).normalized() * d;
 		}
 		if (lformat & RS::ARRAY_FORMAT_COLOR) {
 			v.color = carr[i];
@@ -1280,7 +1284,7 @@ SurfaceTool::CustomFormat SurfaceTool::get_custom_format(int p_channel_index) co
 }
 void SurfaceTool::optimize_indices_for_cache() {
 	ERR_FAIL_NULL(optimize_vertex_cache_func);
-	ERR_FAIL_COND(index_array.size() == 0);
+	ERR_FAIL_COND(index_array.is_empty());
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
 	ERR_FAIL_COND(index_array.size() % 3 != 0);
 
@@ -1290,7 +1294,7 @@ void SurfaceTool::optimize_indices_for_cache() {
 }
 
 AABB SurfaceTool::get_aabb() const {
-	ERR_FAIL_COND_V(vertex_array.size() == 0, AABB());
+	ERR_FAIL_COND_V(vertex_array.is_empty(), AABB());
 
 	AABB aabb;
 	for (uint32_t i = 0; i < vertex_array.size(); i++) {
@@ -1310,8 +1314,8 @@ Vector<int> SurfaceTool::generate_lod(float p_threshold, int p_target_index_coun
 
 	ERR_FAIL_NULL_V(simplify_func, lod);
 	ERR_FAIL_COND_V(p_target_index_count < 0, lod);
-	ERR_FAIL_COND_V(vertex_array.size() == 0, lod);
-	ERR_FAIL_COND_V(index_array.size() == 0, lod);
+	ERR_FAIL_COND_V(vertex_array.is_empty(), lod);
+	ERR_FAIL_COND_V(index_array.is_empty(), lod);
 	ERR_FAIL_COND_V(index_array.size() % 3 != 0, lod);
 	ERR_FAIL_COND_V(index_array.size() < (unsigned int)p_target_index_count, lod);
 

@@ -152,7 +152,7 @@ env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
 
 # avoid issues when building with different versions of python out of the same directory
-env_base.SConsignFile(".sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL))
+env_base.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
 
 # Build options
 
@@ -182,6 +182,7 @@ opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
 opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
+opts.Add(BoolVariable("threads", "Enable threading support", True))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
@@ -191,6 +192,7 @@ opts.Add(BoolVariable("brotli", "Enable Brotli for decompresson and WOFF2 fonts 
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
+opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver (Windows only)", False))
 opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
@@ -210,6 +212,7 @@ opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all 
 opts.Add("object_prefix", "Custom prefix added to the base filename of all generated object files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
+opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
@@ -256,17 +259,26 @@ opts.Add(BoolVariable("builtin_zlib", "Use the built-in zlib library", True))
 opts.Add(BoolVariable("builtin_zstd", "Use the built-in Zstd library", True))
 
 # Compilation environment setup
-opts.Add("CXX", "C++ compiler")
-opts.Add("CC", "C compiler")
-opts.Add("LINK", "Linker")
-opts.Add("CCFLAGS", "Custom flags for both the C and C++ compilers")
-opts.Add("CFLAGS", "Custom flags for the C compiler")
-opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
-opts.Add("LINKFLAGS", "Custom flags for the linker")
+# CXX, CC, and LINK directly set the equivalent `env` values (which may still
+# be overridden for a specific platform), the lowercase ones are appended.
+opts.Add("CXX", "C++ compiler binary")
+opts.Add("CC", "C compiler binary")
+opts.Add("LINK", "Linker binary")
+opts.Add("cppdefines", "Custom defines for the pre-processor")
+opts.Add("ccflags", "Custom flags for both the C and C++ compilers")
+opts.Add("cxxflags", "Custom flags for the C++ compiler")
+opts.Add("cflags", "Custom flags for the C compiler")
+opts.Add("linkflags", "Custom flags for the linker")
 
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
 opts.Update(env_base)
+
+# Copy custom environment variables if set.
+if env_base["import_env_vars"]:
+    for env_var in str(env_base["import_env_vars"]).split(","):
+        if env_var in os.environ:
+            env_base["ENV"][env_var] = os.environ[env_var]
 
 # Platform selection: validate input, and add options.
 
@@ -299,18 +311,14 @@ else:
     if selected_platform != "":
         print("Automatically detected platform: " + selected_platform)
 
-if selected_platform in ["macos", "osx"]:
-    if selected_platform == "osx":
-        # Deprecated alias kept for compatibility.
-        print('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
-    # Alias for convenience.
+if selected_platform == "osx":
+    # Deprecated alias kept for compatibility.
+    print('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
     selected_platform = "macos"
 
-if selected_platform in ["ios", "iphone"]:
-    if selected_platform == "iphone":
-        # Deprecated alias kept for compatibility.
-        print('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
-    # Alias for convenience.
+if selected_platform == "iphone":
+    # Deprecated alias kept for compatibility.
+    print('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
     selected_platform = "ios"
 
 if selected_platform in ["linux", "bsd", "x11"]:
@@ -319,6 +327,11 @@ if selected_platform in ["linux", "bsd", "x11"]:
         print('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
     # Alias for convenience.
     selected_platform = "linuxbsd"
+
+if selected_platform == "javascript":
+    # Deprecated alias kept for compatibility.
+    print('Platform "javascript" has been renamed to "web" in Godot 4. Building for platform "web".')
+    selected_platform = "web"
 
 # Make sure to update this to the found, valid platform as it's used through the buildsystem as the reference.
 # It should always be re-set after calling `opts.Update()` otherwise it uses the original input value.
@@ -497,21 +510,11 @@ if selected_platform in platform_list:
         env.extra_suffix += "." + env["extra_suffix"]
 
     # Environment flags
-    CCFLAGS = env.get("CCFLAGS", "")
-    env["CCFLAGS"] = ""
-    env.Append(CCFLAGS=str(CCFLAGS).split())
-
-    CFLAGS = env.get("CFLAGS", "")
-    env["CFLAGS"] = ""
-    env.Append(CFLAGS=str(CFLAGS).split())
-
-    CXXFLAGS = env.get("CXXFLAGS", "")
-    env["CXXFLAGS"] = ""
-    env.Append(CXXFLAGS=str(CXXFLAGS).split())
-
-    LINKFLAGS = env.get("LINKFLAGS", "")
-    env["LINKFLAGS"] = ""
-    env.Append(LINKFLAGS=str(LINKFLAGS).split())
+    env.Append(CPPDEFINES=env.get("cppdefines", "").split())
+    env.Append(CCFLAGS=env.get("ccflags", "").split())
+    env.Append(CXXFLAGS=env.get("cxxflags", "").split())
+    env.Append(CFLAGS=env.get("cflags", "").split())
+    env.Append(LINKFLAGS=env.get("linkflags", "").split())
 
     # Feature build profile
     disabled_classes = []
@@ -565,7 +568,7 @@ if selected_platform in platform_list:
         if read_scu_limit != 0:
             max_includes_per_scu = read_scu_limit
 
-        methods.set_scu_folders(scu_builders.generate_scu_files(env["verbose"], max_includes_per_scu))
+        methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
 
     # Must happen after the flags' definition, as configure is when most flags
     # are actually handled to change compile options, etc.
@@ -822,6 +825,10 @@ if selected_platform in platform_list:
         suffix += ".double"
 
     suffix += "." + env["arch"]
+
+    if not env["threads"]:
+        suffix += ".nothreads"
+
     suffix += env.extra_suffix
 
     sys.path.remove(tmppath)
@@ -923,17 +930,17 @@ if selected_platform in platform_list:
 
     GLSL_BUILDERS = {
         "RD_GLSL": env.Builder(
-            action=env.Run(glsl_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
+            action=env.Run(glsl_builders.build_rd_headers),
             suffix="glsl.gen.h",
             src_suffix=".glsl",
         ),
         "GLSL_HEADER": env.Builder(
-            action=env.Run(glsl_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
+            action=env.Run(glsl_builders.build_raw_headers),
             suffix="glsl.gen.h",
             src_suffix=".glsl",
         ),
         "GLES3_GLSL": env.Builder(
-            action=env.Run(gles3_builders.build_gles3_headers, 'Building GLES3 GLSL header: "$TARGET"'),
+            action=env.Run(gles3_builders.build_gles3_headers),
             suffix="glsl.gen.h",
             src_suffix=".glsl",
         ),
@@ -949,22 +956,25 @@ if selected_platform in platform_list:
         env.vs_incs = []
         env.vs_srcs = []
 
-    if env["compiledb"]:
+    # CompileDB
+    from SCons import __version__ as scons_raw_version
+
+    scons_ver = env._get_major_minor_revision(scons_raw_version)
+    if env["compiledb"] and scons_ver < (4, 0, 0):
         # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-        from SCons import __version__ as scons_raw_version
-
-        scons_ver = env._get_major_minor_revision(scons_raw_version)
-
-        if scons_ver < (4, 0, 0):
-            print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
-            Exit(255)
-
+        print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
+        Exit(255)
+    if scons_ver >= (4, 0, 0):
         env.Tool("compilation_db")
         env.Alias("compiledb", env.CompilationDatabase())
 
-    Export("env")
+    # Threads
+    if env["threads"]:
+        env.Append(CPPDEFINES=["THREADS_ENABLED"])
 
     # Build subdirs, the build order is dependent on link order.
+    Export("env")
+
     SConscript("core/SCsub")
     SConscript("servers/SCsub")
     SConscript("scene/SCsub")
@@ -982,9 +992,6 @@ if selected_platform in platform_list:
 
     # Microsoft Visual Studio Project Generation
     if env["vsproj"]:
-        if os.name != "nt":
-            print("Error: The `vsproj` option is only usable on Windows with Visual Studio.")
-            Exit(255)
         env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
         methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
         methods.generate_cpp_hint_file("cpp.hint")
@@ -1031,3 +1038,13 @@ def print_elapsed_time():
 
 
 atexit.register(print_elapsed_time)
+
+
+def purge_flaky_files():
+    for build_failure in GetBuildFailures():
+        path = build_failure.node.abspath
+        if os.path.isfile(path):
+            os.remove(path)
+
+
+atexit.register(purge_flaky_files)

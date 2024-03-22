@@ -85,7 +85,7 @@ public:
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
 	double _blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false, real_t *r_activity = nullptr);
-	double _pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info);
+	double _pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false);
 
 protected:
 	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false);

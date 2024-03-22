@@ -180,7 +180,7 @@ StringName SkeletonProfile::get_root_bone() {
 	return root_bone;
 }
 
-void SkeletonProfile::set_root_bone(StringName p_bone_name) {
+void SkeletonProfile::set_root_bone(const StringName &p_bone_name) {
 	if (is_read_only) {
 		return;
 	}
@@ -191,7 +191,7 @@ StringName SkeletonProfile::get_scale_base_bone() {
 	return scale_base_bone;
 }
 
-void SkeletonProfile::set_scale_base_bone(StringName p_bone_name) {
+void SkeletonProfile::set_scale_base_bone(const StringName &p_bone_name) {
 	if (is_read_only) {
 		return;
 	}
@@ -217,7 +217,7 @@ StringName SkeletonProfile::get_group_name(int p_group_idx) const {
 	return groups[p_group_idx].group_name;
 }
 
-void SkeletonProfile::set_group_name(int p_group_idx, const StringName p_group_name) {
+void SkeletonProfile::set_group_name(int p_group_idx, const StringName &p_group_name) {
 	if (is_read_only) {
 		return;
 	}
@@ -254,7 +254,7 @@ void SkeletonProfile::set_bone_size(int p_size) {
 	notify_property_list_changed();
 }
 
-int SkeletonProfile::find_bone(StringName p_bone_name) const {
+int SkeletonProfile::find_bone(const StringName &p_bone_name) const {
 	if (p_bone_name == StringName()) {
 		return -1;
 	}
@@ -271,7 +271,7 @@ StringName SkeletonProfile::get_bone_name(int p_bone_idx) const {
 	return bones[p_bone_idx].bone_name;
 }
 
-void SkeletonProfile::set_bone_name(int p_bone_idx, const StringName p_bone_name) {
+void SkeletonProfile::set_bone_name(int p_bone_idx, const StringName &p_bone_name) {
 	if (is_read_only) {
 		return;
 	}
@@ -285,7 +285,7 @@ StringName SkeletonProfile::get_bone_parent(int p_bone_idx) const {
 	return bones[p_bone_idx].bone_parent;
 }
 
-void SkeletonProfile::set_bone_parent(int p_bone_idx, const StringName p_bone_parent) {
+void SkeletonProfile::set_bone_parent(int p_bone_idx, const StringName &p_bone_parent) {
 	if (is_read_only) {
 		return;
 	}
@@ -314,7 +314,7 @@ StringName SkeletonProfile::get_bone_tail(int p_bone_idx) const {
 	return bones[p_bone_idx].bone_tail;
 }
 
-void SkeletonProfile::set_bone_tail(int p_bone_idx, const StringName p_bone_tail) {
+void SkeletonProfile::set_bone_tail(int p_bone_idx, const StringName &p_bone_tail) {
 	if (is_read_only) {
 		return;
 	}
@@ -356,7 +356,7 @@ StringName SkeletonProfile::get_group(int p_bone_idx) const {
 	return bones[p_bone_idx].group;
 }
 
-void SkeletonProfile::set_group(int p_bone_idx, const StringName p_group) {
+void SkeletonProfile::set_group(int p_bone_idx, const StringName &p_group) {
 	if (is_read_only) {
 		return;
 	}
@@ -379,7 +379,7 @@ void SkeletonProfile::set_require(int p_bone_idx, const bool p_require) {
 	emit_signal("profile_updated");
 }
 
-bool SkeletonProfile::has_bone(StringName p_bone_name) {
+bool SkeletonProfile::has_bone(const StringName &p_bone_name) {
 	bool is_found = false;
 	for (int i = 0; i < bones.size(); i++) {
 		if (bones[i].bone_name == p_bone_name) {

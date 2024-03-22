@@ -146,6 +146,9 @@ private:
 	Vector2 texture_offset;
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif // DISABLE_DEPRECATED
 	static void _bind_methods();
 
 public:

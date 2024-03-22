@@ -76,7 +76,7 @@ class BoneTransformEditor : public VBoxContainer {
 
 	void create_editors();
 
-	void _value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
+	void _value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing);
 
 	void _property_keyed(const String &p_path, bool p_advance);
 
@@ -199,7 +199,6 @@ class Skeleton3DEditor : public VBoxContainer {
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
 
 public:
 	static Skeleton3DEditor *get_singleton() { return singleton; }

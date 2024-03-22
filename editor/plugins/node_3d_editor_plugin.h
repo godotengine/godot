@@ -32,8 +32,8 @@
 #define NODE_3D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-#include "editor/editor_scale.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/spin_box.h"
@@ -124,6 +124,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_AUDIO_LISTENER,
 		VIEW_AUDIO_DOPPLER,
 		VIEW_GIZMOS,
+		VIEW_GRID,
 		VIEW_INFORMATION,
 		VIEW_FRAME_TIME,
 
@@ -399,7 +400,7 @@ private:
 	String message;
 	double message_time;
 
-	void set_message(String p_message, float p_time = 5);
+	void set_message(const String &p_message, float p_time = 5);
 
 	void _view_settings_confirmed(real_t p_interp_delta);
 	void _update_camera(real_t p_interp_delta);
@@ -434,7 +435,7 @@ private:
 	Point2i _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const;
 
 	Vector3 _get_instance_position(const Point2 &p_pos) const;
-	static AABB _calculate_spatial_bounds(const Node3D *p_parent, bool p_exclude_top_level_transform = true);
+	static AABB _calculate_spatial_bounds(const Node3D *p_parent, const Node3D *p_top_level_parent = nullptr);
 
 	Node *_sanitize_preview_node(Node *p_node) const;
 
@@ -443,7 +444,7 @@ private:
 	bool _apply_preview_material(ObjectID p_target, const Point2 &p_point) const;
 	void _reset_preview_material() const;
 	void _remove_preview_material();
-	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
+	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
 	bool _create_instance(Node *parent, String &path, const Point2 &p_point);
 	void _perform_drop_data();
 
@@ -509,7 +510,7 @@ public:
 	RID sbox_instance_xray;
 	RID sbox_instance_xray_offset;
 	Ref<EditorNode3DGizmo> gizmo;
-	HashMap<int, Transform3D> subgizmos; // map ID -> initial transform
+	HashMap<int, Transform3D> subgizmos; // Key: Subgizmo ID, Value: Initial subgizmo transform.
 
 	Node3DEditorSelectedItem() {
 		sp = nullptr;
@@ -597,7 +598,8 @@ private:
 
 	ToolMode tool_mode;
 
-	RID origin;
+	RID origin_mesh;
+	RID origin_multimesh;
 	RID origin_instance;
 	bool origin_enabled = false;
 	RID grid[3];
@@ -631,7 +633,7 @@ private:
 	RID indicators_instance;
 	RID cursor_mesh;
 	RID cursor_instance;
-	Ref<StandardMaterial3D> indicator_mat;
+	Ref<ShaderMaterial> origin_mat;
 	Ref<ShaderMaterial> grid_mat[3];
 	Ref<StandardMaterial3D> cursor_material;
 
@@ -850,9 +852,9 @@ public:
 	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	void set_local_coords_enabled(bool on) const { tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_pressed(on); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
-	double get_translate_snap() const;
-	double get_rotate_snap() const;
-	double get_scale_snap() const;
+	real_t get_translate_snap() const;
+	real_t get_rotate_snap() const;
+	real_t get_scale_snap() const;
 
 	Ref<ArrayMesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
 	Ref<ArrayMesh> get_axis_gizmo(int idx) const { return axis_gizmo[idx]; }

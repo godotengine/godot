@@ -395,7 +395,7 @@ AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 		bool first = true;
 
 		const uint8_t *data_ptr = (const uint8_t *)buffer.ptr();
-		uint32_t particle_data_size = sizeof(ParticleInstanceData3D) + sizeof(float) * particles->userdata_count;
+		uint32_t particle_data_size = sizeof(ParticleInstanceData3D);
 
 		for (int i = 0; i < total_amount; i++) {
 			const ParticleInstanceData3D &particle_data = *(const ParticleInstanceData3D *)&data_ptr[particle_data_size * i];
@@ -728,8 +728,10 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	ParticlesShaderGLES3::ShaderVariant variant = ParticlesShaderGLES3::MODE_DEFAULT;
 
 	uint32_t specialization = 0;
-	for (uint32_t i = 0; i < p_particles->userdata_count; i++) {
-		specialization |= (1 << i);
+	for (uint32_t i = 0; i < PARTICLES_MAX_USERDATAS; i++) {
+		if (m->shader_data->userdatas_used[i]) {
+			specialization |= ParticlesShaderGLES3::USERDATA1_USED << i;
+		}
 	}
 
 	if (p_particles->mode == RS::ParticlesMode::PARTICLES_MODE_3D) {
@@ -818,7 +820,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	}
 
 	glEnable(GL_RASTERIZER_DISCARD);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	_particles_update_instance_buffer(particles, axis, p_up_axis);
 	glDisable(GL_RASTERIZER_DISCARD);
 }
@@ -1002,7 +1004,7 @@ void ParticlesStorage::_particles_update_instance_buffer(Particles *particles, c
 
 void ParticlesStorage::update_particles() {
 	glEnable(GL_RASTERIZER_DISCARD);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
 
@@ -1262,7 +1264,7 @@ GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_p
 		particles_collision->heightfield_fb_size = size;
 
 		glBindTexture(GL_TEXTURE_2D, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
 	return particles_collision->heightfield_fb;

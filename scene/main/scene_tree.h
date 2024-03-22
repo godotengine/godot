@@ -385,6 +385,7 @@ public:
 	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
 	Node *get_first_node_in_group(const StringName &p_group);
 	bool has_group(const StringName &p_identifier) const;
+	int get_node_count_in_group(const StringName &p_group) const;
 
 	//void change_scene(const String& p_path);
 	//Node *get_loaded_scene();
@@ -408,7 +409,9 @@ public:
 
 	static SceneTree *get_singleton() { return singleton; }
 
+#ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	//network API
 

@@ -58,7 +58,9 @@ class NavigationRegion2D : public Node2D {
 private:
 	void _update_debug_mesh();
 	void _update_debug_edge_connections_mesh();
+	void _update_debug_baking_rect();
 	void _navigation_map_changed(RID p_map);
+	void _navigation_debug_changed();
 #endif // DEBUG_ENABLED
 
 protected:
@@ -76,6 +78,7 @@ public:
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
+	RID get_rid() const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
@@ -116,6 +119,7 @@ public:
 
 	void bake_navigation_polygon(bool p_on_thread);
 	void _bake_finished(Ref<NavigationPolygon> p_navigation_polygon);
+	bool is_baking() const;
 
 	NavigationRegion2D();
 	~NavigationRegion2D();

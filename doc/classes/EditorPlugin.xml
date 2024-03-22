@@ -239,7 +239,7 @@
 			<description>
 				Override this method in your plugin to return a [Texture2D] in order to give it an icon.
 				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
-				Ideally, the plugin icon should be white with a transparent background and 16x16 pixels in size.
+				Ideally, the plugin icon should be white with a transparent background and 16×16 pixels in size.
 				[codeblocks]
 				[gdscript]
 				func _get_plugin_icon():
@@ -327,14 +327,14 @@
 			<param index="0" name="object" type="Object" />
 			<description>
 				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return [code]true[/code], then you will get the functions [method _edit] and [method _make_visible] called when the editor requests them. If you have declared the methods [method _forward_canvas_gui_input] and [method _forward_3d_gui_input] these will be called too.
-				[b]Note:[/b] Each plugin should handle only one type of objects at a time. If a plugin handes more types of objects and they are edited at the same time, it will result in errors.
+				[b]Note:[/b] Each plugin should handle only one type of objects at a time. If a plugin handles more types of objects and they are edited at the same time, it will result in errors.
 			</description>
 		</method>
 		<method name="_has_main_screen" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b] and [b]AssetLib[/b]).
-				When the plugin's workspace is selected, other main screen plugins will be hidden, but your plugin will not appear automatically. It needs to be added as a child of [method EditorInterface.get_base_control] and made visible inside [method _make_visible].
+				When the plugin's workspace is selected, other main screen plugins will be hidden, but your plugin will not appear automatically. It needs to be added as a child of [method EditorInterface.get_editor_main_screen] and made visible inside [method _make_visible].
 				Use [method _get_plugin_name] and [method _get_plugin_icon] to customize the plugin button's appearance.
 				[codeblock]
 				var plugin_control
@@ -409,8 +409,10 @@
 			<return type="Button" />
 			<param index="0" name="control" type="Control" />
 			<param index="1" name="title" type="String" />
+			<param index="2" name="shortcut" type="Shortcut" default="null" />
 			<description>
 				Adds a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
+				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will toggle the bottom panel's visibility. See the default editor bottom panel shortcuts in the Editor Settings for inspiration. Per convention, they all use [kbd]Alt[/kbd] modifier.
 			</description>
 		</method>
 		<method name="add_control_to_container">
@@ -427,10 +429,12 @@
 			<return type="void" />
 			<param index="0" name="slot" type="int" enum="EditorPlugin.DockSlot" />
 			<param index="1" name="control" type="Control" />
+			<param index="2" name="shortcut" type="Shortcut" default="null" />
 			<description>
 				Adds the control to a specific dock slot (see [enum DockSlot] for options).
 				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_docks] and free it with [method Node.queue_free].
+				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will toggle the dock's visibility once it's moved to the bottom panel (this shortcut does not affect the dock otherwise). See the default editor bottom panel shortcuts in the Editor Settings for inspiration. Per convention, they all use [kbd]Alt[/kbd] modifier.
 			</description>
 		</method>
 		<method name="add_custom_type">
@@ -541,7 +545,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="submenu" type="PopupMenu" />
 			<description>
-				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [param name]. Use [code]remove_tool_menu_item(name)[/code] on plugin clean up to remove the menu.
+				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [param name]. Use [method remove_tool_menu_item] on plugin clean up to remove the menu.
 			</description>
 		</method>
 		<method name="add_translation_parser_plugin">
@@ -559,11 +563,10 @@
 				The callback should have 4 arguments: [Object] [code]undo_redo[/code], [Object] [code]modified_object[/code], [String] [code]property[/code] and [Variant] [code]new_value[/code]. They are, respectively, the [UndoRedo] object used by the inspector, the currently modified object, the name of the modified property and the new value the property is about to take.
 			</description>
 		</method>
-		<method name="get_editor_interface" is_deprecated="true">
+		<method name="get_editor_interface" deprecated="[EditorInterface] is a global singleton and can be accessed directly by its name.">
 			<return type="EditorInterface" />
 			<description>
 				Returns the [EditorInterface] singleton instance.
-				[i]Deprecated.[/i] [EditorInterface] is a global singleton and can be accessed directly by its name.
 			</description>
 		</method>
 		<method name="get_export_as_menu">
@@ -750,16 +753,15 @@
 				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
 			</description>
 		</signal>
-		<signal name="project_settings_changed" is_deprecated="true">
+		<signal name="project_settings_changed" deprecated="Use [signal ProjectSettings.settings_changed] instead.">
 			<description>
 				Emitted when any project setting has changed.
-				[i]Deprecated.[/i] Use [signal ProjectSettings.settings_changed] instead.
 			</description>
 		</signal>
 		<signal name="resource_saved">
 			<param index="0" name="resource" type="Resource" />
 			<description>
-				Emitted when the given [param resource] was saved on disc.
+				Emitted when the given [param resource] was saved on disc. See also [signal scene_saved].
 			</description>
 		</signal>
 		<signal name="scene_changed">
@@ -771,7 +773,13 @@
 		<signal name="scene_closed">
 			<param index="0" name="filepath" type="String" />
 			<description>
-				Emitted when user closes a scene. The argument is file path to a closed scene.
+				Emitted when user closes a scene. The argument is a file path to the closed scene.
+			</description>
+		</signal>
+		<signal name="scene_saved">
+			<param index="0" name="filepath" type="String" />
+			<description>
+				Emitted when a scene was saved on disc. The argument is a file path to the saved scene. See also [signal resource_saved].
 			</description>
 		</signal>
 	</signals>
