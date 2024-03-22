@@ -385,7 +385,7 @@ void ProjectManager::_dim_window() {
 // Quick settings.
 
 void ProjectManager::_show_quick_settings() {
-	quick_settings_dialog->popup_centered(Size2(600, 200) * EDSCALE);
+	quick_settings_dialog->popup_centered(Size2(640, 200) * EDSCALE);
 }
 
 void ProjectManager::_restart_confirmed() {
