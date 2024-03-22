@@ -41,7 +41,7 @@ static inline bool _is_white_space(char c) {
 }
 
 static inline bool _is_punctuation(char c) {
-	return !((int(c) >= 65 && int(c) <= 90) || (int(c) >= 97 && int(c) <= 122));
+	return !((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c == '_'));
 }
 
 //! sets the state that text was found. Returns true if set should be set
@@ -84,6 +84,29 @@ Error XMLParser::_parse_closing_xml_element() {
 	}
 
 	node_name = String::utf8(pBeginClose, (int)(P - pBeginClose));
+
+	// remove possible white spaces at the beginning
+	while(true) {
+		if(node_name.begins_with(" ")) {
+			node_name = node_name.replace_first(" ","");
+		}
+		else {
+			break;
+		}
+	}
+
+	// remove possible white spaces at the end
+	while(true) {
+		if(node_name.ends_with(" ")) {
+			node_name = node_name.reverse();
+			node_name = node_name.replace_first(" ","");
+			node_name = node_name.reverse();
+		}
+		else {
+			break;
+		}
+	}
+
 #ifdef DEBUG_XML
 	print_line("XML CLOSE: " + node_name);
 #endif
@@ -256,7 +279,7 @@ Error XMLParser::_parse_opening_xml_element() {
 				}
 
 				if (!*P) { // malformatted xml file
-					break;
+					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Malformatted XML.");
 				}
 
 				const char attributeQuoteChar = *P;
@@ -285,6 +308,10 @@ Error XMLParser::_parse_opening_xml_element() {
 			} else {
 				// tag is closed directly
 				next_char();
+				// check if the ending char is a closing tag
+				if(*P != '>') {
+					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid tag name, a tag cannot contain any character after '/' except for '>'.");
+				}
 				node_empty = true;
 				break;
 			}
