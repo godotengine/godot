@@ -63,6 +63,7 @@ public final class PermissionsUtil {
 	public static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 	public static final int REQUEST_CAMERA_PERMISSION = 2;
 	public static final int REQUEST_VIBRATE_PERMISSION = 3;
+	public static final int REQUEST_MODIFY_AUDIO_SETTINGS_PERMISSION = 4;
 	public static final int REQUEST_ALL_PERMISSION_REQ_CODE = 1001;
 	public static final int REQUEST_SINGLE_PERMISSION_REQ_CODE = 1002;
 	public static final int REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE = 2002;
@@ -165,6 +166,14 @@ public final class PermissionsUtil {
 			case Manifest.permission.VIBRATE:
 				if (ContextCompat.checkSelfPermission(activity, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
 					activity.requestPermissions(new String[] { Manifest.permission.VIBRATE }, REQUEST_VIBRATE_PERMISSION);
+					return false;
+				}
+				return true;
+
+			case "MODIFY_AUDIO_SETTINGS":
+			case Manifest.permission.MODIFY_AUDIO_SETTINGS:
+				if (ContextCompat.checkSelfPermission(activity, Manifest.permission.MODIFY_AUDIO_SETTINGS) != PackageManager.PERMISSION_GRANTED) {
+					activity.requestPermissions(new String[] { Manifest.permission.MODIFY_AUDIO_SETTINGS }, REQUEST_MODIFY_AUDIO_SETTINGS_PERMISSION);
 					return false;
 				}
 				return true;

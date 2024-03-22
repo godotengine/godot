@@ -58,4 +58,23 @@ static inline String jstring_to_string(jstring source, JNIEnv *env = nullptr) {
 	return result;
 }
 
+/**
+ * Converts Java CharSequence to Godot String.
+ * @param source Source Java CharSequence. If null an empty string is returned.
+ * @param env JNI environment instance. If null obtained by get_jni_env().
+ * @return Godot string instance.
+ */
+static inline String char_sequence_to_string(jobject source, JNIEnv *env = nullptr) {
+	if (source) {
+		if (!env) {
+			env = get_jni_env();
+		}
+
+		jclass cCharSequence = env->GetObjectClass(source);
+		jmethodID toString = env->GetMethodID(cCharSequence, "toString", "()Ljava/lang/String;");
+		return jstring_to_string((jstring)env->CallObjectMethod(source, toString), env);
+	}
+	return String();
+}
+
 #endif // STRING_ANDROID_H

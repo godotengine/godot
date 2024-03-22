@@ -33,6 +33,7 @@
 #include "android_input_handler.h"
 #include "api/java_class_wrapper.h"
 #include "api/jni_singleton.h"
+#include "audio_driver_oboe.h"
 #include "dir_access_jandroid.h"
 #include "display_server_android.h"
 #include "file_access_android.h"
@@ -142,7 +143,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env
 	_terminate(env, false);
 }
 
-JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline, jobject p_godot_tts) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline, jobject p_godot_tts, jobject p_audio_manager) {
 	setup_android_thread();
 
 	const char **cmdline = nullptr;
@@ -183,6 +184,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env
 		return false;
 	}
 
+	AudioDriverOboe::get_singleton()->setup(p_audio_manager);
 	TTS_Android::setup(p_godot_tts);
 
 	java_class_wrapper = memnew(JavaClassWrapper(godot_java->get_activity()));
@@ -233,6 +235,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jcl
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ttsCallback(JNIEnv *env, jclass clazz, jint event, jint id, jint pos) {
 	TTS_Android::_java_utterance_callback(event, id, pos);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_scoCallback(JNIEnv *env, jclass clazz, jint sco_state) {
+	AudioDriverOboe::get_singleton()->_java_sco_callback(sco_state);
 }
 
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jclass clazz) {
@@ -496,9 +502,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onNightModeChanged(JN
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResult(JNIEnv *env, jclass clazz, jstring p_permission, jboolean p_result) {
 	String permission = jstring_to_string(p_permission, env);
-	if (permission == "android.permission.RECORD_AUDIO" && p_result) {
-		AudioDriver::get_singleton()->input_start();
-	}
+
+	AudioDriverOboe::get_singleton()->request_permission_result(permission, p_result);
 
 	if (os_android->get_main_loop()) {
 		os_android->get_main_loop()->emit_signal(SNAME("on_request_permissions_result"), permission, p_result == JNI_TRUE);

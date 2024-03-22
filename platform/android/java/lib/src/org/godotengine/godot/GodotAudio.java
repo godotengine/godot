@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_driver_opensl.h                                                 */
+/*  GodotAudio.java                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,84 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_DRIVER_OPENSL_H
-#define AUDIO_DRIVER_OPENSL_H
+package org.godotengine.godot;
 
-#include "core/os/mutex.h"
-#include "servers/audio_server.h"
+import org.godotengine.godot.GodotLib;
 
-#include <SLES/OpenSLES.h>
-#include <SLES/OpenSLES_Android.h>
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.media.AudioManager;
 
-class AudioDriverOpenSL : public AudioDriver {
-	bool active = false;
-	Mutex mutex;
+public class GodotAudio {
+	private BroadcastReceiver receiver;
 
-	enum {
-		BUFFER_COUNT = 2
-	};
-
-	bool pause = false;
-
-	uint32_t buffer_size = 0;
-	int16_t *buffers[BUFFER_COUNT] = {};
-	int32_t *mixdown_buffer = nullptr;
-	int last_free = 0;
-
-	Vector<int16_t> rec_buffer;
-
-	SLPlayItf playItf;
-	SLRecordItf recordItf;
-	SLObjectItf sl;
-	SLEngineItf EngineItf;
-	SLObjectItf OutputMix;
-	SLObjectItf player;
-	SLObjectItf recorder;
-	SLAndroidSimpleBufferQueueItf bufferQueueItf;
-	SLAndroidSimpleBufferQueueItf recordBufferQueueItf;
-	SLDataSource audioSource;
-	SLDataFormat_PCM pcm;
-	SLDataSink audioSink;
-	SLDataLocator_OutputMix locator_outputmix;
-
-	static AudioDriverOpenSL *s_ad;
-
-	void _buffer_callback(
-			SLAndroidSimpleBufferQueueItf queueItf);
-
-	static void _buffer_callbacks(
-			SLAndroidSimpleBufferQueueItf queueItf,
-			void *pContext);
-
-	void _record_buffer_callback(
-			SLAndroidSimpleBufferQueueItf queueItf);
-
-	static void _record_buffer_callbacks(
-			SLAndroidSimpleBufferQueueItf queueItf,
-			void *pContext);
-
-	Error init_input_device();
-
-public:
-	virtual const char *get_name() const override {
-		return "Android";
+	public GodotAudio(Context context) {
+		receiver = new InnerBroadcastReceiver();
+		IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED);
+		context.registerReceiver(receiver, intentFilter);
 	}
 
-	virtual Error init() override;
-	virtual void start() override;
-	virtual int get_mix_rate() const override;
-	virtual SpeakerMode get_speaker_mode() const override;
+	private class InnerBroadcastReceiver extends BroadcastReceiver {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
 
-	virtual void lock() override;
-	virtual void unlock() override;
-	virtual void finish() override;
-
-	virtual Error input_start() override;
-	virtual Error input_stop() override;
-
-	void set_pause(bool p_pause);
-
-	AudioDriverOpenSL();
-};
-
-#endif // AUDIO_DRIVER_OPENSL_H
+			if (action.equals(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED)) {
+				int scoState = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1);
+				GodotLib.scoCallback(scoState);
+			}
+		}
+	};
+}
