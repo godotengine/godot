@@ -118,9 +118,7 @@ int EditorImportPlugin::get_format_version() const {
 }
 
 void EditorImportPlugin::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options, int p_preset) const {
-	Array needed;
-	needed.push_back("name");
-	needed.push_back("default_value");
+	Array needed = { "name", "default_value" };
 	TypedArray<Dictionary> options;
 	if (GDVIRTUAL_CALL(_get_import_options, p_path, p_preset, options)) {
 		for (int i = 0; i < options.size(); i++) {

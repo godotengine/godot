@@ -321,9 +321,7 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			if (main_scene == file_metadata) {
 				file_item->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 			}
-			Array udata;
-			udata.push_back(tree_update_id);
-			udata.push_back(file_item);
+			Array udata = { tree_update_id, file_item };
 			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, this, "_tree_thumbnail_done", udata);
 		}
 	} else {
@@ -438,9 +436,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		ti->set_metadata(0, favorite);
 
 		if (!favorite.ends_with("/")) {
-			Array udata;
-			udata.push_back(tree_update_id);
-			udata.push_back(ti);
+			Array udata = { tree_update_id, ti };
 			EditorResourcePreview::get_singleton()->queue_resource_preview(favorite, this, "_tree_thumbnail_done", udata);
 		}
 	}

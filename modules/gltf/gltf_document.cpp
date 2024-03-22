@@ -4406,12 +4406,8 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 
 		Dictionary mr;
 		{
-			Array arr;
 			const Color c = base_material->get_albedo().srgb_to_linear();
-			arr.push_back(c.r);
-			arr.push_back(c.g);
-			arr.push_back(c.b);
-			arr.push_back(c.a);
+			Array arr = { c.r, c.g, c.b, c.a };
 			mr["baseColorFactor"] = arr;
 		}
 		if (_image_format != "None") {
@@ -4617,10 +4613,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 
 		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
 			const Color c = base_material->get_emission().linear_to_srgb();
-			Array arr;
-			arr.push_back(c.r);
-			arr.push_back(c.g);
-			arr.push_back(c.b);
+			Array arr = { c.r, c.g, c.b };
 			d["emissiveFactor"] = arr;
 		}
 

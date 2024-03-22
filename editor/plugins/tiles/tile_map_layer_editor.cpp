@@ -4285,10 +4285,7 @@ void TileMapLayerEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 			if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
 				// Generate a random color from the hashed identifier of the tiles.
-				Array to_hash;
-				to_hash.push_back(tile_source_id);
-				to_hash.push_back(tile_atlas_coords);
-				to_hash.push_back(tile_alternative_tile);
+				Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
 				uint32_t hash = RandomPCG(to_hash.hash()).rand();
 
 				Color color;

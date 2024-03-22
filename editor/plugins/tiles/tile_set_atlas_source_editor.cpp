@@ -1473,9 +1473,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				undo_redo->add_do_method(tile_set_atlas_source, "move_tile_in_atlas", drag_start_tile_shape.position, drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
 				undo_redo->add_do_method(this, "_set_selection_from_array", _get_selection_as_array());
 				undo_redo->add_undo_method(tile_set_atlas_source, "move_tile_in_atlas", drag_current_tile, drag_start_tile_shape.position, drag_start_tile_shape.size);
-				Array array;
-				array.push_back(drag_start_tile_shape.position);
-				array.push_back(0);
+				Array array = { drag_start_tile_shape.position, 0 };
 				undo_redo->add_undo_method(this, "_set_selection_from_array", array);
 				undo_redo->commit_action(false);
 			}
@@ -1573,9 +1571,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				undo_redo->add_do_method(tile_set_atlas_source, "move_tile_in_atlas", drag_start_tile_shape.position, drag_current_tile, tile_set_atlas_source->get_tile_size_in_atlas(drag_current_tile));
 				undo_redo->add_do_method(this, "_set_selection_from_array", _get_selection_as_array());
 				undo_redo->add_undo_method(tile_set_atlas_source, "move_tile_in_atlas", drag_current_tile, drag_start_tile_shape.position, drag_start_tile_shape.size);
-				Array array;
-				array.push_back(drag_start_tile_shape.position);
-				array.push_back(0);
+				Array array = { drag_start_tile_shape.position, 0 };
 				undo_redo->add_undo_method(this, "_set_selection_from_array", array);
 				undo_redo->commit_action(false);
 			}
@@ -1664,9 +1660,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 		case TILE_CREATE: {
 			undo_redo->create_action(TTR("Create a tile"));
 			undo_redo->add_do_method(tile_set_atlas_source, "create_tile", menu_option_coords);
-			Array array;
-			array.push_back(menu_option_coords);
-			array.push_back(0);
+			Array array = { menu_option_coords, 0 };
 			undo_redo->add_do_method(this, "_set_selection_from_array", array);
 			undo_redo->add_undo_method(tile_set_atlas_source, "remove_tile", menu_option_coords);
 			undo_redo->add_undo_method(this, "_set_selection_from_array", _get_selection_as_array());
@@ -2803,11 +2797,9 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 		}
 	} else {
 		// Multiple array of vertices or OccluderPolygon2D.
-		Vector<String> changed_properties;
-		Array values;
+		Vector<String> changed_properties = { count_property };
 		int count = generic_tile_polygon_editor->get_polygon_count();
-		changed_properties.push_back(count_property);
-		values.push_back(count);
+		Array values = { count };
 		for (int i = 0; i < count; i++) {
 			changed_properties.push_back(vformat(element_pattern, i));
 			if (base_type.is_empty()) {
@@ -2941,8 +2933,7 @@ bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Varia
 		if (components[1] == "polygons_count") {
 			EditorPropertyTilePolygon *ep = memnew(EditorPropertyTilePolygon);
 			ep->setup_multiple_mode(vformat("physics_layer_%d/polygons", layer_index), vformat("physics_layer_%d/polygons_count", layer_index), vformat("physics_layer_%d/polygon_%%d/points", layer_index), "");
-			Vector<String> properties;
-			properties.push_back(p_path);
+			Vector<String> properties = { p_path };
 			int count = p_object->get(vformat("physics_layer_%d/polygons_count", layer_index));
 			for (int i = 0; i < count; i++) {
 				properties.push_back(vformat(vformat("physics_layer_%d/polygon_%d/points", layer_index, i)));

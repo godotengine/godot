@@ -322,9 +322,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 					// Random animation offset.
 					real_t random_animation_offset = 0.0;
 					if (atlas_source->get_tile_animation_mode(cell_data.cell.get_atlas_coords()) != TileSetAtlasSource::TILE_ANIMATION_MODE_DEFAULT) {
-						Array to_hash;
-						to_hash.push_back(local_tile_pos);
-						to_hash.push_back(get_instance_id()); // Use instance id as a random hash
+						Array to_hash = { local_tile_pos, get_instance_id() }; // Use instance id as a random hash
 						random_animation_offset = RandomPCG(to_hash.hash()).randf();
 					}
 
@@ -653,10 +651,7 @@ void TileMapLayer::_rendering_draw_cell_debug(const RID &p_canvas_item, const Ve
 				Vector2i grid_size = atlas_source->get_atlas_grid_size();
 				if (atlas_source->get_runtime_texture().is_null() || c.get_atlas_coords().x >= grid_size.x || c.get_atlas_coords().y >= grid_size.y) {
 					// Generate a random color from the hashed values of the tiles.
-					Array to_hash;
-					to_hash.push_back(c.source_id);
-					to_hash.push_back(c.get_atlas_coords());
-					to_hash.push_back(c.alternative_tile);
+					Array to_hash = { c.source_id, c.get_atlas_coords(), c.alternative_tile };
 					uint32_t hash = RandomPCG(to_hash.hash()).rand();
 
 					Color color;
@@ -1514,9 +1509,7 @@ void TileMapLayer::_scenes_draw_cell_debug(const RID &p_canvas_item, const Vecto
 		if (scenes_collection_source) {
 			if (scenes_collection_source->get_scene_tile_scene(c.alternative_tile).is_null() || scenes_collection_source->get_scene_tile_display_placeholder(c.alternative_tile)) {
 				// Generate a random color from the hashed values of the tiles.
-				Array to_hash;
-				to_hash.push_back(c.source_id);
-				to_hash.push_back(c.alternative_tile);
+				Array to_hash = { c.source_id, c.alternative_tile };
 				uint32_t hash = RandomPCG(to_hash.hash()).rand();
 
 				Color color;

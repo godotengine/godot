@@ -1826,9 +1826,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 #ifdef DEBUG_ENABLED
 			if (EngineDebugger::get_singleton()) {
-				Array arr;
-				arr.push_back(gui.mouse_focus->get_path());
-				arr.push_back(gui.mouse_focus->get_class());
+				Array arr = { gui.mouse_focus->get_path(), gui.mouse_focus->get_class() };
 				EngineDebugger::get_singleton()->send_message("scene:click_ctrl", arr);
 			}
 #endif

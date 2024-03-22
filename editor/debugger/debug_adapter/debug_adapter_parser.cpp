@@ -299,12 +299,11 @@ Dictionary DebugAdapterParser::req_threads(const Dictionary &p_params) const {
 	Dictionary response = prepare_success_response(p_params), body;
 	response["body"] = body;
 
-	Array arr;
 	DAP::Thread thread;
 
 	thread.id = 1; // Hardcoded because Godot only supports debugging one thread at the moment
 	thread.name = "Main";
-	arr.push_back(thread.to_json());
+	Array arr = { thread.to_json() };
 	body["threads"] = arr;
 
 	return response;
@@ -381,13 +380,12 @@ Dictionary DebugAdapterParser::req_breakpointLocations(const Dictionary &p_param
 	response["body"] = body;
 	Dictionary args = p_params["arguments"];
 
-	Array locations;
 	DAP::BreakpointLocation location;
 	location.line = args["line"];
 	if (args.has("endLine")) {
 		location.endLine = args["endLine"];
 	}
-	locations.push_back(location.to_json());
+	Array locations = { location.to_json() };
 
 	body["breakpoints"] = locations;
 	return response;
@@ -593,8 +591,7 @@ Dictionary DebugAdapterParser::ev_stopped_breakpoint(const int &p_id) const {
 	body["reason"] = "breakpoint";
 	body["description"] = "Breakpoint";
 
-	Array breakpoints;
-	breakpoints.push_back(p_id);
+	Array breakpoints = { p_id };
 	body["hitBreakpointIds"] = breakpoints;
 
 	return event;

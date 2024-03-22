@@ -189,7 +189,7 @@ void GDScriptCache::remove_script(const String &p_path) {
 
 	if (HashMap<String, Vector<ObjectID>>::Iterator E = singleton->abandoned_parser_map.find(p_path)) {
 		for (ObjectID parser_ref_id : E->value) {
-			Ref<GDScriptParserRef> parser_ref{ ObjectDB::get_instance(parser_ref_id) };
+			Ref<GDScriptParserRef> parser_ref = { ObjectDB::get_instance(parser_ref_id) };
 			if (parser_ref.is_valid()) {
 				parser_ref->clear();
 			}
@@ -460,7 +460,7 @@ void GDScriptCache::clear() {
 
 	for (const KeyValue<String, Vector<ObjectID>> &KV : singleton->abandoned_parser_map) {
 		for (ObjectID parser_ref_id : KV.value) {
-			Ref<GDScriptParserRef> parser_ref{ ObjectDB::get_instance(parser_ref_id) };
+			Ref<GDScriptParserRef> parser_ref = { ObjectDB::get_instance(parser_ref_id) };
 			if (parser_ref.is_valid()) {
 				parser_ref->clear();
 			}

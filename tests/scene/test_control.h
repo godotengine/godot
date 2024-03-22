@@ -1034,8 +1034,7 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 	}
 
 	SIGNAL_WATCH(test_control, SNAME("minimum_size_changed"))
-	Array signal_args;
-	signal_args.push_back(Array());
+	Array signal_args = { {} };
 
 	SUBCASE("Horizontal grow direction begin") {
 		test_control->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);

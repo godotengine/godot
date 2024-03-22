@@ -205,9 +205,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			x.value = rtos(vec.x);
 			y.value = rtos(vec.y);
 
-			Array arr;
-			arr.push_back(x.to_json());
-			arr.push_back(y.to_json());
+			Array arr = { x.to_json(), y.to_json() };
 			variable_list.insert(id, arr);
 			return id;
 		}
@@ -230,11 +228,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			w.value = rtos(rect.size.x);
 			h.value = rtos(rect.size.y);
 
-			Array arr;
-			arr.push_back(x.to_json());
-			arr.push_back(y.to_json());
-			arr.push_back(w.to_json());
-			arr.push_back(h.to_json());
+			Array arr = { x.to_json(), y.to_json(), w.to_json(), h.to_json() };
 			variable_list.insert(id, arr);
 			return id;
 		}
@@ -254,10 +248,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			y.value = rtos(vec.y);
 			z.value = rtos(vec.z);
 
-			Array arr;
-			arr.push_back(x.to_json());
-			arr.push_back(y.to_json());
-			arr.push_back(z.to_json());
+			Array arr = { x.to_json(), y.to_json(), z.to_json() };
 			variable_list.insert(id, arr);
 			return id;
 		}
@@ -279,10 +270,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			y.variablesReference = parse_variant(transform.columns[1]);
 			origin.variablesReference = parse_variant(transform.columns[2]);
 
-			Array arr;
-			arr.push_back(x.to_json());
-			arr.push_back(y.to_json());
-			arr.push_back(origin.to_json());
+			Array arr = { x.to_json(), y.to_json(), origin.to_json() };
 			variable_list.insert(id, arr);
 			return id;
 		}
@@ -298,9 +286,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			normal.value = plane.normal;
 			normal.variablesReference = parse_variant(plane.normal);
 
-			Array arr;
-			arr.push_back(d.to_json());
-			arr.push_back(normal.to_json());
+			Array arr = { d.to_json(), normal.to_json() };
 			variable_list.insert(id, arr);
 			return id;
 		}
@@ -322,11 +308,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			z.value = rtos(quat.z);
 			w.value = rtos(quat.w);
 
-			Array arr;
-			arr.push_back(x.to_json());
-			arr.push_back(y.to_json());
-			arr.push_back(z.to_json());
-			arr.push_back(w.to_json());
+			Array arr = { x.to_json(), y.to_json(), z.to_json(), w.to_json() };
 			variable_list.insert(id, arr);
 			return id;
 		}
@@ -344,9 +326,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			position.variablesReference = parse_variant(aabb.position);
 			size.variablesReference = parse_variant(aabb.size);
 
-			Array arr;
-			arr.push_back(position.to_json());
-			arr.push_back(size.to_json());
+			Array arr = { position.to_json(), size.to_json() };
 			variable_list.insert(id, arr);
 			return id;
 		}
@@ -368,10 +348,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			y.variablesReference = parse_variant(basis.rows[1]);
 			z.variablesReference = parse_variant(basis.rows[2]);
 
-			Array arr;
-			arr.push_back(x.to_json());
-			arr.push_back(y.to_json());
-			arr.push_back(z.to_json());
+			Array arr = { x.to_json(), y.to_json(), z.to_json() };
 			variable_list.insert(id, arr);
 			return id;
 		}
@@ -388,9 +365,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			basis.variablesReference = parse_variant(transform.basis);
 			origin.variablesReference = parse_variant(transform.origin);
 
-			Array arr;
-			arr.push_back(basis.to_json());
-			arr.push_back(origin.to_json());
+			Array arr = { basis.to_json(), origin.to_json() };
 			variable_list.insert(id, arr);
 			return id;
 		}
@@ -412,11 +387,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			b.value = rtos(color.b);
 			a.value = rtos(color.a);
 
-			Array arr;
-			arr.push_back(r.to_json());
-			arr.push_back(g.to_json());
-			arr.push_back(b.to_json());
-			arr.push_back(a.to_json());
+			Array arr = { r.to_json(), g.to_json(), b.to_json(), a.to_json() };
 			variable_list.insert(id, arr);
 			return id;
 		}
@@ -428,8 +399,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			size.type = Variant::get_type_name(Variant::INT);
 			size.value = itos(array.size());
 
-			Array arr;
-			arr.push_back(size.to_json());
+			Array arr = { size.to_json() };
 
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
@@ -467,8 +437,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			size.type = Variant::get_type_name(Variant::INT);
 			size.value = itos(array.size());
 
-			Array arr;
-			arr.push_back(size.to_json());
+			Array arr = { size.to_json() };
 
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
@@ -488,8 +457,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			size.type = Variant::get_type_name(Variant::INT);
 			size.value = itos(array.size());
 
-			Array arr;
-			arr.push_back(size.to_json());
+			Array arr = { size.to_json() };
 
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
@@ -509,8 +477,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			size.type = Variant::get_type_name(Variant::INT);
 			size.value = itos(array.size());
 
-			Array arr;
-			arr.push_back(size.to_json());
+			Array arr = { size.to_json() };
 
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
@@ -530,8 +497,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			size.type = Variant::get_type_name(Variant::INT);
 			size.value = itos(array.size());
 
-			Array arr;
-			arr.push_back(size.to_json());
+			Array arr = { size.to_json() };
 
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
@@ -551,8 +517,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			size.type = Variant::get_type_name(Variant::INT);
 			size.value = itos(array.size());
 
-			Array arr;
-			arr.push_back(size.to_json());
+			Array arr = { size.to_json() };
 
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
@@ -572,8 +537,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			size.type = Variant::get_type_name(Variant::INT);
 			size.value = itos(array.size());
 
-			Array arr;
-			arr.push_back(size.to_json());
+			Array arr = { size.to_json() };
 
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
@@ -593,8 +557,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			size.type = Variant::get_type_name(Variant::INT);
 			size.value = itos(array.size());
 
-			Array arr;
-			arr.push_back(size.to_json());
+			Array arr = { size.to_json() };
 
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
@@ -615,8 +578,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			size.type = Variant::get_type_name(Variant::INT);
 			size.value = itos(array.size());
 
-			Array arr;
-			arr.push_back(size.to_json());
+			Array arr = { size.to_json() };
 
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
@@ -637,8 +599,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			size.type = Variant::get_type_name(Variant::INT);
 			size.value = itos(array.size());
 
-			Array arr;
-			arr.push_back(size.to_json());
+			Array arr = { size.to_json() };
 
 			for (int i = 0; i < array.size(); i++) {
 				DAP::Variable var;
@@ -880,8 +841,7 @@ bool DebugAdapterProtocol::process_message(const String &p_text) {
 	if (parser->has_method(command)) {
 		_current_request = params["command"];
 
-		Array args;
-		args.push_back(params);
+		Array args = { params };
 		Dictionary response = parser->callv(command, args);
 		if (!response.is_empty()) {
 			_current_peer->res_queue.push_front(response);

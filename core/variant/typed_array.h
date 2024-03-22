@@ -55,6 +55,8 @@ public:
 			assign(p_array);
 		}
 	}
+	_FORCE_INLINE_ TypedArray(std::initializer_list<Variant> p_init) :
+			TypedArray(Array(p_init)) {}
 	_FORCE_INLINE_ TypedArray() {
 		set_typed(Variant::OBJECT, T::get_class_static(), Variant());
 	}

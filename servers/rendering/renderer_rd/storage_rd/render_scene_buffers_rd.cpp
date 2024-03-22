@@ -325,9 +325,7 @@ RID RenderSceneBuffersRD::create_texture_from_format(const StringName &p_context
 	named_texture.is_unique = p_unique;
 	named_texture.texture = RD::get_singleton()->texture_create(p_texture_format, p_view);
 
-	Array arr;
-	arr.push_back(p_context);
-	arr.push_back(p_texture_name);
+	Array arr = { p_context, p_texture_name };
 	RD::get_singleton()->set_resource_name(named_texture.texture, String("RenderBuffer {0}/{1}").format(arr));
 
 	update_sizes(named_texture);
@@ -366,9 +364,7 @@ RID RenderSceneBuffersRD::create_texture_view(const StringName &p_context, const
 
 	view_texture.texture = RD::get_singleton()->texture_create_shared(p_view, named_texture.texture);
 
-	Array arr;
-	arr.push_back(p_context);
-	arr.push_back(p_view_name);
+	Array arr = { p_context, p_view_name };
 	RD::get_singleton()->set_resource_name(view_texture.texture, String("RenderBuffer View {0}/{1}").format(arr));
 
 	update_sizes(named_texture);
@@ -446,18 +442,19 @@ RID RenderSceneBuffersRD::get_texture_slice_view(const StringName &p_context, co
 	RID &slice = named_texture.slices[slice_key];
 	slice = RD::get_singleton()->texture_create_shared_from_slice(p_view, named_texture.texture, p_layer, p_mipmap, p_mipmaps, p_layers > 1 ? RD::TEXTURE_SLICE_2D_ARRAY : RD::TEXTURE_SLICE_2D, p_layers);
 
-	Array arr;
-	arr.push_back(p_context);
-	arr.push_back(p_texture_name);
-	arr.push_back(itos(p_layer));
-	arr.push_back(itos(p_layers));
-	arr.push_back(itos(p_mipmap));
-	arr.push_back(itos(p_mipmaps));
-	arr.push_back(itos(p_view.format_override));
-	arr.push_back(itos(p_view.swizzle_r));
-	arr.push_back(itos(p_view.swizzle_g));
-	arr.push_back(itos(p_view.swizzle_b));
-	arr.push_back(itos(p_view.swizzle_a));
+	Array arr = {
+		p_context,
+		p_texture_name,
+		itos(p_layer),
+		itos(p_layers),
+		itos(p_mipmap),
+		itos(p_mipmaps),
+		itos(p_view.format_override),
+		itos(p_view.swizzle_r),
+		itos(p_view.swizzle_g),
+		itos(p_view.swizzle_b),
+		itos(p_view.swizzle_a)
+	};
 	RD::get_singleton()->set_resource_name(slice, String("RenderBuffer {0}/{1}, layer {2}/{3}, mipmap {4}/{5}, view {6}/{7}/{8}/{9}/{10}").format(arr));
 
 	// and return our slice

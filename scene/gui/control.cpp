@@ -56,18 +56,10 @@ Dictionary Control::_edit_get_state() const {
 	s["scale"] = get_scale();
 	s["pivot"] = get_pivot_offset();
 
-	Array anchors;
-	anchors.push_back(get_anchor(SIDE_LEFT));
-	anchors.push_back(get_anchor(SIDE_TOP));
-	anchors.push_back(get_anchor(SIDE_RIGHT));
-	anchors.push_back(get_anchor(SIDE_BOTTOM));
+	Array anchors = { get_anchor(SIDE_LEFT), get_anchor(SIDE_TOP), get_anchor(SIDE_RIGHT), get_anchor(SIDE_BOTTOM) };
 	s["anchors"] = anchors;
 
-	Array offsets;
-	offsets.push_back(get_offset(SIDE_LEFT));
-	offsets.push_back(get_offset(SIDE_TOP));
-	offsets.push_back(get_offset(SIDE_RIGHT));
-	offsets.push_back(get_offset(SIDE_BOTTOM));
+	Array offsets = { get_offset(SIDE_LEFT), get_offset(SIDE_TOP), get_offset(SIDE_RIGHT), get_offset(SIDE_BOTTOM) };
 	s["offsets"] = offsets;
 
 	s["layout_mode"] = _get_layout_mode();

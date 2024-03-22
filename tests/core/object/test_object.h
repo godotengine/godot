@@ -428,8 +428,7 @@ TEST_CASE("[Object] Signals") {
 	}
 
 	SUBCASE("Emitting an existing signal should call the connected method") {
-		Array empty_signal_args;
-		empty_signal_args.push_back(Array());
+		Array empty_signal_args = { {} };
 
 		SIGNAL_WATCH(&object, "my_custom_signal");
 		SIGNAL_CHECK_FALSE("my_custom_signal");
