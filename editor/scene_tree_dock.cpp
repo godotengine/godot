@@ -976,6 +976,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			undo_redo->create_action(TTR("Replace with Branch Scenes"));
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 
 			for (Node *tocopy : selection) {
 				if (tocopy == scene) {
@@ -1011,6 +1012,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					String root_name(tocopy->get_name());
 					root_name = EditorNode::adjust_scene_name_casing(root_name);
 					existing = root_name + "." + extensions.front()->get().to_lower();
+				}
+
+				if (da->file_exists(current_dir + existing)) {
+					accept->set_text(TTR("One or more scenes exist already, will not overwrite existing scenes."));
+					accept->popup_centered();
+					continue;
 				}
 
 				if (selection.size() == 1) {
