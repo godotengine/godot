@@ -2924,6 +2924,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		String to_dir;
 		bool favorite;
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+		if(to_dir.is_empty()) to_dir = "res://";
 		SceneTreeDock::get_singleton()->save_branch_to_file(to_dir);
 	}
 }

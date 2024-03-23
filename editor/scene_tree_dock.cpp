@@ -2981,57 +2981,9 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 		return;
 	}
 
-	if (EditorNode::get_singleton()->is_scene_open(p_file)) {
-		accept->set_text(TTR("Can't overwrite scene that is still open!"));
-		accept->popup_centered();
-		return;
-	}
-
 	Node *base = selection.front()->get();
 
-	HashMap<const Node *, Node *> duplimap;
-	HashMap<const Node *, Node *> inverse_duplimap;
-	Node *copy = base->duplicate_from_editor(duplimap);
-
-	for (const KeyValue<const Node *, Node *> &item : duplimap) {
-		inverse_duplimap[item.value] = const_cast<Node *>(item.key);
-	}
-
-	if (copy) {
-		// Handle Unique Nodes.
-		for (int i = 0; i < copy->get_child_count(false); i++) {
-			_set_node_owner_recursive(copy->get_child(i, false), copy, inverse_duplimap);
-		}
-		// Root node cannot ever be unique name in its own Scene!
-		copy->set_unique_name_in_owner(false);
-
-		Ref<PackedScene> sdata = memnew(PackedScene);
-		Error err = sdata->pack(copy);
-		memdelete(copy);
-
-		if (err != OK) {
-			accept->set_text(TTR("Couldn't save new scene. Likely dependencies (instances) couldn't be satisfied."));
-			accept->popup_centered();
-			return;
-		}
-
-		int flg = 0;
-		if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
-			flg |= ResourceSaver::FLAG_COMPRESS;
-		}
-
-		err = ResourceSaver::save(sdata, p_file, flg);
-		if (err != OK) {
-			accept->set_text(TTR("Error saving scene."));
-			accept->popup_centered();
-			return;
-		}
-		_replace_with_branch_scene(p_file, base);
-	} else {
-		accept->set_text(TTR("Error duplicating scene to save it."));
-		accept->popup_centered();
-		return;
-	}
+	_new_scene_from_node(p_file, base);
 }
 
 void SceneTreeDock::_new_scene_from_node(const String &p_file, Node *p_node) {
