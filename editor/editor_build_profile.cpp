@@ -383,7 +383,7 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 
 	switch (p_action) {
 		case ACTION_RESET: {
-			confirm_dialog->set_text("Reset the edited profile?");
+			confirm_dialog->set_text(TTR("Reset the edited profile?"));
 			confirm_dialog->popup_centered();
 		} break;
 		case ACTION_LOAD: {
@@ -404,11 +404,11 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 			export_profile->set_current_file(profile_path->get_text());
 		} break;
 		case ACTION_NEW: {
-			confirm_dialog->set_text("Create a new profile?");
+			confirm_dialog->set_text(TTR("Create a new profile?"));
 			confirm_dialog->popup_centered();
 		} break;
 		case ACTION_DETECT: {
-			confirm_dialog->set_text("This will scan all files in the current project to detect used classes.");
+			confirm_dialog->set_text(TTR("This will scan all files in the current project to detect used classes."));
 			confirm_dialog->popup_centered();
 		} break;
 		case ACTION_MAX: {
