@@ -153,7 +153,7 @@ Quat Quat::inverse() const {
 	return Quat(-x, -y, -z, w);
 }
 
-Quat Quat::slerp(const Quat &p_to, const real_t &p_weight) const {
+Quat Quat::slerp(const Quat &p_to, real_t p_weight) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quat(), "The start quaternion must be normalized.");
 	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quat(), "The end quaternion must be normalized.");
@@ -200,7 +200,7 @@ Quat Quat::slerp(const Quat &p_to, const real_t &p_weight) const {
 			scale0 * w + scale1 * to1.w);
 }
 
-Quat Quat::slerpni(const Quat &p_to, const real_t &p_weight) const {
+Quat Quat::slerpni(const Quat &p_to, real_t p_weight) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quat(), "The start quaternion must be normalized.");
 	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quat(), "The end quaternion must be normalized.");
@@ -224,7 +224,7 @@ Quat Quat::slerpni(const Quat &p_to, const real_t &p_weight) const {
 			invFactor * from.w + newFactor * p_to.w);
 }
 
-Quat Quat::cubic_slerp(const Quat &p_b, const Quat &p_pre_a, const Quat &p_post_b, const real_t &p_weight) const {
+Quat Quat::cubic_slerp(const Quat &p_b, const Quat &p_pre_a, const Quat &p_post_b, real_t p_weight) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(!is_normalized(), Quat(), "The start quaternion must be normalized.");
 	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quat(), "The end quaternion must be normalized.");
@@ -240,18 +240,18 @@ Quat::operator String() const {
 	return String::num(x) + ", " + String::num(y) + ", " + String::num(z) + ", " + String::num(w);
 }
 
-void Quat::set_axis_angle(const Vector3 &axis, const real_t &angle) {
+void Quat::set_axis_angle(const Vector3 &p_axis, real_t p_angle) {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_MSG(!axis.is_normalized(), "The axis Vector3 must be normalized.");
+	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");
 #endif
-	real_t d = axis.length();
+	real_t d = p_axis.length();
 	if (d == 0) {
 		set(0, 0, 0, 0);
 	} else {
-		real_t sin_angle = Math::sin(angle * 0.5f);
-		real_t cos_angle = Math::cos(angle * 0.5f);
+		real_t sin_angle = Math::sin(p_angle * 0.5f);
+		real_t cos_angle = Math::cos(p_angle * 0.5f);
 		real_t s = sin_angle / d;
-		set(axis.x * s, axis.y * s, axis.z * s,
+		set(p_axis.x * s, p_axis.y * s, p_axis.z * s,
 				cos_angle);
 	}
 }

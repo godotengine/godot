@@ -48,7 +48,7 @@ struct _NO_DISCARD_CLASS_ Rect2 {
 
 	_FORCE_INLINE_ Vector2 get_center() const { return position + (size * 0.5f); }
 
-	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
+	inline bool intersects(const Rect2 &p_rect, bool p_include_borders = false) const {
 		if (p_include_borders) {
 			if (position.x > (p_rect.position.x + p_rect.size.width)) {
 				return false;

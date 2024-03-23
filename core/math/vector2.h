@@ -95,20 +95,20 @@ struct _NO_DISCARD_CLASS_ Vector2 {
 
 	real_t dot(const Vector2 &p_other) const;
 	real_t cross(const Vector2 &p_other) const;
-	Vector2 posmod(const real_t p_mod) const;
+	Vector2 posmod(real_t p_mod) const;
 	Vector2 posmodv(const Vector2 &p_modv) const;
 	Vector2 project(const Vector2 &p_to) const;
 
 	Vector2 plane_project(real_t p_d, const Vector2 &p_vec) const;
 
 	Vector2 clamped(real_t p_len) const;
-	Vector2 limit_length(const real_t p_len = 1.0) const;
+	Vector2 limit_length(real_t p_len = 1.0) const;
 
 	_FORCE_INLINE_ static Vector2 linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_weight);
 	_FORCE_INLINE_ Vector2 linear_interpolate(const Vector2 &p_to, real_t p_weight) const;
 	_FORCE_INLINE_ Vector2 slerp(const Vector2 &p_to, real_t p_weight) const;
 	Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_weight) const;
-	Vector2 move_toward(const Vector2 &p_to, const real_t p_delta) const;
+	Vector2 move_toward(const Vector2 &p_to, real_t p_delta) const;
 
 	Vector2 slide(const Vector2 &p_normal) const;
 	Vector2 bounce(const Vector2 &p_normal) const;
@@ -120,18 +120,18 @@ struct _NO_DISCARD_CLASS_ Vector2 {
 	void operator+=(const Vector2 &p_v);
 	Vector2 operator-(const Vector2 &p_v) const;
 	void operator-=(const Vector2 &p_v);
-	Vector2 operator*(const Vector2 &p_v1) const;
+	Vector2 operator*(const Vector2 &p_v) const;
 
-	Vector2 operator*(const real_t &rvalue) const;
-	void operator*=(const real_t &rvalue);
-	void operator*=(const Vector2 &rvalue) { *this = *this * rvalue; }
+	Vector2 operator*(real_t p_scalar) const;
+	void operator*=(real_t p_scalar);
+	void operator*=(const Vector2 &p_v) { *this = *this * p_v; }
 
-	Vector2 operator/(const Vector2 &p_v1) const;
+	Vector2 operator/(const Vector2 &p_v) const;
 
-	Vector2 operator/(const real_t &rvalue) const;
+	Vector2 operator/(real_t p_scalar) const;
 
-	void operator/=(const real_t &rvalue);
-	void operator/=(const Vector2 &rvalue) { *this = *this / rvalue; }
+	void operator/=(real_t p_scalar);
+	void operator/=(const Vector2 &p_v) { *this = *this / p_v; }
 
 	Vector2 operator-() const;
 
@@ -198,30 +198,30 @@ _FORCE_INLINE_ void Vector2::operator-=(const Vector2 &p_v) {
 	y -= p_v.y;
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator*(const Vector2 &p_v1) const {
-	return Vector2(x * p_v1.x, y * p_v1.y);
-};
+_FORCE_INLINE_ Vector2 Vector2::operator*(const Vector2 &p_v) const {
+	return Vector2(x * p_v.x, y * p_v.y);
+}
 
-_FORCE_INLINE_ Vector2 Vector2::operator*(const real_t &rvalue) const {
-	return Vector2(x * rvalue, y * rvalue);
-};
-_FORCE_INLINE_ void Vector2::operator*=(const real_t &rvalue) {
-	x *= rvalue;
-	y *= rvalue;
-};
+_FORCE_INLINE_ Vector2 Vector2::operator*(real_t p_scalar) const {
+	return Vector2(x * p_scalar, y * p_scalar);
+}
+_FORCE_INLINE_ void Vector2::operator*=(real_t p_scalar) {
+	x *= p_scalar;
+	y *= p_scalar;
+}
 
-_FORCE_INLINE_ Vector2 Vector2::operator/(const Vector2 &p_v1) const {
-	return Vector2(x / p_v1.x, y / p_v1.y);
-};
+_FORCE_INLINE_ Vector2 Vector2::operator/(const Vector2 &p_v) const {
+	return Vector2(x / p_v.x, y / p_v.y);
+}
 
-_FORCE_INLINE_ Vector2 Vector2::operator/(const real_t &rvalue) const {
-	return Vector2(x / rvalue, y / rvalue);
-};
+_FORCE_INLINE_ Vector2 Vector2::operator/(real_t p_scalar) const {
+	return Vector2(x / p_scalar, y / p_scalar);
+}
 
-_FORCE_INLINE_ void Vector2::operator/=(const real_t &rvalue) {
-	x /= rvalue;
-	y /= rvalue;
-};
+_FORCE_INLINE_ void Vector2::operator/=(real_t p_scalar) {
+	x /= p_scalar;
+	y /= p_scalar;
+}
 
 _FORCE_INLINE_ Vector2 Vector2::operator-() const {
 	return Vector2(-x, -y);
@@ -305,16 +305,16 @@ struct _NO_DISCARD_CLASS_ Vector2i {
 	void operator+=(const Vector2i &p_v);
 	Vector2i operator-(const Vector2i &p_v) const;
 	void operator-=(const Vector2i &p_v);
-	Vector2i operator*(const Vector2i &p_v1) const;
+	Vector2i operator*(const Vector2i &p_v) const;
 
-	Vector2i operator*(const int &rvalue) const;
-	void operator*=(const int &rvalue);
+	Vector2i operator*(int p_scalar) const;
+	void operator*=(int p_scalar);
 
-	Vector2i operator/(const Vector2i &p_v1) const;
+	Vector2i operator/(const Vector2i &p_v) const;
 
-	Vector2i operator/(const int &rvalue) const;
+	Vector2i operator/(int p_scalar) const;
 
-	void operator/=(const int &rvalue);
+	void operator/=(int p_scalar);
 
 	Vector2i operator-() const;
 	bool operator<(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
