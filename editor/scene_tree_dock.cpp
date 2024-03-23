@@ -305,7 +305,6 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 	instantiated_scene->set_unique_name_in_owner(base->is_unique_name_in_owner());
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Replace with Branch Scene"));
 
 	Node *parent = base->get_parent();
 	int pos = base->get_index(false);
@@ -334,7 +333,6 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 
 	undo_redo->add_do_reference(instantiated_scene);
 	undo_redo->add_undo_reference(base);
-	undo_redo->commit_action();
 }
 
 bool SceneTreeDock::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) {
@@ -974,6 +972,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Replace with Branch Scenes"));
+
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
 			for (Node *tocopy : selection) {
@@ -1001,15 +1002,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					continue;
 				}
 
-				new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-
 				List<String> extensions;
 				Ref<PackedScene> sd = memnew(PackedScene);
 				ResourceSaver::get_recognized_extensions(sd, &extensions);
-				new_scene_from_dialog->clear_filters();
-				for (int i = 0; i < extensions.size(); i++) {
-					new_scene_from_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
-				}
 
 				String existing;
 				if (extensions.size()) {
@@ -1019,6 +1014,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 
 				if (selection.size() == 1) {
+					new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+					new_scene_from_dialog->clear_filters();
+					for (int i = 0; i < extensions.size(); i++) {
+						new_scene_from_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
+					}
 					new_scene_from_dialog->set_current_path(existing);
 					new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
 					new_scene_from_dialog->popup_file_dialog();
@@ -1027,6 +1027,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					_new_scene_from_node(current_dir + existing, tocopy);
 				}
 			}
+
+			undo_redo->commit_action();
 
 		} break;
 		case TOOL_COPY_NODE_PATH: {
@@ -2981,7 +2983,12 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 
 	Node *base = selection.front()->get();
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Replace with Branch Scene"));
+
 	_new_scene_from_node(p_file, base);
+
+	undo_redo->commit_action();
 }
 
 void SceneTreeDock::_new_scene_from_node(const String &p_file, Node *p_node) {

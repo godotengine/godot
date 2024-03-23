@@ -33,6 +33,7 @@
 
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/script_create_dialog.h"
+#include "editor_undo_redo_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/resources/animation.h"
 
