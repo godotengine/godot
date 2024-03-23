@@ -2250,6 +2250,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					terminal_emulator_args.push_back("--working-directory");
 				} else if (chosen_terminal_emulator.ends_with("urxvt")) {
 					terminal_emulator_args.push_back("-cd");
+				} else if (chosen_terminal_emulator.ends_with("xfce4-terminal")) {
+					terminal_emulator_args.push_back("--working-directory");
 				}
 			}
 #endif
