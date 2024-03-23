@@ -90,6 +90,8 @@ namespace Godot.SourceGenerators
 
             source.Append("using Godot;\n");
             source.Append("using Godot.NativeInterop;\n");
+            source.Append("using Godot.Bridge;\n");
+
             source.Append("\n");
 
             if (hasNamespace)
@@ -201,25 +203,38 @@ namespace Godot.SourceGenerators
                 source.Append("    }\n");
             }
 
-            source.Append("#pragma warning restore CS0109\n");
+            source.Append("#pragma warning restore CS0109\n\n");
 
             // Generate InvokeGodotClassMethod
 
-            if (godotClassMethods.Length > 0)
+            // TODO: why where static methods in here? does excluding them here break stuff? c++ codegen filters by is_virtual and static methods can't be virtual in C#
+            var godotClassNonStaticMethods = godotClassMethods.Where(m => !m.Method.IsStatic).ToArray();
+            if (godotClassNonStaticMethods.Length > 0)
             {
+                source.Append("    public new static readonly ScriptMethodRegistry<").Append(symbol.NameWithTypeParameters())
+                    .Append("> MethodRegistry = ")
+                    .Append("new ScriptMethodRegistry<").Append(symbol.NameWithTypeParameters()).Append(">()");
+                source.Append("\n        .Register(").Append(symbol.BaseType.FullQualifiedNameIncludeGlobal()).Append(".MethodRegistry)");
+
+                foreach (var method in godotClassNonStaticMethods)
+                {
+                    GenerateScriptMethodRegistryEntry(symbol.NameWithTypeParameters(), method, source);
+                }
+
+                source.Append("\n        .Compile();\n\n");
+
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
                 source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
-
-                foreach (var method in godotClassMethods)
-                {
-                    GenerateMethodInvoker(method, source);
-                }
-
-                source.Append("        return base.InvokeGodotClassMethod(method, args, out ret);\n");
-
-                source.Append("    }\n");
+                source.Append("        if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))\n");
+                source.Append("        {\n");
+                source.Append("            scriptMethod(this, args, out ret);\n");
+                source.Append("            return true;\n");
+                source.Append("        }\n\n");
+                source.Append("        ret = new godot_variant();\n");
+                source.Append("        return false;\n");
+                source.Append("    }\n\n");
             }
 
             // Generate InvokeGodotClassStaticMethod
@@ -252,16 +267,7 @@ namespace Godot.SourceGenerators
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override bool HasGodotClassMethod(in godot_string_name method)\n    {\n");
-
-                bool isFirstEntry = true;
-                foreach (string methodName in distinctMethodNames)
-                {
-                    GenerateHasMethodEntry(methodName, source, isFirstEntry);
-                    isFirstEntry = false;
-                }
-
-                source.Append("        return base.HasGodotClassMethod(method);\n");
-
+                source.Append("        return MethodRegistry.ContainsMethod(method);\n");
                 source.Append("    }\n");
             }
 
@@ -410,20 +416,6 @@ namespace Godot.SourceGenerators
                 PropertyHint.None, string.Empty, propUsage, className, exported: false);
         }
 
-        private static void GenerateHasMethodEntry(
-            string methodName,
-            StringBuilder source,
-            bool isFirstEntry
-        )
-        {
-            source.Append("        ");
-            if (!isFirstEntry)
-                source.Append("else ");
-            source.Append("if (method == MethodName.");
-            source.Append(methodName);
-            source.Append(") {\n           return true;\n        }\n");
-        }
-
         private static void GenerateMethodInvoker(
             GodotMethodData method,
             StringBuilder source
@@ -473,6 +465,58 @@ namespace Godot.SourceGenerators
             }
 
             source.Append("        }\n");
+        }
+
+        private static void GenerateScriptMethodRegistryEntry(
+            string type,
+            GodotMethodData method,
+            StringBuilder source
+        )
+        {
+            string methodName = method.Method.Name;
+
+            source.Append("\n        .Register(MethodName.")
+                .Append(methodName)
+                .Append(", ")
+                .Append(method.ParamTypes.Length)
+                .Append(", ")
+                .Append($"({type} scriptInstance, NativeVariantPtrArgs args, out godot_variant ret) => \n")
+                .Append("        {\n");
+
+            if (method.RetType != null)
+                source.Append("            var callRet = ");
+            else
+                source.Append("            ");
+
+            source.Append("scriptInstance.").Append(methodName);
+            source.Append("(");
+
+            for (int i = 0; i < method.ParamTypes.Length; i++)
+            {
+                if (i != 0)
+                    source.Append(", ");
+
+                source.AppendNativeVariantToManagedExpr(string.Concat("args[", i.ToString(), "]"),
+                    method.ParamTypeSymbols[i], method.ParamTypes[i]);
+            }
+
+            source.Append(");\n");
+
+            if (method.RetType != null)
+            {
+                source.Append("            ret = ");
+
+                source.AppendManagedToNativeVariantExpr("callRet",
+                    method.RetType.Value.TypeSymbol, method.RetType.Value.MarshalType);
+                source.Append(";\n");
+            }
+            else
+            {
+                source.Append("            ret = default;\n");
+            }
+
+            source.Append("        })");
+
         }
     }
 }

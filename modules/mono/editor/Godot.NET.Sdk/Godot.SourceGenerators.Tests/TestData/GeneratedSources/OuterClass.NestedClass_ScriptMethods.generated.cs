@@ -1,5 +1,6 @@
 using Godot;
 using Godot.NativeInterop;
+using Godot.Bridge;
 
 partial struct OuterClass
 {
@@ -28,25 +29,35 @@ partial class NestedClass
         return methods;
     }
 #pragma warning restore CS0109
+
+    public new static readonly ScriptMethodRegistry<NestedClass> MethodRegistry = new ScriptMethodRegistry<NestedClass>()
+        .Register(global::Godot.RefCounted.MethodRegistry)
+        .Register(MethodName._Get, 1, (NestedClass scriptInstance, NativeVariantPtrArgs args, out godot_variant ret) => 
+        {
+            var callRet = scriptInstance._Get(global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(args[0]));
+            ret = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(callRet);
+        })
+        .Compile();
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool InvokeGodotClassMethod(in godot_string_name method, NativeVariantPtrArgs args, out godot_variant ret)
     {
-        if (method == MethodName._Get && args.Count == 1) {
-            var callRet = _Get(global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(args[0]));
-            ret = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(callRet);
+        if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))
+        {
+            scriptMethod(this, args, out ret);
             return true;
         }
-        return base.InvokeGodotClassMethod(method, args, out ret);
+
+        ret = new godot_variant();
+        return false;
     }
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool HasGodotClassMethod(in godot_string_name method)
     {
-        if (method == MethodName._Get) {
-           return true;
-        }
-        return base.HasGodotClassMethod(method);
+        return MethodRegistry.ContainsMethod(method);
     }
 }
 }

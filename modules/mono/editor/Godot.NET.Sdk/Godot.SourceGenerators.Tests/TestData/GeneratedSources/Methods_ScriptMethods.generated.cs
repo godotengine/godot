@@ -1,5 +1,6 @@
 using Godot;
 using Godot.NativeInterop;
+using Godot.Bridge;
 
 partial class Methods
 {
@@ -28,34 +29,44 @@ partial class Methods
         return methods;
     }
 #pragma warning restore CS0109
+
+    public new static readonly ScriptMethodRegistry<Methods> MethodRegistry = new ScriptMethodRegistry<Methods>()
+        .Register(global::Godot.GodotObject.MethodRegistry)
+        .Register(MethodName.MethodWithOverload, 0, (Methods scriptInstance, NativeVariantPtrArgs args, out godot_variant ret) => 
+        {
+            scriptInstance.MethodWithOverload();
+            ret = default;
+        })
+        .Register(MethodName.MethodWithOverload, 1, (Methods scriptInstance, NativeVariantPtrArgs args, out godot_variant ret) => 
+        {
+            scriptInstance.MethodWithOverload(global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[0]));
+            ret = default;
+        })
+        .Register(MethodName.MethodWithOverload, 2, (Methods scriptInstance, NativeVariantPtrArgs args, out godot_variant ret) => 
+        {
+            scriptInstance.MethodWithOverload(global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[0]), global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[1]));
+            ret = default;
+        })
+        .Compile();
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool InvokeGodotClassMethod(in godot_string_name method, NativeVariantPtrArgs args, out godot_variant ret)
     {
-        if (method == MethodName.MethodWithOverload && args.Count == 0) {
-            MethodWithOverload();
-            ret = default;
+        if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))
+        {
+            scriptMethod(this, args, out ret);
             return true;
         }
-        if (method == MethodName.MethodWithOverload && args.Count == 1) {
-            MethodWithOverload(global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[0]));
-            ret = default;
-            return true;
-        }
-        if (method == MethodName.MethodWithOverload && args.Count == 2) {
-            MethodWithOverload(global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[0]), global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[1]));
-            ret = default;
-            return true;
-        }
-        return base.InvokeGodotClassMethod(method, args, out ret);
+
+        ret = new godot_variant();
+        return false;
     }
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool HasGodotClassMethod(in godot_string_name method)
     {
-        if (method == MethodName.MethodWithOverload) {
-           return true;
-        }
-        return base.HasGodotClassMethod(method);
+        return MethodRegistry.ContainsMethod(method);
     }
 }
