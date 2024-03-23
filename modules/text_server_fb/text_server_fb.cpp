@@ -71,8 +71,10 @@ using namespace godot;
 #endif
 #endif
 
-#ifdef MODULE_SVG_ENABLED
 #ifdef MODULE_FREETYPE_ENABLED
+#include FT_SFNT_NAMES_H
+#include FT_TRUETYPE_IDS_H
+#ifdef MODULE_SVG_ENABLED
 #include "thorvg_svg_in_ot.h"
 #endif
 #endif
@@ -857,8 +859,37 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 
 		if (!p_font_data->face_init) {
-			// Get style flags and name.
-			if (fd->face->family_name != nullptr) {
+			// When a font does not provide a `family_name`, FreeType tries to synthesize one based on other names.
+			// FreeType automatically converts non-ASCII characters to "?" in the synthesized name.
+			// To avoid that behavior, use the format-specific name directly if available.
+			if (FT_IS_SFNT(fd->face)) {
+				int name_count = FT_Get_Sfnt_Name_Count(fd->face);
+				for (int i = 0; i < name_count; i++) {
+					FT_SfntName sfnt_name;
+					if (FT_Get_Sfnt_Name(fd->face, i, &sfnt_name) != 0) {
+						continue;
+					}
+					if (sfnt_name.name_id != TT_NAME_ID_FONT_FAMILY && sfnt_name.name_id != TT_NAME_ID_TYPOGRAPHIC_FAMILY) {
+						continue;
+					}
+					if (!p_font_data->font_name.is_empty() && sfnt_name.language_id != TT_MS_LANGID_ENGLISH_UNITED_STATES) {
+						continue;
+					}
+
+					switch (sfnt_name.platform_id) {
+						case TT_PLATFORM_APPLE_UNICODE: {
+							p_font_data->font_name.parse_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
+						} break;
+
+						case TT_PLATFORM_MICROSOFT: {
+							if (sfnt_name.encoding_id == TT_MS_ID_UNICODE_CS || sfnt_name.encoding_id == TT_MS_ID_UCS_4) {
+								p_font_data->font_name.parse_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
+							}
+						} break;
+					}
+				}
+			}
+			if (p_font_data->font_name.is_empty() && fd->face->family_name != nullptr) {
 				p_font_data->font_name = String::utf8((const char *)fd->face->family_name);
 			}
 			if (fd->face->style_name != nullptr) {
