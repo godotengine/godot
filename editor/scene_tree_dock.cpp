@@ -976,7 +976,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			List<Node *> selection = editor_selection->get_selected_node_list();
 
-			for(Node* tocopy : selection){
+			for (Node *tocopy : selection) {
 				if (tocopy == scene) {
 					accept->set_text(TTR("Can't save the root node branch as an instantiated scene.\nTo create an editable copy of the current scene, duplicate it using the FileSystem dock context menu\nor create an inherited scene using Scene > New Inherited Scene... instead."));
 					accept->popup_centered();
@@ -1018,17 +1018,15 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					existing = root_name + "." + extensions.front()->get().to_lower();
 				}
 
-				if(selection.size() == 1){
+				if (selection.size() == 1) {
 					new_scene_from_dialog->set_current_path(existing);
 					new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
 					new_scene_from_dialog->popup_file_dialog();
 
-				}else{
+				} else {
 					_new_scene_from_node(current_dir + existing, tocopy);
 				}
-
 			}
-
 
 		} break;
 		case TOOL_COPY_NODE_PATH: {
@@ -2987,7 +2985,6 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 }
 
 void SceneTreeDock::_new_scene_from_node(const String &p_file, Node *p_node) {
-
 	if (EditorNode::get_singleton()->is_scene_open(p_file)) {
 		accept->set_text(TTR("Can't overwrite scene that is still open!"));
 		accept->popup_centered();
