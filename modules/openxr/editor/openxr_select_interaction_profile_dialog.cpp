@@ -111,7 +111,7 @@ void OpenXRSelectInteractionProfileDialog::ok_pressed() {
 }
 
 OpenXRSelectInteractionProfileDialog::OpenXRSelectInteractionProfileDialog() {
-	set_title("Select an interaction profile");
+	set_title(TTR("Select an interaction profile"));
 
 	scroll = memnew(ScrollContainer);
 	scroll->set_custom_minimum_size(Size2(600.0, 400.0));

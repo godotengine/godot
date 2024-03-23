@@ -2159,7 +2159,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	warning_dialog->set_text(TTR("Temporary Euler will not be stored in the object with the original value. Instead, it will be stored as Quaternion with irreversible conversion.\nThis is due to the fact that the result of Euler->Quaternion can be determined uniquely, but the result of Quaternion->Euler can be multi-existent."));
 
 	euler_label = memnew(Label);
-	euler_label->set_text("Temporary Euler");
+	euler_label->set_text(TTR("Temporary Euler"));
 
 	edit_custom_bc->add_child(warning);
 	edit_custom_bc->add_child(edit_custom_layout);
