@@ -598,8 +598,7 @@ void ScriptTextEditor::_update_warnings() {
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(w.start_line - 1);
 		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
-		warnings_panel->add_text(TTR("Line") + " " + itos(w.start_line));
-		warnings_panel->add_text(" (" + w.string_code + "):");
+		warnings_panel->add_text(vformat(TTR("Line %d (%s):"), w.start_line, w.string_code));
 		warnings_panel->pop(); // Color.
 		warnings_panel->pop(); // Meta goto.
 		warnings_panel->pop(); // Cell.
@@ -625,7 +624,7 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.line - 1);
 		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-		errors_panel->add_text(TTR("Line") + " " + itos(err.line) + ":");
+		errors_panel->add_text(vformat(TTR("Line %d:"), err.line));
 		errors_panel->pop(); // Color.
 		errors_panel->pop(); // Meta goto.
 		errors_panel->pop(); // Cell.
@@ -659,7 +658,7 @@ void ScriptTextEditor::_update_errors() {
 			errors_panel->push_cell();
 			errors_panel->push_meta(click_meta);
 			errors_panel->push_color(errors_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			errors_panel->add_text(TTR("Line") + " " + itos(err.line) + ":");
+			errors_panel->add_text(vformat(TTR("Line %d:"), err.line));
 			errors_panel->pop(); // Color.
 			errors_panel->pop(); // Meta goto.
 			errors_panel->pop(); // Cell.
