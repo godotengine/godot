@@ -64,6 +64,9 @@ public:
 	// Turns property path segment into the given style.
 	String process_name(const String &p_name, Style p_style) const;
 
+	// Translate plain text group names.
+	String translate_group_name(const String &p_name) const;
+
 	EditorPropertyNameProcessor();
 	~EditorPropertyNameProcessor();
 };

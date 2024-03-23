@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRInterfaceExtension" inherits="XRInterface" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRInterfaceExtension" inherits="XRInterface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for XR interface extensions (plugins).
 	</brief_description>
@@ -7,6 +7,7 @@
 		External XR interface plugins should inherit from this class.
 	</description>
 	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="_end_frame" qualifiers="virtual">
@@ -60,13 +61,13 @@
 		<method name="_get_play_area" qualifiers="virtual const">
 			<return type="PackedVector3Array" />
 			<description>
-				Returns an [PackedVector3Array] that denotes the play areas boundaries (if applicable).
+				Returns a [PackedVector3Array] that represents the play areas boundaries (if applicable).
 			</description>
 		</method>
 		<method name="_get_play_area_mode" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
-				Returns the [enum XRInterface.PlayAreaMode] that sets up our play area.
+				Returns the play area mode that sets up our play area.
 			</description>
 		</method>
 		<method name="_get_projection_for_view" qualifiers="virtual">
@@ -98,8 +99,14 @@
 				Returns a [PackedStringArray] with tracker names configured by this interface. Note that user configuration can override this list.
 			</description>
 		</method>
+		<method name="_get_system_info" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<description>
+				Returns a [Dictionary] with system information related to this interface.
+			</description>
+		</method>
 		<method name="_get_tracking_status" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="XRInterface.TrackingStatus" />
 			<description>
 				Returns a [enum XRInterface.TrackingStatus] specifying the current status of our tracking.
 			</description>
@@ -159,13 +166,13 @@
 		<method name="_pre_render" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called if this [XRInterfaceExtension] is active before rendering starts, most XR interfaces will sync tracking at this point in time.
+				Called if this [XRInterfaceExtension] is active before rendering starts. Most XR interfaces will sync tracking at this point in time.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called if this [XRInterfaceExtension] is active before our physics and game process is called. most XR interfaces will update its [XRPositionalTracker]s at this point in time.
+				Called if this [XRInterfaceExtension] is active before our physics and game process is called. Most XR interfaces will update its [XRPositionalTracker]s at this point in time.
 			</description>
 		</method>
 		<method name="_set_anchor_detection_is_enabled" qualifiers="virtual">
@@ -177,7 +184,7 @@
 		</method>
 		<method name="_set_play_area_mode" qualifiers="virtual const">
 			<return type="bool" />
-			<param index="0" name="mode" type="int" />
+			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Set the play area mode for this interface.
 			</description>

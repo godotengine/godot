@@ -46,11 +46,13 @@ public:
 		MENU_SELECT_ALL,
 		MENU_UNDO,
 		MENU_REDO,
+		MENU_SUBMENU_TEXT_DIR,
 		MENU_DIR_INHERITED,
 		MENU_DIR_AUTO,
 		MENU_DIR_LTR,
 		MENU_DIR_RTL,
 		MENU_DISPLAY_UCC,
+		MENU_SUBMENU_INSERT_UCC,
 		MENU_INSERT_LRM,
 		MENU_INSERT_RLM,
 		MENU_INSERT_LRE,
@@ -104,13 +106,14 @@ private:
 
 	bool selecting_enabled = true;
 	bool deselect_on_focus_loss_enabled = true;
+	bool drag_and_drop_selection_enabled = true;
 
 	bool context_menu_enabled = true;
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
 
-	bool caret_mid_grapheme_enabled = true;
+	bool caret_mid_grapheme_enabled = false;
 
 	int caret_column = 0;
 	float scroll_offset = 0.0;
@@ -207,6 +210,8 @@ private:
 	void _create_undo_state();
 
 	Key _get_menu_action_accelerator(const String &p_action);
+	void _generate_context_menu();
+	void _update_context_menu();
 
 	void _shape();
 	void _fit_to_width();
@@ -239,17 +244,17 @@ private:
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 
-	void _ensure_menu();
-
 protected:
 	bool _is_over_clear_button(const Point2 &p_pos) const;
+
 	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
+
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
@@ -272,6 +277,7 @@ public:
 	void selection_delete();
 	void deselect();
 	bool has_selection() const;
+	String get_selected_text();
 	int get_selection_from_column() const;
 	int get_selection_to_column() const;
 
@@ -280,6 +286,7 @@ public:
 
 	void set_text(String p_text);
 	String get_text() const;
+	void set_text_with_selection(const String &p_text); // Set text, while preserving selection.
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
@@ -363,6 +370,9 @@ public:
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
 
+	void set_drag_and_drop_selection_enabled(const bool p_enabled);
+	bool is_drag_and_drop_selection_enabled() const;
+
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
 
@@ -374,6 +384,8 @@ public:
 	void clear_pending_select_all_on_focus(); // For other controls, e.g. SpinBox.
 
 	virtual bool is_text_field() const override;
+
+	PackedStringArray get_configuration_warnings() const override;
 
 	void show_virtual_keyboard();
 

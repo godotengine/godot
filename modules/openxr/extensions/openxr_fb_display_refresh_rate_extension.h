@@ -38,7 +38,6 @@
 
 #include "../openxr_api.h"
 #include "../util.h"
-
 #include "openxr_extension_wrapper.h"
 
 class OpenXRDisplayRefreshRateExtension : public OpenXRExtensionWrapper {

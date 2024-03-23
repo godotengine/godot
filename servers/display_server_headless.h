@@ -51,6 +51,8 @@ private:
 		return memnew(DisplayServerHeadless());
 	}
 
+	NativeMenu *native_menu = nullptr;
+
 public:
 	bool has_feature(Feature p_feature) const override { return false; }
 	String get_name() const override { return "headless"; }
@@ -119,6 +121,7 @@ public:
 
 	void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override {}
 	void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override {}
+	bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override { return true; };
 
 	bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override { return false; }
 
@@ -131,8 +134,15 @@ public:
 
 	void set_icon(const Ref<Image> &p_icon) override {}
 
-	DisplayServerHeadless() {}
-	~DisplayServerHeadless() {}
+	DisplayServerHeadless() {
+		native_menu = memnew(NativeMenu);
+	}
+	~DisplayServerHeadless() {
+		if (native_menu) {
+			memdelete(native_menu);
+			native_menu = nullptr;
+		}
+	}
 };
 
 #endif // DISPLAY_SERVER_HEADLESS_H

@@ -354,6 +354,14 @@ TEST_CASE("[Vector3] Other methods") {
 	CHECK_MESSAGE(
 			vector.snapped(Vector3(0.25, 0.25, 0.25)) == Vector3(1.25, 3.5, 5.5),
 			"Vector3 snapped to 0.25 should give exact results.");
+
+	CHECK_MESSAGE(
+			Vector3(1.2, 2.5, 2.0).is_equal_approx(vector.min(Vector3(3.0, 2.5, 2.0))),
+			"Vector3 min should return expected value.");
+
+	CHECK_MESSAGE(
+			Vector3(5.3, 3.4, 5.6).is_equal_approx(vector.max(Vector3(5.3, 2.0, 3.0))),
+			"Vector3 max should return expected value.");
 }
 
 TEST_CASE("[Vector3] Plane methods") {

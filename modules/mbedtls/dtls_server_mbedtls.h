@@ -31,22 +31,21 @@
 #ifndef DTLS_SERVER_MBEDTLS_H
 #define DTLS_SERVER_MBEDTLS_H
 
-#include "core/io/dtls_server.h"
 #include "tls_context_mbedtls.h"
+
+#include "core/io/dtls_server.h"
 
 class DTLSServerMbedTLS : public DTLSServer {
 private:
 	static DTLSServer *_create_func();
-	Ref<CryptoKey> _key;
-	Ref<X509Certificate> _cert;
-	Ref<X509Certificate> _ca_chain;
-	Ref<CookieContextMbedTLS> _cookies;
+	Ref<TLSOptions> tls_options;
+	Ref<CookieContextMbedTLS> cookies;
 
 public:
 	static void initialize();
 	static void finalize();
 
-	virtual Error setup(Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>());
+	virtual Error setup(Ref<TLSOptions> p_options);
 	virtual void stop();
 	virtual Ref<PacketPeerDTLS> take_connection(Ref<PacketPeerUDP> p_peer);
 

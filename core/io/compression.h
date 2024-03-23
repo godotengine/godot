@@ -47,7 +47,8 @@ public:
 		MODE_FASTLZ,
 		MODE_DEFLATE,
 		MODE_ZSTD,
-		MODE_GZIP
+		MODE_GZIP,
+		MODE_BROTLI
 	};
 
 	static int compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode = MODE_ZSTD);

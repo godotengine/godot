@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorScenePostImport" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorScenePostImport" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Post-processes scenes after import.
 	</brief_description>
@@ -10,12 +10,14 @@
 		[gdscript]
 		@tool # Needed so it runs in editor.
 		extends EditorScenePostImport
+
 		# This sample changes all node names.
 		# Called right after the scene is imported and gets the root node.
 		func _post_import(scene):
 		    # Change all node names to "modified_[oldnodename]"
 		    iterate(scene)
 		    return scene # Remember to return the imported scene
+
 		func iterate(node):
 		    if node != null:
 		        node.name = "modified_" + node.name
@@ -30,17 +32,18 @@
 		[Tool]
 		public partial class NodeRenamer : EditorScenePostImport
 		{
-		    public override Object _PostImport(Node scene)
+		    public override GodotObject _PostImport(Node scene)
 		    {
 		        // Change all node names to "modified_[oldnodename]"
 		        Iterate(scene);
 		        return scene; // Remember to return the imported scene
 		    }
+
 		    public void Iterate(Node node)
 		    {
 		        if (node != null)
 		        {
-		            node.Name = "modified_" + node.Name;
+		            node.Name = $"modified_{node.Name}";
 		            foreach (Node child in node.GetChildren())
 		            {
 		                Iterate(child);
@@ -52,7 +55,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="Importing 3D scenes: Custom script">$DOCS_URL/tutorials/assets_pipeline/importing_scenes.html#custom-script</link>
+		<link title="Importing 3D scenes: Configuration: Using import scripts for automation">$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/import_configuration.html#using-import-scripts-for-automation</link>
 	</tutorials>
 	<methods>
 		<method name="_post_import" qualifiers="virtual">

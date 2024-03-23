@@ -30,13 +30,12 @@
 
 #import "joypad_ios.h"
 
-#include "core/config/project_settings.h"
-#include "drivers/coreaudio/audio_driver_coreaudio.h"
-#include "main/main.h"
-
 #import "godot_view.h"
+#import "os_ios.h"
 
-#include "os_ios.h"
+#include "core/config/project_settings.h"
+#import "drivers/coreaudio/audio_driver_coreaudio.h"
+#include "main/main.h"
 
 JoypadIOS::JoypadIOS() {
 	observer = [[JoypadIOSObserver alloc] init];
@@ -150,7 +149,7 @@ void JoypadIOS::start_processing() {
 	int joy_id = Input::get_singleton()->get_unused_joy_id();
 
 	if (joy_id == -1) {
-		printf("Couldn't retrieve new joy id\n");
+		print_verbose("Couldn't retrieve new joy ID.");
 		return;
 	}
 
@@ -174,12 +173,12 @@ void JoypadIOS::start_processing() {
 	GCController *controller = (GCController *)notification.object;
 
 	if (!controller) {
-		printf("Couldn't retrieve new controller\n");
+		print_verbose("Couldn't retrieve new controller.");
 		return;
 	}
 
 	if ([[self.connectedJoypads allKeysForObject:controller] count] > 0) {
-		printf("Controller is already registered\n");
+		print_verbose("Controller is already registered.");
 	} else if (!self.isProcessing) {
 		[self.joypadsQueue addObject:controller];
 	} else {
@@ -304,6 +303,25 @@ void JoypadIOS::start_processing() {
 			} else if (element == gamepad.rightTrigger) {
 				float value = gamepad.rightTrigger.value;
 				Input::get_singleton()->joy_axis(joy_id, JoyAxis::TRIGGER_RIGHT, value);
+			}
+
+			if (@available(iOS 13, *)) {
+				// iOS uses 'buttonOptions' and 'buttonMenu' names for BACK and START joy buttons.
+				if (element == gamepad.buttonOptions) {
+					Input::get_singleton()->joy_button(joy_id, JoyButton::BACK,
+							gamepad.buttonOptions.isPressed);
+				} else if (element == gamepad.buttonMenu) {
+					Input::get_singleton()->joy_button(joy_id, JoyButton::START,
+							gamepad.buttonMenu.isPressed);
+				}
+			}
+
+			if (@available(iOS 14, *)) {
+				// iOS uses 'buttonHome' for the GUIDE joy button.
+				if (element == gamepad.buttonHome) {
+					Input::get_singleton()->joy_button(joy_id, JoyButton::GUIDE,
+							gamepad.buttonHome.isPressed);
+				}
 			}
 		};
 	} else if (controller.microGamepad != nil) {

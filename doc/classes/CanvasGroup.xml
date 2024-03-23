@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasGroup" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CanvasGroup" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Merges several 2D nodes into a single draw operation.
 	</brief_description>
@@ -8,9 +8,12 @@
 		[b]Note:[/b] The [CanvasGroup] uses a custom shader to read from the backbuffer to draw its children. Assigning a [Material] to the [CanvasGroup] overrides the builtin shader. To duplicate the behavior of the builtin shader in a custom [Shader] use the following:
 		[codeblock]
 		shader_type canvas_item;
+		render_mode unshaded;
+
+		uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
 
 		void fragment() {
-		    vec4 c = textureLod(SCREEN_TEXTURE, SCREEN_UV, 0.0);
+		    vec4 c = textureLod(screen_texture, SCREEN_UV, 0.0);
 
 		    if (c.a &gt; 0.0001) {
 		        c.rgb /= c.a;

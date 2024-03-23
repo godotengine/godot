@@ -189,12 +189,12 @@ void _err_flush_stdout();
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, the application crashes.
  */
-#define CRASH_BAD_INDEX(m_index, m_size)                                                                                  \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                               \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
-		_err_flush_stdout();                                                                                              \
-		GENERATE_TRAP();                                                                                                  \
-	} else                                                                                                                \
+#define CRASH_BAD_INDEX(m_index, m_size)                                                                                         \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                      \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", false, true); \
+		_err_flush_stdout();                                                                                                     \
+		GENERATE_TRAP();                                                                                                         \
+	} else                                                                                                                       \
 		((void)0)
 
 /**
@@ -204,12 +204,12 @@ void _err_flush_stdout();
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, prints `m_msg` and the application crashes.
  */
-#define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                          \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                  \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		_err_flush_stdout();                                                                                                 \
-		GENERATE_TRAP();                                                                                                     \
-	} else                                                                                                                   \
+#define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                                 \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                         \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
+		_err_flush_stdout();                                                                                                        \
+		GENERATE_TRAP();                                                                                                            \
+	} else                                                                                                                          \
 		((void)0)
 
 // Unsigned integer index out of bounds error macros.
@@ -292,12 +292,12 @@ void _err_flush_stdout();
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, the application crashes.
  */
-#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                         \
-	if (unlikely((m_index) >= (m_size))) {                                                                                \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
-		_err_flush_stdout();                                                                                              \
-		GENERATE_TRAP();                                                                                                  \
-	} else                                                                                                                \
+#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                                \
+	if (unlikely((m_index) >= (m_size))) {                                                                                       \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", false, true); \
+		_err_flush_stdout();                                                                                                     \
+		GENERATE_TRAP();                                                                                                         \
+	} else                                                                                                                       \
 		((void)0)
 
 /**
@@ -307,12 +307,12 @@ void _err_flush_stdout();
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, prints `m_msg` and the application crashes.
  */
-#define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                 \
-	if (unlikely((m_index) >= (m_size))) {                                                                                   \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		_err_flush_stdout();                                                                                                 \
-		GENERATE_TRAP();                                                                                                     \
-	} else                                                                                                                   \
+#define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                        \
+	if (unlikely((m_index) >= (m_size))) {                                                                                          \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
+		_err_flush_stdout();                                                                                                        \
+		GENERATE_TRAP();                                                                                                            \
+	} else                                                                                                                          \
 		((void)0)
 
 // Null reference error macros.
@@ -730,6 +730,16 @@ void _err_flush_stdout();
 	} else                                                                                        \
 		((void)0)
 
+/**
+ * Warns about `m_msg` only when verbose mode is enabled.
+ */
+#define WARN_VERBOSE(m_msg)               \
+	{                                     \
+		if (is_print_verbose_enabled()) { \
+			WARN_PRINT(m_msg);            \
+		}                                 \
+	}
+
 // Print deprecated warning message macros.
 
 /**
@@ -786,8 +796,19 @@ void _err_flush_stdout();
 		((void)0)
 
 /**
- * This should be a 'free' assert for program flow and should not be needed in any releases,
- *  only used in dev builds.
+ * Note: IN MOST CASES YOU SHOULD NOT USE THIS MACRO.
+ * Do not use unless you understand the trade-offs.
+ *
+ * DEV macros will be compiled out in releases, they are wrapped in DEV_ENABLED.
+ *
+ * Prefer WARNINGS / ERR_FAIL macros (which fail without crashing) - ERR_FAIL should be used in most cases.
+ * Then CRASH_NOW_MSG macros (on rare occasions where error cannot be recovered).
+ *
+ * DEV_ASSERT should generally only be used when both of the following conditions are met:
+ * 1) Bottleneck code where a check in release would be too expensive.
+ * 2) Situations where the check would fail obviously and straight away during the maintenance of the code
+ *    (i.e. strict conditions that should be true no matter what)
+ *    and that can't fail for other contributors once the code is finished and merged.
  */
 #ifdef DEV_ENABLED
 #define DEV_ASSERT(m_cond)                                                                                              \
@@ -799,6 +820,16 @@ void _err_flush_stdout();
 		((void)0)
 #else
 #define DEV_ASSERT(m_cond)
+#endif
+
+#ifdef DEV_ENABLED
+#define DEV_CHECK_ONCE(m_cond)                                                   \
+	if (unlikely(!(m_cond))) {                                                   \
+		ERR_PRINT_ONCE("DEV_CHECK_ONCE failed  \"" _STR(m_cond) "\" is false."); \
+	} else                                                                       \
+		((void)0)
+#else
+#define DEV_CHECK_ONCE(m_cond)
 #endif
 
 #endif // ERROR_MACROS_H

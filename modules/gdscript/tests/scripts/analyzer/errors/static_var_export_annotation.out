@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Annotation "@export" cannot be applied to a static variable.

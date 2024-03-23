@@ -8,19 +8,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_HKDF_H
 #define MBEDTLS_HKDF_H
@@ -69,10 +57,10 @@ extern "C" {
  *  \return An MBEDTLS_ERR_MD_* error for errors returned from the underlying
  *          MD layer.
  */
-int mbedtls_hkdf( const mbedtls_md_info_t *md, const unsigned char *salt,
-                  size_t salt_len, const unsigned char *ikm, size_t ikm_len,
-                  const unsigned char *info, size_t info_len,
-                  unsigned char *okm, size_t okm_len );
+int mbedtls_hkdf(const mbedtls_md_info_t *md, const unsigned char *salt,
+                 size_t salt_len, const unsigned char *ikm, size_t ikm_len,
+                 const unsigned char *info, size_t info_len,
+                 unsigned char *okm, size_t okm_len);
 
 /**
  *  \brief  Take the input keying material \p ikm and extract from it a
@@ -98,10 +86,10 @@ int mbedtls_hkdf( const mbedtls_md_info_t *md, const unsigned char *salt,
  *  \return An MBEDTLS_ERR_MD_* error for errors returned from the underlying
  *          MD layer.
  */
-int mbedtls_hkdf_extract( const mbedtls_md_info_t *md,
-                          const unsigned char *salt, size_t salt_len,
-                          const unsigned char *ikm, size_t ikm_len,
-                          unsigned char *prk );
+int mbedtls_hkdf_extract(const mbedtls_md_info_t *md,
+                         const unsigned char *salt, size_t salt_len,
+                         const unsigned char *ikm, size_t ikm_len,
+                         unsigned char *prk);
 
 /**
  *  \brief  Expand the supplied \p prk into several additional pseudorandom
@@ -129,9 +117,9 @@ int mbedtls_hkdf_extract( const mbedtls_md_info_t *md,
  *  \return An MBEDTLS_ERR_MD_* error for errors returned from the underlying
  *          MD layer.
  */
-int mbedtls_hkdf_expand( const mbedtls_md_info_t *md, const unsigned char *prk,
-                         size_t prk_len, const unsigned char *info,
-                         size_t info_len, unsigned char *okm, size_t okm_len );
+int mbedtls_hkdf_expand(const mbedtls_md_info_t *md, const unsigned char *prk,
+                        size_t prk_len, const unsigned char *info,
+                        size_t info_len, unsigned char *okm, size_t okm_len);
 
 #ifdef __cplusplus
 }

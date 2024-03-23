@@ -34,6 +34,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/resources/camera_attributes.h"
+#include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
 
 class Camera3D : public Node3D {
@@ -67,8 +68,9 @@ private:
 	real_t fov = 75.0;
 	real_t size = 1.0;
 	Vector2 frustum_offset;
-	real_t near = 0.05;
-	real_t far = 4000.0;
+	// _ prefix to avoid conflict with Windows defines.
+	real_t _near = 0.05;
+	real_t _far = 4000.0;
 	real_t v_offset = 0.0;
 	real_t h_offset = 0.0;
 	KeepAspect keep_aspect = KEEP_HEIGHT;
@@ -82,6 +84,7 @@ private:
 
 	Ref<Environment> environment;
 	Ref<CameraAttributes> attributes;
+	Ref<Compositor> compositor;
 	void _attributes_changed();
 
 	// void _camera_make_current(Node *p_camera);
@@ -104,6 +107,8 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
+
+	Projection _get_camera_projection(real_t p_near) const;
 
 public:
 	enum {
@@ -138,6 +143,7 @@ public:
 	void set_frustum_offset(Vector2 p_offset);
 
 	virtual Transform3D get_camera_transform() const;
+	virtual Projection get_camera_projection() const;
 
 	virtual Vector3 project_ray_normal(const Point2 &p_pos) const;
 	virtual Vector3 project_ray_origin(const Point2 &p_pos) const;
@@ -162,6 +168,9 @@ public:
 
 	void set_attributes(const Ref<CameraAttributes> &p_effects);
 	Ref<CameraAttributes> get_attributes() const;
+
+	void set_compositor(const Ref<Compositor> &p_compositor);
+	Ref<Compositor> get_compositor() const;
 
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;

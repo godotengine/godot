@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRPositionalTracker" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRPositionalTracker" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A tracked object.
 	</brief_description>
@@ -37,7 +37,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Marks this pose as invalid, we don't clear the last reported state but it allows users to decide if trackers need to be hidden if we loose tracking or just remain at their last known position.
+				Marks this pose as invalid, we don't clear the last reported state but it allows users to decide if trackers need to be hidden if we lose tracking or just remain at their last known position.
 			</description>
 		</method>
 		<method name="set_input">
@@ -92,24 +92,30 @@
 				Emitted when a button on this tracker is released.
 			</description>
 		</signal>
-		<signal name="input_axis_changed">
-			<param index="0" name="name" type="String" />
-			<param index="1" name="vector" type="Vector2" />
-			<description>
-				Emitted when a thumbstick or thumbpad on this tracker moves.
-			</description>
-		</signal>
-		<signal name="input_value_changed">
+		<signal name="input_float_changed">
 			<param index="0" name="name" type="String" />
 			<param index="1" name="value" type="float" />
 			<description>
 				Emitted when a trigger or similar input on this tracker changes value.
 			</description>
 		</signal>
+		<signal name="input_vector2_changed">
+			<param index="0" name="name" type="String" />
+			<param index="1" name="vector" type="Vector2" />
+			<description>
+				Emitted when a thumbstick or thumbpad on this tracker moves.
+			</description>
+		</signal>
 		<signal name="pose_changed">
 			<param index="0" name="pose" type="XRPose" />
 			<description>
 				Emitted when the state of a pose tracked by this tracker changes.
+			</description>
+		</signal>
+		<signal name="pose_lost_tracking">
+			<param index="0" name="pose" type="XRPose" />
+			<description>
+				Emitted when a pose tracked by this tracker stops getting updated tracking data.
 			</description>
 		</signal>
 		<signal name="profile_changed">

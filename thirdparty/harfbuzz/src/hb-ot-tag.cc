@@ -119,6 +119,17 @@ hb_ot_new_tag_to_script (hb_tag_t tag)
 }
 
 #ifndef HB_DISABLE_DEPRECATED
+/**
+ * hb_ot_tags_from_script:
+ * @script: an #hb_script_t to convert.
+ * @script_tag_1: (out): output #hb_tag_t.
+ * @script_tag_2: (out): output #hb_tag_t.
+ *
+ * Converts an #hb_script_t to script tags.
+ *
+ * Since: 0.6.0
+ * Deprecated: 2.0.0: use hb_ot_tags_from_script_and_language() instead
+ **/
 void
 hb_ot_tags_from_script (hb_script_t  script,
 			hb_tag_t    *script_tag_1,
@@ -249,6 +260,15 @@ struct LangTag
 /*{"zh?",	{HB_TAG('Z','H','P',' ')}},*/	/* Chinese Phonetic */
 
 #ifndef HB_DISABLE_DEPRECATED
+/**
+ * hb_ot_tag_from_language:
+ * @language: an #hb_language_t to convert.
+ *
+ * Converts an #hb_language_t to an #hb_tag_t.
+ *
+ * Since: 0.6.0
+ * Deprecated: 2.0.0: use hb_ot_tags_from_script_and_language() instead
+ **/
 hb_tag_t
 hb_ot_tag_from_language (hb_language_t language)
 {
@@ -392,7 +412,7 @@ parse_private_use_subtag (const char     *private_use_subtag,
 /**
  * hb_ot_tags_from_script_and_language:
  * @script: an #hb_script_t to convert.
- * @language: an #hb_language_t to convert.
+ * @language: (nullable): an #hb_language_t to convert.
  * @script_count: (inout) (optional): maximum number of script tags to retrieve (IN)
  * and actual number of script tags retrieved (OUT)
  * @script_tags: (out) (optional): array of size at least @script_count to store the
@@ -606,7 +626,7 @@ test_langs_sorted ()
     int c = ot_languages2[i].cmp (&ot_languages2[i - 1]);
     if (c > 0)
     {
-      fprintf (stderr, "ot_languages2 not sorted at index %d: %08x %d %08x\n",
+      fprintf (stderr, "ot_languages2 not sorted at index %u: %08x %d %08x\n",
 	       i, ot_languages2[i-1].language, c, ot_languages2[i].language);
       abort();
     }
@@ -617,7 +637,7 @@ test_langs_sorted ()
     int c = ot_languages3[i].cmp (&ot_languages3[i - 1]);
     if (c > 0)
     {
-      fprintf (stderr, "ot_languages3 not sorted at index %d: %08x %d %08x\n",
+      fprintf (stderr, "ot_languages3 not sorted at index %u: %08x %d %08x\n",
 	       i, ot_languages3[i-1].language, c, ot_languages3[i].language);
       abort();
     }

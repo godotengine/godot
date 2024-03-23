@@ -108,7 +108,7 @@ protected:
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _remove(Object *p_button, const String &p_key);
 	void _add_menu();
 	void _add_script(int p_option);
@@ -144,7 +144,7 @@ protected:
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
 public:
@@ -193,7 +193,7 @@ protected:
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _remove(Object *p_button, int p_key);
 	void _add_menu();
 	void _add_feature(int p_option);
@@ -212,7 +212,7 @@ class EditorInspectorPluginFontVariation : public EditorInspectorPlugin {
 
 public:
 	virtual bool can_handle(Object *p_object) override;
-	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
 };
 
 /*************************************************************************/
@@ -242,7 +242,7 @@ class EditorInspectorPluginFontPreview : public EditorInspectorPlugin {
 public:
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
-	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
 };
 
 /*************************************************************************/
@@ -269,7 +269,7 @@ class EditorInspectorPluginSystemFont : public EditorInspectorPlugin {
 
 public:
 	virtual bool can_handle(Object *p_object) override;
-	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false) override;
+	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false) override;
 };
 
 /*************************************************************************/

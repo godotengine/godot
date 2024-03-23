@@ -357,18 +357,18 @@ public:
 		Node *next = nullptr;
 
 		enum Type {
-			TYPE_SHADER,
-			TYPE_FUNCTION,
-			TYPE_BLOCK,
-			TYPE_VARIABLE,
-			TYPE_VARIABLE_DECLARATION,
-			TYPE_CONSTANT,
-			TYPE_OPERATOR,
-			TYPE_CONTROL_FLOW,
-			TYPE_MEMBER,
-			TYPE_ARRAY,
-			TYPE_ARRAY_CONSTRUCT,
-			TYPE_STRUCT,
+			NODE_TYPE_SHADER,
+			NODE_TYPE_FUNCTION,
+			NODE_TYPE_BLOCK,
+			NODE_TYPE_VARIABLE,
+			NODE_TYPE_VARIABLE_DECLARATION,
+			NODE_TYPE_CONSTANT,
+			NODE_TYPE_OPERATOR,
+			NODE_TYPE_CONTROL_FLOW,
+			NODE_TYPE_MEMBER,
+			NODE_TYPE_ARRAY,
+			NODE_TYPE_ARRAY_CONSTRUCT,
+			NODE_TYPE_STRUCT,
 		};
 
 		Type type;
@@ -383,7 +383,7 @@ public:
 		virtual ~Node() {}
 	};
 
-	template <class T>
+	template <typename T>
 	T *alloc_node() {
 		T *node = memnew(T);
 		node->next = nodes;
@@ -407,7 +407,7 @@ public:
 		virtual bool is_indexed() const override { return op == OP_INDEX; }
 
 		OperatorNode() :
-				Node(TYPE_OPERATOR) {}
+				Node(NODE_TYPE_OPERATOR) {}
 	};
 
 	struct VariableNode : public Node {
@@ -421,7 +421,7 @@ public:
 		virtual String get_datatype_name() const override { return String(struct_name); }
 
 		VariableNode() :
-				Node(TYPE_VARIABLE) {}
+				Node(NODE_TYPE_VARIABLE) {}
 	};
 
 	struct VariableDeclarationNode : public Node {
@@ -442,7 +442,7 @@ public:
 		virtual DataType get_datatype() const override { return datatype; }
 
 		VariableDeclarationNode() :
-				Node(TYPE_VARIABLE_DECLARATION) {}
+				Node(NODE_TYPE_VARIABLE_DECLARATION) {}
 	};
 
 	struct ArrayNode : public Node {
@@ -462,7 +462,7 @@ public:
 		virtual bool is_indexed() const override { return index_expression != nullptr; }
 
 		ArrayNode() :
-				Node(TYPE_ARRAY) {}
+				Node(NODE_TYPE_ARRAY) {}
 	};
 
 	struct ArrayConstructNode : public Node {
@@ -475,7 +475,7 @@ public:
 		virtual int get_array_size() const override { return initializer.size(); }
 
 		ArrayConstructNode() :
-				Node(TYPE_ARRAY_CONSTRUCT) {}
+				Node(NODE_TYPE_ARRAY_CONSTRUCT) {}
 	};
 
 	struct ConstantNode : public Node {
@@ -498,7 +498,7 @@ public:
 		virtual int get_array_size() const override { return array_size; }
 
 		ConstantNode() :
-				Node(TYPE_CONSTANT) {}
+				Node(NODE_TYPE_CONSTANT) {}
 	};
 
 	struct FunctionNode;
@@ -536,7 +536,7 @@ public:
 		bool use_comma_between_statements = false;
 
 		BlockNode() :
-				Node(TYPE_BLOCK) {}
+				Node(NODE_TYPE_BLOCK) {}
 	};
 
 	struct ControlFlowNode : public Node {
@@ -545,7 +545,7 @@ public:
 		Vector<BlockNode *> blocks;
 
 		ControlFlowNode() :
-				Node(TYPE_CONTROL_FLOW) {}
+				Node(NODE_TYPE_CONTROL_FLOW) {}
 	};
 
 	struct MemberNode : public Node {
@@ -569,13 +569,13 @@ public:
 		virtual bool is_indexed() const override { return index_expression != nullptr || call_expression != nullptr; }
 
 		MemberNode() :
-				Node(TYPE_MEMBER) {}
+				Node(NODE_TYPE_MEMBER) {}
 	};
 
 	struct StructNode : public Node {
 		List<MemberNode *> members;
 		StructNode() :
-				Node(TYPE_STRUCT) {}
+				Node(NODE_TYPE_STRUCT) {}
 	};
 
 	struct FunctionNode : public Node {
@@ -611,7 +611,7 @@ public:
 		virtual int get_array_size() const override { return return_array_size; }
 
 		FunctionNode() :
-				Node(TYPE_FUNCTION) {}
+				Node(NODE_TYPE_FUNCTION) {}
 	};
 
 	struct ShaderNode : public Node {
@@ -711,14 +711,15 @@ public:
 		HashMap<StringName, Varying> varyings;
 		HashMap<StringName, Uniform> uniforms;
 		HashMap<StringName, Struct> structs;
+		HashMap<StringName, Function> functions;
 		Vector<StringName> render_modes;
 
-		Vector<Function> functions;
+		Vector<Function> vfunctions;
 		Vector<Constant> vconstants;
 		Vector<Struct> vstructs;
 
 		ShaderNode() :
-				Node(TYPE_SHADER) {}
+				Node(NODE_TYPE_SHADER) {}
 	};
 
 	struct UniformOrderComparator {
@@ -910,6 +911,7 @@ private:
 	int error_line = 0;
 
 	Vector<FilePosition> include_positions;
+	HashSet<String> include_markers_handled;
 
 #ifdef DEBUG_ENABLED
 	struct Usage {
@@ -953,7 +955,7 @@ private:
 
 	StringName shader_type_identifier;
 	StringName current_function;
-	bool last_const = false;
+	bool is_const_decl = false;
 	StringName last_name;
 	bool is_shader_inc = false;
 
@@ -1088,10 +1090,10 @@ private:
 	bool _compare_datatypes(DataType p_datatype_a, String p_datatype_name_a, int p_array_size_a, DataType p_datatype_b, String p_datatype_name_b, int p_array_size_b);
 	bool _compare_datatypes_in_nodes(Node *a, Node *b);
 
-	bool _validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str);
+	bool _validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str, bool *r_is_custom_function = nullptr);
 	bool _parse_function_arguments(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, int *r_complete_arg = nullptr);
-	bool _propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat);
-	bool _propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin);
+	bool _propagate_function_call_sampler_uniform_settings(const StringName &p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat);
+	bool _propagate_function_call_sampler_builtin_reference(const StringName &p_name, int p_argument, const StringName &p_builtin);
 	bool _validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message);
 	bool _check_node_constness(const Node *p_node) const;
 

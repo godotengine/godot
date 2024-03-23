@@ -4,7 +4,7 @@
  *
  *   FreeType convenience functions to handle glyphs (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -682,7 +682,10 @@
   Exit2:
     /* if an error occurred, destroy the glyph */
     if ( error )
+    {
       FT_Done_Glyph( glyph );
+      *aglyph = NULL;
+    }
     else
       *aglyph = glyph;
 

@@ -33,8 +33,9 @@
 
 #include "core/config/engine.h"
 #include "core/variant/variant.h"
+
 #ifdef ANDROID_ENABLED
-#include "platform/android/jni_utils.h"
+#include "jni_utils.h"
 #endif
 
 class JNISingleton : public Object {

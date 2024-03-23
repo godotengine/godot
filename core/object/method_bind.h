@@ -49,6 +49,7 @@ class MethodBind {
 	bool _static = false;
 	bool _const = false;
 	bool _returns = false;
+	bool _returns_raw_obj_ptr = false;
 
 protected:
 	Variant::Type *argument_types = nullptr;
@@ -110,7 +111,13 @@ public:
 
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
 
+#ifdef TOOLS_ENABLED
+	virtual bool is_valid() const { return true; }
+#endif
+
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const = 0;
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const = 0;
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const = 0;
 
 	StringName get_name() const;
@@ -121,6 +128,9 @@ public:
 	_FORCE_INLINE_ bool has_return() const { return _returns; }
 	virtual bool is_vararg() const { return false; }
 
+	_FORCE_INLINE_ bool is_return_type_raw_object_ptr() { return _returns_raw_obj_ptr; }
+	_FORCE_INLINE_ void set_return_type_is_raw_object_ptr(bool p_returns_raw_obj) { _returns_raw_obj_ptr = p_returns_raw_obj; }
+
 	void set_default_arguments(const Vector<Variant> &p_defargs);
 
 	uint32_t get_hash() const;
@@ -130,7 +140,7 @@ public:
 };
 
 // MethodBindVarArg base CRTP
-template <class Derived, class T, class R, bool should_returns>
+template <typename Derived, typename T, typename R, bool should_returns>
 class MethodBindVarArgBase : public MethodBind {
 protected:
 	R(T::*method)
@@ -158,8 +168,12 @@ public:
 	}
 #endif
 
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+		ERR_FAIL_MSG("Validated call can't be used with vararg methods. This is a bug.");
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
-		ERR_FAIL(); // Can't call.
+		ERR_FAIL_MSG("ptrcall can't be used with vararg methods. This is a bug.");
 	}
 
 	virtual bool is_const() const { return false; }
@@ -205,12 +219,15 @@ private:
 };
 
 // variadic, no return
-template <class T>
+template <typename T>
 class MethodBindVarArgT : public MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false> {
 	friend class MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>;
 
 public:
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == MethodBind::get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
 		(static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>::method)(p_args, p_arg_count, r_error);
 		return {};
 	}
@@ -228,7 +245,7 @@ private:
 	}
 };
 
-template <class T>
+template <typename T>
 MethodBind *create_vararg_method_bind(void (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
 	MethodBind *a = memnew((MethodBindVarArgT<T>)(p_method, p_info, p_return_nil_is_variant));
 	a->set_instance_class(T::get_class_static());
@@ -236,7 +253,7 @@ MethodBind *create_vararg_method_bind(void (T::*p_method)(const Variant **, int,
 }
 
 // variadic, return
-template <class T, class R>
+template <typename T, typename R>
 class MethodBindVarArgTR : public MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true> {
 	friend class MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>;
 
@@ -247,8 +264,12 @@ public:
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == MethodBind::get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
 		return (static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>::method)(p_args, p_arg_count, r_error);
 	}
+
 #if defined(SANITIZERS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
@@ -266,7 +287,7 @@ private:
 	}
 };
 
-template <class T, class R>
+template <typename T, typename R>
 MethodBind *create_vararg_method_bind(R (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
 	MethodBind *a = memnew((MethodBindVarArgTR<T, R>)(p_method, p_info, p_return_nil_is_variant));
 	a->set_instance_class(T::get_class_static());
@@ -284,9 +305,9 @@ class __UnexistingClass;
 
 // no return, not const
 #ifdef TYPED_METHOD_BIND
-template <class T, class... P>
+template <typename T, typename... P>
 #else
-template <class... P>
+template <typename... P>
 #endif
 class MethodBindT : public MethodBind {
 	void (MB_T::*method)(P...);
@@ -314,6 +335,9 @@ public:
 
 #endif
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_args_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, r_error, get_default_arguments());
 #else
@@ -322,7 +346,21 @@ public:
 		return Variant();
 	}
 
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
+#ifdef TYPED_METHOD_BIND
+		call_with_validated_object_instance_args(static_cast<T *>(p_object), method, p_args);
+#else
+		call_with_validated_object_instance_args(reinterpret_cast<MB_T *>(p_object), method, p_args);
+#endif
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args<T, P...>(static_cast<T *>(p_object), method, p_args);
 #else
@@ -337,7 +375,7 @@ public:
 	}
 };
 
-template <class T, class... P>
+template <typename T, typename... P>
 MethodBind *create_method_bind(void (T::*p_method)(P...)) {
 #ifdef TYPED_METHOD_BIND
 	MethodBind *a = memnew((MethodBindT<T, P...>)(p_method));
@@ -351,9 +389,9 @@ MethodBind *create_method_bind(void (T::*p_method)(P...)) {
 // no return, const
 
 #ifdef TYPED_METHOD_BIND
-template <class T, class... P>
+template <typename T, typename... P>
 #else
-template <class... P>
+template <typename... P>
 #endif
 class MethodBindTC : public MethodBind {
 	void (MB_T::*method)(P...) const;
@@ -381,6 +419,9 @@ public:
 
 #endif
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_argsc_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, r_error, get_default_arguments());
 #else
@@ -389,7 +430,21 @@ public:
 		return Variant();
 	}
 
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
+#ifdef TYPED_METHOD_BIND
+		call_with_validated_object_instance_argsc(static_cast<T *>(p_object), method, p_args);
+#else
+		call_with_validated_object_instance_argsc(reinterpret_cast<MB_T *>(p_object), method, p_args);
+#endif
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_argsc<T, P...>(static_cast<T *>(p_object), method, p_args);
 #else
@@ -405,7 +460,7 @@ public:
 	}
 };
 
-template <class T, class... P>
+template <typename T, typename... P>
 MethodBind *create_method_bind(void (T::*p_method)(P...) const) {
 #ifdef TYPED_METHOD_BIND
 	MethodBind *a = memnew((MethodBindTC<T, P...>)(p_method));
@@ -419,9 +474,9 @@ MethodBind *create_method_bind(void (T::*p_method)(P...) const) {
 // return, not const
 
 #ifdef TYPED_METHOD_BIND
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 #else
-template <class R, class... P>
+template <typename R, typename... P>
 #endif
 class MethodBindTR : public MethodBind {
 	R(MB_T::*method)
@@ -459,6 +514,9 @@ public:
 
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		Variant ret;
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), ret, vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_args_ret_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, ret, r_error, get_default_arguments());
 #else
@@ -467,7 +525,21 @@ public:
 		return ret;
 	}
 
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
+#ifdef TYPED_METHOD_BIND
+		call_with_validated_object_instance_args_ret(static_cast<T *>(p_object), method, p_args, r_ret);
+#else
+		call_with_validated_object_instance_args_ret(reinterpret_cast<MB_T *>(p_object), method, p_args, r_ret);
+#endif
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args_ret<T, R, P...>(static_cast<T *>(p_object), method, p_args, r_ret);
 #else
@@ -483,7 +555,7 @@ public:
 	}
 };
 
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 MethodBind *create_method_bind(R (T::*p_method)(P...)) {
 #ifdef TYPED_METHOD_BIND
 	MethodBind *a = memnew((MethodBindTR<T, R, P...>)(p_method));
@@ -498,9 +570,9 @@ MethodBind *create_method_bind(R (T::*p_method)(P...)) {
 // return, const
 
 #ifdef TYPED_METHOD_BIND
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 #else
-template <class R, class... P>
+template <typename R, typename... P>
 #endif
 class MethodBindTRC : public MethodBind {
 	R(MB_T::*method)
@@ -538,6 +610,9 @@ public:
 
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 		Variant ret;
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), ret, vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
 #ifdef TYPED_METHOD_BIND
 		call_with_variant_args_retc_dv(static_cast<T *>(p_object), method, p_args, p_arg_count, ret, r_error, get_default_arguments());
 #else
@@ -546,7 +621,21 @@ public:
 		return ret;
 	}
 
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
+#ifdef TYPED_METHOD_BIND
+		call_with_validated_object_instance_args_retc(static_cast<T *>(p_object), method, p_args, r_ret);
+#else
+		call_with_validated_object_instance_args_retc(reinterpret_cast<MB_T *>(p_object), method, p_args, r_ret);
+#endif
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_COND_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == get_instance_class(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
+#endif
 #ifdef TYPED_METHOD_BIND
 		call_with_ptr_args_retc<T, R, P...>(static_cast<T *>(p_object), method, p_args, r_ret);
 #else
@@ -563,7 +652,7 @@ public:
 	}
 };
 
-template <class T, class R, class... P>
+template <typename T, typename R, typename... P>
 MethodBind *create_method_bind(R (T::*p_method)(P...) const) {
 #ifdef TYPED_METHOD_BIND
 	MethodBind *a = memnew((MethodBindTRC<T, R, P...>)(p_method));
@@ -578,7 +667,7 @@ MethodBind *create_method_bind(R (T::*p_method)(P...) const) {
 
 // no return
 
-template <class... P>
+template <typename... P>
 class MethodBindTS : public MethodBind {
 	void (*function)(P...);
 
@@ -610,6 +699,10 @@ public:
 		return Variant();
 	}
 
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+		call_with_validated_variant_args_static_method(function, p_args);
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 		(void)p_object;
 		(void)r_ret;
@@ -624,7 +717,7 @@ public:
 	}
 };
 
-template <class... P>
+template <typename... P>
 MethodBind *create_static_method_bind(void (*p_method)(P...)) {
 	MethodBind *a = memnew((MethodBindTS<P...>)(p_method));
 	return a;
@@ -632,7 +725,7 @@ MethodBind *create_static_method_bind(void (*p_method)(P...)) {
 
 // return
 
-template <class R, class... P>
+template <typename R, typename... P>
 class MethodBindTRS : public MethodBind {
 	R(*function)
 	(P...);
@@ -673,6 +766,10 @@ public:
 		return ret;
 	}
 
+	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+		call_with_validated_variant_args_static_method_ret(function, p_args, r_ret);
+	}
+
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
 		(void)p_object;
 		call_with_ptr_args_static_method_ret(function, p_args, r_ret);
@@ -687,7 +784,7 @@ public:
 	}
 };
 
-template <class R, class... P>
+template <typename R, typename... P>
 MethodBind *create_static_method_bind(R (*p_method)(P...)) {
 	MethodBind *a = memnew((MethodBindTRS<R, P...>)(p_method));
 	return a;

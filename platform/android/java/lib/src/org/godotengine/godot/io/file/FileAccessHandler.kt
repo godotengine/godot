@@ -46,7 +46,7 @@ class FileAccessHandler(val context: Context) {
 		private val TAG = FileAccessHandler::class.java.simpleName
 
 		private const val FILE_NOT_FOUND_ERROR_ID = -1
-		private const val INVALID_FILE_ID = 0
+		internal const val INVALID_FILE_ID = 0
 		private const val STARTING_FILE_ID = 1
 
 		internal fun fileExists(context: Context, storageScopeIdentifier: StorageScope.Identifier, path: String?): Boolean {
@@ -96,13 +96,17 @@ class FileAccessHandler(val context: Context) {
 	private fun hasFileId(fileId: Int) = files.indexOfKey(fileId) >= 0
 
 	fun fileOpen(path: String?, modeFlags: Int): Int {
+		val accessFlag = FileAccessFlags.fromNativeModeFlags(modeFlags) ?: return INVALID_FILE_ID
+		return fileOpen(path, accessFlag)
+	}
+
+	internal fun fileOpen(path: String?, accessFlag: FileAccessFlags): Int {
 		val storageScope = storageScopeIdentifier.identifyStorageScope(path)
 		if (storageScope == StorageScope.UNKNOWN) {
 			return INVALID_FILE_ID
 		}
 
 		try {
-			val accessFlag = FileAccessFlags.fromNativeModeFlags(modeFlags) ?: return INVALID_FILE_ID
 			val dataAccess = DataAccess.generateDataAccess(storageScope, context, path!!, accessFlag) ?: return INVALID_FILE_ID
 
 			files.put(++lastFileId, dataAccess)

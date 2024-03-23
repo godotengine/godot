@@ -44,14 +44,13 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/plist.h"
 #include "core/object/ref_counted.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
 #endif
-
-#include "plist.h"
 
 #ifdef MODULE_REGEX_ENABLED
 

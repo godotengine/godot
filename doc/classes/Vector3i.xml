@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector3i" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Vector3i" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Vector used for 3D math using integer coordinates.
+		A 3D vector using integer coordinates.
 	</brief_description>
 	<description>
-		3-element structure that can be used to represent positions in 3D space or any other triplet of numeric values.
+		A 3-element structure that can be used to represent 3D grid coordinates or any other triplet of integers.
 		It uses integer coordinates and is therefore preferable to [Vector3] when exact precision is required. Note that the values are limited to 32 bits, and unlike [Vector3] this cannot be configured with an engine build option. Use [int] or [PackedInt64Array] if 64-bit values are needed.
 		[b]Note:[/b] In a boolean context, a Vector3i will evaluate to [code]false[/code] if it's equal to [code]Vector3i(0, 0, 0)[/code]. Otherwise, a Vector3i will always evaluate to [code]true[/code].
 	</description>
@@ -31,7 +31,7 @@
 			<return type="Vector3i" />
 			<param index="0" name="from" type="Vector3" />
 			<description>
-				Constructs a new [Vector3i] from [Vector3]. The floating point coordinates will be truncated.
+				Constructs a new [Vector3i] from the given [Vector3] by truncating components' fractional parts (rounding towards zero). For a different behavior consider passing the result of [method Vector3.ceil], [method Vector3.floor] or [method Vector3.round] to this constructor instead.
 			</description>
 		</constructor>
 		<constructor name="Vector3i">
@@ -59,7 +59,22 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="distance_squared_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="Vector3i" />
+			<description>
+				Returns the squared distance between this vector and [param to].
+				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="distance_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector3i" />
+			<description>
+				Returns the distance between this vector and [param to].
+			</description>
+		</method>
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -125,6 +140,12 @@
 		<constant name="ONE" value="Vector3i(1, 1, 1)">
 			One vector, a vector with all components set to [code]1[/code].
 		</constant>
+		<constant name="MIN" value="Vector3i(-2147483648, -2147483648, -2147483648)">
+			Min vector, a vector with all components equal to [code]INT32_MIN[/code]. Can be used as a negative integer equivalent of [constant Vector3.INF].
+		</constant>
+		<constant name="MAX" value="Vector3i(2147483647, 2147483647, 2147483647)">
+			Max vector, a vector with all components equal to [code]INT32_MAX[/code]. Can be used as an integer equivalent of [constant Vector3.INF].
+		</constant>
 		<constant name="LEFT" value="Vector3i(-1, 0, 0)">
 			Left unit vector. Represents the local direction of left, and the global direction of west.
 		</constant>
@@ -166,7 +187,7 @@
 			<return type="Vector3i" />
 			<param index="0" name="right" type="int" />
 			<description>
-				Gets the remainder of each component of the [Vector3i] with the the given [int]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
+				Gets the remainder of each component of the [Vector3i] with the given [int]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
 				[codeblock]
 				print(Vector3i(10, -20, 30) % 7) # Prints "(3, -6, 2)"
 				[/codeblock]

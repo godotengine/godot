@@ -33,7 +33,7 @@
 #include "scene/main/timer.h"
 
 Error HTTPRequest::_request() {
-	return client->connect_to_host(url, port, use_tls, validate_tls);
+	return client->connect_to_host(url, port, use_tls ? tls_options : nullptr);
 }
 
 Error HTTPRequest::_parse_url(const String &p_url) {
@@ -50,12 +50,14 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 
 	String scheme;
 	Error err = p_url.parse_url(scheme, url, port, request_string);
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing URL: " + p_url + ".");
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error parsing URL: '%s'.", p_url));
+
 	if (scheme == "https://") {
 		use_tls = true;
 	} else if (scheme != "http://") {
-		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Invalid URL scheme: " + scheme + ".");
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Invalid URL scheme: '%s'.", scheme));
 	}
+
 	if (port == 0) {
 		port = use_tls ? 443 : 80;
 	}
@@ -96,7 +98,7 @@ String HTTPRequest::get_header_value(const PackedStringArray &p_headers, const S
 	return value;
 }
 
-Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, bool p_tls_validate_domain, HTTPClient::Method p_method, const String &p_request_data) {
+Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, HTTPClient::Method p_method, const String &p_request_data) {
 	// Copy the string into a raw buffer.
 	Vector<uint8_t> raw_data;
 
@@ -108,10 +110,10 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 		memcpy(w, charstr.ptr(), len);
 	}
 
-	return request_raw(p_url, p_custom_headers, p_tls_validate_domain, p_method, raw_data);
+	return request_raw(p_url, p_custom_headers, p_method, raw_data);
 }
 
-Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_custom_headers, bool p_tls_validate_domain, HTTPClient::Method p_method, const Vector<uint8_t> &p_request_data_raw) {
+Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_custom_headers, HTTPClient::Method p_method, const Vector<uint8_t> &p_request_data_raw) {
 	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(requesting, ERR_BUSY, "HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
 
@@ -126,8 +128,6 @@ Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_cust
 	if (err) {
 		return err;
 	}
-
-	validate_tls = p_tls_validate_domain;
 
 	headers = p_custom_headers;
 
@@ -192,7 +192,9 @@ void HTTPRequest::cancel_request() {
 		set_process_internal(false);
 	} else {
 		thread_request_quit.set();
-		thread.wait_to_finish();
+		if (thread.is_started()) {
+			thread.wait_to_finish();
+		}
 	}
 
 	file.unref();
@@ -472,7 +474,7 @@ bool HTTPRequest::_update_connection() {
 }
 
 void HTTPRequest::_defer_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data) {
-	call_deferred(SNAME("_request_done"), p_status, p_code, p_headers, p_data);
+	callable_mp(this, &HTTPRequest::_request_done).call_deferred(p_status, p_code, p_headers, p_data);
 }
 
 void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data) {
@@ -503,7 +505,9 @@ void HTTPRequest::_notification(int p_what) {
 
 void HTTPRequest::set_use_threads(bool p_use) {
 	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
+#ifdef THREADS_ENABLED
 	use_threads.set_to(p_use);
+#endif
 }
 
 bool HTTPRequest::is_using_threads() const {
@@ -590,10 +594,16 @@ void HTTPRequest::_timeout() {
 	_defer_done(RESULT_TIMEOUT, 0, PackedStringArray(), PackedByteArray());
 }
 
+void HTTPRequest::set_tls_options(const Ref<TLSOptions> &p_options) {
+	ERR_FAIL_COND(p_options.is_null() || p_options->is_server());
+	tls_options = p_options;
+}
+
 void HTTPRequest::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "tls_validate_domain", "method", "request_data"), &HTTPRequest::request, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "tls_validate_domain", "method", "request_data_raw"), &HTTPRequest::request_raw, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(PackedByteArray()));
+	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "method", "request_data"), &HTTPRequest::request, DEFVAL(PackedStringArray()), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "method", "request_data_raw"), &HTTPRequest::request_raw, DEFVAL(PackedStringArray()), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(PackedByteArray()));
 	ClassDB::bind_method(D_METHOD("cancel_request"), &HTTPRequest::cancel_request);
+	ClassDB::bind_method(D_METHOD("set_tls_options", "client_options"), &HTTPRequest::set_tls_options);
 
 	ClassDB::bind_method(D_METHOD("get_http_client_status"), &HTTPRequest::get_http_client_status);
 
@@ -614,8 +624,6 @@ void HTTPRequest::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_downloaded_bytes"), &HTTPRequest::get_downloaded_bytes);
 	ClassDB::bind_method(D_METHOD("get_body_size"), &HTTPRequest::get_body_size);
-
-	ClassDB::bind_method(D_METHOD("_request_done"), &HTTPRequest::_request_done);
 
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &HTTPRequest::set_timeout);
 	ClassDB::bind_method(D_METHOD("get_timeout"), &HTTPRequest::get_timeout);
@@ -654,6 +662,7 @@ void HTTPRequest::_bind_methods() {
 
 HTTPRequest::HTTPRequest() {
 	client = Ref<HTTPClient>(HTTPClient::create());
+	tls_options = TLSOptions::client();
 	timer = memnew(Timer);
 	timer->set_one_shot(true);
 	timer->connect("timeout", callable_mp(this, &HTTPRequest::_timeout));

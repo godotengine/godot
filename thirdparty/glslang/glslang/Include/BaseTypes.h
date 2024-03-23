@@ -65,10 +65,10 @@ enum TBasicType {
     EbtAccStruct,
     EbtReference,
     EbtRayQuery,
-#ifndef GLSLANG_WEB
+    EbtHitObjectNV,
+    EbtCoopmat,
     // SPIR-V type defined by spirv_type
     EbtSpirvType,
-#endif
 
     // HLSL types that live only temporarily.
     EbtString,
@@ -95,15 +95,14 @@ enum TStorageQualifier {
     EvqUniform,       // read only, shared with app
     EvqBuffer,        // read/write, shared with app
     EvqShared,        // compute shader's read/write 'shared' qualifier
-#ifndef GLSLANG_WEB
     EvqSpirvStorageClass, // spirv_storage_class
-#endif
 
     EvqPayload,
     EvqPayloadIn,
     EvqHitAttr,
     EvqCallableData,
     EvqCallableDataIn,
+    EvqHitObjectAttrNV,
 
     EvqtaskPayloadSharedEXT,
 
@@ -131,6 +130,8 @@ enum TStorageQualifier {
     EvqFragColor,
     EvqFragDepth,
     EvqFragStencil,
+
+    EvqTileImageEXT,
 
     // end of list
     EvqLast
@@ -289,6 +290,12 @@ enum TBuiltInVariable {
     EbvLayerPerViewNV,
     EbvMeshViewCountNV,
     EbvMeshViewIndicesNV,
+
+    EbvMicroTrianglePositionNV,
+    EbvMicroTriangleBaryNV,
+    EbvHitKindFrontFacingMicroTriangleNV,
+    EbvHitKindBackFacingMicroTriangleNV,
+
     //GL_EXT_mesh_shader
     EbvPrimitivePointIndicesEXT,
     EbvPrimitiveLineIndicesEXT,
@@ -316,6 +323,15 @@ enum TBuiltInVariable {
     EbvByteAddressBuffer,
     EbvRWByteAddressBuffer,
 
+    // ARM specific core builtins
+    EbvCoreCountARM,
+    EbvCoreIDARM,
+    EbvCoreMaxIDARM,
+    EbvWarpIDARM,
+    EbvWarpMaxIDARM,
+
+    EbvPositionFetch,
+
     EbvLast
 };
 
@@ -328,10 +344,6 @@ enum TPrecisionQualifier {
     EpqHigh
 };
 
-#ifdef GLSLANG_WEB
-__inline const char* GetStorageQualifierString(TStorageQualifier q) { return ""; }
-__inline const char* GetPrecisionQualifierString(TPrecisionQualifier p) { return ""; }
-#else
 // These will show up in error messages
 __inline const char* GetStorageQualifierString(TStorageQualifier q)
 {
@@ -340,9 +352,7 @@ __inline const char* GetStorageQualifierString(TStorageQualifier q)
     case EvqGlobal:         return "global";         break;
     case EvqConst:          return "const";          break;
     case EvqConstReadOnly:  return "const (read only)"; break;
-#ifndef GLSLANG_WEB
     case EvqSpirvStorageClass: return "spirv_storage_class"; break;
-#endif
     case EvqVaryingIn:      return "in";             break;
     case EvqVaryingOut:     return "out";            break;
     case EvqUniform:        return "uniform";        break;
@@ -368,6 +378,7 @@ __inline const char* GetStorageQualifierString(TStorageQualifier q)
     case EvqCallableData:   return "callableDataNV";   break;
     case EvqCallableDataIn: return "callableDataInNV"; break;
     case EvqtaskPayloadSharedEXT: return "taskPayloadSharedEXT"; break;
+    case EvqHitObjectAttrNV:return "hitObjectAttributeNV"; break;
     default:                return "unknown qualifier";
     }
 }
@@ -518,6 +529,9 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
     case EbvShadingRateKHR:             return "ShadingRateKHR";
     case EbvPrimitiveShadingRateKHR:    return "PrimitiveShadingRateKHR";
 
+    case EbvHitKindFrontFacingMicroTriangleNV: return "HitKindFrontFacingMicroTriangleNV";
+    case EbvHitKindBackFacingMicroTriangleNV:  return "HitKindBackFacingMicroTriangleNV";
+
     default:                      return "unknown built-in variable";
     }
 }
@@ -532,7 +546,6 @@ __inline const char* GetPrecisionQualifierString(TPrecisionQualifier p)
     default:        return "unknown precision qualifier";
     }
 }
-#endif
 
 __inline bool isTypeSignedInt(TBasicType type)
 {

@@ -48,6 +48,26 @@
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering_server.h"
 
+#define RB_SCOPE_SSDS SNAME("rb_ssds")
+#define RB_SCOPE_SSIL SNAME("rb_ssil")
+#define RB_SCOPE_SSAO SNAME("rb_ssao")
+#define RB_SCOPE_SSR SNAME("rb_ssr")
+
+#define RB_LINEAR_DEPTH SNAME("linear_depth")
+#define RB_FINAL SNAME("final")
+#define RB_LAST_FRAME SNAME("last_frame")
+#define RB_DEINTERLEAVED SNAME("deinterleaved")
+#define RB_DEINTERLEAVED_PONG SNAME("deinterleaved_pong")
+#define RB_EDGES SNAME("edges")
+#define RB_IMPORTANCE_MAP SNAME("importance_map")
+#define RB_IMPORTANCE_PONG SNAME("importance_pong")
+
+#define RB_DEPTH_SCALED SNAME("depth_scaled")
+#define RB_NORMAL_SCALED SNAME("normal_scaled")
+#define RB_BLUR_RADIUS SNAME("blur_radius")
+#define RB_INTERMEDIATE SNAME("intermediate")
+#define RB_OUTPUT SNAME("output")
+
 class RenderSceneBuffersRD;
 
 namespace RendererRD {
@@ -64,7 +84,7 @@ public:
 
 	/* SS Downsampler */
 
-	void downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_mipmaps, bool p_invalidate_uniform_set, Size2i p_full_screen_size, const Projection &p_projection);
+	void downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_view, const Projection &p_projection);
 
 	/* SSIL */
 	void ssil_set_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
@@ -75,23 +95,6 @@ public:
 		int buffer_height;
 		int half_buffer_width;
 		int half_buffer_height;
-
-		RID ssil_final;
-		RID deinterleaved;
-		Vector<RID> deinterleaved_slices;
-		RID pong;
-		Vector<RID> pong_slices;
-		RID edges;
-		Vector<RID> edges_slices;
-		RID importance_map[2];
-		RID depth_texture_view;
-
-		RID last_frame;
-		Vector<RID> last_frame_slices;
-
-		RID gather_uniform_set;
-		RID importance_map_uniform_set;
-		RID projection_uniform_set;
 	};
 
 	struct SSILSettings {
@@ -103,9 +106,8 @@ public:
 		Size2i full_screen_size;
 	};
 
-	void ssil_allocate_buffers(SSILRenderBuffers &p_ssil_buffers, const SSILSettings &p_settings, RID p_linear_depth);
-	void screen_space_indirect_lighting(SSILRenderBuffers &p_ssil_buffers, RID p_normal_buffer, const Projection &p_projection, const Projection &p_last_projection, const SSILSettings &p_settings);
-	void ssil_free(SSILRenderBuffers &p_ssil_buffers);
+	void ssil_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, const SSILSettings &p_settings);
+	void screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const Projection &p_last_projection, const SSILSettings &p_settings);
 
 	/* SSAO */
 	void ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
@@ -116,17 +118,6 @@ public:
 		int buffer_height;
 		int half_buffer_width;
 		int half_buffer_height;
-
-		RID ao_deinterleaved;
-		Vector<RID> ao_deinterleaved_slices;
-		RID ao_pong;
-		Vector<RID> ao_pong_slices;
-		RID ao_final;
-		RID importance_map[2];
-		RID depth_texture_view;
-
-		RID gather_uniform_set;
-		RID importance_map_uniform_set;
 	};
 
 	struct SSAOSettings {
@@ -140,9 +131,8 @@ public:
 		Size2i full_screen_size;
 	};
 
-	void ssao_allocate_buffers(SSAORenderBuffers &p_ssao_buffers, const SSAOSettings &p_settings, RID p_linear_depth);
-	void generate_ssao(SSAORenderBuffers &p_ssao_buffers, RID p_normal_buffer, const Projection &p_projection, const SSAOSettings &p_settings);
-	void ssao_free(SSAORenderBuffers &p_ssao_buffers);
+	void ssao_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORenderBuffers &p_ssao_buffers, const SSAOSettings &p_settings);
+	void generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORenderBuffers &p_ssao_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const SSAOSettings &p_settings);
 
 	/* Screen Space Reflection */
 	void ssr_set_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality);
@@ -150,18 +140,10 @@ public:
 	struct SSRRenderBuffers {
 		Size2i size;
 		RenderingServer::EnvironmentSSRRoughnessQuality roughness_quality = RenderingServer::ENV_SSR_ROUGHNESS_QUALITY_DISABLED;
-
-		RID normal_scaled;
-		RID depth_scaled;
-		RID blur_radius[2];
-		RID intermediate;
-		RID output;
-		RID output_slices[RendererSceneRender::MAX_RENDER_VIEWS];
 	};
 
-	void ssr_allocate_buffers(SSRRenderBuffers &p_ssr_buffers, const RenderingDevice::DataFormat p_color_format, const Size2i &p_screen_size, const uint32_t p_view_count);
-	void screen_space_reflection(SSRRenderBuffers &p_ssr_buffers, const RID *p_diffuse_slices, const RID *p_normal_roughness_slices, const RID *p_metallic_slices, const RID *p_depth_slices, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets);
-	void ssr_free(SSRRenderBuffers &p_ssr_buffers);
+	void ssr_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, const RenderingDevice::DataFormat p_color_format);
+	void screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, const RID *p_normal_roughness_slices, const RID *p_metallic_slices, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const Projection *p_projections, const Vector3 *p_eye_offsets);
 
 	/* subsurface scattering */
 	void sss_set_quality(RS::SubSurfaceScatteringQuality p_quality);
@@ -223,7 +205,6 @@ private:
 		SSEffectsDownsamplePushConstant downsample_push_constant;
 		SsEffectsDownsampleShaderRD downsample_shader;
 		RID downsample_shader_version;
-		RID downsample_uniform_set;
 		bool used_half_size_last_frame = false;
 		bool used_mips_last_frame = false;
 		bool used_full_mips_last_frame = false;
@@ -332,7 +313,7 @@ private:
 		RID pipelines[SSIL_MAX];
 	} ssil;
 
-	void gather_ssil(RD::ComputeListID p_compute_list, const Vector<RID> p_ssil_slices, const Vector<RID> p_edges_slices, const SSILSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set, RID p_projection_uniform_set);
+	void gather_ssil(RD::ComputeListID p_compute_list, const RID *p_ssil_slices, const RID *p_edges_slices, const SSILSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set, RID p_projection_uniform_set);
 
 	/* SSAO */
 
@@ -426,7 +407,7 @@ private:
 		RID pipelines[SSAO_MAX];
 	} ssao;
 
-	void gather_ssao(RD::ComputeListID p_compute_list, const Vector<RID> p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set);
+	void gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_slices, const SSAOSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set);
 
 	/* Screen Space Reflection */
 

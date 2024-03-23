@@ -32,7 +32,7 @@
 #define COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-#include "scene/2d/collision_shape_2d.h"
+#include "scene/2d/physics/collision_shape_2d.h"
 
 class CanvasItemEditor;
 
@@ -66,23 +66,27 @@ class CollisionShape2DEditor : public Control {
 
 	Vector<Point2> handles;
 
-	int shape_type;
-	int edit_handle;
-	bool pressed;
+	int shape_type = -1;
+	int edit_handle = -1;
+	bool pressed = false;
+	real_t grab_threshold = 8;
 	Variant original;
 	Transform2D original_transform;
+	Vector2 original_point;
 	Point2 last_point;
+	Vector2 original_mouse_pos;
+
+	Ref<Shape2D> current_shape;
 
 	Variant get_handle_value(int idx) const;
 	void set_handle(int idx, Point2 &p_point);
 	void commit_handle(int idx, Variant &p_org);
 
-	void _get_current_shape_type();
+	void _shape_changed();
 
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
 
 public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);

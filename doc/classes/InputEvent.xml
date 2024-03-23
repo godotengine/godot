@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEvent" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="InputEvent" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Generic input event.
+		Abstract base class for input events.
 	</brief_description>
 	<description>
-		Base class of all sort of input event. See [method Node._input].
+		Abstract base class of all types of input events. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
@@ -71,10 +71,16 @@
 				Returns [code]true[/code] if this input event's type is one that can be assigned to an input action.
 			</description>
 		</method>
+		<method name="is_canceled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this input event has been canceled.
+			</description>
+		</method>
 		<method name="is_echo" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this input event is an echo event (only for events of type [InputEventKey]).
+				Returns [code]true[/code] if this input event is an echo event (only for events of type [InputEventKey]). Any other event type returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_match" qualifiers="const">
@@ -91,6 +97,12 @@
 			<description>
 				Returns [code]true[/code] if this input event is pressed. Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
 				[b]Note:[/b] Due to keyboard ghosting, [method is_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
+			</description>
+		</method>
+		<method name="is_released" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this input event is released. Not relevant for events of type [InputEventMouseMotion] or [InputEventScreenDrag].
 			</description>
 		</method>
 		<method name="xformed_by" qualifiers="const">

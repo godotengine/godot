@@ -31,6 +31,7 @@
 #ifndef HTTP_CLIENT_H
 #define HTTP_CLIENT_H
 
+#include "core/crypto/crypto.h"
 #include "core/io/ip.h"
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
@@ -168,7 +169,7 @@ public:
 	Error verify_headers(const Vector<String> &p_headers);
 
 	virtual Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) = 0;
-	virtual Error connect_to_host(const String &p_host, int p_port = -1, bool p_tls = false, bool p_verify_host = true) = 0;
+	virtual Error connect_to_host(const String &p_host, int p_port = -1, Ref<TLSOptions> p_tls_options = Ref<TLSOptions>()) = 0;
 
 	virtual void set_connection(const Ref<StreamPeer> &p_connection) = 0;
 	virtual Ref<StreamPeer> get_connection() const = 0;

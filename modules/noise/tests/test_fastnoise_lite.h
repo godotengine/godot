@@ -31,9 +31,9 @@
 #ifndef TEST_FASTNOISE_LITE_H
 #define TEST_FASTNOISE_LITE_H
 
-#include "tests/test_macros.h"
+#include "../fastnoise_lite.h"
 
-#include "modules/noise/fastnoise_lite.h"
+#include "tests/test_macros.h"
 
 namespace TestFastNoiseLite {
 

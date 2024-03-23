@@ -30,24 +30,35 @@
 
 #include "export.h"
 
+#include "export_plugin.h"
+
 #include "core/os/os.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
-#include "export_plugin.h"
+
+void register_android_exporter_types() {
+	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformAndroid);
+}
 
 void register_android_exporter() {
 #ifndef ANDROID_ENABLED
-	EDITOR_DEF("export/android/android_sdk_path", "");
+	EDITOR_DEF("export/android/java_sdk_path", OS::get_singleton()->get_environment("JAVA_HOME"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/java_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
+	EDITOR_DEF("export/android/android_sdk_path", OS::get_singleton()->get_environment("ANDROID_HOME"));
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 	EDITOR_DEF("export/android/debug_keystore", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore", PROPERTY_HINT_GLOBAL_FILE, "*.keystore,*.jks"));
 	EDITOR_DEF("export/android/debug_keystore_user", "androiddebugkey");
 	EDITOR_DEF("export/android/debug_keystore_pass", "android");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore_pass", PROPERTY_HINT_PASSWORD));
 	EDITOR_DEF("export/android/force_system_user", false);
 
 	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);
 
 	EDITOR_DEF("export/android/one_click_deploy_clear_previous_install", false);
+
+	EDITOR_DEF("export/android/use_wifi_for_remote_debug", false);
+	EDITOR_DEF("export/android/wifi_remote_debug_host", "localhost");
 #endif
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>(memnew(EditorExportPlatformAndroid));

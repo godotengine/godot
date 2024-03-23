@@ -32,17 +32,18 @@
 #define EDITOR_RESOURCE_PICKER_H
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/texture_rect.h"
 
+class Button;
+class ConfirmationDialog;
 class EditorFileDialog;
 class EditorQuickOpen;
+class PopupMenu;
+class TextureRect;
+class Tree;
+class TreeItem;
 
 class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);
-
-	static HashMap<StringName, List<StringName>> allowed_types_cache;
 
 	String base_type;
 	Ref<Resource> edited_resource;
@@ -58,6 +59,9 @@ class EditorResourcePicker : public HBoxContainer {
 	EditorFileDialog *file_dialog = nullptr;
 	EditorQuickOpen *quick_open = nullptr;
 
+	ConfirmationDialog *duplicate_resources_dialog = nullptr;
+	Tree *duplicate_resources_tree = nullptr;
+
 	Size2i assign_button_min_size = Size2i(1, 1);
 
 	enum MenuOption {
@@ -68,6 +72,7 @@ class EditorResourcePicker : public HBoxContainer {
 		OBJ_MENU_MAKE_UNIQUE,
 		OBJ_MENU_MAKE_UNIQUE_RECURSIVE,
 		OBJ_MENU_SAVE,
+		OBJ_MENU_SAVE_AS,
 		OBJ_MENU_COPY,
 		OBJ_MENU_PASTE,
 		OBJ_MENU_SHOW_IN_FILE_SYSTEM,
@@ -92,15 +97,17 @@ class EditorResourcePicker : public HBoxContainer {
 	void _button_input(const Ref<InputEvent> &p_event);
 
 	String _get_resource_type(const Ref<Resource> &p_resource) const;
-	void _get_allowed_types(bool p_with_convert, HashSet<String> *p_vector) const;
+	void _get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const;
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
-	bool _is_type_valid(const String p_type_name, HashSet<String> p_allowed_types) const;
+	bool _is_type_valid(const String &p_type_name, const HashSet<StringName> &p_allowed_types) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _ensure_resource_menu();
+	void _gather_resources_to_duplicate(const Ref<Resource> p_resource, TreeItem *p_item, const String &p_property_name = "") const;
+	void _duplicate_selected_resources();
 
 protected:
 	virtual void _update_resource();
@@ -109,17 +116,12 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	void set_assign_button_min_size(const Size2i &p_size) {
-		assign_button_min_size = p_size;
-		assign_button->set_custom_minimum_size(assign_button_min_size);
-	}
+	void set_assign_button_min_size(const Size2i &p_size);
 
 	GDVIRTUAL1(_set_create_options, Object *)
 	GDVIRTUAL1R(bool, _handle_menu_selected, int)
 
 public:
-	static void clear_caches();
-
 	void set_base_type(const String &p_base_type);
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;
@@ -144,8 +146,8 @@ class EditorScriptPicker : public EditorResourcePicker {
 	GDCLASS(EditorScriptPicker, EditorResourcePicker);
 
 	enum ExtraMenuOption {
-		OBJ_MENU_NEW_SCRIPT = 10,
-		OBJ_MENU_EXTEND_SCRIPT = 11
+		OBJ_MENU_NEW_SCRIPT = 50,
+		OBJ_MENU_EXTEND_SCRIPT = 51
 	};
 
 	Node *script_owner = nullptr;
@@ -167,7 +169,7 @@ class EditorShaderPicker : public EditorResourcePicker {
 	GDCLASS(EditorShaderPicker, EditorResourcePicker);
 
 	enum ExtraMenuOption {
-		OBJ_MENU_NEW_SHADER = 10,
+		OBJ_MENU_NEW_SHADER = 50,
 	};
 
 	ShaderMaterial *edited_material = nullptr;

@@ -49,6 +49,8 @@ public:
 	struct ActionInfo {
 		String name;
 		Dictionary action;
+		bool has_initial = false;
+		Dictionary action_initial;
 
 		Ref<Texture2D> icon = Ref<Texture2D>();
 		bool editable = true;
@@ -60,6 +62,7 @@ private:
 		BUTTON_EDIT_EVENT,
 		BUTTON_REMOVE_ACTION,
 		BUTTON_REMOVE_EVENT,
+		BUTTON_REVERT_ACTION,
 	};
 
 	Vector<ActionInfo> actions_cache;
@@ -115,6 +118,7 @@ protected:
 
 public:
 	LineEdit *get_search_box() const;
+	LineEdit *get_path_box() const;
 	InputEventConfigurationDialog *get_configuration_dialog();
 
 	// Dictionary represents an Action with "events" (Array) and "deadzone" (float) items. Pass with no param to update list from cached action map.

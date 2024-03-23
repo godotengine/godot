@@ -31,10 +31,11 @@
 #ifndef PHYSICS_SERVER_3D_H
 #define PHYSICS_SERVER_3D_H
 
+#ifndef _3D_DISABLED
+
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
 
 class PhysicsDirectSpaceState3D;
@@ -97,6 +98,7 @@ public:
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const = 0;
 	virtual Vector3 get_contact_impulse(int p_contact_idx) const = 0;
 	virtual int get_contact_local_shape(int p_contact_idx) const = 0;
+	virtual Vector3 get_contact_local_velocity_at_position(int p_contact_idx) const = 0;
 
 	virtual RID get_contact_collider(int p_contact_idx) const = 0;
 	virtual Vector3 get_contact_collider_position(int p_contact_idx) const = 0;
@@ -125,7 +127,7 @@ private:
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query);
-	TypedArray<PackedVector2Array> _collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
+	TypedArray<Vector3> _collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query);
 
 protected:
@@ -154,6 +156,7 @@ public:
 		ObjectID collider_id;
 		Object *collider = nullptr;
 		int shape = 0;
+		int face_index = -1;
 	};
 
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
@@ -210,15 +213,15 @@ public:
 class PhysicsServer3DRenderingServerHandler : public Object {
 	GDCLASS(PhysicsServer3DRenderingServerHandler, Object)
 protected:
-	GDVIRTUAL2(_set_vertex, int, GDExtensionConstPtr<void>)
-	GDVIRTUAL2(_set_normal, int, GDExtensionConstPtr<void>)
+	GDVIRTUAL2(_set_vertex, int, const Vector3 &)
+	GDVIRTUAL2(_set_normal, int, const Vector3 &)
 	GDVIRTUAL1(_set_aabb, const AABB &)
 
 	static void _bind_methods();
 
 public:
-	virtual void set_vertex(int p_vertex_id, const void *p_vector3);
-	virtual void set_normal(int p_vertex_id, const void *p_vector3);
+	virtual void set_vertex(int p_vertex_id, const Vector3 &p_vertex);
+	virtual void set_normal(int p_vertex_id, const Vector3 &p_normal);
 	virtual void set_aabb(const AABB &p_aabb);
 
 	virtual ~PhysicsServer3DRenderingServerHandler() {}
@@ -316,8 +319,7 @@ public:
 		AREA_PARAM_GRAVITY,
 		AREA_PARAM_GRAVITY_VECTOR,
 		AREA_PARAM_GRAVITY_IS_POINT,
-		AREA_PARAM_GRAVITY_DISTANCE_SCALE,
-		AREA_PARAM_GRAVITY_POINT_ATTENUATION,
+		AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE,
 		AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE,
 		AREA_PARAM_LINEAR_DAMP,
 		AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE,
@@ -687,7 +689,7 @@ public:
 	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) = 0;
 	virtual real_t hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const = 0;
 
-	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_value) = 0;
+	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_enabled) = 0;
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const = 0;
 
 	enum SliderJointParam {
@@ -1054,5 +1056,7 @@ VARIANT_ENUM_CAST(PhysicsServer3D::G6DOFJointAxisParam);
 VARIANT_ENUM_CAST(PhysicsServer3D::G6DOFJointAxisFlag);
 VARIANT_ENUM_CAST(PhysicsServer3D::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer3D::ProcessInfo);
+
+#endif // _3D_DISABLED
 
 #endif // PHYSICS_SERVER_3D_H

@@ -448,7 +448,7 @@ _hb_glyph_info_get_lig_id (const hb_glyph_info_t *info)
 static inline bool
 _hb_glyph_info_ligated_internal (const hb_glyph_info_t *info)
 {
-  return !!(info->lig_props() & IS_LIG_BASE);
+  return info->lig_props() & IS_LIG_BASE;
 }
 
 static inline unsigned int
@@ -496,37 +496,37 @@ _hb_glyph_info_get_glyph_props (const hb_glyph_info_t *info)
 static inline bool
 _hb_glyph_info_is_base_glyph (const hb_glyph_info_t *info)
 {
-  return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH);
+  return info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH;
 }
 
 static inline bool
 _hb_glyph_info_is_ligature (const hb_glyph_info_t *info)
 {
-  return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE);
+  return info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE;
 }
 
 static inline bool
 _hb_glyph_info_is_mark (const hb_glyph_info_t *info)
 {
-  return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_MARK);
+  return info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_MARK;
 }
 
 static inline bool
 _hb_glyph_info_substituted (const hb_glyph_info_t *info)
 {
-  return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED);
+  return info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED;
 }
 
 static inline bool
 _hb_glyph_info_ligated (const hb_glyph_info_t *info)
 {
-  return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_LIGATED);
+  return info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_LIGATED;
 }
 
 static inline bool
 _hb_glyph_info_multiplied (const hb_glyph_info_t *info)
 {
-  return !!(info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED);
+  return info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED;
 }
 
 static inline bool

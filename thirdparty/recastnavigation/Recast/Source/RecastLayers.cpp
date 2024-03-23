@@ -17,7 +17,6 @@
 //
 
 #include <float.h>
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -29,8 +28,21 @@
 
 // Must be 255 or smaller (not 256) because layer IDs are stored as
 // a byte where 255 is a special value.
-static const int RC_MAX_LAYERS = 63;
-static const int RC_MAX_NEIS = 16;
+#ifndef RC_MAX_LAYERS_DEF
+#define RC_MAX_LAYERS_DEF 63
+#endif
+
+#if RC_MAX_LAYERS_DEF > 255
+#error RC_MAX_LAYERS_DEF must be 255 or smaller
+#endif
+
+#ifndef RC_MAX_NEIS_DEF
+#define RC_MAX_NEIS_DEF 16
+#endif
+
+// Keep type checking.
+static const int RC_MAX_LAYERS = RC_MAX_LAYERS_DEF;
+static const int RC_MAX_NEIS = RC_MAX_NEIS_DEF;
 
 struct rcLayerRegion
 {
@@ -89,7 +101,7 @@ struct rcLayerSweepSpan
 /// See the #rcConfig documentation for more information on the configuration parameters.
 /// 
 /// @see rcAllocHeightfieldLayerSet, rcCompactHeightfield, rcHeightfieldLayerSet, rcConfig
-bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
+bool rcBuildHeightfieldLayers(rcContext* ctx, const rcCompactHeightfield& chf,
 							  const int borderSize, const int walkableHeight,
 							  rcHeightfieldLayerSet& lset)
 {

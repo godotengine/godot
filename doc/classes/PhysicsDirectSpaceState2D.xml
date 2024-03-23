@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectSpaceState2D" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsDirectSpaceState2D" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Direct access object to a space in the [PhysicsServer2D].
+		Provides direct access to a physics space in the [PhysicsServer2D].
 	</brief_description>
 	<description>
-		Direct access object to a space in the [PhysicsServer2D]. It's used mainly to do queries against objects and areas residing in a given space.
+		Provides direct access to a physics space in the [PhysicsServer2D]. It's used mainly to do queries against objects and areas residing in a given space.
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
@@ -21,7 +21,7 @@
 			</description>
 		</method>
 		<method name="collide_shape">
-			<return type="PackedVector2Array[]" />
+			<return type="Vector2[]" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
 			<param index="1" name="max_results" type="int" default="32" />
 			<description>

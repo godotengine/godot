@@ -33,6 +33,7 @@
 
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/text_paragraph.h"
 
 class ItemList : public Control {
@@ -57,6 +58,7 @@ private:
 		Color icon_modulate = Color(1, 1, 1, 1);
 		Ref<Texture2D> tag_icon;
 		String text;
+		String xl_text;
 		Ref<TextParagraph> text_buf;
 		String language;
 		TextDirection text_direction = TEXT_DIRECTION_AUTO;
@@ -70,6 +72,7 @@ private:
 		Color custom_fg;
 		Color custom_bg = Color(0.0, 0.0, 0.0, 0.0);
 
+		int column = 0;
 		Rect2 rect_cache;
 		Rect2 min_rect_cache;
 
@@ -80,14 +83,21 @@ private:
 		Item() {
 			text_buf.instantiate();
 		}
+
+		Item(bool p_dummy) {}
 	};
 
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
+
 	int current = -1;
+	int hovered = -1;
 
 	bool shape_changed = true;
 
 	bool ensure_selected_visible = false;
 	bool same_column_width = false;
+	bool allow_search = true;
 
 	bool auto_height = false;
 	float auto_height_value = 0.0;
@@ -129,12 +139,14 @@ private:
 		Ref<Font> font;
 		int font_size = 0;
 		Color font_color;
+		Color font_hovered_color;
 		Color font_selected_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
 
 		int line_separation = 0;
 		int icon_margin = 0;
+		Ref<StyleBox> hovered_style;
 		Ref<StyleBox> selected_style;
 		Ref<StyleBox> selected_focus_style;
 		Ref<StyleBox> cursor_style;
@@ -143,15 +155,16 @@ private:
 	} theme_cache;
 
 	void _scroll_changed(double);
-	void _shape(int p_idx);
+	void _shape_text(int p_idx);
+	void _mouse_exited();
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list, items.size()); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
 
 public:
@@ -191,7 +204,6 @@ public:
 	Variant get_item_metadata(int p_idx) const;
 
 	void set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon);
-	Ref<Texture2D> get_item_tag_icon(int p_idx) const;
 
 	void set_item_tooltip_enabled(int p_idx, const bool p_enabled);
 	bool is_item_tooltip_enabled(int p_idx) const;
@@ -204,6 +216,8 @@ public:
 
 	void set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_color);
 	Color get_item_custom_fg_color(int p_idx) const;
+
+	Rect2 get_item_rect(int p_idx, bool p_expand = true) const;
 
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;
@@ -253,6 +267,9 @@ public:
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
 
+	void set_allow_search(bool p_allow);
+	bool get_allow_search() const;
+
 	void ensure_current_is_visible();
 
 	void sort_items_by_text();
@@ -271,6 +288,8 @@ public:
 	Size2 get_minimum_size() const override;
 
 	void set_autoscroll_to_bottom(const bool p_enable);
+
+	void force_update_list_size();
 
 	VScrollBar *get_v_scroll_bar() { return scroll_bar; }
 

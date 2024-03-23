@@ -35,7 +35,6 @@ import org.godotengine.godot.vulkan.VkRenderer;
 import org.godotengine.godot.vulkan.VkSurfaceView;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -52,14 +51,16 @@ import androidx.annotation.Keep;
 import java.io.InputStream;
 
 public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
+	private final GodotHost host;
 	private final Godot godot;
 	private final GodotInputHandler mInputHandler;
 	private final VkRenderer mRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotVulkanRenderView(Context context, Godot godot) {
-		super(context);
+	public GodotVulkanRenderView(GodotHost host, Godot godot) {
+		super(host.getActivity());
 
+		this.host = host;
 		this.godot = godot;
 		mInputHandler = new GodotInputHandler(this);
 		mRenderer = new VkRenderer();
@@ -67,6 +68,10 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 			setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
 		}
 		setFocusableInTouchMode(true);
+	}
+
+	@Override
+	public void startRenderer() {
 		startRenderer(mRenderer);
 	}
 
@@ -87,17 +92,35 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 
 	@Override
 	public void onActivityPaused() {
-		onPause();
+		queueOnVkThread(() -> {
+			GodotLib.focusout();
+			// Pause the renderer
+			mRenderer.onVkPause();
+		});
+	}
+
+	@Override
+	public void onActivityStopped() {
+		pauseRenderThread();
+	}
+
+	@Override
+	public void onActivityStarted() {
+		resumeRenderThread();
 	}
 
 	@Override
 	public void onActivityResumed() {
-		onResume();
+		queueOnVkThread(() -> {
+			// Resume the renderer
+			mRenderer.onVkResume();
+			GodotLib.focusin();
+		});
 	}
 
 	@Override
 	public void onBackPressed() {
-		godot.onBackPressed();
+		godot.onBackPressed(host);
 	}
 
 	@Override
@@ -134,8 +157,10 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 
 	@Override
 	public void requestPointerCapture() {
-		super.requestPointerCapture();
-		mInputHandler.onPointerCaptureChange(true);
+		if (canCapturePointer()) {
+			super.requestPointerCapture();
+			mInputHandler.onPointerCaptureChange(true);
+		}
 	}
 
 	@Override
@@ -162,10 +187,10 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 			try {
 				Bitmap bitmap = null;
 				if (!TextUtils.isEmpty(imagePath)) {
-					if (godot.directoryAccessHandler.filesystemFileExists(imagePath)) {
+					if (godot.getDirectoryAccessHandler().filesystemFileExists(imagePath)) {
 						// Try to load the bitmap from the file system
 						bitmap = BitmapFactory.decodeFile(imagePath);
-					} else if (godot.directoryAccessHandler.assetsFileExists(imagePath)) {
+					} else if (godot.getDirectoryAccessHandler().assetsFileExists(imagePath)) {
 						// Try to load the bitmap from the assets directory
 						AssetManager am = getContext().getAssets();
 						InputStream imageInputStream = am.open(imagePath);
@@ -203,27 +228,5 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 			return getPointerIcon();
 		}
 		return super.onResolvePointerIcon(me, pointerIndex);
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-
-		queueOnVkThread(() -> {
-			// Resume the renderer
-			mRenderer.onVkResume();
-			GodotLib.focusin();
-		});
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-
-		queueOnVkThread(() -> {
-			GodotLib.focusout();
-			// Pause the renderer
-			mRenderer.onVkPause();
-		});
 	}
 }

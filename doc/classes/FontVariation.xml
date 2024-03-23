@@ -1,27 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FontVariation" inherits="Font" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FontVariation" inherits="Font" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Variation of the [Font].
+		A variation of a font with additional settings.
 	</brief_description>
 	<description>
-		OpenType variations, simulated bold / slant, and additional font settings like OpenType features and extra spacing.
+		Provides OpenType variations, simulated bold / slant, and additional font settings like OpenType features and extra spacing.
 		To use simulated bold font variant:
 		[codeblocks]
 		[gdscript]
 		var fv = FontVariation.new()
 		fv.set_base_font(load("res://BarlowCondensed-Regular.ttf"))
-		fv.set_variation_embolden(1.2);
-		$"Label".set("custom_fonts/font", fv)
-		$"Label".set("custom_fonts/font_size", 64)
+		fv.set_variation_embolden(1.2)
+		$Label.add_theme_font_override("font", fv)
+		$Label.add_theme_font_size_override("font_size", 64)
 		[/gdscript]
 		[csharp]
 		var fv = new FontVariation();
 		fv.SetBaseFont(ResourceLoader.Load&lt;FontFile&gt;("res://BarlowCondensed-Regular.ttf"));
 		fv.SetVariationEmbolden(1.2);
-		GetNode("Label").Set("custom_fonts/font", fv);
-		GetNode("Label").Set("custom_font_sizes/font_size", 64);
+		GetNode("Label").AddThemeFontOverride("font", fv);
+		GetNode("Label").AddThemeFontSizeOverride("font_size", 64);
 		[/csharp]
 		[/codeblocks]
+		To set the coordinate of multiple variation axes:
+		[codeblock]
+		var fv = FontVariation.new();
+		var ts = TextServerManager.get_primary_interface()
+		fv.base_font = load("res://BarlowCondensed-Regular.ttf")
+		fv.variation_opentype = { ts.name_to_tag("wght"): 900, ts.name_to_tag("custom_hght"): 900 }
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -31,7 +38,7 @@
 			<param index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<param index="1" name="value" type="int" />
 			<description>
-				Sets the spacing for [code]type[/code] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
 			</description>
 		</method>
 	</methods>
@@ -39,8 +46,8 @@
 		<member name="base_font" type="Font" setter="set_base_font" getter="get_base_font">
 			Base font used to create a variation. If not set, default [Theme] font is used.
 		</member>
-		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
-			Array of fallback [Font]s. If not set [member base_font] fallback are ussed.
+		<member name="baseline_offset" type="float" setter="set_baseline_offset" getter="get_baseline_offset" default="0.0">
+			Extra baseline offset (as a fraction of font height).
 		</member>
 		<member name="opentype_features" type="Dictionary" setter="set_opentype_features" getter="get_opentype_features" default="{}">
 			A set of OpenType feature tags. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
@@ -49,7 +56,7 @@
 			Extra spacing at the bottom of the line in pixels.
 		</member>
 		<member name="spacing_glyph" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra spacing between graphical glyphs
+			Extra spacing between graphical glyphs.
 		</member>
 		<member name="spacing_space" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra width of the space glyphs.
@@ -66,6 +73,8 @@
 		</member>
 		<member name="variation_opentype" type="Dictionary" setter="set_variation_opentype" getter="get_variation_opentype" default="{}">
 			Font OpenType variation coordinates. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]OpenType variation tags[/url].
+			[b]Note:[/b] This [Dictionary] uses OpenType tags as keys. Variation axes can be identified both by tags ([int], e.g. [code]0x77678674[/code]) and names ([String], e.g. [code]wght[/code]). Some axes might be accessible by multiple names. For example, [code]wght[/code] refers to the same axis as [code]weight[/code]. Tags on the other hand are unique. To convert between names and tags, use [method TextServer.name_to_tag] and [method TextServer.tag_to_name].
+			[b]Note:[/b] To get available variation axes of a font, use [method Font.get_supported_variation_list].
 		</member>
 		<member name="variation_transform" type="Transform2D" setter="set_variation_transform" getter="get_variation_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.

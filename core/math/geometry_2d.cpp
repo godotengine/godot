@@ -37,7 +37,7 @@
 
 #define SCALE_FACTOR 100000.0 // Based on CMP_EPSILON.
 
-Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> polygon) {
+Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Point2> &polygon) {
 	Vector<Vector<Vector2>> decomp;
 	List<TPPLPoly> in_poly, out_poly;
 
@@ -93,7 +93,7 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	// For example, it will prioritize a 1024x1024 atlas (works everywhere) instead of a
 	// 256x8192 atlas (won't work anywhere).
 
-	ERR_FAIL_COND(p_rects.size() == 0);
+	ERR_FAIL_COND(p_rects.is_empty());
 	for (int i = 0; i < p_rects.size(); i++) {
 		ERR_FAIL_COND(p_rects[i].width <= 0);
 		ERR_FAIL_COND(p_rects[i].height <= 0);
@@ -318,41 +318,6 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 		polypaths.push_back(polypath);
 	}
 	return polypaths;
-}
-
-Vector<Point2i> Geometry2D::pack_rects(const Vector<Size2i> &p_sizes, const Size2i &p_atlas_size) {
-	Vector<stbrp_node> nodes;
-	nodes.resize(p_atlas_size.width);
-
-	stbrp_context context;
-	stbrp_init_target(&context, p_atlas_size.width, p_atlas_size.height, nodes.ptrw(), p_atlas_size.width);
-
-	Vector<stbrp_rect> rects;
-	rects.resize(p_sizes.size());
-
-	for (int i = 0; i < p_sizes.size(); i++) {
-		rects.write[i].id = 0;
-		rects.write[i].w = p_sizes[i].width;
-		rects.write[i].h = p_sizes[i].height;
-		rects.write[i].x = 0;
-		rects.write[i].y = 0;
-		rects.write[i].was_packed = 0;
-	}
-
-	int res = stbrp_pack_rects(&context, rects.ptrw(), rects.size());
-	if (res == 0) { //pack failed
-		return Vector<Point2i>();
-	}
-
-	Vector<Point2i> ret;
-	ret.resize(p_sizes.size());
-
-	for (int i = 0; i < p_sizes.size(); i++) {
-		Point2i r(rects[i].x, rects[i].y);
-		ret.write[i] = r;
-	}
-
-	return ret;
 }
 
 Vector<Vector3i> Geometry2D::partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size) {

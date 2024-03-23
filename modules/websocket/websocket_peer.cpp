@@ -39,7 +39,7 @@ WebSocketPeer::~WebSocketPeer() {
 }
 
 void WebSocketPeer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "verify_tls", "trusted_tls_certificate"), &WebSocketPeer::connect_to_url, DEFVAL(true), DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "tls_client_options"), &WebSocketPeer::connect_to_url, DEFVAL(Ref<TLSOptions>()));
 	ClassDB::bind_method(D_METHOD("accept_stream", "stream"), &WebSocketPeer::accept_stream);
 	ClassDB::bind_method(D_METHOD("send", "message", "write_mode"), &WebSocketPeer::_send_bind, DEFVAL(WRITE_MODE_BINARY));
 	ClassDB::bind_method(D_METHOD("send_text", "message"), &WebSocketPeer::send_text);

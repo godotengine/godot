@@ -1,0 +1,16 @@
+GDTEST_OK
+Inner._static_init inner
+InnerInner._static_init inner inner
+data: data
+perm: 0
+prop: Hello! suffix
+perm: 1
+prop: prefix World! suffix
+other.perm: 0
+other.prop: Hello! suffix
+other.perm: 2
+other.prop: prefix foo suffix
+load.perm: 0
+load.prop: Hello! suffix
+load.perm: 3
+load.prop: prefix bar suffix

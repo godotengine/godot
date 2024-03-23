@@ -377,6 +377,9 @@ reorder_syllable_use (hb_buffer_t *buffer, unsigned int start, unsigned int end)
 #define POST_BASE_FLAGS64 (FLAG64 (USE(FAbv)) | \
 			   FLAG64 (USE(FBlw)) | \
 			   FLAG64 (USE(FPst)) | \
+			   FLAG64 (USE(FMAbv)) | \
+			   FLAG64 (USE(FMBlw)) | \
+			   FLAG64 (USE(FMPst)) | \
 			   FLAG64 (USE(MAbv)) | \
 			   FLAG64 (USE(MBlw)) | \
 			   FLAG64 (USE(MPst)) | \

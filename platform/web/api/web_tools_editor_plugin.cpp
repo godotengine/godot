@@ -28,8 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#if defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
 #include "web_tools_editor_plugin.h"
+
+#if defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
@@ -57,7 +58,7 @@ WebToolsEditorPlugin::WebToolsEditorPlugin() {
 	add_tool_menu_item("Download Project Source", callable_mp(this, &WebToolsEditorPlugin::_download_zip));
 }
 
-void WebToolsEditorPlugin::_download_zip(Variant p_v) {
+void WebToolsEditorPlugin::_download_zip() {
 	if (!Engine::get_singleton() || !Engine::get_singleton()->is_editor_hint()) {
 		ERR_PRINT("Downloading the project as a ZIP archive is only available in Editor mode.");
 		return;
@@ -75,7 +76,7 @@ void WebToolsEditorPlugin::_download_zip(Variant p_v) {
 	const String project_name_safe = project_name.to_lower().replace(" ", "_");
 	const String datetime_safe =
 			Time::get_singleton()->get_datetime_string_from_system(false, true).replace(" ", "_");
-	const String output_name = OS::get_singleton()->get_safe_dir_name(vformat("%s_%s.zip"));
+	const String output_name = OS::get_singleton()->get_safe_dir_name(vformat("%s_%s.zip", project_name_safe, datetime_safe));
 	const String output_path = String("/tmp").path_join(output_name);
 
 	zipFile zip = zipOpen2(output_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
@@ -154,4 +155,5 @@ void WebToolsEditorPlugin::_zip_recursive(String p_path, String p_base_path, zip
 		cur = dir->get_next();
 	}
 }
-#endif
+
+#endif // TOOLS_ENABLED && WEB_ENABLED

@@ -78,13 +78,6 @@ void GodotArea2D::set_space(GodotSpace2D *p_space) {
 }
 
 void GodotArea2D::set_monitor_callback(const Callable &p_callback) {
-	ObjectID id = p_callback.get_object_id();
-
-	if (id == monitor_callback.get_object_id()) {
-		monitor_callback = p_callback;
-		return;
-	}
-
 	_unregister_shapes();
 
 	monitor_callback = p_callback;
@@ -100,13 +93,6 @@ void GodotArea2D::set_monitor_callback(const Callable &p_callback) {
 }
 
 void GodotArea2D::set_area_monitor_callback(const Callable &p_callback) {
-	ObjectID id = p_callback.get_object_id();
-
-	if (id == area_monitor_callback.get_object_id()) {
-		area_monitor_callback = p_callback;
-		return;
-	}
-
 	_unregister_shapes();
 
 	area_monitor_callback = p_callback;
@@ -145,11 +131,8 @@ void GodotArea2D::set_param(PhysicsServer2D::AreaParameter p_param, const Varian
 		case PhysicsServer2D::AREA_PARAM_GRAVITY_IS_POINT:
 			gravity_is_point = p_value;
 			break;
-		case PhysicsServer2D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
-			gravity_distance_scale = p_value;
-			break;
-		case PhysicsServer2D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
-			point_attenuation = p_value;
+		case PhysicsServer2D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
+			gravity_point_unit_distance = p_value;
 			break;
 		case PhysicsServer2D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
 			_set_space_override_mode(linear_damping_override_mode, (PhysicsServer2D::AreaSpaceOverrideMode)(int)p_value);
@@ -179,10 +162,8 @@ Variant GodotArea2D::get_param(PhysicsServer2D::AreaParameter p_param) const {
 			return gravity_vector;
 		case PhysicsServer2D::AREA_PARAM_GRAVITY_IS_POINT:
 			return gravity_is_point;
-		case PhysicsServer2D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
-			return gravity_distance_scale;
-		case PhysicsServer2D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
-			return point_attenuation;
+		case PhysicsServer2D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
+			return gravity_point_unit_distance;
 		case PhysicsServer2D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
 			return linear_damping_override_mode;
 		case PhysicsServer2D::AREA_PARAM_LINEAR_DAMP:
@@ -199,7 +180,7 @@ Variant GodotArea2D::get_param(PhysicsServer2D::AreaParameter p_param) const {
 }
 
 void GodotArea2D::_queue_monitor_update() {
-	ERR_FAIL_COND(!get_space());
+	ERR_FAIL_NULL(get_space());
 
 	if (!monitor_query_list.in_list()) {
 		get_space()->area_add_to_monitor_query_list(&monitor_query_list);
@@ -304,13 +285,13 @@ void GodotArea2D::call_queries() {
 
 void GodotArea2D::compute_gravity(const Vector2 &p_position, Vector2 &r_gravity) const {
 	if (is_gravity_point()) {
-		const real_t gr_distance_scale = get_gravity_distance_scale();
+		const real_t gr_unit_dist = get_gravity_point_unit_distance();
 		Vector2 v = get_transform().xform(get_gravity_vector()) - p_position;
-		if (gr_distance_scale > 0) {
-			const real_t v_length = v.length();
-			if (v_length > 0) {
-				const real_t v_scaled = v_length * gr_distance_scale;
-				r_gravity = (v.normalized() * (get_gravity() / (v_scaled * v_scaled)));
+		if (gr_unit_dist > 0) {
+			const real_t v_length_sq = v.length_squared();
+			if (v_length_sq > 0) {
+				const real_t gravity_strength = get_gravity() * gr_unit_dist * gr_unit_dist / v_length_sq;
+				r_gravity = v.normalized() * gravity_strength;
 			} else {
 				r_gravity = Vector2();
 			}

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "ogg_packet_sequence.h"
+
 #include "core/variant/typed_array.h"
 
 void OggPacketSequence::push_page(int64_t p_granule_pos, const Vector<PackedByteArray> &p_data) {
@@ -136,6 +137,8 @@ bool OggPacketSequencePlayback::next_ogg_packet(ogg_packet **p_packet) const {
 	ERR_FAIL_COND_V(data_version != ogg_packet_sequence->data_version, false);
 	ERR_FAIL_COND_V(ogg_packet_sequence->page_data.is_empty(), false);
 	ERR_FAIL_COND_V(ogg_packet_sequence->page_granule_positions.is_empty(), false);
+	ERR_FAIL_COND_V(page_cursor >= ogg_packet_sequence->page_data.size(), false);
+
 	// Move on to the next page if need be. This happens first to help simplify seek logic.
 	while (packet_cursor >= ogg_packet_sequence->page_data[page_cursor].size()) {
 		packet_cursor = 0;
@@ -211,6 +214,20 @@ bool OggPacketSequencePlayback::seek_page(int64_t p_granule_pos) {
 	packetno = 0;
 
 	return true;
+}
+
+int64_t OggPacketSequencePlayback::get_page_number() const {
+	return page_cursor;
+}
+
+bool OggPacketSequencePlayback::set_page_number(int64_t p_page_number) {
+	if (p_page_number >= 0 && p_page_number < ogg_packet_sequence->page_data.size()) {
+		page_cursor = p_page_number;
+		packet_cursor = 0;
+		packetno = 0;
+		return true;
+	}
+	return false;
 }
 
 OggPacketSequencePlayback::OggPacketSequencePlayback() {

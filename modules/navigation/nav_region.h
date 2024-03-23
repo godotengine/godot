@@ -31,21 +31,26 @@
 #ifndef NAV_REGION_H
 #define NAV_REGION_H
 
-#include "scene/resources/navigation_mesh.h"
-
 #include "nav_base.h"
 #include "nav_utils.h"
+
+#include "scene/resources/navigation_mesh.h"
 
 class NavRegion : public NavBase {
 	NavMap *map = nullptr;
 	Transform3D transform;
 	Ref<NavigationMesh> mesh;
 	Vector<gd::Edge::Connection> connections;
+	bool enabled = true;
+
+	bool use_edge_connections = true;
 
 	bool polygons_dirty = true;
 
 	/// Cache
 	LocalVector<gd::Polygon> polygons;
+
+	real_t surface_area = 0.0;
 
 public:
 	NavRegion() {
@@ -56,9 +61,17 @@ public:
 		polygons_dirty = true;
 	}
 
+	void set_enabled(bool p_enabled);
+	bool get_enabled() const { return enabled; }
+
 	void set_map(NavMap *p_map);
 	NavMap *get_map() const {
 		return map;
+	}
+
+	void set_use_edge_connections(bool p_enabled);
+	bool get_use_edge_connections() const {
+		return use_edge_connections;
 	}
 
 	void set_transform(Transform3D transform);
@@ -81,6 +94,10 @@ public:
 	LocalVector<gd::Polygon> const &get_polygons() const {
 		return polygons;
 	}
+
+	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
+
+	real_t get_surface_area() const { return surface_area; };
 
 	bool sync();
 

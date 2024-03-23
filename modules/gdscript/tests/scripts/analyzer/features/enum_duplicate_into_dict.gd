@@ -1,7 +1,7 @@
 enum Enum {V1, V2}
 
 func test():
-	var enumAsDict : Dictionary = Enum.duplicate()
+	var enumAsDict: Dictionary = Enum.duplicate()
 	var enumAsVariant = Enum.duplicate()
 	print(Enum.has("V1"))
 	print(enumAsDict.has("V1"))

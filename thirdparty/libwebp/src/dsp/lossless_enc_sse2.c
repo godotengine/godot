@@ -54,8 +54,8 @@ static void TransformColor_SSE2(const VP8LMultipliers* const m,
   const __m128i mults_rb = MK_CST_16(CST_5b(m->green_to_red_),
                                      CST_5b(m->green_to_blue_));
   const __m128i mults_b2 = MK_CST_16(CST_5b(m->red_to_blue_), 0);
-  const __m128i mask_ag = _mm_set1_epi32(0xff00ff00);  // alpha-green masks
-  const __m128i mask_rb = _mm_set1_epi32(0x00ff00ff);  // red-blue masks
+  const __m128i mask_ag = _mm_set1_epi32((int)0xff00ff00);  // alpha-green masks
+  const __m128i mask_rb = _mm_set1_epi32(0x00ff00ff);       // red-blue masks
   int i;
   for (i = 0; i + 4 <= num_pixels; i += 4) {
     const __m128i in = _mm_loadu_si128((__m128i*)&argb_data[i]); // argb
@@ -376,7 +376,7 @@ static void BundleColorMap_SSE2(const uint8_t* const row, int width, int xbits,
       break;
     }
     case 2: {
-      const __m128i mask_or = _mm_set1_epi32(0xff000000);
+      const __m128i mask_or = _mm_set1_epi32((int)0xff000000);
       const __m128i mul_cst = _mm_set1_epi16(0x0104);
       const __m128i mask_mul = _mm_set1_epi16(0x0f00);
       for (x = 0; x + 16 <= width; x += 16, dst += 4) {
@@ -427,7 +427,7 @@ static WEBP_INLINE void Average2_m128i(const __m128i* const a0,
 static void PredictorSub0_SSE2(const uint32_t* in, const uint32_t* upper,
                                int num_pixels, uint32_t* out) {
   int i;
-  const __m128i black = _mm_set1_epi32(ARGB_BLACK);
+  const __m128i black = _mm_set1_epi32((int)ARGB_BLACK);
   for (i = 0; i + 4 <= num_pixels; i += 4) {
     const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);
     const __m128i res = _mm_sub_epi8(src, black);

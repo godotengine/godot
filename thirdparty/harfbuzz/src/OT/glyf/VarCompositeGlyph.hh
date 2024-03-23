@@ -27,32 +27,30 @@ struct VarCompositeGlyphRecord
     HAVE_SKEW_Y			= 0x0200,
     HAVE_TCENTER_X		= 0x0400,
     HAVE_TCENTER_Y		= 0x0800,
-    GID_IS_24			= 0x1000,
+    GID_IS_24BIT		= 0x1000,
     AXES_HAVE_VARIATION		= 0x2000,
+    RESET_UNSPECIFIED_AXES	= 0x4000,
   };
 
   public:
 
   unsigned int get_size () const
   {
+    unsigned fl = flags;
     unsigned int size = min_size;
 
-    unsigned axis_width = (flags & AXIS_INDICES_ARE_SHORT) ? 4 : 3;
+    unsigned axis_width = (fl & AXIS_INDICES_ARE_SHORT) ? 4 : 3;
     size += numAxes * axis_width;
 
-    // gid
-    size += 2;
-    if (flags & GID_IS_24)		size += 1;
+    if (fl & GID_IS_24BIT)	size += 1;
 
-    if (flags & HAVE_TRANSLATE_X)	size += 2;
-    if (flags & HAVE_TRANSLATE_Y)	size += 2;
-    if (flags & HAVE_ROTATION)		size += 2;
-    if (flags & HAVE_SCALE_X)		size += 2;
-    if (flags & HAVE_SCALE_Y)		size += 2;
-    if (flags & HAVE_SKEW_X)		size += 2;
-    if (flags & HAVE_SKEW_Y)		size += 2;
-    if (flags & HAVE_TCENTER_X)		size += 2;
-    if (flags & HAVE_TCENTER_Y)		size += 2;
+    // 2 bytes each for the following flags
+    fl = fl & (HAVE_TRANSLATE_X | HAVE_TRANSLATE_Y |
+	       HAVE_ROTATION |
+	       HAVE_SCALE_X | HAVE_SCALE_Y |
+	       HAVE_SKEW_X | HAVE_SKEW_Y |
+	       HAVE_TCENTER_X | HAVE_TCENTER_Y);
+    size += hb_popcount (fl) * 2;
 
     return size;
   }
@@ -60,13 +58,22 @@ struct VarCompositeGlyphRecord
   bool has_more () const { return true; }
 
   bool is_use_my_metrics () const { return flags & USE_MY_METRICS; }
+  bool is_reset_unspecified_axes () const { return flags & RESET_UNSPECIFIED_AXES; }
 
   hb_codepoint_t get_gid () const
   {
-    if (flags & GID_IS_24)
-      return StructAfter<const HBGlyphID24> (numAxes);
+    if (flags & GID_IS_24BIT)
+      return * (const HBGlyphID24 *) &pad;
     else
-      return StructAfter<const HBGlyphID16> (numAxes);
+      return * (const HBGlyphID16 *) &pad;
+  }
+
+  void set_gid (hb_codepoint_t gid)
+  {
+    if (flags & GID_IS_24BIT)
+      * (HBGlyphID24 *) &pad = gid;
+    else
+      * (HBGlyphID16 *) &pad = gid;
   }
 
   unsigned get_numAxes () const
@@ -76,26 +83,44 @@ struct VarCompositeGlyphRecord
 
   unsigned get_num_points () const
   {
+    unsigned fl = flags;
     unsigned num = 0;
-    if (flags & AXES_HAVE_VARIATION)			num += numAxes;
-    if (flags & (HAVE_TRANSLATE_X | HAVE_TRANSLATE_Y))	num++;
-    if (flags & HAVE_ROTATION)				num++;
-    if (flags & (HAVE_SCALE_X | HAVE_SCALE_Y))		num++;
-    if (flags & (HAVE_SKEW_X | HAVE_SKEW_Y))		num++;
-    if (flags & (HAVE_TCENTER_X | HAVE_TCENTER_Y))	num++;
+    if (fl & AXES_HAVE_VARIATION)			num += numAxes;
+
+    /* Hopefully faster code, relying on the value of the flags. */
+    fl = (((fl & (HAVE_TRANSLATE_Y | HAVE_SCALE_Y | HAVE_SKEW_Y | HAVE_TCENTER_Y)) >> 1) | fl) &
+         (HAVE_TRANSLATE_X | HAVE_ROTATION | HAVE_SCALE_X | HAVE_SKEW_X | HAVE_TCENTER_X);
+    num += hb_popcount (fl);
+    return num;
+
+    /* Slower but more readable code. */
+    if (fl & (HAVE_TRANSLATE_X | HAVE_TRANSLATE_Y))	num++;
+    if (fl & HAVE_ROTATION)				num++;
+    if (fl & (HAVE_SCALE_X | HAVE_SCALE_Y))		num++;
+    if (fl & (HAVE_SKEW_X | HAVE_SKEW_Y))		num++;
+    if (fl & (HAVE_TCENTER_X | HAVE_TCENTER_Y))		num++;
     return num;
   }
 
-  void transform_points (hb_array_t<contour_point_t> record_points,
-			 contour_point_vector_t &points) const
+  void transform_points (hb_array_t<const contour_point_t> record_points,
+			 hb_array_t<contour_point_t> points) const
   {
     float matrix[4];
     contour_point_t trans;
 
-    get_transformation_from_points (record_points, matrix, trans);
+    get_transformation_from_points (record_points.arrayZ, matrix, trans);
 
-    points.transform (matrix);
-    points.translate (trans);
+    auto arrayZ = points.arrayZ;
+    unsigned count = points.length;
+
+    if (matrix[0] != 1.f || matrix[1] != 0.f ||
+	matrix[2] != 0.f || matrix[3] != 1.f)
+      for (unsigned i = 0; i < count; i++)
+        arrayZ[i].transform (matrix);
+
+    if (trans.x != 0.f || trans.y != 0.f)
+      for (unsigned i = 0; i < count; i++)
+        arrayZ[i].translate (trans);
   }
 
   static inline void transform (float (&matrix)[4], contour_point_t &trans,
@@ -126,26 +151,41 @@ struct VarCompositeGlyphRecord
   static void translate (float (&matrix)[4], contour_point_t &trans,
 			 float translateX, float translateY)
   {
-    // https://github.com/fonttools/fonttools/blob/f66ee05f71c8b57b5f519ee975e95edcd1466e14/Lib/fontTools/misc/transform.py#L213
-    float other[6] = {1.f, 0.f, 0.f, 1.f, translateX, translateY};
-    transform (matrix, trans, other);
+    if (!translateX && !translateY)
+      return;
+
+    trans.x += matrix[0] * translateX + matrix[2] * translateY;
+    trans.y += matrix[1] * translateX + matrix[3] * translateY;
   }
 
   static void scale (float (&matrix)[4], contour_point_t &trans,
 		     float scaleX, float scaleY)
   {
-    // https://github.com/fonttools/fonttools/blob/f66ee05f71c8b57b5f519ee975e95edcd1466e14/Lib/fontTools/misc/transform.py#L224
-    float other[6] = {scaleX, 0.f, 0.f, scaleY, 0.f, 0.f};
-    transform (matrix, trans, other);
+    if (scaleX == 1.f && scaleY == 1.f)
+      return;
+
+    matrix[0] *= scaleX;
+    matrix[1] *= scaleX;
+    matrix[2] *= scaleY;
+    matrix[3] *= scaleY;
   }
 
   static void rotate (float (&matrix)[4], contour_point_t &trans,
 		      float rotation)
   {
+    if (!rotation)
+      return;
+
     // https://github.com/fonttools/fonttools/blob/f66ee05f71c8b57b5f519ee975e95edcd1466e14/Lib/fontTools/misc/transform.py#L240
-    rotation = rotation * float (M_PI);
-    float c = cosf (rotation);
-    float s = sinf (rotation);
+    rotation = rotation * HB_PI;
+    float c;
+    float s;
+#ifdef HAVE_SINCOSF
+    sincosf (rotation, &s, &c);
+#else
+    c = cosf (rotation);
+    s = sinf (rotation);
+#endif
     float other[6] = {c, s, -s, c, 0.f, 0.f};
     transform (matrix, trans, other);
   }
@@ -153,99 +193,100 @@ struct VarCompositeGlyphRecord
   static void skew (float (&matrix)[4], contour_point_t &trans,
 		    float skewX, float skewY)
   {
+    if (!skewX && !skewY)
+      return;
+
     // https://github.com/fonttools/fonttools/blob/f66ee05f71c8b57b5f519ee975e95edcd1466e14/Lib/fontTools/misc/transform.py#L255
-    skewX = skewX * float (M_PI);
-    skewY = skewY * float (M_PI);
-    float other[6] = {1.f, tanf (skewY), tanf (skewX), 1.f, 0.f, 0.f};
+    skewX = skewX * HB_PI;
+    skewY = skewY * HB_PI;
+    float other[6] = {1.f,
+		      skewY ? tanf (skewY) : 0.f,
+		      skewX ? tanf (skewX) : 0.f,
+		      1.f,
+		      0.f, 0.f};
     transform (matrix, trans, other);
   }
 
   bool get_points (contour_point_vector_t &points) const
   {
-    float translateX = 0.f;
-    float translateY = 0.f;
-    float rotation = 0.f;
-    float scaleX = 1.f * (1 << 12);
-    float scaleY = 1.f * (1 << 12);
-    float skewX = 0.f;
-    float skewY = 0.f;
-    float tCenterX = 0.f;
-    float tCenterY = 0.f;
+    unsigned num_points = get_num_points ();
 
-    if (unlikely (!points.resize (points.length + get_num_points ()))) return false;
+    points.alloc (points.length + num_points + 4); // For phantom points
+    if (unlikely (!points.resize (points.length + num_points, false))) return false;
+    contour_point_t *rec_points = points.arrayZ + (points.length - num_points);
+    hb_memset (rec_points, 0, num_points * sizeof (rec_points[0]));
 
-    unsigned axis_width = (flags & AXIS_INDICES_ARE_SHORT) ? 2 : 1;
-    unsigned axes_size = numAxes * axis_width;
+    unsigned fl = flags;
+
+    unsigned num_axes = numAxes;
+    unsigned axis_width = (fl & AXIS_INDICES_ARE_SHORT) ? 2 : 1;
+    unsigned axes_size = num_axes * axis_width;
 
     const F2DOT14 *q = (const F2DOT14 *) (axes_size +
-					  (flags & GID_IS_24 ? 3 : 2) +
-					  &StructAfter<const HBUINT8> (numAxes));
+					  (fl & GID_IS_24BIT ? 3 : 2) +
+					  (const HBUINT8 *) &pad);
 
-    hb_array_t<contour_point_t> rec_points = points.as_array ().sub_array (points.length - get_num_points ());
-
-    unsigned count = numAxes;
-    if (flags & AXES_HAVE_VARIATION)
+    unsigned count = num_axes;
+    if (fl & AXES_HAVE_VARIATION)
     {
       for (unsigned i = 0; i < count; i++)
-	rec_points[i].x = *q++;
-      rec_points += count;
+	rec_points++->x = q++->to_int ();
     }
     else
       q += count;
 
     const HBUINT16 *p = (const HBUINT16 *) q;
 
-    if (flags & HAVE_TRANSLATE_X)	translateX = * (const FWORD *) p++;
-    if (flags & HAVE_TRANSLATE_Y)	translateY = * (const FWORD *) p++;
-    if (flags & HAVE_ROTATION)		rotation = * (const F2DOT14 *) p++;
-    if (flags & HAVE_SCALE_X)		scaleX = * (const F4DOT12 *) p++;
-    if (flags & HAVE_SCALE_Y)		scaleY = * (const F4DOT12 *) p++;
-    if (flags & HAVE_SKEW_X)		skewX = * (const F2DOT14 *) p++;
-    if (flags & HAVE_SKEW_Y)		skewY = * (const F2DOT14 *) p++;
-    if (flags & HAVE_TCENTER_X)		tCenterX = * (const FWORD *) p++;
-    if (flags & HAVE_TCENTER_Y)		tCenterY = * (const FWORD *) p++;
-
-    if ((flags & UNIFORM_SCALE) && !(flags & HAVE_SCALE_Y))
-      scaleY = scaleX;
-
-    if (flags & (HAVE_TRANSLATE_X | HAVE_TRANSLATE_Y))
+    if (fl & (HAVE_TRANSLATE_X | HAVE_TRANSLATE_Y))
     {
-      rec_points[0].x = translateX;
-      rec_points[0].y = translateY;
+      int translateX = (fl & HAVE_TRANSLATE_X) ? * (const FWORD *) p++ : 0;
+      int translateY = (fl & HAVE_TRANSLATE_Y) ? * (const FWORD *) p++ : 0;
+      rec_points->x = translateX;
+      rec_points->y = translateY;
       rec_points++;
     }
-    if (flags & HAVE_ROTATION)
+    if (fl & HAVE_ROTATION)
     {
-      rec_points[0].x = rotation;
+      int rotation = (fl & HAVE_ROTATION) ? ((const F4DOT12 *) p++)->to_int () : 0;
+      rec_points->x = rotation;
       rec_points++;
     }
-    if (flags & (HAVE_SCALE_X | HAVE_SCALE_Y))
+    if (fl & (HAVE_SCALE_X | HAVE_SCALE_Y))
     {
-      rec_points[0].x = scaleX;
-      rec_points[0].y = scaleY;
+      int scaleX = (fl & HAVE_SCALE_X) ? ((const F6DOT10 *) p++)->to_int () : 1 << 10;
+      int scaleY = (fl & HAVE_SCALE_Y) ? ((const F6DOT10 *) p++)->to_int () : 1 << 10;
+      if ((fl & UNIFORM_SCALE) && !(fl & HAVE_SCALE_Y))
+	scaleY = scaleX;
+      rec_points->x = scaleX;
+      rec_points->y = scaleY;
       rec_points++;
     }
-    if (flags & (HAVE_SKEW_X | HAVE_SKEW_Y))
+    if (fl & (HAVE_SKEW_X | HAVE_SKEW_Y))
     {
-      rec_points[0].x = skewX;
-      rec_points[0].y = skewY;
+      int skewX = (fl & HAVE_SKEW_X) ? ((const F4DOT12 *) p++)->to_int () : 0;
+      int skewY = (fl & HAVE_SKEW_Y) ? ((const F4DOT12 *) p++)->to_int () : 0;
+      rec_points->x = skewX;
+      rec_points->y = skewY;
       rec_points++;
     }
-    if (flags & (HAVE_TCENTER_X | HAVE_TCENTER_Y))
+    if (fl & (HAVE_TCENTER_X | HAVE_TCENTER_Y))
     {
-      rec_points[0].x = tCenterX;
-      rec_points[0].y = tCenterY;
+      int tCenterX = (fl & HAVE_TCENTER_X) ? * (const FWORD *) p++ : 0;
+      int tCenterY = (fl & HAVE_TCENTER_Y) ? * (const FWORD *) p++ : 0;
+      rec_points->x = tCenterX;
+      rec_points->y = tCenterY;
       rec_points++;
     }
-    assert (!rec_points);
 
     return true;
   }
 
-  void get_transformation_from_points (hb_array_t<contour_point_t> rec_points,
+  void get_transformation_from_points (const contour_point_t *rec_points,
 				       float (&matrix)[4], contour_point_t &trans) const
   {
-    if (flags & AXES_HAVE_VARIATION)
+    unsigned fl = flags;
+
+    if (fl & AXES_HAVE_VARIATION)
       rec_points += numAxes;
 
     matrix[0] = matrix[3] = 1.f;
@@ -262,36 +303,35 @@ struct VarCompositeGlyphRecord
     float tCenterX = 0.f;
     float tCenterY = 0.f;
 
-    if (flags & (HAVE_TRANSLATE_X | HAVE_TRANSLATE_Y))
+    if (fl & (HAVE_TRANSLATE_X | HAVE_TRANSLATE_Y))
     {
-      translateX = rec_points[0].x;
-      translateY = rec_points[0].y;
+      translateX = rec_points->x;
+      translateY = rec_points->y;
       rec_points++;
     }
-    if (flags & HAVE_ROTATION)
+    if (fl & HAVE_ROTATION)
     {
-      rotation = rec_points[0].x / (1 << 14);
+      rotation = rec_points->x / (1 << 12);
       rec_points++;
     }
-    if (flags & (HAVE_SCALE_X | HAVE_SCALE_Y))
+    if (fl & (HAVE_SCALE_X | HAVE_SCALE_Y))
     {
-      scaleX = rec_points[0].x / (1 << 12);
-      scaleY = rec_points[0].y / (1 << 12);
+      scaleX = rec_points->x / (1 << 10);
+      scaleY = rec_points->y / (1 << 10);
       rec_points++;
     }
-    if (flags & (HAVE_SKEW_X | HAVE_SKEW_Y))
+    if (fl & (HAVE_SKEW_X | HAVE_SKEW_Y))
     {
-      skewX = rec_points[0].x / (1 << 14);
-      skewY = rec_points[0].y / (1 << 14);
+      skewX = rec_points->x / (1 << 12);
+      skewY = rec_points->y / (1 << 12);
       rec_points++;
     }
-    if (flags & (HAVE_TCENTER_X | HAVE_TCENTER_Y))
+    if (fl & (HAVE_TCENTER_X | HAVE_TCENTER_Y))
     {
-      tCenterX = rec_points[0].x;
-      tCenterY = rec_points[0].y;
+      tCenterX = rec_points->x;
+      tCenterY = rec_points->y;
       rec_points++;
     }
-    assert (!rec_points);
 
     translate (matrix, trans, translateX + tCenterX, translateY + tCenterY);
     rotate (matrix, trans, rotation);
@@ -305,20 +345,20 @@ struct VarCompositeGlyphRecord
   {
     bool have_variations = flags & AXES_HAVE_VARIATION;
     unsigned axis_width = (flags & AXIS_INDICES_ARE_SHORT) ? 2 : 1;
+    unsigned num_axes = numAxes;
 
-    const HBUINT8  *p = (const HBUINT8 *)  (((HBUINT8 *) &numAxes) + numAxes.static_size + (flags & GID_IS_24 ? 3 : 2));
-    const HBUINT16 *q = (const HBUINT16 *) (((HBUINT8 *) &numAxes) + numAxes.static_size + (flags & GID_IS_24 ? 3 : 2));
+    const HBUINT8  *p = (const HBUINT8 *)  (((HBUINT8 *) &numAxes) + numAxes.static_size + (flags & GID_IS_24BIT ? 3 : 2));
+    const HBUINT16 *q = (const HBUINT16 *) (((HBUINT8 *) &numAxes) + numAxes.static_size + (flags & GID_IS_24BIT ? 3 : 2));
 
-    const F2DOT14 *a = (const F2DOT14 *) ((HBUINT8 *) (axis_width == 1 ? (p + numAxes) : (HBUINT8 *) (q + numAxes)));
+    const F2DOT14 *a = (const F2DOT14 *) ((HBUINT8 *) (axis_width == 1 ? (p + num_axes) : (HBUINT8 *) (q + num_axes)));
 
-    unsigned count = numAxes;
+    unsigned count = num_axes;
     for (unsigned i = 0; i < count; i++)
     {
       unsigned axis_index = axis_width == 1 ? (unsigned) *p++ : (unsigned) *q++;
 
-      signed v = have_variations ? rec_points[i].x : *a++;
+      signed v = have_variations ? rec_points.arrayZ[i].x : a++->to_int ();
 
-      v += setter[axis_index];
       v = hb_clamp (v, -(1<<14), (1<<14));
       setter[axis_index] = v;
     }
@@ -327,8 +367,9 @@ struct VarCompositeGlyphRecord
   protected:
   HBUINT16	flags;
   HBUINT8	numAxes;
+  HBUINT16	pad;
   public:
-  DEFINE_SIZE_MIN (3);
+  DEFINE_SIZE_MIN (5);
 };
 
 using var_composite_iter_t = composite_iter_tmpl<VarCompositeGlyphRecord>;
@@ -343,6 +384,13 @@ struct VarCompositeGlyph
   var_composite_iter_t iter () const
   { return var_composite_iter_t (bytes, &StructAfter<VarCompositeGlyphRecord, GlyphHeader> (header)); }
 
+  const hb_bytes_t trim_padding () const
+  {
+    unsigned length = GlyphHeader::static_size;
+    for (auto &comp : iter ())
+      length += comp.get_size ();
+    return bytes.sub_array (0, length);
+  }
 };
 
 

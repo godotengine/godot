@@ -13,6 +13,7 @@ if env["builtin_libwebp"]:
     thirdparty_dir = "#thirdparty/libwebp/"
     thirdparty_sources = [
         "sharpyuv/sharpyuv.c",
+        "sharpyuv/sharpyuv_cpu.c",
         "sharpyuv/sharpyuv_csp.c",
         "sharpyuv/sharpyuv_dsp.c",
         "sharpyuv/sharpyuv_gamma.c",

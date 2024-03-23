@@ -46,9 +46,7 @@ private:
 	mutable RID_PtrOwner<DummyTexture> texture_owner;
 
 public:
-	static TextureStorage *get_singleton() {
-		return singleton;
-	};
+	static TextureStorage *get_singleton() { return singleton; }
 
 	TextureStorage();
 	~TextureStorage();
@@ -73,21 +71,21 @@ public:
 
 	virtual RID texture_allocate() override {
 		DummyTexture *texture = memnew(DummyTexture);
-		ERR_FAIL_COND_V(!texture, RID());
+		ERR_FAIL_NULL_V(texture, RID());
 		return texture_owner.make_rid(texture);
 	};
 
 	virtual void texture_free(RID p_rid) override {
 		// delete the texture
 		DummyTexture *texture = texture_owner.get_or_null(p_rid);
-		ERR_FAIL_COND(!texture);
+		ERR_FAIL_NULL(texture);
 		texture_owner.free(p_rid);
 		memdelete(texture);
 	};
 
 	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override {
 		DummyTexture *t = texture_owner.get_or_null(p_texture);
-		ERR_FAIL_COND(!t);
+		ERR_FAIL_NULL(t);
 		t->image = p_image->duplicate();
 	};
 	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override{};
@@ -105,7 +103,7 @@ public:
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const override {
 		DummyTexture *t = texture_owner.get_or_null(p_texture);
-		ERR_FAIL_COND_V(!t, Ref<Image>());
+		ERR_FAIL_NULL_V(t, Ref<Image>());
 		return t->image;
 	};
 	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override { return Ref<Image>(); };
@@ -117,6 +115,8 @@ public:
 	virtual void texture_set_path(RID p_texture, const String &p_path) override{};
 	virtual String texture_get_path(RID p_texture) const override { return String(); };
 
+	virtual Image::Format texture_get_format(RID p_texture) const override { return Image::FORMAT_MAX; }
+
 	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override{};
 	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override{};
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) override{};
@@ -127,14 +127,16 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override { return Size2(); };
 
-	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const override { return RID(); };
+	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) override{};
+	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override { return RID(); };
+	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override { return 0; };
 
 	/* DECAL API */
 	virtual RID decal_allocate() override { return RID(); }
 	virtual void decal_initialize(RID p_rid) override {}
 	virtual void decal_free(RID p_rid) override{};
 
-	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) override {}
+	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) override {}
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override {}
 	virtual void decal_set_emission_energy(RID p_decal, float p_energy) override {}
 	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) override {}
@@ -145,6 +147,7 @@ public:
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override {}
 
 	virtual AABB decal_get_aabb(RID p_decal) const override { return AABB(); }
+	virtual uint32_t decal_get_cull_mask(RID p_decal) const override { return 0; }
 
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
@@ -154,6 +157,7 @@ public:
 	virtual RID decal_instance_create(RID p_decal) override { return RID(); }
 	virtual void decal_instance_free(RID p_decal_instance) override {}
 	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override {}
+	virtual void decal_instance_set_sorting_offset(RID p_decal_instance, float p_sorting_offset) override {}
 
 	/* RENDER TARGET */
 
@@ -171,6 +175,11 @@ public:
 	virtual void render_target_set_as_unused(RID p_render_target) override {}
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override {}
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override { return RS::VIEWPORT_MSAA_DISABLED; }
+	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) override {}
+	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const override { return false; }
+	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}
+	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override {}
+	virtual bool render_target_is_using_hdr(RID p_render_target) const override { return false; }
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override {}
 	virtual bool render_target_is_clear_requested(RID p_render_target) override { return false; }

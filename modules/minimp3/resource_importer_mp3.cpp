@@ -47,6 +47,10 @@ String ResourceImporterMP3::get_visible_name() const {
 }
 
 void ResourceImporterMP3::get_recognized_extensions(List<String> *p_extensions) const {
+#ifndef MINIMP3_ONLY_MP3
+	p_extensions->push_back("mp1");
+	p_extensions->push_back("mp2");
+#endif
 	p_extensions->push_back("mp3");
 }
 
@@ -71,7 +75,7 @@ String ResourceImporterMP3::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterMP3::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "loop_offset"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,or_greater"), 0));
@@ -85,7 +89,7 @@ bool ResourceImporterMP3::has_advanced_options() const {
 void ResourceImporterMP3::show_advanced_options(const String &p_path) {
 	Ref<AudioStreamMP3> mp3_stream = import_mp3(p_path);
 	if (mp3_stream.is_valid()) {
-		AudioStreamImportSettings::get_singleton()->edit(p_path, "mp3", mp3_stream);
+		AudioStreamImportSettingsDialog::get_singleton()->edit(p_path, "mp3", mp3_stream);
 	}
 }
 #endif
@@ -106,7 +110,7 @@ Ref<AudioStreamMP3> ResourceImporterMP3::import_mp3(const String &p_path) {
 	mp3_stream.instantiate();
 
 	mp3_stream->set_data(data);
-	ERR_FAIL_COND_V(!mp3_stream->get_data().size(), Ref<AudioStreamMP3>());
+	ERR_FAIL_COND_V(mp3_stream->get_data().is_empty(), Ref<AudioStreamMP3>());
 
 	return mp3_stream;
 }

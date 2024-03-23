@@ -83,9 +83,16 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 	if (unlikely(_p->read_only)) {
 		if (p_key.get_type() == Variant::STRING_NAME) {
 			const StringName *sn = VariantInternal::get_string_name(&p_key);
-			*_p->read_only = _p->variant_map[sn->operator String()];
-		} else {
+			const String &key = sn->operator String();
+			if (likely(_p->variant_map.has(key))) {
+				*_p->read_only = _p->variant_map[key];
+			} else {
+				*_p->read_only = Variant();
+			}
+		} else if (likely(_p->variant_map.has(p_key))) {
 			*_p->read_only = _p->variant_map[p_key];
+		} else {
+			*_p->read_only = Variant();
 		}
 
 		return *_p->read_only;
@@ -140,6 +147,15 @@ Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
 		return p_default;
 	}
 
+	return *result;
+}
+
+Variant Dictionary::get_or_add(const Variant &p_key, const Variant &p_default) {
+	const Variant *result = getptr(p_key);
+	if (!result) {
+		operator[](p_key) = p_default;
+		return p_default;
+	}
 	return *result;
 }
 
@@ -203,7 +219,7 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_c
 	recursion_count++;
 	for (const KeyValue<Variant, Variant> &this_E : _p->variant_map) {
 		HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
-		if (!other_E || !this_E.value.hash_compare(other_E->value, recursion_count)) {
+		if (!other_E || !this_E.value.hash_compare(other_E->value, recursion_count, false)) {
 			return false;
 		}
 	}
@@ -233,15 +249,22 @@ void Dictionary::clear() {
 }
 
 void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
 	for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 		if (p_overwrite || !has(E.key)) {
-			this->operator[](E.key) = E.value;
+			operator[](E.key) = E.value;
 		}
 	}
 }
 
+Dictionary Dictionary::merged(const Dictionary &p_dictionary, bool p_overwrite) const {
+	Dictionary ret = duplicate();
+	ret.merge(p_dictionary, p_overwrite);
+	return ret;
+}
+
 void Dictionary::_unref() const {
-	ERR_FAIL_COND(!_p);
+	ERR_FAIL_NULL(_p);
 	if (_p->refcount.unref()) {
 		if (_p->read_only) {
 			memdelete(_p->read_only);
@@ -333,15 +356,9 @@ Dictionary Dictionary::duplicate(bool p_deep) const {
 	return recursive_duplicate(p_deep, 0);
 }
 
-void Dictionary::set_read_only(bool p_enable) {
-	if (p_enable == bool(_p->read_only != nullptr)) {
-		return;
-	}
-	if (p_enable) {
+void Dictionary::make_read_only() {
+	if (_p->read_only == nullptr) {
 		_p->read_only = memnew(Variant);
-	} else {
-		memdelete(_p->read_only);
-		_p->read_only = nullptr;
 	}
 }
 bool Dictionary::is_read_only() const {

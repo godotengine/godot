@@ -10,10 +10,10 @@ namespace GSUB_impl {
 template <typename Types>
 struct Ligature
 {
-  protected:
+  public:
   typename Types::HBGlyphID
 		ligGlyph;               /* GlyphID of ligature to substitute */
-  HeadlessArrayOf<typename Types::HBGlyphID>
+  HeadlessArray16Of<typename Types::HBGlyphID>
 		component;              /* Array of component GlyphIDs--start
                                          * with the second  component--ordered
                                          * in writing direction */
@@ -28,6 +28,9 @@ struct Ligature
 
   bool intersects (const hb_set_t *glyphs) const
   { return hb_all (component, glyphs); }
+
+  bool intersects_lig_glyph (const hb_set_t *glyphs) const
+  { return glyphs->has(ligGlyph); }
 
   void closure (hb_closure_context_t *c) const
   {
@@ -69,7 +72,7 @@ struct Ligature
       {
 	c->buffer->sync_so_far ();
 	c->buffer->message (c->font,
-			    "replacing glyph at %d (ligature substitution)",
+			    "replacing glyph at %u (ligature substitution)",
 			    c->buffer->idx);
       }
 
@@ -78,8 +81,8 @@ struct Ligature
       if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
       {
 	c->buffer->message (c->font,
-			    "replaced glyph at %d (ligature substitution)",
-			    c->buffer->idx - 1);
+			    "replaced glyph at %u (ligature substitution)",
+			    c->buffer->idx - 1u);
       }
 
       return_trace (true);
@@ -138,7 +141,7 @@ struct Ligature
     {
       c->buffer->sync_so_far ();
       c->buffer->message (c->font,
-			  "ligated glyph at %d",
+			  "ligated glyph at %u",
 			  pos);
     }
 

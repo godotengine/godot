@@ -1,9 +1,10 @@
 name: 🍏 iOS Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:
-  # Only used for the cache key. Increment version to force clean build.
+  # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes
 
@@ -17,7 +18,7 @@ jobs:
     name: Template (target=template_release)
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache

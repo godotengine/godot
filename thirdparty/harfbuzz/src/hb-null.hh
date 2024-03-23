@@ -37,7 +37,7 @@
 
 /* Global nul-content Null pool.  Enlarge as necessary. */
 
-#define HB_NULL_POOL_SIZE 448
+#define HB_NULL_POOL_SIZE 640
 
 template <typename T, typename>
 struct _hb_has_min_size : hb_false_type {};
@@ -85,7 +85,7 @@ using hb_null_size = _hb_null_size<T, void>;
 template <typename T, typename>
 struct _hb_static_size : hb_integral_constant<unsigned, sizeof (T)> {};
 template <typename T>
-struct _hb_static_size<T, hb_void_t<decltype (T::min_size)>> : hb_integral_constant<unsigned, T::static_size> {};
+struct _hb_static_size<T, hb_void_t<decltype (T::static_size)>> : hb_integral_constant<unsigned, T::static_size> {};
 template <typename T>
 using hb_static_size = _hb_static_size<T, void>;
 #define hb_static_size(T) hb_static_size<T>::value
@@ -176,7 +176,7 @@ template <typename Type>
 static inline Type& Crap () {
   static_assert (hb_null_size (Type) <= HB_NULL_POOL_SIZE, "Increase HB_NULL_POOL_SIZE.");
   Type *obj = reinterpret_cast<Type *> (_hb_CrapPool);
-  memcpy (obj, &Null (Type), sizeof (*obj));
+  memcpy (obj, std::addressof (Null (Type)), sizeof (*obj));
   return *obj;
 }
 template <typename QType>
@@ -211,11 +211,11 @@ struct hb_nonnull_ptr_t
   T * operator = (T *v_)   { return v = v_; }
   T * operator -> () const { return get (); }
   T & operator * () const  { return *get (); }
-  T ** operator & () const { return &v; }
+  T ** operator & () const { return std::addressof (v); }
   /* Only auto-cast to const types. */
   template <typename C> operator const C * () const { return get (); }
   operator const char * () const { return (const char *) get (); }
-  T * get () const { return v ? v : const_cast<T *> (&Null (T)); }
+  T * get () const { return v ? v : const_cast<T *> (std::addressof (Null (T))); }
   T * get_raw () const { return v; }
 
   private:

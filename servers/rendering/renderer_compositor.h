@@ -70,6 +70,7 @@ struct BlitToScreen {
 class RendererCompositor {
 private:
 	bool xr_enabled = false;
+	static RendererCompositor *singleton;
 
 protected:
 	static RendererCompositor *(*_create_func)();
@@ -95,9 +96,9 @@ public:
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;
 
-	virtual void prepare_for_blitting_render_targets() = 0;
 	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) = 0;
 
+	virtual void end_viewport(bool p_swap_buffers) = 0;
 	virtual void end_frame(bool p_swap_buffers) = 0;
 	virtual void finalize() = 0;
 	virtual uint64_t get_frame_number() const = 0;
@@ -107,6 +108,7 @@ public:
 	static bool is_low_end() { return low_end; };
 	virtual bool is_xr_enabled() const;
 
+	static RendererCompositor *get_singleton() { return singleton; }
 	RendererCompositor();
 	virtual ~RendererCompositor() {}
 };

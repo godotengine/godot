@@ -54,6 +54,7 @@ kerxTupleKern (int value,
   unsigned int offset = value;
   const FWORD *pv = &StructAtOffset<FWORD> (base, offset);
   if (unlikely (!c->sanitizer.check_array (pv, tupleCount))) return 0;
+  hb_barrier ();
   return *pv;
 }
 
@@ -259,6 +260,7 @@ struct KerxSubTableFormat1
 	  depth = 0;
 	  return;
 	}
+	hb_barrier ();
 
 	hb_mask_t kern_mask = c->plan->kern_mask;
 
@@ -350,7 +352,7 @@ struct KerxSubTableFormat1
     driver_context_t dc (this, c);
 
     StateTableDriver<Types, EntryData> driver (machine, c->buffer, c->font->face);
-    driver.drive (&dc);
+    driver.drive (&dc, c);
 
     return_trace (true);
   }
@@ -389,6 +391,7 @@ struct KerxSubTableFormat2
     kern_idx = Types::offsetToIndex (kern_idx, this, arrayZ.arrayZ);
     const FWORD *v = &arrayZ[kern_idx];
     if (unlikely (!v->sanitize (&c->sanitizer))) return 0;
+    hb_barrier ();
 
     return kerxTupleKern (*v, header.tuple_count (), this, c);
   }
@@ -429,6 +432,7 @@ struct KerxSubTableFormat2
     return_trace (likely (c->check_struct (this) &&
 			  leftClassTable.sanitize (c, this) &&
 			  rightClassTable.sanitize (c, this) &&
+			  hb_barrier () &&
 			  c->check_range (this, array)));
   }
 
@@ -509,6 +513,7 @@ struct KerxSubTableFormat4
 	       double the ankrActionIndex to get the correct offset here. */
 	    const HBUINT16 *data = &ankrData[entry.data.ankrActionIndex * 2];
 	    if (!c->sanitizer.check_array (data, 2)) return;
+	    hb_barrier ();
 	    unsigned int markControlPoint = *data++;
 	    unsigned int currControlPoint = *data++;
 	    hb_position_t markX = 0;
@@ -537,6 +542,7 @@ struct KerxSubTableFormat4
 	       double the ankrActionIndex to get the correct offset here. */
 	    const HBUINT16 *data = &ankrData[entry.data.ankrActionIndex * 2];
 	    if (!c->sanitizer.check_array (data, 2)) return;
+	    hb_barrier ();
 	    unsigned int markAnchorPoint = *data++;
 	    unsigned int currAnchorPoint = *data++;
 	    const Anchor &markAnchor = c->ankr_table->get_anchor (c->buffer->info[mark].codepoint,
@@ -557,6 +563,7 @@ struct KerxSubTableFormat4
 	       by 4 to get the correct offset for the given action. */
 	    const FWORD *data = (const FWORD *) &ankrData[entry.data.ankrActionIndex * 4];
 	    if (!c->sanitizer.check_array (data, 4)) return;
+	    hb_barrier ();
 	    int markX = *data++;
 	    int markY = *data++;
 	    int currX = *data++;
@@ -594,7 +601,7 @@ struct KerxSubTableFormat4
     driver_context_t dc (this, c);
 
     StateTableDriver<Types, EntryData> driver (machine, c->buffer, c->font->face);
-    driver.drive (&dc);
+    driver.drive (&dc, c);
 
     return_trace (true);
   }
@@ -639,6 +646,7 @@ struct KerxSubTableFormat6
       if (unlikely (hb_unsigned_mul_overflows (offset, sizeof (FWORD32)))) return 0;
       const FWORD32 *v = &StructAtOffset<FWORD32> (&(this+t.array), offset * sizeof (FWORD32));
       if (unlikely (!v->sanitize (&c->sanitizer))) return 0;
+      hb_barrier ();
       return kerxTupleKern (*v, header.tuple_count (), &(this+vector), c);
     }
     else
@@ -649,6 +657,7 @@ struct KerxSubTableFormat6
       unsigned int offset = l + r;
       const FWORD *v = &StructAtOffset<FWORD> (&(this+t.array), offset * sizeof (FWORD));
       if (unlikely (!v->sanitize (&c->sanitizer))) return 0;
+      hb_barrier ();
       return kerxTupleKern (*v, header.tuple_count (), &(this+vector), c);
     }
   }
@@ -674,6 +683,7 @@ struct KerxSubTableFormat6
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  (is_long () ?
 			   (
 			     u.l.rowIndexTable.sanitize (c, this) &&
@@ -787,9 +797,10 @@ struct KerxSubTable
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (!u.header.sanitize (c) ||
-	u.header.length <= u.header.static_size ||
-	!c->check_range (this, u.header.length))
+    if (!(u.header.sanitize (c) &&
+	  hb_barrier () &&
+	  u.header.length >= u.header.static_size &&
+	  c->check_range (this, u.header.length)))
       return_trace (false);
 
     return_trace (dispatch (c));
@@ -869,6 +880,8 @@ struct KerxTable
 
   bool apply (AAT::hb_aat_apply_context_t *c) const
   {
+    c->buffer->unsafe_to_concat ();
+
     typedef typename T::SubTable SubTable;
 
     bool ret = false;
@@ -889,7 +902,7 @@ struct KerxTable
       reverse = bool (st->u.header.coverage & st->u.header.Backwards) !=
 		HB_DIRECTION_IS_BACKWARD (c->buffer->props.direction);
 
-      if (!c->buffer->message (c->font, "start subtable %d", c->lookup_index))
+      if (!c->buffer->message (c->font, "start subtable %u", c->lookup_index))
 	goto skip;
 
       if (!seenCrossStream &&
@@ -921,7 +934,7 @@ struct KerxTable
       if (reverse)
 	c->buffer->reverse ();
 
-      (void) c->buffer->message (c->font, "end subtable %d", c->lookup_index);
+      (void) c->buffer->message (c->font, "end subtable %u", c->lookup_index);
 
     skip:
       st = &StructAfter<SubTable> (*st);
@@ -934,9 +947,10 @@ struct KerxTable
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (unlikely (!thiz()->version.sanitize (c) ||
-		  (unsigned) thiz()->version < (unsigned) T::minVersion ||
-		  !thiz()->tableCount.sanitize (c)))
+    if (unlikely (!(thiz()->version.sanitize (c) &&
+		    hb_barrier () &&
+		    (unsigned) thiz()->version >= (unsigned) T::minVersion &&
+		    thiz()->tableCount.sanitize (c))))
       return_trace (false);
 
     typedef typename T::SubTable SubTable;
@@ -947,6 +961,7 @@ struct KerxTable
     {
       if (unlikely (!st->u.header.sanitize (c)))
 	return_trace (false);
+      hb_barrier ();
       /* OpenType kern table has 2-byte subtable lengths.  That's limiting.
        * MS implementation also only supports one subtable, of format 0,
        * anyway.  Certain versions of some fonts, like Calibry, contain

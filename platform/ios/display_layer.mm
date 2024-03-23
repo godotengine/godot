@@ -30,11 +30,12 @@
 
 #import "display_layer.h"
 
+#import "display_server_ios.h"
+#import "os_ios.h"
+
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
-#include "display_server_ios.h"
 #include "main/main.h"
-#include "os_ios.h"
 #include "servers/audio_server.h"
 
 #import <AudioToolbox/AudioServices.h>
@@ -60,7 +61,10 @@
 - (void)layoutDisplayLayer {
 }
 
-- (void)renderDisplayLayer {
+- (void)startRenderDisplayLayer {
+}
+
+- (void)stopRenderDisplayLayer {
 }
 
 @end
@@ -76,8 +80,6 @@
 }
 
 - (void)initializeDisplayLayer {
-	// Get our backing layer
-
 	// Configure it so that it is opaque, does not retain the contents of the backbuffer when displayed, and uses RGBA8888 color.
 	self.opaque = YES;
 	self.drawableProperties = [NSDictionary
@@ -86,8 +88,6 @@
 			kEAGLColorFormatRGBA8,
 			kEAGLDrawablePropertyColorFormat,
 			nil];
-
-	// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
 
 	// Create GL ES 3 context
 	if (GLOBAL_GET("rendering/renderer/rendering_method") == "gl_compatibility") {
@@ -115,8 +115,22 @@
 	[self createFramebuffer];
 }
 
-- (void)renderDisplayLayer {
+- (void)startRenderDisplayLayer {
 	[EAGLContext setCurrentContext:context];
+
+	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+}
+
+- (void)stopRenderDisplayLayer {
+	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+	[context presentRenderbuffer:GL_RENDERBUFFER_OES];
+
+#ifdef DEBUG_ENABLED
+	GLenum err = glGetError();
+	if (err) {
+		NSLog(@"DrawView: %x error", err);
+	}
+#endif
 }
 
 - (void)dealloc {
@@ -154,11 +168,15 @@
 		return NO;
 	}
 
+	GLES3::TextureStorage::system_fbo = viewFramebuffer;
+
 	return YES;
 }
 
 // Clean up any buffers we have allocated.
 - (void)destroyFramebuffer {
+	GLES3::TextureStorage::system_fbo = 0;
+
 	glDeleteFramebuffersOES(1, &viewFramebuffer);
 	viewFramebuffer = 0;
 	glDeleteRenderbuffersOES(1, &viewRenderbuffer);

@@ -46,9 +46,9 @@
  *
  */
 
-template <class TKey,
-		class Hasher = HashMapHasherDefault,
-		class Comparator = HashMapComparatorDefault<TKey>>
+template <typename TKey,
+		typename Hasher = HashMapHasherDefault,
+		typename Comparator = HashMapComparatorDefault<TKey>>
 class HashSet {
 public:
 	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
@@ -80,7 +80,7 @@ private:
 	}
 
 	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) const {
-		if (keys == nullptr) {
+		if (keys == nullptr || num_elements == 0) {
 			return false; // Failed lookups, no elements
 		}
 
@@ -237,7 +237,7 @@ public:
 	}
 
 	void clear() {
-		if (keys == nullptr) {
+		if (keys == nullptr || num_elements == 0) {
 			return;
 		}
 		uint32_t capacity = hash_table_size_primes[capacity_index];

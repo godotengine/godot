@@ -4,7 +4,7 @@
 
 #VERSION_DEFINES
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #endif
@@ -13,9 +13,9 @@
 layout(location = 0) out vec2 uv_interp;
 
 void main() {
-	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
-	uv_interp = base_arr[gl_VertexIndex];
-	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
+	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
+	gl_Position = vec4(base_arr[gl_VertexIndex], 0.0, 1.0);
+	uv_interp = clamp(gl_Position.xy, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
 }
 
 #[fragment]
@@ -24,27 +24,27 @@ void main() {
 
 #VERSION_DEFINES
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
 #else // has_VK_KHR_multiview
 #define ViewIndex 0
 #endif // has_VK_KHR_multiview
-#endif //MULTIVIEW
+#endif //USE_MULTIVIEW
 
 layout(location = 0) in vec2 uv_interp;
 
 #ifdef SUBPASS
 layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput input_color;
-#elif defined(MULTIVIEW)
+#elif defined(USE_MULTIVIEW)
 layout(set = 0, binding = 0) uniform sampler2DArray source_color;
 #else
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 #endif
 
 layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 layout(set = 2, binding = 0) uniform sampler2DArray source_glow;
 #else
 layout(set = 2, binding = 0) uniform sampler2D source_glow;
@@ -57,14 +57,21 @@ layout(set = 3, binding = 0) uniform sampler2D source_color_correction;
 layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #endif
 
+#define FLAG_USE_BCS (1 << 0)
+#define FLAG_USE_GLOW (1 << 1)
+#define FLAG_USE_AUTO_EXPOSURE (1 << 2)
+#define FLAG_USE_COLOR_CORRECTION (1 << 3)
+#define FLAG_USE_FXAA (1 << 4)
+#define FLAG_USE_DEBANDING (1 << 5)
+#define FLAG_CONVERT_TO_SRGB (1 << 6)
+
 layout(push_constant, std430) uniform Params {
 	vec3 bcs;
-	bool use_bcs;
+	uint flags;
 
-	bool use_glow;
-	bool use_auto_exposure;
-	bool use_color_correction;
+	vec2 pixel_size;
 	uint tonemapper;
+	uint pad;
 
 	uvec2 glow_texture_size;
 	float glow_intensity;
@@ -77,10 +84,6 @@ layout(push_constant, std430) uniform Params {
 	float white;
 	float auto_exposure_scale;
 	float luminance_multiplier;
-
-	vec2 pixel_size;
-	bool use_fxaa;
-	bool use_debanding;
 }
 params;
 
@@ -122,7 +125,7 @@ float h1(float a) {
 	return 1.0f + w3(a) / (w2(a) + w3(a));
 }
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 vec4 texture2D_bicubic(sampler2DArray tex, vec2 uv, int p_lod) {
 	float lod = float(p_lod);
 	vec2 tex_size = vec2(params.glow_texture_size >> p_lod);
@@ -150,7 +153,7 @@ vec4 texture2D_bicubic(sampler2DArray tex, vec2 uv, int p_lod) {
 }
 
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
-#else // MULTIVIEW
+#else // USE_MULTIVIEW
 
 vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	float lod = float(p_lod);
@@ -179,15 +182,15 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 }
 
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)
-#endif // !MULTIVIEW
+#endif // !USE_MULTIVIEW
 
 #else // USE_GLOW_FILTER_BICUBIC
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, vec3(m_uv, ViewIndex), float(m_lod))
-#else // MULTIVIEW
+#else // USE_MULTIVIEW
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, m_uv, float(m_lod))
-#endif // !MULTIVIEW
+#endif // !USE_MULTIVIEW
 
 #endif // !USE_GLOW_FILTER_BICUBIC
 
@@ -270,11 +273,11 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always o
 	}
 }
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 vec3 gather_glow(sampler2DArray tex, vec2 uv) { // sample all selected glow levels, view is added to uv later
 #else
 vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
-#endif // defined(MULTIVIEW)
+#endif // defined(USE_MULTIVIEW)
 	vec3 glow = vec3(0.0f);
 
 	if (params.glow_levels[0] > 0.0001) {
@@ -318,10 +321,12 @@ vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blendi
 	if (params.glow_mode == GLOW_MODE_ADD) {
 		return color + glow;
 	} else if (params.glow_mode == GLOW_MODE_SCREEN) {
-		//need color clamping
+		// Needs color clamping.
+		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
 		return max((color + glow) - (color * glow), vec3(0.0));
 	} else if (params.glow_mode == GLOW_MODE_SOFTLIGHT) {
-		//need color clamping
+		// Needs color clamping.
+		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
 		glow = glow * vec3(0.5f) + vec3(0.5f);
 
 		color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
@@ -359,7 +364,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	const float FXAA_REDUCE_MUL = (1.0 / 8.0);
 	const float FXAA_SPAN_MAX = 8.0;
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 	vec3 rgbNW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
 	vec3 rgbNE = textureLod(source_color, vec3(uv_interp + vec2(0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
 	vec3 rgbSW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, 0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
@@ -394,7 +399,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 						  dir * rcpDirMin)) *
 			params.pixel_size;
 
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 	vec3 rgbA = 0.5 * exposure * (textureLod(source_color, vec3(uv_interp + dir * (1.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * (2.0 / 3.0 - 0.5), ViewIndex), 0.0).xyz) * params.luminance_multiplier;
 	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source_color, vec3(uv_interp + dir * -0.5, ViewIndex), 0.0).xyz + textureLod(source_color, vec3(uv_interp + dir * 0.5, ViewIndex), 0.0).xyz) * params.luminance_multiplier;
 #else
@@ -425,9 +430,9 @@ vec3 screen_space_dither(vec2 frag_coord) {
 
 void main() {
 #ifdef SUBPASS
-	// SUBPASS and MULTIVIEW can be combined but in that case we're already reading from the correct layer
+	// SUBPASS and USE_MULTIVIEW can be combined but in that case we're already reading from the correct layer
 	vec4 color = subpassLoad(input_color);
-#elif defined(MULTIVIEW)
+#elif defined(USE_MULTIVIEW)
 	vec4 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f);
 #else
 	vec4 color = textureLod(source_color, uv_interp, 0.0f);
@@ -439,7 +444,7 @@ void main() {
 	float exposure = params.exposure;
 
 #ifndef SUBPASS
-	if (params.use_auto_exposure) {
+	if (bool(params.flags & FLAG_USE_AUTO_EXPOSURE)) {
 		exposure *= 1.0 / (texelFetch(source_auto_exposure, ivec2(0, 0), 0).r * params.luminance_multiplier / params.auto_exposure_scale);
 	}
 #endif
@@ -448,12 +453,12 @@ void main() {
 
 	// Early Tonemap & SRGB Conversion
 #ifndef SUBPASS
-	if (params.use_fxaa) {
+	if (bool(params.flags & FLAG_USE_FXAA)) {
 		// FXAA must be performed before glow to preserve the "bleed" effect of glow.
 		color.rgb = do_fxaa(color.rgb, exposure, uv_interp);
 	}
 
-	if (params.use_glow && params.glow_mode == GLOW_MODE_MIX) {
+	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode == GLOW_MODE_MIX) {
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
 		if (params.glow_map_strength > 0.001) {
 			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
@@ -464,11 +469,12 @@ void main() {
 
 	color.rgb = apply_tonemapping(color.rgb, params.white);
 
-	color.rgb = linear_to_srgb(color.rgb); // regular linear -> SRGB conversion
-
+	if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
+	}
 #ifndef SUBPASS
 	// Glow
-	if (params.use_glow && params.glow_mode != GLOW_MODE_MIX) {
+	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_MIX) {
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
 		if (params.glow_map_strength > 0.001) {
 			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
@@ -476,7 +482,9 @@ void main() {
 
 		// high dynamic range -> SRGB
 		glow = apply_tonemapping(glow, params.white);
-		glow = linear_to_srgb(glow);
+		if (bool(params.flags & FLAG_CONVERT_TO_SRGB)) {
+			glow = linear_to_srgb(glow);
+		}
 
 		color.rgb = apply_glow(color.rgb, glow);
 	}
@@ -484,15 +492,15 @@ void main() {
 
 	// Additional effects
 
-	if (params.use_bcs) {
+	if (bool(params.flags & FLAG_USE_BCS)) {
 		color.rgb = apply_bcs(color.rgb, params.bcs);
 	}
 
-	if (params.use_color_correction) {
+	if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
 		color.rgb = apply_color_correction(color.rgb);
 	}
 
-	if (params.use_debanding) {
+	if (bool(params.flags & FLAG_USE_DEBANDING)) {
 		// Debanding should be done at the end of tonemapping, but before writing to the LDR buffer.
 		// Otherwise, we're adding noise to an already-quantized image.
 		color.rgb += screen_space_dither(gl_FragCoord.xy);

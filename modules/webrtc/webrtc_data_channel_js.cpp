@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef WEB_ENABLED
-
 #include "webrtc_data_channel_js.h"
 
-#include "emscripten.h"
+#ifdef WEB_ENABLED
+
+#include <emscripten.h>
 
 extern "C" {
 typedef void (*RTCChOnOpen)(void *p_obj);

@@ -37,6 +37,8 @@ class ProgressBar : public Range {
 	GDCLASS(ProgressBar, Range);
 
 	bool show_percentage = true;
+	bool indeterminate = false;
+	bool editor_preview_indeterminate = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> background_style;
@@ -50,10 +52,12 @@ class ProgressBar : public Range {
 	} theme_cache;
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
+
 	static void _bind_methods();
+
+	double indeterminate_min_speed = 200.0;
 
 public:
 	enum FillMode {
@@ -70,10 +74,18 @@ public:
 	void set_show_percentage(bool p_visible);
 	bool is_percentage_shown() const;
 
+	void set_indeterminate(bool p_indeterminate);
+	bool is_indeterminate() const;
+
+	void set_editor_preview_indeterminate(bool p_indeterminate_preview);
+	bool is_editor_preview_indeterminate_enabled() const;
+
 	Size2 get_minimum_size() const override;
 	ProgressBar();
 
 private:
+	float _inderminate_fill_progress = 0;
+
 	FillMode mode = FILL_BEGIN_TO_END;
 };
 

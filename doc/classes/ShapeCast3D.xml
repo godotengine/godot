@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ShapeCast3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ShapeCast3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Node for physics collision sweep and immediate overlap queries. Similar to the [RayCast3D] node.
+		A 3D shape that sweeps a region of space to detect [CollisionObject3D]s.
 	</brief_description>
 	<description>
-		Shape casting allows to detect collision objects by sweeping the [member shape] along the cast direction determined by [member target_position] (useful for things like beam weapons).
-		Immediate collision overlaps can be done with the [member target_position] set to [code]Vector3(0, 0, 0)[/code] and by calling [method force_shapecast_update] within the same [b]physics_frame[/b]. This also helps to overcome some limitations of [Area3D] when used as a continuous detection area, often requiring waiting a couple of frames before collision information is available to [Area3D] nodes, and when using the signals creates unnecessary complexity.
-		The node can detect multiple collision objects, but it's usually used to detect the first collision.
-		[b]Note:[/b] Shape casting is more computationally expensive compared to ray casting.
+		Shape casting allows to detect collision objects by sweeping its [member shape] along the cast direction determined by [member target_position]. This is similar to [RayCast3D], but it allows for sweeping a region of space, rather than just a straight line. [ShapeCast3D] can detect multiple collision objects. It is useful for things like wide laser beams or snapping a simple shape to a floor.
+		Immediate collision overlaps can be done with the [member target_position] set to [code]Vector3(0, 0, 0)[/code] and by calling [method force_shapecast_update] within the same physics frame. This helps to overcome some limitations of [Area3D] when used as an instantaneous detection area, as collision information isn't immediately available to it.
+		[b]Note:[/b] Shape casting is more computationally expensive than ray casting.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="add_exception">
 			<return type="void" />
-			<param index="0" name="node" type="Object" />
+			<param index="0" name="node" type="CollisionObject3D" />
 			<description>
 				Adds a collision exception so the shape does not report collisions with the specified [CollisionObject3D] node.
 			</description>
@@ -35,7 +34,7 @@
 		<method name="force_shapecast_update">
 			<return type="void" />
 			<description>
-				Updates the collision information for the shape. Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the shape or its parent has changed state.
+				Updates the collision information for the shape immediately, without waiting for the next [code]_physics_process[/code] call. Use this method, for example, when the shape or its parent has changed state.
 				[b]Note:[/b] [code]enabled == true[/code] is not required for this to work.
 			</description>
 		</method>
@@ -108,7 +107,7 @@
 		</method>
 		<method name="remove_exception">
 			<return type="void" />
-			<param index="0" name="node" type="Object" />
+			<param index="0" name="node" type="CollisionObject3D" />
 			<description>
 				Removes a collision exception so the shape does report collisions with the specified [CollisionObject3D] node.
 			</description>
@@ -120,11 +119,11 @@
 				Removes a collision exception so the shape does report collisions with the specified [RID].
 			</description>
 		</method>
-		<method name="resource_changed">
+		<method name="resource_changed" deprecated="Use [signal Resource.changed] instead.">
 			<return type="void" />
 			<param index="0" name="resource" type="Resource" />
 			<description>
-				This method is used internally to update the debug gizmo in the editor. Any code placed in this function will be called whenever the [member shape] resource is modified.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="set_collision_mask_value">
@@ -138,10 +137,10 @@
 	</methods>
 	<members>
 		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
-			If [code]true[/code], collision with [Area3D]s will be reported.
+			If [code]true[/code], collisions with [Area3D]s will be reported.
 		</member>
 		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled" default="true">
-			If [code]true[/code], collision with [PhysicsBody3D]s will be reported.
+			If [code]true[/code], collisions with [PhysicsBody3D]s will be reported.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The shape's collision mask. Only objects in at least one collision layer enabled in the mask will be detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.

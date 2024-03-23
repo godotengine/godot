@@ -453,7 +453,7 @@ BROTLI_ENC_API BROTLI_BOOL BrotliEncoderHasMoreOutput(
  *
  * This method is used to make language bindings easier and more efficient:
  *  -# push data to ::BrotliEncoderCompressStream,
- *     until ::BrotliEncoderHasMoreOutput returns BROTL_TRUE
+ *     until ::BrotliEncoderHasMoreOutput returns BROTLI_TRUE
  *  -# use ::BrotliEncoderTakeOutput to peek bytes and copy to language-specific
  *     entity
  *
@@ -490,7 +490,7 @@ BROTLI_ENC_EXTRA_API size_t BrotliEncoderGetPreparedDictionarySize(
 /**
  * Gets an encoder library version.
  *
- * Look at BROTLI_VERSION for more information.
+ * Look at BROTLI_MAKE_HEX_VERSION for more information.
  */
 BROTLI_ENC_API uint32_t BrotliEncoderVersion(void);
 

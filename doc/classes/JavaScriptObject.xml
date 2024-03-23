@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="JavaScriptObject" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="JavaScriptObject" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A wrapper class for web native JavaScript objects.
 	</brief_description>
@@ -9,7 +9,7 @@
 		[codeblock]
 		extends Node
 
-		var _my_js_callback = JavaScriptBridge.create_callback(self, "myCallback") # This reference must be kept
+		var _my_js_callback = JavaScriptBridge.create_callback(myCallback) # This reference must be kept
 		var console = JavaScriptBridge.get_interface("console")
 
 		func _init():

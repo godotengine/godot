@@ -33,11 +33,11 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/spin_box.h"
 
 class AcceptDialog;
 class ConfirmationDialog;
 class MenuButton;
+class SpinBox;
 
 class MeshInstance3DEditor : public Control {
 	GDCLASS(MeshInstance3DEditor, Control);
@@ -79,7 +79,8 @@ class MeshInstance3DEditor : public Control {
 
 protected:
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
+
+	void _notification(int p_what);
 
 public:
 	void edit(MeshInstance3D *p_mesh);

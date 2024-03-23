@@ -38,7 +38,7 @@
 
 using namespace godot;
 
-#else
+#elif defined(GODOT_MODULE)
 // Headers for building as built-in module.
 
 #include "core/error/error_macros.h"
@@ -49,13 +49,15 @@ using namespace godot;
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
+#include "modules/modules_enabled.gen.h" // For svg, freetype.
 #endif
 
 #ifdef MODULE_SVG_ENABLED
+#ifdef MODULE_FREETYPE_ENABLED
+
+#include "thorvg_svg_in_ot.h"
 
 #include "thorvg_bounds_iterator.h"
-#include "thorvg_svg_in_ot.h"
 
 #include <freetype/otsvg.h>
 #include <ft2build.h>
@@ -88,24 +90,13 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 	if (!gl_state.ready) {
 		Ref<XMLParser> parser;
 		parser.instantiate();
-#ifdef GDEXTENSION
-		PackedByteArray data;
-		data.resize(document->svg_document_length);
-		memcpy(data.ptrw(), document->svg_document, document->svg_document_length);
-		parser->open_buffer(data);
-#else
 		parser->_open_buffer((const uint8_t *)document->svg_document, document->svg_document_length);
-#endif
 
 		float aspect = 1.0f;
 		String xml_body;
 		while (parser->read() == OK) {
 			if (parser->has_attribute("id")) {
-#ifdef GDEXTENSION
 				const String &gl_name = parser->get_named_attribute_value("id");
-#else
-				const String &gl_name = parser->get_attribute_value("id");
-#endif
 				if (gl_name.begins_with("glyph")) {
 					int dot_pos = gl_name.find(".");
 					int64_t gl_idx = gl_name.substr(5, (dot_pos > 0) ? dot_pos - 5 : -1).to_int();
@@ -117,11 +108,7 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			}
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT && parser->get_node_name() == "svg") {
 				if (parser->has_attribute("viewBox")) {
-#ifdef GDEXTENSION
 					PackedStringArray vb = parser->get_named_attribute_value("viewBox").split(" ");
-#else
-					Vector<String> vb = parser->get_attribute_value("viewBox").split(" ");
-#endif
 
 					if (vb.size() == 4) {
 						aspect = vb[2].to_float() / vb[3].to_float();
@@ -129,36 +116,28 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 				}
 				continue;
 			}
-#ifdef GDEXTENSION
-			if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
-				xml_body = xml_body + "<" + parser->get_node_name();
-				for (int i = 0; i < parser->get_attribute_count(); i++) {
-					xml_body = xml_body + " " + parser->get_attribute_name(i) + "=\"" + parser->get_attribute_value(i) + "\"";
-				}
-				xml_body = xml_body + ">";
-			} else if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-				xml_body = xml_body + parser->get_node_data();
-			} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END) {
-				xml_body = xml_body + "</" + parser->get_node_name() + ">";
-			}
-#else
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
 				xml_body += vformat("<%s", parser->get_node_name());
 				for (int i = 0; i < parser->get_attribute_count(); i++) {
 					xml_body += vformat(" %s=\"%s\"", parser->get_attribute_name(i), parser->get_attribute_value(i));
 				}
-				xml_body += ">";
+
+				if (parser->is_empty()) {
+					xml_body += "/>";
+				} else {
+					xml_body += ">";
+				}
 			} else if (parser->get_node_type() == XMLParser::NODE_TEXT) {
 				xml_body += parser->get_node_data();
 			} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END) {
 				xml_body += vformat("</%s>", parser->get_node_name());
 			}
-#endif
 		}
-		String temp_xml = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 0 0\">" + xml_body;
+		String temp_xml_str = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\">" + xml_body;
+		CharString temp_xml = temp_xml_str.utf8();
 
 		std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
-		tvg::Result result = picture->load(temp_xml.utf8().get_data(), temp_xml.utf8().length(), "svg+xml", false);
+		tvg::Result result = picture->load(temp_xml.get_data(), temp_xml.length(), "svg+xml", false);
 		if (result != tvg::Result::Success) {
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to load SVG document (bounds detection).");
 		}
@@ -175,14 +154,11 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			new_h = (new_w / aspect);
 		}
 
-#ifdef GDEXTENSION
-		gl_state.xml_code = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"" + rtos(min_x) + " " + rtos(min_y) + " " + rtos(new_w) + " " + rtos(new_h) + "\">" + xml_body;
-#else
-		gl_state.xml_code = vformat("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"%f %f %f %f\">", min_x, min_y, new_w, new_h) + xml_body;
-#endif
+		String xml_code_str = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"" + rtos(min_x) + " " + rtos(min_y) + " " + rtos(new_w) + " " + rtos(new_h) + "\">" + xml_body;
+		gl_state.xml_code = xml_code_str.utf8();
 
 		picture = tvg::Picture::gen();
-		result = picture->load(gl_state.xml_code.utf8().get_data(), gl_state.xml_code.utf8().length(), "svg+xml", false);
+		result = picture->load(gl_state.xml_code.get_data(), gl_state.xml_code.length(), "svg+xml", false);
 		if (result != tvg::Result::Success) {
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to load SVG document (glyph metrics).");
 		}
@@ -211,8 +187,8 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to get SVG bounds.");
 		}
 
-		gl_state.bmp_y = -min_y * gl_state.h / new_h;
-		gl_state.bmp_x = min_x * gl_state.w / new_w;
+		gl_state.bmp_y = gl_state.h + metrics.descender / 64.f;
+		gl_state.bmp_x = 0;
 
 		gl_state.ready = true;
 	}
@@ -270,7 +246,7 @@ FT_Error tvg_svg_in_ot_render(FT_GlyphSlot p_slot, FT_Pointer *p_state) {
 	ERR_FAIL_COND_V_MSG(!gl_state.ready, FT_Err_Invalid_SVG_Document, "SVG glyph not ready.");
 
 	std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
-	tvg::Result res = picture->load(gl_state.xml_code.utf8().get_data(), gl_state.xml_code.utf8().length(), "svg+xml", false);
+	tvg::Result res = picture->load(gl_state.xml_code.get_data(), gl_state.xml_code.length(), "svg+xml", false);
 	if (res != tvg::Result::Success) {
 		ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to load SVG document (glyph rendering).");
 	}
@@ -280,7 +256,7 @@ FT_Error tvg_svg_in_ot_render(FT_GlyphSlot p_slot, FT_Pointer *p_state) {
 	}
 
 	std::unique_ptr<tvg::SwCanvas> sw_canvas = tvg::SwCanvas::gen();
-	res = sw_canvas->target((uint32_t *)p_slot->bitmap.buffer, (int)p_slot->bitmap.width, (int)p_slot->bitmap.width, (int)p_slot->bitmap.rows, tvg::SwCanvas::ARGB8888_STRAIGHT);
+	res = sw_canvas->target((uint32_t *)p_slot->bitmap.buffer, (int)p_slot->bitmap.width, (int)p_slot->bitmap.width, (int)p_slot->bitmap.rows, tvg::SwCanvas::ARGB8888S);
 	if (res != tvg::Result::Success) {
 		ERR_FAIL_V_MSG(FT_Err_Invalid_Outline, "Failed to create SVG canvas.");
 	}
@@ -317,4 +293,5 @@ SVG_RendererHooks *get_tvg_svg_in_ot_hooks() {
 	return &tvg_svg_in_ot_hooks;
 }
 
+#endif // MODULE_FREETYPE_ENABLED
 #endif // MODULE_SVG_ENABLED

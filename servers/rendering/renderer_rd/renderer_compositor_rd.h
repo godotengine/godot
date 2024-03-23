@@ -33,7 +33,6 @@
 
 #include "core/os/os.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_rd/effects_rd.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
 #include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
@@ -60,7 +59,6 @@ protected:
 	RendererRD::ParticlesStorage *particles_storage = nullptr;
 	RendererRD::TextureStorage *texture_storage = nullptr;
 	RendererRD::Fog *fog = nullptr;
-	EffectsRD *effects = nullptr;
 	RendererSceneRenderRD *scene = nullptr;
 
 	enum BlitMode {
@@ -82,7 +80,7 @@ protected:
 		float upscale;
 		float aspect_ratio;
 		uint32_t layer;
-		uint32_t pad1;
+		uint32_t convert_to_srgb;
 	};
 
 	struct Blit {
@@ -101,6 +99,7 @@ protected:
 	double delta = 0.0;
 
 	static uint64_t frame;
+	static RendererCompositorRD *singleton;
 
 public:
 	RendererUtilities *get_utilities() { return utilities; };
@@ -114,7 +113,6 @@ public:
 		return scene->get_gi();
 	}
 	RendererFog *get_fog() { return fog; }
-	EffectsRD *get_effects() { return effects; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
 
@@ -122,9 +120,9 @@ public:
 
 	void initialize();
 	void begin_frame(double frame_step);
-	void prepare_for_blitting_render_targets();
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
+	void end_viewport(bool p_swap_buffers) {}
 	void end_frame(bool p_swap_buffers);
 	void finalize();
 
@@ -145,7 +143,7 @@ public:
 		low_end = false;
 	}
 
-	static RendererCompositorRD *singleton;
+	static RendererCompositorRD *get_singleton() { return singleton; }
 	RendererCompositorRD();
 	~RendererCompositorRD();
 };

@@ -32,16 +32,42 @@
 #define NAVIGATION_POLYGON_EDITOR_PLUGIN_H
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
-#include "scene/2d/navigation_region_2d.h"
+
+#include "editor/editor_plugin.h"
+
+class AcceptDialog;
+class HBoxContainer;
+class NavigationPolygon;
+class NavigationRegion2D;
 
 class NavigationPolygonEditor : public AbstractPolygon2DEditor {
+	friend class NavigationPolygonEditorPlugin;
+
 	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);
 
 	NavigationRegion2D *node = nullptr;
 
 	Ref<NavigationPolygon> _ensure_navpoly() const;
 
+	AcceptDialog *err_dialog = nullptr;
+
+	HBoxContainer *bake_hbox = nullptr;
+	Button *button_bake = nullptr;
+	Button *button_reset = nullptr;
+	Label *bake_info = nullptr;
+
+	Timer *rebake_timer = nullptr;
+	float _rebake_timer_delay = 1.5;
+	void _rebake_timer_timeout();
+
+	void _bake_pressed();
+	void _clear_pressed();
+
+	void _update_polygon_editing_state();
+
 protected:
+	void _notification(int p_what);
+
 	virtual Node2D *_get_node() const override;
 	virtual void _set_node(Node *p_polygon) override;
 
@@ -62,6 +88,8 @@ public:
 
 class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
 	GDCLASS(NavigationPolygonEditorPlugin, AbstractPolygon2DEditorPlugin);
+
+	NavigationPolygonEditor *navigation_polygon_editor = nullptr;
 
 public:
 	NavigationPolygonEditorPlugin();

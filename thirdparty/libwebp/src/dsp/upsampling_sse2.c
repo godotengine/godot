@@ -121,7 +121,7 @@ static void FUNC_NAME(const uint8_t* top_y, const uint8_t* bottom_y,           \
   int uv_pos, pos;                                                             \
   /* 16byte-aligned array to cache reconstructed u and v */                    \
   uint8_t uv_buf[14 * 32 + 15] = { 0 };                                        \
-  uint8_t* const r_u = (uint8_t*)((uintptr_t)(uv_buf + 15) & ~15);             \
+  uint8_t* const r_u = (uint8_t*)((uintptr_t)(uv_buf + 15) & ~(uintptr_t)15);  \
   uint8_t* const r_v = r_u + 32;                                               \
                                                                                \
   assert(top_y != NULL);                                                       \

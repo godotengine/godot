@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "enet_multiplayer_peer.h"
+
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
@@ -39,20 +40,20 @@ void ENetMultiplayerPeer::set_target_peer(int p_peer) {
 
 int ENetMultiplayerPeer::get_packet_peer() const {
 	ERR_FAIL_COND_V_MSG(!_is_active(), 1, "The multiplayer instance isn't currently active.");
-	ERR_FAIL_COND_V(incoming_packets.size() == 0, 1);
+	ERR_FAIL_COND_V(incoming_packets.is_empty(), 1);
 
 	return incoming_packets.front()->get().from;
 }
 
 MultiplayerPeer::TransferMode ENetMultiplayerPeer::get_packet_mode() const {
 	ERR_FAIL_COND_V_MSG(!_is_active(), TRANSFER_MODE_RELIABLE, "The multiplayer instance isn't currently active.");
-	ERR_FAIL_COND_V(incoming_packets.size() == 0, TRANSFER_MODE_RELIABLE);
+	ERR_FAIL_COND_V(incoming_packets.is_empty(), TRANSFER_MODE_RELIABLE);
 	return incoming_packets.front()->get().transfer_mode;
 }
 
 int ENetMultiplayerPeer::get_packet_channel() const {
 	ERR_FAIL_COND_V_MSG(!_is_active(), 1, "The multiplayer instance isn't currently active.");
-	ERR_FAIL_COND_V(incoming_packets.size() == 0, 1);
+	ERR_FAIL_COND_V(incoming_packets.is_empty(), 1);
 	int ch = incoming_packets.front()->get().channel;
 	if (ch >= SYSCH_MAX) { // First 2 channels are reserved.
 		return ch - SYSCH_MAX + 1;
@@ -320,7 +321,7 @@ int ENetMultiplayerPeer::get_available_packet_count() const {
 }
 
 Error ENetMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-	ERR_FAIL_COND_V_MSG(incoming_packets.size() == 0, ERR_UNAVAILABLE, "No incoming packets available.");
+	ERR_FAIL_COND_V_MSG(incoming_packets.is_empty(), ERR_UNAVAILABLE, "No incoming packets available.");
 
 	_pop_current_packet();
 
@@ -342,28 +343,27 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 	int packet_flags = 0;
 	int channel = SYSCH_RELIABLE;
 	int tr_channel = get_transfer_channel();
+	switch (get_transfer_mode()) {
+		case TRANSFER_MODE_UNRELIABLE: {
+			packet_flags = ENET_PACKET_FLAG_UNSEQUENCED | ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
+			channel = SYSCH_UNRELIABLE;
+		} break;
+		case TRANSFER_MODE_UNRELIABLE_ORDERED: {
+			packet_flags = ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
+			channel = SYSCH_UNRELIABLE;
+		} break;
+		case TRANSFER_MODE_RELIABLE: {
+			packet_flags = ENET_PACKET_FLAG_RELIABLE;
+			channel = SYSCH_RELIABLE;
+		} break;
+	}
 	if (tr_channel > 0) {
 		channel = SYSCH_MAX + tr_channel - 1;
-	} else {
-		switch (get_transfer_mode()) {
-			case TRANSFER_MODE_UNRELIABLE: {
-				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED | ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
-				channel = SYSCH_UNRELIABLE;
-			} break;
-			case TRANSFER_MODE_UNRELIABLE_ORDERED: {
-				packet_flags = ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
-				channel = SYSCH_UNRELIABLE;
-			} break;
-			case TRANSFER_MODE_RELIABLE: {
-				packet_flags = ENET_PACKET_FLAG_RELIABLE;
-				channel = SYSCH_RELIABLE;
-			} break;
-		}
 	}
 
 #ifdef DEBUG_ENABLED
 	if ((packet_flags & ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT) && p_buffer_size > ENET_HOST_DEFAULT_MTU) {
-		WARN_PRINT_ONCE(vformat("Sending %d bytes unrealiably which is above the MTU (%d), this will result in higher packet loss", p_buffer_size, ENET_HOST_DEFAULT_MTU));
+		WARN_PRINT_ONCE(vformat("Sending %d bytes unreliably which is above the MTU (%d), this will result in higher packet loss", p_buffer_size, ENET_HOST_DEFAULT_MTU));
 	}
 #endif
 

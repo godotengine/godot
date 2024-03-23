@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Texture2D" inherits="Texture" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Texture2D" inherits="Texture" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Texture for 2D and 3D.
 	</brief_description>
@@ -74,6 +74,12 @@
 				Called when a pixel's opaque state in the [Texture2D] is queried at the specified [code](x, y)[/code] position.
 			</description>
 		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderTexture2D]).
+			</description>
+		</method>
 		<method name="draw" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="canvas_item" type="RID" />
@@ -117,6 +123,7 @@
 			<return type="Image" />
 			<description>
 				Returns an [Image] that is a copy of data from this [Texture2D] (a new [Image] is created each time). [Image]s can be accessed and manipulated directly.
+				[b]Note:[/b] This will return [code]null[/code] if this [Texture2D] is invalid.
 				[b]Note:[/b] This will fetch the texture data from the GPU, which might cause performance problems when overused.
 			</description>
 		</method>

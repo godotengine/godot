@@ -7,9 +7,9 @@ class InnerClass:
 
 	static func test_inner_from_inner():
 		print("Inner - Inner")
-		var e1 : MyEnum
-		var e2 : InnerClass.MyEnum
-		var e3 : EnumTypecheckOuterClass.InnerClass.MyEnum
+		var e1: MyEnum
+		var e2: InnerClass.MyEnum
+		var e3: EnumTypecheckOuterClass.InnerClass.MyEnum
 
 		print("Self ", e1, e2, e3)
 		e1 = MyEnum.V1
@@ -36,7 +36,7 @@ class InnerClass:
 
 	static func test_outer_from_inner():
 		print("Inner - Outer")
-		var e : EnumTypecheckOuterClass.MyEnum
+		var e: EnumTypecheckOuterClass.MyEnum
 
 		e = EnumTypecheckOuterClass.MyEnum.V1
 		print("Outer.MyEnum ", e)
@@ -45,8 +45,8 @@ class InnerClass:
 
 func test_outer_from_outer():
 	print("Outer - Outer")
-	var e1 : MyEnum
-	var e2 : EnumTypecheckOuterClass.MyEnum
+	var e1: MyEnum
+	var e2: EnumTypecheckOuterClass.MyEnum
 
 	print("Self ", e1, e2)
 	e1 = MyEnum.V1
@@ -63,8 +63,8 @@ func test_outer_from_outer():
 
 func test_inner_from_outer():
 	print("Outer - Inner")
-	var e1 : InnerClass.MyEnum
-	var e2 : EnumTypecheckOuterClass.InnerClass.MyEnum
+	var e1: InnerClass.MyEnum
+	var e2: EnumTypecheckOuterClass.InnerClass.MyEnum
 
 	print("Inner ", e1, e2)
 	e1 = InnerClass.MyEnum.V1

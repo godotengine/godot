@@ -32,11 +32,10 @@
 #define OGG_PACKET_SEQUENCE_H
 
 #include "core/io/resource.h"
-#include "core/object/gdvirtual.gen.inc"
-#include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
-#include "thirdparty/libogg/ogg/ogg.h"
+
+#include <ogg/ogg.h>
 
 class OggPacketSequencePlayback;
 
@@ -120,6 +119,13 @@ public:
 	// and the current page has a granule position greater than this value.
 	// Returns true on success, false on failure.
 	bool seek_page(int64_t p_granule_pos);
+
+	// Gets the current page number.
+	int64_t get_page_number() const;
+
+	// Moves to a specific page in the stream.
+	// Returns true on success, false if the page number is out of bounds.
+	bool set_page_number(int64_t p_page_number);
 
 	OggPacketSequencePlayback();
 	virtual ~OggPacketSequencePlayback();

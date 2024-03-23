@@ -32,11 +32,13 @@
 #define EDITOR_UNDO_REDO_MANAGER_H
 
 #include "core/object/class_db.h"
-#include "core/object/ref_counted.h"
+#include "core/object/object.h"
 #include "core/object/undo_redo.h"
 
-class EditorUndoRedoManager : public RefCounted {
-	GDCLASS(EditorUndoRedoManager, RefCounted);
+class EditorUndoRedoManager : public Object {
+	GDCLASS(EditorUndoRedoManager, Object);
+
+	static EditorUndoRedoManager *singleton;
 
 public:
 	enum SpecialHistory {
@@ -50,6 +52,7 @@ public:
 		double timestamp = 0;
 		String action_name;
 		UndoRedo::MergeMode merge_mode = UndoRedo::MERGE_DISABLE;
+		bool backward_undo_ops = false;
 	};
 
 	struct History {
@@ -77,8 +80,8 @@ public:
 	int get_history_id_for_object(Object *p_object) const;
 	History &get_history_for_object(Object *p_object);
 
-	void create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE);
-	void create_action(const String &p_name = "", UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, Object *p_custom_context = nullptr);
+	void create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, bool p_backward_undo_ops = false);
+	void create_action(const String &p_name = "", UndoRedo::MergeMode p_mode = UndoRedo::MERGE_DISABLE, Object *p_custom_context = nullptr, bool p_backward_undo_ops = false);
 
 	void add_do_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount);
 	void add_undo_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount);
@@ -127,11 +130,15 @@ public:
 	bool is_history_unsaved(int p_idx);
 	bool has_undo();
 	bool has_redo();
+	bool has_history(int p_idx) const;
 
 	String get_current_action_name();
 	int get_current_action_history_id();
 
 	void discard_history(int p_idx, bool p_erase_from_map = true);
+
+	static EditorUndoRedoManager *get_singleton();
+	EditorUndoRedoManager();
 	~EditorUndoRedoManager();
 };
 

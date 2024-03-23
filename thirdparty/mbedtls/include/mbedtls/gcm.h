@@ -13,19 +13,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #ifndef MBEDTLS_GCM_H
@@ -63,8 +51,7 @@ extern "C" {
 /**
  * \brief          The GCM context structure.
  */
-typedef struct mbedtls_gcm_context
-{
+typedef struct mbedtls_gcm_context {
     mbedtls_cipher_context_t cipher_ctx;  /*!< The cipher context used. */
     uint64_t HL[16];                      /*!< Precalculated HTable low. */
     uint64_t HH[16];                      /*!< Precalculated HTable high. */
@@ -74,8 +61,8 @@ typedef struct mbedtls_gcm_context
     unsigned char y[16];                  /*!< The Y working value. */
     unsigned char buf[16];                /*!< The buf working value. */
     int mode;                             /*!< The operation to perform:
-                                               #MBEDTLS_GCM_ENCRYPT or
-                                               #MBEDTLS_GCM_DECRYPT. */
+                                           #MBEDTLS_GCM_ENCRYPT or
+                                           #MBEDTLS_GCM_DECRYPT. */
 }
 mbedtls_gcm_context;
 
@@ -94,7 +81,7 @@ mbedtls_gcm_context;
  *
  * \param ctx       The GCM context to initialize. This must not be \c NULL.
  */
-void mbedtls_gcm_init( mbedtls_gcm_context *ctx );
+void mbedtls_gcm_init(mbedtls_gcm_context *ctx);
 
 /**
  * \brief           This function associates a GCM context with a
@@ -112,10 +99,10 @@ void mbedtls_gcm_init( mbedtls_gcm_context *ctx );
  * \return          \c 0 on success.
  * \return          A cipher-specific error code on failure.
  */
-int mbedtls_gcm_setkey( mbedtls_gcm_context *ctx,
-                        mbedtls_cipher_id_t cipher,
-                        const unsigned char *key,
-                        unsigned int keybits );
+int mbedtls_gcm_setkey(mbedtls_gcm_context *ctx,
+                       mbedtls_cipher_id_t cipher,
+                       const unsigned char *key,
+                       unsigned int keybits);
 
 /**
  * \brief           This function performs GCM encryption or decryption of a buffer.
@@ -168,17 +155,17 @@ int mbedtls_gcm_setkey( mbedtls_gcm_context *ctx,
  *                  not valid or a cipher-specific error code if the encryption
  *                  or decryption failed.
  */
-int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
-                       int mode,
-                       size_t length,
-                       const unsigned char *iv,
-                       size_t iv_len,
-                       const unsigned char *add,
-                       size_t add_len,
-                       const unsigned char *input,
-                       unsigned char *output,
-                       size_t tag_len,
-                       unsigned char *tag );
+int mbedtls_gcm_crypt_and_tag(mbedtls_gcm_context *ctx,
+                              int mode,
+                              size_t length,
+                              const unsigned char *iv,
+                              size_t iv_len,
+                              const unsigned char *add,
+                              size_t add_len,
+                              const unsigned char *input,
+                              unsigned char *output,
+                              size_t tag_len,
+                              unsigned char *tag);
 
 /**
  * \brief           This function performs a GCM authenticated decryption of a
@@ -213,16 +200,16 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
  *                  not valid or a cipher-specific error code if the decryption
  *                  failed.
  */
-int mbedtls_gcm_auth_decrypt( mbedtls_gcm_context *ctx,
-                      size_t length,
-                      const unsigned char *iv,
-                      size_t iv_len,
-                      const unsigned char *add,
-                      size_t add_len,
-                      const unsigned char *tag,
-                      size_t tag_len,
-                      const unsigned char *input,
-                      unsigned char *output );
+int mbedtls_gcm_auth_decrypt(mbedtls_gcm_context *ctx,
+                             size_t length,
+                             const unsigned char *iv,
+                             size_t iv_len,
+                             const unsigned char *add,
+                             size_t add_len,
+                             const unsigned char *tag,
+                             size_t tag_len,
+                             const unsigned char *input,
+                             unsigned char *output);
 
 /**
  * \brief           This function starts a GCM encryption or decryption
@@ -241,12 +228,12 @@ int mbedtls_gcm_auth_decrypt( mbedtls_gcm_context *ctx,
  *
  * \return          \c 0 on success.
  */
-int mbedtls_gcm_starts( mbedtls_gcm_context *ctx,
-                int mode,
-                const unsigned char *iv,
-                size_t iv_len,
-                const unsigned char *add,
-                size_t add_len );
+int mbedtls_gcm_starts(mbedtls_gcm_context *ctx,
+                       int mode,
+                       const unsigned char *iv,
+                       size_t iv_len,
+                       const unsigned char *add,
+                       size_t add_len);
 
 /**
  * \brief           This function feeds an input buffer into an ongoing GCM
@@ -273,10 +260,10 @@ int mbedtls_gcm_starts( mbedtls_gcm_context *ctx,
  * \return         \c 0 on success.
  * \return         #MBEDTLS_ERR_GCM_BAD_INPUT on failure.
  */
-int mbedtls_gcm_update( mbedtls_gcm_context *ctx,
-                size_t length,
-                const unsigned char *input,
-                unsigned char *output );
+int mbedtls_gcm_update(mbedtls_gcm_context *ctx,
+                       size_t length,
+                       const unsigned char *input,
+                       unsigned char *output);
 
 /**
  * \brief           This function finishes the GCM operation and generates
@@ -294,9 +281,9 @@ int mbedtls_gcm_update( mbedtls_gcm_context *ctx,
  * \return          \c 0 on success.
  * \return          #MBEDTLS_ERR_GCM_BAD_INPUT on failure.
  */
-int mbedtls_gcm_finish( mbedtls_gcm_context *ctx,
-                unsigned char *tag,
-                size_t tag_len );
+int mbedtls_gcm_finish(mbedtls_gcm_context *ctx,
+                       unsigned char *tag,
+                       size_t tag_len);
 
 /**
  * \brief           This function clears a GCM context and the underlying
@@ -305,7 +292,7 @@ int mbedtls_gcm_finish( mbedtls_gcm_context *ctx,
  * \param ctx       The GCM context to clear. If this is \c NULL, the call has
  *                  no effect. Otherwise, this must be initialized.
  */
-void mbedtls_gcm_free( mbedtls_gcm_context *ctx );
+void mbedtls_gcm_free(mbedtls_gcm_context *ctx);
 
 #if defined(MBEDTLS_SELF_TEST)
 
@@ -315,7 +302,7 @@ void mbedtls_gcm_free( mbedtls_gcm_context *ctx );
  * \return         \c 0 on success.
  * \return         \c 1 on failure.
  */
-int mbedtls_gcm_self_test( int verbose );
+int mbedtls_gcm_self_test(int verbose);
 
 #endif /* MBEDTLS_SELF_TEST */
 

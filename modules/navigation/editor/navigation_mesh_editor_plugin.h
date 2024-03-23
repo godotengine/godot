@@ -36,7 +36,9 @@
 #include "editor/editor_plugin.h"
 
 class AcceptDialog;
+class Button;
 class HBoxContainer;
+class Label;
 class NavigationRegion3D;
 
 class NavigationMeshEditor : public Control {

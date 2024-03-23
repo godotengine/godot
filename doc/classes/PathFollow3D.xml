@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PathFollow3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PathFollow3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Point sampler for a [Path3D].
 	</brief_description>
@@ -15,7 +15,7 @@
 			<param index="0" name="transform" type="Transform3D" />
 			<param index="1" name="rotation_mode" type="int" enum="PathFollow3D.RotationMode" />
 			<description>
-				Correct the [code]transform[/code]. [code]rotation_mode[/code] implicitly specifies how posture (forward, up and sideway direction) is calculated.
+				Correct the [param transform]. [param rotation_mode] implicitly specifies how posture (forward, up and sideway direction) is calculated.
 			</description>
 		</method>
 	</methods>
@@ -42,6 +42,9 @@
 		</member>
 		<member name="tilt_enabled" type="bool" setter="set_tilt_enabled" getter="is_tilt_enabled" default="true">
 			If [code]true[/code], the tilt property of [Curve3D] takes effect.
+		</member>
+		<member name="use_model_front" type="bool" setter="set_use_model_front" getter="is_using_model_front" default="false">
+			If [code]true[/code], the node moves on the travel path with orienting the +Z axis as forward. See also [constant Vector3.FORWARD] and [constant Vector3.MODEL_FRONT].
 		</member>
 		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset" default="0.0">
 			The node's offset perpendicular to the curve.

@@ -12,7 +12,7 @@
 
 #define FLAGS_CLIP_RECT_UV uint(1 << 9)
 #define FLAGS_TRANSPOSE_RECT uint(1 << 10)
-#define FLAGS_USING_LIGHT_MASK uint(1 << 11)
+// (1 << 11) is for FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR in RD backends, unused here.
 #define FLAGS_NINEPACH_DRAW_CENTER uint(1 << 12)
 #define FLAGS_USING_PARTICLES uint(1 << 13)
 
@@ -26,6 +26,9 @@
 
 #define FLAGS_USE_MSDF uint(1 << 28)
 #define FLAGS_USE_LCD uint(1 << 29)
+
+#define FLAGS_FLIP_H uint(1 << 30)
+#define FLAGS_FLIP_V uint(1 << 31)
 
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];

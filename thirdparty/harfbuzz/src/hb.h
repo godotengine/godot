@@ -36,6 +36,7 @@
 #include "hb-face.h"
 #include "hb-font.h"
 #include "hb-map.h"
+#include "hb-paint.h"
 #include "hb-set.h"
 #include "hb-shape.h"
 #include "hb-shape-plan.h"

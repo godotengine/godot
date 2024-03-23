@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileSet" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TileSet" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Tile library for tilemaps.
 	</brief_description>
 	<description>
 		A TileSet is a library of tiles for a [TileMap]. A TileSet handles a list of [TileSetSource], each of them storing a set of tiles.
-		Tiles can either be from a [TileSetAtlasSource], that render tiles out of a texture with support for physics, navigation, etc... or from a [TileSetScenesCollectionSource] which exposes scene-based tiles.
-		Tiles are referenced by using three IDs: their source ID, their atlas coordinates ID and their alternative tile ID.
-		A TileSet can be configured so that its tiles expose more or less properties. To do so, the TileSet resources uses property layers, that you can add or remove depending on your needs.
-		For example, adding a physics layer allows giving collision shapes to your tiles. Each layer having dedicated properties (physics layer an mask), you may add several TileSet physics layers for each type of collision you need.
+		Tiles can either be from a [TileSetAtlasSource], which renders tiles out of a texture with support for physics, navigation, etc., or from a [TileSetScenesCollectionSource], which exposes scene-based tiles.
+		Tiles are referenced by using three IDs: their source ID, their atlas coordinates ID, and their alternative tile ID.
+		A TileSet can be configured so that its tiles expose more or fewer properties. To do so, the TileSet resources use property layers, which you can add or remove depending on your needs.
+		For example, adding a physics layer allows giving collision shapes to your tiles. Each layer has dedicated properties (physics layer and mask), so you may add several TileSet physics layers for each type of collision you need.
 		See the functions to add new layers for more information.
 	</description>
 	<tutorials>
@@ -67,7 +67,8 @@
 			<param index="1" name="atlas_source_id_override" type="int" default="-1" />
 			<description>
 				Adds a [TileSetSource] to the TileSet. If [param atlas_source_id_override] is not -1, also set its source ID. Otherwise, a unique identifier is automatically generated.
-				The function returns the added source source ID or -1 if the source could not be added.
+				The function returns the added source ID or -1 if the source could not be added.
+				[b]Warning:[/b] A source cannot belong to two TileSets at the same time. If the added source was attached to another [TileSet], it will be removed from that one.
 			</description>
 		</method>
 		<method name="add_terrain">
@@ -143,11 +144,19 @@
 				Returns the custom data layers count.
 			</description>
 		</method>
+		<method name="get_navigation_layer_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified navigation layer of the TileSet navigation data layer identified by the given [param layer_index] is enabled, given a navigation_layers [param layer_number] between 1 and 32.
+			</description>
+		</method>
 		<method name="get_navigation_layer_layers" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="layer_index" type="int" />
 			<description>
-				Returns the navigation layers (as in the Navigation server) of the gives TileSet navigation layer.
+				Returns the navigation layers (as in the Navigation server) of the given TileSet navigation layer.
 			</description>
 		</method>
 		<method name="get_navigation_layers_count" qualifiers="const">
@@ -159,7 +168,7 @@
 		<method name="get_next_source_id" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns a new unused source ID. This generated ID is the same that a call to [code]add_source[/code] would return.
+				Returns a new unused source ID. This generated ID is the same that a call to [method add_source] would return.
 			</description>
 		</method>
 		<method name="get_occlusion_layer_light_mask" qualifiers="const">
@@ -292,7 +301,7 @@
 			<param index="1" name="coords_from" type="Vector2i" />
 			<param index="2" name="alternative_from" type="int" />
 			<description>
-				Returns if there is and alternative-level proxy for the given identifiers.
+				Returns if there is an alternative-level proxy for the given identifiers.
 			</description>
 		</method>
 		<method name="has_coords_level_tile_proxy">
@@ -323,7 +332,7 @@
 			<param index="1" name="coords_from" type="Vector2i" />
 			<param index="2" name="alternative_from" type="int" />
 			<description>
-				According to the configured proxies, maps the provided indentifiers to a new set of identifiers. The source ID, atlas coordinates ID and alternative tile ID are returned as a 3 elements Array.
+				According to the configured proxies, maps the provided identifiers to a new set of identifiers. The source ID, atlas coordinates ID and alternative tile ID are returned as a 3 elements Array.
 				This function first look for matching alternative-level proxies, then coordinates-level proxies, then source-level proxies.
 				If no proxy corresponding to provided identifiers are found, returns the same values the ones used as arguments.
 			</description>
@@ -500,12 +509,21 @@
 				Sets the type of the custom data layer identified by the given index.
 			</description>
 		</method>
+		<method name="set_navigation_layer_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layer_number" type="int" />
+			<param index="2" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified navigation layer of the TileSet navigation data layer identified by the given [param layer_index], given a navigation_layers [param layer_number] between 1 and 32.
+			</description>
+		</method>
 		<method name="set_navigation_layer_layers">
 			<return type="void" />
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="layers" type="int" />
 			<description>
-				Sets the navigation layers (as in the navigation server) for navigation regions is the given TileSet navigation layer.
+				Sets the navigation layers (as in the navigation server) for navigation regions in the given TileSet navigation layer.
 			</description>
 		</method>
 		<method name="set_occlusion_layer_light_mask">
@@ -521,7 +539,7 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="sdf_collision" type="bool" />
 			<description>
-				Enables or disables sdf collision for occluders in the given TileSet occlusion layer.
+				Enables or disables SDF collision for occluders in the given TileSet occlusion layer.
 			</description>
 		</method>
 		<method name="set_physics_layer_collision_layer">
@@ -561,7 +579,7 @@
 			<param index="0" name="source_from" type="int" />
 			<param index="1" name="source_to" type="int" />
 			<description>
-				Creates a source-level proxy for the given source ID. A proxy will map set of tile identifiers to another set of identifiers. Both the atlac coordinates ID and the alternative tile ID are kept the same when using source-level proxies.
+				Creates a source-level proxy for the given source ID. A proxy will map set of tile identifiers to another set of identifiers. Both the atlas coordinates ID and the alternative tile ID are kept the same when using source-level proxies.
 				This can be used to replace a source in all TileMaps using this TileSet, as TileMap nodes will find and use the proxy's target source when one is available.
 				Proxied tiles can be automatically replaced in TileMap nodes using the editor.
 			</description>
@@ -589,7 +607,7 @@
 			<param index="0" name="terrain_set" type="int" />
 			<param index="1" name="mode" type="int" enum="TileSet.TerrainMode" />
 			<description>
-				Sets a terrain mode. Each mode determines which bits of a tile shape is used to match the neighbouring tiles' terrains.
+				Sets a terrain mode. Each mode determines which bits of a tile shape is used to match the neighboring tiles' terrains.
 			</description>
 		</method>
 	</methods>

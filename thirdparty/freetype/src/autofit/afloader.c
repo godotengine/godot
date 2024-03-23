@@ -4,7 +4,7 @@
  *
  *   Auto-fitter glyph loading routines (body).
  *
- * Copyright (C) 2003-2022 by
+ * Copyright (C) 2003-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -55,10 +55,8 @@
       error = af_face_globals_new( face, &loader->globals, module );
       if ( !error )
       {
-        face->autohint.data =
-          (FT_Pointer)loader->globals;
-        face->autohint.finalizer =
-          (FT_Generic_Finalizer)af_face_globals_free;
+        face->autohint.data      = (FT_Pointer)loader->globals;
+        face->autohint.finalizer = af_face_globals_free;
       }
     }
 
@@ -228,9 +226,6 @@
     AF_StyleClass          style_class;
     AF_WritingSystemClass  writing_system_class;
 
-
-    if ( !size )
-      return FT_THROW( Invalid_Size_Handle );
 
     FT_ZERO( &scaler );
 

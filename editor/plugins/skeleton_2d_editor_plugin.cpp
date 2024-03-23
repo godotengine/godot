@@ -30,13 +30,13 @@
 
 #include "skeleton_2d_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
 #include "scene/2d/mesh_instance_2d.h"
-#include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
-#include "thirdparty/misc/clipper.hpp"
 
 void Skeleton2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -61,7 +61,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Set Rest Pose to Bones"));
 			for (int i = 0; i < node->get_bone_count(); i++) {
 				Bone2D *bone = node->get_bone(i);
@@ -77,7 +77,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Create Rest Pose from Bones"));
 			for (int i = 0; i < node->get_bone_count(); i++) {
 				Bone2D *bone = node->get_bone(i);
@@ -99,7 +99,7 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton2D"));
-	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton2D"), SNAME("EditorIcons")));
+	options->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Skeleton2D"), EditorStringName(EditorIcons)));
 
 	options->get_popup()->add_item(TTR("Reset to Rest Pose"), MENU_OPTION_SET_REST);
 	options->get_popup()->add_separator();

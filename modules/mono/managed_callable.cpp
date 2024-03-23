@@ -43,10 +43,10 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 	const ManagedCallable *a = static_cast<const ManagedCallable *>(p_a);
 	const ManagedCallable *b = static_cast<const ManagedCallable *>(p_b);
 
+	if (a->delegate_handle.value == b->delegate_handle.value) {
+		return true;
+	}
 	if (!a->delegate_handle.value || !b->delegate_handle.value) {
-		if (!a->delegate_handle.value && !b->delegate_handle.value) {
-			return true;
-		}
 		return false;
 	}
 
@@ -63,7 +63,7 @@ bool ManagedCallable::compare_less(const CallableCustom *p_a, const CallableCust
 }
 
 uint32_t ManagedCallable::hash() const {
-	return hash_murmur3_one_64((uint64_t)delegate_handle.value);
+	return GDMonoCache::managed_callbacks.DelegateUtils_DelegateHash(delegate_handle);
 }
 
 String ManagedCallable::get_as_text() const {
@@ -85,11 +85,15 @@ ObjectID ManagedCallable::get_object() const {
 	return CSharpLanguage::get_singleton()->get_managed_callable_middleman()->get_instance_id();
 }
 
+int ManagedCallable::get_argument_count(bool &r_is_valid) const {
+	return GDMonoCache::managed_callbacks.DelegateUtils_GetArgumentCount(delegate_handle, &r_is_valid);
+}
+
 void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // Can't find anything better
 	r_return_value = Variant();
 
-	ERR_FAIL_COND(delegate_handle.value == nullptr);
+	ERR_FAIL_NULL(delegate_handle.value);
 
 	GDMonoCache::managed_callbacks.DelegateUtils_InvokeWithVariantArgs(
 			delegate_handle, trampoline, p_arguments, p_argcount, &r_return_value);

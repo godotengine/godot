@@ -379,6 +379,8 @@ enum UPropertySource {
     UPROPS_SRC_INSC,
     UPROPS_SRC_VO,
     UPROPS_SRC_EMOJI,
+    UPROPS_SRC_IDSU,
+    UPROPS_SRC_ID_COMPAT_MATH,
     /** One more than the highest UPropertySource (UPROPS_SRC_) constant. */
     UPROPS_SRC_COUNT
 };
@@ -441,6 +443,7 @@ class CharacterProperties {
 public:
     CharacterProperties() = delete;
     static const UnicodeSet *getInclusionsForProperty(UProperty prop, UErrorCode &errorCode);
+    static const UnicodeSet *getBinaryPropertySet(UProperty property, UErrorCode &errorCode);
 };
 
 // implemented in uniset_props.cpp

@@ -30,14 +30,9 @@
 
 #include "register_types.h"
 
-#include "core/config/project_settings.h"
-#include "core/debugger/engine_debugger.h"
-#include "core/error/error_macros.h"
-
+#include "remote_debugger_peer_websocket.h"
 #include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
-
-#include "remote_debugger_peer_websocket.h"
 
 #ifdef WEB_ENABLED
 #include "emws_peer.h"
@@ -46,8 +41,15 @@
 #endif
 
 #ifdef TOOLS_ENABLED
-#include "editor/debugger/editor_debugger_server.h"
 #include "editor/editor_debugger_server_websocket.h"
+#endif
+
+#include "core/config/project_settings.h"
+#include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/debugger/editor_debugger_server.h"
 #include "editor/editor_node.h"
 #endif
 

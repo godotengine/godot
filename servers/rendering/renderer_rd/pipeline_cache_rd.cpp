@@ -36,7 +36,7 @@ RID PipelineCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD
 	RD::PipelineMultisampleState multisample_state_version = multisample_state;
 	multisample_state_version.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_framebuffer_format_id, p_render_pass);
 
-	bool wireframe = p_wireframe || rasterization_state.wireframe;
+	bool wireframe = p_wireframe;
 
 	RD::PipelineRasterizationState raster_state_version = rasterization_state;
 	raster_state_version.wireframe = wireframe;
@@ -89,7 +89,7 @@ void PipelineCacheRD::setup(RID p_shader, RD::RenderPrimitive p_primitive, const
 	ERR_FAIL_COND(p_shader.is_null());
 	_clear();
 	shader = p_shader;
-	input_mask = RD::get_singleton()->shader_get_vertex_input_attribute_mask(p_shader);
+	input_mask = 0;
 	render_primitive = p_primitive;
 	rasterization_state = p_rasterization_state;
 	multisample_state = p_multisample;

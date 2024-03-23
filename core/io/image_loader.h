@@ -91,14 +91,12 @@ class ImageLoader {
 
 protected:
 public:
-	static Error load_image(String p_file, Ref<Image> p_image, Ref<FileAccess> p_custom = Ref<FileAccess>(), BitField<ImageFormatLoader::LoaderFlags> p_flags = ImageFormatLoader::FLAG_NONE, float p_scale = 1.0);
+	static Error load_image(const String &p_file, Ref<Image> p_image, Ref<FileAccess> p_custom = Ref<FileAccess>(), BitField<ImageFormatLoader::LoaderFlags> p_flags = ImageFormatLoader::FLAG_NONE, float p_scale = 1.0);
 	static void get_recognized_extensions(List<String> *p_extensions);
 	static Ref<ImageFormatLoader> recognize(const String &p_extension);
 
 	static void add_image_format_loader(Ref<ImageFormatLoader> p_loader);
 	static void remove_image_format_loader(Ref<ImageFormatLoader> p_loader);
-
-	static const Vector<Ref<ImageFormatLoader>> &get_image_format_loaders();
 
 	static void cleanup();
 };

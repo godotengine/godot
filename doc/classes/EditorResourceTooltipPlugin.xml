@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorResourceTooltipPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A plugin that advanced tooltip for its handled resource type.
+	</brief_description>
+	<description>
+		Resource tooltip plugins are used by [FileSystemDock] to generate customized tooltips for specific resources. E.g. tooltip for a [Texture2D] displays a bigger preview and the texture's dimensions.
+		A plugin must be first registered with [method FileSystemDock.add_resource_tooltip_plugin]. When the user hovers a resource in filesystem dock which is handled by the plugin, [method _make_tooltip_for_path] is called to create the tooltip. It works similarly to [method Control._make_custom_tooltip].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_handles" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="type" type="String" />
+			<description>
+				Return [code]true[/code] if the plugin is going to handle the given [Resource] [param type].
+			</description>
+		</method>
+		<method name="_make_tooltip_for_path" qualifiers="virtual const">
+			<return type="Control" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="metadata" type="Dictionary" />
+			<param index="2" name="base" type="Control" />
+			<description>
+				Create and return a tooltip that will be displayed when the user hovers a resource under the given [param path] in filesystem dock.
+				The [param metadata] dictionary is provided by preview generator (see [method EditorResourcePreviewGenerator._generate]).
+				[param base] is the base default tooltip, which is a [VBoxContainer] with a file name, type and size labels. If another plugin handled the same file type, [param base] will be output from the previous plugin. For best result, make sure the base tooltip is part of the returned [Control].
+				[b]Note:[/b] It's unadvised to use [method ResourceLoader.load], especially with heavy resources like models or textures, because it will make the editor unresponsive when creating the tooltip. You can use [method request_thumbnail] if you want to display a preview in your tooltip.
+				[b]Note:[/b] If you decide to discard the [param base], make sure to call [method Node.queue_free], because it's not freed automatically.
+				[codeblock]
+				func _make_tooltip_for_path(path, metadata, base):
+				    var t_rect = TextureRect.new()
+				    request_thumbnail(path, t_rect)
+				    base.add_child(t_rect) # The TextureRect will appear at the bottom of the tooltip.
+				    return base
+				[/codeblock]
+			</description>
+		</method>
+		<method name="request_thumbnail" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="control" type="TextureRect" />
+			<description>
+				Requests a thumbnail for the given [TextureRect]. The thumbnail is created asynchronously by [EditorResourcePreview] and automatically set when available.
+			</description>
+		</method>
+	</methods>
+</class>

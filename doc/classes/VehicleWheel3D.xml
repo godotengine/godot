@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VehicleWheel3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VehicleWheel3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Physics object that simulates the behavior of a wheel.
+		A 3D physics body for a [VehicleBody3D] that simulates the behavior of a wheel.
 	</brief_description>
 	<description>
-		This node needs to be used as a child node of [VehicleBody3D] and simulates the behavior of one of its wheels. This node also acts as a collider to detect if the wheel is touching a surface.
-		[b]Note:[/b] This class has known issues and isn't designed to provide realistic 3D vehicle physics. If you want advanced vehicle physics, you will probably have to write your own physics integration using another [PhysicsBody3D] class.
+		A node used as a child of a [VehicleBody3D] parent to simulate the behavior of one of its wheels. This node also acts as a collider to detect if the wheel is touching a surface.
+		[b]Note:[/b] This class has known issues and isn't designed to provide realistic 3D vehicle physics. If you want advanced vehicle physics, you may need to write your own physics integration using another [PhysicsBody3D] class.
 	</description>
 	<tutorials>
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
@@ -61,7 +61,7 @@
 		<member name="suspension_stiffness" type="float" setter="set_suspension_stiffness" getter="get_suspension_stiffness" default="5.88">
 			This value defines the stiffness of the suspension. Use a value lower than 50 for an off-road car, a value between 50 and 100 for a race car and try something around 200 for something like a Formula 1 car.
 		</member>
-		<member name="suspension_travel" type="float" setter="set_suspension_travel" getter="get_suspension_travel" default="5.0">
+		<member name="suspension_travel" type="float" setter="set_suspension_travel" getter="get_suspension_travel" default="0.2">
 			This is the distance the suspension can travel. As Godot units are equivalent to meters, keep this setting relatively low. Try a value between 0.1 and 0.3 depending on the type of car.
 		</member>
 		<member name="use_as_steering" type="bool" setter="set_use_as_steering" getter="is_used_as_steering" default="false">
@@ -81,7 +81,7 @@
 			This is the distance in meters the wheel is lowered from its origin point. Don't set this to 0.0 and move the wheel into position, instead move the origin point of your wheel (the gizmo in Godot) to the position the wheel will take when bottoming out, then use the rest length to move the wheel down to the position it should be in when the car is in rest.
 		</member>
 		<member name="wheel_roll_influence" type="float" setter="set_roll_influence" getter="get_roll_influence" default="0.1">
-			This value affects the roll of your vehicle. If set to 1.0 for all wheels, your vehicle will be prone to rolling over, while a value of 0.0 will resist body roll.
+			This value affects the roll of your vehicle. If set to 1.0 for all wheels, your vehicle will resist body roll, while a value of 0.0 will be prone to rolling over.
 		</member>
 	</members>
 </class>

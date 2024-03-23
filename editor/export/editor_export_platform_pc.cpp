@@ -31,36 +31,33 @@
 #include "editor_export_platform_pc.h"
 
 #include "core/config/project_settings.h"
+#include "scene/resources/image_texture.h"
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
-	if (p_preset->get("texture_format/s3tc")) {
+	if (p_preset->get("texture_format/s3tc_bptc")) {
 		r_features->push_back("s3tc");
+		r_features->push_back("bptc");
 	}
-	if (p_preset->get("texture_format/etc")) {
-		r_features->push_back("etc");
-	}
-	if (p_preset->get("texture_format/etc2")) {
+	if (p_preset->get("texture_format/etc2_astc")) {
 		r_features->push_back("etc2");
+		r_features->push_back("astc");
 	}
 	// PC platforms only have one architecture per export, since
 	// we export a single executable instead of a bundle.
 	r_features->push_back(p_preset->get("binary_format/architecture"));
 }
 
-void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
+void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) const {
 	String ext_filter = (get_os_name() == "Windows") ? "*.exe" : "";
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, ext_filter), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, ext_filter), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_script", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/bptc"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/no_bptc_fallbacks"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc_bptc"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2_astc"), false));
 }
 
 String EditorExportPlatformPC::get_name() const {
@@ -75,7 +72,7 @@ Ref<Texture2D> EditorExportPlatformPC::get_logo() const {
 	return logo;
 }
 
-bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	bool valid = false;
 
@@ -99,6 +96,14 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
+
+	bool uses_s3tc_bptc = p_preset->get("texture_format/s3tc_bptc");
+	bool uses_etc2_astc = p_preset->get("texture_format/etc2_astc");
+
+	if (!uses_s3tc_bptc && !uses_etc2_astc) {
+		valid = false;
+		err += TTR("A texture format must be selected to export the project. Please select at least one texture format.");
+	}
 
 	if (!err.is_empty()) {
 		r_error = err;
@@ -147,7 +152,7 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	}
 
 	String wrapper_template_path = template_path.get_basename() + "_console.exe";
-	int con_wrapper_mode = p_preset->get("debug/export_console_script");
+	int con_wrapper_mode = p_preset->get("debug/export_console_wrapper");
 	bool copy_wrapper = (con_wrapper_mode == 1 && p_debug) || (con_wrapper_mode == 2);
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -158,6 +163,7 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	}
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("Failed to copy export template."));
+		return err;
 	}
 
 	return err;
@@ -175,7 +181,7 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 
 	int64_t embedded_pos;
 	int64_t embedded_size;
-	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
+	Error err = save_pack(true, p_preset, p_debug, pck_path, &so_files, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
 	if (err == OK && p_preset->get("binary_format/embed_pck")) {
 		if (embedded_size >= 0x100000000 && String(p_preset->get("binary_format/architecture")).contains("32")) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
@@ -233,17 +239,11 @@ void EditorExportPlatformPC::set_logo(const Ref<Texture2D> &p_logo) {
 }
 
 void EditorExportPlatformPC::get_platform_features(List<String> *r_features) const {
-	r_features->push_back("pc"); //all pcs support "pc"
-	r_features->push_back("s3tc"); //all pcs support "s3tc" compression
-	r_features->push_back(get_os_name().to_lower()); //OS name is a feature
+	r_features->push_back("pc"); // Identify PC platforms as such.
+	r_features->push_back(get_os_name().to_lower()); // OS name is a feature.
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {
-	if (p_features.has("bptc")) {
-		if (p_preset->has("texture_format/no_bptc_fallbacks")) {
-			p_features.erase("s3tc");
-		}
-	}
 }
 
 int EditorExportPlatformPC::get_chmod_flags() const {

@@ -8,6 +8,7 @@
 
         <!-- To generate the .runtimeconfig.json file-->
         <EnableDynamicLoading>true</EnableDynamicLoading>
+        <RollForward>LatestMajor</RollForward>
     </PropertyGroup>
 
     <ItemGroup>

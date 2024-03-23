@@ -31,13 +31,13 @@
 #ifndef TILE_ATLAS_VIEW_H
 #define TILE_ATLAS_VIEW_H
 
-#include "editor/editor_zoom_widget.h"
+#include "editor/gui/editor_zoom_widget.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class ViewPanner;
 
@@ -65,9 +65,8 @@ private:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	Ref<ViewPanner> panner;
-	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
-	void _pan_callback(Vector2 p_scroll_vec);
-	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
 	HashMap<Vector2, HashMap<int, Rect2i>> alternative_tiles_rect_cache;
 	void _update_alternative_tiles_rect_cache();
@@ -90,7 +89,11 @@ private:
 	Control *base_tiles_drawing_root = nullptr;
 
 	Control *base_tiles_draw = nullptr;
+	HashMap<Ref<Material>, RID> material_tiles_draw;
+	HashMap<Ref<Material>, RID> material_alternatives_draw;
 	void _draw_base_tiles();
+	RID _get_canvas_item_to_draw(const TileData *p_for_data, const CanvasItem *p_base_item, HashMap<Ref<Material>, RID> &p_material_map);
+	void _clear_material_canvas_items();
 
 	Control *base_tiles_texture_grid = nullptr;
 	void _draw_base_tiles_texture_grid();
@@ -111,7 +114,14 @@ private:
 
 	Size2i _compute_alternative_tiles_control_size();
 
+	struct ThemeCache {
+		Ref<Texture2D> center_view_icon;
+		Ref<Texture2D> checkerboard;
+	} theme_cache;
+
 protected:
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -128,7 +138,7 @@ public:
 	void set_texture_grid_visible(bool p_visible) { base_tiles_texture_grid->set_visible(p_visible); };
 	void set_tile_shape_grid_visible(bool p_visible) { base_tiles_shape_grid->set_visible(p_visible); };
 
-	Vector2i get_atlas_tile_coords_at_pos(const Vector2 p_pos) const;
+	Vector2i get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p_clamp = false) const;
 
 	void add_control_over_atlas_tiles(Control *p_control, bool scaled = true) {
 		if (scaled) {
@@ -158,6 +168,7 @@ public:
 	void queue_redraw();
 
 	TileAtlasView();
+	~TileAtlasView();
 };
 
 #endif // TILE_ATLAS_VIEW_H

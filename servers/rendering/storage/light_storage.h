@@ -81,9 +81,11 @@ public:
 	virtual AABB light_get_aabb(RID p_light) const = 0;
 	virtual float light_get_param(RID p_light, RS::LightParam p_param) = 0;
 	virtual Color light_get_color(RID p_light) = 0;
+	virtual bool light_get_reverse_cull_face_mode(RID p_light) const = 0;
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) = 0;
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) = 0;
 	virtual uint64_t light_get_version(RID p_light) const = 0;
+	virtual uint32_t light_get_cull_mask(RID p_light) const = 0;
 
 	/* LIGHT INSTANCE API */
 
@@ -110,18 +112,20 @@ public:
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) = 0;
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) = 0;
 	virtual void reflection_probe_set_max_distance(RID p_probe, float p_distance) = 0;
-	virtual void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) = 0;
+	virtual void reflection_probe_set_size(RID p_probe, const Vector3 &p_size) = 0;
 	virtual void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) = 0;
 	virtual void reflection_probe_set_as_interior(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) = 0;
+	virtual void reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) = 0;
 	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) = 0;
 
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const = 0;
 	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const = 0;
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const = 0;
-	virtual Vector3 reflection_probe_get_extents(RID p_probe) const = 0;
+	virtual uint32_t reflection_probe_get_reflection_mask(RID p_probe) const = 0;
+	virtual Vector3 reflection_probe_get_size(RID p_probe) const = 0;
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const = 0;
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const = 0;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const = 0;
@@ -139,6 +143,7 @@ public:
 	virtual RID reflection_probe_instance_create(RID p_probe) = 0;
 	virtual void reflection_probe_instance_free(RID p_instance) = 0;
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) = 0;
+	virtual bool reflection_probe_has_atlas_index(RID p_instance) = 0;
 	virtual void reflection_probe_release_atlas_index(RID p_instance) = 0;
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) = 0;
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) = 0;

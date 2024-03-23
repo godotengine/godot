@@ -30,6 +30,8 @@
 
 #include "variant_setget.h"
 
+#include "variant_callable.h"
+
 struct VariantSetterGetterInfo {
 	void (*setter)(Variant *base, const Variant *value, bool &valid);
 	void (*getter)(const Variant *base, Variant *value);
@@ -43,7 +45,7 @@ struct VariantSetterGetterInfo {
 static LocalVector<VariantSetterGetterInfo> variant_setters_getters[Variant::VARIANT_MAX];
 static LocalVector<StringName> variant_setters_getters_names[Variant::VARIANT_MAX]; //one next to another to make it cache friendly
 
-template <class T>
+template <typename T>
 static void register_member(Variant::Type p_type, const StringName &p_member) {
 	VariantSetterGetterInfo sgi;
 	sgi.setter = T::set;
@@ -151,8 +153,8 @@ void unregister_named_setters_getters() {
 bool Variant::has_member(Variant::Type p_type, const StringName &p_member) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 
-	for (uint32_t i = 0; i < variant_setters_getters_names[p_type].size(); i++) {
-		if (variant_setters_getters_names[p_type][i] == p_member) {
+	for (const StringName &member : variant_setters_getters_names[p_type]) {
+		if (member == p_member) {
 			return true;
 		}
 	}
@@ -172,8 +174,8 @@ Variant::Type Variant::get_member_type(Variant::Type p_type, const StringName &p
 }
 
 void Variant::get_member_list(Variant::Type p_type, List<StringName> *r_members) {
-	for (uint32_t i = 0; i < variant_setters_getters_names[p_type].size(); i++) {
-		r_members->push_back(variant_setters_getters_names[p_type][i]);
+	for (const StringName &member : variant_setters_getters_names[p_type]) {
+		r_members->push_back(member);
 	}
 }
 
@@ -264,42 +266,45 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 }
 
 Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
-	Variant ret;
 	uint32_t s = variant_setters_getters[type].size();
 	if (s) {
 		for (uint32_t i = 0; i < s; i++) {
 			if (variant_setters_getters_names[type][i] == p_member) {
+				Variant ret;
 				variant_setters_getters[type][i].getter(this, &ret);
 				r_valid = true;
 				return ret;
 			}
 		}
-
-		r_valid = false;
-
-	} else if (type == Variant::OBJECT) {
-		Object *obj = get_validated_object();
-		if (!obj) {
-			r_valid = false;
-			return "Instance base is null.";
-		} else {
-			return obj->get(p_member, &r_valid);
-		}
-	} else if (type == Variant::DICTIONARY) {
-		const Variant *v = VariantGetInternalPtr<Dictionary>::get_ptr(this)->getptr(p_member);
-		if (v) {
-			r_valid = true;
-
-			return *v;
-		} else {
-			r_valid = false;
-		}
-
-	} else {
-		r_valid = false;
 	}
 
-	return ret;
+	switch (type) {
+		case Variant::OBJECT: {
+			Object *obj = get_validated_object();
+			if (!obj) {
+				r_valid = false;
+				return "Instance base is null.";
+			} else {
+				return obj->get(p_member, &r_valid);
+			}
+		} break;
+		case Variant::DICTIONARY: {
+			const Variant *v = VariantGetInternalPtr<Dictionary>::get_ptr(this)->getptr(p_member);
+			if (v) {
+				r_valid = true;
+				return *v;
+			}
+		} break;
+		default: {
+			if (Variant::has_builtin_method(type, p_member)) {
+				r_valid = true;
+				return Callable(memnew(VariantCallable(*this, p_member)));
+			}
+		} break;
+	}
+
+	r_valid = false;
+	return Variant();
 }
 
 /**** INDEXED SETTERS AND GETTERS ****/
@@ -318,7 +323,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 #ifdef DEBUG_ENABLED
 
 #define NULL_TEST(m_key) \
-	ERR_FAIL_COND(!m_key)
+	ERR_FAIL_NULL(m_key)
 
 #else
 
@@ -389,6 +394,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			v.write[index] = PtrToArg<m_elem_type>::convert(member);                                                                 \
 		}                                                                                                                            \
 		static Variant::Type get_index_type() { return GetTypeInfo<m_elem_type>::VARIANT_TYPE; }                                     \
+		static uint32_t get_index_usage() { return GetTypeInfo<m_elem_type>::get_class_info().usage; }                               \
 		static uint64_t get_indexed_size(const Variant *base) { return VariantGetInternalPtr<m_base_type>::get_ptr(base)->size(); }  \
 	};
 
@@ -427,9 +433,9 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			}                                                                                                                        \
 			m_assign_type num;                                                                                                       \
 			if (value->get_type() == Variant::INT) {                                                                                 \
-				num = (m_assign_type)*VariantGetInternalPtr<int64_t>::get_ptr(value);                                                \
+				num = (m_assign_type) * VariantGetInternalPtr<int64_t>::get_ptr(value);                                              \
 			} else if (value->get_type() == Variant::FLOAT) {                                                                        \
-				num = (m_assign_type)*VariantGetInternalPtr<double>::get_ptr(value);                                                 \
+				num = (m_assign_type) * VariantGetInternalPtr<double>::get_ptr(value);                                               \
 			} else {                                                                                                                 \
 				*oob = false;                                                                                                        \
 				*valid = false;                                                                                                      \
@@ -460,6 +466,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			v.write[index] = PtrToArg<m_elem_type>::convert(member);                                                                 \
 		}                                                                                                                            \
 		static Variant::Type get_index_type() { return GetTypeInfo<m_elem_type>::VARIANT_TYPE; }                                     \
+		static uint32_t get_index_usage() { return GetTypeInfo<m_elem_type>::get_class_info().usage; }                               \
 		static uint64_t get_indexed_size(const Variant *base) { return VariantGetInternalPtr<m_base_type>::get_ptr(base)->size(); }  \
 	};
 
@@ -488,9 +495,9 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			}                                                                                                                  \
 			m_assign_type num;                                                                                                 \
 			if (value->get_type() == Variant::INT) {                                                                           \
-				num = (m_assign_type)*VariantGetInternalPtr<int64_t>::get_ptr(value);                                          \
+				num = (m_assign_type) * VariantGetInternalPtr<int64_t>::get_ptr(value);                                        \
 			} else if (value->get_type() == Variant::FLOAT) {                                                                  \
-				num = (m_assign_type)*VariantGetInternalPtr<double>::get_ptr(value);                                           \
+				num = (m_assign_type) * VariantGetInternalPtr<double>::get_ptr(value);                                         \
 			} else {                                                                                                           \
 				*oob = false;                                                                                                  \
 				*valid = false;                                                                                                \
@@ -515,6 +522,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			v[index] = PtrToArg<m_elem_type>::convert(member);                                                                 \
 		}                                                                                                                      \
 		static Variant::Type get_index_type() { return GetTypeInfo<m_elem_type>::VARIANT_TYPE; }                               \
+		static uint32_t get_index_usage() { return GetTypeInfo<m_elem_type>::get_class_info().usage; }                         \
 		static uint64_t get_indexed_size(const Variant *base) { return m_max; }                                                \
 	};
 
@@ -564,6 +572,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			v m_accessor[index] = PtrToArg<m_elem_type>::convert(member);                                                                 \
 		}                                                                                                                                 \
 		static Variant::Type get_index_type() { return GetTypeInfo<m_elem_type>::VARIANT_TYPE; }                                          \
+		static uint32_t get_index_usage() { return GetTypeInfo<m_elem_type>::get_class_info().usage; }                                    \
 		static uint64_t get_indexed_size(const Variant *base) { return m_max; }                                                           \
 	};
 
@@ -613,6 +622,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 			v.m_set(index, PtrToArg<m_elem_type>::convert(member));                                                                \
 		}                                                                                                                          \
 		static Variant::Type get_index_type() { return GetTypeInfo<m_elem_type>::VARIANT_TYPE; }                                   \
+		static uint32_t get_index_usage() { return GetTypeInfo<m_elem_type>::get_class_info().usage; }                             \
 		static uint64_t get_indexed_size(const Variant *base) { return m_max; }                                                    \
 	};
 
@@ -683,6 +693,7 @@ struct VariantIndexedSetGet_Array {
 		v.set(index, PtrToArg<Variant>::convert(member));
 	}
 	static Variant::Type get_index_type() { return Variant::NIL; }
+	static uint32_t get_index_usage() { return PROPERTY_USAGE_NIL_IS_VARIANT; }
 	static uint64_t get_indexed_size(const Variant *base) { return 0; }
 };
 
@@ -768,6 +779,7 @@ struct VariantIndexedSetGet_String {
 		}
 	}
 	static Variant::Type get_index_type() { return Variant::STRING; }
+	static uint32_t get_index_usage() { return PROPERTY_USAGE_DEFAULT; }
 	static uint64_t get_indexed_size(const Variant *base) { return VariantInternal::get_string(base)->length(); }
 };
 
@@ -812,6 +824,7 @@ struct VariantIndexedSetGet_String {
 			v[index] = PtrToArg<Variant>::convert(member);                                                                          \
 		}                                                                                                                           \
 		static Variant::Type get_index_type() { return Variant::NIL; }                                                              \
+		static uint32_t get_index_usage() { return PROPERTY_USAGE_DEFAULT; }                                                        \
 		static uint64_t get_indexed_size(const Variant *base) { return VariantGetInternalPtr<m_base_type>::get_ptr(base)->size(); } \
 	};
 
@@ -852,14 +865,15 @@ struct VariantIndexedSetterGetterInfo {
 
 	uint64_t (*get_indexed_size)(const Variant *base) = nullptr;
 
-	Variant::Type index_type;
+	Variant::Type index_type = Variant::NIL;
+	uint32_t index_usage = PROPERTY_USAGE_DEFAULT;
 
 	bool valid = false;
 };
 
 static VariantIndexedSetterGetterInfo variant_indexed_setters_getters[Variant::VARIANT_MAX];
 
-template <class T>
+template <typename T>
 static void register_indexed_member(Variant::Type p_type) {
 	VariantIndexedSetterGetterInfo &sgi = variant_indexed_setters_getters[p_type];
 
@@ -872,6 +886,7 @@ static void register_indexed_member(Variant::Type p_type) {
 	sgi.ptr_getter = T::ptr_get;
 
 	sgi.index_type = T::get_index_type();
+	sgi.index_usage = T::get_index_usage();
 	sgi.get_indexed_size = T::get_indexed_size;
 
 	sgi.valid = true;
@@ -918,6 +933,11 @@ bool Variant::has_indexing(Variant::Type p_type) {
 Variant::Type Variant::get_indexed_element_type(Variant::Type p_type) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::VARIANT_MAX);
 	return variant_indexed_setters_getters[p_type].index_type;
+}
+
+uint32_t Variant::get_indexed_element_usage(Variant::Type p_type) {
+	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, PROPERTY_USAGE_DEFAULT);
+	return variant_indexed_setters_getters[p_type].index_usage;
 }
 
 Variant::ValidatedIndexedSetter Variant::get_member_validated_indexed_setter(Variant::Type p_type) {
@@ -1053,7 +1073,7 @@ struct VariantKeyedSetGetObject {
 	}
 	static uint32_t ptr_has(const void *base, const void *key) {
 		const Object *obj = PtrToArg<Object *>::convert(base);
-		ERR_FAIL_COND_V(!obj, false);
+		ERR_FAIL_NULL_V(obj, false);
 		bool valid;
 		obj->getvar(PtrToArg<Variant>::convert(key), &valid);
 		return valid;
@@ -1074,7 +1094,7 @@ struct VariantKeyedSetterGetterInfo {
 
 static VariantKeyedSetterGetterInfo variant_keyed_setters_getters[Variant::VARIANT_MAX];
 
-template <class T>
+template <typename T>
 static void register_keyed_member(Variant::Type p_type) {
 	VariantKeyedSetterGetterInfo &sgi = variant_keyed_setters_getters[p_type];
 
@@ -1151,30 +1171,48 @@ bool Variant::has_key(const Variant &p_key, bool &r_valid) const {
 	}
 }
 
-void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid) {
+void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid, VariantSetError *err_code) {
+	if (err_code) {
+		*err_code = VariantSetError::SET_OK;
+	}
 	if (type == DICTIONARY || type == OBJECT) {
 		bool valid;
 		set_keyed(p_index, p_value, valid);
 		if (r_valid) {
 			*r_valid = valid;
+			if (!valid && err_code) {
+				*err_code = VariantSetError::SET_KEYED_ERR;
+			}
 		}
 	} else {
 		bool valid = false;
 		if (p_index.get_type() == STRING_NAME) {
 			set_named(*VariantGetInternalPtr<StringName>::get_ptr(&p_index), p_value, valid);
+			if (!valid && err_code) {
+				*err_code = VariantSetError::SET_NAMED_ERR;
+			}
 		} else if (p_index.get_type() == INT) {
 			bool obb;
 			set_indexed(*VariantGetInternalPtr<int64_t>::get_ptr(&p_index), p_value, valid, obb);
 			if (obb) {
 				valid = false;
+				if (err_code) {
+					*err_code = VariantSetError::SET_INDEXED_ERR;
+				}
 			}
 		} else if (p_index.get_type() == STRING) { // less efficient version of named
 			set_named(*VariantGetInternalPtr<String>::get_ptr(&p_index), p_value, valid);
+			if (!valid && err_code) {
+				*err_code = VariantSetError::SET_NAMED_ERR;
+			}
 		} else if (p_index.get_type() == FLOAT) { // less efficient version of indexed
 			bool obb;
 			set_indexed(*VariantGetInternalPtr<double>::get_ptr(&p_index), p_value, valid, obb);
 			if (obb) {
 				valid = false;
+				if (err_code) {
+					*err_code = VariantSetError::SET_INDEXED_ERR;
+				}
 			}
 		}
 		if (r_valid) {
@@ -1183,31 +1221,49 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 	}
 }
 
-Variant Variant::get(const Variant &p_index, bool *r_valid) const {
+Variant Variant::get(const Variant &p_index, bool *r_valid, VariantGetError *err_code) const {
+	if (err_code) {
+		*err_code = VariantGetError::GET_OK;
+	}
 	Variant ret;
 	if (type == DICTIONARY || type == OBJECT) {
 		bool valid;
 		ret = get_keyed(p_index, valid);
 		if (r_valid) {
 			*r_valid = valid;
+			if (!valid && err_code) {
+				*err_code = VariantGetError::GET_KEYED_ERR;
+			}
 		}
 	} else {
 		bool valid = false;
 		if (p_index.get_type() == STRING_NAME) {
 			ret = get_named(*VariantGetInternalPtr<StringName>::get_ptr(&p_index), valid);
+			if (!valid && err_code) {
+				*err_code = VariantGetError::GET_NAMED_ERR;
+			}
 		} else if (p_index.get_type() == INT) {
 			bool obb;
 			ret = get_indexed(*VariantGetInternalPtr<int64_t>::get_ptr(&p_index), valid, obb);
 			if (obb) {
 				valid = false;
+				if (err_code) {
+					*err_code = VariantGetError::GET_INDEXED_ERR;
+				}
 			}
 		} else if (p_index.get_type() == STRING) { // less efficient version of named
 			ret = get_named(*VariantGetInternalPtr<String>::get_ptr(&p_index), valid);
+			if (!valid && err_code) {
+				*err_code = VariantGetError::GET_NAMED_ERR;
+			}
 		} else if (p_index.get_type() == FLOAT) { // less efficient version of indexed
 			bool obb;
 			ret = get_indexed(*VariantGetInternalPtr<double>::get_ptr(&p_index), valid, obb);
 			if (obb) {
 				valid = false;
+				if (err_code) {
+					*err_code = VariantGetError::GET_INDEXED_ERR;
+				}
 			}
 		}
 		if (r_valid) {
@@ -1230,7 +1286,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	} else if (type == OBJECT) {
 		Object *obj = get_validated_object();
-		ERR_FAIL_COND(!obj);
+		ERR_FAIL_NULL(obj);
 		obj->get_property_list(p_list);
 
 	} else {
@@ -1253,7 +1309,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			return _data._int > 0;
 		} break;
 		case FLOAT: {
-			r_iter = 0;
+			r_iter = 0.0;
 			return _data._float > 0.0;
 		} break;
 		case VECTOR2: {
@@ -1457,7 +1513,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 		} break;
 		case FLOAT: {
-			int64_t idx = r_iter;
+			double idx = r_iter;
 			idx++;
 			if (idx >= _data._float) {
 				return false;

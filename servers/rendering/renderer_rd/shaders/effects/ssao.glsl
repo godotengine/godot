@@ -158,21 +158,16 @@ vec4 calculate_edges(const float p_center_z, const float p_left_z, const float p
 	return clamp((1.3 - edgesLRTB / (p_center_z * 0.040)), 0.0, 1.0);
 }
 
-vec3 decode_normal(vec3 p_encoded_normal) {
-	vec3 normal = p_encoded_normal * 2.0 - 1.0;
-	return normal;
-}
-
 vec3 load_normal(ivec2 p_pos) {
-	vec3 encoded_normal = imageLoad(source_normal, p_pos).xyz;
-	encoded_normal.z = 1.0 - encoded_normal.z;
-	return decode_normal(encoded_normal);
+	vec3 encoded_normal = normalize(imageLoad(source_normal, p_pos).xyz * 2.0 - 1.0);
+	encoded_normal.z = -encoded_normal.z;
+	return encoded_normal;
 }
 
 vec3 load_normal(ivec2 p_pos, ivec2 p_offset) {
-	vec3 encoded_normal = imageLoad(source_normal, p_pos + p_offset).xyz;
-	encoded_normal.z = 1.0 - encoded_normal.z;
-	return decode_normal(encoded_normal);
+	vec3 encoded_normal = normalize(imageLoad(source_normal, p_pos + p_offset).xyz * 2.0 - 1.0);
+	encoded_normal.z = -encoded_normal.z;
+	return encoded_normal;
 }
 
 // all vectors in viewspace
@@ -221,7 +216,7 @@ void SSAOTap(const int p_quality_level, inout float r_obscurance_sum, inout floa
 	// snap to pixel center (more correct obscurance math, avoids artifacts)
 	sample_offset = round(sample_offset);
 
-	// calculate MIP based on the sample distance from the centre, similar to as described
+	// calculate MIP based on the sample distance from the center, similar to as described
 	// in http://graphics.cs.williams.edu/papers/SAOHPG12/.
 	float mip_level = (p_quality_level < SSAO_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (sample_pow_2_len + p_mip_offset);
 
@@ -259,7 +254,7 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 	// get this pixel's viewspace depth
 	pix_z = valuesUL.y;
 
-	// get left right top bottom neighbouring pixels for edge detection (gets compiled out on quality_level == 0)
+	// get left right top bottom neighboring pixels for edge detection (gets compiled out on quality_level == 0)
 	pix_left_z = valuesUL.x;
 	pix_top_z = valuesUL.z;
 	pix_right_z = valuesBR.z;
@@ -304,11 +299,11 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 	float obscurance_sum = 0.0;
 	float weight_sum = 0.0;
 
-	// edge mask for between this and left/right/top/bottom neighbour pixels - not used in quality level 0 so initialize to "no edge" (1 is no edge, 0 is edge)
+	// edge mask for between this and left/right/top/bottom neighbor pixels - not used in quality level 0 so initialize to "no edge" (1 is no edge, 0 is edge)
 	vec4 edgesLRTB = vec4(1.0, 1.0, 1.0, 1.0);
 
-	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer; a lot smaller offsets needed when using 32bit floats
-	pix_center_pos *= 0.9992;
+	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
+	pix_center_pos *= 0.99;
 
 	if (!p_adaptive_base && (p_quality_level >= SSAO_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
 		edgesLRTB = calculate_edges(pix_z, pix_left_z, pix_right_z, pix_top_z, pix_bottom_z);
@@ -318,7 +313,7 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 	if (!p_adaptive_base && (p_quality_level >= SSAO_DETAIL_AO_ENABLE_AT_QUALITY_PRESET)) {
 		// disable in case of quality level 4 (reference)
 		if (p_quality_level != 4) {
-			//approximate neighbouring pixels positions (actually just deltas or "positions - pix_center_pos" )
+			//approximate neighboring pixels positions (actually just deltas or "positions - pix_center_pos" )
 			vec3 normalized_viewspace_dir = vec3(pix_center_pos.xy / pix_center_pos.zz, 1.0);
 			vec3 pixel_left_delta = vec3(-pixel_size_at_center.x, 0.0, 0.0) + normalized_viewspace_dir * (pix_left_z - pix_center_pos.z);
 			vec3 pixel_right_delta = vec3(+pixel_size_at_center.x, 0.0, 0.0) + normalized_viewspace_dir * (pix_right_z - pix_center_pos.z);

@@ -128,16 +128,20 @@ using Godot.NativeInterop;
         if (isInnerClass)
         {
             var containingType = symbol.ContainingType;
+            AppendPartialContainingTypeDeclarations(containingType);
 
-            while (containingType != null)
+            void AppendPartialContainingTypeDeclarations(INamedTypeSymbol? containingType)
             {
+                if (containingType == null)
+                    return;
+
+                AppendPartialContainingTypeDeclarations(containingType.ContainingType);
+
                 source.Append("partial ");
                 source.Append(containingType.GetDeclarationKeyword());
                 source.Append(" ");
                 source.Append(containingType.NameWithTypeParameters());
                 source.Append("\n{\n");
-
-                containingType = containingType.ContainingType;
             }
         }
 
@@ -168,7 +172,9 @@ using Godot.NativeInterop;
             {
                 var parameter = callback.Parameters[i];
 
-                source.Append(parameter.ToDisplayString());
+                AppendRefKind(source, parameter.RefKind);
+                source.Append(' ');
+                source.Append(parameter.Type.FullQualifiedNameIncludeGlobal());
                 source.Append(' ');
                 source.Append(parameter.Name);
 
@@ -301,16 +307,20 @@ using Godot.NativeInterop;
         if (isInnerClass)
         {
             var containingType = symbol.ContainingType;
+            AppendPartialContainingTypeDeclarations(containingType);
 
-            while (containingType != null)
+            void AppendPartialContainingTypeDeclarations(INamedTypeSymbol? containingType)
             {
+                if (containingType == null)
+                    return;
+
+                AppendPartialContainingTypeDeclarations(containingType.ContainingType);
+
                 source.Append("partial ");
                 source.Append(containingType.GetDeclarationKeyword());
                 source.Append(" ");
                 source.Append(containingType.NameWithTypeParameters());
                 source.Append("\n{\n");
-
-                containingType = containingType.ContainingType;
             }
         }
 
@@ -377,7 +387,7 @@ using Godot.NativeInterop;
     }
 
     private static bool IsGodotInteropStruct(ITypeSymbol type) =>
-        GodotInteropStructs.Contains(type.FullQualifiedNameOmitGlobal());
+        _godotInteropStructs.Contains(type.FullQualifiedNameOmitGlobal());
 
     private static bool IsByRefParameter(IParameterSymbol parameter) =>
         parameter.RefKind is RefKind.In or RefKind.Out or RefKind.Ref;
@@ -438,7 +448,7 @@ using Godot.NativeInterop;
         source.Append(";\n");
     }
 
-    private static readonly string[] GodotInteropStructs =
+    private static readonly string[] _godotInteropStructs =
     {
         "Godot.NativeInterop.godot_ref",
         "Godot.NativeInterop.godot_variant_call_error",

@@ -31,61 +31,46 @@
 #include "editor_run_native.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/resources/image_texture.h"
 
 void EditorRunNative::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-				Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
-				if (eep.is_null()) {
-					continue;
-				}
-				Ref<ImageTexture> icon = eep->get_run_icon();
-				if (!icon.is_null()) {
-					Ref<Image> im = icon->get_image();
-					im = im->duplicate();
-					im->clear_mipmaps();
-					if (!im->is_empty()) {
-						im->resize(16 * EDSCALE, 16 * EDSCALE);
-						Ref<ImageTexture> small_icon = ImageTexture::create_from_image(im);
-						MenuButton *mb = memnew(MenuButton);
-						mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native).bind(i));
-						mb->connect("pressed", callable_mp(this, &EditorRunNative::run_native).bind(-1, i));
-						mb->set_icon(small_icon);
-						add_child(mb);
-						menus[i] = mb;
-					}
-				}
-			}
+		case NOTIFICATION_THEME_CHANGED: {
+			remote_debug->set_icon(get_editor_theme_icon(SNAME("PlayRemote")));
 		} break;
 
 		case NOTIFICATION_PROCESS: {
 			bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
 
 			if (changed) {
-				for (KeyValue<int, MenuButton *> &E : menus) {
-					Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(E.key);
-					MenuButton *mb = E.value;
-					int dc = eep->get_options_count();
-
-					if (dc == 0) {
-						mb->hide();
-					} else {
-						mb->get_popup()->clear();
-						mb->show();
-						if (dc == 1) {
-							mb->set_tooltip_text(eep->get_option_tooltip(0));
-						} else {
-							mb->set_tooltip_text(eep->get_options_tooltip());
-							for (int i = 0; i < dc; i++) {
-								mb->get_popup()->add_icon_item(eep->get_option_icon(i), eep->get_option_label(i));
-								mb->get_popup()->set_item_tooltip(-1, eep->get_option_tooltip(i));
-							}
+				PopupMenu *popup = remote_debug->get_popup();
+				popup->clear();
+				for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
+					Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
+					if (eep.is_null()) {
+						continue;
+					}
+					int dc = MIN(eep->get_options_count(), 9000);
+					if (dc > 0) {
+						popup->add_icon_item(eep->get_run_icon(), eep->get_name(), -1);
+						popup->set_item_disabled(-1, true);
+						for (int j = 0; j < dc; j++) {
+							popup->add_icon_item(eep->get_option_icon(j), eep->get_option_label(j), 10000 * i + j);
+							popup->set_item_tooltip(-1, eep->get_option_tooltip(j));
+							popup->set_item_indent(-1, 2);
 						}
 					}
+				}
+				if (popup->get_item_count() == 0) {
+					remote_debug->set_disabled(true);
+					remote_debug->set_tooltip_text(TTR("No Remote Debug export presets configured."));
+				} else {
+					remote_debug->set_disabled(false);
+					remote_debug->set_tooltip_text(TTR("Remote Debug"));
 				}
 
 				first = false;
@@ -94,24 +79,26 @@ void EditorRunNative::_notification(int p_what) {
 	}
 }
 
-Error EditorRunNative::run_native(int p_idx, int p_platform) {
-	if (!EditorNode::get_singleton()->ensure_main_scene(true)) {
-		resume_idx = p_idx;
-		resume_platform = p_platform;
+void EditorRunNative::_confirm_run_native() {
+	run_confirmed = true;
+	resume_run_native();
+}
+
+Error EditorRunNative::start_run_native(int p_id) {
+	if (p_id < 0) {
 		return OK;
 	}
 
-	Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(p_platform);
-	ERR_FAIL_COND_V(eep.is_null(), ERR_UNAVAILABLE);
+	int platform = p_id / 10000;
+	int idx = p_id % 10000;
+	resume_id = p_id;
 
-	if (p_idx == -1) {
-		if (eep->get_options_count() == 1) {
-			menus[p_platform]->get_popup()->hide();
-			p_idx = 0;
-		} else {
-			return ERR_INVALID_PARAMETER;
-		}
+	if (!EditorNode::get_singleton()->ensure_main_scene(true)) {
+		return OK;
 	}
+
+	Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(platform);
+	ERR_FAIL_COND_V(eep.is_null(), ERR_UNAVAILABLE);
 
 	Ref<EditorExportPreset> preset;
 
@@ -127,6 +114,22 @@ Error EditorRunNative::run_native(int p_idx, int p_platform) {
 		EditorNode::get_singleton()->show_warning(TTR("No runnable export preset found for this platform.\nPlease add a runnable preset in the Export menu or define an existing preset as runnable."));
 		return ERR_UNAVAILABLE;
 	}
+
+	String architecture = eep->get_device_architecture(idx);
+	if (!run_confirmed && !architecture.is_empty()) {
+		String preset_arch = "architectures/" + architecture;
+		bool is_arch_enabled = preset->get(preset_arch);
+
+		if (!is_arch_enabled) {
+			String warning_message = vformat(TTR("Warning: The CPU architecture '%s' is not active in your export preset.\n\n"), Variant(architecture));
+			warning_message += TTR("Run 'Remote Debug' anyway?");
+
+			run_native_confirm->set_text(warning_message);
+			run_native_confirm->popup_centered();
+			return OK;
+		}
+	}
+	run_confirmed = false;
 
 	emit_signal(SNAME("native_run"), preset);
 
@@ -151,16 +154,18 @@ Error EditorRunNative::run_native(int p_idx, int p_platform) {
 	}
 
 	eep->clear_messages();
-	Error err = eep->run(preset, p_idx, flags);
+	Error err = eep->run(preset, idx, flags);
 	result_dialog_log->clear();
 	if (eep->fill_log_messages(result_dialog_log, err)) {
-		result_dialog->popup_centered_ratio(0.5);
+		if (eep->get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_ERROR) {
+			result_dialog->popup_centered_ratio(0.5);
+		}
 	}
 	return err;
 }
 
 void EditorRunNative::resume_run_native() {
-	run_native(resume_idx, resume_platform);
+	start_run_native(resume_id);
 }
 
 void EditorRunNative::_bind_methods() {
@@ -172,6 +177,15 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 }
 
 EditorRunNative::EditorRunNative() {
+	remote_debug = memnew(MenuButton);
+	remote_debug->set_flat(false);
+	remote_debug->set_theme_type_variation("RunBarButton");
+	remote_debug->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::start_run_native));
+	remote_debug->set_tooltip_text(TTR("Remote Debug"));
+	remote_debug->set_disabled(true);
+
+	add_child(remote_debug);
+
 	result_dialog = memnew(AcceptDialog);
 	result_dialog->set_title(TTR("Project Run"));
 	result_dialog_log = memnew(RichTextLabel);
@@ -181,7 +195,9 @@ EditorRunNative::EditorRunNative() {
 	add_child(result_dialog);
 	result_dialog->hide();
 
+	run_native_confirm = memnew(ConfirmationDialog);
+	add_child(run_native_confirm);
+	run_native_confirm->connect("confirmed", callable_mp(this, &EditorRunNative::_confirm_run_native));
+
 	set_process(true);
-	resume_idx = 0;
-	resume_platform = 0;
 }

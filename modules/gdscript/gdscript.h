@@ -31,6 +31,8 @@
 #ifndef GDSCRIPT_H
 #define GDSCRIPT_H
 
+#include "gdscript_function.h"
+
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/doc_data.h"
@@ -38,7 +40,6 @@
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "core/templates/rb_set.h"
-#include "gdscript_function.h"
 
 class GDScriptNativeClass : public RefCounted {
 	GDCLASS(GDScriptNativeClass, RefCounted);
@@ -68,6 +69,7 @@ class GDScript : public Script {
 		StringName setter;
 		StringName getter;
 		GDScriptDataType data_type;
+		PropertyInfo property_info;
 	};
 
 	struct ClearData {
@@ -83,6 +85,9 @@ class GDScript : public Script {
 	friend class GDScriptFunction;
 	friend class GDScriptAnalyzer;
 	friend class GDScriptCompiler;
+	friend class GDScriptDocGen;
+	friend class GDScriptLambdaCallable;
+	friend class GDScriptLambdaSelfCallable;
 	friend class GDScriptLanguage;
 	friend struct GDScriptUtilityFunctionsDefinitions;
 
@@ -91,15 +96,56 @@ class GDScript : public Script {
 	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
-	HashSet<StringName> members; //members are just indices to the instantiated script.
+	// Members are just indices to the instantiated script.
+	HashMap<StringName, MemberInfo> member_indices; // Includes member info of all base GDScript classes.
+	HashSet<StringName> members; // Only members of the current class.
+
+	// Only static variables of the current class.
+	HashMap<StringName, MemberInfo> static_variables_indices;
+	Vector<Variant> static_variables; // Static variable values.
+
 	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
-	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	HashMap<StringName, Ref<GDScript>> subclasses;
-	HashMap<StringName, Vector<StringName>> _signals;
+	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
 
+	struct LambdaInfo {
+		int capture_count;
+		bool use_self;
+	};
+
+	HashMap<GDScriptFunction *, LambdaInfo> lambda_info;
+
+public:
+	class UpdatableFuncPtr {
+		friend class GDScript;
+
+		GDScriptFunction *ptr = nullptr;
+		GDScript *script = nullptr;
+		List<UpdatableFuncPtr *>::Element *list_element = nullptr;
+
+	public:
+		GDScriptFunction *operator->() const { return ptr; }
+		operator GDScriptFunction *() const { return ptr; }
+
+		UpdatableFuncPtr(GDScriptFunction *p_function);
+		~UpdatableFuncPtr();
+	};
+
+private:
+	// List is used here because a ptr to elements are stored, so the memory locations need to be stable
+	List<UpdatableFuncPtr *> func_ptrs_to_update;
+	Mutex func_ptrs_to_update_mutex;
+
+	void _recurse_replace_function_ptrs(const HashMap<GDScriptFunction *, GDScriptFunction *> &p_replacements) const;
+
 #ifdef TOOLS_ENABLED
+	// For static data storage during hot-reloading.
+	HashMap<StringName, MemberInfo> old_static_variables_indices;
+	Vector<Variant> old_static_variables;
+	void _save_old_static_data();
+	void _restore_old_static_data();
 
 	HashMap<StringName, int> member_lines;
 	HashMap<StringName, Variant> member_default_values;
@@ -113,24 +159,16 @@ class GDScript : public Script {
 
 	DocData::ClassDoc doc;
 	Vector<DocData::ClassDoc> docs;
-	String doc_brief_description;
-	String doc_description;
-	Vector<DocData::TutorialDoc> doc_tutorials;
-	HashMap<String, String> doc_functions;
-	HashMap<String, String> doc_variables;
-	HashMap<String, String> doc_constants;
-	HashMap<String, String> doc_signals;
-	HashMap<String, DocData::EnumDoc> doc_enums;
 	void _clear_doc();
-	void _update_doc();
 	void _add_doc(const DocData::ClassDoc &p_inner_class);
-
 #endif
-	HashMap<StringName, PropertyInfo> member_info;
 
 	GDScriptFunction *implicit_initializer = nullptr;
 	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
 	GDScriptFunction *implicit_ready = nullptr;
+	GDScriptFunction *static_initializer = nullptr;
+
+	Error _static_init();
 
 	int subclass_count = 0;
 	RBSet<Object *> instances;
@@ -138,9 +176,13 @@ class GDScript : public Script {
 	bool clearing = false;
 	//exported members
 	String source;
+	Vector<uint8_t> binary_tokens;
 	String path;
-	String name;
+	bool path_valid = false; // False if using default path.
+	StringName local_name; // Inner class identifier or `class_name`.
+	StringName global_name; // `class_name`.
 	String fully_qualified_name;
+	String simplified_icon_path;
 	SelfList<GDScript> script_list;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
@@ -155,28 +197,24 @@ class GDScript : public Script {
 	HashSet<PlaceHolderScriptInstance *> placeholders;
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
+	void _update_exports_down(bool p_base_exports_changed);
 #endif
 
 #ifdef DEBUG_ENABLED
-
 	HashMap<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
-
 #endif
 
-	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
+	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr, bool p_base_exports_changed = false);
 
 	void _save_orphaned_subclasses(GDScript::ClearData *p_clear_data);
-	void _init_rpc_methods_properties();
 
 	void _get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const;
 	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
 	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
 
-	// This method will map the class name from "RefCounted" to "MyClass.InnerClass".
-	static String _get_gdscript_reference_class_name(const GDScript *p_gdscript);
-
 	GDScript *_get_gdscript_from_variant(const Variant &p_variant);
-	void _get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
+	void _collect_function_dependencies(GDScriptFunction *p_func, RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
+	void _collect_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
 
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -188,9 +226,21 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef DEBUG_ENABLED
+	static String debug_get_script_name(const Ref<Script> &p_script);
+#endif
+
+	static String canonicalize_path(const String &p_path);
+	_FORCE_INLINE_ static bool is_canonically_equal_paths(const String &p_path_a, const String &p_path_b) {
+		return canonicalize_path(p_path_a) == canonicalize_path(p_path_b);
+	}
+
+	_FORCE_INLINE_ StringName get_local_name() const { return local_name; }
+
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
 	virtual bool is_valid() const override { return valid; }
+	virtual bool is_abstract() const override { return false; } // GDScript does not support abstract classes.
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
@@ -208,10 +258,9 @@ public:
 	}
 	const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
-	const String &get_script_class_name() const { return name; }
 
 	RBSet<GDScript *> get_dependencies();
-	RBSet<GDScript *> get_inverted_dependencies();
+	HashMap<GDScript *, RBSet<GDScript *>> get_all_dependencies();
 	RBSet<GDScript *> get_must_clear_dependencies();
 
 	virtual bool has_script_signal(const StringName &p_signal) const override;
@@ -223,11 +272,13 @@ public:
 	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
 	const HashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
+	StringName debug_get_static_var_by_index(int p_idx) const;
 
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	virtual bool can_instantiate() const override;
 
 	virtual Ref<Script> get_base_script() const override;
+	virtual StringName get_global_name() const override;
 
 	virtual StringName get_instance_base_type() const override; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) override;
@@ -243,6 +294,7 @@ public:
 	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		return docs;
 	}
+	virtual String get_class_icon_path() const override;
 #endif // TOOLS_ENABLED
 
 	virtual Error reload(bool p_keep_state = false) override;
@@ -250,14 +302,19 @@ public:
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	String get_script_path() const;
 	Error load_source_code(const String &p_path);
-	Error load_byte_code(const String &p_path);
 
-	Vector<uint8_t> get_as_byte_code() const;
+	void set_binary_tokens_source(const Vector<uint8_t> &p_binary_tokens);
+	const Vector<uint8_t> &get_binary_tokens_source() const;
+	Vector<uint8_t> get_as_binary_tokens() const;
 
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
 
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
+	virtual bool has_static_method(const StringName &p_method) const override;
+
+	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
+
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
@@ -277,6 +334,8 @@ public:
 	virtual void get_members(HashSet<StringName> *p_members) override;
 
 	virtual const Variant get_rpc_config() const override;
+
+	void unload_static() const;
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -313,17 +372,21 @@ public:
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
+	virtual void validate_property(PropertyInfo &p_property) const;
 
 	virtual bool property_can_revert(const StringName &p_name) const;
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const;
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
+
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
+
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
-	virtual void notification(int p_notification);
+	virtual void notification(int p_notification, bool p_reversed = false);
 	String to_string(bool *r_valid);
 
 	virtual Ref<Script> get_script() const;
@@ -358,12 +421,26 @@ class GDScriptLanguage : public ScriptLanguage {
 		int *line = nullptr;
 	};
 
-	int _debug_parse_err_line;
-	String _debug_parse_err_file;
-	String _debug_error;
-	int _debug_call_stack_pos;
-	int _debug_max_call_stack;
-	CallLevel *_call_stack = nullptr;
+	static thread_local int _debug_parse_err_line;
+	static thread_local String _debug_parse_err_file;
+	static thread_local String _debug_error;
+	struct CallStack {
+		CallLevel *levels = nullptr;
+		int stack_pos = 0;
+
+		void free() {
+			if (levels) {
+				memdelete(levels);
+				levels = nullptr;
+			}
+		}
+		~CallStack() {
+			free();
+		}
+	};
+
+	static thread_local CallStack _call_stack;
+	int _debug_max_call_stack = 0;
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
 
@@ -378,6 +455,7 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	SelfList<GDScriptFunction>::List function_list;
 	bool profiling;
+	bool profile_native_calls;
 	uint64_t script_frame_time;
 
 	HashMap<String, ObjectID> orphan_subclasses;
@@ -389,59 +467,51 @@ public:
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
-		if (Thread::get_main_id() != Thread::get_caller_id()) {
-			return; //no support for other threads than main for now
+		if (unlikely(_call_stack.levels == nullptr)) {
+			_call_stack.levels = memnew_arr(CallLevel, _debug_max_call_stack + 1);
 		}
 
 		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
 			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() + 1);
 		}
 
-		if (_debug_call_stack_pos >= _debug_max_call_stack) {
+		if (_call_stack.stack_pos >= _debug_max_call_stack) {
 			//stack overflow
 			_debug_error = vformat("Stack overflow (stack size: %s). Check for infinite recursion in your script.", _debug_max_call_stack);
 			EngineDebugger::get_script_debugger()->debug(this);
 			return;
 		}
 
-		_call_stack[_debug_call_stack_pos].stack = p_stack;
-		_call_stack[_debug_call_stack_pos].instance = p_instance;
-		_call_stack[_debug_call_stack_pos].function = p_function;
-		_call_stack[_debug_call_stack_pos].ip = p_ip;
-		_call_stack[_debug_call_stack_pos].line = p_line;
-		_debug_call_stack_pos++;
+		_call_stack.levels[_call_stack.stack_pos].stack = p_stack;
+		_call_stack.levels[_call_stack.stack_pos].instance = p_instance;
+		_call_stack.levels[_call_stack.stack_pos].function = p_function;
+		_call_stack.levels[_call_stack.stack_pos].ip = p_ip;
+		_call_stack.levels[_call_stack.stack_pos].line = p_line;
+		_call_stack.stack_pos++;
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-		if (Thread::get_main_id() != Thread::get_caller_id()) {
-			return; //no support for other threads than main for now
-		}
-
 		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
 			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() - 1);
 		}
 
-		if (_debug_call_stack_pos == 0) {
+		if (_call_stack.stack_pos == 0) {
 			_debug_error = "Stack Underflow (Engine Bug)";
 			EngineDebugger::get_script_debugger()->debug(this);
 			return;
 		}
 
-		_debug_call_stack_pos--;
+		_call_stack.stack_pos--;
 	}
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() override {
-		if (Thread::get_main_id() != Thread::get_caller_id()) {
-			return Vector<StackInfo>();
-		}
-
 		Vector<StackInfo> csi;
-		csi.resize(_debug_call_stack_pos);
-		for (int i = 0; i < _debug_call_stack_pos; i++) {
-			csi.write[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
-			if (_call_stack[i].function) {
-				csi.write[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
-				csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_script_path();
+		csi.resize(_call_stack.stack_pos);
+		for (int i = 0; i < _call_stack.stack_pos; i++) {
+			csi.write[_call_stack.stack_pos - i - 1].line = _call_stack.levels[i].line ? *_call_stack.levels[i].line : 0;
+			if (_call_stack.levels[i].function) {
+				csi.write[_call_stack.stack_pos - i - 1].func = _call_stack.levels[i].function->get_name();
+				csi.write[_call_stack.stack_pos - i - 1].file = _call_stack.levels[i].function->get_script()->get_script_path();
 			}
 		}
 		return csi;
@@ -449,10 +519,12 @@ public:
 
 	struct {
 		StringName _init;
+		StringName _static_init;
 		StringName _notification;
 		StringName _set;
 		StringName _get;
 		StringName _get_property_list;
+		StringName _validate_property;
 		StringName _property_can_revert;
 		StringName _property_get_revert;
 		StringName _script_source;
@@ -475,20 +547,22 @@ public:
 	virtual void init() override;
 	virtual String get_type() const override;
 	virtual String get_extension() const override;
-	virtual Error execute_file(const String &p_path) override;
 	virtual void finish() override;
 
 	/* EDITOR FUNCTIONS */
 	virtual void get_reserved_words(List<String> *p_words) const override;
-	virtual bool is_control_flow_keyword(String p_keywords) const override;
+	virtual bool is_control_flow_keyword(const String &p_keywords) const override;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const override;
+	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
-	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
+	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
-	virtual bool has_named_classes() const override;
+#ifndef DISABLE_DEPRECATED
+	virtual bool has_named_classes() const override { return false; }
+#endif
 	virtual bool supports_builtin_mode() const override;
 	virtual bool supports_documentation() const override;
 	virtual bool can_inherit_from_file() const override { return true; }
@@ -518,6 +592,7 @@ public:
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) override;
 
 	virtual void reload_all_scripts() override;
+	virtual void reload_scripts(const Array &p_scripts, bool p_soft_reload) override;
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;
 
 	virtual void frame() override;
@@ -528,6 +603,8 @@ public:
 
 	virtual void profiling_start() override;
 	virtual void profiling_stop() override;
+	virtual void profiling_set_save_native_calls(bool p_enable) override;
+	void profiling_collate_native_call_data(bool p_accumulated);
 
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override;

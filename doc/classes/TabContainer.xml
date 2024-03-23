@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TabContainer" inherits="Container" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TabContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Tabbed container.
+		A container that creates a tab for each child control, displaying only the active tab's control.
 	</brief_description>
 	<description>
-		Arranges [Control] children into a tabbed view, creating a tab for each one. The active tab's corresponding [Control] has its [code]visible[/code] property set to [code]true[/code], and all other children's to [code]false[/code].
-		Ignores non-[Control] children.
-		[b]Note:[/b] The drawing of the clickable tabs themselves is handled by this node. Adding [TabBar]s as children is not needed.
+		Arranges child controls into a tabbed view, creating a tab for each one. The active tab's corresponding control is made visible, while all other child controls are hidden. Ignores non-control children.
+		[b]Note:[/b] The drawing of the clickable tabs is handled by this node; [TabBar] is not needed.
 	</description>
 	<tutorials>
-		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_current_tab_control" qualifiers="const">
@@ -29,6 +28,13 @@
 			<return type="int" />
 			<description>
 				Returns the previously active tab index.
+			</description>
+		</method>
+		<method name="get_tab_bar" qualifiers="const">
+			<return type="TabBar" />
+			<description>
+				Returns the [TabBar] contained in this container.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it or editing its tabs may cause a crash. If you wish to edit the tabs, use the methods provided in [TabContainer].
 			</description>
 		</method>
 		<method name="get_tab_button_icon" qualifiers="const">
@@ -72,6 +78,13 @@
 				Returns the index of the tab tied to the given [param control]. The control must be a child of the [TabContainer].
 			</description>
 		</method>
+		<method name="get_tab_metadata" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the metadata value set to the tab at index [param tab_idx] using [method set_tab_metadata]. If no metadata was previously set, returns [code]null[/code] by default.
+			</description>
+		</method>
 		<method name="get_tab_title" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="tab_idx" type="int" />
@@ -91,6 +104,18 @@
 			<param index="0" name="tab_idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the tab at index [param tab_idx] is hidden.
+			</description>
+		</method>
+		<method name="select_next_available">
+			<return type="bool" />
+			<description>
+				Selects the first available tab with greater index than the currently selected. Returns [code]true[/code] if tab selection changed.
+			</description>
+		</method>
+		<method name="select_previous_available">
+			<return type="bool" />
+			<description>
+				Selects the first available tab with lower index than the currently selected. Returns [code]true[/code] if tab selection changed.
 			</description>
 		</method>
 		<method name="set_popup">
@@ -132,6 +157,14 @@
 				Sets an icon for the tab at index [param tab_idx].
 			</description>
 		</method>
+		<method name="set_tab_metadata">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="metadata" type="Variant" />
+			<description>
+				Sets the metadata value for the tab at index [param tab_idx], which can be retrieved later using [method get_tab_metadata].
+			</description>
+		</method>
 		<method name="set_tab_title">
 			<return type="void" />
 			<param index="0" name="tab_idx" type="int" />
@@ -148,14 +181,25 @@
 		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
 			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
 		</member>
-		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
+		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="-1">
 			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
+			A value of [code]-1[/code] means that no tab is selected.
+		</member>
+		<member name="deselect_enabled" type="bool" setter="set_deselect_enabled" getter="get_deselect_enabled" default="false">
+			If [code]true[/code], all tabs can be deselected so that no tab is selected. Click on the [member current_tab] to deselect it.
+			Only the tab header will be shown if no tabs are selected.
 		</member>
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
 			Sets the position at which tabs will be placed. See [enum TabBar.AlignmentMode] for details.
+		</member>
+		<member name="tab_focus_mode" type="int" setter="set_tab_focus_mode" getter="get_tab_focus_mode" enum="Control.FocusMode" default="2">
+			The focus access mode for the internal [TabBar] node.
+		</member>
+		<member name="tabs_position" type="int" setter="set_tabs_position" getter="get_tabs_position" enum="TabContainer.TabPosition" default="0">
+			Sets the position of the tab bar. See [enum TabPosition] for details.
 		</member>
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabContainer]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
@@ -165,10 +209,16 @@
 			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden.
 		</member>
 		<member name="use_hidden_tabs_for_min_size" type="bool" setter="set_use_hidden_tabs_for_min_size" getter="get_use_hidden_tabs_for_min_size" default="false">
-			If [code]true[/code], children [Control] nodes that are hidden have their minimum size take into account in the total, instead of only the currently visible one.
+			If [code]true[/code], child [Control] nodes that are hidden have their minimum size take into account in the total, instead of only the currently visible one.
 		</member>
 	</members>
 	<signals>
+		<signal name="active_tab_rearranged">
+			<param index="0" name="idx_to" type="int" />
+			<description>
+				Emitted when the active tab is rearranged via mouse drag. See [member drag_to_rearrange_enabled].
+			</description>
+		</signal>
 		<signal name="pre_popup_pressed">
 			<description>
 				Emitted when the [TabContainer]'s [Popup] button is clicked. See [method set_popup] for details.
@@ -186,13 +236,36 @@
 				Emitted when switching to another tab.
 			</description>
 		</signal>
+		<signal name="tab_clicked">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab is clicked, even if it is the current tab.
+			</description>
+		</signal>
+		<signal name="tab_hovered">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab is hovered by the mouse.
+			</description>
+		</signal>
 		<signal name="tab_selected">
 			<param index="0" name="tab" type="int" />
 			<description>
-				Emitted when a tab is selected, even if it is the current tab.
+				Emitted when a tab is selected via click, directional input, or script, even if it is the current tab.
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="POSITION_TOP" value="0" enum="TabPosition">
+			Places the tab bar at the top.
+		</constant>
+		<constant name="POSITION_BOTTOM" value="1" enum="TabPosition">
+			Places the tab bar at the bottom. The tab bar's [StyleBox] will be flipped vertically.
+		</constant>
+		<constant name="POSITION_MAX" value="2" enum="TabPosition">
+			Represents the size of the [enum TabPosition] enum.
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="drop_mark_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Modulation color for the [theme_item drop_mark] icon.
@@ -200,7 +273,10 @@
 		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Font color of disabled tabs.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Font color of the currently hovered tab.
+		</theme_item>
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the tab name.
 		</theme_item>
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
@@ -208,6 +284,9 @@
 		</theme_item>
 		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
 			Font color of the other, unselected tabs.
+		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the tab's icon. This limit is applied on top of the default size of the icon, but before the value set with [method TabBar.set_tab_icon_max_width]. The height is adjusted according to the icon's ratio.
 		</theme_item>
 		<theme_item name="icon_separation" data_type="constant" type="int" default="4">
 			Space between tab's name and its icon.
@@ -252,6 +331,13 @@
 		</theme_item>
 		<theme_item name="tab_disabled" data_type="style" type="StyleBox">
 			The style of disabled tabs.
+		</theme_item>
+		<theme_item name="tab_focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [TabBar] is focused. The [theme_item tab_focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox] of the selected tab, so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="tab_hovered" data_type="style" type="StyleBox">
+			The style of the currently hovered tab.
+			[b]Note:[/b] This style will be drawn with the same width as [theme_item tab_unselected] at minimum.
 		</theme_item>
 		<theme_item name="tab_selected" data_type="style" type="StyleBox">
 			The style of the currently selected tab.

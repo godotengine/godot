@@ -90,6 +90,12 @@ TEST_CASE("[Vector3i] Length methods") {
 	CHECK_MESSAGE(
 			vector2.length() == doctest::Approx(53.8516480713450403125),
 			"Vector3i length should work as expected.");
+	CHECK_MESSAGE(
+			vector1.distance_squared_to(vector2) == 1400,
+			"Vector3i distance_squared_to should work as expected and return exact result.");
+	CHECK_MESSAGE(
+			vector1.distance_to(vector2) == doctest::Approx(37.41657386773941385584),
+			"Vector3i distance_to should work as expected.");
 }
 
 TEST_CASE("[Vector3i] Operators") {
@@ -129,6 +135,13 @@ TEST_CASE("[Vector3i] Operators") {
 
 TEST_CASE("[Vector3i] Other methods") {
 	const Vector3i vector = Vector3i(1, 3, -7);
+
+	CHECK_MESSAGE(
+			vector.min(Vector3i(3, 2, 5)) == Vector3i(1, 2, -7),
+			"Vector3i min should return expected value.");
+	CHECK_MESSAGE(
+			vector.max(Vector3i(5, 2, 4)) == Vector3i(5, 3, 4),
+			"Vector3i max should return expected value.");
 
 	CHECK_MESSAGE(
 			vector.snapped(Vector3i(4, 2, 5)) == Vector3i(0, 4, -5),

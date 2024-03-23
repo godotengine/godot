@@ -33,12 +33,13 @@
 #include "core/config/engine.h"
 #include "core/os/keyboard.h"
 #include "scene/gui/panel.h"
+#include "scene/theme/theme_db.h"
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
-	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
+	if (get_flag(FLAG_POPUP) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
 		_close_pressed();
 	}
+	Window::_input_from_window(p_event);
 }
 
 void Popup::_initialize_visible_parents() {
@@ -59,19 +60,13 @@ void Popup::_initialize_visible_parents() {
 
 void Popup::_deinitialize_visible_parents() {
 	if (is_embedded()) {
-		for (uint32_t i = 0; i < visible_parents.size(); ++i) {
-			visible_parents[i]->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-			visible_parents[i]->disconnect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+		for (Window *parent_window : visible_parents) {
+			parent_window->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
+			parent_window->disconnect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
 		}
 
 		visible_parents.clear();
 	}
-}
-
-void Popup::_update_theme_item_cache() {
-	Window::_update_theme_item_cache();
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
 }
 
 void Popup::_notification(int p_what) {
@@ -96,15 +91,21 @@ void Popup::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_UNPARENTED:
 		case NOTIFICATION_EXIT_TREE: {
 			if (!is_in_edited_scene_root()) {
 				_deinitialize_visible_parents();
 			}
 		} break;
 
-		case NOTIFICATION_WM_CLOSE_REQUEST:
-		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			if (!is_in_edited_scene_root()) {
+				_close_pressed();
+			}
+		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			if (!is_in_edited_scene_root() && get_flag(FLAG_POPUP)) {
 				_close_pressed();
 			}
 		} break;
@@ -122,16 +123,12 @@ void Popup::_close_pressed() {
 
 	_deinitialize_visible_parents();
 
-	call_deferred(SNAME("hide"));
+	callable_mp((Window *)this, &Window::hide).call_deferred();
 }
 
 void Popup::_post_popup() {
 	Window::_post_popup();
 	popped_up = true;
-}
-
-void Popup::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("popup_hide"));
 }
 
 void Popup::_validate_property(PropertyInfo &p_property) const {
@@ -195,6 +192,12 @@ Rect2i Popup::_popup_adjust_rect() const {
 	return current;
 }
 
+void Popup::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("popup_hide"));
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Popup, panel_style, "panel");
+}
+
 Popup::Popup() {
 	set_wrap_controls(true);
 	set_visible(false);
@@ -202,8 +205,6 @@ Popup::Popup() {
 	set_flag(FLAG_BORDERLESS, true);
 	set_flag(FLAG_RESIZE_DISABLED, true);
 	set_flag(FLAG_POPUP, true);
-
-	connect("window_input", callable_mp(this, &Popup::_input_from_window));
 }
 
 Popup::~Popup() {
@@ -254,12 +255,6 @@ void PopupPanel::_update_child_rects() {
 	}
 }
 
-void PopupPanel::_update_theme_item_cache() {
-	Popup::_update_theme_item_cache();
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
-}
-
 void PopupPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
@@ -272,6 +267,10 @@ void PopupPanel::_notification(int p_what) {
 			_update_child_rects();
 		} break;
 	}
+}
+
+void PopupPanel::_bind_methods() {
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupPanel, panel_style, "panel");
 }
 
 PopupPanel::PopupPanel() {

@@ -32,10 +32,10 @@
 
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 
-static Rect2i prev_rect = Rect2i();
-static bool was_showed = false;
+Rect2i EditorQuickOpen::prev_rect = Rect2i();
+bool EditorQuickOpen::was_showed = false;
 
 void EditorQuickOpen::popup_dialog(const String &p_base, bool p_enable_multi, bool p_dont_clear) {
 	base_type = p_base;
@@ -69,18 +69,9 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		String file = p_efsd->get_file_path(i);
 		String engine_type = p_efsd->get_file_type(i);
-		// TODO: Fix lack of caching for resource's script's global class name (if applicable).
-		String script_type;
-		if (_load_resources) {
-			Ref<Resource> res = ResourceLoader::load(file);
-			if (res.is_valid()) {
-				Ref<Script> scr = res->get_script();
-				if (scr.is_valid()) {
-					script_type = scr->get_language()->get_global_class_name(file);
-				}
-			}
-		}
+		String script_type = p_efsd->get_file_resource_script_class(i);
 		String actual_type = script_type.is_empty() ? engine_type : script_type;
+
 		// Iterate all possible base types.
 		for (String &parent_type : base_types) {
 			if (ClassDB::is_parent_class(engine_type, parent_type) || EditorNode::get_editor_data().script_class_is_parent(script_type, parent_type)) {
@@ -89,7 +80,7 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 				// Store refs to used icons.
 				String ext = file.get_extension();
 				if (!icons.has(ext)) {
-					icons.insert(ext, get_theme_icon((has_theme_icon(actual_type, SNAME("EditorIcons")) ? actual_type : "Object"), SNAME("EditorIcons")));
+					icons.insert(ext, EditorNode::get_singleton()->get_class_icon(actual_type, "Object"));
 				}
 
 				// Stop testing base types as soon as we got a match.
@@ -259,14 +250,14 @@ void EditorQuickOpen::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
 		} break;
 	}
-}
-
-void EditorQuickOpen::_theme_changed() {
-	search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 }
 
 void EditorQuickOpen::_bind_methods() {
@@ -275,7 +266,6 @@ void EditorQuickOpen::_bind_methods() {
 
 EditorQuickOpen::EditorQuickOpen() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->connect("theme_changed", callable_mp(this, &EditorQuickOpen::_theme_changed));
 	add_child(vbc);
 
 	search_box = memnew(LineEdit);

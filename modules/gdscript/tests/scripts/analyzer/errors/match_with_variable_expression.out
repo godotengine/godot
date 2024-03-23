@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Expression in match pattern must be a constant expression, an identifier, or an attribute access ("A.B").

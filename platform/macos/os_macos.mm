@@ -30,14 +30,15 @@
 
 #include "os_macos.h"
 
-#include "core/version_generated.gen.h"
-#include "main/main.h"
-
 #include "dir_access_macos.h"
 #include "display_server_macos.h"
 #include "godot_application.h"
 #include "godot_application_delegate.h"
 #include "macos_terminal_logger.h"
+
+#include "core/crypto/crypto_core.h"
+#include "core/version_generated.gen.h"
+#include "main/main.h"
 
 #include <dlfcn.h>
 #include <libproc.h>
@@ -69,10 +70,40 @@ void OS_MacOS::initialize() {
 String OS_MacOS::get_processor_name() const {
 	char buffer[256];
 	size_t buffer_len = 256;
-	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, nullptr, 0) == 0) {
 		return String::utf8(buffer, buffer_len);
 	}
 	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+}
+
+bool OS_MacOS::is_sandboxed() const {
+	return has_environment("APP_SANDBOX_CONTAINER_ID");
+}
+
+Vector<String> OS_MacOS::get_granted_permissions() const {
+	Vector<String> ret;
+
+	if (is_sandboxed()) {
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				String url_string;
+				url_string.parse_utf8([[url path] UTF8String]);
+				ret.push_back(url_string);
+			}
+		}
+	}
+
+	return ret;
+}
+
+void OS_MacOS::revoke_granted_permissions() {
+	if (is_sandboxed()) {
+		[[NSUserDefaults standardUserDefaults] setObject:nil forKey:@"sec_bookmarks"];
+	}
 }
 
 void OS_MacOS::initialize_core() {
@@ -84,6 +115,18 @@ void OS_MacOS::initialize_core() {
 }
 
 void OS_MacOS::finalize() {
+	if (is_sandboxed()) {
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				[url stopAccessingSecurityScopedResource];
+			}
+		}
+	}
+
 #ifdef COREMIDI_ENABLED
 	midi_driver.close();
 #endif
@@ -96,7 +139,7 @@ void OS_MacOS::finalize() {
 }
 
 void OS_MacOS::initialize_joypads() {
-	joypad_macos = memnew(JoypadMacOS(Input::get_singleton()));
+	joypad_macos = memnew(JoypadMacOS());
 }
 
 void OS_MacOS::set_main_loop(MainLoop *p_main_loop) {
@@ -174,7 +217,7 @@ _FORCE_INLINE_ String OS_MacOS::get_framework_executable(const String &p_path) {
 	return p_path;
 }
 
-Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_MacOS::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = get_framework_executable(p_path);
 
 	if (!FileAccess::exists(path)) {
@@ -187,8 +230,10 @@ Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handl
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("../Frameworks").path_join(p_path.get_file()));
 	}
 
+	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
 	if (r_resolved_path != nullptr) {
 		*r_resolved_path = path;
@@ -287,11 +332,35 @@ String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ret;
 }
 
-Error OS_MacOS::shell_open(String p_uri) {
+Error OS_MacOS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	bool open_folder = false;
+	if (DirAccess::dir_exists_absolute(p_path) && p_open_folder) {
+		open_folder = true;
+	}
+
+	if (!p_path.begins_with("file://")) {
+		p_path = String("file://") + p_path;
+	}
+
+	NSString *string = [NSString stringWithUTF8String:p_path.utf8().get_data()];
+	NSURL *uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
+
+	if (open_folder) {
+		[[NSWorkspace sharedWorkspace] openURL:uri];
+	} else {
+		[[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:@[ uri ]];
+	}
+	return OK;
+}
+
+Error OS_MacOS::shell_open(const String &p_uri) {
 	NSString *string = [NSString stringWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *uri = [[NSURL alloc] initWithString:string];
-	// Escape special characters in filenames
 	if (!uri || !uri.scheme || [uri.scheme isEqual:@"file"]) {
+		// No scheme set, assume "file://" and escape special characters.
+		if (!p_uri.begins_with("file://")) {
+			string = [NSString stringWithUTF8String:("file://" + p_uri).utf8().get_data()];
+		}
 		uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
 	}
 	[[NSWorkspace sharedWorkspace] openURL:uri];
@@ -532,7 +601,9 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 		for (const String &arg : p_arguments) {
 			[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
 		}
+#if defined(__x86_64__)
 		if (@available(macOS 10.15, *)) {
+#endif
 			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
 			[configuration setArguments:arguments];
 			[configuration setCreatesNewApplicationInstance:YES];
@@ -561,6 +632,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 			}
 
 			return err;
+#if defined(__x86_64__)
 		} else {
 			Error err = ERR_TIMEOUT;
 			NSError *error = nullptr;
@@ -576,6 +648,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 			}
 			return err;
 		}
+#endif
 	} else {
 		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
 	}
@@ -650,26 +723,64 @@ Error OS_MacOS::move_to_trash(const String &p_path) {
 	return OK;
 }
 
+String OS_MacOS::get_system_ca_certificates() {
+	CFArrayRef result;
+	SecCertificateRef item;
+	CFDataRef der;
+
+	OSStatus ret = SecTrustCopyAnchorCertificates(&result);
+	ERR_FAIL_COND_V(ret != noErr, "");
+
+	CFIndex l = CFArrayGetCount(result);
+	String certs;
+	PackedByteArray pba;
+	for (CFIndex i = 0; i < l; i++) {
+		item = (SecCertificateRef)CFArrayGetValueAtIndex(result, i);
+		der = SecCertificateCopyData(item);
+		int derlen = CFDataGetLength(der);
+		if (pba.size() < derlen * 3) {
+			pba.resize(derlen * 3);
+		}
+		size_t b64len = 0;
+		Error err = CryptoCore::b64_encode(pba.ptrw(), pba.size(), &b64len, (unsigned char *)CFDataGetBytePtr(der), derlen);
+		CFRelease(der);
+		ERR_CONTINUE(err != OK);
+		certs += "-----BEGIN CERTIFICATE-----\n" + String((char *)pba.ptr(), b64len) + "\n-----END CERTIFICATE-----\n";
+	}
+	CFRelease(result);
+	return certs;
+}
+
+OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
+	// macOS supports both formats on ARM. Prefer S3TC/BPTC
+	// for better compatibility with x86 platforms.
+	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
+}
+
 void OS_MacOS::run() {
 	if (!main_loop) {
 		return;
 	}
 
-	main_loop->initialize();
+	@autoreleasepool {
+		main_loop->initialize();
+	}
 
 	bool quit = false;
 	while (!quit) {
-		@try {
-			if (DisplayServer::get_singleton()) {
-				DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
-			}
-			joypad_macos->process_joypads();
+		@autoreleasepool {
+			@try {
+				if (DisplayServer::get_singleton()) {
+					DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
+				}
+				joypad_macos->start_processing();
 
-			if (Main::iteration()) {
-				quit = true;
+				if (Main::iteration()) {
+					quit = true;
+				}
+			} @catch (NSException *exception) {
+				ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 			}
-		} @catch (NSException *exception) {
-			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 		}
 	}
 
@@ -677,6 +788,23 @@ void OS_MacOS::run() {
 }
 
 OS_MacOS::OS_MacOS() {
+	if (is_sandboxed()) {
+		// Load security-scoped bookmarks, request access, remove stale or invalid bookmarks.
+		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+		NSMutableArray *new_bookmarks = [[NSMutableArray alloc] init];
+		for (id bookmark in bookmarks) {
+			NSError *error = nil;
+			BOOL isStale = NO;
+			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+			if (!error && !isStale) {
+				if ([url startAccessingSecurityScopedResource]) {
+					[new_bookmarks addObject:bookmark];
+				}
+			}
+		}
+		[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+	}
+
 	main_loop = nullptr;
 
 	Vector<Logger *> loggers;
@@ -704,8 +832,9 @@ OS_MacOS::OS_MacOS() {
 	[NSApp finishLaunching];
 
 	id delegate = [[GodotApplicationDelegate alloc] init];
-	ERR_FAIL_COND(!delegate);
+	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
+	[NSApp registerUserInterfaceItemSearchHandler:delegate];
 
 	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
 	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);

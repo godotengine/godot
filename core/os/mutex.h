@@ -31,13 +31,29 @@
 #ifndef MUTEX_H
 #define MUTEX_H
 
-#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/typedefs.h"
 
+#ifdef MINGW_ENABLED
+#define MINGW_STDTHREAD_REDUNDANCY_WARNING
+#include "thirdparty/mingw-std-threads/mingw.mutex.h"
+#define THREADING_NAMESPACE mingw_stdthread
+#else
 #include <mutex>
+#define THREADING_NAMESPACE std
+#endif
 
-template <class StdMutexT>
+#ifdef THREADS_ENABLED
+
+template <typename MutexT>
+class MutexLock;
+
+template <typename StdMutexT>
 class MutexImpl {
+	friend class MutexLock<MutexImpl<StdMutexT>>;
+
+	using StdMutexType = StdMutexT;
+
 	mutable StdMutexT mutex;
 
 public:
@@ -49,32 +65,50 @@ public:
 		mutex.unlock();
 	}
 
-	_ALWAYS_INLINE_ Error try_lock() const {
-		return mutex.try_lock() ? OK : ERR_BUSY;
+	_ALWAYS_INLINE_ bool try_lock() const {
+		return mutex.try_lock();
 	}
 };
 
-template <class MutexT>
+template <typename MutexT>
 class MutexLock {
-	const MutexT &mutex;
+	friend class ConditionVariable;
+
+	THREADING_NAMESPACE::unique_lock<typename MutexT::StdMutexType> lock;
 
 public:
-	_ALWAYS_INLINE_ explicit MutexLock(const MutexT &p_mutex) :
-			mutex(p_mutex) {
-		mutex.lock();
-	}
-
-	_ALWAYS_INLINE_ ~MutexLock() {
-		mutex.unlock();
-	}
+	explicit MutexLock(const MutexT &p_mutex) :
+			lock(p_mutex.mutex) {}
 };
 
-using Mutex = MutexImpl<std::recursive_mutex>; // Recursive, for general use
-using BinaryMutex = MutexImpl<std::mutex>; // Non-recursive, handle with care
+using Mutex = MutexImpl<THREADING_NAMESPACE::recursive_mutex>; // Recursive, for general use
+using BinaryMutex = MutexImpl<THREADING_NAMESPACE::mutex>; // Non-recursive, handle with care
 
-extern template class MutexImpl<std::recursive_mutex>;
-extern template class MutexImpl<std::mutex>;
-extern template class MutexLock<MutexImpl<std::recursive_mutex>>;
-extern template class MutexLock<MutexImpl<std::mutex>>;
+extern template class MutexImpl<THREADING_NAMESPACE::recursive_mutex>;
+extern template class MutexImpl<THREADING_NAMESPACE::mutex>;
+extern template class MutexLock<MutexImpl<THREADING_NAMESPACE::recursive_mutex>>;
+extern template class MutexLock<MutexImpl<THREADING_NAMESPACE::mutex>>;
+
+#else // No threads.
+
+class MutexImpl {
+	mutable THREADING_NAMESPACE::mutex mutex;
+
+public:
+	void lock() const {}
+	void unlock() const {}
+	bool try_lock() const { return true; }
+};
+
+template <typename MutexT>
+class MutexLock {
+public:
+	MutexLock(const MutexT &p_mutex) {}
+};
+
+using Mutex = MutexImpl;
+using BinaryMutex = MutexImpl;
+
+#endif // THREADS_ENABLED
 
 #endif // MUTEX_H

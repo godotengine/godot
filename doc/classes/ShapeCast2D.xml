@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ShapeCast2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ShapeCast2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Node for physics collision sweep and immediate overlap queries. Similar to the [RayCast2D] node.
+		A 2D shape that sweeps a region of space to detect [CollisionObject2D]s.
 	</brief_description>
 	<description>
-		Shape casting allows to detect collision objects by sweeping the [member shape] along the cast direction determined by [member target_position] (useful for things like beam weapons).
-		Immediate collision overlaps can be done with the [member target_position] set to [code]Vector2(0, 0)[/code] and by calling [method force_shapecast_update] within the same [b]physics_frame[/b]. This also helps to overcome some limitations of [Area2D] when used as a continuous detection area, often requiring waiting a couple of frames before collision information is available to [Area2D] nodes, and when using the signals creates unnecessary complexity.
-		The node can detect multiple collision objects, but it's usually used to detect the first collision.
-		[b]Note:[/b] shape casting is more computationally expensive compared to ray casting.
+		Shape casting allows to detect collision objects by sweeping its [member shape] along the cast direction determined by [member target_position]. This is similar to [RayCast2D], but it allows for sweeping a region of space, rather than just a straight line. [ShapeCast2D] can detect multiple collision objects. It is useful for things like wide laser beams or snapping a simple shape to a floor.
+		Immediate collision overlaps can be done with the [member target_position] set to [code]Vector2(0, 0)[/code] and by calling [method force_shapecast_update] within the same physics frame. This helps to overcome some limitations of [Area2D] when used as an instantaneous detection area, as collision information isn't immediately available to it.
+		[b]Note:[/b] Shape casting is more computationally expensive than ray casting.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -35,7 +34,7 @@
 		<method name="force_shapecast_update">
 			<return type="void" />
 			<description>
-				Updates the collision information for the shape. Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the shape or its parent has changed state.
+				Updates the collision information for the shape immediately, without waiting for the next [code]_physics_process[/code] call. Use this method, for example, when the shape or its parent has changed state.
 				[b]Note:[/b] [code]enabled == true[/code] is not required for this to work.
 			</description>
 		</method>
@@ -131,10 +130,10 @@
 	</methods>
 	<members>
 		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
-			If [code]true[/code], collision with [Area2D]s will be reported.
+			If [code]true[/code], collisions with [Area2D]s will be reported.
 		</member>
 		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled" default="true">
-			If [code]true[/code], collision with [PhysicsBody2D]s will be reported.
+			If [code]true[/code], collisions with [PhysicsBody2D]s will be reported.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The shape's collision mask. Only objects in at least one collision layer enabled in the mask will be detected.

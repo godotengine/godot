@@ -8,7 +8,7 @@ namespace Godot.NativeInterop
 {
     internal static class InteropUtils
     {
-        public static Object UnmanagedGetManaged(IntPtr unmanaged)
+        public static GodotObject UnmanagedGetManaged(IntPtr unmanaged)
         {
             // The native pointer may be null
             if (unmanaged == IntPtr.Zero)
@@ -23,7 +23,7 @@ namespace Godot.NativeInterop
                 unmanaged, out hasCsScriptInstance);
 
             if (gcHandlePtr != IntPtr.Zero)
-                return (Object)GCHandle.FromIntPtr(gcHandlePtr).Target;
+                return (GodotObject)GCHandle.FromIntPtr(gcHandlePtr).Target;
 
             // Otherwise, if the object has a CSharpInstance script instance, return null
 
@@ -37,17 +37,17 @@ namespace Godot.NativeInterop
             object target = gcHandlePtr != IntPtr.Zero ? GCHandle.FromIntPtr(gcHandlePtr).Target : null;
 
             if (target != null)
-                return (Object)target;
+                return (GodotObject)target;
 
             // If the native instance binding GC handle target was collected, create a new one
 
             gcHandlePtr = NativeFuncs.godotsharp_internal_unmanaged_instance_binding_create_managed(
                 unmanaged, gcHandlePtr);
 
-            return gcHandlePtr != IntPtr.Zero ? (Object)GCHandle.FromIntPtr(gcHandlePtr).Target : null;
+            return gcHandlePtr != IntPtr.Zero ? (GodotObject)GCHandle.FromIntPtr(gcHandlePtr).Target : null;
         }
 
-        public static void TieManagedToUnmanaged(Object managed, IntPtr unmanaged,
+        public static void TieManagedToUnmanaged(GodotObject managed, IntPtr unmanaged,
             StringName nativeName, bool refCounted, Type type, Type nativeType)
         {
             var gcHandle = refCounted ?
@@ -76,7 +76,7 @@ namespace Godot.NativeInterop
             }
         }
 
-        public static void TieManagedToUnmanagedWithPreSetup(Object managed, IntPtr unmanaged,
+        public static void TieManagedToUnmanagedWithPreSetup(GodotObject managed, IntPtr unmanaged,
             Type type, Type nativeType)
         {
             if (type == nativeType)
@@ -87,7 +87,7 @@ namespace Godot.NativeInterop
                 GCHandle.ToIntPtr(strongGCHandle), unmanaged);
         }
 
-        public static Object EngineGetSingleton(string name)
+        public static GodotObject EngineGetSingleton(string name)
         {
             using godot_string src = Marshaling.ConvertStringToNative(name);
             return UnmanagedGetManaged(NativeFuncs.godotsharp_engine_get_singleton(src));

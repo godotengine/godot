@@ -76,6 +76,9 @@ public:
 	void add_point(Vector2 pos, int atpos = -1);
 	void remove_point(int i);
 
+	void set_closed(bool p_closed);
+	bool is_closed() const;
+
 	void set_width(float width);
 	float get_width() const;
 
@@ -127,6 +130,7 @@ private:
 	LineJointMode _joint_mode = LINE_JOINT_SHARP;
 	LineCapMode _begin_cap_mode = LINE_CAP_NONE;
 	LineCapMode _end_cap_mode = LINE_CAP_NONE;
+	bool _closed = false;
 	float _width = 10.0;
 	Ref<Curve> _curve;
 	Color _default_color = Color(1, 1, 1);
@@ -137,5 +141,10 @@ private:
 	int _round_precision = 8;
 	bool _antialiased = false;
 };
+
+// Needed so we can bind functions
+VARIANT_ENUM_CAST(Line2D::LineJointMode)
+VARIANT_ENUM_CAST(Line2D::LineCapMode)
+VARIANT_ENUM_CAST(Line2D::LineTextureMode)
 
 #endif // LINE_2D_H

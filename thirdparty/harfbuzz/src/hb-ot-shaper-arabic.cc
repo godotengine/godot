@@ -486,8 +486,10 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
   if (likely (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH)))
     return;
 
-  /* The Arabic shaper currently always processes in RTL mode, so we should
-   * stretch / position the stretched pieces to the left / preceding glyphs. */
+  bool rtl = buffer->props.direction == HB_DIRECTION_RTL;
+
+  if (!rtl)
+    buffer->reverse ();
 
   /* We do a two pass implementation:
    * First pass calculates the exact number of extra glyphs we need,
@@ -556,9 +558,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
       }
       i++; // Don't touch i again.
 
-      DEBUG_MSG (ARABIC, nullptr, "%s stretch at (%d,%d,%d)",
+      DEBUG_MSG (ARABIC, nullptr, "%s stretch at (%u,%u,%u)",
 		 step == MEASURE ? "measuring" : "cutting", context, start, end);
-      DEBUG_MSG (ARABIC, nullptr, "rest of word:    count=%d width %d", start - context, w_total);
+      DEBUG_MSG (ARABIC, nullptr, "rest of word:    count=%u width %d", start - context, w_total);
       DEBUG_MSG (ARABIC, nullptr, "fixed tiles:     count=%d width=%d", n_fixed, w_fixed);
       DEBUG_MSG (ARABIC, nullptr, "repeating tiles: count=%d width=%d", n_repeating, w_repeating);
 
@@ -577,7 +579,10 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	++n_copies;
 	hb_position_t excess = (n_copies + 1) * sign * w_repeating - sign * w_remaining;
 	if (excess > 0)
+	{
 	  extra_repeat_overlap = excess / (n_copies * n_repeating);
+	  w_remaining = 0;
+	}
       }
 
       if (step == MEASURE)
@@ -588,7 +593,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
       else
       {
 	buffer->unsafe_to_break (context, end);
-	hb_position_t x_offset = 0;
+	hb_position_t x_offset = w_remaining / 2;
 	for (unsigned int k = end; k > start; k--)
 	{
 	  hb_position_t width = font->get_glyph_h_advance (info[k - 1].codepoint);
@@ -597,18 +602,29 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	  if (info[k - 1].arabic_shaping_action() == STCH_REPEATING)
 	    repeat += n_copies;
 
-	  DEBUG_MSG (ARABIC, nullptr, "appending %d copies of glyph %d; j=%d",
+	  DEBUG_MSG (ARABIC, nullptr, "appending %u copies of glyph %u; j=%u",
 		     repeat, info[k - 1].codepoint, j);
+	  pos[k - 1].x_advance = 0;
 	  for (unsigned int n = 0; n < repeat; n++)
 	  {
-	    x_offset -= width;
-	    if (n > 0)
-	      x_offset += extra_repeat_overlap;
+	    if (rtl)
+	    {
+	      x_offset -= width;
+	      if (n > 0)
+		x_offset += extra_repeat_overlap;
+	    }
 	    pos[k - 1].x_offset = x_offset;
 	    /* Append copy. */
 	    --j;
 	    info[j] = info[k - 1];
 	    pos[j] = pos[k - 1];
+
+	    if (!rtl)
+	    {
+	      x_offset += width;
+	      if (n > 0)
+		x_offset -= extra_repeat_overlap;
+	    }
 	  }
 	}
       }
@@ -625,6 +641,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
       buffer->len = new_len;
     }
   }
+
+  if (!rtl)
+    buffer->reverse ();
 }
 
 
@@ -675,15 +694,15 @@ reorder_marks_arabic (const hb_ot_shape_plan_t *plan HB_UNUSED,
 {
   hb_glyph_info_t *info = buffer->info;
 
-  DEBUG_MSG (ARABIC, buffer, "Reordering marks from %d to %d", start, end);
+  DEBUG_MSG (ARABIC, buffer, "Reordering marks from %u to %u", start, end);
 
   unsigned int i = start;
   for (unsigned int cc = 220; cc <= 230; cc += 10)
   {
-    DEBUG_MSG (ARABIC, buffer, "Looking for %d's starting at %d", cc, i);
+    DEBUG_MSG (ARABIC, buffer, "Looking for %u's starting at %u", cc, i);
     while (i < end && info_cc(info[i]) < cc)
       i++;
-    DEBUG_MSG (ARABIC, buffer, "Looking for %d's stopped at %d", cc, i);
+    DEBUG_MSG (ARABIC, buffer, "Looking for %u's stopped at %u", cc, i);
 
     if (i == end)
       break;
@@ -698,10 +717,10 @@ reorder_marks_arabic (const hb_ot_shape_plan_t *plan HB_UNUSED,
     if (i == j)
       continue;
 
-    DEBUG_MSG (ARABIC, buffer, "Found %d's from %d to %d", cc, i, j);
+    DEBUG_MSG (ARABIC, buffer, "Found %u's from %u to %u", cc, i, j);
 
     /* Shift it! */
-    DEBUG_MSG (ARABIC, buffer, "Shifting %d's: %d %d", cc, i, j);
+    DEBUG_MSG (ARABIC, buffer, "Shifting %u's: %u %u", cc, i, j);
     hb_glyph_info_t temp[HB_OT_SHAPE_MAX_COMBINING_MARKS];
     assert (j - i <= ARRAY_LENGTH (temp));
     buffer->merge_clusters (start, j);

@@ -37,8 +37,8 @@
 #include "servers/audio_server.h"
 
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
+#include "core/variant/typed_array.h"
 
 class AudioStream;
 
@@ -55,6 +55,9 @@ protected:
 	GDVIRTUAL1(_seek, double)
 	GDVIRTUAL3R(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
 	GDVIRTUAL0(_tag_used_streams)
+	GDVIRTUAL2(_set_parameter, const StringName &, const Variant &)
+	GDVIRTUAL1RC(Variant, _get_parameter, const StringName &)
+
 public:
 	virtual void start(double p_from_pos = 0.0);
 	virtual void stop();
@@ -66,6 +69,9 @@ public:
 	virtual void seek(double p_time);
 
 	virtual void tag_used_streams();
+
+	virtual void set_parameter(const StringName &p_name, const Variant &p_value);
+	virtual Variant get_parameter(const StringName &p_name) const;
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
 };
@@ -125,6 +131,7 @@ protected:
 	GDVIRTUAL0RC(bool, _has_loop)
 	GDVIRTUAL0RC(int, _get_bar_beats)
 	GDVIRTUAL0RC(int, _get_beat_count)
+	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_parameter_list)
 
 public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback();
@@ -142,6 +149,17 @@ public:
 	uint64_t get_tagged_frame() const;
 	uint32_t get_tagged_frame_count() const;
 	float get_tagged_frame_offset(int p_index) const;
+
+	struct Parameter {
+		PropertyInfo property;
+		Variant default_value;
+		Parameter(const PropertyInfo &p_info = PropertyInfo(), const Variant &p_default_value = Variant()) {
+			property = p_info;
+			default_value = p_default_value;
+		}
+	};
+
+	virtual void get_parameter_list(List<Parameter> *r_parameters);
 };
 
 // Microphone
@@ -223,8 +241,8 @@ private:
 
 	HashSet<AudioStreamPlaybackRandomizer *> playbacks;
 	Vector<PoolEntry> audio_stream_pool;
-	float random_pitch_scale = 1.1f;
-	float random_volume_offset_db = 5.0f;
+	float random_pitch_scale = 1.0f;
+	float random_volume_offset_db = 0.0f;
 
 	Ref<AudioStreamPlayback> instance_playback_random();
 	Ref<AudioStreamPlayback> instance_playback_no_repeats();

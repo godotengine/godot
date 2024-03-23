@@ -47,8 +47,8 @@ class AudioDriverWASAPI : public AudioDriver {
 	class AudioDeviceWASAPI {
 	public:
 		IAudioClient *audio_client = nullptr;
-		IAudioRenderClient *render_client = nullptr;
-		IAudioCaptureClient *capture_client = nullptr;
+		IAudioRenderClient *render_client = nullptr; // Output
+		IAudioCaptureClient *capture_client = nullptr; // Input
 		SafeFlag active;
 
 		WORD format_tag = 0;
@@ -56,8 +56,8 @@ class AudioDriverWASAPI : public AudioDriver {
 		unsigned int channels = 0;
 		unsigned int frame_size = 0;
 
-		String device_name = "Default";
-		String new_device = "Default";
+		String device_name = "Default"; // Output OR Input
+		String new_device = "Default"; // Output OR Input
 
 		AudioDeviceWASAPI() {}
 	};
@@ -83,38 +83,41 @@ class AudioDriverWASAPI : public AudioDriver {
 	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
 	static void thread_func(void *p_udata);
 
-	Error init_render_device(bool p_reinit = false);
-	Error init_capture_device(bool p_reinit = false);
+	Error init_output_device(bool p_reinit = false);
+	Error init_input_device(bool p_reinit = false);
 
-	Error finish_render_device();
-	Error finish_capture_device();
+	Error finish_output_device();
+	Error finish_input_device();
 
-	Error audio_device_init(AudioDeviceWASAPI *p_device, bool p_capture, bool p_reinit, bool p_no_audio_client_3 = false);
+	Error audio_device_init(AudioDeviceWASAPI *p_device, bool p_input, bool p_reinit, bool p_no_audio_client_3 = false);
 	Error audio_device_finish(AudioDeviceWASAPI *p_device);
-	PackedStringArray audio_device_get_list(bool p_capture);
+	PackedStringArray audio_device_get_list(bool p_input);
 
 public:
-	virtual const char *get_name() const {
+	virtual const char *get_name() const override {
 		return "WASAPI";
 	}
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual float get_latency();
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual PackedStringArray get_device_list();
-	virtual String get_device();
-	virtual void set_device(String device);
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
+	virtual float get_latency() override;
 
-	virtual Error capture_start();
-	virtual Error capture_stop();
-	virtual PackedStringArray capture_get_device_list();
-	virtual void capture_set_device(const String &p_name);
-	virtual String capture_get_device();
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
+
+	virtual PackedStringArray get_output_device_list() override;
+	virtual String get_output_device() override;
+	virtual void set_output_device(const String &p_name) override;
+
+	virtual Error input_start() override;
+	virtual Error input_stop() override;
+
+	virtual PackedStringArray get_input_device_list() override;
+	virtual String get_input_device() override;
+	virtual void set_input_device(const String &p_name) override;
 
 	AudioDriverWASAPI();
 };

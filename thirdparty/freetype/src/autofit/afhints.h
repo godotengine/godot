@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines (specification).
  *
- * Copyright (C) 2003-2022 by
+ * Copyright (C) 2003-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,8 +20,6 @@
 #define AFHINTS_H_
 
 #include "aftypes.h"
-
-#define xxAF_SORT_SEGMENTS
 
 FT_BEGIN_HEADER
 
@@ -310,15 +308,12 @@ FT_BEGIN_HEADER
 
   typedef struct  AF_AxisHintsRec_
   {
-    FT_Int        num_segments; /* number of used segments      */
-    FT_Int        max_segments; /* number of allocated segments */
+    FT_UInt       num_segments; /* number of used segments      */
+    FT_UInt       max_segments; /* number of allocated segments */
     AF_Segment    segments;     /* segments array               */
-#ifdef AF_SORT_SEGMENTS
-    FT_Int        mid_segments;
-#endif
 
-    FT_Int        num_edges;    /* number of used edges      */
-    FT_Int        max_edges;    /* number of allocated edges */
+    FT_UInt       num_edges;    /* number of used edges      */
+    FT_UInt       max_edges;    /* number of allocated edges */
     AF_Edge       edges;        /* edges array               */
 
     AF_Direction  major_dir;    /* either vertical or horizontal */
@@ -380,14 +375,14 @@ FT_BEGIN_HEADER
 #ifdef FT_DEBUG_AUTOFIT
 
 #define AF_HINTS_DO_HORIZONTAL( h )                                     \
-          ( !_af_debug_disable_horz_hints                            && \
+          ( !af_debug_disable_horz_hints_                            && \
             !AF_HINTS_TEST_SCALER( h, AF_SCALER_FLAG_NO_HORIZONTAL ) )
 
 #define AF_HINTS_DO_VERTICAL( h )                                     \
-          ( !_af_debug_disable_vert_hints                          && \
+          ( !af_debug_disable_vert_hints_                          && \
             !AF_HINTS_TEST_SCALER( h, AF_SCALER_FLAG_NO_VERTICAL ) )
 
-#define AF_HINTS_DO_BLUES( h )  ( !_af_debug_disable_blue_hints )
+#define AF_HINTS_DO_BLUES( h )  ( !af_debug_disable_blue_hints_ )
 
 #else /* !FT_DEBUG_AUTOFIT */
 

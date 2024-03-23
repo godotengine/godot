@@ -131,7 +131,7 @@ typedef struct OpenTypeOffsetTable
     sfnt_version = sfnt_tag;
     /* Take space for numTables, searchRange, entrySelector, RangeShift
      * and the TableRecords themselves.  */
-    unsigned num_items = it.len ();
+    unsigned num_items = hb_len (it);
     if (unlikely (!tables.serialize (c, num_items))) return_trace (false);
 
     const char *dir_end = (const char *) c->head;
@@ -145,7 +145,7 @@ typedef struct OpenTypeOffsetTable
       unsigned len = blob->length;
 
       /* Allocate room for the table and copy it. */
-      char *start = (char *) c->allocate_size<void> (len);
+      char *start = (char *) c->allocate_size<void> (len, false);
       if (unlikely (!start)) return false;
 
       TableRecord &rec = tables.arrayZ[i];
@@ -267,6 +267,7 @@ struct TTCHeader
   {
     TRACE_SANITIZE (this);
     if (unlikely (!u.header.version.sanitize (c))) return_trace (false);
+    hb_barrier ();
     switch (u.header.version.major) {
     case 2: /* version 2 is compatible with version 1 */
     case 1: return_trace (u.version1.sanitize (c));
@@ -302,6 +303,7 @@ struct ResourceRecord
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
 		  offset.sanitize (c, data_base) &&
+		  hb_barrier () &&
 		  get_face (data_base).sanitize (c));
   }
 
@@ -337,6 +339,7 @@ struct ResourceTypeRecord
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  resourcesZ.sanitize (c, type_base,
 				       get_resource_count (),
 				       data_base));
@@ -385,6 +388,7 @@ struct ResourceMap
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  typeList.sanitize (c, this,
 				     &(this+typeList),
 				     data_base));
@@ -428,6 +432,7 @@ struct ResourceForkHeader
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  data.sanitize (c, this, dataLen) &&
 		  map.sanitize (c, this, &(this+data)));
   }
@@ -508,6 +513,7 @@ struct OpenTypeFontFile
   {
     TRACE_SANITIZE (this);
     if (unlikely (!u.tag.sanitize (c))) return_trace (false);
+    hb_barrier ();
     switch (u.tag) {
     case CFFTag:	/* All the non-collection tags */
     case TrueTag:

@@ -1,3 +1,5 @@
+# Do not fix code style here!
+
 func test():
 	# The following lines are equivalent:
 	var _integer: int = 1

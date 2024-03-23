@@ -31,8 +31,10 @@
 #include "editor_profiler.h"
 
 #include "core/os/os.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/resources/image_texture.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
 	for (int i = 0; i < m.categories.size(); i++) {
@@ -95,6 +97,7 @@ void EditorProfiler::clear() {
 	plot_sigs.clear();
 	plot_sigs.insert("physics_frame_time");
 	plot_sigs.insert("category_frame_time");
+	display_internal_profiles->set_visible(EDITOR_GET("debugger/profile_native_calls"));
 
 	updating_frame = true;
 	cursor_metric_edit->set_min(0);
@@ -139,11 +142,11 @@ String EditorProfiler::_get_time_as_text(const Metric &m, float p_time, int p_ca
 }
 
 Color EditorProfiler::_get_color_from_signature(const StringName &p_signature) const {
-	Color bc = get_theme_color(SNAME("error_color"), SNAME("Editor"));
+	Color bc = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());
-	return c.lerp(get_theme_color(SNAME("base_color"), SNAME("Editor")), 0.07);
+	return c.lerp(get_theme_color(SNAME("base_color"), EditorStringName(Editor)), 0.07);
 }
 
 void EditorProfiler::_item_edited() {
@@ -184,7 +187,7 @@ void EditorProfiler::_update_plot() {
 	}
 
 	uint8_t *wr = graph_image.ptrw();
-	const Color background_color = get_theme_color(SNAME("dark_color_2"), SNAME("Editor"));
+	const Color background_color = get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor));
 
 	// Clear the previous frame and set the background color.
 	for (int i = 0; i < desired_len; i += 4) {
@@ -347,9 +350,12 @@ void EditorProfiler::_update_frame() {
 			category->set_custom_color(0, _get_color_from_signature(m.categories[i].signature));
 		}
 
-		for (int j = m.categories[i].items.size() - 1; j >= 0; j--) {
+		for (int j = 0; j < m.categories[i].items.size(); j++) {
 			const Metric::Category::Item &it = m.categories[i].items[j];
 
+			if (it.internal == it.total && !display_internal_profiles->is_pressed() && m.categories[i].name == "Script Functions") {
+				continue;
+			}
 			TreeItem *item = variables->create_item(category);
 			item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 			item->set_editable(0, true);
@@ -361,6 +367,9 @@ void EditorProfiler::_update_frame() {
 			item->set_tooltip_text(0, it.name + "\n" + it.script + ":" + itos(it.line));
 
 			float time = dtime == DISPLAY_SELF_TIME ? it.self : it.total;
+			if (dtime == DISPLAY_SELF_TIME && !display_internal_profiles->is_pressed()) {
+				time += it.internal;
+			}
 
 			item->set_text(1, _get_time_as_text(m, time, it.calls));
 
@@ -378,10 +387,10 @@ void EditorProfiler::_update_frame() {
 
 void EditorProfiler::_update_button_text() {
 	if (activate->is_pressed()) {
-		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
+		activate->set_icon(get_editor_theme_icon(SNAME("Stop")));
 		activate->set_text(TTR("Stop"));
 	} else {
-		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+		activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 		activate->set_text(TTR("Start"));
 	}
 }
@@ -402,14 +411,18 @@ void EditorProfiler::_clear_pressed() {
 	_update_plot();
 }
 
+void EditorProfiler::_internal_profiles_pressed() {
+	_combo_changed(0);
+}
+
 void EditorProfiler::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
-			clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+			activate->set_icon(get_editor_theme_icon(SNAME("Play")));
+			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
 		} break;
 	}
 }
@@ -624,12 +637,20 @@ EditorProfiler::EditorProfiler() {
 	hb->add_child(memnew(Label(TTR("Time:"))));
 
 	display_time = memnew(OptionButton);
+	// TRANSLATORS: This is an option in the profiler to display the time spent in a function, including the time spent in other functions called by that function.
 	display_time->add_item(TTR("Inclusive"));
+	// TRANSLATORS: This is an option in the profiler to display the time spent in a function, exincluding the time spent in other functions called by that function.
 	display_time->add_item(TTR("Self"));
 	display_time->set_tooltip_text(TTR("Inclusive: Includes time from other functions called by this function.\nUse this to spot bottlenecks.\n\nSelf: Only count the time spent in the function itself, not in other functions called by that function.\nUse this to find individual functions to optimize."));
 	display_time->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));
 
 	hb->add_child(display_time);
+
+	display_internal_profiles = memnew(CheckButton(TTR("Display internal functions")));
+	display_internal_profiles->set_visible(EDITOR_GET("debugger/profile_native_calls"));
+	display_internal_profiles->set_pressed(false);
+	display_internal_profiles->connect("pressed", callable_mp(this, &EditorProfiler::_internal_profiles_pressed));
+	hb->add_child(display_internal_profiles);
 
 	hb->add_spacer();
 
@@ -658,15 +679,15 @@ EditorProfiler::EditorProfiler() {
 	variables->set_column_title(0, TTR("Name"));
 	variables->set_column_expand(0, true);
 	variables->set_column_clip_content(0, true);
-	variables->set_column_expand_ratio(0, 60);
+	variables->set_column_custom_minimum_width(0, 60);
 	variables->set_column_title(1, TTR("Time"));
 	variables->set_column_expand(1, false);
 	variables->set_column_clip_content(1, true);
-	variables->set_column_expand_ratio(1, 100);
+	variables->set_column_custom_minimum_width(1, 75 * EDSCALE);
 	variables->set_column_title(2, TTR("Calls"));
 	variables->set_column_expand(2, false);
 	variables->set_column_clip_content(2, true);
-	variables->set_column_expand_ratio(2, 60);
+	variables->set_column_custom_minimum_width(2, 50 * EDSCALE);
 	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
 
 	graph = memnew(TextureRect);
@@ -681,8 +702,6 @@ EditorProfiler::EditorProfiler() {
 
 	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);
 	frame_metrics.resize(metric_size);
-
-	EDITOR_DEF("debugger/profiler_frame_max_functions", 64);
 
 	frame_delay = memnew(Timer);
 	frame_delay->set_wait_time(0.1);

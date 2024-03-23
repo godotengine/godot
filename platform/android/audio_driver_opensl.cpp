@@ -44,7 +44,7 @@ void AudioDriverOpenSL::_buffer_callback(
 	if (pause) {
 		mix = false;
 	} else {
-		mix = mutex.try_lock() == OK;
+		mix = mutex.try_lock();
 	}
 
 	if (mix) {
@@ -78,10 +78,6 @@ void AudioDriverOpenSL::_buffer_callbacks(
 	AudioDriverOpenSL *ad = static_cast<AudioDriverOpenSL *>(pContext);
 
 	ad->_buffer_callback(queueItf);
-}
-
-const char *AudioDriverOpenSL::get_name() const {
-	return "Android";
 }
 
 Error AudioDriverOpenSL::init() {
@@ -204,7 +200,7 @@ void AudioDriverOpenSL::_record_buffer_callbacks(SLAndroidSimpleBufferQueueItf q
 	ad->_record_buffer_callback(queueItf);
 }
 
-Error AudioDriverOpenSL::capture_init_device() {
+Error AudioDriverOpenSL::init_input_device() {
 	SLDataLocator_IODevice loc_dev = {
 		SL_DATALOCATOR_IODEVICE,
 		SL_IODEVICE_AUDIOINPUT,
@@ -271,15 +267,16 @@ Error AudioDriverOpenSL::capture_init_device() {
 	return OK;
 }
 
-Error AudioDriverOpenSL::capture_start() {
+Error AudioDriverOpenSL::input_start() {
 	if (OS::get_singleton()->request_permission("RECORD_AUDIO")) {
-		return capture_init_device();
+		return init_input_device();
 	}
 
-	return OK;
+	WARN_PRINT("Unable to start audio capture - No RECORD_AUDIO permission");
+	return ERR_UNAUTHORIZED;
 }
 
-Error AudioDriverOpenSL::capture_stop() {
+Error AudioDriverOpenSL::input_stop() {
 	SLuint32 state;
 	SLresult res = (*recordItf)->GetRecordState(recordItf, &state);
 	ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);

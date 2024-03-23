@@ -32,13 +32,16 @@
 #define PROJECT_SETTINGS_H
 
 #include "core/object/class_db.h"
-#include "core/os/thread_safe.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/rb_set.h"
+
+template <typename T>
+class TypedArray;
 
 class ProjectSettings : public Object {
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
+	friend class TestProjectSettingsInternalsAccessor;
+
+	bool is_changed = false;
 
 public:
 	typedef HashMap<String, Variant> CustomMap;
@@ -69,7 +72,6 @@ protected:
 		Variant variant;
 		Variant initial;
 		bool hide_from_editor = false;
-		bool overridden = false;
 		bool restart_if_changed = false;
 #ifdef DEBUG_METHODS_ENABLED
 		bool ignore_value_in_docs = false;
@@ -91,14 +93,20 @@ protected:
 	RBMap<StringName, VariantContainer> props; // NOTE: Key order is used e.g. in the save_custom method.
 	String resource_path;
 	HashMap<StringName, PropertyInfo> custom_prop_info;
-	bool disable_feature_overrides = false;
 	bool using_datapack = false;
+	bool project_loaded = false;
 	List<String> input_presets;
 
 	HashSet<String> custom_features;
-	HashMap<StringName, StringName> feature_overrides;
+	HashMap<StringName, LocalVector<Pair<StringName, StringName>>> feature_overrides;
 
+	LocalVector<String> hidden_prefixes;
 	HashMap<StringName, AutoloadInfo> autoloads;
+	HashMap<StringName, String> global_groups;
+	HashMap<StringName, HashSet<StringName>> scene_groups_cache;
+
+	Array global_class_list;
+	bool is_global_class_list_loaded = false;
 
 	String project_data_dir_name;
 
@@ -107,6 +115,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
+	void _queue_changed();
+	void _emit_changed();
 
 	static ProjectSettings *singleton;
 
@@ -142,8 +153,12 @@ public:
 
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting, const Variant &p_default_value = Variant()) const;
+	TypedArray<Dictionary> get_global_class_list();
+	void refresh_global_class_list();
+	void store_global_class_list(const Array &p_classes);
+	String get_global_class_list_path() const;
 
-	bool has_setting(String p_var) const;
+	bool has_setting(const String &p_var) const;
 	String localize_path(const String &p_path) const;
 	String globalize_path(const String &p_path) const;
 
@@ -153,11 +168,11 @@ public:
 	void set_restart_if_changed(const String &p_name, bool p_restart);
 	void set_ignore_value_in_docs(const String &p_name, bool p_ignore);
 	bool get_ignore_value_in_docs(const String &p_name) const;
+	void add_hidden_prefix(const String &p_prefix);
 
 	String get_project_data_dir_name() const;
 	String get_project_data_path() const;
 	String get_resource_path() const;
-	String get_safe_project_name() const;
 	String get_imported_files_path() const;
 
 	static ProjectSettings *get_singleton();
@@ -177,13 +192,12 @@ public:
 	const HashMap<StringName, PropertyInfo> &get_custom_property_info() const;
 	uint64_t get_last_saved_time() { return last_save_time; }
 
-	Vector<String> get_optimizer_presets() const;
-
 	List<String> get_input_presets() const { return input_presets; }
 
-	void set_disable_feature_overrides(bool p_disable);
+	Variant get_setting_with_override(const StringName &p_name) const;
 
 	bool is_using_datapack() const;
+	bool is_project_loaded() const;
 
 	bool has_custom_feature(const String &p_feature) const;
 
@@ -192,6 +206,22 @@ public:
 	void remove_autoload(const StringName &p_autoload);
 	bool has_autoload(const StringName &p_autoload) const;
 	AutoloadInfo get_autoload(const StringName &p_name) const;
+
+	const HashMap<StringName, String> &get_global_groups_list() const;
+	void add_global_group(const StringName &p_name, const String &p_description);
+	void remove_global_group(const StringName &p_name);
+	bool has_global_group(const StringName &p_name) const;
+
+	const HashMap<StringName, HashSet<StringName>> &get_scene_groups_cache() const;
+	void add_scene_groups_cache(const StringName &p_path, const HashSet<StringName> &p_cache);
+	void remove_scene_groups_cache(const StringName &p_path);
+	void save_scene_groups_cache();
+	String get_scene_groups_cache_path() const;
+	void load_scene_groups_cache();
+
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	ProjectSettings();
 	~ProjectSettings();
@@ -205,7 +235,7 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 #define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
 #define GLOBAL_DEF_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true)
 #define GLOBAL_DEF_RST_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true)
-#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
+#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
 
 #define GLOBAL_DEF_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, true)
 #define GLOBAL_DEF_RST_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, false, true)

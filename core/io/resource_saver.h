@@ -33,7 +33,6 @@
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 
 class ResourceFormatSaver : public RefCounted {
 	GDCLASS(ResourceFormatSaver, RefCounted);
@@ -41,7 +40,7 @@ class ResourceFormatSaver : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL3R(int64_t, _save, Ref<Resource>, String, uint32_t)
+	GDVIRTUAL3R(Error, _save, Ref<Resource>, String, uint32_t)
 	GDVIRTUAL2R(Error, _set_uid, String, ResourceUID::ID)
 	GDVIRTUAL1RC(bool, _recognize, Ref<Resource>)
 	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, Ref<Resource>)
@@ -71,7 +70,7 @@ class ResourceSaver {
 	static ResourceSavedCallback save_callback;
 	static ResourceSaverGetResourceIDForPath save_get_id_for_path;
 
-	static Ref<ResourceFormatSaver> _find_custom_resource_format_saver(String path);
+	static Ref<ResourceFormatSaver> _find_custom_resource_format_saver(const String &path);
 
 public:
 	enum SaverFlags {
@@ -100,8 +99,7 @@ public:
 	static void set_save_callback(ResourceSavedCallback p_callback);
 	static void set_get_resource_id_for_path(ResourceSaverGetResourceIDForPath p_callback);
 
-	static bool add_custom_resource_format_saver(String script_path);
-	static void remove_custom_resource_format_saver(String script_path);
+	static bool add_custom_resource_format_saver(const String &script_path);
 	static void add_custom_savers();
 	static void remove_custom_savers();
 };

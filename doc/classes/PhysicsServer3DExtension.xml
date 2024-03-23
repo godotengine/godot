@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsServer3DExtension" inherits="PhysicsServer3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsServer3DExtension" inherits="PhysicsServer3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Provides virtual methods that can be overridden to create custom [PhysicsServer3D] implementations.
 	</brief_description>
 	<description>
+		This class extends [PhysicsServer3D] by providing additional virtual methods that can be overridden. When these methods are overridden, they will be called instead of the internal methods of the physics server.
+		Intended for use with GDExtension to create custom implementations of [PhysicsServer3D].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -606,7 +609,8 @@
 			<param index="3" name="margin" type="float" />
 			<param index="4" name="max_collisions" type="int" />
 			<param index="5" name="collide_separation_ray" type="bool" />
-			<param index="6" name="result" type="PhysicsServer3DExtensionMotionResult*" />
+			<param index="6" name="recovery_as_collision" type="bool" />
+			<param index="7" name="result" type="PhysicsServer3DExtensionMotionResult*" />
 			<description>
 			</description>
 		</method>

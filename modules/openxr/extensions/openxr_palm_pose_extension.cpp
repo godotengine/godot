@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_palm_pose_extension.h"
+
 #include "core/string/print_string.h"
 
 OpenXRPalmPoseExtension *OpenXRPalmPoseExtension::singleton = nullptr;

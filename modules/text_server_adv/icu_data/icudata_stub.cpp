@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "unicode/udata.h"
-#include "unicode/utypes.h"
-#include "unicode/uversion.h"
+#include <unicode/udata.h>
+#include <unicode/utypes.h>
+#include <unicode/uversion.h>
 
 typedef struct {
 	uint16_t header_size;

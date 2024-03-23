@@ -33,6 +33,8 @@
 
 #include "scene/resources/visual_shader.h"
 
+class ImageTexture;
+
 // Emit nodes
 
 class VisualShaderNodeParticleEmitter : public VisualShaderNode {
@@ -54,6 +56,8 @@ public:
 	Vector<StringName> get_editable_properties() const override;
 	virtual HashMap<StringName, String> get_editable_properties_names() const override;
 	bool is_show_prop_names() const override;
+
+	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
 
 	VisualShaderNodeParticleEmitter();
 };
@@ -185,6 +189,8 @@ public:
 	bool is_degrees_mode() const;
 	Vector<StringName> get_editable_properties() const override;
 
+	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
+
 	VisualShaderNodeParticleMultiplyByAxisAngle();
 };
 
@@ -204,6 +210,8 @@ public:
 	virtual bool has_output_port_preview(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
 
 	VisualShaderNodeParticleConeVelocity();
 };
@@ -246,6 +254,8 @@ public:
 	void set_op_type(OpType p_type);
 	OpType get_op_type() const;
 
+	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
+
 	VisualShaderNodeParticleRandomness();
 };
 
@@ -287,6 +297,8 @@ public:
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
+
+	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
 
 	VisualShaderNodeParticleAccelerator();
 };
@@ -349,6 +361,8 @@ public:
 	virtual bool is_generate_input_var(int p_port) const override;
 	virtual bool is_input_port_default(int p_port, Shader::Mode p_mode) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
 
 	VisualShaderNodeParticleEmit();
 };

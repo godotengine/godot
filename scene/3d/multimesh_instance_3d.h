@@ -47,6 +47,8 @@ public:
 	void set_multimesh(const Ref<MultiMesh> &p_multimesh);
 	Ref<MultiMesh> get_multimesh() const;
 
+	Array get_meshes() const;
+
 	virtual AABB get_aabb() const override;
 
 	MultiMeshInstance3D();

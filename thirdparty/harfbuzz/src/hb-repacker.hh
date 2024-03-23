@@ -79,7 +79,12 @@ bool _presplit_subtables_if_needed (graph::gsubgpos_graph_context_t& ext_context
   //                pass after this processing is done. Not super necessary as splits are
   //                only done where overflow is likely, so de-dup probably will get undone
   //                later anyways.
-  for (unsigned lookup_index : ext_context.lookups.keys ())
+
+  // The loop below can modify the contents of ext_context.lookups if new subtables are added
+  // to a lookup during a split. So save the initial set of lookup indices so the iteration doesn't
+  // risk access free'd memory if ext_context.lookups gets resized.
+  hb_set_t lookup_indices(ext_context.lookups.keys ());
+  for (unsigned lookup_index : lookup_indices)
   {
     graph::Lookup* lookup = ext_context.lookups.get(lookup_index);
     if (!lookup->split_subtables_if_needed (ext_context, lookup_index))
@@ -114,11 +119,15 @@ bool _promote_extensions_if_needed (graph::gsubgpos_graph_context_t& ext_context
   // TODO(grieger): skip this for the 24 bit case.
   if (!ext_context.lookups) return true;
 
+  unsigned total_lookup_table_sizes = 0;
   hb_vector_t<lookup_size_t> lookup_sizes;
-  lookup_sizes.alloc (ext_context.lookups.get_population ());
+  lookup_sizes.alloc (ext_context.lookups.get_population (), true);
 
   for (unsigned lookup_index : ext_context.lookups.keys ())
   {
+    const auto& lookup_v = ext_context.graph.vertices_[lookup_index];
+    total_lookup_table_sizes += lookup_v.table_size ();
+
     const graph::Lookup* lookup = ext_context.lookups.get(lookup_index);
     hb_set_t visited;
     lookup_sizes.push (lookup_size_t {
@@ -131,14 +140,16 @@ bool _promote_extensions_if_needed (graph::gsubgpos_graph_context_t& ext_context
   lookup_sizes.qsort ();
 
   size_t lookup_list_size = ext_context.graph.vertices_[ext_context.lookup_list_index].table_size ();
-  size_t l2_l3_size = lookup_list_size; // Lookup List + Lookups
-  size_t l3_l4_size = 0; // Lookups + SubTables
+  size_t l2_l3_size = lookup_list_size + total_lookup_table_sizes; // Lookup List + Lookups
+  size_t l3_l4_size = total_lookup_table_sizes; // Lookups + SubTables
   size_t l4_plus_size = 0; // SubTables + their descendants
 
   // Start by assuming all lookups are using extension subtables, this size will be removed later
   // if it's decided to not make a lookup extension.
   for (auto p : lookup_sizes)
   {
+    // TODO(garretrieger): this overestimates the extension subtables size because some extension subtables may be
+    //                     reused. However, we can't correct this until we have connected component analysis in place.
     unsigned subtables_size = p.num_subtables * 8;
     l3_l4_size += subtables_size;
     l4_plus_size += subtables_size;
@@ -159,8 +170,7 @@ bool _promote_extensions_if_needed (graph::gsubgpos_graph_context_t& ext_context
       size_t subtables_size = ext_context.graph.find_subgraph_size (p.lookup_index, visited, 1) - lookup_size;
       size_t remaining_size = p.size - subtables_size - lookup_size;
 
-      l2_l3_size   += lookup_size;
-      l3_l4_size   += lookup_size + subtables_size;
+      l3_l4_size   += subtables_size;
       l3_l4_size   -= p.num_subtables * 8;
       l4_plus_size += subtables_size + remaining_size;
 
@@ -216,7 +226,7 @@ bool _try_isolating_subgraphs (const hb_vector_t<graph::overflow_record_t>& over
   }
 
   DEBUG_MSG (SUBSET_REPACK, nullptr,
-             "Overflow in space %d (%d roots). Moving %d roots to space %d.",
+             "Overflow in space %u (%u roots). Moving %u roots to space %u.",
              space,
              sorted_graph.num_roots_for_space (space),
              roots_to_isolate.get_population (),
@@ -326,7 +336,7 @@ hb_resolve_graph_overflows (hb_tag_t table_tag,
   while (!sorted_graph.in_error ()
          && graph::will_overflow (sorted_graph, &overflows)
          && round < max_rounds) {
-    DEBUG_MSG (SUBSET_REPACK, nullptr, "=== Overflow resolution round %d ===", round);
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "=== Overflow resolution round %u ===", round);
     print_overflows (sorted_graph, overflows);
 
     hb_set_t priority_bumped_parents;

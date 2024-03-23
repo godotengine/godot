@@ -47,8 +47,8 @@ class AudioDriverCoreAudio : public AudioDriver {
 	bool active = false;
 	Mutex mutex;
 
-	String device_name = "Default";
-	String capture_device_name = "Default";
+	String output_device_name = "Default";
+	String input_device_name = "Default";
 
 	int mix_rate = 0;
 	unsigned int channels = 2;
@@ -60,7 +60,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 
 #ifdef MACOS_ENABLED
 	PackedStringArray _get_device_list(bool capture = false);
-	void _set_device(const String &device, bool capture = false);
+	void _set_device(const String &output_device, bool capture = false);
 
 	static OSStatus input_device_address_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
@@ -83,38 +83,38 @@ class AudioDriverCoreAudio : public AudioDriver {
 			UInt32 inBusNumber, UInt32 inNumberFrames,
 			AudioBufferList *ioData);
 
-	Error capture_init();
-	void capture_finish();
+	Error init_input_device();
+	void finish_input_device();
 
 public:
-	const char *get_name() const {
+	virtual const char *get_name() const override {
 		return "CoreAudio";
 	};
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
 
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
 
-	virtual Error capture_start();
-	virtual Error capture_stop();
+#ifdef MACOS_ENABLED
+	virtual PackedStringArray get_output_device_list() override;
+	virtual String get_output_device() override;
+	virtual void set_output_device(const String &p_name) override;
+
+	virtual PackedStringArray get_input_device_list() override;
+	virtual String get_input_device() override;
+	virtual void set_input_device(const String &p_name) override;
+#endif
+
+	virtual Error input_start() override;
+	virtual Error input_stop() override;
 
 	bool try_lock();
 	void stop();
-
-#ifdef MACOS_ENABLED
-	virtual PackedStringArray get_device_list();
-	virtual String get_device();
-	virtual void set_device(String device);
-
-	virtual PackedStringArray capture_get_device_list();
-	virtual void capture_set_device(const String &p_name);
-	virtual String capture_get_device();
-#endif
 
 	AudioDriverCoreAudio();
 	~AudioDriverCoreAudio() {}

@@ -29,32 +29,6 @@
 #include "hb.hh"
 #include "hb-machinery.hh"
 
-#if !defined(HB_NO_SETLOCALE) && (!defined(HAVE_NEWLOCALE) || !defined(HAVE_USELOCALE))
-#define HB_NO_SETLOCALE 1
-#endif
-
-#ifndef HB_NO_SETLOCALE
-
-#include <locale.h>
-#ifdef HAVE_XLOCALE_H
-#include <xlocale.h> // Needed on BSD/OS X for uselocale
-#endif
-
-#ifdef WIN32
-#define hb_locale_t _locale_t
-#else
-#define hb_locale_t locale_t
-#endif
-#define hb_setlocale setlocale
-#define hb_uselocale uselocale
-
-#else
-
-#define hb_locale_t void *
-#define hb_setlocale(Category, Locale) "C"
-#define hb_uselocale(Locale) ((hb_locale_t) 0)
-
-#endif
 
 /**
  * SECTION:hb-common
@@ -658,6 +632,7 @@ hb_script_get_horizontal_direction (hb_script_t script)
     case HB_SCRIPT_OLD_HUNGARIAN:
     case HB_SCRIPT_OLD_ITALIC:
     case HB_SCRIPT_RUNIC:
+    case HB_SCRIPT_TIFINAGH:
 
       return HB_DIRECTION_INVALID;
   }
@@ -840,7 +815,7 @@ parse_tag (const char **pp, const char *end, hb_tag_t *tag)
   }
 
   const char *p = *pp;
-  while (*pp < end && (ISALNUM(**pp) || **pp == '_'))
+  while (*pp < end && (**pp != ' ' && **pp != '=' && **pp != '[' && **pp != quote))
     (*pp)++;
 
   if (p == *pp || *pp - p > 4)

@@ -47,10 +47,13 @@ public:
 	virtual String get_as_text() const override;
 	virtual CompareEqualFunc get_compare_equal_func() const override;
 	virtual CompareLessFunc get_compare_less_func() const override;
+	virtual bool is_valid() const override;
 	virtual StringName get_method() const override;
-	virtual ObjectID get_object() const override; //must always be able to provide an object
+	virtual ObjectID get_object() const override;
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
+	virtual Error rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const override;
 	virtual const Callable *get_base_comparator() const override;
+	virtual int get_argument_count(bool &r_is_valid) const override;
 	virtual int get_bound_arguments_count() const override;
 	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const override;
 	Callable get_callable() { return callable; }
@@ -73,10 +76,13 @@ public:
 	virtual String get_as_text() const override;
 	virtual CompareEqualFunc get_compare_equal_func() const override;
 	virtual CompareLessFunc get_compare_less_func() const override;
+	virtual bool is_valid() const override;
 	virtual StringName get_method() const override;
-	virtual ObjectID get_object() const override; //must always be able to provide an object
+	virtual ObjectID get_object() const override;
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
+	virtual Error rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const override;
 	virtual const Callable *get_base_comparator() const override;
+	virtual int get_argument_count(bool &r_is_valid) const override;
 	virtual int get_bound_arguments_count() const override;
 	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const override;
 

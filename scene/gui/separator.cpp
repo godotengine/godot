@@ -30,6 +30,8 @@
 
 #include "separator.h"
 
+#include "scene/theme/theme_db.h"
+
 Size2 Separator::get_minimum_size() const {
 	Size2 ms(3, 3);
 	if (orientation == VERTICAL) {
@@ -40,18 +42,11 @@ Size2 Separator::get_minimum_size() const {
 	return ms;
 }
 
-void Separator::_update_theme_item_cache() {
-	Control::_update_theme_item_cache();
-
-	theme_cache.separation = get_theme_constant(SNAME("separation"));
-	theme_cache.separator_style = get_theme_stylebox(SNAME("separator"));
-}
-
 void Separator::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			Size2i size = get_size();
-			Size2i ssize = theme_cache.separator_style->get_minimum_size() + theme_cache.separator_style->get_center_size();
+			Size2i ssize = theme_cache.separator_style->get_minimum_size();
 
 			if (orientation == VERTICAL) {
 				theme_cache.separator_style->draw(get_canvas_item(), Rect2((size.x - ssize.x) / 2, 0, ssize.x, size.y));
@@ -60,6 +55,11 @@ void Separator::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void Separator::_bind_methods() {
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Separator, separation);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Separator, separator_style, "separator");
 }
 
 Separator::Separator() {

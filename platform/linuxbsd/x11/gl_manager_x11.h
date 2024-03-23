@@ -31,16 +31,26 @@
 #ifndef GL_MANAGER_X11_H
 #define GL_MANAGER_X11_H
 
-#ifdef X11_ENABLED
-
-#ifdef GLES3_ENABLED
+#if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
-#include "dynwrappers/xext-so_wrap.h"
-#include "dynwrappers/xlib-so_wrap.h"
-#include "dynwrappers/xrender-so_wrap.h"
 #include "servers/display_server.h"
+
+#ifdef SOWRAP_ENABLED
+#include "dynwrappers/xlib-so_wrap.h"
+
+#include "dynwrappers/xext-so_wrap.h"
+#include "dynwrappers/xrender-so_wrap.h"
+#else
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/shape.h>
+#endif
 
 struct GLManager_X11_Private;
 
@@ -64,17 +74,17 @@ private:
 	};
 
 	struct GLDisplay {
-		GLDisplay() { context = nullptr; }
+		GLDisplay() {}
 		~GLDisplay();
 		GLManager_X11_Private *context = nullptr;
-		::Display *x11_display;
-		XVisualInfo x_vi;
+		::Display *x11_display = nullptr;
+		XVisualInfo x_vi = {};
 	};
 
 	// just for convenience, window and display struct
 	struct XWinDisp {
 		::Window x11_window;
-		::Display *x11_display;
+		::Display *x11_display = nullptr;
 	} _x_windisp;
 
 	LocalVector<GLWindow> _windows;
@@ -101,7 +111,7 @@ private:
 	Error _create_context(GLDisplay &gl_display);
 
 public:
-	XVisualInfo get_vi(Display *p_display);
+	XVisualInfo get_vi(Display *p_display, Error &r_error);
 	Error window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height);
 	void window_destroy(DisplayServer::WindowID p_window_id);
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
@@ -119,11 +129,11 @@ public:
 
 	void *get_glx_context(DisplayServer::WindowID p_window_id);
 
+	Error open_display(Display *p_display);
 	GLManager_X11(const Vector2i &p_size, ContextType p_context_type);
 	~GLManager_X11();
 };
 
-#endif // GLES3_ENABLED
-#endif // X11_ENABLED
+#endif // X11_ENABLED && GLES3_ENABLED
 
 #endif // GL_MANAGER_X11_H

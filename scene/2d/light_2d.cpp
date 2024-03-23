@@ -425,6 +425,17 @@ real_t PointLight2D::get_texture_scale() const {
 	return _scale;
 }
 
+#ifndef DISABLE_DEPRECATED
+bool PointLight2D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "mode" && p_value.is_num()) { // Compatibility with Godot 3.x.
+		set_blend_mode((BlendMode)(int)p_value);
+		return true;
+	}
+
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
 void PointLight2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &PointLight2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &PointLight2D::get_texture);
@@ -443,6 +454,7 @@ void PointLight2D::_bind_methods() {
 
 PointLight2D::PointLight2D() {
 	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_POINT);
+	set_hide_clip_children(true);
 }
 
 //////////
@@ -467,4 +479,5 @@ void DirectionalLight2D::_bind_methods() {
 DirectionalLight2D::DirectionalLight2D() {
 	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_DIRECTIONAL);
 	set_max_distance(max_distance); // Update RenderingServer.
+	set_hide_clip_children(true);
 }

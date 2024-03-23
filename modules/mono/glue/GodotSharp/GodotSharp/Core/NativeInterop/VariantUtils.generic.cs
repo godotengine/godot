@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Godot.NativeInterop;
@@ -25,7 +24,6 @@ public partial class VariantUtils
         // ReSharper disable once StaticMemberInGenericType
         internal static unsafe delegate*<in godot_variant, T> FromVariantCb;
 
-        [SuppressMessage("ReSharper", "RedundantNameQualifier")]
         static GenericConversion()
         {
             RuntimeHelpers.RunClassConstructor(typeof(T).TypeHandle);
@@ -33,7 +31,6 @@ public partial class VariantUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    [SuppressMessage("ReSharper", "RedundantNameQualifier")]
     public static godot_variant CreateFrom<[MustBeVariant] T>(in T from)
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -80,14 +77,14 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Vector2))
             return CreateFromVector2(UnsafeAs<Vector2>(from));
 
-        if (typeof(T) == typeof(Vector2i))
-            return CreateFromVector2i(UnsafeAs<Vector2i>(from));
+        if (typeof(T) == typeof(Vector2I))
+            return CreateFromVector2I(UnsafeAs<Vector2I>(from));
 
         if (typeof(T) == typeof(Rect2))
             return CreateFromRect2(UnsafeAs<Rect2>(from));
 
-        if (typeof(T) == typeof(Rect2i))
-            return CreateFromRect2i(UnsafeAs<Rect2i>(from));
+        if (typeof(T) == typeof(Rect2I))
+            return CreateFromRect2I(UnsafeAs<Rect2I>(from));
 
         if (typeof(T) == typeof(Transform2D))
             return CreateFromTransform2D(UnsafeAs<Transform2D>(from));
@@ -98,8 +95,8 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Vector3))
             return CreateFromVector3(UnsafeAs<Vector3>(from));
 
-        if (typeof(T) == typeof(Vector3i))
-            return CreateFromVector3i(UnsafeAs<Vector3i>(from));
+        if (typeof(T) == typeof(Vector3I))
+            return CreateFromVector3I(UnsafeAs<Vector3I>(from));
 
         if (typeof(T) == typeof(Basis))
             return CreateFromBasis(UnsafeAs<Basis>(from));
@@ -113,11 +110,11 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Vector4))
             return CreateFromVector4(UnsafeAs<Vector4>(from));
 
-        if (typeof(T) == typeof(Vector4i))
-            return CreateFromVector4i(UnsafeAs<Vector4i>(from));
+        if (typeof(T) == typeof(Vector4I))
+            return CreateFromVector4I(UnsafeAs<Vector4I>(from));
 
-        if (typeof(T) == typeof(AABB))
-            return CreateFromAABB(UnsafeAs<AABB>(from));
+        if (typeof(T) == typeof(Aabb))
+            return CreateFromAabb(UnsafeAs<Aabb>(from));
 
         if (typeof(T) == typeof(Color))
             return CreateFromColor(UnsafeAs<Color>(from));
@@ -167,8 +164,8 @@ public partial class VariantUtils
         if (typeof(T) == typeof(NodePath[]))
             return CreateFromSystemArrayOfNodePath(UnsafeAs<NodePath[]>(from));
 
-        if (typeof(T) == typeof(RID[]))
-            return CreateFromSystemArrayOfRID(UnsafeAs<RID[]>(from));
+        if (typeof(T) == typeof(Rid[]))
+            return CreateFromSystemArrayOfRid(UnsafeAs<Rid[]>(from));
 
         if (typeof(T) == typeof(StringName))
             return CreateFromStringName(UnsafeAs<StringName>(from));
@@ -176,8 +173,8 @@ public partial class VariantUtils
         if (typeof(T) == typeof(NodePath))
             return CreateFromNodePath(UnsafeAs<NodePath>(from));
 
-        if (typeof(T) == typeof(RID))
-            return CreateFromRID(UnsafeAs<RID>(from));
+        if (typeof(T) == typeof(Rid))
+            return CreateFromRid(UnsafeAs<Rid>(from));
 
         if (typeof(T) == typeof(Godot.Collections.Dictionary))
             return CreateFromDictionary(UnsafeAs<Godot.Collections.Dictionary>(from));
@@ -192,8 +189,8 @@ public partial class VariantUtils
 
         // `typeof(X).IsAssignableFrom(typeof(T))` is optimized away
 
-        if (typeof(Godot.Object).IsAssignableFrom(typeof(T)))
-            return CreateFromGodotObject(UnsafeAs<Godot.Object>(from));
+        if (typeof(GodotObject).IsAssignableFrom(typeof(T)))
+            return CreateFromGodotObject(UnsafeAs<GodotObject>(from));
 
         // `typeof(T).IsValueType` is optimized away
         // `typeof(T).IsEnum` is NOT optimized away: https://github.com/dotnet/runtime/issues/67113
@@ -224,7 +221,6 @@ public partial class VariantUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    [SuppressMessage("ReSharper", "RedundantNameQualifier")]
     public static T ConvertTo<[MustBeVariant] T>(in godot_variant variant)
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -269,14 +265,14 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Vector2))
             return UnsafeAsT(ConvertToVector2(variant));
 
-        if (typeof(T) == typeof(Vector2i))
-            return UnsafeAsT(ConvertToVector2i(variant));
+        if (typeof(T) == typeof(Vector2I))
+            return UnsafeAsT(ConvertToVector2I(variant));
 
         if (typeof(T) == typeof(Rect2))
             return UnsafeAsT(ConvertToRect2(variant));
 
-        if (typeof(T) == typeof(Rect2i))
-            return UnsafeAsT(ConvertToRect2i(variant));
+        if (typeof(T) == typeof(Rect2I))
+            return UnsafeAsT(ConvertToRect2I(variant));
 
         if (typeof(T) == typeof(Transform2D))
             return UnsafeAsT(ConvertToTransform2D(variant));
@@ -284,8 +280,8 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Vector3))
             return UnsafeAsT(ConvertToVector3(variant));
 
-        if (typeof(T) == typeof(Vector3i))
-            return UnsafeAsT(ConvertToVector3i(variant));
+        if (typeof(T) == typeof(Vector3I))
+            return UnsafeAsT(ConvertToVector3I(variant));
 
         if (typeof(T) == typeof(Basis))
             return UnsafeAsT(ConvertToBasis(variant));
@@ -302,11 +298,11 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Vector4))
             return UnsafeAsT(ConvertToVector4(variant));
 
-        if (typeof(T) == typeof(Vector4i))
-            return UnsafeAsT(ConvertToVector4i(variant));
+        if (typeof(T) == typeof(Vector4I))
+            return UnsafeAsT(ConvertToVector4I(variant));
 
-        if (typeof(T) == typeof(AABB))
-            return UnsafeAsT(ConvertToAABB(variant));
+        if (typeof(T) == typeof(Aabb))
+            return UnsafeAsT(ConvertToAabb(variant));
 
         if (typeof(T) == typeof(Color))
             return UnsafeAsT(ConvertToColor(variant));
@@ -356,8 +352,8 @@ public partial class VariantUtils
         if (typeof(T) == typeof(NodePath[]))
             return UnsafeAsT(ConvertToSystemArrayOfNodePath(variant));
 
-        if (typeof(T) == typeof(RID[]))
-            return UnsafeAsT(ConvertToSystemArrayOfRID(variant));
+        if (typeof(T) == typeof(Rid[]))
+            return UnsafeAsT(ConvertToSystemArrayOfRid(variant));
 
         if (typeof(T) == typeof(StringName))
             return UnsafeAsT(ConvertToStringName(variant));
@@ -365,8 +361,8 @@ public partial class VariantUtils
         if (typeof(T) == typeof(NodePath))
             return UnsafeAsT(ConvertToNodePath(variant));
 
-        if (typeof(T) == typeof(RID))
-            return UnsafeAsT(ConvertToRID(variant));
+        if (typeof(T) == typeof(Rid))
+            return UnsafeAsT(ConvertToRid(variant));
 
         if (typeof(T) == typeof(Godot.Collections.Dictionary))
             return UnsafeAsT(ConvertToDictionary(variant));
@@ -381,7 +377,7 @@ public partial class VariantUtils
 
         // `typeof(X).IsAssignableFrom(typeof(T))` is optimized away
 
-        if (typeof(Godot.Object).IsAssignableFrom(typeof(T)))
+        if (typeof(GodotObject).IsAssignableFrom(typeof(T)))
             return (T)(object)ConvertToGodotObject(variant);
 
         // `typeof(T).IsValueType` is optimized away

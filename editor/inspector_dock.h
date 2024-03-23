@@ -34,7 +34,6 @@
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_path.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -43,6 +42,7 @@
 #include "scene/gui/tree.h"
 
 class EditorFileDialog;
+class EditorObjectSelector;
 
 class InspectorDock : public VBoxContainer {
 	GDCLASS(InspectorDock, VBoxContainer);
@@ -92,7 +92,7 @@ class InspectorDock : public VBoxContainer {
 
 	Button *open_docs_button = nullptr;
 	MenuButton *object_menu = nullptr;
-	EditorPath *editor_path = nullptr;
+	EditorObjectSelector *object_selector = nullptr;
 
 	bool info_is_warning = false; // Display in yellow and use warning icon if true.
 	Button *info = nullptr;
@@ -114,7 +114,7 @@ class InspectorDock : public VBoxContainer {
 	void _new_resource();
 	void _load_resource(const String &p_type = "");
 	void _open_resource_selector() { _load_resource(); }; // just used to call from arg-less signal
-	void _resource_file_selected(String p_file);
+	void _resource_file_selected(const String &p_file);
 	void _save_resource(bool save_as);
 	void _unref_resource();
 	void _copy_resource();
@@ -132,6 +132,8 @@ class InspectorDock : public VBoxContainer {
 	void _menu_expand_revertable();
 	void _select_history(int p_idx);
 	void _prepare_history();
+
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 private:
 	static InspectorDock *singleton;

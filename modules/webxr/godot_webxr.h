@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-#include "stddef.h"
+#include <stddef.h>
 
 enum WebXRInputEvent {
 	WEBXR_INPUT_EVENT_SELECTSTART,
@@ -45,7 +45,7 @@ enum WebXRInputEvent {
 };
 
 typedef void (*GodotWebXRSupportedCallback)(char *p_session_mode, int p_supported);
-typedef void (*GodotWebXRStartedCallback)(char *p_reference_space_type);
+typedef void (*GodotWebXRStartedCallback)(char *p_reference_space_type, char *p_enabled_features);
 typedef void (*GodotWebXREndedCallback)();
 typedef void (*GodotWebXRFailedCallback)(char *p_message);
 typedef void (*GodotWebXRInputEventCallback)(int p_event_type, int p_input_source_id);
@@ -85,10 +85,17 @@ extern bool godot_webxr_update_input_source(
 		int *r_button_count,
 		float *r_buttons,
 		int *r_axes_count,
-		float *r_axes);
+		float *r_axes,
+		int *r_has_hand_data,
+		float *r_hand_joints,
+		float *r_hand_radii);
 
 extern char *godot_webxr_get_visibility_state();
 extern int godot_webxr_get_bounds_geometry(float **r_points);
+
+extern float godot_webxr_get_frame_rate();
+extern void godot_webxr_update_target_frame_rate(float p_frame_rate);
+extern int godot_webxr_get_supported_frame_rates(float **r_frame_rates);
 
 #ifdef __cplusplus
 }

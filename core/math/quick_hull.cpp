@@ -383,15 +383,15 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 			if (O->get().plane.is_equal_approx(f.plane)) {
 				//merge and delete edge and contiguous face, while repointing edges (uuugh!)
-				int ois = O->get().indices.size();
+				int o_index_size = O->get().indices.size();
 
-				for (int j = 0; j < ois; j++) {
+				for (int j = 0; j < o_index_size; j++) {
 					//search a
 					if (O->get().indices[j] == a) {
 						//append the rest
-						for (int k = 0; k < ois; k++) {
-							int idx = O->get().indices[(k + j) % ois];
-							int idxn = O->get().indices[(k + j + 1) % ois];
+						for (int k = 0; k < o_index_size; k++) {
+							int idx = O->get().indices[(k + j) % o_index_size];
+							int idxn = O->get().indices[(k + j + 1) % o_index_size];
 							if (idx == b && idxn == a) { //already have b!
 								break;
 							}

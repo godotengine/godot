@@ -135,6 +135,7 @@ struct BaseCoord
   {
     TRACE_SANITIZE (this);
     if (unlikely (!u.format.sanitize (c))) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 1: return_trace (u.format1.sanitize (c));
     case 2: return_trace (u.format2.sanitize (c));
@@ -170,8 +171,8 @@ struct FeatMinMaxRecord
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
-			  minCoord.sanitize (c, this) &&
-			  maxCoord.sanitize (c, this)));
+			  minCoord.sanitize (c, base) &&
+			  maxCoord.sanitize (c, base)));
   }
 
   protected:
@@ -187,7 +188,6 @@ struct FeatMinMaxRecord
 				 * of MinMax table (may be NULL) */
   public:
   DEFINE_SIZE_STATIC (8);
-
 };
 
 struct MinMax
@@ -274,7 +274,7 @@ struct BaseLangSysRecord
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
-			  minMax.sanitize (c, this)));
+			  minMax.sanitize (c, base)));
   }
 
   protected:
@@ -297,7 +297,8 @@ struct BaseScript
   const BaseCoord &get_base_coord (int baseline_tag_index) const
   { return (this+baseValues).get_base_coord (baseline_tag_index); }
 
-  bool has_data () const { return baseValues; }
+  bool has_values () const { return baseValues; }
+  bool has_min_max () const { return defaultMinMax; /* TODO What if only per-language is present? */ }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -383,7 +384,7 @@ struct Axis
 		     const BaseCoord **coord) const
   {
     const BaseScript &base_script = (this+baseScriptList).get_base_script (script_tag);
-    if (!base_script.has_data ())
+    if (!base_script.has_values ())
     {
       *coord = nullptr;
       return false;
@@ -410,7 +411,7 @@ struct Axis
 		    const BaseCoord **max_coord) const
   {
     const BaseScript &base_script = (this+baseScriptList).get_base_script (script_tag);
-    if (!base_script.has_data ())
+    if (!base_script.has_min_max ())
     {
       *min_coord = *max_coord = nullptr;
       return false;
@@ -425,8 +426,8 @@ struct Axis
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
-			  (this+baseTagList).sanitize (c) &&
-			  (this+baseScriptList).sanitize (c)));
+			  baseTagList.sanitize (c, this) &&
+			  baseScriptList.sanitize (c, this)));
   }
 
   protected:
@@ -473,14 +474,13 @@ struct BASE
     return true;
   }
 
-  /* TODO: Expose this separately sometime? */
   bool get_min_max (hb_font_t      *font,
 		    hb_direction_t  direction,
 		    hb_tag_t        script_tag,
 		    hb_tag_t        language_tag,
 		    hb_tag_t        feature_tag,
 		    hb_position_t  *min,
-		    hb_position_t  *max)
+		    hb_position_t  *max) const
   {
     const BaseCoord *min_coord, *max_coord;
     if (!get_axis (direction).get_min_max (script_tag, language_tag, feature_tag,
@@ -497,6 +497,7 @@ struct BASE
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  likely (version.major == 1) &&
 			  hAxis.sanitize (c, this) &&
 			  vAxis.sanitize (c, this) &&

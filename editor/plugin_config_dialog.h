@@ -35,11 +35,21 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/texture_rect.h"
 
+class EditorValidationPanel;
+
 class PluginConfigDialog : public ConfirmationDialog {
 	GDCLASS(PluginConfigDialog, ConfirmationDialog);
+
+	enum {
+		MSG_ID_PLUGIN,
+		MSG_ID_SUBFOLDER,
+		MSG_ID_SCRIPT,
+		MSG_ID_ACTIVE,
+	};
 
 	LineEdit *name_edit = nullptr;
 	LineEdit *subfolder_edit = nullptr;
@@ -50,17 +60,16 @@ class PluginConfigDialog : public ConfirmationDialog {
 	LineEdit *script_edit = nullptr;
 	CheckBox *active_edit = nullptr;
 
-	TextureRect *name_validation = nullptr;
-	TextureRect *subfolder_validation = nullptr;
-	TextureRect *script_validation = nullptr;
+	LocalVector<Control *> plugin_edit_hidden_controls;
+
+	EditorValidationPanel *validation_panel = nullptr;
 
 	bool _edit_mode = false;
 
 	void _clear_fields();
 	void _on_confirmed();
-	void _on_cancelled();
-	void _on_language_changed(const int p_language);
-	void _on_required_text_changed(const String &p_text);
+	void _on_canceled();
+	void _on_required_text_changed();
 	String _get_subfolder();
 
 	static String _to_absolute_plugin_path(const String &p_plugin_name);

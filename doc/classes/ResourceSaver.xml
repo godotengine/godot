@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ResourceSaver" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ResourceSaver" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Singleton for saving Godot-specific resource types.
+		A singleton for saving [Resource]s to the filesystem.
 	</brief_description>
 	<description>
-		Singleton for saving Godot-specific resource types to the filesystem.
-		It uses the many [ResourceFormatSaver] classes registered in the engine (either built-in or from a plugin) to save engine-specific resource data to text-based (e.g. [code].tres[/code] or [code].tscn[/code]) or binary files (e.g. [code].res[/code] or [code].scn[/code]).
+		A singleton for saving resource types to the filesystem.
+		It uses the many [ResourceFormatSaver] classes registered in the engine (either built-in or from a plugin) to save resource data to text-based (e.g. [code].tres[/code] or [code].tscn[/code]) or binary files (e.g. [code].res[/code] or [code].scn[/code]).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -37,11 +37,12 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="resource" type="Resource" />
 			<param index="1" name="path" type="String" default="&quot;&quot;" />
-			<param index="2" name="flags" type="int" enum="ResourceSaver.SaverFlags" default="0" />
+			<param index="2" name="flags" type="int" enum="ResourceSaver.SaverFlags" is_bitfield="true" default="0" />
 			<description>
 				Saves a resource to disk to the given path, using a [ResourceFormatSaver] that recognizes the resource object. If [param path] is empty, [ResourceSaver] will try to use [member Resource.resource_path].
 				The [param flags] bitmask can be specified to customize the save behavior using [enum SaverFlags] flags.
 				Returns [constant OK] on success.
+				[b]Note:[/b] When the project is running, any generated UID associated with the resource will not be saved as the required code is only executed in editor mode.
 			</description>
 		</method>
 	</methods>

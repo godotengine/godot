@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2022 University of Cambridge
+          New API code Copyright (c) 2016-2023 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,24 @@ pcre2test.c with CODE_UNIT_WIDTH == 0. */
 #if defined EBCDIC && defined SUPPORT_UNICODE
 #error The use of both EBCDIC and SUPPORT_UNICODE is not supported.
 #endif
+
+/* When compiling one of the libraries, the value of PCRE2_CODE_UNIT_WIDTH must
+be 8, 16, or 32. AutoTools and CMake ensure that this is always the case, but
+other other building methods may not, so here is a check. It is cut out when
+building pcre2test, bcause that sets the value to zero. No other source should
+be including this file. There is no explicit way of forcing a compile to be
+abandoned, but trying to include a non-existent file seems cleanest. Otherwise
+there will be many irrelevant consequential errors. */
+
+#if (!defined PCRE2_BUILDING_PCRE2TEST && !defined PCRE2_DFTABLES) && \
+  (!defined PCRE2_CODE_UNIT_WIDTH ||     \
+    (PCRE2_CODE_UNIT_WIDTH != 8 &&       \
+     PCRE2_CODE_UNIT_WIDTH != 16 &&      \
+     PCRE2_CODE_UNIT_WIDTH != 32))
+#error PCRE2_CODE_UNIT_WIDTH must be defined as 8, 16, or 32.
+#include <AbandonCompile>
+#endif
+
 
 /* Standard C headers */
 
@@ -119,20 +137,20 @@ only if it is not already set. */
 #ifndef PCRE2_EXP_DECL
 #  ifdef _WIN32
 #    ifndef PCRE2_STATIC
-#      define PCRE2_EXP_DECL       extern __declspec(dllexport)
-#      define PCRE2_EXP_DEFN       __declspec(dllexport)
+#      define PCRE2_EXP_DECL		extern __declspec(dllexport)
+#      define PCRE2_EXP_DEFN		__declspec(dllexport)
 #    else
-#      define PCRE2_EXP_DECL       extern
+#      define PCRE2_EXP_DECL		extern PCRE2_EXPORT
 #      define PCRE2_EXP_DEFN
 #    endif
 #  else
 #    ifdef __cplusplus
-#      define PCRE2_EXP_DECL       extern "C"
+#      define PCRE2_EXP_DECL		extern "C" PCRE2_EXPORT
 #    else
-#      define PCRE2_EXP_DECL       extern
+#      define PCRE2_EXP_DECL		extern PCRE2_EXPORT
 #    endif
 #    ifndef PCRE2_EXP_DEFN
-#      define PCRE2_EXP_DEFN       PCRE2_EXP_DECL
+#      define PCRE2_EXP_DEFN		PCRE2_EXP_DECL
 #    endif
 #  endif
 #endif
@@ -156,8 +174,8 @@ pcre2_match() because of the way it backtracks. */
 #define PCRE2_SPTR CUSTOM_SUBJECT_PTR
 #endif
 
-/* When checking for integer overflow in pcre2_compile(), we need to handle
-large integers. If a 64-bit integer type is available, we can use that.
+/* When checking for integer overflow, we need to handle large integers.
+If a 64-bit integer type is available, we can use that.
 Otherwise we have to cast to double, which of course requires floating point
 arithmetic. Handle this by defining a macro for the appropriate type. */
 
@@ -220,18 +238,17 @@ not rely on this. */
 
 #define COMPILE_ERROR_BASE 100
 
-/* The initial frames vector for remembering backtracking points in
-pcre2_match() is allocated on the system stack, of this size (bytes). The size
-must be a multiple of sizeof(PCRE2_SPTR) in all environments, so making it a
-multiple of 8 is best. Typical frame sizes are a few hundred bytes (it depends
-on the number of capturing parentheses) so 20KiB handles quite a few frames. A
-larger vector on the heap is obtained for patterns that need more frames. The
-maximum size of this can be limited. */
+/* The initial frames vector for remembering pcre2_match() backtracking points
+is allocated on the heap, of this size (bytes) or ten times the frame size if
+larger, unless the heap limit is smaller. Typical frame sizes are a few hundred
+bytes (it depends on the number of capturing parentheses) so 20KiB handles
+quite a few frames. A larger vector on the heap is obtained for matches that
+need more frames, subject to the heap limit. */
 
 #define START_FRAMES_SIZE 20480
 
-/* Similarly, for DFA matching, an initial internal workspace vector is
-allocated on the stack. */
+/* For DFA matching, an initial internal workspace vector is allocated on the
+stack. The heap is used only if this turns out to be too small. */
 
 #define DFA_START_RWS_SIZE 30720
 
@@ -1282,7 +1299,7 @@ match. */
 #define PT_ALNUM      6    /* Alphanumeric - the union of L and N */
 #define PT_SPACE      7    /* Perl space - general category Z plus 9,10,12,13 */
 #define PT_PXSPACE    8    /* POSIX space - Z plus 9,10,11,12,13 */
-#define PT_WORD       9    /* Word - L plus N plus underscore */
+#define PT_WORD       9    /* Word - L, N, Mn, or Pc */
 #define PT_CLIST     10    /* Pseudo-property: match character list */
 #define PT_UCNC      11    /* Universal Character nameable character */
 #define PT_BIDICL    12    /* Specified bidi class */
@@ -1298,6 +1315,7 @@ table. */
 #define PT_PXGRAPH   14    /* [:graph:] - characters that mark the paper */
 #define PT_PXPRINT   15    /* [:print:] - [:graph:] plus non-control spaces */
 #define PT_PXPUNCT   16    /* [:punct:] - punctuation characters */
+#define PT_PXXDIGIT  17    /* [:xdigit:] - hex digits */
 
 /* This value is used when parsing \p and \P escapes to indicate that neither
 \p{script:...} nor \p{scx:...} has been encountered. */
@@ -1328,6 +1346,12 @@ mode rather than an escape sequence. It is also used for [^] in JavaScript
 compatibility mode, and for \C in non-utf mode. In non-DOTALL mode, "." behaves
 like \N.
 
+ESC_ub is a special return from check_escape() when, in BSUX mode, \u{ is not
+followed by hex digits and }, in which case it should mean a literal "u"
+followed by a literal "{". This hack is necessary for cases like \u{ 12}
+because without it, this is interpreted as u{12} now that spaces are allowed in
+quantifiers.
+
 Negative numbers are used to encode a backreference (\1, \2, \3, etc.) in
 check_escape(). There are tests in the code for an escape greater than ESC_b
 and less than ESC_Z to detect the types that may be repeated. These are the
@@ -1337,7 +1361,7 @@ consume a character, that code will have to change. */
 enum { ESC_A = 1, ESC_G, ESC_K, ESC_B, ESC_b, ESC_D, ESC_d, ESC_S, ESC_s,
        ESC_W, ESC_w, ESC_N, ESC_dum, ESC_C, ESC_P, ESC_p, ESC_R, ESC_H,
        ESC_h, ESC_V, ESC_v, ESC_X, ESC_Z, ESC_z,
-       ESC_E, ESC_Q, ESC_g, ESC_k };
+       ESC_E, ESC_Q, ESC_g, ESC_k, ESC_ub };
 
 
 /********************** Opcode definitions ******************/
@@ -1373,8 +1397,8 @@ enum {
   OP_SOD,            /* 1 Start of data: \A */
   OP_SOM,            /* 2 Start of match (subject + offset): \G */
   OP_SET_SOM,        /* 3 Set start of match (\K) */
-  OP_NOT_WORD_BOUNDARY,  /*  4 \B */
-  OP_WORD_BOUNDARY,      /*  5 \b */
+  OP_NOT_WORD_BOUNDARY,  /*  4 \B -- see also OP_NOT_UCP_WORD_BOUNDARY */
+  OP_WORD_BOUNDARY,      /*  5 \b -- see also OP_UCP_WORD_BOUNDARY */
   OP_NOT_DIGIT,          /*  6 \D */
   OP_DIGIT,              /*  7 \d */
   OP_NOT_WHITESPACE,     /*  8 \S */
@@ -1548,78 +1572,85 @@ enum {
   /* The assertions must come before BRA, CBRA, ONCE, and COND. */
 
   OP_REVERSE,        /* 125 Move pointer back - used in lookbehind assertions */
-  OP_ASSERT,         /* 126 Positive lookahead */
-  OP_ASSERT_NOT,     /* 127 Negative lookahead */
-  OP_ASSERTBACK,     /* 128 Positive lookbehind */
-  OP_ASSERTBACK_NOT, /* 129 Negative lookbehind */
-  OP_ASSERT_NA,      /* 130 Positive non-atomic lookahead */
-  OP_ASSERTBACK_NA,  /* 131 Positive non-atomic lookbehind */
+  OP_VREVERSE,       /* 126 Move pointer back - variable */
+  OP_ASSERT,         /* 127 Positive lookahead */
+  OP_ASSERT_NOT,     /* 128 Negative lookahead */
+  OP_ASSERTBACK,     /* 129 Positive lookbehind */
+  OP_ASSERTBACK_NOT, /* 130 Negative lookbehind */
+  OP_ASSERT_NA,      /* 131 Positive non-atomic lookahead */
+  OP_ASSERTBACK_NA,  /* 132 Positive non-atomic lookbehind */
 
   /* ONCE, SCRIPT_RUN, BRA, BRAPOS, CBRA, CBRAPOS, and COND must come
   immediately after the assertions, with ONCE first, as there's a test for >=
   ONCE for a subpattern that isn't an assertion. The POS versions must
   immediately follow the non-POS versions in each case. */
 
-  OP_ONCE,           /* 132 Atomic group, contains captures */
-  OP_SCRIPT_RUN,     /* 133 Non-capture, but check characters' scripts */
-  OP_BRA,            /* 134 Start of non-capturing bracket */
-  OP_BRAPOS,         /* 135 Ditto, with unlimited, possessive repeat */
-  OP_CBRA,           /* 136 Start of capturing bracket */
-  OP_CBRAPOS,        /* 137 Ditto, with unlimited, possessive repeat */
-  OP_COND,           /* 138 Conditional group */
+  OP_ONCE,           /* 133 Atomic group, contains captures */
+  OP_SCRIPT_RUN,     /* 134 Non-capture, but check characters' scripts */
+  OP_BRA,            /* 135 Start of non-capturing bracket */
+  OP_BRAPOS,         /* 136 Ditto, with unlimited, possessive repeat */
+  OP_CBRA,           /* 137 Start of capturing bracket */
+  OP_CBRAPOS,        /* 138 Ditto, with unlimited, possessive repeat */
+  OP_COND,           /* 139 Conditional group */
 
   /* These five must follow the previous five, in the same order. There's a
   check for >= SBRA to distinguish the two sets. */
 
-  OP_SBRA,           /* 139 Start of non-capturing bracket, check empty  */
-  OP_SBRAPOS,        /* 149 Ditto, with unlimited, possessive repeat */
-  OP_SCBRA,          /* 141 Start of capturing bracket, check empty */
-  OP_SCBRAPOS,       /* 142 Ditto, with unlimited, possessive repeat */
-  OP_SCOND,          /* 143 Conditional group, check empty */
+  OP_SBRA,           /* 140 Start of non-capturing bracket, check empty  */
+  OP_SBRAPOS,        /* 141 Ditto, with unlimited, possessive repeat */
+  OP_SCBRA,          /* 142 Start of capturing bracket, check empty */
+  OP_SCBRAPOS,       /* 143 Ditto, with unlimited, possessive repeat */
+  OP_SCOND,          /* 144 Conditional group, check empty */
 
   /* The next two pairs must (respectively) be kept together. */
 
-  OP_CREF,           /* 144 Used to hold a capture number as condition */
-  OP_DNCREF,         /* 145 Used to point to duplicate names as a condition */
-  OP_RREF,           /* 146 Used to hold a recursion number as condition */
-  OP_DNRREF,         /* 147 Used to point to duplicate names as a condition */
-  OP_FALSE,          /* 148 Always false (used by DEFINE and VERSION) */
-  OP_TRUE,           /* 149 Always true (used by VERSION) */
+  OP_CREF,           /* 145 Used to hold a capture number as condition */
+  OP_DNCREF,         /* 146 Used to point to duplicate names as a condition */
+  OP_RREF,           /* 147 Used to hold a recursion number as condition */
+  OP_DNRREF,         /* 148 Used to point to duplicate names as a condition */
+  OP_FALSE,          /* 149 Always false (used by DEFINE and VERSION) */
+  OP_TRUE,           /* 150 Always true (used by VERSION) */
 
-  OP_BRAZERO,        /* 150 These two must remain together and in this */
-  OP_BRAMINZERO,     /* 151 order. */
-  OP_BRAPOSZERO,     /* 152 */
+  OP_BRAZERO,        /* 151 These two must remain together and in this */
+  OP_BRAMINZERO,     /* 152 order. */
+  OP_BRAPOSZERO,     /* 153 */
 
   /* These are backtracking control verbs */
 
-  OP_MARK,           /* 153 always has an argument */
-  OP_PRUNE,          /* 154 */
-  OP_PRUNE_ARG,      /* 155 same, but with argument */
-  OP_SKIP,           /* 156 */
-  OP_SKIP_ARG,       /* 157 same, but with argument */
-  OP_THEN,           /* 158 */
-  OP_THEN_ARG,       /* 159 same, but with argument */
-  OP_COMMIT,         /* 160 */
-  OP_COMMIT_ARG,     /* 161 same, but with argument */
+  OP_MARK,           /* 154 always has an argument */
+  OP_PRUNE,          /* 155 */
+  OP_PRUNE_ARG,      /* 156 same, but with argument */
+  OP_SKIP,           /* 157 */
+  OP_SKIP_ARG,       /* 158 same, but with argument */
+  OP_THEN,           /* 159 */
+  OP_THEN_ARG,       /* 160 same, but with argument */
+  OP_COMMIT,         /* 161 */
+  OP_COMMIT_ARG,     /* 162 same, but with argument */
 
   /* These are forced failure and success verbs. FAIL and ACCEPT do accept an
   argument, but these cases can be compiled as, for example, (*MARK:X)(*FAIL)
   without the need for a special opcode. */
 
-  OP_FAIL,           /* 162 */
-  OP_ACCEPT,         /* 163 */
-  OP_ASSERT_ACCEPT,  /* 164 Used inside assertions */
-  OP_CLOSE,          /* 165 Used before OP_ACCEPT to close open captures */
+  OP_FAIL,           /* 163 */
+  OP_ACCEPT,         /* 164 */
+  OP_ASSERT_ACCEPT,  /* 165 Used inside assertions */
+  OP_CLOSE,          /* 166 Used before OP_ACCEPT to close open captures */
 
   /* This is used to skip a subpattern with a {0} quantifier */
 
-  OP_SKIPZERO,       /* 166 */
+  OP_SKIPZERO,       /* 167 */
 
   /* This is used to identify a DEFINE group during compilation so that it can
   be checked for having only one branch. It is changed to OP_FALSE before
   compilation finishes. */
 
-  OP_DEFINE,         /* 167 */
+  OP_DEFINE,         /* 168 */
+
+  /* These opcodes replace their normal counterparts in UCP mode when
+  PCRE2_EXTRA_ASCII_BSW is not set. */
+
+  OP_NOT_UCP_WORD_BOUNDARY, /* 169 */
+  OP_UCP_WORD_BOUNDARY,     /* 170 */
 
   /* This is not an opcode, but is used to check that tables indexed by opcode
   are the correct length, in order to catch updating errors - there have been
@@ -1665,7 +1696,7 @@ some cases doesn't actually use these names at all). */
   "class", "nclass", "xclass", "Ref", "Refi", "DnRef", "DnRefi",  \
   "Recurse", "Callout", "CalloutStr",                             \
   "Alt", "Ket", "KetRmax", "KetRmin", "KetRpos",                  \
-  "Reverse", "Assert", "Assert not",                              \
+  "Reverse", "VReverse", "Assert", "Assert not",                  \
   "Assert back", "Assert back not",                               \
   "Non-atomic assert", "Non-atomic assert back",                  \
   "Once",                                                         \
@@ -1680,7 +1711,7 @@ some cases doesn't actually use these names at all). */
   "*MARK", "*PRUNE", "*PRUNE", "*SKIP", "*SKIP",                  \
   "*THEN", "*THEN", "*COMMIT", "*COMMIT", "*FAIL",                \
   "*ACCEPT", "*ASSERT_ACCEPT",                                    \
-  "Close", "Skip zero", "Define"
+  "Close", "Skip zero", "Define", "\\B (ucp)", "\\b (ucp)"
 
 
 /* This macro defines the length of fixed length operations in the compiled
@@ -1747,7 +1778,8 @@ in UTF-8 mode. The code that uses this table must know about such things. */
   1+LINK_SIZE,                   /* KetRmax                                */ \
   1+LINK_SIZE,                   /* KetRmin                                */ \
   1+LINK_SIZE,                   /* KetRpos                                */ \
-  1+LINK_SIZE,                   /* Reverse                                */ \
+  1+IMM2_SIZE,                   /* Reverse                                */ \
+  1+2*IMM2_SIZE,                 /* VReverse                               */ \
   1+LINK_SIZE,                   /* Assert                                 */ \
   1+LINK_SIZE,                   /* Assert not                             */ \
   1+LINK_SIZE,                   /* Assert behind                          */ \
@@ -1776,7 +1808,8 @@ in UTF-8 mode. The code that uses this table must know about such things. */
   1, 3,                          /* COMMIT, COMMIT_ARG                     */ \
   1, 1, 1,                       /* FAIL, ACCEPT, ASSERT_ACCEPT            */ \
   1+IMM2_SIZE, 1,                /* CLOSE, SKIPZERO                        */ \
-  1                              /* DEFINE                                 */
+  1,                             /* DEFINE                                 */ \
+  1, 1                           /* \B and \b in UCP mode                  */
 
 /* A magic value for OP_RREF to indicate the "any recursion" condition. */
 
@@ -2043,6 +2076,9 @@ extern void *       _pcre2_memmove(void *, const void *, size_t);
 #endif
 
 #endif  /* PCRE2_CODE_UNIT_WIDTH */
+
+extern BOOL         PRIV(ckd_smul)(PCRE2_SIZE *, int, int);
+
 #endif  /* PCRE2_INTERNAL_H_IDEMPOTENT_GUARD */
 
 /* End of pcre2_internal.h */

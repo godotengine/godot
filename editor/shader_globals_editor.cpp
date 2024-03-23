@@ -70,7 +70,7 @@ class ShaderGlobalsEditorInterface : public Object {
 	GDCLASS(ShaderGlobalsEditorInterface, Object)
 
 	void _set_var(const StringName &p_name, const Variant &p_value, const Variant &p_prev_value) {
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 		undo_redo->create_action(TTR("Set Shader Global Variable"));
 		undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_value);
@@ -105,7 +105,6 @@ class ShaderGlobalsEditorInterface : public Object {
 
 protected:
 	static void _bind_methods() {
-		ClassDB::bind_method("_set_var", &ShaderGlobalsEditorInterface::_set_var);
 		ClassDB::bind_method("_var_changed", &ShaderGlobalsEditorInterface::_var_changed);
 		ADD_SIGNAL(MethodInfo("var_changed"));
 	}
@@ -117,7 +116,7 @@ protected:
 			return false;
 		}
 
-		call_deferred("_set_var", p_name, p_value, existing);
+		callable_mp(this, &ShaderGlobalsEditorInterface::_set_var).call_deferred(p_name, p_value, existing);
 
 		return true;
 	}
@@ -198,7 +197,7 @@ protected:
 					pinfo.type = Variant::COLOR;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_MAT2: {
-					pinfo.type = Variant::PACKED_INT32_ARRAY;
+					pinfo.type = Variant::PACKED_FLOAT32_ARRAY;
 				} break;
 				case RS::GLOBAL_VAR_TYPE_MAT3: {
 					pinfo.type = Variant::BASIS;
@@ -271,13 +270,7 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			return Vector3i();
 		}
 		case RS::GLOBAL_VAR_TYPE_IVEC4: {
-			Vector<int> v4;
-			v4.resize(4);
-			v4.write[0] = 0;
-			v4.write[1] = 0;
-			v4.write[2] = 0;
-			v4.write[3] = 0;
-			return v4;
+			return Vector4i();
 		}
 		case RS::GLOBAL_VAR_TYPE_RECT2I: {
 			return Rect2i();
@@ -292,13 +285,7 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			return Vector3i();
 		}
 		case RS::GLOBAL_VAR_TYPE_UVEC4: {
-			Vector<int> v4;
-			v4.resize(4);
-			v4.write[0] = 0;
-			v4.write[1] = 0;
-			v4.write[2] = 0;
-			v4.write[3] = 0;
-			return v4;
+			return Vector4i();
 		}
 		case RS::GLOBAL_VAR_TYPE_FLOAT: {
 			return 0.0;
@@ -310,7 +297,7 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			return Vector3();
 		}
 		case RS::GLOBAL_VAR_TYPE_VEC4: {
-			return Quaternion();
+			return Vector4();
 		}
 		case RS::GLOBAL_VAR_TYPE_RECT2: {
 			return Rect2();
@@ -319,7 +306,7 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			return Color();
 		}
 		case RS::GLOBAL_VAR_TYPE_MAT2: {
-			Vector<real_t> xform;
+			Vector<float> xform;
 			xform.resize(4);
 			xform.write[0] = 1;
 			xform.write[1] = 0;
@@ -337,29 +324,7 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 			return Transform3D();
 		}
 		case RS::GLOBAL_VAR_TYPE_MAT4: {
-			Vector<real_t> xform;
-			xform.resize(16);
-			xform.write[0] = 1;
-			xform.write[1] = 0;
-			xform.write[2] = 0;
-			xform.write[3] = 0;
-
-			xform.write[4] = 0;
-			xform.write[5] = 1;
-			xform.write[6] = 0;
-			xform.write[7] = 0;
-
-			xform.write[8] = 0;
-			xform.write[9] = 0;
-			xform.write[10] = 1;
-			xform.write[11] = 0;
-
-			xform.write[12] = 0;
-			xform.write[13] = 0;
-			xform.write[14] = 0;
-			xform.write[15] = 1;
-
-			return xform;
+			return Projection();
 		}
 		case RS::GLOBAL_VAR_TYPE_SAMPLER2D: {
 			return "";
@@ -379,15 +344,33 @@ static Variant create_var(RS::GlobalShaderParameterType p_type) {
 	}
 }
 
-void ShaderGlobalsEditor::_variable_added() {
-	String var = variable_name->get_text().strip_edges();
-	if (var.is_empty() || !var.is_valid_identifier()) {
-		EditorNode::get_singleton()->show_warning(TTR("Please specify a valid shader uniform identifier name."));
-		return;
+String ShaderGlobalsEditor::_check_new_variable_name(const String &p_variable_name) {
+	if (p_variable_name.is_empty()) {
+		return TTR("Name cannot be empty.");
 	}
 
+	if (!p_variable_name.is_valid_identifier()) {
+		return TTR("Name must be a valid identifier.");
+	}
+
+	return "";
+}
+
+LineEdit *ShaderGlobalsEditor::get_name_box() const {
+	return variable_name;
+}
+
+void ShaderGlobalsEditor::_variable_name_text_changed(const String &p_variable_name) {
+	const String &warning = _check_new_variable_name(p_variable_name.strip_edges());
+	variable_add->set_tooltip_text(warning);
+	variable_add->set_disabled(!warning.is_empty());
+}
+
+void ShaderGlobalsEditor::_variable_added() {
+	String var = variable_name->get_text().strip_edges();
+
 	if (RenderingServer::get_singleton()->global_shader_parameter_get(var).get_type() != Variant::NIL) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Global shader parameter '%s' already exists'"), var));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Global shader parameter '%s' already exists."), var));
 		return;
 	}
 
@@ -399,7 +382,7 @@ void ShaderGlobalsEditor::_variable_added() {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	Variant value = create_var(RS::GlobalShaderParameterType(variable_type->get_selected()));
 
@@ -415,10 +398,12 @@ void ShaderGlobalsEditor::_variable_added() {
 	undo_redo->add_do_method(this, "_changed");
 	undo_redo->add_undo_method(this, "_changed");
 	undo_redo->commit_action();
+
+	variable_name->clear();
 }
 
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	undo_redo->create_action(TTR("Add Shader Global Parameter"));
 	undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_remove", p_variable);
@@ -451,6 +436,10 @@ void ShaderGlobalsEditor::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			variable_add->set_icon(get_editor_theme_icon(SNAME("Add")));
+		} break;
+
 		case NOTIFICATION_PREDELETE: {
 			inspector->edit(nullptr);
 		} break;
@@ -458,12 +447,18 @@ void ShaderGlobalsEditor::_notification(int p_what) {
 }
 
 ShaderGlobalsEditor::ShaderGlobalsEditor() {
+	ProjectSettings::get_singleton()->add_hidden_prefix("shader_globals/");
+
 	HBoxContainer *add_menu_hb = memnew(HBoxContainer);
 	add_child(add_menu_hb);
 
 	add_menu_hb->add_child(memnew(Label(TTR("Name:"))));
 	variable_name = memnew(LineEdit);
 	variable_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	variable_name->set_clear_button_enabled(true);
+	variable_name->connect("text_changed", callable_mp(this, &ShaderGlobalsEditor::_variable_name_text_changed));
+	variable_name->connect("text_submitted", callable_mp(this, &ShaderGlobalsEditor::_variable_added).unbind(1));
+
 	add_menu_hb->add_child(variable_name);
 
 	add_menu_hb->add_child(memnew(Label(TTR("Type:"))));
@@ -476,6 +471,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	}
 
 	variable_add = memnew(Button(TTR("Add")));
+	variable_add->set_disabled(true);
 	add_menu_hb->add_child(variable_add);
 	variable_add->connect("pressed", callable_mp(this, &ShaderGlobalsEditor::_variable_added));
 

@@ -30,7 +30,6 @@
 
 #include "hb.hh"
 #include "hb-bit-page.hh"
-#include "hb-machinery.hh"
 
 
 struct hb_bit_set_t
@@ -38,7 +37,7 @@ struct hb_bit_set_t
   hb_bit_set_t () = default;
   ~hb_bit_set_t () = default;
 
-  hb_bit_set_t (const hb_bit_set_t& other) : hb_bit_set_t () { set (other); }
+  hb_bit_set_t (const hb_bit_set_t& other) : hb_bit_set_t () { set (other, true); }
   hb_bit_set_t ( hb_bit_set_t&& other) : hb_bit_set_t () { hb_swap (*this, other); }
   hb_bit_set_t& operator= (const hb_bit_set_t& other) { set (other); return *this; }
   hb_bit_set_t& operator= (hb_bit_set_t&& other) { hb_swap (*this, other); return *this; }
@@ -85,12 +84,16 @@ struct hb_bit_set_t
   void err () { if (successful) successful = false; } /* TODO Remove */
   bool in_error () const { return !successful; }
 
-  bool resize (unsigned int count, bool clear = true)
+  bool resize (unsigned int count, bool clear = true, bool exact_size = false)
   {
     if (unlikely (!successful)) return false;
-    if (unlikely (!pages.resize (count, clear) || !page_map.resize (count, clear)))
+
+    if (pages.length == 0 && count == 1)
+      exact_size = true; // Most sets are small and local
+
+    if (unlikely (!pages.resize (count, clear, exact_size) || !page_map.resize (count, clear, exact_size)))
     {
-      pages.resize (page_map.length);
+      pages.resize (page_map.length, clear, exact_size);
       successful = false;
       return false;
     }
@@ -130,7 +133,11 @@ struct hb_bit_set_t
   {
     uint32_t h = 0;
     for (auto &map : page_map)
-      h = h * 31 + hb_hash (map.major) + hb_hash (pages[map.index]);
+    {
+      auto &page = pages.arrayZ[map.index];
+      if (unlikely (page.is_empty ())) continue;
+      h = h * 31 + hb_hash (map.major) + hb_hash (page);
+    }
     return h;
   }
 
@@ -175,6 +182,16 @@ struct hb_bit_set_t
     return true;
   }
 
+  /* Duplicated here from hb-machinery.hh to avoid including it. */
+  template<typename Type>
+  static inline const Type& StructAtOffsetUnaligned(const void *P, unsigned int offset)
+  {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+    return * reinterpret_cast<const Type*> ((const char *) P + offset);
+#pragma GCC diagnostic pop
+  }
+
   template <typename T>
   void set_array (bool v, const T *array, unsigned int count, unsigned int stride=sizeof(T))
   {
@@ -190,7 +207,7 @@ struct hb_bit_set_t
       unsigned int end = major_start (m + 1);
       do
       {
-        if (v || page) /* The v check is to optimize out the page check if v is true. */
+        if (g != INVALID && (v || page)) /* The v check is to optimize out the page check if v is true. */
 	  page->set (g, v);
 
 	array = &StructAtOffsetUnaligned<T> (array, stride);
@@ -234,7 +251,7 @@ struct hb_bit_set_t
 	if (g < last_g) return false;
 	last_g = g;
 
-        if (v || page) /* The v check is to optimize out the page check if v is true. */
+        if (g != INVALID && (v || page)) /* The v check is to optimize out the page check if v is true. */
 	  page->add (g);
 
 	array = &StructAtOffsetUnaligned<T> (array, stride);
@@ -338,7 +355,7 @@ struct hb_bit_set_t
   /* Sink interface. */
   hb_bit_set_t& operator << (hb_codepoint_t v)
   { add (v); return *this; }
-  hb_bit_set_t& operator << (const hb_pair_t<hb_codepoint_t, hb_codepoint_t>& range)
+  hb_bit_set_t& operator << (const hb_codepoint_pair_t& range)
   { add_range (range.first, range.second); return *this; }
 
   bool intersects (hb_codepoint_t first, hb_codepoint_t last) const
@@ -346,11 +363,11 @@ struct hb_bit_set_t
     hb_codepoint_t c = first - 1;
     return next (&c) && c <= last;
   }
-  void set (const hb_bit_set_t &other)
+  void set (const hb_bit_set_t &other, bool exact_size = false)
   {
     if (unlikely (!successful)) return;
     unsigned int count = other.pages.length;
-    if (unlikely (!resize (count, false)))
+    if (unlikely (!resize (count, false, exact_size)))
       return;
     population = other.population;
 
@@ -398,7 +415,6 @@ struct hb_bit_set_t
       uint32_t spm = page_map[spi].major;
       uint32_t lpm = larger_set.page_map[lpi].major;
       auto sp = page_at (spi);
-      auto lp = larger_set.page_at (lpi);
 
       if (spm < lpm && !sp.is_empty ())
         return false;
@@ -406,6 +422,7 @@ struct hb_bit_set_t
       if (lpm < spm)
         continue;
 
+      auto lp = larger_set.page_at (lpi);
       if (!sp.is_subset (lp))
         return false;
 
@@ -422,7 +439,7 @@ struct hb_bit_set_t
   private:
   bool allocate_compact_workspace (hb_vector_t<unsigned>& workspace)
   {
-    if (unlikely (!workspace.resize (pages.length)))
+    if (unlikely (!workspace.resize_exact (pages.length)))
     {
       successful = false;
       return false;
@@ -545,6 +562,7 @@ struct hb_bit_set_t
 	count--;
 	page_map.arrayZ[count] = page_map.arrayZ[a];
 	page_at (count).v = op (page_at (a).v, other.page_at (b).v);
+	page_at (count).dirty ();
       }
       else if (page_map.arrayZ[a - 1].major > other.page_map.arrayZ[b - 1].major)
       {
@@ -563,7 +581,7 @@ struct hb_bit_set_t
 	  count--;
 	  page_map.arrayZ[count].major = other.page_map.arrayZ[b].major;
 	  page_map.arrayZ[count].index = next_page++;
-	  page_at (count).v = other.page_at (b).v;
+	  page_at (count) = other.page_at (b);
 	}
       }
     }
@@ -581,7 +599,7 @@ struct hb_bit_set_t
 	count--;
 	page_map.arrayZ[count].major = other.page_map.arrayZ[b].major;
 	page_map.arrayZ[count].index = next_page++;
-	page_at (count).v = other.page_at (b).v;
+	page_at (count) = other.page_at (b);
       }
     assert (!count);
     resize (newCount);
@@ -619,6 +637,7 @@ struct hb_bit_set_t
         *codepoint = INVALID;
         return false;
       }
+      last_page_lookup = i;
     }
 
     const auto* pages_array = pages.arrayZ;
@@ -628,7 +647,6 @@ struct hb_bit_set_t
       if (pages_array[current.index].next (codepoint))
       {
         *codepoint += current.major * page_t::PAGE_BITS;
-        last_page_lookup = i;
         return true;
       }
       i++;
@@ -645,7 +663,6 @@ struct hb_bit_set_t
 	return true;
       }
     }
-    last_page_lookup = 0;
     *codepoint = INVALID;
     return false;
   }
@@ -859,6 +876,7 @@ struct hb_bit_set_t
   struct iter_t : hb_iter_with_fallback_t<iter_t, hb_codepoint_t>
   {
     static constexpr bool is_sorted_iterator = true;
+    static constexpr bool has_fast_len = true;
     iter_t (const hb_bit_set_t &s_ = Null (hb_bit_set_t),
 	    bool init = true) : s (&s_), v (INVALID), l(0)
     {
@@ -895,7 +913,7 @@ struct hb_bit_set_t
 
     /* The extra page_map length is necessary; can't just rely on vector here,
      * since the next check would be tricked because a null page also has
-     * major==0, which we can't distinguish from an actualy major==0 page... */
+     * major==0, which we can't distinguish from an actually major==0 page... */
     unsigned i = last_page_lookup;
     if (likely (i < page_map.length))
     {
@@ -917,7 +935,7 @@ struct hb_bit_set_t
       memmove (page_map.arrayZ + i + 1,
 	       page_map.arrayZ + i,
 	       (page_map.length - 1 - i) * page_map.item_size);
-      page_map[i] = map;
+      page_map.arrayZ[i] = map;
     }
 
     last_page_lookup = i;
@@ -929,7 +947,7 @@ struct hb_bit_set_t
 
     /* The extra page_map length is necessary; can't just rely on vector here,
      * since the next check would be tricked because a null page also has
-     * major==0, which we can't distinguish from an actualy major==0 page... */
+     * major==0, which we can't distinguish from an actually major==0 page... */
     unsigned i = last_page_lookup;
     if (likely (i < page_map.length))
     {

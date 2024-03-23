@@ -87,6 +87,16 @@ uniform highp float blend_weight;
 uniform lowp float blend_shape_count;
 #endif
 
+#ifdef USE_SKELETON
+uniform mediump vec2 skeleton_transform_x;
+uniform mediump vec2 skeleton_transform_y;
+uniform mediump vec2 skeleton_transform_offset;
+
+uniform mediump vec2 inverse_transform_x;
+uniform mediump vec2 inverse_transform_y;
+uniform mediump vec2 inverse_transform_offset;
+#endif
+
 vec2 signNotZero(vec2 v) {
 	return mix(vec2(-1.0), vec2(1.0), greaterThanEqual(v.xy, vec2(0.0)));
 }
@@ -164,10 +174,13 @@ void main() {
 	m += GET_BONE_MATRIX(bones.z, bones_a.z, in_weight_attrib.z);
 	m += GET_BONE_MATRIX(bones.w, bones_a.w, in_weight_attrib.w);
 
+	mat4 skeleton_matrix = mat4(vec4(skeleton_transform_x, 0.0, 0.0), vec4(skeleton_transform_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(skeleton_transform_offset, 0.0, 1.0));
+	mat4 inverse_matrix = mat4(vec4(inverse_transform_x, 0.0, 0.0), vec4(inverse_transform_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(inverse_transform_offset, 0.0, 1.0));
 	mat4 bone_matrix = mat4(m[0], m[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
 
-	//reverse order because its transposed
-	out_vertex = (vec4(out_vertex, 0.0, 1.0) * bone_matrix).xy;
+	bone_matrix = skeleton_matrix * transpose(bone_matrix) * inverse_matrix;
+
+	out_vertex = (bone_matrix * vec4(out_vertex, 0.0, 1.0)).xy;
 #endif // USE_SKELETON
 
 #else // MODE_2D

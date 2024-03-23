@@ -1,0 +1,10 @@
+= LICENSE file for the KhronosGroup/dfdutils project
+
+Files in this repository fall under this license:
+
+  * SPDX license identifier: "`Apache-2.0`"
+  ** Apache License 2.0
+
+Full license text is available at:
+
+  * Apache-2.0: https://opensource.org/licenses/Apache-2.0

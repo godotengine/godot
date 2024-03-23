@@ -60,12 +60,14 @@ private:
 		String text;
 		MessageType type;
 		int count = 1;
+		bool clear = true;
 
 		LogMessage() {}
 
-		LogMessage(const String p_text, MessageType p_type) :
+		LogMessage(const String &p_text, MessageType p_type, bool p_clear) :
 				text(p_text),
-				type(p_type) {
+				type(p_type),
+				clear(p_clear) {
 		}
 	};
 
@@ -155,6 +157,7 @@ private:
 	Thread::ID current;
 
 	//void _dragged(const Point2& p_ofs);
+	void _meta_clicked(const String &p_meta);
 	void _clear_request();
 	void _copy_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
@@ -166,7 +169,7 @@ private:
 	void _set_search_visible(bool p_visible);
 	void _search_changed(const String &p_text);
 
-	void _process_message(const String &p_msg, MessageType p_type);
+	void _process_message(const String &p_msg, MessageType p_type, bool p_clear);
 	void _reset_message_counts();
 
 	void _set_collapse(bool p_collapse);
@@ -178,7 +181,6 @@ private:
 	void _update_theme();
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:

@@ -31,6 +31,8 @@
 #include "gltf_node.h"
 
 void GLTFNode::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_original_name"), &GLTFNode::get_original_name);
+	ClassDB::bind_method(D_METHOD("set_original_name", "original_name"), &GLTFNode::set_original_name);
 	ClassDB::bind_method(D_METHOD("get_parent"), &GLTFNode::get_parent);
 	ClassDB::bind_method(D_METHOD("set_parent", "parent"), &GLTFNode::set_parent);
 	ClassDB::bind_method(D_METHOD("get_height"), &GLTFNode::get_height);
@@ -45,8 +47,6 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &GLTFNode::set_skin);
 	ClassDB::bind_method(D_METHOD("get_skeleton"), &GLTFNode::get_skeleton);
 	ClassDB::bind_method(D_METHOD("set_skeleton", "skeleton"), &GLTFNode::set_skeleton);
-	ClassDB::bind_method(D_METHOD("get_joint"), &GLTFNode::get_joint);
-	ClassDB::bind_method(D_METHOD("set_joint", "joint"), &GLTFNode::set_joint);
 	ClassDB::bind_method(D_METHOD("get_position"), &GLTFNode::get_position);
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &GLTFNode::set_position);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &GLTFNode::get_rotation);
@@ -60,6 +60,7 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFNode::get_additional_data);
 	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFNode::set_additional_data);
 
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_name"), "set_original_name", "get_original_name"); // String
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "parent"), "set_parent", "get_parent"); // GLTFNodeIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height"), "set_height", "get_height"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "xform"), "set_xform", "get_xform"); // Transform3D
@@ -67,12 +68,18 @@ void GLTFNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "camera"), "set_camera", "get_camera"); // GLTFCameraIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skin"), "set_skin", "get_skin"); // GLTFSkinIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skeleton"), "set_skeleton", "get_skeleton"); // GLTFSkeletonIndex
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "joint"), "set_joint", "get_joint"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "set_position", "get_position"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "rotation"), "set_rotation", "get_rotation"); // Quaternion
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "children"), "set_children", "get_children"); // Vector<int>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light"), "set_light", "get_light"); // GLTFLightIndex
+}
+
+String GLTFNode::get_original_name() {
+	return original_name;
+}
+void GLTFNode::set_original_name(String p_name) {
+	original_name = p_name;
 }
 
 GLTFNodeIndex GLTFNode::get_parent() {
@@ -92,11 +99,11 @@ void GLTFNode::set_height(int p_height) {
 }
 
 Transform3D GLTFNode::get_xform() {
-	return xform;
+	return transform;
 }
 
 void GLTFNode::set_xform(Transform3D p_xform) {
-	xform = p_xform;
+	transform = p_xform;
 }
 
 GLTFMeshIndex GLTFNode::get_mesh() {
@@ -131,36 +138,28 @@ void GLTFNode::set_skeleton(GLTFSkeletonIndex p_skeleton) {
 	skeleton = p_skeleton;
 }
 
-bool GLTFNode::get_joint() {
-	return joint;
-}
-
-void GLTFNode::set_joint(bool p_joint) {
-	joint = p_joint;
-}
-
 Vector3 GLTFNode::get_position() {
-	return position;
+	return transform.origin;
 }
 
 void GLTFNode::set_position(Vector3 p_position) {
-	position = p_position;
+	transform.origin = p_position;
 }
 
 Quaternion GLTFNode::get_rotation() {
-	return rotation;
+	return transform.basis.get_rotation_quaternion();
 }
 
 void GLTFNode::set_rotation(Quaternion p_rotation) {
-	rotation = p_rotation;
+	transform.basis.set_quaternion_scale(p_rotation, transform.basis.get_scale());
 }
 
 Vector3 GLTFNode::get_scale() {
-	return scale;
+	return transform.basis.get_scale();
 }
 
 void GLTFNode::set_scale(Vector3 p_scale) {
-	scale = p_scale;
+	transform.basis = transform.basis.orthonormalized() * Basis::from_scale(p_scale);
 }
 
 Vector<int> GLTFNode::get_children() {

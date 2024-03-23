@@ -32,12 +32,14 @@
 #define TEST_GDSCRIPT_H
 
 #include "gdscript_test_runner.h"
+
 #include "tests/test_macros.h"
 
 namespace GDScriptTests {
 
 enum TestType {
 	TEST_TOKENIZER,
+	TEST_TOKENIZER_BUFFER,
 	TEST_PARSER,
 	TEST_COMPILER,
 	TEST_BYTECODE,

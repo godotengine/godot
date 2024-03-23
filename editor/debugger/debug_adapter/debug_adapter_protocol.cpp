@@ -38,6 +38,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_run_bar.h"
 
 DebugAdapterProtocol *DebugAdapterProtocol::singleton = nullptr;
 
@@ -51,7 +52,7 @@ Error DAPeer::handle_data() {
 		while (true) {
 			if (req_pos >= DAP_MAX_BUFFER_SIZE) {
 				req_pos = 0;
-				ERR_FAIL_COND_V_MSG(true, ERR_OUT_OF_MEMORY, "Response header too big");
+				ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Response header too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
 			if (err != OK) {
@@ -677,7 +678,10 @@ bool DebugAdapterProtocol::process_message(const String &p_text) {
 		if (!response.is_empty()) {
 			_current_peer->res_queue.push_front(response);
 		} else {
-			completed = false;
+			// Launch request needs to be deferred until we receive a configurationDone request.
+			if (command != "req_launch") {
+				completed = false;
+			}
 		}
 	}
 
@@ -759,8 +763,8 @@ void DebugAdapterProtocol::notify_continued() {
 	reset_stack_info();
 }
 
-void DebugAdapterProtocol::notify_output(const String &p_message) {
-	Dictionary event = parser->ev_output(p_message);
+void DebugAdapterProtocol::notify_output(const String &p_message, RemoteDebugger::MessageType p_type) {
+	Dictionary event = parser->ev_output(p_message, p_type);
 	for (List<Ref<DAPeer>>::Element *E = clients.front(); E; E = E->next()) {
 		E->get()->res_queue.push_back(event);
 	}
@@ -812,7 +816,7 @@ Array DebugAdapterProtocol::update_breakpoints(const String &p_path, const Array
 }
 
 void DebugAdapterProtocol::on_debug_paused() {
-	if (EditorNode::get_singleton()->get_pause_button()->is_pressed()) {
+	if (EditorRunBar::get_singleton()->get_pause_button()->is_pressed()) {
 		notify_stopped_paused();
 	} else {
 		notify_continued();
@@ -824,8 +828,8 @@ void DebugAdapterProtocol::on_debug_stopped() {
 	notify_terminated();
 }
 
-void DebugAdapterProtocol::on_debug_output(const String &p_message) {
-	notify_output(p_message);
+void DebugAdapterProtocol::on_debug_output(const String &p_message, int p_type) {
+	notify_output(p_message, RemoteDebugger::MessageType(p_type));
 }
 
 void DebugAdapterProtocol::on_debug_breaked(const bool &p_reallydid, const bool &p_can_debug, const String &p_reason, const bool &p_has_stackdump) {
@@ -970,6 +974,7 @@ void DebugAdapterProtocol::poll() {
 	List<Ref<DAPeer>> to_delete;
 	for (List<Ref<DAPeer>>::Element *E = clients.front(); E; E = E->next()) {
 		Ref<DAPeer> peer = E->get();
+		peer->connection->poll();
 		StreamPeerTCP::Status status = peer->connection->get_status();
 		if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
 			to_delete.push_back(peer);
@@ -1016,8 +1021,7 @@ DebugAdapterProtocol::DebugAdapterProtocol() {
 
 	reset_ids();
 
-	EditorNode *node = EditorNode::get_singleton();
-	node->get_pause_button()->connect("pressed", callable_mp(this, &DebugAdapterProtocol::on_debug_paused));
+	EditorRunBar::get_singleton()->get_pause_button()->connect("pressed", callable_mp(this, &DebugAdapterProtocol::on_debug_paused));
 
 	EditorDebuggerNode *debugger_node = EditorDebuggerNode::get_singleton();
 	debugger_node->connect("breakpoint_toggled", callable_mp(this, &DebugAdapterProtocol::on_debug_breakpoint_toggled));

@@ -51,6 +51,7 @@ class CreateDialog : public ConfirmationDialog {
 	Tree *search_options = nullptr;
 
 	String base_type;
+	bool is_base_type_node = false;
 	String icon_fallback;
 	String preferred_search_result_type;
 
@@ -70,7 +71,7 @@ class CreateDialog : public ConfirmationDialog {
 	bool _should_hide_type(const String &p_type) const;
 	void _add_type(const String &p_type, const TypeCategory p_type_category);
 	void _configure_search_option_item(TreeItem *r_item, const String &p_type, const TypeCategory p_type_category);
-	String _top_result(const Vector<String> p_candidates, const String &p_search_text) const;
+	String _top_result(const Vector<String> &p_candidates, const String &p_search_text) const;
 	float _score_type(const String &p_type, const String &p_search) const;
 	bool _is_type_preferred(const String &p_type) const;
 
@@ -101,8 +102,6 @@ class CreateDialog : public ConfirmationDialog {
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class) const;
 	void _load_favorites_and_history();
 
-	void _update_theme();
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -113,7 +112,7 @@ public:
 	Variant instantiate_selected();
 	String get_selected_type();
 
-	void set_base_type(const String &p_base) { base_type = p_base; }
+	void set_base_type(const String &p_base);
 	String get_base_type() const { return base_type; }
 	void select_base();
 

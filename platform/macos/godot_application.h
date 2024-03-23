@@ -35,6 +35,7 @@
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
+#import <IOKit/hidsystem/ev_keymap.h>
 
 @interface GodotApplication : NSApplication
 @end

@@ -91,12 +91,11 @@ String EditorPaths::get_feature_profiles_dir() const {
 }
 
 void EditorPaths::create() {
-	ERR_FAIL_COND(singleton != nullptr);
-	memnew(EditorPaths());
+	memnew(EditorPaths);
 }
 
 void EditorPaths::free() {
-	ERR_FAIL_COND(singleton == nullptr);
+	ERR_FAIL_NULL(singleton);
 	memdelete(singleton);
 }
 
@@ -111,20 +110,27 @@ void EditorPaths::_bind_methods() {
 }
 
 EditorPaths::EditorPaths() {
+	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
 	project_data_dir = ProjectSettings::get_singleton()->get_project_data_path();
 
 	// Self-contained mode if a `._sc_` or `_sc_` file is present in executable dir.
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
+	Ref<DirAccess> d = DirAccess::create_for_path(exe_path);
+	if (d->file_exists(exe_path + "/._sc_")) {
+		self_contained = true;
+		self_contained_file = exe_path + "/._sc_";
+	} else if (d->file_exists(exe_path + "/_sc_")) {
+		self_contained = true;
+		self_contained_file = exe_path + "/_sc_";
+	}
 
 	// On macOS, look outside .app bundle, since .app bundle is read-only.
+	// Note: This will not work if Gatekeeper path randomization is active.
 	if (OS::get_singleton()->has_feature("macos") && exe_path.ends_with("MacOS") && exe_path.path_join("..").simplify_path().ends_with("Contents")) {
 		exe_path = exe_path.path_join("../../..").simplify_path();
-	}
-	{
-		Ref<DirAccess> d = DirAccess::create_for_path(exe_path);
-
+		d = DirAccess::create_for_path(exe_path);
 		if (d->file_exists(exe_path + "/._sc_")) {
 			self_contained = true;
 			self_contained_file = exe_path + "/._sc_";
@@ -218,7 +224,7 @@ EditorPaths::EditorPaths() {
 
 	// Validate or create project-specific editor data dir,
 	// including shader cache subdir.
-	if (Engine::get_singleton()->is_project_manager_hint() || Main::is_cmdline_tool()) {
+	if (Engine::get_singleton()->is_project_manager_hint() || (Main::is_cmdline_tool() && !ProjectSettings::get_singleton()->is_project_loaded())) {
 		// Nothing to create, use shared editor data dir for shader cache.
 		Engine::get_singleton()->set_shader_cache_path(data_dir);
 	} else {

@@ -89,11 +89,26 @@ void NinePatchRect::_bind_methods() {
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
 }
 
+void NinePatchRect::_texture_changed() {
+	queue_redraw();
+	update_minimum_size();
+}
+
 void NinePatchRect::set_texture(const Ref<Texture2D> &p_tex) {
 	if (texture == p_tex) {
 		return;
 	}
+
+	if (texture.is_valid()) {
+		texture->disconnect_changed(callable_mp(this, &NinePatchRect::_texture_changed));
+	}
+
 	texture = p_tex;
+
+	if (texture.is_valid()) {
+		texture->connect_changed(callable_mp(this, &NinePatchRect::_texture_changed));
+	}
+
 	queue_redraw();
 	update_minimum_size();
 	emit_signal(SceneStringNames::get_singleton()->texture_changed);

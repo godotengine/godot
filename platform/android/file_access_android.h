@@ -32,6 +32,7 @@
 #define FILE_ACCESS_ANDROID_H
 
 #include "core/io/file_access.h"
+
 #include <android/asset_manager.h>
 #include <android/log.h>
 #include <stdio.h>
@@ -65,18 +66,31 @@ public:
 	virtual bool eof_reached() const override; // reading passed EOF
 
 	virtual uint8_t get_8() const override; // get a byte
+	virtual uint16_t get_16() const override;
+	virtual uint32_t get_32() const override;
+	virtual uint64_t get_64() const override;
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
 	virtual Error get_error() const override; // get last error
 
 	virtual void flush() override;
 	virtual void store_8(uint8_t p_dest) override; // store a byte
+	virtual void store_16(uint16_t p_dest) override;
+	virtual void store_32(uint32_t p_dest) override;
+	virtual void store_64(uint64_t p_dest) override;
 
 	virtual bool file_exists(const String &p_path) override; // return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
-	virtual uint32_t _get_unix_permissions(const String &p_file) override { return 0; }
-	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) override { return FAILED; }
+	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return FAILED; }
+
+	virtual bool _get_hidden_attribute(const String &p_file) override { return false; }
+	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) override { return ERR_UNAVAILABLE; }
+	virtual bool _get_read_only_attribute(const String &p_file) override { return false; }
+	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override { return ERR_UNAVAILABLE; }
+
+	virtual void close() override;
 
 	~FileAccessAndroid();
 };

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeCubemap" inherits="VisualShaderNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VisualShaderNodeCubemap" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [Cubemap] sampling node to be used within the visual shader graph.
 	</brief_description>
@@ -33,7 +33,7 @@
 			No hints are added to the uniform declaration.
 		</constant>
 		<constant name="TYPE_COLOR" value="1" enum="TextureType">
-			Adds [code]hint_albedo[/code] as hint to the uniform declaration for proper sRGB to linear conversion.
+			Adds [code]source_color[/code] as hint to the uniform declaration for proper sRGB to linear conversion.
 		</constant>
 		<constant name="TYPE_NORMAL_MAP" value="2" enum="TextureType">
 			Adds [code]hint_normal[/code] as hint to the uniform declaration, which internally converts the texture for proper usage as normal map.

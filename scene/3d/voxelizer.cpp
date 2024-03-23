@@ -346,25 +346,29 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 		} else {
 			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo()); // no albedo texture, color is additive
 		}
+		if (mat->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
+			Ref<Texture2D> emission_tex = mat->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 
-		Ref<Texture2D> emission_tex = mat->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
+			Color emission_col = mat->get_emission();
+			float emission_energy = mat->get_emission_energy_multiplier() * exposure_normalization;
+			if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+				emission_energy *= mat->get_emission_intensity();
+			}
 
-		Color emission_col = mat->get_emission();
-		float emission_energy = mat->get_emission_energy_multiplier() * exposure_normalization;
-		if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
-			emission_energy *= mat->get_emission_intensity();
-		}
+			Ref<Image> img_emission;
 
-		Ref<Image> img_emission;
+			if (emission_tex.is_valid()) {
+				img_emission = emission_tex->get_image();
+			}
 
-		if (emission_tex.is_valid()) {
-			img_emission = emission_tex->get_image();
-		}
-
-		if (mat->get_emission_operator() == BaseMaterial3D::EMISSION_OP_ADD) {
-			mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1) * emission_energy, emission_col * emission_energy);
+			if (mat->get_emission_operator() == BaseMaterial3D::EMISSION_OP_ADD) {
+				mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1) * emission_energy, emission_col * emission_energy);
+			} else {
+				mc.emission = _get_bake_texture(img_emission, emission_col * emission_energy, Color(0, 0, 0));
+			}
 		} else {
-			mc.emission = _get_bake_texture(img_emission, emission_col * emission_energy, Color(0, 0, 0));
+			Ref<Image> empty;
+			mc.emission = _get_bake_texture(empty, Color(0, 0, 0), Color(0, 0, 0));
 		}
 
 	} else {
@@ -379,6 +383,8 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 }
 
 void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
+	ERR_FAIL_COND_MSG(!p_xform.is_finite(), "Invalid mesh bake transform.");
+
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; //only triangles
@@ -880,6 +886,8 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 		}
 	}
 
+	memdelete_arr(work_memory);
+
 	return image3d;
 }
 
@@ -986,6 +994,7 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 		fsm->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		fsm->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		fsm->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		fsm->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 		fsm->set_albedo(Color(1, 1, 1, 1));
 
 		mesh->surface_set_material(0, fsm);

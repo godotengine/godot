@@ -35,6 +35,8 @@
  * @include: hb.h
  *
  * Functions for drawing (extracting) glyph shapes.
+ *
+ * The #hb_draw_funcs_t struct can be used with hb_font_draw_glyph().
  **/
 
 static void
@@ -198,13 +200,29 @@ DEFINE_NULL_INSTANCE (hb_draw_funcs_t) =
   }
 };
 
+/**
+ * hb_draw_funcs_get_empty:
+ *
+ * Fetches the singleton empty draw-functions structure.
+ *
+ * Return value: (transfer full): The empty draw-functions structure
+ *
+ * Since: 7.0.0
+ **/
+hb_draw_funcs_t *
+hb_draw_funcs_get_empty ()
+{
+  return const_cast<hb_draw_funcs_t *> (&Null (hb_draw_funcs_t));
+}
 
 /**
  * hb_draw_funcs_reference: (skip)
  * @dfuncs: draw functions
  *
- * Increases the reference count on @dfuncs by one. This prevents @buffer from
- * being destroyed until a matching call to hb_draw_funcs_destroy() is made.
+ * Increases the reference count on @dfuncs by one.
+ *
+ * This prevents @dfuncs from being destroyed until a matching
+ * call to hb_draw_funcs_destroy() is made.
  *
  * Return value: (transfer full):
  * The referenced #hb_draw_funcs_t.
@@ -244,6 +262,49 @@ hb_draw_funcs_destroy (hb_draw_funcs_t *dfuncs)
   hb_free (dfuncs->user_data);
 
   hb_free (dfuncs);
+}
+
+/**
+ * hb_draw_funcs_set_user_data: (skip)
+ * @dfuncs: The draw-functions structure
+ * @key: The user-data key
+ * @data: A pointer to the user data
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
+ * @replace: Whether to replace an existing data with the same key
+ *
+ * Attaches a user-data key/data pair to the specified draw-functions structure. 
+ *
+ * Return value: `true` if success, `false` otherwise
+ *
+ * Since: 7.0.0
+ **/
+hb_bool_t
+hb_draw_funcs_set_user_data (hb_draw_funcs_t *dfuncs,
+			     hb_user_data_key_t *key,
+			     void *              data,
+			     hb_destroy_func_t   destroy,
+			     hb_bool_t           replace)
+{
+  return hb_object_set_user_data (dfuncs, key, data, destroy, replace);
+}
+
+/**
+ * hb_draw_funcs_get_user_data: (skip)
+ * @dfuncs: The draw-functions structure
+ * @key: The user-data key to query
+ *
+ * Fetches the user-data associated with the specified key,
+ * attached to the specified draw-functions structure.
+ *
+ * Return value: (transfer none): A pointer to the user data
+ *
+ * Since: 7.0.0
+ **/
+void *
+hb_draw_funcs_get_user_data (const hb_draw_funcs_t *dfuncs,
+			     hb_user_data_key_t       *key)
+{
+  return hb_object_get_user_data (dfuncs, key);
 }
 
 /**

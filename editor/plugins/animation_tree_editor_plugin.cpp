@@ -39,39 +39,41 @@
 #include "core/io/resource_loader.h"
 #include "core/math/delaunay_2d.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_file_dialog.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/gui/editor_bottom_panel.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
+#include "scene/gui/button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
+#include "scene/gui/scroll_container.h"
+#include "scene/gui/separator.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
-	if (p_tree && !p_tree->is_connected("animation_player_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed))) {
-		p_tree->connect("animation_player_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed), CONNECT_DEFERRED);
+	if (p_tree && !p_tree->is_connected("animation_list_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed))) {
+		p_tree->connect("animation_list_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed), CONNECT_DEFERRED);
 	}
 
 	if (tree == p_tree) {
 		return;
 	}
 
-	if (tree && tree->is_connected("animation_player_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed))) {
-		tree->disconnect("animation_player_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed));
+	if (tree && tree->is_connected("animation_list_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed))) {
+		tree->disconnect("animation_list_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed));
 	}
 
 	tree = p_tree;
 
 	Vector<String> path;
-	if (tree && tree->has_meta("_tree_edit_path")) {
-		path = tree->get_meta("_tree_edit_path");
-	} else {
-		current_root = ObjectID();
+	if (tree) {
+		edit_path(path);
 	}
-
-	edit_path(path);
 }
 
 void AnimationTreeEditor::_node_removed(Node *p_node) {
@@ -126,7 +128,7 @@ void AnimationTreeEditor::_update_path() {
 void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 	button_path.clear();
 
-	Ref<AnimationNode> node = tree->get_tree_root();
+	Ref<AnimationNode> node = tree->get_root_animation_node();
 
 	if (node.is_valid()) {
 		current_root = node->get_instance_id();
@@ -189,8 +191,8 @@ void AnimationTreeEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_PROCESS: {
 			ObjectID root;
-			if (tree && tree->get_tree_root().is_valid()) {
-				root = tree->get_tree_root()->get_instance_id();
+			if (tree && tree->get_root_animation_node().is_valid()) {
+				root = tree->get_root_animation_node()->get_instance_id();
 			}
 
 			if (root != current_root) {
@@ -245,23 +247,18 @@ bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
 }
 
 Vector<String> AnimationTreeEditor::get_animation_list() {
-	if (!singleton->is_visible()) {
+	if (!singleton->tree || !singleton->is_visible()) {
+		// When tree is empty, singleton not in the main thread.
 		return Vector<String>();
 	}
 
 	AnimationTree *tree = singleton->tree;
-	if (!tree || !tree->has_node(tree->get_animation_player())) {
-		return Vector<String>();
-	}
-
-	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
-
-	if (!ap) {
+	if (!tree) {
 		return Vector<String>();
 	}
 
 	List<StringName> anims;
-	ap->get_animation_list(&anims);
+	tree->get_animation_list(&anims);
 	Vector<String> ret;
 	for (const StringName &E : anims) {
 		ret.push_back(E);
@@ -305,11 +302,11 @@ void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 		//editor->hide_animation_player_editors();
 		//editor->animation_panel_make_visible(true);
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(anim_tree_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(anim_tree_editor);
 		anim_tree_editor->set_process(true);
 	} else {
 		if (anim_tree_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 		button->hide();
 		anim_tree_editor->set_process(false);
@@ -320,7 +317,7 @@ AnimationTreeEditorPlugin::AnimationTreeEditorPlugin() {
 	anim_tree_editor = memnew(AnimationTreeEditor);
 	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("AnimationTree"), anim_tree_editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("AnimationTree"), anim_tree_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_tree_bottom_panel", TTR("Toggle AnimationTree Bottom Panel")));
 	button->hide();
 }
 

@@ -30,17 +30,17 @@
 
 #import "godot_view.h"
 
+#import "display_layer.h"
+#import "display_server_ios.h"
+#import "godot_view_renderer.h"
+
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/string/ustring.h"
-#import "display_layer.h"
-#include "display_server_ios.h"
-#import "godot_view_gesture_recognizer.h"
-#import "godot_view_renderer.h"
 
 #import <CoreMotion/CoreMotion.h>
 
-static const int max_touches = 8;
+static const int max_touches = 32;
 static const float earth_gravity = 9.80665;
 
 @interface GodotView () {
@@ -60,8 +60,6 @@ static const float earth_gravity = 9.80665;
 
 @property(strong, nonatomic) CMMotionManager *motionManager;
 
-@property(strong, nonatomic) GodotViewGestureRecognizer *delayGestureRecognizer;
-
 @end
 
 @implementation GodotView
@@ -74,16 +72,20 @@ static const float earth_gravity = 9.80665;
 	CALayer<DisplayLayer> *layer;
 
 	if ([driverName isEqualToString:@"vulkan"]) {
-		layer = [GodotMetalLayer layer];
-	} else if ([driverName isEqualToString:@"opengl3"]) {
-		if (@available(iOS 13, *)) {
-			NSLog(@"OpenGL ES is deprecated on iOS 13");
-		}
 #if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
-		return nil;
+		if (@available(iOS 13, *)) {
+			layer = [GodotMetalLayer layer];
+		} else {
+			return nil;
+		}
 #else
-		layer = [GodotOpenGLLayer layer];
+		layer = [GodotMetalLayer layer];
 #endif
+	} else if ([driverName isEqualToString:@"opengl3"]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in iOS 12.0
+		layer = [GodotOpenGLLayer layer];
+#pragma clang diagnostic pop
 	} else {
 		return nil;
 	}
@@ -144,10 +146,6 @@ static const float earth_gravity = 9.80665;
 		[self.animationTimer invalidate];
 		self.animationTimer = nil;
 	}
-
-	if (self.delayGestureRecognizer) {
-		self.delayGestureRecognizer = nil;
-	}
 }
 
 - (void)godot_commonInit {
@@ -167,11 +165,23 @@ static const float earth_gravity = 9.80665;
 			self.motionManager = nil;
 		}
 	}
+}
 
-	// Initialize delay gesture recognizer
-	GodotViewGestureRecognizer *gestureRecognizer = [[GodotViewGestureRecognizer alloc] init];
-	self.delayGestureRecognizer = gestureRecognizer;
-	[self addGestureRecognizer:self.delayGestureRecognizer];
+- (void)system_theme_changed {
+	DisplayServerIOS *ds = (DisplayServerIOS *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->emit_system_theme_changed();
+	}
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+	if (@available(iOS 13.0, *)) {
+		[super traitCollectionDidChange:previousTraitCollection];
+
+		if ([UITraitCollection currentTraitCollection].userInterfaceStyle != previousTraitCollection.userInterfaceStyle) {
+			[self system_theme_changed];
+		}
+	}
 }
 
 - (void)stopRendering {
@@ -181,7 +191,7 @@ static const float earth_gravity = 9.80665;
 
 	self.isActive = NO;
 
-	printf("******** stop animation!\n");
+	print_verbose("Stop animation!");
 
 	if (self.useCADisplayLink) {
 		[self.displayLink invalidate];
@@ -201,7 +211,7 @@ static const float earth_gravity = 9.80665;
 
 	self.isActive = YES;
 
-	printf("start animation!\n");
+	print_verbose("Start animation!");
 
 	if (self.useCADisplayLink) {
 		self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
@@ -221,7 +231,7 @@ static const float earth_gravity = 9.80665;
 
 - (void)drawView {
 	if (!self.isActive) {
-		printf("draw view not active!\n");
+		print_verbose("Draw view not active!");
 		return;
 	}
 
@@ -238,7 +248,7 @@ static const float earth_gravity = 9.80665;
 		[self.displayLink setPaused:NO];
 	}
 
-	[self.renderingLayer renderDisplayLayer];
+	[self.renderingLayer startRenderDisplayLayer];
 
 	if (!self.renderer) {
 		return;
@@ -258,6 +268,8 @@ static const float earth_gravity = 9.80665;
 
 	[self handleMotion];
 	[self.renderer renderOnView:self];
+
+	[self.renderingLayer stopRenderDisplayLayer];
 }
 
 - (BOOL)canRender {
@@ -341,58 +353,42 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
-- (void)godotTouchesBegan:(NSSet *)touchesSet withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touchesSet containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			CGPoint touchPoint = [touch locationInView:self];
-			DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, true, touch.tapCount > 1);
-		}
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		CGPoint touchPoint = [touch locationInView:self];
+		DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, true, touch.tapCount > 1);
 	}
 }
 
-- (void)godotTouchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			CGPoint touchPoint = [touch locationInView:self];
-			CGPoint prev_point = [touch previousLocationInView:self];
-			CGFloat alt = [touch altitudeAngle];
-			CGVector azim = [touch azimuthUnitVectorInView:self];
-			DisplayServerIOS::get_singleton()->touch_drag(tid, prev_point.x * self.contentScaleFactor, prev_point.y * self.contentScaleFactor, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, [touch force] / [touch maximumPossibleForce], Vector2(azim.dx, azim.dy) * Math::cos(alt));
-		}
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		CGPoint touchPoint = [touch locationInView:self];
+		CGPoint prev_point = [touch previousLocationInView:self];
+		CGFloat alt = [touch altitudeAngle];
+		CGVector azim = [touch azimuthUnitVectorInView:self];
+		DisplayServerIOS::get_singleton()->touch_drag(tid, prev_point.x * self.contentScaleFactor, prev_point.y * self.contentScaleFactor, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, [touch force] / [touch maximumPossibleForce], Vector2(azim.dx, azim.dy) * Math::cos(alt));
 	}
 }
 
-- (void)godotTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			[self removeTouch:touch];
-			CGPoint touchPoint = [touch locationInView:self];
-			DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, false, false);
-		}
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		[self removeTouch:touch];
+		CGPoint touchPoint = [touch locationInView:self];
+		DisplayServerIOS::get_singleton()->touch_press(tid, touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, false, false);
 	}
 }
 
-- (void)godotTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-	NSArray *tlist = [event.allTouches allObjects];
-	for (unsigned int i = 0; i < [tlist count]; i++) {
-		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-			UITouch *touch = [tlist objectAtIndex:i];
-			int tid = [self getTouchIDForTouch:touch];
-			ERR_FAIL_COND(tid == -1);
-			DisplayServerIOS::get_singleton()->touches_cancelled(tid);
-		}
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+	for (UITouch *touch in touches) {
+		int tid = [self getTouchIDForTouch:touch];
+		ERR_FAIL_COND(tid == -1);
+		DisplayServerIOS::get_singleton()->touches_canceled(tid);
 	}
 	[self clearTouches];
 }

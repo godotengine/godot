@@ -139,7 +139,7 @@ public:
 private:
 	static const char *tk_name[TK_MAX];
 
-	template <class T>
+	template <typename T>
 	static Error _parse_construct(Stream *p_stream, Vector<T> &r_construct, int &line, String &r_err_str);
 	static Error _parse_enginecfg(Stream *p_stream, Vector<String> &strings, int &line, String &r_err_str);
 	static Error _parse_dictionary(Dictionary &object, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
@@ -160,7 +160,7 @@ public:
 	typedef Error (*StoreStringFunc)(void *ud, const String &p_string);
 	typedef String (*EncodeResourceFunc)(void *ud, const Ref<Resource> &p_resource);
 
-	static Error write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int recursion_count = 0);
+	static Error write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int p_recursion_count = 0);
 	static Error write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func = nullptr, void *p_encode_res_ud = nullptr);
 };
 

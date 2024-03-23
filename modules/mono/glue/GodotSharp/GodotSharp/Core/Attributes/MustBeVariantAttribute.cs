@@ -7,5 +7,5 @@ namespace Godot
     /// that can be marshaled from/to a <see cref="Variant"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.GenericParameter)]
-    public class MustBeVariantAttribute : Attribute { }
+    public sealed class MustBeVariantAttribute : Attribute { }
 }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectSpaceState3D" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PhysicsDirectSpaceState3D" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Direct access object to a space in the [PhysicsServer3D].
+		Provides direct access to a physics space in the [PhysicsServer3D].
 	</brief_description>
 	<description>
-		Direct access object to a space in the [PhysicsServer3D]. It's used mainly to do queries against objects and areas residing in a given space.
+		Provides direct access to a physics space in the [PhysicsServer3D]. It's used mainly to do queries against objects and areas residing in a given space.
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
@@ -21,7 +21,7 @@
 			</description>
 		</method>
 		<method name="collide_shape">
-			<return type="PackedVector2Array[]" />
+			<return type="Vector3[]" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />
 			<param index="1" name="max_results" type="int" default="32" />
 			<description>
@@ -67,6 +67,8 @@
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]normal[/code]: The object's surface normal at the intersection point, or [code]Vector3(0, 0, 0)[/code] if the ray starts inside the shape and [member PhysicsRayQueryParameters3D.hit_from_inside] is [code]true[/code].
 				[code]position[/code]: The intersection point.
+				[code]face_index[/code]: The face index at the intersection point.
+				[b]Note:[/b] Returns a valid number only if the intersected shape is a [ConcavePolygonShape3D]. Otherwise, [code]-1[/code] is returned.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty dictionary is returned instead.

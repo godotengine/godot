@@ -60,11 +60,27 @@ public:
 		WRITE_READ = 7,
 	};
 
+	enum UnixPermissionFlags {
+		UNIX_EXECUTE_OTHER = 0x001,
+		UNIX_WRITE_OTHER = 0x002,
+		UNIX_READ_OTHER = 0x004,
+		UNIX_EXECUTE_GROUP = 0x008,
+		UNIX_WRITE_GROUP = 0x010,
+		UNIX_READ_GROUP = 0x020,
+		UNIX_EXECUTE_OWNER = 0x040,
+		UNIX_WRITE_OWNER = 0x080,
+		UNIX_READ_OWNER = 0x100,
+		UNIX_RESTRICTED_DELETE = 0x200,
+		UNIX_SET_GROUP_ID = 0x400,
+		UNIX_SET_USER_ID = 0x800,
+	};
+
 	enum CompressionMode {
 		COMPRESSION_FASTLZ = Compression::MODE_FASTLZ,
 		COMPRESSION_DEFLATE = Compression::MODE_DEFLATE,
 		COMPRESSION_ZSTD = Compression::MODE_ZSTD,
-		COMPRESSION_GZIP = Compression::MODE_GZIP
+		COMPRESSION_GZIP = Compression::MODE_GZIP,
+		COMPRESSION_BROTLI = Compression::MODE_BROTLI,
 	};
 
 	typedef void (*FileCloseFailNotify)(const String &);
@@ -73,14 +89,19 @@ public:
 	bool big_endian = false;
 	bool real_is_double = false;
 
-	virtual uint32_t _get_unix_permissions(const String &p_file) = 0;
-	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) = 0;
+	virtual BitField<UnixPermissionFlags> _get_unix_permissions(const String &p_file) = 0;
+	virtual Error _set_unix_permissions(const String &p_file, BitField<UnixPermissionFlags> p_permissions) = 0;
+
+	virtual bool _get_hidden_attribute(const String &p_file) = 0;
+	virtual Error _set_hidden_attribute(const String &p_file, bool p_hidden) = 0;
+	virtual bool _get_read_only_attribute(const String &p_file) = 0;
+	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) = 0;
 
 protected:
 	static void _bind_methods();
 
 	AccessType get_access_type() const;
-	String fix_path(const String &p_path) const;
+	virtual String fix_path(const String &p_path) const;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) = 0; ///< open a file
 	virtual uint64_t _get_modified_time(const String &p_file) = 0;
 	virtual void _set_access_type(AccessType p_access);
@@ -93,7 +114,7 @@ private:
 
 	AccessType _access_type = ACCESS_FILESYSTEM;
 	static CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
-	template <class T>
+	template <typename T>
 	static Ref<FileAccess> _create_builtin() {
 		return memnew(T);
 	}
@@ -127,7 +148,7 @@ public:
 	Variant get_var(bool p_allow_objects = false) const;
 
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const; ///< get an array of bytes
-	Vector<uint8_t> _get_buffer(int64_t p_length) const;
+	Vector<uint8_t> get_buffer(int64_t p_length) const;
 	virtual String get_line() const;
 	virtual String get_token() const;
 	virtual Vector<String> get_csv_line(const String &p_delim = ",") const;
@@ -162,9 +183,11 @@ public:
 	virtual String get_pascal_string();
 
 	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length); ///< store an array of bytes
-	void _store_buffer(const Vector<uint8_t> &p_buffer);
+	void store_buffer(const Vector<uint8_t> &p_buffer);
 
 	void store_var(const Variant &p_var, bool p_full_objects = false);
+
+	virtual void close() = 0;
 
 	virtual bool file_exists(const String &p_name) = 0; ///< return true if a file exists
 
@@ -182,8 +205,13 @@ public:
 	static CreateFunc get_create_func(AccessType p_access);
 	static bool exists(const String &p_name); ///< return true if a file exists
 	static uint64_t get_modified_time(const String &p_file);
-	static uint32_t get_unix_permissions(const String &p_file);
-	static Error set_unix_permissions(const String &p_file, uint32_t p_permissions);
+	static BitField<FileAccess::UnixPermissionFlags> get_unix_permissions(const String &p_file);
+	static Error set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions);
+
+	static bool get_hidden_attribute(const String &p_file);
+	static Error set_hidden_attribute(const String &p_file, bool p_hidden);
+	static bool get_read_only_attribute(const String &p_file);
+	static Error set_read_only_attribute(const String &p_file, bool p_ro);
 
 	static void set_backup_save(bool p_enable) { backup_save = p_enable; };
 	static bool is_backup_save_enabled() { return backup_save; };
@@ -195,10 +223,10 @@ public:
 	static Vector<uint8_t> get_file_as_bytes(const String &p_path, Error *r_error = nullptr);
 	static String get_file_as_string(const String &p_path, Error *r_error = nullptr);
 
-	static PackedByteArray _get_file_as_bytes(const String &p_path) { return get_file_as_bytes(p_path); }
-	static String _get_file_as_string(const String &p_path) { return get_file_as_string(p_path); };
+	static PackedByteArray _get_file_as_bytes(const String &p_path) { return get_file_as_bytes(p_path, &last_file_open_error); }
+	static String _get_file_as_string(const String &p_path) { return get_file_as_string(p_path, &last_file_open_error); }
 
-	template <class T>
+	template <typename T>
 	static void make_default(AccessType p_access) {
 		create_func[p_access] = _create_builtin<T>;
 	}
@@ -209,5 +237,6 @@ public:
 
 VARIANT_ENUM_CAST(FileAccess::CompressionMode);
 VARIANT_ENUM_CAST(FileAccess::ModeFlags);
+VARIANT_BITFIELD_CAST(FileAccess::UnixPermissionFlags);
 
 #endif // FILE_ACCESS_H

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SubViewport" inherits="Viewport" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SubViewport" inherits="Viewport" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Creates a sub-view into the screen.
+		An interface to a game world that doesn't create a window or draw to the screen directly.
 	</brief_description>
 	<description>
-		[SubViewport] is a [Viewport] that isn't a [Window], i.e. it doesn't draw anything by itself. To display something, [SubViewport]'s [member size] must be non-zero and it should be either put inside a [SubViewportContainer] or assigned to a [ViewportTexture].
+		[SubViewport] Isolates a rectangular region of a scene to be displayed independently. This can be used, for example, to display UI in 3D space.
+		[b]Note:[/b] [SubViewport] is a [Viewport] that isn't a [Window], i.e. it doesn't draw anything by itself. To display anything, [SubViewport] must have a non-zero size and be either put inside a [SubViewportContainer] or assigned to a [ViewportTexture].
 	</description>
 	<tutorials>
 		<link title="Using Viewports">$DOCS_URL/tutorials/rendering/viewports.html</link>
@@ -26,6 +27,7 @@
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(512, 512)">
 			The width and height of the sub-viewport. Must be set to a value greater than or equal to 2 pixels on both dimensions. Otherwise, nothing will be displayed.
+			[b]Note:[/b] If the parent node is a [SubViewportContainer] and its [member SubViewportContainer.stretch] is [code]true[/code], the viewport size cannot be changed manually.
 		</member>
 		<member name="size_2d_override" type="Vector2i" setter="set_size_2d_override" getter="get_size_2d_override" default="Vector2i(0, 0)">
 			The 2D size override of the sub-viewport. If either the width or height is [code]0[/code], the override is disabled.

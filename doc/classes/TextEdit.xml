@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextEdit" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TextEdit" inherits="Control" keywords="textarea" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Multiline text editing control.
+		A multiline text editor.
 	</brief_description>
 	<description>
-		TextEdit is meant for editing large, multiline text. It also has facilities for editing code, such as syntax highlighting support and multiple levels of undo/redo.
+		A multiline text editor. It also has limited facilities for editing code, such as syntax highlighting support. For more advanced facilities for editing code, see [CodeEdit].
 		[b]Note:[/b] Most viewport, caret and edit methods contain a [code]caret_index[/code] argument for [member caret_multiple] support. The argument should be one of the following: [code]-1[/code] for all carets, [code]0[/code] for the main caret, or greater than [code]0[/code] for secondary carets.
 		[b]Note:[/b] When holding down [kbd]Alt[/kbd], the vertical scroll wheel will scroll 5 times as fast as it would normally do. This also works in the Godot script editor.
 	</description>
@@ -101,6 +101,12 @@
 				Adjust the viewport so the caret is visible.
 			</description>
 		</method>
+		<method name="apply_ime">
+			<return type="void" />
+			<description>
+				Applies text from the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) to each caret and closes the IME if it is open.
+			</description>
+		</method>
 		<method name="backspace">
 			<return type="void" />
 			<param index="0" name="caret_index" type="int" default="-1" />
@@ -112,6 +118,12 @@
 			<return type="void" />
 			<description>
 				Starts a multipart edit. All edits will be treated as one action until [method end_complex_operation] is called.
+			</description>
+		</method>
+		<method name="cancel_ime">
+			<return type="void" />
+			<description>
+				Closes the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) if it is open. Any text in the IME will be lost.
 			</description>
 		</method>
 		<method name="center_viewport_to_caret">
@@ -243,7 +255,7 @@
 			<return type="int" enum="TextEdit.GutterType" />
 			<param index="0" name="gutter" type="int" />
 			<description>
-				Returns the type of the gutter at the given index.
+				Returns the type of the gutter at the given index. Gutters can contain icons, text, or custom visuals. See [enum TextEdit.GutterType] for options.
 			</description>
 		</method>
 		<method name="get_gutter_width" qualifiers="const">
@@ -317,7 +329,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the icon currently in [param gutter] at [param line].
+				Returns the icon currently in [param gutter] at [param line]. This only works when the gutter type is [constant GUTTER_TYPE_ICON] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="get_line_gutter_item_color" qualifiers="const">
@@ -341,13 +353,14 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the text currently in [param gutter] at [param line].
+				Returns the text currently in [param gutter] at [param line]. This only works when the gutter type is [constant GUTTER_TYPE_STRING] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="get_line_height" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the height of a largest line.
+				Returns the maximum value of the line height among all lines.
+				[b]Note:[/b] The return value is influenced by [theme_item line_spacing] and [theme_item font_size]. And it will not be less than [code]1[/code].
 			</description>
 		</method>
 		<method name="get_line_width" qualifiers="const">
@@ -390,6 +403,45 @@
 			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] of this [TextEdit]. By default, this menu is displayed when right-clicking on the [TextEdit].
+				You can add custom menu items or remove standard ones. Make sure your IDs don't conflict with the standard ones (see [enum MenuItems]). For example:
+				[codeblocks]
+				[gdscript]
+				func _ready():
+				    var menu = get_menu()
+				    # Remove all items after "Redo".
+				    menu.item_count = menu.get_item_index(MENU_REDO) + 1
+				    # Add custom items.
+				    menu.add_separator()
+				    menu.add_item("Insert Date", MENU_MAX + 1)
+				    # Connect callback.
+				    menu.id_pressed.connect(_on_item_pressed)
+
+				func _on_item_pressed(id):
+				    if id == MENU_MAX + 1:
+				        insert_text_at_caret(Time.get_date_string_from_system())
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    var menu = GetMenu();
+				    // Remove all items after "Redo".
+				    menu.ItemCount = menu.GetItemIndex(TextEdit.MenuItems.Redo) + 1;
+				    // Add custom items.
+				    menu.AddSeparator();
+				    menu.AddItem("Insert Date", TextEdit.MenuItems.Max + 1);
+				    // Add event handler.
+				    menu.IdPressed += OnItemPressed;
+				}
+
+				public void OnItemPressed(int id)
+				{
+				    if (id == TextEdit.MenuItems.Max + 1)
+				    {
+				        InsertTextAtCaret(Time.GetDateStringFromSystem());
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
@@ -397,7 +449,7 @@
 			<return type="int" />
 			<param index="0" name="position" type="Vector2i" />
 			<description>
-				Returns the equivalent minimap line at [param position]
+				Returns the equivalent minimap line at [param position].
 			</description>
 		</method>
 		<method name="get_minimap_visible_lines" qualifiers="const">
@@ -444,7 +496,7 @@
 		<method name="get_saved_version" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the last tagged saved version from [method tag_saved_version]
+				Returns the last tagged saved version from [method tag_saved_version].
 			</description>
 		</method>
 		<method name="get_scroll_pos_for_line" qualifiers="const">
@@ -459,7 +511,7 @@
 			<return type="String" />
 			<param index="0" name="caret_index" type="int" default="-1" />
 			<description>
-				Returns the text inside the selection.
+				Returns the text inside the selection of a caret, or all the carets if [param caret_index] is its default value [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_selection_column" qualifiers="const">
@@ -571,7 +623,7 @@
 		<method name="has_ime_text" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns if the user has IME text.
+				Returns [code]true[/code] if the user has text in the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME).
 			</description>
 		</method>
 		<method name="has_redo" qualifiers="const">
@@ -682,7 +734,7 @@
 			<return type="void" />
 			<param index="0" name="option" type="int" />
 			<description>
-				Triggers a right-click menu action by the specified index. See [enum MenuItems] for a list of available indexes.
+				Executes a given action as defined in the [enum MenuItems] enum.
 			</description>
 		</method>
 		<method name="merge_gutters">
@@ -696,7 +748,7 @@
 		<method name="merge_overlapping_carets">
 			<return type="void" />
 			<description>
-				Merges any overlapping carets. Will favour the newest caret, or the caret with a selection.
+				Merges any overlapping carets. Will favor the newest caret, or the caret with a selection.
 				[b]Note:[/b] This is not called when a caret changes position but after certain actions, so it is possible to get into a state where carets overlap.
 			</description>
 		</method>
@@ -764,18 +816,18 @@
 				[codeblocks]
 				[gdscript]
 				var result = search("print", SEARCH_WHOLE_WORDS, 0, 0)
-				if  result.x != -1:
+				if result.x != -1:
 				    # Result found.
 				    var line_number = result.y
 				    var column_number = result.x
 				[/gdscript]
 				[csharp]
-				Vector2i result = Search("print", (uint)TextEdit.SearchFlags.WholeWords, 0, 0);
-				if (result.Length &gt; 0)
+				Vector2I result = Search("print", (uint)TextEdit.SearchFlags.WholeWords, 0, 0);
+				if (result.X != -1)
 				{
 				    // Result found.
-				    int lineNumber = result.y;
-				    int columnNumber = result.x;
+				    int lineNumber = result.Y;
+				    int columnNumber = result.X;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -828,7 +880,7 @@
 			<description>
 				Moves the caret to the specified [param line] index.
 				If [param adjust_viewport] is [code]true[/code], the viewport will center at the caret position after the move occurs.
-				If [param can_be_hidden] is [code]true[/code], the specified [code]line[/code] can be hidden.
+				If [param can_be_hidden] is [code]true[/code], the specified [param line] can be hidden.
 				[b]Note:[/b] If supporting multiple carets this will not check for any overlap. See [method merge_overlapping_carets].
 			</description>
 		</method>
@@ -845,7 +897,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="draw_callback" type="Callable" />
 			<description>
-				Set a custom draw method for the gutter. The callback method must take the following args: [code]line: int, gutter: int, Area: Rect2[/code].
+				Set a custom draw method for the gutter. The callback method must take the following args: [code]line: int, gutter: int, Area: Rect2[/code]. This only works when the gutter type is [constant GUTTER_TYPE_CUSTOM] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="set_gutter_draw">
@@ -877,7 +929,7 @@
 			<param index="0" name="gutter" type="int" />
 			<param index="1" name="type" type="int" enum="TextEdit.GutterType" />
 			<description>
-				Sets the type of gutter.
+				Sets the type of gutter. Gutters can contain icons, text, or custom visuals. See [enum TextEdit.GutterType] for options.
 			</description>
 		</method>
 		<method name="set_gutter_width">
@@ -943,7 +995,7 @@
 			<param index="1" name="gutter" type="int" />
 			<param index="2" name="icon" type="Texture2D" />
 			<description>
-				Sets the icon for [param gutter] on [param line] to [param icon].
+				Sets the icon for [param gutter] on [param line] to [param icon]. This only works when the gutter type is [constant GUTTER_TYPE_ICON] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="set_line_gutter_item_color">
@@ -970,7 +1022,7 @@
 			<param index="1" name="gutter" type="int" />
 			<param index="2" name="text" type="String" />
 			<description>
-				Sets the text for [param gutter] on [param line] to [param text].
+				Sets the text for [param gutter] on [param line] to [param text]. This only works when the gutter type is [constant GUTTER_TYPE_STRING] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="set_overtype_mode_enabled">
@@ -1015,14 +1067,14 @@
 			<return type="void" />
 			<param index="0" name="callback" type="Callable" />
 			<description>
-				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String[/code]
+				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String[/code].
 			</description>
 		</method>
 		<method name="start_action">
 			<return type="void" />
 			<param index="0" name="action" type="int" enum="TextEdit.EditAction" />
 			<description>
-				Starts an action, will end the current action if [code]action[/code] is different.
+				Starts an action, will end the current action if [param action] is different.
 				An action will also end after a call to [method end_action], after [member ProjectSettings.gui/timers/text_edit_idle_detect_sec] is triggered or a new undoable step outside the [method start_action] and [method end_action] calls.
 			</description>
 		</method>
@@ -1048,19 +1100,25 @@
 		</method>
 	</methods>
 	<members>
+		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="TextServer.AutowrapMode" default="3">
+			If [member wrap_mode] is set to [constant LINE_WRAPPING_BOUNDARY], sets text wrapping mode. To see how each mode behaves, see [enum TextServer.AutowrapMode].
+		</member>
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
-			Sets if the caret should blink.
+			If [code]true[/code], makes the caret blink.
 		</member>
 		<member name="caret_blink_interval" type="float" setter="set_caret_blink_interval" getter="get_caret_blink_interval" default="0.65">
-			Duration (in seconds) of a caret's blinking cycle.
+			The interval at which the caret blinks (in seconds).
 		</member>
-		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="true">
+		<member name="caret_draw_when_editable_disabled" type="bool" setter="set_draw_caret_when_editable_disabled" getter="is_drawing_caret_when_editable_disabled" default="false">
+			If [code]true[/code], caret will be visible when [member editable] is disabled.
+		</member>
+		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
 			Allow moving caret, selecting and removing the individual composite character components.
 			[b]Note:[/b] [kbd]Backspace[/kbd] is always removing individual composite character components.
 		</member>
 		<member name="caret_move_on_right_click" type="bool" setter="set_move_caret_on_right_click_enabled" getter="is_move_caret_on_right_click_enabled" default="true">
 			If [code]true[/code], a right-click moves the caret at the mouse position before displaying the context menu.
-			If [code]false[/code], the context menu disregards mouse location.
+			If [code]false[/code], the context menu ignores mouse location.
 		</member>
 		<member name="caret_multiple" type="bool" setter="set_multiple_carets_enabled" getter="is_multiple_carets_enabled" default="true">
 			Sets if multiple carets are allowed.
@@ -1086,7 +1144,7 @@
 		<member name="draw_tabs" type="bool" setter="set_draw_tabs" getter="is_drawing_tabs" default="false">
 			If [code]true[/code], the "tab" character will have a visible representation.
 		</member>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
@@ -1095,6 +1153,9 @@
 		</member>
 		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled" default="false">
 			If [code]true[/code], the line containing the cursor is highlighted.
+		</member>
+		<member name="indent_wrapped_lines" type="bool" setter="set_indent_wrapped_lines" getter="is_indent_wrapped_lines" default="false">
+			If [code]true[/code], all wrapped lines are indented to the same amount as the unwrapped line.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -1123,7 +1184,7 @@
 			Allow scrolling past the last line into "virtual" space.
 		</member>
 		<member name="scroll_smooth" type="bool" setter="set_smooth_scroll_enabled" getter="is_smooth_scroll_enabled" default="false">
-			Scroll smoothly over the text rather then jumping to the next location.
+			Scroll smoothly over the text rather than jumping to the next location.
 		</member>
 		<member name="scroll_v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed" default="80.0">
 			Sets the scroll speed with the minimap or when [member scroll_smooth] is enabled.
@@ -1188,7 +1249,7 @@
 			<param index="1" name="to_line" type="int" />
 			<description>
 				Emitted immediately when the text changes.
-				When text is added [param from_line] will be less then [param to_line]. On a remove [param to_line] will be less then [param from_line].
+				When text is added [param from_line] will be less than [param to_line]. On a remove [param to_line] will be less than [param from_line].
 			</description>
 		</signal>
 		<signal name="text_changed">
@@ -1224,70 +1285,76 @@
 		<constant name="MENU_REDO" value="6" enum="MenuItems">
 			Redoes the previous action.
 		</constant>
-		<constant name="MENU_DIR_INHERITED" value="7" enum="MenuItems">
+		<constant name="MENU_SUBMENU_TEXT_DIR" value="7" enum="MenuItems">
+			ID of "Text Writing Direction" submenu.
+		</constant>
+		<constant name="MENU_DIR_INHERITED" value="8" enum="MenuItems">
 			Sets text direction to inherited.
 		</constant>
-		<constant name="MENU_DIR_AUTO" value="8" enum="MenuItems">
+		<constant name="MENU_DIR_AUTO" value="9" enum="MenuItems">
 			Sets text direction to automatic.
 		</constant>
-		<constant name="MENU_DIR_LTR" value="9" enum="MenuItems">
+		<constant name="MENU_DIR_LTR" value="10" enum="MenuItems">
 			Sets text direction to left-to-right.
 		</constant>
-		<constant name="MENU_DIR_RTL" value="10" enum="MenuItems">
+		<constant name="MENU_DIR_RTL" value="11" enum="MenuItems">
 			Sets text direction to right-to-left.
 		</constant>
-		<constant name="MENU_DISPLAY_UCC" value="11" enum="MenuItems">
+		<constant name="MENU_DISPLAY_UCC" value="12" enum="MenuItems">
 			Toggles control character display.
 		</constant>
-		<constant name="MENU_INSERT_LRM" value="12" enum="MenuItems">
+		<constant name="MENU_SUBMENU_INSERT_UCC" value="13" enum="MenuItems">
+			ID of "Insert Control Character" submenu.
+		</constant>
+		<constant name="MENU_INSERT_LRM" value="14" enum="MenuItems">
 			Inserts left-to-right mark (LRM) character.
 		</constant>
-		<constant name="MENU_INSERT_RLM" value="13" enum="MenuItems">
+		<constant name="MENU_INSERT_RLM" value="15" enum="MenuItems">
 			Inserts right-to-left mark (RLM) character.
 		</constant>
-		<constant name="MENU_INSERT_LRE" value="14" enum="MenuItems">
+		<constant name="MENU_INSERT_LRE" value="16" enum="MenuItems">
 			Inserts start of left-to-right embedding (LRE) character.
 		</constant>
-		<constant name="MENU_INSERT_RLE" value="15" enum="MenuItems">
+		<constant name="MENU_INSERT_RLE" value="17" enum="MenuItems">
 			Inserts start of right-to-left embedding (RLE) character.
 		</constant>
-		<constant name="MENU_INSERT_LRO" value="16" enum="MenuItems">
+		<constant name="MENU_INSERT_LRO" value="18" enum="MenuItems">
 			Inserts start of left-to-right override (LRO) character.
 		</constant>
-		<constant name="MENU_INSERT_RLO" value="17" enum="MenuItems">
+		<constant name="MENU_INSERT_RLO" value="19" enum="MenuItems">
 			Inserts start of right-to-left override (RLO) character.
 		</constant>
-		<constant name="MENU_INSERT_PDF" value="18" enum="MenuItems">
+		<constant name="MENU_INSERT_PDF" value="20" enum="MenuItems">
 			Inserts pop direction formatting (PDF) character.
 		</constant>
-		<constant name="MENU_INSERT_ALM" value="19" enum="MenuItems">
+		<constant name="MENU_INSERT_ALM" value="21" enum="MenuItems">
 			Inserts Arabic letter mark (ALM) character.
 		</constant>
-		<constant name="MENU_INSERT_LRI" value="20" enum="MenuItems">
+		<constant name="MENU_INSERT_LRI" value="22" enum="MenuItems">
 			Inserts left-to-right isolate (LRI) character.
 		</constant>
-		<constant name="MENU_INSERT_RLI" value="21" enum="MenuItems">
+		<constant name="MENU_INSERT_RLI" value="23" enum="MenuItems">
 			Inserts right-to-left isolate (RLI) character.
 		</constant>
-		<constant name="MENU_INSERT_FSI" value="22" enum="MenuItems">
+		<constant name="MENU_INSERT_FSI" value="24" enum="MenuItems">
 			Inserts first strong isolate (FSI) character.
 		</constant>
-		<constant name="MENU_INSERT_PDI" value="23" enum="MenuItems">
+		<constant name="MENU_INSERT_PDI" value="25" enum="MenuItems">
 			Inserts pop direction isolate (PDI) character.
 		</constant>
-		<constant name="MENU_INSERT_ZWJ" value="24" enum="MenuItems">
+		<constant name="MENU_INSERT_ZWJ" value="26" enum="MenuItems">
 			Inserts zero width joiner (ZWJ) character.
 		</constant>
-		<constant name="MENU_INSERT_ZWNJ" value="25" enum="MenuItems">
+		<constant name="MENU_INSERT_ZWNJ" value="27" enum="MenuItems">
 			Inserts zero width non-joiner (ZWNJ) character.
 		</constant>
-		<constant name="MENU_INSERT_WJ" value="26" enum="MenuItems">
+		<constant name="MENU_INSERT_WJ" value="28" enum="MenuItems">
 			Inserts word joiner (WJ) character.
 		</constant>
-		<constant name="MENU_INSERT_SHY" value="27" enum="MenuItems">
+		<constant name="MENU_INSERT_SHY" value="29" enum="MenuItems">
 			Inserts soft hyphen (SHY) character.
 		</constant>
-		<constant name="MENU_MAX" value="28" enum="MenuItems">
+		<constant name="MENU_MAX" value="30" enum="MenuItems">
 			Represents the size of the [enum MenuItems] enum.
 		</constant>
 		<constant name="ACTION_NONE" value="0" enum="EditAction">
@@ -1330,7 +1397,7 @@
 			Select whole words as if the user double clicked.
 		</constant>
 		<constant name="SELECTION_MODE_LINE" value="4" enum="SelectionMode">
-			Select whole lines as if the user tripped clicked.
+			Select whole lines as if the user triple clicked.
 		</constant>
 		<constant name="LINE_WRAPPING_NONE" value="0" enum="LineWrappingMode">
 			Line wrapping is disabled.
@@ -1339,13 +1406,13 @@
 			Line wrapping occurs at the control boundary, beyond what would normally be visible.
 		</constant>
 		<constant name="GUTTER_TYPE_STRING" value="0" enum="GutterType">
-			Draw a string.
+			When a gutter is set to string using [method set_gutter_type], it is used to contain text set via the [method set_line_gutter_text] method.
 		</constant>
 		<constant name="GUTTER_TYPE_ICON" value="1" enum="GutterType">
-			Draw an icon.
+			When a gutter is set to icon using [method set_gutter_type], it is used to contain an icon set via the [method set_line_gutter_icon] method.
 		</constant>
 		<constant name="GUTTER_TYPE_CUSTOM" value="2" enum="GutterType">
-			Custom draw.
+			When a gutter is set to custom using [method set_gutter_type], it is used to contain custom visuals controlled by a callback method set via the [method set_gutter_custom_draw] method.
 		</constant>
 	</constants>
 	<theme_items>
@@ -1364,7 +1431,7 @@
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Sets the font [Color].
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the [TextEdit].
 		</theme_item>
 		<theme_item name="font_placeholder_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.6)">
@@ -1411,12 +1478,12 @@
 			Sets a custom [Texture2D] for tab text characters.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
-			Sets the [StyleBox] when in focus. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+			Sets the [StyleBox] when in focus. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
 		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit].
 		</theme_item>
-		<theme_item name="read_only" data_type="style" type="StyleBox">
+		<theme_item name="read_only" data_type="style" type="StyleBox" keywords="enabled, disabled, editable">
 			Sets the [StyleBox] of this [TextEdit] when [member editable] is disabled.
 		</theme_item>
 	</theme_items>

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tween" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Tween" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Lightweight object used for general-purpose animation via script, using [Tweener]s.
 	</brief_description>
 	<description>
 		Tweens are mostly useful for animations requiring a numerical property to be interpolated over a range of values. The name [i]tween[/i] comes from [i]in-betweening[/i], an animation technique where you specify [i]keyframes[/i] and the computer interpolates the frames that appear between them. Animating something with a [Tween] is called tweening.
-		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween]; it would be difficult to do the same thing with an [AnimationPlayer] node. Tweens are also more light-weight than [AnimationPlayer], so they are very much suited for simple animations or general tasks that don't require visual tweaking provided by the editor. They can be used in a fire-and-forget manner for some logic that normally would be done by code. You can e.g. make something shoot periodically by using a looped [CallbackTweener] with a delay.
+		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween]; it would be difficult to do the same thing with an [AnimationPlayer] node. Tweens are also more light-weight than [AnimationPlayer], so they are very much suited for simple animations or general tasks that don't require visual tweaking provided by the editor. They can be used in a "fire-and-forget" manner for some logic that normally would be done by code. You can e.g. make something shoot periodically by using a looped [CallbackTweener] with a delay.
 		A [Tween] can be created by using either [method SceneTree.create_tween] or [method Node.create_tween]. [Tween]s created manually (i.e. by using [code]Tween.new()[/code]) are invalid and can't be used for tweening values.
 		A tween animation is created by adding [Tweener]s to the [Tween] object, using [method tween_property], [method tween_interval], [method tween_callback] or [method tween_method]:
 		[codeblocks]
 		[gdscript]
 		var tween = get_tree().create_tween()
-		tween.tween_property($Sprite, "modulate", Color.red, 1)
+		tween.tween_property($Sprite, "modulate", Color.RED, 1)
 		tween.tween_property($Sprite, "scale", Vector2(), 1)
 		tween.tween_callback($Sprite.queue_free)
 		[/gdscript]
@@ -19,7 +19,7 @@
 		Tween tween = GetTree().CreateTween();
 		tween.TweenProperty(GetNode("Sprite"), "modulate", Colors.Red, 1.0f);
 		tween.TweenProperty(GetNode("Sprite"), "scale", Vector2.Zero, 1.0f);
-		tween.TweenCallback(new Callable(GetNode("Sprite").QueueFree));
+		tween.TweenCallback(Callable.From(GetNode("Sprite").QueueFree));
 		[/csharp]
 		[/codeblocks]
 		This sequence will make the [code]$Sprite[/code] node turn red, then shrink, before finally calling [method Node.queue_free] to free the sprite. [Tweener]s are executed one after another by default. This behavior can be changed using [method parallel] and [method set_parallel].
@@ -27,7 +27,7 @@
 		[codeblocks]
 		[gdscript]
 		var tween = get_tree().create_tween()
-		tween.tween_property($Sprite, "modulate", Color.red, 1).set_trans(Tween.TRANS_SINE)
+		tween.tween_property($Sprite, "modulate", Color.RED, 1).set_trans(Tween.TRANS_SINE)
 		tween.tween_property($Sprite, "scale", Vector2(), 1).set_trans(Tween.TRANS_BOUNCE)
 		tween.tween_callback($Sprite.queue_free)
 		[/gdscript]
@@ -35,14 +35,14 @@
 		Tween tween = GetTree().CreateTween();
 		tween.TweenProperty(GetNode("Sprite"), "modulate", Colors.Red, 1.0f).SetTrans(Tween.TransitionType.Sine);
 		tween.TweenProperty(GetNode("Sprite"), "scale", Vector2.Zero, 1.0f).SetTrans(Tween.TransitionType.Bounce);
-		tween.TweenCallback(new Callable(GetNode("Sprite").QueueFree));
+		tween.TweenCallback(Callable.From(GetNode("Sprite").QueueFree));
 		[/csharp]
 		[/codeblocks]
 		Most of the [Tween] methods can be chained this way too. In the following example the [Tween] is bound to the running script's node and a default transition is set for its [Tweener]s:
 		[codeblocks]
 		[gdscript]
 		var tween = get_tree().create_tween().bind_node(self).set_trans(Tween.TRANS_ELASTIC)
-		tween.tween_property($Sprite, "modulate", Color.red, 1)
+		tween.tween_property($Sprite, "modulate", Color.RED, 1)
 		tween.tween_property($Sprite, "scale", Vector2(), 1)
 		tween.tween_callback($Sprite.queue_free)
 		[/gdscript]
@@ -50,7 +50,7 @@
 		var tween = GetTree().CreateTween().BindNode(this).SetTrans(Tween.TransitionType.Elastic);
 		tween.TweenProperty(GetNode("Sprite"), "modulate", Colors.Red, 1.0f);
 		tween.TweenProperty(GetNode("Sprite"), "scale", Vector2.Zero, 1.0f);
-		tween.TweenCallback(new Callable(GetNode("Sprite").QueueFree));
+		tween.TweenCallback(Callable.From(GetNode("Sprite").QueueFree));
 		[/csharp]
 		[/codeblocks]
 		Another interesting use for [Tween]s is animating arbitrary sets of objects:
@@ -77,20 +77,20 @@
 		    tween = create_tween()
 		[/gdscript]
 		[csharp]
-		private Tween tween;
+		private Tween _tween;
 
 		public void Animate()
 		{
-		    if (tween != null)
-		        tween.Kill(); // Abort the previous animation
-		    tween = CreateTween();
+		    if (_tween != null)
+		        _tween.Kill(); // Abort the previous animation
+		    _tween = CreateTween();
 		}
 		[/csharp]
 		[/codeblocks]
 		Some [Tweener]s use transitions and eases. The first accepts a [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [url=https://easings.net/]easings.net[/url] for some examples). The second accepts an [enum EaseType] constant, and controls where the [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [constant EASE_IN_OUT], and use the one that looks best.
-		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/tween_cheatsheet.png]Tween easing and transition types cheatsheet[/url]
-		[b]Note:[/b] All [Tween]s will automatically start by default. To prevent a [Tween] from autostarting, you can call [method stop] immediately after it is created.
-		[b]Note:[/b] [Tween]s are processing after all of nodes in the current frame, i.e. after [method Node._process] or [method Node._physics_process] (depending on [enum TweenProcessMode]).
+		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/tween_cheatsheet.webp]Tween easing and transition types cheatsheet[/url]
+		[b]Note:[/b] Tweens are not designed to be re-used and trying to do so results in an undefined behavior. Create a new Tween for each animation and every time you replay an animation from start. Keep in mind that Tweens start immediately, so only create a Tween when you want to start animating.
+		[b]Note:[/b] The tween is processed after all of the nodes in the current frame, i.e. node's [method Node._process] method would be called before the tween (or [method Node._physics_process] depending on the value passed to [method set_process_mode]).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -129,7 +129,12 @@
 			<description>
 				Processes the [Tween] by the given [param delta] value, in seconds. This is mostly useful for manual control when the [Tween] is paused. It can also be used to end the [Tween] animation immediately, by setting [param delta] longer than the whole duration of the [Tween] animation.
 				Returns [code]true[/code] if the [Tween] still has [Tweener]s that haven't finished.
-				[b]Note:[/b] The [Tween] will become invalid in the next processing frame after its animation finishes. Calling [method stop] after performing [method custom_step] instead keeps and resets the [Tween].
+			</description>
+		</method>
+		<method name="get_loops_left" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of remaining loops for this [Tween] (see [method set_loops]). A return value of [code]-1[/code] indicates an infinitely looping [Tween], and a return value of [code]0[/code] indicates that the [Tween] has already finished.
 			</description>
 		</method>
 		<method name="get_total_elapsed_time" qualifiers="const">
@@ -201,6 +206,7 @@
 			<return type="void" />
 			<description>
 				Pauses the tweening. The animation can be resumed by using [method play].
+				[b]Note:[/b] If a Tween is paused and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
 			</description>
 		</method>
 		<method name="play">
@@ -214,6 +220,7 @@
 			<param index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
 				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
+				If not specified, the default value is [constant EASE_IN_OUT].
 			</description>
 		</method>
 		<method name="set_loops">
@@ -230,6 +237,12 @@
 			<param index="0" name="parallel" type="bool" default="true" />
 			<description>
 				If [param parallel] is [code]true[/code], the [Tweener]s appended after this method will by default run simultaneously, as opposed to sequentially.
+				[b]Note:[/b] Just like with [method parallel], the tweener added right before this method will also be part of the parallel step.
+				[codeblock]
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5)
+				tween.set_parallel()
+				tween.tween_property(self, "modulate", Color.GREEN, 0.5) # Runs together with the position tweener.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_pause_mode">
@@ -244,7 +257,7 @@
 			<return type="Tween" />
 			<param index="0" name="mode" type="int" enum="Tween.TweenProcessMode" />
 			<description>
-				Determines whether the [Tween] should run during idle frame (see [method Node._process]) or physics frame (see [method Node._physics_process].
+				Determines whether the [Tween] should run after process frames (see [method Node._process]) or physics frames (see [method Node._physics_process]).
 				Default value is [constant TWEEN_PROCESS_IDLE].
 			</description>
 		</method>
@@ -260,12 +273,14 @@
 			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
 				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
+				If not specified, the default value is [constant TRANS_LINEAR].
 			</description>
 		</method>
 		<method name="stop">
 			<return type="void" />
 			<description>
 				Stops the tweening and resets the [Tween] to its initial state. This will not remove any appended [Tweener]s.
+				[b]Note:[/b] If a Tween is stopped and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
 			</description>
 		</method>
 		<method name="tween_callback">
@@ -281,21 +296,21 @@
 				[/gdscript]
 				[csharp]
 				Tween tween = GetTree().CreateTween().SetLoops();
-				tween.TweenCallback(new Callable(Shoot)).SetDelay(1.0f);
+				tween.TweenCallback(Callable.From(Shoot)).SetDelay(1.0f);
 				[/csharp]
 				[/codeblocks]
 				[b]Example:[/b] Turning a sprite red and then blue, with 2 second delay:
 				[codeblocks]
 				[gdscript]
 				var tween = get_tree().create_tween()
-				tween.tween_callback($Sprite.set_modulate.bind(Color.red)).set_delay(2)
-				tween.tween_callback($Sprite.set_modulate.bind(Color.blue)).set_delay(2)
+				tween.tween_callback($Sprite.set_modulate.bind(Color.RED)).set_delay(2)
+				tween.tween_callback($Sprite.set_modulate.bind(Color.BLUE)).set_delay(2)
 				[/gdscript]
 				[csharp]
 				Tween tween = GetTree().CreateTween();
 				Sprite2D sprite = GetNode&lt;Sprite2D&gt;("Sprite");
-				tween.TweenCallback(new Callable(() =&gt; sprite.Modulate = Colors.Red)).SetDelay(2.0f);
-				tween.TweenCallback(new Callable(() =&gt; sprite.Modulate = Colors.Blue)).SetDelay(2.0f);
+				tween.TweenCallback(Callable.From(() =&gt; sprite.Modulate = Colors.Red)).SetDelay(2.0f);
+				tween.TweenCallback(Callable.From(() =&gt; sprite.Modulate = Colors.Blue)).SetDelay(2.0f);
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -332,10 +347,10 @@
 				[csharp]
 				Tween tween = CreateTween().SetLoops();
 				tween.TweenProperty(GetNode("Sprite"), "position:x", 200.0f, 1.0f).AsRelative();
-				tween.TweenCallback(new Callable(Jump));
+				tween.TweenCallback(Callable.From(Jump));
 				tween.TweenInterval(2.0f);
 				tween.TweenProperty(GetNode("Sprite"), "position:x", -200.0f, 1.0f).AsRelative();
-				tween.TweenCallback(new Callable(Jump));
+				tween.TweenCallback(Callable.From(Jump));
 				tween.TweenInterval(2.0f);
 				[/csharp]
 				[/codeblocks]
@@ -357,7 +372,7 @@
 				[/gdscript]
 				[csharp]
 				Tween tween = CreateTween();
-				tween.TweenMethod(new Callable(() =&gt; LookAt(Vector3.Up)), new Vector3(-1.0f, 0.0f, -1.0f), new Vector3(1.0f, 0.0f, -1.0f), 1.0f); // The LookAt() method takes up vector as second argument.
+				tween.TweenMethod(Callable.From((Vector3 target) =&gt; LookAt(target, Vector3.Up)), new Vector3(-1.0f, 0.0f, -1.0f), new Vector3(1.0f, 0.0f, -1.0f), 1.0f); // Use lambdas to bind additional arguments for the call.
 				[/csharp]
 				[/codeblocks]
 				[b]Example:[/b] Setting the text of a [Label], using an intermediate method and after a delay:
@@ -376,7 +391,7 @@
 				    base._Ready();
 
 				    Tween tween = CreateTween();
-				    tween.TweenMethod(new Callable(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
+				    tween.TweenMethod(Callable.From&lt;int&gt;(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
 				}
 
 				private void SetLabelText(int value)
@@ -430,7 +445,6 @@
 		<signal name="finished">
 			<description>
 				Emitted when the [Tween] has finished all tweening. Never emitted when the [Tween] is set to infinite looping (see [method set_loops]).
-				[b]Note:[/b] The [Tween] is removed (invalidated) in the next processing frame after this signal is emitted. Calling [method stop] inside the signal callback will prevent the [Tween] from being removed.
 			</description>
 		</signal>
 		<signal name="loop_finished">
@@ -448,10 +462,10 @@
 	</signals>
 	<constants>
 		<constant name="TWEEN_PROCESS_PHYSICS" value="0" enum="TweenProcessMode">
-			The [Tween] updates during the physics frame.
+			The [Tween] updates after each physics frame (see [method Node._physics_process]).
 		</constant>
 		<constant name="TWEEN_PROCESS_IDLE" value="1" enum="TweenProcessMode">
-			The [Tween] updates during the idle frame.
+			The [Tween] updates after each process frame (see [method Node._process]).
 		</constant>
 		<constant name="TWEEN_PAUSE_BOUND" value="0" enum="TweenPauseMode">
 			If the [Tween] has a bound node, it will process when that node can process (see [member Node.process_mode]). Otherwise it's the same as [constant TWEEN_PAUSE_STOP].
@@ -494,6 +508,9 @@
 		</constant>
 		<constant name="TRANS_BACK" value="10" enum="TransitionType">
 			The animation is interpolated backing out at ends.
+		</constant>
+		<constant name="TRANS_SPRING" value="11" enum="TransitionType">
+			The animation is interpolated like a spring towards the end.
 		</constant>
 		<constant name="EASE_IN" value="0" enum="EaseType">
 			The interpolation starts slowly and speeds up towards the end.

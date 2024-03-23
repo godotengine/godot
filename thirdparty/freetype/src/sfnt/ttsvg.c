@@ -4,7 +4,7 @@
  *
  *   OpenType SVG Color (specification).
  *
- * Copyright (C) 2022 by
+ * Copyright (C) 2022-2023 by
  * David Turner, Robert Wilhelm, Werner Lemberg, and Moazin Khatti.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -114,7 +114,7 @@
     FT_TRACE3(( "version: %d\n", svg->version ));
     FT_TRACE3(( "number of entries: %d\n", svg->num_entries ));
 
-    if ( offsetToSVGDocumentList +
+    if ( offsetToSVGDocumentList + 2U +
            svg->num_entries * SVG_DOCUMENT_RECORD_SIZE > table_size )
       goto InvalidTable;
 
@@ -196,7 +196,7 @@
 
 
   static FT_Error
-  find_doc( FT_Byte*    stream,
+  find_doc( FT_Byte*    document_records,
             FT_UShort   num_entries,
             FT_UInt     glyph_index,
             FT_ULong   *doc_offset,
@@ -207,7 +207,7 @@
     FT_Error  error;
 
     Svg_doc  start_doc;
-    Svg_doc  mid_doc;
+    Svg_doc  mid_doc = { 0, 0, 0, 0 }; /* pacify compiler */
     Svg_doc  end_doc;
 
     FT_Bool  found = FALSE;
@@ -225,8 +225,8 @@
       return error;
     }
 
-    start_doc = extract_svg_doc( stream + start_index * 12 );
-    end_doc   = extract_svg_doc( stream + end_index * 12 );
+    start_doc = extract_svg_doc( document_records + start_index * 12 );
+    end_doc   = extract_svg_doc( document_records + end_index * 12 );
 
     if ( ( compare_svg_doc( start_doc, glyph_index ) == -1 ) ||
          ( compare_svg_doc( end_doc, glyph_index ) == 1 )    )
@@ -238,18 +238,18 @@
     while ( start_index <= end_index )
     {
       i        = ( start_index + end_index ) / 2;
-      mid_doc  = extract_svg_doc( stream + i * 12 );
+      mid_doc  = extract_svg_doc( document_records + i * 12 );
       comp_res = compare_svg_doc( mid_doc, glyph_index );
 
       if ( comp_res == 1 )
       {
         start_index = i + 1;
-        start_doc   = extract_svg_doc( stream + start_index * 4 );
+        start_doc   = extract_svg_doc( document_records + start_index * 4 );
       }
       else if ( comp_res == -1 )
       {
         end_index = i - 1;
-        end_doc   = extract_svg_doc( stream + end_index * 4 );
+        end_doc   = extract_svg_doc( document_records + end_index * 4 );
       }
       else
       {
@@ -283,38 +283,48 @@
   tt_face_load_svg_doc( FT_GlyphSlot  glyph,
                         FT_UInt       glyph_index )
   {
-    FT_Byte*   doc_list;        /* pointer to the SVG doc list         */
-    FT_UShort  num_entries;     /* total number of entries in doc list */
-    FT_ULong   doc_offset;
-    FT_ULong   doc_length;
-
-    FT_UShort  start_glyph_id;
-    FT_UShort  end_glyph_id;
-
     FT_Error   error  = FT_Err_Ok;
     TT_Face    face   = (TT_Face)glyph->face;
     FT_Memory  memory = face->root.memory;
     Svg*       svg    = (Svg*)face->svg;
+
+    FT_Byte*  doc_list;
+    FT_ULong  doc_limit;
+
+    FT_Byte*   doc;
+    FT_ULong   doc_offset;
+    FT_ULong   doc_length;
+    FT_UShort  doc_start_glyph_id;
+    FT_UShort  doc_end_glyph_id;
 
     FT_SVG_Document  svg_document = (FT_SVG_Document)glyph->other;
 
 
     FT_ASSERT( !( svg == NULL ) );
 
-    doc_list    = svg->svg_doc_list;
-    num_entries = FT_NEXT_USHORT( doc_list );
+    doc_list = svg->svg_doc_list;
 
-    error = find_doc( doc_list, num_entries, glyph_index,
-                                &doc_offset, &doc_length,
-                                &start_glyph_id, &end_glyph_id );
+    error = find_doc( doc_list + 2, svg->num_entries, glyph_index,
+                                    &doc_offset, &doc_length,
+                                    &doc_start_glyph_id, &doc_end_glyph_id );
     if ( error != FT_Err_Ok )
       goto Exit;
 
-    doc_list = svg->svg_doc_list;      /* reset, so we can use it again */
-    doc_list = (FT_Byte*)( doc_list + doc_offset );
+    doc_limit = svg->table_size -
+                  (FT_ULong)( doc_list - (FT_Byte*)svg->table );
+    if ( doc_offset > doc_limit              ||
+         doc_length > doc_limit - doc_offset )
+    {
+      error = FT_THROW( Invalid_Table );
+      goto Exit;
+    }
 
-    if ( ( doc_list[0] == 0x1F ) && ( doc_list[1] == 0x8B )
-                                 && ( doc_list[2] == 0x08 ) )
+    doc = doc_list + doc_offset;
+
+    if ( doc_length > 6 &&
+         doc[0] == 0x1F &&
+         doc[1] == 0x8B &&
+         doc[2] == 0x08 )
     {
 #ifdef FT_CONFIG_OPTION_USE_ZLIB
 
@@ -331,10 +341,10 @@
        * little-endian format.
        */
       FT_TRACE4(( "SVG document is GZIP compressed\n" ));
-      uncomp_size = (FT_ULong)doc_list[doc_length - 1] << 24 |
-                    (FT_ULong)doc_list[doc_length - 2] << 16 |
-                    (FT_ULong)doc_list[doc_length - 3] << 8  |
-                    (FT_ULong)doc_list[doc_length - 4];
+      uncomp_size = (FT_ULong)doc[doc_length - 1] << 24 |
+                    (FT_ULong)doc[doc_length - 2] << 16 |
+                    (FT_ULong)doc[doc_length - 3] << 8  |
+                    (FT_ULong)doc[doc_length - 4];
 
       if ( FT_QALLOC( uncomp_buffer, uncomp_size ) )
         goto Exit;
@@ -342,7 +352,7 @@
       error = FT_Gzip_Uncompress( memory,
                                   uncomp_buffer,
                                   &uncomp_size,
-                                  doc_list,
+                                  doc,
                                   doc_length );
       if ( error )
       {
@@ -353,7 +363,7 @@
 
       glyph->internal->flags |= FT_GLYPH_OWN_GZIP_SVG;
 
-      doc_list   = uncomp_buffer;
+      doc        = uncomp_buffer;
       doc_length = uncomp_size;
 
 #else /* !FT_CONFIG_OPTION_USE_ZLIB */
@@ -364,14 +374,14 @@
 #endif /* !FT_CONFIG_OPTION_USE_ZLIB */
     }
 
-    svg_document->svg_document        = doc_list;
+    svg_document->svg_document        = doc;
     svg_document->svg_document_length = doc_length;
 
     svg_document->metrics      = glyph->face->size->metrics;
     svg_document->units_per_EM = glyph->face->units_per_EM;
 
-    svg_document->start_glyph_id = start_glyph_id;
-    svg_document->end_glyph_id   = end_glyph_id;
+    svg_document->start_glyph_id = doc_start_glyph_id;
+    svg_document->end_glyph_id   = doc_end_glyph_id;
 
     svg_document->transform.xx = 0x10000;
     svg_document->transform.xy = 0;
@@ -381,10 +391,10 @@
     svg_document->delta.x = 0;
     svg_document->delta.y = 0;
 
-    FT_TRACE5(( "start_glyph_id: %d\n", start_glyph_id ));
-    FT_TRACE5(( "end_glyph_id:   %d\n", end_glyph_id ));
+    FT_TRACE5(( "start_glyph_id: %d\n", doc_start_glyph_id ));
+    FT_TRACE5(( "end_glyph_id:   %d\n", doc_end_glyph_id ));
     FT_TRACE5(( "svg_document:\n" ));
-    FT_TRACE5(( " %.*s\n", (FT_UInt)doc_length, doc_list ));
+    FT_TRACE5(( " %.*s\n", (FT_UInt)doc_length, doc ));
 
     glyph->other = svg_document;
 
@@ -395,7 +405,7 @@
 #else /* !FT_CONFIG_OPTION_SVG */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _tt_svg_dummy;
+  typedef int  tt_svg_dummy_;
 
 #endif /* !FT_CONFIG_OPTION_SVG */
 

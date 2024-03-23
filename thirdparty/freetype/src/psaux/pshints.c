@@ -310,7 +310,7 @@
       CF2_Hint  hint = &hintmap->edge[i];
 
 
-      FT_TRACE6(( "  %3ld    %7.2f  %7.2f  %5d  %s%s%s%s\n",
+      FT_TRACE6(( "  %3zu    %7.2f  %7.2f  %5d  %s%s%s%s\n",
                   hint->index,
                   hint->csCoord / 65536.0,
                   hint->dsCoord / ( hint->scale * 1.0 ),
@@ -693,8 +693,10 @@
         CF2_Fixed  midpoint =
                      cf2_hintmap_map(
                        hintmap->initialHintMap,
-                       ADD_INT32( secondHintEdge->csCoord,
-                                  firstHintEdge->csCoord ) / 2 );
+                       ADD_INT32(
+                         firstHintEdge->csCoord,
+                         SUB_INT32 ( secondHintEdge->csCoord,
+                                     firstHintEdge->csCoord ) / 2 ) );
         CF2_Fixed  halfWidth =
                      FT_MulFix( SUB_INT32( secondHintEdge->csCoord,
                                            firstHintEdge->csCoord ) / 2,
@@ -1034,10 +1036,10 @@
     {
       FT_TRACE6(( "flags: [p]air [g]host [t]op"
                   " [b]ottom [L]ocked [S]ynthetic\n" ));
-      FT_TRACE6(( "Initial hintmap" ));
+      FT_TRACE6(( "Initial hintmap:\n" ));
     }
     else
-      FT_TRACE6(( "Hints:" ));
+      FT_TRACE6(( "Hints:\n" ));
 #endif
 
     cf2_hintmap_dump( hintmap );
@@ -1054,7 +1056,7 @@
     /* adjust positions of hint edges that are not locked to blue zones */
     cf2_hintmap_adjustHints( hintmap );
 
-    FT_TRACE6(( "(adjusted)\n" ));
+    FT_TRACE6(( "Hints adjusted:\n" ));
     cf2_hintmap_dump( hintmap );
 
     /* save the position of all hints that were used in this hint map; */

@@ -34,11 +34,15 @@
 #include "core/io/resource.h"
 #include "core/math/face3.h"
 #include "core/math/triangle_mesh.h"
+#ifndef _3D_DISABLED
+#include "scene/resources/3d/shape_3d.h"
+#endif // _3D_DISABLED
 #include "scene/resources/material.h"
 #include "servers/rendering_server.h"
 
 class ConcavePolygonShape3D;
 class ConvexPolygonShape3D;
+class MeshConvexDecompositionSettings;
 class Shape3D;
 
 class Mesh : public Resource {
@@ -48,6 +52,8 @@ class Mesh : public Resource {
 	mutable Vector<Ref<TriangleMesh>> surface_triangle_meshes; //cached
 	mutable Vector<Vector3> debug_lines;
 	Size2i lightmap_size_hint;
+
+	Vector<Vector3> _get_faces() const;
 
 public:
 	enum PrimitiveType {
@@ -116,7 +122,7 @@ public:
 		ARRAY_CUSTOM_MAX
 	};
 
-	enum ArrayFormat {
+	enum ArrayFormat : uint64_t {
 		ARRAY_FORMAT_VERTEX = RS::ARRAY_FORMAT_VERTEX,
 		ARRAY_FORMAT_NORMAL = RS::ARRAY_FORMAT_NORMAL,
 		ARRAY_FORMAT_TANGENT = RS::ARRAY_FORMAT_TANGENT,
@@ -148,6 +154,14 @@ public:
 		ARRAY_FLAG_USE_8_BONE_WEIGHTS = RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS,
 
 		ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY = RS::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY,
+		ARRAY_FLAG_COMPRESS_ATTRIBUTES = RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES,
+
+		ARRAY_FLAG_FORMAT_VERSION_BASE = RS::ARRAY_FLAG_FORMAT_VERSION_BASE,
+		ARRAY_FLAG_FORMAT_VERSION_SHIFT = RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT,
+		ARRAY_FLAG_FORMAT_VERSION_1 = RS::ARRAY_FLAG_FORMAT_VERSION_1,
+		ARRAY_FLAG_FORMAT_VERSION_2 = (uint64_t)RS::ARRAY_FLAG_FORMAT_VERSION_2,
+		ARRAY_FLAG_FORMAT_CURRENT_VERSION = (uint64_t)RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
+		ARRAY_FLAG_FORMAT_VERSION_MASK = RS::ARRAY_FLAG_FORMAT_VERSION_MASK,
 	};
 
 	virtual int get_surface_count() const;
@@ -178,50 +192,106 @@ public:
 	Size2i get_lightmap_size_hint() const;
 	void clear_cache() const;
 
-	struct ConvexDecompositionSettings {
-		enum Mode : int {
-			CONVEX_DECOMPOSITION_MODE_VOXEL = 0,
-			CONVEX_DECOMPOSITION_MODE_TETRAHEDRON
-		};
-
-		/// Maximum concavity. [Range: 0.0 -> 1.0]
-		real_t max_concavity = 1.0;
-		/// Controls the bias toward clipping along symmetry planes. [Range: 0.0 -> 1.0]
-		real_t symmetry_planes_clipping_bias = 0.05;
-		/// Controls the bias toward clipping along revolution axes. [Range: 0.0 -> 1.0]
-		real_t revolution_axes_clipping_bias = 0.05;
-		real_t min_volume_per_convex_hull = 0.0001;
-		/// Maximum number of voxels generated during the voxelization stage.
-		uint32_t resolution = 10'000;
-		uint32_t max_num_vertices_per_convex_hull = 32;
-		/// Controls the granularity of the search for the "best" clipping plane.
-		/// [Range: 1 -> 16]
-		uint32_t plane_downsampling = 4;
-		/// Controls the precision of the convex-hull generation process during the
-		/// clipping plane selection stage.
-		/// [Range: 1 -> 16]
-		uint32_t convexhull_downsampling = 4;
-		/// enable/disable normalizing the mesh before applying the convex decomposition.
-		bool normalize_mesh = false;
-		Mode mode = CONVEX_DECOMPOSITION_MODE_VOXEL;
-		bool convexhull_approximation = true;
-		/// This is the maximum number of convex hulls to produce from the merge operation.
-		uint32_t max_convex_hulls = 1;
-		bool project_hull_vertices = true;
-	};
-	typedef Vector<Vector<Vector3>> (*ConvexDecompositionFunc)(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, const ConvexDecompositionSettings &p_settings, Vector<Vector<uint32_t>> *r_convex_indices);
+	typedef Vector<Vector<Vector3>> (*ConvexDecompositionFunc)(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, const Ref<MeshConvexDecompositionSettings> &p_settings, Vector<Vector<uint32_t>> *r_convex_indices);
 
 	static ConvexDecompositionFunc convex_decomposition_function;
 
-	Vector<Ref<Shape3D>> convex_decompose(const ConvexDecompositionSettings &p_settings) const;
+#ifndef _3D_DISABLED
+	Vector<Ref<Shape3D>> convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const;
 	Ref<ConvexPolygonShape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
 	Ref<ConcavePolygonShape3D> create_trimesh_shape() const;
+#endif // _3D_DISABLED
 
 	virtual int get_builtin_bind_pose_count() const;
 	virtual Transform3D get_builtin_bind_pose(int p_index) const;
 
+	virtual Ref<Resource> create_placeholder() const;
+
 	Mesh();
 };
+
+class MeshConvexDecompositionSettings : public RefCounted {
+	GDCLASS(MeshConvexDecompositionSettings, RefCounted);
+
+public:
+	enum Mode : int {
+		CONVEX_DECOMPOSITION_MODE_VOXEL = 0,
+		CONVEX_DECOMPOSITION_MODE_TETRAHEDRON = 1
+	};
+
+private:
+	Mode mode = CONVEX_DECOMPOSITION_MODE_VOXEL;
+
+	/// Maximum concavity. [Range: 0.0 -> 1.0]
+	real_t max_concavity = 1.0;
+	/// Controls the bias toward clipping along symmetry planes. [Range: 0.0 -> 1.0]
+	real_t symmetry_planes_clipping_bias = 0.05;
+	/// Controls the bias toward clipping along revolution axes. [Range: 0.0 -> 1.0]
+	real_t revolution_axes_clipping_bias = 0.05;
+	real_t min_volume_per_convex_hull = 0.0001;
+	/// Maximum number of voxels generated during the voxelization stage.
+	uint32_t resolution = 10'000;
+	uint32_t max_num_vertices_per_convex_hull = 32;
+	/// Controls the granularity of the search for the "best" clipping plane.
+	/// [Range: 1 -> 16]
+	uint32_t plane_downsampling = 4;
+	/// Controls the precision of the convex-hull generation process during the
+	/// clipping plane selection stage.
+	/// [Range: 1 -> 16]
+	uint32_t convex_hull_downsampling = 4;
+	/// enable/disable normalizing the mesh before applying the convex decomposition.
+	bool normalize_mesh = false;
+
+	bool convex_hull_approximation = true;
+	/// This is the maximum number of convex hulls to produce from the merge operation.
+	uint32_t max_convex_hulls = 1;
+	bool project_hull_vertices = true;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_max_concavity(real_t p_max_concavity);
+	real_t get_max_concavity() const;
+
+	void set_symmetry_planes_clipping_bias(real_t p_symmetry_planes_clipping_bias);
+	real_t get_symmetry_planes_clipping_bias() const;
+
+	void set_revolution_axes_clipping_bias(real_t p_revolution_axes_clipping_bias);
+	real_t get_revolution_axes_clipping_bias() const;
+
+	void set_min_volume_per_convex_hull(real_t p_min_volume_per_convex_hull);
+	real_t get_min_volume_per_convex_hull() const;
+
+	void set_resolution(uint32_t p_resolution);
+	uint32_t get_resolution() const;
+
+	void set_max_num_vertices_per_convex_hull(uint32_t p_max_num_vertices_per_convex_hull);
+	uint32_t get_max_num_vertices_per_convex_hull() const;
+
+	void set_plane_downsampling(uint32_t p_plane_downsampling);
+	uint32_t get_plane_downsampling() const;
+
+	void set_convex_hull_downsampling(uint32_t p_convex_hull_downsampling);
+	uint32_t get_convex_hull_downsampling() const;
+
+	void set_normalize_mesh(bool p_normalize_mesh);
+	bool get_normalize_mesh() const;
+
+	void set_mode(Mode p_mode);
+	Mode get_mode() const;
+
+	void set_convex_hull_approximation(bool p_convex_hull_approximation);
+	bool get_convex_hull_approximation() const;
+
+	void set_max_convex_hulls(uint32_t p_max_convex_hulls);
+	uint32_t get_max_convex_hulls() const;
+
+	void set_project_hull_vertices(bool p_project_hull_vertices);
+	bool get_project_hull_vertices() const;
+};
+
+VARIANT_ENUM_CAST(MeshConvexDecompositionSettings::Mode);
 
 class ArrayMesh : public Mesh {
 	GDCLASS(ArrayMesh, Mesh);
@@ -236,7 +306,7 @@ class ArrayMesh : public Mesh {
 
 private:
 	struct Surface {
-		uint32_t format = 0;
+		uint64_t format = 0;
 		int array_length = 0;
 		int index_array_length = 0;
 		PrimitiveType primitive = PrimitiveType::PRIMITIVE_MAX;
@@ -271,7 +341,7 @@ protected:
 public:
 	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes = TypedArray<Array>(), const Dictionary &p_lods = Dictionary(), BitField<ArrayFormat> p_flags = 0);
 
-	void add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data = Vector<uint8_t>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
+	void add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data = Vector<uint8_t>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>(), const Vector4 p_uv_scale = Vector4());
 
 	Array surface_get_arrays(int p_surface) const override;
 	TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const override;

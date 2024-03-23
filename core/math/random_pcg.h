@@ -59,6 +59,9 @@ static int __bsr_clz32(uint32_t x) {
 #define LDEXPF(s, e) ldexp(s, e)
 #endif
 
+template <typename T>
+class Vector;
+
 class RandomPCG {
 	pcg32_random_t pcg;
 	uint64_t current_seed = 0; // The seed the current generator state started from.
@@ -86,6 +89,8 @@ public:
 	_FORCE_INLINE_ uint32_t rand(uint32_t bounds) {
 		return pcg32_boundedrand_r(&pcg, bounds);
 	}
+
+	int64_t rand_weighted(const Vector<float> &p_weights);
 
 	// Obtaining floating point numbers in [0, 1] range with "good enough" uniformity.
 	// These functions sample the output of rand() as the fraction part of an infinite binary number,
@@ -126,10 +131,18 @@ public:
 	}
 
 	_FORCE_INLINE_ double randfn(double p_mean, double p_deviation) {
-		return p_mean + p_deviation * (cos(Math_TAU * randd()) * sqrt(-2.0 * log(randd()))); // Box-Muller transform
+		double temp = randd();
+		if (temp < CMP_EPSILON) {
+			temp += CMP_EPSILON; // To prevent generating of INF value in log function, resulting to return NaN value from this function.
+		}
+		return p_mean + p_deviation * (cos(Math_TAU * randd()) * sqrt(-2.0 * log(temp))); // Box-Muller transform.
 	}
 	_FORCE_INLINE_ float randfn(float p_mean, float p_deviation) {
-		return p_mean + p_deviation * (cos((float)Math_TAU * randf()) * sqrt(-2.0 * log(randf()))); // Box-Muller transform
+		float temp = randf();
+		if (temp < CMP_EPSILON) {
+			temp += CMP_EPSILON; // To prevent generating of INF value in log function, resulting to return NaN value from this function.
+		}
+		return p_mean + p_deviation * (cos((float)Math_TAU * randf()) * sqrt(-2.0 * log(temp))); // Box-Muller transform.
 	}
 
 	double random(double p_from, double p_to);

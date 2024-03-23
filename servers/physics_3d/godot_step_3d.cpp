@@ -32,6 +32,7 @@
 
 #include "godot_joint_3d.h"
 
+#include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 
 #define BODY_ISLAND_COUNT_RESERVE 128

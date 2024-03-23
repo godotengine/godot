@@ -126,7 +126,10 @@ Ref<OpenXRInteractionProfile> OpenXRInteractionProfile::new_profile(const char *
 }
 
 void OpenXRInteractionProfile::set_interaction_profile_path(const String p_input_profile_path) {
-	interaction_profile_path = p_input_profile_path;
+	OpenXRInteractionProfileMetadata *pmd = OpenXRInteractionProfileMetadata::get_singleton();
+	ERR_FAIL_NULL(pmd);
+
+	interaction_profile_path = pmd->check_profile_name(p_input_profile_path);
 	emit_changed();
 }
 

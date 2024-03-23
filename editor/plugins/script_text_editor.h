@@ -49,7 +49,7 @@ class ConnectionInfoDialog : public AcceptDialog {
 	virtual void ok_pressed() override;
 
 public:
-	void popup_connections(String p_method, Vector<Node *> p_nodes);
+	void popup_connections(const String &p_method, const Vector<Node *> &p_nodes);
 
 	ConnectionInfoDialog();
 };
@@ -68,6 +68,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Vector<String> functions;
 	List<ScriptLanguage::Warning> warnings;
 	List<ScriptLanguage::ScriptError> errors;
+	HashMap<String, List<ScriptLanguage::ScriptError>> depended_errors;
 	HashSet<int> safe_lines;
 
 	List<Connection> missing_connections;
@@ -97,6 +98,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Color safe_line_number_color = Color(1, 1, 1);
 
 	Color marked_line_color = Color(1, 1, 1);
+	Color folded_code_region_color = Color(1, 1, 1);
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
@@ -124,13 +126,16 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_UNINDENT,
 		EDIT_DELETE_LINE,
 		EDIT_DUPLICATE_SELECTION,
+		EDIT_DUPLICATE_LINES,
 		EDIT_PICK_COLOR,
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
 		EDIT_CAPITALIZE,
 		EDIT_EVALUATE,
+		EDIT_TOGGLE_WORD_WRAP,
 		EDIT_TOGGLE_FOLD_LINE,
 		EDIT_FOLD_ALL_LINES,
+		EDIT_CREATE_CODE_REGION,
 		EDIT_UNFOLD_ALL_LINES,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,
@@ -172,11 +177,10 @@ protected:
 	void _set_theme_for_script();
 	void _show_errors_panel(bool p_show);
 	void _show_warnings_panel(bool p_show);
-	void _error_clicked(Variant p_line);
-	void _warning_clicked(Variant p_line);
+	void _error_clicked(const Variant &p_line);
+	void _warning_clicked(const Variant &p_line);
 
 	void _notification(int p_what);
-	static void _bind_methods();
 
 	HashMap<String, Ref<EditorSyntaxHighlighter>> highlighters;
 	void _change_syntax_highlighter(int p_idx);
@@ -222,8 +226,7 @@ public:
 	virtual void ensure_focus() override;
 	virtual void trim_trailing_whitespace() override;
 	virtual void insert_final_newline() override;
-	virtual void convert_indent_to_spaces() override;
-	virtual void convert_indent_to_tabs() override;
+	virtual void convert_indent() override;
 	virtual void tag_saved_version() override;
 
 	virtual void goto_line(int p_line, bool p_with_error = false) override;
@@ -237,7 +240,7 @@ public:
 	virtual void set_breakpoint(int p_line, bool p_enabled) override;
 	virtual void clear_breakpoints() override;
 
-	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
+	virtual void add_callback(const String &p_function, const PackedStringArray &p_args) override;
 	virtual void update_settings() override;
 
 	virtual bool show_members_overview() override;
@@ -253,58 +256,12 @@ public:
 	static void register_editor();
 
 	virtual Control *get_base_editor() const override;
+	virtual CodeTextEditor *get_code_editor() const override;
 
 	virtual void validate() override;
 
 	ScriptTextEditor();
 	~ScriptTextEditor();
-};
-
-const int KIND_COUNT = 10;
-// The order in which to sort code completion options.
-const ScriptLanguage::CodeCompletionKind KIND_SORT_ORDER[KIND_COUNT] = {
-	ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE,
-	ScriptLanguage::CODE_COMPLETION_KIND_MEMBER,
-	ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION,
-	ScriptLanguage::CODE_COMPLETION_KIND_ENUM,
-	ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL,
-	ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT,
-	ScriptLanguage::CODE_COMPLETION_KIND_CLASS,
-	ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH,
-	ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH,
-	ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT,
-};
-
-// The custom comparer which will sort completion options.
-struct CodeCompletionOptionCompare {
-	_FORCE_INLINE_ bool operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const {
-		if (l.location == r.location) {
-			// If locations are same, sort on kind
-			if (l.kind == r.kind) {
-				// If kinds are same, sort alphanumeric
-				return l.display < r.display;
-			}
-
-			// Sort kinds based on the const sorting array defined above. Lower index = higher priority.
-			int l_index = -1;
-			int r_index = -1;
-			for (int i = 0; i < KIND_COUNT; i++) {
-				const ScriptLanguage::CodeCompletionKind kind = KIND_SORT_ORDER[i];
-				l_index = kind == l.kind ? i : l_index;
-				r_index = kind == r.kind ? i : r_index;
-
-				if (l_index != -1 && r_index != -1) {
-					return l_index < r_index;
-				}
-			}
-
-			// This return should never be hit unless something goes wrong.
-			// l and r should always have a Kind which is in the sort order array.
-			return l.display < r.display;
-		}
-
-		return l.location < r.location;
-	}
 };
 
 #endif // SCRIPT_TEXT_EDITOR_H

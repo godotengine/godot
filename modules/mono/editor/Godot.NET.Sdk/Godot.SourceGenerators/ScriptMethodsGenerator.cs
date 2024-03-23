@@ -16,7 +16,7 @@ namespace Godot.SourceGenerators
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.AreGodotSourceGeneratorsDisabled())
+            if (context.IsGodotSourceGeneratorDisabled("ScriptMethods"))
                 return;
 
             INamedTypeSymbol[] godotClasses = context
@@ -30,16 +30,13 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                             {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
                                 {
-                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
                                     return false;
                                 }
 
                                 return true;
                             }
-
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -105,16 +102,20 @@ namespace Godot.SourceGenerators
             if (isInnerClass)
             {
                 var containingType = symbol.ContainingType;
+                AppendPartialContainingTypeDeclarations(containingType);
 
-                while (containingType != null)
+                void AppendPartialContainingTypeDeclarations(INamedTypeSymbol? containingType)
                 {
+                    if (containingType == null)
+                        return;
+
+                    AppendPartialContainingTypeDeclarations(containingType.ContainingType);
+
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
                     source.Append(containingType.NameWithTypeParameters());
                     source.Append("\n{\n");
-
-                    containingType = containingType.ContainingType;
                 }
             }
 
@@ -125,7 +126,7 @@ namespace Godot.SourceGenerators
             var members = symbol.GetMembers();
 
             var methodSymbols = members
-                .Where(s => !s.IsStatic && s.Kind == SymbolKind.Method && !s.IsImplicitlyDeclared)
+                .Where(s => s.Kind == SymbolKind.Method && !s.IsImplicitlyDeclared)
                 .Cast<IMethodSymbol>()
                 .Where(m => m.MethodKind == MethodKind.Ordinary);
 
@@ -135,8 +136,12 @@ namespace Godot.SourceGenerators
 
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
+            source.Append("    /// <summary>\n")
+                .Append("    /// Cached StringNames for the methods contained in this class, for fast lookup.\n")
+                .Append("    /// </summary>\n");
+
             source.Append(
-                $"    public new class MethodName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.MethodName {{\n");
+                $"    public new class MethodName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.MethodName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -147,6 +152,12 @@ namespace Godot.SourceGenerators
 
             foreach (string methodName in distinctMethodNames)
             {
+                source.Append("        /// <summary>\n")
+                    .Append("        /// Cached name for the '")
+                    .Append(methodName)
+                    .Append("' method.\n")
+                    .Append("        /// </summary>\n");
+
                 source.Append("        public new static readonly global::Godot.StringName ");
                 source.Append(methodName);
                 source.Append(" = \"");
@@ -160,14 +171,22 @@ namespace Godot.SourceGenerators
 
             if (godotClassMethods.Length > 0)
             {
-                const string listType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
+                const string ListType = "global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
+
+                source.Append("    /// <summary>\n")
+                    .Append("    /// Get the method information for all the methods declared in this class.\n")
+                    .Append("    /// This method is used by Godot to register the available methods in the editor.\n")
+                    .Append("    /// Do not call this method.\n")
+                    .Append("    /// </summary>\n");
+
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
-                    .Append(listType)
+                    .Append(ListType)
                     .Append(" GetGodotMethodList()\n    {\n");
 
                 source.Append("        var methods = new ")
-                    .Append(listType)
+                    .Append(ListType)
                     .Append("(")
                     .Append(godotClassMethods.Length)
                     .Append(");\n");
@@ -188,6 +207,8 @@ namespace Godot.SourceGenerators
 
             if (godotClassMethods.Length > 0)
             {
+                source.Append("    /// <inheritdoc/>\n");
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override bool InvokeGodotClassMethod(in godot_string_name method, ");
                 source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
 
@@ -201,10 +222,35 @@ namespace Godot.SourceGenerators
                 source.Append("    }\n");
             }
 
+            // Generate InvokeGodotClassStaticMethod
+
+            var godotClassStaticMethods = godotClassMethods.Where(m => m.Method.IsStatic).ToArray();
+
+            if (godotClassStaticMethods.Length > 0)
+            {
+                source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append("    internal new static bool InvokeGodotClassStaticMethod(in godot_string_name method, ");
+                source.Append("NativeVariantPtrArgs args, out godot_variant ret)\n    {\n");
+
+                foreach (var method in godotClassStaticMethods)
+                {
+                    GenerateMethodInvoker(method, source);
+                }
+
+                source.Append("        ret = default;\n");
+                source.Append("        return false;\n");
+                source.Append("    }\n");
+
+                source.Append("#pragma warning restore CS0109\n");
+            }
+
             // Generate HasGodotClassMethod
 
             if (distinctMethodNames.Length > 0)
             {
+                source.Append("    /// <inheritdoc/>\n");
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override bool HasGodotClassMethod(in godot_string_name method)\n    {\n");
 
                 bool isFirstEntry = true;
@@ -288,8 +334,14 @@ namespace Godot.SourceGenerators
                 .Append("\", usage: (global::Godot.PropertyUsageFlags)")
                 .Append((int)propertyInfo.Usage)
                 .Append(", exported: ")
-                .Append(propertyInfo.Exported ? "true" : "false")
-                .Append(")");
+                .Append(propertyInfo.Exported ? "true" : "false");
+            if (propertyInfo.ClassName != null)
+            {
+                source.Append(", className: new global::Godot.StringName(\"")
+                    .Append(propertyInfo.ClassName)
+                    .Append("\")");
+            }
+            source.Append(")");
         }
 
         private static MethodInfo DetermineMethodInfo(GodotMethodData method)
@@ -298,7 +350,9 @@ namespace Godot.SourceGenerators
 
             if (method.RetType != null)
             {
-                returnVal = DeterminePropertyInfo(method.RetType.Value.MarshalType, name: string.Empty);
+                returnVal = DeterminePropertyInfo(method.RetType.Value.MarshalType,
+                    method.RetType.Value.TypeSymbol,
+                    name: string.Empty);
             }
             else
             {
@@ -317,6 +371,7 @@ namespace Godot.SourceGenerators
                 for (int i = 0; i < paramCount; i++)
                 {
                     arguments.Add(DeterminePropertyInfo(method.ParamTypes[i],
+                        method.Method.Parameters[i].Type,
                         name: method.Method.Parameters[i].Name));
                 }
             }
@@ -325,11 +380,18 @@ namespace Godot.SourceGenerators
                 arguments = null;
             }
 
-            return new MethodInfo(method.Method.Name, returnVal, MethodFlags.Default, arguments,
+            MethodFlags flags = MethodFlags.Default;
+
+            if (method.Method.IsStatic)
+            {
+                flags |= MethodFlags.Static;
+            }
+
+            return new MethodInfo(method.Method.Name, returnVal, flags, arguments,
                 defaultArguments: null);
         }
 
-        private static PropertyInfo DeterminePropertyInfo(MarshalType marshalType, string name)
+        private static PropertyInfo DeterminePropertyInfo(MarshalType marshalType, ITypeSymbol typeSymbol, string name)
         {
             var memberVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(marshalType)!.Value;
 
@@ -338,8 +400,14 @@ namespace Godot.SourceGenerators
             if (memberVariantType == VariantType.Nil)
                 propUsage |= PropertyUsageFlags.NilIsVariant;
 
+            string? className = null;
+            if (memberVariantType == VariantType.Object && typeSymbol is INamedTypeSymbol namedTypeSymbol)
+            {
+                className = namedTypeSymbol.GetGodotScriptNativeClassName();
+            }
+
             return new PropertyInfo(memberVariantType, name,
-                PropertyHint.None, string.Empty, propUsage, exported: false);
+                PropertyHint.None, string.Empty, propUsage, className, exported: false);
         }
 
         private static void GenerateHasMethodEntry(

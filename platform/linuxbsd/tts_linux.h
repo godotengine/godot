@@ -34,14 +34,18 @@
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
 #include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/list.h"
-#include "core/templates/rb_map.h"
 #include "core/variant/array.h"
 #include "servers/display_server.h"
 
+#ifdef SOWRAP_ENABLED
 #include "speechd-so_wrap.h"
+#else
+#include <libspeechd.h>
+#endif
 
-class TTS_Linux {
+class TTS_Linux : public Object {
 	_THREAD_SAFE_CLASS_
 
 	List<DisplayServer::TTSUtterance> queue;
@@ -51,6 +55,13 @@ class TTS_Linux {
 	int last_msg_id = -1;
 	HashMap<int, int> ids;
 
+	struct VoiceInfo {
+		String language;
+		String variant;
+	};
+	bool voices_loaded = false;
+	HashMap<String, VoiceInfo> voices;
+
 	Thread init_thread;
 
 	static void speech_init_thread_func(void *p_userdata);
@@ -58,6 +69,11 @@ class TTS_Linux {
 	static void speech_event_index_mark(size_t p_msg_id, size_t p_client_id, SPDNotificationType p_type, char *p_index_mark);
 
 	static TTS_Linux *singleton;
+
+protected:
+	void _load_voices();
+	void _speech_event(int p_msg_id, int p_type);
+	void _speech_index_mark(int p_msg_id, int p_type, const String &p_index_mark);
 
 public:
 	static TTS_Linux *get_singleton();

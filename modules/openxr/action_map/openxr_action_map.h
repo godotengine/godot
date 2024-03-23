@@ -31,11 +31,11 @@
 #ifndef OPENXR_ACTION_MAP_H
 #define OPENXR_ACTION_MAP_H
 
-#include "core/io/resource.h"
-
 #include "openxr_action.h"
 #include "openxr_action_set.h"
 #include "openxr_interaction_profile.h"
+
+#include "core/io/resource.h"
 
 class OpenXRActionMap : public Resource {
 	GDCLASS(OpenXRActionMap, Resource);

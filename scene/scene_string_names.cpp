@@ -57,7 +57,6 @@ SceneStringNames::SceneStringNames() {
 	sleeping_state_changed = StaticCString::create("sleeping_state_changed");
 
 	finished = StaticCString::create("finished");
-	emission_finished = StaticCString::create("emission_finished");
 	animation_finished = StaticCString::create("animation_finished");
 	animation_changed = StaticCString::create("animation_changed");
 	animation_started = StaticCString::create("animation_started");
@@ -168,8 +167,6 @@ SceneStringNames::SceneStringNames() {
 	_drop_data = StaticCString::create("_drop_data");
 	_can_drop_data = StaticCString::create("_can_drop_data");
 
-	_im_update = StaticCString::create("_im_update"); // Sprite3D
-
 	baked_light_changed = StaticCString::create("baked_light_changed");
 	_baked_light_changed = StaticCString::create("_baked_light_changed");
 
@@ -196,12 +193,16 @@ SceneStringNames::SceneStringNames() {
 
 	path_pp = NodePath("..");
 
+	// Audio bus name.
+	Master = StaticCString::create("Master");
+
 	_default = StaticCString::create("default");
 
 	_window_group = StaticCString::create("_window_group");
 	_window_input = StaticCString::create("_window_input");
 	window_input = StaticCString::create("window_input");
 	_window_unhandled_input = StaticCString::create("_window_unhandled_input");
+	_get_contents_minimum_size = StaticCString::create("_get_contents_minimum_size");
 
 	theme_changed = StaticCString::create("theme_changed");
 	parameters_base_path = "parameters/";

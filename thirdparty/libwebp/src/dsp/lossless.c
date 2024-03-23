@@ -49,7 +49,7 @@ static WEBP_INLINE uint32_t Clip255(uint32_t a) {
 }
 
 static WEBP_INLINE int AddSubtractComponentFull(int a, int b, int c) {
-  return Clip255(a + b - c);
+  return Clip255((uint32_t)(a + b - c));
 }
 
 static WEBP_INLINE uint32_t ClampedAddSubtractFull(uint32_t c0, uint32_t c1,
@@ -66,7 +66,7 @@ static WEBP_INLINE uint32_t ClampedAddSubtractFull(uint32_t c0, uint32_t c1,
 }
 
 static WEBP_INLINE int AddSubtractComponentHalf(int a, int b) {
-  return Clip255(a + (a - b) / 2);
+  return Clip255((uint32_t)(a + (a - b) / 2));
 }
 
 static WEBP_INLINE uint32_t ClampedAddSubtractHalf(uint32_t c0, uint32_t c1,
@@ -293,10 +293,10 @@ void VP8LTransformColorInverse_C(const VP8LMultipliers* const m,
     const uint32_t red = argb >> 16;
     int new_red = red & 0xff;
     int new_blue = argb & 0xff;
-    new_red += ColorTransformDelta(m->green_to_red_, green);
+    new_red += ColorTransformDelta((int8_t)m->green_to_red_, green);
     new_red &= 0xff;
-    new_blue += ColorTransformDelta(m->green_to_blue_, green);
-    new_blue += ColorTransformDelta(m->red_to_blue_, (int8_t)new_red);
+    new_blue += ColorTransformDelta((int8_t)m->green_to_blue_, green);
+    new_blue += ColorTransformDelta((int8_t)m->red_to_blue_, (int8_t)new_red);
     new_blue &= 0xff;
     dst[i] = (argb & 0xff00ff00u) | (new_red << 16) | (new_blue);
   }
@@ -395,7 +395,7 @@ void VP8LInverseTransform(const VP8LTransform* const transform,
   assert(row_start < row_end);
   assert(row_end <= transform->ysize_);
   switch (transform->type_) {
-    case SUBTRACT_GREEN:
+    case SUBTRACT_GREEN_TRANSFORM:
       VP8LAddGreenToBlueAndRed(in, (row_end - row_start) * width, out);
       break;
     case PREDICTOR_TRANSFORM:
@@ -588,6 +588,7 @@ VP8LConvertFunc VP8LConvertBGRAToBGR;
 VP8LMapARGBFunc VP8LMapColor32b;
 VP8LMapAlphaFunc VP8LMapColor8b;
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void VP8LDspInitSSE2(void);
 extern void VP8LDspInitSSE41(void);
 extern void VP8LDspInitNEON(void);

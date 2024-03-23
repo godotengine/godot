@@ -6,21 +6,21 @@ var prop1:
 		prop1 = value
 
 # Typed inline property
-var prop2 : int:
+var prop2: int:
 	get:
 		return prop2
 	set(value):
 		prop2 = value
 
 # Typed inline property with default value
-var prop3 : int = 1:
+var prop3: int = 1:
 	get:
 		return prop3
 	set(value):
 		prop3 = value
 
 # Typed inline property with backing variable
-var _prop4 : int = 2
+var _prop4: int = 2
 var prop4: int:
 	get:
 		return _prop4

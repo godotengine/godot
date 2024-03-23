@@ -36,7 +36,7 @@ void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture2D> &p_t
 	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	p_duration = MAX(0.0, p_duration);
+	p_duration = MAX(SPRITE_FRAME_MINIMUM_DURATION, p_duration);
 
 	Frame frame = { p_texture, p_duration };
 
@@ -57,7 +57,7 @@ void SpriteFrames::set_frame(const StringName &p_anim, int p_idx, const Ref<Text
 		return;
 	}
 
-	p_duration = MAX(0.0, p_duration);
+	p_duration = MAX(SPRITE_FRAME_MINIMUM_DURATION, p_duration);
 
 	Frame frame = { p_texture, p_duration };
 
@@ -201,6 +201,7 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 		anim.loop = d["loop"];
 		Array frames = d["frames"];
 		for (int j = 0; j < frames.size(); j++) {
+#ifndef DISABLE_DEPRECATED
 			// For compatibility.
 			Ref<Resource> res = frames[j];
 			if (res.is_valid()) {
@@ -208,19 +209,39 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 				anim.frames.push_back(frame);
 				continue;
 			}
+#endif
 
 			Dictionary f = frames[j];
 
 			ERR_CONTINUE(!f.has("texture"));
 			ERR_CONTINUE(!f.has("duration"));
 
-			Frame frame = { f["texture"], f["duration"] };
+			Frame frame = { f["texture"], MAX(SPRITE_FRAME_MINIMUM_DURATION, (float)f["duration"]) };
 			anim.frames.push_back(frame);
 		}
 
 		animations[d["name"]] = anim;
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void SpriteFrames::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0) {
+		if (pf == "has_animation" || pf == "remove_animation" || pf == "rename_animation" ||
+				pf == "set_animation_speed" || pf == "get_animation_speed" ||
+				pf == "set_animation_loop" || pf == "get_animation_loop" ||
+				pf == "add_frame" || pf == "set_frame" || pf == "remove_frame" ||
+				pf == "get_frame_count" || pf == "get_frame_texture" || pf == "get_frame_duration" ||
+				pf == "clear") {
+			for (const String &E : get_animation_names()) {
+				r_options->push_back(E.quote());
+			}
+		}
+	}
+	Resource::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
 
 void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "anim"), &SpriteFrames::add_animation);

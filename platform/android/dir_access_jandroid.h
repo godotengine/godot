@@ -31,9 +31,11 @@
 #ifndef DIR_ACCESS_JANDROID_H
 #define DIR_ACCESS_JANDROID_H
 
+#include "java_godot_lib_jni.h"
+
 #include "core/io/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
-#include "java_godot_lib_jni.h"
+
 #include <stdio.h>
 
 /// Android implementation of the DirAccess interface used to provide access to
@@ -75,7 +77,7 @@ public:
 	virtual bool dir_exists(String p_dir) override;
 
 	virtual Error make_dir(String p_dir) override;
-	virtual Error make_dir_recursive(String p_dir) override;
+	virtual Error make_dir_recursive(const String &p_dir) override;
 
 	virtual Error rename(String p_from, String p_to) override;
 	virtual Error remove(String p_name) override;

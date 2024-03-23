@@ -5,19 +5,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_ERROR_H
 #define MBEDTLS_ERROR_H
@@ -30,7 +18,7 @@
 
 #include <stddef.h>
 
-#if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
+#if (defined(__ARMCC_VERSION) || defined(_MSC_VER)) && \
     !defined(inline) && !defined(__cplusplus)
 #define inline __inline
 #endif
@@ -127,15 +115,15 @@ extern "C" {
  *        Wrapper macro for mbedtls_error_add(). See that function for
  *        more details.
  */
-#define MBEDTLS_ERROR_ADD( high, low ) \
-        mbedtls_error_add( high, low, __FILE__, __LINE__ )
+#define MBEDTLS_ERROR_ADD(high, low) \
+    mbedtls_error_add(high, low, __FILE__, __LINE__)
 
 #if defined(MBEDTLS_TEST_HOOKS)
 /**
  * \brief Testing hook called before adding/combining two error codes together.
  *        Only used when invasive testing is enabled via MBEDTLS_TEST_HOOKS.
  */
-extern void (*mbedtls_test_hook_error_add)( int, int, const char *, int );
+extern void (*mbedtls_test_hook_error_add)(int, int, const char *, int);
 #endif
 
 /**
@@ -156,29 +144,30 @@ extern void (*mbedtls_test_hook_error_add)( int, int, const char *, int );
  * \param file      file where this error code addition occurred.
  * \param line      line where this error code addition occurred.
  */
-static inline int mbedtls_error_add( int high, int low,
-                                     const char *file, int line )
+static inline int mbedtls_error_add(int high, int low,
+                                    const char *file, int line)
 {
 #if defined(MBEDTLS_TEST_HOOKS)
-    if( *mbedtls_test_hook_error_add != NULL )
-        ( *mbedtls_test_hook_error_add )( high, low, file, line );
+    if (*mbedtls_test_hook_error_add != NULL) {
+        (*mbedtls_test_hook_error_add)(high, low, file, line);
+    }
 #endif
-    (void)file;
-    (void)line;
+    (void) file;
+    (void) line;
 
-    return( high + low );
+    return high + low;
 }
 
 /**
- * \brief Translate a mbed TLS error code into a string representation,
- *        Result is truncated if necessary and always includes a terminating
- *        null byte.
+ * \brief Translate an Mbed TLS error code into a string representation.
+ *        The result is truncated if necessary and always includes a
+ *        terminating null byte.
  *
  * \param errnum    error code
  * \param buffer    buffer to place representation in
  * \param buflen    length of the buffer
  */
-void mbedtls_strerror( int errnum, char *buffer, size_t buflen );
+void mbedtls_strerror(int errnum, char *buffer, size_t buflen);
 
 /**
  * \brief Translate the high-level part of an Mbed TLS error code into a string
@@ -193,7 +182,7 @@ void mbedtls_strerror( int errnum, char *buffer, size_t buflen );
  * \return The string representation of the error code, or \c NULL if the error
  *         code is unknown.
  */
-const char * mbedtls_high_level_strerr( int error_code );
+const char *mbedtls_high_level_strerr(int error_code);
 
 /**
  * \brief Translate the low-level part of an Mbed TLS error code into a string
@@ -208,7 +197,7 @@ const char * mbedtls_high_level_strerr( int error_code );
  * \return The string representation of the error code, or \c NULL if the error
  *         code is unknown.
  */
-const char * mbedtls_low_level_strerr( int error_code );
+const char *mbedtls_low_level_strerr(int error_code);
 
 #ifdef __cplusplus
 }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DirAccess" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="DirAccess" inherits="RefCounted" keywords="directory, path, folder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Type used to handle the filesystem.
+		Provides methods for managing directories and their content.
 	</brief_description>
 	<description>
-		Directory type. It is used to manage directories and their content (not restricted to the project folder).
+		This class is used to manage directories and their content, even outside of the project folder.
 		[DirAccess] can't be instantiated directly. Instead it is created with a static method that takes a path for which it will be opened.
 		Most of the methods have a static alternative that can be used without creating a [DirAccess]. Static methods only support absolute paths (including [code]res://[/code] and [code]user://[/code]).
 		[codeblock]
@@ -44,11 +44,11 @@
 		        {
 		            if (dir.CurrentIsDir())
 		            {
-		                GD.Print("Found directory: " + fileName);
+		                GD.Print($"Found directory: {fileName}");
 		            }
 		            else
 		            {
-		                GD.Print("Found file: " + fileName);
+		                GD.Print($"Found file: {fileName}");
 		            }
 		            fileName = dir.GetNext();
 		        }
@@ -71,6 +71,7 @@
 			<description>
 				Changes the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
 				Returns one of the [enum Error] code constants ([constant OK] on success).
+				[b]Note:[/b] The new directory must be within the same scope, e.g. when you had opened a directory inside [code]res://[/code], you can't change it to [code]user://[/code] directory. If you need to open a directory in another access scope, use [method open] to create a new instance instead.
 			</description>
 		</method>
 		<method name="copy">
@@ -173,6 +174,7 @@
 			<description>
 				Returns a [PackedStringArray] containing filenames of the directory contents, excluding directories. The array is sorted alphabetically.
 				Affected by [member include_hidden].
+				[b]Note:[/b] When used on a [code]res://[/code] path in an exported project, only the files actually included in the PCK at the given folder level are returned. In practice, this means that since imported resources are stored in a top-level [code].godot/[/code] folder, only paths to [code]*.gd[/code] and [code]*.import[/code] files are returned (plus a few files such as [code]project.godot[/code] or [code]project.binary[/code] and the project icon). In an exported project, the list of returned files will also vary depending on whether [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code].
 			</description>
 		</method>
 		<method name="get_files_at" qualifiers="static">
@@ -200,6 +202,14 @@
 			<return type="int" />
 			<description>
 				Returns the available space on the current directory's disk, in bytes. Returns [code]0[/code] if the platform-specific method to query the available space fails.
+			</description>
+		</method>
+		<method name="is_case_sensitive" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if the file system or directory use case sensitive file names.
+				[b]Note:[/b] This method is implemented on macOS, Linux (for EXT4 and F2FS filesystems only) and Windows. On other platforms, it always returns [code]true[/code].
 			</description>
 		</method>
 		<method name="list_dir_begin">
@@ -290,7 +300,7 @@
 	</methods>
 	<members>
 		<member name="include_hidden" type="bool" setter="set_include_hidden" getter="get_include_hidden">
-			If [code]true[/code], hidden files are included when the navigating directory.
+			If [code]true[/code], hidden files are included when navigating the directory.
 			Affects [method list_dir_begin], [method get_directories] and [method get_files].
 		</member>
 		<member name="include_navigational" type="bool" setter="set_include_navigational" getter="get_include_navigational">

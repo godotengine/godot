@@ -31,10 +31,10 @@
 #include "animation_track_editor_plugins.h"
 
 #include "editor/audio_stream_preview.h"
-#include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
-#include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"
@@ -74,7 +74,7 @@ void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, 
 	draw_texture(icon, ofs);
 
 	if (p_selected) {
-		Color color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		draw_rect_clipped(Rect2(ofs, icon->get_size()), color, false);
 	}
 }
@@ -181,7 +181,7 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 	draw_rect_clipped(rect, color);
 
 	if (p_selected) {
-		Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		draw_rect_clipped(rect, accent, false);
 	}
 }
@@ -310,8 +310,8 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		Rect2 rect = Rect2(from_x, (get_size().height - fh) / 2, to_x - from_x, fh);
 		draw_rect(rect, Color(0.25, 0.25, 0.25));
 
-		Vector<Vector2> lines;
-		lines.resize((to_x - from_x + 1) * 2);
+		Vector<Vector2> points;
+		points.resize((to_x - from_x) * 2);
 		preview_len = preview->get_length();
 
 		for (int i = from_x; i < to_x; i++) {
@@ -321,17 +321,16 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 			float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 			int idx = i - from_x;
-			lines.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
-			lines.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
+			points.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
+			points.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
 		}
 
-		Vector<Color> color;
-		color.push_back(Color(0.75, 0.75, 0.75));
+		Vector<Color> colors = { Color(0.75, 0.75, 0.75) };
 
-		RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, color);
+		RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), points, colors);
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			draw_rect(rect, accent, false);
 		}
 	} else {
@@ -344,7 +343,7 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			draw_rect_clipped(rect, accent, false);
 		}
 	}
@@ -390,7 +389,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 
 		size = texture->get_size();
 
-		if (bool(object->call("is_region"))) {
+		if (bool(object->call("is_region_enabled"))) {
 			size = Rect2(object->call("get_region_rect")).size;
 		}
 
@@ -480,7 +479,7 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 
 		region.size = texture->get_size();
 
-		if (bool(object->call("is_region"))) {
+		if (bool(object->call("is_region_enabled"))) {
 			region = Rect2(object->call("get_region_rect"));
 		}
 
@@ -543,7 +542,7 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 		return;
 	}
 
-	Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	Color bg = accent;
 	bg.a = 0.15;
 
@@ -668,8 +667,8 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		bg.b = 1 - color.b;
 		draw_rect(rect, bg);
 
-		Vector<Vector2> lines;
-		Vector<Color> colorv;
+		Vector<Vector2> points;
+		Vector<Color> colors = { color };
 		{
 			Ref<Animation> ap_anim = ap->get_animation(anim);
 
@@ -686,16 +685,14 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 						continue;
 					}
 
-					lines.push_back(Point2(x, y));
-					lines.push_back(Point2(x + 1, y));
+					points.push_back(Point2(x, y));
+					points.push_back(Point2(x + 1, y));
 				}
 			}
-
-			colorv.push_back(color);
 		}
 
-		if (lines.size() > 2) {
-			RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, colorv);
+		if (points.size() > 2) {
+			RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), points, colors);
 		}
 
 		int limit = to_x - from_x - 4;
@@ -704,7 +701,7 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		}
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			draw_rect(rect, accent, false);
 		}
 	} else {
@@ -717,7 +714,7 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			draw_rect_clipped(rect, accent, false);
 		}
 	}
@@ -730,12 +727,12 @@ void AnimationTrackEditSubAnim::set_node(Object *p_object) {
 //// VOLUME DB ////
 
 int AnimationTrackEditVolumeDB::get_key_height() const {
-	Ref<Texture2D> volume_texture = get_theme_icon(SNAME("ColorTrackVu"), SNAME("EditorIcons"));
+	Ref<Texture2D> volume_texture = get_editor_theme_icon(SNAME("ColorTrackVu"));
 	return volume_texture->get_height() * 1.2;
 }
 
 void AnimationTrackEditVolumeDB::draw_bg(int p_clip_left, int p_clip_right) {
-	Ref<Texture2D> volume_texture = get_theme_icon(SNAME("ColorTrackVu"), SNAME("EditorIcons"));
+	Ref<Texture2D> volume_texture = get_editor_theme_icon(SNAME("ColorTrackVu"));
 	int tex_h = volume_texture->get_height();
 
 	int y_from = (get_size().height - tex_h) / 2;
@@ -746,7 +743,7 @@ void AnimationTrackEditVolumeDB::draw_bg(int p_clip_left, int p_clip_right) {
 }
 
 void AnimationTrackEditVolumeDB::draw_fg(int p_clip_left, int p_clip_right) {
-	Ref<Texture2D> volume_texture = get_theme_icon(SNAME("ColorTrackVu"), SNAME("EditorIcons"));
+	Ref<Texture2D> volume_texture = get_editor_theme_icon(SNAME("ColorTrackVu"));
 	int tex_h = volume_texture->get_height();
 	int y_from = (get_size().height - tex_h) / 2;
 	int db0 = y_from + (24 / 80.0) * tex_h;
@@ -781,7 +778,7 @@ void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, 
 		to_x = p_clip_right;
 	}
 
-	Ref<Texture2D> volume_texture = get_theme_icon(SNAME("ColorTrackVu"), SNAME("EditorIcons"));
+	Ref<Texture2D> volume_texture = get_editor_theme_icon(SNAME("ColorTrackVu"));
 	int tex_h = volume_texture->get_height();
 
 	int y_from = (get_size().height - tex_h) / 2;
@@ -848,9 +845,14 @@ bool AnimationTrackEditTypeAudio::is_key_selectable_by_distance() const {
 
 void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), p_index);
-
 	if (!stream.is_valid()) {
-		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right); // Draw diamond.
+		return;
+	}
+
+	float len = stream->get_length();
+	if (len == 0) {
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right); // Draw diamond.
 		return;
 	}
 
@@ -872,15 +874,7 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	float fh = int(font->get_height(font_size) * 1.5);
 
-	float len = stream->get_length();
-
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
-
-	float preview_len = preview->get_length();
-
-	if (len == 0) {
-		len = preview_len;
-	}
 
 	int pixel_total_len = len * p_pixels_sec;
 
@@ -921,9 +915,9 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	Rect2 rect = Rect2(from_x, (h - fh) / 2, to_x - from_x, fh);
 	draw_rect(rect, Color(0.25, 0.25, 0.25));
 
-	Vector<Vector2> lines;
-	lines.resize((to_x - from_x + 1) * 2);
-	preview_len = preview->get_length();
+	Vector<Vector2> points;
+	points.resize((to_x - from_x) * 2);
+	float preview_len = preview->get_length();
 
 	for (int i = from_x; i < to_x; i++) {
 		float ofs = (i - pixel_begin) * preview_len / pixel_total_len;
@@ -935,16 +929,15 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 		float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 		int idx = i - from_x;
-		lines.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
-		lines.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
+		points.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
+		points.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
 	}
 
-	Vector<Color> color;
-	color.push_back(Color(0.75, 0.75, 0.75));
+	Vector<Color> colors = { Color(0.75, 0.75, 0.75) };
 
-	RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, color);
+	RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), points, colors);
 
-	Color cut_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+	Color cut_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	cut_color.a = 0.7;
 	if (start_ofs > 0 && pixel_begin > p_clip_left) {
 		draw_rect(Rect2(pixel_begin, rect.position.y, 1, rect.size.y), cut_color);
@@ -954,7 +947,7 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	}
 
 	if (p_selected) {
-		Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		draw_rect(rect, accent, false);
 	}
 }
@@ -980,8 +973,7 @@ bool AnimationTrackEditTypeAudio::can_drop_data(const Point2 &p_point, const Var
 			Vector<String> files = drag_data["files"];
 
 			if (files.size() == 1) {
-				String file = files[0];
-				Ref<AudioStream> res = ResourceLoader::load(file);
+				Ref<AudioStream> res = ResourceLoader::load(files[0]);
 				if (res.is_valid()) {
 					return true;
 				}
@@ -1002,8 +994,7 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 			Vector<String> files = drag_data["files"];
 
 			if (files.size() == 1) {
-				String file = files[0];
-				stream = ResourceLoader::load(file);
+				stream = ResourceLoader::load(files[0]);
 			}
 		}
 
@@ -1018,7 +1009,7 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 				ofs += 0.0001;
 			}
 
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Audio Track Clip"));
 			undo_redo->add_do_method(get_animation().ptr(), "audio_track_insert_key", get_track(), ofs, stream);
 			undo_redo->add_undo_method(get_animation().ptr(), "track_remove_key_at_time", get_track(), ofs);
@@ -1045,16 +1036,13 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 				continue;
 			}
 
-			float start_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), i);
-			float end_ofs = get_animation()->audio_track_get_key_end_offset(get_track(), i);
 			float len = stream->get_length();
-
 			if (len == 0) {
-				Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
-				float preview_len = preview->get_length();
-				len = preview_len;
+				continue;
 			}
 
+			float start_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), i);
+			float end_ofs = get_animation()->audio_track_get_key_end_offset(get_track(), i);
 			len -= end_ofs;
 			len -= start_ofs;
 
@@ -1125,7 +1113,7 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (len_resizing && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (len_resizing_rel == 0 || len_resizing_index < 0) {
 			len_resizing = false;
@@ -1284,8 +1272,8 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		bg.b = 1 - color.b;
 		draw_rect(rect, bg);
 
-		Vector<Vector2> lines;
-		Vector<Color> colorv;
+		Vector<Vector2> points;
+		Vector<Color> colors = { color };
 		{
 			Ref<Animation> ap_anim = ap->get_animation(anim);
 
@@ -1302,16 +1290,14 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 						continue;
 					}
 
-					lines.push_back(Point2(x, y));
-					lines.push_back(Point2(x + 1, y));
+					points.push_back(Point2(x, y));
+					points.push_back(Point2(x + 1, y));
 				}
 			}
-
-			colorv.push_back(color);
 		}
 
-		if (lines.size() > 2) {
-			RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, colorv);
+		if (points.size() > 2) {
+			RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), points, colors);
 		}
 
 		int limit = to_x - from_x - 4;
@@ -1320,7 +1306,7 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		}
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			draw_rect(rect, accent, false);
 		}
 	} else {
@@ -1333,7 +1319,7 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		draw_rect_clipped(rect, color);
 
 		if (p_selected) {
-			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			draw_rect_clipped(rect, accent, false);
 		}
 	}

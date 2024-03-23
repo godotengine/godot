@@ -32,9 +32,8 @@
 
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
-#include "editor/editor_node.h"
-#include "editor/editor_run_native.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 void DebugAdapterParser::_bind_methods() {
@@ -45,7 +44,7 @@ void DebugAdapterParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("req_attach", "params"), &DebugAdapterParser::req_attach);
 	ClassDB::bind_method(D_METHOD("req_restart", "params"), &DebugAdapterParser::req_restart);
 	ClassDB::bind_method(D_METHOD("req_terminate", "params"), &DebugAdapterParser::req_terminate);
-	ClassDB::bind_method(D_METHOD("req_configurationDone", "params"), &DebugAdapterParser::prepare_success_response);
+	ClassDB::bind_method(D_METHOD("req_configurationDone", "params"), &DebugAdapterParser::req_configurationDone);
 	ClassDB::bind_method(D_METHOD("req_pause", "params"), &DebugAdapterParser::req_pause);
 	ClassDB::bind_method(D_METHOD("req_continue", "params"), &DebugAdapterParser::req_continue);
 	ClassDB::bind_method(D_METHOD("req_threads", "params"), &DebugAdapterParser::req_threads);
@@ -162,7 +161,7 @@ Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const 
 
 Dictionary DebugAdapterParser::req_disconnect(const Dictionary &p_params) const {
 	if (!DebugAdapterProtocol::get_singleton()->get_current_peer()->attached) {
-		EditorNode::get_singleton()->run_stop();
+		EditorRunBar::get_singleton()->stop_playing();
 	}
 
 	return prepare_success_response(p_params);
@@ -181,6 +180,13 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 		DebugAdapterProtocol::get_singleton()->get_current_peer()->supportsCustomData = args["godot/custom_data"];
 	}
 
+	DebugAdapterProtocol::get_singleton()->get_current_peer()->pending_launch = p_params;
+
+	return Dictionary();
+}
+
+Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const {
+	Dictionary args = p_params["arguments"];
 	ScriptEditorDebugger *dbg = EditorDebuggerNode::get_singleton()->get_default_debugger();
 	if ((bool)args["noDebug"] != dbg->is_skip_breakpoints()) {
 		dbg->debug_skip_breakpoints();
@@ -188,7 +194,7 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 
 	String platform_string = args.get("platform", "host");
 	if (platform_string == "host") {
-		EditorNode::get_singleton()->run_play();
+		EditorRunBar::get_singleton()->play_main_scene();
 	} else {
 		int device = args.get("device", -1);
 		int idx = -1;
@@ -212,8 +218,8 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 			return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN_PLATFORM);
 		}
 
-		EditorNode *editor = EditorNode::get_singleton();
-		Error err = platform_string == "android" ? editor->run_play_native(device, idx) : editor->run_play_native(-1, idx);
+		EditorRunBar *run_bar = EditorRunBar::get_singleton();
+		Error err = platform_string == "android" ? run_bar->start_native_device(device * 10000 + idx) : run_bar->start_native_device(idx);
 		if (err) {
 			if (err == ERR_INVALID_PARAMETER && platform_string == "android") {
 				return prepare_error_response(p_params, DAP::ErrorType::MISSING_DEVICE);
@@ -247,7 +253,7 @@ Dictionary DebugAdapterParser::req_restart(const Dictionary &p_params) const {
 	args = args["arguments"];
 	params["arguments"] = args;
 
-	Dictionary response = DebugAdapterProtocol::get_singleton()->get_current_peer()->attached ? req_attach(params) : req_launch(params);
+	Dictionary response = DebugAdapterProtocol::get_singleton()->get_current_peer()->attached ? req_attach(params) : _launch_process(params);
 	if (!response["success"]) {
 		response["command"] = p_params["command"];
 		return response;
@@ -257,13 +263,23 @@ Dictionary DebugAdapterParser::req_restart(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_terminate(const Dictionary &p_params) const {
-	EditorNode::get_singleton()->run_stop();
+	EditorRunBar::get_singleton()->stop_playing();
+
+	return prepare_success_response(p_params);
+}
+
+Dictionary DebugAdapterParser::req_configurationDone(const Dictionary &p_params) const {
+	Ref<DAPeer> peer = DebugAdapterProtocol::get_singleton()->get_current_peer();
+	if (!peer->pending_launch.is_empty()) {
+		peer->res_queue.push_back(_launch_process(peer->pending_launch));
+		peer->pending_launch.clear();
+	}
 
 	return prepare_success_response(p_params);
 }
 
 Dictionary DebugAdapterParser::req_pause(const Dictionary &p_params) const {
-	EditorNode::get_singleton()->get_pause_button()->set_pressed(true);
+	EditorRunBar::get_singleton()->get_pause_button()->set_pressed(true);
 	EditorDebuggerNode::get_singleton()->_paused();
 
 	DebugAdapterProtocol::get_singleton()->notify_stopped_paused();
@@ -272,7 +288,7 @@ Dictionary DebugAdapterParser::req_pause(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_continue(const Dictionary &p_params) const {
-	EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
+	EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
 	EditorDebuggerNode::get_singleton()->_paused();
 
 	DebugAdapterProtocol::get_singleton()->notify_continued();
@@ -339,6 +355,12 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 		variables["clientPath"] = source.path;
 		variables["editorPath"] = ProjectSettings::get_singleton()->get_resource_path();
 		return prepare_error_response(p_params, DAP::ErrorType::WRONG_PATH, variables);
+	}
+
+	// If path contains \, it's a Windows path, so we need to convert it to /, and make the drive letter uppercase
+	if (source.path.find("\\") != -1) {
+		source.path = source.path.replace("\\", "/");
+		source.path = source.path.substr(0, 1).to_upper() + source.path.substr(1);
 	}
 
 	Array breakpoints = args["breakpoints"], lines;
@@ -463,6 +485,7 @@ Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
 
 	String value = EditorDebuggerNode::get_singleton()->get_var_value(args["expression"]);
 	body["result"] = value;
+	body["variablesReference"] = 0;
 
 	return response;
 }
@@ -578,12 +601,12 @@ Dictionary DebugAdapterParser::ev_continued() const {
 	return event;
 }
 
-Dictionary DebugAdapterParser::ev_output(const String &p_message) const {
+Dictionary DebugAdapterParser::ev_output(const String &p_message, RemoteDebugger::MessageType p_type) const {
 	Dictionary event = prepare_base_event(), body;
 	event["event"] = "output";
 	event["body"] = body;
 
-	body["category"] = "stdout";
+	body["category"] = (p_type == RemoteDebugger::MessageType::MESSAGE_TYPE_ERROR) ? "stderr" : "stdout";
 	body["output"] = p_message + "\r\n";
 
 	return event;

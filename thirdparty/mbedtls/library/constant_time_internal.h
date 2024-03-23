@@ -2,19 +2,7 @@
  *  Constant-time functions
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #ifndef MBEDTLS_CONSTANT_TIME_INTERNAL_H
@@ -43,9 +31,10 @@
  *
  * \return          Zero if \p value is zero, otherwise all-bits-one.
  */
-unsigned mbedtls_ct_uint_mask( unsigned value );
+unsigned mbedtls_ct_uint_mask(unsigned value);
 
-#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC)
+#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC) || defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC) || \
+    defined(MBEDTLS_NIST_KW_C) || defined(MBEDTLS_CIPHER_MODE_CBC)
 
 /** Turn a value into a mask:
  * - if \p value == 0, return the all-bits 0 mask, aka 0
@@ -58,9 +47,10 @@ unsigned mbedtls_ct_uint_mask( unsigned value );
  *
  * \return          Zero if \p value is zero, otherwise all-bits-one.
  */
-size_t mbedtls_ct_size_mask( size_t value );
+size_t mbedtls_ct_size_mask(size_t value);
 
-#endif /* MBEDTLS_SSL_SOME_MODES_USE_MAC */
+#endif /* defined(MBEDTLS_SSL_SOME_MODES_USE_MAC) || defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC) ||
+          defined(MBEDTLS_NIST_KW_C) || defined(MBEDTLS_CIPHER_MODE_CBC) */
 
 #if defined(MBEDTLS_BIGNUM_C)
 
@@ -75,11 +65,12 @@ size_t mbedtls_ct_size_mask( size_t value );
  *
  * \return          Zero if \p value is zero, otherwise all-bits-one.
  */
-mbedtls_mpi_uint mbedtls_ct_mpi_uint_mask( mbedtls_mpi_uint value );
+mbedtls_mpi_uint mbedtls_ct_mpi_uint_mask(mbedtls_mpi_uint value);
 
 #endif /* MBEDTLS_BIGNUM_C */
 
-#if defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC)
+#if defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC) || defined(MBEDTLS_NIST_KW_C) || \
+    defined(MBEDTLS_CIPHER_MODE_CBC)
 
 /** Constant-flow mask generation for "greater or equal" comparison:
  * - if \p x >= \p y, return all-bits 1, that is (size_t) -1
@@ -94,10 +85,11 @@ mbedtls_mpi_uint mbedtls_ct_mpi_uint_mask( mbedtls_mpi_uint value );
  * \return      All-bits-one if \p x is greater or equal than \p y,
  *              otherwise zero.
  */
-size_t mbedtls_ct_size_mask_ge( size_t x,
-                                size_t y );
+size_t mbedtls_ct_size_mask_ge(size_t x,
+                               size_t y);
 
-#endif /* MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC */
+#endif /* defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC) || defined(MBEDTLS_NIST_KW_C) ||
+          defined(MBEDTLS_CIPHER_MODE_CBC) */
 
 /** Constant-flow boolean "equal" comparison:
  * return x == y
@@ -110,8 +102,8 @@ size_t mbedtls_ct_size_mask_ge( size_t x,
  *
  * \return      1 if \p x equals to \p y, otherwise 0.
  */
-unsigned mbedtls_ct_size_bool_eq( size_t x,
-                                  size_t y );
+unsigned mbedtls_ct_size_bool_eq(size_t x,
+                                 size_t y);
 
 #if defined(MBEDTLS_BIGNUM_C)
 
@@ -125,8 +117,8 @@ unsigned mbedtls_ct_size_bool_eq( size_t x,
  *
  * \return      1 if \p x is less than \p y, otherwise 0.
  */
-unsigned mbedtls_ct_mpi_uint_lt( const mbedtls_mpi_uint x,
-                                 const mbedtls_mpi_uint y );
+unsigned mbedtls_ct_mpi_uint_lt(const mbedtls_mpi_uint x,
+                                const mbedtls_mpi_uint y);
 
 #endif /* MBEDTLS_BIGNUM_C */
 
@@ -141,9 +133,9 @@ unsigned mbedtls_ct_mpi_uint_lt( const mbedtls_mpi_uint x,
  *
  * \return  \c if1 if \p condition is nonzero, otherwise \c if0.
  */
-unsigned mbedtls_ct_uint_if( unsigned condition,
-                             unsigned if1,
-                             unsigned if0 );
+unsigned mbedtls_ct_uint_if(unsigned condition,
+                            unsigned if1,
+                            unsigned if0);
 
 #if defined(MBEDTLS_BIGNUM_C)
 
@@ -159,10 +151,10 @@ unsigned mbedtls_ct_uint_if( unsigned condition,
  *                      initialized MPI.
  * \param condition     Condition to test, must be 0 or 1.
  */
-void mbedtls_ct_mpi_uint_cond_assign( size_t n,
-                                      mbedtls_mpi_uint *dest,
-                                      const mbedtls_mpi_uint *src,
-                                      unsigned char condition );
+void mbedtls_ct_mpi_uint_cond_assign(size_t n,
+                                     mbedtls_mpi_uint *dest,
+                                     const mbedtls_mpi_uint *src,
+                                     unsigned char condition);
 
 #endif /* MBEDTLS_BIGNUM_C */
 
@@ -177,7 +169,7 @@ void mbedtls_ct_mpi_uint_cond_assign( size_t n,
  *
  * \return          A base64 digit converted from \p value.
  */
-unsigned char mbedtls_ct_base64_enc_char( unsigned char value );
+unsigned char mbedtls_ct_base64_enc_char(unsigned char value);
 
 /** Given a Base64 digit, return its value.
  *
@@ -191,7 +183,7 @@ unsigned char mbedtls_ct_base64_enc_char( unsigned char value );
  *
  * \return      The value of the base64 digit \p c.
  */
-signed char mbedtls_ct_base64_dec_value( unsigned char c );
+signed char mbedtls_ct_base64_dec_value(unsigned char c);
 
 #endif /* MBEDTLS_BASE64_C */
 
@@ -208,10 +200,10 @@ signed char mbedtls_ct_base64_dec_value( unsigned char c );
  * \param c1        The first value to analyze in the condition.
  * \param c2        The second value to analyze in the condition.
  */
-void mbedtls_ct_memcpy_if_eq( unsigned char *dest,
-                              const unsigned char *src,
-                              size_t len,
-                              size_t c1, size_t c2 );
+void mbedtls_ct_memcpy_if_eq(unsigned char *dest,
+                             const unsigned char *src,
+                             size_t len,
+                             size_t c1, size_t c2);
 
 /** Copy data from a secret position with constant flow.
  *
@@ -239,12 +231,12 @@ void mbedtls_ct_memcpy_if_eq( unsigned char *dest,
  * \param offset_max    The maximal value of \p offset.
  * \param len           The number of bytes to copy.
  */
-void mbedtls_ct_memcpy_offset( unsigned char *dest,
-                               const unsigned char *src,
-                               size_t offset,
-                               size_t offset_min,
-                               size_t offset_max,
-                               size_t len );
+void mbedtls_ct_memcpy_offset(unsigned char *dest,
+                              const unsigned char *src,
+                              size_t offset,
+                              size_t offset_min,
+                              size_t offset_max,
+                              size_t len);
 
 /** Compute the HMAC of variable-length data with constant flow.
  *
@@ -282,14 +274,14 @@ void mbedtls_ct_memcpy_offset( unsigned char *dest,
  * \retval #MBEDTLS_ERR_PLATFORM_HW_ACCEL_FAILED
  *         The hardware accelerator failed.
  */
-int mbedtls_ct_hmac( mbedtls_md_context_t *ctx,
-                     const unsigned char *add_data,
-                     size_t add_data_len,
-                     const unsigned char *data,
-                     size_t data_len_secret,
-                     size_t min_data_len,
-                     size_t max_data_len,
-                     unsigned char *output );
+int mbedtls_ct_hmac(mbedtls_md_context_t *ctx,
+                    const unsigned char *add_data,
+                    size_t add_data_len,
+                    const unsigned char *data,
+                    size_t data_len_secret,
+                    size_t min_data_len,
+                    size_t max_data_len,
+                    unsigned char *output);
 
 #endif /* MBEDTLS_SSL_SOME_MODES_USE_MAC */
 
@@ -323,12 +315,12 @@ int mbedtls_ct_hmac( mbedtls_md_context_t *ctx,
  * \return      #MBEDTLS_ERR_RSA_INVALID_PADDING
  *              The input doesn't contain properly formatted padding.
  */
-int mbedtls_ct_rsaes_pkcs1_v15_unpadding( int mode,
-                                          unsigned char *input,
-                                          size_t ilen,
-                                          unsigned char *output,
-                                          size_t output_max_len,
-                                          size_t *olen );
+int mbedtls_ct_rsaes_pkcs1_v15_unpadding(int mode,
+                                         unsigned char *input,
+                                         size_t ilen,
+                                         unsigned char *output,
+                                         size_t output_max_len,
+                                         size_t *olen);
 
 #endif /* MBEDTLS_PKCS1_V15 && MBEDTLS_RSA_C && ! MBEDTLS_RSA_ALT */
 

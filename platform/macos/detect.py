@@ -1,16 +1,12 @@
 import os
 import sys
-from methods import detect_darwin_sdk_path
-from platform_methods import detect_arch
+from methods import detect_darwin_sdk_path, get_compiler_version, is_vanilla_clang
+from platform_methods import detect_arch, detect_mvk
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from SCons import Environment
-
-
-def is_active():
-    return True
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -36,48 +32,35 @@ def get_opts():
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
+        ("angle_libs", "Path to the ANGLE static libraries", ""),
+        (
+            "bundle_sign_identity",
+            "The 'Full Name', 'Common Name' or SHA-1 hash of the signing identity used to sign editor .app bundle.",
+            "-",
+        ),
+        BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
     ]
+
+
+def get_doc_classes():
+    return [
+        "EditorExportPlatformMacOS",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
 
 
 def get_flags():
     return [
         ("arch", detect_arch()),
         ("use_volk", False),
+        ("supported", ["mono"]),
     ]
 
 
-def get_mvk_sdk_path():
-    def int_or_zero(i):
-        try:
-            return int(i)
-        except:
-            return 0
-
-    def ver_parse(a):
-        return [int_or_zero(i) for i in a.split(".")]
-
-    dirname = os.path.expanduser("~/VulkanSDK")
-    if not os.path.exists(dirname):
-        return ""
-
-    ver_file = "0.0.0.0"
-    ver_num = ver_parse(ver_file)
-
-    files = os.listdir(dirname)
-    for file in files:
-        if os.path.isdir(os.path.join(dirname, file)):
-            ver_comp = ver_parse(file)
-            lib_name = os.path.join(
-                os.path.join(dirname, file), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/libMoltenVK.a"
-            )
-            if os.path.isfile(lib_name) and ver_comp > ver_num:
-                ver_num = ver_comp
-                ver_file = file
-
-    return os.path.join(os.path.join(dirname, ver_file), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/")
-
-
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     if env["arch"] not in supported_arches:
@@ -108,10 +91,19 @@ def configure(env: "Environment"):
         env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
         env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
     elif env["arch"] == "x86_64":
-        print("Building for macOS 10.12+.")
-        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
-        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
-        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
+        print("Building for macOS 10.13+.")
+        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+
+    cc_version = get_compiler_version(env)
+    cc_version_major = cc_version["apple_major"]
+    cc_version_minor = cc_version["apple_minor"]
+    vanilla = is_vanilla_clang(env)
+
+    # Workaround for Xcode 15 linker bug.
+    if not vanilla and cc_version_major == 1500 and cc_version_minor == 0:
+        env.Prepend(LINKFLAGS=["-ld_classic"])
 
     env.Append(CCFLAGS=["-fobjc-arc"])
 
@@ -144,7 +136,7 @@ def configure(env: "Environment"):
             env["CC"] = basecmd + "cc"
             env["CXX"] = basecmd + "c++"
         else:
-            # there aren't any ccache wrappers available for OS X cross-compile,
+            # there aren't any ccache wrappers available for macOS cross-compile,
             # to enable caching we need to prepend the path to the ccache binary
             env["CC"] = ccache_path + " " + basecmd + "cc"
             env["CXX"] = ccache_path + " " + basecmd + "c++"
@@ -216,7 +208,9 @@ def configure(env: "Environment"):
             "-framework",
             "IOKit",
             "-framework",
-            "ForceFeedback",
+            "GameController",
+            "-framework",
+            "CoreHaptics",
             "-framework",
             "CoreVideo",
             "-framework",
@@ -225,42 +219,41 @@ def configure(env: "Environment"):
             "CoreMedia",
             "-framework",
             "QuartzCore",
+            "-framework",
+            "Security",
         ]
     )
     env.Append(LIBS=["pthread", "z"])
 
     if env["opengl3"]:
-        env.Append(CPPDEFINES=["GLES_ENABLED", "GLES3_ENABLED"])
-        env.Append(CCFLAGS=["-Wno-deprecated-declarations"])  # Disable deprecation warnings
-        env.Append(LINKFLAGS=["-framework", "OpenGL"])
+        env.Append(CPPDEFINES=["GLES3_ENABLED"])
+        if env["angle_libs"] != "":
+            env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
+            env.Append(LINKFLAGS=["-L" + env["angle_libs"]])
+            env.Append(LINKFLAGS=["-lANGLE.macos." + env["arch"]])
+            env.Append(LINKFLAGS=["-lEGL.macos." + env["arch"]])
+            env.Append(LINKFLAGS=["-lGLES.macos." + env["arch"]])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
 
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "IOSurface"])
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])
-            mvk_found = False
 
-            mkv_list = [get_mvk_sdk_path(), "/opt/homebrew/lib", "/usr/local/homebrew/lib", "/opt/local/lib"]
-            if env["vulkan_sdk_path"] != "":
-                mkv_list.insert(0, os.path.expanduser(env["vulkan_sdk_path"]))
-                mkv_list.insert(
-                    0,
-                    os.path.join(
-                        os.path.expanduser(env["vulkan_sdk_path"]), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
-                    ),
-                )
-
-            for mvk_path in mkv_list:
-                if mvk_path and os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
-                    mvk_found = True
-                    print("MoltenVK found at: " + mvk_path)
-                    env.Append(LINKFLAGS=["-L" + mvk_path])
+            mvk_path = ""
+            arch_variants = ["macos-arm64_x86_64", "macos-" + env["arch"]]
+            for arch in arch_variants:
+                mvk_path = detect_mvk(env, arch)
+                if mvk_path != "":
+                    mvk_path = os.path.join(mvk_path, arch)
                     break
 
-            if not mvk_found:
+            if mvk_path != "":
+                env.Append(LINKFLAGS=["-L" + mvk_path])
+            else:
                 print(
                     "MoltenVK SDK installation directory not found, use 'vulkan_sdk_path' SCons parameter to specify SDK path."
                 )

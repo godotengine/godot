@@ -33,16 +33,16 @@
 
 #ifndef WEB_ENABLED
 
-#include "websocket_peer.h"
-
 #include "packet_buffer.h"
+#include "websocket_peer.h"
 
 #include "core/crypto/crypto_core.h"
 #include "core/error/error_list.h"
 #include "core/io/packet_peer.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/templates/ring_buffer.h"
-#include "wslay/wslay.h"
+
+#include <wslay/wslay.h>
 
 #define WSL_MAX_HEADER_SIZE 4096
 
@@ -102,8 +102,7 @@ private:
 
 	// WebSocket configuration.
 	bool use_tls = true;
-	bool verify_tls = true;
-	Ref<X509Certificate> tls_cert;
+	Ref<TLSOptions> tls_options;
 
 	// Packet buffers.
 	Vector<uint8_t> packet_buffer;
@@ -132,7 +131,7 @@ public:
 
 	// WebSocketPeer
 	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) override;
-	virtual Error connect_to_url(const String &p_url, bool p_verify_tls = true, Ref<X509Certificate> p_cert = Ref<X509Certificate>()) override;
+	virtual Error connect_to_url(const String &p_url, Ref<TLSOptions> p_options = Ref<TLSOptions>()) override;
 	virtual Error accept_stream(Ref<StreamPeer> p_stream) override;
 	virtual void close(int p_code = 1000, String p_reason = "") override;
 	virtual void poll() override;

@@ -47,19 +47,17 @@ class Popup : public Window {
 		Ref<StyleBox> panel_style;
 	} theme_cache;
 
-	void _input_from_window(const Ref<InputEvent> &p_event);
-
 	void _initialize_visible_parents();
 	void _deinitialize_visible_parents();
 
 protected:
 	void _close_pressed();
 	virtual Rect2i _popup_adjust_rect() const override;
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
-	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
-	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
+	static void _bind_methods();
 
 	virtual void _parent_focused();
 
@@ -82,8 +80,8 @@ class PopupPanel : public Popup {
 protected:
 	void _update_child_rects();
 
-	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
+	static void _bind_methods();
 
 	virtual Size2 _get_contents_minimum_size() const override;
 

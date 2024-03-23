@@ -18,43 +18,96 @@ struct SubsetGlyph
   Glyph source_glyph;
   hb_bytes_t dest_start;  /* region of source_glyph to copy first */
   hb_bytes_t dest_end;    /* region of source_glyph to copy second */
+  bool allocated;
 
   bool serialize (hb_serialize_context_t *c,
 		  bool use_short_loca,
-		  const hb_subset_plan_t *plan,
-		  hb_font_t *font)
+		  const hb_subset_plan_t *plan) const
   {
     TRACE_SERIALIZE (this);
 
-    if (font)
-    {
-      const OT::glyf_accelerator_t &glyf = *font->face->table.glyf;
-      if (!this->compile_bytes_with_deltas (plan, font, glyf))
-        return_trace (false);
+    hb_bytes_t dest_glyph = dest_start.copy (c);
+    hb_bytes_t end_copy = dest_end.copy (c);
+    if (!end_copy.arrayZ || !dest_glyph.arrayZ) {
+      return false;
     }
 
-    hb_bytes_t dest_glyph = dest_start.copy (c);
-    dest_glyph = hb_bytes_t (&dest_glyph, dest_glyph.length + dest_end.copy (c).length);
+    dest_glyph = hb_bytes_t (&dest_glyph, dest_glyph.length + end_copy.length);
     unsigned int pad_length = use_short_loca ? padding () : 0;
-    DEBUG_MSG (SUBSET, nullptr, "serialize %d byte glyph, width %d pad %d", dest_glyph.length, dest_glyph.length + pad_length, pad_length);
+    DEBUG_MSG (SUBSET, nullptr, "serialize %u byte glyph, width %u pad %u", dest_glyph.length, dest_glyph.length + pad_length, pad_length);
 
     HBUINT8 pad;
     pad = 0;
     while (pad_length > 0)
     {
-      c->embed (pad);
+      (void) c->embed (pad);
       pad_length--;
     }
 
     if (unlikely (!dest_glyph.length)) return_trace (true);
 
-    /* update components gids */
+    /* update components gids. */
     for (auto &_ : Glyph (dest_glyph).get_composite_iterator ())
     {
       hb_codepoint_t new_gid;
       if (plan->new_gid_for_old_gid (_.get_gid(), &new_gid))
 	const_cast<CompositeGlyphRecord &> (_).set_gid (new_gid);
     }
+#ifndef HB_NO_VAR_COMPOSITES
+    for (auto &_ : Glyph (dest_glyph).get_var_composite_iterator ())
+    {
+      hb_codepoint_t new_gid;
+      if (plan->new_gid_for_old_gid (_.get_gid(), &new_gid))
+	const_cast<VarCompositeGlyphRecord &> (_).set_gid (new_gid);
+    }
+#endif
+
+#ifndef HB_NO_BEYOND_64K
+    auto it = Glyph (dest_glyph).get_composite_iterator ();
+    if (it)
+    {
+      /* lower GID24 to GID16 in components if possible.
+       *
+       * TODO: VarComposite. Not as critical, since VarComposite supports
+       * gid24 from the first version. */
+      char *p = it ? (char *) &*it : nullptr;
+      char *q = p;
+      const char *end = dest_glyph.arrayZ + dest_glyph.length;
+      while (it)
+      {
+	auto &rec = const_cast<CompositeGlyphRecord &> (*it);
+	++it;
+
+	q += rec.get_size ();
+
+	rec.lower_gid_24_to_16 ();
+
+	unsigned size = rec.get_size ();
+
+	memmove (p, &rec, size);
+
+	p += size;
+      }
+      memmove (p, q, end - q);
+      p += end - q;
+
+      /* We want to shorten the glyph, but we can't do that without
+       * updating the length in the loca table, which is already
+       * written out :-(.  So we just fill the rest of the glyph with
+       * harmless instructions, since that's what they will be
+       * interpreted as.
+       *
+       * Should move the lowering to _populate_subset_glyphs() to
+       * fix this issue. */
+
+      hb_memset (p, 0x7A /* TrueType instruction ROFF; harmless */, end - p);
+      p += end - p;
+      dest_glyph = hb_bytes_t (dest_glyph.arrayZ, p - (char *) dest_glyph.arrayZ);
+
+      // TODO: Padding; & trim serialized bytes.
+      // TODO: Update length in loca. Ugh.
+    }
+#endif
 
     if (plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
       Glyph (dest_glyph).drop_hints ();
@@ -68,12 +121,18 @@ struct SubsetGlyph
   bool compile_bytes_with_deltas (const hb_subset_plan_t *plan,
                                   hb_font_t *font,
                                   const glyf_accelerator_t &glyf)
-  { return source_glyph.compile_bytes_with_deltas (plan, font, glyf, dest_start, dest_end); }
+  {
+    allocated = source_glyph.compile_bytes_with_deltas (plan, font, glyf, dest_start, dest_end);
+    return allocated;
+  }
 
   void free_compiled_bytes ()
   {
-    dest_start.fini ();
-    dest_end.fini ();
+    if (likely (allocated)) {
+      allocated = false;
+      dest_start.fini ();
+      dest_end.fini ();
+    }
   }
 
   void drop_hints_bytes ()

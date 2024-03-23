@@ -58,7 +58,7 @@ private:
 			TYPE_REFERENCE
 		} type;
 
-		bool force_keep_in_merge_ends;
+		bool force_keep_in_merge_ends = false;
 		Ref<RefCounted> ref;
 		ObjectID object;
 		StringName name;
@@ -72,19 +72,22 @@ private:
 		String name;
 		List<Operation> do_ops;
 		List<Operation> undo_ops;
-		uint64_t last_tick;
+		uint64_t last_tick = 0;
+		bool backward_undo_ops = false;
 	};
 
 	Vector<Action> actions;
 	int current_action = -1;
 	bool force_keep_in_merge_ends = false;
 	int action_level = 0;
+	int max_steps = 0;
 	MergeMode merge_mode = MERGE_DISABLE;
 	bool merging = false;
 	uint64_t version = 1;
+	int merge_total = 0;
 
 	void _pop_history_tail();
-	void _process_operation_list(List<Operation>::Element *E);
+	void _process_operation_list(List<Operation>::Element *E, bool p_execute);
 	void _discard_redo();
 	bool _redo(bool p_execute);
 
@@ -102,7 +105,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void create_action(const String &p_name = "", MergeMode p_mode = MERGE_DISABLE);
+	void create_action(const String &p_name = "", MergeMode p_mode = MERGE_DISABLE, bool p_backward_undo_ops = false);
 
 	void add_do_method(const Callable &p_callable);
 	void add_undo_method(const Callable &p_callable);
@@ -130,7 +133,12 @@ public:
 	bool has_undo() const;
 	bool has_redo() const;
 
+	bool is_merging() const;
+
 	uint64_t get_version() const;
+
+	void set_max_steps(int p_max_steps);
+	int get_max_steps() const;
 
 	void set_commit_notify_callback(CommitNotifyCallback p_callback, void *p_ud);
 

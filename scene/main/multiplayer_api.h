@@ -101,15 +101,15 @@ public:
 	virtual Error object_configuration_remove(Object *p_object, Variant p_config) override;
 
 	// Extensions
-	GDVIRTUAL0R(int, _poll);
+	GDVIRTUAL0R(Error, _poll);
 	GDVIRTUAL1(_set_multiplayer_peer, Ref<MultiplayerPeer>);
 	GDVIRTUAL0R(Ref<MultiplayerPeer>, _get_multiplayer_peer);
 	GDVIRTUAL0RC(int, _get_unique_id);
 	GDVIRTUAL0RC(PackedInt32Array, _get_peer_ids);
-	GDVIRTUAL4R(int, _rpc, int, Object *, StringName, Array);
+	GDVIRTUAL4R(Error, _rpc, int, Object *, StringName, Array);
 	GDVIRTUAL0RC(int, _get_remote_sender_id);
-	GDVIRTUAL2R(int, _object_configuration_add, Object *, Variant);
-	GDVIRTUAL2R(int, _object_configuration_remove, Object *, Variant);
+	GDVIRTUAL2R(Error, _object_configuration_add, Object *, Variant);
+	GDVIRTUAL2R(Error, _object_configuration_remove, Object *, Variant);
 };
 
 #endif // MULTIPLAYER_API_H

@@ -30,6 +30,7 @@
 
 #include "sprite_3d.h"
 
+#include "scene/resources/atlas_texture.h"
 #include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {
@@ -205,6 +206,11 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		uint32_t value = 0;
 		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
+		if (value == 4294901760) {
+			// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+			// So we sanitize here.
+			value = 4294967295;
+		}
 
 		v_tangent = value;
 	}
@@ -233,8 +239,8 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		float v_vertex[3] = { (float)vtx.x, (float)vtx.y, (float)vtx.z };
 
 		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
-		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_NORMAL]], &v_normal, 4);
-		memcpy(&vertex_write_buffer[i * vertex_stride + mesh_surface_offsets[RS::ARRAY_TANGENT]], &v_tangent, 4);
+		memcpy(&vertex_write_buffer[i * normal_tangent_stride + mesh_surface_offsets[RS::ARRAY_NORMAL]], &v_normal, 4);
+		memcpy(&vertex_write_buffer[i * normal_tangent_stride + mesh_surface_offsets[RS::ARRAY_TANGENT]], &v_tangent, 4);
 		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_COLOR]], v_color, 4);
 	}
 
@@ -245,8 +251,26 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 	RS::get_singleton()->mesh_set_custom_aabb(mesh_new, aabb_new);
 	set_aabb(aabb_new);
 
+	RS::get_singleton()->material_set_param(get_material(), "alpha_scissor_threshold", alpha_scissor_threshold);
+	RS::get_singleton()->material_set_param(get_material(), "alpha_hash_scale", alpha_hash_scale);
+	RS::get_singleton()->material_set_param(get_material(), "alpha_antialiasing_edge", alpha_antialiasing_edge);
+
+	BaseMaterial3D::Transparency mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_DISABLED;
+	if (get_draw_flag(FLAG_TRANSPARENT)) {
+		if (get_alpha_cut_mode() == ALPHA_CUT_DISCARD) {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_SCISSOR;
+		} else if (get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS) {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS;
+		} else if (get_alpha_cut_mode() == ALPHA_CUT_HASH) {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_HASH;
+		} else {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA;
+		}
+	}
+
 	RID shader_rid;
-	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), &shader_rid);
+	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), alpha_antialiasing_mode, &shader_rid);
+
 	if (last_shader != shader_rid) {
 		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
 		last_shader = shader_rid;
@@ -262,6 +286,10 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 }
 
 void SpriteBase3D::set_centered(bool p_center) {
+	if (centered == p_center) {
+		return;
+	}
+
 	centered = p_center;
 	_queue_redraw();
 }
@@ -271,6 +299,10 @@ bool SpriteBase3D::is_centered() const {
 }
 
 void SpriteBase3D::set_offset(const Point2 &p_offset) {
+	if (offset == p_offset) {
+		return;
+	}
+
 	offset = p_offset;
 	_queue_redraw();
 }
@@ -280,6 +312,10 @@ Point2 SpriteBase3D::get_offset() const {
 }
 
 void SpriteBase3D::set_flip_h(bool p_flip) {
+	if (hflip == p_flip) {
+		return;
+	}
+
 	hflip = p_flip;
 	_queue_redraw();
 }
@@ -289,6 +325,10 @@ bool SpriteBase3D::is_flipped_h() const {
 }
 
 void SpriteBase3D::set_flip_v(bool p_flip) {
+	if (vflip == p_flip) {
+		return;
+	}
+
 	vflip = p_flip;
 	_queue_redraw();
 }
@@ -298,6 +338,10 @@ bool SpriteBase3D::is_flipped_v() const {
 }
 
 void SpriteBase3D::set_modulate(const Color &p_color) {
+	if (modulate == p_color) {
+		return;
+	}
+
 	modulate = p_color;
 	_propagate_color_changed();
 	_queue_redraw();
@@ -309,6 +353,11 @@ Color SpriteBase3D::get_modulate() const {
 
 void SpriteBase3D::set_render_priority(int p_priority) {
 	ERR_FAIL_COND(p_priority < RS::MATERIAL_RENDER_PRIORITY_MIN || p_priority > RS::MATERIAL_RENDER_PRIORITY_MAX);
+
+	if (render_priority == p_priority) {
+		return;
+	}
+
 	render_priority = p_priority;
 	_queue_redraw();
 }
@@ -318,6 +367,10 @@ int SpriteBase3D::get_render_priority() const {
 }
 
 void SpriteBase3D::set_pixel_size(real_t p_amount) {
+	if (pixel_size == p_amount) {
+		return;
+	}
+
 	pixel_size = p_amount;
 	_queue_redraw();
 }
@@ -328,6 +381,11 @@ real_t SpriteBase3D::get_pixel_size() const {
 
 void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
 	ERR_FAIL_INDEX(p_axis, 3);
+
+	if (axis == p_axis) {
+		return;
+	}
+
 	axis = p_axis;
 	_queue_redraw();
 }
@@ -354,7 +412,7 @@ void SpriteBase3D::_queue_redraw() {
 	update_gizmos();
 
 	pending_update = true;
-	call_deferred(SceneStringNames::get_singleton()->_im_update);
+	callable_mp(this, &SpriteBase3D::_im_update).call_deferred();
 }
 
 AABB SpriteBase3D::get_aabb() const {
@@ -379,12 +437,10 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 	real_t px_size = get_pixel_size();
 
 	Vector2 vertices[4] = {
-
 		(final_rect.position + Vector2(0, final_rect.size.y)) * px_size,
 		(final_rect.position + final_rect.size) * px_size,
 		(final_rect.position + Vector2(final_rect.size.x, 0)) * px_size,
 		final_rect.position * px_size,
-
 	};
 
 	int x_axis = ((axis + 1) % 3);
@@ -423,6 +479,11 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 
 void SpriteBase3D::set_draw_flag(DrawFlags p_flag, bool p_enable) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
+
+	if (flags[p_flag] == p_enable) {
+		return;
+	}
+
 	flags[p_flag] = p_enable;
 	_queue_redraw();
 }
@@ -433,7 +494,12 @@ bool SpriteBase3D::get_draw_flag(DrawFlags p_flag) const {
 }
 
 void SpriteBase3D::set_alpha_cut_mode(AlphaCutMode p_mode) {
-	ERR_FAIL_INDEX(p_mode, 3);
+	ERR_FAIL_INDEX(p_mode, ALPHA_CUT_MAX);
+
+	if (alpha_cut == p_mode) {
+		return;
+	}
+
 	alpha_cut = p_mode;
 	_queue_redraw();
 }
@@ -442,8 +508,65 @@ SpriteBase3D::AlphaCutMode SpriteBase3D::get_alpha_cut_mode() const {
 	return alpha_cut;
 }
 
+void SpriteBase3D::set_alpha_hash_scale(float p_hash_scale) {
+	if (alpha_hash_scale == p_hash_scale) {
+		return;
+	}
+
+	alpha_hash_scale = p_hash_scale;
+	_queue_redraw();
+}
+
+float SpriteBase3D::get_alpha_hash_scale() const {
+	return alpha_hash_scale;
+}
+
+void SpriteBase3D::set_alpha_scissor_threshold(float p_threshold) {
+	if (alpha_scissor_threshold == p_threshold) {
+		return;
+	}
+
+	alpha_scissor_threshold = p_threshold;
+	_queue_redraw();
+}
+
+float SpriteBase3D::get_alpha_scissor_threshold() const {
+	return alpha_scissor_threshold;
+}
+
+void SpriteBase3D::set_alpha_antialiasing(BaseMaterial3D::AlphaAntiAliasing p_alpha_aa) {
+	if (alpha_antialiasing_mode == p_alpha_aa) {
+		return;
+	}
+
+	alpha_antialiasing_mode = p_alpha_aa;
+	_queue_redraw();
+}
+
+BaseMaterial3D::AlphaAntiAliasing SpriteBase3D::get_alpha_antialiasing() const {
+	return alpha_antialiasing_mode;
+}
+
+void SpriteBase3D::set_alpha_antialiasing_edge(float p_edge) {
+	if (alpha_antialiasing_edge == p_edge) {
+		return;
+	}
+
+	alpha_antialiasing_edge = p_edge;
+	_queue_redraw();
+}
+
+float SpriteBase3D::get_alpha_antialiasing_edge() const {
+	return alpha_antialiasing_edge;
+}
+
 void SpriteBase3D::set_billboard_mode(StandardMaterial3D::BillboardMode p_mode) {
 	ERR_FAIL_INDEX(p_mode, 3); // Cannot use BILLBOARD_PARTICLES.
+
+	if (billboard_mode == p_mode) {
+		return;
+	}
+
 	billboard_mode = p_mode;
 	_queue_redraw();
 }
@@ -453,10 +576,12 @@ StandardMaterial3D::BillboardMode SpriteBase3D::get_billboard_mode() const {
 }
 
 void SpriteBase3D::set_texture_filter(StandardMaterial3D::TextureFilter p_filter) {
-	if (texture_filter != p_filter) {
-		texture_filter = p_filter;
-		_queue_redraw();
+	if (texture_filter == p_filter) {
+		return;
 	}
+
+	texture_filter = p_filter;
+	_queue_redraw();
 }
 
 StandardMaterial3D::TextureFilter SpriteBase3D::get_texture_filter() const {
@@ -494,6 +619,18 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alpha_cut_mode", "mode"), &SpriteBase3D::set_alpha_cut_mode);
 	ClassDB::bind_method(D_METHOD("get_alpha_cut_mode"), &SpriteBase3D::get_alpha_cut_mode);
 
+	ClassDB::bind_method(D_METHOD("set_alpha_scissor_threshold", "threshold"), &SpriteBase3D::set_alpha_scissor_threshold);
+	ClassDB::bind_method(D_METHOD("get_alpha_scissor_threshold"), &SpriteBase3D::get_alpha_scissor_threshold);
+
+	ClassDB::bind_method(D_METHOD("set_alpha_hash_scale", "threshold"), &SpriteBase3D::set_alpha_hash_scale);
+	ClassDB::bind_method(D_METHOD("get_alpha_hash_scale"), &SpriteBase3D::get_alpha_hash_scale);
+
+	ClassDB::bind_method(D_METHOD("set_alpha_antialiasing", "alpha_aa"), &SpriteBase3D::set_alpha_antialiasing);
+	ClassDB::bind_method(D_METHOD("get_alpha_antialiasing"), &SpriteBase3D::get_alpha_antialiasing);
+
+	ClassDB::bind_method(D_METHOD("set_alpha_antialiasing_edge", "edge"), &SpriteBase3D::set_alpha_antialiasing_edge);
+	ClassDB::bind_method(D_METHOD("get_alpha_antialiasing_edge"), &SpriteBase3D::get_alpha_antialiasing_edge);
+
 	ClassDB::bind_method(D_METHOD("set_billboard_mode", "mode"), &SpriteBase3D::set_billboard_mode);
 	ClassDB::bind_method(D_METHOD("get_billboard_mode"), &SpriteBase3D::get_billboard_mode);
 
@@ -502,8 +639,6 @@ void SpriteBase3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
-
-	ClassDB::bind_method(D_METHOD("_im_update"), &SpriteBase3D::_im_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
@@ -519,7 +654,11 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "double_sided"), "set_draw_flag", "get_draw_flag", FLAG_DOUBLE_SIDED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_draw_flag", "get_draw_flag", FLAG_DISABLE_DEPTH_TEST);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_size"), "set_draw_flag", "get_draw_flag", FLAG_FIXED_SIZE);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass"), "set_alpha_cut_mode", "get_alpha_cut_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass,Alpha Hash"), "set_alpha_cut_mode", "get_alpha_cut_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_hash_scale", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_alpha_hash_scale", "get_alpha_hash_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_antialiasing_mode", PROPERTY_HINT_ENUM, "Disabled,Alpha Edge Blend,Alpha Edge Clip"), "set_alpha_antialiasing", "get_alpha_antialiasing");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 
@@ -533,6 +672,7 @@ void SpriteBase3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALPHA_CUT_DISABLED);
 	BIND_ENUM_CONSTANT(ALPHA_CUT_DISCARD);
 	BIND_ENUM_CONSTANT(ALPHA_CUT_OPAQUE_PREPASS);
+	BIND_ENUM_CONSTANT(ALPHA_CUT_HASH);
 }
 
 SpriteBase3D::SpriteBase3D() {
@@ -550,7 +690,6 @@ SpriteBase3D::SpriteBase3D() {
 	RS::get_singleton()->material_set_param(material, "uv1_scale", Vector3(1, 1, 1));
 	RS::get_singleton()->material_set_param(material, "uv2_offset", Vector3(0, 0, 0));
 	RS::get_singleton()->material_set_param(material, "uv2_scale", Vector3(1, 1, 1));
-	RS::get_singleton()->material_set_param(material, "alpha_scissor_threshold", 0.5);
 
 	mesh = RenderingServer::get_singleton()->mesh_create();
 
@@ -569,11 +708,11 @@ SpriteBase3D::SpriteBase3D() {
 
 	// Create basic mesh and store format information.
 	for (int i = 0; i < 4; i++) {
-		mesh_normals.write[i] = Vector3(0.0, 0.0, 0.0);
-		mesh_tangents.write[i * 4 + 0] = 0.0;
+		mesh_normals.write[i] = Vector3(0.0, 0.0, 1.0);
+		mesh_tangents.write[i * 4 + 0] = 1.0;
 		mesh_tangents.write[i * 4 + 1] = 0.0;
 		mesh_tangents.write[i * 4 + 2] = 0.0;
-		mesh_tangents.write[i * 4 + 3] = 0.0;
+		mesh_tangents.write[i * 4 + 3] = 1.0;
 		mesh_colors.write[i] = Color(1.0, 1.0, 1.0, 1.0);
 		mesh_uvs.write[i] = Vector2(0.0, 0.0);
 		mesh_vertices.write[i] = Vector3(0.0, 0.0, 0.0);
@@ -605,7 +744,7 @@ SpriteBase3D::SpriteBase3D() {
 
 	sd.material = material;
 
-	RS::get_singleton()->mesh_surface_make_offsets_from_format(sd.format, sd.vertex_count, sd.index_count, mesh_surface_offsets, vertex_stride, attrib_stride, skin_stride);
+	RS::get_singleton()->mesh_surface_make_offsets_from_format(sd.format, sd.vertex_count, sd.index_count, mesh_surface_offsets, vertex_stride, normal_tangent_stride, attrib_stride, skin_stride);
 	RS::get_singleton()->mesh_add_surface(mesh, sd);
 	set_base(mesh);
 }
@@ -687,9 +826,12 @@ bool Sprite3D::is_region_enabled() const {
 }
 
 void Sprite3D::set_region_rect(const Rect2 &p_region_rect) {
-	bool changed = region_rect != p_region_rect;
+	if (region_rect == p_region_rect) {
+		return;
+	}
+
 	region_rect = p_region_rect;
-	if (region && changed) {
+	if (region) {
 		_queue_redraw();
 	}
 }
@@ -701,10 +843,12 @@ Rect2 Sprite3D::get_region_rect() const {
 void Sprite3D::set_frame(int p_frame) {
 	ERR_FAIL_INDEX(p_frame, int64_t(vframes) * hframes);
 
+	if (frame == p_frame) {
+		return;
+	}
+
 	frame = p_frame;
-
 	_queue_redraw();
-
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
@@ -724,8 +868,16 @@ Vector2i Sprite3D::get_frame_coords() const {
 }
 
 void Sprite3D::set_vframes(int p_amount) {
-	ERR_FAIL_COND(p_amount < 1);
+	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of vframes cannot be smaller than 1.");
+
+	if (vframes == p_amount) {
+		return;
+	}
+
 	vframes = p_amount;
+	if (frame >= vframes * hframes) {
+		frame = 0;
+	}
 	_queue_redraw();
 	notify_property_list_changed();
 }
@@ -735,8 +887,27 @@ int Sprite3D::get_vframes() const {
 }
 
 void Sprite3D::set_hframes(int p_amount) {
-	ERR_FAIL_COND(p_amount < 1);
+	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of hframes cannot be smaller than 1.");
+
+	if (hframes == p_amount) {
+		return;
+	}
+
+	if (vframes > 1) {
+		// Adjust the frame to fit new sheet dimensions.
+		int original_column = frame % hframes;
+		if (original_column >= p_amount) {
+			// Frame's column was dropped, reset.
+			frame = 0;
+		} else {
+			int original_row = frame / hframes;
+			frame = original_row * p_amount + original_column;
+		}
+	}
 	hframes = p_amount;
+	if (frame >= vframes * hframes) {
+		frame = 0;
+	}
 	_queue_redraw();
 	notify_property_list_changed();
 }
@@ -809,7 +980,7 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hframes", "hframes"), &Sprite3D::set_hframes);
 	ClassDB::bind_method(D_METHOD("get_hframes"), &Sprite3D::get_hframes);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
@@ -866,7 +1037,6 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "animation") {
-		p_property.hint = PROPERTY_HINT_ENUM;
 		List<StringName> names;
 		frames->get_animation_list(&names);
 		names.sort_custom<StringName::AlphCompare>();
@@ -916,6 +1086,12 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 
 void AnimatedSprite3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			if (!Engine::get_singleton()->is_editor_hint() && !frames.is_null() && frames->has_animation(autoplay)) {
+				play(autoplay);
+			}
+		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (frames.is_null() || !frames->has_animation(animation)) {
 				return;
@@ -925,7 +1101,8 @@ void AnimatedSprite3D::_notification(int p_what) {
 			int i = 0;
 			while (remaining) {
 				// Animation speed may be changed by animation_finished or frame_changed signals.
-				double speed = frames->get_animation_speed(animation) * Math::abs(speed_scale);
+				double speed = frames->get_animation_speed(animation) * speed_scale * custom_speed_scale * frame_speed_scale;
+				double abs_speed = Math::abs(speed);
 
 				if (speed == 0) {
 					return; // Do nothing.
@@ -934,52 +1111,56 @@ void AnimatedSprite3D::_notification(int p_what) {
 				// Frame count may be changed by animation_finished or frame_changed signals.
 				int fc = frames->get_frame_count(animation);
 
-				if (timeout <= 0) {
-					int last_frame = fc - 1;
-					if (!playing_backwards) {
-						// Forward.
+				int last_frame = fc - 1;
+				if (!signbit(speed)) {
+					// Forwards.
+					if (frame_progress >= 1.0) {
 						if (frame >= last_frame) {
 							if (frames->get_animation_loop(animation)) {
 								frame = 0;
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								emit_signal("animation_looped");
 							} else {
 								frame = last_frame;
-								if (!is_over) {
-									is_over = true;
-									emit_signal(SceneStringNames::get_singleton()->animation_finished);
-								}
+								pause();
+								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								return;
 							}
 						} else {
 							frame++;
 						}
-					} else {
-						// Reversed.
+						_calc_frame_speed_scale();
+						frame_progress = 0.0;
+						_queue_redraw();
+						emit_signal(SceneStringNames::get_singleton()->frame_changed);
+					}
+					double to_process = MIN((1.0 - frame_progress) / abs_speed, remaining);
+					frame_progress += to_process * abs_speed;
+					remaining -= to_process;
+				} else {
+					// Backwards.
+					if (frame_progress <= 0) {
 						if (frame <= 0) {
 							if (frames->get_animation_loop(animation)) {
 								frame = last_frame;
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								emit_signal("animation_looped");
 							} else {
 								frame = 0;
-								if (!is_over) {
-									is_over = true;
-									emit_signal(SceneStringNames::get_singleton()->animation_finished);
-								}
+								pause();
+								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								return;
 							}
 						} else {
 							frame--;
 						}
+						_calc_frame_speed_scale();
+						frame_progress = 1.0;
+						_queue_redraw();
+						emit_signal(SceneStringNames::get_singleton()->frame_changed);
 					}
-
-					timeout = _get_frame_duration();
-
-					_queue_redraw();
-
-					emit_signal(SceneStringNames::get_singleton()->frame_changed);
+					double to_process = MIN(frame_progress / abs_speed, remaining);
+					frame_progress -= to_process * abs_speed;
+					remaining -= to_process;
 				}
-
-				double to_process = MIN(timeout / speed, remaining);
-				timeout -= to_process * speed;
-				remaining -= to_process;
 
 				i++;
 				if (i > fc) {
@@ -991,25 +1172,37 @@ void AnimatedSprite3D::_notification(int p_what) {
 }
 
 void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
+	if (frames == p_frames) {
+		return;
+	}
+
 	if (frames.is_valid()) {
 		frames->disconnect(SceneStringNames::get_singleton()->changed, callable_mp(this, &AnimatedSprite3D::_res_changed));
 	}
-
+	stop();
 	frames = p_frames;
 	if (frames.is_valid()) {
 		frames->connect(SceneStringNames::get_singleton()->changed, callable_mp(this, &AnimatedSprite3D::_res_changed));
-	}
 
-	if (frames.is_null()) {
-		frame = 0;
-	} else {
-		set_frame(frame);
+		List<StringName> al;
+		frames->get_animation_list(&al);
+		if (al.size() == 0) {
+			set_animation(StringName());
+			autoplay = String();
+		} else {
+			if (!frames->has_animation(animation)) {
+				set_animation(al[0]);
+			}
+			if (!frames->has_animation(autoplay)) {
+				autoplay = String();
+			}
+		}
 	}
 
 	notify_property_list_changed();
-	_reset_timeout();
 	_queue_redraw();
 	update_configuration_warnings();
+	emit_signal("sprite_frames_changed");
 }
 
 Ref<SpriteFrames> AnimatedSprite3D::get_sprite_frames() const {
@@ -1017,42 +1210,61 @@ Ref<SpriteFrames> AnimatedSprite3D::get_sprite_frames() const {
 }
 
 void AnimatedSprite3D::set_frame(int p_frame) {
-	if (frames.is_null()) {
-		return;
-	}
-
-	if (frames->has_animation(animation)) {
-		int limit = frames->get_frame_count(animation);
-		if (p_frame >= limit) {
-			p_frame = limit - 1;
-		}
-	}
-
-	if (p_frame < 0) {
-		p_frame = 0;
-	}
-
-	if (frame == p_frame) {
-		return;
-	}
-
-	frame = p_frame;
-	_reset_timeout();
-	_queue_redraw();
-	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+	set_frame_and_progress(p_frame, signbit(get_playing_speed()) ? 1.0 : 0.0);
 }
 
 int AnimatedSprite3D::get_frame() const {
 	return frame;
 }
 
+void AnimatedSprite3D::set_frame_progress(real_t p_progress) {
+	frame_progress = p_progress;
+}
+
+real_t AnimatedSprite3D::get_frame_progress() const {
+	return frame_progress;
+}
+
+void AnimatedSprite3D::set_frame_and_progress(int p_frame, real_t p_progress) {
+	if (frames.is_null()) {
+		return;
+	}
+
+	bool has_animation = frames->has_animation(animation);
+	int end_frame = has_animation ? MAX(0, frames->get_frame_count(animation) - 1) : 0;
+	bool is_changed = frame != p_frame;
+
+	if (p_frame < 0) {
+		frame = 0;
+	} else if (has_animation && p_frame > end_frame) {
+		frame = end_frame;
+	} else {
+		frame = p_frame;
+	}
+
+	_calc_frame_speed_scale();
+	frame_progress = p_progress;
+
+	if (!is_changed) {
+		return; // No change, don't redraw.
+	}
+	_queue_redraw();
+	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+}
+
 void AnimatedSprite3D::set_speed_scale(float p_speed_scale) {
 	speed_scale = p_speed_scale;
-	playing_backwards = signbit(speed_scale) != backwards;
 }
 
 float AnimatedSprite3D::get_speed_scale() const {
 	return speed_scale;
+}
+
+float AnimatedSprite3D::get_playing_speed() const {
+	if (!playing) {
+		return 0;
+	}
+	return speed_scale * custom_speed_scale;
 }
 
 Rect2 AnimatedSprite3D::get_item_rect() const {
@@ -1073,7 +1285,7 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 	Size2 s = t->get_size();
 
 	Point2 ofs = get_offset();
-	if (centered) {
+	if (is_centered()) {
 		ofs -= s / 2;
 	}
 
@@ -1085,18 +1297,8 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 }
 
 void AnimatedSprite3D::_res_changed() {
-	set_frame(frame);
+	set_frame_and_progress(frame, frame_progress);
 	_queue_redraw();
-	notify_property_list_changed();
-}
-
-void AnimatedSprite3D::set_playing(bool p_playing) {
-	if (playing == p_playing) {
-		return;
-	}
-	playing = p_playing;
-	playing_backwards = signbit(speed_scale) != backwards;
-	set_process_internal(playing);
 	notify_property_list_changed();
 }
 
@@ -1104,50 +1306,122 @@ bool AnimatedSprite3D::is_playing() const {
 	return playing;
 }
 
-void AnimatedSprite3D::play(const StringName &p_animation, bool p_backwards) {
-	backwards = p_backwards;
-	playing_backwards = signbit(speed_scale) != backwards;
+void AnimatedSprite3D::set_autoplay(const String &p_name) {
+	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
+		WARN_PRINT("Setting autoplay after the node has been added to the scene has no effect.");
+	}
 
-	if (p_animation) {
-		set_animation(p_animation);
-		if (frames.is_valid() && playing_backwards && get_frame() == 0) {
-			set_frame(frames->get_frame_count(p_animation) - 1);
+	autoplay = p_name;
+}
+
+String AnimatedSprite3D::get_autoplay() const {
+	return autoplay;
+}
+
+void AnimatedSprite3D::play(const StringName &p_name, float p_custom_scale, bool p_from_end) {
+	StringName name = p_name;
+
+	if (name == StringName()) {
+		name = animation;
+	}
+
+	ERR_FAIL_NULL_MSG(frames, vformat("There is no animation with name '%s'.", name));
+	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(name), vformat("There is no animation with name '%s'.", name));
+
+	if (frames->get_frame_count(name) == 0) {
+		return;
+	}
+
+	playing = true;
+	custom_speed_scale = p_custom_scale;
+
+	int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
+	if (name != animation) {
+		animation = name;
+		if (p_from_end) {
+			set_frame_and_progress(end_frame, 1.0);
+		} else {
+			set_frame_and_progress(0, 0.0);
+		}
+		emit_signal("animation_changed");
+	} else {
+		bool is_backward = signbit(speed_scale * custom_speed_scale);
+		if (p_from_end && is_backward && frame == 0 && frame_progress <= 0.0) {
+			set_frame_and_progress(end_frame, 1.0);
+		} else if (!p_from_end && !is_backward && frame == end_frame && frame_progress >= 1.0) {
+			set_frame_and_progress(0, 0.0);
 		}
 	}
 
-	is_over = false;
-	set_playing(true);
+	set_process_internal(true);
+	notify_property_list_changed();
+	_queue_redraw();
+}
+
+void AnimatedSprite3D::play_backwards(const StringName &p_name) {
+	play(p_name, -1, true);
+}
+
+void AnimatedSprite3D::_stop_internal(bool p_reset) {
+	playing = false;
+	if (p_reset) {
+		custom_speed_scale = 1.0;
+		set_frame_and_progress(0, 0.0);
+	}
+	notify_property_list_changed();
+	set_process_internal(false);
+}
+
+void AnimatedSprite3D::pause() {
+	_stop_internal(false);
 }
 
 void AnimatedSprite3D::stop() {
-	set_playing(false);
-	backwards = false;
-	_reset_timeout();
+	_stop_internal(true);
 }
 
 double AnimatedSprite3D::_get_frame_duration() {
 	if (frames.is_valid() && frames->has_animation(animation)) {
 		return frames->get_frame_duration(animation, frame);
 	}
-	return 0.0;
+	return 1.0;
 }
 
-void AnimatedSprite3D::_reset_timeout() {
-	timeout = _get_frame_duration();
-	is_over = false;
+void AnimatedSprite3D::_calc_frame_speed_scale() {
+	frame_speed_scale = 1.0 / _get_frame_duration();
 }
 
-void AnimatedSprite3D::set_animation(const StringName &p_animation) {
-	ERR_FAIL_COND_MSG(frames == nullptr, vformat("There is no animation with name '%s'.", p_animation));
-	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(p_animation), vformat("There is no animation with name '%s'.", p_animation));
-
-	if (animation == p_animation) {
+void AnimatedSprite3D::set_animation(const StringName &p_name) {
+	if (animation == p_name) {
 		return;
 	}
 
-	animation = p_animation;
-	set_frame(0);
-	_reset_timeout();
+	animation = p_name;
+
+	emit_signal("animation_changed");
+
+	if (frames == nullptr) {
+		animation = StringName();
+		stop();
+		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
+	}
+
+	int frame_count = frames->get_frame_count(animation);
+	if (animation == StringName() || frame_count == 0) {
+		stop();
+		return;
+	} else if (!frames->get_animation_names().has(animation)) {
+		animation = StringName();
+		stop();
+		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
+	}
+
+	if (signbit(get_playing_speed())) {
+		set_frame_and_progress(frame_count - 1, 1.0);
+	} else {
+		set_frame_and_progress(0, 0.0);
+	}
+
 	notify_property_list_changed();
 	_queue_redraw();
 }
@@ -1164,46 +1438,74 @@ PackedStringArray AnimatedSprite3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+#ifdef TOOLS_ENABLED
 void AnimatedSprite3D::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	if (p_idx == 0 && p_function == "play" && frames.is_valid()) {
-		List<StringName> al;
-		frames->get_animation_list(&al);
-		for (const StringName &name : al) {
-			r_options->push_back(String(name).quote());
+	const String pf = p_function;
+	if (p_idx == 0 && frames.is_valid()) {
+		if (pf == "play" || pf == "play_backwards" || pf == "set_animation" || pf == "set_autoplay") {
+			List<StringName> al;
+			frames->get_animation_list(&al);
+			for (const StringName &name : al) {
+				r_options->push_back(String(name).quote());
+			}
 		}
 	}
-	Node::get_argument_options(p_function, p_idx, r_options);
+	SpriteBase3D::get_argument_options(p_function, p_idx, r_options);
 }
+#endif
 
+#ifndef DISABLE_DEPRECATED
+bool AnimatedSprite3D::_set(const StringName &p_name, const Variant &p_value) {
+	if ((p_name == SNAME("frames"))) {
+		set_sprite_frames(p_value);
+		return true;
+	}
+	return false;
+}
+#endif
 void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite3D::set_sprite_frames);
 	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite3D::get_sprite_frames);
 
-	ClassDB::bind_method(D_METHOD("set_animation", "animation"), &AnimatedSprite3D::set_animation);
+	ClassDB::bind_method(D_METHOD("set_animation", "name"), &AnimatedSprite3D::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimatedSprite3D::get_animation);
 
-	ClassDB::bind_method(D_METHOD("set_playing", "playing"), &AnimatedSprite3D::set_playing);
+	ClassDB::bind_method(D_METHOD("set_autoplay", "name"), &AnimatedSprite3D::set_autoplay);
+	ClassDB::bind_method(D_METHOD("get_autoplay"), &AnimatedSprite3D::get_autoplay);
+
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite3D::is_playing);
 
-	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite3D::play, DEFVAL(StringName()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("play", "name", "custom_speed", "from_end"), &AnimatedSprite3D::play, DEFVAL(StringName()), DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("play_backwards", "name"), &AnimatedSprite3D::play_backwards, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("pause"), &AnimatedSprite3D::pause);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite3D::stop);
 
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite3D::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite3D::get_frame);
 
+	ClassDB::bind_method(D_METHOD("set_frame_progress", "progress"), &AnimatedSprite3D::set_frame_progress);
+	ClassDB::bind_method(D_METHOD("get_frame_progress"), &AnimatedSprite3D::get_frame_progress);
+
+	ClassDB::bind_method(D_METHOD("set_frame_and_progress", "frame", "progress"), &AnimatedSprite3D::set_frame_and_progress);
+
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed_scale"), &AnimatedSprite3D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &AnimatedSprite3D::get_speed_scale);
+	ClassDB::bind_method(D_METHOD("get_playing_speed"), &AnimatedSprite3D::get_playing_speed);
 
 	ClassDB::bind_method(D_METHOD("_res_changed"), &AnimatedSprite3D::_res_changed);
 
+	ADD_SIGNAL(MethodInfo("sprite_frames_changed"));
+	ADD_SIGNAL(MethodInfo("animation_changed"));
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("animation_looped"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sprite_frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation", PROPERTY_HINT_ENUM, ""), "set_animation", "get_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_autoplay", "get_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_progress", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_frame_progress", "get_frame_progress");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale"), "set_speed_scale", "get_speed_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "set_playing", "is_playing");
 }
 
 AnimatedSprite3D::AnimatedSprite3D() {

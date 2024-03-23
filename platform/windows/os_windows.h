@@ -31,23 +31,23 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
+#include "crash_handler_windows.h"
+#include "key_mapping_windows.h"
+
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "crash_handler_windows.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
-#include "key_mapping_windows.h"
 #include "servers/audio_server.h"
 
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
-#if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/windows/vulkan_context_win.h"
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
 #endif
 
 #include <io.h>
@@ -69,7 +69,7 @@
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif
 
-template <class T>
+template <typename T>
 class ComAutoreleaseRef {
 public:
 	T *reference = nullptr;
@@ -155,9 +155,9 @@ public:
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
-	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
 	virtual MainLoop *get_main_loop() const override;
 
@@ -178,6 +178,8 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const override;
 	virtual uint64_t get_ticks_usec() const override;
 
+	virtual Dictionary get_memory_info() const override;
+
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error kill(const ProcessID &p_pid) override;
@@ -186,7 +188,8 @@ public:
 
 	virtual bool has_environment(const String &p_var) const override;
 	virtual String get_environment(const String &p_var) const override;
-	virtual bool set_environment(const String &p_var, const String &p_value) const override;
+	virtual void set_environment(const String &p_var, const String &p_value) const override;
+	virtual void unset_environment(const String &p_var) const override;
 
 	virtual Vector<String> get_system_fonts() const override;
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
@@ -210,7 +213,8 @@ public:
 
 	virtual String get_unique_id() const override;
 
-	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_open(const String &p_uri) override;
+	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;
 
 	void run();
 
@@ -221,6 +225,8 @@ public:
 	virtual void initialize_debugging() override;
 
 	virtual Error move_to_trash(const String &p_path) override;
+
+	virtual String get_system_ca_certificates() override;
 
 	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
 

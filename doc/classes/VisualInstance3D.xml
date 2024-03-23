@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualInstance3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VisualInstance3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Parent of all visual 3D nodes.
 	</brief_description>
@@ -36,7 +36,7 @@
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member layers] is enabled, given a [code]layer_number[/code] between 1 and 20.
+				Returns whether or not the specified layer of the [member layers] is enabled, given a [param layer_number] between 1 and 20.
 			</description>
 		</method>
 		<method name="set_base">
@@ -58,13 +58,15 @@
 	<members>
 		<member name="layers" type="int" setter="set_layer_mask" getter="get_layer_mask" default="1">
 			The render layer(s) this [VisualInstance3D] is drawn on.
-			This object will only be visible for [Camera3D]s whose cull mask includes the render object this [VisualInstance3D] is set to.
+			This object will only be visible for [Camera3D]s whose cull mask includes any of the render layers this [VisualInstance3D] is set to.
 			For [Light3D]s, this can be used to control which [VisualInstance3D]s are affected by a specific light. For [GPUParticles3D], this can be used to control which particles are effected by a specific attractor. For [Decal]s, this can be used to control which [VisualInstance3D]s are affected by a specific decal.
+			To adjust [member layers] more easily using a script, use [method get_layer_mask_value] and [method set_layer_mask_value].
+			[b]Note:[/b] [VoxelGI], SDFGI and [LightmapGI] will always take all layers into account to determine what contributes to global illumination. If this is an issue, set [member GeometryInstance3D.gi_mode] to [constant GeometryInstance3D.GI_MODE_DISABLED] for meshes and [member Light3D.light_bake_mode] to [constant Light3D.BAKE_DISABLED] for lights to exclude them from global illumination.
 		</member>
 		<member name="sorting_offset" type="float" setter="set_sorting_offset" getter="get_sorting_offset" default="0.0">
-			The sorting offset used by this [VisualInstance3D]. Adjusting it to a higher value will make the [VisualInstance3D] reliably draw on top of other [VisualInstance3D]s that are otherwise positioned at the same spot.
+			The amount by which the depth of this [VisualInstance3D] will be adjusted when sorting by depth. Uses the same units as the engine (which are typically meters). Adjusting it to a higher value will make the [VisualInstance3D] reliably draw on top of other [VisualInstance3D]s that are otherwise positioned at the same spot. To ensure it always draws on top of other objects around it (not positioned at the same spot), set the value to be greater than the distance between this [VisualInstance3D] and the other nearby [VisualInstance3D]s.
 		</member>
-		<member name="sorting_use_aabb_center" type="bool" setter="set_sorting_use_aabb_center" getter="is_sorting_use_aabb_center" default="true">
+		<member name="sorting_use_aabb_center" type="bool" setter="set_sorting_use_aabb_center" getter="is_sorting_use_aabb_center">
 			If [code]true[/code], the object is sorted based on the [AABB] center. The object will be sorted based on the global position otherwise.
 			The [AABB] center based sorting is generally more accurate for 3D models. The position based sorting instead allows to better control the drawing order when working with [GPUParticles3D] and [CPUParticles3D].
 		</member>

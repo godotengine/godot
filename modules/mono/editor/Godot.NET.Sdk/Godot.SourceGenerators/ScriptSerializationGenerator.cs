@@ -16,7 +16,7 @@ namespace Godot.SourceGenerators
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.AreGodotSourceGeneratorsDisabled())
+            if (context.IsGodotSourceGeneratorDisabled("ScriptSerialization"))
                 return;
 
             INamedTypeSymbol[] godotClasses = context
@@ -30,16 +30,14 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                             {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
                                 {
-                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
                                     return false;
                                 }
 
                                 return true;
                             }
 
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -91,16 +89,20 @@ namespace Godot.SourceGenerators
             if (isInnerClass)
             {
                 var containingType = symbol.ContainingType;
+                AppendPartialContainingTypeDeclarations(containingType);
 
-                while (containingType != null)
+                void AppendPartialContainingTypeDeclarations(INamedTypeSymbol? containingType)
                 {
+                    if (containingType == null)
+                        return;
+
+                    AppendPartialContainingTypeDeclarations(containingType.ContainingType);
+
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
                     source.Append(containingType.NameWithTypeParameters());
                     source.Append("\n{\n");
-
-                    containingType = containingType.ContainingType;
                 }
             }
 
@@ -113,14 +115,20 @@ namespace Godot.SourceGenerators
             var propertySymbols = members
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)
                 .Cast<IPropertySymbol>()
-                .Where(s => !s.IsIndexer);
+                .Where(s => !s.IsIndexer && s.ExplicitInterfaceImplementations.Length == 0);
 
             var fieldSymbols = members
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
                 .Cast<IFieldSymbol>();
 
-            var godotClassProperties = propertySymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
-            var godotClassFields = fieldSymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
+            // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
+            // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
+            var godotClassProperties = propertySymbols.Where(property => !(property.IsReadOnly || property.IsWriteOnly || property.SetMethod!.IsInitOnly))
+                .WhereIsGodotCompatibleType(typeCache)
+                .ToArray();
+            var godotClassFields = fieldSymbols.Where(property => !property.IsReadOnly)
+                .WhereIsGodotCompatibleType(typeCache)
+                .ToArray();
 
             var signalDelegateSymbols = members
                 .Where(s => s.Kind == SymbolKind.NamedType)
@@ -149,6 +157,8 @@ namespace Godot.SourceGenerators
                 godotSignalDelegates.Add(new(signalName, signalDelegateSymbol, invokeMethodData.Value));
             }
 
+            source.Append("    /// <inheritdoc/>\n");
+            source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
             source.Append(
                 "    protected override void SaveGodotObjectData(global::Godot.Bridge.GodotSerializationInfo info)\n    {\n");
             source.Append("        base.SaveGodotObjectData(info);\n");
@@ -196,6 +206,8 @@ namespace Godot.SourceGenerators
 
             source.Append("    }\n");
 
+            source.Append("    /// <inheritdoc/>\n");
+            source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
             source.Append(
                 "    protected override void RestoreGodotObjectData(global::Godot.Bridge.GodotSerializationInfo info)\n    {\n");
             source.Append("        base.RestoreGodotObjectData(info);\n");

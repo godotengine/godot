@@ -241,11 +241,11 @@ static UBool changesWhenCasefolded(const BinaryProperty &/*prop*/, UChar32 c, UP
     }
     if(c>=0) {
         /* single code point */
-        const UChar *resultString;
+        const char16_t *resultString;
         return (UBool)(ucase_toFullFolding(c, &resultString, U_FOLD_CASE_DEFAULT)>=0);
     } else {
         /* guess some large but stack-friendly capacity */
-        UChar dest[2*UCASE_MAX_STRING_LENGTH];
+        char16_t dest[2*UCASE_MAX_STRING_LENGTH];
         int32_t destLength;
         destLength=u_strFoldCase(dest, UPRV_LENGTHOF(dest),
                                   nfd.getBuffer(), nfd.length(),
@@ -276,7 +276,7 @@ static UBool changesWhenNFKC_Casefolded(const BinaryProperty &/*prop*/, UChar32 
         ReorderingBuffer buffer(*kcf, dest);
         // Small destCapacity for NFKC_CF(c).
         if(buffer.init(5, errorCode)) {
-            const UChar *srcArray=src.getBuffer();
+            const char16_t *srcArray=src.getBuffer();
             kcf->compose(srcArray, srcArray+src.length(), false,
                           true, buffer, errorCode);
         }
@@ -326,6 +326,53 @@ static UBool isRegionalIndicator(const BinaryProperty &/*prop*/, UChar32 c, UPro
 
 static UBool hasEmojiProperty(const BinaryProperty &/*prop*/, UChar32 c, UProperty which) {
     return EmojiProps::hasBinaryProperty(c, which);
+}
+
+static UBool isIDSUnaryOperator(const BinaryProperty &/*prop*/, UChar32 c, UProperty /*which*/) {
+    // New in Unicode 15.1 for just two characters.
+    return 0x2FFE<=c && c<=0x2FFF;
+}
+
+/** Ranges (start/limit pairs) of ID_Compat_Math_Continue (only), from UCD PropList.txt. */
+static constexpr UChar32 ID_COMPAT_MATH_CONTINUE[] = {
+    0x00B2, 0x00B3 + 1,
+    0x00B9, 0x00B9 + 1,
+    0x2070, 0x2070 + 1,
+    0x2074, 0x207E + 1,
+    0x2080, 0x208E + 1
+};
+
+/** ID_Compat_Math_Start characters, from UCD PropList.txt. */
+static constexpr UChar32 ID_COMPAT_MATH_START[] = {
+    0x2202,
+    0x2207,
+    0x221E,
+    0x1D6C1,
+    0x1D6DB,
+    0x1D6FB,
+    0x1D715,
+    0x1D735,
+    0x1D74F,
+    0x1D76F,
+    0x1D789,
+    0x1D7A9,
+    0x1D7C3
+};
+
+static UBool isIDCompatMathStart(const BinaryProperty &/*prop*/, UChar32 c, UProperty /*which*/) {
+    if (c < ID_COMPAT_MATH_START[0]) { return false; }  // fastpath for common scripts
+    for (UChar32 startChar : ID_COMPAT_MATH_START) {
+        if (c == startChar) { return true; }
+    }
+    return false;
+}
+
+static UBool isIDCompatMathContinue(const BinaryProperty &prop, UChar32 c, UProperty /*which*/) {
+    for (int32_t i = 0; i < UPRV_LENGTHOF(ID_COMPAT_MATH_CONTINUE); i += 2) {
+        if (c < ID_COMPAT_MATH_CONTINUE[i]) { return false; }  // below range start
+        if (c < ID_COMPAT_MATH_CONTINUE[i + 1]) { return true; }  // below range limit
+    }
+    return isIDCompatMathStart(prop, c, UCHAR_ID_COMPAT_MATH_START);
 }
 
 static const BinaryProperty binProps[UCHAR_BINARY_LIMIT]={
@@ -409,6 +456,9 @@ static const BinaryProperty binProps[UCHAR_BINARY_LIMIT]={
     { UPROPS_SRC_EMOJI, 0, hasEmojiProperty },  // UCHAR_RGI_EMOJI_TAG_SEQUENCE
     { UPROPS_SRC_EMOJI, 0, hasEmojiProperty },  // UCHAR_RGI_EMOJI_ZWJ_SEQUENCE
     { UPROPS_SRC_EMOJI, 0, hasEmojiProperty },  // UCHAR_RGI_EMOJI
+    { UPROPS_SRC_IDSU, 0, isIDSUnaryOperator }, // UCHAR_IDS_UNARY_OPERATOR
+    { UPROPS_SRC_ID_COMPAT_MATH, 0, isIDCompatMathStart }, // UCHAR_ID_COMPAT_MATH_START
+    { UPROPS_SRC_ID_COMPAT_MATH, 0, isIDCompatMathContinue }, // UCHAR_ID_COMPAT_MATH_CONTINUE
 };
 
 U_CAPI UBool U_EXPORT2
@@ -423,8 +473,21 @@ u_hasBinaryProperty(UChar32 c, UProperty which) {
     }
 }
 
+/* Checks if the Unicode character can start a Unicode identifier.*/
 U_CAPI UBool U_EXPORT2
-u_stringHasBinaryProperty(const UChar *s, int32_t length, UProperty which) {
+u_isIDStart(UChar32 c) {
+    return u_hasBinaryProperty(c, UCHAR_ID_START);
+}
+
+/* Checks if the Unicode character can be a Unicode identifier part other than starting the
+ identifier.*/
+U_CAPI UBool U_EXPORT2
+u_isIDPart(UChar32 c) {
+    return u_hasBinaryProperty(c, UCHAR_ID_CONTINUE);
+}
+
+U_CAPI UBool U_EXPORT2
+u_stringHasBinaryProperty(const char16_t *s, int32_t length, UProperty which) {
     if (s == nullptr && length != 0) { return false; }
     if (length == 1) {
         return u_hasBinaryProperty(s[0], which);  // single code point
@@ -746,6 +809,19 @@ uprops_getSource(UProperty which) {
 
 U_CFUNC void U_EXPORT2
 uprops_addPropertyStarts(UPropertySource src, const USetAdder *sa, UErrorCode *pErrorCode) {
+    if (U_FAILURE(*pErrorCode)) { return; }
+    if (src == UPROPS_SRC_ID_COMPAT_MATH) {
+        // range limits
+        for (UChar32 c : ID_COMPAT_MATH_CONTINUE) {
+            sa->add(sa->set, c);
+        }
+        // single characters
+        for (UChar32 c : ID_COMPAT_MATH_START) {
+            sa->add(sa->set, c);
+            sa->add(sa->set, c + 1);
+        }
+        return;
+    }
     if (!ulayout_ensureData(*pErrorCode)) { return; }
     const UCPTrie *trie;
     switch (src) {
@@ -780,11 +856,11 @@ uprops_addPropertyStarts(UPropertySource src, const USetAdder *sa, UErrorCode *p
 #if !UCONFIG_NO_NORMALIZATION
 
 U_CAPI int32_t U_EXPORT2
-u_getFC_NFKC_Closure(UChar32 c, UChar *dest, int32_t destCapacity, UErrorCode *pErrorCode) {
-    if(pErrorCode==NULL || U_FAILURE(*pErrorCode)) {
+u_getFC_NFKC_Closure(UChar32 c, char16_t *dest, int32_t destCapacity, UErrorCode *pErrorCode) {
+    if(pErrorCode==nullptr || U_FAILURE(*pErrorCode)) {
         return 0;
     }
-    if(destCapacity<0 || (dest==NULL && destCapacity>0)) {
+    if(destCapacity<0 || (dest==nullptr && destCapacity>0)) {
         *pErrorCode=U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
     }
@@ -800,7 +876,7 @@ u_getFC_NFKC_Closure(UChar32 c, UChar *dest, int32_t destCapacity, UErrorCode *p
     }
     // first: b = NFKC(Fold(a))
     UnicodeString folded1String;
-    const UChar *folded1;
+    const char16_t *folded1;
     int32_t folded1Length=ucase_toFullFolding(c, &folded1, U_FOLD_CASE_DEFAULT);
     if(folded1Length<0) {
         const Normalizer2Impl *nfkcImpl=Normalizer2Factory::getImpl(nfkc);

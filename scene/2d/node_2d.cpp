@@ -112,12 +112,24 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 }
 #endif
 
-void Node2D::_update_xform_values() {
-	position = transform.columns[2];
+void Node2D::_set_xform_dirty(bool p_dirty) const {
+	if (is_group_processing()) {
+		if (p_dirty) {
+			xform_dirty.mt.set();
+		} else {
+			xform_dirty.mt.clear();
+		}
+	} else {
+		xform_dirty.st = p_dirty;
+	}
+}
+
+void Node2D::_update_xform_values() const {
 	rotation = transform.get_rotation();
-	scale = transform.get_scale();
 	skew = transform.get_skew();
-	_xform_dirty = false;
+	position = transform.columns[2];
+	scale = transform.get_scale();
+	_set_xform_dirty(false);
 }
 
 void Node2D::_update_transform() {
@@ -126,52 +138,56 @@ void Node2D::_update_transform() {
 
 	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), transform);
 
-	if (!is_inside_tree()) {
-		return;
-	}
-
 	_notify_transform();
 }
 
 void Node2D::reparent(Node *p_parent, bool p_keep_global_transform) {
-	Transform2D temp = get_global_transform();
-	Node::reparent(p_parent);
+	ERR_THREAD_GUARD;
 	if (p_keep_global_transform) {
+		Transform2D temp = get_global_transform();
+		Node::reparent(p_parent);
 		set_global_transform(temp);
+	} else {
+		Node::reparent(p_parent);
 	}
 }
 
 void Node2D::set_position(const Point2 &p_pos) {
-	if (_xform_dirty) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	ERR_THREAD_GUARD;
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 	position = p_pos;
 	_update_transform();
 }
 
 void Node2D::set_rotation(real_t p_radians) {
-	if (_xform_dirty) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	ERR_THREAD_GUARD;
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 	rotation = p_radians;
 	_update_transform();
 }
 
 void Node2D::set_rotation_degrees(real_t p_degrees) {
+	ERR_THREAD_GUARD;
 	set_rotation(Math::deg_to_rad(p_degrees));
 }
 
 void Node2D::set_skew(real_t p_radians) {
-	if (_xform_dirty) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	ERR_THREAD_GUARD;
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 	skew = p_radians;
 	_update_transform();
 }
 
 void Node2D::set_scale(const Size2 &p_scale) {
-	if (_xform_dirty) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	ERR_THREAD_GUARD;
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 	scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
@@ -185,61 +201,73 @@ void Node2D::set_scale(const Size2 &p_scale) {
 }
 
 Point2 Node2D::get_position() const {
-	if (_xform_dirty) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	ERR_READ_THREAD_GUARD_V(Point2());
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
+
 	return position;
 }
 
 real_t Node2D::get_rotation() const {
-	if (_xform_dirty) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	ERR_READ_THREAD_GUARD_V(0);
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 
 	return rotation;
 }
 
 real_t Node2D::get_rotation_degrees() const {
+	ERR_READ_THREAD_GUARD_V(0);
 	return Math::rad_to_deg(get_rotation());
 }
 
 real_t Node2D::get_skew() const {
-	if (_xform_dirty) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	ERR_READ_THREAD_GUARD_V(0);
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 
 	return skew;
 }
 
 Size2 Node2D::get_scale() const {
-	if (_xform_dirty) {
-		const_cast<Node2D *>(this)->_update_xform_values();
+	ERR_READ_THREAD_GUARD_V(Size2());
+	if (_is_xform_dirty()) {
+		_update_xform_values();
 	}
 
 	return scale;
 }
 
 Transform2D Node2D::get_transform() const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
 	return transform;
 }
 
 void Node2D::rotate(real_t p_radians) {
+	ERR_THREAD_GUARD;
 	set_rotation(get_rotation() + p_radians);
 }
 
 void Node2D::translate(const Vector2 &p_amount) {
+	ERR_THREAD_GUARD;
 	set_position(get_position() + p_amount);
 }
 
 void Node2D::global_translate(const Vector2 &p_amount) {
+	ERR_THREAD_GUARD;
 	set_global_position(get_global_position() + p_amount);
 }
 
 void Node2D::apply_scale(const Size2 &p_amount) {
+	ERR_THREAD_GUARD;
 	set_scale(get_scale() * p_amount);
 }
 
 void Node2D::move_x(real_t p_delta, bool p_scaled) {
+	ERR_THREAD_GUARD;
 	Transform2D t = get_transform();
 	Vector2 m = t[0];
 	if (!p_scaled) {
@@ -249,6 +277,7 @@ void Node2D::move_x(real_t p_delta, bool p_scaled) {
 }
 
 void Node2D::move_y(real_t p_delta, bool p_scaled) {
+	ERR_THREAD_GUARD;
 	Transform2D t = get_transform();
 	Vector2 m = t[1];
 	if (!p_scaled) {
@@ -258,10 +287,12 @@ void Node2D::move_y(real_t p_delta, bool p_scaled) {
 }
 
 Point2 Node2D::get_global_position() const {
+	ERR_READ_THREAD_GUARD_V(Point2());
 	return get_global_transform().get_origin();
 }
 
 void Node2D::set_global_position(const Point2 &p_pos) {
+	ERR_THREAD_GUARD;
 	CanvasItem *parent = get_parent_item();
 	if (parent) {
 		Transform2D inv = parent->get_global_transform().affine_inverse();
@@ -272,18 +303,22 @@ void Node2D::set_global_position(const Point2 &p_pos) {
 }
 
 real_t Node2D::get_global_rotation() const {
+	ERR_READ_THREAD_GUARD_V(0);
 	return get_global_transform().get_rotation();
 }
 
 real_t Node2D::get_global_rotation_degrees() const {
+	ERR_READ_THREAD_GUARD_V(0);
 	return Math::rad_to_deg(get_global_rotation());
 }
 
 real_t Node2D::get_global_skew() const {
+	ERR_READ_THREAD_GUARD_V(0);
 	return get_global_transform().get_skew();
 }
 
 void Node2D::set_global_rotation(const real_t p_radians) {
+	ERR_THREAD_GUARD;
 	CanvasItem *parent = get_parent_item();
 	if (parent) {
 		Transform2D parent_global_transform = parent->get_global_transform();
@@ -297,10 +332,12 @@ void Node2D::set_global_rotation(const real_t p_radians) {
 }
 
 void Node2D::set_global_rotation_degrees(const real_t p_degrees) {
+	ERR_THREAD_GUARD;
 	set_global_rotation(Math::deg_to_rad(p_degrees));
 }
 
 void Node2D::set_global_skew(const real_t p_radians) {
+	ERR_THREAD_GUARD;
 	CanvasItem *parent = get_parent_item();
 	if (parent) {
 		Transform2D parent_global_transform = parent->get_global_transform();
@@ -314,10 +351,12 @@ void Node2D::set_global_skew(const real_t p_radians) {
 }
 
 Size2 Node2D::get_global_scale() const {
+	ERR_READ_THREAD_GUARD_V(Size2());
 	return get_global_transform().get_scale();
 }
 
 void Node2D::set_global_scale(const Size2 &p_scale) {
+	ERR_THREAD_GUARD;
 	CanvasItem *parent = get_parent_item();
 	if (parent) {
 		Transform2D parent_global_transform = parent->get_global_transform();
@@ -331,19 +370,17 @@ void Node2D::set_global_scale(const Size2 &p_scale) {
 }
 
 void Node2D::set_transform(const Transform2D &p_transform) {
+	ERR_THREAD_GUARD;
 	transform = p_transform;
-	_xform_dirty = true;
+	_set_xform_dirty(true);
 
 	RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), transform);
-
-	if (!is_inside_tree()) {
-		return;
-	}
 
 	_notify_transform();
 }
 
 void Node2D::set_global_transform(const Transform2D &p_transform) {
+	ERR_THREAD_GUARD;
 	CanvasItem *parent = get_parent_item();
 	if (parent) {
 		set_transform(parent->get_global_transform().affine_inverse() * p_transform);
@@ -353,13 +390,14 @@ void Node2D::set_global_transform(const Transform2D &p_transform) {
 }
 
 Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
 	if (p_parent == this) {
 		return Transform2D();
 	}
 
 	Node2D *parent_2d = Object::cast_to<Node2D>(get_parent());
 
-	ERR_FAIL_COND_V(!parent_2d, Transform2D());
+	ERR_FAIL_NULL_V(parent_2d, Transform2D());
 	if (p_parent == parent_2d) {
 		return get_transform();
 	} else {
@@ -368,26 +406,39 @@ Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const
 }
 
 void Node2D::look_at(const Vector2 &p_pos) {
+	ERR_THREAD_GUARD;
 	rotate(get_angle_to(p_pos));
 }
 
 real_t Node2D::get_angle_to(const Vector2 &p_pos) const {
+	ERR_READ_THREAD_GUARD_V(0);
 	return (to_local(p_pos) * get_scale()).angle();
 }
 
 Point2 Node2D::to_local(Point2 p_global) const {
+	ERR_READ_THREAD_GUARD_V(Point2());
 	return get_global_transform().affine_inverse().xform(p_global);
 }
 
 Point2 Node2D::to_global(Point2 p_local) const {
+	ERR_READ_THREAD_GUARD_V(Point2());
 	return get_global_transform().xform(p_local);
 }
 
 void Node2D::_notification(int p_notification) {
 	switch (p_notification) {
-		case NOTIFICATION_MOVED_IN_PARENT: {
+		case NOTIFICATION_ENTER_TREE: {
+			ERR_MAIN_THREAD_GUARD;
+
 			if (get_viewport()) {
-				get_viewport()->gui_set_root_order_dirty();
+				get_parent()->connect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty), CONNECT_REFERENCE_COUNTED);
+			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			ERR_MAIN_THREAD_GUARD;
+
+			if (get_viewport()) {
+				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty));
 			}
 		} break;
 	}
@@ -437,16 +488,16 @@ void Node2D::_bind_methods() {
 
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_RANGE, "-99999,99999,0.001,or_less,or_greater,hide_slider,suffix:px"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians"), "set_rotation", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees"), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale", PROPERTY_HINT_LINK), "set_scale", "get_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "skew", PROPERTY_HINT_RANGE, "-89.9,89.9,0.1,radians"), "set_skew", "get_skew");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "skew", PROPERTY_HINT_RANGE, "-89.9,89.9,0.1,radians_as_degrees"), "set_skew", "get_skew");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "set_transform", "get_transform");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "set_global_position", "get_global_position");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_rotation", PROPERTY_HINT_NONE, "radians", PROPERTY_USAGE_NONE), "set_global_rotation", "get_global_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_rotation", PROPERTY_HINT_NONE, "radians_as_degrees", PROPERTY_USAGE_NONE), "set_global_rotation", "get_global_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_rotation_degrees", "get_global_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_scale", "get_global_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_skew", PROPERTY_HINT_NONE, "radians", PROPERTY_USAGE_NONE), "set_global_skew", "get_global_skew");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_skew", PROPERTY_HINT_NONE, "radians_as_degrees", PROPERTY_USAGE_NONE), "set_global_skew", "get_global_skew");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_transform", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
 }

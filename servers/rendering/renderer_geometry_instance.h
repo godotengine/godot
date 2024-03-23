@@ -37,7 +37,7 @@
 #include "core/templates/rid.h"
 #include "storage/utilities.h"
 
-// API definition for our RenderGeometryInstance class so we can expose this through GDExternal in the near future
+// API definition for our RenderGeometryInstance class so we can expose this through GDExtension in the near future
 class RenderGeometryInstance {
 public:
 	virtual ~RenderGeometryInstance() {}

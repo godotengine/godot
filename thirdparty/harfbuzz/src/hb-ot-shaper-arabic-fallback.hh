@@ -154,16 +154,22 @@ arabic_fallback_synthesize_lookup_ligature (const hb_ot_shape_plan_t *plan HB_UN
       const auto &components = ligature_table[first_glyph_idx].ligatures[ligature_idx].components;
       unsigned component_count = ARRAY_LENGTH_CONST (components);
 
-      for (unsigned i = 0; i < component_count; i++)
+      bool matched = true;
+      for (unsigned j = 0; j < component_count; j++)
       {
-	hb_codepoint_t component_u   = ligature_table[first_glyph_idx].ligatures[ligature_idx].components[i];
+	hb_codepoint_t component_u   = ligature_table[first_glyph_idx].ligatures[ligature_idx].components[j];
 	hb_codepoint_t component_glyph;
 	if (!component_u ||
-	    !hb_font_get_glyph (font, component_u,   0, &component_glyph))
-	  continue;
+	    !hb_font_get_nominal_glyph (font, component_u, &component_glyph))
+	{
+	  matched = false;
+	  break;
+	}
 
 	component_list[num_components++] = component_glyph;
       }
+      if (!matched)
+        continue;
 
       component_count_list[num_ligatures] = 1 + component_count;
       ligature_list[num_ligatures] = ligature_glyph;
@@ -222,7 +228,7 @@ struct arabic_fallback_plan_t
 
   hb_mask_t mask_array[ARABIC_FALLBACK_MAX_LOOKUPS];
   OT::SubstLookup *lookup_array[ARABIC_FALLBACK_MAX_LOOKUPS];
-  OT::hb_ot_layout_lookup_accelerator_t accel_array[ARABIC_FALLBACK_MAX_LOOKUPS];
+  OT::hb_ot_layout_lookup_accelerator_t *accel_array[ARABIC_FALLBACK_MAX_LOOKUPS];
 };
 
 #if defined(_WIN32) && !defined(HB_NO_WIN1256)
@@ -272,7 +278,7 @@ arabic_fallback_plan_init_win1256 (arabic_fallback_plan_t *fallback_plan HB_UNUS
       fallback_plan->lookup_array[j] = const_cast<OT::SubstLookup*> (&(&manifest+manifest[i].lookupOffset));
       if (fallback_plan->lookup_array[j])
       {
-	fallback_plan->accel_array[j].init (*fallback_plan->lookup_array[j]);
+	fallback_plan->accel_array[j] = OT::hb_ot_layout_lookup_accelerator_t::create (*fallback_plan->lookup_array[j]);
 	j++;
       }
     }
@@ -302,7 +308,7 @@ arabic_fallback_plan_init_unicode (arabic_fallback_plan_t *fallback_plan,
       fallback_plan->lookup_array[j] = arabic_fallback_synthesize_lookup (plan, font, i);
       if (fallback_plan->lookup_array[j])
       {
-	fallback_plan->accel_array[j].init (*fallback_plan->lookup_array[j]);
+	fallback_plan->accel_array[j] = OT::hb_ot_layout_lookup_accelerator_t::create (*fallback_plan->lookup_array[j]);
 	j++;
       }
     }
@@ -349,7 +355,7 @@ arabic_fallback_plan_destroy (arabic_fallback_plan_t *fallback_plan)
   for (unsigned int i = 0; i < fallback_plan->num_lookups; i++)
     if (fallback_plan->lookup_array[i])
     {
-      fallback_plan->accel_array[i].fini ();
+      hb_free (fallback_plan->accel_array[i]);
       if (fallback_plan->free_lookups)
 	hb_free (fallback_plan->lookup_array[i]);
     }
@@ -362,13 +368,14 @@ arabic_fallback_plan_shape (arabic_fallback_plan_t *fallback_plan,
 			    hb_font_t *font,
 			    hb_buffer_t *buffer)
 {
-  OT::hb_ot_apply_context_t c (0, font, buffer);
+  OT::hb_ot_apply_context_t c (0, font, buffer, hb_blob_get_empty ());
   for (unsigned int i = 0; i < fallback_plan->num_lookups; i++)
     if (fallback_plan->lookup_array[i]) {
       c.set_lookup_mask (fallback_plan->mask_array[i]);
-      hb_ot_layout_substitute_lookup (&c,
-				      *fallback_plan->lookup_array[i],
-				      fallback_plan->accel_array[i]);
+      if (fallback_plan->accel_array[i])
+	hb_ot_layout_substitute_lookup (&c,
+					*fallback_plan->lookup_array[i],
+					*fallback_plan->accel_array[i]);
     }
 }
 

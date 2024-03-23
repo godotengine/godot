@@ -31,13 +31,12 @@
 #include "occluder_instance_3d.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/triangulate.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/importer_mesh.h"
+#include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
 
 #ifdef TOOLS_ENABLED
@@ -441,14 +440,14 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 	}
 
 	if (occluder.is_valid()) {
-		occluder->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &OccluderInstance3D::_occluder_changed));
+		occluder->disconnect_changed(callable_mp(this, &OccluderInstance3D::_occluder_changed));
 	}
 
 	occluder = p_occluder;
 
 	if (occluder.is_valid()) {
 		set_base(occluder->get_rid());
-		occluder->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &OccluderInstance3D::_occluder_changed));
+		occluder->connect_changed(callable_mp(this, &OccluderInstance3D::_occluder_changed));
 	} else {
 		set_base(RID());
 	}
@@ -459,7 +458,7 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 #ifdef TOOLS_ENABLED
 	// PolygonOccluder3D is edited via an editor plugin, this ensures the plugin is shown/hidden when necessary
 	if (Engine::get_singleton()->is_editor_hint()) {
-		EditorNode::get_singleton()->call_deferred(SNAME("edit_current"));
+		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_current).call_deferred();
 	}
 #endif
 }
@@ -542,13 +541,14 @@ void OccluderInstance3D::_bake_surface(const Transform3D &p_transform, Array p_s
 		float error = -1.0f;
 		int target_index_count = MIN(indices.size(), 36);
 
+		const int simplify_options = SurfaceTool::SIMPLIFY_LOCK_BORDER;
+
 		uint32_t index_count = SurfaceTool::simplify_func(
 				(unsigned int *)indices.ptrw(),
 				(unsigned int *)indices.ptr(),
 				indices.size(),
 				vertices_f32.ptr(), vertices.size(), sizeof(float) * 3,
-				target_index_count, target_error, &error);
-
+				target_index_count, target_error, simplify_options, &error);
 		indices.resize(index_count);
 	}
 
@@ -604,7 +604,7 @@ void OccluderInstance3D::_bake_node(Node *p_node, PackedVector3Array &r_vertices
 }
 
 void OccluderInstance3D::bake_single_node(const Node3D *p_node, float p_simplification_distance, PackedVector3Array &r_vertices, PackedInt32Array &r_indices) {
-	ERR_FAIL_COND(!p_node);
+	ERR_FAIL_NULL(p_node);
 
 	Transform3D xform = p_node->is_inside_tree() ? p_node->get_global_transform() : p_node->get_transform();
 

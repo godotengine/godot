@@ -1,23 +1,11 @@
 /**
  * \file platform_time.h
  *
- * \brief mbed TLS Platform time abstraction
+ * \brief Mbed TLS Platform time abstraction
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_PLATFORM_TIME_H
 #define MBEDTLS_PLATFORM_TIME_H
@@ -47,7 +35,7 @@ typedef time_t mbedtls_time_t;
  * The function pointers for time
  */
 #if defined(MBEDTLS_PLATFORM_TIME_ALT)
-extern mbedtls_time_t (*mbedtls_time)( mbedtls_time_t* time );
+extern mbedtls_time_t (*mbedtls_time)(mbedtls_time_t *time);
 
 /**
  * \brief   Set your own time function pointer
@@ -56,7 +44,7 @@ extern mbedtls_time_t (*mbedtls_time)( mbedtls_time_t* time );
  *
  * \return              0
  */
-int mbedtls_platform_set_time( mbedtls_time_t (*time_func)( mbedtls_time_t* time ) );
+int mbedtls_platform_set_time(mbedtls_time_t (*time_func)(mbedtls_time_t *time));
 #else
 #if defined(MBEDTLS_PLATFORM_TIME_MACRO)
 #define mbedtls_time    MBEDTLS_PLATFORM_TIME_MACRO

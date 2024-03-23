@@ -4,7 +4,7 @@
  *
  *   OpenType & CFF data/program tables loader (specification).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -105,14 +105,14 @@ FT_BEGIN_HEADER
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
   FT_LOCAL( FT_Error )
-  cff_get_var_blend( CFF_Face     face,
+  cff_get_var_blend( FT_Face      face,
                      FT_UInt     *num_coords,
                      FT_Fixed*   *coords,
                      FT_Fixed*   *normalizedcoords,
                      FT_MM_Var*  *mm_var );
 
   FT_LOCAL( void )
-  cff_done_blend( CFF_Face  face );
+  cff_done_blend( FT_Face  face );
 #endif
 
 

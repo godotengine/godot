@@ -52,9 +52,6 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 };
 
-VARIANT_ENUM_CAST(Month);
-VARIANT_ENUM_CAST(Weekday);
-
 #define UNIX_TIME_TO_HMS                                                     \
 	uint8_t hour, minute, second;                                            \
 	{                                                                        \
@@ -192,9 +189,6 @@ VARIANT_ENUM_CAST(Weekday);
 Time *Time::singleton = nullptr;
 
 Time *Time::get_singleton() {
-	if (!singleton) {
-		memnew(Time);
-	}
 	return singleton;
 }
 
@@ -261,7 +255,7 @@ String Time::get_time_string_from_unix_time(int64_t p_unix_time_val) const {
 	return vformat("%02d:%02d:%02d", hour, minute, second);
 }
 
-Dictionary Time::get_datetime_dict_from_datetime_string(String p_datetime, bool p_weekday) const {
+Dictionary Time::get_datetime_dict_from_datetime_string(const String &p_datetime, bool p_weekday) const {
 	PARSE_ISO8601_STRING(Dictionary())
 	Dictionary dict;
 	dict[YEAR_KEY] = year;
@@ -279,7 +273,7 @@ Dictionary Time::get_datetime_dict_from_datetime_string(String p_datetime, bool 
 	return dict;
 }
 
-String Time::get_datetime_string_from_datetime_dict(const Dictionary p_datetime, bool p_use_space) const {
+String Time::get_datetime_string_from_datetime_dict(const Dictionary &p_datetime, bool p_use_space) const {
 	ERR_FAIL_COND_V_MSG(p_datetime.is_empty(), "", "Invalid datetime Dictionary: Dictionary is empty.");
 	EXTRACT_FROM_DICTIONARY
 	VALIDATE_YMDHMS("")
@@ -293,7 +287,7 @@ String Time::get_datetime_string_from_datetime_dict(const Dictionary p_datetime,
 	return timestamp;
 }
 
-int64_t Time::get_unix_time_from_datetime_dict(const Dictionary p_datetime) const {
+int64_t Time::get_unix_time_from_datetime_dict(const Dictionary &p_datetime) const {
 	ERR_FAIL_COND_V_MSG(p_datetime.is_empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
 	EXTRACT_FROM_DICTIONARY
 	VALIDATE_YMDHMS(0)
@@ -301,7 +295,7 @@ int64_t Time::get_unix_time_from_datetime_dict(const Dictionary p_datetime) cons
 	return day_number * SECONDS_PER_DAY + hour * 3600 + minute * 60 + second;
 }
 
-int64_t Time::get_unix_time_from_datetime_string(String p_datetime) const {
+int64_t Time::get_unix_time_from_datetime_string(const String &p_datetime) const {
 	PARSE_ISO8601_STRING(-1)
 	VALIDATE_YMDHMS(0)
 	YMD_TO_DAY_NUMBER
@@ -382,10 +376,10 @@ String Time::get_time_string_from_system(bool p_utc) const {
 
 Dictionary Time::get_time_zone_from_system() const {
 	OS::TimeZoneInfo info = OS::get_singleton()->get_time_zone_info();
-	Dictionary timezone;
-	timezone["bias"] = info.bias;
-	timezone["name"] = info.name;
-	return timezone;
+	Dictionary ret_timezone;
+	ret_timezone["bias"] = info.bias;
+	ret_timezone["name"] = info.name;
+	return ret_timezone;
 }
 
 double Time::get_unix_time_from_system() const {

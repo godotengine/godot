@@ -34,11 +34,38 @@
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
+void RenderSceneDataRD::_bind_methods() {
+}
+
+Transform3D RenderSceneDataRD::get_cam_transform() const {
+	return cam_transform;
+}
+
+Projection RenderSceneDataRD::get_cam_projection() const {
+	return cam_projection;
+}
+
+uint32_t RenderSceneDataRD::get_view_count() const {
+	return view_count;
+}
+
+Vector3 RenderSceneDataRD::get_view_eye_offset(uint32_t p_view) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_view, view_count, Vector3());
+
+	return view_eye_offset[p_view];
+}
+
+Projection RenderSceneDataRD::get_view_projection(uint32_t p_view) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_view, view_count, Projection());
+
+	return view_projection[p_view];
+}
+
 RID RenderSceneDataRD::create_uniform_buffer() {
 	return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA));
 }
 
-void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_flip_y, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers) {
+void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_flip_y, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier) {
 	RendererSceneRenderRD *render_scene_render = RendererSceneRenderRD::get_singleton();
 
 	UBODATA ubo_data;
@@ -76,6 +103,8 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 		ubo.eye_offset[v][3] = 0.0;
 	}
 
+	RendererRD::MaterialStorage::store_transform(main_cam_transform, ubo.main_cam_inv_view_matrix);
+
 	ubo.taa_jitter[0] = taa_jitter.x;
 	ubo.taa_jitter[1] = taa_jitter.y;
 
@@ -89,6 +118,7 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	RendererRD::MaterialStorage::store_soft_shadow_kernel(render_scene_render->penumbra_shadow_kernel_get(), ubo.penumbra_shadow_kernel);
 	RendererRD::MaterialStorage::store_soft_shadow_kernel(render_scene_render->soft_shadow_kernel_get(), ubo.soft_shadow_kernel);
 	ubo.camera_visible_layers = camera_visible_layers;
+	ubo.pass_alpha_multiplier = p_opaque_render_buffers && p_apply_alpha_multiplier ? 0.0f : 1.0f;
 
 	ubo.viewport_size[0] = p_screen_size.x;
 	ubo.viewport_size[1] = p_screen_size.y;
@@ -165,10 +195,15 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 		}
 
 		ubo.fog_enabled = render_scene_render->environment_get_fog_enabled(p_env);
+		ubo.fog_mode = render_scene_render->environment_get_fog_mode(p_env);
 		ubo.fog_density = render_scene_render->environment_get_fog_density(p_env);
 		ubo.fog_height = render_scene_render->environment_get_fog_height(p_env);
 		ubo.fog_height_density = render_scene_render->environment_get_fog_height_density(p_env);
 		ubo.fog_aerial_perspective = render_scene_render->environment_get_fog_aerial_perspective(p_env);
+
+		ubo.fog_depth_curve = render_scene_render->environment_get_fog_depth_curve(p_env);
+		ubo.fog_depth_end = render_scene_render->environment_get_fog_depth_end(p_env) > 0.0 ? render_scene_render->environment_get_fog_depth_end(p_env) : ubo.z_far;
+		ubo.fog_depth_begin = MIN(render_scene_render->environment_get_fog_depth_begin(p_env), ubo.fog_depth_end - 0.001);
 
 		Color fog_color = render_scene_render->environment_get_fog_light_color(p_env).srgb_to_linear();
 		float fog_energy = render_scene_render->environment_get_fog_light_energy(p_env);
@@ -234,6 +269,12 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 		RendererRD::MaterialStorage::store_transform(prev_cam_transform, prev_ubo.inv_view_matrix);
 		RendererRD::MaterialStorage::store_transform(prev_cam_transform.affine_inverse(), prev_ubo.view_matrix);
 
+#ifdef REAL_T_IS_DOUBLE
+		RendererRD::MaterialStorage::split_double(-prev_cam_transform.origin.x, &prev_ubo.inv_view_matrix[12], &prev_ubo.inv_view_matrix[3]);
+		RendererRD::MaterialStorage::split_double(-prev_cam_transform.origin.y, &prev_ubo.inv_view_matrix[13], &prev_ubo.inv_view_matrix[7]);
+		RendererRD::MaterialStorage::split_double(-prev_cam_transform.origin.z, &prev_ubo.inv_view_matrix[14], &prev_ubo.inv_view_matrix[11]);
+#endif
+
 		for (uint32_t v = 0; v < view_count; v++) {
 			prev_projection = prev_correction * view_projection[v];
 			RendererRD::MaterialStorage::store_camera(prev_projection, prev_ubo.projection_matrix_view[v]);
@@ -245,9 +286,9 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	}
 
 	uniform_buffer = p_uniform_buffer;
-	RD::get_singleton()->buffer_update(uniform_buffer, 0, sizeof(UBODATA), &ubo, RD::BARRIER_MASK_RASTER);
+	RD::get_singleton()->buffer_update(uniform_buffer, 0, sizeof(UBODATA), &ubo);
 }
 
-RID RenderSceneDataRD::get_uniform_buffer() {
+RID RenderSceneDataRD::get_uniform_buffer() const {
 	return uniform_buffer;
 }

@@ -36,6 +36,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 
+class EditorPropertyVector2i;
 class EditorUndoRedoManager;
 
 class TileProxiesManagerDialog : public ConfirmationDialog {

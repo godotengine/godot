@@ -57,7 +57,7 @@ layout(r32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffe
 #elif defined(DST_IMAGE_8BIT)
 layout(rgba8, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
 #else
-layout(rgba32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
+layout(rgba16f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
 #endif
 
 #ifdef MODE_GAUSSIAN_BLUR
@@ -103,12 +103,13 @@ void main() {
 #ifdef MODE_GLOW
 	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
 		// Tonemap initial samples to reduce weight of fireflies: https://graphicrants.blogspot.com/2013/12/tone-mapping.html
-		local_cache[dest_index] /= 1.0 + dot(local_cache[dest_index].rgb, vec3(0.299, 0.587, 0.114));
-		local_cache[dest_index + 1] /= 1.0 + dot(local_cache[dest_index + 1].rgb, vec3(0.299, 0.587, 0.114));
-		local_cache[dest_index + 16] /= 1.0 + dot(local_cache[dest_index + 16].rgb, vec3(0.299, 0.587, 0.114));
-		local_cache[dest_index + 16 + 1] /= 1.0 + dot(local_cache[dest_index + 16 + 1].rgb, vec3(0.299, 0.587, 0.114));
+		vec3 tonemap_col = vec3(0.299, 0.587, 0.114) / max(params.glow_luminance_cap, 6.0);
+		local_cache[dest_index] /= 1.0 + dot(local_cache[dest_index].rgb, tonemap_col);
+		local_cache[dest_index + 1] /= 1.0 + dot(local_cache[dest_index + 1].rgb, tonemap_col);
+		local_cache[dest_index + 16] /= 1.0 + dot(local_cache[dest_index + 16].rgb, tonemap_col);
+		local_cache[dest_index + 16 + 1] /= 1.0 + dot(local_cache[dest_index + 16 + 1].rgb, tonemap_col);
 	}
-	const float kernel[4] = { 0.174938, 0.165569, 0.140367, 0.106595 };
+	const float kernel[5] = { 0.2024, 0.1790, 0.1240, 0.0672, 0.0285 };
 #else
 	// Simpler blur uses SIGMA2 for the gaussian kernel for a stronger effect.
 	const float kernel[4] = { 0.214607, 0.189879, 0.131514, 0.071303 };
@@ -126,6 +127,10 @@ void main() {
 	color_top += local_cache[read_index - 1] * kernel[1];
 	color_top += local_cache[read_index - 2] * kernel[2];
 	color_top += local_cache[read_index - 3] * kernel[3];
+#ifdef MODE_GLOW
+	color_top += local_cache[read_index + 4] * kernel[4];
+	color_top += local_cache[read_index - 4] * kernel[4];
+#endif // MODE_GLOW
 
 	vec4 color_bottom = vec4(0.0);
 	color_bottom += local_cache[read_index + 16] * kernel[0];
@@ -135,6 +140,10 @@ void main() {
 	color_bottom += local_cache[read_index - 1 + 16] * kernel[1];
 	color_bottom += local_cache[read_index - 2 + 16] * kernel[2];
 	color_bottom += local_cache[read_index - 3 + 16] * kernel[3];
+#ifdef MODE_GLOW
+	color_bottom += local_cache[read_index + 4 + 16] * kernel[4];
+	color_bottom += local_cache[read_index - 4 + 16] * kernel[4];
+#endif // MODE_GLOW
 
 	// rotate samples to take advantage of cache coherency
 	uint write_index = gl_LocalInvocationID.y * 2 + gl_LocalInvocationID.x * 16;
@@ -161,11 +170,15 @@ void main() {
 	color += temp_cache[index - 1] * kernel[1];
 	color += temp_cache[index - 2] * kernel[2];
 	color += temp_cache[index - 3] * kernel[3];
+#ifdef MODE_GLOW
+	color += temp_cache[index + 4] * kernel[4];
+	color += temp_cache[index - 4] * kernel[4];
+#endif // MODE_GLOW
 
 #ifdef MODE_GLOW
 	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
 		// Undo tonemap to restore range: https://graphicrants.blogspot.com/2013/12/tone-mapping.html
-		color /= 1.0 - dot(color.rgb, vec3(0.299, 0.587, 0.114));
+		color /= 1.0 - dot(color.rgb, vec3(0.299, 0.587, 0.114) / max(params.glow_luminance_cap, 6.0));
 	}
 
 	color *= params.glow_strength;

@@ -32,6 +32,7 @@
 
 #include "display_server_macos.h"
 #include "key_mapping_macos.h"
+
 #include "main/main.h"
 
 @implementation GodotContentLayerDelegate
@@ -39,6 +40,7 @@
 - (id)init {
 	self = [super init];
 	window_id = DisplayServer::INVALID_WINDOW_ID;
+	need_redraw = false;
 	return self;
 }
 
@@ -46,13 +48,18 @@
 	window_id = wid;
 }
 
+- (void)setNeedRedraw:(bool)redraw {
+	need_redraw = redraw;
+}
+
 - (void)displayLayer:(CALayer *)layer {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing()) {
+	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing() && need_redraw) {
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
 		}
+		need_redraw = false;
 	}
 }
 
@@ -92,6 +99,7 @@
 	}
 
 	[super setFrameSize:newSize];
+	[layer_delegate setNeedRedraw:true];
 	[self.layer setNeedsDisplay]; // Force "drawRect" call.
 }
 
@@ -115,13 +123,7 @@
 	self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
 	self.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
 
-	if (@available(macOS 10.13, *)) {
-		[self registerForDraggedTypes:[NSArray arrayWithObject:NSPasteboardTypeFileURL]];
-#if !defined(__aarch64__) // Do not build deprectead 10.13 code on ARM.
-	} else {
-		[self registerForDraggedTypes:[NSArray arrayWithObject:NSFilenamesPboardType]];
-#endif
-	}
+	[self registerForDraggedTypes:[NSArray arrayWithObject:NSPasteboardTypeFileURL]];
 	marked_text = [[NSMutableAttributedString alloc] init];
 	return self;
 }
@@ -135,12 +137,6 @@
 
 - (CALayer *)makeBackingLayer {
 	return [[CAMetalLayer class] layer];
-}
-
-- (void)updateLayer {
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	ds->window_update(window_id);
-	[super updateLayer];
 }
 
 - (BOOL)wantsUpdateLayer {
@@ -185,6 +181,7 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	if (wd.im_active) {
 		ime_input_event_in_progress = true;
+		ds->pop_last_key_event();
 		ds->update_im_text(Point2i(selectedRange.location, selectedRange.length), String::utf8([[marked_text mutableString] UTF8String]));
 	}
 }
@@ -194,6 +191,9 @@
 }
 
 - (void)unmarkText {
+	if (ime_input_event_in_progress) {
+		ime_suppress_next_keyup = true;
+	}
 	ime_input_event_in_progress = false;
 	[[marked_text mutableString] setString:@""];
 
@@ -245,8 +245,6 @@
 }
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange {
-	NSEvent *event = [NSApp currentEvent];
-
 	NSString *characters;
 	if ([aString isKindOfClass:[NSAttributedString class]]) {
 		characters = [aString string];
@@ -284,13 +282,14 @@
 		DisplayServerMacOS::KeyEvent ke;
 
 		ke.window_id = window_id;
-		ke.macos_state = [event modifierFlags];
+		ke.macos_state = 0;
 		ke.pressed = true;
 		ke.echo = false;
 		ke.raw = false; // IME input event.
 		ke.keycode = Key::NONE;
 		ke.physical_keycode = Key::NONE;
-		ke.unicode = codepoint;
+		ke.key_label = Key::NONE;
+		ke.unicode = fix_unicode(codepoint);
 
 		ds->push_to_key_event_buffer(ke);
 	}
@@ -318,27 +317,13 @@
 		Vector<String> files;
 		NSPasteboard *pboard = [sender draggingPasteboard];
 
-		if (@available(macOS 10.13, *)) {
-			NSArray *items = pboard.pasteboardItems;
-			for (NSPasteboardItem *item in items) {
-				NSString *url = [item stringForType:NSPasteboardTypeFileURL];
-				NSString *file = [NSURL URLWithString:url].path;
-				files.push_back(String::utf8([file UTF8String]));
-			}
-#if !defined(__aarch64__) // Do not build deprectead 10.13 code on ARM.
-		} else {
-			NSArray *filenames = [pboard propertyListForType:NSFilenamesPboardType];
-			for (NSString *file in filenames) {
-				files.push_back(String::utf8([file UTF8String]));
-			}
-#endif
+		NSArray *items = pboard.pasteboardItems;
+		for (NSPasteboardItem *item in items) {
+			NSString *url = [item stringForType:NSPasteboardTypeFileURL];
+			NSString *file = [NSURL URLWithString:url].path;
+			files.push_back(String::utf8([file UTF8String]));
 		}
-
-		Variant v = files;
-		Variant *vp = &v;
-		Variant ret;
-		Callable::CallError ce;
-		wd.drop_files_callback.callp((const Variant **)&vp, 1, ret, ce);
+		wd.drop_files_callback.call(files);
 	}
 
 	return NO;
@@ -353,7 +338,7 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-	return !wd.no_focus && !wd.is_popup;
+	return !wd.no_focus;
 }
 
 - (BOOL)acceptsFirstResponder {
@@ -371,7 +356,7 @@
 	ds->cursor_update_shape();
 }
 
-- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index pressed:(bool)pressed {
+- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index pressed:(bool)pressed outofstream:(bool)outofstream {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {
 		return;
@@ -392,14 +377,18 @@
 	Ref<InputEventMouseButton> mb;
 	mb.instantiate();
 	mb->set_window_id(window_id);
-	ds->update_mouse_pos(wd, [event locationInWindow]);
+	if (outofstream) {
+		ds->update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
+	} else {
+		ds->update_mouse_pos(wd, [event locationInWindow]);
+	}
 	ds->get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(index);
 	mb->set_pressed(pressed);
 	mb->set_position(wd.mouse_pos);
 	mb->set_global_position(wd.mouse_pos);
 	mb->set_button_mask(last_button_state);
-	if (index == MouseButton::LEFT && pressed) {
+	if (!outofstream && index == MouseButton::LEFT && pressed) {
 		mb->set_double_click([event clickCount] == 2);
 	}
 
@@ -409,10 +398,10 @@
 - (void)mouseDown:(NSEvent *)event {
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		mouse_down_control = true;
-		[self processMouseEvent:event index:MouseButton::RIGHT pressed:true];
+		[self processMouseEvent:event index:MouseButton::RIGHT pressed:true outofstream:false];
 	} else {
 		mouse_down_control = false;
-		[self processMouseEvent:event index:MouseButton::LEFT pressed:true];
+		[self processMouseEvent:event index:MouseButton::LEFT pressed:true outofstream:false];
 	}
 }
 
@@ -422,9 +411,9 @@
 
 - (void)mouseUp:(NSEvent *)event {
 	if (mouse_down_control) {
-		[self processMouseEvent:event index:MouseButton::RIGHT pressed:false];
+		[self processMouseEvent:event index:MouseButton::RIGHT pressed:false outofstream:false];
 	} else {
-		[self processMouseEvent:event index:MouseButton::LEFT pressed:false];
+		[self processMouseEvent:event index:MouseButton::LEFT pressed:false outofstream:false];
 	}
 }
 
@@ -463,15 +452,17 @@
 	}
 	mm->set_global_position(wd.mouse_pos);
 	mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+	mm->set_screen_velocity(mm->get_velocity());
 	const Vector2i relativeMotion = Vector2i(delta.x, delta.y) * ds->screen_get_max_scale();
 	mm->set_relative(relativeMotion);
+	mm->set_relative_screen_position(relativeMotion);
 	ds->get_key_modifier_state([event modifierFlags], mm);
 
 	Input::get_singleton()->parse_input_event(mm);
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-	[self processMouseEvent:event index:MouseButton::RIGHT pressed:true];
+	[self processMouseEvent:event index:MouseButton::RIGHT pressed:true outofstream:false];
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
@@ -479,16 +470,16 @@
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-	[self processMouseEvent:event index:MouseButton::RIGHT pressed:false];
+	[self processMouseEvent:event index:MouseButton::RIGHT pressed:false outofstream:false];
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:true];
+		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:true outofstream:false];
 	} else if ((int)[event buttonNumber] == 3) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:true];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:true outofstream:false];
 	} else if ((int)[event buttonNumber] == 4) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:true];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:true outofstream:false];
 	} else {
 		return;
 	}
@@ -500,13 +491,28 @@
 
 - (void)otherMouseUp:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:false];
+		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:false outofstream:false];
 	} else if ((int)[event buttonNumber] == 3) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:false];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:false outofstream:false];
 	} else if ((int)[event buttonNumber] == 4) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:false];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:false outofstream:false];
 	} else {
 		return;
+	}
+}
+
+- (void)swipeWithEvent:(NSEvent *)event {
+	// Swipe gesture on Trackpad/Magic Mouse, or physical back/forward mouse buttons.
+	if ([event phase] == NSEventPhaseEnded || [event phase] == NSEventPhaseChanged) {
+		if (Math::is_equal_approx([event deltaX], 1.0)) {
+			// Swipe left (back).
+			[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:true outofstream:true];
+			[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:false outofstream:true];
+		} else if (Math::is_equal_approx([event deltaX], -1.0)) {
+			// Swipe right (forward).
+			[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:true outofstream:true];
+			[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:false outofstream:true];
+		}
 	}
 }
 
@@ -516,9 +522,8 @@
 		return;
 	}
 
-	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_CAPTURED) {
-		ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_MOUSE_EXIT);
+		ds->mouse_exit_window(window_id);
 	}
 }
 
@@ -528,9 +533,8 @@
 		return;
 	}
 
-	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_CAPTURED) {
-		ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_MOUSE_ENTER);
+		ds->mouse_enter_window(window_id);
 	}
 
 	ds->cursor_update_shape();
@@ -584,7 +588,7 @@
 		NSString *characters = [event characters];
 		NSUInteger length = [characters length];
 
-		if (!wd.im_active && length > 0 && keycode_has_unicode(KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]))) {
+		if (!wd.im_active && length > 0 && keycode_has_unicode(KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true))) {
 			// Fallback unicode character handler used if IME is not active.
 			Char16String text;
 			text.resize([characters length] + 1);
@@ -593,20 +597,23 @@
 			String u32text;
 			u32text.parse_utf16(text.ptr(), text.length());
 
+			DisplayServerMacOS::KeyEvent ke;
+			ke.window_id = window_id;
+			ke.macos_state = [event modifierFlags];
+			ke.pressed = true;
+			ke.echo = [event isARepeat];
+			ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], false);
+			ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
+			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
+			ke.raw = true;
+
+			if (u32text.is_empty()) {
+				ke.unicode = 0;
+				ds->push_to_key_event_buffer(ke);
+			}
 			for (int i = 0; i < u32text.length(); i++) {
 				const char32_t codepoint = u32text[i];
-
-				DisplayServerMacOS::KeyEvent ke;
-
-				ke.window_id = window_id;
-				ke.macos_state = [event modifierFlags];
-				ke.pressed = true;
-				ke.echo = [event isARepeat];
-				ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]);
-				ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
-				ke.raw = true;
-				ke.unicode = codepoint;
-
+				ke.unicode = fix_unicode(codepoint);
 				ds->push_to_key_event_buffer(ke);
 			}
 		} else {
@@ -616,10 +623,12 @@
 			ke.macos_state = [event modifierFlags];
 			ke.pressed = true;
 			ke.echo = [event isARepeat];
-			ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]);
+			ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], false);
 			ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
-			ke.raw = false;
+			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 			ke.unicode = 0;
+			ke.location = KeyMappingMacOS::translate_location([event keyCode]);
+			ke.raw = false;
 
 			ds->push_to_key_event_buffer(ke);
 		}
@@ -638,56 +647,55 @@
 	}
 	ignore_momentum_scroll = true;
 
-	// Ignore all input if IME input is in progress
-	if (!ime_input_event_in_progress) {
-		DisplayServerMacOS::KeyEvent ke;
+	DisplayServerMacOS::KeyEvent ke;
 
-		ke.window_id = window_id;
-		ke.echo = false;
-		ke.raw = true;
+	ke.window_id = window_id;
+	ke.echo = false;
+	ke.raw = true;
 
-		int key = [event keyCode];
-		int mod = [event modifierFlags];
+	int key = [event keyCode];
+	int mod = [event modifierFlags];
 
-		if (key == 0x36 || key == 0x37) {
-			if (mod & NSEventModifierFlagCommand) {
-				mod &= ~NSEventModifierFlagCommand;
-				ke.pressed = true;
-			} else {
-				ke.pressed = false;
-			}
-		} else if (key == 0x38 || key == 0x3c) {
-			if (mod & NSEventModifierFlagShift) {
-				mod &= ~NSEventModifierFlagShift;
-				ke.pressed = true;
-			} else {
-				ke.pressed = false;
-			}
-		} else if (key == 0x3a || key == 0x3d) {
-			if (mod & NSEventModifierFlagOption) {
-				mod &= ~NSEventModifierFlagOption;
-				ke.pressed = true;
-			} else {
-				ke.pressed = false;
-			}
-		} else if (key == 0x3b || key == 0x3e) {
-			if (mod & NSEventModifierFlagControl) {
-				mod &= ~NSEventModifierFlagControl;
-				ke.pressed = true;
-			} else {
-				ke.pressed = false;
-			}
+	if (key == 0x36 || key == 0x37) {
+		if (mod & NSEventModifierFlagCommand) {
+			mod &= ~NSEventModifierFlagCommand;
+			ke.pressed = true;
 		} else {
-			return;
+			ke.pressed = false;
 		}
-
-		ke.macos_state = mod;
-		ke.keycode = KeyMappingMacOS::remap_key(key, mod);
-		ke.physical_keycode = KeyMappingMacOS::translate_key(key);
-		ke.unicode = 0;
-
-		ds->push_to_key_event_buffer(ke);
+	} else if (key == 0x38 || key == 0x3c) {
+		if (mod & NSEventModifierFlagShift) {
+			mod &= ~NSEventModifierFlagShift;
+			ke.pressed = true;
+		} else {
+			ke.pressed = false;
+		}
+	} else if (key == 0x3a || key == 0x3d) {
+		if (mod & NSEventModifierFlagOption) {
+			mod &= ~NSEventModifierFlagOption;
+			ke.pressed = true;
+		} else {
+			ke.pressed = false;
+		}
+	} else if (key == 0x3b || key == 0x3e) {
+		if (mod & NSEventModifierFlagControl) {
+			mod &= ~NSEventModifierFlagControl;
+			ke.pressed = true;
+		} else {
+			ke.pressed = false;
+		}
+	} else {
+		return;
 	}
+
+	ke.macos_state = mod;
+	ke.keycode = KeyMappingMacOS::remap_key(key, mod, false);
+	ke.physical_keycode = KeyMappingMacOS::translate_key(key);
+	ke.key_label = KeyMappingMacOS::remap_key(key, mod, true);
+	ke.unicode = 0;
+	ke.location = KeyMappingMacOS::translate_location(key);
+
+	ds->push_to_key_event_buffer(ke);
 }
 
 - (void)keyUp:(NSEvent *)event {
@@ -696,51 +704,27 @@
 		return;
 	}
 
-	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-
 	// Ignore all input if IME input is in progress.
+	if (ime_suppress_next_keyup) {
+		ime_suppress_next_keyup = false;
+		return;
+	}
+
 	if (!ime_input_event_in_progress) {
-		NSString *characters = [event characters];
-		NSUInteger length = [characters length];
+		DisplayServerMacOS::KeyEvent ke;
 
-		// Fallback unicode character handler used if IME is not active.
-		if (!wd.im_active && length > 0 && keycode_has_unicode(KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]))) {
-			Char16String text;
-			text.resize([characters length] + 1);
-			[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
+		ke.window_id = window_id;
+		ke.macos_state = [event modifierFlags];
+		ke.pressed = false;
+		ke.echo = [event isARepeat];
+		ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], false);
+		ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
+		ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
+		ke.unicode = 0;
+		ke.location = KeyMappingMacOS::translate_location([event keyCode]);
+		ke.raw = true;
 
-			String u32text;
-			u32text.parse_utf16(text.ptr(), text.length());
-
-			for (int i = 0; i < u32text.length(); i++) {
-				const char32_t codepoint = u32text[i];
-				DisplayServerMacOS::KeyEvent ke;
-
-				ke.window_id = window_id;
-				ke.macos_state = [event modifierFlags];
-				ke.pressed = false;
-				ke.echo = [event isARepeat];
-				ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]);
-				ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
-				ke.raw = true;
-				ke.unicode = codepoint;
-
-				ds->push_to_key_event_buffer(ke);
-			}
-		} else {
-			DisplayServerMacOS::KeyEvent ke;
-
-			ke.window_id = window_id;
-			ke.macos_state = [event modifierFlags];
-			ke.pressed = false;
-			ke.echo = [event isARepeat];
-			ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]);
-			ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
-			ke.raw = true;
-			ke.unicode = 0;
-
-			ds->push_to_key_event_buffer(ke);
-		}
+		ds->push_to_key_event_buffer(ke);
 	}
 }
 

@@ -30,7 +30,6 @@
 
 #include "noise_texture_2d.h"
 
-#include "core/core_string_names.h"
 #include "noise.h"
 
 NoiseTexture2D::NoiseTexture2D() {
@@ -44,14 +43,12 @@ NoiseTexture2D::~NoiseTexture2D() {
 	if (texture.is_valid()) {
 		RS::get_singleton()->free(texture);
 	}
-	noise_thread.wait_to_finish();
+	if (noise_thread.is_started()) {
+		noise_thread.wait_to_finish();
+	}
 }
 
 void NoiseTexture2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_texture"), &NoiseTexture2D::_update_texture);
-	ClassDB::bind_method(D_METHOD("_generate_texture"), &NoiseTexture2D::_generate_texture);
-	ClassDB::bind_method(D_METHOD("_thread_done", "image"), &NoiseTexture2D::_thread_done);
-
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &NoiseTexture2D::set_width);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &NoiseTexture2D::set_height);
 
@@ -76,6 +73,9 @@ void NoiseTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bump_strength", "bump_strength"), &NoiseTexture2D::set_bump_strength);
 	ClassDB::bind_method(D_METHOD("get_bump_strength"), &NoiseTexture2D::get_bump_strength);
 
+	ClassDB::bind_method(D_METHOD("set_normalize", "normalize"), &NoiseTexture2D::set_normalize);
+	ClassDB::bind_method(D_METHOD("is_normalized"), &NoiseTexture2D::is_normalized);
+
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "gradient"), &NoiseTexture2D::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &NoiseTexture2D::get_color_ramp);
 
@@ -91,6 +91,7 @@ void NoiseTexture2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "as_normal_map"), "set_as_normal_map", "is_normal_map");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bump_strength", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_bump_strength", "get_bump_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize"), "set_normalize", "is_normalized");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "Noise"), "set_noise", "get_noise");
 }
@@ -133,7 +134,7 @@ void NoiseTexture2D::_thread_done(const Ref<Image> &p_image) {
 
 void NoiseTexture2D::_thread_function(void *p_ud) {
 	NoiseTexture2D *tex = static_cast<NoiseTexture2D *>(p_ud);
-	tex->call_deferred(SNAME("_thread_done"), tex->_generate_texture());
+	callable_mp(tex, &NoiseTexture2D::_thread_done).call_deferred(tex->_generate_texture());
 }
 
 void NoiseTexture2D::_queue_update() {
@@ -142,7 +143,7 @@ void NoiseTexture2D::_queue_update() {
 	}
 
 	update_queued = true;
-	call_deferred(SNAME("_update_texture"));
+	callable_mp(this, &NoiseTexture2D::_update_texture).call_deferred();
 }
 
 Ref<Image> NoiseTexture2D::_generate_texture() {
@@ -156,9 +157,9 @@ Ref<Image> NoiseTexture2D::_generate_texture() {
 	Ref<Image> new_image;
 
 	if (seamless) {
-		new_image = ref_noise->get_seamless_image(size.x, size.y, invert, in_3d_space, seamless_blend_skirt);
+		new_image = ref_noise->get_seamless_image(size.x, size.y, invert, in_3d_space, seamless_blend_skirt, normalize);
 	} else {
-		new_image = ref_noise->get_image(size.x, size.y, invert, in_3d_space);
+		new_image = ref_noise->get_image(size.x, size.y, invert, in_3d_space, normalize);
 	}
 	if (color_ramp.is_valid()) {
 		new_image = _modulate_with_gradient(new_image, color_ramp);
@@ -216,11 +217,11 @@ void NoiseTexture2D::set_noise(Ref<Noise> p_noise) {
 		return;
 	}
 	if (noise.is_valid()) {
-		noise->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture2D::_queue_update));
+		noise->disconnect_changed(callable_mp(this, &NoiseTexture2D::_queue_update));
 	}
 	noise = p_noise;
 	if (noise.is_valid()) {
-		noise->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture2D::_queue_update));
+		noise->connect_changed(callable_mp(this, &NoiseTexture2D::_queue_update));
 	}
 	_queue_update();
 }
@@ -340,13 +341,25 @@ void NoiseTexture2D::set_color_ramp(const Ref<Gradient> &p_gradient) {
 		return;
 	}
 	if (color_ramp.is_valid()) {
-		color_ramp->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture2D::_queue_update));
+		color_ramp->disconnect_changed(callable_mp(this, &NoiseTexture2D::_queue_update));
 	}
 	color_ramp = p_gradient;
 	if (color_ramp.is_valid()) {
-		color_ramp->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NoiseTexture2D::_queue_update));
+		color_ramp->connect_changed(callable_mp(this, &NoiseTexture2D::_queue_update));
 	}
 	_queue_update();
+}
+
+void NoiseTexture2D::set_normalize(bool p_normalize) {
+	if (normalize == p_normalize) {
+		return;
+	}
+	normalize = p_normalize;
+	_queue_update();
+}
+
+bool NoiseTexture2D::is_normalized() const {
+	return normalize;
 }
 
 Ref<Gradient> NoiseTexture2D::get_color_ramp() const {

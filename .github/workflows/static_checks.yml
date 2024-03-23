@@ -1,5 +1,6 @@
 name: 📊 Static Checks
-on: [push, pull_request]
+on:
+  workflow_call:
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-static
@@ -7,43 +8,62 @@ concurrency:
 
 jobs:
   static-checks:
-    name: Static Checks (clang-format, black format, file format, documentation checks)
-    runs-on: ubuntu-20.04
+    name: Code style, file formatting, and docs
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
-      # Azure repositories are not reliable, we need to prevent Azure giving us packages.
-      - name: Make apt sources.list use the default Ubuntu repositories
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/*
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-15 main"
-          sudo apt-get update
+      - name: Install APT dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: dos2unix libxml2-utils moreutils
 
-      - name: Install dependencies
+      - name: Install Python dependencies and general setup
         run: |
-          sudo apt-get install -qq dos2unix clang-format-15 libxml2-utils python3-pip moreutils
-          sudo update-alternatives --remove-all clang-format || true
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-15 100
-          sudo pip3 install black==22.3.0 pygments pytest==7.1.2 mypy==0.971
+          pip3 install pytest==7.1.2 mypy==0.971
+          git config diff.wsErrorHighlight all
+
+      - name: Get changed files
+        id: changed-files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            files=$(gh pr diff ${{ github.event.pull_request.number }} --name-only)
+          elif [ "${{ github.event_name }}" == "push" -a "${{ github.event.forced }}" == "false" -a "${{ github.event.created }}" == "false" ]; then
+            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null || true)
+          fi
+          echo "$files" >> changed.txt
+          cat changed.txt
+          files=$(echo "$files" | grep -v 'thirdparty' | xargs -I {} sh -c 'echo "./{}"' | tr '\n' ' ')
+          echo "CHANGED_FILES=$files" >> $GITHUB_ENV
+
+      # This needs to happen before Python and npm execution; it must happen before any extra files are written.
+      - name: .gitignore checks (gitignore_check.sh)
+        run: |
+          bash ./misc/scripts/gitignore_check.sh
+
+      - name: Style checks via pre-commit
+        uses: pre-commit/action@v3.0.1
 
       - name: File formatting checks (file_format.sh)
         run: |
-          bash ./misc/scripts/file_format.sh
+          bash ./misc/scripts/file_format.sh changed.txt
 
       - name: Header guards formatting checks (header_guards.sh)
         run: |
-          bash ./misc/scripts/header_guards.sh
-
-      - name: Python style checks via black (black_format.sh)
-        run: |
-          bash ./misc/scripts/black_format.sh
+          bash ./misc/scripts/header_guards.sh changed.txt
 
       - name: Python scripts static analysis (mypy_check.sh)
         run: |
-          bash ./misc/scripts/mypy_check.sh
+          if grep -qE '\.py$|SConstruct|SCsub' changed.txt || [ -z "$(cat changed.txt)" ]; then
+            bash ./misc/scripts/mypy_check.sh
+          else
+            echo "Skipping Python static analysis as no Python files were changed."
+          fi
 
       - name: Python builders checks via pytest (pytest_builders.sh)
         run: |
@@ -51,23 +71,27 @@ jobs:
 
       - name: JavaScript style and documentation checks via ESLint and JSDoc
         run: |
-          cd platform/web
-          npm ci
-          npm run lint
-          npm run docs -- -d dry-run
+          if grep -q "\.js" changed.txt || [ -z "$(cat changed.txt)" ]; then
+            cd platform/web
+            npm ci
+            npm run lint
+            npm run docs -- -d dry-run
+          else
+            echo "Skipping JavaScript formatting as no Web/JS files were changed."
+          fi
 
       - name: Class reference schema checks
         run: |
-          xmllint --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml
+          xmllint --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml platform/*/doc_classes/*.xml
 
       - name: Documentation checks
         run: |
-          doc/tools/make_rst.py --dry-run --color doc/classes modules
+          doc/tools/doc_status.py doc/classes modules/*/doc_classes platform/*/doc_classes
 
-      - name: Style checks via clang-format (clang_format.sh)
-        run: |
-          bash ./misc/scripts/clang_format.sh
-
-      - name: Style checks via dotnet format (dotnet_format.sh)
-        run: |
-          bash ./misc/scripts/dotnet_format.sh
+      - name: Spell checks via codespell
+        if: github.event_name == 'pull_request' && env.CHANGED_FILES != ''
+        uses: codespell-project/actions-codespell@v2
+        with:
+          skip: "./bin,./thirdparty,*.desktop,*.gen.*,*.po,*.pot,*.rc,./AUTHORS.md,./COPYRIGHT.txt,./DONORS.md,./core/input/gamecontrollerdb.txt,./core/string/locales.h,./editor/project_converter_3_to_4.cpp,./misc/scripts/codespell.sh,./platform/android/java/lib/src/com,./platform/web/node_modules,./platform/web/package-lock.json"
+          ignore_words_list: "breaked,curvelinear,doubleclick,expct,findn,gird,hel,inout,lod,mis,nd,numer,ot,requestor,te,vai"
+          path: ${{ env.CHANGED_FILES }}

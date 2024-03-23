@@ -32,6 +32,7 @@
 #define EDITOR_EXPORT_PLUGIN_H
 
 #include "core/extension/gdextension.h"
+#include "editor_export_platform.h"
 #include "editor_export_preset.h"
 #include "editor_export_shared_object.h"
 #include "scene/main/node.h"
@@ -39,7 +40,9 @@
 class EditorExportPlugin : public RefCounted {
 	GDCLASS(EditorExportPlugin, RefCounted);
 
+	friend class EditorExport;
 	friend class EditorExportPlatform;
+	friend class EditorExportPreset;
 
 	Ref<EditorExportPreset> export_preset;
 
@@ -68,7 +71,7 @@ class EditorExportPlugin : public RefCounted {
 		skipped = false;
 	}
 
-	_FORCE_INLINE_ void _export_end() {
+	_FORCE_INLINE_ void _export_end_clear() {
 		ios_frameworks.clear();
 		ios_embedded_frameworks.clear();
 		ios_bundle_files.clear();
@@ -82,6 +85,8 @@ class EditorExportPlugin : public RefCounted {
 	void _export_file_script(const String &p_path, const String &p_type, const Vector<String> &p_features);
 	void _export_begin_script(const Vector<String> &p_features, bool p_debug, const String &p_path, int p_flags);
 	void _export_end_script();
+
+	String _has_valid_export_configuration(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset);
 
 protected:
 	void set_export_preset(const Ref<EditorExportPreset> &p_preset);
@@ -103,6 +108,7 @@ protected:
 
 	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features);
 	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags);
+	virtual void _export_end();
 
 	static void _bind_methods();
 
@@ -120,22 +126,52 @@ protected:
 	GDVIRTUAL0(_end_customize_scenes)
 	GDVIRTUAL0(_end_customize_resources)
 
+	GDVIRTUAL2RC(PackedStringArray, _get_export_features, const Ref<EditorExportPlatform> &, bool);
+	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_export_options, const Ref<EditorExportPlatform> &);
+	GDVIRTUAL1RC(Dictionary, _get_export_options_overrides, const Ref<EditorExportPlatform> &);
+	GDVIRTUAL1RC(bool, _should_update_export_options, const Ref<EditorExportPlatform> &);
+	GDVIRTUAL2RC(String, _get_export_option_warning, const Ref<EditorExportPlatform> &, String);
+
 	GDVIRTUAL0RC(String, _get_name)
 
-	bool _begin_customize_resources(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) const; // Return true if this plugin does property export customization
-	Ref<Resource> _customize_resource(const Ref<Resource> &p_resource, const String &p_path); // If nothing is returned, it means do not touch (nothing changed). If something is returned (either the same or a different resource) it means changes are made.
+	GDVIRTUAL1RC(bool, _supports_platform, const Ref<EditorExportPlatform> &);
 
-	bool _begin_customize_scenes(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) const; // Return true if this plugin does property export customization
-	Node *_customize_scene(Node *p_root, const String &p_path); // Return true if a change was made
+	GDVIRTUAL2RC(PackedStringArray, _get_android_dependencies, const Ref<EditorExportPlatform> &, bool);
+	GDVIRTUAL2RC(PackedStringArray, _get_android_dependencies_maven_repos, const Ref<EditorExportPlatform> &, bool);
+	GDVIRTUAL2RC(PackedStringArray, _get_android_libraries, const Ref<EditorExportPlatform> &, bool);
+	GDVIRTUAL2RC(String, _get_android_manifest_activity_element_contents, const Ref<EditorExportPlatform> &, bool);
+	GDVIRTUAL2RC(String, _get_android_manifest_application_element_contents, const Ref<EditorExportPlatform> &, bool);
+	GDVIRTUAL2RC(String, _get_android_manifest_element_contents, const Ref<EditorExportPlatform> &, bool);
 
-	uint64_t _get_customization_configuration_hash() const; // Hash used for caching customized resources and scenes.
+	virtual bool _begin_customize_resources(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features); // Return true if this plugin does property export customization
+	virtual Ref<Resource> _customize_resource(const Ref<Resource> &p_resource, const String &p_path); // If nothing is returned, it means do not touch (nothing changed). If something is returned (either the same or a different resource) it means changes are made.
 
-	void _end_customize_scenes();
-	void _end_customize_resources();
+	virtual bool _begin_customize_scenes(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features); // Return true if this plugin does property export customization
+	virtual Node *_customize_scene(Node *p_root, const String &p_path); // Return true if a change was made
 
-	virtual String _get_name() const;
+	virtual uint64_t _get_customization_configuration_hash() const; // Hash used for caching customized resources and scenes.
+
+	virtual void _end_customize_scenes();
+	virtual void _end_customize_resources();
+
+	virtual PackedStringArray _get_export_features(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
+	virtual void _get_export_options(const Ref<EditorExportPlatform> &p_export_platform, List<EditorExportPlatform::ExportOption> *r_options) const;
+	virtual Dictionary _get_export_options_overrides(const Ref<EditorExportPlatform> &p_export_platform) const;
+	virtual bool _should_update_export_options(const Ref<EditorExportPlatform> &p_export_platform) const;
+	virtual String _get_export_option_warning(const Ref<EditorExportPlatform> &p_export_platform, const String &p_option_name) const;
 
 public:
+	virtual String get_name() const;
+
+	virtual bool supports_platform(const Ref<EditorExportPlatform> &p_export_platform) const;
+
+	virtual PackedStringArray get_android_dependencies(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
+	virtual PackedStringArray get_android_dependencies_maven_repos(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
+	virtual PackedStringArray get_android_libraries(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
+	virtual String get_android_manifest_activity_element_contents(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
+	virtual String get_android_manifest_application_element_contents(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
+	virtual String get_android_manifest_element_contents(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
+
 	Vector<String> get_ios_frameworks() const;
 	Vector<String> get_ios_embedded_frameworks() const;
 	Vector<String> get_ios_project_static_libs() const;
@@ -144,6 +180,7 @@ public:
 	Vector<String> get_ios_bundle_files() const;
 	String get_ios_cpp_code() const;
 	const Vector<String> &get_macos_plugin_files() const;
+	Variant get_option(const StringName &p_name) const;
 
 	EditorExportPlugin();
 };

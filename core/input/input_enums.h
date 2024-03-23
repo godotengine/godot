@@ -122,6 +122,7 @@ enum class MouseButton {
 };
 
 enum class MouseButtonMask {
+	NONE = 0,
 	LEFT = (1 << (int(MouseButton::LEFT) - 1)),
 	RIGHT = (1 << (int(MouseButton::RIGHT) - 1)),
 	MIDDLE = (1 << (int(MouseButton::MIDDLE) - 1)),

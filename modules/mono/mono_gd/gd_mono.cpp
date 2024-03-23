@@ -30,6 +30,18 @@
 
 #include "gd_mono.h"
 
+#include "../csharp_script.h"
+#include "../glue/runtime_interop.h"
+#include "../godotsharp_dirs.h"
+#include "../thirdparty/coreclr_delegates.h"
+#include "../thirdparty/hostfxr.h"
+#include "../utils/path_utils.h"
+#include "gd_mono_cache.h"
+
+#ifdef TOOLS_ENABLED
+#include "../editor/hostfxr_resolver.h"
+#endif
+
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
@@ -37,30 +49,8 @@
 #include "core/os/os.h"
 #include "core/os/thread.h"
 
-#include "../csharp_script.h"
-#include "../glue/runtime_interop.h"
-#include "../godotsharp_dirs.h"
-#include "../utils/path_utils.h"
-#include "gd_mono_cache.h"
-
-#include "../thirdparty/coreclr_delegates.h"
-#include "../thirdparty/hostfxr.h"
-
-#ifdef TOOLS_ENABLED
-#include "../editor/hostfxr_resolver.h"
-#endif
-
 #ifdef UNIX_ENABLED
 #include <dlfcn.h>
-#endif
-
-// TODO mobile
-#if 0
-#ifdef ANDROID_ENABLED
-#include "support/android_support.h"
-#elif defined(IOS_ENABLED)
-#include "support/ios_support.h"
-#endif
 #endif
 
 GDMono *GDMono::singleton = nullptr;
@@ -271,7 +261,12 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 
 	load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer =
 			initialize_hostfxr_for_config(get_data(config_path));
-	ERR_FAIL_NULL_V(load_assembly_and_get_function_pointer, nullptr);
+
+	if (load_assembly_and_get_function_pointer == nullptr) {
+		// Show a message box to the user to make the problem explicit (and explain a potential crash).
+		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, no compatible version was found.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-us/download and restart Godot."), TTR("Failed to load .NET runtime"));
+		ERR_FAIL_V_MSG(nullptr, ".NET: Failed to load compatible .NET runtime");
+	}
 
 	r_runtime_initialized = true;
 
@@ -288,20 +283,10 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	return godot_plugins_initialize;
 }
 #else
-static String get_assembly_name() {
-	String assembly_name = ProjectSettings::get_singleton()->get_setting("dotnet/project/assembly_name");
-
-	if (assembly_name.is_empty()) {
-		assembly_name = ProjectSettings::get_singleton()->get_safe_project_name();
-	}
-
-	return assembly_name;
-}
-
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
-	String assembly_name = get_assembly_name();
+	String assembly_name = path::get_csharp_project_name();
 
 	HostFxrCharString assembly_path = str_to_hostfxr(GodotSharpDirs::get_api_assemblies_dir()
 															 .path_join(assembly_name + ".dll"));
@@ -326,11 +311,11 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 }
 
 godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle) {
-	String assembly_name = get_assembly_name();
+	String assembly_name = path::get_csharp_project_name();
 
 #if defined(WINDOWS_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dll");
-#elif defined(MACOS_ENABLED)
+#elif defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dylib");
 #elif defined(UNIX_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".so");
@@ -338,27 +323,32 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 #error "Platform not supported (yet?)"
 #endif
 
-	if (FileAccess::exists(native_aot_so_path)) {
-		Error err = OS::get_singleton()->open_dynamic_library(native_aot_so_path, r_aot_dll_handle);
+	Error err = OS::get_singleton()->open_dynamic_library(native_aot_so_path, r_aot_dll_handle);
 
-		if (err != OK) {
-			return nullptr;
-		}
-
-		void *lib = r_aot_dll_handle;
-
-		void *symbol = nullptr;
-
-		err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "godotsharp_game_main_init", symbol);
-		ERR_FAIL_COND_V(err != OK, nullptr);
-		return (godot_plugins_initialize_fn)symbol;
+	if (err != OK) {
+		return nullptr;
 	}
 
-	return nullptr;
+	void *lib = r_aot_dll_handle;
+
+	void *symbol = nullptr;
+
+	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "godotsharp_game_main_init", symbol);
+	ERR_FAIL_COND_V(err != OK, nullptr);
+	return (godot_plugins_initialize_fn)symbol;
 }
 #endif
 
 } // namespace
+
+bool GDMono::should_initialize() {
+#ifdef TOOLS_ENABLED
+	// The editor always needs to initialize the .NET module for now.
+	return true;
+#else
+	return OS::get_singleton()->has_feature("dotnet");
+#endif
+}
 
 static bool _on_core_api_assembly_loaded() {
 	if (!GDMonoCache::godot_api_cache_updated) {
@@ -384,16 +374,28 @@ void GDMono::initialize() {
 
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
+#if !defined(IOS_ENABLED)
+	// Check that the .NET assemblies directory exists before trying to use it.
+	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
+		OS::get_singleton()->alert(vformat(RTR("Unable to find the .NET assemblies directory.\nMake sure the '%s' directory exists and contains the .NET assemblies."), GodotSharpDirs::get_api_assemblies_dir()), RTR(".NET assemblies not found"));
+		ERR_FAIL_MSG(".NET: Assemblies not found");
+	}
+#endif
+
 	if (!load_hostfxr(hostfxr_dll_handle)) {
 #if !defined(TOOLS_ENABLED)
 		godot_plugins_initialize = try_load_native_aot_library(hostfxr_dll_handle);
 
 		if (godot_plugins_initialize != nullptr) {
 			is_native_aot = true;
+			runtime_initialized = true;
 		} else {
 			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 		}
 #else
+
+		// Show a message box to the user to make the problem explicit (and explain a potential crash).
+		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, specifically hostfxr.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-us/download and restart Godot."), TTR("Failed to load .NET runtime"));
 		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 #endif
 	}
@@ -435,10 +437,16 @@ void GDMono::initialize() {
 	print_verbose(".NET: GodotPlugins initialized");
 
 	_on_core_api_assembly_loaded();
+
+#ifdef TOOLS_ENABLED
+	_try_load_project_assembly();
+#endif
+
+	initialized = true;
 }
 
 #ifdef TOOLS_ENABLED
-void GDMono::initialize_load_assemblies() {
+void GDMono::_try_load_project_assembly() {
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		return;
 	}
@@ -466,11 +474,7 @@ void GDMono::_init_godot_api_hashes() {
 
 #ifdef TOOLS_ENABLED
 bool GDMono::_load_project_assembly() {
-	String assembly_name = ProjectSettings::get_singleton()->get_setting("dotnet/project/assembly_name");
-
-	if (assembly_name.is_empty()) {
-		assembly_name = ProjectSettings::get_singleton()->get_safe_project_name();
-	}
+	String assembly_name = path::get_csharp_project_name();
 
 	String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
 								   .path_join(assembly_name + ".dll");
@@ -493,15 +497,31 @@ bool GDMono::_load_project_assembly() {
 #endif
 
 #ifdef GD_MONO_HOT_RELOAD
+void GDMono::reload_failure() {
+	if (++project_load_failure_count >= (int)GLOBAL_GET("dotnet/project/assembly_reload_attempts")) {
+		// After reloading a project has failed n times in a row, update the path and modification time
+		// to stop any further attempts at loading this assembly, which probably is never going to work anyways.
+		project_load_failure_count = 0;
+
+		ERR_PRINT_ED(".NET: Giving up on assembly reloading. Please restart the editor if unloading was failing.");
+
+		String assembly_name = path::get_csharp_project_name();
+		String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir().path_join(assembly_name + ".dll");
+		assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
+		project_assembly_path = assembly_path.simplify_path();
+		project_assembly_modified_time = FileAccess::get_modified_time(assembly_path);
+	}
+}
+
 Error GDMono::reload_project_assemblies() {
 	ERR_FAIL_COND_V(!runtime_initialized, ERR_BUG);
 
 	finalizing_scripts_domain = true;
 
-	CSharpLanguage::get_singleton()->_on_scripts_domain_about_to_unload();
-
 	if (!get_plugin_callbacks().UnloadProjectPluginCallback()) {
-		ERR_FAIL_V_MSG(Error::FAILED, ".NET: Failed to unload assemblies.");
+		ERR_PRINT_ED(".NET: Failed to unload assemblies. Please check https://github.com/godotengine/godot/issues/78513 for more information.");
+		reload_failure();
+		return FAILED;
 	}
 
 	finalizing_scripts_domain = false;
@@ -509,8 +529,14 @@ Error GDMono::reload_project_assemblies() {
 	// Load the project's main assembly. Here, during hot-reloading, we do
 	// consider failing to load the project's main assembly to be an error.
 	if (!_load_project_assembly()) {
-		print_error(".NET: Failed to load project assembly.");
+		ERR_PRINT_ED(".NET: Failed to load project assembly.");
+		reload_failure();
 		return ERR_CANT_OPEN;
+	}
+
+	if (project_load_failure_count > 0) {
+		project_load_failure_count = 0;
+		ERR_PRINT_ED(".NET: Assembly reloading succeeded after failures.");
 	}
 
 	return OK;
@@ -519,24 +545,10 @@ Error GDMono::reload_project_assemblies() {
 
 GDMono::GDMono() {
 	singleton = this;
-
-	runtime_initialized = false;
-	finalizing_scripts_domain = false;
-
-	api_core_hash = 0;
-#ifdef TOOLS_ENABLED
-	api_editor_hash = 0;
-#endif
 }
 
 GDMono::~GDMono() {
 	finalizing_scripts_domain = true;
-
-	if (is_runtime_initialized()) {
-		if (GDMonoCache::godot_api_cache_updated) {
-			GDMonoCache::managed_callbacks.DisposablesTracker_OnGodotShuttingDown();
-		}
-	}
 
 	if (hostfxr_dll_handle) {
 		OS::get_singleton()->close_dynamic_library(hostfxr_dll_handle);
@@ -544,10 +556,6 @@ GDMono::~GDMono() {
 
 	finalizing_scripts_domain = false;
 	runtime_initialized = false;
-
-#if defined(ANDROID_ENABLED)
-	gdmono::android::support::cleanup();
-#endif
 
 	singleton = nullptr;
 }

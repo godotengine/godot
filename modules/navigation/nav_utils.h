@@ -112,6 +112,8 @@ struct Polygon {
 
 	/// The center of this `Polygon`
 	Vector3 center;
+
+	real_t surface_area = 0.0;
 };
 
 struct NavigationPoly {
@@ -125,10 +127,10 @@ struct NavigationPoly {
 	Vector3 back_navigation_edge_pathway_start;
 	Vector3 back_navigation_edge_pathway_end;
 
-	/// The entry location of this poly.
+	/// The entry position of this poly.
 	Vector3 entry;
 	/// The distance to the destination.
-	float traveled_distance = 0.0;
+	real_t traveled_distance = 0.0;
 
 	NavigationPoly() { poly = nullptr; }
 
@@ -136,7 +138,7 @@ struct NavigationPoly {
 			poly(p_poly) {}
 
 	bool operator==(const NavigationPoly &other) const {
-		return this->poly == other.poly;
+		return poly == other.poly;
 	}
 
 	bool operator!=(const NavigationPoly &other) const {

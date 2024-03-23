@@ -51,6 +51,7 @@ protected:
 	Point2 camera_pos;
 	Point2 smoothed_camera_pos;
 	bool first = true;
+	bool just_exited_tree = false;
 
 	ObjectID custom_viewport_id; // to check validity
 	Viewport *custom_viewport = nullptr;
@@ -64,9 +65,9 @@ protected:
 	Vector2 zoom_scale = Vector2(1, 1);
 	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	bool ignore_rotation = true;
-	bool current = false;
+	bool enabled = true;
 	real_t position_smoothing_speed = 5.0;
-	bool follow_smoothing_enabled = false;
+	bool position_smoothing_enabled = false;
 
 	real_t camera_angle = 0.0;
 	real_t rotation_smoothing_speed = 5.0;
@@ -84,11 +85,12 @@ protected:
 	bool drag_vertical_offset_changed = false;
 
 	Point2 camera_screen_center;
+	bool _is_editing_in_editor() const;
 	void _update_process_callback();
 	void _update_scroll();
 
 	void _make_current(Object *p_which);
-	void set_current(bool p_current);
+	void _reset_just_exited() { just_exited_tree = false; }
 
 	void _set_old_smoothing(real_t p_enable);
 
@@ -154,6 +156,9 @@ public:
 
 	void set_process_callback(Camera2DProcessCallback p_mode);
 	Camera2DProcessCallback get_process_callback() const;
+
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
 
 	void make_current();
 	void clear_current();

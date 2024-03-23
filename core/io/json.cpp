@@ -30,6 +30,7 @@
 
 #include "json.h"
 
+#include "core/config/engine.h"
 #include "core/string/print_string.h"
 
 const char *JSON::tk_name[TK_MAX] = {
@@ -46,13 +47,7 @@ const char *JSON::tk_name[TK_MAX] = {
 };
 
 String JSON::_make_indent(const String &p_indent, int p_size) {
-	String indent_text = "";
-	if (!p_indent.is_empty()) {
-		for (int i = 0; i < p_size; i++) {
-			indent_text += p_indent;
-		}
-	}
-	return indent_text;
+	return p_indent.repeat(p_size);
 }
 
 String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision) {
@@ -90,9 +85,12 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 		case Variant::PACKED_FLOAT64_ARRAY:
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::ARRAY: {
+			Array a = p_var;
+			if (a.size() == 0) {
+				return "[]";
+			}
 			String s = "[";
 			s += end_statement;
-			Array a = p_var;
 
 			ERR_FAIL_COND_V_MSG(p_markers.has(a.id()), "\"[...]\"", "Converting circular structure to JSON.");
 			p_markers.insert(a.id());
@@ -301,9 +299,15 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 								}
 
 							} break;
-							default: {
+							case '"':
+							case '\\':
+							case '/': {
 								res = next;
 							} break;
+							default: {
+								r_err_str = "Invalid escape sequence.";
+								return ERR_PARSE_ERROR;
+							}
 						}
 
 						str += res;
@@ -506,6 +510,7 @@ Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index,
 
 void JSON::set_data(const Variant &p_data) {
 	data = p_data;
+	text.clear();
 }
 
 Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line) {
@@ -539,12 +544,19 @@ Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_st
 	return err;
 }
 
-Error JSON::parse(const String &p_json_string) {
+Error JSON::parse(const String &p_json_string, bool p_keep_text) {
 	Error err = _parse_string(p_json_string, data, err_str, err_line);
 	if (err == Error::OK) {
 		err_line = 0;
 	}
+	if (p_keep_text) {
+		text = p_json_string;
+	}
 	return err;
+}
+
+String JSON::get_parsed_text() const {
+	return text;
 }
 
 String JSON::stringify(const Variant &p_var, const String &p_indent, bool p_sort_keys, bool p_full_precision) {
@@ -565,10 +577,11 @@ Variant JSON::parse_string(const String &p_json_string) {
 void JSON::_bind_methods() {
 	ClassDB::bind_static_method("JSON", D_METHOD("stringify", "data", "indent", "sort_keys", "full_precision"), &JSON::stringify, DEFVAL(""), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_static_method("JSON", D_METHOD("parse_string", "json_string"), &JSON::parse_string);
-	ClassDB::bind_method(D_METHOD("parse", "json_string"), &JSON::parse);
+	ClassDB::bind_method(D_METHOD("parse", "json_text", "keep_text"), &JSON::parse, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_data"), &JSON::get_data);
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &JSON::set_data);
+	ClassDB::bind_method(D_METHOD("get_parsed_text"), &JSON::get_parsed_text);
 	ClassDB::bind_method(D_METHOD("get_error_line"), &JSON::get_error_line);
 	ClassDB::bind_method(D_METHOD("get_error_message"), &JSON::get_error_message);
 
@@ -592,13 +605,20 @@ Ref<Resource> ResourceFormatLoaderJSON::load(const String &p_path, const String 
 	Ref<JSON> json;
 	json.instantiate();
 
-	Error err = json->parse(FileAccess::get_file_as_string(p_path));
+	Error err = json->parse(FileAccess::get_file_as_string(p_path), Engine::get_singleton()->is_editor_hint());
 	if (err != OK) {
-		if (r_error) {
-			*r_error = err;
+		String err_text = "Error parsing JSON file at '" + p_path + "', on line " + itos(json->get_error_line()) + ": " + json->get_error_message();
+
+		if (Engine::get_singleton()->is_editor_hint()) {
+			// If running on editor, still allow opening the JSON so the code editor can edit it.
+			WARN_PRINT(err_text);
+		} else {
+			if (r_error) {
+				*r_error = err;
+			}
+			ERR_PRINT(err_text);
+			return Ref<Resource>();
 		}
-		ERR_PRINT("Error parsing JSON file at '" + p_path + "', on line " + itos(json->get_error_line()) + ": " + json->get_error_message());
-		return Ref<Resource>();
 	}
 
 	if (r_error) {
@@ -628,7 +648,7 @@ Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const Strin
 	Ref<JSON> json = p_resource;
 	ERR_FAIL_COND_V(json.is_null(), ERR_INVALID_PARAMETER);
 
-	String source = JSON::stringify(json->get_data(), "\t", false, true);
+	String source = json->get_parsed_text().is_empty() ? JSON::stringify(json->get_data(), "\t", false, true) : json->get_parsed_text();
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);

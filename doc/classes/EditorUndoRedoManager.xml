@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorUndoRedoManager" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorUndoRedoManager" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Manages undo history of scenes opened in the editor.
 	</brief_description>
@@ -10,6 +10,8 @@
 		- If the object is a built-in resource, use the scene from its path;
 		- If the object is external resource or anything else, use global history.
 		This guessing can sometimes yield false results, so you can provide a custom context object when creating an action.
+		[EditorUndoRedoManager] is intended to be used by Godot editor plugins. You can obtain it using [method EditorPlugin.get_undo_redo]. For non-editor uses or plugins that don't need to integrate with the editor's undo history, use [UndoRedo] instead.
+		The manager's API is mostly the same as in [UndoRedo], so you can refer to its documentation for more examples. The main difference is that [EditorUndoRedoManager] uses object + method name for actions, instead of [Callable].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -78,10 +80,12 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="0" />
 			<param index="2" name="custom_context" type="Object" default="null" />
+			<param index="3" name="backward_undo_ops" type="bool" default="false" />
 			<description>
 				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property], and [method add_undo_property], then commit the action with [method commit_action].
 				The way actions are merged is dictated by the [param merge_mode] argument. See [enum UndoRedo.MergeMode] for details.
 				If [param custom_context] object is provided, it will be used for deducing target history (instead of using the first operation).
+				The way undo operation are ordered in actions is dictated by [param backward_undo_ops]. When [param backward_undo_ops] is [code]false[/code] undo option are ordered in the same order they were added. Which means the first operation to be added will be the first to be undone.
 			</description>
 		</method>
 		<method name="get_history_undo_redo" qualifiers="const">

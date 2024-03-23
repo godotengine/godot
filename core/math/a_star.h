@@ -33,7 +33,6 @@
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
-#include "core/object/script_language.h"
 #include "core/templates/oa_hash_map.h"
 
 /**
@@ -52,7 +51,7 @@ class AStar3D : public RefCounted {
 		real_t weight_scale = 0;
 		bool enabled = false;
 
-		OAHashMap<int64_t, Point *> neighbours = 4u;
+		OAHashMap<int64_t, Point *> neighbors = 4u;
 		OAHashMap<int64_t, Point *> unlinked_neighbours = 4u;
 
 		// Used for pathfinding.

@@ -38,6 +38,9 @@
 class SurfaceTool : public RefCounted {
 	GDCLASS(SurfaceTool, RefCounted);
 
+	static const uint32_t custom_mask[RS::ARRAY_CUSTOM_COUNT];
+	static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT];
+
 public:
 	struct Vertex {
 		Vector3 vertex;
@@ -74,11 +77,16 @@ public:
 		SKIN_8_WEIGHTS
 	};
 
+	enum {
+		/* Do not move vertices that are located on the topological border (vertices on triangle edges that don't have a paired triangle). Useful for simplifying portions of the larger mesh. */
+		SIMPLIFY_LOCK_BORDER = 1 << 0, // From meshopt_SimplifyLockBorder
+	};
+
 	typedef void (*OptimizeVertexCacheFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
 	static OptimizeVertexCacheFunc optimize_vertex_cache_func;
-	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *r_error);
+	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, unsigned int options, float *r_error);
 	static SimplifyFunc simplify_func;
-	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, float *result_error, const float *attributes, const float *attribute_weights, size_t attribute_count);
+	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, const float *attributes, size_t attribute_stride, const float *attribute_weights, size_t attribute_count, size_t target_index_count, float target_error, unsigned int options, float *result_error);
 	static SimplifyWithAttribFunc simplify_with_attrib_func;
 	typedef float (*SimplifyScaleFunc)(const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 	static SimplifyScaleFunc simplify_scale_func;
@@ -97,6 +105,21 @@ private:
 		static _FORCE_INLINE_ uint32_t hash(const Vertex &p_vtx);
 	};
 
+	struct SmoothGroupVertex {
+		Vector3 vertex;
+		uint32_t smooth_group = 0;
+		bool operator==(const SmoothGroupVertex &p_vertex) const;
+
+		SmoothGroupVertex(const Vertex &p_vertex) {
+			vertex = p_vertex.vertex;
+			smooth_group = p_vertex.smooth_group;
+		};
+	};
+
+	struct SmoothGroupVertexHasher {
+		static _FORCE_INLINE_ uint32_t hash(const SmoothGroupVertex &p_vtx);
+	};
+
 	struct TriangleHasher {
 		static _FORCE_INLINE_ uint32_t hash(const int *p_triangle);
 		static _FORCE_INLINE_ bool compare(const int *p_lhs, const int *p_rhs);
@@ -113,7 +136,7 @@ private:
 	bool begun = false;
 	bool first = false;
 	Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_LINES;
-	uint32_t format = 0;
+	uint64_t format = 0;
 	Ref<Material> material;
 	//arrays
 	LocalVector<Vertex> vertex_array;
@@ -135,8 +158,8 @@ private:
 
 	CustomFormat last_custom_format[RS::ARRAY_CUSTOM_COUNT];
 
-	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat);
-	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat);
+	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
+	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
 
 	//mikktspace callbacks
 	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
@@ -146,6 +169,8 @@ private:
 	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
 	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
+
+	void _add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const TypedArray<Plane> &p_tangents = TypedArray<Plane>());
 
 protected:
 	static void _bind_methods();
@@ -194,12 +219,12 @@ public:
 	LocalVector<Vertex> &get_vertex_array() { return vertex_array; }
 
 	void create_from_triangle_arrays(const Array &p_arrays);
-	static void create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<Vertex> &ret, uint32_t *r_format = nullptr);
+	static void create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<Vertex> &ret, uint64_t *r_format = nullptr);
 	Array commit_to_arrays();
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name);
 	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform);
-	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_compress_flags = 0);
+	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint64_t p_compress_flags = 0);
 
 	SurfaceTool();
 };

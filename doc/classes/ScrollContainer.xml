@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScrollContainer" inherits="Container" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ScrollContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A helper node for displaying scrollable elements such as lists.
+		A container used to provide scrollbars to a child control when needed.
 	</brief_description>
 	<description>
-		A ScrollContainer node meant to contain a [Control] child.
-		ScrollContainers will automatically create a scrollbar child ([HScrollBar], [VScrollBar], or both) when needed and will only draw the Control within the ScrollContainer area. Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer. Scrollbars will also automatically resize the grabber based on the [member Control.custom_minimum_size] of the Control relative to the ScrollContainer.
-		Works great with a [Panel] control. You can set [constant Control.SIZE_EXPAND] on the children's size flags, so they will upscale to the ScrollContainer's size if it's larger (scroll is invisible for the chosen dimension).
+		A container used to provide a child control with scrollbars when needed. Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer. Scrollbars will also automatically resize the grabber based on the [member Control.custom_minimum_size] of the Control relative to the ScrollContainer.
 	</description>
 	<tutorials>
-		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<methods>
 		<method name="ensure_control_visible">
@@ -53,9 +51,25 @@
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
 			The current horizontal scroll value.
+			[b]Note:[/b] If you are setting this value in the [method Node._ready] function or earlier, it needs to be wrapped with [method Object.set_deferred], since scroll bar's [member Range.max_value] is not initialized yet.
+			[codeblock]
+			func _ready():
+			    set_deferred("scroll_horizontal", 600)
+			[/codeblock]
+		</member>
+		<member name="scroll_horizontal_custom_step" type="float" setter="set_horizontal_custom_step" getter="get_horizontal_custom_step" default="-1.0">
+			Overrides the [member ScrollBar.custom_step] used when clicking the internal scroll bar's horizontal increment and decrement buttons or when using arrow keys when the [ScrollBar] is focused.
 		</member>
 		<member name="scroll_vertical" type="int" setter="set_v_scroll" getter="get_v_scroll" default="0">
 			The current vertical scroll value.
+			[b]Note:[/b] Setting it early needs to be deferred, just like in [member scroll_horizontal].
+			[codeblock]
+			func _ready():
+			    set_deferred("scroll_vertical", 600)
+			[/codeblock]
+		</member>
+		<member name="scroll_vertical_custom_step" type="float" setter="set_vertical_custom_step" getter="get_vertical_custom_step" default="-1.0">
+			Overrides the [member ScrollBar.custom_step] used when clicking the internal scroll bar's vertical increment and decrement buttons or when using arrow keys when the [ScrollBar] is focused.
 		</member>
 		<member name="vertical_scroll_mode" type="int" setter="set_vertical_scroll_mode" getter="get_vertical_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
 			Controls whether vertical scrollbar can be used and when it should be visible. See [enum ScrollMode] for options.
@@ -64,12 +78,14 @@
 	<signals>
 		<signal name="scroll_ended">
 			<description>
-				Emitted when scrolling stops.
+				Emitted when scrolling stops when dragging the scrollable area [i]with a touch event[/i]. This signal is [i]not[/i] emitted when scrolling by dragging the scrollbar, scrolling with the mouse wheel or scrolling with keyboard/gamepad events.
+				[b]Note:[/b] This signal is only emitted on Android or iOS, or on desktop/web platforms when [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is enabled.
 			</description>
 		</signal>
 		<signal name="scroll_started">
 			<description>
-				Emitted when scrolling is started.
+				Emitted when scrolling starts when dragging the scrollable area w[i]ith a touch event[/i]. This signal is [i]not[/i] emitted when scrolling by dragging the scrollbar, scrolling with the mouse wheel or scrolling with keyboard/gamepad events.
+				[b]Note:[/b] This signal is only emitted on Android or iOS, or on desktop/web platforms when [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is enabled.
 			</description>
 		</signal>
 	</signals>

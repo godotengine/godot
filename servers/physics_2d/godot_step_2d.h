@@ -33,7 +33,6 @@
 
 #include "godot_space_2d.h"
 
-#include "core/object/worker_thread_pool.h"
 #include "core/templates/local_vector.h"
 
 class GodotStep2D {

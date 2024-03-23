@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AESContext" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AESContext" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Interface to low level AES encryption features.
+		Provides access to AES encryption/decryption of raw data.
 	</brief_description>
 	<description>
-		This class provides access to AES encryption/decryption of raw data. Both AES-ECB and AES-CBC mode are supported.
+		This class holds the context information required for encryption and decryption operations with AES (Advanced Encryption Standard). Both AES-ECB and AES-CBC modes are supported.
 		[codeblocks]
 		[gdscript]
 		extends Node
@@ -15,63 +15,62 @@
 		    var key = "My secret key!!!" # Key must be either 16 or 32 bytes.
 		    var data = "My secret text!!" # Data size must be multiple of 16 bytes, apply padding if needed.
 		    # Encrypt ECB
-		    aes.start(AESContext.MODE_ECB_ENCRYPT, key.to_utf8())
-		    var encrypted = aes.update(data.to_utf8())
+		    aes.start(AESContext.MODE_ECB_ENCRYPT, key.to_utf8_buffer())
+		    var encrypted = aes.update(data.to_utf8_buffer())
 		    aes.finish()
 		    # Decrypt ECB
-		    aes.start(AESContext.MODE_ECB_DECRYPT, key.to_utf8())
+		    aes.start(AESContext.MODE_ECB_DECRYPT, key.to_utf8_buffer())
 		    var decrypted = aes.update(encrypted)
 		    aes.finish()
 		    # Check ECB
-		    assert(decrypted == data.to_utf8())
+		    assert(decrypted == data.to_utf8_buffer())
 
 		    var iv = "My secret iv!!!!" # IV must be of exactly 16 bytes.
 		    # Encrypt CBC
-		    aes.start(AESContext.MODE_CBC_ENCRYPT, key.to_utf8(), iv.to_utf8())
-		    encrypted = aes.update(data.to_utf8())
+		    aes.start(AESContext.MODE_CBC_ENCRYPT, key.to_utf8_buffer(), iv.to_utf8_buffer())
+		    encrypted = aes.update(data.to_utf8_buffer())
 		    aes.finish()
 		    # Decrypt CBC
-		    aes.start(AESContext.MODE_CBC_DECRYPT, key.to_utf8(), iv.to_utf8())
+		    aes.start(AESContext.MODE_CBC_DECRYPT, key.to_utf8_buffer(), iv.to_utf8_buffer())
 		    decrypted = aes.update(encrypted)
 		    aes.finish()
 		    # Check CBC
-		    assert(decrypted == data.to_utf8())
+		    assert(decrypted == data.to_utf8_buffer())
 		[/gdscript]
 		[csharp]
 		using Godot;
-		using System;
 		using System.Diagnostics;
 
-		public class Example : Node
+		public partial class MyNode : Node
 		{
-		    public AESContext Aes = new AESContext();
+		    private AesContext _aes = new AesContext();
 
 		    public override void _Ready()
 		    {
 		        string key = "My secret key!!!"; // Key must be either 16 or 32 bytes.
 		        string data = "My secret text!!"; // Data size must be multiple of 16 bytes, apply padding if needed.
 		        // Encrypt ECB
-		        Aes.Start(AESContext.Mode.EcbEncrypt, key.ToUTF8());
-		        byte[] encrypted = Aes.Update(data.ToUTF8());
-		        Aes.Finish();
+		        _aes.Start(AesContext.Mode.EcbEncrypt, key.ToUtf8Buffer());
+		        byte[] encrypted = _aes.Update(data.ToUtf8Buffer());
+		        _aes.Finish();
 		        // Decrypt ECB
-		        Aes.Start(AESContext.Mode.EcbDecrypt, key.ToUTF8());
-		        byte[] decrypted = Aes.Update(encrypted);
-		        Aes.Finish();
+		        _aes.Start(AesContext.Mode.EcbDecrypt, key.ToUtf8Buffer());
+		        byte[] decrypted = _aes.Update(encrypted);
+		        _aes.Finish();
 		        // Check ECB
-		        Debug.Assert(decrypted == data.ToUTF8());
+		        Debug.Assert(decrypted == data.ToUtf8Buffer());
 
 		        string iv = "My secret iv!!!!"; // IV must be of exactly 16 bytes.
 		        // Encrypt CBC
-		        Aes.Start(AESContext.Mode.EcbEncrypt, key.ToUTF8(), iv.ToUTF8());
-		        encrypted = Aes.Update(data.ToUTF8());
-		        Aes.Finish();
+		        _aes.Start(AesContext.Mode.EcbEncrypt, key.ToUtf8Buffer(), iv.ToUtf8Buffer());
+		        encrypted = _aes.Update(data.ToUtf8Buffer());
+		        _aes.Finish();
 		        // Decrypt CBC
-		        Aes.Start(AESContext.Mode.EcbDecrypt, key.ToUTF8(), iv.ToUTF8());
-		        decrypted = Aes.Update(encrypted);
-		        Aes.Finish();
+		        _aes.Start(AesContext.Mode.EcbDecrypt, key.ToUtf8Buffer(), iv.ToUtf8Buffer());
+		        decrypted = _aes.Update(encrypted);
+		        _aes.Finish();
 		        // Check CBC
-		        Debug.Assert(decrypted == data.ToUTF8());
+		        Debug.Assert(decrypted == data.ToUtf8Buffer());
 		    }
 		}
 		[/csharp]

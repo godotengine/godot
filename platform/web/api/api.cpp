@@ -29,9 +29,11 @@
 /**************************************************************************/
 
 #include "api.h"
-#include "core/config/engine.h"
+
 #include "javascript_bridge_singleton.h"
 #include "web_tools_editor_plugin.h"
+
+#include "core/config/engine.h"
 
 static JavaScriptBridge *javascript_bridge_singleton;
 
@@ -78,6 +80,7 @@ void JavaScriptBridge::_bind_methods() {
 }
 
 #if !defined(WEB_ENABLED) || !defined(JAVASCRIPT_EVAL_ENABLED)
+
 Variant JavaScriptBridge::eval(const String &p_code, bool p_use_global_exec_context) {
 	return Variant();
 }
@@ -93,7 +96,7 @@ Ref<JavaScriptObject> JavaScriptBridge::create_callback(const Callable &p_callab
 Variant JavaScriptBridge::_create_object_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 1;
 		return Ref<JavaScriptObject>();
 	}
 	if (p_args[0]->get_type() != Variant::STRING) {
@@ -104,16 +107,23 @@ Variant JavaScriptBridge::_create_object_bind(const Variant **p_args, int p_argc
 	}
 	return Ref<JavaScriptObject>();
 }
+
 #endif
+
 #if !defined(WEB_ENABLED)
+
 bool JavaScriptBridge::pwa_needs_update() const {
 	return false;
 }
+
 Error JavaScriptBridge::pwa_update() {
 	return ERR_UNAVAILABLE;
 }
+
 void JavaScriptBridge::force_fs_sync() {
 }
+
 void JavaScriptBridge::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {
 }
+
 #endif

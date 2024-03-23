@@ -46,7 +46,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 		while (true) {
 			if (req_pos >= LSP_MAX_BUFFER_SIZE) {
 				req_pos = 0;
-				ERR_FAIL_COND_V_MSG(true, ERR_OUT_OF_MEMORY, "Response header too big");
+				ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Response header too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
 			if (err != OK) {
@@ -105,7 +105,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 Error GDScriptLanguageProtocol::LSPeer::send_data() {
 	int sent = 0;
-	if (!res_queue.is_empty()) {
+	while (!res_queue.is_empty()) {
 		CharString c_res = res_queue[0];
 		if (res_sent < c_res.size()) {
 			Error err = connection->put_partial_data((const uint8_t *)c_res.get_data() + res_sent, c_res.size() - res_sent - 1, sent);
@@ -229,7 +229,9 @@ void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 	notify_client("gdscript/capabilities", capabilities.to_json());
 }
 
-void GDScriptLanguageProtocol::poll() {
+void GDScriptLanguageProtocol::poll(int p_limit_usec) {
+	uint64_t target_ticks = OS::get_singleton()->get_ticks_usec() + p_limit_usec;
+
 	if (server->is_connection_available()) {
 		on_client_connected();
 	}
@@ -237,22 +239,29 @@ void GDScriptLanguageProtocol::poll() {
 	HashMap<int, Ref<LSPeer>>::Iterator E = clients.begin();
 	while (E != clients.end()) {
 		Ref<LSPeer> peer = E->value;
+		peer->connection->poll();
 		StreamPeerTCP::Status status = peer->connection->get_status();
 		if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
 			on_client_disconnected(E->key);
 			E = clients.begin();
 			continue;
 		} else {
-			if (peer->connection->get_available_bytes() > 0) {
+			Error err = OK;
+			while (peer->connection->get_available_bytes() > 0) {
 				latest_client_id = E->key;
-				Error err = peer->handle_data();
-				if (err != OK && err != ERR_BUSY) {
-					on_client_disconnected(E->key);
-					E = clients.begin();
-					continue;
+				err = peer->handle_data();
+				if (err != OK || OS::get_singleton()->get_ticks_usec() >= target_ticks) {
+					break;
 				}
 			}
-			Error err = peer->send_data();
+
+			if (err != OK && err != ERR_BUSY) {
+				on_client_disconnected(E->key);
+				E = clients.begin();
+				continue;
+			}
+
+			err = peer->send_data();
 			if (err != OK && err != ERR_BUSY) {
 				on_client_disconnected(E->key);
 				E = clients.begin();
@@ -277,6 +286,11 @@ void GDScriptLanguageProtocol::stop() {
 }
 
 void GDScriptLanguageProtocol::notify_client(const String &p_method, const Variant &p_params, int p_client_id) {
+#ifdef TESTS_ENABLED
+	if (clients.is_empty()) {
+		return;
+	}
+#endif
 	if (p_client_id == -1) {
 		ERR_FAIL_COND_MSG(latest_client_id == -1,
 				"GDScript LSP: Can't notify client as none was connected.");
@@ -284,7 +298,7 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	}
 	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_COND(peer == nullptr);
+	ERR_FAIL_NULL(peer);
 
 	Dictionary message = make_notification(p_method, p_params);
 	String msg = Variant(message).to_json_string();
@@ -293,6 +307,11 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 }
 
 void GDScriptLanguageProtocol::request_client(const String &p_method, const Variant &p_params, int p_client_id) {
+#ifdef TESTS_ENABLED
+	if (clients.is_empty()) {
+		return;
+	}
+#endif
 	if (p_client_id == -1) {
 		ERR_FAIL_COND_MSG(latest_client_id == -1,
 				"GDScript LSP: Can't notify client as none was connected.");
@@ -300,7 +319,7 @@ void GDScriptLanguageProtocol::request_client(const String &p_method, const Vari
 	}
 	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_COND(peer == nullptr);
+	ERR_FAIL_NULL(peer);
 
 	Dictionary message = make_request(p_method, p_params, next_server_id);
 	next_server_id++;

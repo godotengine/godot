@@ -34,8 +34,6 @@
 
 //#define DEBUG_XML
 
-VARIANT_ENUM_CAST(XMLParser::NodeType);
-
 static inline bool _is_white_space(char c) {
 	return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
 }
@@ -338,7 +336,7 @@ uint64_t XMLParser::get_node_offset() const {
 }
 
 Error XMLParser::seek(uint64_t p_pos) {
-	ERR_FAIL_COND_V(!data, ERR_FILE_EOF);
+	ERR_FAIL_NULL_V(data, ERR_FILE_EOF);
 	ERR_FAIL_COND_V(p_pos >= length, ERR_FILE_EOF);
 
 	P = data + p_pos;
@@ -354,10 +352,10 @@ void XMLParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_offset"), &XMLParser::get_node_offset);
 	ClassDB::bind_method(D_METHOD("get_attribute_count"), &XMLParser::get_attribute_count);
 	ClassDB::bind_method(D_METHOD("get_attribute_name", "idx"), &XMLParser::get_attribute_name);
-	ClassDB::bind_method(D_METHOD("get_attribute_value", "idx"), (String(XMLParser::*)(int) const) & XMLParser::get_attribute_value);
+	ClassDB::bind_method(D_METHOD("get_attribute_value", "idx"), &XMLParser::get_attribute_value);
 	ClassDB::bind_method(D_METHOD("has_attribute", "name"), &XMLParser::has_attribute);
-	ClassDB::bind_method(D_METHOD("get_named_attribute_value", "name"), (String(XMLParser::*)(const String &) const) & XMLParser::get_attribute_value);
-	ClassDB::bind_method(D_METHOD("get_named_attribute_value_safe", "name"), &XMLParser::get_attribute_value_safe);
+	ClassDB::bind_method(D_METHOD("get_named_attribute_value", "name"), &XMLParser::get_named_attribute_value);
+	ClassDB::bind_method(D_METHOD("get_named_attribute_value_safe", "name"), &XMLParser::get_named_attribute_value_safe);
 	ClassDB::bind_method(D_METHOD("is_empty"), &XMLParser::is_empty);
 	ClassDB::bind_method(D_METHOD("get_current_line"), &XMLParser::get_current_line);
 	ClassDB::bind_method(D_METHOD("skip_section"), &XMLParser::skip_section);
@@ -422,7 +420,7 @@ bool XMLParser::has_attribute(const String &p_name) const {
 	return false;
 }
 
-String XMLParser::get_attribute_value(const String &p_name) const {
+String XMLParser::get_named_attribute_value(const String &p_name) const {
 	int idx = -1;
 	for (int i = 0; i < attributes.size(); i++) {
 		if (attributes[i].name == p_name) {
@@ -436,7 +434,7 @@ String XMLParser::get_attribute_value(const String &p_name) const {
 	return attributes[idx].value;
 }
 
-String XMLParser::get_attribute_value_safe(const String &p_name) const {
+String XMLParser::get_named_attribute_value_safe(const String &p_name) const {
 	int idx = -1;
 	for (int i = 0; i < attributes.size(); i++) {
 		if (attributes[i].name == p_name) {
@@ -456,7 +454,7 @@ bool XMLParser::is_empty() const {
 }
 
 Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
-	ERR_FAIL_COND_V(p_buffer.size() == 0, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_buffer.is_empty(), ERR_INVALID_DATA);
 
 	if (data_copy) {
 		memdelete_arr(data_copy);
@@ -476,7 +474,7 @@ Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
 
 Error XMLParser::_open_buffer(const uint8_t *p_buffer, size_t p_size) {
 	ERR_FAIL_COND_V(p_size == 0, ERR_INVALID_DATA);
-	ERR_FAIL_COND_V(!p_buffer, ERR_INVALID_DATA);
+	ERR_FAIL_NULL_V(p_buffer, ERR_INVALID_DATA);
 
 	if (data_copy) {
 		memdelete_arr(data_copy);

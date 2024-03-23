@@ -38,100 +38,20 @@
 class Node3D;
 class Button;
 class PopupMenu;
-class EditorCommandPalette;
 class EditorDebuggerPlugin;
 class EditorExport;
 class EditorExportPlugin;
-class EditorFileSystem;
 class EditorImportPlugin;
-class EditorInspector;
 class EditorInspectorPlugin;
+class EditorInterface;
 class EditorNode3DGizmoPlugin;
-class EditorPaths;
-class EditorResourcePreview;
+class EditorResourceConversionPlugin;
 class EditorSceneFormatImporter;
 class EditorScenePostImportPlugin;
-class EditorSelection;
-class EditorSettings;
 class EditorToolAddons;
 class EditorTranslationParserPlugin;
 class EditorUndoRedoManager;
-class FileSystemDock;
 class ScriptCreateDialog;
-class ScriptEditor;
-class VBoxContainer;
-
-class EditorInterface : public Node {
-	GDCLASS(EditorInterface, Node);
-
-protected:
-	static void _bind_methods();
-	static EditorInterface *singleton;
-
-	TypedArray<Texture2D> _make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size);
-
-public:
-	static EditorInterface *get_singleton() { return singleton; }
-
-	VBoxContainer *get_editor_main_screen();
-	void edit_resource(const Ref<Resource> &p_resource);
-	void edit_node(Node *p_node);
-	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);
-	void open_scene_from_path(const String &scene_path);
-	void reload_scene_from_path(const String &scene_path);
-
-	void play_main_scene();
-	void play_current_scene();
-	void play_custom_scene(const String &scene_path);
-	void stop_playing_scene();
-	bool is_playing_scene() const;
-	String get_playing_scene() const;
-
-	Node *get_edited_scene_root();
-	PackedStringArray get_open_scenes() const;
-	ScriptEditor *get_script_editor();
-
-	EditorCommandPalette *get_command_palette() const;
-
-	void select_file(const String &p_file);
-	Vector<String> get_selected_paths() const;
-	String get_current_path() const;
-	String get_current_directory() const;
-
-	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
-
-	EditorSelection *get_selection();
-	//EditorImportExport *get_import_export();
-	Ref<EditorSettings> get_editor_settings();
-	EditorPaths *get_editor_paths();
-	EditorResourcePreview *get_resource_previewer();
-	EditorFileSystem *get_resource_file_system();
-
-	FileSystemDock *get_file_system_dock();
-
-	Control *get_base_control();
-	float get_editor_scale() const;
-
-	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
-	bool is_plugin_enabled(const String &p_plugin) const;
-
-	void set_movie_maker_enabled(bool p_enabled);
-	bool is_movie_maker_enabled() const;
-
-	EditorInspector *get_inspector() const;
-
-	Error save_scene();
-	void save_scene_as(const String &p_scene, bool p_with_preview = true);
-	void restart_editor(bool p_save = true);
-
-	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
-
-	void set_main_screen_editor(const String &p_name);
-	void set_distraction_free_mode(bool p_enter);
-	bool is_distraction_free_mode_enabled() const;
-
-	EditorInterface();
-};
 
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
@@ -141,41 +61,11 @@ class EditorPlugin : public Node {
 	bool force_draw_over_forwarding_enabled = false;
 
 	String last_main_screen_name;
+	String plugin_version;
 
+#ifndef DISABLE_DEPRECATED
 	void _editor_project_settings_changed();
-
-protected:
-	void _notification(int p_what);
-
-	static void _bind_methods();
-	Ref<EditorUndoRedoManager> get_undo_redo();
-
-	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
-	void remove_custom_type(const String &p_type);
-
-	GDVIRTUAL1R(bool, _forward_canvas_gui_input, Ref<InputEvent>)
-	GDVIRTUAL1(_forward_canvas_draw_over_viewport, Control *)
-	GDVIRTUAL1(_forward_canvas_force_draw_over_viewport, Control *)
-	GDVIRTUAL2R(int, _forward_3d_gui_input, Camera3D *, Ref<InputEvent>)
-	GDVIRTUAL1(_forward_3d_draw_over_viewport, Control *)
-	GDVIRTUAL1(_forward_3d_force_draw_over_viewport, Control *)
-	GDVIRTUAL0RC(String, _get_plugin_name)
-	GDVIRTUAL0RC(Ref<Texture2D>, _get_plugin_icon)
-	GDVIRTUAL0RC(bool, _has_main_screen)
-	GDVIRTUAL1(_make_visible, bool)
-	GDVIRTUAL1(_edit, Variant)
-	GDVIRTUAL1RC(bool, _handles, Variant)
-	GDVIRTUAL0RC(Dictionary, _get_state)
-	GDVIRTUAL1(_set_state, Dictionary)
-	GDVIRTUAL0(_clear)
-	GDVIRTUAL0(_save_external_data)
-	GDVIRTUAL0(_apply_changes)
-	GDVIRTUAL0RC(Vector<String>, _get_breakpoints)
-	GDVIRTUAL1(_set_window_layout, Ref<ConfigFile>)
-	GDVIRTUAL1(_get_window_layout, Ref<ConfigFile>)
-	GDVIRTUAL0R(bool, _build)
-	GDVIRTUAL0(_enable_plugin)
-	GDVIRTUAL0(_disable_plugin)
+#endif
 
 public:
 	enum CustomControlContainer {
@@ -208,15 +98,56 @@ public:
 	enum AfterGUIInput {
 		AFTER_GUI_INPUT_PASS,
 		AFTER_GUI_INPUT_STOP,
-		AFTER_GUI_INPUT_CUSTOM
+		AFTER_GUI_INPUT_CUSTOM,
 	};
 
+protected:
+	void _notification(int p_what);
+
+	static void _bind_methods();
+	EditorUndoRedoManager *get_undo_redo();
+
+	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
+	void remove_custom_type(const String &p_type);
+
+	GDVIRTUAL1R(bool, _forward_canvas_gui_input, Ref<InputEvent>)
+	GDVIRTUAL1(_forward_canvas_draw_over_viewport, Control *)
+	GDVIRTUAL1(_forward_canvas_force_draw_over_viewport, Control *)
+	GDVIRTUAL2R(int, _forward_3d_gui_input, Camera3D *, Ref<InputEvent>)
+	GDVIRTUAL1(_forward_3d_draw_over_viewport, Control *)
+	GDVIRTUAL1(_forward_3d_force_draw_over_viewport, Control *)
+	GDVIRTUAL0RC(String, _get_plugin_name)
+	GDVIRTUAL0RC(Ref<Texture2D>, _get_plugin_icon)
+	GDVIRTUAL0RC(bool, _has_main_screen)
+	GDVIRTUAL1(_make_visible, bool)
+	GDVIRTUAL1(_edit, Object *)
+	GDVIRTUAL1RC(bool, _handles, Object *)
+	GDVIRTUAL0RC(Dictionary, _get_state)
+	GDVIRTUAL1(_set_state, Dictionary)
+	GDVIRTUAL0(_clear)
+	GDVIRTUAL1RC(String, _get_unsaved_status, String)
+	GDVIRTUAL0(_save_external_data)
+	GDVIRTUAL0(_apply_changes)
+	GDVIRTUAL0RC(Vector<String>, _get_breakpoints)
+	GDVIRTUAL1(_set_window_layout, Ref<ConfigFile>)
+	GDVIRTUAL1(_get_window_layout, Ref<ConfigFile>)
+	GDVIRTUAL0R(bool, _build)
+	GDVIRTUAL0(_enable_plugin)
+	GDVIRTUAL0(_disable_plugin)
+
+#ifndef DISABLE_DEPRECATED
+	Button *_add_control_to_bottom_panel_compat_88081(Control *p_control, const String &p_title);
+	void _add_control_to_dock_compat_88081(DockSlot p_slot, Control *p_control);
+	static void _bind_compatibility_methods();
+#endif
+
+public:
 	//TODO: send a resource for editing to the editor node?
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
 	void remove_control_from_container(CustomControlContainer p_location, Control *p_control);
-	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title);
-	void add_control_to_dock(DockSlot p_slot, Control *p_control);
+	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut = nullptr);
+	void add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut = nullptr);
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
 
@@ -236,6 +167,7 @@ public:
 	void notify_scene_changed(const Node *scn_root);
 	void notify_scene_closed(const String &scene_filepath);
 	void notify_resource_saved(const Ref<Resource> &p_resource);
+	void notify_scene_saved(const String &p_scene_filepath);
 
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay);
@@ -247,14 +179,18 @@ public:
 
 	virtual String get_name() const;
 	virtual const Ref<Texture2D> get_icon() const;
+	virtual String get_plugin_version() const;
+	virtual void set_plugin_version(const String &p_version);
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify() {} //notify that it was raised by the user, not the editor
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;
+	virtual bool can_auto_hide() const;
 	virtual Dictionary get_state() const; //save editor state so it can't be reloaded when reloading scene
 	virtual void set_state(const Dictionary &p_state); //restore editor state (likely was saved with the scene)
 	virtual void clear(); // clear any temporary data in the editor, reset it (likely new scene or load another scene)
+	virtual String get_unsaved_status(const String &p_for_scene = "") const;
 	virtual void save_external_data(); // if editor references external resources/scenes, save them
 	virtual void apply_changes(); // if changes are pending in editor, apply them
 	virtual void get_breakpoints(List<String> *p_breakpoints);
@@ -276,9 +212,6 @@ public:
 
 	void make_bottom_panel_item_visible(Control *p_item);
 	void hide_bottom_panel();
-
-	virtual void restore_global_state();
-	virtual void save_global_state();
 
 	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
 	void remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);
@@ -307,6 +240,9 @@ public:
 	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 
+	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
+	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
+
 	void enable_plugin();
 	void disable_plugin();
 
@@ -328,7 +264,7 @@ class EditorPlugins {
 	static EditorPluginCreateFunc creation_funcs[MAX_CREATE_FUNCS];
 	static int creation_func_count;
 
-	template <class T>
+	template <typename T>
 	static EditorPlugin *creator() {
 		return memnew(T);
 	}
@@ -340,7 +276,7 @@ public:
 		return creation_funcs[p_idx]();
 	}
 
-	template <class T>
+	template <typename T>
 	static void add_by_type() {
 		add_create_func(creator<T>);
 	}

@@ -31,15 +31,10 @@
 #include "texture_progress_bar.h"
 
 #include "core/config/engine.h"
+#include "scene/resources/atlas_texture.h"
 
 void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
-	if (under == p_texture) {
-		return;
-	}
-
-	under = p_texture;
-	queue_redraw();
-	update_minimum_size();
+	_set_texture(&under, p_texture);
 }
 
 Ref<Texture2D> TextureProgressBar::get_under_texture() const {
@@ -47,15 +42,7 @@ Ref<Texture2D> TextureProgressBar::get_under_texture() const {
 }
 
 void TextureProgressBar::set_over_texture(const Ref<Texture2D> &p_texture) {
-	if (over == p_texture) {
-		return;
-	}
-
-	over = p_texture;
-	queue_redraw();
-	if (under.is_null()) {
-		update_minimum_size();
-	}
+	_set_texture(&over, p_texture);
 }
 
 Ref<Texture2D> TextureProgressBar::get_over_texture() const {
@@ -87,6 +74,7 @@ void TextureProgressBar::set_nine_patch_stretch(bool p_stretch) {
 	nine_patch_stretch = p_stretch;
 	queue_redraw();
 	update_minimum_size();
+	notify_property_list_changed();
 }
 
 bool TextureProgressBar::get_nine_patch_stretch() const {
@@ -108,13 +96,7 @@ Size2 TextureProgressBar::get_minimum_size() const {
 }
 
 void TextureProgressBar::set_progress_texture(const Ref<Texture2D> &p_texture) {
-	if (progress == p_texture) {
-		return;
-	}
-
-	progress = p_texture;
-	queue_redraw();
-	update_minimum_size();
+	_set_texture(&progress, p_texture);
 }
 
 Ref<Texture2D> TextureProgressBar::get_progress_texture() const {
@@ -171,6 +153,28 @@ void TextureProgressBar::set_tint_over(const Color &p_tint) {
 
 Color TextureProgressBar::get_tint_over() const {
 	return tint_over;
+}
+
+void TextureProgressBar::_set_texture(Ref<Texture2D> *p_destination, const Ref<Texture2D> &p_texture) {
+	DEV_ASSERT(p_destination);
+	Ref<Texture2D> &destination = *p_destination;
+	if (destination == p_texture) {
+		return;
+	}
+	if (destination.is_valid()) {
+		destination->disconnect_changed(callable_mp(this, &TextureProgressBar::_texture_changed));
+	}
+	destination = p_texture;
+	if (destination.is_valid()) {
+		// Pass `CONNECT_REFERENCE_COUNTED` to avoid early disconnect in case the same texture is assigned to different "slots".
+		destination->connect_changed(callable_mp(this, &TextureProgressBar::_texture_changed), CONNECT_REFERENCE_COUNTED);
+	}
+	_texture_changed();
+}
+
+void TextureProgressBar::_texture_changed() {
+	update_minimum_size();
+	queue_redraw();
 }
 
 Point2 TextureProgressBar::unit_val_to_uv(float val) {
@@ -612,6 +616,7 @@ void TextureProgressBar::set_fill_mode(int p_fill) {
 
 	mode = (FillMode)p_fill;
 	queue_redraw();
+	notify_property_list_changed();
 }
 
 int TextureProgressBar::get_fill_mode() {
@@ -666,6 +671,16 @@ Point2 TextureProgressBar::get_radial_center_offset() {
 	return rad_center_off;
 }
 
+void TextureProgressBar::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name.begins_with("stretch_margin_") && !nine_patch_stretch) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name.begins_with("radial_") && (mode != FillMode::FILL_CLOCKWISE && mode != FillMode::FILL_COUNTER_CLOCKWISE && mode != FillMode::FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE)) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+}
+
 void TextureProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_under_texture", "tex"), &TextureProgressBar::set_under_texture);
 	ClassDB::bind_method(D_METHOD("get_under_texture"), &TextureProgressBar::get_under_texture);
@@ -707,8 +722,13 @@ void TextureProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_nine_patch_stretch"), &TextureProgressBar::get_nine_patch_stretch);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise,Bilinear (Left and Right),Bilinear (Top and Bottom),Clockwise and Counter Clockwise"), "set_fill_mode", "get_fill_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "nine_patch_stretch"), "set_nine_patch_stretch", "get_nine_patch_stretch");
+	ADD_GROUP("Radial Fill", "radial_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,degrees"), "set_radial_initial_angle", "get_radial_initial_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,degrees"), "set_fill_degrees", "get_fill_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "radial_center_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_radial_center_offset", "get_radial_center_offset");
 
+	ADD_GROUP("", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "nine_patch_stretch"), "set_nine_patch_stretch", "get_nine_patch_stretch");
 	ADD_GROUP("Stretch Margin", "stretch_margin_");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_left", PROPERTY_HINT_RANGE, "0,16384,1,suffix:px"), "set_stretch_margin", "get_stretch_margin", SIDE_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_top", PROPERTY_HINT_RANGE, "0,16384,1,suffix:px"), "set_stretch_margin", "get_stretch_margin", SIDE_TOP);
@@ -725,11 +745,6 @@ void TextureProgressBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_under"), "set_tint_under", "get_tint_under");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_over"), "set_tint_over", "get_tint_over");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_progress"), "set_tint_progress", "get_tint_progress");
-
-	ADD_GROUP("Radial Fill", "radial_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider,degrees"), "set_radial_initial_angle", "get_radial_initial_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider,degrees"), "set_fill_degrees", "get_fill_degrees");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "radial_center_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_radial_center_offset", "get_radial_center_offset");
 
 	BIND_ENUM_CONSTANT(FILL_LEFT_TO_RIGHT);
 	BIND_ENUM_CONSTANT(FILL_RIGHT_TO_LEFT);

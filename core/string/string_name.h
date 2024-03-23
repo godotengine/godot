@@ -71,11 +71,6 @@ class StringName {
 
 	_Data *_data = nullptr;
 
-	union _HashUnion {
-		_Data *ptr = nullptr;
-		uint32_t hash;
-	};
-
 	void unref();
 	friend void register_core_types();
 	friend void unregister_core_types();
@@ -116,6 +111,15 @@ public:
 	}
 	_FORCE_INLINE_ bool operator<(const StringName &p_name) const {
 		return _data < p_name._data;
+	}
+	_FORCE_INLINE_ bool operator<=(const StringName &p_name) const {
+		return _data <= p_name._data;
+	}
+	_FORCE_INLINE_ bool operator>(const StringName &p_name) const {
+		return _data > p_name._data;
+	}
+	_FORCE_INLINE_ bool operator>=(const StringName &p_name) const {
+		return _data >= p_name._data;
 	}
 	_FORCE_INLINE_ bool operator==(const StringName &p_name) const {
 		// the real magic of all this mess happens here.
@@ -177,6 +181,8 @@ public:
 	StringName(const String &p_name, bool p_static = false);
 	StringName(const StaticCString &p_static_string, bool p_static = false);
 	StringName() {}
+
+	static void assign_static_unique_class_name(StringName *ptr, const char *p_name);
 	_FORCE_INLINE_ ~StringName() {
 		if (likely(configured) && _data) { //only free if configured
 			unref();

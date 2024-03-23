@@ -39,6 +39,7 @@ struct ClassDefFormat1 : public OT::ClassDefFormat1_3<SmallTypes>
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     constexpr unsigned min_size = OT::ClassDefFormat1_3<SmallTypes>::min_size;
     if (vertex_len < min_size) return false;
+    hb_barrier ();
     return vertex_len >= min_size + classValue.get_size () - classValue.len.get_size ();
   }
 };
@@ -50,6 +51,7 @@ struct ClassDefFormat2 : public OT::ClassDefFormat2_4<SmallTypes>
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     constexpr unsigned min_size = OT::ClassDefFormat2_4<SmallTypes>::min_size;
     if (vertex_len < min_size) return false;
+    hb_barrier ();
     return vertex_len >= min_size + rangeRecord.get_size () - rangeRecord.len.get_size ();
   }
 };
@@ -72,7 +74,7 @@ struct ClassDef : public OT::ClassDef
     class_def_link->width = SmallTypes::size;
     class_def_link->objidx = class_def_prime_id;
     class_def_link->position = link_position;
-    class_def_prime_vertex.parents.push (parent_id);
+    class_def_prime_vertex.add_parent (parent_id);
 
     return true;
   }
@@ -94,7 +96,13 @@ struct ClassDef : public OT::ClassDef
     }
 
     hb_bytes_t class_def_copy = serializer.copy_bytes ();
-    c.add_buffer ((char *) class_def_copy.arrayZ); // Give ownership to the context, it will cleanup the buffer.
+    if (!class_def_copy.arrayZ) return false;
+    // Give ownership to the context, it will cleanup the buffer.
+    if (!c.add_buffer ((char *) class_def_copy.arrayZ))
+    {
+      hb_free ((char *) class_def_copy.arrayZ);
+      return false;
+    }
 
     auto& obj = c.graph.vertices_[dest_obj].obj;
     obj.head = (char *) class_def_copy.arrayZ;
@@ -108,6 +116,7 @@ struct ClassDef : public OT::ClassDef
   {
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < OT::ClassDef::min_size) return false;
+    hb_barrier ();
     switch (u.format)
     {
     case 1: return ((ClassDefFormat1*)this)->sanitize (vertex);

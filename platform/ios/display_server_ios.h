@@ -34,31 +34,38 @@
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
-#if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/rendering_device_vulkan.h"
+#if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/rendering_device.h"
 
-#include "vulkan_context_ios.h"
+#if defined(VULKAN_ENABLED)
+#import "rendering_context_driver_vulkan_ios.h"
 
 #ifdef USE_VOLK
 #include <volk.h>
 #else
 #include <vulkan/vulkan.h>
 #endif
-#endif
+#endif // VULKAN_ENABLED
+#endif // RD_ENABLED
+
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif // GLES3_ENABLED
 
 #import <Foundation/Foundation.h>
 #import <QuartzCore/CAMetalLayer.h>
 
 class DisplayServerIOS : public DisplayServer {
-	GDCLASS(DisplayServerIOS, DisplayServer)
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 
 	_THREAD_SAFE_CLASS_
 
-#if defined(VULKAN_ENABLED)
-	VulkanContextIOS *context_vulkan = nullptr;
-	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#if defined(RD_ENABLED)
+	RenderingContextDriver *rendering_context = nullptr;
+	RenderingDevice *rendering_device = nullptr;
 #endif
+	NativeMenu *native_menu = nullptr;
 
 	id tts = nullptr;
 
@@ -70,6 +77,8 @@ class DisplayServerIOS : public DisplayServer {
 	Callable window_resize_callback;
 	Callable input_event_callback;
 	Callable input_text_callback;
+
+	Callable system_theme_changed;
 
 	int virtual_keyboard_height = 0;
 
@@ -103,17 +112,20 @@ public:
 	void send_window_event(DisplayServer::WindowEvent p_event) const;
 	void _window_callback(const Callable &p_callable, const Variant &p_arg) const;
 
+	void emit_system_theme_changed();
+
 	// MARK: - Input
 
 	// MARK: Touches and Apple Pencil
 
 	void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click);
 	void touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_pressure, Vector2 p_tilt);
-	void touches_cancelled(int p_idx);
+	void touches_canceled(int p_idx);
 
 	// MARK: Keyboard
 
-	void key(Key p_key, char32_t p_char, bool p_pressed);
+	void key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, NSInteger p_modifier, bool p_pressed, KeyLocation p_location);
+	bool is_keyboard_active() const;
 
 	// MARK: Motion
 
@@ -136,6 +148,10 @@ public:
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
 
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
+
 	virtual Rect2i get_display_safe_area() const override;
 
 	virtual int get_screen_count() const override;
@@ -149,8 +165,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
-	virtual WindowID
-	get_window_at_screen_position(const Point2i &p_position) const override;
+	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 
 	virtual int64_t window_get_native_handle(HandleType p_handle_type, WindowID p_window = MAIN_WINDOW_ID) const override;
 
@@ -188,6 +203,7 @@ public:
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual float screen_get_max_scale() const override;
 
@@ -216,6 +232,7 @@ public:
 	virtual bool screen_is_kept_on() const override;
 
 	void resize_window(CGSize size);
+	virtual void swap_buffers() override {}
 };
 
 #endif // DISPLAY_SERVER_IOS_H

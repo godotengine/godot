@@ -33,7 +33,6 @@
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 
 class TextEdit;
 
@@ -64,7 +63,7 @@ public:
 	virtual void _update_cache() {}
 
 	void set_text_edit(TextEdit *p_text_edit);
-	TextEdit *get_text_edit();
+	TextEdit *get_text_edit() const;
 
 	SyntaxHighlighter() {}
 	virtual ~SyntaxHighlighter() {}

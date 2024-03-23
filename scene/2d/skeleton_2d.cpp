@@ -48,12 +48,14 @@ bool Bone2D::_set(const StringName &p_path, const Variant &p_value) {
 	} else if (path.begins_with("default_length")) {
 		set_length(p_value);
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor_settings/show_bone_gizmo")) {
+	else if (path.begins_with("editor_settings/show_bone_gizmo")) {
 		_editor_set_show_bone_gizmo(p_value);
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
@@ -70,12 +72,14 @@ bool Bone2D::_get(const StringName &p_path, Variant &r_ret) const {
 	} else if (path.begins_with("default_length")) {
 		r_ret = get_length();
 	}
-
 #ifdef TOOLS_ENABLED
-	if (path.begins_with("editor_settings/show_bone_gizmo")) {
+	else if (path.begins_with("editor_settings/show_bone_gizmo")) {
 		r_ret = _editor_get_show_bone_gizmo();
 	}
 #endif // TOOLS_ENABLED
+	else {
+		return false;
+	}
 
 	return true;
 }
@@ -115,6 +119,7 @@ void Bone2D::_notification(int p_what) {
 				bone.bone = this;
 				skeleton->bones.push_back(bone);
 				skeleton->_make_bone_setup_dirty();
+				get_parent()->connect(SNAME("child_order_changed"), callable_mp(skeleton, &Skeleton2D::_make_bone_setup_dirty), CONNECT_REFERENCE_COUNTED);
 			}
 
 			cache_transform = get_transform();
@@ -154,15 +159,6 @@ void Bone2D::_notification(int p_what) {
 #endif // TOOLS_ENABLED
 		} break;
 
-		case NOTIFICATION_MOVED_IN_PARENT: {
-			if (skeleton) {
-				skeleton->_make_bone_setup_dirty();
-			}
-			if (copy_transform_to_cache) {
-				cache_transform = get_transform();
-			}
-		} break;
-
 		case NOTIFICATION_EXIT_TREE: {
 			if (skeleton) {
 				for (int i = 0; i < skeleton->bones.size(); i++) {
@@ -172,7 +168,7 @@ void Bone2D::_notification(int p_what) {
 					}
 				}
 				skeleton->_make_bone_setup_dirty();
-				skeleton = nullptr;
+				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(skeleton, &Skeleton2D::_make_bone_setup_dirty));
 			}
 			parent_bone = nullptr;
 			set_transform(cache_transform);
@@ -317,8 +313,8 @@ void Bone2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p_outline_shape, Bone2D *p_other_bone) {
-	int bone_width = EDITOR_GET("editors/2d/bone_width");
-	int bone_outline_width = EDITOR_GET("editors/2d/bone_outline_size");
+	float bone_width = EDITOR_GET("editors/2d/bone_width");
+	float bone_outline_width = EDITOR_GET("editors/2d/bone_outline_size");
 
 	if (!is_inside_tree()) {
 		return false; //may have been removed
@@ -378,9 +374,6 @@ void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skeleton_rest"), &Bone2D::get_skeleton_rest);
 	ClassDB::bind_method(D_METHOD("get_index_in_skeleton"), &Bone2D::get_index_in_skeleton);
 
-	ClassDB::bind_method(D_METHOD("set_default_length", "default_length"), &Bone2D::set_default_length);
-	ClassDB::bind_method(D_METHOD("get_default_length"), &Bone2D::get_default_length);
-
 	ClassDB::bind_method(D_METHOD("set_autocalculate_length_and_angle", "auto_calculate"), &Bone2D::set_autocalculate_length_and_angle);
 	ClassDB::bind_method(D_METHOD("get_autocalculate_length_and_angle"), &Bone2D::get_autocalculate_length_and_angle);
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &Bone2D::set_length);
@@ -416,18 +409,8 @@ void Bone2D::apply_rest() {
 	set_transform(rest);
 }
 
-void Bone2D::set_default_length(real_t p_length) {
-	WARN_DEPRECATED_MSG("set_default_length is deprecated. Please use set_length instead!");
-	set_length(p_length);
-}
-
-real_t Bone2D::get_default_length() const {
-	WARN_DEPRECATED_MSG("get_default_length is deprecated. Please use get_length instead!");
-	return get_length();
-}
-
 int Bone2D::get_index_in_skeleton() const {
-	ERR_FAIL_COND_V(!skeleton, -1);
+	ERR_FAIL_NULL_V(skeleton, -1);
 	skeleton->_update_bone_setup();
 	return skeleton_index;
 }
@@ -450,29 +433,23 @@ PackedStringArray Bone2D::get_configuration_warnings() const {
 }
 
 void Bone2D::calculate_length_and_rotation() {
-	// if there is at least a single child Bone2D node, we can calculate
+	// If there is at least a single child Bone2D node, we can calculate
 	// the length and direction. We will always just use the first Bone2D for this.
-	bool calculated = false;
 	int child_count = get_child_count();
-	if (child_count > 0) {
-		for (int i = 0; i < child_count; i++) {
-			Bone2D *child = Object::cast_to<Bone2D>(get_child(i));
-			if (child) {
-				Vector2 child_local_pos = to_local(child->get_global_position());
-				length = child_local_pos.length();
-				bone_angle = child_local_pos.normalized().angle();
-				calculated = true;
-				break;
-			}
+	Transform2D global_inv = get_global_transform().affine_inverse();
+
+	for (int i = 0; i < child_count; i++) {
+		Bone2D *child = Object::cast_to<Bone2D>(get_child(i));
+		if (child) {
+			Vector2 child_local_pos = global_inv.xform(child->get_global_position());
+			length = child_local_pos.length();
+			bone_angle = child_local_pos.angle();
+			return; // Finished!
 		}
 	}
-	if (calculated) {
-		return; // Finished!
-	} else {
-		WARN_PRINT("No Bone2D children of node " + get_name() + ". Cannot calculate bone length or angle reliably.\nUsing transform rotation for bone angle");
-		bone_angle = get_transform().get_rotation();
-		return;
-	}
+
+	WARN_PRINT("No Bone2D children of node " + get_name() + ". Cannot calculate bone length or angle reliably.\nUsing transform rotation for bone angle.");
+	bone_angle = get_transform().get_rotation();
 }
 
 void Bone2D::set_autocalculate_length_and_angle(bool p_autocalculate) {
@@ -519,6 +496,7 @@ Bone2D::Bone2D() {
 	bone_angle = 0;
 	autocalculate_length_and_angle = true;
 	set_notify_local_transform(true);
+	set_hide_clip_children(true);
 	//this is a clever hack so the bone knows no rest has been set yet, allowing to show an error.
 	for (int i = 0; i < 3; i++) {
 		rest[i] = Vector2(0, 0);
@@ -562,7 +540,7 @@ void Skeleton2D::_get_property_list(List<PropertyInfo> *p_list) const {
 			PropertyInfo(Variant::OBJECT, PNAME("modification_stack"),
 					PROPERTY_HINT_RESOURCE_TYPE,
 					"SkeletonModificationStack2D",
-					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
+					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 }
 
 void Skeleton2D::_make_bone_setup_dirty() {
@@ -571,7 +549,7 @@ void Skeleton2D::_make_bone_setup_dirty() {
 	}
 	bone_setup_dirty = true;
 	if (is_inside_tree()) {
-		call_deferred(SNAME("_update_bone_setup"));
+		callable_mp(this, &Skeleton2D::_update_bone_setup).call_deferred();
 	}
 }
 
@@ -609,7 +587,7 @@ void Skeleton2D::_make_transform_dirty() {
 	}
 	transform_dirty = true;
 	if (is_inside_tree()) {
-		call_deferred(SNAME("_update_transform"));
+		callable_mp(this, &Skeleton2D::_update_transform).call_deferred();
 	}
 }
 
@@ -780,9 +758,6 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 }
 
 void Skeleton2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_bone_setup"), &Skeleton2D::_update_bone_setup);
-	ClassDB::bind_method(D_METHOD("_update_transform"), &Skeleton2D::_update_transform);
-
 	ClassDB::bind_method(D_METHOD("get_bone_count"), &Skeleton2D::get_bone_count);
 	ClassDB::bind_method(D_METHOD("get_bone", "idx"), &Skeleton2D::get_bone);
 
@@ -801,6 +776,7 @@ void Skeleton2D::_bind_methods() {
 Skeleton2D::Skeleton2D() {
 	skeleton = RS::get_singleton()->skeleton_create();
 	set_notify_transform(true);
+	set_hide_clip_children(true);
 }
 
 Skeleton2D::~Skeleton2D() {

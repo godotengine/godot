@@ -5,11 +5,7 @@ from methods import detect_darwin_sdk_path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from SCons import Environment
-
-
-def is_active():
-    return True
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -27,6 +23,7 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
+        ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
         (
             "IOS_TOOLCHAIN_PATH",
             "Path to iOS toolchain",
@@ -34,9 +31,19 @@ def get_opts():
         ),
         ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
         BoolVariable("ios_simulator", "Build for iOS Simulator", False),
-        BoolVariable("ios_exceptions", "Enable exceptions", False),
         ("ios_triple", "Triple for ios toolchain", ""),
+        BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
     ]
+
+
+def get_doc_classes():
+    return [
+        "EditorExportPlatformIOS",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
 
 
 def get_flags():
@@ -44,10 +51,12 @@ def get_flags():
         ("arch", "arm64"),  # Default for convenience.
         ("target", "template_debug"),
         ("use_volk", False),
+        ("supported", ["mono"]),
+        ("builtin_pcre2_with_jit", False),
     ]
 
 
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     if env["arch"] not in supported_arches:
@@ -79,19 +88,18 @@ def configure(env: "Environment"):
     env["ENV"]["PATH"] = env["IOS_TOOLCHAIN_PATH"] + "/Developer/usr/bin/:" + env["ENV"]["PATH"]
 
     compiler_path = "$IOS_TOOLCHAIN_PATH/usr/bin/${ios_triple}"
-    s_compiler_path = "$IOS_TOOLCHAIN_PATH/Developer/usr/bin/"
 
     ccache_path = os.environ.get("CCACHE")
     if ccache_path is None:
         env["CC"] = compiler_path + "clang"
         env["CXX"] = compiler_path + "clang++"
-        env["S_compiler"] = s_compiler_path + "gcc"
+        env["S_compiler"] = compiler_path + "clang"
     else:
         # there aren't any ccache wrappers available for iOS,
         # to enable caching we need to prepend the path to the ccache binary
         env["CC"] = ccache_path + " " + compiler_path + "clang"
         env["CXX"] = ccache_path + " " + compiler_path + "clang++"
-        env["S_compiler"] = ccache_path + " " + s_compiler_path + "gcc"
+        env["S_compiler"] = ccache_path + " " + compiler_path + "clang"
     env["AR"] = compiler_path + "ar"
     env["RANLIB"] = compiler_path + "ranlib"
 
@@ -99,13 +107,14 @@ def configure(env: "Environment"):
 
     if env["ios_simulator"]:
         detect_darwin_sdk_path("iossimulator", env)
-        env.Append(ASFLAGS=["-mios-simulator-version-min=13.0"])
-        env.Append(CCFLAGS=["-mios-simulator-version-min=13.0"])
+        env.Append(ASFLAGS=["-mios-simulator-version-min=12.0"])
+        env.Append(CCFLAGS=["-mios-simulator-version-min=12.0"])
+        env.Append(CPPDEFINES=["IOS_SIMULATOR"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
         detect_darwin_sdk_path("ios", env)
-        env.Append(ASFLAGS=["-miphoneos-version-min=11.0"])
-        env.Append(CCFLAGS=["-miphoneos-version-min=11.0"])
+        env.Append(ASFLAGS=["-miphoneos-version-min=12.0"])
+        env.Append(CCFLAGS=["-miphoneos-version-min=12.0"])
 
     if env["arch"] == "x86_64":
         if not env["ios_simulator"]:
@@ -133,11 +142,6 @@ def configure(env: "Environment"):
         env.Append(ASFLAGS=["-arch", "arm64"])
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
 
-    if env["ios_exceptions"]:
-        env.Append(CCFLAGS=["-fexceptions"])
-    else:
-        env.Append(CCFLAGS=["-fno-exceptions"])
-
     # Temp fix for ABS/MAX/MIN macros in iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])
 
@@ -152,4 +156,12 @@ def configure(env: "Environment"):
     env.Append(CPPDEFINES=["IOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+
+    if env["opengl3"]:
+        env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])
+        env.Prepend(
+            CPPPATH=[
+                "$IOS_SDK_PATH/System/Library/Frameworks/OpenGLES.framework/Headers",
+            ]
+        )

@@ -41,10 +41,6 @@ protected:
 	static StreamPeerTLS *(*_create)();
 	static void _bind_methods();
 
-	static bool available;
-
-	bool blocking_handshake = true;
-
 public:
 	enum Status {
 		STATUS_DISCONNECTED,
@@ -54,12 +50,9 @@ public:
 		STATUS_ERROR_HOSTNAME_MISMATCH
 	};
 
-	void set_blocking_handshake_enabled(bool p_enabled);
-	bool is_blocking_handshake_enabled() const;
-
 	virtual void poll() = 0;
-	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>()) = 0;
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>()) = 0;
+	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<TLSOptions> p_options) = 0;
+	virtual Error connect_to_stream(Ref<StreamPeer> p_base, const String &p_common_name, Ref<TLSOptions> p_options) = 0;
 	virtual Status get_status() const = 0;
 	virtual Ref<StreamPeer> get_stream() const = 0;
 

@@ -43,7 +43,7 @@ HB_BEGIN_DECLS
  *
  * Since: 0.9.21
  */
-#define HB_SET_VALUE_INVALID ((hb_codepoint_t) -1)
+#define HB_SET_VALUE_INVALID HB_CODEPOINT_INVALID
 
 /**
  * hb_set_t:
@@ -96,6 +96,9 @@ hb_set_is_empty (const hb_set_t *set);
 
 HB_EXTERN void
 hb_set_invert (hb_set_t *set);
+
+HB_EXTERN hb_bool_t
+hb_set_is_inverted (const hb_set_t *set);
 
 HB_EXTERN hb_bool_t
 hb_set_has (const hb_set_t *set,

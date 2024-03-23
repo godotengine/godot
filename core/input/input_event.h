@@ -56,10 +56,13 @@ class InputEvent : public Resource {
 	int device = 0;
 
 protected:
+	bool canceled = false;
+	bool pressed = false;
+
 	static void _bind_methods();
 
 public:
-	static const int DEVICE_ID_TOUCH_MOUSE;
+	static const int DEVICE_ID_EMULATION;
 	static const int DEVICE_ID_INTERNAL;
 
 	void set_device(int p_device);
@@ -71,8 +74,9 @@ public:
 	float get_action_strength(const StringName &p_action, bool p_exact_match = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false) const;
 
-	// To be removed someday, since they do not make sense for all events
-	virtual bool is_pressed() const;
+	bool is_canceled() const;
+	bool is_pressed() const;
+	bool is_released() const;
 	virtual bool is_echo() const;
 
 	virtual String as_text() const = 0;
@@ -149,11 +153,11 @@ public:
 class InputEventKey : public InputEventWithModifiers {
 	GDCLASS(InputEventKey, InputEventWithModifiers);
 
-	bool pressed = false; /// otherwise release
-
 	Key keycode = Key::NONE; // Key enum, without modifier masks.
 	Key physical_keycode = Key::NONE;
+	Key key_label = Key::NONE;
 	uint32_t unicode = 0; ///unicode
+	KeyLocation location = KeyLocation::UNSPECIFIED;
 
 	bool echo = false; /// true if this is an echo key
 
@@ -162,7 +166,6 @@ protected:
 
 public:
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const override;
 
 	void set_keycode(Key p_keycode);
 	Key get_keycode() const;
@@ -170,24 +173,35 @@ public:
 	void set_physical_keycode(Key p_keycode);
 	Key get_physical_keycode() const;
 
+	void set_key_label(Key p_key_label);
+	Key get_key_label() const;
+
 	void set_unicode(char32_t p_unicode);
 	char32_t get_unicode() const;
+
+	void set_location(KeyLocation p_key_location);
+	KeyLocation get_location() const;
 
 	void set_echo(bool p_enable);
 	virtual bool is_echo() const override;
 
 	Key get_keycode_with_modifiers() const;
 	Key get_physical_keycode_with_modifiers() const;
+	Key get_key_label_with_modifiers() const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
 	virtual bool is_action_type() const override { return true; }
 
+	virtual String as_text_physical_keycode() const;
+	virtual String as_text_keycode() const;
+	virtual String as_text_key_label() const;
+	virtual String as_text_location() const;
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
-	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks);
+	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks, bool p_physical = false);
 
 	InputEventKey() {}
 };
@@ -221,7 +235,6 @@ class InputEventMouseButton : public InputEventMouse {
 
 	float factor = 1;
 	MouseButton button_index = MouseButton::NONE;
-	bool pressed = false; //otherwise released
 	bool double_click = false; //last even less than double click time
 
 protected:
@@ -235,7 +248,7 @@ public:
 	MouseButton get_button_index() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const override;
+	void set_canceled(bool p_canceled);
 
 	void set_double_click(bool p_double_click);
 	bool is_double_click() const;
@@ -258,7 +271,9 @@ class InputEventMouseMotion : public InputEventMouse {
 	Vector2 tilt;
 	float pressure = 0;
 	Vector2 relative;
+	Vector2 screen_relative;
 	Vector2 velocity;
+	Vector2 screen_velocity;
 	bool pen_inverted = false;
 
 protected:
@@ -277,8 +292,14 @@ public:
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;
 
+	void set_relative_screen_position(const Vector2 &p_relative);
+	Vector2 get_relative_screen_position() const;
+
 	void set_velocity(const Vector2 &p_velocity);
 	Vector2 get_velocity() const;
+
+	void set_screen_velocity(const Vector2 &p_velocity);
+	Vector2 get_screen_velocity() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
@@ -304,14 +325,14 @@ public:
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
 
-	virtual bool is_pressed() const override;
-
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
 	virtual String to_string() override;
+
+	static Ref<InputEventJoypadMotion> create_reference(JoyAxis p_axis, float p_value);
 
 	InputEventJoypadMotion() {}
 };
@@ -320,7 +341,6 @@ class InputEventJoypadButton : public InputEvent {
 	GDCLASS(InputEventJoypadButton, InputEvent);
 
 	JoyButton button_index = (JoyButton)0;
-	bool pressed = false;
 	float pressure = 0; //0 to 1
 protected:
 	static void _bind_methods();
@@ -330,7 +350,6 @@ public:
 	JoyButton get_button_index() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const override;
 
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
@@ -352,7 +371,6 @@ class InputEventScreenTouch : public InputEventFromWindow {
 	GDCLASS(InputEventScreenTouch, InputEventFromWindow);
 	int index = 0;
 	Vector2 pos;
-	bool pressed = false;
 	bool double_tap = false;
 
 protected:
@@ -366,7 +384,7 @@ public:
 	Vector2 get_position() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const override;
+	void set_canceled(bool p_canceled);
 
 	void set_double_tap(bool p_double_tap);
 	bool is_double_tap() const;
@@ -383,7 +401,9 @@ class InputEventScreenDrag : public InputEventFromWindow {
 	int index = 0;
 	Vector2 pos;
 	Vector2 relative;
+	Vector2 screen_relative;
 	Vector2 velocity;
+	Vector2 screen_velocity;
 	Vector2 tilt;
 	float pressure = 0;
 	bool pen_inverted = false;
@@ -410,8 +430,14 @@ public:
 	void set_relative(const Vector2 &p_relative);
 	Vector2 get_relative() const;
 
+	void set_relative_screen_position(const Vector2 &p_relative);
+	Vector2 get_relative_screen_position() const;
+
 	void set_velocity(const Vector2 &p_velocity);
 	Vector2 get_velocity() const;
+
+	void set_screen_velocity(const Vector2 &p_velocity);
+	Vector2 get_screen_velocity() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
@@ -426,7 +452,6 @@ class InputEventAction : public InputEvent {
 	GDCLASS(InputEventAction, InputEvent);
 
 	StringName action;
-	bool pressed = false;
 	float strength = 1.0f;
 
 protected:
@@ -437,7 +462,6 @@ public:
 	StringName get_action() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const override;
 
 	void set_strength(float p_strength);
 	float get_strength() const;
@@ -561,10 +585,11 @@ protected:
 public:
 	void set_shortcut(Ref<Shortcut> p_shortcut);
 	Ref<Shortcut> get_shortcut();
-	virtual bool is_pressed() const override;
 
 	virtual String as_text() const override;
 	virtual String to_string() override;
+
+	InputEventShortcut();
 };
 
 #endif // INPUT_EVENT_H

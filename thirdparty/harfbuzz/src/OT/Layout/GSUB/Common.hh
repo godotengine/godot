@@ -8,8 +8,6 @@ namespace OT {
 namespace Layout {
 namespace GSUB_impl {
 
-typedef hb_pair_t<hb_codepoint_t, hb_codepoint_t> hb_codepoint_pair_t;
-
 template<typename Iterator>
 static void SingleSubst_serialize (hb_serialize_context_t *c,
                                    Iterator it);

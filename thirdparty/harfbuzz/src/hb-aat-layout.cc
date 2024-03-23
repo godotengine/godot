@@ -55,7 +55,13 @@ AAT::hb_aat_apply_context_t::hb_aat_apply_context_t (const hb_ot_shape_plan_t *p
 						       buffer (buffer_),
 						       sanitizer (),
 						       ankr_table (&Null (AAT::ankr)),
-						       gdef_table (face->table.GDEF->table),
+						       gdef_table (
+#ifndef HB_NO_OT_LAYOUT
+							 face->table.GDEF->table
+#else
+							 &Null (GDEF)
+#endif
+						       ),
 						       lookup_index (0)
 {
   sanitizer.init (blob);
@@ -244,15 +250,23 @@ hb_aat_layout_has_substitution (hb_face_t *face)
 void
 hb_aat_layout_substitute (const hb_ot_shape_plan_t *plan,
 			  hb_font_t *font,
-			  hb_buffer_t *buffer)
+			  hb_buffer_t *buffer,
+			  const hb_feature_t *features,
+			  unsigned num_features)
 {
+  hb_aat_map_builder_t builder (font->face, plan->props);
+  for (unsigned i = 0; i < num_features; i++)
+    builder.add_feature (features[i]);
+  hb_aat_map_t map;
+  builder.compile (map);
+
   hb_blob_t *morx_blob = font->face->table.morx.get_blob ();
   const AAT::morx& morx = *morx_blob->as<AAT::morx> ();
   if (morx.has_data ())
   {
     AAT::hb_aat_apply_context_t c (plan, font, buffer, morx_blob);
     if (!buffer->message (font, "start table morx")) return;
-    morx.apply (&c);
+    morx.apply (&c, map);
     (void) buffer->message (font, "end table morx");
     return;
   }
@@ -263,7 +277,7 @@ hb_aat_layout_substitute (const hb_ot_shape_plan_t *plan,
   {
     AAT::hb_aat_apply_context_t c (plan, font, buffer, mort_blob);
     if (!buffer->message (font, "start table mort")) return;
-    mort.apply (&c);
+    mort.apply (&c, map);
     (void) buffer->message (font, "end table mort");
     return;
   }

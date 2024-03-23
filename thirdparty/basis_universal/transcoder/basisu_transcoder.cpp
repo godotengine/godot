@@ -155,7 +155,7 @@
    // If BASISD_SUPPORT_KTX2_ZSTD is 0, UASTC files compressed with Zstd cannot be loaded.
 	#if BASISD_SUPPORT_KTX2_ZSTD
 		// We only use two Zstd API's: ZSTD_decompress() and ZSTD_isError()
-		#include "../zstd/zstd.h"
+		#include <zstd.h>
 	#endif
 #endif
 

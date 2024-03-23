@@ -38,12 +38,12 @@
 #define MIN_VELOCITY 0.0001
 #define MAX_BIAS_ROTATION (Math_PI / 8)
 
-void GodotBodyPair3D::_contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
+void GodotBodyPair3D::_contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal, void *p_userdata) {
 	GodotBodyPair3D *pair = static_cast<GodotBodyPair3D *>(p_userdata);
-	pair->contact_added_callback(p_point_A, p_index_A, p_point_B, p_index_B);
+	pair->contact_added_callback(p_point_A, p_index_A, p_point_B, p_index_B, normal);
 }
 
-void GodotBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B) {
+void GodotBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal) {
 	Vector3 local_A = A->get_inv_transform().basis.xform(p_point_A);
 	Vector3 local_B = B->get_inv_transform().basis.xform(p_point_B - offset_B);
 
@@ -167,6 +167,8 @@ void GodotBodyPair3D::validate_contacts() {
 // cast forward along motion vector to see if A is going to enter/pass B's collider next frame, only proceed if it does.
 // adjust the velocity of A down so that it will just slightly intersect the collider instead of blowing right past it.
 bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, const Transform3D &p_xform_A, GodotBody3D *p_B, int p_shape_B, const Transform3D &p_xform_B) {
+	GodotShape3D *shape_A_ptr = p_A->get_shape(p_shape_A);
+
 	Vector3 motion = p_A->get_linear_velocity() * p_step;
 	real_t mlen = motion.length();
 	if (mlen < CMP_EPSILON) {
@@ -176,7 +178,7 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 	Vector3 mnormal = motion / mlen;
 
 	real_t min = 0.0, max = 0.0;
-	p_A->get_shape(p_shape_A)->project_range(mnormal, p_xform_A, min, max);
+	shape_A_ptr->project_range(mnormal, p_xform_A, min, max);
 
 	// Did it move enough in this direction to even attempt raycast?
 	// Let's say it should move more than 1/3 the size of the object in that axis.
@@ -187,33 +189,61 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 
 	// A is moving fast enough that tunneling might occur. See if it's really about to collide.
 
-	// Cast a segment from support in motion normal, in the same direction of motion by motion length.
-	// Support point will the farthest forward collision point along the movement vector.
-	// i.e. the point that should hit B first if any collision does occur.
+	// Roughly predict body B's position in the next frame (ignoring collisions).
+	Transform3D predicted_xform_B = p_xform_B.translated(p_B->get_linear_velocity() * p_step);
 
-	// convert mnormal into body A's local xform because get_support requires (and returns) local coordinates.
-	Vector3 s = p_A->get_shape(p_shape_A)->get_support(p_xform_A.basis.xform_inv(mnormal).normalized());
-	Vector3 from = p_xform_A.xform(s);
-	Vector3 to = from + motion;
+	// Support points are the farthest forward points on A in the direction of the motion vector.
+	// i.e. the candidate points of which one should hit B first if any collision does occur.
+	static const int max_supports = 16;
+	Vector3 supports_A[max_supports];
+	int support_count_A;
+	GodotShape3D::FeatureType support_type_A;
+	// Convert mnormal into body A's local xform because get_supports requires (and returns) local coordinates.
+	shape_A_ptr->get_supports(p_xform_A.basis.xform_inv(mnormal).normalized(), max_supports, supports_A, support_count_A, support_type_A);
 
-	Transform3D from_inv = p_xform_B.affine_inverse();
+	// Cast a segment from each support point of A in the motion direction.
+	int segment_support_idx = -1;
+	float segment_hit_length = FLT_MAX;
+	Vector3 segment_hit_local;
+	for (int i = 0; i < support_count_A; i++) {
+		supports_A[i] = p_xform_A.xform(supports_A[i]);
 
-	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
-	// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd. But it still works out.
-	Vector3 local_from = from_inv.xform(from - motion * 0.1);
-	Vector3 local_to = from_inv.xform(to);
+		Vector3 from = supports_A[i];
+		Vector3 to = from + motion;
 
-	Vector3 rpos, rnorm;
-	if (!p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm, true)) {
-		// there was no hit. Since the segment is the length of per-frame motion, this means the bodies will not
+		Transform3D from_inv = predicted_xform_B.affine_inverse();
+
+		// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
+		// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd.
+		// But it still works out.
+		Vector3 local_from = from_inv.xform(from - motion * 0.1);
+		Vector3 local_to = from_inv.xform(to);
+
+		Vector3 rpos, rnorm;
+		int fi = -1;
+		if (p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm, fi, true)) {
+			float hit_length = local_from.distance_to(rpos);
+			if (hit_length < segment_hit_length) {
+				segment_support_idx = i;
+				segment_hit_length = hit_length;
+				segment_hit_local = rpos;
+			}
+		}
+	}
+
+	if (segment_support_idx == -1) {
+		// There was no hit. Since the segment is the length of per-frame motion, this means the bodies will not
 		// actually collide yet on next frame. We'll probably check again next frame once they're closer.
 		return false;
 	}
 
-	// Shorten the linear velocity so it will collide next frame.
-	Vector3 hitpos = p_xform_B.xform(rpos);
+	Vector3 hitpos = predicted_xform_B.xform(segment_hit_local);
 
-	real_t newlen = hitpos.distance_to(from) + (max - min) * 0.01; // adding 1% of body length to the distance between collision and support point should cause body A's support point to arrive just within B's collider next frame.
+	real_t newlen = hitpos.distance_to(supports_A[segment_support_idx]);
+	// Adding 1% of body length to the distance between collision and support point
+	// should cause body A's support point to arrive just within B's collider next frame.
+	newlen += (max - min) * 0.01;
+	// FIXME: This doesn't always work well when colliding with a triangle face of a trimesh shape.
 
 	p_A->set_linear_velocity((mnormal * newlen) / p_step);
 
@@ -327,6 +357,8 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 	bool do_process = false;
 
+	const Vector3 &offset_A = A->get_transform().get_origin();
+
 	const Basis &basis_A = A->get_transform().basis;
 	const Basis &basis_B = B->get_transform().basis;
 
@@ -355,7 +387,6 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 #ifdef DEBUG_ENABLED
 		if (space->is_debugging_contacts()) {
-			const Vector3 &offset_A = A->get_transform().get_origin();
 			space->add_debug_contact(global_A + offset_A);
 			space->add_debug_contact(global_B + offset_A);
 		}
@@ -380,14 +411,17 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 		// contact query reporting...
 
-		if (A->can_report_contacts()) {
-			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
-			A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crA, c.acc_impulse);
-		}
-
-		if (B->can_report_contacts()) {
+		if (A->can_report_contacts() || B->can_report_contacts()) {
 			Vector3 crB = B->get_angular_velocity().cross(c.rB) + B->get_linear_velocity();
-			B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crB, -c.acc_impulse);
+			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
+
+			if (A->can_report_contacts()) {
+				A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, crA, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
+			}
+
+			if (B->can_report_contacts()) {
+				B->add_contact(global_B + offset_A, c.normal, depth, shape_B, crB, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA, -c.acc_impulse);
+			}
 		}
 
 		if (report_contacts_only) {
@@ -577,12 +611,12 @@ GodotBodyPair3D::~GodotBodyPair3D() {
 	B->remove_constraint(this);
 }
 
-void GodotBodySoftBodyPair3D::_contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
+void GodotBodySoftBodyPair3D::_contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal, void *p_userdata) {
 	GodotBodySoftBodyPair3D *pair = static_cast<GodotBodySoftBodyPair3D *>(p_userdata);
-	pair->contact_added_callback(p_point_A, p_index_A, p_point_B, p_index_B);
+	pair->contact_added_callback(p_point_A, p_index_A, p_point_B, p_index_B, normal);
 }
 
-void GodotBodySoftBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B) {
+void GodotBodySoftBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal) {
 	Vector3 local_A = body->get_inv_transform().xform(p_point_A);
 	Vector3 local_B = p_point_B - soft_body->get_node_position(p_index_B);
 
@@ -591,7 +625,7 @@ void GodotBodySoftBodyPair3D::contact_added_callback(const Vector3 &p_point_A, i
 	contact.index_B = p_index_B;
 	contact.local_A = local_A;
 	contact.local_B = local_B;
-	contact.normal = (p_point_A - p_point_B).normalized();
+	contact.normal = (normal.dot((p_point_A - p_point_B)) < 0 ? -normal : normal);
 	contact.used = true;
 
 	// Attempt to determine if the contact will be reused.
@@ -770,9 +804,9 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 
 		if (body->can_report_contacts()) {
 			Vector3 crA = body->get_angular_velocity().cross(c.rA) + body->get_linear_velocity();
-			body->add_contact(global_A, -c.normal, depth, body_shape, global_B, 0, soft_body->get_instance_id(), soft_body->get_self(), crA, c.acc_impulse);
+			Vector3 crB = soft_body->get_node_velocity(c.index_B);
+			body->add_contact(global_A, -c.normal, depth, body_shape, crA, global_B, 0, soft_body->get_instance_id(), soft_body->get_self(), crB, c.acc_impulse);
 		}
-
 		if (report_contacts_only) {
 			collided = false;
 			continue;

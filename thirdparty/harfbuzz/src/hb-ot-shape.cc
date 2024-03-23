@@ -80,8 +80,7 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *fac
 					      const hb_segment_properties_t &props) :
 						face (face),
 						props (props),
-						map (face, props),
-						aat_map (face, props)
+						map (face, props)
 #ifndef HB_NO_AAT_SHAPE
 						, apply_morx (_hb_apply_morx (face, props))
 #endif
@@ -105,10 +104,6 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
   plan.props = props;
   plan.shaper = shaper;
   map.compile (plan.map, key);
-#ifndef HB_NO_AAT_SHAPE
-  if (apply_morx)
-    aat_map.compile (plan.aat_map);
-#endif
 
 #ifndef HB_NO_OT_SHAPE_FRACTIONS
   plan.frac_mask = plan.map.get_1_mask (HB_TAG ('f','r','a','c'));
@@ -222,9 +217,6 @@ hb_ot_shape_plan_t::init0 (hb_face_t                     *face,
 			   const hb_shape_plan_key_t     *key)
 {
   map.init ();
-#ifndef HB_NO_AAT_SHAPE
-  aat_map.init ();
-#endif
 
   hb_ot_shape_planner_t planner (face,
 				 key->props);
@@ -241,9 +233,6 @@ hb_ot_shape_plan_t::init0 (hb_face_t                     *face,
     if (unlikely (!data))
     {
       map.fini ();
-#ifndef HB_NO_AAT_SHAPE
-      aat_map.fini ();
-#endif
       return false;
     }
   }
@@ -258,21 +247,13 @@ hb_ot_shape_plan_t::fini ()
     shaper->data_destroy (const_cast<void *> (data));
 
   map.fini ();
-#ifndef HB_NO_AAT_SHAPE
-  aat_map.fini ();
-#endif
 }
 
 void
 hb_ot_shape_plan_t::substitute (hb_font_t   *font,
 				hb_buffer_t *buffer) const
 {
-#ifndef HB_NO_AAT_SHAPE
-  if (unlikely (apply_morx))
-    hb_aat_layout_substitute (this, font, buffer);
-  else
-#endif
-    map.substitute (this, font, buffer);
+  map.substitute (this, font, buffer);
 }
 
 void
@@ -332,6 +313,8 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t *planner,
 {
   hb_ot_map_builder_t *map = &planner->map;
 
+  map->is_simple = true;
+
   map->enable_feature (HB_TAG('r','v','r','n'));
   map->add_gsub_pause (nullptr);
 
@@ -373,7 +356,10 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t *planner,
   map->enable_feature (HB_TAG ('H','A','R','F')); /* Considered discretionary. */
 
   if (planner->shaper->collect_features)
+  {
+    map->is_simple = false;
     planner->shaper->collect_features (planner);
+  }
 
   map->enable_feature (HB_TAG ('B','u','z','z')); /* Considered required. */
   map->enable_feature (HB_TAG ('B','U','Z','Z')); /* Considered discretionary. */
@@ -397,6 +383,8 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t *planner,
     map->enable_feature (HB_TAG ('v','e','r','t'), F_GLOBAL_SEARCH);
   }
 
+  if (num_user_features)
+    map->is_simple = false;
   for (unsigned int i = 0; i < num_user_features; i++)
   {
     const hb_feature_t *feature = &user_features[i];
@@ -405,18 +393,6 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t *planner,
 		       feature->end == HB_FEATURE_GLOBAL_END) ?  F_GLOBAL : F_NONE,
 		      feature->value);
   }
-
-#ifndef HB_NO_AAT_SHAPE
-  if (planner->apply_morx)
-  {
-    hb_aat_map_builder_t *aat_map = &planner->aat_map;
-    for (unsigned int i = 0; i < num_user_features; i++)
-    {
-      const hb_feature_t *feature = &user_features[i];
-      aat_map->add_feature (feature->tag, feature->value);
-    }
-  }
-#endif
 
   if (planner->shaper->override_features)
     planner->shaper->override_features (planner);
@@ -500,9 +476,18 @@ hb_set_unicode_props (hb_buffer_t *buffer)
   {
     _hb_glyph_info_set_unicode_props (&info[i], buffer);
 
+    unsigned gen_cat = _hb_glyph_info_get_general_category (&info[i]);
+    if (FLAG_UNSAFE (gen_cat) &
+	(FLAG (HB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER) |
+	 FLAG (HB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER) |
+	 FLAG (HB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER) |
+	 FLAG (HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER) |
+	 FLAG (HB_UNICODE_GENERAL_CATEGORY_SPACE_SEPARATOR)))
+      continue;
+
     /* Marks are already set as continuation by the above line.
      * Handle Emoji_Modifier and ZWJ-continuation. */
-    if (unlikely (_hb_glyph_info_get_general_category (&info[i]) == HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL &&
+    if (unlikely (gen_cat == HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL &&
 		  hb_in_range<hb_codepoint_t> (info[i].codepoint, 0x1F3FBu, 0x1F3FFu)))
     {
       _hb_glyph_info_set_continuation (&info[i]);
@@ -780,6 +765,14 @@ hb_ot_shape_setup_masks_fraction (const hb_ot_shape_context_t *c)
 	     _hb_glyph_info_get_general_category (&info[end]) ==
 	     HB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER)
 	end++;
+      if (start == i || end == i + 1)
+      {
+        if (start == i)
+	  buffer->unsafe_to_concat (start, start + 1);
+	if (end == i + 1)
+	  buffer->unsafe_to_concat (end - 1, end);
+	continue;
+      }
 
       buffer->unsafe_to_break (start, end);
 
@@ -940,7 +933,13 @@ hb_ot_substitute_plan (const hb_ot_shape_context_t *c)
   if (c->plan->fallback_glyph_classes)
     hb_synthesize_glyph_classes (c->buffer);
 
-  c->plan->substitute (c->font, buffer);
+#ifndef HB_NO_AAT_SHAPE
+  if (unlikely (c->plan->apply_morx))
+    hb_aat_layout_substitute (c->plan, c->font, c->buffer,
+			      c->user_features, c->num_user_features);
+  else
+#endif
+    c->plan->substitute (c->font, buffer);
 }
 
 static inline void
@@ -1055,7 +1054,7 @@ hb_ot_position_plan (const hb_ot_shape_context_t *c)
    * direction is backward we don't shift and it will end up
    * hanging over the next glyph after the final reordering.
    *
-   * Note: If fallback positinoing happens, we don't care about
+   * Note: If fallback positioning happens, we don't care about
    * this as it will be overridden.
    */
   bool adjust_offsets_when_zeroing = c->plan->adjust_mark_positioning_when_zeroing &&

@@ -4,7 +4,7 @@
  *
  *   AFM parser (body).
  *
- * Copyright (C) 2006-2022 by
+ * Copyright (C) 2006-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -563,7 +563,7 @@
   }
 
 
-  FT_LOCAL( void )
+  FT_LOCAL_DEF( void )
   afm_parser_done( AFM_Parser  parser )
   {
     FT_Memory  memory = parser->memory;
@@ -1061,7 +1061,7 @@
         if ( error )
           goto Fail;
         /* we only support kern data, so ... */
-        /* fall through                      */
+        FALL_THROUGH;
 
       case AFM_TOKEN_ENDFONTMETRICS:
         return FT_Err_Ok;
@@ -1086,7 +1086,7 @@
 #else /* T1_CONFIG_OPTION_NO_AFM */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _afm_parse_dummy;
+  typedef int  afm_parse_dummy_;
 
 #endif /* T1_CONFIG_OPTION_NO_AFM */
 

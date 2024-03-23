@@ -35,26 +35,6 @@
 #include "hb-set-digest.hh"
 
 
-#ifndef HB_BUFFER_MAX_LEN_FACTOR
-#define HB_BUFFER_MAX_LEN_FACTOR 64
-#endif
-#ifndef HB_BUFFER_MAX_LEN_MIN
-#define HB_BUFFER_MAX_LEN_MIN 16384
-#endif
-#ifndef HB_BUFFER_MAX_LEN_DEFAULT
-#define HB_BUFFER_MAX_LEN_DEFAULT 0x3FFFFFFF /* Shaping more than a billion chars? Let us know! */
-#endif
-
-#ifndef HB_BUFFER_MAX_OPS_FACTOR
-#define HB_BUFFER_MAX_OPS_FACTOR 1024
-#endif
-#ifndef HB_BUFFER_MAX_OPS_MIN
-#define HB_BUFFER_MAX_OPS_MIN 16384
-#endif
-#ifndef HB_BUFFER_MAX_OPS_DEFAULT
-#define HB_BUFFER_MAX_OPS_DEFAULT 0x1FFFFFFF /* Shaping more than a billion operations? Let us know! */
-#endif
-
 static_assert ((sizeof (hb_glyph_info_t) == 20), "");
 static_assert ((sizeof (hb_glyph_info_t) == sizeof (hb_glyph_position_t)), "");
 
@@ -484,13 +464,16 @@ struct hb_buffer_t
 		      start, end,
 		      true);
   }
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
   void unsafe_to_concat (unsigned int start = 0, unsigned int end = -1)
   {
     if (likely ((flags & HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT) == 0))
       return;
     _set_glyph_flags (HB_GLYPH_FLAG_UNSAFE_TO_CONCAT,
 		      start, end,
-		      true);
+		      false);
   }
   void unsafe_to_break_from_outbuffer (unsigned int start = 0, unsigned int end = -1)
   {
@@ -498,6 +481,9 @@ struct hb_buffer_t
 		      start, end,
 		      true, true);
   }
+#ifndef HB_OPTIMIZE_SIZE
+  HB_ALWAYS_INLINE
+#endif
   void unsafe_to_concat_from_outbuffer (unsigned int start = 0, unsigned int end = -1)
   {
     if (likely ((flags & HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT) == 0))
@@ -513,6 +499,13 @@ struct hb_buffer_t
 
   HB_NODISCARD HB_INTERNAL bool enlarge (unsigned int size);
 
+  HB_NODISCARD bool resize (unsigned length)
+  {
+    assert (!have_output);
+    if (unlikely (!ensure (length))) return false;
+    len = length;
+    return true;
+  }
   HB_NODISCARD bool ensure (unsigned int size)
   { return likely (!size || size < allocated) ? true : enlarge (size); }
 
@@ -573,7 +566,7 @@ struct hb_buffer_t
   bool message (hb_font_t *font, const char *fmt, ...) HB_PRINTF_FUNC(3, 4)
   {
 #ifdef HB_NO_BUFFER_MESSAGE
-   return true;
+    return true;
 #else
     if (likely (!messaging ()))
       return true;
@@ -601,21 +594,59 @@ struct hb_buffer_t
 			  unsigned int cluster,
 			  hb_mask_t mask)
   {
-    for (unsigned int i = start; i < end; i++)
-      if (cluster != infos[i].cluster)
+    if (unlikely (start == end))
+      return;
+
+    unsigned cluster_first = infos[start].cluster;
+    unsigned cluster_last = infos[end - 1].cluster;
+
+    if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS ||
+	(cluster != cluster_first && cluster != cluster_last))
+    {
+      for (unsigned int i = start; i < end; i++)
+	if (cluster != infos[i].cluster)
+	{
+	  scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
+	  infos[i].mask |= mask;
+	}
+      return;
+    }
+
+    /* Monotone clusters */
+
+    if (cluster == cluster_first)
+    {
+      for (unsigned int i = end; start < i && infos[i - 1].cluster != cluster_first; i--)
+      {
+	scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
+	infos[i - 1].mask |= mask;
+      }
+    }
+    else /* cluster == cluster_last */
+    {
+      for (unsigned int i = start; i < end && infos[i].cluster != cluster_last; i++)
       {
 	scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
 	infos[i].mask |= mask;
       }
+    }
   }
-  static unsigned
+  unsigned
   _infos_find_min_cluster (const hb_glyph_info_t *infos,
 			   unsigned start, unsigned end,
 			   unsigned cluster = UINT_MAX)
   {
-    for (unsigned int i = start; i < end; i++)
-      cluster = hb_min (cluster, infos[i].cluster);
-    return cluster;
+    if (unlikely (start == end))
+      return cluster;
+
+    if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
+    {
+      for (unsigned int i = start; i < end; i++)
+	cluster = hb_min (cluster, infos[i].cluster);
+      return cluster;
+    }
+
+    return hb_min (cluster, hb_min (infos[start].cluster, infos[end - 1].cluster));
   }
 
   void clear_glyph_flags (hb_mask_t mask = 0)

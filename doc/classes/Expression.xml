@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Expression" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Expression" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A class that stores an expression you can execute.
 	</brief_description>
@@ -24,23 +24,23 @@
 		        $LineEdit.text = str(result)
 		[/gdscript]
 		[csharp]
-		public Expression expression = new Expression();
+		private Expression _expression = new Expression();
 
 		public override void _Ready()
 		{
-		    GetNode("LineEdit").TextSubmitted += OnTextEntered;
+		    GetNode&lt;LineEdit&gt;("LineEdit").TextSubmitted += OnTextEntered;
 		}
 
 		private void OnTextEntered(string command)
 		{
-		    Error error = expression.Parse(command);
+		    Error error = _expression.Parse(command);
 		    if (error != Error.Ok)
 		    {
-		        GD.Print(expression.GetErrorText());
+		        GD.Print(_expression.GetErrorText());
 		        return;
 		    }
-		    object result = expression.Execute();
-		    if (!expression.HasExecuteFailed())
+		    Variant result = _expression.Execute();
+		    if (!_expression.HasExecuteFailed())
 		    {
 		        GetNode&lt;LineEdit&gt;("LineEdit").Text = result.ToString();
 		    }
@@ -49,6 +49,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
+		<link title="Evaluating Expressions">$DOCS_URL/tutorials/scripting/evaluating_expressions.html</link>
 	</tutorials>
 	<methods>
 		<method name="execute">
@@ -65,7 +66,7 @@
 		<method name="get_error_text" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the error text if [method parse] has failed.
+				Returns the error text if [method parse] or [method execute] has failed.
 			</description>
 		</method>
 		<method name="has_execute_failed" qualifiers="const">

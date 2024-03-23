@@ -6,19 +6,6 @@
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
-#define SAMPLER_NEAREST_CLAMP 0
-#define SAMPLER_LINEAR_CLAMP 1
-#define SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP 2
-#define SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP 3
-#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP 4
-#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP 5
-#define SAMPLER_NEAREST_REPEAT 6
-#define SAMPLER_LINEAR_REPEAT 7
-#define SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT 8
-#define SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT 9
-#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
-#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
-
 #define DENSITY_SCALE 1024.0
 
 #include "../cluster_data_inc.glsl"
@@ -26,7 +13,7 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 #define M_PI 3.14159265359
 
-layout(set = 0, binding = 1) uniform sampler material_samplers[12];
+#include "../samplers_inc.glsl"
 
 layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
@@ -37,7 +24,7 @@ layout(push_constant, std430) uniform Params {
 	vec3 position;
 	float pad;
 
-	vec3 extents;
+	vec3 size;
 	float pad2;
 
 	ivec3 corner;
@@ -184,36 +171,37 @@ void main() {
 	vec4 local_pos = params.transform * world;
 	local_pos.xyz /= local_pos.w;
 
+	vec3 half_size = params.size / 2.0;
 	float sdf = -1.0;
 	if (params.shape == 0) {
 		// Ellipsoid
 		// https://www.shadertoy.com/view/tdS3DG
-		float k0 = length(local_pos.xyz / params.extents);
-		float k1 = length(local_pos.xyz / (params.extents * params.extents));
+		float k0 = length(local_pos.xyz / half_size);
+		float k1 = length(local_pos.xyz / (half_size * half_size));
 		sdf = k0 * (k0 - 1.0) / k1;
 	} else if (params.shape == 1) {
 		// Cone
 		// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 
-		// Compute the cone angle automatically to fit within the volume's extents.
-		float inv_height = 1.0 / max(0.001, params.extents.y);
-		float radius = 1.0 / max(0.001, (min(params.extents.x, params.extents.z) * 0.5));
+		// Compute the cone angle automatically to fit within the volume's size.
+		float inv_height = 1.0 / max(0.001, half_size.y);
+		float radius = 1.0 / max(0.001, (min(half_size.x, half_size.z) * 0.5));
 		float hypotenuse = sqrt(radius * radius + inv_height * inv_height);
 		float rsin = radius / hypotenuse;
 		float rcos = inv_height / hypotenuse;
 		vec2 c = vec2(rsin, rcos);
 
 		float q = length(local_pos.xz);
-		sdf = max(dot(c, vec2(q, local_pos.y - params.extents.y)), -params.extents.y - local_pos.y);
+		sdf = max(dot(c, vec2(q, local_pos.y - half_size.y)), -half_size.y - local_pos.y);
 	} else if (params.shape == 2) {
 		// Cylinder
 		// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
-		vec2 d = abs(vec2(length(local_pos.xz), local_pos.y)) - vec2(min(params.extents.x, params.extents.z), params.extents.y);
+		vec2 d = abs(vec2(length(local_pos.xz), local_pos.y)) - vec2(min(half_size.x, half_size.z), half_size.y);
 		sdf = min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
 	} else if (params.shape == 3) {
 		// Box
 		// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
-		vec3 q = abs(local_pos.xyz) - params.extents;
+		vec3 q = abs(local_pos.xyz) - half_size;
 		sdf = length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 	}
 
@@ -222,7 +210,7 @@ void main() {
 #ifndef SDF_USED
 		cull_mask = 1.0 - smoothstep(-0.1, 0.0, sdf);
 #endif
-		uvw = clamp((local_pos.xyz + params.extents) / (2.0 * params.extents), 0.0, 1.0);
+		uvw = clamp((local_pos.xyz + half_size) / params.size, 0.0, 1.0);
 	}
 
 	if (cull_mask > 0.0) {

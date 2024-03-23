@@ -35,6 +35,8 @@
 template <typename impl_t>
 struct hb_sparseset_t
 {
+  static constexpr bool realloc_move = true;
+
   hb_object_header_t header;
   impl_t s;
 
@@ -79,6 +81,7 @@ struct hb_sparseset_t
   void reset () { s.reset (); }
   void clear () { s.clear (); }
   void invert () { s.invert (); }
+  bool is_inverted () const { return s.is_inverted (); }
   bool is_empty () const { return s.is_empty (); }
   uint32_t hash () const { return s.hash (); }
 
@@ -114,7 +117,7 @@ struct hb_sparseset_t
   /* Sink interface. */
   hb_sparseset_t& operator << (hb_codepoint_t v)
   { add (v); return *this; }
-  hb_sparseset_t& operator << (const hb_pair_t<hb_codepoint_t, hb_codepoint_t>& range)
+  hb_sparseset_t& operator << (const hb_codepoint_pair_t& range)
   { add_range (range.first, range.second); return *this; }
 
   bool intersects (hb_codepoint_t first, hb_codepoint_t last) const
@@ -170,6 +173,11 @@ struct hb_set_t : hb_sparseset_t<hb_bit_set_invertible_t>
   template <typename Iterable,
 	    hb_requires (hb_is_iterable (Iterable))>
   hb_set_t (const Iterable &o) : sparseset (o) {}
+
+  hb_set_t& operator << (hb_codepoint_t v)
+  { sparseset::operator<< (v); return *this; }
+  hb_set_t& operator << (const hb_codepoint_pair_t& range)
+  { sparseset::operator<< (range); return *this; }
 };
 
 static_assert (hb_set_t::INVALID == HB_SET_VALUE_INVALID, "");

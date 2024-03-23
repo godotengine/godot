@@ -9,6 +9,14 @@ layout(location = 0) in vec2 vertex_attrib;
 layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 
+#if defined(CUSTOM0_USED)
+layout(location = 6) in vec4 custom0_attrib;
+#endif
+
+#if defined(CUSTOM1_USED)
+layout(location = 7) in vec4 custom1_attrib;
+#endif
+
 layout(location = 10) in uvec4 bone_attrib;
 layout(location = 11) in vec4 weight_attrib;
 
@@ -36,8 +44,21 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
 
 #GLOBALS
 
+#ifdef USE_ATTRIBUTES
+vec3 srgb_to_linear(vec3 color) {
+	return mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), color.rgb * (1.0 / 12.92), lessThan(color.rgb, vec3(0.04045)));
+}
+#endif
+
 void main() {
 	vec4 instance_custom = vec4(0.0);
+#if defined(CUSTOM0_USED)
+	vec4 custom0 = vec4(0.0);
+#endif
+#if defined(CUSTOM1_USED)
+	vec4 custom1 = vec4(0.0);
+#endif
+
 #ifdef USE_PRIMITIVE
 
 	//weird bug,
@@ -65,12 +86,24 @@ void main() {
 #elif defined(USE_ATTRIBUTES)
 
 	vec2 vertex = vertex_attrib;
-	vec4 color = color_attrib * draw_data.modulation;
+	vec4 color = color_attrib;
+	if (bool(draw_data.flags & FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR)) {
+		color.rgb = srgb_to_linear(color.rgb);
+	}
+	color *= draw_data.modulation;
 	vec2 uv = uv_attrib;
+
+#if defined(CUSTOM0_USED)
+	custom0 = custom0_attrib;
+#endif
+
+#if defined(CUSTOM1_USED)
+	custom1 = custom1_attrib;
+#endif
 
 	uvec4 bones = bone_attrib;
 	vec4 bone_weights = weight_attrib;
-#else
+#else // !USE_ATTRIBUTES
 
 	vec2 vertex_base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	vec2 vertex_base = vertex_base_arr[gl_VertexIndex];
@@ -80,7 +113,7 @@ void main() {
 	vec2 vertex = draw_data.dst_rect.xy + abs(draw_data.dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(draw_data.src_rect.zw, vec2(0.0, 0.0)));
 	uvec4 bones = uvec4(0, 0, 0, 0);
 
-#endif
+#endif // USE_ATTRIBUTES
 
 	mat4 model_matrix = mat4(vec4(draw_data.world_x, 0.0, 0.0), vec4(draw_data.world_y, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(draw_data.world_ofs, 0.0, 1.0));
 
@@ -170,6 +203,10 @@ void main() {
 #ifdef USE_POINT_SIZE
 	float point_size = 1.0;
 #endif
+
+#ifdef USE_WORLD_VERTEX_COORDS
+	vertex = (model_matrix * vec4(vertex, 0.0, 1.0)).xy;
+#endif
 	{
 #CODE : VERTEX
 	}
@@ -178,7 +215,7 @@ void main() {
 	pixel_size_interp = abs(draw_data.dst_rect.zw) * vertex_base;
 #endif
 
-#if !defined(SKIP_TRANSFORM_USED)
+#if !defined(SKIP_TRANSFORM_USED) && !defined(USE_WORLD_VERTEX_COORDS)
 	vertex = (model_matrix * vec4(vertex, 0.0, 1.0)).xy;
 #endif
 
@@ -237,7 +274,7 @@ vec2 screen_uv_to_sdf(vec2 p_uv) {
 
 float texture_sdf(vec2 p_sdf) {
 	vec2 uv = p_sdf * canvas_data.sdf_to_tex.xy + canvas_data.sdf_to_tex.zw;
-	float d = texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv).r;
+	float d = texture(sampler2D(sdf_texture, SAMPLER_LINEAR_CLAMP), uv).r;
 	d *= SDF_MAX_LENGTH;
 	return d * canvas_data.tex_to_sdf;
 }
@@ -247,8 +284,8 @@ vec2 texture_sdf_normal(vec2 p_sdf) {
 
 	const float EPSILON = 0.001;
 	return normalize(vec2(
-			texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv + vec2(EPSILON, 0.0)).r - texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv - vec2(EPSILON, 0.0)).r,
-			texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv + vec2(0.0, EPSILON)).r - texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv - vec2(0.0, EPSILON)).r));
+			texture(sampler2D(sdf_texture, SAMPLER_LINEAR_CLAMP), uv + vec2(EPSILON, 0.0)).r - texture(sampler2D(sdf_texture, SAMPLER_LINEAR_CLAMP), uv - vec2(EPSILON, 0.0)).r,
+			texture(sampler2D(sdf_texture, SAMPLER_LINEAR_CLAMP), uv + vec2(0.0, EPSILON)).r - texture(sampler2D(sdf_texture, SAMPLER_LINEAR_CLAMP), uv - vec2(0.0, EPSILON)).r));
 }
 
 vec2 sdf_to_screen_uv(vec2 p_sdf) {
@@ -502,7 +539,16 @@ void main() {
 
 	if (normal_used || (using_light && bool(draw_data.flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
 		normal.xy = texture(sampler2D(normal_texture, texture_sampler), uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
-		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
+		if (bool(draw_data.flags & FLAGS_TRANSPOSE_RECT)) {
+			normal.xy = normal.yx;
+		}
+		if (bool(draw_data.flags & FLAGS_FLIP_H)) {
+			normal.x = -normal.x;
+		}
+		if (bool(draw_data.flags & FLAGS_FLIP_V)) {
+			normal.y = -normal.y;
+		}
+		normal.z = sqrt(max(0.0, 1.0 - dot(normal.xy, normal.xy)));
 		normal_used = true;
 	} else {
 		normal = vec3(0.0, 0.0, 1.0);
@@ -557,12 +603,9 @@ void main() {
 	}
 
 	vec4 base_color = color;
-	if (bool(draw_data.flags & FLAGS_USING_LIGHT_MASK)) {
-		color = vec4(0.0); //invisible by default due to using light mask
-	}
 
 #ifdef MODE_LIGHT_ONLY
-	color = vec4(0.0);
+	float light_only_alpha = 0.0;
 #elif !defined(MODE_UNSHADED)
 	color *= canvas_data.canvas_modulation;
 #endif
@@ -605,6 +648,9 @@ void main() {
 		}
 
 		light_blend_compute(light_base, light_color, color.rgb);
+#ifdef MODE_LIGHT_ONLY
+		light_only_alpha += light_color.a;
+#endif
 	}
 
 	// Positional Lights
@@ -689,7 +735,14 @@ void main() {
 		}
 
 		light_blend_compute(light_base, light_color, color.rgb);
+#ifdef MODE_LIGHT_ONLY
+		light_only_alpha += light_color.a;
+#endif
 	}
+#endif
+
+#ifdef MODE_LIGHT_ONLY
+	color.a *= light_only_alpha;
 #endif
 
 	frag_color = color;

@@ -33,6 +33,9 @@
 
 #include "core/config/engine.h"
 
+// Uncomment this define to get more debugging logs for the delta smoothing.
+// #define GODOT_DEBUG_DELTA_SMOOTHER
+
 struct MainFrameTime {
 	double process_step; // delta time to advance during process()
 	int physics_steps; // number of times to iterate the physics engine
@@ -42,6 +45,66 @@ struct MainFrameTime {
 };
 
 class MainTimerSync {
+	class DeltaSmoother {
+	public:
+		// pass the recorded delta, returns a smoothed delta
+		int64_t smooth_delta(int64_t p_delta);
+
+	private:
+		void update_refresh_rate_estimator(int64_t p_delta);
+		bool fps_allows_smoothing(int64_t p_delta);
+
+		// estimated vsync delta (monitor refresh rate)
+		int64_t _vsync_delta = 16666;
+
+		// keep track of accumulated time so we know how many vsyncs to advance by
+		int64_t _leftover_time = 0;
+
+		// keep a rough measurement of the FPS as we run.
+		// If this drifts a long way below or above the refresh rate, the machine
+		// is struggling to keep up, and we can switch off smoothing. This
+		// also deals with the case that the user has overridden the vsync in the GPU settings,
+		// in which case we don't want to try smoothing.
+		static const int MEASURE_FPS_OVER_NUM_FRAMES = 64;
+
+		int64_t _measurement_time = 0;
+		int64_t _measurement_frame_count = 0;
+		int64_t _measurement_end_frame = MEASURE_FPS_OVER_NUM_FRAMES;
+		int64_t _measurement_start_time = 0;
+		bool _measurement_allows_smoothing = true;
+
+		// we can estimate the fps by growing it on condition
+		// that a large proportion of frames are higher than the current estimate.
+		int32_t _estimated_fps = 0;
+		int32_t _hits_at_estimated = 0;
+		int32_t _hits_above_estimated = 0;
+		int32_t _hits_below_estimated = 0;
+		int32_t _hits_one_above_estimated = 0;
+		int32_t _hits_one_below_estimated = 0;
+		bool _estimate_complete = false;
+		bool _estimate_locked = false;
+
+		// data for averaging the delta over a second or so
+		// to prevent spurious values
+		int64_t _estimator_total_delta = 0;
+		int32_t _estimator_delta_readings = 0;
+
+		void made_new_estimate() {
+			_hits_above_estimated = 0;
+			_hits_at_estimated = 0;
+			_hits_below_estimated = 0;
+			_hits_one_above_estimated = 0;
+			_hits_one_below_estimated = 0;
+
+			_estimate_complete = false;
+
+#ifdef GODOT_DEBUG_DELTA_SMOOTHER
+			print_line("estimated fps " + itos(_estimated_fps));
+#endif
+		}
+
+	} _delta_smoother;
+
 	// wall clock time measured on the main thread
 	uint64_t last_cpu_ticks_usec = 0;
 	uint64_t current_cpu_ticks_usec = 0;

@@ -55,9 +55,9 @@
 #include "core/os/mutex.h"
 
 #define BVHTREE_CLASS BVH_Tree<T, NUM_TREES, 2, MAX_ITEMS, USER_PAIR_TEST_FUNCTION, USER_CULL_TEST_FUNCTION, USE_PAIRS, BOUNDS, POINT>
-#define BVH_LOCKED_FUNCTION BVHLockedFunction(&_mutex, BVH_THREAD_SAFE &&_thread_safe);
+#define BVH_LOCKED_FUNCTION BVHLockedFunction _lock_guard(&_mutex, BVH_THREAD_SAFE &&_thread_safe);
 
-template <class T, int NUM_TREES = 1, bool USE_PAIRS = false, int MAX_ITEMS = 32, class USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, class USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, class BOUNDS = AABB, class POINT = Vector3, bool BVH_THREAD_SAFE = true>
+template <typename T, int NUM_TREES = 1, bool USE_PAIRS = false, int MAX_ITEMS = 32, typename USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, typename USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, typename BOUNDS = AABB, typename POINT = Vector3, bool BVH_THREAD_SAFE = true>
 class BVH_Manager {
 public:
 	// note we are using uint32_t instead of BVHHandle, losing type safety, but this
@@ -444,9 +444,7 @@ private:
 		params.result_array = nullptr;
 		params.subindex_array = nullptr;
 
-		for (unsigned int n = 0; n < changed_items.size(); n++) {
-			const BVHHandle &h = changed_items[n];
-
+		for (const BVHHandle &h : changed_items) {
 			// use the expanded aabb for pairing
 			const BOUNDS &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
 			BVHABB_CLASS abb;
@@ -465,9 +463,7 @@ private:
 			params.result_count_overall = 0; // might not be needed
 			tree.cull_aabb(params, false);
 
-			for (unsigned int i = 0; i < tree._cull_hits.size(); i++) {
-				uint32_t ref_id = tree._cull_hits[i];
-
+			for (const uint32_t ref_id : tree._cull_hits) {
 				// don't collide against ourself
 				if (ref_id == changed_item_ref_id) {
 					continue;
@@ -783,11 +779,7 @@ private:
 			// will be compiled out if not set in template
 			if (p_thread_safe) {
 				_mutex = p_mutex;
-
-				if (_mutex->try_lock() != OK) {
-					WARN_PRINT("Info : multithread BVH access detected (benign)");
-					_mutex->lock();
-				}
+				_mutex->lock();
 
 			} else {
 				_mutex = nullptr;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,12 +51,12 @@
 #define _USE_MATH_DEFINES       //Math Constants are not defined in Standard C/C++.
 
 #include <cstring>
-#include <math.h>
-#include <clocale>
 #include <ctype.h>
+#include "tvgMath.h"
+#include "tvgShape.h"
 #include "tvgSvgLoaderCommon.h"
 #include "tvgSvgPath.h"
-#include "tvgSvgUtil.h"
+#include "tvgStr.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
@@ -75,7 +75,7 @@ static char* _skipComma(const char* content)
 static bool _parseNumber(char** content, float* number)
 {
     char* end = NULL;
-    *number = svgUtilStrtof(*content, &end);
+    *number = strToFloat(*content, &end);
     //If the start of string is not number
     if ((*content) == end) return false;
     //Skip comma if any
@@ -383,7 +383,7 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
         case 's':
         case 'S': {
             Point p[3], ctrl;
-            if ((cmds->count > 1) && (cmds->data[cmds->count - 1] == PathCommand::CubicTo) &&
+            if ((cmds->count > 1) && (cmds->last() == PathCommand::CubicTo) &&
                 !(*isQuadratic)) {
                 ctrl.x = 2 * cur->x - curCtl->x;
                 ctrl.y = 2 * cur->y - curCtl->y;
@@ -424,7 +424,7 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
         case 't':
         case 'T': {
             Point p[3], ctrl;
-            if ((cmds->count > 1) && (cmds->data[cmds->count - 1] == PathCommand::CubicTo) &&
+            if ((cmds->count > 1) && (cmds->last() == PathCommand::CubicTo) &&
                 *isQuadratic) {
                 ctrl.x = 2 * cur->x - curCtl->x;
                 ctrl.y = 2 * cur->y - curCtl->y;
@@ -471,9 +471,16 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
         }
         case 'a':
         case 'A': {
-            _pathAppendArcTo(cmds, pts, cur, curCtl, arr[5], arr[6], arr[0], arr[1], arr[2], arr[3], arr[4]);
-            *cur = *curCtl = {arr[5], arr[6]};
-            *isQuadratic = false;
+            if (mathZero(arr[0]) || mathZero(arr[1])) {
+                Point p = {arr[5], arr[6]};
+                cmds->push(PathCommand::LineTo);
+                pts->push(p);
+                *cur = {arr[5], arr[6]};
+            } else if (!mathEqual(cur->x, arr[5]) || !mathEqual(cur->y, arr[6])) {
+                _pathAppendArcTo(cmds, pts, cur, curCtl, arr[5], arr[6], fabsf(arr[0]), fabsf(arr[1]), arr[2], arr[3], arr[4]);
+                *cur = *curCtl = {arr[5], arr[6]};
+                *isQuadratic = false;
+            }
             break;
         }
         default: {
@@ -535,7 +542,7 @@ static char* _nextCommand(char* path, char* cmd, float* arr, int* count)
 /************************************************************************/
 
 
-bool svgPathToTvgPath(const char* svgPath, Array<PathCommand>& cmds, Array<Point>& pts)
+bool svgPathToShape(const char* svgPath, Shape* shape)
 {
     float numberArray[7];
     int numberCount = 0;
@@ -545,11 +552,10 @@ bool svgPathToTvgPath(const char* svgPath, Array<PathCommand>& cmds, Array<Point
     char cmd = 0;
     bool isQuadratic = false;
     char* path = (char*)svgPath;
-    char* curLocale;
 
-    curLocale = setlocale(LC_NUMERIC, NULL);
-    if (curLocale) curLocale = strdup(curLocale);
-    setlocale(LC_NUMERIC, "POSIX");
+    auto& pts = P(shape)->rs.path.pts;
+    auto& cmds = P(shape)->rs.path.cmds;
+    auto lastCmds = cmds.count;
 
     while ((path[0] != '\0')) {
         path = _nextCommand(path, &cmd, numberArray, &numberCount);
@@ -557,8 +563,6 @@ bool svgPathToTvgPath(const char* svgPath, Array<PathCommand>& cmds, Array<Point
         if (!_processCommand(&cmds, &pts, cmd, numberArray, numberCount, &cur, &curCtl, &startPoint, &isQuadratic)) break;
     }
 
-    setlocale(LC_NUMERIC, curLocale);
-    if (curLocale) free(curLocale);
-
+    if (cmds.count > lastCmds && cmds[lastCmds] != PathCommand::MoveTo) return false;
     return true;
 }

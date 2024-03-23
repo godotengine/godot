@@ -49,6 +49,8 @@ GodotJavaViewWrapper::GodotJavaViewWrapper(jobject godot_view) {
 		_request_pointer_capture = env->GetMethodID(_cls, "requestPointerCapture", "()V");
 		_release_pointer_capture = env->GetMethodID(_cls, "releasePointerCapture", "()V");
 	}
+
+	_can_capture_pointer = env->GetMethodID(_cls, "canCapturePointer", "()Z");
 }
 
 bool GodotJavaViewWrapper::can_update_pointer_icon() const {
@@ -56,7 +58,16 @@ bool GodotJavaViewWrapper::can_update_pointer_icon() const {
 }
 
 bool GodotJavaViewWrapper::can_capture_pointer() const {
-	return _request_pointer_capture != nullptr && _release_pointer_capture != nullptr;
+	// We can capture the pointer if the other jni capture method ids are initialized,
+	// and GodotView#canCapturePointer() returns true.
+	if (_request_pointer_capture != nullptr && _release_pointer_capture != nullptr && _can_capture_pointer != nullptr) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+
+		return env->CallBooleanMethod(_godot_view, _can_capture_pointer);
+	}
+
+	return false;
 }
 
 void GodotJavaViewWrapper::request_pointer_capture() {

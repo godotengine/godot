@@ -40,7 +40,7 @@ class EditorUndoRedoManager;
 class HistoryDock : public VBoxContainer {
 	GDCLASS(HistoryDock, VBoxContainer);
 
-	Ref<EditorUndoRedoManager> ur_manager;
+	EditorUndoRedoManager *ur_manager;
 	ItemList *action_list = nullptr;
 
 	CheckBox *current_scene_checkbox = nullptr;
@@ -53,6 +53,7 @@ class HistoryDock : public VBoxContainer {
 	void refresh_history();
 	void on_version_changed();
 	void refresh_version();
+	void save_options();
 
 protected:
 	void _notification(int p_notification);

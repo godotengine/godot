@@ -42,15 +42,12 @@ int main(int argc, char *argv[]) {
 	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
 #endif
 
-	printf("*********** main.m\n");
 	gargc = argc;
 	gargv = argv;
 
-	printf("running app main\n");
 	@autoreleasepool {
 		NSString *className = NSStringFromClass([GodotApplicalitionDelegate class]);
 		UIApplicationMain(argc, argv, nil, className);
 	}
-	printf("main done\n");
 	return 0;
 }

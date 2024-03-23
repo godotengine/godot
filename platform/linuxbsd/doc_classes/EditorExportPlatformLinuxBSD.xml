@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformLinuxBSD" inherits="EditorExportPlatformPC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exporter for Linux/BSD.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+		<link title="Exporting for Linux">$DOCS_URL/tutorials/export/exporting_for_linux.html</link>
+	</tutorials>
+	<members>
+		<member name="binary_format/architecture" type="String" setter="" getter="">
+			Application executable architecture.
+			Supported architectures: [code]x86_32[/code], [code]x86_64[/code], [code]arm64[/code], [code]arm32[/code], [code]rv64[/code], [code]ppc64[/code], and [code]ppc32[/code].
+			Official export templates include [code]x86_32[/code] and [code]x86_64[/code] binaries only.
+		</member>
+		<member name="binary_format/embed_pck" type="bool" setter="" getter="">
+			If [code]true[/code], project resources are embedded into the executable.
+		</member>
+		<member name="custom_template/debug" type="String" setter="" getter="">
+			Path to the custom export template. If left empty, default template is used.
+		</member>
+		<member name="custom_template/release" type="String" setter="" getter="">
+			Path to the custom export template. If left empty, default template is used.
+		</member>
+		<member name="debug/export_console_wrapper" type="int" setter="" getter="">
+			If [code]true[/code], a console wrapper is exported alongside the main executable, which allows running the project with enabled console output.
+		</member>
+		<member name="ssh_remote_deploy/cleanup_script" type="String" setter="" getter="">
+			Script code to execute on the remote host when app is finished.
+			The following variables can be used in the script:
+			- [code]{temp_dir}[/code] - Path of temporary folder on the remote, used to upload app and scripts to.
+			- [code]{archive_name}[/code] - Name of the ZIP containing uploaded application.
+			- [code]{exe_name}[/code] - Name of application executable.
+			- [code]{cmd_args}[/code] - Array of the command line argument for the application.
+		</member>
+		<member name="ssh_remote_deploy/enabled" type="bool" setter="" getter="">
+			Enables remote deploy using SSH/SCP.
+		</member>
+		<member name="ssh_remote_deploy/extra_args_scp" type="String" setter="" getter="">
+			Array of the additional command line arguments passed to the SCP.
+		</member>
+		<member name="ssh_remote_deploy/extra_args_ssh" type="String" setter="" getter="">
+			Array of the additional command line arguments passed to the SSH.
+		</member>
+		<member name="ssh_remote_deploy/host" type="String" setter="" getter="">
+			Remote host SSH user name and address, in [code]user@address[/code] format.
+		</member>
+		<member name="ssh_remote_deploy/port" type="String" setter="" getter="">
+			Remote host SSH port number.
+		</member>
+		<member name="ssh_remote_deploy/run_script" type="String" setter="" getter="">
+			Script code to execute on the remote host when running the app.
+			The following variables can be used in the script:
+			- [code]{temp_dir}[/code] - Path of temporary folder on the remote, used to upload app and scripts to.
+			- [code]{archive_name}[/code] - Name of the ZIP containing uploaded application.
+			- [code]{exe_name}[/code] - Name of application executable.
+			- [code]{cmd_args}[/code] - Array of the command line argument for the application.
+		</member>
+		<member name="texture_format/etc2_astc" type="bool" setter="" getter="">
+			If [code]true[/code], project textures are exported in the ETC2/ASTC format.
+		</member>
+		<member name="texture_format/s3tc_bptc" type="bool" setter="" getter="">
+			If [code]true[/code], project textures are exported in the S3TC/BPTC format.
+		</member>
+	</members>
+</class>

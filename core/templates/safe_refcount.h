@@ -50,13 +50,16 @@
 //   value and, as an important benefit, you can be sure the value is properly synchronized
 //   even with threads that are already running.
 
-// This is used in very specific areas of the engine where it's critical that these guarantees are held
+// These are used in very specific areas of the engine where it's critical that these guarantees are held
 #define SAFE_NUMERIC_TYPE_PUN_GUARANTEES(m_type)                    \
 	static_assert(sizeof(SafeNumeric<m_type>) == sizeof(m_type));   \
 	static_assert(alignof(SafeNumeric<m_type>) == alignof(m_type)); \
-	static_assert(std::is_trivially_destructible<std::atomic<m_type>>::value);
+	static_assert(std::is_trivially_destructible_v<std::atomic<m_type>>);
+#define SAFE_FLAG_TYPE_PUN_GUARANTEES                \
+	static_assert(sizeof(SafeFlag) == sizeof(bool)); \
+	static_assert(alignof(SafeFlag) == alignof(bool));
 
-template <class T>
+template <typename T>
 class SafeNumeric {
 	std::atomic<T> value;
 
@@ -100,6 +103,17 @@ public:
 
 	_ALWAYS_INLINE_ T sub(T p_value) {
 		return value.fetch_sub(p_value, std::memory_order_acq_rel) - p_value;
+	}
+
+	_ALWAYS_INLINE_ T bit_or(T p_value) {
+		return value.fetch_or(p_value, std::memory_order_acq_rel);
+	}
+	_ALWAYS_INLINE_ T bit_and(T p_value) {
+		return value.fetch_and(p_value, std::memory_order_acq_rel);
+	}
+
+	_ALWAYS_INLINE_ T bit_xor(T p_value) {
+		return value.fetch_xor(p_value, std::memory_order_acq_rel);
 	}
 
 	// Returns the original value instead of the new one
@@ -168,7 +182,7 @@ class SafeRefCount {
 	SafeNumeric<uint32_t> count;
 
 #ifdef DEV_ENABLED
-	_ALWAYS_INLINE_ void _check_unref_sanity() {
+	_ALWAYS_INLINE_ void _check_unref_safety() {
 		// This won't catch every misuse, but it's better than nothing.
 		CRASH_COND_MSG(count.get() == 0,
 				"Trying to unreference a SafeRefCount which is already zero is wrong and a symptom of it being misused.\n"
@@ -188,14 +202,14 @@ public:
 
 	_ALWAYS_INLINE_ bool unref() { // true if must be disposed of
 #ifdef DEV_ENABLED
-		_check_unref_sanity();
+		_check_unref_safety();
 #endif
 		return count.decrement() == 0;
 	}
 
 	_ALWAYS_INLINE_ uint32_t unrefval() { // 0 if must be disposed of
 #ifdef DEV_ENABLED
-		_check_unref_sanity();
+		_check_unref_safety();
 #endif
 		return count.decrement();
 	}

@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/math/expression.h"
+#include "scene/theme/theme_db.h"
 
 Size2 SpinBox::get_minimum_size() const {
 	Size2 ms = line_edit->get_combined_minimum_size();
@@ -39,7 +40,7 @@ Size2 SpinBox::get_minimum_size() const {
 	return ms;
 }
 
-void SpinBox::_value_changed(double p_value) {
+void SpinBox::_update_text(bool p_keep_line_edit) {
 	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
 	if (is_localizing_numeral_system()) {
 		value = TS->format_number(value);
@@ -54,26 +55,44 @@ void SpinBox::_value_changed(double p_value) {
 		}
 	}
 
-	line_edit->set_text(value);
-	Range::_value_changed(p_value);
+	if (p_keep_line_edit && value == last_updated_text && value != line_edit->get_text()) {
+		return;
+	}
+
+	line_edit->set_text_with_selection(value);
+	last_updated_text = value;
 }
 
 void SpinBox::_text_submitted(const String &p_string) {
 	Ref<Expression> expr;
 	expr.instantiate();
 
-	String num = TS->parse_number(p_string);
-	// Ignore the prefix and suffix in the expression
-	Error err = expr->parse(num.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
+	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
+	String text = p_string.replace(",", ".");
+	text = text.replace(";", ",");
+	text = TS->parse_number(text);
+	// Ignore the prefix and suffix in the expression.
+	text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
+
+	Error err = expr->parse(text);
 	if (err != OK) {
-		return;
+		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
+		text = p_string;
+		text = TS->parse_number(text);
+		text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
+
+		err = expr->parse(text);
+		if (err != OK) {
+			_update_text();
+			return;
+		}
 	}
 
 	Variant value = expr->execute(Array(), nullptr, false, true);
 	if (value.get_type() != Variant::NIL) {
 		set_value(value);
 	}
-	_value_changed(0);
+	_update_text();
 }
 
 void SpinBox::_text_changed(const String &p_string) {
@@ -192,7 +211,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_line_edit_focus_enter() {
 	int col = line_edit->get_caret_column();
-	_value_changed(0); // Update the LineEdit's text.
+	_update_text();
 	line_edit->set_caret_column(col);
 
 	// LineEdit text might change and it clears any selection. Have to re-select here.
@@ -202,8 +221,18 @@ void SpinBox::_line_edit_focus_enter() {
 }
 
 void SpinBox::_line_edit_focus_exit() {
+	// Discontinue because the focus_exit was caused by left-clicking the arrows.
+	const Viewport *viewport = get_viewport();
+	if (!viewport || viewport->gui_get_focus_owner() == get_line_edit()) {
+		return;
+	}
 	// Discontinue because the focus_exit was caused by right-click context menu.
 	if (line_edit->is_menu_visible()) {
+		return;
+	}
+	// Discontinue because the focus_exit was caused by canceling.
+	if (Input::get_singleton()->is_action_pressed("ui_cancel")) {
+		_update_text();
 		return;
 	}
 
@@ -219,15 +248,10 @@ inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 	}
 }
 
-void SpinBox::_update_theme_item_cache() {
-	Range::_update_theme_item_cache();
-
-	theme_cache.updown_icon = get_theme_icon(SNAME("updown"));
-}
-
 void SpinBox::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
+			_update_text(true);
 			_adjust_width_for_icon(theme_cache.updown_icon);
 
 			RID ci = get_canvas_item();
@@ -242,21 +266,23 @@ void SpinBox::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			_adjust_width_for_icon(theme_cache.updown_icon);
-			_value_changed(0);
+			_update_text();
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED:
+			drag.allowed = false;
+			[[fallthrough]];
 		case NOTIFICATION_EXIT_TREE: {
 			_release_mouse();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_value_changed(0);
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			call_deferred(SNAME("update_minimum_size"));
-			get_line_edit()->call_deferred(SNAME("update_minimum_size"));
+			callable_mp((Control *)this, &Control::update_minimum_size).call_deferred();
+			callable_mp((Control *)get_line_edit(), &Control::update_minimum_size).call_deferred();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -279,7 +305,7 @@ void SpinBox::set_suffix(const String &p_suffix) {
 	}
 
 	suffix = p_suffix;
-	_value_changed(0);
+	_update_text();
 }
 
 String SpinBox::get_suffix() const {
@@ -292,7 +318,7 @@ void SpinBox::set_prefix(const String &p_prefix) {
 	}
 
 	prefix = p_prefix;
-	_value_changed(0);
+	_update_text();
 }
 
 String SpinBox::get_prefix() const {
@@ -368,8 +394,10 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step"), "set_custom_arrow_step", "get_custom_arrow_step");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SpinBox, updown_icon, "updown");
 }
 
 SpinBox::SpinBox() {

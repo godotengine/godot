@@ -51,39 +51,6 @@ Written by: Marcus Hennix
 
 #include "godot_cone_twist_joint_3d.h"
 
-static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
-	if (Math::abs(n.z) > Math_SQRT12) {
-		// choose p in y-z plane
-		real_t a = n[1] * n[1] + n[2] * n[2];
-		real_t k = 1.0 / Math::sqrt(a);
-		p = Vector3(0, -n[2] * k, n[1] * k);
-		// set q = n x p
-		q = Vector3(a * k, -n[0] * p[2], n[0] * p[1]);
-	} else {
-		// choose p in x-y plane
-		real_t a = n.x * n.x + n.y * n.y;
-		real_t k = 1.0 / Math::sqrt(a);
-		p = Vector3(-n.y * k, n.x * k, 0);
-		// set q = n x p
-		q = Vector3(-n.z * p.y, n.z * p.x, a * k);
-	}
-}
-
-static _FORCE_INLINE_ real_t atan2fast(real_t y, real_t x) {
-	real_t coeff_1 = Math_PI / 4.0f;
-	real_t coeff_2 = 3.0f * coeff_1;
-	real_t abs_y = Math::abs(y);
-	real_t angle;
-	if (x >= 0.0f) {
-		real_t r = (x - abs_y) / (x + abs_y);
-		angle = coeff_1 - coeff_1 * r;
-	} else {
-		real_t r = (x + abs_y) / (abs_y - x);
-		angle = coeff_2 - coeff_1 * r;
-	}
-	return (y < 0.0f) ? -angle : angle;
-}
-
 GodotConeTwistJoint3D::GodotConeTwistJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &rbAFrame, const Transform3D &rbBFrame) :
 		GodotJoint3D(_arr, 2) {
 	A = rbA;
@@ -147,8 +114,8 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 	Vector3 b1Axis1, b1Axis2, b1Axis3;
 	Vector3 b2Axis1, b2Axis2;
 
-	b1Axis1 = A->get_transform().basis.xform(this->m_rbAFrame.basis.get_column(0));
-	b2Axis1 = B->get_transform().basis.xform(this->m_rbBFrame.basis.get_column(0));
+	b1Axis1 = A->get_transform().basis.xform(m_rbAFrame.basis.get_column(0));
+	b2Axis1 = B->get_transform().basis.xform(m_rbBFrame.basis.get_column(0));
 
 	real_t swing1 = real_t(0.), swing2 = real_t(0.);
 
@@ -158,7 +125,7 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 
 	// Get Frame into world space
 	if (m_swingSpan1 >= real_t(0.05f)) {
-		b1Axis2 = A->get_transform().basis.xform(this->m_rbAFrame.basis.get_column(1));
+		b1Axis2 = A->get_transform().basis.xform(m_rbAFrame.basis.get_column(1));
 		//swing1  = btAtan2Fast( b2Axis1.dot(b1Axis2),b2Axis1.dot(b1Axis1) );
 		swx = b2Axis1.dot(b1Axis1);
 		swy = b2Axis1.dot(b1Axis2);
@@ -169,7 +136,7 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 	}
 
 	if (m_swingSpan2 >= real_t(0.05f)) {
-		b1Axis3 = A->get_transform().basis.xform(this->m_rbAFrame.basis.get_column(2));
+		b1Axis3 = A->get_transform().basis.xform(m_rbAFrame.basis.get_column(2));
 		//swing2 = btAtan2Fast( b2Axis1.dot(b1Axis3),b2Axis1.dot(b1Axis1) );
 		swx = b2Axis1.dot(b1Axis1);
 		swy = b2Axis1.dot(b1Axis3);
@@ -199,7 +166,7 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 
 	// Twist limits
 	if (m_twistSpan >= real_t(0.)) {
-		Vector3 b2Axis22 = B->get_transform().basis.xform(this->m_rbBFrame.basis.get_column(1));
+		Vector3 b2Axis22 = B->get_transform().basis.xform(m_rbBFrame.basis.get_column(1));
 		Quaternion rotationArc = Quaternion(b2Axis1, b1Axis1);
 		Vector3 TwistRef = rotationArc.xform(b2Axis22);
 		real_t twist = atan2fast(TwistRef.dot(b1Axis3), TwistRef.dot(b1Axis2));

@@ -41,14 +41,30 @@
 #include "drivers/unix/thread_posix.h"
 #include "servers/rendering_server.h"
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <mach-o/dyld.h>
+#include <mach/host_info.h>
+#include <mach/mach_host.h>
 #include <mach/mach_time.h>
+#include <sys/sysctl.h>
 #endif
 
 #if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
 #include <sys/param.h>
 #include <sys/sysctl.h>
+#endif
+
+#if defined(__FreeBSD__)
+#include <kvm.h>
+#endif
+
+#if defined(__OpenBSD__)
+#include <sys/swap.h>
+#include <uvm/uvmexp.h>
+#endif
+
+#if defined(__NetBSD__)
+#include <uvm/uvm_extern.h>
 #endif
 
 #include <dlfcn.h>
@@ -59,10 +75,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/resource.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+
+#ifndef RTLD_DEEPBIND
+#define RTLD_DEEPBIND 0
+#endif
+
+#ifndef SANITIZERS_ENABLED
+#define GODOT_DLOPEN_MODE RTLD_NOW | RTLD_DEEPBIND
+#else
+#define GODOT_DLOPEN_MODE RTLD_NOW
+#endif
 
 #if defined(MACOS_ENABLED) || (defined(__ANDROID_API__) && __ANDROID_API__ >= 28)
 // Random location for getentropy. Fitting.
@@ -126,7 +153,9 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 }
 
 void OS_Unix::initialize_core() {
+#ifdef THREADS_ENABLED
 	init_thread_posix();
+#endif
 
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
@@ -274,6 +303,192 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	return longtime;
 }
 
+Dictionary OS_Unix::get_memory_info() const {
+	Dictionary meminfo;
+
+	meminfo["physical"] = -1;
+	meminfo["free"] = -1;
+	meminfo["available"] = -1;
+	meminfo["stack"] = -1;
+
+#if defined(__APPLE__)
+	int pagesize = 0;
+	size_t len = sizeof(pagesize);
+	if (sysctlbyname("vm.pagesize", &pagesize, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get vm.pagesize, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	int64_t phy_mem = 0;
+	len = sizeof(phy_mem);
+	if (sysctlbyname("hw.memsize", &phy_mem, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get hw.memsize, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
+	vm_statistics64_data_t vmstat;
+	if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&vmstat, &count) != KERN_SUCCESS) {
+		ERR_PRINT("Could not get host vm statistics.");
+	}
+	struct xsw_usage swap_used;
+	len = sizeof(swap_used);
+	if (sysctlbyname("vm.swapusage", &swap_used, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get vm.swapusage, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	if (phy_mem != 0) {
+		meminfo["physical"] = phy_mem;
+	}
+	if (vmstat.free_count * (int64_t)pagesize != 0) {
+		meminfo["free"] = vmstat.free_count * (int64_t)pagesize;
+	}
+	if (swap_used.xsu_avail + vmstat.free_count * (int64_t)pagesize != 0) {
+		meminfo["available"] = swap_used.xsu_avail + vmstat.free_count * (int64_t)pagesize;
+	}
+#elif defined(__FreeBSD__)
+	int pagesize = 0;
+	size_t len = sizeof(pagesize);
+	if (sysctlbyname("vm.stats.vm.v_page_size", &pagesize, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get vm.stats.vm.v_page_size, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	uint64_t mtotal = 0;
+	len = sizeof(mtotal);
+	if (sysctlbyname("vm.stats.vm.v_page_count", &mtotal, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get vm.stats.vm.v_page_count, error code: %d - %s", errno, strerror(errno)));
+	}
+	uint64_t mfree = 0;
+	len = sizeof(mfree);
+	if (sysctlbyname("vm.stats.vm.v_free_count", &mfree, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get vm.stats.vm.v_free_count, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	uint64_t stotal = 0;
+	uint64_t sused = 0;
+	char errmsg[_POSIX2_LINE_MAX] = {};
+	kvm_t *kd = kvm_openfiles(nullptr, "/dev/null", nullptr, 0, errmsg);
+	if (kd == nullptr) {
+		ERR_PRINT(vformat("kvm_openfiles failed, error: %s", errmsg));
+	} else {
+		struct kvm_swap swap_info[32];
+		int count = kvm_getswapinfo(kd, swap_info, 32, 0);
+		for (int i = 0; i < count; i++) {
+			stotal += swap_info[i].ksw_total;
+			sused += swap_info[i].ksw_used;
+		}
+		kvm_close(kd);
+	}
+
+	if (mtotal * pagesize != 0) {
+		meminfo["physical"] = mtotal * pagesize;
+	}
+	if (mfree * pagesize != 0) {
+		meminfo["free"] = mfree * pagesize;
+	}
+	if ((mfree + stotal - sused) * pagesize != 0) {
+		meminfo["available"] = (mfree + stotal - sused) * pagesize;
+	}
+#elif defined(__OpenBSD__)
+	int pagesize = sysconf(_SC_PAGESIZE);
+
+	const int mib[] = { CTL_VM, VM_UVMEXP };
+	uvmexp uvmexp_info;
+	size_t len = sizeof(uvmexp_info);
+	if (sysctl(mib, 2, &uvmexp_info, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get CTL_VM, VM_UVMEXP, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	uint64_t stotal = 0;
+	uint64_t sused = 0;
+	int count = swapctl(SWAP_NSWAP, 0, 0);
+	if (count > 0) {
+		swapent swap_info[count];
+		count = swapctl(SWAP_STATS, swap_info, count);
+
+		for (int i = 0; i < count; i++) {
+			if (swap_info[i].se_flags & SWF_ENABLE) {
+				sused += swap_info[i].se_inuse;
+				stotal += swap_info[i].se_nblks;
+			}
+		}
+	}
+
+	if (uvmexp_info.npages * pagesize != 0) {
+		meminfo["physical"] = uvmexp_info.npages * pagesize;
+	}
+	if (uvmexp_info.free * pagesize != 0) {
+		meminfo["free"] = uvmexp_info.free * pagesize;
+	}
+	if ((uvmexp_info.free * pagesize) + (stotal - sused) * DEV_BSIZE != 0) {
+		meminfo["available"] = (uvmexp_info.free * pagesize) + (stotal - sused) * DEV_BSIZE;
+	}
+#elif defined(__NetBSD__)
+	int pagesize = sysconf(_SC_PAGESIZE);
+
+	const int mib[] = { CTL_VM, VM_UVMEXP2 };
+	uvmexp_sysctl uvmexp_info;
+	size_t len = sizeof(uvmexp_info);
+	if (sysctl(mib, 2, &uvmexp_info, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get CTL_VM, VM_UVMEXP2, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	if (uvmexp_info.npages * pagesize != 0) {
+		meminfo["physical"] = uvmexp_info.npages * pagesize;
+	}
+	if (uvmexp_info.free * pagesize != 0) {
+		meminfo["free"] = uvmexp_info.free * pagesize;
+	}
+	if ((uvmexp_info.free + uvmexp_info.swpages - uvmexp_info.swpginuse) * pagesize != 0) {
+		meminfo["available"] = (uvmexp_info.free + uvmexp_info.swpages - uvmexp_info.swpginuse) * pagesize;
+	}
+#else
+	Error err;
+	Ref<FileAccess> f = FileAccess::open("/proc/meminfo", FileAccess::READ, &err);
+	uint64_t mtotal = 0;
+	uint64_t mfree = 0;
+	uint64_t sfree = 0;
+	while (f.is_valid() && !f->eof_reached()) {
+		String s = f->get_line().strip_edges();
+		if (s.begins_with("MemTotal:")) {
+			Vector<String> stok = s.replace("MemTotal:", "").strip_edges().split(" ");
+			if (stok.size() == 2) {
+				mtotal = stok[0].to_int() * 1024;
+			}
+		}
+		if (s.begins_with("MemFree:")) {
+			Vector<String> stok = s.replace("MemFree:", "").strip_edges().split(" ");
+			if (stok.size() == 2) {
+				mfree = stok[0].to_int() * 1024;
+			}
+		}
+		if (s.begins_with("SwapFree:")) {
+			Vector<String> stok = s.replace("SwapFree:", "").strip_edges().split(" ");
+			if (stok.size() == 2) {
+				sfree = stok[0].to_int() * 1024;
+			}
+		}
+	}
+
+	if (mtotal != 0) {
+		meminfo["physical"] = mtotal;
+	}
+	if (mfree != 0) {
+		meminfo["free"] = mfree;
+	}
+	if (mfree + sfree != 0) {
+		meminfo["available"] = mfree + sfree;
+	}
+#endif
+
+	rlimit stackinfo = {};
+	getrlimit(RLIMIT_STACK, &stackinfo);
+
+	if (stackinfo.rlim_cur != 0) {
+		meminfo["stack"] = (int64_t)stackinfo.rlim_cur;
+	}
+
+	return meminfo;
+}
+
 Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
@@ -292,7 +507,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		}
 
 		FILE *f = popen(command.utf8().get_data(), "r");
-		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command);
+		ERR_FAIL_NULL_V_MSG(f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command + ".");
 		char buf[65535];
 		while (fgets(buf, 65535, f)) {
 			if (p_pipe_mutex) {
@@ -411,10 +626,6 @@ bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
 	return true;
 }
 
-bool OS_Unix::has_environment(const String &p_var) const {
-	return getenv(p_var.utf8().get_data()) != nullptr;
-}
-
 String OS_Unix::get_locale() const {
 	if (!has_environment("LANG")) {
 		return "en";
@@ -428,7 +639,7 @@ String OS_Unix::get_locale() const {
 	return locale;
 }
 
-Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_Unix::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path;
 
 	if (FileAccess::exists(path) && path.is_relative_path()) {
@@ -447,8 +658,10 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 		path = get_executable_path().get_base_dir().path_join("../lib").path_join(p_path.get_file());
 	}
 
-	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ". Error: " + dlerror());
+	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+
+	p_library_handle = dlopen(path.utf8().get_data(), GODOT_DLOPEN_MODE);
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
 	if (r_resolved_path != nullptr) {
 		*r_resolved_path = path;
@@ -464,7 +677,7 @@ Error OS_Unix::close_dynamic_library(void *p_library_handle) {
 	return OK;
 }
 
-Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
+Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional) {
 	const char *error;
 	dlerror(); // Clear existing errors
 
@@ -487,15 +700,31 @@ Error OS_Unix::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
-String OS_Unix::get_environment(const String &p_var) const {
-	if (getenv(p_var.utf8().get_data())) {
-		return getenv(p_var.utf8().get_data());
-	}
-	return "";
+bool OS_Unix::has_environment(const String &p_var) const {
+	return getenv(p_var.utf8().get_data()) != nullptr;
 }
 
-bool OS_Unix::set_environment(const String &p_var, const String &p_value) const {
-	return setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ true) == 0;
+String OS_Unix::get_environment(const String &p_var) const {
+	const char *val = getenv(p_var.utf8().get_data());
+	if (val == nullptr) { // Not set; return empty string
+		return "";
+	}
+	String s;
+	if (s.parse_utf8(val) == OK) {
+		return s;
+	}
+	return String(val); // Not valid UTF-8, so return as-is
+}
+
+void OS_Unix::set_environment(const String &p_var, const String &p_value) const {
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	int err = setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ 1);
+	ERR_FAIL_COND_MSG(err != 0, vformat("Failed setting environment variable '%s', the system is out of memory.", p_var));
+}
+
+void OS_Unix::unset_environment(const String &p_var) const {
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	unsetenv(p_var.utf8().get_data());
 }
 
 String OS_Unix::get_user_data_dir() const {
@@ -531,10 +760,25 @@ String OS_Unix::get_executable_path() const {
 		return OS::get_executable_path();
 	}
 	return b;
-#elif defined(__OpenBSD__) || defined(__NetBSD__)
+#elif defined(__OpenBSD__)
 	char resolved_path[MAXPATHLEN];
 
 	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);
+
+	return String(resolved_path);
+#elif defined(__NetBSD__)
+	int mib[4] = { CTL_KERN, KERN_PROC_ARGS, -1, KERN_PROC_PATHNAME };
+	char buf[MAXPATHLEN];
+	size_t len = sizeof(buf);
+	if (sysctl(mib, 4, buf, &len, nullptr, 0) != 0) {
+		WARN_PRINT("Couldn't get executable path from sysctl");
+		return OS::get_executable_path();
+	}
+
+	// NetBSD does not always return a normalized path. For example if argv[0] is "./a.out" then executable path is "/home/netbsd/./a.out". Normalize with realpath:
+	char resolved_path[MAXPATHLEN];
+
+	realpath(buf, resolved_path);
 
 	return String(resolved_path);
 #elif defined(__FreeBSD__)

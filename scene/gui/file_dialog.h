@@ -38,6 +38,8 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
 
+class GridContainer;
+
 class FileDialog : public ConfirmationDialog {
 	GDCLASS(FileDialog, ConfirmationDialog);
 
@@ -60,7 +62,6 @@ public:
 	typedef void (*RegisterFunc)(FileDialog *);
 
 	static GetIconFunc get_icon_func;
-	static GetIconFunc get_large_icon_func;
 	static RegisterFunc register_func;
 	static RegisterFunc unregister_func;
 
@@ -71,6 +72,7 @@ private:
 	Button *makedir = nullptr;
 	Access access = ACCESS_RESOURCES;
 	VBoxContainer *vbox = nullptr;
+	GridContainer *grid_options = nullptr;
 	FileMode mode;
 	LineEdit *dir = nullptr;
 	HBoxContainer *drives_container = nullptr;
@@ -106,8 +108,9 @@ private:
 
 	static bool default_show_hidden_files;
 	bool show_hidden_files = false;
+	bool use_native_dialog = false;
 
-	bool invalidated = true;
+	bool is_invalidating = false;
 
 	struct ThemeCache {
 		Ref<Texture2D> parent_folder;
@@ -117,6 +120,7 @@ private:
 		Ref<Texture2D> toggle_hidden;
 		Ref<Texture2D> folder;
 		Ref<Texture2D> file;
+		Ref<Texture2D> create_folder;
 
 		Color folder_icon_color;
 		Color file_icon_color;
@@ -127,6 +131,15 @@ private:
 		Color icon_focus_color;
 		Color icon_pressed_color;
 	} theme_cache;
+
+	struct Option {
+		String name;
+		Vector<String> values;
+		int default_idx = 0;
+	};
+	Vector<Option> options;
+	Dictionary selected_options;
+	bool options_dirty = false;
 
 	void update_dir();
 	void update_file_name();
@@ -155,19 +168,33 @@ private:
 	void _change_dir(const String &p_new_dir);
 	void _update_drives(bool p_select = true);
 
+	void _invalidate();
+
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
+	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
+
 	bool _is_open_should_be_disabled();
+
+	TypedArray<Dictionary> _get_options() const;
+	void _update_option_controls();
+	void _option_changed_checkbox_toggled(bool p_pressed, const String &p_name);
+	void _option_changed_item_selected(int p_idx, const String &p_name);
 
 	virtual void _post_popup() override;
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
-	//bind helpers
+
 public:
+	virtual void set_visible(bool p_visible) override;
+	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
+
 	void popup_file_dialog();
 	void clear_filters();
 	void add_filter(const String &p_filter, const String &p_description = "");
@@ -184,11 +211,28 @@ public:
 	void set_current_file(const String &p_file);
 	void set_current_path(const String &p_path);
 
+	String get_option_name(int p_option) const;
+	Vector<String> get_option_values(int p_option) const;
+	int get_option_default(int p_option) const;
+	void set_option_name(int p_option, const String &p_name);
+	void set_option_values(int p_option, const Vector<String> &p_values);
+	void set_option_default(int p_option, int p_index);
+
+	void add_option(const String &p_name, const Vector<String> &p_values, int p_index);
+
+	void set_option_count(int p_count);
+	int get_option_count() const;
+
+	Dictionary get_selected_options() const;
+
 	void set_root_subfolder(const String &p_root);
 	String get_root_subfolder() const;
 
 	void set_mode_overrides_title(bool p_override);
 	bool is_mode_overriding_title() const;
+
+	void set_use_native_dialog(bool p_native);
+	bool get_use_native_dialog() const;
 
 	void set_file_mode(FileMode p_mode);
 	FileMode get_file_mode() const;

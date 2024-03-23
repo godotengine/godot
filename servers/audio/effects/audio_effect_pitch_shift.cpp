@@ -309,7 +309,7 @@ Ref<AudioEffectInstance> AudioEffectPitchShift::instantiate() {
 }
 
 void AudioEffectPitchShift::set_pitch_scale(float p_pitch_scale) {
-	ERR_FAIL_COND(p_pitch_scale <= 0.0);
+	ERR_FAIL_COND(!(p_pitch_scale > 0.0));
 	pitch_scale = p_pitch_scale;
 }
 
@@ -355,13 +355,4 @@ void AudioEffectPitchShift::_bind_methods() {
 	BIND_ENUM_CONSTANT(FFT_SIZE_2048);
 	BIND_ENUM_CONSTANT(FFT_SIZE_4096);
 	BIND_ENUM_CONSTANT(FFT_SIZE_MAX);
-}
-
-AudioEffectPitchShift::AudioEffectPitchShift() {
-	pitch_scale = 1.0;
-	oversampling = 4;
-	fft_size = FFT_SIZE_2048;
-	wet = 0.0;
-	dry = 0.0;
-	filter = false;
 }

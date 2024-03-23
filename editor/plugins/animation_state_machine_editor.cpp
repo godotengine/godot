@@ -35,11 +35,11 @@
 #include "core/io/resource_loader.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
@@ -50,6 +50,9 @@
 #include "scene/gui/tree.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/resources/style_box_flat.h"
+#include "scene/scene_string_names.h"
+#include "scene/theme/theme_db.h"
 
 bool AnimationNodeStateMachineEditor::can_edit(const Ref<AnimationNode> &p_node) {
 	Ref<AnimationNodeStateMachine> ansm = p_node;
@@ -67,15 +70,64 @@ void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 		selected_transition_from = StringName();
 		selected_transition_to = StringName();
 		selected_transition_index = -1;
-		selected_multi_transition = TransitionLine();
 		selected_node = StringName();
 		selected_nodes.clear();
 		_update_mode();
 		_update_graph();
 	}
 
+	if (read_only) {
+		tool_create->set_pressed(false);
+		tool_connect->set_pressed(false);
+	}
+
 	tool_create->set_disabled(read_only);
 	tool_connect->set_disabled(read_only);
+}
+
+String AnimationNodeStateMachineEditor::_get_root_playback_path(String &r_node_directory) {
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	Vector<String> edited_path = AnimationTreeEditor::get_singleton()->get_edited_path();
+
+	String base_path;
+	Vector<String> node_directory_path;
+
+	bool is_playable_anodesm_found = false;
+
+	if (edited_path.size()) {
+		while (!is_playable_anodesm_found) {
+			base_path = String("/").join(edited_path);
+			Ref<AnimationNodeStateMachine> anodesm = !edited_path.size() ? Ref<AnimationNode>(tree->get_root_animation_node().ptr()) : tree->get_root_animation_node()->find_node_by_path(base_path);
+			if (!anodesm.is_valid()) {
+				break;
+			} else {
+				if (anodesm->get_state_machine_type() != AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
+					is_playable_anodesm_found = true;
+				} else {
+					int idx = edited_path.size() - 1;
+					node_directory_path.push_back(edited_path[idx]);
+					edited_path.remove_at(idx);
+				}
+			}
+		}
+	}
+
+	if (is_playable_anodesm_found) {
+		// Return Root/Nested state machine playback.
+		node_directory_path.reverse();
+		r_node_directory = String("/").join(node_directory_path);
+		if (node_directory_path.size()) {
+			r_node_directory += "/";
+		}
+		base_path = !edited_path.size() ? String(SceneStringNames::get_singleton()->parameters_base_path) + "playback" : String(SceneStringNames::get_singleton()->parameters_base_path) + base_path + "/playback";
+	} else {
+		// Hmmm, we have to return Grouped state machine playback...
+		// It will give the user the error that Root/Nested state machine should be retrieved, that would be kind :-)
+		r_node_directory = String();
+		base_path = AnimationTreeEditor::get_singleton()->get_base_path() + "playback";
+	}
+
+	return base_path;
 }
 
 void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEvent> &p_event) {
@@ -84,8 +136,9 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		return;
 	}
 
-	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
-	if (playback.is_null()) {
+	String node_directory;
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(_get_root_playback_path(node_directory));
+	if (!playback.is_valid()) {
 		return;
 	}
 
@@ -99,16 +152,6 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		}
 	}
 
-	// Group selected nodes on a state machine
-	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->is_ctrl_pressed() && !k->is_shift_pressed() && k->get_keycode() == Key::G && !k->is_echo()) {
-		_group_selected_nodes();
-	}
-
-	// Ungroup state machine
-	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->is_ctrl_pressed() && k->is_shift_pressed() && k->get_keycode() == Key::G && !k->is_echo()) {
-		_ungroup_selected_nodes();
-	}
-
 	Ref<InputEventMouseButton> mb = p_event;
 
 	// Add new node
@@ -120,21 +163,20 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	}
 
 	// Select node or push a field inside
-	if (mb.is_valid() && !mb->is_shift_pressed() && !mb->is_ctrl_pressed() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+	if (mb.is_valid() && !mb->is_shift_pressed() && !mb->is_command_or_control_pressed() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		selected_transition_from = StringName();
 		selected_transition_to = StringName();
 		selected_transition_index = -1;
-		selected_multi_transition = TransitionLine();
 		selected_node = StringName();
 
 		for (int i = node_rects.size() - 1; i >= 0; i--) { //inverse to draw order
 			if (node_rects[i].play.has_point(mb->get_position())) { //edit name
 				if (play_mode->get_selected() == 1 || !playback->is_playing()) {
-					//start
-					playback->start(node_rects[i].node_name);
+					// Start
+					playback->start(node_directory + String(node_rects[i].node_name));
 				} else {
-					//travel
-					playback->travel(node_rects[i].node_name);
+					// Travel
+					playback->travel(node_directory + String(node_rects[i].node_name));
 				}
 				state_machine_draw->queue_redraw();
 				return;
@@ -142,8 +184,8 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 			if (!read_only) {
 				if (node_rects[i].name.has_point(mb->get_position()) && state_machine->can_edit_node(node_rects[i].node_name)) { // edit name
-					Ref<StyleBox> line_sb = get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"));
-
+					// TODO: Avoid using strings, expose a method on LineEdit.
+					Ref<StyleBox> line_sb = name_edit->get_theme_stylebox(SNAME("normal"));
 					Rect2 edit_rect = node_rects[i].name;
 					edit_rect.position -= line_sb->get_offset();
 					edit_rect.size += line_sb->get_minimum_size();
@@ -161,7 +203,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			}
 
 			if (node_rects[i].edit.has_point(mb->get_position())) { //edit name
-				call_deferred(SNAME("_open_editor"), node_rects[i].node_name);
+				callable_mp(this, &AnimationNodeStateMachineEditor::_open_editor).call_deferred(node_rects[i].node_name);
 				return;
 			}
 
@@ -213,26 +255,11 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			selected_transition_index = closest;
 
 			Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(closest);
-			EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
-
-			if (!transition_lines[closest].multi_transitions.is_empty()) {
-				selected_transition_index = -1;
-				selected_multi_transition = transition_lines[closest];
-
-				Ref<EditorAnimationMultiTransitionEdit> multi;
-				multi.instantiate();
-				multi->add_transition(selected_transition_from, selected_transition_to, tr);
-
-				for (int i = 0; i < transition_lines[closest].multi_transitions.size(); i++) {
-					int index = transition_lines[closest].multi_transitions[i].transition_index;
-
-					Ref<AnimationNodeStateMachineTransition> transition = state_machine->get_transition(index);
-					StringName from = transition_lines[closest].multi_transitions[i].from_node;
-					StringName to = transition_lines[closest].multi_transitions[i].to_node;
-
-					multi->add_transition(from, to, transition);
-				}
-				EditorNode::get_singleton()->push_item(multi.ptr(), "", true);
+			if (!state_machine->is_transition_across_group(closest)) {
+				EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+			} else {
+				EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+				EditorNode::get_singleton()->push_item(nullptr, "", true);
 			}
 		}
 
@@ -246,7 +273,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			Ref<AnimationNode> an = state_machine->get_node(selected_node);
 			updating = true;
 
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Move Node"));
 
 			for (int i = 0; i < node_rects.size(); i++) {
@@ -296,11 +323,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				EditorNode::get_singleton()->show_warning(TTR("Transition exists!"));
 				connecting = false;
 			} else {
-				if (anodesm.is_valid() || end_node.is_valid()) {
-					_open_connect_menu(mb->get_position());
-				} else {
-					_add_transition();
-				}
+				_add_transition();
 			}
 		} else {
 			_open_menu(mb->get_position());
@@ -319,7 +342,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				ABS(box_selecting_from.x - box_selecting_to.x),
 				ABS(box_selecting_from.y - box_selecting_to.y));
 
-		if (mb->is_ctrl_pressed() || mb->is_shift_pressed()) {
+		if (mb->is_command_or_control_pressed() || mb->is_shift_pressed()) {
 			previous_selected = selected_nodes;
 		} else {
 			selected_nodes.clear();
@@ -429,8 +452,8 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	if (mm.is_valid()) {
 		state_machine_draw->grab_focus();
 
-		String new_over_node;
-		int new_over_node_what = -1;
+		String new_hovered_node_name;
+		HoveredNodeArea new_hovered_node_area = HOVER_NODE_NONE;
 		if (tool_select->is_pressed()) {
 			for (int i = node_rects.size() - 1; i >= 0; i--) { // Inverse to draw order.
 
@@ -439,20 +462,20 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				}
 
 				if (node_rects[i].node.has_point(mm->get_position())) {
-					new_over_node = node_rects[i].node_name;
+					new_hovered_node_name = node_rects[i].node_name;
 					if (node_rects[i].play.has_point(mm->get_position())) {
-						new_over_node_what = 0;
+						new_hovered_node_area = HOVER_NODE_PLAY;
 					} else if (node_rects[i].edit.has_point(mm->get_position())) {
-						new_over_node_what = 1;
+						new_hovered_node_area = HOVER_NODE_EDIT;
 					}
 					break;
 				}
 			}
 		}
 
-		if (new_over_node != over_node || new_over_node_what != over_node_what) {
-			over_node = new_over_node;
-			over_node_what = new_over_node_what;
+		if (new_hovered_node_name != hovered_node_name || new_hovered_node_area != hovered_node_area) {
+			hovered_node_name = new_hovered_node_name;
+			hovered_node_area = new_hovered_node_area;
 			state_machine_draw->queue_redraw();
 		}
 
@@ -481,12 +504,6 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				String from = String(transition_lines[closest].from_node);
 				String to = String(transition_lines[closest].to_node);
 				String tooltip = from + " -> " + to;
-
-				for (int i = 0; i < transition_lines[closest].multi_transitions.size(); i++) {
-					from = String(transition_lines[closest].multi_transitions[i].from_node);
-					to = String(transition_lines[closest].multi_transitions[i].to_node);
-					tooltip += "\n" + from + " -> " + to;
-				}
 				state_machine_draw->set_tooltip_text(tooltip);
 			} else {
 				state_machine_draw->set_tooltip_text("");
@@ -522,222 +539,21 @@ Control::CursorShape AnimationNodeStateMachineEditor::get_cursor_shape(const Poi
 	return cursor_shape;
 }
 
-void AnimationNodeStateMachineEditor::_group_selected_nodes() {
-	if (!selected_nodes.is_empty()) {
-		if (selected_nodes.size() == 1 && (*selected_nodes.begin() == state_machine->start_node || *selected_nodes.begin() == state_machine->end_node))
-			return;
-
-		Ref<AnimationNodeStateMachine> group_sm = memnew(AnimationNodeStateMachine);
-		Vector2 group_position;
-
-		Vector<NodeUR> nodes_ur;
-		Vector<TransitionUR> transitions_ur;
-
-		int base = 1;
-		String base_name = group_sm->get_caption();
-		String group_name = base_name;
-
-		while (state_machine->has_node(group_name) && !selected_nodes.has(group_name)) {
-			base++;
-			group_name = base_name + " " + itos(base);
-		}
-
-		updating = true;
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-		undo_redo->create_action("Group");
-
-		// Move selected nodes to the new state machine
-		for (const StringName &E : selected_nodes) {
-			if (!state_machine->can_edit_node(E)) {
-				continue;
-			}
-
-			Ref<AnimationNode> node = state_machine->get_node(E);
-			Vector2 node_position = state_machine->get_node_position(E);
-			group_position += node_position;
-
-			NodeUR new_node;
-			new_node.name = E;
-			new_node.node = node;
-			new_node.position = node_position;
-
-			nodes_ur.push_back(new_node);
-		}
-
-		// Add the transitions to the new state machine
-		for (int i = 0; i < state_machine->get_transition_count(); i++) {
-			String from = state_machine->get_transition_from(i);
-			String to = state_machine->get_transition_to(i);
-
-			String local_from = from.get_slicec('/', 0);
-			String local_to = to.get_slicec('/', 0);
-
-			String old_from = from;
-			String old_to = to;
-
-			bool from_selected = false;
-			bool to_selected = false;
-
-			if (selected_nodes.has(local_from) && local_from != state_machine->start_node) {
-				from_selected = true;
-			}
-			if (selected_nodes.has(local_to) && local_to != state_machine->end_node) {
-				to_selected = true;
-			}
-			if (!from_selected && !to_selected) {
-				continue;
-			}
-
-			Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(i);
-
-			if (!from_selected) {
-				from = "../" + old_from;
-			}
-			if (!to_selected) {
-				to = "../" + old_to;
-			}
-
-			TransitionUR new_tr;
-			new_tr.new_from = from;
-			new_tr.new_to = to;
-			new_tr.old_from = old_from;
-			new_tr.old_to = old_to;
-			new_tr.transition = tr;
-
-			transitions_ur.push_back(new_tr);
-		}
-
-		for (int i = 0; i < nodes_ur.size(); i++) {
-			undo_redo->add_do_method(state_machine.ptr(), "remove_node", nodes_ur[i].name);
-			undo_redo->add_undo_method(group_sm.ptr(), "remove_node", nodes_ur[i].name);
-		}
-
-		undo_redo->add_do_method(state_machine.ptr(), "add_node", group_name, group_sm, group_position / nodes_ur.size());
-		undo_redo->add_undo_method(state_machine.ptr(), "remove_node", group_name);
-
-		for (int i = 0; i < nodes_ur.size(); i++) {
-			undo_redo->add_do_method(group_sm.ptr(), "add_node", nodes_ur[i].name, nodes_ur[i].node, nodes_ur[i].position);
-			undo_redo->add_undo_method(state_machine.ptr(), "add_node", nodes_ur[i].name, nodes_ur[i].node, nodes_ur[i].position);
-		}
-
-		for (int i = 0; i < transitions_ur.size(); i++) {
-			undo_redo->add_do_method(group_sm.ptr(), "add_transition", transitions_ur[i].new_from, transitions_ur[i].new_to, transitions_ur[i].transition);
-			undo_redo->add_undo_method(state_machine.ptr(), "add_transition", transitions_ur[i].old_from, transitions_ur[i].old_to, transitions_ur[i].transition);
-		}
-
-		undo_redo->add_do_method(this, "_update_graph");
-		undo_redo->add_undo_method(this, "_update_graph");
-		undo_redo->commit_action();
-		updating = false;
-
-		selected_nodes.clear();
-		selected_nodes.insert(group_name);
-		state_machine_draw->queue_redraw();
-		accept_event();
-		_update_mode();
-	}
-}
-
-void AnimationNodeStateMachineEditor::_ungroup_selected_nodes() {
-	bool find = false;
-	HashSet<StringName> new_selected_nodes;
-
-	for (const StringName &E : selected_nodes) {
-		Ref<AnimationNodeStateMachine> group_sm = state_machine->get_node(E);
-
-		if (group_sm.is_valid()) {
-			find = true;
-
-			Vector2 group_position = state_machine->get_node_position(E);
-			StringName group_name = E;
-
-			List<AnimationNode::ChildNode> nodes;
-			group_sm->get_child_nodes(&nodes);
-
-			Vector<NodeUR> nodes_ur;
-			Vector<TransitionUR> transitions_ur;
-
-			updating = true;
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-			undo_redo->create_action("Ungroup");
-
-			// Move all child nodes to current state machine
-			for (int i = 0; i < nodes.size(); i++) {
-				if (!group_sm->can_edit_node(nodes[i].name)) {
-					continue;
-				}
-
-				Vector2 node_position = group_sm->get_node_position(nodes[i].name);
-
-				NodeUR new_node;
-				new_node.name = nodes[i].name;
-				new_node.position = node_position;
-				new_node.node = nodes[i].node;
-
-				nodes_ur.push_back(new_node);
-			}
-
-			for (int i = 0; i < group_sm->get_transition_count(); i++) {
-				String from = group_sm->get_transition_from(i);
-				String to = group_sm->get_transition_to(i);
-				Ref<AnimationNodeStateMachineTransition> tr = group_sm->get_transition(i);
-
-				TransitionUR new_tr;
-				new_tr.new_from = from.replace_first("../", "");
-				new_tr.new_to = to.replace_first("../", "");
-				new_tr.old_from = from;
-				new_tr.old_to = to;
-				new_tr.transition = tr;
-
-				transitions_ur.push_back(new_tr);
-			}
-
-			for (int i = 0; i < nodes_ur.size(); i++) {
-				undo_redo->add_do_method(group_sm.ptr(), "remove_node", nodes_ur[i].name);
-				undo_redo->add_undo_method(state_machine.ptr(), "remove_node", nodes_ur[i].name);
-			}
-
-			undo_redo->add_do_method(state_machine.ptr(), "remove_node", group_name);
-			undo_redo->add_undo_method(state_machine.ptr(), "add_node", group_name, group_sm, group_position);
-
-			for (int i = 0; i < nodes_ur.size(); i++) {
-				new_selected_nodes.insert(nodes_ur[i].name);
-				undo_redo->add_do_method(state_machine.ptr(), "add_node", nodes_ur[i].name, nodes_ur[i].node, nodes_ur[i].position);
-				undo_redo->add_undo_method(group_sm.ptr(), "add_node", nodes_ur[i].name, nodes_ur[i].node, nodes_ur[i].position);
-			}
-
-			for (int i = 0; i < transitions_ur.size(); i++) {
-				if (transitions_ur[i].old_from != state_machine->start_node && transitions_ur[i].old_to != state_machine->end_node) {
-					undo_redo->add_do_method(state_machine.ptr(), "add_transition", transitions_ur[i].new_from, transitions_ur[i].new_to, transitions_ur[i].transition);
-				}
-
-				undo_redo->add_undo_method(group_sm.ptr(), "add_transition", transitions_ur[i].old_from, transitions_ur[i].old_to, transitions_ur[i].transition);
-			}
-
-			for (int i = 0; i < state_machine->get_transition_count(); i++) {
-				String from = state_machine->get_transition_from(i);
-				String to = state_machine->get_transition_to(i);
-				Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(i);
-
-				if (from == group_name || to == group_name) {
-					undo_redo->add_undo_method(state_machine.ptr(), "add_transition", from, to, tr);
-				}
-			}
-
-			undo_redo->add_do_method(this, "_update_graph");
-			undo_redo->add_undo_method(this, "_update_graph");
-			undo_redo->commit_action();
-			updating = false;
-		}
+String AnimationNodeStateMachineEditor::get_tooltip(const Point2 &p_pos) const {
+	if (hovered_node_name == StringName()) {
+		return AnimationTreeNodeEditorPlugin::get_tooltip(p_pos);
 	}
 
-	if (find) {
-		selected_nodes = new_selected_nodes;
-		selected_node = StringName();
-		state_machine_draw->queue_redraw();
-		accept_event();
-		_update_mode();
+	String tooltip_text;
+	if (hovered_node_area == HOVER_NODE_PLAY) {
+		tooltip_text = vformat(TTR("Play/Travel to %s"), hovered_node_name);
+	} else if (hovered_node_area == HOVER_NODE_EDIT) {
+		tooltip_text = vformat(TTR("Edit %s"), hovered_node_name);
+	} else {
+		tooltip_text = hovered_node_name;
 	}
+
+	return tooltip_text;
 }
 
 void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
@@ -746,26 +562,25 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 		return;
 	}
 
-	menu->clear();
+	menu->clear(false);
 	animations_menu->clear();
 	animations_to_add.clear();
-	List<StringName> classes;
-	classes.sort_custom<StringName::AlphCompare>();
 
-	ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
-	menu->add_submenu_item(TTR("Add Animation"), "animations");
-
-	if (tree->has_node(tree->get_animation_player())) {
-		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
-		if (ap) {
-			List<StringName> names;
-			ap->get_animation_list(&names);
-			for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-				animations_menu->add_icon_item(get_theme_icon("Animation", "EditorIcons"), E->get());
-				animations_to_add.push_back(E->get());
-			}
+	List<StringName> animation_names;
+	tree->get_animation_list(&animation_names);
+	menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
+	if (animation_names.is_empty()) {
+		menu->set_item_disabled(menu->get_item_idx_from_text(TTR("Add Animation")), true);
+	} else {
+		for (const StringName &name : animation_names) {
+			animations_menu->add_icon_item(theme_cache.animation_icon, name);
+			animations_to_add.push_back(name);
 		}
 	}
+
+	List<StringName> classes;
+	ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
+	classes.sort_custom<StringName::AlphCompare>();
 
 	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
 		String name = String(E->get()).replace_first("AnimationNode", "");
@@ -790,83 +605,8 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 	add_node_pos = p_position / EDSCALE + state_machine->get_graph_offset();
 }
 
-void AnimationNodeStateMachineEditor::_open_connect_menu(const Vector2 &p_position) {
-	ERR_FAIL_COND(connecting_to_node == StringName());
-
-	Ref<AnimationNode> node = state_machine->get_node(connecting_to_node);
-	Ref<AnimationNodeStateMachine> anodesm = node;
-	Ref<AnimationNodeEndState> end_node = node;
-	ERR_FAIL_COND(!anodesm.is_valid() && !end_node.is_valid());
-
-	connect_menu->clear();
-	state_machine_menu->clear();
-	end_menu->clear();
-	nodes_to_connect.clear();
-
-	for (int i = connect_menu->get_child_count() - 1; i >= 0; i--) {
-		Node *child = connect_menu->get_child(i);
-
-		if (child->is_class("PopupMenu")) {
-			connect_menu->remove_child(child);
-		}
-	}
-
-	connect_menu->reset_size();
-	state_machine_menu->reset_size();
-	end_menu->reset_size();
-
-	if (anodesm.is_valid()) {
-		_create_submenu(connect_menu, anodesm, connecting_to_node, connecting_to_node);
-	} else {
-		_create_submenu(connect_menu, state_machine, connecting_to_node, connecting_to_node, true);
-	}
-
-	connect_menu->add_submenu_item(TTR("To") + " Animation", connecting_to_node);
-
-	if (state_machine_menu->get_item_count() > 0 || !end_node.is_valid()) {
-		connect_menu->add_submenu_item(TTR("To") + " StateMachine", "state_machines");
-		connect_menu->add_child(state_machine_menu);
-	}
-
-	if (end_node.is_valid()) {
-		connect_menu->add_submenu_item(TTR("To") + " End", "end_nodes");
-		connect_menu->add_child(end_menu);
-	} else {
-		state_machine_menu->add_item(connecting_to_node, nodes_to_connect.size());
-	}
-
-	nodes_to_connect.push_back(connecting_to_node);
-
-	if (nodes_to_connect.size() == 1) {
-		_add_transition();
-		return;
-	}
-
-	connect_menu->set_position(state_machine_draw->get_screen_transform().xform(p_position));
-	connect_menu->popup();
-}
-
-bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path, bool from_root, Vector<Ref<AnimationNodeStateMachine>> p_parents) {
+bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path) {
 	String prev_path;
-	Vector<Ref<AnimationNodeStateMachine>> parents = p_parents;
-
-	if (from_root && p_nodesm->get_prev_state_machine() == nullptr) {
-		return false;
-	}
-
-	if (from_root) {
-		AnimationNodeStateMachine *prev = p_nodesm->get_prev_state_machine();
-
-		while (prev != nullptr) {
-			parents.push_back(prev);
-			p_nodesm = Ref<AnimationNodeStateMachine>(prev);
-			prev_path += "../";
-			prev = prev->get_prev_state_machine();
-		}
-		end_menu->add_item("Root", nodes_to_connect.size());
-		nodes_to_connect.push_back(prev_path + state_machine->end_node);
-		prev_path.remove_at(prev_path.size() - 1);
-	}
 
 	List<StringName> nodes;
 	p_nodesm->get_node_list(&nodes);
@@ -881,12 +621,7 @@ bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<Ani
 		if (p_nodesm->can_edit_node(E)) {
 			Ref<AnimationNodeStateMachine> ansm = p_nodesm->get_node(E);
 
-			String path;
-			if (from_root) {
-				path = prev_path + "/" + E;
-			} else {
-				path = String(p_path) + "/" + E;
-			}
+			String path = String(p_path) + "/" + E;
 
 			if (ansm == state_machine) {
 				end_menu->add_item(E, nodes_to_connect.size());
@@ -895,25 +630,10 @@ bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<Ani
 			}
 
 			if (ansm.is_valid()) {
-				bool parent_found = false;
+				state_machine_menu->add_item(E, nodes_to_connect.size());
+				nodes_to_connect.push_back(path);
 
-				for (int i = 0; i < parents.size(); i++) {
-					if (parents[i] == ansm) {
-						path = path.replace_first("/../" + E, "");
-						parent_found = true;
-						break;
-					}
-				}
-
-				if (parent_found) {
-					end_menu->add_item(E, nodes_to_connect.size());
-					nodes_to_connect.push_back(path + "/" + state_machine->end_node);
-				} else {
-					state_machine_menu->add_item(E, nodes_to_connect.size());
-					nodes_to_connect.push_back(path);
-				}
-
-				if (_create_submenu(nodes_menu, ansm, E, path, false, parents)) {
+				if (_create_submenu(nodes_menu, ansm, E, path)) {
 					nodes_menu->add_submenu_item(E, E);
 					node_added = true;
 				}
@@ -935,11 +655,10 @@ void AnimationNodeStateMachineEditor::_stop_connecting() {
 
 void AnimationNodeStateMachineEditor::_delete_selected() {
 	TreeItem *item = delete_tree->get_next_selected(nullptr);
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	while (item) {
 		if (!updating) {
 			updating = true;
-			selected_multi_transition = TransitionLine();
 			undo_redo->create_action("Transition(s) Removed");
 		}
 
@@ -959,18 +678,10 @@ void AnimationNodeStateMachineEditor::_delete_selected() {
 }
 
 void AnimationNodeStateMachineEditor::_delete_all() {
-	Vector<TransitionLine> multi_transitions = selected_multi_transition.multi_transitions;
-	selected_multi_transition = TransitionLine();
-
 	updating = true;
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action("Transition(s) Removed");
 	_erase_selected(true);
-	for (int i = 0; i < multi_transitions.size(); i++) {
-		selected_transition_from = multi_transitions[i].from_node;
-		selected_transition_to = multi_transitions[i].to_node;
-		_erase_selected(true);
-	}
 	undo_redo->commit_action();
 	updating = false;
 
@@ -1018,9 +729,9 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 		String type = menu->get_item_metadata(p_index);
 
 		Object *obj = ClassDB::instantiate(type);
-		ERR_FAIL_COND(!obj);
+		ERR_FAIL_NULL(obj);
 		AnimationNode *an = Object::cast_to<AnimationNode>(obj);
-		ERR_FAIL_COND(!an);
+		ERR_FAIL_NULL(an);
 
 		node = Ref<AnimationNode>(an);
 		base_name = type.replace_first("AnimationNode", "");
@@ -1043,7 +754,7 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 	}
 
 	updating = true;
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Node and Transition"));
 	undo_redo->add_do_method(state_machine.ptr(), "add_node", name, node, add_node_pos);
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
@@ -1070,7 +781,7 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 	}
 
 	updating = true;
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Node and Transition"));
 	undo_redo->add_do_method(state_machine.ptr(), "add_node", name, anim, add_node_pos);
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
@@ -1100,7 +811,7 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 		tr->set_advance_mode(auto_advance->is_pressed() ? AnimationNodeStateMachineTransition::AdvanceMode::ADVANCE_MODE_AUTO : AnimationNodeStateMachineTransition::AdvanceMode::ADVANCE_MODE_ENABLED);
 		tr->set_switch_mode(AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()));
 
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		if (!p_nested_action) {
 			updating = true;
 			undo_redo->create_action(TTR("Add Transition"));
@@ -1120,45 +831,42 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 		selected_transition_to = connecting_to_node;
 		selected_transition_index = transition_lines.size();
 
-		EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+		if (!state_machine->is_transition_across_group(selected_transition_index)) {
+			EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+		} else {
+			EditorNode::get_singleton()->push_item(tr.ptr(), "", true);
+			EditorNode::get_singleton()->push_item(nullptr, "", true);
+		}
 		_update_mode();
 	}
 
 	connecting = false;
 }
 
-void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, bool p_auto_advance, bool p_multi_transitions) {
-	Color linecolor = get_theme_color(SNAME("font_color"), SNAME("Label"));
-	Color icon_color(1, 1, 1);
-	Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-
-	if (!p_enabled) {
-		linecolor.a *= 0.2;
-		icon_color.a *= 0.2;
-		accent.a *= 0.6;
-	}
-
-	const Ref<Texture2D> icons[6] = {
-		get_theme_icon(SNAME("TransitionImmediateBig"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("TransitionSyncBig"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("TransitionEndBig"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("TransitionImmediateAutoBig"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("TransitionSyncAutoBig"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("TransitionEndAutoBig"), SNAME("EditorIcons"))
-	};
-
-	if (p_selected) {
-		state_machine_draw->draw_line(p_from, p_to, accent, 6);
-	}
+void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_is_across_group) {
+	Color line_color = p_enabled ? theme_cache.transition_color : theme_cache.transition_disabled_color;
+	Color icon_color = p_enabled ? theme_cache.transition_icon_color : theme_cache.transition_icon_disabled_color;
+	Color highlight_color = p_enabled ? theme_cache.highlight_color : theme_cache.highlight_disabled_color;
 
 	if (p_travel) {
-		linecolor = accent;
-		linecolor.set_hsv(1.0, linecolor.get_s(), linecolor.get_v());
+		line_color = highlight_color;
 	}
 
-	state_machine_draw->draw_line(p_from, p_to, linecolor, 2);
+	if (p_selected) {
+		state_machine_draw->draw_line(p_from, p_to, highlight_color, 6, true);
+	}
+	state_machine_draw->draw_line(p_from, p_to, line_color, 2, true);
 
-	Ref<Texture2D> icon = icons[p_mode + (p_auto_advance ? 3 : 0)];
+	if (p_fade_ratio > 0.0) {
+		Color fade_line_color = highlight_color;
+		fade_line_color.set_hsv(1.0, fade_line_color.get_s(), fade_line_color.get_v());
+		state_machine_draw->draw_line(p_from, p_from.lerp(p_to, p_fade_ratio), fade_line_color, 2);
+	}
+
+	const int ICON_COUNT = sizeof(theme_cache.transition_icons) / sizeof(*theme_cache.transition_icons);
+	int icon_index = p_mode + (p_auto_advance ? ICON_COUNT / 2 : 0);
+	ERR_FAIL_COND(icon_index >= ICON_COUNT);
+	Ref<Texture2D> icon = theme_cache.transition_icons[icon_index];
 
 	Transform2D xf;
 	xf.columns[0] = (p_to - p_from).normalized();
@@ -1166,11 +874,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 	xf.columns[2] = (p_from + p_to) * 0.5 - xf.columns[1] * icon->get_height() * 0.5 - xf.columns[0] * icon->get_height() * 0.5;
 
 	state_machine_draw->draw_set_transform_matrix(xf);
-	if (p_multi_transitions) {
-		state_machine_draw->draw_texture(icons[0], Vector2(-icon->get_width(), 0), icon_color);
-		state_machine_draw->draw_texture(icons[0], Vector2(), icon_color);
-		state_machine_draw->draw_texture(icons[0], Vector2(icon->get_width(), 0), icon_color);
-	} else {
+	if (!p_is_across_group) {
 		state_machine_draw->draw_texture(icon, Vector2(), icon_color);
 	}
 	state_machine_draw->draw_set_transform_matrix(Transform2D());
@@ -1206,43 +910,21 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		return;
 	}
 
-	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
-
-	Ref<StyleBoxFlat> style = get_theme_stylebox(SNAME("state_machine_frame"), SNAME("GraphNode"));
-	Ref<StyleBoxFlat> style_selected = get_theme_stylebox(SNAME("state_machine_selected_frame"), SNAME("GraphNode"));
-
-	Ref<Font> font = get_theme_font(SNAME("title_font"), SNAME("GraphNode"));
-	int font_size = get_theme_font_size(SNAME("title_font_size"), SNAME("GraphNode"));
-	Color font_color = get_theme_color(SNAME("title_color"), SNAME("GraphNode"));
-	Ref<Texture2D> play = get_theme_icon(SNAME("Play"), SNAME("EditorIcons"));
-	Ref<Texture2D> edit = get_theme_icon(SNAME("Edit"), SNAME("EditorIcons"));
-	Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
-	Color linecolor = get_theme_color(SNAME("font_color"), SNAME("Label"));
-	linecolor.a *= 0.3;
-	Ref<StyleBox> playing_overlay = get_theme_stylebox(SNAME("position"), SNAME("GraphNode"));
-
-	Ref<StyleBoxFlat> start_overlay = style->duplicate();
-	start_overlay->set_border_width_all(1 * EDSCALE);
-	start_overlay->set_border_color(Color::html("#80f6cf"));
-
-	Ref<StyleBoxFlat> end_overlay = style->duplicate();
-	end_overlay->set_border_width_all(1 * EDSCALE);
-	end_overlay->set_border_color(Color::html("#f26661"));
-
 	bool playing = false;
 	StringName current;
 	StringName blend_from;
 	Vector<StringName> travel_path;
 
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 	if (playback.is_valid()) {
 		playing = playback->is_playing();
 		current = playback->get_current_node();
-		blend_from = playback->get_blend_from_node();
+		blend_from = playback->get_fading_from_node();
 		travel_path = playback->get_travel_path();
 	}
 
 	if (state_machine_draw->has_focus()) {
-		state_machine_draw->draw_rect(Rect2(Point2(), state_machine_draw->get_size()), accent, false);
+		state_machine_draw->draw_rect(Rect2(Point2(), state_machine_draw->get_size()), theme_cache.highlight_color, false);
 	}
 	int sep = 3 * EDSCALE;
 
@@ -1257,29 +939,30 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Vector2 from = (state_machine->get_node_position(selected_node) * EDSCALE) + drag_ofs - state_machine->get_graph_offset() * EDSCALE;
 		if (snap_x != StringName()) {
 			Vector2 to = (state_machine->get_node_position(snap_x) * EDSCALE) - state_machine->get_graph_offset() * EDSCALE;
-			state_machine_draw->draw_line(from, to, linecolor, 2);
+			state_machine_draw->draw_line(from, to, theme_cache.guideline_color, 2);
 		}
 		if (snap_y != StringName()) {
 			Vector2 to = (state_machine->get_node_position(snap_y) * EDSCALE) - state_machine->get_graph_offset() * EDSCALE;
-			state_machine_draw->draw_line(from, to, linecolor, 2);
+			state_machine_draw->draw_line(from, to, theme_cache.guideline_color, 2);
 		}
 	}
 
 	//pre pass nodes so we know the rectangles
 	for (const StringName &E : nodes) {
-		Ref<AnimationNode> anode = state_machine->get_node(E);
 		String name = E;
-		bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
-		Ref<StyleBox> sb = selected_nodes.has(E) ? style_selected : style;
+		int name_string_size = theme_cache.node_title_font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.node_title_font_size).width;
 
-		Size2 s = sb->get_minimum_size();
-		int strsize = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
-		s.width += strsize;
-		s.height += MAX(font->get_height(font_size), play->get_height());
-		s.width += sep + play->get_width();
+		Ref<AnimationNode> anode = state_machine->get_node(name);
+		bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
+		bool is_selected = selected_nodes.has(name);
+
+		Size2 s = (is_selected ? theme_cache.node_frame_selected : theme_cache.node_frame)->get_minimum_size();
+		s.width += name_string_size;
+		s.height += MAX(theme_cache.node_title_font->get_height(theme_cache.node_title_font_size), theme_cache.play_node->get_height());
+		s.width += sep + theme_cache.play_node->get_width();
 
 		if (needs_editor) {
-			s.width += sep + edit->get_width();
+			s.width += sep + theme_cache.edit_node->get_width();
 		}
 
 		Vector2 offset;
@@ -1327,27 +1010,24 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 			}
 		}
 
-		_connection_draw(from, to, AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()), true, false, false, false, false);
+		_connection_draw(from, to, AnimationNodeStateMachineTransition::SwitchMode(switch_mode->get_selected()), true, false, false, 0.0, false, false);
 	}
 
-	Ref<Texture2D> tr_reference_icon = get_theme_icon(SNAME("TransitionImmediateBig"), SNAME("EditorIcons"));
-	float tr_bidi_offset = int(tr_reference_icon->get_height() * 0.8);
+	// TransitionImmediateBig
+	float tr_bidi_offset = int(theme_cache.transition_icons[0]->get_height() * 0.8);
 
 	//draw transition lines
 	for (int i = 0; i < state_machine->get_transition_count(); i++) {
 		TransitionLine tl;
 		tl.transition_index = i;
+
 		tl.from_node = state_machine->get_transition_from(i);
-		StringName local_from = String(tl.from_node).get_slicec('/', 0);
-		local_from = local_from == ".." ? state_machine->start_node : local_from;
-		Vector2 ofs_from = (dragging_selected && selected_nodes.has(local_from)) ? drag_ofs : Vector2();
-		tl.from = (state_machine->get_node_position(local_from) * EDSCALE) + ofs_from - state_machine->get_graph_offset() * EDSCALE;
+		Vector2 ofs_from = (dragging_selected && selected_nodes.has(tl.from_node)) ? drag_ofs : Vector2();
+		tl.from = (state_machine->get_node_position(tl.from_node) * EDSCALE) + ofs_from - state_machine->get_graph_offset() * EDSCALE;
 
 		tl.to_node = state_machine->get_transition_to(i);
-		StringName local_to = String(tl.to_node).get_slicec('/', 0);
-		local_to = local_to == ".." ? state_machine->end_node : local_to;
-		Vector2 ofs_to = (dragging_selected && selected_nodes.has(local_to)) ? drag_ofs : Vector2();
-		tl.to = (state_machine->get_node_position(local_to) * EDSCALE) + ofs_to - state_machine->get_graph_offset() * EDSCALE;
+		Vector2 ofs_to = (dragging_selected && selected_nodes.has(tl.to_node)) ? drag_ofs : Vector2();
+		tl.to = (state_machine->get_node_position(tl.to_node) * EDSCALE) + ofs_to - state_machine->get_graph_offset() * EDSCALE;
 
 		Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(i);
 		tl.disabled = bool(tr->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED);
@@ -1357,35 +1037,38 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		tl.mode = tr->get_switch_mode();
 		tl.width = tr_bidi_offset;
 		tl.travel = false;
+		tl.fade_ratio = 0.0;
 		tl.hidden = false;
+		tl.is_across_group = state_machine->is_transition_across_group(i);
 
-		if (state_machine->has_local_transition(local_to, local_from)) { //offset if same exists
+		if (state_machine->has_transition(tl.to_node, tl.from_node)) { //offset if same exists
 			Vector2 offset = -(tl.from - tl.to).normalized().orthogonal() * tr_bidi_offset;
 			tl.from += offset;
 			tl.to += offset;
 		}
 
 		for (int j = 0; j < node_rects.size(); j++) {
-			if (node_rects[j].node_name == local_from) {
+			if (node_rects[j].node_name == tl.from_node) {
 				_clip_src_line_to_rect(tl.from, tl.to, node_rects[j].node);
 			}
-			if (node_rects[j].node_name == local_to) {
+			if (node_rects[j].node_name == tl.to_node) {
 				_clip_dst_line_to_rect(tl.from, tl.to, node_rects[j].node);
 			}
 		}
 
 		tl.selected = selected_transition_from == tl.from_node && selected_transition_to == tl.to_node;
 
-		if (blend_from == local_from && current == local_to) {
+		if (blend_from == tl.from_node && current == tl.to_node) {
 			tl.travel = true;
+			tl.fade_ratio = MIN(1.0, fading_pos / fading_time);
 		}
 
 		if (travel_path.size()) {
-			if (current == local_from && travel_path[0] == local_to) {
+			if (current == tl.from_node && travel_path[0] == tl.to_node) {
 				tl.travel = true;
 			} else {
 				for (int j = 0; j < travel_path.size() - 1; j++) {
-					if (travel_path[j] == local_from && travel_path[j + 1] == local_to) {
+					if (travel_path[j] == tl.from_node && travel_path[j + 1] == tl.to_node) {
 						tl.travel = true;
 						break;
 					}
@@ -1399,17 +1082,11 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 			tl.auto_advance = true;
 		}
 
-		// check if already have this local transition
+		// check if already have this transition
 		for (int j = 0; j < transition_lines.size(); j++) {
-			StringName from = String(transition_lines[j].from_node).get_slicec('/', 0);
-			StringName to = String(transition_lines[j].to_node).get_slicec('/', 0);
-			from = from == ".." ? state_machine->start_node : from;
-			to = to == ".." ? state_machine->end_node : to;
-
-			if (from == local_from && to == local_to) {
+			if (transition_lines[j].from_node == tl.from_node && transition_lines[j].to_node == tl.to_node) {
 				tl.hidden = true;
 				transition_lines.write[j].disabled = transition_lines[j].disabled && tl.disabled;
-				transition_lines.write[j].multi_transitions.push_back(tl);
 			}
 		}
 		transition_lines.push_back(tl);
@@ -1418,68 +1095,67 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	for (int i = 0; i < transition_lines.size(); i++) {
 		TransitionLine tl = transition_lines[i];
 		if (!tl.hidden) {
-			_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, tl.selected, tl.travel, tl.auto_advance, !tl.multi_transitions.is_empty());
+			_connection_draw(tl.from, tl.to, tl.mode, !tl.disabled, tl.selected, tl.travel, tl.fade_ratio, tl.auto_advance, tl.is_across_group);
 		}
 	}
 
 	//draw actual nodes
 	for (int i = 0; i < node_rects.size(); i++) {
 		String name = node_rects[i].node_name;
+		int name_string_size = theme_cache.node_title_font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.node_title_font_size).width;
+
 		Ref<AnimationNode> anode = state_machine->get_node(name);
 		bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
-		Ref<StyleBox> sb = selected_nodes.has(name) ? style_selected : style;
-		int strsize = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
-		NodeRect &nr = node_rects.write[i];
+		bool is_selected = selected_nodes.has(name);
 
+		NodeRect &nr = node_rects.write[i];
 		Vector2 offset = nr.node.position;
 		int h = nr.node.size.height;
 
 		//prepre rect
 
 		//now scroll it to draw
-		state_machine_draw->draw_style_box(sb, nr.node);
+		Ref<StyleBox> node_frame_style = is_selected ? theme_cache.node_frame_selected : theme_cache.node_frame;
+		state_machine_draw->draw_style_box(node_frame_style, nr.node);
 
-		if (state_machine->start_node == name) {
-			state_machine_draw->draw_style_box(sb == style_selected ? style_selected : start_overlay, nr.node);
+		if (!is_selected && state_machine->start_node == name) {
+			state_machine_draw->draw_style_box(theme_cache.node_frame_start, nr.node);
 		}
-
-		if (state_machine->end_node == name) {
-			state_machine_draw->draw_style_box(sb == style_selected ? style_selected : end_overlay, nr.node);
+		if (!is_selected && state_machine->end_node == name) {
+			state_machine_draw->draw_style_box(theme_cache.node_frame_end, nr.node);
 		}
-
 		if (playing && (blend_from == name || current == name || travel_path.has(name))) {
-			state_machine_draw->draw_style_box(playing_overlay, nr.node);
+			state_machine_draw->draw_style_box(theme_cache.node_frame_playing, nr.node);
 		}
 
-		offset.x += sb->get_offset().x;
+		offset.x += node_frame_style->get_offset().x;
 
-		nr.play.position = offset + Vector2(0, (h - play->get_height()) / 2).floor();
-		nr.play.size = play->get_size();
+		nr.play.position = offset + Vector2(0, (h - theme_cache.play_node->get_height()) / 2).floor();
+		nr.play.size = theme_cache.play_node->get_size();
 
-		Ref<Texture2D> play_tex = play;
-
-		if (over_node == name && over_node_what == 0) {
-			state_machine_draw->draw_texture(play_tex, nr.play.position, accent);
+		if (hovered_node_name == name && hovered_node_area == HOVER_NODE_PLAY) {
+			state_machine_draw->draw_texture(theme_cache.play_node, nr.play.position, theme_cache.highlight_color);
 		} else {
-			state_machine_draw->draw_texture(play_tex, nr.play.position);
+			state_machine_draw->draw_texture(theme_cache.play_node, nr.play.position);
 		}
 
-		offset.x += sep + play->get_width();
+		offset.x += sep + theme_cache.play_node->get_width();
 
-		nr.name.position = offset + Vector2(0, (h - font->get_height(font_size)) / 2).floor();
-		nr.name.size = Vector2(strsize, font->get_height(font_size));
+		nr.name.position = offset + Vector2(0, (h - theme_cache.node_title_font->get_height(theme_cache.node_title_font_size)) / 2).floor();
+		nr.name.size = Vector2(name_string_size, theme_cache.node_title_font->get_height(theme_cache.node_title_font_size));
 
-		state_machine_draw->draw_string(font, nr.name.position + Vector2(0, font->get_ascent(font_size)), name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
-		offset.x += strsize + sep;
+		state_machine_draw->draw_string(theme_cache.node_title_font, nr.name.position + Vector2(0, theme_cache.node_title_font->get_ascent(theme_cache.node_title_font_size)), name, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.node_title_font_size, theme_cache.node_title_font_color);
+		offset.x += name_string_size + sep;
 
+		nr.can_edit = needs_editor;
 		if (needs_editor) {
-			nr.edit.position = offset + Vector2(0, (h - edit->get_height()) / 2).floor();
-			nr.edit.size = edit->get_size();
+			nr.edit.position = offset + Vector2(0, (h - theme_cache.edit_node->get_height()) / 2).floor();
+			nr.edit.size = theme_cache.edit_node->get_size();
 
-			if (over_node == name && over_node_what == 1) {
-				state_machine_draw->draw_texture(edit, nr.edit.position, accent);
+			if (hovered_node_name == name && hovered_node_area == HOVER_NODE_EDIT) {
+				state_machine_draw->draw_texture(theme_cache.edit_node, nr.edit.position, theme_cache.highlight_color);
 			} else {
-				state_machine_draw->draw_texture(edit, nr.edit.position);
+				state_machine_draw->draw_texture(theme_cache.edit_node, nr.edit.position);
 			}
 		}
 	}
@@ -1508,25 +1184,24 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	state_machine_play_pos->queue_redraw();
 }
 
-void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
+void AnimationNodeStateMachineEditor::_state_machine_pos_draw_individual(const String &p_name, float p_ratio) {
 	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
 	if (!tree) {
 		return;
 	}
 
 	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
-
 	if (!playback.is_valid() || !playback->is_playing()) {
 		return;
 	}
 
-	if (playback->get_current_node() == state_machine->start_node || playback->get_current_node() == state_machine->end_node) {
+	if (p_name == state_machine->start_node || p_name == state_machine->end_node || p_name.is_empty()) {
 		return;
 	}
 
 	int idx = -1;
 	for (int i = 0; i < node_rects.size(); i++) {
-		if (node_rects[i].node_name == playback->get_current_node()) {
+		if (node_rects[i].node_name == p_name) {
 			idx = i;
 			break;
 		}
@@ -1537,6 +1212,9 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 	}
 
 	const NodeRect &nr = node_rects[idx];
+	if (nr.can_edit) {
+		return; // It is not AnimationNodeAnimation.
+	}
 
 	Vector2 from;
 	from.x = nr.play.position.x;
@@ -1550,19 +1228,35 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 	}
 	to.y = from.y;
 
-	float len = MAX(0.0001, current_length);
+	state_machine_play_pos->draw_line(from, to, theme_cache.playback_background_color, 2);
+	to = from.lerp(to, p_ratio);
+	state_machine_play_pos->draw_line(from, to, theme_cache.playback_color, 2);
+}
 
-	float pos = CLAMP(play_pos, 0, len);
-	float c = pos / len;
-	Color fg = get_theme_color(SNAME("font_color"), SNAME("Label"));
-	Color bg = fg;
-	bg.a *= 0.3;
+void AnimationNodeStateMachineEditor::_state_machine_pos_draw_all() {
+	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
+	if (!tree) {
+		return;
+	}
 
-	state_machine_play_pos->draw_line(from, to, bg, 2);
+	Ref<AnimationNodeStateMachinePlayback> playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
+	if (!playback.is_valid() || !playback->is_playing()) {
+		return;
+	}
 
-	to = from.lerp(to, c);
+	{
+		float len = MAX(0.0001, current_length);
+		float pos = CLAMP(current_play_pos, 0, len);
+		float c = current_length == HUGE_LENGTH ? 1 : (pos / len);
+		_state_machine_pos_draw_individual(playback->get_current_node(), c);
+	}
 
-	state_machine_play_pos->draw_line(from, to, fg, 2);
+	{
+		float len = MAX(0.0001, fade_from_length);
+		float pos = CLAMP(fade_from_current_play_pos, 0, len);
+		float c = fade_from_length == HUGE_LENGTH ? 1 : (pos / len);
+		_state_machine_pos_draw_individual(playback->get_fading_from_node(), c);
+	}
 }
 
 void AnimationNodeStateMachineEditor::_update_graph() {
@@ -1579,32 +1273,27 @@ void AnimationNodeStateMachineEditor::_update_graph() {
 
 void AnimationNodeStateMachineEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_TRANSLATION_CHANGED: {
-			error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
-			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+		case NOTIFICATION_THEME_CHANGED: {
+			panel->add_theme_style_override("panel", theme_cache.panel_style);
+			error_panel->add_theme_style_override("panel", theme_cache.error_panel_style);
+			error_label->add_theme_color_override("font_color", theme_cache.error_color);
 
-			tool_select->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
-			tool_create->set_icon(get_theme_icon(SNAME("ToolAddNode"), SNAME("EditorIcons")));
-			tool_connect->set_icon(get_theme_icon(SNAME("ToolConnect"), SNAME("EditorIcons")));
+			tool_select->set_icon(theme_cache.tool_icon_select);
+			tool_create->set_icon(theme_cache.tool_icon_create);
+			tool_connect->set_icon(theme_cache.tool_icon_connect);
 
 			switch_mode->clear();
-			switch_mode->add_icon_item(get_theme_icon(SNAME("TransitionImmediate"), SNAME("EditorIcons")), TTR("Immediate"));
-			switch_mode->add_icon_item(get_theme_icon(SNAME("TransitionSync"), SNAME("EditorIcons")), TTR("Sync"));
-			switch_mode->add_icon_item(get_theme_icon(SNAME("TransitionEnd"), SNAME("EditorIcons")), TTR("At End"));
+			switch_mode->add_icon_item(theme_cache.transition_icon_immediate, TTR("Immediate"));
+			switch_mode->add_icon_item(theme_cache.transition_icon_sync, TTR("Sync"));
+			switch_mode->add_icon_item(theme_cache.transition_icon_end, TTR("At End"));
 
-			auto_advance->set_icon(get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons")));
+			auto_advance->set_icon(theme_cache.play_icon_auto);
 
-			tool_erase->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-			tool_group->set_icon(get_theme_icon(SNAME("Group"), SNAME("EditorIcons")));
-			tool_ungroup->set_icon(get_theme_icon(SNAME("Ungroup"), SNAME("EditorIcons")));
+			tool_erase->set_icon(theme_cache.tool_icon_erase);
 
 			play_mode->clear();
-			play_mode->add_icon_item(get_theme_icon(SNAME("PlayTravel"), SNAME("EditorIcons")), TTR("Travel"));
-			play_mode->add_icon_item(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")), TTR("Immediate"));
+			play_mode->add_icon_item(theme_cache.play_icon_travel, TTR("Travel"));
+			play_mode->add_icon_item(theme_cache.play_icon_start, TTR("Immediate"));
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1624,10 +1313,6 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
 			} else if (tree->is_state_invalid()) {
 				error = tree->get_invalid_state_reason();
-				/*} else if (state_machine->get_parent().is_valid() && state_machine->get_parent()->is_class("AnimationNodeStateMachine")) {
-				if (state_machine->get_start_node() == StringName() || state_machine->get_end_node() == StringName()) {
-					error = TTR("Start and end nodes are needed for a sub-transition.");
-				}*/
 			} else if (playback.is_null()) {
 				error = vformat(TTR("No playback resource set at path: %s."), AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 			}
@@ -1687,17 +1372,28 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			Vector<StringName> tp;
 			bool is_playing = false;
 			StringName current_node;
-			StringName blend_from_node;
-			play_pos = 0;
+			StringName fading_from_node;
+
+			current_play_pos = 0;
 			current_length = 0;
+
+			fade_from_current_play_pos = 0;
+			fade_from_length = 0;
+
+			fading_time = 0;
+			fading_pos = 0;
 
 			if (playback.is_valid()) {
 				tp = playback->get_travel_path();
 				is_playing = playback->is_playing();
 				current_node = playback->get_current_node();
-				blend_from_node = playback->get_blend_from_node();
-				play_pos = playback->get_current_play_pos();
+				fading_from_node = playback->get_fading_from_node();
+				current_play_pos = playback->get_current_play_pos();
 				current_length = playback->get_current_length();
+				fade_from_current_play_pos = playback->get_fade_from_play_pos();
+				fade_from_length = playback->get_fade_from_length();
+				fading_time = playback->get_fading_time();
+				fading_pos = playback->get_fading_pos();
 			}
 
 			{
@@ -1714,12 +1410,19 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			}
 
 			//redraw if travel state changed
-			if (!same_travel_path || last_active != is_playing || last_current_node != current_node || last_blend_from_node != blend_from_node) {
+			if (!same_travel_path ||
+					last_active != is_playing ||
+					last_current_node != current_node ||
+					last_fading_from_node != fading_from_node ||
+					last_fading_time != fading_time ||
+					last_fading_pos != fading_pos) {
 				state_machine_draw->queue_redraw();
 				last_travel_path = tp;
 				last_current_node = current_node;
 				last_active = is_playing;
-				last_blend_from_node = blend_from_node;
+				last_fading_from_node = fading_from_node;
+				last_fading_time = fading_time;
+				last_fading_pos = fading_pos;
 				state_machine_play_pos->queue_redraw();
 			}
 
@@ -1731,26 +1434,32 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 					while (anodesm.is_valid()) {
 						current_node_playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + next + "/playback");
-						next += "/" + current_node_playback->get_current_node();
-						anodesm = anodesm->get_node(current_node_playback->get_current_node());
+						StringName cnode = current_node_playback->get_current_node();
+						next += "/" + cnode;
+						if (!anodesm->has_node(cnode)) {
+							break;
+						}
+						anodesm = anodesm->get_node(cnode);
 					}
 
 					// when current_node is a state machine, use playback of current_node to set play_pos
 					if (current_node_playback.is_valid()) {
-						play_pos = current_node_playback->get_current_play_pos();
+						current_play_pos = current_node_playback->get_current_play_pos();
 						current_length = current_node_playback->get_current_length();
 					}
 				}
 			}
 
-			if (last_play_pos != play_pos) {
-				last_play_pos = play_pos;
+			if (last_play_pos != current_play_pos || fade_from_last_play_pos != fade_from_current_play_pos) {
+				last_play_pos = current_play_pos;
+				fade_from_last_play_pos = fade_from_current_play_pos;
 				state_machine_play_pos->queue_redraw();
 			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			over_node = StringName();
+			hovered_node_name = StringName();
+			hovered_node_area = HOVER_NODE_NONE;
 			set_process(is_visible_in_tree());
 		} break;
 	}
@@ -1773,12 +1482,16 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	int base = 1;
 	String name = base_name;
 	while (state_machine->has_node(name)) {
+		if (name == prev_name) {
+			name_edit_popup->hide(); // The old name wins, the name doesn't change, just hide the popup.
+			return;
+		}
 		base++;
 		name = base_name + " " + itos(base);
 	}
 
 	updating = true;
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Node Renamed"));
 	undo_redo->add_do_method(state_machine.ptr(), "rename_node", prev_name, name);
 	undo_redo->add_undo_method(state_machine.ptr(), "rename_node", name, prev_name);
@@ -1813,7 +1526,7 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 		if (!p_nested_action) {
 			updating = true;
 		}
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Node Removed"));
 
 		for (int i = 0; i < node_rects.size(); i++) {
@@ -1833,10 +1546,7 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 			for (int j = 0; j < state_machine->get_transition_count(); j++) {
 				String from = state_machine->get_transition_from(j);
 				String to = state_machine->get_transition_to(j);
-				String local_from = from.get_slicec('/', 0);
-				String local_to = to.get_slicec('/', 0);
-
-				if (local_from == node_rects[i].node_name || local_to == node_rects[i].node_name) {
+				if (from == node_rects[i].node_name || to == node_rects[i].node_name) {
 					undo_redo->add_undo_method(state_machine.ptr(), "add_transition", from, to, state_machine->get_transition(j));
 				}
 			}
@@ -1853,36 +1563,12 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 		selected_nodes.clear();
 	}
 
-	if (!selected_multi_transition.multi_transitions.is_empty()) {
-		delete_tree->clear();
-
-		TreeItem *root = delete_tree->create_item();
-
-		TreeItem *item = delete_tree->create_item(root);
-		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_text(0, String(selected_transition_from) + " -> " + selected_transition_to);
-		item->set_editable(0, true);
-
-		for (int i = 0; i < selected_multi_transition.multi_transitions.size(); i++) {
-			String from = selected_multi_transition.multi_transitions[i].from_node;
-			String to = selected_multi_transition.multi_transitions[i].to_node;
-
-			item = delete_tree->create_item(root);
-			item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-			item->set_text(0, from + " -> " + to);
-			item->set_editable(0, true);
-		}
-
-		delete_window->popup_centered(Vector2(400, 200));
-		return;
-	}
-
 	if (selected_transition_to != StringName() && selected_transition_from != StringName() && state_machine->has_transition(selected_transition_from, selected_transition_to)) {
 		Ref<AnimationNodeStateMachineTransition> tr = state_machine->get_transition(state_machine->find_transition(selected_transition_from, selected_transition_to));
 		if (!p_nested_action) {
 			updating = true;
 		}
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Transition Removed"));
 		undo_redo->add_do_method(state_machine.ptr(), "remove_transition", selected_transition_from, selected_transition_to);
 		undo_redo->add_undo_method(state_machine.ptr(), "add_transition", selected_transition_from, selected_transition_to, tr);
@@ -1895,7 +1581,6 @@ void AnimationNodeStateMachineEditor::_erase_selected(const bool p_nested_action
 		selected_transition_from = StringName();
 		selected_transition_to = StringName();
 		selected_transition_index = -1;
-		selected_multi_transition = TransitionLine();
 	}
 
 	state_machine_draw->queue_redraw();
@@ -1907,26 +1592,13 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 		bool nothing_selected = selected_nodes.is_empty() && selected_transition_from == StringName() && selected_transition_to == StringName();
 		bool start_end_selected = selected_nodes.size() == 1 && (*selected_nodes.begin() == state_machine->start_node || *selected_nodes.begin() == state_machine->end_node);
 		tool_erase->set_disabled(nothing_selected || start_end_selected || read_only);
-
-		if (selected_nodes.is_empty() || start_end_selected || read_only) {
-			tool_group->set_disabled(true);
-			tool_group->set_visible(true);
-			tool_ungroup->set_visible(false);
-		} else {
-			Ref<AnimationNodeStateMachine> ansm = state_machine->get_node(*selected_nodes.begin());
-
-			if (selected_nodes.size() == 1 && ansm.is_valid()) {
-				tool_group->set_disabled(true);
-				tool_group->set_visible(false);
-				tool_ungroup->set_visible(true);
-			} else {
-				tool_group->set_disabled(false);
-				tool_group->set_visible(true);
-				tool_ungroup->set_visible(false);
-			}
-		}
 	} else {
 		selection_tools_hb->hide();
+	}
+
+	if (read_only) {
+		tool_create->set_pressed(false);
+		tool_connect->set_pressed(false);
 	}
 
 	if (tool_connect->is_pressed()) {
@@ -1938,12 +1610,56 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 
 void AnimationNodeStateMachineEditor::_bind_methods() {
 	ClassDB::bind_method("_update_graph", &AnimationNodeStateMachineEditor::_update_graph);
-	ClassDB::bind_method("_open_editor", &AnimationNodeStateMachineEditor::_open_editor);
-	ClassDB::bind_method("_connect_to", &AnimationNodeStateMachineEditor::_connect_to);
-	ClassDB::bind_method("_stop_connecting", &AnimationNodeStateMachineEditor::_stop_connecting);
-	ClassDB::bind_method("_delete_selected", &AnimationNodeStateMachineEditor::_delete_selected);
-	ClassDB::bind_method("_delete_all", &AnimationNodeStateMachineEditor::_delete_all);
-	ClassDB::bind_method("_delete_tree_draw", &AnimationNodeStateMachineEditor::_delete_tree_draw);
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, panel_style, "panel", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, error_panel_style, "error_panel", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, error_color, "error_color", "GraphStateMachine");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_select, "ToolSelect", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_create, "ToolAddNode", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_connect, "ToolConnect", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_erase, "Remove", "EditorIcons");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icon_immediate, "TransitionImmediate", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icon_sync, "TransitionSync", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icon_end, "TransitionEnd", "EditorIcons");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_start, "Play", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_travel, "PlayTravel", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_auto, "AutoPlay", "EditorIcons");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, animation_icon, "Animation", "EditorIcons");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame, "node_frame", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_selected, "node_frame_selected", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_playing, "node_frame_playing", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_start, "node_frame_start", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_end, "node_frame_end", "GraphStateMachine");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_FONT, AnimationNodeStateMachineEditor, node_title_font, "node_title_font", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_FONT_SIZE, AnimationNodeStateMachineEditor, node_title_font_size, "node_title_font_size", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, node_title_font_color, "node_title_font_color", "GraphStateMachine");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_node, "Play", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, edit_node, "Edit", "EditorIcons");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_color, "transition_color", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_disabled_color, "transition_disabled_color", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_icon_color, "transition_icon_color", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_icon_disabled_color, "transition_icon_disabled_color", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, highlight_color, "highlight_color", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, highlight_disabled_color, "highlight_disabled_color", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, guideline_color, "guideline_color", "GraphStateMachine");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[0], "TransitionImmediateBig", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[1], "TransitionSyncBig", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[2], "TransitionEndBig", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[3], "TransitionImmediateAutoBig", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[4], "TransitionSyncAutoBig", "EditorIcons");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[5], "TransitionEndAutoBig", "EditorIcons");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, playback_color, "playback_color", "GraphStateMachine");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, playback_background_color, "playback_background_color", "GraphStateMachine");
 }
 
 AnimationNodeStateMachineEditor *AnimationNodeStateMachineEditor::singleton = nullptr;
@@ -1958,7 +1674,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	bg.instantiate();
 
 	tool_select = memnew(Button);
-	tool_select->set_flat(true);
+	tool_select->set_theme_type_variation("FlatButton");
 	top_hb->add_child(tool_select);
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
@@ -1967,7 +1683,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_select->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_create = memnew(Button);
-	tool_create->set_flat(true);
+	tool_create->set_theme_type_variation("FlatButton");
 	top_hb->add_child(tool_create);
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
@@ -1975,7 +1691,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_create->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_connect = memnew(Button);
-	tool_connect->set_flat(true);
+	tool_connect->set_theme_type_variation("FlatButton");
 	top_hb->add_child(tool_connect);
 	tool_connect->set_toggle_mode(true);
 	tool_connect->set_button_group(bg);
@@ -1987,22 +1703,8 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	top_hb->add_child(selection_tools_hb);
 	selection_tools_hb->add_child(memnew(VSeparator));
 
-	tool_group = memnew(Button);
-	tool_group->set_flat(true);
-	tool_group->set_tooltip_text(TTR("Group Selected Node(s)") + " (Ctrl+G)");
-	tool_group->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_group_selected_nodes));
-	tool_group->set_disabled(true);
-	selection_tools_hb->add_child(tool_group);
-
-	tool_ungroup = memnew(Button);
-	tool_ungroup->set_flat(true);
-	tool_ungroup->set_tooltip_text(TTR("Ungroup Selected Node") + " (Ctrl+Shift+G)");
-	tool_ungroup->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_ungroup_selected_nodes));
-	tool_ungroup->set_visible(false);
-	selection_tools_hb->add_child(tool_ungroup);
-
 	tool_erase = memnew(Button);
-	tool_erase->set_flat(true);
+	tool_erase->set_theme_type_variation("FlatButton");
 	tool_erase->set_tooltip_text(TTR("Remove selected node or transition."));
 	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected).bind(false));
 	tool_erase->set_disabled(true);
@@ -2017,7 +1719,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	transition_tools_hb->add_child(switch_mode);
 
 	auto_advance = memnew(Button);
-	auto_advance->set_flat(true);
+	auto_advance->set_theme_type_variation("FlatButton");
 	auto_advance->set_tooltip_text(TTR("New Transitions Should Auto Advance"));
 	auto_advance->set_toggle_mode(true);
 	auto_advance->set_pressed(true);
@@ -2048,7 +1750,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_draw->add_child(state_machine_play_pos);
 	state_machine_play_pos->set_mouse_filter(MOUSE_FILTER_PASS); //pass all to parent
 	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw));
+	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw_all));
 
 	v_scroll = memnew(VScrollBar);
 	state_machine_draw->add_child(v_scroll);
@@ -2075,8 +1777,8 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	menu->connect("popup_hide", callable_mp(this, &AnimationNodeStateMachineEditor::_stop_connecting));
 
 	animations_menu = memnew(PopupMenu);
+	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	menu->add_child(animations_menu);
-	animations_menu->set_name("animations");
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_add_animation_type));
 
 	connect_menu = memnew(PopupMenu);
@@ -2123,15 +1825,6 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	Button *delete_all = delete_window->add_button(TTR("Delete All"), true);
 	delete_all->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_delete_all));
-
-	over_node_what = -1;
-	dragging_selected_attempt = false;
-	connecting = false;
-	selected_transition_index = -1;
-
-	last_active = false;
-
-	error_time = 0;
 }
 
 void EditorAnimationMultiTransitionEdit::add_transition(const StringName &p_from, const StringName &p_to, Ref<AnimationNodeStateMachineTransition> p_transition) {

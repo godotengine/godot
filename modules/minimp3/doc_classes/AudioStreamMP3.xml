@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamMP3" inherits="AudioStream" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="AudioStreamMP3" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		MP3 audio stream driver.
 	</brief_description>
@@ -21,21 +21,17 @@
 			[codeblocks]
 			[gdscript]
 			func load_mp3(path):
-			    var file = File.new()
-			    file.open(path, File.READ)
+			    var file = FileAccess.open(path, FileAccess.READ)
 			    var sound = AudioStreamMP3.new()
 			    sound.data = file.get_buffer(file.get_length())
-			    file.close()
 			    return sound
 			[/gdscript]
 			[csharp]
 			public AudioStreamMP3 LoadMP3(string path)
 			{
-			    var file = new File();
-			    file.Open(path, File.READ);
+			    using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
 			    var sound = new AudioStreamMP3();
 			    sound.Data = file.GetBuffer(file.GetLength());
-			    file.Close();
 			    return sound;
 			}
 			[/csharp]

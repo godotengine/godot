@@ -2,9 +2,9 @@
 #pragma once
 
 /*
- * MULTI-CHANNEL SIGNED DISTANCE FIELD GENERATOR v1.9 (2021-05-28)
- * ---------------------------------------------------------------
- * A utility by Viktor Chlumsky, (c) 2014 - 2021
+ * MULTI-CHANNEL SIGNED DISTANCE FIELD GENERATOR
+ * ---------------------------------------------
+ * A utility by Viktor Chlumsky, (c) 2014 - 2023
  *
  * The technique used to generate multi-channel distance fields in this code
  * has been developed by Viktor Chlumsky in 2014 for his master's thesis,
@@ -15,8 +15,9 @@
  *
  */
 
+#include "core/base.h"
 #include "core/arithmetics.hpp"
-#include "core/Vector2.h"
+#include "core/Vector2.hpp"
 #include "core/Projection.h"
 #include "core/Scanline.h"
 #include "core/Shape.h"
@@ -33,8 +34,6 @@
 #include "core/save-bmp.h"
 #include "core/save-tiff.h"
 #include "core/shape-description.h"
-
-#define MSDFGEN_VERSION "1.9"
 
 namespace msdfgen {
 

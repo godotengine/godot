@@ -38,24 +38,27 @@
 namespace TestFileAccess {
 
 TEST_CASE("[FileAccess] CSV read") {
-	Ref<FileAccess> f = FileAccess::open(TestUtils::get_data_path("translations.csv"), FileAccess::READ);
+	Ref<FileAccess> f = FileAccess::open(TestUtils::get_data_path("testdata.csv"), FileAccess::READ);
+	REQUIRE(!f.is_null());
 
 	Vector<String> header = f->get_csv_line(); // Default delimiter: ",".
-	REQUIRE(header.size() == 3);
+	REQUIRE(header.size() == 4);
 
 	Vector<String> row1 = f->get_csv_line(","); // Explicit delimiter, should be the same.
-	REQUIRE(row1.size() == 3);
+	REQUIRE(row1.size() == 4);
 	CHECK(row1[0] == "GOOD_MORNING");
 	CHECK(row1[1] == "Good Morning");
 	CHECK(row1[2] == "Guten Morgen");
+	CHECK(row1[3] == "Bonjour");
 
 	Vector<String> row2 = f->get_csv_line();
-	REQUIRE(row2.size() == 3);
+	REQUIRE(row2.size() == 4);
 	CHECK(row2[0] == "GOOD_EVENING");
 	CHECK(row2[1] == "Good Evening");
 	CHECK(row2[2].is_empty()); // Use case: not yet translated!
 	// https://github.com/godotengine/godot/issues/44269
 	CHECK_MESSAGE(row2[2] != "\"", "Should not parse empty string as a single double quote.");
+	CHECK(row2[3] == "\"\""); // Intentionally testing only escaped double quotes.
 
 	Vector<String> row3 = f->get_csv_line();
 	REQUIRE(row3.size() == 6);
@@ -81,6 +84,7 @@ TEST_CASE("[FileAccess] CSV read") {
 
 TEST_CASE("[FileAccess] Get as UTF-8 String") {
 	Ref<FileAccess> f_lf = FileAccess::open(TestUtils::get_data_path("line_endings_lf.test.txt"), FileAccess::READ);
+	REQUIRE(!f_lf.is_null());
 	String s_lf = f_lf->get_as_utf8_string();
 	f_lf->seek(0);
 	String s_lf_nocr = f_lf->get_as_utf8_string(true);
@@ -88,6 +92,7 @@ TEST_CASE("[FileAccess] Get as UTF-8 String") {
 	CHECK(s_lf_nocr == "Hello darkness\nMy old friend\nI've come to talk\nWith you again\n");
 
 	Ref<FileAccess> f_crlf = FileAccess::open(TestUtils::get_data_path("line_endings_crlf.test.txt"), FileAccess::READ);
+	REQUIRE(!f_crlf.is_null());
 	String s_crlf = f_crlf->get_as_utf8_string();
 	f_crlf->seek(0);
 	String s_crlf_nocr = f_crlf->get_as_utf8_string(true);
@@ -95,6 +100,7 @@ TEST_CASE("[FileAccess] Get as UTF-8 String") {
 	CHECK(s_crlf_nocr == "Hello darkness\nMy old friend\nI've come to talk\nWith you again\n");
 
 	Ref<FileAccess> f_cr = FileAccess::open(TestUtils::get_data_path("line_endings_cr.test.txt"), FileAccess::READ);
+	REQUIRE(!f_cr.is_null());
 	String s_cr = f_cr->get_as_utf8_string();
 	f_cr->seek(0);
 	String s_cr_nocr = f_cr->get_as_utf8_string(true);

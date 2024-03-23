@@ -52,7 +52,7 @@ class XRInterface : public RefCounted {
 	GDCLASS(XRInterface, RefCounted);
 
 public:
-	enum Capabilities { /* purely meta data, provides some info about what this interface supports */
+	enum Capabilities { /* purely metadata, provides some info about what this interface supports */
 		XR_NONE = 0, /* no capabilities */
 		XR_MONO = 1, /* can be used with mono output */
 		XR_STEREO = 2, /* can be used with stereo output */
@@ -75,7 +75,13 @@ public:
 		XR_PLAY_AREA_3DOF, /* Only support orientation tracking, no positional tracking, area will center around player */
 		XR_PLAY_AREA_SITTING, /* Player is in seated position, limited positional tracking, fixed guardian around player */
 		XR_PLAY_AREA_ROOMSCALE, /* Player is free to move around, full positional tracking */
-		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space, XRServer.center_on_hmd disabled */
+		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space */
+	};
+
+	enum EnvironmentBlendMode {
+		XR_ENV_BLEND_MODE_OPAQUE, /* You cannot see the real world, VR like */
+		XR_ENV_BLEND_MODE_ADDITIVE, /* You can see the real world, AR like */
+		XR_ENV_BLEND_MODE_ALPHA_BLEND, /* Real world is passed through where alpha channel is 0.0 and gradually blends to opaque for value 1.0. */
 	};
 
 protected:
@@ -94,6 +100,7 @@ public:
 	virtual bool is_initialized() const = 0; /* returns true if we've initialized this interface */
 	virtual bool initialize() = 0; /* initialize this interface, if this has an HMD it becomes the primary interface */
 	virtual void uninitialize() = 0; /* deinitialize this interface */
+	virtual Dictionary get_system_info() = 0; /* return a dictionary with info about our system */
 
 	/** input and output **/
 
@@ -138,6 +145,11 @@ public:
 	virtual bool start_passthrough() { return false; }
 	virtual void stop_passthrough() {}
 
+	/** environment blend mode. */
+	virtual Array get_supported_environment_blend_modes();
+	virtual XRInterface::EnvironmentBlendMode get_environment_blend_mode() const { return XR_ENV_BLEND_MODE_OPAQUE; }
+	virtual bool set_environment_blend_mode(EnvironmentBlendMode mode) { return false; }
+
 	XRInterface();
 	~XRInterface();
 
@@ -151,5 +163,6 @@ private:
 VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
 VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
+VARIANT_ENUM_CAST(XRInterface::EnvironmentBlendMode);
 
 #endif // XR_INTERFACE_H

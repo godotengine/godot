@@ -90,7 +90,7 @@ public final class ProcessPhoenix extends Activity {
    */
   public static void forceQuit(Activity activity, int pid) {
     Process.killProcess(pid); // Kill original main process
-    activity.finish();
+    activity.finishAndRemoveTask();
     Runtime.getRuntime().exit(0); // Kill kill kill!
   }
 
@@ -120,7 +120,7 @@ public final class ProcessPhoenix extends Activity {
 
   /**
    * Checks if the current process is a temporary Phoenix Process.
-   * This can be used to avoid initialisation of unused resources or to prevent running code that
+   * This can be used to avoid initialization of unused resources or to prevent running code that
    * is not multi-process ready.
    *
    * @return true if the current process is a temporary Phoenix Process

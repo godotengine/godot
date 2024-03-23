@@ -29,7 +29,7 @@
 #ifdef HAVE_GOBJECT
 
 
-/**
+/*
  * SECTION:hb-gobject
  * @title: hb-gobject
  * @short_description: GObject integration support
@@ -91,6 +91,7 @@ hb_gobject_##name##_get_type () \
 HB_DEFINE_OBJECT_TYPE (buffer)
 HB_DEFINE_OBJECT_TYPE (blob)
 HB_DEFINE_OBJECT_TYPE (draw_funcs)
+HB_DEFINE_OBJECT_TYPE (paint_funcs)
 HB_DEFINE_OBJECT_TYPE (face)
 HB_DEFINE_OBJECT_TYPE (font)
 HB_DEFINE_OBJECT_TYPE (font_funcs)
@@ -102,8 +103,12 @@ HB_DEFINE_VALUE_TYPE (feature)
 HB_DEFINE_VALUE_TYPE (glyph_info)
 HB_DEFINE_VALUE_TYPE (glyph_position)
 HB_DEFINE_VALUE_TYPE (segment_properties)
+HB_DEFINE_VALUE_TYPE (draw_state)
+HB_DEFINE_VALUE_TYPE (color_stop)
+HB_DEFINE_VALUE_TYPE (color_line)
 HB_DEFINE_VALUE_TYPE (user_data_key)
 
+HB_DEFINE_VALUE_TYPE (ot_var_axis_info)
 HB_DEFINE_VALUE_TYPE (ot_math_glyph_variant)
 HB_DEFINE_VALUE_TYPE (ot_math_glyph_part)
 

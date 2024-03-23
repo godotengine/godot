@@ -434,14 +434,13 @@ Error Expression::_get_token(Token &r_token) {
 					}
 					return OK;
 
-				} else if (is_ascii_char(cchar) || is_underscore(cchar)) {
-					String id;
-					bool first = true;
+				} else if (is_unicode_identifier_start(cchar)) {
+					String id = String::chr(cchar);
+					cchar = GET_CHAR();
 
-					while (is_ascii_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
+					while (is_unicode_identifier_continue(cchar)) {
 						id += String::chr(cchar);
 						cchar = GET_CHAR();
-						first = false;
 					}
 
 					str_ofs--; //go back one
@@ -1495,7 +1494,7 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 	return OK;
 }
 
-Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error, bool p_const_calls_only) {
+Variant Expression::execute(const Array &p_inputs, Object *p_base, bool p_show_error, bool p_const_calls_only) {
 	ERR_FAIL_COND_V_MSG(error_set, Variant(), "There was previously a parse error: " + error_str + ".");
 
 	execution_error = false;

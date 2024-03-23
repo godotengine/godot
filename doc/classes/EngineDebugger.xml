@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EngineDebugger" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EngineDebugger" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Exposes the internal debugger.
 	</brief_description>
@@ -50,7 +50,7 @@
 			<param index="1" name="enable" type="bool" />
 			<param index="2" name="arguments" type="Array" default="[]" />
 			<description>
-				Calls the [code]toggle[/code] callable of the profiler with given [param name] and [param arguments]. Enables/Disables the same profiler depending on [code]enable[/code] argument.
+				Calls the [code]toggle[/code] callable of the profiler with given [param name] and [param arguments]. Enables/Disables the same profiler depending on [param enable] argument.
 			</description>
 		</method>
 		<method name="register_message_capture">

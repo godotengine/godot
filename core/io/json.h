@@ -36,8 +36,8 @@
 #include "core/io/resource_saver.h"
 #include "core/variant/variant.h"
 
-class JSON : public RefCounted {
-	GDCLASS(JSON, RefCounted);
+class JSON : public Resource {
+	GDCLASS(JSON, Resource);
 
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,
@@ -65,6 +65,7 @@ class JSON : public RefCounted {
 		Variant value;
 	};
 
+	String text;
 	Variant data;
 	String err_str;
 	int err_line = 0;
@@ -83,7 +84,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error parse(const String &p_json_string);
+	Error parse(const String &p_json_string, bool p_keep_text = false);
+	String get_parsed_text() const;
+
 	static String stringify(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true, bool p_full_precision = false);
 	static Variant parse_string(const String &p_json_string);
 

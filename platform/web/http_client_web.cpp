@@ -37,20 +37,20 @@ void HTTPClientWeb::_parse_headers(int p_len, const char **p_headers, void *p_re
 	}
 }
 
-Error HTTPClientWeb::connect_to_host(const String &p_host, int p_port, bool p_tls, bool p_verify_host) {
+Error HTTPClientWeb::connect_to_host(const String &p_host, int p_port, Ref<TLSOptions> p_tls_options) {
+	ERR_FAIL_COND_V(p_tls_options.is_valid() && p_tls_options->is_server(), ERR_INVALID_PARAMETER);
+
 	close();
-	if (p_tls && !p_verify_host) {
-		WARN_PRINT("Disabling HTTPClientWeb's host verification is not supported for the Web platform, host will be verified");
-	}
 
 	port = p_port;
-	use_tls = p_tls;
+	use_tls = p_tls_options.is_valid();
 
 	host = p_host;
 
 	String host_lower = host.to_lower();
 	if (host_lower.begins_with("http://")) {
 		host = host.substr(7, host.length() - 7);
+		use_tls = false;
 	} else if (host_lower.begins_with("https://")) {
 		use_tls = true;
 		host = host.substr(8, host.length() - 8);
@@ -149,7 +149,15 @@ Error HTTPClientWeb::get_response_headers(List<String> *r_response) {
 }
 
 int64_t HTTPClientWeb::get_response_body_length() const {
-	return godot_js_fetch_body_length_get(js_id);
+	// Body length cannot be consistently retrieved from the web.
+	// Reading the "content-length" value will return a meaningless value when the response is compressed,
+	// as reading will return uncompressed chunks in any case, resulting in a mismatch between the detected
+	// body size and the actual size returned by repeatedly calling read_response_body_chunk.
+	// Additionally, while "content-length" is considered a safe CORS header, "content-encoding" is not,
+	// so using the "content-encoding" to decide if "content-length" is meaningful is not an option either.
+	// We simply must accept the fact that browsers are awful when it comes to networking APIs.
+	// See GH-47597, and GH-79327.
+	return -1;
 }
 
 PackedByteArray HTTPClientWeb::read_response_body_chunk() {

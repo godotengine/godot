@@ -31,12 +31,13 @@
 #ifndef OS_MACOS_H
 #define OS_MACOS_H
 
-#include "core/input/input.h"
 #include "crash_handler_macos.h"
-#include "drivers/coreaudio/audio_driver_coreaudio.h"
-#include "drivers/coremidi/midi_driver_coremidi.h"
+#import "joypad_macos.h"
+
+#include "core/input/input.h"
+#import "drivers/coreaudio/audio_driver_coreaudio.h"
+#import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
-#include "joypad_macos.h"
 #include "servers/audio_server.h"
 
 class OS_MacOS : public OS_Unix {
@@ -84,7 +85,7 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 
 	virtual MainLoop *get_main_loop() const override;
 
@@ -97,7 +98,8 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
-	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_open(const String &p_uri) override;
+	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;
 
 	virtual String get_locale() const override;
 
@@ -111,12 +113,19 @@ public:
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;
 
+	virtual bool is_sandboxed() const override;
+	virtual Vector<String> get_granted_permissions() const override;
+	virtual void revoke_granted_permissions() override;
+
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;
 
 	virtual Error move_to_trash(const String &p_path) override;
+
+	virtual String get_system_ca_certificates() override;
+	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
 
 	void run();
 

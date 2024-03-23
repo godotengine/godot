@@ -34,6 +34,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "scene/main/window.h"
+#include "scene/theme/theme_db.h"
 
 bool ScrollBar::focus_by_default = false;
 
@@ -55,12 +56,14 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 		accept_event();
 
 		if (b->get_button_index() == MouseButton::WHEEL_DOWN && b->is_pressed()) {
-			set_value(get_value() + get_page() / 4.0);
+			double change = get_page() != 0.0 ? get_page() / 4.0 : (get_max() - get_min()) / 16.0;
+			set_value(get_value() + MAX(change, get_step()));
 			accept_event();
 		}
 
 		if (b->get_button_index() == MouseButton::WHEEL_UP && b->is_pressed()) {
-			set_value(get_value() - get_page() / 4.0);
+			double change = get_page() != 0.0 ? get_page() / 4.0 : (get_max() - get_min()) / 16.0;
+			set_value(get_value() - MAX(change, get_step()));
 			accept_event();
 		}
 
@@ -99,7 +102,8 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 				if (scrolling) {
 					target_scroll = CLAMP(target_scroll - get_page(), get_min(), get_max() - get_page());
 				} else {
-					target_scroll = CLAMP(get_value() - get_page(), get_min(), get_max() - get_page());
+					double change = get_page() != 0.0 ? get_page() : (get_max() - get_min()) / 16.0;
+					target_scroll = CLAMP(get_value() - change, get_min(), get_max() - get_page());
 				}
 
 				if (smooth_scroll_enabled) {
@@ -122,7 +126,8 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 				if (scrolling) {
 					target_scroll = CLAMP(target_scroll + get_page(), get_min(), get_max() - get_page());
 				} else {
-					target_scroll = CLAMP(get_value() + get_page(), get_min(), get_max() - get_page());
+					double change = get_page() != 0.0 ? get_page() : (get_max() - get_min()) / 16.0;
+					target_scroll = CLAMP(get_value() + change, get_min(), get_max() - get_page());
 				}
 
 				if (smooth_scroll_enabled) {
@@ -215,24 +220,6 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			set_value(get_max());
 		}
 	}
-}
-
-void ScrollBar::_update_theme_item_cache() {
-	Range::_update_theme_item_cache();
-
-	theme_cache.scroll_style = get_theme_stylebox(SNAME("scroll"));
-	theme_cache.scroll_focus_style = get_theme_stylebox(SNAME("scroll_focus"));
-	theme_cache.scroll_offset_style = get_theme_stylebox(SNAME("hscroll"));
-	theme_cache.grabber_style = get_theme_stylebox(SNAME("grabber"));
-	theme_cache.grabber_hl_style = get_theme_stylebox(SNAME("grabber_highlight"));
-	theme_cache.grabber_pressed_style = get_theme_stylebox(SNAME("grabber_pressed"));
-
-	theme_cache.increment_icon = get_theme_icon(SNAME("increment"));
-	theme_cache.increment_hl_icon = get_theme_icon(SNAME("increment_highlight"));
-	theme_cache.increment_pressed_icon = get_theme_icon(SNAME("increment_pressed"));
-	theme_cache.decrement_icon = get_theme_icon(SNAME("decrement"));
-	theme_cache.decrement_hl_icon = get_theme_icon(SNAME("decrement_highlight"));
-	theme_cache.decrement_pressed_icon = get_theme_icon(SNAME("decrement_pressed"));
 }
 
 void ScrollBar::_notification(int p_what) {
@@ -424,6 +411,14 @@ void ScrollBar::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				incr_active = false;
+				decr_active = false;
+				drag.active = false;
+			}
+		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
 			highlight = HIGHLIGHT_NONE;
 			queue_redraw();
@@ -433,7 +428,7 @@ void ScrollBar::_notification(int p_what) {
 
 double ScrollBar::get_grabber_min_size() const {
 	Ref<StyleBox> grabber = theme_cache.grabber_style;
-	Size2 gminsize = grabber->get_minimum_size() + grabber->get_center_size();
+	Size2 gminsize = grabber->get_minimum_size();
 	return (orientation == VERTICAL) ? gminsize.height : gminsize.width;
 }
 
@@ -473,22 +468,6 @@ double ScrollBar::get_area_size() const {
 	}
 }
 
-double ScrollBar::get_area_offset() const {
-	double ofs = 0.0;
-
-	if (orientation == VERTICAL) {
-		ofs += theme_cache.scroll_offset_style->get_margin(SIDE_TOP);
-		ofs += theme_cache.decrement_icon->get_height();
-	}
-
-	if (orientation == HORIZONTAL) {
-		ofs += theme_cache.scroll_offset_style->get_margin(SIDE_LEFT);
-		ofs += theme_cache.decrement_icon->get_width();
-	}
-
-	return ofs;
-}
-
 double ScrollBar::get_grabber_offset() const {
 	return (get_area_size()) * get_as_ratio();
 }
@@ -500,7 +479,7 @@ Size2 ScrollBar::get_minimum_size() const {
 	Size2 minsize;
 
 	if (orientation == VERTICAL) {
-		minsize.width = MAX(incr->get_size().width, (bg->get_minimum_size() + bg->get_center_size()).width);
+		minsize.width = MAX(incr->get_size().width, bg->get_minimum_size().width);
 		minsize.height += incr->get_size().height;
 		minsize.height += decr->get_size().height;
 		minsize.height += bg->get_minimum_size().height;
@@ -508,7 +487,7 @@ Size2 ScrollBar::get_minimum_size() const {
 	}
 
 	if (orientation == HORIZONTAL) {
-		minsize.height = MAX(incr->get_size().height, (bg->get_center_size() + bg->get_minimum_size()).height);
+		minsize.height = MAX(incr->get_size().height, bg->get_minimum_size().height);
 		minsize.width += incr->get_size().width;
 		minsize.width += decr->get_size().width;
 		minsize.width += bg->get_minimum_size().width;
@@ -641,6 +620,19 @@ void ScrollBar::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scrolling"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_custom_step", "get_custom_step");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollBar, scroll_style, "scroll");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollBar, scroll_focus_style, "scroll_focus");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollBar, grabber_style, "grabber");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollBar, grabber_hl_style, "grabber_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollBar, grabber_pressed_style, "grabber_pressed");
+
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, increment_icon, "increment");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, increment_hl_icon, "increment_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, increment_pressed_icon, "increment_pressed");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_icon, "decrement");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_hl_icon, "decrement_highlight");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_pressed_icon, "decrement_pressed");
 }
 
 ScrollBar::ScrollBar(Orientation p_orientation) {

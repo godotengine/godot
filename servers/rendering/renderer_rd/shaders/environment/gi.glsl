@@ -4,6 +4,10 @@
 
 #VERSION_DEFINES
 
+#ifdef SAMPLE_VOXEL_GI_NEAREST
+#extension GL_EXT_samplerless_texture_functions : enable
+#endif
+
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #define M_PI 3.141592
@@ -614,6 +618,11 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 	if (normal.length() > 0.5) {
 		//valid normal, can do GI
 		float roughness = normal_roughness.w;
+		bool dynamic_object = roughness > 0.5;
+		if (dynamic_object) {
+			roughness = 1.0 - roughness;
+		}
+		roughness /= (127.0 / 255.0);
 		vec3 view = -normalize(mat3(scene_data.cam_transform) * (vertex - scene_data.eye_offset[gl_GlobalInvocationID.z].xyz));
 		vertex = mat3(scene_data.cam_transform) * vertex;
 		normal = normalize(mat3(scene_data.cam_transform) * normal);
@@ -625,7 +634,11 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 
 #ifdef USE_VOXEL_GI_INSTANCES
 		{
+#ifdef SAMPLE_VOXEL_GI_NEAREST
+			uvec2 voxel_gi_tex = texelFetch(voxel_gi_buffer, pos, 0).rg;
+#else
 			uvec2 voxel_gi_tex = texelFetch(usampler2D(voxel_gi_buffer, linear_sampler), pos, 0).rg;
+#endif
 			roughness *= roughness;
 			//find arbitrary tangent and bitangent, then build a matrix
 			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);

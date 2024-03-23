@@ -74,6 +74,25 @@ protected:
 			uint32_t bmp_colors_used = 0;
 			uint32_t bmp_important_colors = 0;
 		} bmp_info_header;
+
+		struct bmp_bitfield_s {
+			uint16_t alpha_mask = 0x8000;
+			uint16_t red_mask = 0x7C00;
+			uint16_t green_mask = 0x03E0;
+			uint16_t blue_mask = 0x001F;
+			uint16_t alpha_mask_width = 1u;
+			uint16_t red_mask_width = 5u;
+			uint16_t green_mask_width = 5u;
+			uint16_t blue_mask_width = 5u;
+			uint8_t alpha_offset = 15u; // Used for bit shifting.
+			uint8_t red_offset = 10u; // Used for bit shifting.
+			uint8_t green_offset = 5u; // Used for bit shifting.
+			//uint8_t blue_offset = 0u; // Always LSB aligned no shifting needed.
+			//uint8_t alpha_max = 1u; // Always boolean or on, so no scaling needed.
+			uint8_t red_max = 32u; // Used for color space scaling.
+			uint8_t green_max = 32u; // Used for color space scaling.
+			uint8_t blue_max = 32u; // Used for color space scaling.
+		} bmp_bitfield;
 	};
 
 	static Error convert_to_image(Ref<Image> p_image,

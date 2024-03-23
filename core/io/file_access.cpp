@@ -38,7 +38,7 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 
-FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = { nullptr, nullptr };
+FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = {};
 
 FileAccess::FileCloseFailNotify FileAccess::close_fail_notify = nullptr;
 
@@ -133,8 +133,8 @@ Ref<FileAccess> FileAccess::open_encrypted(const String &p_path, ModeFlags p_mod
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
 	Error err = fae->open_and_parse(fa, p_key, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 	return fae;
@@ -149,8 +149,8 @@ Ref<FileAccess> FileAccess::open_encrypted_pass(const String &p_path, ModeFlags 
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
 	Error err = fae->open_and_parse_password(fa, p_pass, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 	return fae;
@@ -161,9 +161,8 @@ Ref<FileAccess> FileAccess::open_compressed(const String &p_path, ModeFlags p_mo
 	fac.instantiate();
 	fac->configure("GCPF", (Compression::Mode)p_compress_mode);
 	Error err = fac->open_internal(p_path, p_mode_flags);
-
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 
@@ -292,7 +291,7 @@ real_t FileAccess::get_real() const {
 
 Variant FileAccess::get_var(bool p_allow_objects) const {
 	uint32_t len = get_32();
-	Vector<uint8_t> buff = _get_buffer(len);
+	Vector<uint8_t> buff = get_buffer(len);
 	ERR_FAIL_COND_V((uint32_t)buff.size() != len, Variant());
 
 	const uint8_t *r = buff.ptr();
@@ -442,6 +441,11 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 			current += c;
 		}
 	}
+
+	if (in_quote) {
+		WARN_PRINT(vformat("Reached end of file before closing '\"' in CSV file '%s'.", get_path()));
+	}
+
 	strings.push_back(current);
 
 	return strings;
@@ -469,7 +473,7 @@ uint64_t FileAccess::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	return i;
 }
 
-Vector<uint8_t> FileAccess::_get_buffer(int64_t p_length) const {
+Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 	Vector<uint8_t> data;
 
 	ERR_FAIL_COND_V_MSG(p_length < 0, data, "Length of buffer cannot be smaller than 0.");
@@ -579,7 +583,7 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	return mt;
 }
 
-uint32_t FileAccess::get_unix_permissions(const String &p_file) {
+BitField<FileAccess::UnixPermissionFlags> FileAccess::get_unix_permissions(const String &p_file) {
 	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
 		return 0;
 	}
@@ -587,11 +591,10 @@ uint32_t FileAccess::get_unix_permissions(const String &p_file) {
 	Ref<FileAccess> fa = create_for_path(p_file);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
 
-	uint32_t mt = fa->_get_unix_permissions(p_file);
-	return mt;
+	return fa->_get_unix_permissions(p_file);
 }
 
-Error FileAccess::set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+Error FileAccess::set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) {
 	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
 		return ERR_UNAVAILABLE;
 	}
@@ -600,6 +603,52 @@ Error FileAccess::set_unix_permissions(const String &p_file, uint32_t p_permissi
 	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
 
 	Error err = fa->_set_unix_permissions(p_file, p_permissions);
+	return err;
+}
+
+bool FileAccess::get_hidden_attribute(const String &p_file) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return false;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	return fa->_get_hidden_attribute(p_file);
+}
+
+Error FileAccess::set_hidden_attribute(const String &p_file, bool p_hidden) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	Error err = fa->_set_hidden_attribute(p_file, p_hidden);
+	return err;
+}
+
+bool FileAccess::get_read_only_attribute(const String &p_file) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return false;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	return fa->_get_read_only_attribute(p_file);
+}
+
+Error FileAccess::set_read_only_attribute(const String &p_file, bool p_ro) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return ERR_UNAVAILABLE;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	Error err = fa->_set_read_only_attribute(p_file, p_ro);
 	return err;
 }
 
@@ -663,7 +712,7 @@ void FileAccess::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	}
 }
 
-void FileAccess::_store_buffer(const Vector<uint8_t> &p_buffer) {
+void FileAccess::store_buffer(const Vector<uint8_t> &p_buffer) {
 	uint64_t len = p_buffer.size();
 	if (len == 0) {
 		return;
@@ -687,7 +736,7 @@ void FileAccess::store_var(const Variant &p_var, bool p_full_objects) {
 	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
 
 	store_32(len);
-	_store_buffer(buff);
+	store_buffer(buff);
 }
 
 Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_error) {
@@ -829,7 +878,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_float"), &FileAccess::get_float);
 	ClassDB::bind_method(D_METHOD("get_double"), &FileAccess::get_double);
 	ClassDB::bind_method(D_METHOD("get_real"), &FileAccess::get_real);
-	ClassDB::bind_method(D_METHOD("get_buffer", "length"), &FileAccess::_get_buffer);
+	ClassDB::bind_method(D_METHOD("get_buffer", "length"), (Vector<uint8_t>(FileAccess::*)(int64_t) const) & FileAccess::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &FileAccess::get_line);
 	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &FileAccess::get_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("get_as_text", "skip_cr"), &FileAccess::get_as_text, DEFVAL(false));
@@ -847,7 +896,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_float", "value"), &FileAccess::store_float);
 	ClassDB::bind_method(D_METHOD("store_double", "value"), &FileAccess::store_double);
 	ClassDB::bind_method(D_METHOD("store_real", "value"), &FileAccess::store_real);
-	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), &FileAccess::_store_buffer);
+	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (void(FileAccess::*)(const Vector<uint8_t> &)) & FileAccess::store_buffer);
 	ClassDB::bind_method(D_METHOD("store_line", "line"), &FileAccess::store_line);
 	ClassDB::bind_method(D_METHOD("store_csv_line", "values", "delim"), &FileAccess::store_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("store_string", "string"), &FileAccess::store_string);
@@ -856,8 +905,18 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_pascal_string", "string"), &FileAccess::store_pascal_string);
 	ClassDB::bind_method(D_METHOD("get_pascal_string"), &FileAccess::get_pascal_string);
 
+	ClassDB::bind_method(D_METHOD("close"), &FileAccess::close);
+
 	ClassDB::bind_static_method("FileAccess", D_METHOD("file_exists", "path"), &FileAccess::exists);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_modified_time", "file"), &FileAccess::get_modified_time);
+
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_unix_permissions", "file"), &FileAccess::get_unix_permissions);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_unix_permissions", "file", "permissions"), &FileAccess::set_unix_permissions);
+
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_hidden_attribute", "file"), &FileAccess::get_hidden_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_hidden_attribute", "file", "hidden"), &FileAccess::set_hidden_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("set_read_only_attribute", "file", "ro"), &FileAccess::set_read_only_attribute);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_read_only_attribute", "file"), &FileAccess::get_read_only_attribute);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian");
 
@@ -870,4 +929,18 @@ void FileAccess::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESSION_DEFLATE);
 	BIND_ENUM_CONSTANT(COMPRESSION_ZSTD);
 	BIND_ENUM_CONSTANT(COMPRESSION_GZIP);
+	BIND_ENUM_CONSTANT(COMPRESSION_BROTLI);
+
+	BIND_BITFIELD_FLAG(UNIX_READ_OWNER);
+	BIND_BITFIELD_FLAG(UNIX_WRITE_OWNER);
+	BIND_BITFIELD_FLAG(UNIX_EXECUTE_OWNER);
+	BIND_BITFIELD_FLAG(UNIX_READ_GROUP);
+	BIND_BITFIELD_FLAG(UNIX_WRITE_GROUP);
+	BIND_BITFIELD_FLAG(UNIX_EXECUTE_GROUP);
+	BIND_BITFIELD_FLAG(UNIX_READ_OTHER);
+	BIND_BITFIELD_FLAG(UNIX_WRITE_OTHER);
+	BIND_BITFIELD_FLAG(UNIX_EXECUTE_OTHER);
+	BIND_BITFIELD_FLAG(UNIX_SET_USER_ID);
+	BIND_BITFIELD_FLAG(UNIX_SET_GROUP_ID);
+	BIND_BITFIELD_FLAG(UNIX_RESTRICTED_DELETE);
 }

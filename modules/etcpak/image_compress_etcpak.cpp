@@ -33,19 +33,19 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-#include "thirdparty/etcpak/ProcessDxtc.hpp"
-#include "thirdparty/etcpak/ProcessRGB.hpp"
+#include <ProcessDxtc.hpp>
+#include <ProcessRGB.hpp>
 
 EtcpakType _determine_etc_type(Image::UsedChannels p_channels) {
 	switch (p_channels) {
 		case Image::USED_CHANNELS_L:
-			return EtcpakType::ETCPAK_TYPE_ETC1;
+			return EtcpakType::ETCPAK_TYPE_ETC2;
 		case Image::USED_CHANNELS_LA:
 			return EtcpakType::ETCPAK_TYPE_ETC2_ALPHA;
 		case Image::USED_CHANNELS_R:
-			return EtcpakType::ETCPAK_TYPE_ETC2;
+			return EtcpakType::ETCPAK_TYPE_ETC2_R;
 		case Image::USED_CHANNELS_RG:
-			return EtcpakType::ETCPAK_TYPE_ETC2_RA_AS_RG;
+			return EtcpakType::ETCPAK_TYPE_ETC2_RG;
 		case Image::USED_CHANNELS_RGB:
 			return EtcpakType::ETCPAK_TYPE_ETC2;
 		case Image::USED_CHANNELS_RGBA:
@@ -62,11 +62,11 @@ EtcpakType _determine_dxt_type(Image::UsedChannels p_channels) {
 		case Image::USED_CHANNELS_LA:
 			return EtcpakType::ETCPAK_TYPE_DXT5;
 		case Image::USED_CHANNELS_R:
-			return EtcpakType::ETCPAK_TYPE_DXT5;
+			return EtcpakType::ETCPAK_TYPE_RGTC_R;
 		case Image::USED_CHANNELS_RG:
-			return EtcpakType::ETCPAK_TYPE_DXT5_RA_AS_RG;
+			return EtcpakType::ETCPAK_TYPE_RGTC_RG;
 		case Image::USED_CHANNELS_RGB:
-			return EtcpakType::ETCPAK_TYPE_DXT5;
+			return EtcpakType::ETCPAK_TYPE_DXT1;
 		case Image::USED_CHANNELS_RGBA:
 			return EtcpakType::ETCPAK_TYPE_DXT5;
 		default:
@@ -74,24 +74,22 @@ EtcpakType _determine_dxt_type(Image::UsedChannels p_channels) {
 	}
 }
 
-void _compress_etc1(Image *r_img, float p_lossy_quality) {
-	_compress_etcpak(EtcpakType::ETCPAK_TYPE_ETC1, r_img, p_lossy_quality);
+void _compress_etc1(Image *r_img) {
+	_compress_etcpak(EtcpakType::ETCPAK_TYPE_ETC1, r_img);
 }
 
-void _compress_etc2(Image *r_img, float p_lossy_quality, Image::UsedChannels p_channels) {
+void _compress_etc2(Image *r_img, Image::UsedChannels p_channels) {
 	EtcpakType type = _determine_etc_type(p_channels);
-	_compress_etcpak(type, r_img, p_lossy_quality);
+	_compress_etcpak(type, r_img);
 }
 
-void _compress_bc(Image *r_img, float p_lossy_quality, Image::UsedChannels p_channels) {
+void _compress_bc(Image *r_img, Image::UsedChannels p_channels) {
 	EtcpakType type = _determine_dxt_type(p_channels);
-	_compress_etcpak(type, r_img, p_lossy_quality);
+	_compress_etcpak(type, r_img);
 }
 
-void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_quality) {
+void _compress_etcpak(EtcpakType p_compresstype, Image *r_img) {
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
-
-	// TODO: See how to handle lossy quality.
 
 	Image::Format img_format = r_img->get_format();
 	if (img_format >= Image::FORMAT_DXT1) {
@@ -115,6 +113,12 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 	} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_ETC2) {
 		target_format = Image::FORMAT_ETC2_RGB8;
 		r_img->convert_rgba8_to_bgra8(); // It's badly documented but ETCPAK seems to be expected BGRA8 for ETC.
+	} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_ETC2_R) {
+		target_format = Image::FORMAT_ETC2_R11;
+		r_img->convert_rgba8_to_bgra8(); // It's badly documented but ETCPAK seems to be expected BGRA8 for ETC.
+	} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_ETC2_RG) {
+		target_format = Image::FORMAT_ETC2_RG11;
+		r_img->convert_rgba8_to_bgra8(); // It's badly documented but ETCPAK seems to be expected BGRA8 for ETC.
 	} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_ETC2_RA_AS_RG) {
 		target_format = Image::FORMAT_ETC2_RA_AS_RG;
 		r_img->convert_rg_to_ra_rgba8();
@@ -129,8 +133,12 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 		r_img->convert_rg_to_ra_rgba8();
 	} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_DXT5) {
 		target_format = Image::FORMAT_DXT5;
+	} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_RGTC_R) {
+		target_format = Image::FORMAT_RGTC_R;
+	} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_RGTC_RG) {
+		target_format = Image::FORMAT_RGTC_RG;
 	} else {
-		ERR_FAIL_MSG("Invalid or unsupported Etcpak compression format.");
+		ERR_FAIL_MSG("Invalid or unsupported etcpak compression format, not ETC or DXT.");
 	}
 
 	// Compress image data and (if required) mipmaps.
@@ -171,7 +179,7 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 
 	const uint8_t *src_read = r_img->get_data().ptr();
 
-	print_verbose(vformat("ETCPAK: Encoding image size %dx%d to format %s.", width, height, Image::get_format_name(target_format)));
+	print_verbose(vformat("etcpak: Encoding image size %dx%d to format %s%s.", width, height, Image::get_format_name(target_format), mipmaps ? ", with mipmaps" : ""));
 
 	int dest_size = Image::get_image_data_size(width, height, target_format, mipmaps);
 	Vector<uint8_t> dest_data;
@@ -221,23 +229,54 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 			// Override the src_mip_read pointer to our temporary Vector.
 			src_mip_read = padded_src.ptr();
 		}
-		if (p_compresstype == EtcpakType::ETCPAK_TYPE_ETC1) {
-			CompressEtc1RgbDither(src_mip_read, dest_mip_write, blocks, mip_w);
-		} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_ETC2) {
-			CompressEtc2Rgb(src_mip_read, dest_mip_write, blocks, mip_w, true);
-		} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_ETC2_ALPHA || p_compresstype == EtcpakType::ETCPAK_TYPE_ETC2_RA_AS_RG) {
-			CompressEtc2Rgba(src_mip_read, dest_mip_write, blocks, mip_w, true);
-		} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_DXT1) {
-			CompressDxt1Dither(src_mip_read, dest_mip_write, blocks, mip_w);
-		} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_DXT5 || p_compresstype == EtcpakType::ETCPAK_TYPE_DXT5_RA_AS_RG) {
-			CompressDxt5(src_mip_read, dest_mip_write, blocks, mip_w);
-		} else {
-			ERR_FAIL_MSG("Invalid or unsupported Etcpak compression format.");
+
+		switch (p_compresstype) {
+			case EtcpakType::ETCPAK_TYPE_ETC1:
+				CompressEtc1RgbDither(src_mip_read, dest_mip_write, blocks, mip_w);
+				break;
+
+			case EtcpakType::ETCPAK_TYPE_ETC2:
+				CompressEtc2Rgb(src_mip_read, dest_mip_write, blocks, mip_w, true);
+				break;
+
+			case EtcpakType::ETCPAK_TYPE_ETC2_ALPHA:
+			case EtcpakType::ETCPAK_TYPE_ETC2_RA_AS_RG:
+				CompressEtc2Rgba(src_mip_read, dest_mip_write, blocks, mip_w, true);
+				break;
+
+			case EtcpakType::ETCPAK_TYPE_ETC2_R:
+				CompressEacR(src_mip_read, dest_mip_write, blocks, mip_w);
+				break;
+
+			case EtcpakType::ETCPAK_TYPE_ETC2_RG:
+				CompressEacRg(src_mip_read, dest_mip_write, blocks, mip_w);
+				break;
+
+			case EtcpakType::ETCPAK_TYPE_DXT1:
+				CompressDxt1Dither(src_mip_read, dest_mip_write, blocks, mip_w);
+				break;
+
+			case EtcpakType::ETCPAK_TYPE_DXT5:
+			case EtcpakType::ETCPAK_TYPE_DXT5_RA_AS_RG:
+				CompressDxt5(src_mip_read, dest_mip_write, blocks, mip_w);
+				break;
+
+			case EtcpakType::ETCPAK_TYPE_RGTC_R:
+				CompressBc4(src_mip_read, dest_mip_write, blocks, mip_w);
+				break;
+
+			case EtcpakType::ETCPAK_TYPE_RGTC_RG:
+				CompressBc5(src_mip_read, dest_mip_write, blocks, mip_w);
+				break;
+
+			default:
+				ERR_FAIL_MSG("etcpak: Invalid or unsupported compression format.");
+				break;
 		}
 	}
 
 	// Replace original image with compressed one.
 	r_img->set_data(width, height, mipmaps, target_format, dest_data);
 
-	print_verbose(vformat("ETCPAK encode took %s ms.", rtos(OS::get_singleton()->get_ticks_msec() - start_time)));
+	print_verbose(vformat("etcpak: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }

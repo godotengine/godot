@@ -40,7 +40,7 @@
 class FogVolume : public VisualInstance3D {
 	GDCLASS(FogVolume, VisualInstance3D);
 
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 size = Vector3(2, 2, 2);
 	Ref<Material> material;
 	RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
 
@@ -50,10 +50,14 @@ protected:
 	_FORCE_INLINE_ RID _get_volume() { return volume; }
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_shape(RS::FogVolumeShape p_type);
 	RS::FogVolumeShape get_shape() const;

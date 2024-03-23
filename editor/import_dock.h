@@ -54,8 +54,10 @@ class ImportDock : public VBoxContainer {
 	HashMap<StringName, Variant> property_values;
 
 	ConfirmationDialog *reimport_confirm = nullptr;
+	Label *cleanup_warning = nullptr;
 	Label *label_warning = nullptr;
 	Button *import = nullptr;
+	List<String> need_cleanup;
 
 	Control *advanced_spacer = nullptr;
 	Button *advanced = nullptr;
@@ -75,8 +77,10 @@ class ImportDock : public VBoxContainer {
 	void _property_toggled(const StringName &p_prop, bool p_checked);
 	void _set_dirty(bool p_dirty);
 	void _reimport_attempt();
-	void _reimport_and_restart();
+	void _reimport_and_cleanup();
 	void _reimport();
+
+	void _replace_resource_in_object(Object *p_object, const Ref<Resource> &old_resource, const Ref<Resource> &new_resource);
 
 	void _advanced_options();
 	enum {
@@ -98,6 +102,7 @@ protected:
 public:
 	void set_edit_path(const String &p_path);
 	void set_edit_multiple_paths(const Vector<String> &p_paths);
+	void reimport_resources(const Vector<String> &p_paths);
 	void initialize_import_options() const;
 	void clear();
 

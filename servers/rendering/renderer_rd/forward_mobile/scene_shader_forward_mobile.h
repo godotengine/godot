@@ -97,7 +97,7 @@ public:
 
 		bool valid = false;
 		RID version;
-		uint32_t vertex_input_mask = 0;
+		uint64_t vertex_input_mask = 0;
 		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
 
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
@@ -119,6 +119,7 @@ public:
 		bool uses_discard = false;
 		bool uses_roughness = false;
 		bool uses_normal = false;
+		bool uses_tangent = false;
 		bool uses_particle_trails = false;
 
 		bool unshaded = false;
@@ -128,6 +129,7 @@ public:
 		bool uses_screen_texture = false;
 		bool uses_depth_texture = false;
 		bool uses_normal_texture = false;
+		bool uses_screen_texture_mipmaps = false;
 		bool uses_time = false;
 		bool uses_vertex_time = false;
 		bool uses_fragment_time = false;
@@ -180,6 +182,8 @@ public:
 	RID default_material;
 	RID overdraw_material_shader;
 	RID overdraw_material;
+	RID debug_shadow_splits_material_shader;
+	RID debug_shadow_splits_material;
 	RID default_shader_rd;
 
 	RID default_vec4_xform_buffer;
@@ -192,6 +196,9 @@ public:
 
 	RID overdraw_material_uniform_set;
 	ShaderData *overdraw_material_shader_ptr = nullptr;
+
+	RID debug_shadow_splits_material_uniform_set;
+	ShaderData *debug_shadow_splits_material_shader_ptr = nullptr;
 
 	SceneShaderForwardMobile();
 	~SceneShaderForwardMobile();

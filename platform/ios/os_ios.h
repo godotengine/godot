@@ -33,16 +33,20 @@
 
 #ifdef IOS_ENABLED
 
-#include "drivers/coreaudio/audio_driver_coreaudio.h"
+#import "ios.h"
+#import "joypad_ios.h"
+
+#import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "ios.h"
-#include "joypad_ios.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+
 #if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/ios/vulkan_context_ios.h"
+#import "rendering_context_driver_vulkan_ios.h"
+#endif
 #endif
 
 class OS_IOS : public OS_Unix {
@@ -99,16 +103,16 @@ public:
 	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
-	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
 	virtual String get_model_name() const override;
 
-	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_open(const String &p_uri) override;
 
 	virtual String get_user_data_dir() const override;
 
@@ -125,6 +129,9 @@ public:
 
 	void on_focus_out();
 	void on_focus_in();
+
+	void on_enter_background();
+	void on_exit_background();
 };
 
 #endif // IOS_ENABLED

@@ -41,7 +41,7 @@ struct VariantConstructData {
 
 static LocalVector<VariantConstructData> construct_data[Variant::VARIANT_MAX];
 
-template <class T>
+template <typename T>
 static void add_constructor(const Vector<String> &arg_names) {
 	ERR_FAIL_COND_MSG(arg_names.size() != T::get_argument_count(), "Argument names size mismatch for " + Variant::get_type_name(T::get_base_type()) + ".");
 
@@ -315,6 +315,17 @@ String Variant::get_constructor_argument_name(Variant::Type p_type, int p_constr
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
 	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), String());
 	return construct_data[p_type][p_constructor].arg_names[p_argument];
+}
+
+void VariantInternal::refcounted_object_assign(Variant *v, const RefCounted *rc) {
+	if (!rc || !const_cast<RefCounted *>(rc)->init_ref()) {
+		v->_get_obj().obj = nullptr;
+		v->_get_obj().id = ObjectID();
+		return;
+	}
+
+	v->_get_obj().obj = const_cast<RefCounted *>(rc);
+	v->_get_obj().id = rc->get_instance_id();
 }
 
 void VariantInternal::object_assign(Variant *v, const Object *o) {

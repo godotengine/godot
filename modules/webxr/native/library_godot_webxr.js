@@ -42,6 +42,7 @@ const GodotWebXR = {
 		view_count: 1,
 		input_sources: new Array(16),
 		touches: new Array(5),
+		onsimpleevent: null,
 
 		// Monkey-patch the requestAnimationFrame() used by Emscripten for the main
 		// loop, so that we can swap it out for XRSession.requestAnimationFrame()
@@ -283,6 +284,9 @@ const GodotWebXR = {
 				GodotRuntime.free(c_str);
 			});
 
+			// Store onsimpleevent so we can use it later.
+			GodotWebXR.onsimpleevent = onsimpleevent;
+
 			const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
 			const gl = GL.getContext(gl_context_handle).GLctx;
 			GodotWebXR.gl = gl;
@@ -314,9 +318,11 @@ const GodotWebXR = {
 					// callback don't bubble up here and cause Godot to try the
 					// next reference space.
 					window.setTimeout(function () {
-						const c_str = GodotRuntime.allocString(reference_space_type);
-						onstarted(c_str);
-						GodotRuntime.free(c_str);
+						const reference_space_c_str = GodotRuntime.allocString(reference_space_type);
+						const enabled_features_c_str = GodotRuntime.allocString(Array.from(session.enabledFeatures).join(','));
+						onstarted(reference_space_c_str, enabled_features_c_str);
+						GodotRuntime.free(reference_space_c_str);
+						GodotRuntime.free(enabled_features_c_str);
 					}, 0);
 				}
 
@@ -368,6 +374,7 @@ const GodotWebXR = {
 		GodotWebXR.view_count = 1;
 		GodotWebXR.input_sources = new Array(16);
 		GodotWebXR.touches = new Array(5);
+		GodotWebXR.onsimpleevent = null;
 
 		// Disable the monkey-patched window.requestAnimationFrame() and
 		// pause/restart the main loop to activate it on all platforms.
@@ -474,8 +481,8 @@ const GodotWebXR = {
 	},
 
 	godot_webxr_update_input_source__proxy: 'sync',
-	godot_webxr_update_input_source__sig: 'iiiiiiiiiiii',
-	godot_webxr_update_input_source: function (p_input_source_id, r_target_pose, r_target_ray_mode, r_touch_index, r_has_grip_pose, r_grip_pose, r_has_standard_mapping, r_button_count, r_buttons, r_axes_count, r_axes) {
+	godot_webxr_update_input_source__sig: 'iiiiiiiiiiiiiii',
+	godot_webxr_update_input_source: function (p_input_source_id, r_target_pose, r_target_ray_mode, r_touch_index, r_has_grip_pose, r_grip_pose, r_has_standard_mapping, r_button_count, r_buttons, r_axes_count, r_axes, r_has_hand_data, r_hand_joints, r_hand_radii) {
 		if (!GodotWebXR.session || !GodotWebXR.frame) {
 			return 0;
 		}
@@ -558,6 +565,19 @@ const GodotWebXR = {
 		GodotRuntime.setHeapValue(r_button_count, button_count, 'i32');
 		GodotRuntime.setHeapValue(r_axes_count, axes_count, 'i32');
 
+		// Hand tracking data.
+		let has_hand_data = false;
+		if (input_source.hand && r_hand_joints !== 0 && r_hand_radii !== 0) {
+			const hand_joint_array = new Float32Array(25 * 16);
+			const hand_radii_array = new Float32Array(25);
+			if (frame.fillPoses(input_source.hand.values(), space, hand_joint_array) && frame.fillJointRadii(input_source.hand.values(), hand_radii_array)) {
+				GodotRuntime.heapCopy(HEAPF32, hand_joint_array, r_hand_joints);
+				GodotRuntime.heapCopy(HEAPF32, hand_radii_array, r_hand_radii);
+				has_hand_data = true;
+			}
+		}
+		GodotRuntime.setHeapValue(r_has_hand_data, has_hand_data ? 1 : 0, 'i32');
+
 		return true;
 	},
 
@@ -584,17 +604,61 @@ const GodotWebXR = {
 		}
 
 		const buf = GodotRuntime.malloc(point_count * 3 * 4);
-		GodotRuntime.setHeapValue(buf, point_count, 'i32');
 		for (let i = 0; i < point_count; i++) {
 			const point = GodotWebXR.space.boundsGeometry[i];
-			GodotRuntime.setHeapValue(buf + ((i * 3) + 1) * 4, point.x, 'float');
-			GodotRuntime.setHeapValue(buf + ((i * 3) + 2) * 4, point.y, 'float');
-			GodotRuntime.setHeapValue(buf + ((i * 3) + 3) * 4, point.z, 'float');
+			GodotRuntime.setHeapValue(buf + ((i * 3) + 0) * 4, point.x, 'float');
+			GodotRuntime.setHeapValue(buf + ((i * 3) + 1) * 4, point.y, 'float');
+			GodotRuntime.setHeapValue(buf + ((i * 3) + 2) * 4, point.z, 'float');
 		}
 		GodotRuntime.setHeapValue(r_points, buf, 'i32');
 
 		return point_count;
 	},
+
+	godot_webxr_get_frame_rate__proxy: 'sync',
+	godot_webxr_get_frame_rate__sig: 'i',
+	godot_webxr_get_frame_rate: function () {
+		if (!GodotWebXR.session || GodotWebXR.session.frameRate === undefined) {
+			return 0;
+		}
+		return GodotWebXR.session.frameRate;
+	},
+
+	godot_webxr_update_target_frame_rate__proxy: 'sync',
+	godot_webxr_update_target_frame_rate__sig: 'vi',
+	godot_webxr_update_target_frame_rate: function (p_frame_rate) {
+		if (!GodotWebXR.session || GodotWebXR.session.updateTargetFrameRate === undefined) {
+			return;
+		}
+
+		GodotWebXR.session.updateTargetFrameRate(p_frame_rate).then(() => {
+			const c_str = GodotRuntime.allocString('display_refresh_rate_changed');
+			GodotWebXR.onsimpleevent(c_str);
+			GodotRuntime.free(c_str);
+		});
+	},
+
+	godot_webxr_get_supported_frame_rates__proxy: 'sync',
+	godot_webxr_get_supported_frame_rates__sig: 'ii',
+	godot_webxr_get_supported_frame_rates: function (r_frame_rates) {
+		if (!GodotWebXR.session || GodotWebXR.session.supportedFrameRates === undefined) {
+			return 0;
+		}
+
+		const frame_rate_count = GodotWebXR.session.supportedFrameRates.length;
+		if (frame_rate_count === 0) {
+			return 0;
+		}
+
+		const buf = GodotRuntime.malloc(frame_rate_count * 4);
+		for (let i = 0; i < frame_rate_count; i++) {
+			GodotRuntime.setHeapValue(buf + (i * 4), GodotWebXR.session.supportedFrameRates[i], 'float');
+		}
+		GodotRuntime.setHeapValue(r_frame_rates, buf, 'i32');
+
+		return frame_rate_count;
+	},
+
 };
 
 autoAddDeps(GodotWebXR, '$GodotWebXR');

@@ -51,8 +51,8 @@ public:
 	int compress_mode = 0;
 	float lossy = 1.0;
 	int hdr_compression = 0;
-	int bptc_ldr = 0;
 	bool mipmaps = true;
+	bool high_quality = false;
 	Image::UsedChannels used_channels = Image::USED_CHANNELS_RGBA;
 	virtual ~LayeredTextureImport() {}
 };
@@ -119,7 +119,7 @@ public:
 
 	void set_mode(Mode p_mode) { mode = p_mode; }
 
-	ResourceImporterLayeredTexture();
+	ResourceImporterLayeredTexture(bool p_singleton = false);
 	~ResourceImporterLayeredTexture();
 };
 

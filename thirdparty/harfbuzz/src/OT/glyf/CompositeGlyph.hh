@@ -87,27 +87,69 @@ struct CompositeGlyphRecord
     }
   }
 
-  void transform_points (contour_point_vector_t &points) const
+  static void transform (const float (&matrix)[4],
+			 hb_array_t<contour_point_t> points)
   {
-    float matrix[4];
-    contour_point_t trans;
-    if (get_transformation (matrix, trans))
+    if (matrix[0] != 1.f || matrix[1] != 0.f ||
+	matrix[2] != 0.f || matrix[3] != 1.f)
+      for (auto &point : points)
+        point.transform (matrix);
+  }
+
+  static void translate (const contour_point_t &trans,
+			 hb_array_t<contour_point_t> points)
+  {
+    if (HB_OPTIMIZE_SIZE_VAL)
     {
-      if (scaled_offsets ())
-      {
-	points.translate (trans);
-	points.transform (matrix);
-      }
+      if (trans.x != 0.f || trans.y != 0.f)
+        for (auto &point : points)
+	  point.translate (trans);
+    }
+    else
+    {
+      if (trans.x != 0.f && trans.y != 0.f)
+        for (auto &point : points)
+	  point.translate (trans);
       else
       {
-	points.transform (matrix);
-	points.translate (trans);
+	if (trans.x != 0.f)
+	  for (auto &point : points)
+	    point.x += trans.x;
+	else if (trans.y != 0.f)
+	  for (auto &point : points)
+	    point.y += trans.y;
       }
     }
   }
 
-  unsigned compile_with_deltas (const contour_point_t &p_delta,
-                                char *out) const
+  void transform_points (hb_array_t<contour_point_t> points,
+			 const float (&matrix)[4],
+			 const contour_point_t &trans) const
+  {
+    if (scaled_offsets ())
+    {
+      translate (trans, points);
+      transform (matrix, points);
+    }
+    else
+    {
+      transform (matrix, points);
+      translate (trans, points);
+    }
+  }
+
+  bool get_points (contour_point_vector_t &points) const
+  {
+    float matrix[4];
+    contour_point_t trans;
+    get_transformation (matrix, trans);
+    if (unlikely (!points.alloc (points.length + 4))) return false; // For phantom points
+    points.push (trans);
+    return true;
+  }
+
+  unsigned compile_with_point (const contour_point_t &point,
+                               char *out) const
   {
     const HBINT8 *p = &StructAfter<const HBINT8> (flags);
 #ifndef HB_NO_BEYOND_64K
@@ -121,18 +163,17 @@ struct CompositeGlyphRecord
     unsigned len_before_val = (const char *)p - (const char *)this;
     if (flags & ARG_1_AND_2_ARE_WORDS)
     {
-      // no overflow, copy and update value with deltas
+      // no overflow, copy value
       hb_memcpy (out, this, len);
 
-      const HBINT16 *px = reinterpret_cast<const HBINT16 *> (p);
       HBINT16 *o = reinterpret_cast<HBINT16 *> (out + len_before_val);
-      o[0] = px[0] + roundf (p_delta.x);
-      o[1] = px[1] + roundf (p_delta.y);
+      o[0] = roundf (point.x);
+      o[1] = roundf (point.y);
     }
     else
     {
-      int new_x = p[0] + roundf (p_delta.x);
-      int new_y = p[1] + roundf (p_delta.y);
+      int new_x = roundf (point.x);
+      int new_y = roundf (point.y);
       if (new_x <= 127 && new_x >= -128 &&
           new_y <= 127 && new_y >= -128)
       {
@@ -143,7 +184,7 @@ struct CompositeGlyphRecord
       }
       else
       {
-        // int8 overflows after deltas applied
+        // new point value has an int8 overflow
         hb_memcpy (out, this, len_before_val);
         
         //update flags
@@ -171,6 +212,7 @@ struct CompositeGlyphRecord
   bool scaled_offsets () const
   { return (flags & (SCALED_COMPONENT_OFFSET | UNSCALED_COMPONENT_OFFSET)) == SCALED_COMPONENT_OFFSET; }
 
+  public:
   bool get_transformation (float (&matrix)[4], contour_point_t &trans) const
   {
     matrix[0] = matrix[3] = 1.f;
@@ -225,7 +267,6 @@ struct CompositeGlyphRecord
     return tx || ty;
   }
 
-  public:
   hb_codepoint_t get_gid () const
   {
 #ifndef HB_NO_BEYOND_64K
@@ -245,6 +286,27 @@ struct CompositeGlyphRecord
       /* TODO assert? */
       StructAfter<HBGlyphID16> (flags) = gid;
   }
+
+#ifndef HB_NO_BEYOND_64K
+  void lower_gid_24_to_16 ()
+  {
+    hb_codepoint_t gid = get_gid ();
+    if (!(flags & GID_IS_24BIT) || gid > 0xFFFFu)
+      return;
+
+    /* Lower the flag and move the rest of the struct down. */
+
+    unsigned size = get_size ();
+    char *end = (char *) this + size;
+    char *p = &StructAfter<char> (flags);
+    p += HBGlyphID24::static_size;
+
+    flags = flags & ~GID_IS_24BIT;
+    set_gid (gid);
+
+    memmove (p - HBGlyphID24::static_size + HBGlyphID16::static_size, p, end - p);
+  }
+#endif
 
   protected:
   HBUINT16	flags;
@@ -304,7 +366,7 @@ struct CompositeGlyph
   }
 
   bool compile_bytes_with_deltas (const hb_bytes_t &source_bytes,
-                                  const contour_point_vector_t &deltas,
+                                  const contour_point_vector_t &points_with_deltas,
                                   hb_bytes_t &dest_bytes /* OUT */)
   {
     if (source_bytes.length <= GlyphHeader::static_size ||
@@ -319,7 +381,7 @@ struct CompositeGlyph
     /* try to allocate more memories than source glyph bytes
      * in case that there might be an overflow for int8 value
      * and we would need to use int16 instead */
-    char *o = (char *) hb_calloc (source_len + source_len/2, sizeof (char));
+    char *o = (char *) hb_calloc (source_len * 2, sizeof (char));
     if (unlikely (!o)) return false;
 
     const CompositeGlyphRecord *c = reinterpret_cast<const CompositeGlyphRecord *> (source_bytes.arrayZ + GlyphHeader::static_size);
@@ -329,8 +391,11 @@ struct CompositeGlyph
     unsigned i = 0, source_comp_len = 0;
     for (const auto &component : it)
     {
-      /* last 4 points in deltas are phantom points and should not be included */
-      if (i >= deltas.length - 4) return false;
+      /* last 4 points in points_with_deltas are phantom points and should not be included */
+      if (i >= points_with_deltas.length - 4) {
+        hb_free (o);
+        return false;
+      }
 
       unsigned comp_len = component.get_size ();
       if (component.is_anchored ())
@@ -340,7 +405,7 @@ struct CompositeGlyph
       }
       else
       {
-        unsigned new_len = component.compile_with_deltas (deltas[i], p);
+        unsigned new_len = component.compile_with_point (points_with_deltas[i], p);
         p += new_len;
       }
       i++;

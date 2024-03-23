@@ -31,22 +31,20 @@
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
-#include "editor/editor_inspector.h"
-#include "editor/scene_tree_editor.h"
-#include "scene/gui/button.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/label.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/spin_box.h"
 #include "scene/gui/tree.h"
 
+class Button;
+class CheckBox;
 class ConnectDialogBinds;
+class EditorInspector;
+class Label;
+class LineEdit;
+class OptionButton;
+class PopupMenu;
+class SceneTreeEditor;
+class SpinBox;
 
 class ConnectDialog : public ConfirmationDialog {
 	GDCLASS(ConnectDialog, ConfirmationDialog);
@@ -88,7 +86,7 @@ public:
 			method = base_callable.get_method();
 		}
 
-		Callable get_callable() {
+		Callable get_callable() const {
 			if (unbinds > 0) {
 				return Callable(target, method).unbind(unbinds);
 			} else if (!binds.is_empty()) {
@@ -106,17 +104,28 @@ public:
 private:
 	Label *connect_to_label = nullptr;
 	LineEdit *from_signal = nullptr;
+	LineEdit *filter_nodes = nullptr;
 	Node *source = nullptr;
+	ConnectionData source_connection_data;
 	StringName signal;
+	PackedStringArray signal_args;
 	LineEdit *dst_method = nullptr;
 	ConnectDialogBinds *cdbinds = nullptr;
 	bool edit_mode = false;
 	bool first_popup = true;
 	NodePath dst_path;
 	VBoxContainer *vbc_right = nullptr;
-
 	SceneTreeEditor *tree = nullptr;
 	AcceptDialog *error = nullptr;
+
+	Button *open_method_tree = nullptr;
+	AcceptDialog *method_popup = nullptr;
+	Tree *method_tree = nullptr;
+	Label *empty_tree_label = nullptr;
+	LineEdit *method_search = nullptr;
+	CheckButton *script_methods_only = nullptr;
+	CheckButton *compatible_methods_only = nullptr;
+
 	SpinBox *unbind_count = nullptr;
 	EditorInspector *bind_editor = nullptr;
 	OptionButton *type_list = nullptr;
@@ -125,39 +134,55 @@ private:
 	CheckButton *advanced = nullptr;
 	Vector<Control *> bind_controls;
 
+	Label *warning_label = nullptr;
 	Label *error_label = nullptr;
 
 	void ok_pressed() override;
 	void _cancel_pressed();
 	void _item_activated();
-	void _text_submitted(const String &p_text);
 	void _tree_node_selected();
+	void _focus_currently_connected();
+
+	void _method_selected();
+	void _create_method_tree_items(const List<MethodInfo> &p_methods, TreeItem *p_parent_item);
+	List<MethodInfo> _filter_method_list(const List<MethodInfo> &p_methods, const MethodInfo &p_signal, const String &p_search_string) const;
+	void _update_method_tree();
+	void _method_check_button_pressed(const CheckButton *p_button);
+	void _open_method_popup();
+
 	void _unbind_count_changed(double p_count);
 	void _add_bind();
 	void _remove_bind();
 	void _advanced_pressed();
 	void _update_ok_enabled();
+	void _update_warning_label();
 
 protected:
+	virtual void _post_popup() override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	static StringName generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target);
+	static StringName generate_method_callback_name(Node *p_source, const String &p_signal_name, Node *p_target);
 	Node *get_source() const;
+	ConnectionData get_source_connection_data() const;
 	StringName get_signal_name() const;
+	PackedStringArray get_signal_args() const;
 	NodePath get_dst_path() const;
 	void set_dst_node(Node *p_node);
 	StringName get_dst_method_name() const;
 	void set_dst_method(const StringName &p_method);
 	int get_unbinds() const;
 	Vector<Variant> get_binds() const;
+	String get_signature(const MethodInfo &p_method, PackedStringArray *r_arg_names = nullptr);
 
 	bool get_deferred() const;
 	bool get_one_shot() const;
 	bool is_editing() const;
 
-	void init(ConnectionData p_cd, bool p_edit = false);
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
+	void init(const ConnectionData &p_cd, const PackedStringArray &p_signal_args, bool p_edit = false);
 
 	void popup_dialog(const String &p_for_signal);
 	ConnectDialog();
@@ -166,8 +191,7 @@ public:
 
 //////////////////////////////////////////
 
-// Custom Tree needed to use a RichTextLabel as tooltip control
-// when display signal documentation.
+// Custom `Tree` needed to use `EditorHelpTooltip` to display signal documentation.
 class ConnectionsDockTree : public Tree {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };
@@ -175,17 +199,27 @@ class ConnectionsDockTree : public Tree {
 class ConnectionsDock : public VBoxContainer {
 	GDCLASS(ConnectionsDock, VBoxContainer);
 
-	//Right-click Pop-up Menu Options.
-	enum SignalMenuOption {
-		CONNECT,
-		DISCONNECT_ALL,
-		COPY_NAME,
+	enum TreeItemType {
+		TREE_ITEM_TYPE_ROOT,
+		TREE_ITEM_TYPE_CLASS,
+		TREE_ITEM_TYPE_SIGNAL,
+		TREE_ITEM_TYPE_CONNECTION,
 	};
 
+	// Right-click context menu options.
+	enum ClassMenuOption {
+		CLASS_MENU_OPEN_DOCS,
+	};
+	enum SignalMenuOption {
+		SIGNAL_MENU_CONNECT,
+		SIGNAL_MENU_DISCONNECT_ALL,
+		SIGNAL_MENU_COPY_NAME,
+		SIGNAL_MENU_OPEN_DOCS,
+	};
 	enum SlotMenuOption {
-		EDIT,
-		GO_TO_SCRIPT,
-		DISCONNECT,
+		SLOT_MENU_EDIT,
+		SLOT_MENU_GO_TO_METHOD,
+		SLOT_MENU_DISCONNECT,
 	};
 
 	Node *selected_node = nullptr;
@@ -194,33 +228,35 @@ class ConnectionsDock : public VBoxContainer {
 	ConfirmationDialog *disconnect_all_dialog = nullptr;
 	ConnectDialog *connect_dialog = nullptr;
 	Button *connect_button = nullptr;
+	PopupMenu *class_menu = nullptr;
+	String class_menu_doc_class_name;
 	PopupMenu *signal_menu = nullptr;
 	PopupMenu *slot_menu = nullptr;
 	LineEdit *search_box = nullptr;
 
-	HashMap<StringName, HashMap<StringName, String>> descr_cache;
-
 	void _filter_changed(const String &p_text);
 
 	void _make_or_edit_connection();
-	void _connect(ConnectDialog::ConnectionData p_cd);
-	void _disconnect(TreeItem &p_item);
+	void _connect(const ConnectDialog::ConnectionData &p_cd);
+	void _disconnect(const ConnectDialog::ConnectionData &p_cd);
 	void _disconnect_all();
 
 	void _tree_item_selected();
 	void _tree_item_activated();
-	bool _is_item_signal(TreeItem &p_item);
+	TreeItemType _get_item_type(const TreeItem &p_item) const;
 	bool _is_connection_inherited(Connection &p_connection);
 
 	void _open_connection_dialog(TreeItem &p_item);
-	void _open_connection_dialog(ConnectDialog::ConnectionData p_cd);
-	void _go_to_script(TreeItem &p_item);
+	void _open_edit_connection_dialog(TreeItem &p_item);
+	void _go_to_method(TreeItem &p_item);
 
+	void _handle_class_menu_option(int p_option);
+	void _class_menu_about_to_popup();
 	void _handle_signal_menu_option(int p_option);
 	void _signal_menu_about_to_popup();
 	void _handle_slot_menu_option(int p_option);
 	void _slot_menu_about_to_popup();
-	void _rmb_pressed(Vector2 p_position, MouseButton p_button);
+	void _tree_gui_input(const Ref<InputEvent> &p_event);
 	void _close();
 
 protected:

@@ -39,6 +39,7 @@
 #include "core/typedefs.h"
 
 #include "core/io/resource_loader.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/shader_include.h"
@@ -83,7 +84,7 @@ private:
 		int line;
 		int index;
 		int size;
-		Vector<Token> generated;
+		LocalVector<Token> generated;
 
 	private:
 		void add_generated(const Token &p_t);
@@ -93,11 +94,13 @@ private:
 		int get_line() const;
 		int get_index() const;
 		char32_t peek();
+		int consume_line_continuations(int p_offset);
 
-		void get_and_clear_generated(Vector<Token> *r_out);
+		void get_and_clear_generated(LocalVector<char32_t> *r_out);
 		void backtrack(char32_t p_what);
 		LocalVector<Token> advance(char32_t p_what);
 		void skip_whitespace();
+		bool consume_empty_line();
 		String get_identifier(bool *r_is_cursor = nullptr, bool p_started = false);
 		String peek_identifier();
 		Token get_token();
@@ -167,7 +170,6 @@ private:
 private:
 	LocalVector<char32_t> output;
 	State *state = nullptr;
-	bool state_owner = false;
 
 private:
 	static bool is_char_word(char32_t p_char);
@@ -181,7 +183,7 @@ private:
 	}
 
 	void _set_unexpected_token_error(const String &p_what, int p_line) {
-		set_error(vformat(RTR("Unexpected token '%s'."), p_what), p_line);
+		set_error(vformat(RTR("Unexpected token: '%s'."), p_what), p_line);
 	}
 
 	void process_directive(Tokenizer *p_tokenizer);
@@ -204,6 +206,7 @@ private:
 	Error expand_macros(const String &p_string, int p_line, String &r_result);
 	bool expand_macros_once(const String &p_line, int p_line_number, const RBMap<String, Define *>::Element *p_define_pair, String &r_expanded);
 	bool find_match(const String &p_string, const String &p_value, int &r_index, int &r_index_start);
+	void concatenate_macro_body(String &r_body);
 
 	String next_directive(Tokenizer *p_tokenizer, const Vector<String> &p_directives);
 	void add_to_output(const String &p_str);
@@ -211,7 +214,7 @@ private:
 
 	static Define *create_define(const String &p_body);
 
-	void clear();
+	void clear_state();
 
 	Error preprocess(State *p_state, const String &p_code, String &r_result);
 

@@ -48,7 +48,7 @@ bool PacketPeerDTLS::is_available() {
 
 void PacketPeerDTLS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("poll"), &PacketPeerDTLS::poll);
-	ClassDB::bind_method(D_METHOD("connect_to_peer", "packet_peer", "validate_certs", "for_hostname", "valid_certificate"), &PacketPeerDTLS::connect_to_peer, DEFVAL(true), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("connect_to_peer", "packet_peer", "hostname", "client_options"), &PacketPeerDTLS::connect_to_peer, DEFVAL(Ref<TLSOptions>()));
 	ClassDB::bind_method(D_METHOD("get_status"), &PacketPeerDTLS::get_status);
 	ClassDB::bind_method(D_METHOD("disconnect_from_peer"), &PacketPeerDTLS::disconnect_from_peer);
 

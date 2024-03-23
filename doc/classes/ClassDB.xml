@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ClassDB" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ClassDB" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Class information repository.
+		A class information repository.
 	</brief_description>
 	<description>
 		Provides access to metadata stored for every available class.
@@ -63,6 +63,15 @@
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
 				Returns an array with the names all the integer constants of [param class] or its ancestry.
+			</description>
+		</method>
+		<method name="class_get_method_argument_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="method" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns the number of arguments of the method [param method] of [param class] or its ancestry if [param no_inheritance] is [code]false[/code].
 			</description>
 		</method>
 		<method name="class_get_method_list" qualifiers="const">

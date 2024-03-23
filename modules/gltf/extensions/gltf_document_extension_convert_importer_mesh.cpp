@@ -32,7 +32,7 @@
 
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/importer_mesh.h"
+#include "scene/resources/3d/importer_mesh.h"
 
 void GLTFDocumentExtensionConvertImporterMesh::_bind_methods() {
 }
@@ -70,7 +70,7 @@ Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_sta
 		}
 		queue.pop_front();
 	}
-	while (!queue.is_empty()) {
+	while (!delete_queue.is_empty()) {
 		List<Node *>::Element *E = delete_queue.front();
 		Node *node = E->get();
 		memdelete(node);

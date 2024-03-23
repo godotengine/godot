@@ -5,19 +5,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_PKCS12_H
 #define MBEDTLS_PKCS12_H
@@ -70,14 +58,29 @@ extern "C" {
  *
  * \return           0 if successful, or a MBEDTLS_ERR_XXX code
  */
-int mbedtls_pkcs12_pbe_sha1_rc4_128( mbedtls_asn1_buf *pbe_params, int mode,
-                             const unsigned char *pwd,  size_t pwdlen,
-                             const unsigned char *input, size_t len,
-                             unsigned char *output );
+int mbedtls_pkcs12_pbe_sha1_rc4_128(mbedtls_asn1_buf *pbe_params, int mode,
+                                    const unsigned char *pwd,  size_t pwdlen,
+                                    const unsigned char *input, size_t len,
+                                    unsigned char *output);
 
 /**
  * \brief            PKCS12 Password Based function (encryption / decryption)
  *                   for cipher-based and mbedtls_md-based PBE's
+ *
+ * \note             When encrypting, #MBEDTLS_CIPHER_PADDING_PKCS7 must
+ *                   be enabled at compile time.
+ *
+ * \warning          When decrypting:
+ *                   - if #MBEDTLS_CIPHER_PADDING_PKCS7 is enabled at compile
+ *                     time, this function validates the CBC padding and returns
+ *                     #MBEDTLS_ERR_PKCS12_PASSWORD_MISMATCH if the padding is
+ *                     invalid. Note that this can help active adversaries
+ *                     attempting to brute-forcing the password. Note also that
+ *                     there is no guarantee that an invalid password will be
+ *                     detected (the chances of a valid padding with a random
+ *                     password are about 1/255).
+ *                   - if #MBEDTLS_CIPHER_PADDING_PKCS7 is disabled at compile
+ *                     time, this function does not validate the CBC padding.
  *
  * \param pbe_params an ASN1 buffer containing the pkcs-12 PbeParams structure
  * \param mode       either #MBEDTLS_PKCS12_PBE_ENCRYPT or
@@ -87,17 +90,76 @@ int mbedtls_pkcs12_pbe_sha1_rc4_128( mbedtls_asn1_buf *pbe_params, int mode,
  * \param pwd        Latin1-encoded password used. This may only be \c NULL when
  *                   \p pwdlen is 0. No null terminator should be used.
  * \param pwdlen     length of the password (may be 0)
- * \param input      the input data
+ * \param data       the input data
  * \param len        data length
- * \param output     the output buffer
+ * \param output     Output buffer.
+ *                   On success, it contains the encrypted or decrypted data,
+ *                   possibly followed by the CBC padding.
+ *                   On failure, the content is indeterminate.
+ *                   For decryption, there must be enough room for \p len
+ *                   bytes.
+ *                   For encryption, there must be enough room for
+ *                   \p len + 1 bytes, rounded up to the block size of
+ *                   the block cipher identified by \p pbe_params.
  *
  * \return           0 if successful, or a MBEDTLS_ERR_XXX code
  */
-int mbedtls_pkcs12_pbe( mbedtls_asn1_buf *pbe_params, int mode,
-                mbedtls_cipher_type_t cipher_type, mbedtls_md_type_t md_type,
-                const unsigned char *pwd,  size_t pwdlen,
-                const unsigned char *input, size_t len,
-                unsigned char *output );
+int mbedtls_pkcs12_pbe(mbedtls_asn1_buf *pbe_params, int mode,
+                       mbedtls_cipher_type_t cipher_type, mbedtls_md_type_t md_type,
+                       const unsigned char *pwd,  size_t pwdlen,
+                       const unsigned char *data, size_t len,
+                       unsigned char *output);
+
+#if defined(MBEDTLS_CIPHER_PADDING_PKCS7)
+
+/**
+ * \brief            PKCS12 Password Based function (encryption / decryption)
+ *                   for cipher-based and mbedtls_md-based PBE's
+ *
+ *
+ * \warning          When decrypting:
+ *                   - This function validates the CBC padding and returns
+ *                     #MBEDTLS_ERR_PKCS12_PASSWORD_MISMATCH if the padding is
+ *                     invalid. Note that this can help active adversaries
+ *                     attempting to brute-forcing the password. Note also that
+ *                     there is no guarantee that an invalid password will be
+ *                     detected (the chances of a valid padding with a random
+ *                     password are about 1/255).
+ *
+ * \param pbe_params an ASN1 buffer containing the pkcs-12 PbeParams structure
+ * \param mode       either #MBEDTLS_PKCS12_PBE_ENCRYPT or
+ *                   #MBEDTLS_PKCS12_PBE_DECRYPT
+ * \param cipher_type the cipher used
+ * \param md_type    the mbedtls_md used
+ * \param pwd        Latin1-encoded password used. This may only be \c NULL when
+ *                   \p pwdlen is 0. No null terminator should be used.
+ * \param pwdlen     length of the password (may be 0)
+ * \param data       the input data
+ * \param len        data length
+ * \param output     Output buffer.
+ *                   On success, it contains the encrypted or decrypted data,
+ *                   possibly followed by the CBC padding.
+ *                   On failure, the content is indeterminate.
+ *                   For decryption, there must be enough room for \p len
+ *                   bytes.
+ *                   For encryption, there must be enough room for
+ *                   \p len + 1 bytes, rounded up to the block size of
+ *                   the block cipher identified by \p pbe_params.
+ * \param output_size size of output buffer.
+ *                    This must be big enough to accommodate for output plus
+ *                    padding data.
+ * \param output_len On success, length of actual data written to the output buffer.
+ *
+ * \return           0 if successful, or a MBEDTLS_ERR_XXX code
+ */
+int mbedtls_pkcs12_pbe_ext(mbedtls_asn1_buf *pbe_params, int mode,
+                           mbedtls_cipher_type_t cipher_type, mbedtls_md_type_t md_type,
+                           const unsigned char *pwd,  size_t pwdlen,
+                           const unsigned char *data, size_t len,
+                           unsigned char *output, size_t output_size,
+                           size_t *output_len);
+
+#endif /* MBEDTLS_CIPHER_PADDING_PKCS7 */
 
 #endif /* MBEDTLS_ASN1_PARSE_C */
 
@@ -128,10 +190,10 @@ int mbedtls_pkcs12_pbe( mbedtls_asn1_buf *pbe_params, int mode,
  *
  * \return          0 if successful, or a MD, BIGNUM type error.
  */
-int mbedtls_pkcs12_derivation( unsigned char *data, size_t datalen,
-                       const unsigned char *pwd, size_t pwdlen,
-                       const unsigned char *salt, size_t saltlen,
-                       mbedtls_md_type_t mbedtls_md, int id, int iterations );
+int mbedtls_pkcs12_derivation(unsigned char *data, size_t datalen,
+                              const unsigned char *pwd, size_t pwdlen,
+                              const unsigned char *salt, size_t saltlen,
+                              mbedtls_md_type_t mbedtls_md, int id, int iterations);
 
 #ifdef __cplusplus
 }

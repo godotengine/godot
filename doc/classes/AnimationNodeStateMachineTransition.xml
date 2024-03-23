@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeStateMachineTransition" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationNodeStateMachineTransition" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		A transition within an [AnimationNodeStateMachine] connecting two [AnimationRootNode]s.
 	</brief_description>
 	<description>
+		The path generated when using [method AnimationNodeStateMachinePlayback.travel] is limited to the nodes connected by [AnimationNodeStateMachineTransition].
+		You can set the timing and conditions of the transition in detail.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<members>
 		<member name="advance_condition" type="StringName" setter="set_advance_condition" getter="get_advance_condition" default="&amp;&quot;&quot;">
@@ -15,7 +18,7 @@
 			$animation_tree.set("parameters/conditions/idle", is_on_floor and (linear_velocity.x == 0))
 			[/gdscript]
 			[csharp]
-			GetNode&lt;AnimationTree&gt;("animation_tree").Set("parameters/conditions/idle", IsOnFloor &amp;&amp; (LinearVelocity.x == 0));
+			GetNode&lt;AnimationTree&gt;("animation_tree").Set("parameters/conditions/idle", IsOnFloor &amp;&amp; (LinearVelocity.X == 0));
 			[/csharp]
 			[/codeblocks]
 		</member>
@@ -27,6 +30,9 @@
 		</member>
 		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="1">
 			Lower priority transitions are preferred when travelling through the tree via [method AnimationNodeStateMachinePlayback.travel] or [member advance_mode] is set to [constant ADVANCE_MODE_AUTO].
+		</member>
+		<member name="reset" type="bool" setter="set_reset" getter="is_reset" default="true">
+			If [code]true[/code], the destination animation is played back from the beginning when switched.
 		</member>
 		<member name="switch_mode" type="int" setter="set_switch_mode" getter="get_switch_mode" enum="AnimationNodeStateMachineTransition.SwitchMode" default="0">
 			The transition type.

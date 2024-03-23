@@ -36,7 +36,7 @@
 class MeshDataTool : public RefCounted {
 	GDCLASS(MeshDataTool, RefCounted);
 
-	int format = 0;
+	uint64_t format = 0;
 	struct Vertex {
 		Vector3 vertex;
 		Color color;
@@ -74,12 +74,17 @@ class MeshDataTool : public RefCounted {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	Error commit_to_surface_bind_compat_81138(const Ref<ArrayMesh> &p_mesh);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	void clear();
 	Error create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surface);
-	Error commit_to_surface(const Ref<ArrayMesh> &p_mesh);
+	Error commit_to_surface(const Ref<ArrayMesh> &p_mesh, uint64_t p_compression_flags = 0);
 
-	int get_format() const;
+	uint64_t get_format() const;
 
 	int get_vertex_count() const;
 	int get_edge_count() const;

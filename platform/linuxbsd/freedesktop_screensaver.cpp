@@ -34,7 +34,11 @@
 
 #include "core/config/project_settings.h"
 
+#ifdef SOWRAP_ENABLED
 #include "dbus-so_wrap.h"
+#else
+#include <dbus/dbus.h>
+#endif
 
 #define BUS_OBJECT_NAME "org.freedesktop.ScreenSaver"
 #define BUS_OBJECT_PATH "/org/freedesktop/ScreenSaver"
@@ -127,12 +131,32 @@ void FreeDesktopScreenSaver::uninhibit() {
 }
 
 FreeDesktopScreenSaver::FreeDesktopScreenSaver() {
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
 	int dylibloader_verbose = 0;
 #endif
 	unsupported = (initialize_dbus(dylibloader_verbose) != 0);
+#else
+	unsupported = false;
+#endif
+
+	if (unsupported) {
+		return;
+	}
+
+	bool ver_ok = false;
+	int version_major = 0;
+	int version_minor = 0;
+	int version_rev = 0;
+	dbus_get_version(&version_major, &version_minor, &version_rev);
+	ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
+	print_verbose(vformat("ScreenSaver: DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
+	if (!ver_ok) {
+		print_verbose("ScreenSaver:: Unsupported DBus library version!");
+		unsupported = true;
+	}
 }
 
 #endif // DBUS_ENABLED

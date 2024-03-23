@@ -29,7 +29,8 @@
 /**************************************************************************/
 
 #include "openxr_action_set_editor.h"
-#include "editor/editor_node.h"
+
+#include "editor/editor_string_names.h"
 #include "openxr_action_editor.h"
 
 void OpenXRActionSetEditor::_bind_methods() {
@@ -45,16 +46,16 @@ void OpenXRActionSetEditor::_bind_methods() {
 
 void OpenXRActionSetEditor::_set_fold_icon() {
 	if (is_expanded) {
-		fold_btn->set_icon(get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")));
+		fold_btn->set_icon(get_theme_icon(SNAME("GuiTreeArrowDown"), EditorStringName(EditorIcons)));
 	} else {
-		fold_btn->set_icon(get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")));
+		fold_btn->set_icon(get_theme_icon(SNAME("GuiTreeArrowRight"), EditorStringName(EditorIcons)));
 	}
 }
 
 void OpenXRActionSetEditor::_theme_changed() {
 	_set_fold_icon();
-	add_action->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-	rem_action_set->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+	add_action->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
+	rem_action_set->set_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 }
 
 void OpenXRActionSetEditor::_notification(int p_what) {
@@ -212,7 +213,7 @@ void OpenXRActionSetEditor::set_focus_on_entry() {
 }
 
 OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRActionSet> p_action_set) {
-	undo_redo = EditorNode::get_undo_redo();
+	undo_redo = EditorUndoRedoManager::get_singleton();
 	action_map = p_action_map;
 	action_set = p_action_set;
 

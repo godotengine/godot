@@ -227,7 +227,7 @@ hb_shape_plan_create2 (hb_face_t                     *face,
 		       const char * const            *shaper_list)
 {
   DEBUG_MSG_FUNC (SHAPE_PLAN, nullptr,
-		  "face=%p num_features=%d num_coords=%d shaper_list=%p",
+		  "face=%p num_features=%u num_coords=%u shaper_list=%p",
 		  face,
 		  num_user_features,
 		  num_coords,
@@ -391,7 +391,7 @@ _hb_shape_plan_execute_internal (hb_shape_plan_t    *shape_plan,
 				 unsigned int        num_features)
 {
   DEBUG_MSG_FUNC (SHAPE_PLAN, shape_plan,
-		  "num_features=%d shaper_func=%p, shaper_name=%s",
+		  "num_features=%u shaper_func=%p, shaper_name=%s",
 		  num_features,
 		  shape_plan->key.shaper_func,
 		  shape_plan->key.shaper_name);
@@ -520,7 +520,7 @@ hb_shape_plan_create_cached2 (hb_face_t                     *face,
 			      const char * const            *shaper_list)
 {
   DEBUG_MSG_FUNC (SHAPE_PLAN, nullptr,
-		  "face=%p num_features=%d shaper_list=%p",
+		  "face=%p num_features=%u shaper_list=%p",
 		  face,
 		  num_user_features,
 		  shaper_list);

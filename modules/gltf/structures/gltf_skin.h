@@ -32,7 +32,9 @@
 #define GLTF_SKIN_H
 
 #include "../gltf_defines.h"
+
 #include "core/io/resource.h"
+#include "scene/resources/3d/skin.h"
 
 template <typename T>
 class TypedArray;
@@ -40,6 +42,8 @@ class TypedArray;
 class GLTFSkin : public Resource {
 	GDCLASS(GLTFSkin, Resource);
 	friend class GLTFDocument;
+	friend class SkinTool;
+	friend class FBXDocument;
 
 private:
 	// The "skeleton" property defined in the gltf spec. -1 = Scene Root
@@ -108,6 +112,9 @@ public:
 
 	Ref<Skin> get_godot_skin();
 	void set_godot_skin(Ref<Skin> p_godot_skin);
+
+	Dictionary to_dictionary();
+	Error from_dictionary(const Dictionary &dict);
 };
 
 #endif // GLTF_SKIN_H

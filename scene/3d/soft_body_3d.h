@@ -44,6 +44,7 @@ class SoftBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHand
 	int surface = 0;
 	Vector<uint8_t> buffer;
 	uint32_t stride = 0;
+	uint32_t normal_stride = 0;
 	uint32_t offset_vertices = 0;
 	uint32_t offset_normal = 0;
 
@@ -59,8 +60,8 @@ private:
 	void commit_changes();
 
 public:
-	void set_vertex(int p_vertex_id, const void *p_vector3) override;
-	void set_normal(int p_vertex_id, const void *p_vector3) override;
+	void set_vertex(int p_vertex_id, const Vector3 &p_vertex) override;
+	void set_normal(int p_vertex_id, const Vector3 &p_normal) override;
 	void set_aabb(const AABB &p_aabb) override;
 };
 
@@ -178,6 +179,8 @@ public:
 	void pin_point_toggle(int p_point_index);
 	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath());
 	bool is_point_pinned(int p_point_index) const;
+
+	void _pin_point_deferred(int p_point_index, bool pin, const NodePath p_spatial_attachment_path);
 
 	void set_ray_pickable(bool p_ray_pickable);
 	bool is_ray_pickable() const;

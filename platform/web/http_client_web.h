@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-#include "stddef.h"
+#include <stddef.h>
 
 typedef enum {
 	GODOT_JS_FETCH_STATE_REQUESTING = 0,
@@ -51,7 +51,6 @@ extern int godot_js_fetch_read_headers(int p_id, void (*parse_callback)(int p_si
 extern int godot_js_fetch_read_chunk(int p_id, uint8_t *p_buf, int p_buf_size);
 extern void godot_js_fetch_free(int p_id);
 extern godot_js_fetch_state_t godot_js_fetch_state_get(int p_id);
-extern int godot_js_fetch_body_length_get(int p_id);
 extern int godot_js_fetch_http_status_get(int p_id);
 extern int godot_js_fetch_is_chunked(int p_id);
 
@@ -86,7 +85,7 @@ public:
 
 	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) override;
 
-	Error connect_to_host(const String &p_host, int p_port = -1, bool p_tls = false, bool p_verify_host = true) override;
+	Error connect_to_host(const String &p_host, int p_port = -1, Ref<TLSOptions> p_tls_options = Ref<TLSOptions>()) override;
 	void set_connection(const Ref<StreamPeer> &p_connection) override;
 	Ref<StreamPeer> get_connection() const override;
 	void close() override;

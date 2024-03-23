@@ -38,7 +38,7 @@
  * Table specific optimizations (eg. extension promotion in GSUB/GPOS) may be performed.
  * Passing HB_TAG_NONE will disable table specific optimizations.
  *
- * Since: EXPERIMENTAL
+ * XSince: EXPERIMENTAL
  **/
 hb_blob_t* hb_subset_repack_or_fail (hb_tag_t table_tag,
                                      hb_object_t* hb_objects,

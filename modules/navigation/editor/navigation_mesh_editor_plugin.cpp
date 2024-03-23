@@ -32,12 +32,17 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "../navigation_mesh_generator.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
+#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -50,8 +55,8 @@ void NavigationMeshEditor::_node_removed(Node *p_node) {
 void NavigationMeshEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			button_bake->set_icon(get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
-			button_reset->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+			button_bake->set_icon(get_theme_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
+			button_reset->set_icon(get_theme_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
 		} break;
 	}
 }
@@ -59,22 +64,51 @@ void NavigationMeshEditor::_notification(int p_what) {
 void NavigationMeshEditor::_bake_pressed() {
 	button_bake->set_pressed(false);
 
-	ERR_FAIL_COND(!node);
-	if (!node->get_navigation_mesh().is_valid()) {
+	ERR_FAIL_NULL(node);
+	Ref<NavigationMesh> navmesh = node->get_navigation_mesh();
+	if (!navmesh.is_valid()) {
 		err_dialog->set_text(TTR("A NavigationMesh resource must be set or created for this node to work."));
 		err_dialog->popup_centered();
 		return;
 	}
 
-	NavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
-	NavigationMeshGenerator::get_singleton()->bake(node->get_navigation_mesh(), node);
+	String path = navmesh->get_path();
+	if (!path.is_resource_file()) {
+		int srpos = path.find("::");
+		if (srpos != -1) {
+			String base = path.substr(0, srpos);
+			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+				if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+					err_dialog->set_text(TTR("Cannot generate navigation mesh because it does not belong to the edited scene. Make it unique first."));
+					err_dialog->popup_centered();
+					return;
+				}
+			} else {
+				if (FileAccess::exists(base + ".import")) {
+					err_dialog->set_text(TTR("Cannot generate navigation mesh because it belongs to a resource which was imported."));
+					err_dialog->popup_centered();
+					return;
+				}
+			}
+		}
+	} else {
+		if (FileAccess::exists(path + ".import")) {
+			err_dialog->set_text(TTR("Cannot generate navigation mesh because the resource was imported from another type."));
+			err_dialog->popup_centered();
+			return;
+		}
+	}
+
+	node->bake_navigation_mesh(false);
 
 	node->update_gizmos();
 }
 
 void NavigationMeshEditor::_clear_pressed() {
 	if (node) {
-		NavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
+		if (node->get_navigation_mesh().is_valid()) {
+			node->get_navigation_mesh()->clear();
+		}
 	}
 
 	button_bake->set_pressed(false);
@@ -100,17 +134,18 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	bake_hbox = memnew(HBoxContainer);
 
 	button_bake = memnew(Button);
-	button_bake->set_flat(true);
+	button_bake->set_theme_type_variation("FlatButton");
 	bake_hbox->add_child(button_bake);
 	button_bake->set_toggle_mode(true);
-	button_bake->set_text(TTR("Bake NavMesh"));
+	button_bake->set_text(TTR("Bake NavigationMesh"));
+	button_bake->set_tooltip_text(TTR("Bakes the NavigationMesh by first parsing the scene for source geometry and then creating the navigation mesh vertices and polygons."));
 	button_bake->connect("pressed", callable_mp(this, &NavigationMeshEditor::_bake_pressed));
 
 	button_reset = memnew(Button);
-	button_reset->set_flat(true);
+	button_reset->set_theme_type_variation("FlatButton");
 	bake_hbox->add_child(button_reset);
-	// No button text, we only use a revert icon which is set when entering the tree.
-	button_reset->set_tooltip_text(TTR("Clear the navigation mesh."));
+	button_reset->set_text(TTR("Clear NavigationMesh"));
+	button_reset->set_tooltip_text(TTR("Clears the internal NavigationMesh vertices and polygons."));
 	button_reset->connect("pressed", callable_mp(this, &NavigationMeshEditor::_clear_pressed));
 
 	bake_info = memnew(Label);

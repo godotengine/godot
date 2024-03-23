@@ -45,4 +45,4 @@ void unregister_ios_api() {
 void register_ios_api() {}
 void unregister_ios_api() {}
 
-#endif
+#endif // IOS_ENABLED

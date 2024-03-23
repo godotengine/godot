@@ -31,11 +31,12 @@
 #ifndef AUDIO_DRIVER_WEB_H
 #define AUDIO_DRIVER_WEB_H
 
+#include "godot_audio.h"
+#include "godot_js.h"
+
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "servers/audio_server.h"
-
-#include "godot_audio.h"
 
 class AudioDriverWeb : public AudioDriver {
 private:
@@ -55,8 +56,8 @@ private:
 	int mix_rate = 0;
 	int channel_count = 0;
 
-	static void _state_change_callback(int p_state);
-	static void _latency_update_callback(float p_latency);
+	WASM_EXPORT static void _state_change_callback(int p_state);
+	WASM_EXPORT static void _latency_update_callback(float p_latency);
 
 	static AudioDriverWeb *singleton;
 
@@ -77,18 +78,19 @@ public:
 	virtual void start() final;
 	virtual void finish() final;
 
-	virtual float get_latency() override;
 	virtual int get_mix_rate() const override;
 	virtual SpeakerMode get_speaker_mode() const override;
+	virtual float get_latency() override;
 
-	virtual Error capture_start() override;
-	virtual Error capture_stop() override;
+	virtual Error input_start() override;
+	virtual Error input_stop() override;
 
 	static void resume();
 
 	AudioDriverWeb() {}
 };
 
+#ifdef THREADS_ENABLED
 class AudioDriverWorklet : public AudioDriverWeb {
 private:
 	enum {
@@ -111,10 +113,62 @@ protected:
 	virtual void finish_driver() override;
 
 public:
-	virtual const char *get_name() const override { return "AudioWorklet"; }
+	virtual const char *get_name() const override {
+		return "AudioWorklet";
+	}
 
-	void lock() override;
-	void unlock() override;
+	virtual void lock() override;
+	virtual void unlock() override;
 };
+
+#else
+
+class AudioDriverWorklet : public AudioDriverWeb {
+private:
+	static void _process_callback(int p_pos, int p_samples);
+	static void _capture_callback(int p_pos, int p_samples);
+
+	static AudioDriverWorklet *singleton;
+
+protected:
+	virtual Error create(int &p_buffer_size, int p_output_channels) override;
+	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
+
+public:
+	virtual const char *get_name() const override {
+		return "AudioWorklet";
+	}
+
+	virtual void lock() override {}
+	virtual void unlock() override {}
+
+	static AudioDriverWorklet *get_singleton() { return singleton; }
+
+	AudioDriverWorklet() { singleton = this; }
+};
+
+class AudioDriverScriptProcessor : public AudioDriverWeb {
+private:
+	static void _process_callback();
+
+	static AudioDriverScriptProcessor *singleton;
+
+protected:
+	virtual Error create(int &p_buffer_size, int p_output_channels) override;
+	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
+	virtual void finish_driver() override;
+
+public:
+	virtual const char *get_name() const override { return "ScriptProcessor"; }
+
+	virtual void lock() override {}
+	virtual void unlock() override {}
+
+	static AudioDriverScriptProcessor *get_singleton() { return singleton; }
+
+	AudioDriverScriptProcessor() { singleton = this; }
+};
+
+#endif // THREADS_ENABLED
 
 #endif // AUDIO_DRIVER_WEB_H

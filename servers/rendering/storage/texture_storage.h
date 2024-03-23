@@ -90,6 +90,8 @@ public:
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
 
+	virtual Image::Format texture_get_format(RID p_texture) const = 0;
+
 	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
 	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) = 0;
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
@@ -100,14 +102,16 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) = 0;
 
-	virtual RID texture_get_rd_texture_rid(RID p_texture, bool p_srgb = false) const = 0;
+	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) = 0;
+	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
+	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
 
 	/* Decal API */
 	virtual RID decal_allocate() = 0;
 	virtual void decal_initialize(RID p_rid) = 0;
 	virtual void decal_free(RID p_rid) = 0;
 
-	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) = 0;
+	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) = 0;
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) = 0;
 	virtual void decal_set_emission_energy(RID p_decal, float p_energy) = 0;
 	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) = 0;
@@ -118,6 +122,7 @@ public:
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
 
 	virtual AABB decal_get_aabb(RID p_decal) const = 0;
+	virtual uint32_t decal_get_cull_mask(RID p_decal) const = 0;
 
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
@@ -127,6 +132,7 @@ public:
 	virtual RID decal_instance_create(RID p_decal) = 0;
 	virtual void decal_instance_free(RID p_decal_instance) = 0;
 	virtual void decal_instance_set_transform(RID p_decal_instance, const Transform3D &p_transform) = 0;
+	virtual void decal_instance_set_sorting_offset(RID p_decal_instance, float p_sorting_offset) = 0;
 
 	/* RENDER TARGET */
 
@@ -145,6 +151,11 @@ public:
 	virtual void render_target_set_as_unused(RID p_render_target) = 0;
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) = 0;
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const = 0;
+	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) = 0;
+	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const = 0;
+	virtual void render_target_do_msaa_resolve(RID p_render_target) = 0;
+	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) = 0;
+	virtual bool render_target_is_using_hdr(RID p_render_target) const = 0;
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) = 0;
 	virtual bool render_target_is_clear_requested(RID p_render_target) = 0;

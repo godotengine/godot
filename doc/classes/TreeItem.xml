@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TreeItem" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TreeItem" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Control for a single item inside a [Tree].
+		An internal control for a single item inside [Tree].
 	</brief_description>
 	<description>
-		Control for a single item inside a [Tree]. May have child [TreeItem]s and be styled as well as contain buttons.
-		You can remove a [TreeItem] by using [method Object.free].
+		A single item of a [Tree] control. It can contain other [TreeItem]s as children, which allows it to create a hierarchy. It can also contain text and buttons. [TreeItem] is not a [Node], it is internal to the [Tree].
+		To create a [TreeItem], use [method Tree.create_item] or [method TreeItem.create_child]. To remove a [TreeItem], use [method Object.free].
+		[b]Note:[/b] The ID values used for buttons are 32-bit, unlike [int] which is always 64-bit. They go from [code]-2147483648[/code] to [code]2147483647[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -18,7 +19,14 @@
 			<param index="3" name="disabled" type="bool" default="false" />
 			<param index="4" name="tooltip_text" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a button with [Texture2D] [param button] at column [param column]. The [param id] is used to identify the button. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip_text].
+				Adds a button with [Texture2D] [param button] at column [param column]. The [param id] is used to identify the button in the according [signal Tree.button_clicked] signal and can be different from the buttons index. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip_text].
+			</description>
+		</method>
+		<method name="add_child">
+			<return type="void" />
+			<param index="0" name="child" type="TreeItem" />
+			<description>
+				Adds a previously unparented [TreeItem] as a direct child of this one. The [param child] item must not be a part of any [Tree] or parented to any [TreeItem]. See also [method remove_child].
 			</description>
 		</method>
 		<method name="call_recursive" qualifiers="vararg">
@@ -44,10 +52,10 @@
 		</method>
 		<method name="create_child">
 			<return type="TreeItem" />
-			<param index="0" name="idx" type="int" default="-1" />
+			<param index="0" name="index" type="int" default="-1" />
 			<description>
 				Creates an item and adds it as a child.
-				The new item will be inserted as position [param idx] (the default value [code]-1[/code] means the last position), or it will be the last child if [param idx] is higher than the child count.
+				The new item will be inserted as position [param index] (the default value [code]-1[/code] means the last position), or it will be the last child if [param index] is higher than the child count.
 			</description>
 		</method>
 		<method name="deselect">
@@ -60,17 +68,24 @@
 		<method name="erase_button">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<description>
-				Removes the button at index [param button_idx] in column [param column].
+				Removes the button at index [param button_index] in column [param column].
+			</description>
+		</method>
+		<method name="get_autowrap_mode" qualifiers="const">
+			<return type="int" enum="TextServer.AutowrapMode" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the text autowrap mode in the given [param column]. By default it is [constant TextServer.AUTOWRAP_OFF].
 			</description>
 		</method>
 		<method name="get_button" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<description>
-				Returns the [Texture2D] of the button at index [param button_idx] in column [param column].
+				Returns the [Texture2D] of the button at index [param button_index] in column [param column].
 			</description>
 		</method>
 		<method name="get_button_by_id" qualifiers="const">
@@ -79,6 +94,14 @@
 			<param index="1" name="id" type="int" />
 			<description>
 				Returns the button index if there is a button with ID [param id] in column [param column], otherwise returns -1.
+			</description>
+		</method>
+		<method name="get_button_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="id" type="int" />
+			<description>
+				Returns the color of the button with ID [param id] in column [param column]. If the specified button does not exist, returns [constant Color.BLACK].
 			</description>
 		</method>
 		<method name="get_button_count" qualifiers="const">
@@ -91,17 +114,17 @@
 		<method name="get_button_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<description>
-				Returns the ID for the button at index [param button_idx] in column [param column].
+				Returns the ID for the button at index [param button_index] in column [param column].
 			</description>
 		</method>
 		<method name="get_button_tooltip_text" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<description>
-				Returns the tooltip text for the button at index [param button_idx] in column [param column].
+				Returns the tooltip text for the button at index [param button_index] in column [param column].
 			</description>
 		</method>
 		<method name="get_cell_mode" qualifiers="const">
@@ -113,9 +136,9 @@
 		</method>
 		<method name="get_child">
 			<return type="TreeItem" />
-			<param index="0" name="idx" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Returns a child item by its index (see [method get_child_count]). This method is often used for iterating all children of an item.
+				Returns a child item by its [param index] (see [method get_child_count]). This method is often used for iterating all children of an item.
 				Negative indices access the children from the last one.
 			</description>
 		</method>
@@ -143,6 +166,13 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Returns the custom color of column [param column].
+			</description>
+		</method>
+		<method name="get_custom_draw_callback" qualifiers="const">
+			<return type="Callable" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the custom callback of column [param column].
 			</description>
 		</method>
 		<method name="get_custom_font" qualifiers="const">
@@ -183,7 +213,7 @@
 			<return type="int" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns the column's icon's maximum width.
+				Returns the maximum allowed width of the icon in the given [param column].
 			</description>
 		</method>
 		<method name="get_icon_modulate" qualifiers="const">
@@ -226,11 +256,19 @@
 				Returns the next sibling TreeItem in the tree or a null object if there is none.
 			</description>
 		</method>
+		<method name="get_next_in_tree">
+			<return type="TreeItem" />
+			<param index="0" name="wrap" type="bool" default="false" />
+			<description>
+				Returns the next TreeItem in the tree (in the context of a depth-first search) or a [code]null[/code] object if there is none.
+				If [param wrap] is enabled, the method will wrap around to the first element in the tree when called on the last element, otherwise it returns [code]null[/code].
+			</description>
+		</method>
 		<method name="get_next_visible">
 			<return type="TreeItem" />
 			<param index="0" name="wrap" type="bool" default="false" />
 			<description>
-				Returns the next visible sibling TreeItem in the tree or a null object if there is none.
+				Returns the next visible TreeItem in the tree (in the context of a depth-first search) or a [code]null[/code] object if there is none.
 				If [param wrap] is enabled, the method will wrap around to the first visible element in the tree when called on the last visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
@@ -246,11 +284,19 @@
 				Returns the previous sibling TreeItem in the tree or a null object if there is none.
 			</description>
 		</method>
+		<method name="get_prev_in_tree">
+			<return type="TreeItem" />
+			<param index="0" name="wrap" type="bool" default="false" />
+			<description>
+				Returns the previous TreeItem in the tree (in the context of a depth-first search) or a [code]null[/code] object if there is none.
+				If [param wrap] is enabled, the method will wrap around to the last element in the tree when called on the first visible element, otherwise it returns [code]null[/code].
+			</description>
+		</method>
 		<method name="get_prev_visible">
 			<return type="TreeItem" />
 			<param index="0" name="wrap" type="bool" default="false" />
 			<description>
-				Returns the previous visible sibling TreeItem in the tree or a null object if there is none.
+				Returns the previous visible sibling TreeItem in the tree (in the context of a depth-first search) or a [code]null[/code] object if there is none.
 				If [param wrap] is enabled, the method will wrap around to the last visible element in the tree when called on the first visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
@@ -308,6 +354,13 @@
 				Returns item's text base writing direction.
 			</description>
 		</method>
+		<method name="get_text_overrun_behavior" qualifiers="const">
+			<return type="int" enum="TextServer.OverrunBehavior" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the clipping behavior when the text exceeds the item's bounding rectangle in the given [param column]. By default it is [constant TextServer.OVERRUN_TRIM_ELLIPSIS].
+			</description>
+		</method>
 		<method name="get_tooltip_text" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="column" type="int" />
@@ -332,9 +385,9 @@
 		<method name="is_button_disabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<description>
-				Returns [code]true[/code] if the button at index [param button_idx] for the given [param column] is disabled.
+				Returns [code]true[/code] if the button at index [param button_index] for the given [param column] is disabled.
 			</description>
 		</method>
 		<method name="is_checked" qualifiers="const">
@@ -348,6 +401,13 @@
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
+			</description>
+		</method>
+		<method name="is_edit_multiline" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns [code]true[/code] if the given [param column] is multiline editable.
 			</description>
 		</method>
 		<method name="is_editable">
@@ -378,6 +438,12 @@
 				Returns [code]true[/code] if the given [param column] is selected.
 			</description>
 		</method>
+		<method name="is_visible_in_tree" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member visible] is [code]true[/code] and all its ancestors are also visible.
+			</description>
+		</method>
 		<method name="move_after">
 			<return type="void" />
 			<param index="0" name="item" type="TreeItem" />
@@ -406,7 +472,8 @@
 			<return type="void" />
 			<param index="0" name="child" type="TreeItem" />
 			<description>
-				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later. To completely remove a [TreeItem] use [method Object.free].
+				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later (see [method add_child]). To completely remove a [TreeItem] use [method Object.free].
+				[b]Note:[/b] If you want to move a child from one [Tree] to another, then instead of removing and adding it manually you can use [method move_before] or [method move_after].
 			</description>
 		</method>
 		<method name="select">
@@ -416,31 +483,48 @@
 				Selects the given [param column].
 			</description>
 		</method>
+		<method name="set_autowrap_mode">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="autowrap_mode" type="int" enum="TextServer.AutowrapMode" />
+			<description>
+				Sets the autowrap mode in the given [param column]. If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the cell's bounding rectangle.
+			</description>
+		</method>
 		<method name="set_button">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<param index="2" name="button" type="Texture2D" />
 			<description>
-				Sets the given column's button [Texture2D] at index [param button_idx] to [param button].
+				Sets the given column's button [Texture2D] at index [param button_index] to [param button].
 			</description>
 		</method>
 		<method name="set_button_color">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<param index="2" name="color" type="Color" />
 			<description>
-				Sets the given column's button color at index [param button_idx] to [param color].
+				Sets the given column's button color at index [param button_index] to [param color].
 			</description>
 		</method>
 		<method name="set_button_disabled">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<param index="2" name="disabled" type="bool" />
 			<description>
-				If [code]true[/code], disables the button at index [param button_idx] in the given [param column].
+				If [code]true[/code], disables the button at index [param button_index] in the given [param column].
+			</description>
+		</method>
+		<method name="set_button_tooltip_text">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="button_index" type="int" />
+			<param index="2" name="tooltip" type="String" />
+			<description>
+				Sets the tooltip text for the button at index [param button_index] in the given [param column].
 			</description>
 		</method>
 		<method name="set_cell_mode">
@@ -456,7 +540,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="checked" type="bool" />
 			<description>
-				If [code]true[/code], the given [param column] is checked. Clears column's indeterminate status.
+				If [param checked] is [code]true[/code], the given [param column] is checked. Clears column's indeterminate status.
 			</description>
 		</method>
 		<method name="set_collapsed_recursive">
@@ -490,13 +574,22 @@
 				Sets the given column's custom color.
 			</description>
 		</method>
-		<method name="set_custom_draw">
+		<method name="set_custom_draw" deprecated="Use [method TreeItem.set_custom_draw_callback] instead.">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="object" type="Object" />
 			<param index="2" name="callback" type="StringName" />
 			<description>
-				Sets the given column's custom draw callback to [param callback] method on [param object].
+				Sets the given column's custom draw callback to the [param callback] method on [param object].
+				The method named [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
+			</description>
+		</method>
+		<method name="set_custom_draw_callback">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Sets the given column's custom draw callback. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback.
 				The [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
 			</description>
 		</method>
@@ -516,12 +609,21 @@
 				Sets custom font size used to draw text in the given [param column].
 			</description>
 		</method>
+		<method name="set_edit_multiline">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="multiline" type="bool" />
+			<description>
+				If [param multiline] is [code]true[/code], the given [param column] is multiline editable.
+				[b]Note:[/b] This option only affects the type of control ([LineEdit] or [TextEdit]) that appears when editing the column. You can set multiline values with [method set_text] even if the column is not multiline editable.
+			</description>
+		</method>
 		<method name="set_editable">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], the given [param column] is editable.
+				If [param enabled] is [code]true[/code], the given [param column] is editable.
 			</description>
 		</method>
 		<method name="set_expand_right">
@@ -529,7 +631,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], the given [param column] is expanded to the right.
+				If [param enable] is [code]true[/code], the given [param column] is expanded to the right.
 			</description>
 		</method>
 		<method name="set_icon">
@@ -545,7 +647,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="width" type="int" />
 			<description>
-				Sets the given column's icon's maximum width.
+				Sets the maximum allowed width of the icon in the given [param column]. This limit is applied on top of the default size of the icon and on top of [theme_item Tree.icon_max_width]. The height is adjusted according to the icon's ratio.
 			</description>
 		</method>
 		<method name="set_icon_modulate">
@@ -569,7 +671,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="indeterminate" type="bool" />
 			<description>
-				If [code]true[/code], the given [param column] is marked [param indeterminate].
+				If [param indeterminate] is [code]true[/code], the given [param column] is marked indeterminate.
 				[b]Note:[/b] If set [code]true[/code] from [code]false[/code], then column is cleared of checked status.
 			</description>
 		</method>
@@ -614,7 +716,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="selectable" type="bool" />
 			<description>
-				If [code]true[/code], the given column is selectable.
+				If [param selectable] is [code]true[/code], the given [param column] is selectable.
 			</description>
 		</method>
 		<method name="set_structured_text_bidi_override">
@@ -663,6 +765,14 @@
 				Sets item's text base writing direction.
 			</description>
 		</method>
+		<method name="set_text_overrun_behavior">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="overrun_behavior" type="int" enum="TextServer.OverrunBehavior" />
+			<description>
+				Sets the clipping behavior when the text exceeds the item's bounding rectangle in the given [param column].
+			</description>
+		</method>
 		<method name="set_tooltip_text">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
@@ -674,6 +784,7 @@
 		<method name="uncollapse_tree">
 			<return type="void" />
 			<description>
+				Uncollapses all [TreeItem]s necessary to reveal this [TreeItem], i.e. all ancestor [TreeItem]s.
 			</description>
 		</method>
 	</methods>

@@ -33,8 +33,9 @@
 #include "hb-subset.h"
 #include "hb-map.hh"
 #include "hb-set.hh"
-
+#include "hb-cplusplus.hh"
 #include "hb-font.hh"
+#include "hb-subset-instancer-solver.hh"
 
 struct hb_ot_name_record_ids_t
 {
@@ -82,22 +83,34 @@ HB_MARK_AS_FLAG_T (hb_subset_flags_t);
 
 struct hb_subset_input_t
 {
+  HB_INTERNAL hb_subset_input_t ();
+
+  ~hb_subset_input_t ()
+  {
+    sets.~sets_t ();
+
+#ifdef HB_EXPERIMENTAL_API
+    for (auto _ : name_table_overrides.values ())
+      _.fini ();
+#endif
+  }
+
   hb_object_header_t header;
 
   struct sets_t {
-    hb_set_t *glyphs;
-    hb_set_t *unicodes;
-    hb_set_t *no_subset_tables;
-    hb_set_t *drop_tables;
-    hb_set_t *name_ids;
-    hb_set_t *name_languages;
-    hb_set_t *layout_features;
-    hb_set_t *layout_scripts;
+    hb::shared_ptr<hb_set_t> glyphs;
+    hb::shared_ptr<hb_set_t> unicodes;
+    hb::shared_ptr<hb_set_t> no_subset_tables;
+    hb::shared_ptr<hb_set_t> drop_tables;
+    hb::shared_ptr<hb_set_t> name_ids;
+    hb::shared_ptr<hb_set_t> name_languages;
+    hb::shared_ptr<hb_set_t> layout_features;
+    hb::shared_ptr<hb_set_t> layout_scripts;
   };
 
   union {
     sets_t sets;
-    hb_set_t* set_ptrs[sizeof (sets_t) / sizeof (hb_set_t*)];
+    hb::shared_ptr<hb_set_t> set_ptrs[sizeof (sets_t) / sizeof (hb_set_t*)];
   };
 
   unsigned flags;
@@ -106,9 +119,10 @@ struct hb_subset_input_t
   // If set loca format will always be the long version.
   bool force_long_loca = false;
 
-  hb_hashmap_t<hb_tag_t, float> *axes_location;
+  hb_hashmap_t<hb_tag_t, Triple> axes_location;
+  hb_map_t glyph_map;
 #ifdef HB_EXPERIMENTAL_API
-  hb_hashmap_t<hb_ot_name_record_ids_t, hb_bytes_t> *name_table_overrides;
+  hb_hashmap_t<hb_ot_name_record_ids_t, hb_bytes_t> name_table_overrides;
 #endif
 
   inline unsigned num_sets () const
@@ -116,9 +130,9 @@ struct hb_subset_input_t
     return sizeof (set_ptrs) / sizeof (hb_set_t*);
   }
 
-  inline hb_array_t<hb_set_t*> sets_iter ()
+  inline hb_array_t<hb::shared_ptr<hb_set_t>> sets_iter ()
   {
-    return hb_array_t<hb_set_t*> (set_ptrs, num_sets ());
+    return hb_array (set_ptrs);
   }
 
   bool in_error () const
@@ -129,9 +143,9 @@ struct hb_subset_input_t
         return true;
     }
 
-    return axes_location->in_error ()
+    return axes_location.in_error ()
 #ifdef HB_EXPERIMENTAL_API
-	|| name_table_overrides->in_error ()
+	|| name_table_overrides.in_error ()
 #endif
 	;
   }

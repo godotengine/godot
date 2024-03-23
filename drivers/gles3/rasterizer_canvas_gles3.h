@@ -39,8 +39,8 @@
 #include "storage/material_storage.h"
 #include "storage/texture_storage.h"
 
-#include "shaders/canvas.glsl.gen.h"
-#include "shaders/canvas_occlusion.glsl.gen.h"
+#include "drivers/gles3/shaders/canvas.glsl.gen.h"
+#include "drivers/gles3/shaders/canvas_occlusion.glsl.gen.h"
 
 class RasterizerSceneGLES3;
 
@@ -75,6 +75,9 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 
 		FLAGS_USE_MSDF = (1 << 28),
 		FLAGS_USE_LCD = (1 << 29),
+
+		FLAGS_FLIP_H = (1 << 30),
+		FLAGS_FLIP_V = (1 << 31),
 	};
 
 	enum {
@@ -189,7 +192,7 @@ public:
 		GLuint index_buffer = 0;
 		int count = 0;
 		bool color_disabled = false;
-		Color color;
+		Color color = Color(1.0, 1.0, 1.0, 1.0);
 	};
 
 	struct {
@@ -244,7 +247,6 @@ public:
 
 		uint32_t max_lights_per_render = 256;
 		uint32_t max_lights_per_item = 16;
-		uint32_t max_instances_per_batch = 512;
 		uint32_t max_instances_per_buffer = 16384;
 		uint32_t max_instance_buffer_size = 16384 * 128;
 	} data;
@@ -253,6 +255,7 @@ public:
 		// Position in the UBO measured in bytes
 		uint32_t start = 0;
 		uint32_t instance_count = 0;
+		uint32_t instance_buffer_index = 0;
 
 		RID tex;
 		RS::CanvasItemTextureFilter filter = RS::CANVAS_ITEM_TEXTURE_FILTER_MAX;
@@ -266,6 +269,7 @@ public:
 		RID material;
 		GLES3::CanvasMaterialData *material_data = nullptr;
 		CanvasShaderGLES3::ShaderVariant shader_variant = CanvasShaderGLES3::MODE_QUAD;
+		uint64_t vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_COLOR | RS::ARRAY_FORMAT_TEX_UV;
 
 		const Item::Command *command = nullptr;
 		Item::Command::Type command_type = Item::Command::TYPE_ANIMATION_SLICE; // Can default to any type that doesn't form a batch.
@@ -278,7 +282,7 @@ public:
 	// We track them and ensure that they don't get reused until at least 2 frames have passed
 	// to avoid the GPU stalling to wait for a resource to become available.
 	struct DataBuffer {
-		GLuint buffer = 0;
+		Vector<GLuint> instance_buffers;
 		GLuint light_ubo = 0;
 		GLuint state_ubo = 0;
 		uint64_t last_frame_used = -3;
@@ -288,9 +292,10 @@ public:
 	struct State {
 		LocalVector<DataBuffer> canvas_instance_data_buffers;
 		LocalVector<Batch> canvas_instance_batches;
-		uint32_t current_buffer = 0;
-		uint32_t current_buffer_index = 0;
+		uint32_t current_data_buffer_index = 0;
+		uint32_t current_instance_buffer_index = 0;
 		uint32_t current_batch_index = 0;
+		uint32_t last_item_index = 0;
 
 		InstanceData *instance_data_array = nullptr;
 
@@ -350,18 +355,24 @@ public:
 	void _bind_canvas_texture(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat);
 	void _prepare_canvas_texture(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, uint32_t &r_index, Size2 &r_texpixel_size);
 
-	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) override;
-	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, uint32_t &r_last_index, bool &r_sdf_used, bool p_to_backbuffer = false);
-	void _record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_break_batch, bool &r_sdf_used);
-	void _render_batch(Light *p_lights, uint32_t p_index);
+	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) override;
+	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool &r_sdf_used, bool p_to_backbuffer = false, RenderingMethod::RenderInfo *r_render_info = nullptr);
+	void _record_item_commands(const Item *p_item, RID p_render_target, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_break_batch, bool &r_sdf_used, const Point2 &p_offset);
+	void _render_batch(Light *p_lights, uint32_t p_index, RenderingMethod::RenderInfo *r_render_info = nullptr);
 	bool _bind_material(GLES3::CanvasMaterialData *p_material_data, CanvasShaderGLES3::ShaderVariant p_variant, uint64_t p_specialization);
-	void _new_batch(bool &r_batch_broken, uint32_t &r_index);
+	void _new_batch(bool &r_batch_broken);
 	void _add_to_batch(uint32_t &r_index, bool &r_batch_broken);
 	void _allocate_instance_data_buffer();
-	void _align_instance_data_buffer(uint32_t &r_index);
+	void _allocate_instance_buffer();
 	void _enable_attributes(uint32_t p_start, bool p_primitive, uint32_t p_rate = 1);
 
 	void set_time(double p_time);
+
+	virtual void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) override {
+		if (p_enabled) {
+			WARN_PRINT_ONCE("Debug CanvasItem Redraw is not available yet when using the GL Compatibility backend.");
+		}
+	}
 
 	static RasterizerCanvasGLES3 *get_singleton();
 	RasterizerCanvasGLES3();

@@ -2,7 +2,7 @@
 #define OPENXR_PLATFORM_H_ 1
 
 /*
-** Copyright 2017-2022 The Khronos Group Inc.
+** Copyright 2017-2024, The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
@@ -22,7 +22,7 @@ extern "C" {
 #ifdef XR_USE_PLATFORM_ANDROID
 
 #define XR_KHR_android_thread_settings 1
-#define XR_KHR_android_thread_settings_SPEC_VERSION 5
+#define XR_KHR_android_thread_settings_SPEC_VERSION 6
 #define XR_KHR_ANDROID_THREAD_SETTINGS_EXTENSION_NAME "XR_KHR_android_thread_settings"
 
 typedef enum XrAndroidThreadTypeKHR {
@@ -454,9 +454,9 @@ typedef XrSwapchainImageVulkanKHR XrSwapchainImageVulkan2KHR;
 
 typedef XrGraphicsRequirementsVulkanKHR XrGraphicsRequirementsVulkan2KHR;
 
-typedef XrResult (XRAPI_PTR *PFN_xrCreateVulkanInstanceKHR)(XrInstance                           instance, const XrVulkanInstanceCreateInfoKHR* createInfo, VkInstance*                          vulkanInstance, VkResult*                            vulkanResult);
-typedef XrResult (XRAPI_PTR *PFN_xrCreateVulkanDeviceKHR)(XrInstance                          instance, const XrVulkanDeviceCreateInfoKHR*  createInfo, VkDevice*                           vulkanDevice, VkResult*                           vulkanResult);
-typedef XrResult (XRAPI_PTR *PFN_xrGetVulkanGraphicsDevice2KHR)(XrInstance                              instance, const XrVulkanGraphicsDeviceGetInfoKHR* getInfo, VkPhysicalDevice*                       vulkanPhysicalDevice);
+typedef XrResult (XRAPI_PTR *PFN_xrCreateVulkanInstanceKHR)(XrInstance instance, const XrVulkanInstanceCreateInfoKHR* createInfo, VkInstance* vulkanInstance, VkResult* vulkanResult);
+typedef XrResult (XRAPI_PTR *PFN_xrCreateVulkanDeviceKHR)(XrInstance instance, const XrVulkanDeviceCreateInfoKHR* createInfo, VkDevice* vulkanDevice, VkResult* vulkanResult);
+typedef XrResult (XRAPI_PTR *PFN_xrGetVulkanGraphicsDevice2KHR)(XrInstance instance, const XrVulkanGraphicsDeviceGetInfoKHR* getInfo, VkPhysicalDevice* vulkanPhysicalDevice);
 typedef XrResult (XRAPI_PTR *PFN_xrGetVulkanGraphicsRequirements2KHR)(XrInstance instance, XrSystemId systemId, XrGraphicsRequirementsVulkanKHR* graphicsRequirements);
 
 #ifndef XR_NO_PROTOTYPES
@@ -489,16 +489,17 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetVulkanGraphicsRequirements2KHR(
 #ifdef XR_USE_PLATFORM_EGL
 
 #define XR_MNDX_egl_enable 1
-#define XR_MNDX_egl_enable_SPEC_VERSION   1
+#define XR_MNDX_egl_enable_SPEC_VERSION   2
 #define XR_MNDX_EGL_ENABLE_EXTENSION_NAME "XR_MNDX_egl_enable"
+typedef PFN_xrVoidFunction (*PFN_xrEglGetProcAddressMNDX)(const char *name);
 // XrGraphicsBindingEGLMNDX extends XrSessionCreateInfo
 typedef struct XrGraphicsBindingEGLMNDX {
-    XrStructureType             type;
-    const void* XR_MAY_ALIAS    next;
-    PFNEGLGETPROCADDRESSPROC    getProcAddress;
-    EGLDisplay                  display;
-    EGLConfig                   config;
-    EGLContext                  context;
+    XrStructureType                type;
+    const void* XR_MAY_ALIAS       next;
+    PFN_xrEglGetProcAddressMNDX    getProcAddress;
+    EGLDisplay                     display;
+    EGLConfig                      config;
+    EGLContext                     context;
 } XrGraphicsBindingEGLMNDX;
 
 #endif /* XR_USE_PLATFORM_EGL */
@@ -564,6 +565,30 @@ typedef struct XrAndroidSurfaceSwapchainCreateInfoFB {
 #endif // XR_USE_PLATFORM_ANDROID
 
 #endif /* XR_USE_PLATFORM_ANDROID */
+
+#ifdef XR_USE_PLATFORM_ML
+
+#define XR_ML_compat 1
+#define XR_ML_compat_SPEC_VERSION         1
+#define XR_ML_COMPAT_EXTENSION_NAME       "XR_ML_compat"
+typedef struct XrCoordinateSpaceCreateInfoML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    MLCoordinateFrameUID        cfuid;
+    XrPosef                     poseInCoordinateSpace;
+} XrCoordinateSpaceCreateInfoML;
+
+typedef XrResult (XRAPI_PTR *PFN_xrCreateSpaceFromCoordinateFrameUIDML)(XrSession session, const XrCoordinateSpaceCreateInfoML *createInfo, XrSpace* space);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpaceFromCoordinateFrameUIDML(
+    XrSession                                   session,
+    const XrCoordinateSpaceCreateInfoML *       createInfo,
+    XrSpace*                                    space);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+#endif /* XR_USE_PLATFORM_ML */
 
 #ifdef XR_USE_PLATFORM_WIN32
 

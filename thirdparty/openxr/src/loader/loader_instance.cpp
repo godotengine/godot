@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2024, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -15,13 +15,13 @@
 
 #include "api_layer_interface.hpp"
 #include "hex_and_handles.h"
-#include "loader_interfaces.h"
 #include "loader_logger.hpp"
 #include "runtime_interface.hpp"
-#include "xr_generated_dispatch_table.h"
+#include "xr_generated_dispatch_table_core.h"
 #include "xr_generated_loader.hpp"
 
 #include <openxr/openxr.h>
+#include <openxr/openxr_loader_negotiation.h>
 
 #include <cstring>
 #include <memory>
@@ -60,7 +60,7 @@ XrResult Get(LoaderInstance** loader_instance, const char* log_function_name) {
 
 bool IsAvailable() { return GetSetCurrentLoaderInstance() != nullptr; }
 
-void Remove() { GetSetCurrentLoaderInstance().release(); }
+void Remove() { GetSetCurrentLoaderInstance().reset(nullptr); }
 }  // namespace ActiveLoaderInstance
 
 // Extensions that are supported by the loader, but may not be supported
@@ -200,8 +200,8 @@ XrResult LoaderInstance::CreateInstance(PFN_xrGetInstanceProcAddr get_instance_p
         if (!api_layer_interfaces.empty()) {
             // Initialize an array of ApiLayerNextInfo structs
             std::unique_ptr<XrApiLayerNextInfo[]> next_info_list(new XrApiLayerNextInfo[api_layer_interfaces.size()]);
-            auto ni_index = static_cast<uint32_t>(api_layer_interfaces.size() - 1);
-            for (uint32_t i = 0; i <= ni_index; i++) {
+            size_t ni_index = api_layer_interfaces.size() - 1;
+            for (size_t i = 0; i <= ni_index; i++) {
                 next_info_list[i].structType = XR_LOADER_INTERFACE_STRUCT_API_LAYER_NEXT_INFO;
                 next_info_list[i].structVersion = XR_API_LAYER_NEXT_INFO_STRUCT_VERSION;
                 next_info_list[i].structSize = sizeof(XrApiLayerNextInfo);

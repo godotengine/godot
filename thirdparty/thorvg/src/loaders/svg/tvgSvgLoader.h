@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,13 +19,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_SVG_LOADER_H_
 #define _TVG_SVG_LOADER_H_
 
 #include "tvgTaskScheduler.h"
 #include "tvgSvgLoaderCommon.h"
 
-class SvgLoader : public LoadModule, public Task
+class SvgLoader : public ImageLoader, public Task
 {
 public:
     string filePath;
@@ -34,27 +35,32 @@ public:
     uint32_t size = 0;
 
     SvgLoaderData loaderData;
-    unique_ptr<Scene> root;
+    Scene* root = nullptr;
 
     bool copy = false;
 
     SvgLoader();
     ~SvgLoader();
 
-    using LoadModule::open;
     bool open(const string& path) override;
     bool open(const char* data, uint32_t size, bool copy) override;
     bool resize(Paint* paint, float w, float h) override;
     bool read() override;
     bool close() override;
-    unique_ptr<Paint> paint() override;
+
+    Paint* paint() override;
 
 private:
+    SvgViewFlag viewFlag = SvgViewFlag::None;
     AspectRatioAlign align = AspectRatioAlign::XMidYMid;
     AspectRatioMeetOrSlice meetOrSlice = AspectRatioMeetOrSlice::Meet;
+    float vx = 0;
+    float vy = 0;
+    float vw = 0;
+    float vh = 0;
 
     bool header();
-    void clear();
+    void clear(bool all = true);
     void run(unsigned tid) override;
 };
 

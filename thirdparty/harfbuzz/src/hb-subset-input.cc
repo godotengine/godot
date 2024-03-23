@@ -27,46 +27,20 @@
 #include "hb-subset.hh"
 #include "hb-set.hh"
 #include "hb-utf.hh"
-/**
- * hb_subset_input_create_or_fail:
- *
- * Creates a new subset input object.
- *
- * Return value: (transfer full): New subset input, or `NULL` if failed. Destroy
- * with hb_subset_input_destroy().
- *
- * Since: 1.8.0
- **/
-hb_subset_input_t *
-hb_subset_input_create_or_fail (void)
+
+
+hb_subset_input_t::hb_subset_input_t ()
 {
-  hb_subset_input_t *input = hb_object_create<hb_subset_input_t>();
+  for (auto& set : sets_iter ())
+    set = hb::shared_ptr<hb_set_t> (hb_set_create ());
 
-  if (unlikely (!input))
-    return nullptr;
+  if (in_error ())
+    return;
 
-  for (auto& set : input->sets_iter ())
-    set = hb_set_create ();
+  flags = HB_SUBSET_FLAGS_DEFAULT;
 
-  input->axes_location = hb_hashmap_create<hb_tag_t, float> ();
-#ifdef HB_EXPERIMENTAL_API
-  input->name_table_overrides = hb_hashmap_create<hb_ot_name_record_ids_t, hb_bytes_t> ();
-#endif
-
-  if (!input->axes_location ||
-#ifdef HB_EXPERIMENTAL_API
-      !input->name_table_overrides ||
-#endif
-      input->in_error ())
-  {
-    hb_subset_input_destroy (input);
-    return nullptr;
-  }
-
-  input->flags = HB_SUBSET_FLAGS_DEFAULT;
-
-  hb_set_add_range (input->sets.name_ids, 0, 6);
-  hb_set_add (input->sets.name_languages, 0x0409);
+  hb_set_add_range (sets.name_ids, 0, 6);
+  hb_set_add (sets.name_languages, 0x0409);
 
   hb_tag_t default_drop_tables[] = {
     // Layout disabled by default
@@ -92,21 +66,17 @@ hb_subset_input_create_or_fail (void)
     HB_TAG ('S', 'i', 'l', 'f'),
     HB_TAG ('S', 'i', 'l', 'l'),
   };
-  input->sets.drop_tables->add_array (default_drop_tables, ARRAY_LENGTH (default_drop_tables));
+  sets.drop_tables->add_array (default_drop_tables, ARRAY_LENGTH (default_drop_tables));
 
   hb_tag_t default_no_subset_tables[] = {
-    HB_TAG ('a', 'v', 'a', 'r'),
     HB_TAG ('g', 'a', 's', 'p'),
-    HB_TAG ('c', 'v', 't', ' '),
     HB_TAG ('f', 'p', 'g', 'm'),
     HB_TAG ('p', 'r', 'e', 'p'),
     HB_TAG ('V', 'D', 'M', 'X'),
     HB_TAG ('D', 'S', 'I', 'G'),
-    HB_TAG ('M', 'V', 'A', 'R'),
-    HB_TAG ('c', 'v', 'a', 'r'),
   };
-  input->sets.no_subset_tables->add_array (default_no_subset_tables,
-                                         ARRAY_LENGTH (default_no_subset_tables));
+  sets.no_subset_tables->add_array (default_no_subset_tables,
+					 ARRAY_LENGTH (default_no_subset_tables));
 
   //copied from _layout_features_groups in fonttools
   hb_tag_t default_layout_features[] = {
@@ -152,6 +122,12 @@ hb_subset_input_create_or_fail (void)
 
     //justify
     HB_TAG ('j', 'a', 'l', 't'), // HarfBuzz doesn't use; others might
+
+    //East Asian spacing
+    HB_TAG ('c', 'h', 'w', 's'),
+    HB_TAG ('v', 'c', 'h', 'w'),
+    HB_TAG ('h', 'a', 'l', 't'),
+    HB_TAG ('v', 'h', 'a', 'l'),
 
     //private
     HB_TAG ('H', 'a', 'r', 'f'),
@@ -208,15 +184,35 @@ hb_subset_input_create_or_fail (void)
     HB_TAG ('b', 'l', 'w', 'm'),
   };
 
-  input->sets.layout_features->add_array (default_layout_features, ARRAY_LENGTH (default_layout_features));
+  sets.layout_features->add_array (default_layout_features, ARRAY_LENGTH (default_layout_features));
 
-  input->sets.layout_scripts->invert (); // Default to all scripts.
+  sets.layout_scripts->invert (); // Default to all scripts.
+}
+
+/**
+ * hb_subset_input_create_or_fail:
+ *
+ * Creates a new subset input object.
+ *
+ * Return value: (transfer full): New subset input, or `NULL` if failed. Destroy
+ * with hb_subset_input_destroy().
+ *
+ * Since: 1.8.0
+ **/
+hb_subset_input_t *
+hb_subset_input_create_or_fail (void)
+{
+  hb_subset_input_t *input = hb_object_create<hb_subset_input_t>();
+
+  if (unlikely (!input))
+    return nullptr;
 
   if (input->in_error ())
   {
     hb_subset_input_destroy (input);
     return nullptr;
   }
+
   return input;
 }
 
@@ -249,20 +245,6 @@ void
 hb_subset_input_destroy (hb_subset_input_t *input)
 {
   if (!hb_object_destroy (input)) return;
-
-  for (hb_set_t* set : input->sets_iter ())
-    hb_set_destroy (set);
-
-  hb_hashmap_destroy (input->axes_location);
-
-#ifdef HB_EXPERIMENTAL_API
-  if (input->name_table_overrides)
-  {
-    for (auto _ : *input->name_table_overrides)
-      _.second.fini ();
-  }
-  hb_hashmap_destroy (input->name_table_overrides);
-#endif
 
   hb_free (input);
 }
@@ -395,16 +377,56 @@ hb_subset_input_get_user_data (const hb_subset_input_t *input,
   return hb_object_get_user_data (input, key);
 }
 
+/**
+ * hb_subset_input_keep_everything:
+ * @input: a #hb_subset_input_t object
+ *
+ * Configure input object to keep everything in the font face.
+ * That is, all Unicodes, glyphs, names, layout items,
+ * glyph names, etc.
+ *
+ * The input can be tailored afterwards by the caller.
+ *
+ * Since: 7.0.0
+ */
+void
+hb_subset_input_keep_everything (hb_subset_input_t *input)
+{
+  const hb_subset_sets_t indices[] = {HB_SUBSET_SETS_UNICODE,
+				      HB_SUBSET_SETS_GLYPH_INDEX,
+				      HB_SUBSET_SETS_NAME_ID,
+				      HB_SUBSET_SETS_NAME_LANG_ID,
+				      HB_SUBSET_SETS_LAYOUT_FEATURE_TAG,
+				      HB_SUBSET_SETS_LAYOUT_SCRIPT_TAG};
+
+  for (auto idx : hb_iter (indices))
+  {
+    hb_set_t *set = hb_subset_input_set (input, idx);
+    hb_set_clear (set);
+    hb_set_invert (set);
+  }
+
+  // Don't drop any tables
+  hb_set_clear (hb_subset_input_set (input, HB_SUBSET_SETS_DROP_TABLE_TAG));
+
+  hb_subset_input_set_flags (input,
+			     HB_SUBSET_FLAGS_NOTDEF_OUTLINE |
+			     HB_SUBSET_FLAGS_GLYPH_NAMES |
+			     HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES |
+                             HB_SUBSET_FLAGS_PASSTHROUGH_UNRECOGNIZED);
+}
+
 #ifndef HB_NO_VAR
 /**
  * hb_subset_input_pin_axis_to_default: (skip)
  * @input: a #hb_subset_input_t object.
+ * @face: a #hb_face_t object.
  * @axis_tag: Tag of the axis to be pinned
  *
  * Pin an axis to its default location in the given subset input object.
  *
- * Currently only works for fonts with 'glyf' tables. CFF and CFF2 is not
- * yet supported. Additionally all axes in a font must be pinned.
+ * All axes in a font must be pinned. Additionally, `CFF2` table, if present,
+ * will be de-subroutinized.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -419,19 +441,21 @@ hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  return input->axes_location->set (axis_tag, axis_info.default_value);
+  float default_val = axis_info.default_value;
+  return input->axes_location.set (axis_tag, Triple (default_val, default_val, default_val));
 }
 
 /**
  * hb_subset_input_pin_axis_location: (skip)
  * @input: a #hb_subset_input_t object.
+ * @face: a #hb_face_t object.
  * @axis_tag: Tag of the axis to be pinned
  * @axis_value: Location on the axis to be pinned at
  *
  * Pin an axis to a fixed location in the given subset input object.
  *
- * Currently only works for fonts with 'glyf' tables. CFF and CFF2 is not
- * yet supported. Additionally all axes in a font must be pinned.
+ * All axes in a font must be pinned. Additionally, `CFF2` table, if present,
+ * will be de-subroutinized.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -448,8 +472,59 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
     return false;
 
   float val = hb_clamp(axis_value, axis_info.min_value, axis_info.max_value);
-  return input->axes_location->set (axis_tag, val);
+  return input->axes_location.set (axis_tag, Triple (val, val, val));
 }
+
+#ifdef HB_EXPERIMENTAL_API
+/**
+ * hb_subset_input_set_axis_range: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @face: a #hb_face_t object.
+ * @axis_tag: Tag of the axis
+ * @axis_min_value: Minimum value of the axis variation range to set
+ * @axis_max_value: Maximum value of the axis variation range to set
+ * @axis_def_value: Default value of the axis variation range to set, in case of
+ * null, it'll be determined automatically
+ *
+ * Restricting the range of variation on an axis in the given subset input object.
+ * New min/default/max values will be clamped if they're not within the fvar axis range.
+ * If the new default value is null:
+ * If the fvar axis default value is within the new range, then new default
+ * value is the same as original default value.
+ * If the fvar axis default value is not within the new range, the new default
+ * value will be changed to the new min or max value, whichever is closer to the fvar
+ * axis default.
+ *
+ * Note: input min value can not be bigger than input max value. If the input
+ * default value is not within the new min/max range, it'll be clamped.
+ * Note: currently it supports gvar and cvar tables only.
+ *
+ * Return value: `true` if success, `false` otherwise
+ *
+ * XSince: EXPERIMENTAL
+ **/
+HB_EXTERN hb_bool_t
+hb_subset_input_set_axis_range (hb_subset_input_t  *input,
+                                hb_face_t          *face,
+                                hb_tag_t            axis_tag,
+                                float               axis_min_value,
+                                float               axis_max_value,
+                                float              *axis_def_value /* IN, maybe NULL */)
+{
+  if (axis_min_value > axis_max_value)
+    return false;
+
+  hb_ot_var_axis_info_t axis_info;
+  if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
+    return false;
+
+  float new_min_val = hb_clamp(axis_min_value, axis_info.min_value, axis_info.max_value);
+  float new_max_val = hb_clamp(axis_max_value, axis_info.min_value, axis_info.max_value);
+  float new_default_val = axis_def_value ? *axis_def_value : axis_info.default_value;
+  new_default_val = hb_clamp(new_default_val, new_min_val, new_max_val);
+  return input->axes_location.set (axis_tag, Triple (new_min_val, new_default_val, new_max_val));
+}
+#endif
 #endif
 
 /**
@@ -478,39 +553,10 @@ hb_subset_preprocess (hb_face_t *source)
 {
   hb_subset_input_t* input = hb_subset_input_create_or_fail ();
   if (!input)
-    return source;
+    return hb_face_reference (source);
 
-  hb_set_clear (hb_subset_input_set(input, HB_SUBSET_SETS_UNICODE));
-  hb_set_invert (hb_subset_input_set(input, HB_SUBSET_SETS_UNICODE));
+  hb_subset_input_keep_everything (input);
 
-  hb_set_clear (hb_subset_input_set(input, HB_SUBSET_SETS_GLYPH_INDEX));
-  hb_set_invert (hb_subset_input_set(input, HB_SUBSET_SETS_GLYPH_INDEX));
-
-  hb_set_clear (hb_subset_input_set(input,
-                                    HB_SUBSET_SETS_LAYOUT_FEATURE_TAG));
-  hb_set_invert (hb_subset_input_set(input,
-                                     HB_SUBSET_SETS_LAYOUT_FEATURE_TAG));
-
-  hb_set_clear (hb_subset_input_set(input,
-                                    HB_SUBSET_SETS_LAYOUT_SCRIPT_TAG));
-  hb_set_invert (hb_subset_input_set(input,
-                                     HB_SUBSET_SETS_LAYOUT_SCRIPT_TAG));
-
-  hb_set_clear (hb_subset_input_set(input,
-                                    HB_SUBSET_SETS_NAME_ID));
-  hb_set_invert (hb_subset_input_set(input,
-                                     HB_SUBSET_SETS_NAME_ID));
-
-  hb_set_clear (hb_subset_input_set(input,
-                                    HB_SUBSET_SETS_NAME_LANG_ID));
-  hb_set_invert (hb_subset_input_set(input,
-                                     HB_SUBSET_SETS_NAME_LANG_ID));
-
-  hb_subset_input_set_flags(input,
-                            HB_SUBSET_FLAGS_NOTDEF_OUTLINE |
-                            HB_SUBSET_FLAGS_GLYPH_NAMES |
-                            HB_SUBSET_FLAGS_RETAIN_GIDS |
-                            HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES);
   input->attach_accelerator_data = true;
 
   // Always use long loca in the preprocessed version. This allows
@@ -523,10 +569,41 @@ hb_subset_preprocess (hb_face_t *source)
 
   if (!new_source) {
     DEBUG_MSG (SUBSET, nullptr, "Preprocessing failed due to subset failure.");
-    return source;
+    return hb_face_reference (source);
   }
 
   return new_source;
+}
+
+/**
+ * hb_subset_input_old_to_new_glyph_mapping:
+ * @input: a #hb_subset_input_t object.
+ *
+ * Returns a map which can be used to provide an explicit mapping from old to new glyph
+ * id's in the produced subset. The caller should populate the map as desired.
+ * If this map is left empty then glyph ids will be automatically mapped to new
+ * values by the subsetter. If populated, the mapping must be unique. That
+ * is no two original glyph ids can be mapped to the same new id.
+ * Additionally, if a mapping is provided then the retain gids option cannot
+ * be enabled.
+ *
+ * Any glyphs that are retained in the subset which are not specified
+ * in this mapping will be assigned glyph ids after the highest glyph
+ * id in the mapping.
+ *
+ * Note: this will accept and apply non-monotonic mappings, however this
+ * may result in unsorted Coverage tables. Such fonts may not work for all
+ * use cases (for example ots will reject unsorted coverage tables). So it's
+ * recommended, if possible, to supply a monotonic mapping.
+ *
+ * Return value: (transfer none): pointer to the #hb_map_t of the custom glyphs ID map.
+ *
+ * Since: 7.3.0
+ **/
+HB_EXTERN hb_map_t*
+hb_subset_input_old_to_new_glyph_mapping (hb_subset_input_t *input)
+{
+  return &input->glyph_map;
 }
 
 #ifdef HB_EXPERIMENTAL_API
@@ -547,7 +624,7 @@ hb_subset_preprocess (hb_face_t *source)
  * Note: for mac platform, we only support name_str with all ascii characters,
  * name_str with non-ascii characters will be ignored.
  *
- * Since: EXPERIMENTAL
+ * XSince: EXPERIMENTAL
  **/
 HB_EXTERN hb_bool_t
 hb_subset_input_override_name_table (hb_subset_input_t  *input,
@@ -593,7 +670,7 @@ hb_subset_input_override_name_table (hb_subset_input_t  *input,
     hb_memcpy (override_name, name_str, str_len);
     name_bytes = hb_bytes_t (override_name, str_len);
   }
-  input->name_table_overrides->set (hb_ot_name_record_ids_t (platform_id, encoding_id, language_id, name_id), name_bytes);
+  input->name_table_overrides.set (hb_ot_name_record_ids_t (platform_id, encoding_id, language_id, name_id), name_bytes);
   return true;
 }
 

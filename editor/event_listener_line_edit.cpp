@@ -59,16 +59,46 @@ static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
 String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, bool p_include_device) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Provided event is not a valid instance of InputEvent");
 
-	String text = p_event->as_text();
-
+	String text;
 	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_command_or_control_autoremap()) {
-#ifdef MACOS_ENABLED
-		text = text.replace("Command", "Command/Ctrl");
-#else
-		text = text.replace("Ctrl", "Command/Ctrl");
-#endif
+	if (key.is_valid()) {
+		String mods_text = key->InputEventWithModifiers::as_text();
+		mods_text = mods_text.is_empty() ? mods_text : mods_text + "+";
+		if (key->is_command_or_control_autoremap()) {
+			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+				mods_text = mods_text.replace("Command", "Command/Ctrl");
+			} else {
+				mods_text = mods_text.replace("Ctrl", "Command/Ctrl");
+			}
+		}
+
+		if (key->get_keycode() != Key::NONE) {
+			text += mods_text + keycode_get_string(key->get_keycode());
+		}
+		if (key->get_physical_keycode() != Key::NONE) {
+			if (!text.is_empty()) {
+				text += " " + TTR("or") + " ";
+			}
+			text += mods_text + keycode_get_string(key->get_physical_keycode()) + " (" + TTR("Physical");
+			if (key->get_location() != KeyLocation::UNSPECIFIED) {
+				text += " " + key->as_text_location();
+			}
+			text += ")";
+		}
+		if (key->get_key_label() != Key::NONE) {
+			if (!text.is_empty()) {
+				text += " " + TTR("or") + " ";
+			}
+			text += mods_text + keycode_get_string(key->get_key_label()) + " (" + TTR("Unicode") + ")";
+		}
+
+		if (text.is_empty()) {
+			text = "(" + TTR("Unset") + ")";
+		}
+	} else {
+		text = p_event->as_text();
 	}
+
 	Ref<InputEventMouse> mouse = p_event;
 	Ref<InputEventJoypadMotion> jp_motion = p_event;
 	Ref<InputEventJoypadButton> jp_button = p_event;
@@ -76,10 +106,11 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 		// Joypad motion events will display slightly differently than what the event->as_text() provides. See #43660.
 		String desc = TTR("Unknown Joypad Axis");
 		if (jp_motion->get_axis() < JoyAxis::MAX) {
-			desc = RTR(_joy_axis_descriptions[2 * (size_t)jp_motion->get_axis() + (jp_motion->get_axis_value() < 0 ? 0 : 1)]);
+			desc = TTR(_joy_axis_descriptions[2 * (size_t)jp_motion->get_axis() + (jp_motion->get_axis_value() < 0 ? 0 : 1)]);
 		}
 
-		text = vformat("Joypad Axis %s %s (%s)", itos((int64_t)jp_motion->get_axis()), jp_motion->get_axis_value() < 0 ? "-" : "+", desc);
+		// TRANSLATORS: %d is the axis number, the first %s is either "-" or "+", and the second %s is the description of the axis.
+		text = vformat(TTR("Joypad Axis %d %s (%s)"), (int64_t)jp_motion->get_axis(), jp_motion->get_axis_value() < 0 ? "-" : "+", desc);
 	}
 	if (p_include_device && (mouse.is_valid() || jp_button.is_valid() || jp_motion.is_valid())) {
 		String device_string = get_device_string(p_event->get_device());
@@ -148,12 +179,12 @@ void EventListenerLineEdit::_on_text_changed(const String &p_text) {
 }
 
 void EventListenerLineEdit::_on_focus() {
-	set_placeholder(TTR("Listening for input..."));
+	set_placeholder(TTR("Listening for Input"));
 }
 
 void EventListenerLineEdit::_on_unfocus() {
 	ignore_next_event = true;
-	set_placeholder(TTR("Filter by event..."));
+	set_placeholder(TTR("Filter by Event"));
 }
 
 Ref<InputEvent> EventListenerLineEdit::get_event() const {
@@ -188,7 +219,7 @@ void EventListenerLineEdit::_notification(int p_what) {
 			connect("text_changed", callable_mp(this, &EventListenerLineEdit::_on_text_changed));
 			connect("focus_entered", callable_mp(this, &EventListenerLineEdit::_on_focus));
 			connect("focus_exited", callable_mp(this, &EventListenerLineEdit::_on_unfocus));
-			set_right_icon(get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons")));
+			set_right_icon(get_editor_theme_icon(SNAME("Keyboard")));
 			set_clear_button_enabled(true);
 		} break;
 	}
@@ -200,5 +231,5 @@ void EventListenerLineEdit::_bind_methods() {
 
 EventListenerLineEdit::EventListenerLineEdit() {
 	set_caret_blink_enabled(false);
-	set_placeholder(TTR("Filter by event..."));
+	set_placeholder(TTR("Filter by Event"));
 }

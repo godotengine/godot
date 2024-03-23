@@ -1,4 +1,4 @@
-class A extends CanvasItem:
+class A extends InstancePlaceholder:
 	func _init():
 		print('no')
 

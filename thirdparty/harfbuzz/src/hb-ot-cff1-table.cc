@@ -422,8 +422,8 @@ bool OT::cff1::accelerator_t::get_extents (hb_font_t *font, hb_codepoint_t glyph
   }
   else
   {
-    extents->x_bearing = font->em_scalef_x (bounds.min.x.to_real ());
-    extents->width = font->em_scalef_x (bounds.max.x.to_real ()) - extents->x_bearing;
+    extents->x_bearing = roundf (bounds.min.x.to_real ());
+    extents->width = roundf (bounds.max.x.to_real () - extents->x_bearing);
   }
   if (bounds.min.y >= bounds.max.y)
   {
@@ -432,9 +432,11 @@ bool OT::cff1::accelerator_t::get_extents (hb_font_t *font, hb_codepoint_t glyph
   }
   else
   {
-    extents->y_bearing = font->em_scalef_y (bounds.max.y.to_real ());
-    extents->height = font->em_scalef_y (bounds.min.y.to_real ()) - extents->y_bearing;
+    extents->y_bearing = roundf (bounds.max.y.to_real ());
+    extents->height = roundf (bounds.min.y.to_real () - extents->y_bearing);
   }
+
+  font->scale_glyph_extents (extents);
 
   return true;
 }
@@ -551,6 +553,15 @@ bool _get_path (const OT::cff1::accelerator_t *cff, hb_font_t *font, hb_codepoin
   return true;
 }
 
+bool OT::cff1::accelerator_t::paint_glyph (hb_font_t *font, hb_codepoint_t glyph, hb_paint_funcs_t *funcs, void *data, hb_color_t foreground) const
+{
+  funcs->push_clip_glyph (data, glyph, font);
+  funcs->color (data, true, foreground);
+  funcs->pop_clip (data);
+
+  return true;
+}
+
 bool OT::cff1::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const
 {
 #ifdef HB_NO_OT_FONT_CFF
@@ -563,11 +574,11 @@ bool OT::cff1::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, h
 
 struct get_seac_param_t
 {
-  get_seac_param_t (const OT::cff1::accelerator_t *_cff) : cff (_cff) {}
+  get_seac_param_t (const OT::cff1::accelerator_subset_t *_cff) : cff (_cff) {}
 
   bool has_seac () const { return base && accent; }
 
-  const OT::cff1::accelerator_t *cff;
+  const OT::cff1::accelerator_subset_t *cff;
   hb_codepoint_t  base = 0;
   hb_codepoint_t  accent = 0;
 };
@@ -585,7 +596,7 @@ struct cff1_cs_opset_seac_t : cff1_cs_opset_t<cff1_cs_opset_seac_t, get_seac_par
   }
 };
 
-bool OT::cff1::accelerator_t::get_seac_components (hb_codepoint_t glyph, hb_codepoint_t *base, hb_codepoint_t *accent) const
+bool OT::cff1::accelerator_subset_t::get_seac_components (hb_codepoint_t glyph, hb_codepoint_t *base, hb_codepoint_t *accent) const
 {
   if (unlikely (!is_valid () || (glyph >= num_glyphs))) return false;
 

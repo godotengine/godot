@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Dictionary" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Dictionary" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Dictionary type.
+		A built-in data structure that holds key-value pairs.
 	</brief_description>
 	<description>
-		Dictionary type. Associative container, which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding new entries. In other programming languages, this data structure is sometimes referred to as a hash map or associative array.
-		You can define a dictionary by placing a comma-separated list of [code]key: value[/code] pairs in curly braces [code]{}[/code].
-		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
+		Dictionaries are associative containers that contain values referenced by unique keys. Dictionaries will preserve the insertion order when adding new entries. In other programming languages, this data structure is often referred to as a hash map or an associative array.
+		You can define a dictionary by placing a comma-separated list of [code]key: value[/code] pairs inside curly braces [code]{}[/code].
 		Creating a dictionary:
 		[codeblocks]
 		[gdscript]
@@ -42,7 +41,7 @@
 		You can access a dictionary's value by referencing its corresponding key. In the above example, [code]points_dict["White"][/code] will return [code]50[/code]. You can also write [code]points_dict.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
 		[codeblocks]
 		[gdscript]
-		@export(String, "White", "Yellow", "Orange") var my_color
+		@export_enum("White", "Yellow", "Orange") var my_color: String
 		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
 		func _ready():
 		    # We can't use dot syntax here as `my_color` is a variable.
@@ -51,7 +50,7 @@
 		[csharp]
 		[Export(PropertyHint.Enum, "White,Yellow,Orange")]
 		public string MyColor { get; set; }
-		public Godot.Collections.Dictionary pointsDict = new Godot.Collections.Dictionary
+		private Godot.Collections.Dictionary _pointsDict = new Godot.Collections.Dictionary
 		{
 		    {"White", 50},
 		    {"Yellow", 75},
@@ -60,7 +59,7 @@
 
 		public override void _Ready()
 		{
-		    int points = (int)pointsDict[MyColor];
+		    int points = (int)_pointsDict[MyColor];
 		}
 		[/csharp]
 		[/codeblocks]
@@ -134,8 +133,8 @@
 		}
 		[/csharp]
 		[/codeblocks]
+		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
 		[b]Note:[/b] Erasing elements while iterating over dictionaries is [b]not[/b] supported and will result in unpredictable behavior.
-		[b]Note:[/b] When declaring a dictionary with [code]const[/code], the dictionary becomes read-only. A read-only Dictionary's entries cannot be overridden at run-time. This does [i]not[/i] affect nested [Array] and [Dictionary] values.
 	</description>
 	<tutorials>
 		<link title="GDScript basics: Dictionary">$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#dictionary</link>
@@ -153,7 +152,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="from" type="Dictionary" />
 			<description>
-				Returns the same array as [param from]. If you need a copy of the array, use [method duplicate].
+				Returns the same dictionary as [param from]. If you need a copy of the dictionary, use [method duplicate].
 			</description>
 		</constructor>
 	</constructors>
@@ -195,6 +194,14 @@
 				Returns the corresponding value for the given [param key] in the dictionary. If the [param key] does not exist, returns [param default], or [code]null[/code] if the parameter is omitted.
 			</description>
 		</method>
+		<method name="get_or_add">
+			<return type="Variant" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="default" type="Variant" default="null" />
+			<description>
+				Gets a value and ensures the key is set. If the [param key] exists in the dictionary, this behaves like [method get]. Otherwise, the [param default] value is inserted into the dictionary and returned.
+			</description>
+		</method>
 		<method name="has" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="key" type="Variant" />
@@ -218,9 +225,9 @@
 				    { 210, default },
 				};
 
-				GD.Print(myDict.Contains("Godot")); // Prints true
-				GD.Print(myDict.Contains(210));     // Prints true
-				GD.Print(myDict.Contains(4));       // Prints false
+				GD.Print(myDict.ContainsKey("Godot")); // Prints true
+				GD.Print(myDict.ContainsKey(210));     // Prints true
+				GD.Print(myDict.ContainsKey(4));       // Prints false
 				[/csharp]
 				[/codeblocks]
 				In GDScript, this is equivalent to the [code]in[/code] operator:
@@ -262,7 +269,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Dictionaries with the same entries but in a different order will not have the same hash.
-				[b]Note:[/b] Dictionaries with equal hash values are [i]not[/i] guaranteed to be the same, because of hash collisions. On the countrary, dictionaries with different hash values are guaranteed to be different.
+				[b]Note:[/b] Dictionaries with equal hash values are [i]not[/i] guaranteed to be the same, because of hash collisions. On the contrary, dictionaries with different hash values are guaranteed to be different.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
@@ -271,10 +278,22 @@
 				Returns [code]true[/code] if the dictionary is empty (its size is [code]0[/code]). See also [method size].
 			</description>
 		</method>
+		<method name="is_read_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the dictionary is read-only. See [method make_read_only]. Dictionaries are automatically read-only if declared with [code]const[/code] keyword.
+			</description>
+		</method>
 		<method name="keys" qualifiers="const">
 			<return type="Array" />
 			<description>
 				Returns the list of keys in the dictionary.
+			</description>
+		</method>
+		<method name="make_read_only">
+			<return type="void" />
+			<description>
+				Makes the dictionary read-only, i.e. disables modification of the dictionary's contents. Does not apply to nested content, e.g. content of nested dictionaries.
 			</description>
 		</method>
 		<method name="merge">
@@ -283,6 +302,60 @@
 			<param index="1" name="overwrite" type="bool" default="false" />
 			<description>
 				Adds entries from [param dictionary] to this dictionary. By default, duplicate keys are not copied over, unless [param overwrite] is [code]true[/code].
+				[codeblocks]
+				[gdscript]
+				var dict = { "item": "sword", "quantity": 2 }
+				var other_dict = { "quantity": 15, "color": "silver" }
+
+				# Overwriting of existing keys is disabled by default.
+				dict.merge(other_dict)
+				print(dict)  # { "item": "sword", "quantity": 2, "color": "silver" }
+
+				# With overwriting of existing keys enabled.
+				dict.merge(other_dict, true)
+				print(dict)  # { "item": "sword", "quantity": 15, "color": "silver" }
+				[/gdscript]
+				[csharp]
+				var dict = new Godot.Collections.Dictionary
+				{
+				    ["item"] = "sword",
+				    ["quantity"] = 2,
+				};
+
+				var otherDict = new Godot.Collections.Dictionary
+				{
+				    ["quantity"] = 15,
+				    ["color"] = "silver",
+				};
+
+				// Overwriting of existing keys is disabled by default.
+				dict.Merge(otherDict);
+				GD.Print(dict); // { "item": "sword", "quantity": 2, "color": "silver" }
+
+				// With overwriting of existing keys enabled.
+				dict.Merge(otherDict, true);
+				GD.Print(dict); // { "item": "sword", "quantity": 15, "color": "silver" }
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] [method merge] is [i]not[/i] recursive. Nested dictionaries are considered as keys that can be overwritten or not depending on the value of [param overwrite], but they will never be merged together.
+			</description>
+		</method>
+		<method name="merged" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<param index="1" name="overwrite" type="bool" default="false" />
+			<description>
+				Returns a copy of this dictionary merged with the other [param dictionary]. By default, duplicate keys are not copied over, unless [param overwrite] is [code]true[/code]. See also [method merge].
+				This method is useful for quickly making dictionaries with default values:
+				[codeblock]
+				var base = { "fruit": "apple", "vegetable": "potato" }
+				var extra = { "fruit": "orange", "dressing": "vinegar" }
+				# Prints { "fruit": "orange", "vegetable": "potato", "dressing": "vinegar" }
+				print(extra.merged(base))
+				# Prints { "fruit": "apple", "vegetable": "potato", "dressing": "vinegar" }
+				print(extra.merged(base, true))
+				[/codeblock]
+				See also [method merge].
 			</description>
 		</method>
 		<method name="size" qualifiers="const">

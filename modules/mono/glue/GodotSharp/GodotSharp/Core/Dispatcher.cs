@@ -9,7 +9,10 @@ namespace Godot
         internal static GodotTaskScheduler DefaultGodotTaskScheduler;
 
         internal static void InitializeDefaultGodotTaskScheduler()
-            => DefaultGodotTaskScheduler = new GodotTaskScheduler();
+        {
+            DefaultGodotTaskScheduler?.Dispose();
+            DefaultGodotTaskScheduler = new GodotTaskScheduler();
+        }
 
         public static GodotSynchronizationContext SynchronizationContext => DefaultGodotTaskScheduler.Context;
     }

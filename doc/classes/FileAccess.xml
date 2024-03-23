@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FileAccess" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FileAccess" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Type to handle file reading and writing operations.
+		Provides methods for file reading and writing operations.
 	</brief_description>
 	<description>
-		File type. This is used to permanently store data into the user device's file system and to read from it. This can be used to store game save data or player configuration files, for example.
+		This class can be used to permanently store data in the user device's file system and to read from it. This is useful for store game save data or player configuration files.
 		Here's a sample on how to write and read from a file:
 		[codeblocks]
 		[gdscript]
@@ -33,25 +33,23 @@
 		[/csharp]
 		[/codeblocks]
 		In the example above, the file will be saved in the user data folder as specified in the [url=$DOCS_URL/tutorials/io/data_paths.html]Data paths[/url] documentation.
-		There is no method to close a file in order to free it from use. Instead, [FileAccess] will close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. In C# the reference must be disposed after we are done using it, this can be done with the [code]using[/code] statement or calling the [code]Dispose[/code] method directly.
-		[codeblocks]
-		[gdscript]
-		var file = FileAccess.open("res://something") # File is opened and locked for use.
-		file = null # File is closed.
-		[/gdscript]
-		[csharp]
-		using var file = FileAccess.Open("res://something"); // File is opened and locked for use.
-		// The using statement calls Dispose when going out of scope.
-		[/csharp]
-		[/codeblocks]
-		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of the [FileAccess] API, as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package.
+		[FileAccess] will close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. [method close] can be used to close it before then explicitly. In C# the reference must be disposed manually, which can be done with the [code]using[/code] statement or by calling the [code]Dispose[/code] method directly.
+		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of [FileAccess], as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package.
 		[b]Note:[/b] Files are automatically closed only if the process exits "normally" (such as by clicking the window manager's close button or pressing [b]Alt + F4[/b]). If you stop the project execution by pressing [b]F8[/b] while the project is running, the file won't be closed as the game process will be killed. You can work around this by calling [method flush] at regular intervals.
 	</description>
 	<tutorials>
 		<link title="File system">$DOCS_URL/tutorials/scripting/filesystem.html</link>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
+		<method name="close">
+			<return type="void" />
+			<description>
+				Closes the currently opened file and prevents subsequent read/write operations. Use [method flush] to persist the data to disk without closing the file.
+				[b]Note:[/b] [FileAccess] will automatically close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. In C# the reference must be disposed after we are done using it, this can be done with the [code]using[/code] statement or calling the [code]Dispose[/code] method directly.
+			</description>
+		</method>
 		<method name="eof_reached" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -87,6 +85,12 @@
 				[b]Note:[/b] Only call [method flush] when you actually need it. Otherwise, it will decrease performance due to constant disk writes.
 			</description>
 		</method>
+		<method name="get_8" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the next 8 bits from the file as an integer. See [method store_8] for details on what values can be stored and retrieved this way.
+			</description>
+		</method>
 		<method name="get_16" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -103,12 +107,6 @@
 			<return type="int" />
 			<description>
 				Returns the next 64 bits from the file as an integer. See [method store_64] for details on what values can be stored and retrieved this way.
-			</description>
-		</method>
-		<method name="get_8" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the next 8 bits from the file as an integer. See [method store_8] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_as_text" qualifiers="const">
@@ -158,6 +156,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns the whole [param path] file contents as a [PackedByteArray] without any decoding.
+				Returns an empty [PackedByteArray] if an error occurred while opening the file. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="get_file_as_string" qualifiers="static">
@@ -165,12 +164,21 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns the whole [param path] file contents as a [String]. Text is interpreted as being UTF-8 encoded.
+				Returns an empty [String] if an error occurred while opening the file. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="get_float" qualifiers="const">
 			<return type="float" />
 			<description>
 				Returns the next 32 bits from the file as a floating-point number.
+			</description>
+		</method>
+		<method name="get_hidden_attribute" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="file" type="String" />
+			<description>
+				Returns [code]true[/code], if file [code]hidden[/code] attribute is set.
+				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_length" qualifiers="const">
@@ -197,7 +205,7 @@
 			<return type="int" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns the last time the [param file] was modified in Unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This Unix timestamp can be converted to another format using the [Time] singleton.
+				Returns the last time the [param file] was modified in Unix timestamp format, or [code]0[/code] on error. This Unix timestamp can be converted to another format using the [Time] singleton.
 			</description>
 		</method>
 		<method name="get_open_error" qualifiers="static">
@@ -231,6 +239,14 @@
 				Returns the file cursor's position.
 			</description>
 		</method>
+		<method name="get_read_only_attribute" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="file" type="String" />
+			<description>
+				Returns [code]true[/code], if file [code]read only[/code] attribute is set.
+				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
+			</description>
+		</method>
 		<method name="get_real" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -241,7 +257,15 @@
 			<return type="String" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns a SHA-256 [String] representing the file at the given path or an empty [String] on failure.
+				Returns an SHA-256 [String] representing the file at the given path or an empty [String] on failure.
+			</description>
+		</method>
+		<method name="get_unix_permissions" qualifiers="static">
+			<return type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
+			<param index="0" name="file" type="String" />
+			<description>
+				Returns file UNIX permissions.
+				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
 			</description>
 		</method>
 		<method name="get_var" qualifiers="const">
@@ -249,6 +273,7 @@
 			<param index="0" name="allow_objects" type="bool" default="false" />
 			<description>
 				Returns the next [Variant] value from the file. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
+				Internally, this uses the same decoding mechanism as the [method @GlobalScope.bytes_to_var] method.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
@@ -314,6 +339,42 @@
 				[b]Note:[/b] This is an offset, so you should use negative numbers or the cursor will be at the end of the file.
 			</description>
 		</method>
+		<method name="set_hidden_attribute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="hidden" type="bool" />
+			<description>
+				Sets file [b]hidden[/b] attribute.
+				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
+			</description>
+		</method>
+		<method name="set_read_only_attribute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="ro" type="bool" />
+			<description>
+				Sets file [b]read only[/b] attribute.
+				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
+			</description>
+		</method>
+		<method name="set_unix_permissions" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
+			<description>
+				Sets file UNIX permissions.
+				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
+			</description>
+		</method>
+		<method name="store_8">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Stores an integer as 8 bits in the file.
+				[b]Note:[/b] The [param value] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
+				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
+			</description>
+		</method>
 		<method name="store_16">
 			<return type="void" />
 			<param index="0" name="value" type="int" />
@@ -348,8 +409,8 @@
 				    f.Seek(0); // Go back to start to read the stored value.
 				    ushort read1 = f.Get16(); // 65494
 				    ushort read2 = f.Get16(); // 121
-				    short converted1 = BitConverter.ToInt16(BitConverter.GetBytes(read1), 0); // -42
-				    short converted2 = BitConverter.ToInt16(BitConverter.GetBytes(read2), 0); // 121
+				    short converted1 = (short)read1; // -42
+				    short converted2 = (short)read2; // 121
 				}
 				[/csharp]
 				[/codeblocks]
@@ -370,15 +431,6 @@
 			<description>
 				Stores an integer as 64 bits in the file.
 				[b]Note:[/b] The [param value] must lie in the interval [code][-2^63, 2^63 - 1][/code] (i.e. be a valid [int] value).
-			</description>
-		</method>
-		<method name="store_8">
-			<return type="void" />
-			<param index="0" name="value" type="int" />
-			<description>
-				Stores an integer as 8 bits in the file.
-				[b]Note:[/b] The [param value] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
-				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
 		<method name="store_buffer">
@@ -447,6 +499,7 @@
 			<param index="1" name="full_objects" type="bool" default="false" />
 			<description>
 				Stores any Variant value in the file. If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code).
+				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_bytes] method.
 				[b]Note:[/b] Not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object._get_property_list]. See [enum PropertyUsageFlags] for the possible usage flags.
 			</description>
 		</method>
@@ -464,12 +517,14 @@
 		</constant>
 		<constant name="WRITE" value="2" enum="ModeFlags">
 			Opens the file for write operations. The file is created if it does not exist, and truncated if it does.
+			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive]).
 		</constant>
 		<constant name="READ_WRITE" value="3" enum="ModeFlags">
 			Opens the file for read and write operations. Does not truncate the file. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE_READ" value="7" enum="ModeFlags">
 			Opens the file for read and write operations. The file is created if it does not exist, and truncated if it does. The cursor is positioned at the beginning of the file.
+			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive]).
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
 			Uses the [url=https://fastlz.org/]FastLZ[/url] compression method.
@@ -482,6 +537,45 @@
 		</constant>
 		<constant name="COMPRESSION_GZIP" value="3" enum="CompressionMode">
 			Uses the [url=https://www.gzip.org/]gzip[/url] compression method.
+		</constant>
+		<constant name="COMPRESSION_BROTLI" value="4" enum="CompressionMode">
+			Uses the [url=https://github.com/google/brotli]brotli[/url] compression method (only decompression is supported).
+		</constant>
+		<constant name="UNIX_READ_OWNER" value="256" enum="UnixPermissionFlags" is_bitfield="true">
+			Read for owner bit.
+		</constant>
+		<constant name="UNIX_WRITE_OWNER" value="128" enum="UnixPermissionFlags" is_bitfield="true">
+			Write for owner bit.
+		</constant>
+		<constant name="UNIX_EXECUTE_OWNER" value="64" enum="UnixPermissionFlags" is_bitfield="true">
+			Execute for owner bit.
+		</constant>
+		<constant name="UNIX_READ_GROUP" value="32" enum="UnixPermissionFlags" is_bitfield="true">
+			Read for group bit.
+		</constant>
+		<constant name="UNIX_WRITE_GROUP" value="16" enum="UnixPermissionFlags" is_bitfield="true">
+			Write for group bit.
+		</constant>
+		<constant name="UNIX_EXECUTE_GROUP" value="8" enum="UnixPermissionFlags" is_bitfield="true">
+			Execute for group bit.
+		</constant>
+		<constant name="UNIX_READ_OTHER" value="4" enum="UnixPermissionFlags" is_bitfield="true">
+			Read for other bit.
+		</constant>
+		<constant name="UNIX_WRITE_OTHER" value="2" enum="UnixPermissionFlags" is_bitfield="true">
+			Write for other bit.
+		</constant>
+		<constant name="UNIX_EXECUTE_OTHER" value="1" enum="UnixPermissionFlags" is_bitfield="true">
+			Execute for other bit.
+		</constant>
+		<constant name="UNIX_SET_USER_ID" value="2048" enum="UnixPermissionFlags" is_bitfield="true">
+			Set user id on execution bit.
+		</constant>
+		<constant name="UNIX_SET_GROUP_ID" value="1024" enum="UnixPermissionFlags" is_bitfield="true">
+			Set group id on execution bit.
+		</constant>
+		<constant name="UNIX_RESTRICTED_DELETE" value="512" enum="UnixPermissionFlags" is_bitfield="true">
+			Restricted deletion (sticky) bit.
 		</constant>
 	</constants>
 </class>

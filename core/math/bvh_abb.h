@@ -32,7 +32,7 @@
 #define BVH_ABB_H
 
 // special optimized version of axis aligned bounding box
-template <class BOUNDS = AABB, class POINT = Vector3>
+template <typename BOUNDS = AABB, typename POINT = Vector3>
 struct BVH_ABB {
 	struct ConvexHull {
 		// convex hulls (optional)
@@ -87,7 +87,7 @@ struct BVH_ABB {
 		return -neg_max - min;
 	}
 
-	POINT calculate_centre() const {
+	POINT calculate_center() const {
 		return POINT((calculate_size() * 0.5) + min);
 	}
 

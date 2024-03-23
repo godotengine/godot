@@ -30,7 +30,7 @@
 
 #include "check_button.h"
 
-#include "core/string/print_string.h"
+#include "scene/theme/theme_db.h"
 #include "servers/rendering_server.h"
 
 Size2 CheckButton::get_icon_size() const {
@@ -68,31 +68,20 @@ Size2 CheckButton::get_icon_size() const {
 
 Size2 CheckButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
-	Size2 tex_size = get_icon_size();
-	minsize.width += tex_size.width;
-	if (get_text().length() > 0) {
-		minsize.width += MAX(0, theme_cache.h_separation);
+	const Size2 tex_size = get_icon_size();
+	if (tex_size.width > 0 || tex_size.height > 0) {
+		const Size2 padding = _get_current_stylebox()->get_minimum_size();
+		Size2 content_size = minsize - padding;
+		if (content_size.width > 0 && tex_size.width > 0) {
+			content_size.width += MAX(0, theme_cache.h_separation);
+		}
+		content_size.width += tex_size.width;
+		content_size.height = MAX(content_size.height, tex_size.height);
+
+		minsize = content_size + padding;
 	}
-	minsize.height = MAX(minsize.height, tex_size.height + theme_cache.normal_style->get_margin(SIDE_TOP) + theme_cache.normal_style->get_margin(SIDE_BOTTOM));
 
 	return minsize;
-}
-
-void CheckButton::_update_theme_item_cache() {
-	Button::_update_theme_item_cache();
-
-	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.check_v_offset = get_theme_constant(SNAME("check_v_offset"));
-	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
-
-	theme_cache.checked = get_theme_icon(SNAME("checked"));
-	theme_cache.unchecked = get_theme_icon(SNAME("unchecked"));
-	theme_cache.checked_disabled = get_theme_icon(SNAME("checked_disabled"));
-	theme_cache.unchecked_disabled = get_theme_icon(SNAME("unchecked_disabled"));
-	theme_cache.checked_mirrored = get_theme_icon(SNAME("checked_mirrored"));
-	theme_cache.unchecked_mirrored = get_theme_icon(SNAME("unchecked_mirrored"));
-	theme_cache.checked_disabled_mirrored = get_theme_icon(SNAME("checked_disabled_mirrored"));
-	theme_cache.unchecked_disabled_mirrored = get_theme_icon(SNAME("unchecked_disabled_mirrored"));
 }
 
 void CheckButton::_notification(int p_what) {
@@ -151,6 +140,21 @@ void CheckButton::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void CheckButton::_bind_methods() {
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckButton, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckButton, check_v_offset);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CheckButton, normal_style, "normal");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, checked);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, unchecked);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, checked_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, unchecked_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, checked_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, unchecked_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, checked_disabled_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, unchecked_disabled_mirrored);
 }
 
 CheckButton::CheckButton(const String &p_text) :

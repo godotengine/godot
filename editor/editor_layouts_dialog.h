@@ -44,6 +44,8 @@ class EditorLayoutsDialog : public ConfirmationDialog {
 	VBoxContainer *makevb = nullptr;
 
 	void _line_gui_input(const Ref<InputEvent> &p_event);
+	void _update_ok_disable_state();
+	void _deselect_layout_names();
 
 protected:
 	static void _bind_methods();

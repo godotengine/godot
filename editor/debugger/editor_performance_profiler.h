@@ -54,7 +54,7 @@ private:
 		int frame_index = 0;
 
 		Monitor();
-		Monitor(String p_name, String p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item);
+		Monitor(const String &p_name, const String &p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item);
 		void update_value(float p_value);
 		void reset();
 	};
@@ -78,6 +78,9 @@ private:
 	TreeItem *_get_monitor_base(const StringName &p_base_name);
 	TreeItem *_create_monitor_item(const StringName &p_monitor_name, TreeItem *p_base);
 	void _marker_input(const Ref<InputEvent> &p_event);
+
+protected:
+	void _notification(int p_what);
 
 public:
 	void reset();

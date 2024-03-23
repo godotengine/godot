@@ -5,7 +5,7 @@
  *   Basic Type1/Type2 type definitions and interface (specification
  *   only).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -172,8 +172,8 @@ FT_BEGIN_HEADER
   {
     FT_Bool        IsCIDFont;
     FT_BBox        FontBBox;
-    FT_Fixed       Ascender;
-    FT_Fixed       Descender;
+    FT_Fixed       Ascender;     /* optional, mind the zero */
+    FT_Fixed       Descender;    /* optional, mind the zero */
     AFM_TrackKern  TrackKerns;   /* free if non-NULL */
     FT_UInt        NumTrackKern;
     AFM_KernPair   KernPairs;    /* free if non-NULL */
@@ -201,30 +201,30 @@ FT_BEGIN_HEADER
 
   typedef struct  T1_FaceRec_
   {
-    FT_FaceRec      root;
-    T1_FontRec      type1;
-    const void*     psnames;
-    const void*     psaux;
-    const void*     afm_data;
-    FT_CharMapRec   charmaprecs[2];
-    FT_CharMap      charmaps[2];
+    FT_FaceRec     root;
+    T1_FontRec     type1;
+    const void*    psnames;
+    const void*    psaux;
+    const void*    afm_data;
+    FT_CharMapRec  charmaprecs[2];
+    FT_CharMap     charmaps[2];
 
     /* support for Multiple Masters fonts */
-    PS_Blend        blend;
+    PS_Blend       blend;
 
     /* undocumented, optional: indices of subroutines that express      */
     /* the NormalizeDesignVector and the ConvertDesignVector procedure, */
     /* respectively, as Type 2 charstrings; -1 if keywords not present  */
-    FT_Int           ndv_idx;
-    FT_Int           cdv_idx;
+    FT_Int         ndv_idx;
+    FT_Int         cdv_idx;
 
     /* undocumented, optional: has the same meaning as len_buildchar */
     /* for Type 2 fonts; manipulated by othersubrs 19, 24, and 25    */
-    FT_UInt          len_buildchar;
-    FT_Long*         buildchar;
+    FT_UInt        len_buildchar;
+    FT_Long*       buildchar;
 
     /* since version 2.1 - interface to PostScript hinter */
-    const void*     pshinter;
+    const void*    pshinter;
 
   } T1_FaceRec;
 

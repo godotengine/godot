@@ -32,12 +32,13 @@
 
 #include "register_types.h"
 
-#include "core/object/class_db.h"
 #include "grid_map.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/grid_map_editor_plugin.h"
 #endif
+
+#include "core/object/class_db.h"
 
 void initialize_gridmap_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {

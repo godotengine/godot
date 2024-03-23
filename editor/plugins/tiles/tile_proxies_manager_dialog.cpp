@@ -30,10 +30,12 @@
 
 #include "tile_proxies_manager_dialog.h"
 
-#include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/editor_properties_vector.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
 
 void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index, Object *p_item_list) {
@@ -55,7 +57,7 @@ void TileProxiesManagerDialog::_menu_id_pressed(int p_id) {
 }
 
 void TileProxiesManagerDialog::_delete_selected_bindings() {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove Tile Proxies"));
 
 	Vector<int> source_level_selected = source_level_list->get_selected_items();
@@ -155,7 +157,7 @@ void TileProxiesManagerDialog::_property_changed(const String &p_path, const Var
 }
 
 void TileProxiesManagerDialog::_add_button_pressed() {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (from.source_id != TileSet::INVALID_SOURCE && to.source_id != TileSet::INVALID_SOURCE) {
 		Vector2i from_coords = from.get_atlas_coords();
 		Vector2i to_coords = to.get_atlas_coords();
@@ -196,7 +198,7 @@ void TileProxiesManagerDialog::_add_button_pressed() {
 }
 
 void TileProxiesManagerDialog::_clear_invalid_button_pressed() {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Delete All Invalid Tile Proxies"));
 
 	undo_redo->add_do_method(*tile_set, "cleanup_invalid_tile_proxies");
@@ -224,7 +226,7 @@ void TileProxiesManagerDialog::_clear_invalid_button_pressed() {
 }
 
 void TileProxiesManagerDialog::_clear_all_button_pressed() {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Delete All Tile Proxies"));
 
 	undo_redo->add_do_method(*tile_set, "clear_tile_proxies");
@@ -305,7 +307,7 @@ void TileProxiesManagerDialog::_unhandled_key_input(Ref<InputEvent> p_event) {
 }
 
 void TileProxiesManagerDialog::cancel_pressed() {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	for (int i = 0; i < commited_actions_count; i++) {
 		undo_redo->undo();
 	}
@@ -343,6 +345,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	vbox_container->add_child(source_level_label);
 
 	source_level_list = memnew(ItemList);
+	source_level_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	source_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	source_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	source_level_list->set_allow_rmb_select(true);
@@ -354,6 +357,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	vbox_container->add_child(coords_level_label);
 
 	coords_level_list = memnew(ItemList);
+	coords_level_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	coords_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	coords_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	coords_level_list->set_allow_rmb_select(true);
@@ -365,6 +369,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	vbox_container->add_child(alternative_level_label);
 
 	alternative_level_list = memnew(ItemList);
+	alternative_level_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	alternative_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	alternative_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	alternative_level_list->set_allow_rmb_select(true);

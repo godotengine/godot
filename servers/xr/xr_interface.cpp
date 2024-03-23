@@ -43,6 +43,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_initialized"), &XRInterface::is_initialized);
 	ClassDB::bind_method(D_METHOD("initialize"), &XRInterface::initialize);
 	ClassDB::bind_method(D_METHOD("uninitialize"), &XRInterface::uninitialize);
+	ClassDB::bind_method(D_METHOD("get_system_info"), &XRInterface::get_system_info);
 
 	ClassDB::bind_method(D_METHOD("get_tracking_status"), &XRInterface::get_tracking_status);
 
@@ -75,6 +76,12 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transform_for_view", "view", "cam_transform"), &XRInterface::get_transform_for_view);
 	ClassDB::bind_method(D_METHOD("get_projection_for_view", "view", "aspect", "near", "far"), &XRInterface::get_projection_for_view);
 
+	/** environment blend mode. */
+	ClassDB::bind_method(D_METHOD("get_supported_environment_blend_modes"), &XRInterface::get_supported_environment_blend_modes);
+	ClassDB::bind_method(D_METHOD("set_environment_blend_mode", "mode"), &XRInterface::set_environment_blend_mode);
+	ClassDB::bind_method(D_METHOD("get_environment_blend_mode"), &XRInterface::get_environment_blend_mode);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "environment_blend_mode"), "set_environment_blend_mode", "get_environment_blend_mode");
+
 	ADD_GROUP("AR", "ar_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ar_is_anchor_detection_enabled"), "set_anchor_detection_is_enabled", "get_anchor_detection_is_enabled");
 
@@ -97,6 +104,10 @@ void XRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(XR_PLAY_AREA_SITTING);
 	BIND_ENUM_CONSTANT(XR_PLAY_AREA_ROOMSCALE);
 	BIND_ENUM_CONSTANT(XR_PLAY_AREA_STAGE);
+
+	BIND_ENUM_CONSTANT(XR_ENV_BLEND_MODE_OPAQUE);
+	BIND_ENUM_CONSTANT(XR_ENV_BLEND_MODE_ADDITIVE);
+	BIND_ENUM_CONSTANT(XR_ENV_BLEND_MODE_ALPHA_BLEND);
 };
 
 bool XRInterface::is_primary() {
@@ -272,4 +283,10 @@ XRInterface::TrackingStatus XRInterface::get_tracking_status() const {
 }
 
 void XRInterface::trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
+}
+
+Array XRInterface::get_supported_environment_blend_modes() {
+	Array default_blend_modes;
+	default_blend_modes.push_back(XR_ENV_BLEND_MODE_OPAQUE);
+	return default_blend_modes;
 }

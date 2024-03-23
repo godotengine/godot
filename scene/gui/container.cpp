@@ -30,12 +30,9 @@
 
 #include "container.h"
 
-#include "core/object/message_queue.h"
 #include "scene/scene_string_names.h"
 
 void Container::_child_minsize_changed() {
-	//Size2 ms = get_combined_minimum_size();
-	//if (ms.width > get_size().width || ms.height > get_size().height) {
 	update_minimum_size();
 	queue_sort();
 }
@@ -97,7 +94,7 @@ void Container::_sort_children() {
 }
 
 void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
-	ERR_FAIL_COND(!p_child);
+	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND(p_child->get_parent() != this);
 
 	bool rtl = is_layout_rtl();
@@ -140,7 +137,7 @@ void Container::queue_sort() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_callable(callable_mp(this, &Container::_sort_children));
+	callable_mp(this, &Container::_sort_children).call_deferred();
 	pending_sort = true;
 }
 

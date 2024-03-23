@@ -59,6 +59,7 @@ private:
 	real_t seamless_blend_skirt = 0.1;
 	bool as_normal_map = false;
 	float bump_strength = 8.0;
+	bool normalize = true;
 
 	Ref<Gradient> color_ramp;
 	Ref<Noise> noise;
@@ -104,6 +105,9 @@ public:
 
 	void set_bump_strength(float p_bump_strength);
 	float get_bump_strength();
+
+	void set_normalize(bool p_normalize);
+	bool is_normalized() const;
 
 	void set_color_ramp(const Ref<Gradient> &p_gradient);
 	Ref<Gradient> get_color_ramp() const;

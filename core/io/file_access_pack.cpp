@@ -48,7 +48,8 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t 
 }
 
 void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted) {
-	PathMD5 pmd5(p_path.md5_buffer());
+	String simplified_path = p_path.simplify_path();
+	PathMD5 pmd5(simplified_path.md5_buffer());
 
 	bool exists = files.has(pmd5);
 
@@ -68,7 +69,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 
 	if (!exists) {
 		//search for dir
-		String p = p_path.replace_first("res://", "");
+		String p = simplified_path.replace_first("res://", "");
 		PackedDir *cd = root;
 
 		if (p.contains("/")) { //in a subdir
@@ -87,7 +88,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 				}
 			}
 		}
-		String filename = p_path.get_file();
+		String filename = simplified_path.get_file();
 		// Don't add as a file if the path points to a directory
 		if (!filename.is_empty()) {
 			cd->files.insert(filename);
@@ -195,6 +196,8 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		return false;
 	}
 
+	int64_t pck_start_pos = f->get_position() - 4;
+
 	uint32_t version = f->get_32();
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -207,6 +210,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	uint64_t file_base = f->get_64();
 
 	bool enc_directory = (pack_flags & PACK_DIR_ENCRYPTED);
+	bool rel_filebase = (pack_flags & PACK_REL_FILEBASE);
 
 	for (int i = 0; i < 16; i++) {
 		//reserved
@@ -214,6 +218,10 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	}
 
 	int file_count = f->get_32();
+
+	if (rel_filebase) {
+		file_base += pck_start_pos;
+	}
 
 	if (enc_directory) {
 		Ref<FileAccessEncrypted> fae;
@@ -260,7 +268,7 @@ Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::Pack
 //////////////////////////////////////////////////////////////////
 
 Error FileAccessPack::open_internal(const String &p_path, int p_mode_flags) {
-	ERR_FAIL_V(ERR_UNAVAILABLE);
+	ERR_PRINT("Can't open pack-referenced file.");
 	return ERR_UNAVAILABLE;
 }
 
@@ -326,7 +334,7 @@ uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 		to_read = (int64_t)pf.size - (int64_t)pos;
 	}
 
-	pos += p_length;
+	pos += to_read;
 
 	if (to_read <= 0) {
 		return 0;
@@ -364,6 +372,10 @@ void FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 
 bool FileAccessPack::file_exists(const String &p_name) {
 	return false;
+}
+
+void FileAccessPack::close() {
+	f = Ref<FileAccess>();
 }
 
 FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file) :
@@ -450,7 +462,7 @@ String DirAccessPack::get_drive(int p_drive) {
 	return "";
 }
 
-PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
+PackedData::PackedDir *DirAccessPack::_find_dir(const String &p_dir) {
 	String nd = p_dir.replace("\\", "/");
 
 	// Special handling since simplify_path() will forbid it
@@ -486,7 +498,7 @@ PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
 	}
 
 	for (int i = 0; i < paths.size(); i++) {
-		String p = paths[i];
+		const String &p = paths[i];
 		if (p == ".") {
 			continue;
 		} else if (p == "..") {

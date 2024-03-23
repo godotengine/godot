@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
  */
 
 #include <memory.h>
-#include "tvgLoader.h"
 #include "tvgJpgLoader.h"
 
 /************************************************************************/
@@ -38,23 +37,39 @@ void JpgLoader::clear()
 }
 
 
+void JpgLoader::run(unsigned tid)
+{
+    surface.buf8 = jpgdDecompress(decoder);
+    surface.stride = static_cast<uint32_t>(w);
+    surface.w = static_cast<uint32_t>(w);
+    surface.h = static_cast<uint32_t>(h);
+    surface.cs = ColorSpace::ARGB8888;
+    surface.channelSize = sizeof(uint32_t);
+    surface.premultiplied = true;
+
+    clear();
+}
+
+
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
 
+JpgLoader::JpgLoader() : ImageLoader(FileType::Jpg)
+{
+
+}
+
 
 JpgLoader::~JpgLoader()
 {
-    jpgdDelete(decoder);
-    if (freeData) free(data);
-    free(image);
+    clear();
+    free(surface.buf8);
 }
 
 
 bool JpgLoader::open(const string& path)
 {
-    clear();
-
     int width, height;
     decoder = jpgdHeader(path.c_str(), &width, &height);
     if (!decoder) return false;
@@ -68,8 +83,6 @@ bool JpgLoader::open(const string& path)
 
 bool JpgLoader::open(const char* data, uint32_t size, bool copy)
 {
-    clear();
-
     if (copy) {
         this->data = (char *) malloc(size);
         if (!this->data) return false;
@@ -94,7 +107,9 @@ bool JpgLoader::open(const char* data, uint32_t size, bool copy)
 
 bool JpgLoader::read()
 {
-    if (!decoder || w <= 0 || h <= 0) return false;
+    if (!LoadModule::read()) return true;
+
+    if (!decoder || w == 0 || h == 0) return false;
 
     TaskScheduler::request(this);
 
@@ -104,34 +119,14 @@ bool JpgLoader::read()
 
 bool JpgLoader::close()
 {
+    if (!LoadModule::close()) return false;
     this->done();
-    clear();
     return true;
 }
 
 
-unique_ptr<Surface> JpgLoader::bitmap()
+Surface* JpgLoader::bitmap()
 {
     this->done();
-
-    if (!image) return nullptr;
-
-    auto surface = static_cast<Surface*>(malloc(sizeof(Surface)));
-    surface->buffer = (uint32_t*)(image);
-    surface->stride = static_cast<uint32_t>(w);
-    surface->w = static_cast<uint32_t>(w);
-    surface->h = static_cast<uint32_t>(h);
-    surface->cs = SwCanvas::ARGB8888;
-
-    return unique_ptr<Surface>(surface);
-}
-
-
-void JpgLoader::run(unsigned tid)
-{
-    if (image) {
-        free(image);
-        image = nullptr;
-    }
-    image = jpgdDecompress(decoder);
+    return ImageLoader::bitmap();
 }

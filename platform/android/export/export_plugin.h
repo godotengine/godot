@@ -31,7 +31,9 @@
 #ifndef ANDROID_EXPORT_PLUGIN_H
 #define ANDROID_EXPORT_PLUGIN_H
 
+#ifndef DISABLE_DEPRECATED
 #include "godot_plugin_config.h"
+#endif // DISABLE_DEPRECATED
 
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
@@ -49,6 +51,15 @@ const String SPLASH_CONFIG_XML_CONTENT = R"SPLASH(<?xml version="1.0" encoding="
 </layer-list>
 )SPLASH";
 
+// Optional environment variables for defining confidential information. If any
+// of these is set, they will override the values set in the credentials file.
+const String ENV_ANDROID_KEYSTORE_DEBUG_PATH = "GODOT_ANDROID_KEYSTORE_DEBUG_PATH";
+const String ENV_ANDROID_KEYSTORE_DEBUG_USER = "GODOT_ANDROID_KEYSTORE_DEBUG_USER";
+const String ENV_ANDROID_KEYSTORE_DEBUG_PASS = "GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD";
+const String ENV_ANDROID_KEYSTORE_RELEASE_PATH = "GODOT_ANDROID_KEYSTORE_RELEASE_PATH";
+const String ENV_ANDROID_KEYSTORE_RELEASE_USER = "GODOT_ANDROID_KEYSTORE_RELEASE_USER";
+const String ENV_ANDROID_KEYSTORE_RELEASE_PASS = "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD";
+
 struct LauncherIcon {
 	const char *export_path;
 	int dimensions = 0;
@@ -65,6 +76,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String name;
 		String description;
 		int api_level = 0;
+		String architecture;
 	};
 
 	struct APKExportData {
@@ -72,28 +84,37 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		EditorProgress *ep = nullptr;
 	};
 
-	Vector<PluginConfigAndroid> plugins;
+#ifndef DISABLE_DEPRECATED
+	mutable Vector<PluginConfigAndroid> android_plugins;
+	mutable SafeFlag android_plugins_changed;
+	Mutex android_plugins_lock;
+#endif // DISABLE_DEPRECATED
 	String last_plugin_names;
-	uint64_t last_custom_build_time = 0;
-	SafeFlag plugins_changed;
-	Mutex plugins_lock;
+	uint64_t last_gradle_build_time = 0;
+	String last_gradle_build_dir;
+
 	Vector<Device> devices;
 	SafeFlag devices_changed;
 	Mutex device_lock;
 #ifndef ANDROID_ENABLED
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
+	SafeFlag has_runnable_preset;
 
 	static void _check_for_changes_poll_thread(void *ud);
+	void _update_preset_status();
 #endif
 
 	String get_project_name(const String &p_name) const;
 
 	String get_package_name(const String &p_package) const;
 
+	String get_valid_basename() const;
+
 	String get_assets_directory(const Ref<EditorExportPreset> &p_preset, int p_export_format) const;
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
+	bool is_project_name_valid() const;
 
 	static bool _should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data);
 
@@ -116,12 +137,14 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Vector<ABI> get_abis();
 
+#ifndef DISABLE_DEPRECATED
 	/// List the gdap files in the directory specified by the p_path parameter.
 	static Vector<String> list_gdap_files(const String &p_path);
 
 	static Vector<PluginConfigAndroid> get_plugins();
 
 	static Vector<PluginConfigAndroid> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets);
+#endif // DISABLE_DEPRECATED
 
 	static Error store_in_apk(APKExportData *ed, const String &p_path, const Vector<uint8_t> &p_data, int compression_method = Z_DEFLATED);
 
@@ -155,10 +178,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background);
 
-	void store_image(const LauncherIcon launcher_icon, const Vector<uint8_t> &data);
-
-	void store_image(const String &export_path, const Vector<uint8_t> &data);
-
 	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
 			const String &processed_splash_config_xml,
 			const Ref<Image> &splash_image,
@@ -169,13 +188,21 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Vector<ABI> get_enabled_abis(const Ref<EditorExportPreset> &p_preset);
 
+	static bool _uses_vulkan();
+
+protected:
+	void _notification(int p_what);
+
 public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
-public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
-	virtual void get_export_options(List<ExportOption> *r_options) override;
+	virtual void get_export_options(List<ExportOption> *r_options) const override;
+
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
+
+	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
 
 	virtual String get_name() const override;
 
@@ -195,6 +222,8 @@ public:
 
 	virtual String get_option_tooltip(int p_index) const override;
 
+	virtual String get_device_architecture(int p_index) const override;
+
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) override;
 
 	virtual Ref<Texture2D> get_run_icon() const override;
@@ -203,33 +232,19 @@ public:
 
 	static String get_apksigner_path(int p_target_sdk = -1, bool p_check_executes = false);
 
-	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	static String get_java_path();
+
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
+	static bool has_valid_username_and_password(const Ref<EditorExportPreset> &p_preset, String &r_error);
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 
-	inline bool is_clean_build_required(Vector<PluginConfigAndroid> enabled_plugins) {
-		String plugin_names = PluginConfigAndroid::get_plugins_names(enabled_plugins);
-		bool first_build = last_custom_build_time == 0;
-		bool have_plugins_changed = false;
+	String _get_plugins_names(const Ref<EditorExportPreset> &p_preset) const;
 
-		if (!first_build) {
-			have_plugins_changed = plugin_names != last_plugin_names;
-			if (!have_plugins_changed) {
-				for (int i = 0; i < enabled_plugins.size(); i++) {
-					if (enabled_plugins.get(i).last_updated > last_custom_build_time) {
-						have_plugins_changed = true;
-						break;
-					}
-				}
-			}
-		}
+	String _resolve_export_plugin_android_library_path(const String &p_android_library_path) const;
 
-		last_custom_build_time = OS::get_singleton()->get_unix_time();
-		last_plugin_names = plugin_names;
-
-		return have_plugins_changed || first_build;
-	}
+	bool _is_clean_build_required(const Ref<EditorExportPreset> &p_preset);
 
 	String get_apk_expansion_fullpath(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
@@ -239,9 +254,9 @@ public:
 
 	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &export_path, EditorProgress &ep);
 
-	void _clear_assets_directory();
+	void _clear_assets_directory(const Ref<EditorExportPreset> &p_preset);
 
-	void _remove_copied_libs();
+	void _remove_copied_libs(String p_gdextension_libs_path);
 
 	static String join_list(const List<String> &p_parts, const String &p_separator);
 	static String join_abis(const Vector<ABI> &p_parts, const String &p_separator, bool p_use_arch);

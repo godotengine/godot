@@ -62,6 +62,9 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
@@ -88,8 +91,8 @@ public:
 	Node *create_convex_collision_node(bool p_clean = true, bool p_simplify = false);
 	void create_convex_collision(bool p_clean = true, bool p_simplify = false);
 
-	Node *create_multiple_convex_collisions_node();
-	void create_multiple_convex_collisions();
+	Node *create_multiple_convex_collisions_node(const Ref<MeshConvexDecompositionSettings> &p_settings = Ref<MeshConvexDecompositionSettings>());
+	void create_multiple_convex_collisions(const Ref<MeshConvexDecompositionSettings> &p_settings = Ref<MeshConvexDecompositionSettings>());
 
 	MeshInstance3D *create_debug_tangents_node();
 	void create_debug_tangents();

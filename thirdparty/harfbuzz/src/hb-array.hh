@@ -47,6 +47,8 @@ enum hb_not_found_t
 template <typename Type>
 struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
 {
+  static constexpr bool realloc_move = true;
+
   /*
    * Constructors.
    */
@@ -75,10 +77,24 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
    */
   typedef Type& __item_t__;
   static constexpr bool is_random_access_iterator = true;
+  static constexpr bool has_fast_len = true;
+  Type& __item__ () const
+  {
+    if (unlikely (!length)) return CrapOrNull (Type);
+    return *arrayZ;
+  }
   Type& __item_at__ (unsigned i) const
   {
     if (unlikely (i >= length)) return CrapOrNull (Type);
     return arrayZ[i];
+  }
+  void __next__ ()
+  {
+    if (unlikely (!length))
+      return;
+    length--;
+    backwards_length++;
+    arrayZ++;
   }
   void __forward__ (unsigned n)
   {
@@ -87,6 +103,14 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
     length -= n;
     backwards_length += n;
     arrayZ += n;
+  }
+  void __prev__ ()
+  {
+    if (unlikely (!backwards_length))
+      return;
+    length++;
+    backwards_length--;
+    arrayZ--;
   }
   void __rewind__ (unsigned n)
   {
@@ -122,9 +146,14 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
 
   uint32_t hash () const
   {
-    uint32_t current = 0;
+    // FNV-1a hash function
+    // https://github.com/harfbuzz/harfbuzz/pull/4228
+    uint32_t current = /*cbf29ce4*/0x84222325;
     for (auto &v : *this)
-      current = current * 31 + hb_hash (v);
+    {
+      current = current ^ hb_hash (v);
+      current = current * 16777619;
+    }
     return current;
   }
 
@@ -304,6 +333,9 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
   unsigned int backwards_length = 0;
 };
 template <typename T> inline hb_array_t<T>
+hb_array ()
+{ return hb_array_t<T> (); }
+template <typename T> inline hb_array_t<T>
 hb_array (T *array, unsigned int length)
 { return hb_array_t<T> (array, length); }
 template <typename T, unsigned int length_> inline hb_array_t<T>
@@ -319,6 +351,7 @@ struct hb_sorted_array_t :
   HB_ITER_USING (iter_base_t);
   static constexpr bool is_random_access_iterator = true;
   static constexpr bool is_sorted_iterator = true;
+  static constexpr bool has_fast_len = true;
 
   hb_sorted_array_t () = default;
   hb_sorted_array_t (const hb_sorted_array_t&) = default;
@@ -446,41 +479,21 @@ inline bool hb_array_t<const unsigned char>::operator == (const hb_array_t<const
 
 /* Specialize hash() for byte arrays. */
 
+#ifndef HB_OPTIMIZE_SIZE_MORE
 template <>
 inline uint32_t hb_array_t<const char>::hash () const
 {
-  uint32_t current = 0;
-  unsigned i = 0;
-
-#if defined(__OPTIMIZE__) && !defined(HB_NO_PACKED) && \
-    ((defined(__GNUC__) && __GNUC__ >= 5) || defined(__clang__))
-  struct __attribute__((packed)) packed_uint32_t { uint32_t v; };
-  for (; i + 4 <= this->length; i += 4)
-    current = current * 31 + hb_hash ((uint32_t) ((packed_uint32_t *) &this->arrayZ[i])->v);
-#endif
-
-  for (; i < this->length; i++)
-    current = current * 31 + hb_hash (this->arrayZ[i]);
-  return current;
+  // https://github.com/harfbuzz/harfbuzz/pull/4228
+  return fasthash32(arrayZ, length, 0xf437ffe6 /* magic? */);
 }
 
 template <>
 inline uint32_t hb_array_t<const unsigned char>::hash () const
 {
-  uint32_t current = 0;
-  unsigned i = 0;
-
-#if defined(__OPTIMIZE__) && !defined(HB_NO_PACKED) && \
-    ((defined(__GNUC__) && __GNUC__ >= 5) || defined(__clang__))
-  struct __attribute__((packed)) packed_uint32_t { uint32_t v; };
-  for (; i + 4 <= this->length; i += 4)
-    current = current * 31 + hb_hash ((uint32_t) ((packed_uint32_t *) &this->arrayZ[i])->v);
-#endif
-
-  for (; i < this->length; i++)
-    current = current * 31 + hb_hash (this->arrayZ[i]);
-  return current;
+  // https://github.com/harfbuzz/harfbuzz/pull/4228
+  return fasthash32(arrayZ, length, 0xf437ffe6 /* magic? */);
 }
+#endif
 
 
 typedef hb_array_t<const char> hb_bytes_t;

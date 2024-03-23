@@ -5,19 +5,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_SSL_COOKIE_H
 #define MBEDTLS_SSL_COOKIE_H
@@ -54,8 +42,7 @@ extern "C" {
 /**
  * \brief          Context for the default cookie functions.
  */
-typedef struct mbedtls_ssl_cookie_ctx
-{
+typedef struct mbedtls_ssl_cookie_ctx {
     mbedtls_md_context_t    hmac_ctx;   /*!< context for the HMAC portion   */
 #if !defined(MBEDTLS_HAVE_TIME)
     unsigned long   serial;     /*!< serial number for expiration   */
@@ -71,14 +58,14 @@ typedef struct mbedtls_ssl_cookie_ctx
 /**
  * \brief          Initialize cookie context
  */
-void mbedtls_ssl_cookie_init( mbedtls_ssl_cookie_ctx *ctx );
+void mbedtls_ssl_cookie_init(mbedtls_ssl_cookie_ctx *ctx);
 
 /**
  * \brief          Setup cookie context (generate keys)
  */
-int mbedtls_ssl_cookie_setup( mbedtls_ssl_cookie_ctx *ctx,
-                      int (*f_rng)(void *, unsigned char *, size_t),
-                      void *p_rng );
+int mbedtls_ssl_cookie_setup(mbedtls_ssl_cookie_ctx *ctx,
+                             int (*f_rng)(void *, unsigned char *, size_t),
+                             void *p_rng);
 
 /**
  * \brief          Set expiration delay for cookies
@@ -89,12 +76,12 @@ int mbedtls_ssl_cookie_setup( mbedtls_ssl_cookie_ctx *ctx,
  *                 issued in the meantime.
  *                 0 to disable expiration (NOT recommended)
  */
-void mbedtls_ssl_cookie_set_timeout( mbedtls_ssl_cookie_ctx *ctx, unsigned long delay );
+void mbedtls_ssl_cookie_set_timeout(mbedtls_ssl_cookie_ctx *ctx, unsigned long delay);
 
 /**
  * \brief          Free cookie context
  */
-void mbedtls_ssl_cookie_free( mbedtls_ssl_cookie_ctx *ctx );
+void mbedtls_ssl_cookie_free(mbedtls_ssl_cookie_ctx *ctx);
 
 /**
  * \brief          Generate cookie, see \c mbedtls_ssl_cookie_write_t

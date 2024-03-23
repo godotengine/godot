@@ -258,7 +258,7 @@ public:
      * @param language Lowercase two-letter or three-letter ISO-639 code.
      *  This parameter can instead be an ICU style C locale (e.g. "en_US"),
      *  but the other parameters must not be used.
-     *  This parameter can be NULL; if so,
+     *  This parameter can be nullptr; if so,
      *  the locale is initialized to match the current default locale.
      *  (This is the same as using the default constructor.)
      *  Please note: The Java Locale class does NOT accept the form
@@ -294,7 +294,7 @@ public:
      * @param other The Locale object being moved in.
      * @stable ICU 63
      */
-    Locale(Locale&& other) U_NOEXCEPT;
+    Locale(Locale&& other) noexcept;
 
     /**
      * Destructor
@@ -320,7 +320,7 @@ public:
      * @return      *this
      * @stable ICU 63
      */
-    Locale& operator=(Locale&& other) U_NOEXCEPT;
+    Locale& operator=(Locale&& other) noexcept;
 
     /**
      * Checks if two locale keys are the same.
@@ -344,7 +344,7 @@ public:
     /**
      * Clone this object.
      * Clones can be used concurrently in multiple threads.
-     * If an error occurs, then NULL is returned.
+     * If an error occurs, then nullptr is returned.
      * The caller must delete the clone.
      *
      * @return a clone of this object
@@ -378,7 +378,7 @@ public:
      * setDefault() only changes ICU's default locale ID, <strong>not</strong>
      * the default locale ID of the runtime environment.
      *
-     * @param newLocale Locale to set to.  If NULL, set to the value obtained
+     * @param newLocale Locale to set to.  If nullptr, set to the value obtained
      *                  from the runtime environment.
      * @param success The error code.
      * @system
@@ -453,7 +453,7 @@ public:
     /**
      * Creates a locale from the given string after canonicalizing
      * the string according to CLDR by calling uloc_canonicalize().
-     * @param name the locale ID to create from.  Must not be NULL.
+     * @param name the locale ID to create from.  Must not be nullptr.
      * @return a new locale object corresponding to the given name
      * @stable ICU 3.0
      * @see uloc_canonicalize
@@ -583,7 +583,7 @@ public:
      * Gets the list of keywords for the specified locale.
      *
      * @param status the status code
-     * @return pointer to StringEnumeration class, or NULL if there are no keywords. 
+     * @return pointer to StringEnumeration class, or nullptr if there are no keywords.
      * Client must dispose of it by calling delete.
      * @see getKeywords
      * @stable ICU 2.8
@@ -594,7 +594,7 @@ public:
      * Gets the list of Unicode keywords for the specified locale.
      *
      * @param status the status code
-     * @return pointer to StringEnumeration class, or NULL if there are no keywords.
+     * @return pointer to StringEnumeration class, or nullptr if there are no keywords.
      * Client must dispose of it by calling delete.
      * @see getUnicodeKeywords
      * @stable ICU 63
@@ -722,7 +722,7 @@ public:
      *
      * @param keywordName name of the keyword to be set. Case insensitive.
      * @param keywordValue value of the keyword to be set. If 0-length or
-     *  NULL, will result in the keyword being removed. No error is given if
+     *  nullptr, will result in the keyword being removed. No error is given if
      *  that keyword does not exist.
      * @param status Returns any error information while performing this operation.
      *
@@ -743,7 +743,7 @@ public:
      *
      * @param keywordName name of the keyword to be set.
      * @param keywordValue value of the keyword to be set. If 0-length or
-     *  NULL, will result in the keyword being removed. No error is given if
+     *  nullptr, will result in the keyword being removed. No error is given if
      *  that keyword does not exist.
      * @param status Returns any error information while performing this operation.
      * @stable ICU 63
@@ -763,7 +763,7 @@ public:
      *
      * @param keywordName name of the keyword to be set.
      * @param keywordValue value of the keyword to be set. If 0-length or
-     *  NULL, will result in the keyword being removed. No error is given if
+     *  nullptr, will result in the keyword being removed. No error is given if
      *  that keyword does not exist.
      * @param status Returns any error information while performing this operation.
      * @stable ICU 63
@@ -984,7 +984,10 @@ public:
     static const char* const* U_EXPORT2 getISOCountries();
 
     /**
-     * Gets a list of all available language codes defined in ISO 639.  This is a pointer
+     * Returns a list of all unique language codes defined in ISO 639.
+     * They can be 2 or 3 letter codes, as defined by
+     * <a href="https://www.ietf.org/rfc/bcp/bcp47.html#section-2.2.1">
+     * BCP 47, section 2.2.1</a>. This is a pointer
      * to an array of pointers to arrays of char.  All of these pointers are owned
      * by ICU-- do not delete them, and do not write through them.  The array is
      * terminated with a null pointer.
@@ -1110,6 +1113,15 @@ protected: /* only protected for testing purposes. DO NOT USE. */
      * @internal
      */
     void setFromPOSIXID(const char *posixID);
+    /**
+     * Minimize the subtags for this Locale, per the algorithm described
+     * @param favorScript favor to keep script if true, to keep region if false.
+     * @param status  error information if maximizing this Locale failed.
+     *                If this Locale is not well-formed, the error code is
+     *                U_ILLEGAL_ARGUMENT_ERROR.
+     * @internal
+     */
+    void minimizeSubtags(bool favorScript, UErrorCode& status);
 #endif  /* U_HIDE_INTERNAL_API */
 
 private:

@@ -36,18 +36,23 @@
 #include "core/version.h"
 #include "main/main.h"
 
-#ifdef DEBUG_ENABLED
-#define CRASH_HANDLER_ENABLED 1
+#ifndef DEBUG_ENABLED
+#undef CRASH_HANDLER_ENABLED
 #endif
 
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>
 #include <dlfcn.h>
 #include <execinfo.h>
+#include <link.h>
 #include <signal.h>
 #include <stdlib.h>
 
 static void handle_crash(int sig) {
+	signal(SIGSEGV, SIG_DFL);
+	signal(SIGFPE, SIG_DFL);
+	signal(SIGILL, SIG_DFL);
+
 	if (OS::get_singleton() == nullptr) {
 		abort();
 	}
@@ -79,7 +84,33 @@ static void handle_crash(int sig) {
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 	char **strings = backtrace_symbols(bt_buffer, size);
+	// PIE executable relocation, zero for non-PIE executables
+#ifdef __GLIBC__
+	// This is a glibc only thing apparently.
+	uintptr_t relocation = _r_debug.r_map->l_addr;
+#else
+	// Non glibc systems apparently don't give PIE relocation info.
+	uintptr_t relocation = 0;
+#endif //__GLIBC__
 	if (strings) {
+		List<String> args;
+		for (size_t i = 0; i < size; i++) {
+			char str[1024];
+			snprintf(str, 1024, "%p", (void *)((uintptr_t)bt_buffer[i] - relocation));
+			args.push_back(str);
+		}
+		args.push_back("-e");
+		args.push_back(_execpath);
+
+		// Try to get the file/line number using addr2line
+		int ret;
+		String output = "";
+		Error err = OS::get_singleton()->execute(String("addr2line"), args, &output, &ret);
+		Vector<String> addr2line_results;
+		if (err == OK) {
+			addr2line_results = output.substr(0, output.length() - 1).split("\n", false);
+		}
+
 		for (size_t i = 1; i < size; i++) {
 			char fname[1024];
 			Dl_info info;
@@ -102,24 +133,7 @@ static void handle_crash(int sig) {
 				}
 			}
 
-			List<String> args;
-
-			char str[1024];
-			snprintf(str, 1024, "%p", bt_buffer[i]);
-			args.push_back(str);
-			args.push_back("-e");
-			args.push_back(_execpath);
-
-			String output = "";
-
-			// Try to get the file/line number using addr2line
-			int ret;
-			Error err = OS::get_singleton()->execute(String("addr2line"), args, &output, &ret);
-			if (err == OK) {
-				output = output.substr(0, output.length() - 1);
-			}
-
-			print_error(vformat("[%d] %s (%s)", (int64_t)i, fname, output));
+			print_error(vformat("[%d] %s (%s)", (int64_t)i, fname, err == OK ? addr2line_results[i] : ""));
 		}
 
 		free(strings);
@@ -146,9 +160,9 @@ void CrashHandler::disable() {
 	}
 
 #ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, nullptr);
-	signal(SIGFPE, nullptr);
-	signal(SIGILL, nullptr);
+	signal(SIGSEGV, SIG_DFL);
+	signal(SIGFPE, SIG_DFL);
+	signal(SIGILL, SIG_DFL);
 #endif
 
 	disabled = true;

@@ -38,7 +38,11 @@
 #include "core/templates/safe_refcount.h"
 #include "servers/audio_server.h"
 
+#ifdef SOWRAP_ENABLED
 #include "pulse-so_wrap.h"
+#else
+#include <pulse/pulseaudio.h>
+#endif
 
 class AudioDriverPulseAudio : public AudioDriver {
 	Thread thread;
@@ -51,13 +55,13 @@ class AudioDriverPulseAudio : public AudioDriver {
 	pa_channel_map pa_map = {};
 	pa_channel_map pa_rec_map = {};
 
-	String device_name = "Default";
-	String new_device = "Default";
-	String default_device;
+	String output_device_name = "Default";
+	String new_output_device = "Default";
+	String default_output_device;
 
-	String capture_device_name;
-	String capture_new_device;
-	String capture_default_device;
+	String input_device_name;
+	String new_input_device;
+	String default_input_device;
 
 	Vector<int32_t> samples_in;
 	Vector<int16_t> samples_out;
@@ -83,42 +87,41 @@ class AudioDriverPulseAudio : public AudioDriver {
 	static void pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata);
 	static void pa_sourcelist_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata);
 
-	Error init_device();
-	void finish_device();
+	Error init_output_device();
+	void finish_output_device();
 
-	Error capture_init_device();
-	void capture_finish_device();
+	Error init_input_device();
+	void finish_input_device();
 
 	Error detect_channels(bool capture = false);
 
 	static void thread_func(void *p_udata);
 
 public:
-	const char *get_name() const {
+	virtual const char *get_name() const override {
 		return "PulseAudio";
 	};
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
+	virtual float get_latency() override;
 
-	virtual PackedStringArray get_device_list();
-	virtual String get_device();
-	virtual void set_device(String device);
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
 
-	virtual PackedStringArray capture_get_device_list();
-	virtual void capture_set_device(const String &p_name);
-	virtual String capture_get_device();
+	virtual PackedStringArray get_output_device_list() override;
+	virtual String get_output_device() override;
+	virtual void set_output_device(const String &p_name) override;
 
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual Error input_start() override;
+	virtual Error input_stop() override;
 
-	virtual float get_latency();
-
-	virtual Error capture_start();
-	virtual Error capture_stop();
+	virtual PackedStringArray get_input_device_list() override;
+	virtual String get_input_device() override;
+	virtual void set_input_device(const String &p_name) override;
 
 	AudioDriverPulseAudio();
 	~AudioDriverPulseAudio() {}

@@ -4,7 +4,7 @@
  *
  *   Multiple Master font support (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -185,6 +185,14 @@
       error = FT_ERR( Invalid_Argument );
       if ( service->set_mm_design )
         error = service->set_mm_design( face, num_coords, coords );
+
+      if ( !error )
+      {
+        if ( num_coords )
+          face->face_flags |= FT_FACE_FLAG_VARIATION;
+        else
+          face->face_flags &= ~FT_FACE_FLAG_VARIATION;
+      }
     }
 
     /* enforce recomputation of auto-hinting data */
@@ -220,6 +228,14 @@
       error = FT_ERR( Invalid_Argument );
       if ( service->set_mm_weightvector )
         error = service->set_mm_weightvector( face, len, weightvector );
+
+      if ( !error )
+      {
+        if ( len )
+          face->face_flags |= FT_FACE_FLAG_VARIATION;
+        else
+          face->face_flags &= ~FT_FACE_FLAG_VARIATION;
+      }
     }
 
     /* enforce recomputation of auto-hinting data */
@@ -282,6 +298,30 @@
       error = FT_ERR( Invalid_Argument );
       if ( service_mm->set_var_design )
         error = service_mm->set_var_design( face, num_coords, coords );
+
+      if ( !error || error == -1 )
+      {
+        FT_Bool  is_variation_old = FT_IS_VARIATION( face );
+
+
+        if ( num_coords )
+          face->face_flags |= FT_FACE_FLAG_VARIATION;
+        else
+          face->face_flags &= ~FT_FACE_FLAG_VARIATION;
+
+        if ( service_mm->construct_ps_name )
+        {
+          if ( error == -1 )
+          {
+            /* The PS name of a named instance and a non-named instance */
+            /* usually differs, even if the axis values are identical.  */
+            if ( is_variation_old != FT_IS_VARIATION( face ) )
+              service_mm->construct_ps_name( face );
+          }
+          else
+            service_mm->construct_ps_name( face );
+        }
+      }
 
       /* internal error code -1 means `no change'; we can exit immediately */
       if ( error == -1 )
@@ -359,6 +399,30 @@
       if ( service_mm->set_mm_blend )
         error = service_mm->set_mm_blend( face, num_coords, coords );
 
+      if ( !error || error == -1 )
+      {
+        FT_Bool  is_variation_old = FT_IS_VARIATION( face );
+
+
+        if ( num_coords )
+          face->face_flags |= FT_FACE_FLAG_VARIATION;
+        else
+          face->face_flags &= ~FT_FACE_FLAG_VARIATION;
+
+        if ( service_mm->construct_ps_name )
+        {
+          if ( error == -1 )
+          {
+            /* The PS name of a named instance and a non-named instance */
+            /* usually differs, even if the axis values are identical.  */
+            if ( is_variation_old != FT_IS_VARIATION( face ) )
+              service_mm->construct_ps_name( face );
+          }
+          else
+            service_mm->construct_ps_name( face );
+        }
+      }
+
       /* internal error code -1 means `no change'; we can exit immediately */
       if ( error == -1 )
         return FT_Err_Ok;
@@ -409,6 +473,30 @@
       error = FT_ERR( Invalid_Argument );
       if ( service_mm->set_mm_blend )
         error = service_mm->set_mm_blend( face, num_coords, coords );
+
+      if ( !error || error == -1 )
+      {
+        FT_Bool  is_variation_old = FT_IS_VARIATION( face );
+
+
+        if ( num_coords )
+          face->face_flags |= FT_FACE_FLAG_VARIATION;
+        else
+          face->face_flags &= ~FT_FACE_FLAG_VARIATION;
+
+        if ( service_mm->construct_ps_name )
+        {
+          if ( error == -1 )
+          {
+            /* The PS name of a named instance and a non-named instance */
+            /* usually differs, even if the axis values are identical.  */
+            if ( is_variation_old != FT_IS_VARIATION( face ) )
+              service_mm->construct_ps_name( face );
+          }
+          else
+            service_mm->construct_ps_name( face );
+        }
+      }
 
       /* internal error code -1 means `no change'; we can exit immediately */
       if ( error == -1 )
@@ -535,8 +623,35 @@
     if ( !error )
     {
       error = FT_ERR( Invalid_Argument );
-      if ( service_mm->set_instance )
-        error = service_mm->set_instance( face, instance_index );
+      if ( service_mm->set_named_instance )
+        error = service_mm->set_named_instance( face, instance_index );
+
+      if ( !error || error == -1 )
+      {
+        FT_Bool  is_variation_old = FT_IS_VARIATION( face );
+
+
+        face->face_flags &= ~FT_FACE_FLAG_VARIATION;
+        face->face_index  = ( instance_index << 16 )        |
+                            ( face->face_index & 0xFFFFL );
+
+        if ( service_mm->construct_ps_name )
+        {
+          if ( error == -1 )
+          {
+            /* The PS name of a named instance and a non-named instance */
+            /* usually differs, even if the axis values are identical.  */
+            if ( is_variation_old != FT_IS_VARIATION( face ) )
+              service_mm->construct_ps_name( face );
+          }
+          else
+            service_mm->construct_ps_name( face );
+        }
+      }
+
+      /* internal error code -1 means `no change'; we can exit immediately */
+      if ( error == -1 )
+        return FT_Err_Ok;
     }
 
     if ( !error )
@@ -554,11 +669,32 @@
       face->autohint.data = NULL;
     }
 
+    return error;
+  }
+
+
+  /* documentation is in ftmm.h */
+
+  FT_EXPORT_DEF( FT_Error )
+  FT_Get_Default_Named_Instance( FT_Face   face,
+                                 FT_UInt  *instance_index )
+  {
+    FT_Error  error;
+
+    FT_Service_MultiMasters  service_mm = NULL;
+
+
+    /* check of `face' delayed to `ft_face_get_mm_service' */
+
+    error = ft_face_get_mm_service( face, &service_mm );
     if ( !error )
     {
-      face->face_index  = ( instance_index << 16 )        |
-                          ( face->face_index & 0xFFFFL );
-      face->face_flags &= ~FT_FACE_FLAG_VARIATION;
+      /* no error if `get_default_named_instance` is not available */
+      if ( service_mm->get_default_named_instance )
+        error = service_mm->get_default_named_instance( face,
+                                                        instance_index );
+      else
+        error = FT_Err_Ok;
     }
 
     return error;

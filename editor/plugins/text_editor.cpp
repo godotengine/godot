@@ -30,6 +30,7 @@
 
 #include "text_editor.h"
 
+#include "core/io/json.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -67,12 +68,12 @@ void TextEditor::_load_theme_settings() {
 String TextEditor::get_name() {
 	String name;
 
-	name = text_file->get_path().get_file();
+	name = edited_res->get_path().get_file();
 	if (name.is_empty()) {
 		// This appears for newly created built-in text_files before saving the scene.
 		name = TTR("[unsaved]");
-	} else if (text_file->is_built_in()) {
-		const String &text_file_name = text_file->get_name();
+	} else if (edited_res->is_built_in()) {
+		const String &text_file_name = edited_res->get_name();
 		if (!text_file_name.is_empty()) {
 			// If the built-in text_file has a custom resource name defined,
 			// display the built-in text_file name as follows: `ResourceName (scene_file.tscn)`
@@ -88,20 +89,29 @@ String TextEditor::get_name() {
 }
 
 Ref<Texture2D> TextEditor::get_theme_icon() {
-	return EditorNode::get_singleton()->get_object_icon(text_file.ptr(), "");
+	return EditorNode::get_singleton()->get_object_icon(edited_res.ptr(), "TextFile");
 }
 
 Ref<Resource> TextEditor::get_edited_resource() const {
-	return text_file;
+	return edited_res;
 }
 
 void TextEditor::set_edited_resource(const Ref<Resource> &p_res) {
-	ERR_FAIL_COND(text_file.is_valid());
+	ERR_FAIL_COND(edited_res.is_valid());
 	ERR_FAIL_COND(p_res.is_null());
 
-	text_file = p_res;
+	edited_res = p_res;
 
-	code_editor->get_text_editor()->set_text(text_file->get_text());
+	Ref<TextFile> text_file = edited_res;
+	if (text_file != nullptr) {
+		code_editor->get_text_editor()->set_text(text_file->get_text());
+	}
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		code_editor->get_text_editor()->set_text(json_file->get_parsed_text());
+	}
+
 	code_editor->get_text_editor()->clear_undo_history();
 	code_editor->get_text_editor()->tag_saved_version();
 
@@ -118,6 +128,8 @@ void TextEditor::enable_editor(Control *p_shortcut_context) {
 
 	_load_theme_settings();
 
+	_validate_script();
+
 	if (p_shortcut_context) {
 		for (int i = 0; i < edit_hb->get_child_count(); ++i) {
 			Control *c = cast_to<Control>(edit_hb->get_child(i));
@@ -128,7 +140,7 @@ void TextEditor::enable_editor(Control *p_shortcut_context) {
 	}
 }
 
-void TextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
+void TextEditor::add_callback(const String &p_function, const PackedStringArray &p_args) {
 }
 
 void TextEditor::set_debugger_active(bool p_active) {
@@ -138,12 +150,16 @@ Control *TextEditor::get_base_editor() const {
 	return code_editor->get_text_editor();
 }
 
+CodeTextEditor *TextEditor::get_code_editor() const {
+	return code_editor;
+}
+
 PackedInt32Array TextEditor::get_breakpoints() {
 	return PackedInt32Array();
 }
 
 void TextEditor::reload_text() {
-	ERR_FAIL_COND(text_file.is_null());
+	ERR_FAIL_COND(edited_res.is_null());
 
 	CodeEdit *te = code_editor->get_text_editor();
 	int column = te->get_caret_column();
@@ -151,7 +167,16 @@ void TextEditor::reload_text() {
 	int h = te->get_h_scroll();
 	int v = te->get_v_scroll();
 
-	te->set_text(text_file->get_text());
+	Ref<TextFile> text_file = edited_res;
+	if (text_file != nullptr) {
+		te->set_text(text_file->get_text());
+	}
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		te->set_text(json_file->get_parsed_text());
+	}
+
 	te->set_caret_line(row);
 	te->set_caret_column(column);
 	te->set_h_scroll(h);
@@ -166,6 +191,20 @@ void TextEditor::reload_text() {
 void TextEditor::_validate_script() {
 	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		CodeEdit *te = code_editor->get_text_editor();
+
+		te->set_line_background_color(code_editor->get_error_pos().x, Color(0, 0, 0, 0));
+		code_editor->set_error("");
+
+		if (json_file->parse(te->get_text(), true) != OK) {
+			code_editor->set_error(json_file->get_error_message());
+			code_editor->set_error_pos(json_file->get_error_line(), 0);
+			te->set_line_background_color(code_editor->get_error_pos().x, EDITOR_GET("text_editor/theme/highlighting/mark_color"));
+		}
+	}
 }
 
 void TextEditor::_update_bookmark_list() {
@@ -204,13 +243,22 @@ void TextEditor::_bookmark_item_pressed(int p_idx) {
 }
 
 void TextEditor::apply_code() {
-	text_file->set_text(code_editor->get_text_editor()->get_text());
+	Ref<TextFile> text_file = edited_res;
+	if (text_file != nullptr) {
+		text_file->set_text(code_editor->get_text_editor()->get_text());
+	}
+
+	Ref<JSON> json_file = edited_res;
+	if (json_file != nullptr) {
+		json_file->parse(code_editor->get_text_editor()->get_text(), true);
+	}
+	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
 }
 
 bool TextEditor::is_unsaved() {
 	const bool unsaved =
 			code_editor->get_text_editor()->get_version() != code_editor->get_text_editor()->get_saved_version() ||
-			text_file->get_path().is_empty(); // In memory.
+			edited_res->get_path().is_empty(); // In memory.
 	return unsaved;
 }
 
@@ -244,12 +292,8 @@ void TextEditor::insert_final_newline() {
 	code_editor->insert_final_newline();
 }
 
-void TextEditor::convert_indent_to_spaces() {
-	code_editor->convert_indent_to_spaces();
-}
-
-void TextEditor::convert_indent_to_tabs() {
-	code_editor->convert_indent_to_tabs();
+void TextEditor::convert_indent() {
+	code_editor->get_text_editor()->convert_indent();
 }
 
 void TextEditor::tag_saved_version() {
@@ -308,31 +352,32 @@ void TextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
 
 void TextEditor::_edit_option(int p_op) {
 	CodeEdit *tx = code_editor->get_text_editor();
+	tx->apply_ime();
 
 	switch (p_op) {
 		case EDIT_UNDO: {
 			tx->undo();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_REDO: {
 			tx->redo();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_CUT: {
 			tx->cut();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_COPY: {
 			tx->copy();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_PASTE: {
 			tx->paste();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_SELECT_ALL: {
 			tx->select_all();
-			tx->call_deferred(SNAME("grab_focus"));
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
 		} break;
 		case EDIT_MOVE_LINE_UP: {
 			code_editor->move_lines_up();
@@ -352,9 +397,17 @@ void TextEditor::_edit_option(int p_op) {
 		case EDIT_DUPLICATE_SELECTION: {
 			code_editor->duplicate_selection();
 		} break;
+		case EDIT_DUPLICATE_LINES: {
+			code_editor->get_text_editor()->duplicate_lines();
+		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			for (int caret_idx = 0; caret_idx < tx->get_caret_count(); caret_idx++) {
-				tx->toggle_foldable_line(tx->get_caret_line(caret_idx));
+			int previous_line = -1;
+			for (int caret_idx : tx->get_caret_index_edit_order()) {
+				int line_idx = tx->get_caret_line(caret_idx);
+				if (line_idx != previous_line) {
+					tx->toggle_foldable_line(line_idx);
+					previous_line = line_idx;
+				}
 			}
 			tx->queue_redraw();
 		} break;
@@ -370,10 +423,12 @@ void TextEditor::_edit_option(int p_op) {
 			trim_trailing_whitespace();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
-			convert_indent_to_spaces();
+			code_editor->set_indent_using_spaces(true);
+			convert_indent();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_TABS: {
-			convert_indent_to_tabs();
+			code_editor->set_indent_using_spaces(false);
+			convert_indent();
 		} break;
 		case EDIT_TO_UPPERCASE: {
 			_convert_case(CodeTextEditor::UPPER);
@@ -383,6 +438,10 @@ void TextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_CAPITALIZE: {
 			_convert_case(CodeTextEditor::CAPITALIZE);
+		} break;
+		case EDIT_TOGGLE_WORD_WRAP: {
+			TextEdit::LineWrappingMode wrap = code_editor->get_text_editor()->get_line_wrapping_mode();
+			code_editor->get_text_editor()->set_line_wrapping_mode(wrap == TextEdit::LINE_WRAPPING_BOUNDARY ? TextEdit::LINE_WRAPPING_NONE : TextEdit::LINE_WRAPPING_BOUNDARY);
 		} break;
 		case SEARCH_FIND: {
 			code_editor->get_find_replace_bar()->popup_search();
@@ -430,8 +489,8 @@ void TextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 	code_editor->convert_case(p_case);
 }
 
-static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource) {
-	if (Object::cast_to<TextFile>(*p_resource)) {
+ScriptEditorBase *TextEditor::create_editor(const Ref<Resource> &p_resource) {
+	if (Object::cast_to<TextFile>(*p_resource) || Object::cast_to<JSON>(*p_resource)) {
 		return memnew(TextEditor);
 	}
 	return nullptr;
@@ -447,6 +506,8 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::RIGHT) {
 			CodeEdit *tx = code_editor->get_text_editor();
+
+			tx->apply_ime();
 
 			Point2i pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());
 			int row = pos.y;
@@ -558,21 +619,6 @@ TextEditor::TextEditor() {
 
 	edit_hb = memnew(HBoxContainer);
 
-	search_menu = memnew(MenuButton);
-	search_menu->set_shortcut_context(this);
-	edit_hb->add_child(search_menu);
-	search_menu->set_text(TTR("Search"));
-	search_menu->set_switch_on_hover(true);
-	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
-
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
-	search_menu->get_popup()->add_separator();
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
-
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_shortcut_context(this);
 	edit_hb->add_child(edit_menu);
@@ -600,24 +646,22 @@ TextEditor::TextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_lines"), EDIT_DUPLICATE_LINES);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 
 	edit_menu->get_popup()->add_separator();
 	PopupMenu *convert_case = memnew(PopupMenu);
-	convert_case->set_name("convert_case");
-	edit_menu->get_popup()->add_child(convert_case);
-	edit_menu->get_popup()->add_submenu_item(TTR("Convert Case"), "convert_case");
+	edit_menu->get_popup()->add_submenu_node_item(TTR("Convert Case"), convert_case);
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase")), EDIT_TO_UPPERCASE);
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase")), EDIT_TO_LOWERCASE);
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
 
 	highlighter_menu = memnew(PopupMenu);
-	highlighter_menu->set_name("highlighter_menu");
-	edit_menu->get_popup()->add_child(highlighter_menu);
-	edit_menu->get_popup()->add_submenu_item(TTR("Syntax Highlighter"), "highlighter_menu");
+	edit_menu->get_popup()->add_submenu_node_item(TTR("Syntax Highlighter"), highlighter_menu);
 	highlighter_menu->connect("id_pressed", callable_mp(this, &TextEditor::_change_syntax_highlighter));
 
 	Ref<EditorPlainTextSyntaxHighlighter> plain_highlighter;
@@ -628,6 +672,21 @@ TextEditor::TextEditor() {
 	highlighter.instantiate();
 	add_syntax_highlighter(highlighter);
 	set_syntax_highlighter(plain_highlighter);
+
+	search_menu = memnew(MenuButton);
+	search_menu->set_shortcut_context(this);
+	edit_hb->add_child(search_menu);
+	search_menu->set_text(TTR("Search"));
+	search_menu->set_switch_on_hover(true);
+	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
+
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
+	search_menu->get_popup()->add_separator();
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_shortcut_context(this);
@@ -640,17 +699,13 @@ TextEditor::TextEditor() {
 	goto_menu->get_popup()->add_separator();
 
 	bookmarks_menu = memnew(PopupMenu);
-	bookmarks_menu->set_name("Bookmarks");
-	goto_menu->get_popup()->add_child(bookmarks_menu);
-	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
+	goto_menu->get_popup()->add_submenu_node_item(TTR("Bookmarks"), bookmarks_menu);
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &TextEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &TextEditor::_bookmark_item_pressed));
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);
-
-	code_editor->get_text_editor()->set_drag_forwarding_compat(this);
 }
 
 TextEditor::~TextEditor() {
@@ -658,4 +713,5 @@ TextEditor::~TextEditor() {
 }
 
 void TextEditor::validate() {
+	code_editor->validate_script();
 }

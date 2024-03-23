@@ -34,6 +34,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/run_instances_dialog.h"
 #include "main/main.h"
 #include "servers/display_server.h"
 
@@ -70,6 +71,9 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	bool debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisions", false);
 	bool debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
 	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
+	bool debug_avoidance = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_avoidance", false);
+	bool debug_canvas_redraw = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_canvas_redraw", false);
+
 	if (debug_collisions) {
 		args.push_back("--debug-collisions");
 	}
@@ -80,6 +84,14 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 
 	if (debug_navigation) {
 		args.push_back("--debug-navigation");
+	}
+
+	if (debug_avoidance) {
+		args.push_back("--debug-avoidance");
+	}
+
+	if (debug_canvas_redraw) {
+		args.push_back("--debug-canvas-item-redraw");
 	}
 
 	if (p_write_movie != "") {
@@ -211,68 +223,31 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		args.push_back(p_scene);
 	}
 
-	String exec = OS::get_singleton()->get_executable_path();
-
-	const String raw_custom_args = GLOBAL_GET("editor/run/main_run_args");
-	if (!raw_custom_args.is_empty()) {
-		// Allow the user to specify a command to run, similar to Steam's launch options.
-		// In this case, Godot will no longer be run directly; it's up to the underlying command
-		// to run it. For instance, this can be used on Linux to force a running project
-		// to use Optimus using `prime-run` or similar.
-		// Example: `prime-run %command% --time-scale 0.5`
-		const int placeholder_pos = raw_custom_args.find("%command%");
-
-		Vector<String> custom_args;
-
-		if (placeholder_pos != -1) {
-			// Prepend executable-specific custom arguments.
-			// If nothing is placed before `%command%`, behave as if no placeholder was specified.
-			Vector<String> exec_args = raw_custom_args.substr(0, placeholder_pos).split(" ", false);
-			if (exec_args.size() >= 1) {
-				exec = exec_args[0];
-				exec_args.remove_at(0);
-
-				// Append the Godot executable name before we append executable arguments
-				// (since the order is reversed when using `push_front()`).
-				args.push_front(OS::get_singleton()->get_executable_path());
-			}
-
-			for (int i = exec_args.size() - 1; i >= 0; i--) {
-				// Iterate backwards as we're pushing items in the reverse order.
-				args.push_front(exec_args[i].replace(" ", "%20"));
-			}
-
-			// Append Godot-specific custom arguments.
-			custom_args = raw_custom_args.substr(placeholder_pos + String("%command%").size()).split(" ", false);
-			for (int i = 0; i < custom_args.size(); i++) {
-				args.push_back(custom_args[i].replace(" ", "%20"));
-			}
-		} else {
-			// Append Godot-specific custom arguments.
-			custom_args = raw_custom_args.split(" ", false);
-			for (int i = 0; i < custom_args.size(); i++) {
-				args.push_back(custom_args[i].replace(" ", "%20"));
-			}
-		}
-	}
-
 	// Pass the debugger stop shortcut to the running instance(s).
 	String shortcut;
 	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/stop_running_project"), shortcut);
 	OS::get_singleton()->set_environment("__GODOT_EDITOR_STOP_SHORTCUT__", shortcut);
 
-	printf("Running: %s", exec.utf8().get_data());
-	for (const String &E : args) {
-		printf(" %s", E.utf8().get_data());
-	};
-	printf("\n");
+	String exec = OS::get_singleton()->get_executable_path();
+	int instance_count = RunInstancesDialog::get_singleton()->get_instance_count();
+	for (int i = 0; i < instance_count; i++) {
+		List<String> instance_args(args);
+		RunInstancesDialog::get_singleton()->get_argument_list_for_instance(i, instance_args);
+		RunInstancesDialog::get_singleton()->apply_custom_features(i);
 
-	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
-	for (int i = 0; i < instances; i++) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			print_line(vformat("Running: %s", exec));
+			for (const String &E : instance_args) {
+				print_line(" %s", E);
+			}
+		}
+
 		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->create_instance(args, &pid);
+		Error err = OS::get_singleton()->create_instance(instance_args, &pid);
 		ERR_FAIL_COND_V(err, err);
-		pids.push_back(pid);
+		if (pid != 0) {
+			pids.push_back(pid);
+		}
 	}
 
 	status = STATUS_PLAY;

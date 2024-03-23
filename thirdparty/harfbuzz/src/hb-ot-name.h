@@ -33,9 +33,8 @@
 
 HB_BEGIN_DECLS
 
-
 /**
- * hb_ot_name_id_t:
+ * hb_ot_name_id_predefined_t:
  * @HB_OT_NAME_ID_COPYRIGHT: Copyright notice
  * @HB_OT_NAME_ID_FONT_FAMILY: Font Family name
  * @HB_OT_NAME_ID_FONT_SUBFAMILY: Font Subfamily name
@@ -65,16 +64,14 @@ HB_BEGIN_DECLS
  * @HB_OT_NAME_ID_VARIATIONS_PS_PREFIX: Variations PostScript Name Prefix
  * @HB_OT_NAME_ID_INVALID: Value to represent a nonexistent name ID.
  *
- * An integral type representing an OpenType 'name' table name identifier.
- * There are predefined name IDs, as well as name IDs return from other
- * API.  These can be used to fetch name strings from a font face.
+ * An enum type representing the pre-defined name IDs.
  *
  * For more information on these fields, see the
  * [OpenType spec](https://docs.microsoft.com/en-us/typography/opentype/spec/name#name-ids).
  *
- * Since: 2.0.0
+ * Since: 7.0.0
  **/
-enum
+typedef enum
 {
   HB_OT_NAME_ID_COPYRIGHT		= 0,
   HB_OT_NAME_ID_FONT_FAMILY		= 1,
@@ -104,8 +101,17 @@ enum
   HB_OT_NAME_ID_VARIATIONS_PS_PREFIX	= 25,
 
   HB_OT_NAME_ID_INVALID			= 0xFFFF
-};
+} hb_ot_name_id_predefined_t;
 
+/**
+ * hb_ot_name_id_t:
+ *
+ * An integral type representing an OpenType 'name' table name identifier.
+ * There are predefined name IDs, as well as name IDs return from other
+ * API.  These can be used to fetch name strings from a font face.
+ *
+ * Since: 2.0.0
+ **/
 typedef unsigned int hb_ot_name_id_t;
 
 

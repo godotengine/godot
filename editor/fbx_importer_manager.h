@@ -31,12 +31,14 @@
 #ifndef FBX_IMPORTER_MANAGER_H
 #define FBX_IMPORTER_MANAGER_H
 
-#include "editor/editor_file_dialog.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 
 class FBXImporterManager : public ConfirmationDialog {
 	GDCLASS(FBXImporterManager, ConfirmationDialog)
+
+	bool is_importing = false;
 
 	Label *message = nullptr;
 	LineEdit *fbx_path = nullptr;
@@ -47,6 +49,7 @@ class FBXImporterManager : public ConfirmationDialog {
 	void _validate_path(const String &p_path);
 	void _select_file(const String &p_path);
 	void _path_confirmed();
+	void _cancel_setup();
 	void _browse_install();
 	void _link_clicked();
 
