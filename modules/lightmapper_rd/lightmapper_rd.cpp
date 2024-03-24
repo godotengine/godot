@@ -233,8 +233,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		MeshInstance &mi = mesh_instances.write[m_i];
 		Size2i s = Size2i(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height());
 		sizes.push_back(s);
-		atlas_size.width = MAX(atlas_size.width, s.width + 2);
-		atlas_size.height = MAX(atlas_size.height, s.height + 2);
+		atlas_size = atlas_size.max(s + Size2i(2, 2));
 	}
 
 	int max = nearest_power_of_2_templated(atlas_size.width);

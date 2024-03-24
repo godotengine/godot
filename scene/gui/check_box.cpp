@@ -36,28 +36,28 @@
 Size2 CheckBox::get_icon_size() const {
 	Size2 tex_size = Size2(0, 0);
 	if (!theme_cache.checked.is_null()) {
-		tex_size = Size2(theme_cache.checked->get_width(), theme_cache.checked->get_height());
+		tex_size = theme_cache.checked->get_size();
 	}
 	if (!theme_cache.unchecked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.unchecked->get_width()), MAX(tex_size.height, theme_cache.unchecked->get_height()));
+		tex_size = tex_size.max(theme_cache.unchecked->get_size());
 	}
 	if (!theme_cache.radio_checked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_checked->get_width()), MAX(tex_size.height, theme_cache.radio_checked->get_height()));
+		tex_size = tex_size.max(theme_cache.radio_checked->get_size());
 	}
 	if (!theme_cache.radio_unchecked.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_unchecked->get_width()), MAX(tex_size.height, theme_cache.radio_unchecked->get_height()));
+		tex_size = tex_size.max(theme_cache.radio_unchecked->get_size());
 	}
 	if (!theme_cache.checked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.checked_disabled->get_width()), MAX(tex_size.height, theme_cache.checked_disabled->get_height()));
+		tex_size = tex_size.max(theme_cache.checked_disabled->get_size());
 	}
 	if (!theme_cache.unchecked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.unchecked_disabled->get_width()), MAX(tex_size.height, theme_cache.unchecked_disabled->get_height()));
+		tex_size = tex_size.max(theme_cache.unchecked_disabled->get_size());
 	}
 	if (!theme_cache.radio_checked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_checked_disabled->get_width()), MAX(tex_size.height, theme_cache.radio_checked_disabled->get_height()));
+		tex_size = tex_size.max(theme_cache.radio_checked_disabled->get_size());
 	}
 	if (!theme_cache.radio_unchecked_disabled.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, theme_cache.radio_unchecked_disabled->get_width()), MAX(tex_size.height, theme_cache.radio_unchecked_disabled->get_height()));
+		tex_size = tex_size.max(theme_cache.radio_unchecked_disabled->get_size());
 	}
 	return tex_size;
 }

@@ -181,8 +181,7 @@ void GraphEditMinimap::gui_input(const Ref<InputEvent> &p_ev) {
 		if (is_resizing) {
 			// Prevent setting minimap wider than GraphEdit.
 			Vector2 new_minimap_size;
-			new_minimap_size.width = MIN(get_size().width - mm->get_relative().x, ge->get_size().width - 2.0 * minimap_padding.x);
-			new_minimap_size.height = MIN(get_size().height - mm->get_relative().y, ge->get_size().height - 2.0 * minimap_padding.y);
+			new_minimap_size = (get_size() - mm->get_relative()).min(ge->get_size() - 2.0 * minimap_padding);
 			ge->set_minimap_size(new_minimap_size);
 
 			queue_redraw();
