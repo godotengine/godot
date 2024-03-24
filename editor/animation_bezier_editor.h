@@ -101,6 +101,8 @@ class AnimationBezierTrackEdit : public Control {
 	void _menu_selected(int p_index);
 
 	void _play_position_draw();
+	bool _is_track_displayed(int p_track_index);
+	bool _is_track_curves_displayed(int p_track_index);
 
 	Vector2 insert_at_pos;
 
@@ -188,6 +190,7 @@ class AnimationBezierTrackEdit : public Control {
 	void _draw_track(int p_track, const Color &p_color);
 
 	float _bezier_h_to_pixel(float p_h);
+	void _zoom_vertically(real_t p_minimum_value, real_t p_maximum_value);
 
 protected:
 	static void _bind_methods();
@@ -208,6 +211,7 @@ public:
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
 	void set_filtered(bool p_filtered);
+	void auto_fit_vertically();
 
 	void set_play_position(real_t p_pos);
 	void update_play_position();
