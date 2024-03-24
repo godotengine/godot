@@ -1,22 +1,13 @@
-#pragma once
+#include "unknoterNode.h"
 
-#include "scene/main/node.h"
+#include <vector>
 
-#include <memory>
-
-class UnknoterImpl;
-
-class UnknoterNode : public Node {
-	GDCLASS(UnknoterNode, Node);
-
-  std::unique_ptr<UnknoterImpl> impl_;
-protected:
-  static void _bind_methods();
+class UnknoterImpl {
+  int width;
+  int height;
+  std::vector<std::vector<int>> coords_to_player;
 
 public:
-  UnknoterNode();
-  ~UnknoterNode();
-
   void reset(int players, int width, int height);
 
   int get_edge_player(int x, int y);
