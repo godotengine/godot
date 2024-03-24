@@ -1899,7 +1899,7 @@ void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
 			Node *check = to_visit[to_visit.size() - 1];
 			to_visit.resize(to_visit.size() - 1);
 
-			for (int i = 0; i < check->get_child_count(); i++) {
+			for (int i = 0; i < check->get_child_count(false); i++) {
 				Node *child = check->get_child(i, false);
 				to_visit.push_back(child);
 				if (child->data.owner == owner_temp) {
