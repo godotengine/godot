@@ -63,6 +63,8 @@ if env["gdnative_enabled"]:
     sys_env.Append(CCFLAGS=["-s", "EXPORT_ALL=1"])
     sys_env.Append(LINKFLAGS=["-s", "EXPORT_ALL=1"])
     sys_env.Append(LINKFLAGS=["-s", "WARN_ON_UNDEFINED_SYMBOLS=0"])
+    sys_env.Append(LINKFLAGS=["-s", "WASM_BIGINT=1"])
+
     # Force exporting the standard library (printf, malloc, etc.)
     sys_env["ENV"]["EMCC_FORCE_STDLIBS"] = "libc,libc++,libc++abi"
     # The main emscripten runtime, with exported standard libraries.
@@ -73,6 +75,7 @@ if env["gdnative_enabled"]:
     wasm_env.Append(CPPDEFINES=["WASM_GDNATIVE"])  # So that OS knows it can run GDNative libraries.
     wasm_env.Append(CCFLAGS=["-s", "SIDE_MODULE=2"])
     wasm_env.Append(LINKFLAGS=["-s", "SIDE_MODULE=2"])
+    wasm_env.Append(LINKFLAGS=["-s", "WASM_BIGINT=1"])
     wasm = wasm_env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", javascript_files)
     build = sys + [wasm[0]]
 else:
