@@ -1014,12 +1014,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					existing = root_name + "." + extensions.front()->get().to_lower();
 				}
 
-				if (da->file_exists(current_dir + existing)) {
-					accept->set_text(TTR("One or more scenes exist already, will not overwrite existing scenes."));
-					accept->popup_centered();
-					continue;
-				}
-
 				if (selection.size() == 1) {
 					new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 					new_scene_from_dialog->clear_filters();
@@ -1029,8 +1023,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					new_scene_from_dialog->set_current_path(existing);
 					new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
 					new_scene_from_dialog->popup_file_dialog();
-
 				} else {
+					if (da->file_exists(current_dir + existing)) {
+						accept->set_text(TTR("One or more scenes exist already, will not overwrite existing scenes."));
+						accept->popup_centered();
+						continue;
+					}
 					_new_scene_from_node(current_dir + existing, tocopy);
 				}
 			}
