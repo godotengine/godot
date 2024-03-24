@@ -187,7 +187,7 @@ with open(os.path.join(dest_dir, "kernels/config.h"), "w", encoding="utf-8", new
     )
 
 
-with open("CMakeLists.txt", "r") as cmake_file:
+with open("CMakeLists.txt", "r", encoding="utf-8") as cmake_file:
     cmake_content = cmake_file.read()
     major_version = int(re.compile(r"EMBREE_VERSION_MAJOR\s(\d+)").findall(cmake_content)[0])
     minor_version = int(re.compile(r"EMBREE_VERSION_MINOR\s(\d+)").findall(cmake_content)[0])

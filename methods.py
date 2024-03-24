@@ -179,7 +179,7 @@ def get_version_info(module_version_string="", silent=False):
     gitfolder = ".git"
 
     if os.path.isfile(".git"):
-        with open(".git", "r") as file:
+        with open(".git", "r", encoding="utf-8") as file:
             module_folder = file.readline().strip()
         if module_folder.startswith("gitdir: "):
             gitfolder = module_folder[8:]
@@ -196,12 +196,12 @@ def get_version_info(module_version_string="", silent=False):
             head = os.path.join(gitfolder, ref)
             packedrefs = os.path.join(gitfolder, "packed-refs")
             if os.path.isfile(head):
-                with open(head, "r") as file:
+                with open(head, "r", encoding="utf-8") as file:
                     githash = file.readline().strip()
             elif os.path.isfile(packedrefs):
                 # Git may pack refs into a single file. This code searches .git/packed-refs file for the current ref's hash.
                 # https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-pack-refs.html
-                for line in open(packedrefs, "r").read().splitlines():
+                for line in open(packedrefs, "r", encoding="utf-8").read().splitlines():
                     if line.startswith("#"):
                         continue
                     (line_hash, line_ref) = line.split(" ")
@@ -270,7 +270,7 @@ const uint64_t VERSION_TIMESTAMP = {git_timestamp};
 
 
 def parse_cg_file(fname, uniforms, sizes, conditionals):
-    with open(fname, "r") as fs:
+    with open(fname, "r", encoding="utf-8") as fs:
         line = fs.readline()
 
         while line:
@@ -1243,7 +1243,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     ).hexdigest()
 
     if os.path.exists(f"{project_name}.vcxproj.filters"):
-        with open(f"{project_name}.vcxproj.filters", "r") as file:
+        with open(f"{project_name}.vcxproj.filters", "r", encoding="utf-8") as file:
             existing_filters = file.read()
         match = re.search(r"(?ms)^<!-- CHECKSUM$.([0-9a-f]{32})", existing_filters)
         if match is not None and md5 == match.group(1):
@@ -1255,7 +1255,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     if not skip_filters:
         print(f"Regenerating {project_name}.vcxproj.filters")
 
-        with open("misc/msvs/vcxproj.filters.template", "r") as file:
+        with open("misc/msvs/vcxproj.filters.template", "r", encoding="utf-8") as file:
             filters_template = file.read()
         for i in range(1, 10):
             filters_template = filters_template.replace(f"%%UUID{i}%%", str(uuid.uuid4()))
@@ -1409,7 +1409,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             )
         output = f'bin\\godot{env["PROGSUFFIX"]}'
 
-        with open("misc/msvs/props.template", "r") as file:
+        with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()
 
         props_template = props_template.replace("%%VSCONF%%", vsconf)
@@ -1478,7 +1478,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     sln_uuid = str(uuid.uuid4())
 
     if os.path.exists(f"{project_name}.sln"):
-        for line in open(f"{project_name}.sln", "r").read().splitlines():
+        for line in open(f"{project_name}.sln", "r", encoding="utf-8").read().splitlines():
             if line.startswith('Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}")'):
                 proj_uuid = re.search(
                     r"\"{(\b[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-\b[0-9a-fA-F]{12}\b)}\"$",
@@ -1567,7 +1567,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     section2 = sorted(section2)
 
     if not get_bool(original_args, "vsproj_props_only", False):
-        with open("misc/msvs/vcxproj.template", "r") as file:
+        with open("misc/msvs/vcxproj.template", "r", encoding="utf-8") as file:
             proj_template = file.read()
         proj_template = proj_template.replace("%%UUID%%", proj_uuid)
         proj_template = proj_template.replace("%%CONFS%%", "\n    ".join(configurations))
@@ -1579,7 +1579,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             f.write(proj_template)
 
     if not get_bool(original_args, "vsproj_props_only", False):
-        with open("misc/msvs/sln.template", "r") as file:
+        with open("misc/msvs/sln.template", "r", encoding="utf-8") as file:
             sln_template = file.read()
         sln_template = sln_template.replace("%%NAME%%", project_name)
         sln_template = sln_template.replace("%%UUID%%", proj_uuid)

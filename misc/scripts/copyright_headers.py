@@ -69,7 +69,7 @@ for f in sys.argv[1:]:
     # In a second pass, we skip all consecutive comment lines starting with "/*",
     # then we can append the rest (step 2).
 
-    with open(fname.strip(), "r") as fileread:
+    with open(fname.strip(), "r", encoding="utf-8") as fileread:
         line = fileread.readline()
         header_done = False
 
