@@ -40,6 +40,7 @@
 #include "modules/game_help/logic/animation_help.h"
 #include "modules/game_help/logic/body_main.h"
 #include "modules/game_help/logic/body_part.h"
+#include "modules/game_help/logic/data_table_manager.h"
 #include "modules/game_help/csv/CSV_EditorImportPlugin.h"
 
 
@@ -91,6 +92,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	
 	ClassDB::register_class<CharacterBodyMain>();
 	ClassDB::register_class<CharacterBodyPart>();
+	ClassDB::register_class<CharacterController>();
 	//ClassDB::register_class<BTPlaySkill>();
 
 	
@@ -104,6 +106,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	animation_help = memnew(AnimationHelp);
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AnimationHelp", animation_help));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("DataTableManager", DataTableManager::get_singleton()));
 
 
 

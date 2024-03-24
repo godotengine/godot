@@ -138,7 +138,7 @@ protected:
 	void _convert_to_last_version(int p_from_version);
 
 	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0);
-
+public:
 	void _add_property_info_bind(const Dictionary &p_info);
 
 	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);

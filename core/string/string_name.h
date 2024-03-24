@@ -98,6 +98,50 @@ public:
 	bool operator==(const char *p_name) const;
 	bool operator!=(const String &p_name) const;
 	bool operator!=(const char *p_name) const;
+	int find(const String &p_str, int p_from = 0) const
+	{
+		return operator String().find(p_str, 0);
+	}
+	bool match(const String &p_wildcard) const
+	{
+		return operator String().match(p_wildcard);
+	}
+	bool begins_with(const String &p_string) const
+	{
+		return operator String().begins_with(p_string);
+	}
+	String substr(int p_from, int p_chars = -1) const
+	{
+		return operator String().substr(p_from, p_chars);
+	}
+	String replace(const String &p_key, const String &p_with) const
+	{
+		return operator String().replace(p_key, p_with);
+	}
+	_FORCE_INLINE_ int length() const 
+	{
+		return operator String().length();
+	}
+	String to_upper() const
+	{
+		return operator String().to_upper();
+	}
+	String to_lower() const
+	{
+		return operator String().to_lower();
+	}
+	bool is_empty() const
+	{
+		return operator String().is_empty();
+	}
+	String get_slice(const String &p_splitter, int p_slice) const
+	{
+		return operator String().get_slice(p_splitter, p_slice);
+	}
+	String  str()const
+	{
+		return operator String();
+	}
 
 	_FORCE_INLINE_ bool is_node_unique_name() const {
 		if (!_data) {

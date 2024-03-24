@@ -1,4 +1,5 @@
 #include "body_main.h"
+#include "data_table_manager.h"
 
 
 void CharacterBodyMain::_bind_methods()
@@ -164,6 +165,28 @@ CharacterBodyMain::CharacterBodyMain()
 CharacterBodyMain::~CharacterBodyMain()
 {
     
+}
+
+
+
+
+
+void CharacterController::load_test()
+{
+    Dictionary data = DataTableManager::get_singleton()->get_data_table("player");
+
+    if(!data.has(load_test_id))
+    {
+        ERR_FAIL_MSG("data not found:" + itos(load_test_id));
+    }
+
+    CharacterBodyMain*body = get_load_test_player();
+    if(body)
+    {
+        startup(body,data[load_test_id]);
+    }
+
+
 }
 
 

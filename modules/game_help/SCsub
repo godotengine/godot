@@ -17,3 +17,4 @@ env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/he
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/color_brushes/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/grass/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/navmesh/*.cpp")
+
