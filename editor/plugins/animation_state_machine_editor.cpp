@@ -1247,14 +1247,14 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw_all() {
 	{
 		float len = MAX(0.0001, current_length);
 		float pos = CLAMP(current_play_pos, 0, len);
-		float c = current_length == HUGE_LENGTH ? 1 : (pos / len);
+		float c = pos / len;
 		_state_machine_pos_draw_individual(playback->get_current_node(), c);
 	}
 
 	{
 		float len = MAX(0.0001, fade_from_length);
 		float pos = CLAMP(fade_from_current_play_pos, 0, len);
-		float c = fade_from_length == HUGE_LENGTH ? 1 : (pos / len);
+		float c = pos / len;
 		_state_machine_pos_draw_individual(playback->get_fading_from_node(), c);
 	}
 }
