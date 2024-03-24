@@ -1476,6 +1476,10 @@ public:
 	virtual void canvas_item_set_debug_redraw(bool p_enabled) = 0;
 	virtual bool canvas_item_get_debug_redraw() const = 0;
 
+	virtual void canvas_item_set_interpolated(RID p_item, bool p_interpolated) = 0;
+	virtual void canvas_item_reset_physics_interpolation(RID p_item) = 0;
+	virtual void canvas_item_transform_physics_interpolation(RID p_item, const Transform2D &p_transform) = 0;
+
 	/* CANVAS LIGHT */
 	virtual RID canvas_light_create() = 0;
 
@@ -1523,6 +1527,10 @@ public:
 	virtual void canvas_light_set_shadow_color(RID p_light, const Color &p_color) = 0;
 	virtual void canvas_light_set_shadow_smooth(RID p_light, float p_smooth) = 0;
 
+	virtual void canvas_light_set_interpolated(RID p_light, bool p_interpolated) = 0;
+	virtual void canvas_light_reset_physics_interpolation(RID p_light) = 0;
+	virtual void canvas_light_transform_physics_interpolation(RID p_light, const Transform2D &p_transform) = 0;
+
 	/* CANVAS LIGHT OCCLUDER */
 
 	virtual RID canvas_light_occluder_create() = 0;
@@ -1532,6 +1540,10 @@ public:
 	virtual void canvas_light_occluder_set_as_sdf_collision(RID p_occluder, bool p_enable) = 0;
 	virtual void canvas_light_occluder_set_transform(RID p_occluder, const Transform2D &p_xform) = 0;
 	virtual void canvas_light_occluder_set_light_mask(RID p_occluder, int p_mask) = 0;
+
+	virtual void canvas_light_occluder_set_interpolated(RID p_occluder, bool p_interpolated) = 0;
+	virtual void canvas_light_occluder_reset_physics_interpolation(RID p_occluder) = 0;
+	virtual void canvas_light_occluder_transform_physics_interpolation(RID p_occluder, const Transform2D &p_transform) = 0;
 
 	/* CANVAS LIGHT OCCLUDER POLYGON */
 
@@ -1603,6 +1615,11 @@ public:
 	/* FREE */
 
 	virtual void free(RID p_rid) = 0; // Free RIDs associated with the rendering server.
+
+	/* INTERPOLATION */
+
+	virtual void tick() = 0;
+	virtual void set_physics_interpolation_enabled(bool p_enabled) = 0;
 
 	/* EVENT QUEUING */
 

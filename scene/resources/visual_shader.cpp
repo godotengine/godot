@@ -4710,68 +4710,61 @@ String VisualShaderNodeExpression::get_expression() const {
 	return expression;
 }
 
+bool VisualShaderNodeExpression::_is_valid_identifier_char(char32_t p_c) const {
+	return p_c == '_' || (p_c >= 'A' && p_c <= 'Z') || (p_c >= 'a' && p_c <= 'z') || (p_c >= '0' && p_c <= '9');
+}
+
+String VisualShaderNodeExpression::_replace_port_names(const Vector<Pair<String, String>> &p_pairs, const String &p_expression) const {
+	String _expression = p_expression;
+
+	for (const Pair<String, String> &pair : p_pairs) {
+		String from = pair.first;
+		String to = pair.second;
+		int search_idx = 0;
+		int len = from.length();
+
+		while (true) {
+			int index = _expression.find(from, search_idx);
+			if (index == -1) {
+				break;
+			}
+
+			int left_index = index - 1;
+			int right_index = index + len;
+			bool left_correct = left_index <= 0 || !_is_valid_identifier_char(_expression[left_index]);
+			bool right_correct = right_index >= _expression.length() || !_is_valid_identifier_char(_expression[right_index]);
+
+			if (left_correct && right_correct) {
+				_expression = _expression.erase(index, len);
+				_expression = _expression.insert(index, to);
+
+				search_idx = index + to.length();
+			} else {
+				search_idx = index + len;
+			}
+		}
+	}
+
+	return _expression;
+}
+
 String VisualShaderNodeExpression::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String _expression = expression;
 
 	_expression = _expression.insert(0, "\n");
 	_expression = _expression.replace("\n", "\n		");
 
-	static Vector<String> pre_symbols;
-	if (pre_symbols.is_empty()) {
-		pre_symbols.push_back("	");
-		pre_symbols.push_back(",");
-		pre_symbols.push_back(";");
-		pre_symbols.push_back("{");
-		pre_symbols.push_back("[");
-		pre_symbols.push_back("]");
-		pre_symbols.push_back("(");
-		pre_symbols.push_back(" ");
-		pre_symbols.push_back("-");
-		pre_symbols.push_back("*");
-		pre_symbols.push_back("/");
-		pre_symbols.push_back("+");
-		pre_symbols.push_back("=");
-		pre_symbols.push_back("&");
-		pre_symbols.push_back("|");
-		pre_symbols.push_back("!");
-	}
-
-	static Vector<String> post_symbols;
-	if (post_symbols.is_empty()) {
-		post_symbols.push_back("	");
-		post_symbols.push_back("\n");
-		post_symbols.push_back(",");
-		post_symbols.push_back(";");
-		post_symbols.push_back("}");
-		post_symbols.push_back("[");
-		post_symbols.push_back("]");
-		post_symbols.push_back(")");
-		post_symbols.push_back(" ");
-		post_symbols.push_back(".");
-		post_symbols.push_back("-");
-		post_symbols.push_back("*");
-		post_symbols.push_back("/");
-		post_symbols.push_back("+");
-		post_symbols.push_back("=");
-		post_symbols.push_back("&");
-		post_symbols.push_back("|");
-		post_symbols.push_back("!");
-	}
-
+	Vector<Pair<String, String>> input_port_names;
 	for (int i = 0; i < get_input_port_count(); i++) {
-		for (int j = 0; j < pre_symbols.size(); j++) {
-			for (int k = 0; k < post_symbols.size(); k++) {
-				_expression = _expression.replace(pre_symbols[j] + get_input_port_name(i) + post_symbols[k], pre_symbols[j] + p_input_vars[i] + post_symbols[k]);
-			}
-		}
+		input_port_names.push_back(Pair<String, String>(get_input_port_name(i), p_input_vars[i]));
 	}
+	_expression = _replace_port_names(input_port_names, _expression);
+
+	Vector<Pair<String, String>> output_port_names;
 	for (int i = 0; i < get_output_port_count(); i++) {
-		for (int j = 0; j < pre_symbols.size(); j++) {
-			for (int k = 0; k < post_symbols.size(); k++) {
-				_expression = _expression.replace(pre_symbols[j] + get_output_port_name(i) + post_symbols[k], pre_symbols[j] + p_output_vars[i] + post_symbols[k]);
-			}
-		}
+		output_port_names.push_back(Pair<String, String>(get_output_port_name(i), p_output_vars[i]));
 	}
+	_expression = _replace_port_names(output_port_names, _expression);
 
 	String output_initializer;
 

@@ -101,7 +101,7 @@ struct _NO_DISCARD_ AABB {
 	_FORCE_INLINE_ void expand_to(const Vector3 &p_vector); /** expand to contain a point if necessary */
 
 	_FORCE_INLINE_ AABB abs() const {
-		return AABB(Vector3(position.x + MIN(size.x, (real_t)0), position.y + MIN(size.y, (real_t)0), position.z + MIN(size.z, (real_t)0)), size.abs());
+		return AABB(position + size.min(Vector3()), size.abs());
 	}
 
 	Variant intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const;

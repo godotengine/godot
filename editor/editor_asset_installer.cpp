@@ -735,6 +735,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	source_tree_vb->add_child(source_tree_label);
 
 	source_tree = memnew(Tree);
+	source_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	source_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	source_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
 	source_tree_vb->add_child(source_tree);
@@ -749,6 +750,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	destination_tree_vb->add_child(destination_tree_label);
 
 	destination_tree = memnew(Tree);
+	destination_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	destination_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	destination_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
 	destination_tree_vb->add_child(destination_tree);

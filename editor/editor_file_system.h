@@ -68,14 +68,6 @@ class EditorFileSystemDirectory : public Object {
 		String script_class_icon_path;
 	};
 
-	struct FileInfoSort {
-		bool operator()(const FileInfo *p_a, const FileInfo *p_b) const {
-			return p_a->file < p_b->file;
-		}
-	};
-
-	void sort_files();
-
 	Vector<FileInfo *> files;
 
 	static void _bind_methods();

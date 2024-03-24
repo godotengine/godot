@@ -66,6 +66,11 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
 public:
+	enum {
+		NEW_KEY_INDEX = -2,
+		NEW_VALUE_INDEX,
+	};
+
 	void set_dict(const Dictionary &p_dict);
 	Dictionary get_dict();
 
@@ -74,6 +79,9 @@ public:
 
 	void set_new_item_value(const Variant &p_new_item);
 	Variant get_new_item_value();
+
+	String get_label_for_index(int p_index);
+	String get_property_name_for_index(int p_index);
 
 	EditorPropertyDictionaryObject();
 };
@@ -125,7 +133,7 @@ class EditorPropertyArray : public EditorProperty {
 	void _reorder_button_gui_input(const Ref<InputEvent> &p_event);
 	void _reorder_button_down(int p_index);
 	void _reorder_button_up();
-	void create_new_property_slot();
+	void _create_new_property_slot();
 
 protected:
 	Ref<EditorPropertyArrayObject> object;
@@ -160,6 +168,34 @@ public:
 class EditorPropertyDictionary : public EditorProperty {
 	GDCLASS(EditorPropertyDictionary, EditorProperty);
 
+	struct Slot {
+		Ref<EditorPropertyDictionaryObject> object;
+		HBoxContainer *container = nullptr;
+		int index = -1;
+		Variant::Type type = Variant::VARIANT_MAX;
+		bool as_id = false;
+		EditorProperty *prop = nullptr;
+		String prop_name;
+
+		void set_index(int p_idx) {
+			index = p_idx;
+			prop_name = object->get_property_name_for_index(p_idx);
+			update_prop_or_index();
+		}
+
+		void set_prop(EditorProperty *p_prop) {
+			prop->add_sibling(p_prop);
+			prop->queue_free();
+			prop = p_prop;
+			update_prop_or_index();
+		}
+
+		void update_prop_or_index() {
+			prop->set_object_and_property(object.ptr(), prop_name);
+			prop->set_label(object->get_label_for_index(index));
+		}
+	};
+
 	PopupMenu *change_type = nullptr;
 	bool updating = false;
 
@@ -170,15 +206,18 @@ class EditorPropertyDictionary : public EditorProperty {
 	Button *edit = nullptr;
 	MarginContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
+	PanelContainer *add_panel = nullptr;
 	EditorSpinSlider *size_sliderv = nullptr;
 	Button *button_add_item = nullptr;
 	EditorPaginator *paginator = nullptr;
 	PropertyHint property_hint;
+	LocalVector<Slot> slots;
+	void _create_new_property_slot(int p_idx);
 
 	void _page_changed(int p_page);
 	void _edit_pressed();
 	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
-	void _change_type(Object *p_button, int p_index);
+	void _change_type(Object *p_button, int p_slot_index);
 	void _change_type_menu(int p_index);
 
 	void _add_key_value();

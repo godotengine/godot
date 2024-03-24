@@ -762,6 +762,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	container->add_child(unique_resources_label);
 
 	unique_resources_list_tree = memnew(Tree);
+	unique_resources_list_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	unique_resources_list_tree->set_hide_root(true);
 	unique_resources_list_tree->set_columns(1);
 	unique_resources_list_tree->set_column_title(0, TTR("Property"));

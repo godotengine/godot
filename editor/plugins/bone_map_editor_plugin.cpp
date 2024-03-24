@@ -173,6 +173,7 @@ void BonePicker::create_editors() {
 	add_child(vbox);
 
 	bones = memnew(Tree);
+	bones->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	bones->set_select_mode(Tree::SELECT_SINGLE);
 	bones->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	bones->set_hide_root(true);

@@ -294,7 +294,7 @@ VoxelGI::Subdiv VoxelGI::get_subdiv() const {
 
 void VoxelGI::set_size(const Vector3 &p_size) {
 	// Prevent very small size dimensions as these breaks baking if other size dimensions are set very high.
-	size = Vector3(MAX(1.0, p_size.x), MAX(1.0, p_size.y), MAX(1.0, p_size.z));
+	size = p_size.max(Vector3(1.0, 1.0, 1.0));
 	update_gizmos();
 }
 
