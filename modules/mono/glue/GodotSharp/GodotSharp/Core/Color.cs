@@ -1329,10 +1329,7 @@ namespace Godot
         /// Converts this <see cref="Color"/> to a string.
         /// </summary>
         /// <returns>A string representation of this color.</returns>
-        public override readonly string ToString()
-        {
-            return $"({R}, {G}, {B}, {A})";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Color"/> to a string with the given <paramref name="format"/>.
@@ -1340,9 +1337,7 @@ namespace Godot
         /// <returns>A string representation of this color.</returns>
         public readonly string ToString(string? format)
         {
-#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
-            return $"({R.ToString(format)}, {G.ToString(format)}, {B.ToString(format)}, {A.ToString(format)})";
-#pragma warning restore CA1305
+            return $"({R.ToString(format, CultureInfo.InvariantCulture)}, {G.ToString(format, CultureInfo.InvariantCulture)}, {B.ToString(format, CultureInfo.InvariantCulture)}, {A.ToString(format, CultureInfo.InvariantCulture)})";
         }
     }
 }
