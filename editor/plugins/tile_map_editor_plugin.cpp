@@ -150,6 +150,13 @@ void TileMapEditor::_update_button_tool() {
 }
 
 void TileMapEditor::_button_tool_select(int p_tool) {
+	if (_mouse_buttons_pressed) {
+		// Disallow changing tool when drawing,
+		// to prevent undo actions getting messed up
+		// and out of sync.
+		return;
+	}
+
 	tool = (Tool)p_tool;
 	_update_button_tool();
 	switch (tool) {
@@ -1160,6 +1167,14 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
+		// Keep track internally of which mouse buttons are pressed
+		// so we can disallow changing tool.
+		if (mb->is_pressed()) {
+			_mouse_buttons_pressed |= mb->get_button_index();
+		} else {
+			_mouse_buttons_pressed &= ~mb->get_button_index();
+		}
+
 		if (mb->get_button_index() == BUTTON_LEFT) {
 			if (mb->is_pressed()) {
 				if (Input::get_singleton()->is_key_pressed(KEY_SPACE)) {

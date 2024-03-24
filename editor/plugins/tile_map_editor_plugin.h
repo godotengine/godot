@@ -105,6 +105,7 @@ class TileMapEditor : public VBoxContainer {
 
 	Tool tool;
 	Tool last_tool;
+	uint32_t _mouse_buttons_pressed = 0;
 
 	bool selection_active;
 	bool mouse_over;
