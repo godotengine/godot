@@ -134,6 +134,11 @@ private:
 
 		int process_priority;
 
+		// If canvas item children of a node change child order,
+		// we store this information in the scenetree in a temporary structure
+		// allocated on demand per node.
+		uint32_t canvas_parent_id = UINT32_MAX;
+
 		// Keep bitpacked values together to get better packing
 		PauseMode pause_mode : 2;
 		PhysicsInterpolationMode physics_interpolation_mode : 2;
@@ -279,7 +284,7 @@ public:
 		NOTIFICATION_DRAG_BEGIN = 21,
 		NOTIFICATION_DRAG_END = 22,
 		NOTIFICATION_PATH_CHANGED = 23,
-		//NOTIFICATION_TRANSLATION_CHANGED = 24, moved below
+		NOTIFICATION_CHILD_ORDER_CHANGED = 24,
 		NOTIFICATION_INTERNAL_PROCESS = 25,
 		NOTIFICATION_INTERNAL_PHYSICS_PROCESS = 26,
 		NOTIFICATION_POST_ENTER_TREE = 27,
@@ -454,6 +459,9 @@ public:
 	_FORCE_INLINE_ bool is_physics_interpolated() const { return data.physics_interpolated; }
 	_FORCE_INLINE_ bool is_physics_interpolated_and_enabled() const { return is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && is_physics_interpolated(); }
 	void reset_physics_interpolation();
+
+	uint32_t get_canvas_parent_id() const { return data.canvas_parent_id; }
+	void set_canvas_parent_id(uint32_t p_id) { data.canvas_parent_id = p_id; }
 
 	void request_ready();
 

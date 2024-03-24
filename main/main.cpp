@@ -2399,6 +2399,12 @@ bool Main::iteration() {
 		exit = true;
 	}
 	visual_server_callbacks->flush();
+
+	// Ensure that VisualServer is kept up to date at least once with any ordering changes
+	// of canvas items before a render.
+	// This ensures this will be done at least once in apps that create their own MainLoop.
+	Viewport::flush_canvas_parents_dirty_order();
+
 	message_queue->flush();
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.

@@ -70,6 +70,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void update_draw_order();
+
 	void set_layer(int p_xform);
 	int get_layer() const;
 
