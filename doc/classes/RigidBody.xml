@@ -210,8 +210,16 @@
 				Emitted when one of this RigidBody's [Shape]s collides with another [PhysicsBody] or [GridMap]'s [Shape]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
 				[code]body_rid[/code] the [RID] of the other [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody] or [GridMap].
-				[code]body_shape_index[/code] the index of the [Shape] of the other [PhysicsBody] or [GridMap] used by the [PhysicsServer]. Get the [CollisionShape] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape] of this RigidBody used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
+				[code]body_shape_index[/code] the index of the [Shape] of the other [PhysicsBody] or [GridMap].
+				[code]local_shape_index[/code] the index of the [Shape] of this RigidBody.
+				[b]Example of getting the[/b] [CollisionShape] [b]node from the shape index:[/b]
+				[codeblock]
+				var body_shape_owner = body.shape_find_owner(body_shape_index)
+				var body_shape_node = body.shape_owner_get_owner(body_shape_owner)
+
+				var local_shape_owner = shape_find_owner(local_shape_index)
+				var local_shape_node = shape_owner_get_owner(local_shape_owner)
+				[/codeblock]
 				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape]. Don't use multiple [CollisionShape]s when using a [ConcavePolygonShape] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
@@ -224,9 +232,10 @@
 				Emitted when the collision between one of this RigidBody's [Shape]s and another [PhysicsBody] or [GridMap]'s [Shape]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
 				[code]body_rid[/code] the [RID] of the other [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer]. [GridMap]s are detected if the Meshes have [Shape]s.
 				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody] or [GridMap].
-				[code]body_shape_index[/code] the index of the [Shape] of the other [PhysicsBody] or [GridMap] used by the [PhysicsServer]. Get the [CollisionShape] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape] of this RigidBody used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
+				[code]body_shape_index[/code] the index of the [Shape] of the other [PhysicsBody] or [GridMap].
+				[code]local_shape_index[/code] the index of the [Shape] of this RigidBody.
 				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape]. Don't use multiple [CollisionShape]s when using a [ConcavePolygonShape] with Bullet physics if you need shape indices.
+				See also [signal body_shape_entered].
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">

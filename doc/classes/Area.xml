@@ -122,8 +122,16 @@
 				Emitted when one of another Area's [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code].
 				[code]area_rid[/code] the [RID] of the other Area's [CollisionObject] used by the [PhysicsServer].
 				[code]area[/code] the other Area.
-				[code]area_shape_index[/code] the index of the [Shape] of the other Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]area.shape_owner_get_owner(area_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape] of this Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
+				[code]area_shape_index[/code] the index of the [Shape] from the other Area.
+				[code]local_shape_index[/code] the index of the [Shape] from this Area.
+				[b]Example of getting the[/b] [CollisionShape] [b]node from the shape index:[/b]
+				[codeblock]
+				var other_shape_owner = area.shape_find_owner(area_shape_index)
+				var other_shape_node = area.shape_owner_get_owner(other_shape_owner)
+
+				var local_shape_owner = shape_find_owner(local_shape_index)
+				var local_shape_node = shape_owner_get_owner(local_shape_owner)
+				[/codeblock]
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
@@ -135,8 +143,9 @@
 				Emitted when one of another Area's [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code].
 				[code]area_rid[/code] the [RID] of the other Area's [CollisionObject] used by the [PhysicsServer].
 				[code]area[/code] the other Area.
-				[code]area_shape_index[/code] the index of the [Shape] of the other Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]area.shape_owner_get_owner(area_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape] of this Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
+				[code]area_shape_index[/code] the index of the [Shape] from the other Area.
+				[code]local_shape_index[/code] the index of the [Shape] from this Area.
+				See also [signal area_shape_entered].
 			</description>
 		</signal>
 		<signal name="body_entered">
@@ -162,8 +171,16 @@
 				Emitted when one of a [PhysicsBody] or [GridMap]'s [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
 				[code]body_rid[/code] the [RID] of the [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
 				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody] or [GridMap].
-				[code]body_shape_index[/code] the index of the [Shape] of the [PhysicsBody] or [GridMap] used by the [PhysicsServer]. Get the [CollisionShape] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape] of this Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
+				[code]body_shape_index[/code] the index of the [Shape] from the [PhysicsBody] or [GridMap].
+				[code]local_shape_index[/code] the index of the [Shape] from this Area.
+				[b]Example of getting the[/b] [CollisionShape] [b]node from the shape index:[/b]
+				[codeblock]
+				var body_shape_owner = body.shape_find_owner(body_shape_index)
+				var body_shape_node = body.shape_owner_get_owner(body_shape_owner)
+
+				var local_shape_owner = shape_find_owner(local_shape_index)
+				var local_shape_node = shape_owner_get_owner(local_shape_owner)
+				[/codeblock]
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -175,8 +192,9 @@
 				Emitted when one of a [PhysicsBody] or [GridMap]'s [Shape]s enters one of this Area's [Shape]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape]s.
 				[code]body_rid[/code] the [RID] of the [PhysicsBody] or [MeshLibrary]'s [CollisionObject] used by the [PhysicsServer].
 				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody] or [GridMap].
-				[code]body_shape_index[/code] the index of the [Shape] of the [PhysicsBody] or [GridMap] used by the [PhysicsServer]. Get the [CollisionShape] node with [code]body.shape_owner_get_owner(body_shape_index)[/code].
-				[code]local_shape_index[/code] the index of the [Shape] of this Area used by the [PhysicsServer]. Get the [CollisionShape] node with [code]self.shape_owner_get_owner(local_shape_index)[/code].
+				[code]body_shape_index[/code] the index of the [Shape] from the [PhysicsBody] or [GridMap].
+				[code]local_shape_index[/code] the index of the [Shape] from this Area.
+				See also [signal body_shape_entered].
 			</description>
 		</signal>
 	</signals>
