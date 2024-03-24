@@ -290,9 +290,11 @@ class AnimationTrackEdit : public Control {
 	mutable int dropping_at = 0;
 	float insert_at_pos = 0.0f;
 	bool moving_selection_attempt = false;
+	bool moving_selection_effective = false;
+	float moving_selection_pivot = 0.0f;
+	float moving_selection_mouse_begin_x = 0.0f;
 	int select_single_attempt = -1;
 	bool moving_selection = false;
-	float moving_selection_from_ofs = 0.0f;
 
 	bool in_group = false;
 	AnimationTrackEditor *editor = nullptr;

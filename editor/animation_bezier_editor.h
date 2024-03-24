@@ -109,6 +109,7 @@ class AnimationBezierTrackEdit : public Control {
 	typedef Pair<int, int> IntPair;
 
 	bool moving_selection_attempt = false;
+	float moving_selection_mouse_begin_x = 0.0;
 	IntPair select_single_attempt;
 	bool moving_selection = false;
 	int moving_selection_from_key = 0;
