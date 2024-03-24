@@ -423,6 +423,7 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
+	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	search_options->add_theme_constant_override("draw_guides", 1);
@@ -1892,7 +1893,7 @@ struct _ScriptEditorItemData {
 			if (sort_key == id.sort_key) {
 				return index < id.index;
 			} else {
-				return sort_key.naturalnocasecmp_to(id.sort_key) < 0;
+				return sort_key.filenocasecmp_to(id.sort_key) < 0;
 			}
 		} else {
 			return category < id.category;
@@ -4167,6 +4168,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 		disk_changed_list = memnew(Tree);
 		vbc->add_child(disk_changed_list);
+		disk_changed_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
 		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::reload_scripts).bind(false));

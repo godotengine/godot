@@ -117,7 +117,12 @@
 	<members>
 		<member name="device" type="int" setter="set_device" getter="get_device" default="0">
 			The event's device ID.
-			[b]Note:[/b] This device ID will always be [code]-1[/code] for emulated mouse input from a touchscreen. This can be used to distinguish emulated mouse input from physical mouse input.
+			[b]Note:[/b] [member device] can be negative for special use cases that don't refer to devices physically present on the system. See [constant DEVICE_ID_EMULATION].
 		</member>
 	</members>
+	<constants>
+		<constant name="DEVICE_ID_EMULATION" value="-1">
+			Device ID used for emulated mouse input from a touchscreen, or for emulated touch input from a mouse. This can be used to distinguish emulated mouse input from physical mouse input, or emulated touch input from physical touch input.
+		</constant>
+	</constants>
 </class>

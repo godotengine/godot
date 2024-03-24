@@ -501,8 +501,7 @@ Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p
 	// Clamp.
 	if (p_clamp) {
 		Vector2i size = tile_set_atlas_source->get_atlas_grid_size();
-		ret.x = CLAMP(ret.x, 0, size.x - 1);
-		ret.y = CLAMP(ret.y, 0, size.y - 1);
+		ret = ret.clamp(Vector2i(), size - Vector2i(1, 1));
 	}
 
 	return ret;

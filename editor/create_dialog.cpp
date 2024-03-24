@@ -779,6 +779,7 @@ CreateDialog::CreateDialog() {
 	vsc->add_child(fav_vb);
 
 	favorites = memnew(Tree);
+	favorites->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	favorites->set_hide_root(true);
 	favorites->set_hide_folding(true);
 	favorites->set_allow_reselect(true);
@@ -823,6 +824,7 @@ CreateDialog::CreateDialog() {
 	vbc->add_margin_child(TTR("Search:"), search_hb);
 
 	search_options = memnew(Tree);
+	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->connect("item_activated", callable_mp(this, &CreateDialog::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &CreateDialog::_item_selected));
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);

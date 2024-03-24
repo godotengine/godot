@@ -139,6 +139,8 @@ private:
 	HashMap<StringName, Group> group_map;
 	bool _quit = false;
 
+	bool _physics_interpolation_enabled = false;
+
 	StringName tree_changed_name = "tree_changed";
 	StringName node_added_name = "node_added";
 	StringName node_removed_name = "node_removed";
@@ -313,6 +315,8 @@ public:
 
 	virtual void initialize() override;
 
+	virtual void iteration_prepare() override;
+
 	virtual bool physics_process(double p_time) override;
 	virtual bool process(double p_time) override;
 
@@ -424,6 +428,9 @@ public:
 
 	void set_disable_node_threading(bool p_disable);
 	//default texture settings
+
+	void set_physics_interpolation_enabled(bool p_enabled);
+	bool is_physics_interpolation_enabled() const;
 
 	SceneTree();
 	~SceneTree();

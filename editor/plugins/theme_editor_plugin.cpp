@@ -918,6 +918,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	add_child(import_main_hb);
 
 	import_items_tree = memnew(Tree);
+	import_items_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	import_items_tree->set_hide_root(true);
 	import_items_tree->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	import_main_hb->add_child(import_items_tree);
@@ -1928,6 +1929,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_dialog_side_vb->add_child(edit_type_label);
 
 	edit_type_list = memnew(Tree);
+	edit_type_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	edit_type_list->set_hide_root(true);
 	edit_type_list->set_hide_folding(true);
 	edit_type_list->set_columns(1);
@@ -2031,6 +2033,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_remove_all->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_remove_all_items));
 
 	edit_items_tree = memnew(Tree);
+	edit_items_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	edit_items_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	edit_items_tree->set_hide_root(true);
 	edit_items_tree->set_columns(1);

@@ -377,10 +377,8 @@ public:
 		Vector2 further_away_opposite(1e20, 1e20);
 
 		for (int i = 0; i < c; i++) {
-			further_away.x = MAX(p[i].x, further_away.x);
-			further_away.y = MAX(p[i].y, further_away.y);
-			further_away_opposite.x = MIN(p[i].x, further_away_opposite.x);
-			further_away_opposite.y = MIN(p[i].y, further_away_opposite.y);
+			further_away = further_away.max(p[i]);
+			further_away_opposite = further_away_opposite.min(p[i]);
 		}
 
 		// Make point outside that won't intersect with points in segment from p_point.

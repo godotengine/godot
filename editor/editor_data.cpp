@@ -721,8 +721,12 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		}
 
 		new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
-
-		memdelete(edited_scene[p_idx].root);
+		Node *old_root = edited_scene[p_idx].root;
+		for (int i = 0; i < old_root->get_child_count(); i++) {
+			memdelete(old_root->get_child(i));
+		}
+		old_root->replace_by(new_scene);
+		memdelete(old_root);
 		edited_scene.write[p_idx].root = new_scene;
 		if (!new_scene->get_scene_file_path().is_empty()) {
 			edited_scene.write[p_idx].path = new_scene->get_scene_file_path();

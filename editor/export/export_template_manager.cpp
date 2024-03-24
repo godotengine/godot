@@ -1040,6 +1040,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	installed_versions_hb->add_child(installed_label);
 
 	installed_table = memnew(Tree);
+	installed_table->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	installed_table->set_hide_root(true);
 	installed_table->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	installed_table->set_v_size_flags(Control::SIZE_EXPAND_FILL);

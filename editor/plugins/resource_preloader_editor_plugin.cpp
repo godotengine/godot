@@ -369,6 +369,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 
 	tree = memnew(Tree);
 	tree->connect("button_clicked", callable_mp(this, &ResourcePreloaderEditor::_cell_button_pressed));
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(2);
 	tree->set_column_expand_ratio(0, 2);
 	tree->set_column_clip_content(0, true);

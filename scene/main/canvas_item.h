@@ -140,6 +140,8 @@ private:
 
 	void _notify_transform(CanvasItem *p_node);
 
+	virtual void _physics_interpolated_changed() override;
+
 	static CanvasItem *current_item_drawn;
 	friend class Viewport;
 	void _refresh_texture_repeat_cache() const;

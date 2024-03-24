@@ -34,16 +34,19 @@
 #include "core/math/geometry_2d.h"
 
 void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) const {
+	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::VECTOR2, blend_position));
 	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, length_internal, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 Variant AnimationNodeBlendSpace2D::get_parameter_default_value(const StringName &p_parameter) const {
+	Variant ret = AnimationNode::get_parameter_default_value(p_parameter);
+	if (ret != Variant()) {
+		return ret;
+	}
+
 	if (p_parameter == closest) {
 		return -1;
-	} else if (p_parameter == length_internal) {
-		return 0;
 	} else {
 		return Vector2();
 	}
@@ -442,19 +445,18 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 	r_weights[2] = w;
 }
 
-double AnimationNodeBlendSpace2D::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
+AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	_update_triangles();
 
 	Vector2 blend_pos = get_parameter(blend_position);
 	int cur_closest = get_parameter(closest);
-	double cur_length_internal = get_parameter(length_internal);
-	double mind = 0.0; //time of min distance point
+	NodeTimeInfo mind; //time of min distance point
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
 		if (triangles.size() == 0) {
-			return 0;
+			return NodeTimeInfo();
 		}
 
 		Vector2 best_point;
@@ -500,7 +502,7 @@ double AnimationNodeBlendSpace2D::_process(const AnimationMixer::PlaybackInfo p_
 			}
 		}
 
-		ERR_FAIL_COND_V(blend_triangle == -1, 0); //should never reach here
+		ERR_FAIL_COND_V(blend_triangle == -1, NodeTimeInfo()); //should never reach here
 
 		int triangle_points[3];
 		for (int j = 0; j < 3; j++) {
@@ -509,15 +511,17 @@ double AnimationNodeBlendSpace2D::_process(const AnimationMixer::PlaybackInfo p_
 
 		first = true;
 
+		bool found = false;
+		double max_weight = 0.0;
 		for (int i = 0; i < blend_points_used; i++) {
-			bool found = false;
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
 					//blend with the given weight
 					pi.weight = blend_weights[j];
-					double t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
-					if (first || t < mind) {
+					NodeTimeInfo t = blend_node(blend_points[i].node, blend_points[i].name, pi, FILTER_IGNORE, true, p_test_only);
+					if (first || pi.weight > max_weight) {
 						mind = t;
+						max_weight = pi.weight;
 						first = false;
 					}
 					found = true;
@@ -543,7 +547,7 @@ double AnimationNodeBlendSpace2D::_process(const AnimationMixer::PlaybackInfo p_
 		}
 
 		if (new_closest != cur_closest && new_closest != -1) {
-			double from = 0.0;
+			NodeTimeInfo from;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && cur_closest != -1) {
 				//for ping-pong loop
 				Ref<AnimationNodeAnimation> na_c = static_cast<Ref<AnimationNodeAnimation>>(blend_points[cur_closest].node);
@@ -554,14 +558,13 @@ double AnimationNodeBlendSpace2D::_process(const AnimationMixer::PlaybackInfo p_
 				//see how much animation remains
 				pi.seeked = false;
 				pi.weight = 0;
-				from = cur_length_internal - blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, p_test_only);
+				from = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, p_test_only);
 			}
 
-			pi.time = from;
+			pi.time = from.position;
 			pi.seeked = true;
 			pi.weight = 1.0;
 			mind = blend_node(blend_points[new_closest].node, blend_points[new_closest].name, pi, FILTER_IGNORE, true, p_test_only);
-			cur_length_internal = from + mind;
 			cur_closest = new_closest;
 		} else {
 			pi.weight = 1.0;
@@ -580,7 +583,6 @@ double AnimationNodeBlendSpace2D::_process(const AnimationMixer::PlaybackInfo p_
 	}
 
 	set_parameter(closest, cur_closest);
-	set_parameter(length_internal, cur_length_internal);
 	return mind;
 }
 

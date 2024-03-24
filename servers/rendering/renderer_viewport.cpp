@@ -31,6 +31,7 @@
 #include "renderer_viewport.h"
 
 #include "core/config/project_settings.h"
+#include "core/math/transform_interpolator.h"
 #include "core/object/worker_thread_pool.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
@@ -339,7 +340,14 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 					if (!F->enabled) {
 						continue;
 					}
-					F->xform_cache = xf * F->xform;
+
+					if (!RSG::canvas->_interpolation_data.interpolation_enabled || !F->interpolated) {
+						F->xform_cache = xf * F->xform_curr;
+					} else {
+						real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+						TransformInterpolator::interpolate_transform_2d(F->xform_prev, F->xform_curr, F->xform_cache, f);
+						F->xform_cache = xf * F->xform_cache;
+					}
 
 					if (sdf_rect.intersects_transformed(F->xform_cache, F->aabb_cache)) {
 						F->next = occluders;
@@ -378,7 +386,14 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 					Vector2 offset = tsize / 2.0;
 					cl->rect_cache = Rect2(-offset + cl->texture_offset, tsize);
-					cl->xform_cache = xf * cl->xform;
+
+					if (!RSG::canvas->_interpolation_data.interpolation_enabled || !cl->interpolated) {
+						cl->xform_cache = xf * cl->xform_curr;
+					} else {
+						real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+						TransformInterpolator::interpolate_transform_2d(cl->xform_prev, cl->xform_curr, cl->xform_cache, f);
+						cl->xform_cache = xf * cl->xform_cache;
+					}
 
 					if (clip_rect.intersects_transformed(cl->xform_cache, cl->rect_cache)) {
 						cl->filter_next_ptr = lights;
@@ -386,7 +401,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 						Transform2D scale;
 						scale.scale(cl->rect_cache.size);
 						scale.columns[2] = cl->rect_cache.position;
-						cl->light_shader_xform = xf * cl->xform * scale;
+						cl->light_shader_xform = cl->xform_cache * scale;
 						if (cl->use_shadow) {
 							cl->shadows_next_ptr = lights_with_shadow;
 							if (lights_with_shadow == nullptr) {
@@ -406,7 +421,13 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				if (cl->enabled) {
 					cl->filter_next_ptr = directional_lights;
 					directional_lights = cl;
-					cl->xform_cache = xf * cl->xform;
+					if (!RSG::canvas->_interpolation_data.interpolation_enabled || !cl->interpolated) {
+						cl->xform_cache = xf * cl->xform_curr;
+					} else {
+						real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+						TransformInterpolator::interpolate_transform_2d(cl->xform_prev, cl->xform_curr, cl->xform_cache, f);
+						cl->xform_cache = xf * cl->xform_cache;
+					}
 					cl->xform_cache.columns[2] = Vector2(); //translation is pointless
 					if (cl->use_shadow) {
 						cl->shadows_next_ptr = directional_lights_with_shadow;
@@ -441,7 +462,13 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 					if (!F->enabled) {
 						continue;
 					}
-					F->xform_cache = xf * F->xform;
+					if (!RSG::canvas->_interpolation_data.interpolation_enabled || !F->interpolated) {
+						F->xform_cache = xf * F->xform_curr;
+					} else {
+						real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+						TransformInterpolator::interpolate_transform_2d(F->xform_prev, F->xform_curr, F->xform_cache, f);
+						F->xform_cache = xf * F->xform_cache;
+					}
 					if (shadow_rect.intersects_transformed(F->xform_cache, F->aabb_cache)) {
 						F->next = occluders;
 						occluders = F;
@@ -521,7 +548,13 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 						if (!F->enabled) {
 							continue;
 						}
-						F->xform_cache = xf * F->xform;
+						if (!RSG::canvas->_interpolation_data.interpolation_enabled || !F->interpolated) {
+							F->xform_cache = xf * F->xform_curr;
+						} else {
+							real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+							TransformInterpolator::interpolate_transform_2d(F->xform_prev, F->xform_curr, F->xform_cache, f);
+							F->xform_cache = xf * F->xform_cache;
+						}
 						Transform2D localizer = F->xform_cache.affine_inverse();
 
 						for (int j = 0; j < point_count; j++) {

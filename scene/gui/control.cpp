@@ -1653,8 +1653,7 @@ Size2 Control::get_custom_minimum_size() const {
 
 void Control::_update_minimum_size_cache() {
 	Size2 minsize = get_minimum_size();
-	minsize.x = MAX(minsize.x, data.custom_minimum_size.x);
-	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
+	minsize = minsize.max(data.custom_minimum_size);
 
 	data.minimum_size_cache = minsize;
 	data.minimum_size_valid = true;
@@ -3690,6 +3689,8 @@ void Control::_bind_methods() {
 
 Control::Control() {
 	data.theme_owner = memnew(ThemeOwner(this));
+
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }
 
 Control::~Control() {

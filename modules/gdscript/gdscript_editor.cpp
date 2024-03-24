@@ -2665,6 +2665,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	GDScriptParser::DataType base_type = p_base.type;
 
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
+	const bool use_string_names = EDITOR_GET("text_editor/completion/add_string_name_literals");
+	const bool use_node_paths = EDITOR_GET("text_editor/completion/add_node_path_literals");
 
 	while (base_type.is_set() && !base_type.is_variant()) {
 		switch (base_type.kind) {
@@ -2698,8 +2700,14 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 							List<String> options;
 							obj->get_argument_options(p_method, p_argidx, &options);
 							for (String &opt : options) {
+								// Handle user preference.
 								if (opt.is_quoted()) {
-									opt = opt.unquote().quote(quote_style); // Handle user preference.
+									opt = opt.unquote().quote(quote_style);
+									if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
+										opt = opt.indent("&");
+									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
+										opt = opt.indent("^");
+									}
 								}
 								ScriptLanguage::CodeCompletionOption option(opt, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 								r_result.insert(option.display, option);

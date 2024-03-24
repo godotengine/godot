@@ -3096,7 +3096,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return err;
 			}
 			if (user_data.libs.size() > 0) {
-				Ref<FileAccess> fa = FileAccess::open(GDEXTENSION_LIBS_PATH, FileAccess::WRITE);
+				Ref<FileAccess> fa = FileAccess::open(gdextension_libs_path, FileAccess::WRITE);
 				fa->store_string(JSON::stringify(user_data.libs, "\t"));
 			}
 		} else {

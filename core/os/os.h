@@ -56,7 +56,8 @@ class OS {
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
 	String _local_clipboard;
-	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
+	// Assume success by default, all failure cases need to set EXIT_FAILURE explicitly.
+	int _exit_code = EXIT_SUCCESS;
 	bool _allow_hidpi = false;
 	bool _allow_layered = false;
 	bool _stdout_enabled = true;
