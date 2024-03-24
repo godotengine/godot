@@ -2082,6 +2082,9 @@
 		<member name="navigation/baking/thread_model/baking_use_multiple_threads" type="bool" setter="" getter="" default="true">
 			If enabled the async navmesh baking uses multiple threads.
 		</member>
+		<member name="navigation/baking/use_crash_prevention_checks" type="bool" setter="" getter="" default="true">
+			If enabled, and baking would potentially lead to an engine crash, the baking will be interrupted and an error message with explanation will be raised.
+		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>

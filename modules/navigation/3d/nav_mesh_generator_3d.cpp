@@ -750,11 +750,14 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
 
 	// ~30000000 seems to be around sweetspot where Editor baking breaks
-	if ((cfg.width * cfg.height) > 30000000) {
-		WARN_PRINT("NavigationMesh baking process will likely fail."
-				   "\nSource geometry is suspiciously big for the current Cell Size and Cell Height in the NavMesh Resource bake settings."
-				   "\nIf baking does not fail, the resulting NavigationMesh will create serious pathfinding performance issues."
-				   "\nIt is advised to increase Cell Size and/or Cell Height in the NavMesh Resource bake settings or reduce the size / scale of the source geometry.");
+	if ((cfg.width * cfg.height) > 30000000 && GLOBAL_GET("navigation/baking/use_crash_prevention_checks")) {
+		ERR_FAIL_MSG("Baking interrupted."
+					 "\nNavigationMesh baking process would likely crash the engine."
+					 "\nSource geometry is suspiciously big for the current Cell Size and Cell Height in the NavMesh Resource bake settings."
+					 "\nIf baking does not crash the engine or fail, the resulting NavigationMesh will create serious pathfinding performance issues."
+					 "\nIt is advised to increase Cell Size and/or Cell Height in the NavMesh Resource bake settings or reduce the size / scale of the source geometry."
+					 "\nIf you would like to try baking anyway, disable the 'navigation/baking/use_crash_prevention_checks' project setting.");
+		return;
 	}
 
 	bake_state = "Creating heightfield..."; // step #3
