@@ -245,14 +245,27 @@ namespace Godot.SourceGenerators
                     .Append(godotSignalDelegates.Count)
                     .Append(");\n");
 
+                StringBuilder docSignaString = new StringBuilder();
+
                 foreach (var signalDelegateData in godotSignalDelegates)
                 {
                     var methodInfo = DetermineMethodInfo(signalDelegateData);
                     AppendMethodInfo(source, methodInfo);
+                    GenerateSignalDoc(docSignaString, signalDelegateData.DelegateSymbol, signalDelegateData.Name);
                 }
 
                 source.Append("        return signals;\n");
                 source.Append("    }\n");
+
+                source.Append("\n#if TOOLS\n");
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append("    internal new static global::System.Collections.Generic.Dictionary<global::Godot.StringName, string> GetGodotSignalDocs()\n    {\n");
+                source.Append("        var docs = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, string>(");
+                source.Append(godotSignalDelegates.Count);
+                source.Append(");\n");
+                source.Append(docSignaString);
+                source.Append("        return docs;\n    }\n");
+                source.Append("#endif // TOOLS\n");
             }
 
             source.Append("#pragma warning restore CS0109\n");
@@ -516,6 +529,18 @@ namespace Godot.SourceGenerators
             source.Append("            return;\n");
 
             source.Append("        }\n");
+        }
+
+        private static void GenerateSignalDoc(StringBuilder docSignalString, ISymbol symbol, string signalName)
+        {
+            if (!string.IsNullOrWhiteSpace(symbol.GetDocumentationCommentXml()))
+            {
+                docSignalString.Append("        docs.Add(SignalName.")
+                    .Append(signalName)
+                    .Append(", \"")
+                    .Append(symbol.GettDocumentationSummaryText())
+                    .Append("\");\n");
+            }
         }
     }
 }

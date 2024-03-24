@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -46,6 +47,11 @@ namespace Godot.SourceGenerators
             }
 
             return false;
+        }
+
+        public static string? GettDocumentationSummaryText(this ISymbol symbol)
+        {
+            return XDocument.Parse(symbol.GetDocumentationCommentXml())?.Descendants("summary").FirstOrDefault()?.Value.Trim().Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\\n    ", "\\n");
         }
 
         public static INamedTypeSymbol? GetGodotScriptNativeClass(this INamedTypeSymbol classTypeSymbol)
