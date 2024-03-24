@@ -2433,9 +2433,7 @@ Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Vari
 			Rect2 pa = p_pre_a;
 			Rect2 pb = p_post_b;
 
-			return Rect2(
-					a.position.cubic_interpolate_in_time(b.position, pa.position, pb.position, p_c, p_b_t, p_pre_a_t, p_post_b_t),
-					a.size.cubic_interpolate_in_time(b.size, pa.size, pb.size, p_c, p_b_t, p_pre_a_t, p_post_b_t));
+			return a.cubic_interpolate_in_time(b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
 		}
 		case Variant::VECTOR3: {
 			Vector3 a = p_a;
@@ -2459,9 +2457,7 @@ Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Vari
 			AABB pa = p_pre_a;
 			AABB pb = p_post_b;
 
-			return AABB(
-					a.position.cubic_interpolate_in_time(b.position, pa.position, pb.position, p_c, p_b_t, p_pre_a_t, p_post_b_t),
-					a.size.cubic_interpolate_in_time(b.size, pa.size, pb.size, p_c, p_b_t, p_pre_a_t, p_post_b_t));
+			return a.cubic_interpolate_in_time(b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t);
 		}
 		default: {
 			return _interpolate(p_a, p_b, p_c);
@@ -5692,14 +5688,16 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			return Vector2i(int32_t(va.x + (vb.x - va.x) * c), int32_t(va.y + (vb.y - va.y) * c));
 		}
 		case Variant::RECT2: {
-			const Rect2 ra = a.operator Rect2();
-			const Rect2 rb = b.operator Rect2();
-			return Rect2(ra.position.lerp(rb.position, c), ra.size.lerp(rb.size, c));
+			return (a.operator Rect2()).lerp(b.operator Rect2(), c);
 		}
 		case Variant::RECT2I: {
 			const Rect2i ra = a.operator Rect2i();
 			const Rect2i rb = b.operator Rect2i();
-			return Rect2i(int32_t(ra.position.x + (rb.position.x - ra.position.x) * c), int32_t(ra.position.y + (rb.position.y - ra.position.y) * c), int32_t(ra.size.x + (rb.size.x - ra.size.x) * c), int32_t(ra.size.y + (rb.size.y - ra.size.y) * c));
+			return Rect2i(
+					int32_t(ra.position.x + (rb.position.x - ra.position.x) * c),
+					int32_t(ra.position.y + (rb.position.y - ra.position.y) * c),
+					int32_t(Math::abs(ra.size.x + (rb.size.x - ra.size.x) * c)),
+					int32_t(Math::abs(ra.size.y + (rb.size.y - ra.size.y) * c)));
 		}
 		case Variant::VECTOR3: {
 			return (a.operator Vector3()).lerp(b.operator Vector3(), c);
@@ -5726,9 +5724,7 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 			return (a.operator Color()).lerp(b.operator Color(), c);
 		}
 		case Variant::AABB: {
-			const ::AABB aa = a.operator ::AABB();
-			const ::AABB ab = b.operator ::AABB();
-			return ::AABB(aa.position.lerp(ab.position, c), aa.size.lerp(ab.size, c));
+			return (a.operator ::AABB()).lerp(b.operator ::AABB(), c);
 		}
 		case Variant::BASIS: {
 			return (a.operator Basis()).lerp(b.operator Basis(), c);
