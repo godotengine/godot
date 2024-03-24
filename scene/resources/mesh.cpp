@@ -42,6 +42,36 @@
 
 Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 
+#ifdef TOOLS_ENABLED
+const Mesh::CachedStats &Mesh::get_cached_stats() const {
+	if (_cached_stats.dirty) {
+		_cached_stats.dirty = false;
+		_cached_stats.triangle_count = get_triangle_count();
+		_cached_stats.vertex_count = get_vertex_count();
+		_cached_stats.index_count = get_index_count();
+		_cached_stats.array_format = get_array_format();
+	}
+
+	return _cached_stats;
+}
+#endif
+
+int Mesh::surface_get_index_count(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, get_surface_count(), 0);
+
+	switch (surface_get_primitive_type(p_idx)) {
+		case PRIMITIVE_TRIANGLES:
+		case PRIMITIVE_TRIANGLE_FAN:
+		case PRIMITIVE_TRIANGLE_STRIP: {
+			return (surface_get_format(p_idx) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(p_idx) : surface_get_array_len(p_idx);
+		} break;
+		default: {
+		} break;
+	}
+
+	return 0;
+}
+
 int Mesh::surface_get_triangle_count(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, get_surface_count(), 0);
 
@@ -64,6 +94,41 @@ int Mesh::surface_get_triangle_count(int p_idx) const {
 	}
 
 	return 0;
+}
+
+uint32_t Mesh::get_array_format() const {
+	// This is an ORed array format of all surfaces,
+	// primarily for display in editor.
+	// We can't easily display each surface individually,
+	// but the common case will be a single surface
+	// or similar surfaces.
+	uint32_t array_format = 0;
+
+	for (int i = 0; i < get_surface_count(); i++) {
+		array_format |= surface_get_format(i);
+	}
+
+	return array_format;
+}
+
+int Mesh::get_vertex_count() const {
+	int vertex_count = 0;
+
+	for (int i = 0; i < get_surface_count(); i++) {
+		vertex_count += surface_get_array_len(i);
+	}
+
+	return vertex_count;
+}
+
+int Mesh::get_index_count() const {
+	int index_count = 0;
+
+	for (int i = 0; i < get_surface_count(); i++) {
+		index_count += surface_get_index_count(i);
+	}
+
+	return index_count;
 }
 
 int Mesh::get_triangle_count() const {
@@ -625,6 +690,9 @@ void Mesh::set_storage_mode(StorageMode p_storage_mode) {
 void Mesh::clear_cache() const {
 	triangle_mesh.unref();
 	debug_lines.clear();
+#ifdef TOOLS_ENABLED
+	_cached_stats.dirty = true;
+#endif
 }
 
 Vector<Ref<Shape>> Mesh::convex_decompose(int p_max_convex_hulls) const {
