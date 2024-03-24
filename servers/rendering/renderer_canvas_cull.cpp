@@ -70,6 +70,11 @@ void RendererCanvasCull::_dependency_deleted(const RID &p_dependency, Dependency
 void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, uint32_t p_canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info) {
 	RENDER_TIMESTAMP("Cull CanvasItem Tree");
 
+	// This is used to avoid passing the camera transform down the rendering
+	// function calls, as it won't be used in 99% of cases, because the camera
+	// transform is normally concatenated with the item global transform.
+	_current_camera_transform = p_transform;
+
 	memset(z_list, 0, z_range * sizeof(RendererCanvasRender::Item *));
 	memset(z_last_list, 0, z_range * sizeof(RendererCanvasRender::Item *));
 
@@ -336,7 +341,12 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			TransformInterpolator::interpolate_transform_2d(ci->xform_prev, ci->xform_curr, self_xform, f);
 		}
 
-		Transform2D parent_xform = p_parent_xform;
+		Transform2D parent_xform;
+		if (!p_canvas_item->ignore_parent_xform) {
+			parent_xform = p_parent_xform;
+		} else {
+			parent_xform = _current_camera_transform;
+		}
 
 		if (snapping_2d_transforms_to_pixel) {
 			self_xform.columns[2] = (self_xform.columns[2] + Point2(0.5, 0.5)).floor();
@@ -684,6 +694,13 @@ void RendererCanvasCull::canvas_item_set_draw_behind_parent(RID p_item, bool p_e
 	ERR_FAIL_NULL(canvas_item);
 
 	canvas_item->behind = p_enable;
+}
+
+void RendererCanvasCull::canvas_item_set_ignore_parent_transform(RID p_item, bool p_enable) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->ignore_parent_xform = p_enable;
 }
 
 void RendererCanvasCull::canvas_item_set_update_when_visible(RID p_item, bool p_update) {

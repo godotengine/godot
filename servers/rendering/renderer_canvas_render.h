@@ -321,6 +321,7 @@ public:
 		bool update_when_visible : 1;
 		bool on_interpolate_transform_list : 1;
 		bool interpolated : 1;
+		bool ignore_parent_xform : 1;
 
 		struct CanvasGroup {
 			RS::CanvasGroupMode mode;
@@ -486,6 +487,7 @@ public:
 			repeat_source = false;
 			on_interpolate_transform_list = false;
 			interpolated = true;
+			ignore_parent_xform = false;
 		}
 		virtual ~Item() {
 			clear();
