@@ -115,6 +115,7 @@ namespace Godot.NativeInterop
         private godot_bool _isAbstract;
         private godot_bool _isConstructedGenericType;
         private godot_bool _isGenericTypeDefinition;
+        private godot_array _interfaces;
 
         public godot_string ClassName
         {
@@ -156,6 +157,12 @@ namespace Godot.NativeInterop
         {
             readonly get => _isGenericTypeDefinition;
             set => _isGenericTypeDefinition = value;
+        }
+
+        public godot_array Interfaces
+        {
+            readonly get => _interfaces;
+            set => _interfaces = value;
         }
     }
 

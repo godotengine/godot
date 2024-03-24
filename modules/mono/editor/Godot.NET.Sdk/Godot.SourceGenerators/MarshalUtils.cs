@@ -73,6 +73,7 @@ namespace Godot.SourceGenerators
                 MarshalType.SystemArrayOfRid => VariantType.Array,
                 MarshalType.Variant => VariantType.Nil,
                 MarshalType.GodotObjectOrDerived => VariantType.Object,
+                MarshalType.GodotObjectInterface => VariantType.Object,
                 MarshalType.StringName => VariantType.StringName,
                 MarshalType.NodePath => VariantType.NodePath,
                 MarshalType.Rid => VariantType.Rid,
@@ -118,6 +119,9 @@ namespace Godot.SourceGenerators
                 default:
                 {
                     var typeKind = type.TypeKind;
+
+                    if (typeKind == TypeKind.Interface)
+                        return MarshalType.GodotObjectInterface;
 
                     if (typeKind == TypeKind.Enum)
                         return MarshalType.Enum;
@@ -319,6 +323,11 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".ConvertToArray<",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedNameIncludeGlobal(), ">(",
                         inputExpr, ")"),
+                // Interfaces are limited to GodotObjects
+                MarshalType.GodotObjectInterface =>
+                    source.Append(
+                        "(", typeSymbol.FullQualifiedNameIncludeGlobal(), ")",
+                        VariantUtils, ".ConvertTo<global::Godot.GodotObject>(", inputExpr, ")"),
                 _ => source.Append(VariantUtils, ".ConvertTo<",
                     typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr, ")"),
             };
@@ -337,6 +346,9 @@ namespace Godot.SourceGenerators
                     source.Append(VariantUtils, ".CreateFromDictionary(", inputExpr, ")"),
                 MarshalType.GodotGenericArray =>
                     source.Append(VariantUtils, ".CreateFromArray(", inputExpr, ")"),
+                // Interfaces need to be casted to GodotObject
+                MarshalType.GodotObjectInterface =>
+                    source.Append(VariantUtils, ".CreateFrom((global::Godot.GodotObject)", inputExpr, ")"),
                 _ => source.Append(VariantUtils, ".CreateFrom<",
                     typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr, ")"),
             };
@@ -375,6 +387,8 @@ namespace Godot.SourceGenerators
                 // We need a special case for generic Godot collections, because Variant.From<T> is slower
                 MarshalType.GodotGenericDictionary or MarshalType.GodotGenericArray =>
                     source.Append("global::Godot.Variant.CreateFrom(", inputExpr, ")"),
+                MarshalType.GodotObjectInterface =>
+                    source.Append("global::Godot.Variant.From((global::Godot.GodotObject)", inputExpr, ")"),
                 _ => source.Append("global::Godot.Variant.From<",
                     typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr, ")")
             };
