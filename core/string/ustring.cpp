@@ -1871,7 +1871,7 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	bool decode_failed = false;
 	{
 		const char *ptrtmp = p_utf8;
-		const char *ptrtmp_limit = &p_utf8[p_len];
+		const char *ptrtmp_limit = p_len >= 0 ? &p_utf8[p_len] : nullptr;
 		int skip = 0;
 		uint8_t c_start = 0;
 		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
@@ -2148,7 +2148,7 @@ Error String::parse_utf16(const char16_t *p_utf16, int p_len) {
 	bool decode_error = false;
 	{
 		const char16_t *ptrtmp = p_utf16;
-		const char16_t *ptrtmp_limit = &p_utf16[p_len];
+		const char16_t *ptrtmp_limit = p_len >= 0 ? &p_utf16[p_len] : nullptr;
 		uint32_t c_prev = 0;
 		bool skip = false;
 		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
