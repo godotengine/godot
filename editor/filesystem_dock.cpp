@@ -453,7 +453,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			int index;
 			EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(favorite, &index);
 			if (dir) {
-				icon = _get_tree_item_icon(dir->get_file_import_is_valid(index), dir->get_file_path(index), dir->get_file_type(index));
+				icon = _get_tree_item_icon(dir->get_file_import_is_valid(index), dir->get_file_type(index), _get_entry_script_icon(dir, index));
 			} else {
 				icon = get_editor_theme_icon(SNAME("File"));
 			}
@@ -1004,6 +1004,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				fi.path = favorite;
 				if (efd) {
 					fi.type = efd->get_file_type(index);
+					fi.icon_path = _get_entry_script_icon(efd, index);
 					fi.import_broken = !efd->get_file_import_is_valid(index);
 					fi.modified_time = efd->get_file_modified_time(index);
 				} else {
@@ -1096,6 +1097,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				fi.name = efd->get_file(i);
 				fi.path = directory.path_join(fi.name);
 				fi.type = efd->get_file_type(i);
+				fi.icon_path = _get_entry_script_icon(efd, i);
 				fi.import_broken = !efd->get_file_import_is_valid(i);
 				fi.modified_time = efd->get_file_modified_time(i);
 
@@ -1113,7 +1115,6 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		FileInfo *finfo = &(E);
 		String fname = finfo->name;
 		String fpath = finfo->path;
-		String ftype = finfo->type;
 
 		Ref<Texture2D> type_icon;
 		Ref<Texture2D> big_icon;
@@ -1121,11 +1122,10 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		String tooltip = fpath;
 
 		// Select the icons.
+		type_icon = _get_tree_item_icon(!finfo->import_broken, finfo->type, finfo->icon_path);
 		if (!finfo->import_broken) {
-			type_icon = (has_theme_icon(ftype, EditorStringName(EditorIcons))) ? get_editor_theme_icon(ftype) : get_editor_theme_icon(SNAME("Object"));
 			big_icon = file_thumbnail;
 		} else {
-			type_icon = get_editor_theme_icon(SNAME("ImportFail"));
 			big_icon = file_thumbnail_broken;
 			tooltip += "\n" + TTR("Status: Import of file failed. Please fix file and reimport manually.");
 		}
