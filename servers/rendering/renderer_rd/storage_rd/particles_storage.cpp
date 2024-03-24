@@ -1138,6 +1138,10 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 		//fill the trail params
 		for (uint32_t i = 0; i < p_particles->trail_params.size(); i++) {
 			uint32_t src_idx = i * p_particles->frame_history.size() / p_particles->trail_params.size();
+			if (p_particles->speed_scale <= 0.0) {
+				// Stop trails.
+				src_idx = 0;
+			}
 			p_particles->trail_params[i] = p_particles->frame_history[src_idx];
 		}
 	} else {
