@@ -66,7 +66,11 @@ RID RenderSceneDataRD::create_uniform_buffer() {
 	// @ShadyTF : persistent buffers
 	// Was:
 	//return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA));
-	return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA), Vector<uint8_t>(), RD::BUFFER_CREATION_LINEAR_BIT | RD::BUFFER_CREATION_PERSISTENT_BIT);
+	if (OS::get_singleton()->get_current_rendering_method() == "forward_mobile") {
+		return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA), Vector<uint8_t>(), RD::BUFFER_CREATION_LINEAR_BIT | RD::BUFFER_CREATION_PERSISTENT_BIT);
+	} else {
+		return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA));
+	}
 	// </TF>
 }
 

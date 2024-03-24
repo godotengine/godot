@@ -1670,114 +1670,112 @@ void RenderForwardMobile::base_uniforms_changed() {
 void RenderForwardMobile::_update_render_base_uniform_set() {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
-	if (true) {
-		if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
-			RD::get_singleton()->free(render_base_uniform_set);
-		}
+	if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
+		RD::get_singleton()->free(render_base_uniform_set);
+	}
 
-		lightmap_texture_array_version = light_storage->lightmap_array_get_version();
+	lightmap_texture_array_version = light_storage->lightmap_array_get_version();
 
-		Vector<RD::Uniform> uniforms;
+	Vector<RD::Uniform> uniforms;
 
-		{
-			RD::Uniform u;
-			u.binding = 2;
-			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.append_id(scene_shader.shadow_sampler);
+	{
+		RD::Uniform u;
+		u.binding = 2;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
+		u.append_id(scene_shader.shadow_sampler);
 
 // <TF>
 // @ShadyTF
 // immutable sampler usage case
-			u.immutable_sampler = true;
+		u.immutable_sampler = true;
 // <TF>
-			uniforms.push_back(u);
-		}
-
-		{
-			RD::Uniform u;
-			u.binding = 3;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(RendererRD::LightStorage::get_singleton()->get_omni_light_buffer());
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 4;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(RendererRD::LightStorage::get_singleton()->get_spot_light_buffer());
-			uniforms.push_back(u);
-		}
-
-		{
-			RD::Uniform u;
-			u.binding = 5;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(RendererRD::LightStorage::get_singleton()->get_reflection_probe_buffer());
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 6;
-			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.append_id(RendererRD::LightStorage::get_singleton()->get_directional_light_buffer());
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 7;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(scene_state.lightmap_buffer);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 8;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(scene_state.lightmap_capture_buffer);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 9;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture();
-			u.append_id(decal_atlas);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 10;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture_srgb();
-			u.append_id(decal_atlas);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 11;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.append_id(RendererRD::TextureStorage::get_singleton()->get_decal_buffer());
-			uniforms.push_back(u);
-		}
-
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 12;
-			u.append_id(RendererRD::MaterialStorage::get_singleton()->global_shader_uniforms_get_storage_buffer());
-			uniforms.push_back(u);
-		}
-
-		{
-			RD::Uniform u;
-			u.binding = 13;
-			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.append_id(RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
-			uniforms.push_back(u);
-		}
-
-		render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET, true);
+		uniforms.push_back(u);
 	}
+
+	{
+		RD::Uniform u;
+		u.binding = 3;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.append_id(RendererRD::LightStorage::get_singleton()->get_omni_light_buffer());
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.binding = 4;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.append_id(RendererRD::LightStorage::get_singleton()->get_spot_light_buffer());
+		uniforms.push_back(u);
+	}
+
+	{
+		RD::Uniform u;
+		u.binding = 5;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.append_id(RendererRD::LightStorage::get_singleton()->get_reflection_probe_buffer());
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.binding = 6;
+		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+		u.append_id(RendererRD::LightStorage::get_singleton()->get_directional_light_buffer());
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.binding = 7;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.append_id(scene_state.lightmap_buffer);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.binding = 8;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.append_id(scene_state.lightmap_capture_buffer);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.binding = 9;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture();
+		u.append_id(decal_atlas);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.binding = 10;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture_srgb();
+		u.append_id(decal_atlas);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.binding = 11;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.append_id(RendererRD::TextureStorage::get_singleton()->get_decal_buffer());
+		uniforms.push_back(u);
+	}
+
+	{
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.binding = 12;
+		u.append_id(RendererRD::MaterialStorage::get_singleton()->global_shader_uniforms_get_storage_buffer());
+		uniforms.push_back(u);
+	}
+
+	{
+		RD::Uniform u;
+		u.binding = 13;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
+		u.append_id(RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+		uniforms.push_back(u);
+	}
+
+	render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET, true);
 }
 
 RID RenderForwardMobile::_render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) {
