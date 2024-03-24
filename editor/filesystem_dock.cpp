@@ -3900,6 +3900,7 @@ FileSystemDock::FileSystemDock() {
 	add_child(split_box);
 
 	tree = memnew(FileSystemTree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	tree->set_hide_root(true);
 	SET_DRAG_FORWARDING_GCD(tree, FileSystemDock);
