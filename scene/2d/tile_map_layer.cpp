@@ -356,6 +356,14 @@ void TileMapLayer::_rendering_update() {
 					// Drawing the tile in the canvas item.
 					TileMap::draw_tile(ci, local_tile_pos - rendering_quadrant->canvas_items_position, tile_set, cell_data.cell.source_id, cell_data.cell.get_atlas_coords(), cell_data.cell.alternative_tile, -1, get_self_modulate(), tile_data, random_animation_offset);
 				}
+
+				// Reset physics interpolation for any recreated canvas items.
+				if (is_physics_interpolated_and_enabled() && is_visible_in_tree()) {
+					for (const RID &ci : rendering_quadrant->canvas_items) {
+						rs->canvas_item_reset_physics_interpolation(ci);
+					}
+				}
+
 			} else {
 				// Free the quadrant.
 				for (int i = 0; i < rendering_quadrant->canvas_items.size(); i++) {
@@ -451,6 +459,15 @@ void TileMapLayer::_rendering_notification(int p_what) {
 					rs->canvas_light_occluder_attach_to_canvas(occluder, get_canvas());
 					rs->canvas_light_occluder_set_transform(occluder, tilemap_xform * xform);
 				}
+			}
+		}
+	} else if (p_what == NOTIFICATION_RESET_PHYSICS_INTERPOLATION) {
+		for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
+			for (const RID &ci : kv.value->canvas_items) {
+				if (ci.is_null()) {
+					continue;
+				}
+				rs->canvas_item_reset_physics_interpolation(ci);
 			}
 		}
 	}

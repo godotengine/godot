@@ -451,6 +451,30 @@ void SceneTree::initialize() {
 	root->_set_tree(this);
 }
 
+void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
+	// We never want interpolation in the editor.
+	if (Engine::get_singleton()->is_editor_hint()) {
+		p_enabled = false;
+	}
+
+	if (p_enabled == _physics_interpolation_enabled) {
+		return;
+	}
+
+	_physics_interpolation_enabled = p_enabled;
+	RenderingServer::get_singleton()->set_physics_interpolation_enabled(p_enabled);
+}
+
+bool SceneTree::is_physics_interpolation_enabled() const {
+	return _physics_interpolation_enabled;
+}
+
+void SceneTree::iteration_prepare() {
+	if (_physics_interpolation_enabled) {
+		RenderingServer::get_singleton()->tick();
+	}
+}
+
 bool SceneTree::physics_process(double p_time) {
 	root_lock++;
 
@@ -1606,6 +1630,9 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
 	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(EXIT_SUCCESS));
 
+	ClassDB::bind_method(D_METHOD("set_physics_interpolation_enabled", "enabled"), &SceneTree::set_physics_interpolation_enabled);
+	ClassDB::bind_method(D_METHOD("is_physics_interpolation_enabled"), &SceneTree::is_physics_interpolation_enabled);
+
 	ClassDB::bind_method(D_METHOD("queue_delete", "obj"), &SceneTree::queue_delete);
 
 	MethodInfo mi;
@@ -1657,6 +1684,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_current_scene", "get_current_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "", "get_root");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolation"), "set_physics_interpolation_enabled", "is_physics_interpolation_enabled");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("tree_process_mode_changed")); //editor only signal, but due to API hash it can't be removed in run-time
@@ -1747,6 +1775,8 @@ SceneTree::SceneTree() {
 	}
 	root->set_as_audio_listener_3d(true);
 #endif // _3D_DISABLED
+
+	set_physics_interpolation_enabled(GLOBAL_DEF("physics/common/physics_interpolation", false));
 
 	// Initialize network state.
 	set_multiplayer(MultiplayerAPI::create_default_interface());
