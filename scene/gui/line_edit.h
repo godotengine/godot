@@ -246,13 +246,15 @@ private:
 
 protected:
 	bool _is_over_clear_button(const Point2 &p_pos) const;
+
 	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
+
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
@@ -382,6 +384,8 @@ public:
 	void clear_pending_select_all_on_focus(); // For other controls, e.g. SpinBox.
 
 	virtual bool is_text_field() const override;
+
+	PackedStringArray get_configuration_warnings() const override;
 
 	void show_virtual_keyboard();
 

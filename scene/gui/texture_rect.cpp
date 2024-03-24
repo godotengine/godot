@@ -189,10 +189,8 @@ bool TextureRect::_set(const StringName &p_name, const Variant &p_value) {
 #endif
 
 void TextureRect::_texture_changed() {
-	if (texture.is_valid()) {
-		queue_redraw();
-		update_minimum_size();
-	}
+	queue_redraw();
+	update_minimum_size();
 }
 
 void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {

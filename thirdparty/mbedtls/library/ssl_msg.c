@@ -3,19 +3,7 @@
  *  (record layer + retransmission state machine)
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 /*
  *  The SSL 3.0 specification was drafted by Netscape in 1996,
@@ -1149,6 +1137,14 @@ int mbedtls_ssl_decrypt_buf(mbedtls_ssl_context const *ssl,
 
 #if defined(MBEDTLS_ARC4_C) || defined(MBEDTLS_CIPHER_NULL_CIPHER)
     if (mode == MBEDTLS_MODE_STREAM) {
+        if (rec->data_len < transform->maclen) {
+            MBEDTLS_SSL_DEBUG_MSG(1,
+                                  ("Record too short for MAC:"
+                                   " %" MBEDTLS_PRINTF_SIZET " < %" MBEDTLS_PRINTF_SIZET,
+                                   rec->data_len, transform->maclen));
+            return MBEDTLS_ERR_SSL_INVALID_MAC;
+        }
+
         padlen = 0;
         if ((ret = mbedtls_cipher_crypt(&transform->cipher_ctx_dec,
                                         transform->iv_dec,
@@ -1561,7 +1557,7 @@ hmac_failed_etm_enabled:
         unsigned char mac_expect[MBEDTLS_SSL_MAC_ADD] = { 0 };
         unsigned char mac_peer[MBEDTLS_SSL_MAC_ADD] = { 0 };
 
-        /* If the initial value of padlen was such that
+        /* For CBC+MAC, If the initial value of padlen was such that
          * data_len < maclen + padlen + 1, then padlen
          * got reset to 1, and the initial check
          * data_len >= minlen + maclen + 1
@@ -1573,6 +1569,9 @@ hmac_failed_etm_enabled:
          * subtracted either padlen + 1 (if the padding was correct)
          * or 0 (if the padding was incorrect) since then,
          * hence data_len >= maclen in any case.
+         *
+         * For stream ciphers, we checked above that
+         * data_len >= maclen.
          */
         rec->data_len -= transform->maclen;
         ssl_extract_add_data_from_record(add_data, &add_data_len, rec,

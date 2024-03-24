@@ -34,6 +34,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_binds.h"
 
 class FramebufferCacheRD : public Object {
 	GDCLASS(FramebufferCacheRD, Object)
@@ -195,6 +196,9 @@ class FramebufferCacheRD : public Object {
 		return rid;
 	}
 
+private:
+	static void _bind_methods();
+
 public:
 	template <typename... Args>
 	RID get_cache(Args... args) {
@@ -300,6 +304,8 @@ public:
 		// Not in cache, create:
 		return _allocate_from_data(p_views, h, table_idx, p_textures, p_passes);
 	}
+
+	static RID get_cache_multipass_array(const TypedArray<RID> &p_textures, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_views = 1);
 
 	static FramebufferCacheRD *get_singleton() { return singleton; }
 

@@ -7,6 +7,7 @@
 		KHR_materials_pbrSpecularGlossiness is an archived GLTF extension. This means that it is deprecated and not recommended for new files. However, it is still supported for loading old files.
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 		<link title="KHR_materials_pbrSpecularGlossiness GLTF extension spec">https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Archived/KHR_materials_pbrSpecularGlossiness</link>
 	</tutorials>
 	<members>

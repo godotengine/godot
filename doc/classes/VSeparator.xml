@@ -8,12 +8,4 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<theme_items>
-		<theme_item name="separation" data_type="constant" type="int" default="4">
-			The width of the area covered by the separator. Effectively works like a minimum width.
-		</theme_item>
-		<theme_item name="separator" data_type="style" type="StyleBox">
-			The style for the separator line. Works best with [StyleBoxLine] (remember to enable [member StyleBoxLine.vertical]).
-		</theme_item>
-	</theme_items>
 </class>

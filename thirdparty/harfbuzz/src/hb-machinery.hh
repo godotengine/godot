@@ -131,10 +131,6 @@ static inline Type& StructAfter(TObject &X)
   unsigned int get_size () const { return (size - (array).min_size + (array).get_size ()); } \
   DEFINE_SIZE_ARRAY(size, array)
 
-#define DEFINE_SIZE_MAX(size) \
-  DEFINE_INSTANCE_ASSERTION (sizeof (*this) <= (size)) \
-  static constexpr unsigned max_size = (size)
-
 
 
 /*

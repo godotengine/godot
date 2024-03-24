@@ -129,6 +129,7 @@ TEST_CASE("[TranslationPO] Plural messages") {
 	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 2), 2) == "Il y a 2 pommes");
 }
 
+#ifdef TOOLS_ENABLED
 TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") {
 	Ref<Translation> translation = memnew(Translation);
 	translation->set_locale("fr");
@@ -150,7 +151,6 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 	CHECK(messages.size() == 0);
 }
 
-#ifdef TOOLS_ENABLED
 TEST_CASE("[TranslationCSV] CSV import") {
 	Ref<ResourceImporterCSVTranslation> import_csv_translation = memnew(ResourceImporterCSVTranslation);
 

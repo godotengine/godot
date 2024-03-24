@@ -209,6 +209,14 @@ TEST_CASE("[Curve3D] Sampling") {
 		CHECK(curve->get_closest_point(Vector3(50, 50, 0)) == Vector3(0, 50, 0));
 		CHECK(curve->get_closest_point(Vector3(0, 100, 0)) == Vector3(0, 50, 0));
 	}
+
+	SUBCASE("sample_baked_up_vector, off-axis") {
+		// Regression test for issue #81879
+		Ref<Curve3D> c = memnew(Curve3D);
+		c->add_point(Vector3());
+		c->add_point(Vector3(0, .1, 1));
+		CHECK_LT((c->sample_baked_up_vector(c->get_closest_offset(Vector3(0, 0, .9))) - Vector3(0, 0.995037, -0.099504)).length(), 0.01);
+	}
 }
 
 TEST_CASE("[Curve3D] Tessellation") {

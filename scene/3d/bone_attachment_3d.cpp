@@ -148,9 +148,9 @@ void BoneAttachment3D::_check_bind() {
 			bone_idx = sk->find_bone(bone_name);
 		}
 		if (bone_idx != -1) {
-			sk->call_deferred(SNAME("connect"), "bone_pose_changed", callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
+			sk->connect(SNAME("bone_pose_changed"), callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
 			bound = true;
-			call_deferred(SNAME("on_bone_pose_update"), bone_idx);
+			callable_mp(this, &BoneAttachment3D::on_bone_pose_update).call_deferred(bone_idx);
 		}
 	}
 }
@@ -244,7 +244,7 @@ int BoneAttachment3D::get_bone_idx() const {
 
 void BoneAttachment3D::set_override_pose(bool p_override) {
 	override_pose = p_override;
-	set_notify_local_transform(override_pose);
+	set_notify_transform(override_pose);
 	set_process_internal(override_pose);
 
 	if (!override_pose) {
@@ -301,7 +301,7 @@ void BoneAttachment3D::_notification(int p_what) {
 			_check_unbind();
 		} break;
 
-		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+		case NOTIFICATION_TRANSFORM_CHANGED: {
 			_transform_changed();
 		} break;
 
@@ -333,7 +333,7 @@ void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
 	}
 }
 #ifdef TOOLS_ENABLED
-void BoneAttachment3D::_notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Dictionary p_rename_map) {
+void BoneAttachment3D::notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Dictionary p_rename_map) {
 	const Skeleton3D *parent = nullptr;
 	if (use_external_skeleton) {
 		if (external_skeleton_node_cache.is_valid()) {
@@ -348,6 +348,16 @@ void BoneAttachment3D::_notify_skeleton_bones_renamed(Node *p_base_scene, Skelet
 			set_bone_name(bn);
 		}
 	}
+}
+
+void BoneAttachment3D::notify_rebind_required() {
+	// Ensures bindings are properly updated after a scene reload.
+	_check_unbind();
+	if (use_external_skeleton) {
+		_update_external_skeleton_cache();
+	}
+	bone_idx = -1;
+	_check_bind();
 }
 #endif // TOOLS_ENABLED
 
@@ -370,9 +380,6 @@ void BoneAttachment3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_external_skeleton"), &BoneAttachment3D::get_use_external_skeleton);
 	ClassDB::bind_method(D_METHOD("set_external_skeleton", "external_skeleton"), &BoneAttachment3D::set_external_skeleton);
 	ClassDB::bind_method(D_METHOD("get_external_skeleton"), &BoneAttachment3D::get_external_skeleton);
-#ifdef TOOLS_ENABLED
-	ClassDB::bind_method(D_METHOD("_notify_skeleton_bones_renamed"), &BoneAttachment3D::_notify_skeleton_bones_renamed);
-#endif // TOOLS_ENABLED
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_idx"), "set_bone_idx", "get_bone_idx");

@@ -39,6 +39,7 @@
 #include "core/typedefs.h"
 
 #include "core/io/resource_loader.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/shader_include.h"

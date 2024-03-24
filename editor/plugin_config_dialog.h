@@ -48,6 +48,7 @@ class PluginConfigDialog : public ConfirmationDialog {
 		MSG_ID_PLUGIN,
 		MSG_ID_SUBFOLDER,
 		MSG_ID_SCRIPT,
+		MSG_ID_ACTIVE,
 	};
 
 	LineEdit *name_edit = nullptr;
@@ -58,6 +59,8 @@ class PluginConfigDialog : public ConfirmationDialog {
 	OptionButton *script_option_edit = nullptr;
 	LineEdit *script_edit = nullptr;
 	CheckBox *active_edit = nullptr;
+
+	LocalVector<Control *> plugin_edit_hidden_controls;
 
 	EditorValidationPanel *validation_panel = nullptr;
 

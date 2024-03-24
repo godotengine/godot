@@ -36,6 +36,8 @@
 #undef  FT_COMPONENT
 #define FT_COMPONENT  sfwoff2
 
+  /* An arbitrary, heuristic size limit (67MByte) for expanded WOFF2 data. */
+#define MAX_SFNT_SIZE  ( 1 << 26 )
 
 #define READ_255USHORT( var )  FT_SET_ERROR( Read255UShort( stream, &var ) )
 
@@ -2180,9 +2182,8 @@
       else
         sfnt_size = woff2.totalSfntSize;
 
-      /* Value 1<<26 = 67108864 is heuristic. */
-      if (sfnt_size >= (1 << 26))
-        sfnt_size = 1 << 26;
+      if ( sfnt_size >= MAX_SFNT_SIZE )
+        sfnt_size = MAX_SFNT_SIZE;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
       if ( sfnt_size != woff2.totalSfntSize )
@@ -2257,10 +2258,15 @@
       goto Exit;
     }
 
-    if ( woff2.uncompressed_size > sfnt_size )
+    /* We must not blindly trust `uncompressed_size` since its   */
+    /* value might be corrupted.  If it is too large, reject the */
+    /* font.  In other words, we don't accept a WOFF2 font that  */
+    /* expands to something larger than MAX_SFNT_SIZE.  If ever  */
+    /* necessary, this limit can be easily adjusted.             */
+    if ( woff2.uncompressed_size > MAX_SFNT_SIZE )
     {
-      FT_ERROR(( "woff2_open_font: SFNT table lengths are too large.\n" ));
-      error = FT_THROW( Invalid_Table );
+      FT_ERROR(( "Uncompressed font too large.\n" ));
+      error = FT_THROW( Array_Too_Large );
       goto Exit;
     }
 

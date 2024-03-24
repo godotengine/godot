@@ -60,13 +60,13 @@ struct _NO_DISCARD_ Vector2i {
 		int32_t coord[2] = { 0 };
 	};
 
-	_FORCE_INLINE_ int32_t &operator[](int p_idx) {
-		DEV_ASSERT((unsigned int)p_idx < 2);
-		return coord[p_idx];
+	_FORCE_INLINE_ int32_t &operator[](int p_axis) {
+		DEV_ASSERT((unsigned int)p_axis < 2);
+		return coord[p_axis];
 	}
-	_FORCE_INLINE_ const int32_t &operator[](int p_idx) const {
-		DEV_ASSERT((unsigned int)p_idx < 2);
-		return coord[p_idx];
+	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
+		DEV_ASSERT((unsigned int)p_axis < 2);
+		return coord[p_axis];
 	}
 
 	_FORCE_INLINE_ Vector2i::Axis min_axis_index() const {
@@ -85,22 +85,30 @@ struct _NO_DISCARD_ Vector2i {
 		return Vector2i(MAX(x, p_vector2i.x), MAX(y, p_vector2i.y));
 	}
 
+	double distance_to(const Vector2i &p_to) const {
+		return (p_to - *this).length();
+	}
+
+	int64_t distance_squared_to(const Vector2i &p_to) const {
+		return (p_to - *this).length_squared();
+	}
+
 	Vector2i operator+(const Vector2i &p_v) const;
 	void operator+=(const Vector2i &p_v);
 	Vector2i operator-(const Vector2i &p_v) const;
 	void operator-=(const Vector2i &p_v);
 	Vector2i operator*(const Vector2i &p_v1) const;
 
-	Vector2i operator*(const int32_t &rvalue) const;
-	void operator*=(const int32_t &rvalue);
+	Vector2i operator*(int32_t p_rvalue) const;
+	void operator*=(int32_t p_rvalue);
 
 	Vector2i operator/(const Vector2i &p_v1) const;
-	Vector2i operator/(const int32_t &rvalue) const;
-	void operator/=(const int32_t &rvalue);
+	Vector2i operator/(int32_t p_rvalue) const;
+	void operator/=(int32_t p_rvalue);
 
 	Vector2i operator%(const Vector2i &p_v1) const;
-	Vector2i operator%(const int32_t &rvalue) const;
-	void operator%=(const int32_t &rvalue);
+	Vector2i operator%(int32_t p_rvalue) const;
+	void operator%=(int32_t p_rvalue);
 
 	Vector2i operator-() const;
 	bool operator<(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
@@ -125,7 +133,7 @@ struct _NO_DISCARD_ Vector2i {
 	operator Vector2() const;
 
 	inline Vector2i() {}
-	inline Vector2i(const int32_t p_x, const int32_t p_y) {
+	inline Vector2i(int32_t p_x, int32_t p_y) {
 		x = p_x;
 		y = p_y;
 	}
@@ -133,19 +141,19 @@ struct _NO_DISCARD_ Vector2i {
 
 // Multiplication operators required to workaround issues with LLVM using implicit conversion.
 
-_FORCE_INLINE_ Vector2i operator*(const int32_t p_scalar, const Vector2i &p_vector) {
+_FORCE_INLINE_ Vector2i operator*(int32_t p_scalar, const Vector2i &p_vector) {
 	return p_vector * p_scalar;
 }
 
-_FORCE_INLINE_ Vector2i operator*(const int64_t p_scalar, const Vector2i &p_vector) {
+_FORCE_INLINE_ Vector2i operator*(int64_t p_scalar, const Vector2i &p_vector) {
 	return p_vector * p_scalar;
 }
 
-_FORCE_INLINE_ Vector2i operator*(const float p_scalar, const Vector2i &p_vector) {
+_FORCE_INLINE_ Vector2i operator*(float p_scalar, const Vector2i &p_vector) {
 	return p_vector * p_scalar;
 }
 
-_FORCE_INLINE_ Vector2i operator*(const double p_scalar, const Vector2i &p_vector) {
+_FORCE_INLINE_ Vector2i operator*(double p_scalar, const Vector2i &p_vector) {
 	return p_vector * p_scalar;
 }
 

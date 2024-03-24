@@ -46,9 +46,24 @@ OpenXRInteractionProfileMetadata::~OpenXRInteractionProfileMetadata() {
 }
 
 void OpenXRInteractionProfileMetadata::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("register_profile_rename", "old_name", "new_name"), &OpenXRInteractionProfileMetadata::register_profile_rename);
 	ClassDB::bind_method(D_METHOD("register_top_level_path", "display_name", "openxr_path", "openxr_extension_name"), &OpenXRInteractionProfileMetadata::register_top_level_path);
 	ClassDB::bind_method(D_METHOD("register_interaction_profile", "display_name", "openxr_path", "openxr_extension_name"), &OpenXRInteractionProfileMetadata::register_interaction_profile);
 	ClassDB::bind_method(D_METHOD("register_io_path", "interaction_profile", "display_name", "toplevel_path", "openxr_path", "openxr_extension_name", "action_type"), &OpenXRInteractionProfileMetadata::register_io_path);
+}
+
+void OpenXRInteractionProfileMetadata::register_profile_rename(const String &p_old_name, const String &p_new_name) {
+	ERR_FAIL_COND(profile_renames.has(p_old_name));
+
+	profile_renames[p_old_name] = p_new_name;
+}
+
+String OpenXRInteractionProfileMetadata::check_profile_name(const String &p_name) const {
+	if (profile_renames.has(p_name)) {
+		return profile_renames[p_name];
+	}
+
+	return p_name;
 }
 
 void OpenXRInteractionProfileMetadata::register_top_level_path(const String &p_display_name, const String &p_openxr_path, const String &p_openxr_extension_name) {
@@ -344,6 +359,9 @@ void OpenXRInteractionProfileMetadata::_register_core_metadata() {
 	register_io_path("/interaction_profiles/oculus/touch_controller", "Thumbstick", "/user/hand/right", "/user/hand/right/input/thumbstick", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
 	register_io_path("/interaction_profiles/oculus/touch_controller", "Thumbstick click", "/user/hand/right", "/user/hand/right/input/thumbstick/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
 	register_io_path("/interaction_profiles/oculus/touch_controller", "Thumbstick touch", "/user/hand/right", "/user/hand/right/input/thumbstick/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
+
+	register_io_path("/interaction_profiles/oculus/touch_controller", "Thumbrest touch", "/user/hand/left", "/user/hand/left/input/thumbrest/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
+	register_io_path("/interaction_profiles/oculus/touch_controller", "Thumbrest touch", "/user/hand/right", "/user/hand/right/input/thumbrest/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 
 	register_io_path("/interaction_profiles/oculus/touch_controller", "Haptic output", "/user/hand/left", "/user/hand/left/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
 	register_io_path("/interaction_profiles/oculus/touch_controller", "Haptic output", "/user/hand/right", "/user/hand/right/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);

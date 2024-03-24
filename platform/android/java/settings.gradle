@@ -5,12 +5,15 @@ pluginManagement {
     plugins {
         id 'com.android.application' version versions.androidGradlePlugin
         id 'com.android.library' version versions.androidGradlePlugin
+        id 'com.android.asset-pack' version versions.androidGradlePlugin
         id 'org.jetbrains.kotlin.android' version versions.kotlinVersion
         id 'io.github.gradle-nexus.publish-plugin' version versions.nexusPublishVersion
     }
     repositories {
-        gradlePluginPortal()
         google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url "https://plugins.gradle.org/m2/" }
     }
 }
 

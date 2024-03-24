@@ -112,6 +112,8 @@ struct Polygon {
 
 	/// The center of this `Polygon`
 	Vector3 center;
+
+	real_t surface_area = 0.0;
 };
 
 struct NavigationPoly {
@@ -136,7 +138,7 @@ struct NavigationPoly {
 			poly(p_poly) {}
 
 	bool operator==(const NavigationPoly &other) const {
-		return this->poly == other.poly;
+		return poly == other.poly;
 	}
 
 	bool operator!=(const NavigationPoly &other) const {

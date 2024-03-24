@@ -109,6 +109,7 @@ void ImportDefaultsEditor::_save() {
 		} else {
 			ProjectSettings::get_singleton()->set("importer_defaults/" + settings->importer->get_importer_name(), Variant());
 		}
+		ProjectSettings::get_singleton()->save();
 	}
 }
 
@@ -199,6 +200,8 @@ void ImportDefaultsEditor::clear() {
 }
 
 ImportDefaultsEditor::ImportDefaultsEditor() {
+	ProjectSettings::get_singleton()->add_hidden_prefix("importer_defaults/");
+
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_child(memnew(Label(TTR("Importer:"))));
 	importers = memnew(OptionButton);

@@ -33,6 +33,7 @@
 		<method name="get_skips" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the number of times the playback skipped due to a buffer underrun in the audio sample data. This value is reset at the start of the playback.
 			</description>
 		</method>
 		<method name="push_buffer">

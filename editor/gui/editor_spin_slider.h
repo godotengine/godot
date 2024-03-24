@@ -72,6 +72,9 @@ class EditorSpinSlider : public Range {
 	bool hide_slider = false;
 	bool flat = false;
 
+	void _grab_start();
+	void _grab_end();
+
 	void _grabber_gui_input(const Ref<InputEvent> &p_event);
 	void _value_input_closed();
 	void _value_input_submitted(const String &);

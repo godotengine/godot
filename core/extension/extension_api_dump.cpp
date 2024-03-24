@@ -32,12 +32,14 @@
 
 #include "core/config/engine.h"
 #include "core/core_constants.h"
+#include "core/extension/gdextension_compat_hashes.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/templates/pair.h"
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_help.h"
 
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 	if (p_type == Variant::NIL) {
@@ -87,7 +89,16 @@ static String get_type_meta_name(const GodotTypeInfo::Metadata metadata) {
 	return argmeta[metadata];
 }
 
-Dictionary GDExtensionAPIDump::generate_extension_api() {
+static String fix_doc_description(const String &p_bbcode) {
+	// Based on what EditorHelp does.
+
+	return p_bbcode.dedent()
+			.replace("\t", "")
+			.replace("\r", "")
+			.strip_edges();
+}
+
+Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 	Dictionary api_dump;
 
 	{
@@ -459,11 +470,21 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 		api_dump["builtin_class_member_offsets"] = core_type_member_offsets;
 	}
 
+	if (p_include_docs) {
+		EditorHelp::generate_doc(false);
+	}
+
 	{
 		// Global enums and constants.
 		Array constants;
 		HashMap<String, List<Pair<String, int64_t>>> enum_list;
 		HashMap<String, bool> enum_is_bitfield;
+
+		const DocData::ClassDoc *global_scope_doc = nullptr;
+		if (p_include_docs) {
+			global_scope_doc = EditorHelp::get_doc_data()->class_list.getptr("@GlobalScope");
+			CRASH_COND_MSG(!global_scope_doc, "Could not find '@GlobalScope' in DocData.");
+		}
 
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 			int64_t value = CoreConstants::get_global_constant_value(i);
@@ -478,6 +499,14 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 				d["name"] = name;
 				d["value"] = value;
 				d["is_bitfield"] = bitfield;
+				if (p_include_docs) {
+					for (const DocData::ConstantDoc &constant_doc : global_scope_doc->constants) {
+						if (constant_doc.name == name) {
+							d["description"] = fix_doc_description(constant_doc.description);
+							break;
+						}
+					}
+				}
 				constants.push_back(d);
 			}
 		}
@@ -489,11 +518,25 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 			Dictionary d1;
 			d1["name"] = E.key;
 			d1["is_bitfield"] = enum_is_bitfield[E.key];
+			if (p_include_docs) {
+				const DocData::EnumDoc *enum_doc = global_scope_doc->enums.getptr(E.key);
+				if (enum_doc) {
+					d1["description"] = fix_doc_description(enum_doc->description);
+				}
+			}
 			Array values;
 			for (const Pair<String, int64_t> &F : E.value) {
 				Dictionary d2;
 				d2["name"] = F.first;
 				d2["value"] = F.second;
+				if (p_include_docs) {
+					for (const DocData::ConstantDoc &constant_doc : global_scope_doc->constants) {
+						if (constant_doc.name == F.first) {
+							d2["description"] = fix_doc_description(constant_doc.description);
+							break;
+						}
+					}
+				}
 				values.push_back(d2);
 			}
 			d1["values"] = values;
@@ -507,6 +550,12 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 
 		List<StringName> utility_func_names;
 		Variant::get_utility_function_list(&utility_func_names);
+
+		const DocData::ClassDoc *global_scope_doc = nullptr;
+		if (p_include_docs) {
+			global_scope_doc = EditorHelp::get_doc_data()->class_list.getptr("@GlobalScope");
+			CRASH_COND_MSG(!global_scope_doc, "Could not find '@GlobalScope' in DocData.");
+		}
 
 		for (const StringName &name : utility_func_names) {
 			Dictionary func;
@@ -544,6 +593,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 				func["arguments"] = arguments;
 			}
 
+			if (p_include_docs) {
+				for (const DocData::MethodDoc &method_doc : global_scope_doc->methods) {
+					if (method_doc.name == name) {
+						func["description"] = fix_doc_description(method_doc.description);
+						break;
+					}
+				}
+			}
+
 			utility_funcs.push_back(func);
 		}
 
@@ -570,6 +628,12 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 
 			d["is_keyed"] = Variant::is_keyed(type);
 
+			DocData::ClassDoc *builtin_doc = nullptr;
+			if (p_include_docs && d["name"] != "Nil") {
+				builtin_doc = EditorHelp::get_doc_data()->class_list.getptr(d["name"]);
+				CRASH_COND_MSG(!builtin_doc, vformat("Could not find '%s' in DocData.", d["name"]));
+			}
+
 			{
 				//members
 				Array members;
@@ -580,6 +644,14 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					Dictionary d2;
 					d2["name"] = String(member_name);
 					d2["type"] = get_builtin_or_variant_type_name(Variant::get_member_type(type, member_name));
+					if (p_include_docs) {
+						for (const DocData::PropertyDoc &property_doc : builtin_doc->properties) {
+							if (property_doc.name == member_name) {
+								d2["description"] = fix_doc_description(property_doc.description);
+								break;
+							}
+						}
+					}
 					members.push_back(d2);
 				}
 				if (members.size()) {
@@ -598,6 +670,14 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					Variant constant = Variant::get_constant_value(type, constant_name);
 					d2["type"] = get_builtin_or_variant_type_name(constant.get_type());
 					d2["value"] = constant.get_construct_string();
+					if (p_include_docs) {
+						for (const DocData::ConstantDoc &constant_doc : builtin_doc->constants) {
+							if (constant_doc.name == constant_name) {
+								d2["description"] = fix_doc_description(constant_doc.description);
+								break;
+							}
+						}
+					}
 					constants.push_back(d2);
 				}
 				if (constants.size()) {
@@ -623,7 +703,22 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						Dictionary values_dict;
 						values_dict["name"] = String(enumeration);
 						values_dict["value"] = Variant::get_enum_value(type, enum_name, enumeration);
+						if (p_include_docs) {
+							for (const DocData::ConstantDoc &constant_doc : builtin_doc->constants) {
+								if (constant_doc.name == enumeration) {
+									values_dict["description"] = fix_doc_description(constant_doc.description);
+									break;
+								}
+							}
+						}
 						values.push_back(values_dict);
+					}
+
+					if (p_include_docs) {
+						const DocData::EnumDoc *enum_doc = builtin_doc->enums.getptr(enum_name);
+						if (enum_doc) {
+							enum_dict["description"] = fix_doc_description(enum_doc->description);
+						}
 					}
 
 					if (values.size()) {
@@ -645,11 +740,27 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						Variant::Type rt = Variant::get_operator_return_type(Variant::Operator(k), type, Variant::Type(j));
 						if (rt != Variant::NIL) {
 							Dictionary d2;
-							d2["name"] = Variant::get_operator_name(Variant::Operator(k));
-							if (k != Variant::OP_NEGATE && k != Variant::OP_POSITIVE && k != Variant::OP_NOT && k != Variant::OP_BIT_NEGATE) {
-								d2["right_type"] = get_builtin_or_variant_type_name(Variant::Type(j));
+							String operator_name = Variant::get_operator_name(Variant::Operator(k));
+							d2["name"] = operator_name;
+
+							String right_type_name = get_builtin_or_variant_type_name(Variant::Type(j));
+							bool is_unary = k == Variant::OP_NEGATE || k == Variant::OP_POSITIVE || k == Variant::OP_NOT || k == Variant::OP_BIT_NEGATE;
+							if (!is_unary) {
+								d2["right_type"] = right_type_name;
 							}
+
 							d2["return_type"] = get_builtin_or_variant_type_name(Variant::get_operator_return_type(Variant::Operator(k), type, Variant::Type(j)));
+
+							if (p_include_docs && builtin_doc != nullptr) {
+								for (const DocData::MethodDoc &operator_doc : builtin_doc->operators) {
+									if (operator_doc.name == "operator " + operator_name &&
+											(is_unary || operator_doc.arguments[0].type == right_type_name)) {
+										d2["description"] = fix_doc_description(operator_doc.description);
+										break;
+									}
+								}
+							}
+
 							operators.push_back(d2);
 						}
 					}
@@ -696,6 +807,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						d2["arguments"] = arguments;
 					}
 
+					if (p_include_docs) {
+						for (const DocData::MethodDoc &method_doc : builtin_doc->methods) {
+							if (method_doc.name == method_name) {
+								d2["description"] = fix_doc_description(method_doc.description);
+								break;
+							}
+						}
+					}
+
 					methods.push_back(d2);
 				}
 				if (methods.size()) {
@@ -721,6 +841,28 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					if (arguments.size()) {
 						d2["arguments"] = arguments;
 					}
+
+					if (p_include_docs && builtin_doc) {
+						for (const DocData::MethodDoc &constructor_doc : builtin_doc->constructors) {
+							if (constructor_doc.arguments.size() != argcount) {
+								continue;
+							}
+							bool constructor_found = true;
+							for (int k = 0; k < argcount; k++) {
+								const DocData::ArgumentDoc &argument_doc = constructor_doc.arguments[k];
+								const Dictionary &argument_dict = arguments[k];
+								const String &argument_string = argument_dict["type"];
+								if (argument_doc.type != argument_string) {
+									constructor_found = false;
+									break;
+								}
+							}
+							if (constructor_found) {
+								d2["description"] = fix_doc_description(constructor_doc.description);
+							}
+						}
+					}
+
 					constructors.push_back(d2);
 				}
 
@@ -731,6 +873,11 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 			{
 				//destructor
 				d["has_destructor"] = Variant::has_destructor(type);
+			}
+
+			if (p_include_docs && builtin_doc != nullptr) {
+				d["brief_description"] = fix_doc_description(builtin_doc->brief_description);
+				d["description"] = fix_doc_description(builtin_doc->description);
 			}
 
 			builtins.push_back(d);
@@ -750,6 +897,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 		class_list.sort_custom<StringName::AlphCompare>();
 
 		for (const StringName &class_name : class_list) {
+			if (!ClassDB::is_class_exposed(class_name)) {
+				continue;
+			}
 			Dictionary d;
 			d["name"] = String(class_name);
 			d["is_refcounted"] = ClassDB::is_parent_class(class_name, "RefCounted");
@@ -757,6 +907,12 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 			StringName parent_class = ClassDB::get_parent_class(class_name);
 			if (parent_class != StringName()) {
 				d["inherits"] = String(parent_class);
+			}
+
+			DocData::ClassDoc *class_doc = nullptr;
+			if (p_include_docs) {
+				class_doc = EditorHelp::get_doc_data()->class_list.getptr(class_name);
+				CRASH_COND_MSG(!class_doc, vformat("Could not find '%s' in DocData.", class_name));
 			}
 
 			{
@@ -779,6 +935,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					Dictionary d2;
 					d2["name"] = String(F);
 					d2["value"] = ClassDB::get_integer_constant(class_name, F);
+
+					if (p_include_docs) {
+						for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
+							if (constant_doc.name == F) {
+								d2["description"] = fix_doc_description(constant_doc.description);
+								break;
+							}
+						}
+					}
 
 					constants.push_back(d2);
 				}
@@ -804,10 +969,27 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						Dictionary d3;
 						d3["name"] = String(G->get());
 						d3["value"] = ClassDB::get_integer_constant(class_name, G->get());
+
+						if (p_include_docs) {
+							for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
+								if (constant_doc.name == G->get()) {
+									d3["description"] = fix_doc_description(constant_doc.description);
+									break;
+								}
+							}
+						}
+
 						values.push_back(d3);
 					}
 
 					d2["values"] = values;
+
+					if (p_include_docs) {
+						const DocData::EnumDoc *enum_doc = class_doc->enums.getptr(F);
+						if (enum_doc) {
+							d2["description"] = fix_doc_description(enum_doc->description);
+						}
+					}
 
 					enums.push_back(d2);
 				}
@@ -860,6 +1042,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 							d2["arguments"] = arguments;
 						}
 
+						if (p_include_docs) {
+							for (const DocData::MethodDoc &method_doc : class_doc->methods) {
+								if (method_doc.name == method_name) {
+									d2["description"] = fix_doc_description(method_doc.description);
+									break;
+								}
+							}
+						}
+
 						methods.push_back(d2);
 
 					} else if (F.name.begins_with("_")) {
@@ -881,11 +1072,18 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						d2["hash"] = method->get_hash();
 
 						Vector<uint32_t> compat_hashes = ClassDB::get_method_compatibility_hashes(class_name, method_name);
+						Array compatibility;
 						if (compat_hashes.size()) {
-							Array compatibility;
 							for (int i = 0; i < compat_hashes.size(); i++) {
 								compatibility.push_back(compat_hashes[i]);
 							}
+						}
+
+#ifndef DISABLE_DEPRECATED
+						GDExtensionCompatHashes::get_legacy_hashes(class_name, method_name, compatibility);
+#endif
+
+						if (compatibility.size() > 0) {
 							d2["hash_compatibility"] = compatibility;
 						}
 
@@ -921,6 +1119,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 							d2["arguments"] = arguments;
 						}
 
+						if (p_include_docs) {
+							for (const DocData::MethodDoc &method_doc : class_doc->methods) {
+								if (method_doc.name == method_name) {
+									d2["description"] = fix_doc_description(method_doc.description);
+									break;
+								}
+							}
+						}
+
 						methods.push_back(d2);
 					}
 				}
@@ -953,6 +1160,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					}
 					if (arguments.size()) {
 						d2["arguments"] = arguments;
+					}
+
+					if (p_include_docs) {
+						for (const DocData::MethodDoc &signal_doc : class_doc->signals) {
+							if (signal_doc.name == signal_name) {
+								d2["description"] = fix_doc_description(signal_doc.description);
+								break;
+							}
+						}
 					}
 
 					signals.push_back(d2);
@@ -994,12 +1210,27 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					if (index != -1) {
 						d2["index"] = index;
 					}
+
+					if (p_include_docs) {
+						for (const DocData::PropertyDoc &property_doc : class_doc->properties) {
+							if (property_doc.name == property_name) {
+								d2["description"] = fix_doc_description(property_doc.description);
+								break;
+							}
+						}
+					}
+
 					properties.push_back(d2);
 				}
 
 				if (properties.size()) {
 					d["properties"] = properties;
 				}
+			}
+
+			if (p_include_docs && class_doc != nullptr) {
+				d["brief_description"] = fix_doc_description(class_doc->brief_description);
+				d["description"] = fix_doc_description(class_doc->description);
 			}
 
 			classes.push_back(d);
@@ -1054,8 +1285,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 	return api_dump;
 }
 
-void GDExtensionAPIDump::generate_extension_json_file(const String &p_path) {
-	Dictionary api = generate_extension_api();
+void GDExtensionAPIDump::generate_extension_json_file(const String &p_path, bool p_include_docs) {
+	Dictionary api = generate_extension_api(p_include_docs);
 	Ref<JSON> json;
 	json.instantiate();
 

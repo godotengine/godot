@@ -50,9 +50,9 @@ public:
 		UNASSIGNED_VARIABLE_OP_ASSIGN, // Variable never assigned but used in an assignment operation (+=, *=, etc).
 		UNUSED_VARIABLE, // Local variable is declared but never used.
 		UNUSED_LOCAL_CONSTANT, // Local constant is declared but never used.
-		UNUSED_PRIVATE_CLASS_VARIABLE, // Class variable is declared private ("_" prefix) but never used in the file.
+		UNUSED_PRIVATE_CLASS_VARIABLE, // Class variable is declared private ("_" prefix) but never used in the class.
 		UNUSED_PARAMETER, // Function parameter is never used.
-		UNUSED_SIGNAL, // Signal is defined but never emitted.
+		UNUSED_SIGNAL, // Signal is defined but never explicitly used in the class.
 		SHADOWED_VARIABLE, // Variable name shadowed by other variable in same class.
 		SHADOWED_VARIABLE_BASE_CLASS, // Variable name shadowed by other variable in some base class.
 		SHADOWED_GLOBAL_IDENTIFIER, // A global class or function has the same name as variable.
@@ -61,9 +61,8 @@ public:
 		STANDALONE_EXPRESSION, // Expression not assigned to a variable.
 		STANDALONE_TERNARY, // Return value of ternary expression is discarded.
 		INCOMPATIBLE_TERNARY, // Possible values of a ternary if are not mutually compatible.
-		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name.
-		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name.
-		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name.
+		UNTYPED_DECLARATION, // Variable/parameter/function has no static type, explicitly specified or implicitly inferred.
+		INFERRED_DECLARATION, // Variable/constant/parameter has an implicitly inferred static type.
 		UNSAFE_PROPERTY_ACCESS, // Property not found in the detected type (but can be in subtypes).
 		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes).
 		UNSAFE_CAST, // Cast used in an unknown type.
@@ -73,7 +72,6 @@ public:
 		STATIC_CALLED_ON_INSTANCE, // A static method was called on an instance of a class instead of on the class itself.
 		REDUNDANT_STATIC_UNLOAD, // The `@static_unload` annotation is used but the class does not have static data.
 		REDUNDANT_AWAIT, // await is used but expression is synchronous (not a signal nor a coroutine).
-		REDUNDANT_FOR_VARIABLE_TYPE, // The for variable type specifier is a supertype of the inferred type.
 		ASSERT_ALWAYS_TRUE, // Expression for assert argument is always true.
 		ASSERT_ALWAYS_FALSE, // Expression for assert argument is always false.
 		INTEGER_DIVISION, // Integer divide by integer, decimal part is discarded.
@@ -90,6 +88,11 @@ public:
 		NATIVE_METHOD_OVERRIDE, // The script method overrides a native one, this may not work as intended.
 		GET_NODE_DEFAULT_WITHOUT_ONREADY, // A class variable uses `get_node()` (or the `$` notation) as its default value, but does not use the @onready annotation.
 		ONREADY_WITH_EXPORT, // The `@onready` annotation will set the value after `@export` which is likely not intended.
+#ifndef DISABLE_DEPRECATED
+		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name.
+		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name.
+		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name.
+#endif
 		WARNING_MAX,
 	};
 
@@ -109,9 +112,8 @@ public:
 		WARN, // STANDALONE_EXPRESSION
 		WARN, // STANDALONE_TERNARY
 		WARN, // INCOMPATIBLE_TERNARY
-		WARN, // PROPERTY_USED_AS_FUNCTION
-		WARN, // CONSTANT_USED_AS_FUNCTION
-		WARN, // FUNCTION_USED_AS_PROPERTY
+		IGNORE, // UNTYPED_DECLARATION // Static typing is optional, we don't want to spam warnings.
+		IGNORE, // INFERRED_DECLARATION // Static typing is optional, we don't want to spam warnings.
 		IGNORE, // UNSAFE_PROPERTY_ACCESS // Too common in untyped scenarios.
 		IGNORE, // UNSAFE_METHOD_ACCESS // Too common in untyped scenarios.
 		IGNORE, // UNSAFE_CAST // Too common in untyped scenarios.
@@ -121,7 +123,6 @@ public:
 		WARN, // STATIC_CALLED_ON_INSTANCE
 		WARN, // REDUNDANT_STATIC_UNLOAD
 		WARN, // REDUNDANT_AWAIT
-		WARN, // REDUNDANT_FOR_VARIABLE_TYPE
 		WARN, // ASSERT_ALWAYS_TRUE
 		WARN, // ASSERT_ALWAYS_FALSE
 		WARN, // INTEGER_DIVISION
@@ -138,6 +139,11 @@ public:
 		ERROR, // NATIVE_METHOD_OVERRIDE // May not work as expected.
 		ERROR, // GET_NODE_DEFAULT_WITHOUT_ONREADY // May not work as expected.
 		ERROR, // ONREADY_WITH_EXPORT // May not work as expected.
+#ifndef DISABLE_DEPRECATED
+		WARN, // PROPERTY_USED_AS_FUNCTION
+		WARN, // CONSTANT_USED_AS_FUNCTION
+		WARN, // FUNCTION_USED_AS_PROPERTY
+#endif
 	};
 
 	static_assert((sizeof(default_warning_levels) / sizeof(default_warning_levels[0])) == WARNING_MAX, "Amount of default levels does not match the amount of warnings.");

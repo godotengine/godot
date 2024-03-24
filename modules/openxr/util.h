@@ -61,13 +61,13 @@
 #define GDEXTENSION_INIT_XR_FUNC(name)                                                              \
 	do {                                                                                            \
 		name##_ptr = reinterpret_cast<PFN_##name>(get_openxr_api()->get_instance_proc_addr(#name)); \
-		ERR_FAIL_COND(name##_ptr == nullptr);                                                       \
+		ERR_FAIL_NULL(name##_ptr);                                                                  \
 	} while (0)
 
 #define GDEXTENSION_INIT_XR_FUNC_V(name)                                                            \
 	do {                                                                                            \
 		name##_ptr = reinterpret_cast<PFN_##name>(get_openxr_api()->get_instance_proc_addr(#name)); \
-		ERR_FAIL_COND_V(name##_ptr == nullptr, false);                                              \
+		ERR_FAIL_NULL_V(name##_ptr, false);                                                         \
 	} while (0)
 
 #define EXT_PROTO_XRRESULT_FUNC1(func_name, arg1_type, arg1)                    \

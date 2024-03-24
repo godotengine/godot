@@ -33,8 +33,12 @@
 
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
+class Gizmo3DHelper;
+
 class DecalGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(DecalGizmoPlugin, EditorNode3DGizmoPlugin);
+
+	Ref<Gizmo3DHelper> helper;
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
@@ -44,10 +48,12 @@ public:
 
 	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
 	Variant get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
+	void begin_handle_action(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) override;
 	void set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) override;
 	void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
 
 	DecalGizmoPlugin();
+	~DecalGizmoPlugin();
 };
 
 #endif // DECAL_GIZMO_PLUGIN_H

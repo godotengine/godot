@@ -33,9 +33,10 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
@@ -53,7 +54,7 @@ Transform2D TextureRegionEditor::_get_offset_transform() const {
 }
 
 void TextureRegionEditor::_texture_preview_draw() {
-	Ref<Texture2D> object_texture = _get_edited_object_texture();
+	const Ref<Texture2D> object_texture = _get_edited_object_texture();
 	if (object_texture.is_null()) {
 		return;
 	}
@@ -67,13 +68,13 @@ void TextureRegionEditor::_texture_preview_draw() {
 }
 
 void TextureRegionEditor::_texture_overlay_draw() {
-	Ref<Texture2D> object_texture = _get_edited_object_texture();
+	const Ref<Texture2D> object_texture = _get_edited_object_texture();
 	if (object_texture.is_null()) {
 		return;
 	}
 
 	Transform2D mtx = _get_offset_transform();
-	const Color color = get_theme_color(SNAME("mono_color"), SNAME("Editor"));
+	const Color color = get_theme_color(SNAME("mono_color"), EditorStringName(Editor));
 
 	if (snap_mode == SNAP_GRID) {
 		const Color grid_color = Color(color.r, color.g, color.b, color.a * 0.15);
@@ -146,7 +147,7 @@ void TextureRegionEditor::_texture_overlay_draw() {
 		}
 	}
 
-	Ref<Texture2D> select_handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
+	Ref<Texture2D> select_handle = get_editor_theme_icon(SNAME("EditorHandle"));
 
 	Rect2 scroll_rect(Point2(), object_texture->get_size());
 
@@ -225,8 +226,8 @@ void TextureRegionEditor::_texture_overlay_draw() {
 		hscroll->set_value((hscroll->get_min() + hscroll->get_max() - hscroll->get_page()) / 2);
 		vscroll->set_value((vscroll->get_min() + vscroll->get_max() - vscroll->get_page()) / 2);
 		// This ensures that the view is updated correctly.
-		callable_mp(this, &TextureRegionEditor::_pan_callback).bind(Vector2(1, 0)).call_deferred();
-		callable_mp(this, &TextureRegionEditor::_scroll_changed).bind(0.0).call_deferred();
+		callable_mp(this, &TextureRegionEditor::_pan_callback).call_deferred(Vector2(1, 0), Ref<InputEvent>());
+		callable_mp(this, &TextureRegionEditor::_scroll_changed).call_deferred(0.0);
 		request_center = false;
 	}
 
@@ -264,7 +265,7 @@ void TextureRegionEditor::_draw_margin_line(Vector2 p_from, Vector2 p_to) {
 
 	Vector2 dash_size = (p_to - p_from).normalized() * 10;
 	const int dash_thickness = Math::round(2 * EDSCALE);
-	const Color dash_color = get_theme_color(SNAME("mono_color"), SNAME("Editor"));
+	const Color dash_color = get_theme_color(SNAME("mono_color"), EditorStringName(Editor));
 	const Color dash_bg_color = dash_color.inverted() * Color(1, 1, 1, 0.5);
 	const int line_threshold = 200;
 
@@ -697,7 +698,7 @@ void TextureRegionEditor::_set_snap_sep_y(float p_val) {
 }
 
 void TextureRegionEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
-	if (p_zoom < 0.25 || p_zoom > 8) {
+	if (p_zoom < min_draw_zoom || p_zoom > max_draw_zoom) {
 		return;
 	}
 
@@ -745,7 +746,7 @@ void TextureRegionEditor::_update_autoslice() {
 	autoslice_is_dirty = false;
 	autoslice_cache.clear();
 
-	Ref<Texture2D> object_texture = _get_edited_object_texture();
+	const Ref<Texture2D> object_texture = _get_edited_object_texture();
 	if (object_texture.is_null()) {
 		return;
 	}
@@ -803,13 +804,18 @@ void TextureRegionEditor::_update_autoslice() {
 void TextureRegionEditor::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				break;
+			}
+			[[fallthrough]];
+		}
+
+		case NOTIFICATION_READY: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
 			get_tree()->connect("node_removed", callable_mp(this, &TextureRegionEditor::_node_removed));
-
-			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 
 			hb_grid->set_visible(snap_mode == SNAP_GRID);
 			if (snap_mode == SNAP_AUTOSLICE && is_visible() && autoslice_is_dirty) {
@@ -822,12 +828,12 @@ void TextureRegionEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			texture_preview->add_theme_style_override("panel", get_theme_stylebox(SNAME("TextureRegionPreviewBG"), SNAME("EditorStyles")));
-			texture_overlay->add_theme_style_override("panel", get_theme_stylebox(SNAME("TextureRegionPreviewFG"), SNAME("EditorStyles")));
+			texture_preview->add_theme_style_override("panel", get_theme_stylebox(SNAME("TextureRegionPreviewBG"), EditorStringName(EditorStyles)));
+			texture_overlay->add_theme_style_override("panel", get_theme_stylebox(SNAME("TextureRegionPreviewFG"), EditorStringName(EditorStyles)));
 
-			zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
-			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
-			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
+			zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
+			zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -859,14 +865,6 @@ void TextureRegionEditor::_node_removed(Node *p_node) {
 }
 
 void TextureRegionEditor::_clear_edited_object() {
-	node_sprite_2d = nullptr;
-	node_sprite_3d = nullptr;
-	node_ninepatch = nullptr;
-	res_stylebox = Ref<StyleBoxTexture>();
-	res_atlas_texture = Ref<AtlasTexture>();
-}
-
-void TextureRegionEditor::edit(Object *p_obj) {
 	if (node_sprite_2d) {
 		node_sprite_2d->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
@@ -883,6 +881,14 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		res_atlas_texture->disconnect_changed(callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 
+	node_sprite_2d = nullptr;
+	node_sprite_3d = nullptr;
+	node_ninepatch = nullptr;
+	res_stylebox = Ref<StyleBoxTexture>();
+	res_atlas_texture = Ref<AtlasTexture>();
+}
+
+void TextureRegionEditor::edit(Object *p_obj) {
 	_clear_edited_object();
 
 	if (p_obj) {
@@ -949,8 +955,9 @@ Rect2 TextureRegionEditor::_get_edited_object_region() const {
 		region = res_atlas_texture->get_region();
 	}
 
-	if (region == Rect2()) {
-		region = Rect2(Vector2(), _get_edited_object_texture()->get_size());
+	const Ref<Texture2D> object_texture = _get_edited_object_texture();
+	if (region == Rect2() && object_texture.is_valid()) {
+		region = Rect2(Vector2(), object_texture->get_size());
 	}
 
 	return region;
@@ -964,7 +971,7 @@ void TextureRegionEditor::_texture_changed() {
 }
 
 void TextureRegionEditor::_edit_region() {
-	Ref<Texture2D> object_texture = _get_edited_object_texture();
+	const Ref<Texture2D> object_texture = _get_edited_object_texture();
 	if (object_texture.is_null()) {
 		_zoom_reset();
 		hscroll->hide();
@@ -1093,7 +1100,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	snap_mode_button->add_item(TTR("Pixel Snap"), 1);
 	snap_mode_button->add_item(TTR("Grid Snap"), 2);
 	snap_mode_button->add_item(TTR("Auto Slice"), 3);
-	snap_mode_button->select(0);
+	snap_mode_button->select(snap_mode);
 	snap_mode_button->connect("item_selected", callable_mp(this, &TextureRegionEditor::_set_snap_mode));
 
 	hb_grid = memnew(HBoxContainer);
@@ -1164,6 +1171,11 @@ TextureRegionEditor::TextureRegionEditor() {
 
 	hb_grid->hide();
 
+	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
+	draw_zoom = MAX(1.0f, EDSCALE);
+	max_draw_zoom = 128.0f * MAX(1.0f, EDSCALE);
+	min_draw_zoom = 0.01f * MAX(1.0f, EDSCALE);
+
 	texture_preview = memnew(PanelContainer);
 	vb->add_child(texture_preview);
 	texture_preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1226,7 +1238,7 @@ bool EditorInspectorPluginTextureRegion::parse_property(Object *p_object, const 
 	if ((p_type == Variant::RECT2 || p_type == Variant::RECT2I)) {
 		if (((Object::cast_to<Sprite2D>(p_object) || Object::cast_to<Sprite3D>(p_object) || Object::cast_to<NinePatchRect>(p_object) || Object::cast_to<StyleBoxTexture>(p_object)) && p_path == "region_rect") || (Object::cast_to<AtlasTexture>(p_object) && p_path == "region")) {
 			Button *button = EditorInspector::create_inspector_action_button(TTR("Edit Region"));
-			button->set_icon(texture_region_editor->get_theme_icon(SNAME("RegionEdit"), SNAME("EditorIcons")));
+			button->set_icon(texture_region_editor->get_editor_theme_icon(SNAME("RegionEdit")));
 			button->connect("pressed", callable_mp(this, &EditorInspectorPluginTextureRegion::_region_edit).bind(p_object));
 			add_property_editor(p_path, button, true);
 		}

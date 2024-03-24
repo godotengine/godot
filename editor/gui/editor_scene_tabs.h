@@ -63,9 +63,12 @@ class EditorSceneTabs : public MarginContainer {
 	void _scene_tab_hovered(int p_tab);
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
+	void _scene_tabs_resized();
 
+	void _update_tab_titles();
 	void _reposition_active_tab(int p_to_index);
 	void _update_context_menu();
+	void _disable_menu_option_if(int p_option, bool p_condition);
 
 	void _tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 

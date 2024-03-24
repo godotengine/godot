@@ -31,6 +31,7 @@
 #ifndef ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 #define ANIMATION_BLEND_TREE_EDITOR_PLUGIN_H
 
+#include "core/object/script_language.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
@@ -65,6 +66,9 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	AcceptDialog *filter_dialog = nullptr;
 	Tree *filters = nullptr;
 	CheckBox *filter_enabled = nullptr;
+	Button *filter_fill_selection = nullptr;
+	Button *filter_invert_selection = nullptr;
+	Button *filter_clear_selection = nullptr;
 
 	HashMap<StringName, ProgressBar *> animations;
 	Vector<EditorProperty *> visible_properties;
@@ -107,14 +111,20 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _scroll_changed(const Vector2 &p_scroll);
 	void _node_selected(Object *p_node);
 	void _open_in_editor(const String &p_which);
-	void _anim_selected(int p_index, Array p_options, const String &p_node);
-	void _delete_request(const String &p_which);
+	void _anim_selected(int p_index, const Array &p_options, const String &p_node);
+	void _delete_node_request(const String &p_which);
 	void _delete_nodes_request(const TypedArray<StringName> &p_nodes);
 
 	bool _update_filters(const Ref<AnimationNode> &anode);
 	void _inspect_filters(const String &p_which);
 	void _filter_edited();
 	void _filter_toggled();
+	void _filter_fill_selection();
+	void _filter_invert_selection();
+	void _filter_clear_selection();
+	void _filter_fill_selection_recursive(EditorUndoRedoManager *p_undo_redo, TreeItem *p_item, bool p_parent_filtered);
+	void _filter_invert_selection_recursive(EditorUndoRedoManager *p_undo_redo, TreeItem *p_item);
+	void _filter_clear_selection_recursive(EditorUndoRedoManager *p_undo_redo, TreeItem *p_item);
 	Ref<AnimationNode> _filter_edit;
 
 	void _popup(bool p_has_input_ports, const Vector2 &p_node_position);
@@ -126,7 +136,6 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 
 	void _update_editor_settings();
-	void _update_theme();
 
 	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;

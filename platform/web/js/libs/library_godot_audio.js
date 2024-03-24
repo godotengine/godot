@@ -159,16 +159,19 @@ const GodotAudio = {
 		return 1;
 	},
 
+	godot_audio_has_worklet__proxy: 'sync',
 	godot_audio_has_worklet__sig: 'i',
 	godot_audio_has_worklet: function () {
 		return (GodotAudio.ctx && GodotAudio.ctx.audioWorklet) ? 1 : 0;
 	},
 
+	godot_audio_has_script_processor__proxy: 'sync',
 	godot_audio_has_script_processor__sig: 'i',
 	godot_audio_has_script_processor: function () {
 		return (GodotAudio.ctx && GodotAudio.ctx.createScriptProcessor) ? 1 : 0;
 	},
 
+	godot_audio_init__proxy: 'sync',
 	godot_audio_init__sig: 'iiiii',
 	godot_audio_init: function (p_mix_rate, p_latency, p_state_change, p_latency_update) {
 		const statechange = GodotRuntime.get_func(p_state_change);
@@ -179,6 +182,7 @@ const GodotAudio = {
 		return channels;
 	},
 
+	godot_audio_resume__proxy: 'sync',
 	godot_audio_resume__sig: 'v',
 	godot_audio_resume: function () {
 		if (GodotAudio.ctx && GodotAudio.ctx.state !== 'running') {
@@ -358,6 +362,7 @@ const GodotAudioWorklet = {
 		},
 	},
 
+	godot_audio_worklet_create__proxy: 'sync',
 	godot_audio_worklet_create__sig: 'ii',
 	godot_audio_worklet_create: function (channels) {
 		try {
@@ -369,6 +374,7 @@ const GodotAudioWorklet = {
 		return 0;
 	},
 
+	godot_audio_worklet_start__proxy: 'sync',
 	godot_audio_worklet_start__sig: 'viiiii',
 	godot_audio_worklet_start: function (p_in_buf, p_in_size, p_out_buf, p_out_size, p_state) {
 		const out_buffer = GodotRuntime.heapSub(HEAPF32, p_out_buf, p_out_size);
@@ -377,6 +383,7 @@ const GodotAudioWorklet = {
 		GodotAudioWorklet.start(in_buffer, out_buffer, state);
 	},
 
+	godot_audio_worklet_start_no_threads__proxy: 'sync',
 	godot_audio_worklet_start_no_threads__sig: 'viiiiii',
 	godot_audio_worklet_start_no_threads: function (p_out_buf, p_out_size, p_out_callback, p_in_buf, p_in_size, p_in_callback) {
 		const out_callback = GodotRuntime.get_func(p_out_callback);
@@ -465,6 +472,7 @@ const GodotAudioScript = {
 		},
 	},
 
+	godot_audio_script_create__proxy: 'sync',
 	godot_audio_script_create__sig: 'iii',
 	godot_audio_script_create: function (buffer_length, channel_count) {
 		const buf_len = GodotRuntime.getHeapValue(buffer_length, 'i32');
@@ -478,6 +486,7 @@ const GodotAudioScript = {
 		return 0;
 	},
 
+	godot_audio_script_start__proxy: 'sync',
 	godot_audio_script_start__sig: 'viiiii',
 	godot_audio_script_start: function (p_in_buf, p_in_size, p_out_buf, p_out_size, p_cb) {
 		const onprocess = GodotRuntime.get_func(p_cb);

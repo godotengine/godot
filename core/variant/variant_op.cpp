@@ -37,7 +37,7 @@ static VariantEvaluatorFunction operator_evaluator_table[Variant::OP_MAX][Varian
 static Variant::ValidatedOperatorEvaluator validated_operator_evaluator_table[Variant::OP_MAX][Variant::VARIANT_MAX][Variant::VARIANT_MAX];
 static Variant::PTROperatorEvaluator ptr_operator_evaluator_table[Variant::OP_MAX][Variant::VARIANT_MAX][Variant::VARIANT_MAX];
 
-template <class T>
+template <typename T>
 void register_op(Variant::Operator p_op, Variant::Type p_type_a, Variant::Type p_type_b) {
 	operator_return_type_table[p_op][p_type_a][p_type_b] = T::get_return_type();
 	operator_evaluator_table[p_op][p_type_a][p_type_b] = T::evaluate;
@@ -411,6 +411,15 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorDivNZ<Vector4i, Vector4i, Vector4i>>(Variant::OP_DIVIDE, Variant::VECTOR4I, Variant::VECTOR4I);
 	register_op<OperatorEvaluatorDivNZ<Vector4, Vector4i, double>>(Variant::OP_DIVIDE, Variant::VECTOR4I, Variant::FLOAT);
 	register_op<OperatorEvaluatorDivNZ<Vector4i, Vector4i, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR4I, Variant::INT);
+
+	register_op<OperatorEvaluatorDiv<Transform2D, Transform2D, int64_t>>(Variant::OP_DIVIDE, Variant::TRANSFORM2D, Variant::INT);
+	register_op<OperatorEvaluatorDiv<Transform2D, Transform2D, double>>(Variant::OP_DIVIDE, Variant::TRANSFORM2D, Variant::FLOAT);
+
+	register_op<OperatorEvaluatorDiv<Transform3D, Transform3D, int64_t>>(Variant::OP_DIVIDE, Variant::TRANSFORM3D, Variant::INT);
+	register_op<OperatorEvaluatorDiv<Transform3D, Transform3D, double>>(Variant::OP_DIVIDE, Variant::TRANSFORM3D, Variant::FLOAT);
+
+	register_op<OperatorEvaluatorDiv<Basis, Basis, int64_t>>(Variant::OP_DIVIDE, Variant::BASIS, Variant::INT);
+	register_op<OperatorEvaluatorDiv<Basis, Basis, double>>(Variant::OP_DIVIDE, Variant::BASIS, Variant::FLOAT);
 
 	register_op<OperatorEvaluatorDiv<Quaternion, Quaternion, double>>(Variant::OP_DIVIDE, Variant::QUATERNION, Variant::FLOAT);
 	register_op<OperatorEvaluatorDiv<Quaternion, Quaternion, int64_t>>(Variant::OP_DIVIDE, Variant::QUATERNION, Variant::INT);

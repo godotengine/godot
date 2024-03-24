@@ -6,19 +6,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_PLATFORM_UTIL_H
 #define MBEDTLS_PLATFORM_UTIL_H
@@ -221,6 +209,11 @@ MBEDTLS_DEPRECATED typedef int mbedtls_deprecated_numeric_constant_t;
 #define MBEDTLS_IGNORE_RETURN(result) ((void) !(result))
 #endif
 
+/* If the following macro is defined, the library is being built by the test
+ * framework, and the framework is going to provide a replacement
+ * mbedtls_platform_zeroize() using a preprocessor macro, so the function
+ * declaration should be omitted.  */
+#if !defined(MBEDTLS_TEST_DEFINES_ZEROIZE) //no-check-names
 /**
  * \brief       Securely zeroize a buffer
  *
@@ -244,6 +237,7 @@ MBEDTLS_DEPRECATED typedef int mbedtls_deprecated_numeric_constant_t;
  *
  */
 void mbedtls_platform_zeroize(void *buf, size_t len);
+#endif
 
 #if defined(MBEDTLS_HAVE_TIME_DATE)
 /**

@@ -144,7 +144,7 @@
 		<method name="translate" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="message" type="StringName" />
-			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns the current locale's translation for the given message (key) and context.
 			</description>
@@ -154,7 +154,7 @@
 			<param index="0" name="message" type="StringName" />
 			<param index="1" name="plural_message" type="StringName" />
 			<param index="2" name="n" type="int" />
-			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="3" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns the current locale's translation for the given message (key), plural message and context.
 				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.

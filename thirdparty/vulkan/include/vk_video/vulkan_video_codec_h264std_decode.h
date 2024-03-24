@@ -2,7 +2,7 @@
 #define VULKAN_VIDEO_CODEC_H264STD_DECODE_H_ 1
 
 /*
-** Copyright 2015-2023 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -19,13 +19,15 @@ extern "C" {
 
 
 
+// vulkan_video_codec_h264std_decode is a preprocessor guard. Do not pass it to API calls.
 #define vulkan_video_codec_h264std_decode 1
+#include "vulkan_video_codec_h264std.h"
 
 #define VK_STD_VULKAN_VIDEO_CODEC_H264_DECODE_API_VERSION_1_0_0 VK_MAKE_VIDEO_STD_VERSION(1, 0, 0)
 
-#define STD_VIDEO_DECODE_H264_FIELD_ORDER_COUNT_LIST_SIZE 2
 #define VK_STD_VULKAN_VIDEO_CODEC_H264_DECODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H264_DECODE_API_VERSION_1_0_0
 #define VK_STD_VULKAN_VIDEO_CODEC_H264_DECODE_EXTENSION_NAME "VK_STD_vulkan_video_codec_h264_decode"
+#define STD_VIDEO_DECODE_H264_FIELD_ORDER_COUNT_LIST_SIZE 2
 
 typedef enum StdVideoDecodeH264FieldOrderCount {
     STD_VIDEO_DECODE_H264_FIELD_ORDER_COUNT_TOP = 0,

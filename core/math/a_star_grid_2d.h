@@ -33,7 +33,6 @@
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
-#include "core/object/script_language.h"
 #include "core/templates/list.h"
 #include "core/templates/local_vector.h"
 
@@ -57,11 +56,19 @@ public:
 		HEURISTIC_MAX,
 	};
 
+	enum CellShape {
+		CELL_SHAPE_SQUARE,
+		CELL_SHAPE_ISOMETRIC_RIGHT,
+		CELL_SHAPE_ISOMETRIC_DOWN,
+		CELL_SHAPE_MAX,
+	};
+
 private:
 	Rect2i region;
 	Vector2 offset;
 	Size2 cell_size = Size2(1, 1);
 	bool dirty = false;
+	CellShape cell_shape = CELL_SHAPE_SQUARE;
 
 	bool jumping_enabled = false;
 	DiagonalMode diagonal_mode = DIAGONAL_MODE_ALWAYS;
@@ -106,22 +113,30 @@ private:
 	uint64_t pass = 1;
 
 private: // Internal routines.
-	_FORCE_INLINE_ bool _is_walkable(int64_t p_x, int64_t p_y) const {
+	_FORCE_INLINE_ bool _is_walkable(int32_t p_x, int32_t p_y) const {
 		if (region.has_point(Vector2i(p_x, p_y))) {
 			return !points[p_y - region.position.y][p_x - region.position.x].solid;
 		}
 		return false;
 	}
 
-	_FORCE_INLINE_ Point *_get_point(int64_t p_x, int64_t p_y) {
+	_FORCE_INLINE_ Point *_get_point(int32_t p_x, int32_t p_y) {
 		if (region.has_point(Vector2i(p_x, p_y))) {
 			return &points[p_y - region.position.y][p_x - region.position.x];
 		}
 		return nullptr;
 	}
 
-	_FORCE_INLINE_ Point *_get_point_unchecked(int64_t p_x, int64_t p_y) {
+	_FORCE_INLINE_ Point *_get_point_unchecked(int32_t p_x, int32_t p_y) {
 		return &points[p_y - region.position.y][p_x - region.position.x];
+	}
+
+	_FORCE_INLINE_ Point *_get_point_unchecked(const Vector2i &p_id) {
+		return &points[p_id.y - region.position.y][p_id.x - region.position.x];
+	}
+
+	_FORCE_INLINE_ const Point *_get_point_unchecked(const Vector2i &p_id) const {
+		return &points[p_id.y - region.position.y][p_id.x - region.position.x];
 	}
 
 	void _get_nbors(Point *p_point, LocalVector<Point *> &r_nbors);
@@ -150,12 +165,12 @@ public:
 	void set_cell_size(const Size2 &p_cell_size);
 	Size2 get_cell_size() const;
 
+	void set_cell_shape(CellShape p_cell_shape);
+	CellShape get_cell_shape() const;
+
 	void update();
 
-	int get_width() const;
-	int get_height() const;
-
-	bool is_in_bounds(int p_x, int p_y) const;
+	bool is_in_bounds(int32_t p_x, int32_t p_y) const;
 	bool is_in_boundsv(const Vector2i &p_id) const;
 	bool is_dirty() const;
 
@@ -189,5 +204,6 @@ public:
 
 VARIANT_ENUM_CAST(AStarGrid2D::DiagonalMode);
 VARIANT_ENUM_CAST(AStarGrid2D::Heuristic);
+VARIANT_ENUM_CAST(AStarGrid2D::CellShape)
 
 #endif // A_STAR_GRID_2D_H

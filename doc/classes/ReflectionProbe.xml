@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ReflectionProbe" inherits="VisualInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ReflectionProbe" inherits="VisualInstance3D" keywords="environment, envmap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Captures its surroundings to create fast, accurate reflections from a given point.
 	</brief_description>
@@ -28,7 +28,8 @@
 			[b]Note:[/b] To better fit rectangle-shaped rooms that are not aligned to the grid, you can rotate the [ReflectionProbe] node.
 		</member>
 		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="1048575">
-			Sets the cull mask which determines what objects are drawn by this probe. Every [VisualInstance3D] with a layer included in this cull mask will be rendered by the probe. To improve performance, it is best to only include large objects which are likely to take up a lot of space in the reflection.
+			Sets the cull mask which determines what objects are drawn by this probe. Every [VisualInstance3D] with a layer included in this cull mask will be rendered by the probe. It is best to only include large objects which are likely to take up a lot of space in the reflection in order to save on rendering cost.
+			This can also be used to prevent an object from reflecting upon itself (for instance, a [ReflectionProbe] centered on a vehicle).
 		</member>
 		<member name="enable_shadows" type="bool" setter="set_enable_shadows" getter="are_shadows_enabled" default="false">
 			If [code]true[/code], computes shadows in the reflection probe. This makes the reflection probe slower to render; you may want to disable this if using the [constant UPDATE_ALWAYS] [member update_mode].
@@ -49,6 +50,9 @@
 		</member>
 		<member name="origin_offset" type="Vector3" setter="set_origin_offset" getter="get_origin_offset" default="Vector3(0, 0, 0)">
 			Sets the origin offset to be used when this [ReflectionProbe] is in [member box_projection] mode. This can be set to a non-zero value to ensure a reflection fits a rectangle-shaped room, while reducing the number of objects that "get in the way" of the reflection.
+		</member>
+		<member name="reflection_mask" type="int" setter="set_reflection_mask" getter="get_reflection_mask" default="1048575">
+			Sets the reflection mask which determines what objects have reflections applied from this probe. Every [VisualInstance3D] with a layer included in this reflection mask will have reflections applied from this probe. See also [member cull_mask], which can be used to exclude objects from appearing in the reflection while still making them affected by the [ReflectionProbe].
 		</member>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(20, 20, 20)">
 			The size of the reflection probe. The larger the size, the more space covered by the probe, which will lower the perceived resolution. It is best to keep the size only as large as you need it.

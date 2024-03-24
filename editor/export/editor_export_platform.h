@@ -49,6 +49,9 @@ const String ENV_SCRIPT_ENCRYPTION_KEY = "GODOT_SCRIPT_ENCRYPTION_KEY";
 class EditorExportPlatform : public RefCounted {
 	GDCLASS(EditorExportPlatform, RefCounted);
 
+protected:
+	static void _bind_methods();
+
 public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 	typedef Error (*EditorExportSaveSharedObject)(void *p_userdata, const SharedObject &p_so);
@@ -129,8 +132,8 @@ protected:
 
 	HashSet<String> get_features(const Ref<EditorExportPreset> &p_preset, bool p_debug) const;
 
-	bool exists_export_template(String template_file_name, String *err) const;
-	String find_export_template(String template_file_name, String *err = nullptr) const;
+	bool exists_export_template(const String &template_file_name, String *err) const;
+	String find_export_template(const String &template_file_name, String *err = nullptr) const;
 	void gen_export_flags(Vector<String> &r_flags, int p_flags);
 	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
 
@@ -200,6 +203,7 @@ public:
 		return worst_type;
 	}
 
+	static Vector<String> get_main_pack_forced_export_files();
 	static Vector<String> get_forced_export_files();
 
 	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
@@ -213,9 +217,9 @@ public:
 	virtual String get_name() const = 0;
 	virtual Ref<Texture2D> get_logo() const = 0;
 
-	Error export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func = nullptr);
+	Error export_project_files(bool p_main_pack, const Ref<EditorExportPreset> &p_preset, bool p_debug, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func = nullptr);
 
-	Error save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, bool p_embed = false, int64_t *r_embedded_start = nullptr, int64_t *r_embedded_size = nullptr);
+	Error save_pack(bool p_main_pack, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, bool p_embed = false, int64_t *r_embedded_start = nullptr, int64_t *r_embedded_size = nullptr);
 	Error save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
 
 	virtual bool poll_export() { return false; }
@@ -224,6 +228,7 @@ public:
 	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
 	virtual String get_option_label(int p_device) const { return ""; }
 	virtual String get_option_tooltip(int p_device) const { return ""; }
+	virtual String get_device_architecture(int p_device) const { return ""; }
 
 	enum DebugFlags {
 		DEBUG_FLAG_DUMB_CLIENT = 1,

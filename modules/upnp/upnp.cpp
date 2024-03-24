@@ -242,14 +242,14 @@ Ref<UPNPDevice> UPNP::get_device(int index) const {
 }
 
 void UPNP::add_device(Ref<UPNPDevice> device) {
-	ERR_FAIL_COND(device == nullptr);
+	ERR_FAIL_NULL(device);
 
 	devices.push_back(device);
 }
 
 void UPNP::set_device(int index, Ref<UPNPDevice> device) {
 	ERR_FAIL_INDEX(index, devices.size());
-	ERR_FAIL_COND(device == nullptr);
+	ERR_FAIL_NULL(device);
 
 	devices.set(index, device);
 }
@@ -265,7 +265,7 @@ void UPNP::clear_devices() {
 }
 
 Ref<UPNPDevice> UPNP::get_gateway() const {
-	ERR_FAIL_COND_V_MSG(devices.size() < 1, nullptr, "Couldn't find any UPNPDevices.");
+	ERR_FAIL_COND_V_MSG(devices.is_empty(), nullptr, "Couldn't find any UPNPDevices.");
 
 	for (int i = 0; i < devices.size(); i++) {
 		Ref<UPNPDevice> dev = get_device(i);

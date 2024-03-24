@@ -32,10 +32,12 @@ package org.godotengine.godot
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.fragment.app.FragmentActivity
+import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 
 /**
@@ -148,6 +150,15 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 		godotFragment?.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+		// Logging the result of permission requests
+		if (requestCode == PermissionsUtil.REQUEST_ALL_PERMISSION_REQ_CODE || requestCode == PermissionsUtil.REQUEST_SINGLE_PERMISSION_REQ_CODE) {
+			Log.d(TAG, "Received permissions request result..")
+			for (i in permissions.indices) {
+				val permissionGranted = grantResults[i] == PackageManager.PERMISSION_GRANTED
+				Log.d(TAG, "Permission ${permissions[i]} ${if (permissionGranted) { "granted"} else { "denied" }}")
+			}
+		}
 	}
 
 	override fun onBackPressed() {
@@ -156,6 +167,10 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 
 	override fun getActivity(): Activity? {
 		return this
+	}
+
+	override fun getGodot(): Godot? {
+		return godotFragment?.godot
 	}
 
 	/**

@@ -32,9 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -43,9 +43,9 @@
 #include "scene/gui/color_rect.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"
-#include "scene/resources/fog_material.h"
+#include "scene/resources/3d/fog_material.h"
+#include "scene/resources/3d/sky_material.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/resources/sky_material.h"
 
 void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
@@ -63,13 +63,13 @@ void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 void MaterialEditor::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
-	theme_cache.light_1_icon = get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons"));
-	theme_cache.light_2_icon = get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons"));
+	theme_cache.light_1_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight1"));
+	theme_cache.light_2_icon = get_editor_theme_icon(SNAME("MaterialPreviewLight2"));
 
-	theme_cache.sphere_icon = get_theme_icon(SNAME("MaterialPreviewSphere"), SNAME("EditorIcons"));
-	theme_cache.box_icon = get_theme_icon(SNAME("MaterialPreviewCube"), SNAME("EditorIcons"));
+	theme_cache.sphere_icon = get_editor_theme_icon(SNAME("MaterialPreviewSphere"));
+	theme_cache.box_icon = get_editor_theme_icon(SNAME("MaterialPreviewCube"));
 
-	theme_cache.checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
+	theme_cache.checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
 }
 
 void MaterialEditor::_notification(int p_what) {
@@ -303,7 +303,7 @@ void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
+void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value) {
 	EditorUndoRedoManager *undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo);
 

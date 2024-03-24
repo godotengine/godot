@@ -88,19 +88,18 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	RSG::scene->render_probes();
 
-	RSG::viewport->draw_viewports();
+	RSG::viewport->draw_viewports(p_swap_buffers);
 	RSG::canvas_render->update();
 
-	if (OS::get_singleton()->get_current_rendering_driver_name() != "opengl3") {
-		// Already called for gl_compatibility renderer.
-		RSG::rasterizer->end_frame(p_swap_buffers);
-	}
+	RSG::rasterizer->end_frame(p_swap_buffers);
 
+#ifndef _3D_DISABLED
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
 		// let our XR server know we're done so we can get our frame timing
 		xr_server->end_frame();
 	}
+#endif // _3D_DISABLED
 
 	RSG::canvas->update_visibility_notifiers();
 	RSG::scene->update_visibility_notifiers();
@@ -214,6 +213,7 @@ void RenderingServerDefault::_finish() {
 		free(test_cube);
 	}
 
+	RSG::canvas->finalize();
 	RSG::rasterizer->finalize();
 }
 
@@ -289,9 +289,11 @@ void RenderingServerDefault::set_default_clear_color(const Color &p_color) {
 	RSG::viewport->set_default_clear_color(p_color);
 }
 
+#ifndef DISABLE_DEPRECATED
 bool RenderingServerDefault::has_feature(Features p_feature) const {
 	return false;
 }
+#endif
 
 void RenderingServerDefault::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
 	RSG::scene->sdfgi_set_debug_probe_select(p_position, p_dir);
@@ -368,6 +370,16 @@ void RenderingServerDefault::_thread_loop() {
 	_finish();
 }
 
+/* INTERPOLATION */
+
+void RenderingServerDefault::tick() {
+	RSG::canvas->tick();
+}
+
+void RenderingServerDefault::set_physics_interpolation_enabled(bool p_enabled) {
+	RSG::canvas->set_physics_interpolation_enabled(p_enabled);
+}
+
 /* EVENT QUEUING */
 
 void RenderingServerDefault::sync() {
@@ -379,6 +391,7 @@ void RenderingServerDefault::sync() {
 }
 
 void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Manually triggering the draw function from the RenderingServer can only be done on the main thread. Call this function from the main thread or use call_deferred().");
 	if (create_thread) {
 		command_queue.push(this, &RenderingServerDefault::_thread_draw, p_swap_buffers, frame_step);
 	} else {
@@ -387,24 +400,26 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 }
 
 void RenderingServerDefault::_call_on_render_thread(const Callable &p_callable) {
-	Variant ret;
-	Callable::CallError ce;
-	p_callable.callp(nullptr, 0, ret, ce);
+	p_callable.call();
 }
 
 RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 		command_queue(p_create_thread) {
 	RenderingServer::init();
 
+#ifdef THREADS_ENABLED
 	create_thread = p_create_thread;
-
-	if (!p_create_thread) {
+	if (!create_thread) {
 		server_thread = Thread::get_caller_id();
 	} else {
 		server_thread = 0;
 	}
+#else
+	create_thread = false;
+	server_thread = Thread::get_main_id();
+#endif
+	RSG::threaded = create_thread;
 
-	RSG::threaded = p_create_thread;
 	RSG::canvas = memnew(RendererCanvasCull);
 	RSG::viewport = memnew(RendererViewport);
 	RendererSceneCull *sr = memnew(RendererSceneCull);

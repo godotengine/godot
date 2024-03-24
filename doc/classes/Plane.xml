@@ -152,11 +152,11 @@
 	<members>
 		<member name="d" type="float" setter="" getter="" default="0.0">
 			The distance from the origin to the plane, expressed in terms of [member normal] (according to its direction and magnitude). Actual absolute distance from the origin to the plane can be calculated as [code]abs(d) / normal.length()[/code] (if [member normal] has zero length then this [Plane] does not represent a valid plane).
-			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is [code]d[/code], while the [code](a, b, c)[/code] coordinates are represented by the [member normal] property.
+			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is [code skip-lint]d[/code], while the [code](a, b, c)[/code] coordinates are represented by the [member normal] property.
 		</member>
 		<member name="normal" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
 			The normal of the plane, typically a unit vector. Shouldn't be a zero vector as [Plane] with such [member normal] does not represent a valid plane.
-			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is the vector [code](a, b, c)[/code], where [code]d[/code] is the [member d] property.
+			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is the vector [code](a, b, c)[/code], where [code skip-lint]d[/code] is the [member d] property.
 		</member>
 		<member name="x" type="float" setter="" getter="" default="0.0">
 			The X component of the plane's [member normal] vector.
@@ -193,6 +193,7 @@
 			<param index="0" name="right" type="Transform3D" />
 			<description>
 				Inversely transforms (multiplies) the [Plane] by the given [Transform3D] transformation matrix.
+				[code]plane * transform[/code] is equivalent to [code]transform.affine_inverse() * plane[/code]. See [method Transform3D.affine_inverse].
 			</description>
 		</operator>
 		<operator name="operator ==">

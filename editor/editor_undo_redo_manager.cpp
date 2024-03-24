@@ -156,7 +156,7 @@ void EditorUndoRedoManager::add_undo_methodp(Object *p_object, const StringName 
 void EditorUndoRedoManager::_add_do_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 2;
 		return;
 	}
 
@@ -185,7 +185,7 @@ void EditorUndoRedoManager::_add_do_method(const Variant **p_args, int p_argcoun
 void EditorUndoRedoManager::_add_undo_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		r_error.argument = 0;
+		r_error.expected = 2;
 		return;
 	}
 
@@ -239,6 +239,7 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 	is_committing = true;
 
 	History &history = get_or_create_history(pending_action.history_id);
+	bool merging = history.undo_redo->is_merging();
 	history.undo_redo->commit_action(p_execute);
 	history.redo_stack.clear();
 
@@ -248,39 +249,10 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 		return;
 	}
 
-	if (!history.undo_stack.is_empty()) {
-		// Discard action if it should be merged (UndoRedo handles merging internally).
-		switch (pending_action.merge_mode) {
-			case UndoRedo::MERGE_DISABLE:
-				break; // Nothing to do here.
-			case UndoRedo::MERGE_ENDS: {
-				if (history.undo_stack.size() < 2) {
-					break;
-				}
-
-				const Action &prev_action = history.undo_stack.back()->get();
-				const Action &pre_prev_action = history.undo_stack.back()->prev()->get();
-				if (pending_action.merge_mode == prev_action.merge_mode && pending_action.merge_mode == pre_prev_action.merge_mode &&
-						pending_action.action_name == prev_action.action_name && pending_action.action_name == pre_prev_action.action_name) {
-					pending_action = Action();
-					is_committing = false;
-					emit_signal(SNAME("history_changed"));
-					return;
-				}
-			} break;
-			case UndoRedo::MERGE_ALL: {
-				const Action &prev_action = history.undo_stack.back()->get();
-				if (pending_action.merge_mode == prev_action.merge_mode && pending_action.action_name == prev_action.action_name) {
-					pending_action = Action();
-					is_committing = false;
-					emit_signal(SNAME("history_changed"));
-					return;
-				}
-			} break;
-		}
+	if (!merging) {
+		history.undo_stack.push_back(pending_action);
 	}
 
-	history.undo_stack.push_back(pending_action);
 	pending_action = Action();
 	is_committing = false;
 	emit_signal(SNAME("history_changed"));
@@ -401,6 +373,10 @@ bool EditorUndoRedoManager::has_redo() {
 		}
 	}
 	return false;
+}
+
+bool EditorUndoRedoManager::has_history(int p_idx) const {
+	return history_map.has(p_idx);
 }
 
 void EditorUndoRedoManager::clear_history(bool p_increase_version, int p_idx) {

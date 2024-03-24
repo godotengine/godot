@@ -8,19 +8,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_AESNI_H
 #define MBEDTLS_AESNI_H
@@ -36,16 +24,20 @@
 #define MBEDTLS_AESNI_AES      0x02000000u
 #define MBEDTLS_AESNI_CLMUL    0x00000002u
 
-/* Can we do AESNI with inline assembly?
- * (Only implemented with gas syntax, only for 64-bit.)
- */
-#if defined(MBEDTLS_HAVE_ASM) && defined(__GNUC__) && \
-    (defined(__amd64__) || defined(__x86_64__))   &&  \
-    !defined(MBEDTLS_HAVE_X86_64)
+#if !defined(MBEDTLS_HAVE_X86_64) && \
+    (defined(__amd64__) || defined(__x86_64__) || \
+    defined(_M_X64) || defined(_M_AMD64)) && \
+    !defined(_M_ARM64EC)
 #define MBEDTLS_HAVE_X86_64
 #endif
 
-#if defined(MBEDTLS_AESNI_C)
+#if !defined(MBEDTLS_HAVE_X86) && \
+    (defined(__i386__) || defined(_M_IX86))
+#define MBEDTLS_HAVE_X86
+#endif
+
+#if defined(MBEDTLS_AESNI_C) && \
+    (defined(MBEDTLS_HAVE_X86_64) || defined(MBEDTLS_HAVE_X86))
 
 /* Can we do AESNI with intrinsics?
  * (Only implemented with certain compilers, only for certain targets.)
@@ -72,7 +64,11 @@
  * favor the assembly-based implementation if it's available. We intend to
  * revise this in a later release of Mbed TLS 3.x. In the long run, we will
  * likely remove the assembly implementation. */
-#if defined(MBEDTLS_HAVE_X86_64)
+#if defined(MBEDTLS_HAVE_ASM) && \
+    defined(__GNUC__) && defined(MBEDTLS_HAVE_X86_64)
+/* Can we do AESNI with inline assembly?
+ * (Only implemented with gas syntax, only for 64-bit.)
+ */
 #define MBEDTLS_AESNI_HAVE_CODE 1 // via assembly
 #elif defined(MBEDTLS_AESNI_HAVE_INTRINSICS)
 #define MBEDTLS_AESNI_HAVE_CODE 2 // via intrinsics
@@ -168,6 +164,6 @@ int mbedtls_aesni_setkey_enc(unsigned char *rk,
 #endif
 
 #endif /* MBEDTLS_AESNI_HAVE_CODE */
-#endif  /* MBEDTLS_AESNI_C */
+#endif /* MBEDTLS_AESNI_C && (MBEDTLS_HAVE_X86_64 || MBEDTLS_HAVE_X86) */
 
 #endif /* MBEDTLS_AESNI_H */

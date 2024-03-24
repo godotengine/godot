@@ -1,0 +1,189 @@
+diff --git a/thirdparty/mingw-std-threads/mingw.condition_variable.h b/thirdparty/mingw-std-threads/mingw.condition_variable.h
+index 50c5ebd6df..d099fad2ec 100644
+--- a/thirdparty/mingw-std-threads/mingw.condition_variable.h
++++ b/thirdparty/mingw-std-threads/mingw.condition_variable.h
+@@ -58,7 +58,7 @@
+ 
+ namespace mingw_stdthread
+ {
+-#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS)
++#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__)
+ enum class cv_status { no_timeout, timeout };
+ #else
+ using std::cv_status;
+@@ -87,12 +87,12 @@ public:
+         :   mSemaphore(CreateSemaphoreA(NULL, 0, 0xFFFF, NULL))
+     {
+         if (mSemaphore == NULL)
+-            throw std::system_error(GetLastError(), std::generic_category());
++            __builtin_trap();
+         mWakeEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+         if (mWakeEvent == NULL)
+         {
+             CloseHandle(mSemaphore);
+-            throw std::system_error(GetLastError(), std::generic_category());
++            __builtin_trap();
+         }
+     }
+     ~condition_variable_any()
+@@ -132,7 +132,7 @@ private:
+         else
+         {
+             using namespace std;
+-            throw system_error(make_error_code(errc::protocol_error));
++            __builtin_trap();
+         }
+     }
+ public:
+@@ -547,7 +547,7 @@ namespace std
+ //  was none. Direct specification (std::), however, would be unaffected.
+ //    Take the safe option, and include only in the presence of MinGW's win32
+ //  implementation.
+-#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS)
++#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__)
+ using mingw_stdthread::cv_status;
+ using mingw_stdthread::condition_variable;
+ using mingw_stdthread::condition_variable_any;
+diff --git a/thirdparty/mingw-std-threads/mingw.mutex.h b/thirdparty/mingw-std-threads/mingw.mutex.h
+index 03efa13f8b..1e881e6c7d 100644
+--- a/thirdparty/mingw-std-threads/mingw.mutex.h
++++ b/thirdparty/mingw-std-threads/mingw.mutex.h
+@@ -132,7 +132,7 @@ struct _OwnerThread
+         fprintf(stderr, "FATAL: Recursive locking of non-recursive mutex\
+  detected. Throwing system exception\n");
+         fflush(stderr);
+-        throw system_error(make_error_code(errc::resource_deadlock_would_occur));
++        __builtin_trap();
+     }
+     DWORD checkOwnerBeforeLock() const
+     {
+@@ -364,13 +364,13 @@ public:
+ #endif
+         if ((ret != kWaitObject0) && (ret != kWaitAbandoned))
+         {
+-            throw std::system_error(GetLastError(), std::system_category());
++            __builtin_trap();
+         }
+     }
+     void unlock()
+     {
+         if (!ReleaseMutex(mHandle))
+-            throw std::system_error(GetLastError(), std::system_category());
++            __builtin_trap();
+     }
+     bool try_lock()
+     {
+@@ -480,7 +480,7 @@ namespace std
+ //  was none. Direct specification (std::), however, would be unaffected.
+ //    Take the safe option, and include only in the presence of MinGW's win32
+ //  implementation.
+-#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS)
++#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__)
+ using mingw_stdthread::recursive_mutex;
+ using mingw_stdthread::mutex;
+ using mingw_stdthread::recursive_timed_mutex;
+diff --git a/thirdparty/mingw-std-threads/mingw.shared_mutex.h b/thirdparty/mingw-std-threads/mingw.shared_mutex.h
+index ff1ac65135..ddc46bb826 100644
+--- a/thirdparty/mingw-std-threads/mingw.shared_mutex.h
++++ b/thirdparty/mingw-std-threads/mingw.shared_mutex.h
+@@ -134,7 +134,7 @@ public:
+         using namespace std;
+ #ifndef NDEBUG
+         if (!(mCounter.fetch_sub(1, memory_order_release) & static_cast<counter_type>(~kWriteBit)))
+-            throw system_error(make_error_code(errc::operation_not_permitted));
++            __builtin_trap();
+ #else
+         mCounter.fetch_sub(1, memory_order_release);
+ #endif
+@@ -187,7 +187,7 @@ public:
+         using namespace std;
+ #ifndef NDEBUG
+         if (mCounter.load(memory_order_relaxed) != kWriteBit)
+-            throw system_error(make_error_code(errc::operation_not_permitted));
++            __builtin_trap();
+ #endif
+         mCounter.store(0, memory_order_release);
+     }
+@@ -317,9 +317,9 @@ class shared_lock
+     {
+         using namespace std;
+         if (mMutex == nullptr)
+-            throw system_error(make_error_code(errc::operation_not_permitted));
++            __builtin_trap();
+         if (mOwns)
+-            throw system_error(make_error_code(errc::resource_deadlock_would_occur));
++            __builtin_trap();
+     }
+ public:
+     typedef Mutex mutex_type;
+@@ -432,7 +432,7 @@ public:
+     {
+         using namespace std;
+         if (!mOwns)
+-            throw system_error(make_error_code(errc::operation_not_permitted));
++            __builtin_trap();
+         mMutex->unlock_shared();
+         mOwns = false;
+     }
+@@ -484,10 +484,10 @@ namespace std
+ //  was none. Direct specification (std::), however, would be unaffected.
+ //    Take the safe option, and include only in the presence of MinGW's win32
+ //  implementation.
+-#if (__cplusplus < 201703L) || (defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS))
++#if (__cplusplus < 201703L) || (defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__))
+ using mingw_stdthread::shared_mutex;
+ #endif
+-#if (__cplusplus < 201402L) || (defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS))
++#if (__cplusplus < 201402L) || (defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__))
+ using mingw_stdthread::shared_timed_mutex;
+ using mingw_stdthread::shared_lock;
+ #elif !defined(MINGW_STDTHREAD_REDUNDANCY_WARNING)  //  Skip repetition
+diff --git a/thirdparty/mingw-std-threads/mingw.thread.h b/thirdparty/mingw-std-threads/mingw.thread.h
+index bcdd1a36a8..60d2200db2 100644
+--- a/thirdparty/mingw-std-threads/mingw.thread.h
++++ b/thirdparty/mingw-std-threads/mingw.thread.h
+@@ -193,10 +193,9 @@ public:
+         if (int_handle == 0)
+         {
+             mHandle = kInvalidHandle;
+-            int errnum = errno;
+             delete call;
+ //  Note: Should only throw EINVAL, EAGAIN, EACCES
+-            throw std::system_error(errnum, std::generic_category());
++            __builtin_trap();
+         } else {
+             mThreadId.mId = id_receiver;
+             mHandle = reinterpret_cast<HANDLE>(int_handle);
+@@ -213,11 +212,11 @@ public:
+     {
+         using namespace std;
+         if (get_id() == id(GetCurrentThreadId()))
+-            throw system_error(make_error_code(errc::resource_deadlock_would_occur));
++            __builtin_trap();
+         if (mHandle == kInvalidHandle)
+-            throw system_error(make_error_code(errc::no_such_process));
++            __builtin_trap();
+         if (!joinable())
+-            throw system_error(make_error_code(errc::invalid_argument));
++            __builtin_trap();
+         WaitForSingleObject(mHandle, kInfinite);
+         CloseHandle(mHandle);
+         mHandle = kInvalidHandle;
+@@ -266,7 +265,7 @@ moving another thread to it.\n");
+         if (!joinable())
+         {
+             using namespace std;
+-            throw system_error(make_error_code(errc::invalid_argument));
++            __builtin_trap();
+         }
+         if (mHandle != kInvalidHandle)
+         {
+@@ -326,7 +325,7 @@ namespace std
+ //  was none. Direct specification (std::), however, would be unaffected.
+ //    Take the safe option, and include only in the presence of MinGW's win32
+ //  implementation.
+-#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS)
++#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__)
+ using mingw_stdthread::thread;
+ //    Remove ambiguity immediately, to avoid problems arising from the above.
+ //using std::thread;

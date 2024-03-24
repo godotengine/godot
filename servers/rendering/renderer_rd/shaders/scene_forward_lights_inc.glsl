@@ -71,7 +71,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	mat4 inv_view_matrix = scene_data_block.data.inv_view_matrix;
 
 #ifdef USING_MOBILE_RENDERER
-	mat4 read_model_matrix = draw_call.transform;
+	mat4 read_model_matrix = instances.data[draw_call.instance_index].transform;
 #else
 	mat4 read_model_matrix = instances.data[instance_index_interp].transform;
 #endif
@@ -932,7 +932,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 
 		vec4 reflection;
 
-		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_ref_vec, reflections.data[ref_index].index), roughness * MAX_ROUGHNESS_LOD).rgb * sc_luminance_multiplier;
+		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_ref_vec, reflections.data[ref_index].index), roughness * MAX_ROUGHNESS_LOD).rgb * sc_luminance_multiplier;
 		reflection.rgb *= reflections.data[ref_index].exposure_normalization;
 		if (reflections.data[ref_index].exterior) {
 			reflection.rgb = mix(specular_light, reflection.rgb, blend);
@@ -955,7 +955,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 
 			vec4 ambient_out;
 
-			ambient_out.rgb = textureLod(samplerCubeArray(reflection_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_amb_vec, reflections.data[ref_index].index), MAX_ROUGHNESS_LOD).rgb;
+			ambient_out.rgb = textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_amb_vec, reflections.data[ref_index].index), MAX_ROUGHNESS_LOD).rgb;
 			ambient_out.rgb *= reflections.data[ref_index].exposure_normalization;
 			ambient_out.a = blend;
 			if (reflections.data[ref_index].exterior) {

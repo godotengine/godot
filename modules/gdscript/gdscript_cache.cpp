@@ -37,7 +37,6 @@
 
 #include "core/io/file_access.h"
 #include "core/templates/vector.h"
-#include "scene/resources/packed_scene.h"
 
 bool GDScriptParserRef::is_valid() const {
 	return parser != nullptr;
@@ -59,7 +58,7 @@ GDScriptAnalyzer *GDScriptParserRef::get_analyzer() {
 }
 
 Error GDScriptParserRef::raise_status(Status p_new_status) {
-	ERR_FAIL_COND_V(parser == nullptr, ERR_INVALID_DATA);
+	ERR_FAIL_NULL_V(parser, ERR_INVALID_DATA);
 
 	if (result != OK) {
 		return result;
@@ -67,10 +66,15 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 
 	while (p_new_status > status) {
 		switch (status) {
-			case EMPTY:
+			case EMPTY: {
 				status = PARSED;
-				result = parser->parse(GDScriptCache::get_source_code(path), path, false);
-				break;
+				String remapped_path = ResourceLoader::path_remap(path);
+				if (remapped_path.get_extension().to_lower() == "gdc") {
+					result = parser->parse_binary(GDScriptCache::get_binary_tokens(remapped_path), path);
+				} else {
+					result = parser->parse(GDScriptCache::get_source_code(remapped_path), path, false);
+				}
+			} break;
 			case PARSED: {
 				status = INHERITANCE_SOLVED;
 				Error inheritance_result = get_analyzer()->resolve_inheritance();
@@ -139,13 +143,6 @@ void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 		return;
 	}
 
-	for (KeyValue<String, HashSet<String>> &E : singleton->packed_scene_dependencies) {
-		if (E.value.has(p_from)) {
-			E.value.insert(p_to);
-			E.value.erase(p_from);
-		}
-	}
-
 	if (singleton->parser_map.has(p_from) && !p_from.is_empty()) {
 		singleton->parser_map[p_to] = singleton->parser_map[p_from];
 	}
@@ -173,15 +170,6 @@ void GDScriptCache::remove_script(const String &p_path) {
 		return;
 	}
 
-	for (KeyValue<String, HashSet<String>> &E : singleton->packed_scene_dependencies) {
-		if (!E.value.has(p_path)) {
-			continue;
-		}
-		E.value.erase(p_path);
-	}
-
-	GDScriptCache::clear_unreferenced_packed_scenes();
-
 	if (singleton->parser_map.has(p_path)) {
 		singleton->parser_map[p_path]->clear();
 		singleton->parser_map.erase(p_path);
@@ -205,7 +193,8 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 			return ref;
 		}
 	} else {
-		if (!FileAccess::exists(p_path)) {
+		String remapped_path = ResourceLoader::path_remap(p_path);
+		if (!FileAccess::exists(remapped_path)) {
 			r_error = ERR_FILE_NOT_FOUND;
 			return ref;
 		}
@@ -239,6 +228,20 @@ String GDScriptCache::get_source_code(const String &p_path) {
 	return source;
 }
 
+Vector<uint8_t> GDScriptCache::get_binary_tokens(const String &p_path) {
+	Vector<uint8_t> buffer;
+	Error err = OK;
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
+	ERR_FAIL_COND_V_MSG(err != OK, buffer, "Failed to open binary GDScript file '" + p_path + "'.");
+
+	uint64_t len = f->get_length();
+	buffer.resize(len);
+	uint64_t read = f->get_buffer(buffer.ptrw(), buffer.size());
+	ERR_FAIL_COND_V_MSG(read != len, Vector<uint8_t>(), "Failed to read binary GDScript file '" + p_path + "'.");
+
+	return buffer;
+}
+
 Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_error, const String &p_owner) {
 	MutexLock lock(singleton->mutex);
 	if (!p_owner.is_empty()) {
@@ -251,10 +254,20 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 		return singleton->shallow_gdscript_cache[p_path];
 	}
 
+	String remapped_path = ResourceLoader::path_remap(p_path);
+
 	Ref<GDScript> script;
 	script.instantiate();
 	script->set_path(p_path, true);
-	r_error = script->load_source_code(p_path);
+	if (remapped_path.get_extension().to_lower() == "gdc") {
+		Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
+		if (buffer.is_empty()) {
+			r_error = ERR_FILE_CANT_READ;
+		}
+		script->set_binary_tokens_source(buffer);
+	} else {
+		r_error = script->load_source_code(remapped_path);
+	}
 
 	if (r_error) {
 		return Ref<GDScript>(); // Returns null and does not cache when the script fails to load.
@@ -287,15 +300,25 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 
 	if (script.is_null()) {
 		script = get_shallow_script(p_path, r_error);
-		if (r_error) {
+		// Only exit early if script failed to load, otherwise let reload report errors.
+		if (script.is_null()) {
 			return script;
 		}
 	}
 
 	if (p_update_from_disk) {
-		r_error = script->load_source_code(p_path);
-		if (r_error) {
-			return script;
+		if (p_path.get_extension().to_lower() == "gdc") {
+			Vector<uint8_t> buffer = get_binary_tokens(p_path);
+			if (buffer.is_empty()) {
+				r_error = ERR_FILE_CANT_READ;
+				return script;
+			}
+			script->set_binary_tokens_source(buffer);
+		} else {
+			r_error = script->load_source_code(p_path);
+			if (r_error) {
+				return script;
+			}
 		}
 	}
 
@@ -360,57 +383,6 @@ void GDScriptCache::remove_static_script(const String &p_fqcn) {
 	singleton->static_gdscript_cache.erase(p_fqcn);
 }
 
-Ref<PackedScene> GDScriptCache::get_packed_scene(const String &p_path, Error &r_error, const String &p_owner) {
-	MutexLock lock(singleton->mutex);
-
-	if (singleton->packed_scene_cache.has(p_path)) {
-		singleton->packed_scene_dependencies[p_path].insert(p_owner);
-		return singleton->packed_scene_cache[p_path];
-	}
-
-	Ref<PackedScene> scene = ResourceCache::get_ref(p_path);
-	if (scene.is_valid()) {
-		singleton->packed_scene_cache[p_path] = scene;
-		singleton->packed_scene_dependencies[p_path].insert(p_owner);
-		return scene;
-	}
-	scene.instantiate();
-
-	r_error = OK;
-	if (p_path.is_empty()) {
-		r_error = ERR_FILE_BAD_PATH;
-		return scene;
-	}
-
-	scene->set_path(p_path);
-	singleton->packed_scene_cache[p_path] = scene;
-	singleton->packed_scene_dependencies[p_path].insert(p_owner);
-
-	scene->reload_from_file();
-	return scene;
-}
-
-void GDScriptCache::clear_unreferenced_packed_scenes() {
-	if (singleton == nullptr) {
-		return;
-	}
-
-	MutexLock lock(singleton->mutex);
-
-	if (singleton->cleared) {
-		return;
-	}
-
-	for (KeyValue<String, HashSet<String>> &E : singleton->packed_scene_dependencies) {
-		if (E.value.size() > 0 || !ResourceLoader::is_imported(E.key)) {
-			continue;
-		}
-
-		singleton->packed_scene_dependencies.erase(E.key);
-		singleton->packed_scene_cache.erase(E.key);
-	}
-}
-
 void GDScriptCache::clear() {
 	if (singleton == nullptr) {
 		return;
@@ -433,16 +405,10 @@ void GDScriptCache::clear() {
 			E->clear();
 	}
 
-	singleton->packed_scene_dependencies.clear();
-	singleton->packed_scene_cache.clear();
-
 	parser_map_refs.clear();
 	singleton->parser_map.clear();
 	singleton->shallow_gdscript_cache.clear();
 	singleton->full_gdscript_cache.clear();
-
-	singleton->packed_scene_cache.clear();
-	singleton->packed_scene_dependencies.clear();
 }
 
 GDScriptCache::GDScriptCache() {

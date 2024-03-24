@@ -44,13 +44,14 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"
@@ -71,7 +72,7 @@
 
 using CameraOverride = EditorDebuggerNode::CameraOverride;
 
-void ScriptEditorDebugger::_put_msg(String p_message, Array p_data, uint64_t p_thread_id) {
+void ScriptEditorDebugger::_put_msg(const String &p_message, const Array &p_data, uint64_t p_thread_id) {
 	ERR_FAIL_COND(p_thread_id == Thread::UNASSIGNED_ID);
 	if (is_session_active()) {
 		Array msg;
@@ -93,9 +94,9 @@ void ScriptEditorDebugger::debug_copy() {
 void ScriptEditorDebugger::debug_skip_breakpoints() {
 	skip_breakpoints_value = !skip_breakpoints_value;
 	if (skip_breakpoints_value) {
-		skip_breakpoints->set_icon(get_theme_icon(SNAME("DebugSkipBreakpointsOn"), SNAME("EditorIcons")));
+		skip_breakpoints->set_icon(get_editor_theme_icon(SNAME("DebugSkipBreakpointsOn")));
 	} else {
-		skip_breakpoints->set_icon(get_theme_icon(SNAME("DebugSkipBreakpointsOff"), SNAME("EditorIcons")));
+		skip_breakpoints->set_icon(get_editor_theme_icon(SNAME("DebugSkipBreakpointsOff")));
 	}
 
 	Array msg;
@@ -143,11 +144,11 @@ void ScriptEditorDebugger::update_tabs() {
 	} else {
 		errors_tab->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
 		if (error_count >= 1 && warning_count >= 1) {
-			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_theme_icon(SNAME("ErrorWarning"), SNAME("EditorIcons")));
+			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_editor_theme_icon(SNAME("ErrorWarning")));
 		} else if (error_count >= 1) {
-			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_editor_theme_icon(SNAME("Error")));
 		} else {
-			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
+			tabs->set_tab_icon(tabs->get_tab_idx_from_control(errors_tab), get_editor_theme_icon(SNAME("Warning")));
 		}
 	}
 }
@@ -386,7 +387,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		}
 
 	} else if (p_msg == "set_pid") {
-		ERR_FAIL_COND(p_data.size() < 1);
+		ERR_FAIL_COND(p_data.is_empty());
 		remote_pid = p_data[0];
 	} else if (p_msg == "scene:click_ctrl") {
 		ERR_FAIL_COND(p_data.size() < 2);
@@ -420,8 +421,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			it->set_text(3, String::humanize_size(bytes));
 			total += bytes;
 
-			if (has_theme_icon(type, SNAME("EditorIcons"))) {
-				it->set_icon(0, get_theme_icon(type, SNAME("EditorIcons")));
+			if (has_theme_icon(type, EditorStringName(EditorIcons))) {
+				it->set_icon(0, get_editor_theme_icon(type));
 			}
 		}
 
@@ -494,7 +495,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 				} break;
 			}
 			EditorNode::get_log()->add_message(output_strings[i], msg_type);
-			emit_signal(SNAME("output"), output_strings[i]);
+			emit_signal(SNAME("output"), output_strings[i], msg_type);
 		}
 	} else if (p_msg == "performance:profile_frame") {
 		Vector<float> frame_data;
@@ -560,11 +561,11 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		}
 		error->set_collapsed(true);
 
-		error->set_icon(0, get_theme_icon(oe.warning ? SNAME("Warning") : SNAME("Error"), SNAME("EditorIcons")));
+		error->set_icon(0, get_editor_theme_icon(oe.warning ? SNAME("Warning") : SNAME("Error")));
 		error->set_text(0, time);
 		error->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
 
-		const Color color = get_theme_color(oe.warning ? SNAME("warning_color") : SNAME("error_color"), SNAME("Editor"));
+		const Color color = get_theme_color(oe.warning ? SNAME("warning_color") : SNAME("error_color"), EditorStringName(Editor));
 		error->set_custom_color(0, color);
 		error->set_custom_color(1, color);
 
@@ -757,6 +758,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			int calls = frame.script_functions[i].call_count;
 			float total = frame.script_functions[i].total_time;
 			float self = frame.script_functions[i].self_time;
+			float internal = frame.script_functions[i].internal_time;
 
 			EditorProfiler::Metric::Category::Item item;
 			if (profiler_signature.has(signature)) {
@@ -781,6 +783,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			item.calls = calls;
 			item.self = self;
 			item.total = total;
+			item.internal = internal;
 			funcs.items.write[i] = item;
 		}
 
@@ -803,7 +806,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		}
 		performance_profiler->update_monitors(monitors);
 	} else if (p_msg == "filesystem:update_file") {
-		ERR_FAIL_COND(p_data.size() < 1);
+		ERR_FAIL_COND(p_data.is_empty());
 		if (EditorFileSystem::get_singleton()) {
 			EditorFileSystem::get_singleton()->update_file(p_data[0]);
 		}
@@ -821,13 +824,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
 	switch (p_type) {
 		case MESSAGE_ERROR:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			break;
 		case MESSAGE_WARNING:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			reason->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			break;
 		default:
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), SNAME("Editor")));
+			reason->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 	}
 	reason->set_text(p_reason);
 
@@ -853,32 +856,32 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("DebuggerPanel"), SNAME("EditorStyles")));
+			tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 
-			skip_breakpoints->set_icon(get_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff"), SNAME("EditorIcons")));
-			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
-			step->set_icon(get_theme_icon(SNAME("DebugStep"), SNAME("EditorIcons")));
-			next->set_icon(get_theme_icon(SNAME("DebugNext"), SNAME("EditorIcons")));
-			dobreak->set_icon(get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
-			docontinue->set_icon(get_theme_icon(SNAME("DebugContinue"), SNAME("EditorIcons")));
-			vmem_refresh->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-			vmem_export->set_icon(get_theme_icon(SNAME("Save"), SNAME("EditorIcons")));
-			search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			skip_breakpoints->set_icon(get_editor_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff")));
+			copy->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+			step->set_icon(get_editor_theme_icon(SNAME("DebugStep")));
+			next->set_icon(get_editor_theme_icon(SNAME("DebugNext")));
+			dobreak->set_icon(get_editor_theme_icon(SNAME("Pause")));
+			docontinue->set_icon(get_editor_theme_icon(SNAME("DebugContinue")));
+			vmem_refresh->set_icon(get_editor_theme_icon(SNAME("Reload")));
+			vmem_export->set_icon(get_editor_theme_icon(SNAME("Save")));
+			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			reason->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			TreeItem *error_root = error_tree->get_root();
 			if (error_root) {
 				TreeItem *error = error_root->get_first_child();
 				while (error) {
 					if (error->has_meta("_is_warning")) {
-						error->set_icon(0, get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
-						error->set_custom_color(0, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-						error->set_custom_color(1, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+						error->set_icon(0, get_editor_theme_icon(SNAME("Warning")));
+						error->set_custom_color(0, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+						error->set_custom_color(1, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 					} else if (error->has_meta("_is_error")) {
-						error->set_icon(0, get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
-						error->set_custom_color(0, get_theme_color(SNAME("error_color"), SNAME("Editor")));
-						error->set_custom_color(1, get_theme_color(SNAME("error_color"), SNAME("Editor")));
+						error->set_icon(0, get_editor_theme_icon(SNAME("Error")));
+						error->set_custom_color(0, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+						error->set_custom_color(1, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 					}
 
 					error = error->get_next();
@@ -1096,7 +1099,9 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 				// Add max funcs options to request.
 				Array opts;
 				int max_funcs = EDITOR_GET("debugger/profiler_frame_max_functions");
+				bool include_native = EDITOR_GET("debugger/profile_native_calls");
 				opts.push_back(CLAMP(max_funcs, 16, 512));
+				opts.push_back(include_native);
 				msg_data.push_back(opts);
 			}
 			_put_msg("profiler:servers", msg_data);
@@ -1513,8 +1518,12 @@ void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool
 	}
 }
 
-void ScriptEditorDebugger::reload_scripts() {
-	_put_msg("reload_scripts", Array(), debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);
+void ScriptEditorDebugger::reload_all_scripts() {
+	_put_msg("reload_all_scripts", Array(), debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);
+}
+
+void ScriptEditorDebugger::reload_scripts(const Vector<String> &p_script_paths) {
+	_put_msg("reload_scripts", Variant(p_script_paths).operator Array(), debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);
 }
 
 bool ScriptEditorDebugger::is_skip_breakpoints() {
@@ -1598,13 +1607,13 @@ void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos, 
 	const TreeItem *selected = breakpoints_tree->get_selected();
 	String file = selected->get_text(0);
 	if (selected->has_meta("line")) {
-		breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete Breakpoint"), ACTION_DELETE_BREAKPOINT);
+		breakpoints_menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete Breakpoint"), ACTION_DELETE_BREAKPOINT);
 		file = selected->get_parent()->get_text(0);
 	}
-	breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete All Breakpoints in:") + " " + file, ACTION_DELETE_BREAKPOINTS_IN_FILE);
-	breakpoints_menu->add_icon_item(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete All Breakpoints"), ACTION_DELETE_ALL_BREAKPOINTS);
+	breakpoints_menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete All Breakpoints in:") + " " + file, ACTION_DELETE_BREAKPOINTS_IN_FILE);
+	breakpoints_menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete All Breakpoints"), ACTION_DELETE_ALL_BREAKPOINTS);
 
-	breakpoints_menu->set_position(breakpoints_tree->get_global_position() + p_pos);
+	breakpoints_menu->set_position(get_screen_position() + get_local_mouse_position());
 	breakpoints_menu->popup();
 }
 
@@ -1618,8 +1627,8 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos, M
 	item_menu->reset_size();
 
 	if (error_tree->is_anything_selected()) {
-		item_menu->add_icon_item(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), TTR("Copy Error"), ACTION_COPY_ERROR);
-		item_menu->add_icon_item(get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
+		item_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTR("Copy Error"), ACTION_COPY_ERROR);
+		item_menu->add_icon_item(get_editor_theme_icon(SNAME("ExternalLink")), TTR("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -1682,7 +1691,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			// Parse back the `file:line @ method()` string.
 			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
 			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
-			const String file = file_line_number[0];
+			const String &file = file_line_number[0];
 			const int line_number = file_line_number[1].to_int();
 
 			// Construct a GitHub repository URL and open it in the user's default web browser.
@@ -1748,7 +1757,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("remote_object_updated", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("remote_object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("remote_tree_updated"));
-	ADD_SIGNAL(MethodInfo("output"));
+	ADD_SIGNAL(MethodInfo("output", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::INT, "level")));
 	ADD_SIGNAL(MethodInfo("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump")));
 	ADD_SIGNAL(MethodInfo("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars")));
 	ADD_SIGNAL(MethodInfo("stack_frame_var", PropertyInfo(Variant::ARRAY, "data")));
@@ -1813,7 +1822,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		skip_breakpoints = memnew(Button);
-		skip_breakpoints->set_flat(true);
+		skip_breakpoints->set_theme_type_variation("FlatButton");
 		hbc->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip_text(TTR("Skip Breakpoints"));
 		skip_breakpoints->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
@@ -1821,7 +1830,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		copy = memnew(Button);
-		copy->set_flat(true);
+		copy->set_theme_type_variation("FlatButton");
 		hbc->add_child(copy);
 		copy->set_tooltip_text(TTR("Copy Error"));
 		copy->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_copy));
@@ -1829,14 +1838,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		step = memnew(Button);
-		step->set_flat(true);
+		step->set_theme_type_variation("FlatButton");
 		hbc->add_child(step);
 		step->set_tooltip_text(TTR("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
 		step->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_step));
 
 		next = memnew(Button);
-		next->set_flat(true);
+		next->set_theme_type_variation("FlatButton");
 		hbc->add_child(next);
 		next->set_tooltip_text(TTR("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
@@ -1845,14 +1854,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		dobreak = memnew(Button);
-		dobreak->set_flat(true);
+		dobreak->set_theme_type_variation("FlatButton");
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip_text(TTR("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
 		dobreak->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_break));
 
 		docontinue = memnew(Button);
-		docontinue->set_flat(true);
+		docontinue->set_theme_type_variation("FlatButton");
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip_text(TTR("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
@@ -2027,10 +2036,10 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		vmem_total->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		vmem_hb->add_child(vmem_total);
 		vmem_refresh = memnew(Button);
-		vmem_refresh->set_flat(true);
+		vmem_refresh->set_theme_type_variation("FlatButton");
 		vmem_hb->add_child(vmem_refresh);
 		vmem_export = memnew(Button);
-		vmem_export->set_flat(true);
+		vmem_export->set_theme_type_variation("FlatButton");
 		vmem_export->set_tooltip_text(TTR("Export list to a CSV file"));
 		vmem_hb->add_child(vmem_export);
 		vmem_vb->add_child(vmem_hb);

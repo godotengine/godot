@@ -75,5 +75,11 @@
 				Emitted when a thumbstick or thumbpad on this controller is moved.
 			</description>
 		</signal>
+		<signal name="profile_changed">
+			<param index="0" name="role" type="String" />
+			<description>
+				Emitted when the interaction profile on this controller is changed.
+			</description>
+		</signal>
 	</signals>
 </class>

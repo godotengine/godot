@@ -556,6 +556,7 @@ struct CmapSubtableFormat4
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
+    hb_barrier ();
 
     if (unlikely (!c->check_range (this, length)))
     {
@@ -742,10 +743,11 @@ struct CmapSubtableLongSegmented
 			unsigned num_glyphs) const
   {
     hb_codepoint_t last_end = 0;
-    for (unsigned i = 0; i < this->groups.len; i++)
+    unsigned count = this->groups.len;
+    for (unsigned i = 0; i < count; i++)
     {
-      hb_codepoint_t start = this->groups[i].startCharCode;
-      hb_codepoint_t end = hb_min ((hb_codepoint_t) this->groups[i].endCharCode,
+      hb_codepoint_t start = this->groups.arrayZ[i].startCharCode;
+      hb_codepoint_t end = hb_min ((hb_codepoint_t) this->groups.arrayZ[i].endCharCode,
 				   (hb_codepoint_t) HB_UNICODE_MAX);
       if (unlikely (start > end || start < last_end)) {
         // Range is not in order and is invalid, skip it.
@@ -754,7 +756,7 @@ struct CmapSubtableLongSegmented
       last_end = end;
 
 
-      hb_codepoint_t gid = this->groups[i].glyphID;
+      hb_codepoint_t gid = this->groups.arrayZ[i].glyphID;
       if (!gid)
       {
         if (T::formatNumber == 13) continue;
@@ -767,9 +769,9 @@ struct CmapSubtableLongSegmented
 
       mapping->alloc (mapping->get_population () + end - start + 1);
 
+      unicodes->add_range (start, end);
       for (unsigned cp = start; cp <= end; cp++)
       {
-	unicodes->add (cp);
 	mapping->set (cp, gid);
         gid += T::increment;
       }
@@ -1427,6 +1429,7 @@ struct CmapSubtable
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case  0: return_trace (u.format0 .sanitize (c));
     case  4: return_trace (u.format4 .sanitize (c));
@@ -2060,6 +2063,7 @@ struct cmap
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  likely (version == 0) &&
 		  encodingRecord.sanitize (c, this));
   }

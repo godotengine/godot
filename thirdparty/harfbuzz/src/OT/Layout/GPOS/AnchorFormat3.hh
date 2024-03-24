@@ -38,9 +38,15 @@ struct AnchorFormat3
     *y = font->em_fscale_y (yCoordinate);
 
     if ((font->x_ppem || font->num_coords) && xDeviceTable.sanitize (&c->sanitizer, this))
+    {
+      hb_barrier ();
       *x += (this+xDeviceTable).get_x_delta (font, c->var_store, c->var_store_cache);
+    }
     if ((font->y_ppem || font->num_coords) && yDeviceTable.sanitize (&c->sanitizer, this))
+    {
+      hb_barrier ();
       *y += (this+yDeviceTable).get_y_delta (font, c->var_store, c->var_store_cache);
+    }
   }
 
   bool subset (hb_subset_context_t *c) const
@@ -52,9 +58,14 @@ struct AnchorFormat3
     if (unlikely (!c->serializer->embed (yCoordinate))) return_trace (false);
 
     unsigned x_varidx = xDeviceTable ? (this+xDeviceTable).get_variation_index () : HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
-    if (c->plan->layout_variation_idx_delta_map.has (x_varidx))
+    if (x_varidx != HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
     {
-      int delta = hb_second (c->plan->layout_variation_idx_delta_map.get (x_varidx));
+      hb_pair_t<unsigned, int> *new_varidx_delta;
+      if (!c->plan->layout_variation_idx_delta_map.has (x_varidx, &new_varidx_delta))
+        return_trace (false);
+     
+      x_varidx = hb_first (*new_varidx_delta);
+      int delta = hb_second (*new_varidx_delta);
       if (delta != 0)
       {
         if (!c->serializer->check_assign (out->xCoordinate, xCoordinate + delta,
@@ -64,9 +75,14 @@ struct AnchorFormat3
     }
 
     unsigned y_varidx = yDeviceTable ? (this+yDeviceTable).get_variation_index () : HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
-    if (c->plan->layout_variation_idx_delta_map.has (y_varidx))
+    if (y_varidx != HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
     {
-      int delta = hb_second (c->plan->layout_variation_idx_delta_map.get (y_varidx));
+      hb_pair_t<unsigned, int> *new_varidx_delta;
+      if (!c->plan->layout_variation_idx_delta_map.has (y_varidx, &new_varidx_delta))
+        return_trace (false);
+
+      y_varidx = hb_first (*new_varidx_delta);
+      int delta = hb_second (*new_varidx_delta);
       if (delta != 0)
       {
         if (!c->serializer->check_assign (out->yCoordinate, yCoordinate + delta,
@@ -75,7 +91,10 @@ struct AnchorFormat3
       }
     }
 
-    if (c->plan->all_axes_pinned)
+    /* in case that all axes are pinned or no variations after instantiation,
+     * both var_idxes will be mapped to HB_OT_LAYOUT_NO_VARIATIONS_INDEX */
+    if (x_varidx == HB_OT_LAYOUT_NO_VARIATIONS_INDEX &&
+        y_varidx == HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
       return_trace (c->serializer->check_assign (out->format, 1, HB_SERIALIZE_ERROR_INT_OVERFLOW));
 
     if (!c->serializer->embed (xDeviceTable)) return_trace (false);

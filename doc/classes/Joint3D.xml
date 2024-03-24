@@ -9,6 +9,14 @@
 	<tutorials>
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
 	</tutorials>
+	<methods>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the joint's [RID].
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="exclude_nodes_from_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision" default="true">
 			If [code]true[/code], the two bodies of the nodes are not able to collide with each other.

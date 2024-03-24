@@ -75,7 +75,7 @@ public:
 		XR_PLAY_AREA_3DOF, /* Only support orientation tracking, no positional tracking, area will center around player */
 		XR_PLAY_AREA_SITTING, /* Player is in seated position, limited positional tracking, fixed guardian around player */
 		XR_PLAY_AREA_ROOMSCALE, /* Player is free to move around, full positional tracking */
-		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space, XRServer.center_on_hmd disabled */
+		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space */
 	};
 
 	enum EnvironmentBlendMode {
@@ -147,6 +147,7 @@ public:
 
 	/** environment blend mode. */
 	virtual Array get_supported_environment_blend_modes();
+	virtual XRInterface::EnvironmentBlendMode get_environment_blend_mode() const { return XR_ENV_BLEND_MODE_OPAQUE; }
 	virtual bool set_environment_blend_mode(EnvironmentBlendMode mode) { return false; }
 
 	XRInterface();

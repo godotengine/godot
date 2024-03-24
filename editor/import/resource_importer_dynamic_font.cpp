@@ -110,6 +110,7 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_mipmaps"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "disable_embedded_bitmaps"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), (msdf) ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
@@ -137,7 +138,7 @@ bool ResourceImporterDynamicFont::has_advanced_options() const {
 	return true;
 }
 void ResourceImporterDynamicFont::show_advanced_options(const String &p_path) {
-	DynamicFontImportSettings::get_singleton()->open_settings(p_path);
+	DynamicFontImportSettingsDialog::get_singleton()->open_settings(p_path);
 }
 
 Error ResourceImporterDynamicFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -145,6 +146,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 
 	int antialiasing = p_options["antialiasing"];
 	bool generate_mipmaps = p_options["generate_mipmaps"];
+	bool disable_embedded_bitmaps = p_options["disable_embedded_bitmaps"];
 	bool msdf = p_options["multichannel_signed_distance_field"];
 	int px_range = p_options["msdf_pixel_range"];
 	int px_size = p_options["msdf_size"];
@@ -165,6 +167,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 	font.instantiate();
 	font->set_data(data);
 	font->set_antialiasing((TextServer::FontAntialiasing)antialiasing);
+	font->set_disable_embedded_bitmaps(disable_embedded_bitmaps);
 	font->set_generate_mipmaps(generate_mipmaps);
 	font->set_multichannel_signed_distance_field(msdf);
 	font->set_msdf_pixel_range(px_range);

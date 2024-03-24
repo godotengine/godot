@@ -2,19 +2,7 @@
  *  Constant-time functions
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 /*
@@ -80,7 +68,8 @@ unsigned mbedtls_ct_uint_mask(unsigned value)
 #endif
 }
 
-#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC)
+#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC) || defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC) || \
+    defined(MBEDTLS_NIST_KW_C) || defined(MBEDTLS_CIPHER_MODE_CBC)
 
 size_t mbedtls_ct_size_mask(size_t value)
 {
@@ -96,7 +85,8 @@ size_t mbedtls_ct_size_mask(size_t value)
 #endif
 }
 
-#endif /* MBEDTLS_SSL_SOME_MODES_USE_MAC */
+#endif /* defined(MBEDTLS_SSL_SOME_MODES_USE_MAC) || defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC) ||
+          defined(MBEDTLS_NIST_KW_C) || defined(MBEDTLS_CIPHER_MODE_CBC) */
 
 #if defined(MBEDTLS_BIGNUM_C)
 
@@ -116,7 +106,8 @@ mbedtls_mpi_uint mbedtls_ct_mpi_uint_mask(mbedtls_mpi_uint value)
 
 #endif /* MBEDTLS_BIGNUM_C */
 
-#if defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC)
+#if defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC) || defined(MBEDTLS_NIST_KW_C) || \
+    defined(MBEDTLS_CIPHER_MODE_CBC)
 
 /** Constant-flow mask generation for "less than" comparison:
  * - if \p x < \p y, return all-bits 1, that is (size_t) -1
@@ -151,7 +142,8 @@ size_t mbedtls_ct_size_mask_ge(size_t x,
     return ~mbedtls_ct_size_mask_lt(x, y);
 }
 
-#endif /* MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC */
+#endif /* defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC) || defined(MBEDTLS_NIST_KW_C) ||
+          defined(MBEDTLS_CIPHER_MODE_CBC) */
 
 #if defined(MBEDTLS_BASE64_C)
 

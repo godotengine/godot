@@ -72,8 +72,6 @@ class EditorQuickOpen : public ConfirmationDialog {
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _text_changed(const String &p_newtext);
 
-	void _theme_changed();
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

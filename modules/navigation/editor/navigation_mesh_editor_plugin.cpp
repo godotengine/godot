@@ -35,6 +35,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
@@ -54,8 +55,8 @@ void NavigationMeshEditor::_node_removed(Node *p_node) {
 void NavigationMeshEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			button_bake->set_icon(get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
-			button_reset->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+			button_bake->set_icon(get_theme_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
+			button_reset->set_icon(get_theme_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
 		} break;
 	}
 }
@@ -63,7 +64,7 @@ void NavigationMeshEditor::_notification(int p_what) {
 void NavigationMeshEditor::_bake_pressed() {
 	button_bake->set_pressed(false);
 
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 	Ref<NavigationMesh> navmesh = node->get_navigation_mesh();
 	if (!navmesh.is_valid()) {
 		err_dialog->set_text(TTR("A NavigationMesh resource must be set or created for this node to work."));
@@ -133,7 +134,7 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	bake_hbox = memnew(HBoxContainer);
 
 	button_bake = memnew(Button);
-	button_bake->set_flat(true);
+	button_bake->set_theme_type_variation("FlatButton");
 	bake_hbox->add_child(button_bake);
 	button_bake->set_toggle_mode(true);
 	button_bake->set_text(TTR("Bake NavigationMesh"));
@@ -141,7 +142,7 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	button_bake->connect("pressed", callable_mp(this, &NavigationMeshEditor::_bake_pressed));
 
 	button_reset = memnew(Button);
-	button_reset->set_flat(true);
+	button_reset->set_theme_type_variation("FlatButton");
 	bake_hbox->add_child(button_reset);
 	button_reset->set_text(TTR("Clear NavigationMesh"));
 	button_reset->set_tooltip_text(TTR("Clears the internal NavigationMesh vertices and polygons."));

@@ -2,7 +2,7 @@
 #define VULKAN_VIDEO_CODEC_H264STD_H_ 1
 
 /*
-** Copyright 2015-2023 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -19,8 +19,9 @@ extern "C" {
 
 
 
+// vulkan_video_codec_h264std is a preprocessor guard. Do not pass it to API calls.
 #define vulkan_video_codec_h264std 1
-#include <stdint.h>
+#include "vulkan_video_codecs_common.h"
 #define STD_VIDEO_H264_CPB_CNT_LIST_SIZE  32
 #define STD_VIDEO_H264_SCALING_LIST_4X4_NUM_LISTS 6
 #define STD_VIDEO_H264_SCALING_LIST_4X4_NUM_ELEMENTS 16
@@ -28,6 +29,7 @@ extern "C" {
 #define STD_VIDEO_H264_SCALING_LIST_8X8_NUM_ELEMENTS 64
 #define STD_VIDEO_H264_MAX_NUM_LIST_REF   32
 #define STD_VIDEO_H264_MAX_CHROMA_PLANES  2
+#define STD_VIDEO_H264_NO_REFERENCE_PICTURE 0xFF
 
 typedef enum StdVideoH264ChromaFormatIdc {
     STD_VIDEO_H264_CHROMA_FORMAT_IDC_MONOCHROME = 0,

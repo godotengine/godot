@@ -36,11 +36,18 @@
 
 class Control;
 class Node;
+class ThemeContext;
 class Window;
 
 class ThemeOwner : public Object {
+	Node *holder = nullptr;
+
 	Control *owner_control = nullptr;
 	Window *owner_window = nullptr;
+	ThemeContext *owner_context = nullptr;
+
+	void _owner_context_changed();
+	ThemeContext *_get_active_owner_context() const;
 
 	Node *_get_next_owner_node(Node *p_from_node) const;
 	Ref<Theme> _get_owner_node_theme(Node *p_owner_node) const;
@@ -52,6 +59,8 @@ public:
 	Node *get_owner_node() const;
 	bool has_owner_node() const;
 
+	void set_owner_context(ThemeContext *p_context, bool p_propagate = true);
+
 	// Theme propagation.
 
 	void assign_theme_on_parented(Node *p_for_node);
@@ -62,14 +71,14 @@ public:
 
 	void get_theme_type_dependencies(const Node *p_for_node, const StringName &p_theme_type, List<StringName> *r_list) const;
 
-	Variant get_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
-	bool has_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
+	Variant get_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const List<StringName> &p_theme_types);
+	bool has_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const List<StringName> &p_theme_types);
 
 	float get_theme_default_base_scale();
 	Ref<Font> get_theme_default_font();
 	int get_theme_default_font_size();
 
-	ThemeOwner() {}
+	ThemeOwner(Node *p_holder) { holder = p_holder; }
 	~ThemeOwner() {}
 };
 

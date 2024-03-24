@@ -106,7 +106,7 @@
 #endif
 
 #ifndef HB_COLRV1_MAX_EDGE_COUNT
-#define HB_COLRV1_MAX_EDGE_COUNT 1024
+#define HB_COLRV1_MAX_EDGE_COUNT 65536
 #endif
 
 

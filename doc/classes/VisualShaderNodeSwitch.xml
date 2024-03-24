@@ -4,7 +4,7 @@
 		A selector function for use within the visual shader graph.
 	</brief_description>
 	<description>
-		Returns an associated value of the [code]op_type[/code] type if the provided boolean value is [code]true[/code] or [code]false[/code].
+		Returns an associated value of the [member op_type] type if the provided boolean value is [code]true[/code] or [code]false[/code].
 	</description>
 	<tutorials>
 	</tutorials>

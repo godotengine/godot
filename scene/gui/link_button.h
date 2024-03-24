@@ -79,7 +79,7 @@ private:
 protected:
 	virtual void pressed() override;
 	virtual Size2 get_minimum_size() const override;
-	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -103,6 +103,8 @@ public:
 
 	void set_underline_mode(UnderlineMode p_underline_mode);
 	UnderlineMode get_underline_mode() const;
+
+	Ref<Font> get_button_font() const;
 
 	LinkButton(const String &p_text = String());
 };

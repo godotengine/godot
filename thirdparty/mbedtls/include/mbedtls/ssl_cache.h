@@ -5,19 +5,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_SSL_CACHE_H
 #define MBEDTLS_SSL_CACHE_H
@@ -99,6 +87,11 @@ void mbedtls_ssl_cache_init(mbedtls_ssl_cache_context *cache);
  *
  * \param data     SSL cache context
  * \param session  session to retrieve entry for
+ *
+ * \return                \c 0 on success.
+ * \return                #MBEDTLS_ERR_SSL_CACHE_ENTRY_NOT_FOUND if there is
+ *                        no cache entry with specified session ID found, or
+ *                        any other negative error code for other failures.
  */
 int mbedtls_ssl_cache_get(void *data, mbedtls_ssl_session *session);
 
@@ -108,6 +101,9 @@ int mbedtls_ssl_cache_get(void *data, mbedtls_ssl_session *session);
  *
  * \param data     SSL cache context
  * \param session  session to store entry for
+ *
+ * \return                \c 0 on success.
+ * \return                A negative error code on failure.
  */
 int mbedtls_ssl_cache_set(void *data, const mbedtls_ssl_session *session);
 

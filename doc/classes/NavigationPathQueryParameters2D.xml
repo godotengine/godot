@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationPathQueryParameters2D" inherits="RefCounted" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationPathQueryParameters2D" inherits="RefCounted" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides parameters for 2D navigation path queries.
 	</brief_description>
@@ -11,7 +11,7 @@
 	</tutorials>
 	<members>
 		<member name="map" type="RID" setter="set_map" getter="get_map" default="RID()">
-			The navigation [code]map[/code] [RID] used in the path query.
+			The navigation map [RID] used in the path query.
 		</member>
 		<member name="metadata_flags" type="int" setter="set_metadata_flags" getter="get_metadata_flags" enum="NavigationPathQueryParameters2D.PathMetadataFlags" is_bitfield="true" default="7">
 			Additional information to include with the navigation path.

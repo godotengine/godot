@@ -168,12 +168,14 @@ _solve (Triple tent, Triple axisLimit, bool negative = false)
    *                           |
    *                      crossing
    */
-  if (gain > outGain)
+  if (gain >= outGain)
   {
+    // Note that this is the branch taken if both gain and outGain are 0.
+
     // Crossing point on the axis.
     float crossing = peak + (1 - gain) * (upper - peak);
 
-    Triple loc{axisDef, peak, crossing};
+    Triple loc{hb_max (lower, axisDef), peak, crossing};
     float scalar = 1.f;
 
     // The part before the crossing point.
@@ -253,9 +255,8 @@ _solve (Triple tent, Triple axisLimit, bool negative = false)
      *              axisDef      axisMax
      */
     float newUpper = peak + (1 - gain) * (upper - peak);
-    // I feel like the first condition is always true because
-    // outGain >= gain.
-    if (axisMax <= newUpper && newUpper <= axisDef + (axisMax - axisDef) * 2)
+    assert (axisMax <= newUpper);  // Because outGain > gain
+    if (newUpper <= axisDef + (axisMax - axisDef) * 2)
     {
       upper = newUpper;
       if (!negative && axisDef + (axisMax - axisDef) * MAX_F2DOT14 < upper)
@@ -362,38 +363,47 @@ _solve (Triple tent, Triple axisLimit, bool negative = false)
   return out;
 }
 
-/* Normalizes value based on a min/default/max triple. */
-static inline float normalizeValue (float v, const Triple &triple, bool extrapolate = false)
+static inline TripleDistances _reverse_triple_distances (const TripleDistances &v)
+{ return TripleDistances (v.positive, v.negative); }
+
+float renormalizeValue (float v, const Triple &triple,
+                        const TripleDistances &triple_distances, bool extrapolate)
 {
-  /*
-  >>> normalizeValue(400, (100, 400, 900))
-  0.0
-  >>> normalizeValue(100, (100, 400, 900))
-  -1.0
-  >>> normalizeValue(650, (100, 400, 900))
-  0.5
-  */
   float lower = triple.minimum, def = triple.middle, upper = triple.maximum;
   assert (lower <= def && def <= upper);
 
   if (!extrapolate)
       v = hb_max (hb_min (v, upper), lower);
 
-  if ((v == def) || (lower == upper))
+  if (v == def)
     return 0.f;
 
-  if ((v < def && lower != def) || (v > def && upper == def))
-    return (v - def) / (def - lower);
-  else
-  {
-    assert ((v > def && upper != def) ||
-	    (v < def && lower == def));
+  if (def < 0.f)
+    return -renormalizeValue (-v, _reverse_negate (triple),
+                              _reverse_triple_distances (triple_distances), extrapolate);
+
+  /* default >= 0 and v != default */
+  if (v > def)
     return (v - def) / (upper - def);
-  }
+
+  /* v < def */
+  if (lower >= 0.f)
+    return (v - def) / (def - lower);
+
+  /* lower < 0 and v < default */
+  float total_distance = triple_distances.negative * (-lower) + triple_distances.positive * def;
+
+  float v_distance;
+  if (v >= 0.f)
+    v_distance = (def - v) * triple_distances.positive;
+  else
+    v_distance = (-v) * triple_distances.negative + triple_distances.positive * def;
+
+  return (-v_distance) /total_distance;
 }
 
 result_t
-rebase_tent (Triple tent, Triple axisLimit)
+rebase_tent (Triple tent, Triple axisLimit, TripleDistances axis_triple_distances)
 {
   assert (-1.f <= axisLimit.minimum && axisLimit.minimum <= axisLimit.middle && axisLimit.middle <= axisLimit.maximum && axisLimit.maximum <= +1.f);
   assert (-2.f <= tent.minimum && tent.minimum <= tent.middle && tent.middle <= tent.maximum && tent.maximum <= +2.f);
@@ -401,7 +411,7 @@ rebase_tent (Triple tent, Triple axisLimit)
 
   result_t sols = _solve (tent, axisLimit);
 
-  auto n = [&axisLimit] (float v) { return normalizeValue (v, axisLimit, true); };
+  auto n = [&axisLimit, &axis_triple_distances] (float v) { return renormalizeValue (v, axisLimit, axis_triple_distances); };
 
   result_t out;
   for (auto &p : sols)

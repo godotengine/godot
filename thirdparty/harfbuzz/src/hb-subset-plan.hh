@@ -67,6 +67,40 @@ struct head_maxp_info_t
 
 typedef struct head_maxp_info_t head_maxp_info_t;
 
+struct contour_point_t
+{
+  void init (float x_ = 0.f, float y_ = 0.f, bool is_end_point_ = false)
+  { flag = 0; x = x_; y = y_; is_end_point = is_end_point_; }
+
+  void transform (const float (&matrix)[4])
+  {
+    float x_ = x * matrix[0] + y * matrix[2];
+	  y  = x * matrix[1] + y * matrix[3];
+    x  = x_;
+  }
+  HB_ALWAYS_INLINE
+  void translate (const contour_point_t &p) { x += p.x; y += p.y; }
+
+
+  float x;
+  float y;
+  uint8_t flag;
+  bool is_end_point;
+};
+
+struct contour_point_vector_t : hb_vector_t<contour_point_t>
+{
+  void extend (const hb_array_t<contour_point_t> &a)
+  {
+    unsigned int old_len = length;
+    if (unlikely (!resize (old_len + a.length, false)))
+      return;
+    auto arrayZ = this->arrayZ + old_len;
+    unsigned count = a.length;
+    hb_memcpy (arrayZ, a.arrayZ, count * sizeof (arrayZ[0]));
+  }
+};
+
 namespace OT {
   struct cff1_subset_accelerator_t;
   struct cff2_subset_accelerator_t;
@@ -112,6 +146,9 @@ struct hb_subset_plan_t
   // whether to insert a catch-all FeatureVariationRecord
   bool gsub_insert_catch_all_feature_variation_rec;
   bool gpos_insert_catch_all_feature_variation_rec;
+
+  // whether GDEF VarStore is retained
+  mutable bool has_gdef_varstore;
 
 #define HB_SUBSET_PLAN_MEMBER(Type, Name) Type Name;
 #include "hb-subset-plan-member-list.hh"

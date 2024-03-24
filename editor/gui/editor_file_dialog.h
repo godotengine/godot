@@ -103,6 +103,7 @@ private:
 	PopupMenu *item_menu = nullptr;
 	TextureRect *preview = nullptr;
 	VBoxContainer *preview_vb = nullptr;
+	HSplitContainer *body_hsplit = nullptr;
 	HSplitContainer *list_hb = nullptr;
 	HBoxContainer *file_box = nullptr;
 	LineEdit *file = nullptr;
@@ -154,6 +155,7 @@ private:
 		Ref<Texture2D> favorite;
 		Ref<Texture2D> mode_thumbnails;
 		Ref<Texture2D> mode_list;
+		Ref<Texture2D> create_folder;
 		Ref<Texture2D> favorites_up;
 		Ref<Texture2D> favorites_down;
 
@@ -198,7 +200,7 @@ private:
 	void _item_menu_id_pressed(int p_option);
 
 	void _select_drive(int p_idx);
-	void _dir_submitted(String p_dir);
+	void _dir_submitted(const String &p_dir);
 	void _action_pressed();
 	void _save_confirm_pressed();
 	void _cancel_pressed();
@@ -238,6 +240,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	Color get_dir_icon_color(const String &p_dir_path);
+
 	// Public for use with callable_mp.
 	void _file_submitted(const String &p_file);
 
@@ -281,6 +285,8 @@ public:
 
 	void set_previews_enabled(bool p_enabled);
 	bool are_previews_enabled();
+
+	void add_side_menu(Control *p_menu, const String &p_title = "");
 
 	EditorFileDialog();
 	~EditorFileDialog();

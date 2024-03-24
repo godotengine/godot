@@ -30,39 +30,42 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.plugin.GodotPlugin;
+
 import android.app.Activity;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Denotate a component (e.g: Activity, Fragment) that hosts the {@link Godot} engine.
  */
 public interface GodotHost {
 	/**
-	 * Provides a set of command line parameters to setup the engine.
+	 * Provides a set of command line parameters to setup the {@link Godot} engine.
 	 */
 	default List<String> getCommandLine() {
 		return Collections.emptyList();
 	}
 
 	/**
-	 * Invoked on the render thread when the Godot setup is complete.
+	 * Invoked on the render thread when setup of the {@link Godot} engine is complete.
 	 */
 	default void onGodotSetupCompleted() {}
 
 	/**
-	 * Invoked on the render thread when the Godot main loop has started.
+	 * Invoked on the render thread when the {@link Godot} engine main loop has started.
 	 */
 	default void onGodotMainLoopStarted() {}
 
 	/**
-	 * Invoked on the render thread to terminate the given Godot instance.
+	 * Invoked on the render thread to terminate the given {@link Godot} engine instance.
 	 */
 	default void onGodotForceQuit(Godot instance) {}
 
 	/**
-	 * Invoked on the render thread to terminate the Godot instance with the given id.
+	 * Invoked on the render thread to terminate the {@link Godot} engine instance with the given id.
 	 * @param godotInstanceId id of the Godot instance to terminate. See {@code onNewGodotInstanceRequested}
 	 *
 	 * @return true if successful, false otherwise.
@@ -90,7 +93,19 @@ public interface GodotHost {
 	}
 
 	/**
-	 * Provide access to the Activity hosting the Godot engine.
+	 * Provide access to the Activity hosting the {@link Godot} engine.
 	 */
 	Activity getActivity();
+
+	/**
+	 * Provide access to the hosted {@link Godot} engine.
+	 */
+	Godot getGodot();
+
+	/**
+	 * Returns a set of {@link GodotPlugin} to be registered with the hosted {@link Godot} engine.
+	 */
+	default Set<GodotPlugin> getHostPlugins(Godot engine) {
+		return Collections.emptySet();
+	}
 }
