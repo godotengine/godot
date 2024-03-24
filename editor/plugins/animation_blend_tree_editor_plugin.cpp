@@ -1252,6 +1252,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 
 	filters = memnew(Tree);
 	filter_vbox->add_child(filters);
+	filters->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	filters->set_v_size_flags(SIZE_EXPAND_FILL);
 	filters->set_hide_root(true);
 	filters->connect("item_edited", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_edited));

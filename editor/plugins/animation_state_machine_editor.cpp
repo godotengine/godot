@@ -1809,6 +1809,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	add_child(delete_window);
 
 	delete_tree = memnew(Tree);
+	delete_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	delete_tree->set_hide_root(true);
 	delete_tree->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_delete_tree_draw));
 	delete_window->add_child(delete_tree);

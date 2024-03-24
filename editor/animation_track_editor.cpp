@@ -7569,6 +7569,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_vbox->add_child(select_all_button);
 
 	track_copy_select = memnew(Tree);
+	track_copy_select->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	track_copy_select->set_h_size_flags(SIZE_EXPAND_FILL);
 	track_copy_select->set_v_size_flags(SIZE_EXPAND_FILL);
 	track_copy_select->set_hide_root(true);

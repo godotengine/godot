@@ -304,6 +304,7 @@ EditorAbout::EditorAbout() {
 	license_thirdparty->add_child(tpl_hbc);
 
 	_tpl_tree = memnew(Tree);
+	_tpl_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	_tpl_tree->set_hide_root(true);
 	TreeItem *root = _tpl_tree->create_item();
 	TreeItem *tpl_ti_all = _tpl_tree->create_item(root);
