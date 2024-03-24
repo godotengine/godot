@@ -1424,16 +1424,22 @@ void RenderForwardMobile::_render_shadow_end() {
 		uint32_t curr_shadow_index = 0;
 
 		while (curr_shadow_index < scene_state.shadow_passes.size()) {
-			// 4 = shadow cascades amount
-			uint32_t pass_amount;
+			uint32_t pass_amount = 0;
 			SceneState::ShadowPass start_shadow_pass = scene_state.shadow_passes[curr_shadow_index];
 			switch (start_shadow_pass.light_type) {
-				case RS::LIGHT_DIRECTIONAL:
-					pass_amount = 4;
+				case RS::LIGHT_DIRECTIONAL: {
+					uint32_t i = 0;
+					while (i < scene_state.shadow_passes.size() && scene_state.shadow_passes[i].light_type == RS::LIGHT_DIRECTIONAL) {
+						i++;
+						pass_amount++;
+					}
 					break;
+				}
+				// A cubemap is made of 6 faces
 				case RS::LIGHT_OMNI:
 					pass_amount = 6;
 					break;
+				// A spotlight requires only one pass
 				case RS::LIGHT_SPOT:
 					pass_amount = 1;
 					break;
