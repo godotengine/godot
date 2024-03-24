@@ -315,14 +315,11 @@ protected:
 
 	void _notification(int p_notification);
 
-<<<<<<< HEAD
 	virtual void _enter_tree(){}
 	virtual void _exit_tree(){}
 	virtual void _ready(){}
-=======
 	virtual void _physics_interpolated_changed();
 
->>>>>>> 99ff024f78f65ba0bc54fb409cfeca43ba2008fe
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
