@@ -52,7 +52,9 @@ void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_RGB_img", "rgb_img"), &CameraFeed::set_RGB_img);
 	ClassDB::bind_method(D_METHOD("_set_YCbCr_img", "ycbcr_img"), &CameraFeed::set_YCbCr_img);
 	ClassDB::bind_method(D_METHOD("_set_YCbCr_imgs", "y_img", "cbcr_img"), &CameraFeed::set_YCbCr_imgs);
+	ClassDB::bind_method(D_METHOD("_set_external", "width", "height"), &CameraFeed::set_external);
 	ClassDB::bind_method(D_METHOD("_allocate_texture", "width", "height", "format", "texture_type", "data_type"), &CameraFeed::allocate_texture);
+	ClassDB::bind_method(D_METHOD("get_texture", "which"), &CameraFeed::get_texture);
 
 	ADD_GROUP("Feed", "feed_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "feed_is_active"), "set_active", "is_active");
@@ -62,6 +64,7 @@ void CameraFeed::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEED_RGB);
 	BIND_ENUM_CONSTANT(FEED_YCBCR);
 	BIND_ENUM_CONSTANT(FEED_YCBCR_SEP);
+	BIND_ENUM_CONSTANT(FEED_EXTERNAL);
 
 	BIND_ENUM_CONSTANT(FEED_UNSPECIFIED);
 	BIND_ENUM_CONSTANT(FEED_FRONT);
@@ -130,6 +133,8 @@ void CameraFeed::set_transform(const Transform2D &p_transform) {
 }
 
 RID CameraFeed::get_texture(CameraServer::FeedImage p_which) {
+	ERR_FAIL_INDEX_V(p_which, CameraServer::FEED_IMAGES, RID());
+
 	return texture[p_which];
 }
 
@@ -244,6 +249,20 @@ void CameraFeed::set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_c
 		vs->texture_set_data(texture[CameraServer::FEED_CBCR_IMAGE], p_cbcr_img);
 		datatype = CameraFeed::FEED_YCBCR_SEP;
 	}
+}
+
+void CameraFeed::set_external(int p_width, int p_height) {
+	VisualServer *vs = VisualServer::get_singleton();
+
+	if ((base_width != p_width) || (base_height != p_height) || ((datatype != FEED_EXTERNAL))) {
+		// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
+		base_width = p_width;
+		base_height = p_height;
+
+		vs->texture_allocate(texture[0], p_width, p_height, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_EXTERNAL, 0);
+	}
+
+	datatype = FEED_EXTERNAL;
 }
 
 void CameraFeed::allocate_texture(int p_width, int p_height, Image::Format p_format, VisualServer::TextureType p_texture_type, FeedDataType p_data_type) {

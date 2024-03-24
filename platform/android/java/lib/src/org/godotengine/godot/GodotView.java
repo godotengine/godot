@@ -234,6 +234,7 @@ public class GodotView extends GLSurfaceView {
 				break;
 
 			case REGULAR:
+			case ARCORE:
 			default:
 				/* By default, GLSurfaceView() creates a RGB_565 opaque surface.
 				 * If we want a translucent one, we should change the surface's
