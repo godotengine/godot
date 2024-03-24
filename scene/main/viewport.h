@@ -87,6 +87,8 @@ public:
 
 	virtual Ref<Image> get_image() const override;
 
+	void set_mouse_over_state(bool p_over);
+
 	ViewportTexture();
 	~ViewportTexture();
 };

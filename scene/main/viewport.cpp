@@ -197,6 +197,17 @@ void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
 	emit_changed();
 }
 
+void ViewportTexture::set_mouse_over_state(bool p_over) {
+	Node *scene = get_local_scene();
+	if (!scene) {
+		return;
+	}
+	Viewport *viewport = Object::cast_to<Viewport>(scene->get_node(get_viewport_path_in_scene()));
+	if (viewport && viewport->gui.mouse_in_viewport != p_over) {
+		viewport->notification(p_over ? Node::NOTIFICATION_VP_MOUSE_ENTER : Node::NOTIFICATION_VP_MOUSE_EXIT);
+	}
+}
+
 void ViewportTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_viewport_path_in_scene", "path"), &ViewportTexture::set_viewport_path_in_scene);
 	ClassDB::bind_method(D_METHOD("get_viewport_path_in_scene"), &ViewportTexture::get_viewport_path_in_scene);
