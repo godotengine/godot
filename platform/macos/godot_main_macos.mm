@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	@autoreleasepool {
 		ret = Main::start();
 	}
-	if (ret) {
+	if (ret == EXIT_SUCCESS) {
 		os.run();
 	} else {
 		os.set_exit_code(EXIT_FAILURE);
