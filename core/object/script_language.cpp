@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/io/resource_loader.h"
 
 #include <stdint.h>
 
@@ -168,6 +169,24 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_abstract"), &Script::is_abstract);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
+}
+
+void Script::reload_from_file() {
+#ifdef TOOLS_ENABLED
+	// Replicates how the ScriptEditor reloads script resources, which generally handles it.
+	// However, when scripts are to be reloaded but aren't open in the internal editor, we go through here instead.
+	const Ref<Script> rel = ResourceLoader::load(ResourceLoader::path_remap(get_path()), get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+	if (rel.is_null()) {
+		return;
+	}
+
+	set_source_code(rel->get_source_code());
+	set_last_modified_time(rel->get_last_modified_time());
+
+	reload();
+#else
+	Resource::reload_from_file();
+#endif
 }
 
 void ScriptServer::set_scripting_enabled(bool p_enabled) {
