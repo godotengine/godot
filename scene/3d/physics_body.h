@@ -35,6 +35,7 @@
 #include "scene/3d/collision_object.h"
 #include "scene/resources/physics_material.h"
 #include "servers/physics_server.h"
+#include "servers/rid_reference.h"
 #include "skeleton.h"
 
 class PhysicsBody : public CollisionObject {
@@ -292,7 +293,7 @@ private:
 
 	Vector3 floor_normal;
 	Vector3 floor_velocity;
-	RID on_floor_body;
+	RIDRef<RIDReferences::SERVER_PHYSICS> on_floor_body;
 	bool on_floor;
 	bool on_ceiling;
 	bool on_wall;
