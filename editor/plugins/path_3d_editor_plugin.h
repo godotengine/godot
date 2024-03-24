@@ -106,10 +106,16 @@ public:
 class Path3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path3DEditorPlugin, EditorPlugin);
 
+	friend class Path3DGizmo;
+	friend class Path3DGizmoPlugin;
+
+	Ref<Path3DGizmoPlugin> path_3d_gizmo_plugin;
+
 	HBoxContainer *topmenu_bar = nullptr;
 	Button *curve_create = nullptr;
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
+	Button *curve_edit_tilt = nullptr;
 	Button *curve_del = nullptr;
 	Button *curve_close = nullptr;
 	MenuButton *handle_menu = nullptr;
@@ -120,6 +126,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 		MODE_CREATE,
 		MODE_EDIT,
 		MODE_EDIT_CURVE,
+		MODE_EDIT_TILT,
 		MODE_DELETE,
 		ACTION_CLOSE
 	};
