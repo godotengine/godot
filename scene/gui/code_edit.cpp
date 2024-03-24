@@ -3398,9 +3398,16 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		int offset = option.default_value.get_type() == Variant::COLOR ? line_height : 0;
 
 		if (in_string != -1) {
+			// The completion string may have a literal behind it, which should be removed before re-quoting.
+			String literal;
+			if (option.insert_text.substr(1).is_quoted()) {
+				literal = option.display.left(1);
+				option.display = option.display.substr(1);
+				option.insert_text = option.insert_text.substr(1);
+			}
 			String quote = single_quote ? "'" : "\"";
-			option.display = option.display.unquote().quote(quote);
-			option.insert_text = option.insert_text.unquote().quote(quote);
+			option.display = literal + (option.display.unquote().quote(quote));
+			option.insert_text = literal + (option.insert_text.unquote().quote(quote));
 		}
 
 		if (option.display.length() == 0) {

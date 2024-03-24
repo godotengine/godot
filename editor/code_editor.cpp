@@ -941,6 +941,10 @@ void CodeTextEditor::_complete_request() {
 			font_color = completion_string_color;
 		} else if (e.insert_text.begins_with("##") || e.insert_text.begins_with("///")) {
 			font_color = completion_doc_comment_color;
+		} else if (e.insert_text.begins_with("&")) {
+			font_color = completion_string_name_color;
+		} else if (e.insert_text.begins_with("^")) {
+			font_color = completion_node_path_color;
 		} else if (e.insert_text.begins_with("#") || e.insert_text.begins_with("//")) {
 			font_color = completion_comment_color;
 		}
@@ -997,6 +1001,8 @@ void CodeTextEditor::update_editor_settings() {
 	// Theme: Highlighting
 	completion_font_color = EDITOR_GET("text_editor/theme/highlighting/completion_font_color");
 	completion_string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+	completion_string_name_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/string_name_color");
+	completion_node_path_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/node_path_color");
 	completion_comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 	completion_doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
 
