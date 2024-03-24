@@ -559,6 +559,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Dictionary, values);
 	VCALL_LOCALMEM1R(Dictionary, duplicate);
 	VCALL_LOCALMEM2R(Dictionary, get);
+	VCALL_LOCALMEM2R(Dictionary, get_or_add);
 
 	VCALL_LOCALMEM2(Array, set);
 	VCALL_LOCALMEM1R(Array, get);
@@ -1944,6 +1945,7 @@ void register_variant_methods() {
 	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, values, varray());
 	ADDFUNC1R(DICTIONARY, DICTIONARY, Dictionary, duplicate, BOOL, "deep", varray(false));
 	ADDFUNC2R(DICTIONARY, NIL, Dictionary, get, NIL, "key", NIL, "default", varray(Variant()));
+	ADDFUNC2R(DICTIONARY, NIL, Dictionary, get_or_add, NIL, "key", NIL, "default", varray(Variant()));
 
 	ADDFUNC0R(ARRAY, INT, Array, size, varray());
 	ADDFUNC0R(ARRAY, BOOL, Array, empty, varray());
