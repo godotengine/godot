@@ -41,7 +41,7 @@
 		</member>
 		<member name="scroll_scale" type="Vector2" setter="set_scroll_scale" getter="get_scroll_scale" default="Vector2(1, 1)">
 			Multiplier to the final [Parallax2D]'s offset. Can be used to simulate distance from the camera.
-			For example, a value of [code]1[/code] scrolls at the same speed as the camera. A value greater than [code]1[/code] scrolls faster, making objects appear closer. Less than [code]1[/code] scrolls slower, making object appear closer and a value of [code]0[/code] stops the objects completely.
+			For example, a value of [code]1[/code] scrolls at the same speed as the camera. A value greater than [code]1[/code] scrolls faster, making objects appear closer. Less than [code]1[/code] scrolls slower, making objects appear further, and a value of [code]0[/code] stops the objects completely.
 		</member>
 	</members>
 </class>
