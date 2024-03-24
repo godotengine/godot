@@ -527,6 +527,9 @@
 		<theme_item name="title_button_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Default text [Color] of the title button.
 		</theme_item>
+		<theme_item name="stripe_color" data_type="color" type="Color" default="Color(1.0, 1.0, 1.0, 0.02)">
+			Default [Color] of the alternating background stripes.
+		</theme_item>
 		<theme_item name="button_margin" data_type="constant" type="int" default="4">
 			The horizontal space between each button in a cell.
 		</theme_item>
@@ -535,6 +538,9 @@
 		</theme_item>
 		<theme_item name="draw_guides" data_type="constant" type="int" default="1">
 			Draws the guidelines if not zero, this acts as a boolean. The guideline is a horizontal line drawn at the bottom of each item.
+		</theme_item>
+		<theme_item name="draw_stripes" data_type="constant" type="int" default="1">
+			Draws the stripes if not zero, this acts as a boolean. The stripes are alternating background colors to visually separate items in the tree.
 		</theme_item>
 		<theme_item name="draw_relationship_lines" data_type="constant" type="int" default="0">
 			Draws the relationship lines if not zero, this acts as a boolean. Relationship lines are drawn at the start of child items to show hierarchy.
