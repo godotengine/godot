@@ -173,7 +173,7 @@ TEST_CASE("[String] Invalid UTF8 (non-standard)") {
 	static const char32_t u32str[] = { 0x45, 0x304A, 0x3088, 0x3046, 0x1F3A4, 0x20AC, 0xFFFD, 0 };
 	String s;
 	Error err = s.parse_utf8((const char *)u8str);
-	CHECK(err == ERR_INVALID_DATA);
+	CHECK(err == ERR_PARSE_ERROR);
 	CHECK(s == u32str);
 
 	CharString cs = (const char *)u8str;
@@ -203,7 +203,7 @@ TEST_CASE("[String] Invalid UTF16 (non-standard)") {
 	static const char32_t u32str[] = { 0x0045, 0x304A, 0x3088, 0x3046, 0xDFA4, 0 };
 	String s;
 	Error err = s.parse_utf16(u16str);
-	CHECK(err == ERR_PARSE_ERROR);
+	CHECK(err == ERR_PARSE_ERROR_INVALID_SURROGATE);
 	CHECK(s == u32str);
 
 	Char16String cs = u16str;
