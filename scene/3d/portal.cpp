@@ -162,10 +162,13 @@ void Portal::_notification(int p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
 			ERR_FAIL_COND(get_world().is_null());
 
-			// defer full creation of the visual server portal to when the editor portal is in the scene tree
+			// Defer full creation of the visual server portal to when the editor portal is in the scene tree.
 			VisualServer::get_singleton()->portal_set_scenario(_portal_rid, get_world()->get_scenario());
 
-			// we can't calculate world points until we have entered the tree
+			// Update any components in visual server that require the scenario to be set.
+			VisualServer::get_singleton()->portal_set_active(_portal_rid, _settings_active);
+
+			// We can't calculate world points until we have entered the tree.
 			portal_update();
 			update_gizmo();
 
@@ -192,7 +195,14 @@ void Portal::_notification(int p_what) {
 
 void Portal::set_portal_active(bool p_active) {
 	_settings_active = p_active;
-	VisualServer::get_singleton()->portal_set_active(_portal_rid, p_active);
+
+	// This can be called prior to entering the tree when loading packed scene,
+	// where the scenario has not yet been set (and thus the visual server portal
+	// is not yet fully created).
+	// We therefore defer setting this until entering the tree.
+	if (is_inside_tree()) {
+		VisualServer::get_singleton()->portal_set_active(_portal_rid, p_active);
+	}
 }
 
 bool Portal::get_portal_active() const {
