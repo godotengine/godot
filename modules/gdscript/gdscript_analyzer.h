@@ -31,12 +31,12 @@
 #ifndef GDSCRIPT_ANALYZER_H
 #define GDSCRIPT_ANALYZER_H
 
+#include "core/variant/variant.h"
 #include "gdscript_cache.h"
 #include "gdscript_parser.h"
 
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
-#include "core/templates/hash_set.h"
 
 class GDScriptAnalyzer {
 	GDScriptParser *parser = nullptr;
@@ -136,6 +136,7 @@ class GDScriptAnalyzer {
 	void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);
 #ifdef DEBUG_ENABLED
 	void is_shadowing(GDScriptParser::IdentifierNode *p_identifier, const String &p_context, const bool p_in_local_scope);
+	void check_conversion(const GDScriptParser::Node *p_source, const Variant::Type &p_from, const Variant::Type &p_to);
 #endif
 
 public:

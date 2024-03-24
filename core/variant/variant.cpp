@@ -831,6 +831,16 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 	return false;
 }
 
+bool Variant::conversion_causes_copy(const Variant::Type &p_type_from, const Variant::Type &p_type_to) {
+	if (p_type_from == p_type_to) {
+		return false;
+	}
+	if (p_type_to == NIL || p_type_to == NIL) {
+		return false;
+	}
+	return (Variant::is_type_shared(p_type_from) || p_type_from >= PACKED_BYTE_ARRAY) && (Variant::is_type_shared(p_type_to) || p_type_to >= PACKED_BYTE_ARRAY);
+}
+
 bool Variant::operator==(const Variant &p_variant) const {
 	return hash_compare(p_variant);
 }
