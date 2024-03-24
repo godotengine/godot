@@ -78,6 +78,7 @@ class EditorStandardSyntaxHighlighter : public EditorSyntaxHighlighter {
 
 private:
 	Ref<CodeHighlighter> highlighter;
+	ScriptLanguage *script_language = nullptr; // See GH-89610.
 
 public:
 	virtual void _update_cache() override;
@@ -86,6 +87,8 @@ public:
 	virtual String _get_name() const override { return TTR("Standard"); }
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+
+	void _set_script_language(ScriptLanguage *p_script_language) { script_language = p_script_language; }
 
 	EditorStandardSyntaxHighlighter() { highlighter.instantiate(); }
 };
