@@ -585,13 +585,13 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _cleanup_animation(Ref<Animation> p_animation);
 
-	void _anim_duplicate_keys(float p_ofs, int p_track);
+	void _anim_duplicate_keys(float p_ofs, bool p_ofs_valid, int p_track);
 
 	void _anim_copy_keys(bool p_cut);
 
 	bool _is_track_compatible(int p_target_track_idx, Variant::Type p_source_value_type, Animation::TrackType p_source_track_type);
 
-	void _anim_paste_keys(float p_ofs, int p_track);
+	void _anim_paste_keys(float p_ofs, bool p_ofs_valid, int p_track);
 
 	void _view_group_toggle();
 	Button *view_group = nullptr;

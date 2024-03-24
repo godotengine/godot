@@ -34,6 +34,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/text_line.h"
@@ -900,7 +901,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if (p_event->is_pressed()) {
 		if (ED_IS_SHORTCUT("animation_editor/duplicate_selected_keys", p_event)) {
 			if (!read_only) {
-				duplicate_selected_keys(-1.0);
+				duplicate_selected_keys(-1.0, false);
 			}
 			accept_event();
 		}
@@ -918,7 +919,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 		if (ED_IS_SHORTCUT("animation_editor/paste_keys", p_event)) {
 			if (!read_only) {
-				paste_keys(-1.0);
+				paste_keys(-1.0, false);
 			}
 			accept_event();
 		}
@@ -1642,25 +1643,28 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 
 	real_t time = ((menu_insert_key.x - limit) / timeline->get_zoom_scale()) + timeline->get_value();
 
-	while (animation->track_find_key(selected_track, time, Animation::FIND_MODE_APPROX) != -1) {
-		time += 0.001;
-	}
-
 	switch (p_index) {
 		case MENU_KEY_INSERT: {
 			if (animation->get_track_count() > 0) {
+				if (editor->snap->is_pressed() && editor->step->get_value() != 0) {
+					time = editor->snap_time(time);
+				}
+				while (animation->track_find_key(selected_track, time, Animation::FIND_MODE_APPROX) != -1) {
+					time += 0.001;
+				}
 				float h = (get_size().height / 2.0 - menu_insert_key.y) * timeline_v_zoom + timeline_v_scroll;
 				Array new_point = make_default_bezier_key(h);
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Add Bezier Point"));
 				undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, time, new_point);
+				undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
 				undo_redo->commit_action();
 				queue_redraw();
 			}
 		} break;
 		case MENU_KEY_DUPLICATE: {
-			duplicate_selected_keys(time);
+			duplicate_selected_keys(time, true);
 		} break;
 		case MENU_KEY_DELETE: {
 			delete_selection();
@@ -1672,7 +1676,7 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 			copy_selected_keys(false);
 		} break;
 		case MENU_KEY_PASTE: {
-			paste_keys(time);
+			paste_keys(time, true);
 		} break;
 		case MENU_KEY_SET_HANDLE_FREE: {
 			_change_selected_keys_handle_mode(Animation::HANDLE_MODE_FREE);
@@ -1695,7 +1699,7 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 	}
 }
 
-void AnimationBezierTrackEdit::duplicate_selected_keys(real_t p_ofs) {
+void AnimationBezierTrackEdit::duplicate_selected_keys(real_t p_ofs, bool p_ofs_valid) {
 	if (selection.size() == 0) {
 		return;
 	}
@@ -1715,7 +1719,14 @@ void AnimationBezierTrackEdit::duplicate_selected_keys(real_t p_ofs) {
 
 	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 		real_t t = animation->track_get_key_time(E->get().first, E->get().second);
-		real_t insert_pos = p_ofs >= 0 ? p_ofs : timeline->get_play_position();
+		real_t insert_pos = p_ofs_valid ? p_ofs : timeline->get_play_position();
+
+		if (p_ofs_valid) {
+			if (editor->snap->is_pressed() && editor->step->get_value() != 0) {
+				insert_pos = editor->snap_time(insert_pos);
+			}
+		}
+
 		real_t dst_time = t + (insert_pos - top_time);
 		int existing_idx = animation->track_find_key(E->get().first, dst_time, Animation::FIND_MODE_APPROX);
 
@@ -1793,7 +1804,7 @@ void AnimationBezierTrackEdit::copy_selected_keys(bool p_cut) {
 	}
 }
 
-void AnimationBezierTrackEdit::paste_keys(real_t p_ofs) {
+void AnimationBezierTrackEdit::paste_keys(real_t p_ofs, bool p_ofs_valid) {
 	if (editor->is_key_clipboard_active() && animation.is_valid() && (selected_track >= 0 && selected_track < animation->get_track_count())) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Animation Paste Keys"));
@@ -1824,7 +1835,12 @@ void AnimationBezierTrackEdit::paste_keys(real_t p_ofs) {
 		for (int i = 0; i < editor->key_clipboard.keys.size(); i++) {
 			const AnimationTrackEditor::KeyClipboard::Key key = editor->key_clipboard.keys[i];
 
-			float insert_pos = p_ofs >= 0 ? p_ofs : timeline->get_play_position();
+			float insert_pos = p_ofs_valid ? p_ofs : timeline->get_play_position();
+			if (p_ofs_valid) {
+				if (editor->snap->is_pressed() && editor->step->get_value() != 0) {
+					insert_pos = editor->snap_time(insert_pos);
+				}
+			}
 			float dst_time = key.time + insert_pos;
 
 			int existing_idx = animation->track_find_key(selected_track, dst_time, Animation::FIND_MODE_APPROX);

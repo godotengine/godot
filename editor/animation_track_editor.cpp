@@ -2754,7 +2754,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if (p_event->is_pressed()) {
 		if (ED_IS_SHORTCUT("animation_editor/duplicate_selected_keys", p_event)) {
 			if (!read_only) {
-				emit_signal(SNAME("duplicate_request"), -1.0);
+				emit_signal(SNAME("duplicate_request"), -1.0, false);
 			}
 			accept_event();
 		}
@@ -2773,7 +2773,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (ED_IS_SHORTCUT("animation_editor/paste_keys", p_event)) {
 			if (!read_only) {
-				emit_signal(SNAME("paste_request"), -1.0);
+				emit_signal(SNAME("paste_request"), -1.0, false);
 			}
 			accept_event();
 		}
@@ -3248,7 +3248,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			emit_signal(SNAME("insert_key"), insert_at_pos);
 		} break;
 		case MENU_KEY_DUPLICATE: {
-			emit_signal(SNAME("duplicate_request"), insert_at_pos);
+			emit_signal(SNAME("duplicate_request"), insert_at_pos, true);
 		} break;
 		case MENU_KEY_CUT: {
 			emit_signal(SNAME("cut_request"));
@@ -3257,7 +3257,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			emit_signal(SNAME("copy_request"));
 		} break;
 		case MENU_KEY_PASTE: {
-			emit_signal(SNAME("paste_request"), insert_at_pos);
+			emit_signal(SNAME("paste_request"), insert_at_pos, true);
 		} break;
 		case MENU_KEY_ADD_RESET: {
 			emit_signal(SNAME("create_reset_request"));
@@ -3331,11 +3331,11 @@ void AnimationTrackEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("move_selection_commit"));
 	ADD_SIGNAL(MethodInfo("move_selection_cancel"));
 
-	ADD_SIGNAL(MethodInfo("duplicate_request", PropertyInfo(Variant::FLOAT, "offset")));
+	ADD_SIGNAL(MethodInfo("duplicate_request", PropertyInfo(Variant::FLOAT, "offset"), PropertyInfo(Variant::BOOL, "is_offset_valid")));
 	ADD_SIGNAL(MethodInfo("create_reset_request"));
 	ADD_SIGNAL(MethodInfo("copy_request"));
 	ADD_SIGNAL(MethodInfo("cut_request"));
-	ADD_SIGNAL(MethodInfo("paste_request", PropertyInfo(Variant::FLOAT, "offset")));
+	ADD_SIGNAL(MethodInfo("paste_request", PropertyInfo(Variant::FLOAT, "offset"), PropertyInfo(Variant::BOOL, "is_offset_valid")));
 	ADD_SIGNAL(MethodInfo("delete_request"));
 }
 
@@ -5158,6 +5158,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			undo_redo->create_action(TTR("Add Position Key"));
 			undo_redo->add_do_method(animation.ptr(), "position_track_insert_key", p_track, p_ofs, pos);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
 			undo_redo->commit_action();
 
@@ -5178,6 +5179,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			undo_redo->create_action(TTR("Add Rotation Key"));
 			undo_redo->add_do_method(animation.ptr(), "rotation_track_insert_key", p_track, p_ofs, rot);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
 			undo_redo->commit_action();
 
@@ -5196,6 +5198,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			undo_redo->create_action(TTR("Add Scale Key"));
 			undo_redo->add_do_method(animation.ptr(), "scale_track_insert_key", p_track, p_ofs, base->get_scale());
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
 			undo_redo->commit_action();
 
@@ -5241,6 +5244,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			undo_redo->create_action(TTR("Add Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, arr);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
 			undo_redo->commit_action();
 
@@ -5253,6 +5257,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			undo_redo->create_action(TTR("Add Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, ak);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
 			undo_redo->commit_action();
 		} break;
@@ -5261,6 +5266,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			undo_redo->create_action(TTR("Add Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, anim);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", p_track, p_ofs);
 			undo_redo->commit_action();
 		} break;
@@ -5301,6 +5307,7 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Method Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", insert_key_from_track_call_track, insert_key_from_track_call_ofs, d);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", insert_key_from_track_call_track, insert_key_from_track_call_ofs);
 			undo_redo->commit_action();
 
@@ -5711,7 +5718,7 @@ void AnimationTrackEditor::_bezier_track_set_key_handle_mode(Animation *p_anim, 
 	p_anim->bezier_track_set_key_handle_mode(p_track, p_index, p_mode, p_set_mode);
 }
 
-void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, int p_track) {
+void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, bool p_ofs_valid, int p_track) {
 	if (selection.size() && animation.is_valid()) {
 		int top_track = 0x7FFFFFFF;
 		float top_time = 1e10;
@@ -5764,7 +5771,13 @@ void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, int p_track) {
 			const SelectedKey &sk = E->key();
 
 			float t = animation->track_get_key_time(sk.track, sk.key);
-			float insert_pos = p_ofs >= 0 ? p_ofs : timeline->get_play_position();
+			float insert_pos = p_ofs_valid ? p_ofs : timeline->get_play_position();
+
+			if (p_ofs_valid) {
+				if (snap->is_pressed() && step->get_value() != 0) {
+					insert_pos = snap_time(insert_pos);
+				}
+			}
 
 			float dst_time = t + (insert_pos - top_time);
 			int dst_track = sk.track + (start_track - top_track);
@@ -5871,7 +5884,7 @@ void AnimationTrackEditor::_set_key_clipboard(int p_top_track, float p_top_time,
 	}
 }
 
-void AnimationTrackEditor::_anim_paste_keys(float p_ofs, int p_track) {
+void AnimationTrackEditor::_anim_paste_keys(float p_ofs, bool p_ofs_valid, int p_track) {
 	if (is_key_clipboard_active() && animation.is_valid()) {
 		int start_track = p_track;
 		if (p_track == -1) { // Pasting from shortcut or Edit menu.
@@ -5906,7 +5919,13 @@ void AnimationTrackEditor::_anim_paste_keys(float p_ofs, int p_track) {
 		for (int i = 0; i < key_clipboard.keys.size(); i++) {
 			const KeyClipboard::Key key = key_clipboard.keys[i];
 
-			float insert_pos = p_ofs >= 0 ? p_ofs : timeline->get_play_position();
+			float insert_pos = p_ofs_valid ? p_ofs : timeline->get_play_position();
+
+			if (p_ofs_valid) {
+				if (snap->is_pressed() && step->get_value() != 0) {
+					insert_pos = snap_time(insert_pos);
+				}
+			}
 
 			float dst_time = key.time + insert_pos;
 			int dst_track = key.track + start_track;
@@ -6503,10 +6522,10 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 		case EDIT_DUPLICATE_SELECTED_KEYS: {
 			if (bezier_edit->is_visible()) {
-				bezier_edit->duplicate_selected_keys(-1.0);
+				bezier_edit->duplicate_selected_keys(-1.0, false);
 				break;
 			}
-			_anim_duplicate_keys(-1.0, -1.0);
+			_anim_duplicate_keys(-1.0, false, -1.0);
 		} break;
 		case EDIT_CUT_KEYS: {
 			if (bezier_edit->is_visible()) {
@@ -6523,7 +6542,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			_anim_copy_keys(false);
 		} break;
 		case EDIT_PASTE_KEYS: {
-			_anim_paste_keys(-1.0, -1.0);
+			_anim_paste_keys(-1.0, false, -1.0);
 		} break;
 		case EDIT_MOVE_FIRST_SELECTED_KEY_TO_CURSOR: {
 			if (moving_selection || selection.is_empty()) {

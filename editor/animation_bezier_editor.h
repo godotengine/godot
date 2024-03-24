@@ -216,9 +216,9 @@ public:
 	void set_play_position(real_t p_pos);
 	void update_play_position();
 
-	void duplicate_selected_keys(real_t p_ofs);
+	void duplicate_selected_keys(real_t p_ofs, bool p_ofs_valid);
 	void copy_selected_keys(bool p_cut);
-	void paste_keys(real_t p_ofs);
+	void paste_keys(real_t p_ofs, bool p_ofs_valid);
 	void delete_selection();
 
 	void _bezier_track_insert_key(int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode);
