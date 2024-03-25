@@ -225,17 +225,20 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					break;
 
 				case ACTION_MOVING_POINT:
-				case ACTION_MOVING_NEW_POINT: {
 					if (original_mouse_pos != gpoint) {
-						if (action == ACTION_MOVING_POINT) {
-							undo_redo->create_action(TTR("Move Point in Curve"));
-							undo_redo->add_undo_method(curve.ptr(), "set_point_position", action_point, moving_from);
-						}
+						undo_redo->create_action(TTR("Move Point in Curve"));
+						undo_redo->add_undo_method(curve.ptr(), "set_point_position", action_point, moving_from);
 						undo_redo->add_do_method(curve.ptr(), "set_point_position", action_point, cpoint);
 						undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 						undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 						undo_redo->commit_action(false);
 					}
+					break;
+				case ACTION_MOVING_NEW_POINT: {
+					undo_redo->add_do_method(curve.ptr(), "set_point_position", action_point, cpoint);
+					undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+					undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+					undo_redo->commit_action(false);
 				} break;
 
 				case ACTION_MOVING_IN: {
