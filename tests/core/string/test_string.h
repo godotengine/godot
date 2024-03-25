@@ -338,10 +338,12 @@ TEST_CASE("[String] Natural compare function test") {
 
 TEST_CASE("[String] File compare function test") {
 	String a = "_img2.png";
+	String b = "img2.png";
 
 	CHECK(a.nocasecmp_to("img10.png") > 0);
 	CHECK_MESSAGE(a.filenocasecmp_to("img10.png") < 0, "Should sort before letters.");
 	CHECK_MESSAGE(a.filenocasecmp_to(".img10.png") > 0, "Should sort after period.");
+	CHECK(b.filenocasecmp_to("img3.png") < 0);
 }
 
 TEST_CASE("[String] hex_encode_buffer") {
