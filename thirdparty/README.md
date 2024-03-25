@@ -540,7 +540,7 @@ File extracted from upstream release tarball:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: git (c21d3be6ddf627f8ca852ba4b6db9903b0557858, 2023)
+- Version: 0.20 (c21d3be6ddf627f8ca852ba4b6db9903b0557858, 2023)
 - License: MIT
 
 Files extracted from upstream repository:
@@ -860,7 +860,7 @@ instead of `miniz.h` as an external dependency.
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.12.7 (cddae9966cbb48c431ea17c262d6f48393206fd7, 2024)
+- Version: 0.12.9 (afa6d8499bd49141d99d5e40a4620bd9f6bc0467, 2024)
 - License: MIT
 
 Files extracted from upstream source:

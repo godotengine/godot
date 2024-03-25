@@ -31,7 +31,7 @@ class GLES3HeaderStruct:
 
 
 def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, depth: int):
-    with open(filename, "r") as fs:
+    with open(filename, "r", encoding="utf-8") as fs:
         line = fs.readline()
 
         while line:

@@ -1070,6 +1070,12 @@
 				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String[/code].
 			</description>
 		</method>
+		<method name="skip_selection_for_next_occurrence">
+			<return type="void" />
+			<description>
+				Moves a selection and a caret for the next occurrence of the current selection. If there is no active selection, moves to the next occurrence of the word under caret.
+			</description>
+		</method>
 		<method name="start_action">
 			<return type="void" />
 			<param index="0" name="action" type="int" enum="TextEdit.EditAction" />

@@ -69,18 +69,21 @@ int main(int argc, char **argv) {
 		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
 	}
 
-	if (err == ERR_HELP) { // Returned by --help and --version, so success.
-		return 0;
-	} else if (err != OK) {
-		return 255;
+	if (err != OK) {
+		if (err == ERR_HELP) { // Returned by --help and --version, so success.
+			return EXIT_SUCCESS;
+		}
+		return EXIT_FAILURE;
 	}
 
-	bool ok;
+	int ret;
 	@autoreleasepool {
-		ok = Main::start();
+		ret = Main::start();
 	}
-	if (ok) {
-		os.run(); // It is actually the OS that decides how to run.
+	if (ret == EXIT_SUCCESS) {
+		os.run();
+	} else {
+		os.set_exit_code(EXIT_FAILURE);
 	}
 
 	@autoreleasepool {

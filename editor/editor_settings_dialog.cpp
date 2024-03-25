@@ -789,6 +789,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	top_hbox->add_child(clear_all_search);
 
 	shortcuts = memnew(Tree);
+	shortcuts->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	shortcuts->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	shortcuts->set_columns(2);
 	shortcuts->set_hide_root(true);

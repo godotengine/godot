@@ -751,6 +751,7 @@ ConnectDialog::ConnectDialog() {
 
 	method_tree = memnew(Tree);
 	method_vbc->add_child(method_tree);
+	method_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	method_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	method_tree->set_hide_root(true);
 	method_tree->connect("item_selected", callable_mp(this, &ConnectDialog::_method_selected));

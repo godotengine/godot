@@ -1334,6 +1334,12 @@
 		<member name="input/ui_text_select_word_under_caret.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to select the word currently under the caret.
 		</member>
+		<member name="input/ui_text_skip_selection_for_next_occurrence" type="Dictionary" setter="" getter="">
+			If no selection is currently active with the last caret in text fields, searches for the next occurrence of the the word currently under the caret and moves the caret to the next occurrence. The action can be performed sequentially for other occurrences of the word under the last caret.
+			If a selection is currently active with the last caret in text fields, searches for the next occurrence of the selection, adds a caret, selects the next occurrence then deselects the previous selection and its associated caret. The action can be performed sequentially for other occurrences of the selection of the last caret.
+			The viewport is adjusted to the latest newly added caret.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_text_submit" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to submit a text field.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -2082,6 +2088,9 @@
 		<member name="navigation/baking/thread_model/baking_use_multiple_threads" type="bool" setter="" getter="" default="true">
 			If enabled the async navmesh baking uses multiple threads.
 		</member>
+		<member name="navigation/baking/use_crash_prevention_checks" type="bool" setter="" getter="" default="true">
+			If enabled, and baking would potentially lead to an engine crash, the baking will be interrupted and an error message with explanation will be raised.
+		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
@@ -2266,9 +2275,15 @@
 			Controls the maximum number of physics steps that can be simulated each rendered frame. The default value is tuned to avoid "spiral of death" situations where expensive physics simulations trigger more expensive simulations indefinitely. However, the game will appear to slow down if the rendering FPS is less than [code]1 / max_physics_steps_per_frame[/code] of [member physics/common/physics_ticks_per_second]. This occurs even if [code]delta[/code] is consistently used in physics calculations. To avoid this, increase [member physics/common/max_physics_steps_per_frame] if you have increased [member physics/common/physics_ticks_per_second] significantly above its default value.
 			[b]Note:[/b] This property is only read when the project starts. To change the maximum number of simulated physics steps per frame at runtime, set [member Engine.max_physics_steps_per_frame] instead.
 		</member>
+		<member name="physics/common/physics_interpolation" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the renderer will interpolate the transforms of physics objects between the last two transforms, so that smooth motion is seen even when physics ticks do not coincide with rendered frames. See also [member Node.physics_interpolation_mode] and [method Node.reset_physics_interpolation].
+			[b]Note:[/b] If [code]true[/code], the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0.0[/code].
+			[b]Note:[/b] This property is only read when the project starts. To toggle physics interpolation at runtime, set [member SceneTree.physics_interpolation] instead.
+			[b]Note:[/b] This feature is currently only implemented in the 2D renderer.
+		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Controls how much physics ticks are synchronized with real time. For 0 or less, the ticks are synchronized. Such values are recommended for network games, where clock synchronization matters. Higher values cause higher deviation of in-game clock and real clock, but allows smoothing out framerate jitters. The default value of 0.5 should be good enough for most; values above 2 could cause the game to react to dropped frames with a noticeable delay and are not recommended.
-			[b]Note:[/b] For best results, when using a custom physics interpolation solution, the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0[/code].
+			[b]Note:[/b] When using a physics interpolation solution (such as enabling [member physics/common/physics_interpolation] or using a custom solution), the physics jitter fix should be disabled by setting [member physics/common/physics_jitter_fix] to [code]0.0[/code].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics jitter fix at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
 		<member name="physics/common/physics_ticks_per_second" type="int" setter="" getter="" default="60">

@@ -52,7 +52,7 @@ int64_t RandomPCG::rand_weighted(const Vector<float> &p_weights) {
 		weights_sum += weights[i];
 	}
 
-	float remaining_distance = Math::randf() * weights_sum;
+	float remaining_distance = randf() * weights_sum;
 	for (int64_t i = 0; i < weights_size; ++i) {
 		remaining_distance -= weights[i];
 		if (remaining_distance < 0) {

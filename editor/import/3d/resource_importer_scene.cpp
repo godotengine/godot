@@ -53,6 +53,7 @@
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/animation.h"
+#include "scene/resources/bone_map.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/surface_tool.h"
@@ -310,6 +311,71 @@ int ResourceImporterScene::get_preset_count() const {
 
 String ResourceImporterScene::get_preset_name(int p_idx) const {
 	return String();
+}
+
+void ResourceImporterScene::_pre_fix_global(Node *p_scene, const HashMap<StringName, Variant> &p_options) const {
+	if (p_options.has("animation/import_rest_as_RESET") && (bool)p_options["animation/import_rest_as_RESET"]) {
+		TypedArray<Node> anim_players = p_scene->find_children("*", "AnimationPlayer");
+		if (anim_players.is_empty()) {
+			AnimationPlayer *anim_player = memnew(AnimationPlayer);
+			anim_player->set_name("AnimationPlayer");
+			p_scene->add_child(anim_player);
+			anim_player->set_owner(p_scene);
+			anim_players.append(anim_player);
+		}
+		Ref<Animation> reset_anim;
+		for (int i = 0; i < anim_players.size(); i++) {
+			AnimationPlayer *player = cast_to<AnimationPlayer>(anim_players[i]);
+			if (player->has_animation(SNAME("RESET"))) {
+				reset_anim = player->get_animation(SNAME("RESET"));
+				break;
+			}
+		}
+		if (reset_anim.is_null()) {
+			AnimationPlayer *anim_player = cast_to<AnimationPlayer>(anim_players[0]);
+			reset_anim.instantiate();
+			Ref<AnimationLibrary> anim_library;
+			if (anim_player->has_animation_library(StringName())) {
+				anim_library = anim_player->get_animation_library(StringName());
+			} else {
+				anim_library.instantiate();
+				anim_player->add_animation_library(StringName(), anim_library);
+			}
+			anim_library->add_animation(SNAME("RESET"), reset_anim);
+		}
+		TypedArray<Node> skeletons = p_scene->find_children("*", "Skeleton3D");
+		for (int i = 0; i < skeletons.size(); i++) {
+			Skeleton3D *skeleton = cast_to<Skeleton3D>(skeletons[i]);
+			NodePath skeleton_path = p_scene->get_path_to(skeleton);
+
+			HashSet<NodePath> existing_pos_tracks;
+			HashSet<NodePath> existing_rot_tracks;
+			for (int trk_i = 0; trk_i < reset_anim->get_track_count(); trk_i++) {
+				NodePath np = reset_anim->track_get_path(trk_i);
+				if (reset_anim->track_get_type(trk_i) == Animation::TYPE_POSITION_3D) {
+					existing_pos_tracks.insert(np);
+				}
+				if (reset_anim->track_get_type(trk_i) == Animation::TYPE_ROTATION_3D) {
+					existing_rot_tracks.insert(np);
+				}
+			}
+			for (int bone_i = 0; bone_i < skeleton->get_bone_count(); bone_i++) {
+				NodePath bone_path(skeleton_path.get_names(), Vector<StringName>{ skeleton->get_bone_name(bone_i) }, false);
+				if (!existing_pos_tracks.has(bone_path)) {
+					int pos_t = reset_anim->add_track(Animation::TYPE_POSITION_3D);
+					reset_anim->track_set_path(pos_t, bone_path);
+					reset_anim->position_track_insert_key(pos_t, 0.0, skeleton->get_bone_rest(bone_i).origin);
+					reset_anim->track_set_imported(pos_t, true);
+				}
+				if (!existing_rot_tracks.has(bone_path)) {
+					int rot_t = reset_anim->add_track(Animation::TYPE_ROTATION_3D);
+					reset_anim->track_set_path(rot_t, bone_path);
+					reset_anim->rotation_track_insert_key(rot_t, 0.0, skeleton->get_bone_rest(bone_i).basis.get_rotation_quaternion());
+					reset_anim->track_set_imported(rot_t, true);
+				}
+			}
+		}
+	}
 }
 
 static bool _teststr(const String &p_what, const String &p_str) {
@@ -1157,6 +1223,74 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 	}
 
 	if (Object::cast_to<Skeleton3D>(p_node)) {
+		Ref<Animation> rest_animation;
+		float rest_animation_timestamp = 0.0;
+		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_node);
+		if (skeleton != nullptr && int(node_settings.get("rest_pose/load_pose", 0)) != 0) {
+			String selected_animation_name = node_settings.get("rest_pose/selected_animation", String());
+			if (int(node_settings["rest_pose/load_pose"]) == 1) {
+				TypedArray<Node> children = p_root->find_children("*", "AnimationPlayer", true, false);
+				for (int node_i = 0; node_i < children.size(); node_i++) {
+					AnimationPlayer *anim_player = cast_to<AnimationPlayer>(children[node_i]);
+					ERR_CONTINUE(anim_player == nullptr);
+					List<StringName> anim_list;
+					anim_player->get_animation_list(&anim_list);
+					if (anim_list.size() == 1) {
+						selected_animation_name = anim_list[0];
+					}
+					rest_animation = anim_player->get_animation(selected_animation_name);
+					if (rest_animation.is_valid()) {
+						break;
+					}
+				}
+			} else if (int(node_settings["rest_pose/load_pose"]) == 2) {
+				Object *external_object = node_settings.get("rest_pose/external_animation_library", Variant());
+				rest_animation = external_object;
+				if (rest_animation.is_null()) {
+					Ref<AnimationLibrary> library(external_object);
+					if (library.is_valid()) {
+						List<StringName> anim_list;
+						library->get_animation_list(&anim_list);
+						if (anim_list.size() == 1) {
+							selected_animation_name = String(anim_list[0]);
+						}
+						rest_animation = library->get_animation(selected_animation_name);
+					}
+				}
+			}
+			rest_animation_timestamp = double(node_settings.get("rest_pose/selected_timestamp", 0.0));
+			if (rest_animation.is_valid()) {
+				for (int track_i = 0; track_i < rest_animation->get_track_count(); track_i++) {
+					NodePath path = rest_animation->track_get_path(track_i);
+					StringName node_path = path.get_concatenated_names();
+					if (String(node_path).begins_with("%")) {
+						continue; // Unique node names are commonly used with retargeted animations, which we do not want to use.
+					}
+					StringName skeleton_bone = path.get_concatenated_subnames();
+					if (skeleton_bone == StringName()) {
+						continue;
+					}
+					int bone_idx = skeleton->find_bone(skeleton_bone);
+					if (bone_idx == -1) {
+						continue;
+					}
+					switch (rest_animation->track_get_type(track_i)) {
+						case Animation::TYPE_POSITION_3D: {
+							Vector3 bone_position = rest_animation->position_track_interpolate(track_i, rest_animation_timestamp);
+							skeleton->set_bone_rest(bone_idx, Transform3D(skeleton->get_bone_rest(bone_idx).basis, bone_position));
+						} break;
+						case Animation::TYPE_ROTATION_3D: {
+							Quaternion bone_rotation = rest_animation->rotation_track_interpolate(track_i, rest_animation_timestamp);
+							Transform3D current_rest = skeleton->get_bone_rest(bone_idx);
+							skeleton->set_bone_rest(bone_idx, Transform3D(Basis(bone_rotation).scaled(current_rest.basis.get_scale()), current_rest.origin));
+						} break;
+						default:
+							break;
+					}
+				}
+			}
+		}
+
 		ObjectID node_id = p_node->get_instance_id();
 		for (int i = 0; i < post_importer_plugins.size(); i++) {
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE, p_root, p_node, Ref<Resource>(), node_settings);
@@ -1745,6 +1879,34 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rest_pose/load_pose", PROPERTY_HINT_ENUM, "Default Pose,Use AnimationPlayer,Load External Animation", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "rest_pose/external_animation_library", PROPERTY_HINT_RESOURCE_TYPE, "Animation,AnimationLibrary", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "rest_pose/selected_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "rest_pose/selected_timestamp", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:s", PROPERTY_USAGE_DEFAULT), 0.0f));
+			String mismatched_or_empty_profile_warning = String(
+					"The external rest animation is missing some bones. "
+					"Consider disabling Remove Immutable Tracks on the other file."); // TODO: translate.
+			r_options->push_back(ImportOption(
+					PropertyInfo(
+							Variant::STRING, U"rest_pose/\u26A0_validation_warning/mismatched_or_empty_profile",
+							PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY),
+					Variant(mismatched_or_empty_profile_warning)));
+			String profile_must_not_be_retargeted_warning = String(
+					"This external rest animation appears to have been imported with a BoneMap. "
+					"Disable the bone map when exporting a rest animation from the reference model."); // TODO: translate.
+			r_options->push_back(ImportOption(
+					PropertyInfo(
+							Variant::STRING, U"rest_pose/\u26A0_validation_warning/profile_must_not_be_retargeted",
+							PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY),
+					Variant(profile_must_not_be_retargeted_warning)));
+			String no_animation_warning = String(
+					"Select an animation: Find a FBX or glTF in a compatible rest pose "
+					"and export a compatible animation from its import settings."); // TODO: translate.
+			r_options->push_back(ImportOption(
+					PropertyInfo(
+							Variant::STRING, U"rest_pose//no_animation_chosen",
+							PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY),
+					Variant(no_animation_warning)));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "retarget/bone_map", PROPERTY_HINT_RESOURCE_TYPE, "BoneMap", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Variant()));
 		} break;
 		default: {
@@ -1859,9 +2021,90 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE: {
-			const bool use_retarget = p_options["retarget/bone_map"].get_validated_object() != nullptr;
-			if (p_option != "retarget/bone_map" && p_option.begins_with("retarget/")) {
-				return use_retarget;
+			const bool use_retarget = Object::cast_to<BoneMap>(p_options["retarget/bone_map"].get_validated_object()) != nullptr;
+			if (!use_retarget && p_option != "retarget/bone_map" && p_option.begins_with("retarget/")) {
+				return false;
+			}
+			int rest_warning = 0;
+			if (p_option.begins_with("rest_pose/")) {
+				if (!p_options.has("rest_pose/load_pose") || int(p_options["rest_pose/load_pose"]) == 0) {
+					if (p_option != "rest_pose/load_pose") {
+						return false;
+					}
+				} else if (int(p_options["rest_pose/load_pose"]) == 1) {
+					if (p_option == "rest_pose/external_animation_library") {
+						return false;
+					}
+				} else if (int(p_options["rest_pose/load_pose"]) == 2) {
+					Object *res = p_options["rest_pose/external_animation_library"];
+					Ref<Animation> anim(res);
+					if (anim.is_valid() && p_option == "rest_pose/selected_animation") {
+						return false;
+					}
+					Ref<AnimationLibrary> library(res);
+					String selected_animation_name = p_options["rest_pose/selected_animation"];
+					if (library.is_valid()) {
+						List<StringName> anim_list;
+						library->get_animation_list(&anim_list);
+						if (anim_list.size() == 1) {
+							selected_animation_name = String(anim_list[0]);
+						}
+						if (library->has_animation(selected_animation_name)) {
+							anim = library->get_animation(selected_animation_name);
+						}
+					}
+					int found_bone_count = 0;
+					Ref<BoneMap> bone_map;
+					Ref<SkeletonProfile> prof;
+					if (p_options.has("retarget/bone_map")) {
+						bone_map = p_options["retarget/bone_map"];
+					}
+					if (bone_map.is_valid()) {
+						prof = bone_map->get_profile();
+					}
+					if (anim.is_valid()) {
+						HashSet<StringName> target_bones;
+						if (bone_map.is_valid() && prof.is_valid()) {
+							for (int target_i = 0; target_i < prof->get_bone_size(); target_i++) {
+								StringName skeleton_bone_name = bone_map->get_skeleton_bone_name(prof->get_bone_name(target_i));
+								if (skeleton_bone_name) {
+									target_bones.insert(skeleton_bone_name);
+								}
+							}
+						}
+						for (int track_i = 0; track_i < anim->get_track_count(); track_i++) {
+							if (anim->track_get_type(track_i) != Animation::TYPE_POSITION_3D && anim->track_get_type(track_i) != Animation::TYPE_ROTATION_3D) {
+								continue;
+							}
+							NodePath path = anim->track_get_path(track_i);
+							StringName node_path = path.get_concatenated_names();
+							StringName skeleton_bone = path.get_concatenated_subnames();
+							if (skeleton_bone) {
+								if (String(node_path).begins_with("%")) {
+									rest_warning = 1;
+								}
+								if (target_bones.has(skeleton_bone)) {
+									target_bones.erase(skeleton_bone);
+								}
+								found_bone_count++;
+							}
+						}
+						if ((found_bone_count < 15 || !target_bones.is_empty()) && rest_warning != 1) {
+							rest_warning = 2; // heuristic: animation targeted too few bones.
+						}
+					} else {
+						rest_warning = 3;
+					}
+				}
+				if (p_option.begins_with("rest_pose/") && p_option.ends_with("profile_must_not_be_retargeted")) {
+					return rest_warning == 1;
+				}
+				if (p_option.begins_with("rest_pose/") && p_option.ends_with("mismatched_or_empty_profile")) {
+					return rest_warning == 2;
+				}
+				if (p_option.begins_with("rest_pose/") && p_option.ends_with("no_animation_chosen")) {
+					return rest_warning == 3;
+				}
 			}
 		} break;
 		default: {
@@ -1945,6 +2188,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 30));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/trimming"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/remove_immutable_tracks"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import_rest_as_RESET"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "import_script/path", PROPERTY_HINT_FILE, script_ext_hint), ""));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "_subresources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Dictionary()));
@@ -2079,8 +2323,8 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 						merge_angle = mesh_settings["lods/normal_merge_angle"];
 					}
 
-					if (mesh_settings.has("save_to_file/enabled") && bool(mesh_settings["save_to_file/enabled"]) && mesh_settings.has("save_to_file/path")) {
-						save_to_file = mesh_settings["save_to_file/path"];
+					if (bool(mesh_settings.get("save_to_file/enabled", false))) {
+						save_to_file = mesh_settings.get("save_to_file/path", String());
 						if (!save_to_file.is_resource_file()) {
 							save_to_file = "";
 						}
@@ -2387,6 +2631,8 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 		return nullptr;
 	}
 
+	_pre_fix_global(scene, p_options);
+
 	HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
 	List<Pair<NodePath, Node *>> node_renames;
 	_pre_fix_node(scene, scene, collision_map, nullptr, node_renames);
@@ -2520,6 +2766,8 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 			scene_3d->scale(scale);
 		}
 	}
+
+	_pre_fix_global(scene, p_options);
 
 	HashSet<Ref<ImporterMesh>> scanned_meshes;
 	HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;

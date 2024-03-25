@@ -93,8 +93,7 @@ void VersionControlEditorPlugin::popup_vcs_set_up_dialog(const Control *p_gui_ba
 	if (!available_plugins.is_empty()) {
 		Size2 popup_size = Size2(400, 100);
 		Size2 window_size = p_gui_base->get_viewport_rect().size;
-		popup_size.x = MIN(window_size.x * 0.5, popup_size.x);
-		popup_size.y = MIN(window_size.y * 0.5, popup_size.y);
+		popup_size = popup_size.min(window_size * 0.5);
 
 		_populate_available_vcs_names();
 

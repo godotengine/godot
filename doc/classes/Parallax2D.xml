@@ -25,6 +25,7 @@
 		<member name="limit_end" type="Vector2" setter="set_limit_end" getter="get_limit_end" default="Vector2(1e+07, 1e+07)">
 			Bottom-right limits for scrolling to end. If the camera is outside of this limit, the [Parallax2D] will stop scrolling. Must be higher than [member limit_begin] and the viewport size combined to work.
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="repeat_size" type="Vector2" setter="set_repeat_size" getter="get_repeat_size" default="Vector2(0, 0)">
 			Repeats the [Texture2D] of each of this node's children and offsets them by this value. When scrolling, the node's position loops, giving the illusion of an infinite scrolling background if the values are larger than the screen size. If an axis is set to [code]0[/code], the [Texture2D] will not be repeated.
 		</member>
@@ -40,7 +41,7 @@
 		</member>
 		<member name="scroll_scale" type="Vector2" setter="set_scroll_scale" getter="get_scroll_scale" default="Vector2(1, 1)">
 			Multiplier to the final [Parallax2D]'s offset. Can be used to simulate distance from the camera.
-			For example, a value of [code]1[/code] scrolls at the same speed as the camera. A value greater than [code]1[/code] scrolls faster, making objects appear closer. Less than [code]1[/code] scrolls slower, making object appear closer and a value of [code]0[/code] stops the objects completely.
+			For example, a value of [code]1[/code] scrolls at the same speed as the camera. A value greater than [code]1[/code] scrolls faster, making objects appear closer. Less than [code]1[/code] scrolls slower, making objects appear further, and a value of [code]0[/code] stops the objects completely.
 		</member>
 	</members>
 </class>

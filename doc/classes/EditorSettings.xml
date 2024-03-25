@@ -1031,6 +1031,12 @@
 			The number of pixels to scroll with every mouse wheel increment. Higher values make the script scroll by faster when using the mouse wheel.
 			[b]Note:[/b] You can hold down [kbd]Alt[/kbd] while using the mouse wheel to temporarily scroll 5 times faster.
 		</member>
+		<member name="text_editor/completion/add_node_path_literals" type="bool" setter="" getter="">
+			If [code]true[/code], uses [NodePath] instead of [String] when appropriate for code autocompletion or for drag and dropping object properties into the script editor.
+		</member>
+		<member name="text_editor/completion/add_string_name_literals" type="bool" setter="" getter="">
+			If [code]true[/code], uses [StringName] instead of [String] when appropriate for code autocompletion.
+		</member>
 		<member name="text_editor/completion/add_type_hints" type="bool" setter="" getter="">
 			If [code]true[/code], adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] hints such as [code]-&gt; void[/code] and [code]: int[/code] when using code autocompletion or when creating onready variables by drag and dropping nodes into the script editor while pressing the [kbd]Ctrl[/kbd] key. If [code]true[/code], newly created scripts will also automatically have type hints added to their method parameters and return types.
 		</member>

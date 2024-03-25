@@ -34,6 +34,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
+#include "core/math/transform_interpolator.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
@@ -427,7 +428,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 	Transform2D base_transform = p_canvas_transform_inverse * p_item->final_transform;
 
 	if (p_offset.x || p_offset.y) {
-		base_transform *= Transform2D(0, p_offset / p_item->xform.get_scale());
+		base_transform *= Transform2D(0, p_offset / p_item->xform_curr.get_scale()); // TODO: Interpolate or explain why not needed.
 	}
 
 	Transform2D draw_transform;
@@ -1366,7 +1367,15 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				ERR_CONTINUE(!clight);
 			}
 
-			Vector2 canvas_light_pos = p_canvas_transform.xform(l->xform.get_origin()); //convert light position to canvas coordinates, as all computation is done in canvas coords to avoid precision loss
+			Transform2D final_xform;
+			if (!RSG::canvas->_interpolation_data.interpolation_enabled || !l->interpolated) {
+				final_xform = l->xform_curr;
+			} else {
+				real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+				TransformInterpolator::interpolate_transform_2d(l->xform_prev, l->xform_curr, final_xform, f);
+			}
+			// Convert light position to canvas coordinates, as all computation is done in canvas coordinates to avoid precision loss.
+			Vector2 canvas_light_pos = p_canvas_transform.xform(final_xform.get_origin());
 			state.light_uniforms[index].position[0] = canvas_light_pos.x;
 			state.light_uniforms[index].position[1] = canvas_light_pos.y;
 

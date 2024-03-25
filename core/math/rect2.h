@@ -152,14 +152,12 @@ struct _NO_DISCARD_ Rect2 {
 			return Rect2();
 		}
 
-		new_rect.position.x = MAX(p_rect.position.x, position.x);
-		new_rect.position.y = MAX(p_rect.position.y, position.y);
+		new_rect.position = p_rect.position.max(position);
 
 		Point2 p_rect_end = p_rect.position + p_rect.size;
 		Point2 end = position + size;
 
-		new_rect.size.x = MIN(p_rect_end.x, end.x) - new_rect.position.x;
-		new_rect.size.y = MIN(p_rect_end.y, end.y) - new_rect.position.y;
+		new_rect.size = p_rect_end.min(end) - new_rect.position;
 
 		return new_rect;
 	}
@@ -172,11 +170,9 @@ struct _NO_DISCARD_ Rect2 {
 #endif
 		Rect2 new_rect;
 
-		new_rect.position.x = MIN(p_rect.position.x, position.x);
-		new_rect.position.y = MIN(p_rect.position.y, position.y);
+		new_rect.position = p_rect.position.min(position);
 
-		new_rect.size.x = MAX(p_rect.position.x + p_rect.size.x, position.x + size.x);
-		new_rect.size.y = MAX(p_rect.position.y + p_rect.size.y, position.y + size.y);
+		new_rect.size = (p_rect.position + p_rect.size).max(position + size);
 
 		new_rect.size = new_rect.size - new_rect.position; // Make relative again.
 
@@ -282,7 +278,7 @@ struct _NO_DISCARD_ Rect2 {
 	}
 
 	_FORCE_INLINE_ Rect2 abs() const {
-		return Rect2(Point2(position.x + MIN(size.x, (real_t)0), position.y + MIN(size.y, (real_t)0)), size.abs());
+		return Rect2(position + size.min(Point2()), size.abs());
 	}
 
 	_FORCE_INLINE_ Rect2 round() const {

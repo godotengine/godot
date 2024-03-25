@@ -874,8 +874,8 @@ void EditorFileDialog::update_file_list() {
 		item = dir_access->get_next();
 	}
 
-	dirs.sort_custom<NaturalNoCaseComparator>();
-	files.sort_custom<NaturalNoCaseComparator>();
+	dirs.sort_custom<FileNoCaseComparator>();
+	files.sort_custom<FileNoCaseComparator>();
 
 	while (!dirs.is_empty()) {
 		const String &dir_name = dirs.front()->get();

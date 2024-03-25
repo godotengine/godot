@@ -129,6 +129,34 @@ void GLTFPhysicsShape::set_importer_mesh(Ref<ImporterMesh> p_importer_mesh) {
 	importer_mesh = p_importer_mesh;
 }
 
+Ref<ImporterMesh> _convert_hull_points_to_mesh(const Vector<Vector3> &p_hull_points) {
+	Ref<ImporterMesh> importer_mesh;
+	ERR_FAIL_COND_V_MSG(p_hull_points.size() < 3, importer_mesh, "GLTFPhysicsShape: Convex hull has fewer points (" + itos(p_hull_points.size()) + ") than the minimum of 3. At least 3 points are required in order to save to GLTF, since it uses a mesh to represent convex hulls.");
+	if (p_hull_points.size() > 255) {
+		WARN_PRINT("GLTFPhysicsShape: Convex hull has more points (" + itos(p_hull_points.size()) + ") than the recommended maximum of 255. This may not load correctly in other engines.");
+	}
+	// Convert the convex hull points into an array of faces.
+	Geometry3D::MeshData md;
+	Error err = ConvexHullComputer::convex_hull(p_hull_points, md);
+	ERR_FAIL_COND_V_MSG(err != OK, importer_mesh, "GLTFPhysicsShape: Failed to compute convex hull.");
+	Vector<Vector3> face_vertices;
+	for (uint32_t i = 0; i < md.faces.size(); i++) {
+		uint32_t index_count = md.faces[i].indices.size();
+		for (uint32_t j = 1; j < index_count - 1; j++) {
+			face_vertices.append(p_hull_points[md.faces[i].indices[0]]);
+			face_vertices.append(p_hull_points[md.faces[i].indices[j]]);
+			face_vertices.append(p_hull_points[md.faces[i].indices[j + 1]]);
+		}
+	}
+	// Create an ImporterMesh from the faces.
+	importer_mesh.instantiate();
+	Array surface_array;
+	surface_array.resize(Mesh::ArrayType::ARRAY_MAX);
+	surface_array[Mesh::ArrayType::ARRAY_VERTEX] = face_vertices;
+	importer_mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, surface_array);
+	return importer_mesh;
+}
+
 Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_node(const CollisionShape3D *p_godot_shape_node) {
 	Ref<GLTFPhysicsShape> gltf_shape;
 	gltf_shape.instantiate();
@@ -163,30 +191,8 @@ Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_node(const CollisionShape3D *p_godo
 		gltf_shape->shape_type = "convex";
 		Ref<ConvexPolygonShape3D> convex = shape_resource;
 		Vector<Vector3> hull_points = convex->get_points();
-		ERR_FAIL_COND_V_MSG(hull_points.size() < 3, gltf_shape, "GLTFPhysicsShape: Convex hull has fewer points (" + itos(hull_points.size()) + ") than the minimum of 3. At least 3 points are required in order to save to GLTF, since it uses a mesh to represent convex hulls.");
-		if (hull_points.size() > 255) {
-			WARN_PRINT("GLTFPhysicsShape: Convex hull has more points (" + itos(hull_points.size()) + ") than the recommended maximum of 255. This may not load correctly in other engines.");
-		}
-		// Convert the convex hull points into an array of faces.
-		Geometry3D::MeshData md;
-		Error err = ConvexHullComputer::convex_hull(hull_points, md);
-		ERR_FAIL_COND_V_MSG(err != OK, gltf_shape, "GLTFPhysicsShape: Failed to compute convex hull.");
-		Vector<Vector3> face_vertices;
-		for (uint32_t i = 0; i < md.faces.size(); i++) {
-			uint32_t index_count = md.faces[i].indices.size();
-			for (uint32_t j = 1; j < index_count - 1; j++) {
-				face_vertices.append(hull_points[md.faces[i].indices[0]]);
-				face_vertices.append(hull_points[md.faces[i].indices[j]]);
-				face_vertices.append(hull_points[md.faces[i].indices[j + 1]]);
-			}
-		}
-		// Create an ImporterMesh from the faces.
-		Ref<ImporterMesh> importer_mesh;
-		importer_mesh.instantiate();
-		Array surface_array;
-		surface_array.resize(Mesh::ArrayType::ARRAY_MAX);
-		surface_array[Mesh::ArrayType::ARRAY_VERTEX] = face_vertices;
-		importer_mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, surface_array);
+		Ref<ImporterMesh> importer_mesh = _convert_hull_points_to_mesh(hull_points);
+		ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), gltf_shape, "GLTFPhysicsShape: Failed to convert convex hull points to a mesh.");
 		gltf_shape->set_importer_mesh(importer_mesh);
 	} else if (cast_to<const ConcavePolygonShape3D>(shape_resource.ptr())) {
 		gltf_shape->shape_type = "trimesh";

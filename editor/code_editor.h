@@ -184,6 +184,8 @@ class CodeTextEditor : public VBoxContainer {
 
 	Color completion_font_color;
 	Color completion_string_color;
+	Color completion_string_name_color;
+	Color completion_node_path_color;
 	Color completion_comment_color;
 	Color completion_doc_comment_color;
 	CodeTextEditorCodeCompleteFunc code_complete_func;

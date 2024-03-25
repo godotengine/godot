@@ -1033,8 +1033,7 @@ void Window::_update_window_size() {
 	}
 
 	if (embedder) {
-		size.x = MAX(size.x, 1);
-		size.y = MAX(size.y, 1);
+		size = size.max(Size2i(1, 1));
 
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
@@ -1214,7 +1213,7 @@ void Window::set_force_native(bool p_force_native) {
 		return;
 	}
 	force_native = p_force_native;
-	if (is_visible()) {
+	if (is_visible() && !is_in_edited_scene_root()) {
 		WARN_PRINT("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
 	}
 }
@@ -1225,7 +1224,7 @@ bool Window::get_force_native() const {
 
 Viewport *Window::get_embedder() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
-	if (force_native && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) {
+	if (force_native && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS) && !is_in_edited_scene_root()) {
 		return nullptr;
 	}
 
@@ -1545,8 +1544,7 @@ Size2 Window::_get_contents_minimum_size() const {
 			Point2i pos = c->get_position();
 			Size2i min = c->get_combined_minimum_size();
 
-			max.x = MAX(pos.x + min.x, max.x);
-			max.y = MAX(pos.y + min.y, max.y);
+			max = max.max(pos + min);
 		}
 	}
 
@@ -1703,7 +1701,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	Vector2i size_ratio = parent_rect.size * p_fallback_ratio;
 
 	Rect2i popup_rect;
-	popup_rect.size = Vector2i(MIN(size_ratio.x, expected_size.x), MIN(size_ratio.y, expected_size.y));
+	popup_rect.size = size_ratio.min(expected_size);
 	popup_rect.size = _clamp_window_size(popup_rect.size);
 
 	if (parent_rect != Rect2()) {

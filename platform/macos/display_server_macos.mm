@@ -83,8 +83,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		Rect2i srect = screen_get_usable_rect(rq_screen);
 		Point2i wpos = p_rect.position;
 		if (srect != Rect2i()) {
-			wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
-			wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
+			wpos = wpos.clamp(srect.position, srect.position + srect.size - p_rect.size / 3);
 		}
 		// macOS native y-coordinate relative to _get_screens_origin() is negative,
 		// Godot passes a positive value.
@@ -1877,8 +1876,7 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 	Size2i wsize = window_get_size(p_window);
 	wpos += srect.position;
 
-	wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - wsize.width / 3);
-	wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - wsize.height / 3);
+	wpos = wpos.clamp(srect.position, srect.position + srect.size - wsize / 3);
 	window_set_position(wpos, p_window);
 
 	if (was_fullscreen) {
@@ -2309,8 +2307,7 @@ void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offs
 	WindowData &wd = windows[p_window];
 	float scale = screen_get_max_scale();
 	wd.wb_offset = p_offset / scale;
-	wd.wb_offset.x = MAX(wd.wb_offset.x, 12);
-	wd.wb_offset.y = MAX(wd.wb_offset.y, 12);
+	wd.wb_offset = wd.wb_offset.max(Vector2i(12, 12));
 	if (wd.window_button_view) {
 		[wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
 	}

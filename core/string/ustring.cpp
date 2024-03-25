@@ -927,52 +927,106 @@ static _FORCE_INLINE_ signed char natural_cmp_common(const char32_t *&r_this_str
 	return 0;
 }
 
+static _FORCE_INLINE_ signed char naturalcasecmp_to_base(const char32_t *p_this_str, const char32_t *p_that_str) {
+	if (p_this_str && p_that_str) {
+		while (*p_this_str == '.' || *p_that_str == '.') {
+			if (*p_this_str++ != '.') {
+				return 1;
+			}
+			if (*p_that_str++ != '.') {
+				return -1;
+			}
+			if (!*p_that_str) {
+				return 1;
+			}
+			if (!*p_this_str) {
+				return -1;
+			}
+		}
+
+		while (*p_this_str) {
+			if (!*p_that_str) {
+				return 1;
+			} else if (is_digit(*p_this_str)) {
+				if (!is_digit(*p_that_str)) {
+					return -1;
+				}
+
+				signed char ret = natural_cmp_common(p_this_str, p_that_str);
+				if (ret) {
+					return ret;
+				}
+			} else if (is_digit(*p_that_str)) {
+				return 1;
+			} else {
+				if (*p_this_str < *p_that_str) { // If current character in this is less, we are less.
+					return -1;
+				} else if (*p_this_str > *p_that_str) { // If current character in this is greater, we are greater.
+					return 1;
+				}
+
+				p_this_str++;
+				p_that_str++;
+			}
+		}
+		if (*p_that_str) {
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 signed char String::naturalcasecmp_to(const String &p_str) const {
 	const char32_t *this_str = get_data();
 	const char32_t *that_str = p_str.get_data();
 
-	if (this_str && that_str) {
-		while (*this_str == '.' || *that_str == '.') {
-			if (*this_str++ != '.') {
+	return naturalcasecmp_to_base(this_str, that_str);
+}
+
+static _FORCE_INLINE_ signed char naturalnocasecmp_to_base(const char32_t *p_this_str, const char32_t *p_that_str) {
+	if (p_this_str && p_that_str) {
+		while (*p_this_str == '.' || *p_that_str == '.') {
+			if (*p_this_str++ != '.') {
 				return 1;
 			}
-			if (*that_str++ != '.') {
+			if (*p_that_str++ != '.') {
 				return -1;
 			}
-			if (!*that_str) {
+			if (!*p_that_str) {
 				return 1;
 			}
-			if (!*this_str) {
+			if (!*p_this_str) {
 				return -1;
 			}
 		}
 
-		while (*this_str) {
-			if (!*that_str) {
+		while (*p_this_str) {
+			if (!*p_that_str) {
 				return 1;
-			} else if (is_digit(*this_str)) {
-				if (!is_digit(*that_str)) {
+			} else if (is_digit(*p_this_str)) {
+				if (!is_digit(*p_that_str)) {
 					return -1;
 				}
 
-				signed char ret = natural_cmp_common(this_str, that_str);
+				signed char ret = natural_cmp_common(p_this_str, p_that_str);
 				if (ret) {
 					return ret;
 				}
-			} else if (is_digit(*that_str)) {
+			} else if (is_digit(*p_that_str)) {
 				return 1;
 			} else {
-				if (*this_str < *that_str) { // If current character in this is less, we are less.
+				if (_find_upper(*p_this_str) < _find_upper(*p_that_str)) { // If current character in this is less, we are less.
 					return -1;
-				} else if (*this_str > *that_str) { // If current character in this is greater, we are greater.
+				} else if (_find_upper(*p_this_str) > _find_upper(*p_that_str)) { // If current character in this is greater, we are greater.
 					return 1;
 				}
 
-				this_str++;
-				that_str++;
+				p_this_str++;
+				p_that_str++;
 			}
 		}
-		if (*that_str) {
+		if (*p_that_str) {
 			return -1;
 		}
 	}
@@ -984,53 +1038,47 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 	const char32_t *this_str = get_data();
 	const char32_t *that_str = p_str.get_data();
 
-	if (this_str && that_str) {
-		while (*this_str == '.' || *that_str == '.') {
-			if (*this_str++ != '.') {
-				return 1;
-			}
-			if (*that_str++ != '.') {
-				return -1;
-			}
-			if (!*that_str) {
-				return 1;
-			}
-			if (!*this_str) {
-				return -1;
-			}
-		}
+	return naturalnocasecmp_to_base(this_str, that_str);
+}
 
-		while (*this_str) {
-			if (!*that_str) {
-				return 1;
-			} else if (is_digit(*this_str)) {
-				if (!is_digit(*that_str)) {
-					return -1;
-				}
-
-				signed char ret = natural_cmp_common(this_str, that_str);
-				if (ret) {
-					return ret;
-				}
-			} else if (is_digit(*that_str)) {
-				return 1;
-			} else {
-				if (_find_upper(*this_str) < _find_upper(*that_str)) { // If current character in this is less, we are less.
-					return -1;
-				} else if (_find_upper(*this_str) > _find_upper(*that_str)) { // If current character in this is greater, we are greater.
-					return 1;
-				}
-
-				this_str++;
-				that_str++;
-			}
+static _FORCE_INLINE_ signed char file_cmp_common(const char32_t *&r_this_str, const char32_t *&r_that_str) {
+	// Compare leading `_` sequences.
+	while ((*r_this_str == '_' && *r_that_str) || (*r_this_str && *r_that_str == '_')) {
+		// Sort `_` lower than everything except `.`
+		if (*r_this_str != '_') {
+			return *r_this_str == '.' ? -1 : 1;
+		} else if (*r_that_str != '_') {
+			return *r_that_str == '.' ? 1 : -1;
 		}
-		if (*that_str) {
-			return -1;
-		}
+		r_this_str++;
+		r_that_str++;
 	}
 
 	return 0;
+}
+
+signed char String::filecasecmp_to(const String &p_str) const {
+	const char32_t *this_str = get_data();
+	const char32_t *that_str = p_str.get_data();
+
+	signed char ret = file_cmp_common(this_str, that_str);
+	if (ret) {
+		return ret;
+	}
+
+	return naturalcasecmp_to_base(this_str, that_str);
+}
+
+signed char String::filenocasecmp_to(const String &p_str) const {
+	const char32_t *this_str = get_data();
+	const char32_t *that_str = p_str.get_data();
+
+	signed char ret = file_cmp_common(this_str, that_str);
+	if (ret) {
+		return ret;
+	}
+
+	return naturalnocasecmp_to_base(this_str, that_str);
 }
 
 const char32_t *String::get_data() const {
@@ -1822,7 +1870,7 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	bool decode_failed = false;
 	{
 		const char *ptrtmp = p_utf8;
-		const char *ptrtmp_limit = &p_utf8[p_len];
+		const char *ptrtmp_limit = p_len >= 0 ? &p_utf8[p_len] : nullptr;
 		int skip = 0;
 		uint8_t c_start = 0;
 		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
@@ -2099,7 +2147,7 @@ Error String::parse_utf16(const char16_t *p_utf16, int p_len) {
 	bool decode_error = false;
 	{
 		const char16_t *ptrtmp = p_utf16;
-		const char16_t *ptrtmp_limit = &p_utf16[p_len];
+		const char16_t *ptrtmp_limit = p_len >= 0 ? &p_utf16[p_len] : nullptr;
 		uint32_t c_prev = 0;
 		bool skip = false;
 		while (ptrtmp != ptrtmp_limit && *ptrtmp) {

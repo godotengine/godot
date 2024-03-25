@@ -197,15 +197,15 @@ void FileDialog::_notification(int p_what) {
 			dir_up->end_bulk_theme_override();
 
 			dir_prev->begin_bulk_theme_override();
-			dir_prev->add_theme_color_override("icon_color_normal", theme_cache.icon_normal_color);
-			dir_prev->add_theme_color_override("icon_color_hover", theme_cache.icon_hover_color);
+			dir_prev->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
+			dir_prev->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
 			dir_prev->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			dir_prev->add_theme_color_override("icon_color_pressed", theme_cache.icon_pressed_color);
 			dir_prev->end_bulk_theme_override();
 
 			dir_next->begin_bulk_theme_override();
-			dir_next->add_theme_color_override("icon_color_normal", theme_cache.icon_normal_color);
-			dir_next->add_theme_color_override("icon_color_hover", theme_cache.icon_hover_color);
+			dir_next->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
+			dir_next->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
 			dir_next->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			dir_next->add_theme_color_override("icon_color_pressed", theme_cache.icon_pressed_color);
 			dir_next->end_bulk_theme_override();
@@ -671,8 +671,8 @@ void FileDialog::update_file_list() {
 		item = dir_access->get_next();
 	}
 
-	dirs.sort_custom<NaturalNoCaseComparator>();
-	files.sort_custom<NaturalNoCaseComparator>();
+	dirs.sort_custom<FileNoCaseComparator>();
+	files.sort_custom<FileNoCaseComparator>();
 
 	while (!dirs.is_empty()) {
 		String &dir_name = dirs.front()->get();

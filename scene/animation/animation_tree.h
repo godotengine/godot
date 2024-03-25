@@ -63,6 +63,34 @@ public:
 	HashMap<NodePath, bool> filter;
 	bool filter_enabled = false;
 
+	// To propagate information from upstream for use in estimation of playback progress.
+	// These values must be taken from the result of blend_node() or blend_input() and must be essentially read-only.
+	// For example, if you want to change the position, you need to change the pi.time value of PlaybackInfo passed to blend_input(pi) and get the result.
+	struct NodeTimeInfo {
+		// Retain the previous frame values. These are stored into the AnimationTree's Map and exposing them as read-only values.
+		double length = 0.0;
+		double position = 0.0;
+		double delta = 0.0;
+
+		// Needs internally to estimate remain time, the previous frame values are not retained.
+		Animation::LoopMode loop_mode = Animation::LOOP_NONE;
+		bool is_just_looped = false; // For breaking loop, it is true when just looped.
+		bool is_infinity = false; // For unpredictable state machine's end.
+
+		bool is_looping() {
+			return loop_mode != Animation::LOOP_NONE;
+		}
+		double get_remain(bool p_break_loop = false) {
+			if ((is_looping() && !p_break_loop) || is_infinity) {
+				return HUGE_LENGTH;
+			}
+			if (p_break_loop && is_just_looped) {
+				return 0;
+			}
+			return length - position;
+		}
+	};
+
 	// Temporary state for blending process which needs to be stored in each AnimationNodes.
 	struct NodeState {
 		StringName base_path;
@@ -84,16 +112,23 @@ public:
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
-	double _blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false, real_t *r_activity = nullptr);
-	double _pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false);
+
+	// The time information is passed from upstream to downstream by AnimationMixer::PlaybackInfo::p_playback_info until AnimationNodeAnimation processes it.
+	// Conversely, AnimationNodeAnimation returns the processed result as NodeTimeInfo from downstream to upstream.
+	NodeTimeInfo _blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false, real_t *r_activity = nullptr);
+	NodeTimeInfo _pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false);
 
 protected:
-	virtual double _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false);
-	double process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false);
+	StringName current_length = "current_length";
+	StringName current_position = "current_position";
+	StringName current_delta = "current_delta";
+
+	virtual NodeTimeInfo process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false); // To organize time information. Virtualizing for especially AnimationNodeAnimation needs to take "backward" into account.
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false); // Main process.
 
 	void blend_animation(const StringName &p_animation, AnimationMixer::PlaybackInfo p_playback_info);
-	double blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
-	double blend_input(int p_input, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+	NodeTimeInfo blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+	NodeTimeInfo blend_input(int p_input, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
 
 	// Bind-able methods to expose for compatibility, moreover AnimationMixer::PlaybackInfo is not exposed.
 	void blend_animation_ex(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE);
@@ -124,6 +159,9 @@ public:
 	void set_parameter(const StringName &p_name, const Variant &p_value);
 	Variant get_parameter(const StringName &p_name) const;
 
+	void set_node_time_info(const NodeTimeInfo &p_node_time_info); // Wrapper of set_parameter().
+	virtual NodeTimeInfo get_node_time_info() const; // Wrapper of get_parameter().
+
 	struct ChildNode {
 		StringName name;
 		Ref<AnimationNode> node;
@@ -150,6 +188,10 @@ public:
 	bool is_closable() const;
 
 	virtual bool has_filter() const;
+
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const;
 	Ref<AnimationNode> find_node_by_path(const String &p_name) const;

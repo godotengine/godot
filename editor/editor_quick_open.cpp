@@ -275,6 +275,7 @@ EditorQuickOpen::EditorQuickOpen() {
 	register_text_enter(search_box);
 
 	search_options = memnew(Tree);
+	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->connect("item_activated", callable_mp(this, &EditorQuickOpen::_confirmed));
 	search_options->create_item();
 	search_options->set_hide_root(true);

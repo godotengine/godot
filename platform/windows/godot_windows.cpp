@@ -171,13 +171,15 @@ int widechar_main(int argc, wchar_t **argv) {
 		delete[] argv_utf8;
 
 		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return 0;
+			return EXIT_SUCCESS;
 		}
-		return 255;
+		return EXIT_FAILURE;
 	}
 
-	if (Main::start()) {
+	if (Main::start() == EXIT_SUCCESS) {
 		os.run();
+	} else {
+		os.set_exit_code(EXIT_FAILURE);
 	}
 	Main::cleanup();
 
