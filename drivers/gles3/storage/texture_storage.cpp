@@ -1680,6 +1680,14 @@ uint32_t TextureStorage::texture_get_texid(RID p_texture) const {
 	return texture->tex_id;
 }
 
+Vector3i TextureStorage::texture_get_size(RID p_texture) const {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+
+	ERR_FAIL_NULL_V(texture, Vector3i(0, 0, 0));
+
+	return Vector3i(texture->width, texture->height, texture->depth);
+}
+
 uint32_t TextureStorage::texture_get_width(RID p_texture) const {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
