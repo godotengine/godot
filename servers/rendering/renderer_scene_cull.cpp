@@ -592,7 +592,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				InstanceLightmapData *lightmap_data = static_cast<InstanceLightmapData *>(instance->base_data);
 				//erase dependencies, since no longer a lightmap
 				while (lightmap_data->users.begin()) {
-					instance_geometry_set_lightmap((*lightmap_data->users.begin())->self, RID(), Rect2(), 0);
+					instance_geometry_set_lightmap((*lightmap_data->users.begin())->self, RID(), Rect2(), 0, Vector2());
 				}
 				RSG::light_storage->lightmap_instance_free(lightmap_data->instance);
 			} break;
@@ -679,7 +679,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				geom->geometry_instance->set_transparency(instance->transparency);
 				geom->geometry_instance->set_use_baked_light(instance->baked_light);
 				geom->geometry_instance->set_use_dynamic_gi(instance->dynamic_gi);
-				geom->geometry_instance->set_use_lightmap(RID(), instance->lightmap_uv_scale, instance->lightmap_slice_index);
+				geom->geometry_instance->set_use_lightmap(RID(), instance->lightmap_uv_scale, instance->lightmap_slice_index, instance->lightmap_texture_size);
 				geom->geometry_instance->set_instance_shader_uniforms_offset(instance->instance_allocated_shader_uniforms_offset);
 				geom->geometry_instance->set_cast_double_sided_shadows(instance->cast_shadows == RS::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
 				if (instance->lightmap_sh.size() == 9) {
@@ -1451,7 +1451,7 @@ void RendererSceneCull::_update_instance_visibility_dependencies(Instance *p_ins
 	}
 }
 
-void RendererSceneCull::instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index) {
+void RendererSceneCull::instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index, const Vector2 &p_lightmap_texture_size) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(instance);
 
@@ -1466,6 +1466,7 @@ void RendererSceneCull::instance_geometry_set_lightmap(RID p_instance, RID p_lig
 	instance->lightmap = lightmap_instance;
 	instance->lightmap_uv_scale = p_lightmap_uv_scale;
 	instance->lightmap_slice_index = p_slice_index;
+	instance->lightmap_texture_size = p_lightmap_texture_size;
 
 	RID lightmap_instance_rid;
 
@@ -1478,7 +1479,7 @@ void RendererSceneCull::instance_geometry_set_lightmap(RID p_instance, RID p_lig
 	if ((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK && instance->base_data) {
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 		ERR_FAIL_NULL(geom->geometry_instance);
-		geom->geometry_instance->set_use_lightmap(lightmap_instance_rid, p_lightmap_uv_scale, p_slice_index);
+		geom->geometry_instance->set_use_lightmap(lightmap_instance_rid, p_lightmap_uv_scale, p_slice_index, p_lightmap_texture_size);
 	}
 }
 
@@ -4169,7 +4170,7 @@ bool RendererSceneCull::free(RID p_rid) {
 
 		Instance *instance = instance_owner.get_or_null(p_rid);
 
-		instance_geometry_set_lightmap(p_rid, RID(), Rect2(), 0);
+		instance_geometry_set_lightmap(p_rid, RID(), Rect2(), 0, Vector2());
 		instance_set_scenario(p_rid, RID());
 		instance_set_base(p_rid, RID());
 		instance_geometry_set_material_override(p_rid, RID());
