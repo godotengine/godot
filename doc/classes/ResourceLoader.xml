@@ -9,7 +9,7 @@
 		[b]Note:[/b] You have to import the files into the engine first to load them using [method load]. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
 	</description>
 	<tutorials>
-		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<methods>
 		<method name="add_resource_format_loader">

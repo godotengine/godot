@@ -7,7 +7,7 @@
 		An array specifically designed to hold [Vector2]. Packs data tightly, so it saves memory for large array sizes.
 	</description>
 	<tutorials>
-		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
+		<link title="Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
 	</tutorials>
 	<constructors>
 		<constructor name="PackedVector2Array">

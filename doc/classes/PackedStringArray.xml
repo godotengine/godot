@@ -13,7 +13,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<constructors>
 		<constructor name="PackedStringArray">
