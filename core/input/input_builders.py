@@ -13,7 +13,7 @@ def make_default_controller_mappings(target, source, env):
         # ensure mappings have a consistent order
         platform_mappings: dict = OrderedDict()
         for src_path in source:
-            with open(str(src_path), "r") as f:
+            with open(str(src_path), "r", encoding="utf-8") as f:
                 # read mapping file and skip header
                 mapping_file_lines = f.readlines()[2:]
 

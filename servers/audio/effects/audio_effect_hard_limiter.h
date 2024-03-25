@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  texture_loader_ktx.h                                                  */
+/*  audio_effect_hard_limiter.h                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,21 +28,62 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_LOADER_KTX_H
-#define TEXTURE_LOADER_KTX_H
+#ifndef AUDIO_EFFECT_HARD_LIMITER_H
+#define AUDIO_EFFECT_HARD_LIMITER_H
 
-#include "core/io/resource_loader.h"
-#include "scene/resources/texture.h"
+#include "servers/audio/audio_effect.h"
 
-class ResourceFormatKTX : public ResourceFormatLoader {
+class AudioEffectHardLimiter;
+
+class AudioEffectHardLimiterInstance : public AudioEffectInstance {
+	GDCLASS(AudioEffectHardLimiterInstance, AudioEffectInstance);
+	friend class AudioEffectHardLimiter;
+	Ref<AudioEffectHardLimiter> base;
+
+private:
+	int sample_cursor = 0;
+
+	float release_factor = 0;
+	float attack_factor = 0;
+	float gain = 1;
+	float gain_target = 1;
+
+	LocalVector<float> sample_buffer_left;
+	LocalVector<float> sample_buffer_right;
+
+	int gain_samples_to_store = 0;
+	int gain_bucket_cursor = 0;
+	int gain_bucket_size = 0;
+	LocalVector<float> gain_buckets;
+
 public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
-
-	virtual ~ResourceFormatKTX() {}
-	ResourceFormatKTX();
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 };
 
-#endif // TEXTURE_LOADER_KTX_H
+class AudioEffectHardLimiter : public AudioEffect {
+	GDCLASS(AudioEffectHardLimiter, AudioEffect);
+
+	friend class AudioEffectHardLimiterInstance;
+	float pre_gain = 0.0f;
+	float ceiling = -0.3f;
+	float sustain = 0.02f;
+	float release = 0.1f;
+	const float attack = 0.002;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_ceiling_db(float p_ceiling);
+	float get_ceiling_db() const;
+
+	void set_release(float p_release);
+	float get_release() const;
+
+	void set_pre_gain_db(float p_pre_gain);
+	float get_pre_gain_db() const;
+
+	Ref<AudioEffectInstance> instantiate() override;
+};
+
+#endif // AUDIO_EFFECT_HARD_LIMITER_H

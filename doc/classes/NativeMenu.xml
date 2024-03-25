@@ -211,12 +211,21 @@
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
+		<method name="find_item_index_with_submenu" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="submenu_rid" type="RID" />
+			<description>
+				Returns the index of the item with the submenu specified by [param submenu_rid]. Indices are automatically assigned to each item by the engine, and cannot be set manually.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="find_item_index_with_tag" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="rid" type="RID" />
 			<param index="1" name="tag" type="Variant" />
 			<description>
-				Returns the index of the item with the specified [param tag]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				Returns the index of the item with the specified [param tag]. Indices are automatically assigned to each item by the engine, and cannot be set manually.
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
@@ -225,7 +234,7 @@
 			<param index="0" name="rid" type="RID" />
 			<param index="1" name="text" type="String" />
 			<description>
-				Returns the index of the item with the specified [param text]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				Returns the index of the item with the specified [param text]. Indices are automatically assigned to each item by the engine, and cannot be set manually.
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>

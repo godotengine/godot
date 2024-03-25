@@ -43,6 +43,7 @@
 #include "audio/effects/audio_effect_distortion.h"
 #include "audio/effects/audio_effect_eq.h"
 #include "audio/effects/audio_effect_filter.h"
+#include "audio/effects/audio_effect_hard_limiter.h"
 #include "audio/effects/audio_effect_limiter.h"
 #include "audio/effects/audio_effect_panner.h"
 #include "audio/effects/audio_effect_phaser.h"
@@ -210,6 +211,7 @@ void register_server_types() {
 		GDREGISTER_CLASS(AudioEffectDelay);
 		GDREGISTER_CLASS(AudioEffectCompressor);
 		GDREGISTER_CLASS(AudioEffectLimiter);
+		GDREGISTER_CLASS(AudioEffectHardLimiter);
 		GDREGISTER_CLASS(AudioEffectPitchShift);
 		GDREGISTER_CLASS(AudioEffectPhaser);
 
