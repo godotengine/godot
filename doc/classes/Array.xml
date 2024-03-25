@@ -140,15 +140,15 @@
 				The callable's method should take one [Variant] parameter (the current array element) and return a boolean value.
 				[codeblock]
 				func _ready():
-				    print([6, 10, 6].all(greater_than_5))  # Prints True (3/3 elements evaluate to `true`).
-				    print([4, 10, 4].all(greater_than_5))  # Prints False (1/3 elements evaluate to `true`).
-				    print([4, 4, 4].all(greater_than_5))  # Prints False (0/3 elements evaluate to `true`).
-				    print([].all(greater_than_5))  # Prints True (0/0 elements evaluate to `true`).
+					print([6, 10, 6].all(greater_than_5))  # Prints True (3/3 elements evaluate to `true`).
+					print([4, 10, 4].all(greater_than_5))  # Prints False (1/3 elements evaluate to `true`).
+					print([4, 4, 4].all(greater_than_5))  # Prints False (0/3 elements evaluate to `true`).
+					print([].all(greater_than_5))  # Prints True (0/0 elements evaluate to `true`).
 
-				    print([6, 10, 6].all(func(number): return number &gt; 5))  # Prints True. Same as the first line above, but using lambda function.
+					print([6, 10, 6].all(func(number): return number &gt; 5))  # Prints True. Same as the first line above, but using lambda function.
 
 				func greater_than_5(number):
-				    return number &gt; 5
+					return number &gt; 5
 				[/codeblock]
 				See also [method any], [method filter], [method map] and [method reduce].
 				[b]Note:[/b] Unlike relying on the size of an array returned by [method filter], this method will return as early as possible to improve performance (especially with large arrays).
@@ -163,15 +163,15 @@
 				The callable's method should take one [Variant] parameter (the current array element) and return a boolean value.
 				[codeblock]
 				func _ready():
-				    print([6, 10, 6].any(greater_than_5))  # Prints True (3 elements evaluate to `true`).
-				    print([4, 10, 4].any(greater_than_5))  # Prints True (1 elements evaluate to `true`).
-				    print([4, 4, 4].any(greater_than_5))  # Prints False (0 elements evaluate to `true`).
-				    print([].any(greater_than_5))  # Prints False (0 elements evaluate to `true`).
+					print([6, 10, 6].any(greater_than_5))  # Prints True (3 elements evaluate to `true`).
+					print([4, 10, 4].any(greater_than_5))  # Prints True (1 elements evaluate to `true`).
+					print([4, 4, 4].any(greater_than_5))  # Prints False (0 elements evaluate to `true`).
+					print([].any(greater_than_5))  # Prints False (0 elements evaluate to `true`).
 
-				    print([6, 10, 6].any(func(number): return number &gt; 5))  # Prints True. Same as the first line above, but using lambda function.
+					print([6, 10, 6].any(func(number): return number &gt; 5))  # Prints True. Same as the first line above, but using lambda function.
 
 				func greater_than_5(number):
-				    return number &gt; 5
+					return number &gt; 5
 				[/codeblock]
 				See also [method all], [method filter], [method map] and [method reduce].
 				[b]Note:[/b] Unlike relying on the size of an array returned by [method filter], this method will return as early as possible to improve performance (especially with large arrays).
@@ -296,11 +296,11 @@
 				The callable's method should take one [Variant] parameter (the current array element) and return a boolean value.
 				[codeblock]
 				func _ready():
-				    print([1, 2, 3].filter(remove_1)) # Prints [2, 3].
-				    print([1, 2, 3].filter(func(number): return number != 1)) # Same as above, but using lambda function.
+					print([1, 2, 3].filter(remove_1)) # Prints [2, 3].
+					print([1, 2, 3].filter(func(number): return number != 1)) # Same as above, but using lambda function.
 
 				func remove_1(number):
-				    return number != 1
+					return number != 1
 				[/codeblock]
 				See also [method any], [method all], [method map] and [method reduce].
 			</description>
@@ -364,14 +364,14 @@
 				[gdscript]
 				# Will evaluate to `true`.
 				if 2 in [2, 4, 6, 8]:
-				    print("Contains!")
+					print("Contains!")
 				[/gdscript]
 				[csharp]
 				// As there is no "in" keyword in C#, you have to use Contains
 				var array = new Godot.Collections.Array { 2, 4, 6, 8 };
 				if (array.Contains(2))
 				{
-				    GD.Print("Contains!");
+					GD.Print("Contains!");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -433,11 +433,11 @@
 				The callable's method should take one [Variant] parameter (the current array element) and can return any [Variant].
 				[codeblock]
 				func _ready():
-				    print([1, 2, 3].map(negate)) # Prints [-1, -2, -3].
-				    print([1, 2, 3].map(func(number): return -number)) # Same as above, but using lambda function.
+					print([1, 2, 3].map(negate)) # Prints [-1, -2, -3].
+					print([1, 2, 3].map(func(number): return -number)) # Same as above, but using lambda function.
 
 				func negate(number):
-				    return -number
+					return -number
 				[/codeblock]
 				See also [method filter], [method reduce], [method any] and [method all].
 			</description>
@@ -449,12 +449,12 @@
 				To find the maximum value using a custom comparator, you can use [method reduce]. In this example every array element is checked and the first maximum value is returned:
 				[codeblock]
 				func _ready():
-				    var arr = [Vector2(0, 1), Vector2(2, 0), Vector2(1, 1), Vector2(1, 0), Vector2(0, 2)]
-				    # In this example we compare the lengths.
-				    print(arr.reduce(func(max, val): return val if is_length_greater(val, max) else max))
+					var arr = [Vector2(0, 1), Vector2(2, 0), Vector2(1, 1), Vector2(1, 0), Vector2(0, 2)]
+					# In this example we compare the lengths.
+					print(arr.reduce(func(max, val): return val if is_length_greater(val, max) else max))
 
 				func is_length_greater(a, b):
-				    return a.length() &gt; b.length()
+					return a.length() &gt; b.length()
 				[/codeblock]
 			</description>
 		</method>
@@ -526,11 +526,11 @@
 				The callable's method takes two arguments: the current value of [param accum] and the current array element. If [param accum] is [code]null[/code] (default value), the iteration will start from the second element, with the first one used as initial value of [param accum].
 				[codeblock]
 				func _ready():
-				    print([1, 2, 3].reduce(sum, 10)) # Prints 16.
-				    print([1, 2, 3].reduce(func(accum, number): return accum + number, 10)) # Same as above, but using lambda function.
+					print([1, 2, 3].reduce(sum, 10)) # Prints 16.
+					print([1, 2, 3].reduce(func(accum, number): return accum + number, 10)) # Same as above, but using lambda function.
 
 				func sum(accum, number):
-				    return accum + number
+					return accum + number
 				[/codeblock]
 				See also [method map], [method filter], [method any] and [method all].
 			</description>
@@ -631,18 +631,18 @@
 				[codeblocks]
 				[gdscript]
 				func sort_ascending(a, b):
-				    if a[0] &lt; b[0]:
-				        return true
-				    return false
+					if a[0] &lt; b[0]:
+						return true
+					return false
 
 				func _ready():
-				    var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
-				    my_items.sort_custom(sort_ascending)
-				    print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]].
+					var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
+					my_items.sort_custom(sort_ascending)
+					print(my_items) # Prints [[4, Tomato], [5, Potato], [9, Rice]].
 
-				    # Descending, lambda version.
-				    my_items.sort_custom(func(a, b): return a[0] &gt; b[0])
-				    print(my_items) # Prints [[9, Rice], [5, Potato], [4, Tomato]].
+					# Descending, lambda version.
+					my_items.sort_custom(func(a, b): return a[0] &gt; b[0])
+					print(my_items) # Prints [[9, Rice], [5, Potato], [4, Tomato]].
 				[/gdscript]
 				[csharp]
 				// There is no custom sort support for Godot.Collections.Array

@@ -304,14 +304,14 @@
 				[b]Example:[/b]
 				[codeblock]
 				func _ready():
-				    if Engine.is_editor_hint():
-				        EditorInterface.popup_node_selector(_on_node_selected, ["Button"])
+					if Engine.is_editor_hint():
+						EditorInterface.popup_node_selector(_on_node_selected, ["Button"])
 
 				func _on_node_selected(node_path):
-				    if node_path.is_empty():
-				        print("node selection canceled")
-				    else:
-				        print("selected ", node_path)
+					if node_path.is_empty():
+						print("node selection canceled")
+					else:
+						print("selected ", node_path)
 				[/codeblock]
 			</description>
 		</method>
@@ -325,14 +325,14 @@
 				[b]Example:[/b]
 				[codeblock]
 				func _ready():
-				    if Engine.is_editor_hint():
-				        EditorInterface.popup_property_selector(this, _on_property_selected, [TYPE_INT])
+					if Engine.is_editor_hint():
+						EditorInterface.popup_property_selector(this, _on_property_selected, [TYPE_INT])
 
 				func _on_property_selected(property_path):
-				    if property_path.is_empty():
-				        print("property selection canceled")
-				    else:
-				        print("selected ", property_path)
+					if property_path.is_empty():
+						print("property selection canceled")
+					else:
+						print("selected ", property_path)
 				[/codeblock]
 			</description>
 		</method>

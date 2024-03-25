@@ -719,10 +719,10 @@
 				Example usage:
 				[codeblock]
 				func _ready():
-				    get_viewport().files_dropped.connect(on_files_dropped)
+					get_viewport().files_dropped.connect(on_files_dropped)
 
 				func on_files_dropped(files):
-				    print(files)
+					print(files)
 				[/codeblock]
 			</description>
 		</signal>

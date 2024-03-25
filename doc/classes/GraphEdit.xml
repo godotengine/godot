@@ -30,11 +30,11 @@
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_input_hotzone(in_node, in_port, mouse_position):
-				    var port_size: Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-				    var port_pos: Vector2 = in_node.get_position() + in_node.get_input_port_position(in_port) - port_size / 2
-				    var rect = Rect2(port_pos, port_size)
+					var port_size: Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+					var port_pos: Vector2 = in_node.get_position() + in_node.get_input_port_position(in_port) - port_size / 2
+					var rect = Rect2(port_pos, port_size)
 
-				    return rect.has_point(mouse_position)
+					return rect.has_point(mouse_position)
 				[/codeblock]
 			</description>
 		</method>
@@ -48,11 +48,11 @@
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_output_hotzone(in_node, in_port, mouse_position):
-				    var port_size: Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-				    var port_pos: Vector2 = in_node.get_position() + in_node.get_output_port_position(in_port) - port_size / 2
-				    var rect = Rect2(port_pos, port_size)
+					var port_size: Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+					var port_pos: Vector2 = in_node.get_position() + in_node.get_output_port_position(in_port) - port_size / 2
+					var rect = Rect2(port_pos, port_size)
 
-				    return rect.has_point(mouse_position)
+					return rect.has_point(mouse_position)
 				[/codeblock]
 			</description>
 		</method>
@@ -69,12 +69,12 @@
 				[codeblocks]
 				[gdscript]
 				func _is_node_hover_valid(from, from_port, to, to_port):
-				    return from != to
+					return from != to
 				[/gdscript]
 				[csharp]
 				public override bool _IsNodeHoverValid(StringName fromNode, int fromPort, StringName toNode, int toPort)
 				{
-				    return fromNode != toNode;
+					return fromNode != toNode;
 				}
 				[/csharp]
 				[/codeblocks]
