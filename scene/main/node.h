@@ -41,9 +41,11 @@ class Window;
 class SceneState;
 class Tween;
 class PropertyTweener;
+class NodeCompoent;
 
 SAFE_FLAG_TYPE_PUN_GUARANTEES
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
+// 节点组件
 
 class Node : public Object {
 	GDCLASS(Node, Object);
@@ -244,6 +246,30 @@ private:
 	} data;
 
 	Ref<MultiplayerAPI> multiplayer;
+
+
+	// 节点组件
+	TypedArray<NodeCompoent> compoent;
+
+	void set_compoent(const TypedArray<NodeCompoent>& p_compoent);
+	TypedArray<NodeCompoent> get_compoent();
+	
+	virtual void node_process(double delta)const;
+	virtual void node_physics_process(double delta)const;
+	virtual void node_enter_tree()const;
+	virtual void node_exit_tree()const;
+	virtual void node_ready()const;
+	virtual Vector<String> node_get_configuration_warnings()const;
+	
+	virtual void node_input(const Ref<InputEvent> &p_event)const;
+	virtual void node_shortcut_input(const Ref<InputEvent> &p_key_event)const;
+	virtual void node_unhandled_input(const Ref<InputEvent> &p_event)const;
+	virtual void node_unhandled_key_input(const Ref<InputEvent> &p_key_event)const;
+
+
+
+
+
 
 	String _get_tree_string_pretty(const String &p_prefix, bool p_last);
 	String _get_tree_string(const Node *p_node);
@@ -767,6 +793,110 @@ public:
 #endif
 	Node();
 	~Node();
+};
+class NodeCompoent : public Resource
+{
+	GDCLASS(NodeCompoent, Resource);
+	static void _bind_methods();
+public:
+	virtual bool is_supper_class(Node* node) 
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_is_supper_class))
+		{
+			bool ret = false;
+			GDVIRTUAL_CALL(_is_supper_class,node,ret);
+			return ret;
+		}
+		return true; 
+	}
+	virtual void node_process( Node* node,double delta)
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_node_process))
+		{
+			GDVIRTUAL_CALL(_node_process,node,delta);
+		}
+	}
+	virtual void node_physics_process(Node* node, double delta)
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_node_physics_process))
+		{
+			GDVIRTUAL_CALL(_node_physics_process,node,delta);
+		}
+	}
+	virtual void node_enter_tree(Node* node)
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_node_enter_tree))
+		{
+			GDVIRTUAL_CALL(_node_enter_tree,node);
+		}
+	}
+	virtual void node_exit_tree(Node* node)
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_node_exit_tree))
+		{
+			GDVIRTUAL_CALL(_node_exit_tree,node);
+		}
+	}
+	virtual void node_ready(Node* node)
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_node_ready))
+		{
+			GDVIRTUAL_CALL(_node_ready,node);
+		}
+	}
+	virtual Vector<String> node_get_configuration_warnings(Node* node)
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_node_get_configuration_warnings))
+		{
+			Vector<String> warnings;
+			GDVIRTUAL_CALL(_node_get_configuration_warnings,node,warnings);
+			return warnings;
+		}
+		return Vector<String>();
+	}
+	
+	virtual void node_input(Node* node,const Ref<InputEvent> &p_event)
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_node_input))
+		{
+			GDVIRTUAL_CALL(_node_input,node,p_event);
+		}
+	}
+	virtual void node_shortcut_input(Node* node,const Ref<InputEvent> &p_key_event)
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_node_shortcut_input))
+		{
+			GDVIRTUAL_CALL(_node_shortcut_input,node,p_key_event);
+		}
+	}
+	virtual void node_unhandled_input(Node* node,const Ref<InputEvent> &p_event)
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_node_unhandled_input))
+		{
+			GDVIRTUAL_CALL(_node_unhandled_input,node,p_event);
+		}
+	}
+	virtual void node_unhandled_key_input(Node* node,const Ref<InputEvent> &p_key_event)
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_node_unhandled_key_input))
+		{
+			GDVIRTUAL_CALL(_node_unhandled_key_input,node,p_key_event);
+		}
+	}
+
+
+	GDVIRTUAL1RC(bool,_is_supper_class, Node*)
+	GDVIRTUAL2(_node_process, Node*,double)
+	GDVIRTUAL2(_node_physics_process,Node*, double)
+	GDVIRTUAL1(_node_enter_tree,Node*)
+	GDVIRTUAL1(_node_exit_tree,Node*)
+	GDVIRTUAL1(_node_ready,Node*)
+	GDVIRTUAL1RC(Vector<String>, _node_get_configuration_warnings,Node*)
+
+	GDVIRTUAL2(_node_input,Node*,Ref<InputEvent>)
+	GDVIRTUAL2(_node_shortcut_input,Node*, Ref<InputEvent>)
+	GDVIRTUAL2(_node_unhandled_input,Node*, Ref<InputEvent>)
+	GDVIRTUAL2(_node_unhandled_key_input,Node*, Ref<InputEvent>)
 };
 
 VARIANT_ENUM_CAST(Node::DuplicateFlags);

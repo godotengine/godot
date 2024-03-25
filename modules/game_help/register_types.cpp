@@ -41,6 +41,7 @@
 #include "modules/game_help/logic/body_main.h"
 #include "modules/game_help/logic/body_part.h"
 #include "modules/game_help/logic/data_table_manager.h"
+#include "modules/game_help/logic/path_manager.h"
 #include "modules/game_help/csv/CSV_EditorImportPlugin.h"
 
 
@@ -89,6 +90,8 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	initialize_filiage_manager(p_level);
 	ClassDB::register_class<AnimationHelp>();
 
+	ClassDB::register_class<DataTableManager>();
+	ClassDB::register_class<PathManager>();
 	
 	ClassDB::register_class<CharacterBodyMain>();
 	ClassDB::register_class<CharacterBodyPart>();
@@ -107,6 +110,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AnimationHelp", animation_help));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("DataTableManager", DataTableManager::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PathManager", PathManager::get_singleton()));
 
 
 

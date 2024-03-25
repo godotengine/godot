@@ -55,10 +55,12 @@ void Node::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_PROCESS: {
 			GDVIRTUAL_CALL(_process, get_process_delta_time());
+			node_process(get_process_delta_time());
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
 			GDVIRTUAL_CALL(_physics_process, get_physics_process_delta_time());
+			node_physics_process( get_physics_process_delta_time());
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -211,6 +213,7 @@ void Node::_notification(int p_notification) {
 			}
 			_ready();
 			GDVIRTUAL_CALL(_ready);
+			node_ready();
 		} break;
 
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -295,6 +298,7 @@ void Node::_propagate_enter_tree() {
 
 	_enter_tree();
 	GDVIRTUAL_CALL(_enter_tree);
+	node_enter_tree();
 
 	emit_signal(SceneStringNames::get_singleton()->tree_entered);
 
@@ -372,6 +376,7 @@ void Node::_propagate_exit_tree() {
 	data.blocked--;
 	_exit_tree();
 	GDVIRTUAL_CALL(_exit_tree);
+	node_exit_tree();
 
 	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
 
@@ -3320,6 +3325,7 @@ PackedStringArray Node::get_configuration_warnings() const {
 	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
 		ret.append_array(warnings);
 	}
+	ret.append_array(node_get_configuration_warnings());
 
 	return ret;
 }
@@ -3361,6 +3367,7 @@ void Node::request_ready() {
 void Node::_call_input(const Ref<InputEvent> &p_event) {
 	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
 		GDVIRTUAL_CALL(_input, p_event);
+		node_input(p_event);
 	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
 		return;
@@ -3371,6 +3378,7 @@ void Node::_call_input(const Ref<InputEvent> &p_event) {
 void Node::_call_shortcut_input(const Ref<InputEvent> &p_event) {
 	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
 		GDVIRTUAL_CALL(_shortcut_input, p_event);
+		node_shortcut_input(p_event);
 	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
 		return;
@@ -3381,6 +3389,7 @@ void Node::_call_shortcut_input(const Ref<InputEvent> &p_event) {
 void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
 	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
 		GDVIRTUAL_CALL(_unhandled_input, p_event);
+		node_unhandled_input(p_event);
 	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
 		return;
@@ -3391,6 +3400,7 @@ void Node::_call_unhandled_input(const Ref<InputEvent> &p_event) {
 void Node::_call_unhandled_key_input(const Ref<InputEvent> &p_event) {
 	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
 		GDVIRTUAL_CALL(_unhandled_key_input, p_event);
+		node_unhandled_key_input(p_event);
 	}
 	if (!is_inside_tree() || !get_viewport() || get_viewport()->is_input_handled()) {
 		return;
@@ -3681,6 +3691,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_thread_safe", "property", "value"), &Node::set_thread_safe);
 	ClassDB::bind_method(D_METHOD("notify_thread_safe", "what"), &Node::notify_thread_safe);
 
+	ClassDB::bind_method(D_METHOD("set_compoent"), &Node::set_compoent);
+	ClassDB::bind_method(D_METHOD("get_compoent"), &Node::get_compoent);
+
 	BIND_CONSTANT(NOTIFICATION_ENTER_TREE);
 	BIND_CONSTANT(NOTIFICATION_EXIT_TREE);
 	BIND_CONSTANT(NOTIFICATION_MOVED_IN_PARENT);
@@ -3776,6 +3789,8 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");
 
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "compoent",PROPERTY_HINT_RESOURCE_TYPE,"NodeCompoent"), "set_components", "get_components");
+
 	ADD_GROUP("Process", "process_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
@@ -3865,6 +3880,137 @@ Node::~Node() {
 
 	orphan_node_count--;
 }
+
+
+void Node::set_compoent(const TypedArray<NodeCompoent>& p_compoent)
+{
+	compoent.clear();
+	for(int i=0;i<p_compoent.size();i++)
+	{
+		Ref<NodeCompoent> comp = p_compoent[i];
+		if(comp.is_valid() && comp->is_supper_class(this))
+		{
+			compoent.push_back(p_compoent[i]);
+		}
+	}
+}
+TypedArray<NodeCompoent> Node::get_compoent()
+{
+	return compoent;
+}
+
+void Node::node_process(double delta)const
+{
+	for(int i=0;i<compoent.size();i++)
+	{
+		Ref<NodeCompoent> comp = compoent[i];
+		if(comp.is_valid())		
+			comp->node_process((Node*)this,delta);
+	}
+}
+void Node::node_physics_process(double delta)const
+{
+	for(int i=0;i<compoent.size();i++)
+	{
+		Ref<NodeCompoent> comp = compoent[i];
+		if(comp.is_valid())
+			comp->node_physics_process((Node*)this,delta);
+	}
+}
+void Node::node_enter_tree()const
+{
+	for(int i=0;i<compoent.size();i++)
+	{
+		Ref<NodeCompoent> comp = compoent[i];
+		if(comp.is_valid())
+			comp->node_enter_tree((Node*)this);
+	}
+}
+void Node::node_exit_tree()const
+{
+
+	for(int i=0;i<compoent.size();i++)
+	{
+		Ref<NodeCompoent> comp = compoent[i];
+		if(comp.is_valid())
+			comp->node_exit_tree((Node*)this);
+	}
+
+}
+void Node::node_ready()const
+{
+	for(int i=0;i<compoent.size();i++)
+	{
+		Ref<NodeCompoent> comp = compoent[i];
+		if(comp.is_valid())
+			comp->node_ready((Node*)this);
+	}
+}
+Vector<String> Node::node_get_configuration_warnings()const
+{
+	Vector<String> rs;
+	for(int i=0;i<compoent.size();i++)
+	{
+		Ref<NodeCompoent> comp = compoent[i];
+		if(comp.is_valid())
+			rs.append_array(comp->node_get_configuration_warnings((Node*)this));
+	}
+	return rs;
+}
+
+void Node::node_input(const Ref<InputEvent> &p_event)const
+{
+	for(int i=0;i<compoent.size();i++)
+	{
+		Ref<NodeCompoent> comp = compoent[i];
+		if(comp.is_valid())
+			comp->node_input((Node*)this,p_event);
+	}
+}
+void Node::node_shortcut_input(const Ref<InputEvent> &p_key_event)const
+{
+	for(int i=0;i<compoent.size();i++)
+	{
+		Ref<NodeCompoent> comp = compoent[i];
+		if(comp.is_valid())
+			comp->node_shortcut_input((Node*)this,p_key_event);
+
+	}
+}
+void Node::node_unhandled_input(const Ref<InputEvent> &p_event)const
+{
+	for(int i=0;i<compoent.size();i++)
+	{
+		Ref<NodeCompoent> comp = compoent[i];
+		if(comp.is_valid())
+			comp->node_unhandled_input((Node*)this,p_event);
+	}
+}
+void Node::node_unhandled_key_input(const Ref<InputEvent> &p_key_event)const
+{
+	for(int i=0;i<compoent.size();i++)
+	{
+		Ref<NodeCompoent> comp = compoent[i];
+		if(comp.is_valid())
+			comp->node_unhandled_key_input((Node*)this,p_key_event);
+	}
+}
+
+void NodeCompoent::_bind_methods()
+{
+	GDVIRTUAL_BIND(_is_supper_class,"node");
+	GDVIRTUAL_BIND(_node_process,"node","delta");
+	GDVIRTUAL_BIND(_node_physics_process,"node","delta");
+	GDVIRTUAL_BIND(_node_enter_tree,"node");
+	GDVIRTUAL_BIND(_node_exit_tree,"node");
+	GDVIRTUAL_BIND(_node_ready,"node");
+	GDVIRTUAL_BIND(_node_get_configuration_warnings,"node");
+	GDVIRTUAL_BIND(_node_input,"node","event");
+	GDVIRTUAL_BIND(_node_shortcut_input,"node","event");
+	GDVIRTUAL_BIND(_node_unhandled_input,"node","event");
+	GDVIRTUAL_BIND(_node_unhandled_key_input,"node","event");
+}
+
 
 ////////////////////////////////
 // Multithreaded locked version of Object functions.
