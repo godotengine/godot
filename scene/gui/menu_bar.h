@@ -55,7 +55,7 @@ class MenuBar : public Control {
 		Ref<TextLine> text_buf;
 		bool hidden = false;
 		bool disabled = false;
-		int global_index = -1;
+		RID submenu_rid;
 
 		Menu(const String &p_name) {
 			name = p_name;
