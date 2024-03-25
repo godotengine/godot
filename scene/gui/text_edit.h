@@ -890,6 +890,7 @@ public:
 	void select_all();
 	void select_word_under_caret(int p_caret = -1);
 	void add_selection_for_next_occurrence();
+	void skip_selection_for_next_occurrence();
 	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column, int p_caret = 0);
 
 	bool has_selection(int p_caret = -1) const;

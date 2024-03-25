@@ -65,7 +65,7 @@ public:
 				return false;
 			}
 
-			Vector3 closest_point = Vector3(CLAMP(p_cam_position.x, p_bounds[0], p_bounds[3]), CLAMP(p_cam_position.y, p_bounds[1], p_bounds[4]), CLAMP(p_cam_position.z, p_bounds[2], p_bounds[5]));
+			Vector3 closest_point = p_cam_position.clamp(Vector3(p_bounds[0], p_bounds[1], p_bounds[2]), Vector3(p_bounds[3], p_bounds[4], p_bounds[5]));
 
 			if (closest_point == p_cam_position) {
 				return false;

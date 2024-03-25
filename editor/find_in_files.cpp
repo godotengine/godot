@@ -566,6 +566,7 @@ void FindInFilesDialog::_bind_methods() {
 //-----------------------------------------------------------------------------
 const char *FindInFilesPanel::SIGNAL_RESULT_SELECTED = "result_selected";
 const char *FindInFilesPanel::SIGNAL_FILES_MODIFIED = "files_modified";
+const char *FindInFilesPanel::SIGNAL_CLOSE_BUTTON_CLICKED = "close_button_clicked";
 
 FindInFilesPanel::FindInFilesPanel() {
 	_finder = memnew(FindInFiles);
@@ -611,10 +612,16 @@ FindInFilesPanel::FindInFilesPanel() {
 		_cancel_button->hide();
 		hbc->add_child(_cancel_button);
 
+		_close_button = memnew(Button);
+		_close_button->set_text(TTR("Close"));
+		_close_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_close_button_clicked));
+		hbc->add_child(_close_button);
+
 		vbc->add_child(hbc);
 	}
 
 	_results_display = memnew(Tree);
+	_results_display->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	_results_display->connect("item_selected", callable_mp(this, &FindInFilesPanel::_on_result_selected));
 	_results_display->connect("item_edited", callable_mp(this, &FindInFilesPanel::_on_item_edited));
@@ -842,6 +849,10 @@ void FindInFilesPanel::_on_cancel_button_clicked() {
 	stop_search();
 }
 
+void FindInFilesPanel::_on_close_button_clicked() {
+	emit_signal(SNAME(SIGNAL_CLOSE_BUTTON_CLICKED));
+}
+
 void FindInFilesPanel::_on_result_selected() {
 	TreeItem *item = _results_display->get_selected();
 	HashMap<TreeItem *, Result>::Iterator E = _result_items.find(item);
@@ -1009,4 +1020,6 @@ void FindInFilesPanel::_bind_methods() {
 			PropertyInfo(Variant::INT, "end")));
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_FILES_MODIFIED, PropertyInfo(Variant::STRING, "paths")));
+
+	ADD_SIGNAL(MethodInfo(SIGNAL_CLOSE_BUTTON_CLICKED));
 }

@@ -336,6 +336,16 @@ TEST_CASE("[String] Natural compare function test") {
 	CHECK(a.naturalnocasecmp_to("img10.png") < 0);
 }
 
+TEST_CASE("[String] File compare function test") {
+	String a = "_img2.png";
+	String b = "img2.png";
+
+	CHECK(a.nocasecmp_to("img10.png") > 0);
+	CHECK_MESSAGE(a.filenocasecmp_to("img10.png") < 0, "Should sort before letters.");
+	CHECK_MESSAGE(a.filenocasecmp_to(".img10.png") > 0, "Should sort after period.");
+	CHECK(b.filenocasecmp_to("img3.png") < 0);
+}
+
 TEST_CASE("[String] hex_encode_buffer") {
 	static const uint8_t u8str[] = { 0x45, 0xE3, 0x81, 0x8A, 0x8F, 0xE3 };
 	String s = String::hex_encode_buffer(u8str, 6);

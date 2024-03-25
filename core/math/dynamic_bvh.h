@@ -376,13 +376,8 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 			volume.min = p_points[0];
 			volume.max = p_points[0];
 		} else {
-			volume.min.x = MIN(volume.min.x, p_points[i].x);
-			volume.min.y = MIN(volume.min.y, p_points[i].y);
-			volume.min.z = MIN(volume.min.z, p_points[i].z);
-
-			volume.max.x = MAX(volume.max.x, p_points[i].x);
-			volume.max.y = MAX(volume.max.y, p_points[i].y);
-			volume.max.z = MAX(volume.max.z, p_points[i].z);
+			volume.min = volume.min.min(p_points[i]);
+			volume.max = volume.max.max(p_points[i]);
 		}
 	}
 

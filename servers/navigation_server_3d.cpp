@@ -235,6 +235,7 @@ NavigationServer3D::NavigationServer3D() {
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_multiple_threads", true);
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_high_priority_threads", true);
 
+	GLOBAL_DEF("navigation/baking/use_crash_prevention_checks", true);
 	GLOBAL_DEF("navigation/baking/thread_model/baking_use_multiple_threads", true);
 	GLOBAL_DEF("navigation/baking/thread_model/baking_use_high_priority_threads", true);
 

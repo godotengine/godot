@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 #nullable enable
@@ -1012,10 +1013,7 @@ namespace Godot
         /// Converts this <see cref="Projection"/> to a string.
         /// </summary>
         /// <returns>A string representation of this projection.</returns>
-        public override readonly string ToString()
-        {
-            return $"{X.X}, {X.Y}, {X.Z}, {X.W}\n{Y.X}, {Y.Y}, {Y.Z}, {Y.W}\n{Z.X}, {Z.Y}, {Z.Z}, {Z.W}\n{W.X}, {W.Y}, {W.Z}, {W.W}\n";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Projection"/> to a string with the given <paramref name="format"/>.
@@ -1023,12 +1021,10 @@ namespace Godot
         /// <returns>A string representation of this projection.</returns>
         public readonly string ToString(string? format)
         {
-#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
-            return $"{X.X.ToString(format)}, {X.Y.ToString(format)}, {X.Z.ToString(format)}, {X.W.ToString(format)}\n" +
-                $"{Y.X.ToString(format)}, {Y.Y.ToString(format)}, {Y.Z.ToString(format)}, {Y.W.ToString(format)}\n" +
-                $"{Z.X.ToString(format)}, {Z.Y.ToString(format)}, {Z.Z.ToString(format)}, {Z.W.ToString(format)}\n" +
-                $"{W.X.ToString(format)}, {W.Y.ToString(format)}, {W.Z.ToString(format)}, {W.W.ToString(format)}\n";
-#pragma warning restore CA1305
+            return $"{X.X.ToString(format, CultureInfo.InvariantCulture)}, {X.Y.ToString(format, CultureInfo.InvariantCulture)}, {X.Z.ToString(format, CultureInfo.InvariantCulture)}, {X.W.ToString(format, CultureInfo.InvariantCulture)}\n" +
+                $"{Y.X.ToString(format, CultureInfo.InvariantCulture)}, {Y.Y.ToString(format, CultureInfo.InvariantCulture)}, {Y.Z.ToString(format, CultureInfo.InvariantCulture)}, {Y.W.ToString(format, CultureInfo.InvariantCulture)}\n" +
+                $"{Z.X.ToString(format, CultureInfo.InvariantCulture)}, {Z.Y.ToString(format, CultureInfo.InvariantCulture)}, {Z.Z.ToString(format, CultureInfo.InvariantCulture)}, {Z.W.ToString(format, CultureInfo.InvariantCulture)}\n" +
+                $"{W.X.ToString(format, CultureInfo.InvariantCulture)}, {W.Y.ToString(format, CultureInfo.InvariantCulture)}, {W.Z.ToString(format, CultureInfo.InvariantCulture)}, {W.W.ToString(format, CultureInfo.InvariantCulture)}\n";
         }
     }
 }

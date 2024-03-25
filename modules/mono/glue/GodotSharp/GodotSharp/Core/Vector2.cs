@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 #nullable enable
@@ -1016,10 +1017,7 @@ namespace Godot
         /// Converts this <see cref="Vector2"/> to a string.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public override readonly string ToString()
-        {
-            return $"({X}, {Y})";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Vector2"/> to a string with the given <paramref name="format"/>.
@@ -1027,9 +1025,7 @@ namespace Godot
         /// <returns>A string representation of this vector.</returns>
         public readonly string ToString(string? format)
         {
-#pragma warning disable CA1305 // Disable warning: "Specify IFormatProvider"
-            return $"({X.ToString(format)}, {Y.ToString(format)})";
-#pragma warning restore CA1305
+            return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)})";
         }
     }
 }

@@ -1321,6 +1321,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	include_files = memnew(Tree);
 	include_margin->add_child(include_files);
+	include_files->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	include_files->connect("item_edited", callable_mp(this, &ProjectExportDialog::_tree_changed));
 	include_files->connect("check_propagated_to_item", callable_mp(this, &ProjectExportDialog::_check_propagated_to_item));
 	include_files->connect("custom_popup_edited", callable_mp(this, &ProjectExportDialog::_tree_popup_edited));

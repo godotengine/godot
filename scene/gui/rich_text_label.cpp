@@ -951,7 +951,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					case ITEM_IMAGE: {
 						ItemImage *img = static_cast<ItemImage *>(it);
 						if (img->pad) {
-							Size2 pad_size = Size2(MIN(rect.size.x, img->image->get_width()), MIN(rect.size.y, img->image->get_height()));
+							Size2 pad_size = rect.size.min(img->image->get_size());
 							Vector2 pad_off = (rect.size - pad_size) / 2;
 							img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off + pad_off, pad_size), false, img->color);
 						} else {

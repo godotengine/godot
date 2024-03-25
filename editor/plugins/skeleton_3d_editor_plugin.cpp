@@ -505,10 +505,8 @@ void Skeleton3DEditor::_file_selected(const String &p_file) {
 			position_max = Vector2(grest.origin.x, grest.origin.y);
 			position_min = Vector2(grest.origin.x, grest.origin.y);
 		} else {
-			position_max.x = MAX(grest.origin.x, position_max.x);
-			position_max.y = MAX(grest.origin.y, position_max.y);
-			position_min.x = MIN(grest.origin.x, position_min.x);
-			position_min.y = MIN(grest.origin.y, position_min.y);
+			position_max = position_max.max(Vector2(grest.origin.x, grest.origin.y));
+			position_min = position_min.min(Vector2(grest.origin.x, grest.origin.y));
 		}
 	}
 
@@ -811,6 +809,7 @@ void Skeleton3DEditor::create_editors() {
 	bones_section->get_vbox()->add_child(s_con);
 
 	joint_tree = memnew(Tree);
+	joint_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	joint_tree->set_columns(1);
 	joint_tree->set_focus_mode(Control::FOCUS_NONE);
 	joint_tree->set_select_mode(Tree::SELECT_SINGLE);

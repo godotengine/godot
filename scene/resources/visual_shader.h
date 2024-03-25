@@ -819,6 +819,10 @@ public:
 class VisualShaderNodeExpression : public VisualShaderNodeGroupBase {
 	GDCLASS(VisualShaderNodeExpression, VisualShaderNodeGroupBase);
 
+private:
+	bool _is_valid_identifier_char(char32_t p_c) const;
+	String _replace_port_names(const Vector<Pair<String, String>> &p_pairs, const String &p_expression) const;
+
 protected:
 	String expression = "";
 

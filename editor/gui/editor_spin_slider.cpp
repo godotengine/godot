@@ -238,28 +238,28 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !is_read_only()) {
-		double step = get_step();
-		if (step < 1) {
-			double divisor = 1.0 / get_step();
-
-			if (trunc(divisor) == divisor) {
-				step = 1.0;
-			}
-		}
-
-		if (k->is_command_or_control_pressed()) {
-			step *= 100.0;
-		} else if (k->is_shift_pressed()) {
-			step *= 10.0;
-		} else if (k->is_alt_pressed()) {
-			step *= 0.1;
-		}
-
 		Key code = k->get_keycode();
 
 		switch (code) {
 			case Key::UP:
 			case Key::DOWN: {
+				double step = get_step();
+				if (step < 1) {
+					double divisor = 1.0 / step;
+
+					if (trunc(divisor) == divisor) {
+						step = 1.0;
+					}
+				}
+
+				if (k->is_command_or_control_pressed()) {
+					step *= 100.0;
+				} else if (k->is_shift_pressed()) {
+					step *= 10.0;
+				} else if (k->is_alt_pressed()) {
+					step *= 0.1;
+				}
+
 				_evaluate_input_text();
 
 				double last_value = get_value();
@@ -267,12 +267,6 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 					step *= -1;
 				}
 				set_value(last_value + step);
-				double new_value = get_value();
-
-				double clamp_value = CLAMP(new_value, get_min(), get_max());
-				if (new_value != clamp_value) {
-					set_value(clamp_value);
-				}
 
 				value_input_dirty = true;
 				set_process_internal(true);

@@ -2115,7 +2115,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (is_shortcut_keys_enabled()) {
-			// SELECT ALL, SELECT WORD UNDER CARET, ADD SELECTION FOR NEXT OCCURRENCE,
+			// SELECT ALL, SELECT WORD UNDER CARET, ADD SELECTION FOR NEXT OCCURRENCE, SKIP SELECTION FOR NEXT OCCURRENCE,
 			// CLEAR CARETS AND SELECTIONS, CUT, COPY, PASTE.
 			if (k->is_action("ui_text_select_all", true)) {
 				select_all();
@@ -2129,6 +2129,11 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 			if (k->is_action("ui_text_add_selection_for_next_occurrence", true)) {
 				add_selection_for_next_occurrence();
+				accept_event();
+				return;
+			}
+			if (k->is_action("ui_text_skip_selection_for_next_occurrence", true)) {
+				skip_selection_for_next_occurrence();
 				accept_event();
 				return;
 			}
@@ -5185,6 +5190,54 @@ void TextEdit::add_selection_for_next_occurrence() {
 	}
 }
 
+void TextEdit::skip_selection_for_next_occurrence() {
+	if (!selecting_enabled) {
+		return;
+	}
+
+	if (text.size() == 1 && text[0].length() == 0) {
+		return;
+	}
+
+	// Always use the last caret, to correctly search for
+	// the next occurrence that comes after this caret.
+	int caret = get_caret_count() - 1;
+
+	// Supports getting the text under caret without selecting it.
+	// It allows to use this shortcut to simply jump to the next (under caret) word.
+	// Due to const and &(reference) presence, ternary operator is a way to avoid errors and warnings.
+	const String &searched_text = has_selection(caret) ? get_selected_text(caret) : get_word_under_caret(caret);
+
+	int column = (has_selection(caret) ? get_selection_from_column(caret) : get_caret_column(caret)) + 1;
+	int line = get_caret_line(caret);
+
+	const Point2i next_occurrence = search(searched_text, SEARCH_MATCH_CASE, line, column);
+
+	if (next_occurrence.x == -1 || next_occurrence.y == -1) {
+		return;
+	}
+
+	int to_column = (has_selection(caret) ? get_selection_to_column(caret) : get_caret_column(caret)) + 1;
+	int end = next_occurrence.x + (to_column - column);
+	int new_caret = add_caret(next_occurrence.y, end);
+
+	if (new_caret != -1) {
+		select(next_occurrence.y, next_occurrence.x, next_occurrence.y, end, new_caret);
+		adjust_viewport_to_caret(new_caret);
+		merge_overlapping_carets();
+	}
+
+	// Deselect word under previous caret.
+	if (has_selection(caret)) {
+		select_word_under_caret(caret);
+	}
+
+	// Remove previous caret.
+	if (get_caret_count() > 1) {
+		remove_caret(caret);
+	}
+}
+
 void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_to_column, int p_caret) {
 	ERR_FAIL_INDEX(p_caret, carets.size());
 	if (!selecting_enabled) {
@@ -6351,6 +6404,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select_all"), &TextEdit::select_all);
 	ClassDB::bind_method(D_METHOD("select_word_under_caret", "caret_index"), &TextEdit::select_word_under_caret, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("add_selection_for_next_occurrence"), &TextEdit::add_selection_for_next_occurrence);
+	ClassDB::bind_method(D_METHOD("skip_selection_for_next_occurrence"), &TextEdit::skip_selection_for_next_occurrence);
 	ClassDB::bind_method(D_METHOD("select", "from_line", "from_column", "to_line", "to_column", "caret_index"), &TextEdit::select, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("has_selection", "caret_index"), &TextEdit::has_selection, DEFVAL(-1));

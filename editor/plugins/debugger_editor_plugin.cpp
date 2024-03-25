@@ -77,10 +77,10 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 			TTR("When this option is enabled, curve resources used by path nodes will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, navigation meshes and polygons will be visible in the running project."));
+			TTR("When this option is enabled, navigation meshes, and polygons will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_avoidance", TTR("Visible Avoidance")), RUN_DEBUG_AVOIDANCE);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, avoidance objects shapes, radius and velocities will be visible in the running project."));
+			TTR("When this option is enabled, avoidance object shapes, radiuses, and velocities will be visible in the running project."));
 	debug_menu->add_separator();
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_canvas_redraw", TTR("Debug CanvasItem Redraws")), RUN_DEBUG_CANVAS_REDRAW);
 	debug_menu->set_item_tooltip(-1,

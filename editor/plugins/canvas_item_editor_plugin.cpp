@@ -2643,6 +2643,7 @@ void CanvasItemEditor::_update_cursor() {
 void CanvasItemEditor::_update_lock_and_group_button() {
 	bool all_locked = true;
 	bool all_group = true;
+	bool has_canvas_item = false;
 	List<Node *> selection = editor_selection->get_selected_node_list();
 	if (selection.is_empty()) {
 		all_locked = false;
@@ -2657,6 +2658,7 @@ void CanvasItemEditor::_update_lock_and_group_button() {
 				if (all_group && !item->has_meta("_edit_group_")) {
 					all_group = false;
 				}
+				has_canvas_item = true;
 			}
 			if (!all_locked && !all_group) {
 				break;
@@ -2664,12 +2666,17 @@ void CanvasItemEditor::_update_lock_and_group_button() {
 		}
 	}
 
+	all_locked = all_locked && has_canvas_item;
+	all_group = all_group && has_canvas_item;
+
 	lock_button->set_visible(!all_locked);
-	lock_button->set_disabled(selection.is_empty());
+	lock_button->set_disabled(!has_canvas_item);
 	unlock_button->set_visible(all_locked);
+	unlock_button->set_disabled(!has_canvas_item);
 	group_button->set_visible(!all_group);
-	group_button->set_disabled(selection.is_empty());
+	group_button->set_disabled(!has_canvas_item);
 	ungroup_button->set_visible(all_group);
+	ungroup_button->set_disabled(!has_canvas_item);
 }
 
 Control::CursorShape CanvasItemEditor::get_cursor_shape(const Point2 &p_pos) const {
@@ -4011,6 +4018,9 @@ void CanvasItemEditor::_notification(int p_what) {
 			AnimationPlayerEditor::get_singleton()->connect("animation_selected", callable_mp(this, &CanvasItemEditor::_keying_changed).unbind(1));
 			_keying_changed();
 			_update_editor_settings();
+
+			connect("item_lock_status_changed", callable_mp(this, &CanvasItemEditor::_update_lock_and_group_button));
+			connect("item_group_status_changed", callable_mp(this, &CanvasItemEditor::_update_lock_and_group_button));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {

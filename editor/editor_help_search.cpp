@@ -356,6 +356,7 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	// Create the results tree.
 	results_tree = memnew(Tree);
+	results_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	results_tree->set_columns(2);
 	results_tree->set_column_title(0, TTR("Name"));

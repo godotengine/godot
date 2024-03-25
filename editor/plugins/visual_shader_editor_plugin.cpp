@@ -5716,6 +5716,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	members = memnew(Tree);
 	members_vb->add_child(members);
 	SET_DRAG_FORWARDING_GCD(members, VisualShaderEditor);
+	members->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // TODO: Implement proper translation switch.
 	members->set_h_size_flags(SIZE_EXPAND_FILL);
 	members->set_v_size_flags(SIZE_EXPAND_FILL);
 	members->set_hide_root(true);
@@ -5818,6 +5819,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 		varyings = memnew(Tree);
 		vb->add_child(varyings);
+		varyings->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		varyings->set_h_size_flags(SIZE_EXPAND_FILL);
 		varyings->set_v_size_flags(SIZE_EXPAND_FILL);
 		varyings->set_hide_root(true);

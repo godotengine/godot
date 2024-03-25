@@ -104,6 +104,22 @@ public:
 		return false;
 	}
 
+	U erase_multiple_unordered(const T &p_val) {
+		U from = 0;
+		U occurrences = 0;
+		while (true) {
+			int64_t idx = find(p_val, from);
+
+			if (idx == -1) {
+				break;
+			}
+			remove_at_unordered(idx);
+			from = idx;
+			occurrences++;
+		}
+		return occurrences;
+	}
+
 	void invert() {
 		for (U i = 0; i < count / 2; i++) {
 			SWAP(data[i], data[count - i - 1]);

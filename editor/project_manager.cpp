@@ -44,6 +44,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_title_bar.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "editor/project_manager/project_dialog.h"
 #include "editor/project_manager/project_list.h"
@@ -80,6 +81,12 @@ void ProjectManager::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			Engine::get_singleton()->set_editor_hint(false);
 
+			Window *main_window = get_window();
+			if (main_window) {
+				// Handle macOS fullscreen and extend-to-title changes.
+				main_window->connect("titlebar_changed", callable_mp(this, &ProjectManager::_titlebar_resized));
+			}
+
 			// Theme has already been created in the constructor, so we can skip that step.
 			_update_theme(true);
 		} break;
@@ -91,6 +98,7 @@ void ProjectManager::_notification(int p_what) {
 
 			_select_main_view(MAIN_VIEW_PROJECTS);
 			_update_list_placeholder();
+			_titlebar_resized();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1007,6 +1015,24 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 	project_list->find_projects_multiple(folders);
 }
 
+void ProjectManager::_titlebar_resized() {
+	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
+	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
+	if (left_menu_spacer) {
+		int w = (root_container->is_layout_rtl()) ? margin.y : margin.x;
+		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
+		right_spacer->set_custom_minimum_size(Size2(w, 0));
+	}
+	if (right_menu_spacer) {
+		int w = (root_container->is_layout_rtl()) ? margin.x : margin.y;
+		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
+		left_spacer->set_custom_minimum_size(Size2(w, 0));
+	}
+	if (title_bar) {
+		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
+	}
+}
+
 // Object methods.
 
 ProjectManager::ProjectManager() {
@@ -1102,9 +1128,18 @@ ProjectManager::ProjectManager() {
 	root_container->add_child(main_vbox);
 
 	// Title bar.
+	bool can_expand = bool(EDITOR_GET("interface/editor/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EXTEND_TO_TITLE);
+
 	{
-		title_bar = memnew(HBoxContainer);
+		title_bar = memnew(EditorTitleBar);
 		main_vbox->add_child(title_bar);
+
+		if (can_expand) {
+			// Add spacer to avoid other controls under window minimize/maximize/close buttons (left side).
+			left_menu_spacer = memnew(Control);
+			left_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			title_bar->add_child(left_menu_spacer);
+		}
 
 		HBoxContainer *left_hbox = memnew(HBoxContainer);
 		left_hbox->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
@@ -1117,11 +1152,25 @@ ProjectManager::ProjectManager() {
 		left_hbox->add_child(title_bar_logo);
 		title_bar_logo->connect("pressed", callable_mp(this, &ProjectManager::_show_about));
 
+		if (can_expand) {
+			// Spacer to center main toggles.
+			left_spacer = memnew(Control);
+			left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			title_bar->add_child(left_spacer);
+		}
+
 		main_view_toggles = memnew(HBoxContainer);
 		main_view_toggles->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 		main_view_toggles->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		main_view_toggles->set_stretch_ratio(2.0);
 		title_bar->add_child(main_view_toggles);
+
+		if (can_expand) {
+			// Spacer to center main toggles.
+			right_spacer = memnew(Control);
+			right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			title_bar->add_child(right_spacer);
+		}
 
 		main_view_toggles_group.instantiate();
 
@@ -1136,6 +1185,13 @@ ProjectManager::ProjectManager() {
 		quick_settings_button->set_text(TTR("Settings"));
 		right_hbox->add_child(quick_settings_button);
 		quick_settings_button->connect("pressed", callable_mp(this, &ProjectManager::_show_quick_settings));
+
+		if (can_expand) {
+			// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
+			right_menu_spacer = memnew(Control);
+			right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			title_bar->add_child(right_menu_spacer);
+		}
 	}
 
 	main_view_container = memnew(PanelContainer);
@@ -1535,6 +1591,14 @@ ProjectManager::ProjectManager() {
 		if (!scanned_for_projects) {
 			project_list->update_project_list();
 		}
+	}
+
+	// Extend menu bar to window title.
+	if (can_expand) {
+		DisplayServer::get_singleton()->process_events();
+		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServer::MAIN_WINDOW_ID);
+		title_bar->set_can_move_window(true);
+		title_bar->connect("item_rect_changed", callable_mp(this, &ProjectManager::_titlebar_resized));
 	}
 
 	_update_size_limits();

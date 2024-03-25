@@ -38,6 +38,7 @@ class CheckBox;
 class EditorAbout;
 class EditorAssetLibrary;
 class EditorFileDialog;
+class EditorTitleBar;
 class HFlowContainer;
 class LineEdit;
 class LinkButton;
@@ -71,12 +72,17 @@ class ProjectManager : public Control {
 
 	void _update_size_limits();
 	void _update_theme(bool p_skip_creation = false);
+	void _titlebar_resized();
 
 	MarginContainer *root_container = nullptr;
 	Panel *background_panel = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 
-	HBoxContainer *title_bar = nullptr;
+	EditorTitleBar *title_bar = nullptr;
+	Control *left_menu_spacer = nullptr;
+	Control *left_spacer = nullptr;
+	Control *right_menu_spacer = nullptr;
+	Control *right_spacer = nullptr;
 	Button *title_bar_logo = nullptr;
 	HBoxContainer *main_view_toggles = nullptr;
 	Button *quick_settings_button = nullptr;

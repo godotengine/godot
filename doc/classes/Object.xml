@@ -1024,7 +1024,7 @@
 			<param index="0" name="message" type="StringName" />
 			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
+				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation. Note that most [Control] nodes automatically translate their strings, so this method is mostly useful for formatted strings or custom drawn text.
 				If [method can_translate_messages] is [code]false[/code], or no translation is available, this method returns the [param message] without changes. See [method set_message_translation].
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url].
 			</description>

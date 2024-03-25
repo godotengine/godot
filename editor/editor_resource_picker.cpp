@@ -112,7 +112,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 				preview_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 				int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 				thumbnail_size *= EDSCALE;
-				assign_button->set_custom_minimum_size(Size2(MAX(1, assign_button_min_size.x), MAX(thumbnail_size, assign_button_min_size.y)));
+				assign_button->set_custom_minimum_size(assign_button_min_size.max(Size2(1, thumbnail_size)));
 			}
 
 			preview_rect->set_texture(p_preview);
@@ -382,6 +382,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				vb->add_child(label);
 
 				duplicate_resources_tree = memnew(Tree);
+				duplicate_resources_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				vb->add_child(duplicate_resources_tree);
 				duplicate_resources_tree->set_columns(2);
 				duplicate_resources_tree->set_v_size_flags(SIZE_EXPAND_FILL);
