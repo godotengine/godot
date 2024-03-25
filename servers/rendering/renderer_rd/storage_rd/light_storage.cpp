@@ -569,7 +569,7 @@ void LightStorage::set_max_lights(const uint32_t p_max_lights) {
 	max_directional_lights = RendererSceneRender::MAX_DIRECTIONAL_LIGHTS;
 	uint32_t directional_light_buffer_size = max_directional_lights * sizeof(DirectionalLightData);
 	directional_lights = memnew_arr(DirectionalLightData, max_directional_lights);
-	for (uint32_t i=0; i<2; i++)
+	for (uint32_t i=0; i<RD::get_singleton()->get_frame_delay(); i++)
 		directional_light_buffer[i] = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size, Vector<uint8_t>(), RD::BUFFER_CREATION_LINEAR_BIT | RD::BUFFER_CREATION_PERSISTENT_BIT);
 }
 
