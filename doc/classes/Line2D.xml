@@ -9,8 +9,6 @@
 		[b]Note:[/b] [Line2D] is drawn using a 2D mesh.
 	</description>
 	<tutorials>
-		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
-		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
 	<methods>
 		<method name="add_point">

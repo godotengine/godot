@@ -8,6 +8,5 @@
 	</description>
 	<tutorials>
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 </class>
