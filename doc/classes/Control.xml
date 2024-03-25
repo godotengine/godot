@@ -1182,6 +1182,14 @@
 			- One of the node's theme property overrides is changed.
 			- The node enters the scene tree.
 			[b]Note:[/b] As an optimization, this notification won't be sent from changes that occur while this node is outside of the scene tree. Instead, all of the theme item updates can be applied at once when the node enters the scene tree.
+			[b]Note:[/b] This notification is received alongside [constant Node.NOTIFICATION_ENTER_TREE], so if you are instantiating a scene, the child nodes will not be initialized yet. You can use it to setup theming for this node, child nodes created from script, or if you want to access child nodes added in the editor, make sure the node is ready using [method Node.is_node_ready].
+			[codeblock]
+			func _notification(what):
+			    if what == NOTIFICATION_THEME_CHANGED:
+			        if not is_node_ready():
+			            await ready # Wait until ready signal.
+			        $Label.add_theme_color_override("font_color", Color.YELLOW)
+			[/codeblock]
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">
 			Sent when this node is inside a [ScrollContainer] which has begun being scrolled when dragging the scrollable area [i]with a touch event[/i]. This notification is [i]not[/i] sent when scrolling by dragging the scrollbar, scrolling with the mouse wheel or scrolling with keyboard/gamepad events.
