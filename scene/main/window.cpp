@@ -1213,7 +1213,7 @@ void Window::set_force_native(bool p_force_native) {
 		return;
 	}
 	force_native = p_force_native;
-	if (is_visible()) {
+	if (is_visible() && !is_in_edited_scene_root()) {
 		WARN_PRINT("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
 	}
 }
@@ -1224,7 +1224,7 @@ bool Window::get_force_native() const {
 
 Viewport *Window::get_embedder() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
-	if (force_native && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) {
+	if (force_native && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS) && !is_in_edited_scene_root()) {
 		return nullptr;
 	}
 
