@@ -1468,7 +1468,7 @@ void EditorPropertyFloat::update_property() {
 void EditorPropertyFloat::_bind_methods() {
 }
 
-void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_radians_as_degrees) {
+void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_radians_as_degrees, bool allow_non_finite, bool allow_inf_input) {
 	radians_as_degrees = p_radians_as_degrees;
 	spin->set_min(p_min);
 	spin->set_max(p_max);
@@ -1478,6 +1478,8 @@ void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool 
 	spin->set_allow_greater(p_greater);
 	spin->set_allow_lesser(p_lesser);
 	spin->set_suffix(p_suffix);
+	spin->set_allow_display_non_finite(allow_non_finite);
+	spin->set_allow_infinite_input(allow_inf_input);
 }
 
 EditorPropertyFloat::EditorPropertyFloat() {
@@ -3462,6 +3464,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 struct EditorPropertyRangeHint {
 	bool or_greater = true;
 	bool or_less = true;
+	bool allow_non_finite = false;
+	bool allow_inf_input = false;
 	double min = -99999.0;
 	double max = 99999.0;
 	double step = 1.0;
@@ -3503,6 +3507,10 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 				hint.hide_slider = true;
 			} else if (slice == "exp") {
 				hint.exp_range = true;
+			} else if (slice == "allow_non_finite") {
+				hint.allow_non_finite = true;
+			} else if (slice == "allow_inf_input") {
+				hint.allow_inf_input = true;
 			}
 		}
 	}
@@ -3631,7 +3639,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians_as_degrees);
+				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians_as_degrees, hint.allow_non_finite, hint.allow_inf_input);
 
 				return editor;
 			}
