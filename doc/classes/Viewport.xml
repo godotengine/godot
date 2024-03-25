@@ -497,10 +497,16 @@
 			Represents the size of the [enum RenderInfo] enum.
 		</constant>
 		<constant name="RENDER_INFO_TYPE_VISIBLE" value="0" enum="RenderInfoType">
+			Visible render pass (excluding shadows).
 		</constant>
 		<constant name="RENDER_INFO_TYPE_SHADOW" value="1" enum="RenderInfoType">
+			Shadow render pass. Objects will be rendered several times depending on the number of amounts of lights with shadows and the number of directional shadow splits.
 		</constant>
-		<constant name="RENDER_INFO_TYPE_MAX" value="2" enum="RenderInfoType">
+		<constant name="RENDER_INFO_TYPE_CANVAS" value="2" enum="RenderInfoType">
+			Canvas item rendering. This includes all 2D rendering.
+		</constant>
+		<constant name="RENDER_INFO_TYPE_MAX" value="3" enum="RenderInfoType">
+			Represents the size of the [enum RenderInfoType] enum.
 		</constant>
 		<constant name="DEBUG_DRAW_DISABLED" value="0" enum="DebugDraw">
 			Objects are displayed normally.
