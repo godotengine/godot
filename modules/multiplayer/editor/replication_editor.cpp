@@ -270,6 +270,7 @@ ReplicationEditor::ReplicationEditor() {
 	pin = memnew(Button);
 	pin->set_theme_type_variation("FlatButton");
 	pin->set_toggle_mode(true);
+	pin->set_tooltip_text(TTR("Pin replication editor"));
 	hb->add_child(pin);
 
 	tree = memnew(Tree);
