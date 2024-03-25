@@ -9,8 +9,7 @@
 		Note that "global pose" below refers to the overall transform of the bone with respect to skeleton, so it is not the actual global/world transform of the bone.
 	</description>
 	<tutorials>
-		<link title="3D Inverse Kinematics Demo">https://godotengine.org/asset-library/asset/523</link>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
 		<method name="add_bone">

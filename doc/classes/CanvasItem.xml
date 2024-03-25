@@ -12,7 +12,7 @@
 	<tutorials>
 		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
 		<link title="Custom drawing in 2D">$DOCS_URL/tutorials/2d/custom_drawing_in_2d.html</link>
-		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
+		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
 	</tutorials>
 	<methods>
 		<method name="_draw" qualifiers="virtual">

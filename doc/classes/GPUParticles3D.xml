@@ -10,7 +10,7 @@
 	<tutorials>
 		<link title="Particle systems (3D)">$DOCS_URL/tutorials/3d/particles/index.html</link>
 		<link title="Controlling thousands of fish with Particles">$DOCS_URL/tutorials/performance/vertex_animation/controlling_thousands_of_fish.html</link>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
 		<method name="capture_aabb" qualifiers="const">

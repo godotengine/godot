@@ -8,9 +8,9 @@
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
-		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
-		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
-		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
+		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
+		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
 	</tutorials>
 	<methods>
 		<method name="_get_beat_count" qualifiers="virtual const">
