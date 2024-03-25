@@ -3684,6 +3684,14 @@
 				Returns the viewport's last rendered frame.
 			</description>
 		</method>
+		<method name="viewport_get_update_mode" qualifiers="const">
+			<return type="int" enum="RenderingServer.ViewportUpdateMode" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Returns the viewport's update mode. See [enum ViewportUpdateMode] constants for options.
+				[b]Warning:[/b] Calling this from any thread other than the rendering thread will be detrimental to performance.
+			</description>
+		</method>
 		<method name="viewport_remove_canvas">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
