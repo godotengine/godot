@@ -68,6 +68,7 @@ void NativeMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("find_item_index_with_text", "rid", "text"), &NativeMenu::find_item_index_with_text);
 	ClassDB::bind_method(D_METHOD("find_item_index_with_tag", "rid", "tag"), &NativeMenu::find_item_index_with_tag);
+	ClassDB::bind_method(D_METHOD("find_item_index_with_submenu", "rid", "submenu_rid"), &NativeMenu::find_item_index_with_submenu);
 
 	ClassDB::bind_method(D_METHOD("is_item_checked", "rid", "idx"), &NativeMenu::is_item_checked);
 	ClassDB::bind_method(D_METHOD("is_item_checkable", "rid", "idx"), &NativeMenu::is_item_checkable);
@@ -260,6 +261,19 @@ int NativeMenu::find_item_index_with_text(const RID &p_rid, const String &p_text
 
 int NativeMenu::find_item_index_with_tag(const RID &p_rid, const Variant &p_tag) const {
 	WARN_PRINT("Global menus are not supported on this platform.");
+	return -1;
+}
+
+int NativeMenu::find_item_index_with_submenu(const RID &p_rid, const RID &p_submenu_rid) const {
+	if (!has_menu(p_rid) || !has_menu(p_submenu_rid)) {
+		return -1;
+	}
+	int count = get_item_count(p_rid);
+	for (int i = 0; i < count; i++) {
+		if (p_submenu_rid == get_item_submenu(p_rid, i)) {
+			return i;
+		}
+	}
 	return -1;
 }
 

@@ -102,6 +102,7 @@ public:
 
 	virtual int find_item_index_with_text(const RID &p_rid, const String &p_text) const;
 	virtual int find_item_index_with_tag(const RID &p_rid, const Variant &p_tag) const;
+	virtual int find_item_index_with_submenu(const RID &p_rid, const RID &p_submenu_rid) const;
 
 	virtual bool is_item_checked(const RID &p_rid, int p_idx) const;
 	virtual bool is_item_checkable(const RID &p_rid, int p_idx) const;
