@@ -621,10 +621,10 @@ class EditorPropertyColor : public EditorProperty {
 	ColorPickerButton *picker = nullptr;
 	void _color_changed(const Color &p_color);
 	void _popup_closed();
-	void _picker_created();
 	void _picker_opening();
 
 	Color last_color;
+	bool live_changes_enabled = true;
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -633,6 +633,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(bool p_show_alpha);
+	void set_live_changes_enabled(bool p_enabled);
 	EditorPropertyColor();
 };
 

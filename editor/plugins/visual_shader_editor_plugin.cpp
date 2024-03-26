@@ -6922,6 +6922,8 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 		} else if (Object::cast_to<EditorPropertyEnum>(prop)) {
 			prop->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 			Object::cast_to<EditorPropertyEnum>(prop)->set_option_button_clip(false);
+		} else if (Object::cast_to<EditorPropertyColor>(prop)) {
+			Object::cast_to<EditorPropertyColor>(prop)->set_live_changes_enabled(false);
 		}
 
 		editors.push_back(prop);
