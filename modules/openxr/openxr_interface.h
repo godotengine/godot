@@ -80,6 +80,8 @@ private:
 	XRPose::TrackingConfidence head_confidence;
 	Transform3D transform_for_view[2]; // We currently assume 2, but could be 4 for VARJO which we do not support yet
 
+	XRVRS xr_vrs;
+
 	void _load_action_map();
 
 	struct Action { // An action we've registered with OpenXR
@@ -167,6 +169,12 @@ public:
 
 	bool get_foveation_dynamic() const;
 	void set_foveation_dynamic(bool p_foveation_dynamic);
+
+	float get_vrs_min_radius() const;
+	void set_vrs_min_radius(float p_vrs_min_radius);
+
+	float get_vrs_strength() const;
+	void set_vrs_strength(float p_vrs_strength);
 
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
@@ -275,6 +283,8 @@ public:
 
 	Vector3 get_hand_joint_linear_velocity(Hand p_hand, HandJoints p_joint) const;
 	Vector3 get_hand_joint_angular_velocity(Hand p_hand, HandJoints p_joint) const;
+
+	virtual RID get_vrs_texture() override;
 
 	OpenXRInterface();
 	~OpenXRInterface();

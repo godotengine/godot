@@ -456,6 +456,7 @@ public:
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	bool get_view_transform(uint32_t p_view, Transform3D &r_transform);
 	bool get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, Projection &p_camera_matrix);
+	Vector2 get_eye_focus(uint32_t p_view, float p_aspect);
 	bool process();
 
 	void pre_render();
@@ -514,6 +515,9 @@ public:
 	bool interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path);
 	bool interaction_profile_suggest_bindings(RID p_interaction_profile);
 	void interaction_profile_free(RID p_interaction_profile);
+
+	RID find_tracker(const String &p_name);
+	RID find_action(const String &p_name);
 
 	bool sync_action_sets(const Vector<RID> p_active_sets);
 	bool get_action_bool(RID p_action, RID p_tracker);

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_eye_gaze_interaction.h                                         */
+/*  xr_vrs.h                                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,39 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_EYE_GAZE_INTERACTION_H
-#define OPENXR_EYE_GAZE_INTERACTION_H
+#ifndef XR_VRS_H
+#define XR_VRS_H
 
-#include "openxr_extension_wrapper.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
 
-class OpenXREyeGazeInteractionExtension : public OpenXRExtensionWrapper {
-public:
-	static OpenXREyeGazeInteractionExtension *get_singleton();
+/* This is a helper class for generating stereoscopic VRS images */
 
-	OpenXREyeGazeInteractionExtension();
-	~OpenXREyeGazeInteractionExtension();
-
-	virtual HashMap<String, bool *> get_requested_extensions() override;
-	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer) override;
-
-	PackedStringArray get_suggested_tracker_names() override;
-
-	bool is_available();
-	bool supports_eye_gaze_interaction();
-
-	virtual void on_register_metadata() override;
-
-	bool get_eye_gaze_pose(double p_dist, Vector3 &r_eye_pose);
+class XRVRS : public Object {
+	GDCLASS(XRVRS, Object);
 
 private:
-	static OpenXREyeGazeInteractionExtension *singleton;
+	float vrs_min_radius = 20.0;
+	float vrs_strength = 1.0;
+	bool vrs_dirty = true;
 
-	bool available = false;
-	XrSystemEyeGazeInteractionPropertiesEXT properties;
+	RID vrs_texture;
+	Size2i target_size;
+	PackedVector2Array eye_foci;
 
-	bool init_eye_gaze_pose = false;
-	RID eye_tracker;
-	RID eye_action;
+protected:
+	static void _bind_methods();
+
+public:
+	~XRVRS();
+
+	float get_vrs_min_radius() const;
+	void set_vrs_min_radius(float p_vrs_min_radius);
+	float get_vrs_strength() const;
+	void set_vrs_strength(float p_vrs_strength);
+
+	RID make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array &p_eye_foci);
 };
 
-#endif // OPENXR_EYE_GAZE_INTERACTION_H
+#endif // XR_VRS_H
