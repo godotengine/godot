@@ -42,77 +42,85 @@ void MIDIDriver::set_singleton() {
 	singleton = this;
 }
 
-void MIDIDriver::receive_input_packet(int device_index, uint64_t timestamp, uint8_t *data, uint32_t length) {
-	Ref<InputEventMIDI> event;
-	event.instantiate();
-	event->set_device(device_index);
-	uint32_t param_position = 1;
+void MIDIDriver::receive_input_packet(int p_device_index, uint64_t p_timestamp, uint8_t *p_data, uint32_t p_length) {
+	// p_data may contain multiple messages, eg multiple note on using MIDI 'running status'.
+	uint32_t index = 0; // index will be incremented as each status or data byte is read from p_data.
 
-	if (length >= 1) {
-		if (data[0] >= 0xF0) {
-			// channel does not apply to system common messages
-			event->set_channel(0);
-			event->set_message(MIDIMessage(data[0]));
-			last_received_message = data[0];
-		} else if ((data[0] & 0x80) == 0x00) {
-			// running status
-			event->set_channel(last_received_message & 0xF);
-			event->set_message(MIDIMessage(last_received_message >> 4));
-			param_position = 0;
-		} else {
-			event->set_channel(data[0] & 0xF);
-			event->set_message(MIDIMessage(data[0] >> 4));
-			param_position = 1;
-			last_received_message = data[0];
+	// Each time through loop will consume a MIDI message worth of bytes from p_data and create one InputEventMIDI.
+	while (index < p_length) {
+		Ref<InputEventMIDI> event;
+		event.instantiate();
+		event->set_device(p_device_index);
+
+		if (p_length - index >= 1) {
+			if (p_data[index] >= 0xF0) {
+				// Channel does not apply to system common messages.
+				event->set_channel(0);
+				event->set_message(MIDIMessage(p_data[index]));
+				last_received_message = p_data[index];
+				index++;
+			} else if ((p_data[index] & 0x80) == 0x00) {
+				// Running status, index is not changed because no new MIDI status byte, just additional data bytes.
+				event->set_channel(last_received_message & 0xF);
+				event->set_message(MIDIMessage(last_received_message >> 4));
+			} else {
+				event->set_channel(p_data[index] & 0xF);
+				event->set_message(MIDIMessage(p_data[index] >> 4));
+				last_received_message = p_data[index];
+				index++;
+			}
 		}
+
+		switch (event->get_message()) {
+			case MIDIMessage::AFTERTOUCH:
+				if (p_length >= 2 + index) {
+					event->set_pitch(p_data[index++]);
+					event->set_pressure(p_data[index++]);
+				}
+				break;
+
+			case MIDIMessage::CONTROL_CHANGE:
+				if (p_length >= 2 + index) {
+					event->set_controller_number(p_data[index++]);
+					event->set_controller_value(p_data[index++]);
+				}
+				break;
+
+			case MIDIMessage::NOTE_ON:
+			case MIDIMessage::NOTE_OFF:
+				if (p_length >= 2 + index) {
+					event->set_pitch(p_data[index++]);
+					event->set_velocity(p_data[index++]);
+				}
+				break;
+
+			case MIDIMessage::PITCH_BEND:
+				if (p_length >= 2 + index) {
+					event->set_pitch((p_data[index + 1] << 7) | p_data[index]);
+					index += 2;
+				}
+				break;
+
+			case MIDIMessage::PROGRAM_CHANGE:
+				if (p_length >= 1 + index) {
+					event->set_instrument(p_data[index++]);
+				}
+				break;
+
+			case MIDIMessage::CHANNEL_PRESSURE:
+				if (p_length >= 1 + index) {
+					event->set_pressure(p_data[index++]);
+				}
+				break;
+
+			default:
+				// Anything else means unsupported MIDI or invalid packet,
+				// cannot further parse p_data, so exit.
+				return;
+		}
+
+		Input::get_singleton()->parse_input_event(event);
 	}
-
-	switch (event->get_message()) {
-		case MIDIMessage::AFTERTOUCH:
-			if (length >= 2 + param_position) {
-				event->set_pitch(data[param_position]);
-				event->set_pressure(data[param_position + 1]);
-			}
-			break;
-
-		case MIDIMessage::CONTROL_CHANGE:
-			if (length >= 2 + param_position) {
-				event->set_controller_number(data[param_position]);
-				event->set_controller_value(data[param_position + 1]);
-			}
-			break;
-
-		case MIDIMessage::NOTE_ON:
-		case MIDIMessage::NOTE_OFF:
-			if (length >= 2 + param_position) {
-				event->set_pitch(data[param_position]);
-				event->set_velocity(data[param_position + 1]);
-			}
-			break;
-
-		case MIDIMessage::PITCH_BEND:
-			if (length >= 2 + param_position) {
-				event->set_pitch((data[param_position + 1] << 7) | data[param_position]);
-			}
-			break;
-
-		case MIDIMessage::PROGRAM_CHANGE:
-			if (length >= 1 + param_position) {
-				event->set_instrument(data[param_position]);
-			}
-			break;
-
-		case MIDIMessage::CHANNEL_PRESSURE:
-			if (length >= 1 + param_position) {
-				event->set_pressure(data[param_position]);
-			}
-			break;
-		default:
-			break;
-	}
-
-	Input *id = Input::get_singleton();
-	id->parse_input_event(event);
 }
 
 PackedStringArray MIDIDriver::get_connected_inputs() {
