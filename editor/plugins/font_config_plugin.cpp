@@ -716,7 +716,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 		for (int i = 0; i < FGRP_MAX; i++) {
 			if (have_sub[i]) {
-				menu->add_submenu_node_item(RTR(group_names[i]), menu_sub[i]);
+				menu->add_submenu_node_item(TTRGET(group_names[i]), menu_sub[i]);
 			}
 		}
 
@@ -848,15 +848,15 @@ EditorPropertyOTFeatures::EditorPropertyOTFeatures() {
 		menu_sub[i]->connect("id_pressed", callable_mp(this, &EditorPropertyOTFeatures::_add_feature));
 	}
 
-	group_names[FGRP_STYLISTIC_SET] = "Stylistic Sets";
-	group_names[FGRP_CHARACTER_VARIANT] = "Character Variants";
-	group_names[FGRP_CAPITLS] = "Capitals";
-	group_names[FGRP_LIGATURES] = "Ligatures";
-	group_names[FGRP_ALTERNATES] = "Alternates";
-	group_names[FGRP_EAL] = "East Asian Language";
-	group_names[FGRP_EAW] = "East Asian Widths";
-	group_names[FGRP_NUMAL] = "Numeral Alignment";
-	group_names[FGRP_CUSTOM] = "Custom";
+	group_names[FGRP_STYLISTIC_SET] = TTRC("Stylistic Sets");
+	group_names[FGRP_CHARACTER_VARIANT] = TTRC("Character Variants");
+	group_names[FGRP_CAPITLS] = TTRC("Capitals");
+	group_names[FGRP_LIGATURES] = TTRC("Ligatures");
+	group_names[FGRP_ALTERNATES] = TTRC("Alternates");
+	group_names[FGRP_EAL] = TTRC("East Asian Language");
+	group_names[FGRP_EAW] = TTRC("East Asian Widths");
+	group_names[FGRP_NUMAL] = TTRC("Numeral Alignment");
+	group_names[FGRP_CUSTOM] = TTRC("Custom");
 }
 
 /*************************************************************************/
