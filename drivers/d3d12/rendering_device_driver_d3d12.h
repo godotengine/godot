@@ -105,6 +105,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool primitive_in_multiviewport = false;
 		bool ss_image_supported = false; // We can provide a density map attachment on our framebuffer.
 		uint32_t ss_image_tile_size = 0;
+		uint32_t ss_max_fragment_size = 0;
 		bool additional_rates_supported = false;
 	};
 

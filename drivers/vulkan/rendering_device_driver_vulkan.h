@@ -87,6 +87,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 
 		Size2i min_texel_size;
 		Size2i max_texel_size;
+		Size2i max_fragment_size;
 
 		Size2i texel_size; // The texel size we'll use
 	};
