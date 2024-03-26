@@ -33,6 +33,7 @@
 
 #include "servers/xr/xr_interface.h"
 #include "servers/xr/xr_positional_tracker.h"
+#include "servers/xr/xr_vrs.h"
 
 /**
 	The mobile interface is a native VR interface that can be used on Android and iOS phones.
@@ -71,6 +72,8 @@ private:
 	// at a minimum we need a tracker for our head
 	Ref<XRPositionalTracker> head;
 	Transform3D head_transform;
+
+	XRVRS xr_vrs;
 
 	/*
 		logic for processing our sensor data, this was originally in our positional tracker logic but I think
@@ -138,6 +141,12 @@ public:
 	void set_k2(const double p_k2);
 	double get_k2() const;
 
+	float get_vrs_min_radius() const;
+	void set_vrs_min_radius(float p_vrs_min_radius);
+
+	float get_vrs_strength() const;
+	void set_vrs_strength(float p_vrs_strength);
+
 	virtual StringName get_name() const override;
 	virtual uint32_t get_capabilities() const override;
 
@@ -160,6 +169,8 @@ public:
 	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 
 	virtual void process() override;
+
+	virtual RID get_vrs_texture() override;
 
 	MobileVRInterface();
 	~MobileVRInterface();

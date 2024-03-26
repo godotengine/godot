@@ -152,6 +152,14 @@
 		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
 			The render size multiplier for the current HMD. Must be set before the interface has been initialized.
 		</member>
+		<member name="vrs_min_radius" type="float" setter="set_vrs_min_radius" getter="get_vrs_min_radius" default="20.0">
+			The minimum radius around the focal point where full quality is guaranteed if VRS is used as a percentage of screen size.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
+		</member>
+		<member name="vrs_strength" type="float" setter="set_vrs_strength" getter="get_vrs_strength" default="1.0">
+			The strength used to calculate the VRS density map. The greater this value, the more noticeable VRS is. This improves performance at the cost of quality.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
+		</member>
 	</members>
 	<signals>
 		<signal name="instance_exiting">

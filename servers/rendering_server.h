@@ -1056,7 +1056,15 @@ public:
 		VIEWPORT_VRS_MAX,
 	};
 
+	enum ViewportVRSUpdateMode {
+		VIEWPORT_VRS_UPDATE_DISABLED,
+		VIEWPORT_VRS_UPDATE_ONCE,
+		VIEWPORT_VRS_UPDATE_ALWAYS,
+		VIEWPORT_VRS_UPDATE_MAX,
+	};
+
 	virtual void viewport_set_vrs_mode(RID p_viewport, ViewportVRSMode p_mode) = 0;
+	virtual void viewport_set_vrs_update_mode(RID p_viewport, ViewportVRSUpdateMode p_mode) = 0;
 	virtual void viewport_set_vrs_texture(RID p_viewport, RID p_texture) = 0;
 
 	/* SKY API */
@@ -1815,6 +1823,7 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportOcclusionCullingBuildQuality);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
 VARIANT_ENUM_CAST(RenderingServer::ViewportVRSMode);
+VARIANT_ENUM_CAST(RenderingServer::ViewportVRSUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::CompositorEffectCallbackType);
 VARIANT_ENUM_CAST(RenderingServer::CompositorEffectFlags);

@@ -34,6 +34,7 @@
 #include "core/math/projection.h"
 #include "core/os/thread_safe.h"
 #include "servers/xr_server.h"
+#include "xr_vrs.h"
 
 // forward declaration
 struct BlitToScreen;
@@ -133,7 +134,6 @@ public:
 	// These methods are called from the rendering thread.
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) = 0; /* get each view projection matrix */
-	virtual RID get_vrs_texture(); /* obtain VRS texture */
 	virtual RID get_color_texture(); /* obtain color output texture (if applicable) */
 	virtual RID get_depth_texture(); /* obtain depth output texture (if applicable, used for reprojection) */
 	virtual RID get_velocity_texture(); /* obtain velocity output texture (if applicable, used for spacewarp) */
@@ -149,19 +149,16 @@ public:
 	virtual bool start_passthrough() { return false; }
 	virtual void stop_passthrough() {}
 
-	/** environment blend mode. */
+	/** environment blend mode **/
 	virtual Array get_supported_environment_blend_modes();
 	virtual XRInterface::EnvironmentBlendMode get_environment_blend_mode() const { return XR_ENV_BLEND_MODE_OPAQUE; }
 	virtual bool set_environment_blend_mode(EnvironmentBlendMode mode) { return false; }
 
+	/** VRS **/
+	virtual RID get_vrs_texture(); /* obtain VRS texture */
+
 	XRInterface();
 	~XRInterface();
-
-private:
-	struct VRSData {
-		RID vrs_texture;
-		Size2i size;
-	} vrs;
 };
 
 VARIANT_ENUM_CAST(XRInterface::Capabilities);

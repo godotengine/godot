@@ -3960,6 +3960,20 @@ RS::ViewportVRSMode TextureStorage::render_target_get_vrs_mode(RID p_render_targ
 	return rt->vrs_mode;
 }
 
+void TextureStorage::render_target_set_vrs_update_mode(RID p_render_target, RS::ViewportVRSUpdateMode p_mode) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->vrs_update_mode = p_mode;
+}
+
+RS::ViewportVRSUpdateMode TextureStorage::render_target_get_vrs_update_mode(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, RS::VIEWPORT_VRS_UPDATE_DISABLED);
+
+	return rt->vrs_update_mode;
+}
+
 void TextureStorage::render_target_set_vrs_texture(RID p_render_target, RID p_texture) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
