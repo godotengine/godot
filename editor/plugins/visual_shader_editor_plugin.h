@@ -137,6 +137,9 @@ public:
 	void set_expression(VisualShader::Type p_type, int p_node_id, const String &p_expression);
 	void attach_node_to_frame(VisualShader::Type p_type, int p_node_id, int p_frame_id);
 	void detach_node_from_frame(VisualShader::Type p_type, int p_node_id);
+	void set_frame_color_enabled(VisualShader::Type p_type, int p_node_id, bool p_enable);
+	void set_frame_color(VisualShader::Type p_type, int p_node_id, const Color &p_color);
+	void set_frame_autoshrink_enabled(VisualShader::Type p_type, int p_node_id, bool p_enable);
 	int get_constant_index(float p_constant) const;
 	Ref<Script> get_node_script(int p_node_id) const;
 	void update_theme();
@@ -451,6 +454,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _frame_color_popup_show(const Point2 &p_position, int p_node_id);
 	void _frame_color_popup_hide();
 	void _frame_color_confirm();
+	void _frame_color_changed(const Color &p_color);
 
 	void _frame_autoshrink_enabled_changed(int p_node_id);
 

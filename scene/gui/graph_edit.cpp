@@ -770,6 +770,8 @@ Rect2 GraphEdit::_compute_minimum_frame_size(const GraphFrame *p_frame) {
 		return Rect2();
 	}
 
+	int autoshrink_margin = p_frame->get_autoshrink_margin();
+
 	for (StringName attached_node_name : frame_attached_nodes.get(p_frame->get_name())) {
 		GraphElement *attached_node = Object::cast_to<GraphElement>(get_node_or_null(NodePath(attached_node_name)));
 
@@ -786,8 +788,8 @@ Rect2 GraphEdit::_compute_minimum_frame_size(const GraphFrame *p_frame) {
 		max_point = max_point.max(node_pos + size);
 	}
 
-	min_point -= p_frame->get_autoshrink_margin();
-	max_point += p_frame->get_autoshrink_margin();
+	min_point -= Size2(autoshrink_margin, autoshrink_margin);
+	max_point += Size2(autoshrink_margin, autoshrink_margin);
 
 	return Rect2(min_point, max_point - min_point);
 }

@@ -241,11 +241,11 @@ bool GraphFrame::is_autoshrink_enabled() const {
 	return autoshrink_enabled;
 }
 
-void GraphFrame::set_autoshrink_margin(const Vector2i &p_margin) {
+void GraphFrame::set_autoshrink_margin(const int &p_margin) {
 	autoshrink_margin = p_margin;
 }
 
-Vector2i GraphFrame::get_autoshrink_margin() const {
+int GraphFrame::get_autoshrink_margin() const {
 	return autoshrink_margin;
 }
 

@@ -123,6 +123,9 @@ void VisualShaderGraphPlugin::_bind_methods() {
 	ClassDB::bind_method("update_curve_xyz", &VisualShaderGraphPlugin::update_curve_xyz);
 	ClassDB::bind_method(D_METHOD("attach_node_to_frame", "type", "id", "frame"), &VisualShaderGraphPlugin::attach_node_to_frame);
 	ClassDB::bind_method(D_METHOD("detach_node_from_frame", "type", "id"), &VisualShaderGraphPlugin::detach_node_from_frame);
+	ClassDB::bind_method(D_METHOD("set_frame_color_enabled", "type", "id", "enabled"), &VisualShaderGraphPlugin::set_frame_color_enabled);
+	ClassDB::bind_method(D_METHOD("set_frame_color", "type", "id", "color"), &VisualShaderGraphPlugin::set_frame_color);
+	ClassDB::bind_method(D_METHOD("set_frame_autoshrink_enabled", "type", "id", "enabled"), &VisualShaderGraphPlugin::set_frame_autoshrink_enabled);
 }
 
 void VisualShaderGraphPlugin::set_editor(VisualShaderEditor *p_editor) {
@@ -195,6 +198,8 @@ void VisualShaderGraphPlugin::update_node(VisualShader::Type p_type, int p_node_
 	}
 	remove_node(p_type, p_node_id, true);
 	add_node(p_type, p_node_id, true, true);
+
+	// TODO: Restore focus here?
 }
 
 void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_type, int p_node_id, int p_port_id, const Variant &p_value) {
@@ -330,6 +335,51 @@ void VisualShaderGraphPlugin::detach_node_from_frame(VisualShader::Type p_type, 
 			frame_hint_label->show();
 		}
 	}
+}
+
+void VisualShaderGraphPlugin::set_frame_color_enabled(VisualShader::Type p_type, int p_node_id, bool p_enable) {
+	GraphEdit *graph = editor->graph;
+	if (!graph) {
+		return;
+	}
+
+	String node_name = itos(p_node_id);
+	GraphFrame *frame = Object::cast_to<GraphFrame>(graph->get_node_or_null(node_name));
+	if (!frame) {
+		return;
+	}
+
+	frame->set_tint_color_enabled(p_enable);
+}
+
+void VisualShaderGraphPlugin::set_frame_color(VisualShader::Type p_type, int p_node_id, const Color &p_color) {
+	GraphEdit *graph = editor->graph;
+	if (!graph) {
+		return;
+	}
+
+	String node_name = itos(p_node_id);
+	GraphFrame *frame = Object::cast_to<GraphFrame>(graph->get_node_or_null(node_name));
+	if (!frame) {
+		return;
+	}
+
+	frame->set_tint_color(p_color);
+}
+
+void VisualShaderGraphPlugin::set_frame_autoshrink_enabled(VisualShader::Type p_type, int p_node_id, bool p_enable) {
+	GraphEdit *graph = editor->graph;
+	if (!graph) {
+		return;
+	}
+
+	String node_name = itos(p_node_id);
+	GraphFrame *frame = Object::cast_to<GraphFrame>(graph->get_node_or_null(node_name));
+	if (!frame) {
+		return;
+	}
+
+	frame->set_autoshrink_enabled(p_enable);
 }
 
 Ref<Script> VisualShaderGraphPlugin::get_node_script(int p_node_id) const {
@@ -2729,6 +2779,9 @@ void VisualShaderEditor::_frame_title_popup_show(const Point2 &p_position, int p
 	frame_title_change_popup->set_meta("id", p_node_id);
 	frame_title_change_popup->popup();
 	frame_title_change_popup->set_position(p_position);
+
+	// Select current text.
+	frame_title_change_edit->grab_focus();
 }
 
 void VisualShaderEditor::_frame_title_text_changed(const String &p_new_text) {
@@ -2768,9 +2821,16 @@ void VisualShaderEditor::_frame_title_popup_hide() {
 void VisualShaderEditor::_frame_color_enabled_changed(int p_node_id) {
 	int item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_COLOR);
 
-	bool tint_color_enabled = popup_menu->is_item_checked(item_index);
+	// The new state.
+	bool tint_color_enabled = !popup_menu->is_item_checked(item_index);
 
-	popup_menu->set_item_checked(item_index, !tint_color_enabled);
+	popup_menu->set_item_checked(item_index, tint_color_enabled);
+	int frame_color_item_idx = popup_menu->get_item_index(NodeMenuOptions::SET_FRAME_COLOR);
+	if (tint_color_enabled && frame_color_item_idx == -1) {
+		popup_menu->add_item(TTR("Set Tint Color"), NodeMenuOptions::SET_FRAME_COLOR);
+	} else if (!tint_color_enabled && frame_color_item_idx != -1) {
+		popup_menu->remove_item(frame_color_item_idx);
+	}
 
 	VisualShader::Type type = get_current_shader_type();
 	Ref<VisualShaderNodeFrame> node = visual_shader->get_node(type, p_node_id);
@@ -2779,10 +2839,10 @@ void VisualShaderEditor::_frame_color_enabled_changed(int p_node_id) {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Toggle Frame Color"));
-	undo_redo->add_do_method(node.ptr(), "set_tint_color_enabled", !tint_color_enabled);
+	undo_redo->add_do_method(node.ptr(), "set_tint_color_enabled", tint_color_enabled);
 	undo_redo->add_undo_method(node.ptr(), "set_tint_color_enabled", node->is_tint_color_enabled());
-	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, p_node_id);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, p_node_id);
+	undo_redo->add_do_method(graph_plugin.ptr(), "set_frame_color_enabled", (int)type, p_node_id, tint_color_enabled);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "set_frame_color_enabled", (int)type, p_node_id, node->is_tint_color_enabled());
 	undo_redo->commit_action();
 }
 
@@ -2794,13 +2854,23 @@ void VisualShaderEditor::_frame_color_popup_show(const Point2 &p_position, int p
 	}
 	frame_tint_color_picker->set_pick_color(node->get_tint_color());
 	frame_tint_color_pick_popup->set_meta("id", p_node_id);
-	frame_tint_color_pick_popup->reset_size();
-	frame_tint_color_pick_popup->popup();
 	frame_tint_color_pick_popup->set_position(p_position);
+	frame_tint_color_pick_popup->popup();
 }
 
 void VisualShaderEditor::_frame_color_confirm() {
 	frame_tint_color_pick_popup->hide();
+}
+
+void VisualShaderEditor::_frame_color_changed(const Color &p_color) {
+	ERR_FAIL_COND(!frame_tint_color_pick_popup->has_meta("id"));
+	int node_id = (int)frame_tint_color_pick_popup->get_meta("id");
+
+	VisualShader::Type type = get_current_shader_type();
+	Ref<VisualShaderNodeFrame> node = visual_shader->get_node(type, node_id);
+	ERR_FAIL_COND(node.is_null());
+	node->set_tint_color(p_color);
+	graph_plugin->set_frame_color(type, node_id, p_color);
 }
 
 void VisualShaderEditor::_frame_color_popup_hide() {
@@ -2809,18 +2879,18 @@ void VisualShaderEditor::_frame_color_popup_hide() {
 
 	VisualShader::Type type = get_current_shader_type();
 	Ref<VisualShaderNodeFrame> node = visual_shader->get_node(type, node_id);
-
 	ERR_FAIL_COND(node.is_null());
 
 	if (node->get_tint_color() == frame_tint_color_picker->get_pick_color()) {
 		return;
 	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Set Frame Color"));
 	undo_redo->add_do_method(node.ptr(), "set_tint_color", frame_tint_color_picker->get_pick_color());
 	undo_redo->add_undo_method(node.ptr(), "set_tint_color", node->get_tint_color());
-	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, node_id);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, node_id);
+	undo_redo->add_do_method(graph_plugin.ptr(), "set_frame_color", (int)type, node_id, frame_tint_color_picker->get_pick_color());
+	undo_redo->add_undo_method(graph_plugin.ptr(), "set_frame_color", (int)type, node_id, node->get_tint_color());
 	undo_redo->commit_action();
 }
 
@@ -2840,9 +2910,11 @@ void VisualShaderEditor::_frame_autoshrink_enabled_changed(int p_node_id) {
 	undo_redo->create_action(TTR("Toggle Auto Shrink"));
 	undo_redo->add_do_method(node.ptr(), "set_autoshrink_enabled", !autoshrink_enabled);
 	undo_redo->add_undo_method(node.ptr(), "set_autoshrink_enabled", autoshrink_enabled);
-	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, p_node_id);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, p_node_id);
+	undo_redo->add_do_method(graph_plugin.ptr(), "set_frame_autoshrink_enabled", (int)type, p_node_id, !autoshrink_enabled);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "set_frame_autoshrink_enabled", (int)type, p_node_id, autoshrink_enabled);
 	undo_redo->commit_action();
+
+	popup_menu->hide();
 }
 
 void VisualShaderEditor::_parameter_line_edit_changed(const String &p_text, int p_node_id) {
@@ -3400,7 +3472,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 	undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, vsnode, position, id_to_use);
 	undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_to_use);
 	undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_to_use, false, true);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_to_use, false, false);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_to_use, false);
 
 	VisualShaderNodeExpression *expr = Object::cast_to<VisualShaderNodeExpression>(vsnode.ptr());
 	if (expr) {
@@ -4549,14 +4621,16 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			if (selected_frame != -1) {
 				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR3);
 				popup_menu->add_item(TTR("Set Frame Title"), NodeMenuOptions::SET_FRAME_TITLE);
-				popup_menu->add_check_item(TTR("Enable Tint Color"), NodeMenuOptions::ENABLE_FRAME_COLOR);
 				popup_menu->add_check_item(TTR("Enable Auto Shrink"), NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK);
-				popup_menu->add_item(TTR("Set Tint Color"), NodeMenuOptions::SET_FRAME_COLOR);
+				popup_menu->add_check_item(TTR("Enable Tint Color"), NodeMenuOptions::ENABLE_FRAME_COLOR);
 
 				VisualShaderNodeFrame *frame_ref = Object::cast_to<VisualShaderNodeFrame>(selected_vsnode.ptr());
 				if (frame_ref) {
 					int item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_COLOR);
 					popup_menu->set_item_checked(item_index, frame_ref->is_tint_color_enabled());
+					if (frame_ref->is_tint_color_enabled()) {
+						popup_menu->add_item(TTR("Set Tint Color"), NodeMenuOptions::SET_FRAME_COLOR);
+					}
 
 					item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK);
 					popup_menu->set_item_checked(item_index, frame_ref->is_autoshrink_enabled());
@@ -6032,6 +6106,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	popup_menu = memnew(PopupMenu);
 	add_child(popup_menu);
+	popup_menu->set_hide_on_checkable_item_selection(false);
 	popup_menu->add_item(TTR("Add Node"), NodeMenuOptions::ADD);
 	popup_menu->add_separator();
 	popup_menu->add_item(TTR("Cut"), NodeMenuOptions::CUT);
@@ -6200,6 +6275,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	frame_title_change_popup = memnew(PopupPanel);
 	frame_title_change_edit = memnew(LineEdit);
 	frame_title_change_edit->set_expand_to_text_length_enabled(true);
+	frame_title_change_edit->set_select_all_on_focus(true);
 	frame_title_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_frame_title_text_changed));
 	frame_title_change_edit->connect("text_submitted", callable_mp(this, &VisualShaderEditor::_frame_title_text_submitted));
 	frame_title_change_popup->add_child(frame_title_change_edit);
@@ -6215,10 +6291,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	frame_tint_color_picker = memnew(ColorPicker);
 	frame_popup_item_tint_color_editor->add_child(frame_tint_color_picker);
 	frame_tint_color_picker->reset_size();
+	frame_tint_color_picker->connect("color_changed", callable_mp(this, &VisualShaderEditor::_frame_color_changed));
 	Button *frame_tint_color_confirm_button = memnew(Button);
 	frame_tint_color_confirm_button->set_text(TTR("OK"));
 	frame_popup_item_tint_color_editor->add_child(frame_tint_color_confirm_button);
 	frame_tint_color_confirm_button->connect("pressed", callable_mp(this, &VisualShaderEditor::_frame_color_confirm));
+
 	frame_tint_color_pick_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_frame_color_popup_hide));
 	add_child(frame_tint_color_pick_popup);
 

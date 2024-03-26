@@ -22,11 +22,11 @@
 		<member name="autoshrink_enabled" type="bool" setter="set_autoshrink_enabled" getter="is_autoshrink_enabled" default="true">
 			If [code]true[/code], the frame's rect will be adjusted automatically to enclose all attached [GraphElement]s.
 		</member>
-		<member name="autoshrink_margin" type="Vector2i" setter="set_autoshrink_margin" getter="get_autoshrink_margin" default="Vector2i(40, 40)">
-			The margin around the frame (horizontal, vertical) that is used to calculate the size of the frame when [member autoshrink_enabled] is [code]true[/code].
+		<member name="autoshrink_margin" type="int" setter="set_autoshrink_margin" getter="get_autoshrink_margin" default="Vector2i(40, 40)">
+			The margin around the attached nodes that is used to calculate the size of the frame when [member autoshrink_enabled] is [code]true[/code].
 		</member>
 		<member name="drag_margin" type="int" setter="set_drag_margin" getter="get_drag_margin" default="16">
-			The margin around the frame that can be used to drag the frame.
+			The margin inside the frame that can be used to drag the frame.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
 		<member name="tint_color" type="Color" setter="set_tint_color" getter="get_tint_color" default="Color(0.3, 0.3, 0.3, 0.75)">

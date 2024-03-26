@@ -61,7 +61,7 @@ private:
 	Label *title_label = nullptr;
 
 	bool autoshrink_enabled = true;
-	Vector2i autoshrink_margin = Vector2i(40, 40);
+	int autoshrink_margin = 40;
 	int drag_margin = 16;
 
 	bool tint_color_enabled = false;
@@ -83,8 +83,8 @@ public:
 	void set_autoshrink_enabled(bool p_enable);
 	bool is_autoshrink_enabled() const;
 
-	void set_autoshrink_margin(const Vector2i &p_margin);
-	Vector2i get_autoshrink_margin() const;
+	void set_autoshrink_margin(const int &p_margin);
+	int get_autoshrink_margin() const;
 
 	HBoxContainer *get_titlebar_hbox();
 
