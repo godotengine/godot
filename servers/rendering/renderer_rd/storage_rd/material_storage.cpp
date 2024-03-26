@@ -987,25 +987,16 @@ void MaterialStorage::MaterialData::free_parameters_uniform_set(RID p_uniform_se
 }
 
 bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, bool p_use_linear_color, bool p_3d_material) {
-	if ((uint32_t)ubo_data.size() != p_ubo_size) {
-		p_uniform_dirty = true;
-		if (uniform_buffer.is_valid()) {
-			RD::get_singleton()->free(uniform_buffer);
-			uniform_buffer = RID();
-		}
+	p_uniform_dirty = true;
+	if (uniform_buffer.is_valid()) {
+		RD::get_singleton()->free(uniform_buffer);
+		uniform_buffer = RID();
+	}
 
-		ubo_data.resize(p_ubo_size);
-		if (ubo_data.size()) {
-			uniform_buffer = RD::get_singleton()->uniform_buffer_create(ubo_data.size(), Vector<uint8_t>(), RD::BUFFER_CREATION_PERSISTENT_BIT);
-			memset(ubo_data.ptrw(), 0, ubo_data.size()); //clear
-		}
-
-		//clear previous uniform set
-		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-			RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, nullptr, nullptr);
-			RD::get_singleton()->free(uniform_set);
-			uniform_set = RID();
-		}
+	ubo_data.resize(p_ubo_size);
+	if (ubo_data.size()) {
+		uniform_buffer = RD::get_singleton()->uniform_buffer_create(ubo_data.size(), Vector<uint8_t>(), RD::BUFFER_CREATION_PERSISTENT_BIT | RD::BUFFER_CREATION_LINEAR_BIT);
+		memset(ubo_data.ptrw(), 0, ubo_data.size()); //clear
 	}
 
 	//check whether buffer changed
@@ -1023,13 +1014,6 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		texture_cache.resize(tex_uniform_count);
 		render_target_cache.clear();
 		p_textures_dirty = true;
-
-		//clear previous uniform set
-		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-			RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, nullptr, nullptr);
-			RD::get_singleton()->free(uniform_set);
-			uniform_set = RID();
-		}
 	}
 
 	if (p_textures_dirty && tex_uniform_count) {
@@ -1075,7 +1059,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		}
 	}
 
-	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_shader_uniform_set);
+	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_shader_uniform_set, true);
 	RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, MaterialStorage::_material_uniform_set_erased, &self);
 
 	return true;

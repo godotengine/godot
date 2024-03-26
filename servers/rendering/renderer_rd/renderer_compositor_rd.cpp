@@ -203,7 +203,7 @@ void RendererCompositorRD::initialize() {
 // @ShadyTF
 // replace push constants with UBO
 		uint32_t params_size = sizeof(BlitPushConstant);
-		blit.params_uniform_buffer = RD::RenderingDevice::get_singleton()->uniform_buffer_create( params_size );
+		blit.params_uniform_buffer = RD::RenderingDevice::get_singleton()->uniform_buffer_create( params_size, Vector<uint8_t>(), RD::BUFFER_CREATION_PERSISTENT_BIT );
 		Vector<RD::Uniform> params_uniforms;
 		RD::Uniform u;
 		u.binding = 0;
