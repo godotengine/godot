@@ -3511,6 +3511,7 @@ void SceneTreeDock::_update_tree_menu() {
 	tree_menu->set_item_tooltip(tree_menu->get_item_index(TOOL_CENTER_PARENT), TTR("If enabled, Reparent to New Node will create the new node in the center of the selected nodes, if possible."));
 
 	PopupMenu *resource_list = memnew(PopupMenu);
+	resource_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	resource_list->connect("about_to_popup", callable_mp(this, &SceneTreeDock::_list_all_subresources).bind(resource_list));
 	resource_list->connect("index_pressed", callable_mp(this, &SceneTreeDock::_edit_subresource).bind(resource_list));
 	tree_menu->add_submenu_node_item(TTR("All Scene Sub-Resources"), resource_list);
