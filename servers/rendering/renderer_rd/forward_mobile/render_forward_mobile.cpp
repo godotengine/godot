@@ -757,7 +757,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	// fill our render lists early so we can find out if we use various features
 	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR);
 	if (RenderingDeviceCommons::render_pass_opts_enabled) {
-		render_list[RENDER_LIST_OPAQUE].sort_for_rendering();
+		render_list[RENDER_LIST_OPAQUE].sort_by_depth();
 	} else {
 		render_list[RENDER_LIST_OPAQUE].sort_by_key();
 	}
@@ -1372,7 +1372,7 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode, true);
 	uint32_t render_list_size = render_list[RENDER_LIST_SECONDARY].elements.size() - render_list_from;
 	if (RenderingDeviceCommons::render_pass_opts_enabled) {
-		render_list[RENDER_LIST_SECONDARY].sort_for_shadows(render_list_from, render_list_size);
+		render_list[RENDER_LIST_SECONDARY].sort_by_depth(render_list_from, render_list_size);
 	} else {
 		render_list[RENDER_LIST_SECONDARY].sort_by_key_range(render_list_from, render_list_size);
 	}
@@ -1518,6 +1518,8 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
 	if (!RenderingDeviceCommons::render_pass_opts_enabled) {
 		render_list[RENDER_LIST_SECONDARY].sort_by_key();
+	} else {
+		render_list[RENDER_LIST_SECONDARY].sort_by_depth();
 	}
 	_fill_instance_data(RENDER_LIST_SECONDARY);
 
