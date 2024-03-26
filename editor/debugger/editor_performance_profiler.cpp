@@ -84,7 +84,7 @@ String EditorPerformanceProfiler::_create_label(float p_value, Performance::Moni
 			return String::humanize_size(p_value);
 		}
 		case Performance::MONITOR_TYPE_TIME: {
-			return TS->format_number(rtos(p_value * 1000).pad_decimals(2)) + " " + RTR("ms");
+			return TS->format_number(rtos(p_value * 1000).pad_decimals(2)) + " " + TTR("ms");
 		}
 		default: {
 			return TS->format_number(rtos(p_value));

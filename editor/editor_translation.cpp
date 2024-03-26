@@ -160,20 +160,22 @@ List<StringName> get_extractable_message_list() {
 	ExtractableTranslationList *etl = _extractable_translations;
 	List<StringName> msgids;
 	while (etl->data) {
-		Vector<uint8_t> data;
-		data.resize(etl->uncomp_size);
-		int ret = Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
-		ERR_FAIL_COND_V_MSG(ret == -1, msgids, "Compressed file is corrupt.");
+		if (!strcmp(etl->lang, "source")) {
+			Vector<uint8_t> data;
+			data.resize(etl->uncomp_size);
+			int ret = Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
+			ERR_FAIL_COND_V_MSG(ret == -1, msgids, "Compressed file is corrupt.");
 
-		Ref<FileAccessMemory> fa;
-		fa.instantiate();
-		fa->open_custom(data.ptr(), data.size());
+			Ref<FileAccessMemory> fa;
+			fa.instantiate();
+			fa->open_custom(data.ptr(), data.size());
 
-		Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
 
-		if (tr.is_valid()) {
-			tr->get_message_list(&msgids);
-			break;
+			if (tr.is_valid()) {
+				tr->get_message_list(&msgids);
+				break;
+			}
 		}
 
 		etl++;

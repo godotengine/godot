@@ -1164,9 +1164,20 @@ void ScriptTextEditor::_update_connected_methods() {
 	// Add override icons to methods.
 	methods_found.clear();
 	for (int i = 0; i < functions.size(); i++) {
-		StringName name = StringName(functions[i].get_slice(":", 0));
+		String raw_name = functions[i].get_slice(":", 0);
+		StringName name = StringName(raw_name);
 		if (methods_found.has(name)) {
 			continue;
+		}
+
+		// Account for inner classes
+		if (raw_name.contains(".")) {
+			// Strip inner class name from the method, and start from the right since
+			// our inner class might be inside another inner class
+			int pos = raw_name.rfind(".");
+			if (pos != -1) {
+				name = raw_name.substr(pos + 1);
+			}
 		}
 
 		String found_base_class;
@@ -1217,7 +1228,7 @@ void ScriptTextEditor::_update_connected_methods() {
 				text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_editor_theme_icon(SNAME("MethodOverrideAndSlot")));
 			}
 
-			methods_found.insert(name);
+			methods_found.insert(StringName(raw_name));
 		}
 	}
 }

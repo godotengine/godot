@@ -36,7 +36,7 @@
 #include "core/os/os.h"
 #include "core/variant/callable.h"
 
-#include "native_menu.h"
+#include "display/native_menu.h"
 
 class Texture2D;
 class Image;

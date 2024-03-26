@@ -132,17 +132,16 @@ void CollisionPolygon2D::_notification(int p_what) {
 			}
 
 			if (polygon.size() > 2) {
-#define DEBUG_DECOMPOSE
-#if defined(TOOLS_ENABLED) && defined(DEBUG_DECOMPOSE)
-				Vector<Vector<Vector2>> decomp = _decompose_in_convex();
+#ifdef TOOLS_ENABLED
+				if (build_mode == BUILD_SOLIDS) {
+					Vector<Vector<Vector2>> decomp = _decompose_in_convex();
 
-				Color c(0.4, 0.9, 0.1);
-				for (int i = 0; i < decomp.size(); i++) {
-					c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
-					draw_colored_polygon(decomp[i], c);
+					Color c(0.4, 0.9, 0.1);
+					for (int i = 0; i < decomp.size(); i++) {
+						c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
+						draw_colored_polygon(decomp[i], c);
+					}
 				}
-#else
-				draw_colored_polygon(polygon, get_tree()->get_debug_collisions_color());
 #endif
 
 				const Color stroke_color = Color(0.9, 0.2, 0.0);
