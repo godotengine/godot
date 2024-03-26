@@ -210,8 +210,10 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 			return true;
 		} break;
 
+		//case FEATURE_NATIVE_DIALOG:
+		//case FEATURE_NATIVE_DIALOG_INPUT:
 #ifdef DBUS_ENABLED
-		case FEATURE_NATIVE_DIALOG: {
+		case FEATURE_NATIVE_DIALOG_FILE: {
 			return true;
 		} break;
 #endif
