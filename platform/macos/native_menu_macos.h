@@ -33,7 +33,7 @@
 
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
-#include "servers/native_menu.h"
+#include "servers/display/native_menu.h"
 
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
