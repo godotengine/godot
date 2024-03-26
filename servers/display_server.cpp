@@ -645,22 +645,22 @@ void DisplayServer::enable_for_stealing_focus(OS::ProcessID pid) {
 
 Error DisplayServer::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 Error DisplayServer::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 Error DisplayServer::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 Error DisplayServer::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 int DisplayServer::keyboard_get_layout_count() const {
