@@ -126,6 +126,7 @@ public:
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
 	void print_header(const String &p_string) const;
+	void print_header_rich(const String &p_string) const;
 
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
