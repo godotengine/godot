@@ -54,6 +54,7 @@
 #include "core/os/keyboard.h"
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
+#include "core/templates/bit_field.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid.h"
 #include "core/variant/array.h"
@@ -491,22 +492,12 @@ public:
 
 	Variant(const IPAddress &p_address);
 
-#define VARIANT_ENUM_CLASS_CONSTRUCTOR(m_enum) \
-	Variant(m_enum p_value) {                  \
-		type = INT;                            \
-		_data._int = (int64_t)p_value;         \
-	}
-
-	// Only enum classes that need to be bound need this to be defined.
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(EulerOrder)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(KeyLocation)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(MIDIMessage)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(MouseButton)
-
-#undef VARIANT_ENUM_CLASS_CONSTRUCTOR
+	template <typename T>
+	Variant(BitField<T> p_bit_field) :
+			Variant(static_cast<int64_t>(p_bit_field)) {}
+	template <typename EnumClass, std::enable_if_t<std::is_enum_v<EnumClass> && !std::is_convertible_v<EnumClass, std::underlying_type_t<EnumClass>>, int> = 0>
+	Variant(EnumClass p_enum_class) :
+			Variant(static_cast<int64_t>(p_enum_class)) {}
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {

@@ -289,19 +289,6 @@ constexpr Key operator-(Key a, Key b) {
 	return (Key)((int)a - (int)b);
 }
 
-constexpr Key operator&(Key a, Key b) {
-	return (Key)((int)a & (int)b);
-}
-
-constexpr Key operator|(Key a, Key b) {
-	return (Key)((int)a | (int)b);
-}
-
-constexpr Key &operator|=(Key &a, Key b) {
-	a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b));
-	return a;
-}
-
 constexpr Key &operator|=(Key &a, KeyModifierMask b) {
 	a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b));
 	return a;
@@ -330,10 +317,6 @@ constexpr Key operator|(KeyModifierMask a, Key b) {
 
 constexpr KeyModifierMask operator+(KeyModifierMask a, KeyModifierMask b) {
 	return (KeyModifierMask)((int)a + (int)b);
-}
-
-constexpr KeyModifierMask operator|(KeyModifierMask a, KeyModifierMask b) {
-	return (KeyModifierMask)((int)a | (int)b);
 }
 
 String keycode_get_string(Key p_code);
