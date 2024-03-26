@@ -1,7 +1,7 @@
 /**
  * test_subtree.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -45,7 +45,7 @@ TEST_CASE("[Modules][LimboAI] BTSubtree") {
 		CHECK(st->get_child_count() == 1);
 		CHECK(st->get_child(0) != task);
 
-        Ref<BTTestAction> ta = st->get_child(0);
+		Ref<BTTestAction> ta = st->get_child(0);
 		REQUIRE(ta.is_valid());
 
 		SUBCASE("When child succeeds") {

@@ -1,7 +1,7 @@
 /**
  * limbo_utility.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -608,6 +608,10 @@ void LimboUtility::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("decorate_output_var", "variable"), &LimboUtility::decorate_output_var);
 	ClassDB::bind_method(D_METHOD("get_status_name", "status"), &LimboUtility::get_status_name);
 	ClassDB::bind_method(D_METHOD("get_task_icon", "class_or_script_path"), &LimboUtility::get_task_icon);
+	ClassDB::bind_method(D_METHOD("get_check_operator_string", "check"), &LimboUtility::get_check_operator_string);
+	ClassDB::bind_method(D_METHOD("perform_check", "check", "a", "b"), &LimboUtility::perform_check);
+	ClassDB::bind_method(D_METHOD("get_operation_string", "operation"), &LimboUtility::get_operation_string);
+	ClassDB::bind_method(D_METHOD("perform_operation", "operation", "a", "b"), &LimboUtility::perform_operation);
 
 	BIND_ENUM_CONSTANT(CHECK_EQUAL);
 	BIND_ENUM_CONSTANT(CHECK_LESS_THAN);

@@ -6,6 +6,7 @@ void CharacterBodyMain::_bind_methods()
 {
     
 	ClassDB::bind_method(D_METHOD("restart"), &CharacterBodyMain::restart);
+	ClassDB::bind_method(D_METHOD("init_main_body","p_skeleton_file_path","p_animation_group"), &CharacterBodyMain::init_main_body);
 
 
 	ClassDB::bind_method(D_METHOD("set_behavior_tree", "behavior_tree"), &CharacterBodyMain::set_behavior_tree);

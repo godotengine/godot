@@ -22,6 +22,20 @@
 				Produces a string with a [Blackboard] variable name that is formatted for display or console output.
 			</description>
 		</method>
+		<method name="get_check_operator_string" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="check" type="int" enum="LimboUtility.CheckType" />
+			<description>
+				Returns an operator string for a [enum CheckType] enum value. For example, [constant CHECK_EQUAL] returns "==".
+			</description>
+		</method>
+		<method name="get_operation_string" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="operation" type="int" enum="LimboUtility.Operation" />
+			<description>
+				Returns a string representation of an [enum Operation] enum value.
+			</description>
+		</method>
 		<method name="get_status_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="status" type="int" />
@@ -34,6 +48,24 @@
 			<param index="0" name="class_or_script_path" type="String" />
 			<description>
 				Returns the icon texture associated with a task based on its class name or script resource path.
+			</description>
+		</method>
+		<method name="perform_check">
+			<return type="bool" />
+			<param index="0" name="check" type="int" enum="LimboUtility.CheckType" />
+			<param index="1" name="a" type="Variant" />
+			<param index="2" name="b" type="Variant" />
+			<description>
+				Performs a [param check] on two values, [param a] and [param b], and returns [code]true[/code] if the check passes.
+			</description>
+		</method>
+		<method name="perform_operation">
+			<return type="Variant" />
+			<param index="0" name="operation" type="int" enum="LimboUtility.Operation" />
+			<param index="1" name="a" type="Variant" />
+			<param index="2" name="b" type="Variant" />
+			<description>
+				Performs an [param operation] on two values, [param a] and [param b], and returns the result.
 			</description>
 		</method>
 	</methods>

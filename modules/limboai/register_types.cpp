@@ -197,7 +197,7 @@ void initialize_limboai_module(ModuleInitializationLevel p_level) {
 		LIMBO_REGISTER_TASK(BTWaitTicks);
 		LIMBO_REGISTER_TASK(BTCheckAgentProperty);
 		LIMBO_REGISTER_TASK(BTCheckTrigger);
-		LIMBO_REGISTER_TASK(BTCheckVar);		
+		LIMBO_REGISTER_TASK(BTCheckVar);
 		LIMBO_REGISTER_TASK(BTPlaySkill);
 
 		GDREGISTER_ABSTRACT_CLASS(BBParam);

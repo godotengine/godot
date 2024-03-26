@@ -16,10 +16,11 @@ bool BlackboardPlan::_set(const StringName &p_name, const Variant &p_value) {
 
 	// * Editor
 	if (var_map.has(p_name)) {
-		var_map[p_name].set_value(p_value);
+		BBVariable &var = var_map[p_name];
+		var.set_value(p_value);
 		if (base.is_valid() && p_value == base->get_var(p_name).get_value()) {
 			// When user pressed reset property button in inspector...
-			var_map[p_name].reset_value_changed();
+			var.reset_value_changed();
 		}
 		return true;
 	}
@@ -92,6 +93,12 @@ void BlackboardPlan::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(var.get_type(), var_name, var.get_hint(), var.get_hint_string(), PROPERTY_USAGE_EDITOR));
 		}
 
+		if (is_derived() && (!var.is_value_changed() || var.get_value() == base->var_map[var_name].get_value())) {
+			// Don't store variable if it's not modified in a derived plan.
+			// Variable is considered modified when it's marked as changed and its value is different from the base plan.
+			continue;
+		}
+
 		// * Storage
 		p_list->push_back(PropertyInfo(Variant::STRING, "var/" + var_name + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::INT, "var/" + var_name + "/type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
@@ -133,6 +140,7 @@ bool BlackboardPlan::is_prefetching_nodepath_vars() const {
 }
 
 void BlackboardPlan::add_var(const StringName &p_name, const BBVariable &p_var) {
+	ERR_FAIL_COND(p_name == StringName());
 	ERR_FAIL_COND(var_map.has(p_name));
 	var_map.insert(p_name, p_var);
 	var_list.push_back(Pair<StringName, BBVariable>(p_name, p_var));
@@ -191,6 +199,7 @@ void BlackboardPlan::rename_var(const StringName &p_name, const StringName &p_ne
 
 	ERR_FAIL_COND(!is_valid_var_name(p_new_name));
 	ERR_FAIL_COND(!var_map.has(p_name));
+	ERR_FAIL_COND(var_map.has(p_new_name));
 
 	BBVariable var = var_map[p_name];
 	Pair<StringName, BBVariable> new_entry(p_new_name, var);
@@ -263,11 +272,16 @@ void BlackboardPlan::sync_with_base_plan() {
 	}
 
 	// Erase variables that do not exist in the base plan.
+	List<StringName> erase_list;
 	for (const Pair<StringName, BBVariable> &p : var_list) {
 		if (!base->has_var(p.first)) {
-			remove_var(p.first);
+			erase_list.push_back(p.first);
 			changed = true;
 		}
+	}
+	while (erase_list.size()) {
+		remove_var(erase_list.front()->get());
+		erase_list.pop_front();
 	}
 
 	// Sync order of variables.

@@ -20,6 +20,8 @@ More on task types you can read in the :ref:`introduction`.
    **🛈 Note:** To help you write new tasks, you can add a script template to
    your project using “Misc → Create script template” menu option.
 
+Using the :ref:`Blackboard<class_Blackboard>` is covered in :ref:`accessing_blackboard`.
+
 Task anatomy
 ------------
 

@@ -14,12 +14,6 @@
 #include "../../util/limbo_utility.h"
 
 #ifdef LIMBOAI_MODULE
-#include "core/core_bind.h"
-#include "core/error/error_macros.h"
-#include "core/object/class_db.h"
-#include "core/object/object.h"
-#include "core/variant/variant.h"
-#include "core/variant/variant_utility.h"
 #endif // LIMBOAI_MODULE
 
 #ifdef LIMBOAI_GDEXTENSION

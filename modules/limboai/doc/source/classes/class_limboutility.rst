@@ -22,15 +22,23 @@ Methods
 .. table::
    :widths: auto
 
-   +-----------+---------------------------------------------------------------------------------------------------------------+
-   | String    | :ref:`decorate_output_var<class_LimboUtility_method_decorate_output_var>` **(** String variable **)** |const| |
-   +-----------+---------------------------------------------------------------------------------------------------------------+
-   | String    | :ref:`decorate_var<class_LimboUtility_method_decorate_var>` **(** String variable **)** |const|               |
-   +-----------+---------------------------------------------------------------------------------------------------------------+
-   | String    | :ref:`get_status_name<class_LimboUtility_method_get_status_name>` **(** int status **)** |const|              |
-   +-----------+---------------------------------------------------------------------------------------------------------------+
-   | Texture2D | :ref:`get_task_icon<class_LimboUtility_method_get_task_icon>` **(** String class_or_script_path **)** |const| |
-   +-----------+---------------------------------------------------------------------------------------------------------------+
+   +-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | String    | :ref:`decorate_output_var<class_LimboUtility_method_decorate_output_var>` **(** String variable **)** |const|                                                   |
+   +-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | String    | :ref:`decorate_var<class_LimboUtility_method_decorate_var>` **(** String variable **)** |const|                                                                 |
+   +-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | String    | :ref:`get_check_operator_string<class_LimboUtility_method_get_check_operator_string>` **(** :ref:`CheckType<enum_LimboUtility_CheckType>` check **)** |const|   |
+   +-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | String    | :ref:`get_operation_string<class_LimboUtility_method_get_operation_string>` **(** :ref:`Operation<enum_LimboUtility_Operation>` operation **)** |const|         |
+   +-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | String    | :ref:`get_status_name<class_LimboUtility_method_get_status_name>` **(** int status **)** |const|                                                                |
+   +-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | Texture2D | :ref:`get_task_icon<class_LimboUtility_method_get_task_icon>` **(** String class_or_script_path **)** |const|                                                   |
+   +-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | bool      | :ref:`perform_check<class_LimboUtility_method_perform_check>` **(** :ref:`CheckType<enum_LimboUtility_CheckType>` check, Variant a, Variant b **)**             |
+   +-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | Variant   | :ref:`perform_operation<class_LimboUtility_method_perform_operation>` **(** :ref:`Operation<enum_LimboUtility_Operation>` operation, Variant a, Variant b **)** |
+   +-----------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -234,6 +242,30 @@ Produces a string with a :ref:`Blackboard<class_Blackboard>` variable name that 
 
 ----
 
+.. _class_LimboUtility_method_get_check_operator_string:
+
+.. rst-class:: classref-method
+
+String **get_check_operator_string** **(** :ref:`CheckType<enum_LimboUtility_CheckType>` check **)** |const|
+
+Returns an operator string for a :ref:`CheckType<enum_LimboUtility_CheckType>` enum value. For example, :ref:`CHECK_EQUAL<class_LimboUtility_constant_CHECK_EQUAL>` returns "==".
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_LimboUtility_method_get_operation_string:
+
+.. rst-class:: classref-method
+
+String **get_operation_string** **(** :ref:`Operation<enum_LimboUtility_Operation>` operation **)** |const|
+
+Returns a string representation of an :ref:`Operation<enum_LimboUtility_Operation>` enum value.
+
+.. rst-class:: classref-item-separator
+
+----
+
 .. _class_LimboUtility_method_get_status_name:
 
 .. rst-class:: classref-method
@@ -253,6 +285,30 @@ Returns a name of a :ref:`BTTask<class_BTTask>` status code.
 Texture2D **get_task_icon** **(** String class_or_script_path **)** |const|
 
 Returns the icon texture associated with a task based on its class name or script resource path.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_LimboUtility_method_perform_check:
+
+.. rst-class:: classref-method
+
+bool **perform_check** **(** :ref:`CheckType<enum_LimboUtility_CheckType>` check, Variant a, Variant b **)**
+
+Performs a ``check`` on two values, ``a`` and ``b``, and returns ``true`` if the check passes.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_LimboUtility_method_perform_operation:
+
+.. rst-class:: classref-method
+
+Variant **perform_operation** **(** :ref:`Operation<enum_LimboUtility_Operation>` operation, Variant a, Variant b **)**
+
+Performs an ``operation`` on two values, ``a`` and ``b``, and returns the result.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`

@@ -286,7 +286,7 @@ void EditorPropertyBBParam::update_property() {
 		variable_editor->update_property();
 		variable_editor->show();
 		bottom_container->hide();
-		type_choice->set_icon(get_editor_theme_icon(SNAME("BTSetVar")));
+		type_choice->set_icon(get_editor_theme_icon(SNAME("LimboExtraVariable")));
 	} else {
 		_create_value_editor(param->get_type());
 		variable_editor->hide();
@@ -321,7 +321,7 @@ void EditorPropertyBBParam::_notification(int p_what) {
 			// Initialize type choice.
 			PopupMenu *type_menu = type_choice->get_popup();
 			type_menu->clear();
-			type_menu->add_icon_item(get_editor_theme_icon(SNAME("BTSetVar")), TTR("Blackboard Variable"), ID_BIND_VAR);
+			type_menu->add_icon_item(get_editor_theme_icon(SNAME("LimboExtraVariable")), TTR("Blackboard Variable"), ID_BIND_VAR);
 			type_menu->add_separator();
 			Ref<BBParam> param = _get_edited_param();
 			bool is_variant_param = param->is_class_ptr(BBVariant::get_class_ptr_static());

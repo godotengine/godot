@@ -5,11 +5,6 @@
 [ext_resource type="BehaviorTree" uid="uid://bpdm5jnegi38" path="res://demo/ai/trees/01_agent_melee_simple.tres" id="3_tb7cx"]
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_s08ac"]
-var/speed/name = "speed"
-var/speed/type = 3
-var/speed/value = 400.0
-var/speed/hint = 1
-var/speed/hint_string = "10,1000,10"
 
 [node name="AgentMeleeSimple" instance=ExtResource("1_l180o")]
 

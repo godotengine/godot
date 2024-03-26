@@ -10,6 +10,8 @@ including objects and resources.
 
 Using the :ref:`Blackboard<class_Blackboard>`, you can easily share data in your behavior trees, making the tasks in the behavior tree more flexible.
 
+.. _accessing_blackboard:
+
 Accessing the Blackboard in a Task
 ----------------------------------
 
@@ -31,9 +33,13 @@ Here's an example of how you can interact with the :ref:`Blackboard<class_Blackb
         # Check if the "speed" variable exists:
         if blackboard.has_var(speed_var):
             # ...
-..
 
-    **🛈 Note:** The variable doesn't need to exist when you set it.
+It is recommended to suffix variable name properties with ``_var``, like in the example above, which enables the
+inspector to provide a more convenient property editor for the variable. This editor
+allows you to select or add the variable to the blackboard plan, and provides a
+warning icon if the variable does not exist in the blackboard plan.
+
+    **🛈 Note:** The variable doesn't need to exist when you set it in code.
 
 .. _editing_plan:
 

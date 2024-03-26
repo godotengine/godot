@@ -5,11 +5,6 @@
 [ext_resource type="BehaviorTree" uid="uid://c2bxoo68ywb27" path="res://demo/ai/trees/03_agent_imp.tres" id="3_furh3"]
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_aog23"]
-var/speed/name = &"speed"
-var/speed/type = 3
-var/speed/value = 400.0
-var/speed/hint = 1
-var/speed/hint_string = "10,1000,10"
 
 [node name="AgentImp" instance=ExtResource("1_13xup")]
 

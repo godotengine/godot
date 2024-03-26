@@ -17,16 +17,10 @@
 
 #ifdef LIMBOAI_MODULE
 #include "core/io/resource.h"
-#include "core/object/object.h"
-#include "core/typedefs.h"
-#include "core/variant/variant.h"
 #endif // LIMBOAI_MODULE
 
 #ifdef LIMBOAI_GDEXTENSION
-#include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/classes/resource.hpp>
-#include <godot_cpp/core/type_info.hpp>
-#include <godot_cpp/variant/variant.hpp>
 #endif // LIMBOAI_GDEXTENSION
 
 class BBParam : public Resource {
@@ -50,14 +44,7 @@ private:
 protected:
 	static void _bind_methods();
 
-	_FORCE_INLINE_ void _assign_default_value() {
-#ifdef LIMBOAI_MODULE
-		Callable::CallError err;
-		Variant::construct(get_type(), saved_value, nullptr, 0, err);
-#elif LIMBOAI_GDEXTENSION
-		saved_value.clear();
-#endif
-	}
+	_FORCE_INLINE_ void _assign_default_value() { saved_value = VARIANT_DEFAULT(get_type()); }
 
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 

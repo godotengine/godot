@@ -16,7 +16,7 @@ var/speed/hint_string = "10,1000,10"
 [sub_resource type="BTAction" id="BTAction_2murg"]
 script = ExtResource("1_f605f")
 group = &"player"
-output_var = "target"
+output_var = &"target"
 
 [sub_resource type="BTRunLimit" id="BTRunLimit_60b8b"]
 children = [SubResource("BTAction_2murg")]
@@ -25,11 +25,11 @@ children = [SubResource("BTAction_2murg")]
 script = ExtResource("2_mj1cj")
 distance_min = 0.0
 distance_max = 200.0
-target_var = "target"
+target_var = &"target"
 
 [sub_resource type="BTAction" id="BTAction_oc76s"]
 script = ExtResource("3_86p0r")
-target_var = "target"
+target_var = &"target"
 
 [sub_resource type="BBNode" id="BBNode_6d0yy"]
 resource_name = "AnimationPlayer"
@@ -60,7 +60,7 @@ duration = 5.0
 script = ExtResource("2_mj1cj")
 distance_min = 0.0
 distance_max = 200.0
-target_var = "target"
+target_var = &"target"
 
 [sub_resource type="BBNode" id="BBNode_wksgd"]
 resource_name = "AnimationPlayer"
@@ -72,7 +72,7 @@ animation_name = &"walk"
 
 [sub_resource type="BTAction" id="BTAction_6q0k4"]
 script = ExtResource("4_u0vk1")
-speed_var = "speed"
+speed_var = &"speed"
 max_angle_deviation = 0.7
 
 [sub_resource type="BTTimeLimit" id="BTTimeLimit_6eii7"]
@@ -100,7 +100,7 @@ children = [SubResource("BTCondition_x0uu7"), SubResource("BTPlayAnimation_umlwj
 script = ExtResource("2_mj1cj")
 distance_min = 200.0
 distance_max = 10000.0
-target_var = "target"
+target_var = &"target"
 
 [sub_resource type="BBNode" id="BBNode_rpwld"]
 resource_name = "AnimationPlayer"
@@ -112,8 +112,8 @@ animation_name = &"walk"
 
 [sub_resource type="BTAction" id="BTAction_wc11r"]
 script = ExtResource("6_1yikm")
-target_var = "target"
-speed_var = "speed"
+target_var = &"target"
+speed_var = &"speed"
 approach_distance = 100.0
 
 [sub_resource type="BBNode" id="BBNode_aw5jj"]

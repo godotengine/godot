@@ -1,7 +1,7 @@
 /**
  * limbo_debugger_plugin.cpp
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -19,7 +19,6 @@
 #include "../../util/limbo_compat.h"
 #include "../../util/limbo_utility.h"
 #include "limbo_debugger.h"
-#include "editor/editor_paths.h"
 
 #ifdef LIMBOAI_MODULE
 #include "core/debugger/engine_debugger.h"
@@ -31,6 +30,7 @@
 #include "core/string/ustring.h"
 #include "core/variant/array.h"
 #include "editor/editor_interface.h"
+#include "editor/editor_paths.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/filesystem_dock.h"
 #include "editor/plugins/editor_debugger_plugin.h"
@@ -171,7 +171,7 @@ void LimboDebuggerTab::_resource_header_pressed() {
 	if (bt_path.is_empty()) {
 		return;
 	}
-	FS_DOCK_SELECT_FILE(bt_path);
+	FS_DOCK_SELECT_FILE(bt_path.get_slice("::", 0));
 	Ref<BehaviorTree> bt = RESOURCE_LOAD(bt_path, "BehaviorTree");
 	ERR_FAIL_COND_MSG(!bt.is_valid(), "Failed to load BehaviorTree. Wrong resource path?");
 	EditorInterface::get_singleton()->edit_resource(bt);

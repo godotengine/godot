@@ -5,11 +5,6 @@
 [ext_resource type="BehaviorTree" uid="uid://tep50j4d6kgp" path="res://demo/ai/trees/tutorial/tutorial_07_more_decorators.tres" id="3_ta3g6"]
 
 [sub_resource type="BlackboardPlan" id="BlackboardPlan_52mdk"]
-var/speed/name = "speed"
-var/speed/type = 3
-var/speed/value = 400.0
-var/speed/hint = 1
-var/speed/hint_string = "10,1000,10"
 
 [node name="TutorialMoreDecorators" instance=ExtResource("1_k4qfc")]
 

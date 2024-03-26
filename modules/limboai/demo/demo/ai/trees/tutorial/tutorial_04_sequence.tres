@@ -33,14 +33,14 @@ animation_name = &"walk"
 script = ExtResource("1_gk66j")
 range_min = 300.0
 range_max = 500.0
-position_var = "pos"
+position_var = &"pos"
 
 [sub_resource type="BTAction" id="BTAction_djl5v"]
 script = ExtResource("2_v5eou")
-target_position_var = "pos"
-speed_var = "speed"
+target_position_var = &"pos"
+speed_var = &"speed"
 tolerance = 50.0
-avoid_var = ""
+avoid_var = &""
 
 [sub_resource type="BTFail" id="BTFail_i2f36"]
 

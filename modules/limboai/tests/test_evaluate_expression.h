@@ -1,7 +1,7 @@
 /**
  * test_evaluate_expression.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  * Copyright 2024 Wilson E. Alvarez
  *
  * Use of this source code is governed by an MIT-style

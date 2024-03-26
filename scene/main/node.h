@@ -809,6 +809,14 @@ public:
 		}
 		return true; 
 	}
+	virtual void remove_to_node(Node* node) 
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_remove_to_node))
+		{
+			GDVIRTUAL_CALL(_remove_to_node,node);
+		}
+		
+	}
 	virtual void node_process( Node* node,double delta)
 	{
 		if(GDVIRTUAL_IS_OVERRIDDEN(_node_process))
@@ -886,6 +894,7 @@ public:
 
 
 	GDVIRTUAL1RC(bool,_is_supper_class, Node*)
+	GDVIRTUAL1(_remove_to_node, Node*)
 	GDVIRTUAL2(_node_process, Node*,double)
 	GDVIRTUAL2(_node_physics_process,Node*, double)
 	GDVIRTUAL1(_node_enter_tree,Node*)

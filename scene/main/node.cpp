@@ -3884,6 +3884,16 @@ Node::~Node() {
 
 void Node::set_compoent(const TypedArray<NodeCompoent>& p_compoent)
 {
+
+	// 处理移除的组件消息回调
+	for(int i = 0;i<compoent.size();i++)
+	{
+		if(p_compoent.find(compoent[i])==-1)
+		{
+			Ref<NodeCompoent> comp = compoent[i];
+			comp->remove_to_node((Node*)this);
+		}
+	}
 	compoent.clear();
 	for(int i=0;i<p_compoent.size();i++)
 	{
@@ -3999,6 +4009,7 @@ void Node::node_unhandled_key_input(const Ref<InputEvent> &p_key_event)const
 void NodeCompoent::_bind_methods()
 {
 	GDVIRTUAL_BIND(_is_supper_class,"node");
+	GDVIRTUAL_BIND(_remove_to_node,"node");
 	GDVIRTUAL_BIND(_node_process,"node","delta");
 	GDVIRTUAL_BIND(_node_physics_process,"node","delta");
 	GDVIRTUAL_BIND(_node_enter_tree,"node");

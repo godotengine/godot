@@ -1,7 +1,7 @@
 /**
  * limbo_utility.h
  * =============================================================================
- * Copyright 2021-2023 Serhii Snitsaruk
+ * Copyright 2021-2024 Serhii Snitsaruk
  *
  * Use of this source code is governed by an MIT-style
  * license that can be found in the LICENSE file or at
@@ -36,7 +36,7 @@ using namespace godot;
 
 #define LOGICAL_XOR(a, b) (a) ? !(b) : (b)
 
-#define LIMBO_DOC_VERSION "latest"
+#define LIMBO_DOC_VERSION "v1.0"
 
 class LimboUtility : public Object {
 	GDCLASS(LimboUtility, Object);

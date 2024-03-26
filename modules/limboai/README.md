@@ -34,7 +34,7 @@ Behavior Trees are powerful hierarchical structures used to model and control th
 [![Demonstration](https://img.youtube.com/vi/NWaMArUg7mY/0.jpg)](https://www.youtube.com/watch?v=NWaMArUg7mY)
 
 >**🛈 Demo project** lives in the `demo` folder and is available separately in [**Releases**](https://github.com/limbonaut/limboai/releases).
-> It contains a tutorial that introduces behavior trees and includes examples.
+> It also contains a tutorial that introduces behavior trees using examples.
 
 ## Features
 
@@ -45,11 +45,12 @@ Behavior Trees are powerful hierarchical structures used to model and control th
     - Control execution flow using composite, decorator, and condition tasks.
     - [Create custom tasks](https://limboai.readthedocs.io/en/latest/getting-started/custom-tasks.html) by extending core classes: `BTAction`, `BTCondition`, `BTDecorator`, and `BTComposite`.
     - Built-in class documentation.
-    - Blackboard: Share data seamlessly between tasks using the `Blackboard`.
+    - Blackboard system: Share data seamlessly between tasks using the `Blackboard`.
       - Blackboard plans: Define variables in the BehaviorTree resource and override their values in the BTPlayer node.
+      - Plan editor: Manage variables, their data types and property hints.
       - Blackboard scopes: Prevent name conflicts and enable advanced techniques like [sharing data between several agents](https://limboai.readthedocs.io/en/latest/getting-started/using-blackboard.html#sharing-data-between-several-agents).
       - Blackboard parameters: [Export a BB parameter](https://limboai.readthedocs.io/en/latest/getting-started/using-blackboard.html#task-parameters), for which user can provide a value or bind it to a blackboard variable (can be used in custom tasks).
-      - Editor support: Blackboard plan editor, and inspector property editor for exported string properties ending with "_var".
+      - Inspector support for specifying blackboard variables (custom editor for exported `StringName` properties ending with "_var").
     - Use the `BTSubtree` task to execute a tree from a different resource file, promoting organization and reusability.
     - Visual Debugger: Inspect the execution of any BT in a running scene to identify and troubleshoot issues.
     - Visualize BT in-game using `BehaviorTreeView` node (for custom in-game tools).
@@ -57,7 +58,7 @@ Behavior Trees are powerful hierarchical structures used to model and control th
 
 - **Hierarchical State Machines (HSM):**
     - Extend the `LimboState` class to implement state logic.
-    - The `LimboHSM` node serves as a state machine that manages `LimboState` instances and transitions.
+    - `LimboHSM` node serves as a state machine that manages `LimboState` instances and transitions.
     - `LimboHSM` is a state itself and can be nested within other `LimboHSM` instances.
     - [Event-based](https://limboai.readthedocs.io/en/latest/getting-started/hsm.html#events-and-transitions): Transitions are associated with events and are triggered by the state machine when the relevant event is dispatched, allowing for better decoupling of transitions from state logic.
     - Combine state machines with behavior trees using `BTState` for advanced reactive AI.
@@ -68,7 +69,7 @@ Behavior Trees are powerful hierarchical structures used to model and control th
 
 - **GDExtension:** LimboAI can be [used as extension](https://limboai.readthedocs.io/en/latest/getting-started/gdextension.html). Custom engine builds are not necessary.
 
-- **Demo + Tutorial:** Check out our extensive demo project, which includes a tutorial providing an introduction to behavior trees with examples.
+- **Demo + Tutorial:** Check out our extensive demo project, which includes an introduction to behavior trees using examples.
 
 ## Getting LimboAI
 
@@ -102,16 +103,15 @@ LimboAI can be used as either a C++ module or as a GDExtension shared library. G
 
 ## Contributing
 
-All contributions are welcome! Feel free to open issues with bug reports and feature requests, and submit PRs.
+Contributions are welcome! Please open issues for bug reports, feature requests, or code changes. Keep the minor versions backward-compatible when submitting pull requests.
 
-Got an idea for a behavior tree task that you think would be useful on a variety of projects?
-I invite you to open an issue and describe your concept.
+If you have an idea for a behavior tree task or a feature that could be useful in a variety of projects, open an issue to discuss it.
 
 ## Social
 
-We have a fresh new Discord server: https://discord.gg/N5MGC95GpP
+Need help? We have a Discord server: https://discord.gg/N5MGC95GpP
 
-I write about LimboAI development on the Mastodon: https://mastodon.gamedev.place/@limbo.
+I write about LimboAI development on Mastodon: https://mastodon.gamedev.place/@limbo.
 
 ## Roadmap
 
