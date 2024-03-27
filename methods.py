@@ -1592,3 +1592,26 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
     if get_bool(original_args, "vsproj_gen_only", True):
         sys.exit()
+
+
+def get_debug_symbols_enum(default: bool):
+    """debug_symbols is an enum and has multiple options that replace the previous
+    boolean arguments for debug_symbols and separate_debug_symbols.
+
+    This function enables backwards compatibility and handles the boolean arguments
+    of the old system and translates them to the new, proper enums values of the new.
+    """
+    from SCons.Script import ARGUMENTS
+    from SCons.Variables.BoolVariable import TRUE_STRINGS
+
+    arg_value = ARGUMENTS.get("debug_symbols")
+    if arg_value in ["embedded", "separate"]:
+        return arg_value
+
+    return_value = "no"
+    # check if the legacy "yes" value was passed for "debug_symbols"
+    if arg_value in TRUE_STRINGS or default is True:
+        return_value = "embedded"  # if it was, this means we want to embed the symbols in the binary
+        if get_cmdline_bool("separate_debug_symbols", False):
+            return_value = "separate"  # unless the flag to separate them was also passed
+    return return_value

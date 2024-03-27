@@ -124,7 +124,7 @@ files = [
 
 prog = env.add_program("#bin/godot", files)
 
-if env["debug_symbols"] and env["separate_debug_symbols"]:
+if env["debug_symbols"] == "separate":
     env.AddPostAction(prog, env.Run(platform_macos_builders.make_debug_macos))
 
 if env["generate_bundle"]:
