@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterQOA" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Imports a QOA audio file or converts a WAV audio file for playback.
+	</brief_description>
+	<description>
+		QOA is a lossy audio format, with worse audio quality compared to [ResourceImporterOggVorbis] and [ResourceImporterMP3] at a reasonable bitrate, but significantly better than [ResourceImporterWAV] when compressed as IMA-ADPCM.
+		It's recommended to use QOA when you need to play a lot of simultaneous sound effects, but also save memory.
+		You may import WAV files into QOA by selecting "Quite OK Audio" in the Import As dropdown.
+	</description>
+	<tutorials>
+		<link title="Importing audio samples">$DOCS_URL/tutorials/assets_pipeline/importing_audio_samples.html</link>
+	</tutorials>
+	<members>
+		<member name="edit/loop_begin" type="int" setter="" getter="" default="0">
+			The begin loop point to use when [member edit/loop_mode] is enabled. This is set in seconds after the beginning of the audio file.
+		</member>
+		<member name="edit/loop_end" type="int" setter="" getter="" default="-1">
+			The end loop point to use when [member edit/loop_mode] is enabled. This is set in seconds after the beginning of the audio file. A value of [code]-1[/code] uses the end of the audio file as the end loop point.
+		</member>
+		<member name="edit/loop_mode" type="int" setter="" getter="" default="0">
+			Controls how audio should loop. If imported from WAV, this is automatically read from the metadata on import.
+			[b]Disabled:[/b] Don't loop audio, even if metadata indicates the file should be played back looping.
+			[b]Forward:[/b] Standard audio looping.
+			[b]Note:[/b] In [AudioStreamPlayer], the [signal AudioStreamPlayer.finished] signal won't be emitted for looping audio when it reaches the end of the audio file, as the audio will keep playing indefinitely.
+		</member>
+		<member name="edit/normalize" type="bool" setter="" getter="" default="false">
+			WAV only. If [code]true[/code], normalize the audio volume so that its peak volume is equal to 0 dB. When enabled, normalization will make audio sound louder depending on its original peak volume.
+		</member>
+		<member name="edit/trim" type="bool" setter="" getter="" default="false">
+			WAV only. If [code]true[/code], automatically trim the beginning and end of the audio if it's lower than -50 dB after normalization (see [member edit/normalize]). This prevents having files with silence at the beginning or end, which increases their size unnecessarily and adds latency to the moment they are played back. A fade-in/fade-out period of 500 samples is also used during trimming to avoid audible pops.
+		</member>
+		<member name="force/max_rate" type="bool" setter="" getter="" default="false">
+			WAV only. If set to a value greater than [code]0[/code], forces the audio's sample rate to be reduced to a value lower than or equal to the value specified in [member force/max_rate_hz].
+			This can decrease file size noticeably on certain sounds, without impacting quality depending on the actual sound's contents. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_audio_samples.html#doc-importing-audio-samples-best-practices]Best practices[/url] for more information.
+		</member>
+		<member name="force/max_rate_hz" type="float" setter="" getter="" default="44100">
+			WAV only. The frequency to limit the imported audio sample to (in Hz). Only effective if [member force/max_rate] is [code]true[/code].
+		</member>
+		<member name="force/mono" type="bool" setter="" getter="" default="false">
+			WAV only. If [code]true[/code], forces the imported audio to be mono if the source file is stereo. This decreases the file size by 50% by merging the two channels into one.
+		</member>
+	</members>
+</class>
