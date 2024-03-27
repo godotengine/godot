@@ -3,6 +3,9 @@
 
 #if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
 #extension GL_EXT_multiview : enable
+#ifdef has_EXT_fragment_invocation_density
+#extension GL_EXT_fragment_invocation_density : enable
+#endif // has_EXT_fragment_invocation_density
 #endif
 
 #include "../decal_data_inc.glsl"

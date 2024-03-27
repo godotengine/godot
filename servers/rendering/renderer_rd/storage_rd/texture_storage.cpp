@@ -494,14 +494,18 @@ TextureStorage::TextureStorage() {
 	{ //create default VRS
 
 		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R8_UINT;
-		tformat.width = 4;
-		tformat.height = 4;
-		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
-		tformat.texture_type = RD::TEXTURE_TYPE_2D;
-		if (!RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS)) {
+		if (RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS)) {
+			tformat.format = RD::DATA_FORMAT_R8_UINT;
+			tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
+		} else if (RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_FD)) {
+			tformat.format = RD::DATA_FORMAT_R8G8_UNORM;
+			tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
+		} else {
 			tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
 		}
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
 		Vector<uint8_t> pv;
 		pv.resize(4 * 4);
@@ -3960,6 +3964,20 @@ RS::ViewportVRSMode TextureStorage::render_target_get_vrs_mode(RID p_render_targ
 	ERR_FAIL_NULL_V(rt, RS::VIEWPORT_VRS_DISABLED);
 
 	return rt->vrs_mode;
+}
+
+void TextureStorage::render_target_set_vrs_update_mode(RID p_render_target, RS::ViewportVRSUpdateMode p_mode) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->vrs_update_mode = p_mode;
+}
+
+RS::ViewportVRSUpdateMode TextureStorage::render_target_get_vrs_update_mode(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, RS::VIEWPORT_VRS_UPDATE_DISABLED);
+
+	return rt->vrs_update_mode;
 }
 
 void TextureStorage::render_target_set_vrs_texture(RID p_render_target, RID p_texture) {

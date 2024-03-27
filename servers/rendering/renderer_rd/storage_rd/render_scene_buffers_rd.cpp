@@ -229,8 +229,15 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 	RID vrs_texture;
 	RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
 	if (vrs && vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
+		RD::DataFormat vrs_data_format = RD::DATA_FORMAT_MAX;
+		if (RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS)) {
+			vrs_data_format = RD::DATA_FORMAT_R8_UINT;
+		} else if (RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_FD)) {
+			vrs_data_format = RD::DATA_FORMAT_R8G8_UNORM;
+		}
+
 		uint32_t usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-		vrs_texture = create_texture(RB_SCOPE_VRS, RB_TEXTURE, RD::DATA_FORMAT_R8_UINT, usage_bits, RD::TEXTURE_SAMPLES_1, vrs->get_vrs_texture_size(internal_size));
+		vrs_texture = create_texture(RB_SCOPE_VRS, RB_TEXTURE, vrs_data_format, usage_bits, RD::TEXTURE_SAMPLES_1, vrs->get_vrs_texture_size(internal_size));
 	}
 
 	// (re-)configure any named buffers

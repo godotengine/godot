@@ -810,12 +810,15 @@ public:
 		LIMIT_SUBGROUP_OPERATIONS,
 		LIMIT_VRS_TEXEL_WIDTH,
 		LIMIT_VRS_TEXEL_HEIGHT,
+		LIMIT_VRS_MAX_FRAGMENT_WIDTH,
+		LIMIT_VRS_MAX_FRAGMENT_HEIGHT,
 	};
 
 	enum Features {
 		SUPPORTS_MULTIVIEW,
 		SUPPORTS_FSR_HALF_FLOAT,
 		SUPPORTS_ATTACHMENT_VRS,
+		SUPPORTS_ATTACHMENT_FD,
 		// If not supported, a fragment shader with only side effets (i.e., writes  to buffers, but doesn't output to attachments), may be optimized down to no-op by the GPU driver.
 		SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS,
 	};

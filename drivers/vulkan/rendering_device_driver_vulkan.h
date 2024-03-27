@@ -84,9 +84,15 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 		bool pipeline_vrs_supported = false; // We can specify our fragment rate on a pipeline level.
 		bool primitive_vrs_supported = false; // We can specify our fragment rate on each drawcall.
 		bool attachment_vrs_supported = false; // We can provide a density map attachment on our framebuffer.
+		bool attachment_fd_supported = false; // We can provide a density map but through the fragment density extension.
+
+		bool fd_map_dynamic_supported = false;
+		bool fd_map_non_subsampled_images_supported = false;
 
 		Size2i min_texel_size;
 		Size2i max_texel_size;
+		Size2i max_fragment_size;
+		bool fragment_density_invocations; // specifies whether the implementation may invoke additional fragment shader invocations for each covered sample
 
 		Size2i texel_size; // The texel size we'll use
 	};
@@ -619,7 +625,7 @@ public:
 	virtual uint64_t get_total_memory_used() override final;
 	virtual uint64_t limit_get(Limit p_limit) override final;
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
-	virtual bool has_feature(Features p_feature) override final;
+	virtual bool has_feature(Features p_feature) const override final;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
 	virtual String get_api_name() const override final;
 	virtual String get_api_version() const override final;

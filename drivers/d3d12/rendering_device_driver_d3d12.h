@@ -105,6 +105,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool primitive_in_multiviewport = false;
 		bool ss_image_supported = false; // We can provide a density map attachment on our framebuffer.
 		uint32_t ss_image_tile_size = 0;
+		uint32_t ss_max_fragment_size = 0;
 		bool additional_rates_supported = false;
 	};
 
@@ -986,7 +987,7 @@ public:
 	virtual uint64_t get_total_memory_used() override final;
 	virtual uint64_t limit_get(Limit p_limit) override final;
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
-	virtual bool has_feature(Features p_feature) override final;
+	virtual bool has_feature(Features p_feature) const override final;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
 	virtual String get_api_name() const override final;
 	virtual String get_api_version() const override final;

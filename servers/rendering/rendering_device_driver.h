@@ -762,7 +762,7 @@ public:
 	virtual uint64_t get_total_memory_used() = 0;
 	virtual uint64_t limit_get(Limit p_limit) = 0;
 	virtual uint64_t api_trait_get(ApiTrait p_trait);
-	virtual bool has_feature(Features p_feature) = 0;
+	virtual bool has_feature(Features p_feature) const = 0;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() = 0;
 	virtual String get_api_name() const = 0;
 	virtual String get_api_version() const = 0;

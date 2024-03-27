@@ -44,17 +44,19 @@ private:
 	enum VRSMode {
 		VRS_DEFAULT,
 		VRS_MULTIVIEW,
+		VRS_RG,
+		VRS_RG_MULTIVIEW,
 		VRS_MAX,
 	};
 
-	/* we have no push constant here (yet)
 	struct VRSPushConstant {
-
+		float max_texel_factor; // 4x8, 8x4 and 8x8 are only available on some GPUs.
+		float res1;
+		float res2;
+		float res3;
 	};
-	*/
 
 	struct VRSShader {
-		// VRSPushConstant push_constant;
 		VrsShaderRD shader;
 		RID shader_version;
 		PipelineCacheRD pipelines[VRS_MAX];

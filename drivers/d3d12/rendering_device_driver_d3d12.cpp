@@ -5912,6 +5912,9 @@ uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 		case LIMIT_VRS_TEXEL_WIDTH:
 		case LIMIT_VRS_TEXEL_HEIGHT:
 			return vrs_capabilities.ss_image_tile_size;
+		case LIMIT_VRS_MAX_FRAGMENT_WIDTH:
+		case LIMIT_VRS_MAX_FRAGMENT_HEIGHT:
+			return vrs_capabilities.ss_max_fragment_size;
 		default: {
 #ifdef DEV_ENABLED
 			WARN_PRINT("Returning maximum value for unknown limit " + itos(p_limit) + ".");
@@ -5942,7 +5945,7 @@ uint64_t RenderingDeviceDriverD3D12::api_trait_get(ApiTrait p_trait) {
 	}
 }
 
-bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
+bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) const {
 	switch (p_feature) {
 		case SUPPORTS_MULTIVIEW:
 			return multiview_capabilities.is_supported && multiview_capabilities.max_view_count > 1;
@@ -5950,6 +5953,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 			return shader_capabilities.native_16bit_ops && storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
 		case SUPPORTS_ATTACHMENT_VRS:
 			return vrs_capabilities.ss_image_supported;
+		case SUPPORTS_ATTACHMENT_FD:
+			return false;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
 		default:
@@ -6218,6 +6223,7 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 				vrs_capabilities.primitive_in_multiviewport = options6.PerPrimitiveShadingRateSupportedWithViewportIndexing;
 				vrs_capabilities.ss_image_supported = true;
 				vrs_capabilities.ss_image_tile_size = options6.ShadingRateImageTileSize;
+				vrs_capabilities.ss_max_fragment_size = 8; // TODO figure out if this is supplied and/or needed
 				vrs_capabilities.additional_rates_supported = options6.AdditionalShadingRatesSupported;
 			}
 		}
