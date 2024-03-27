@@ -530,10 +530,13 @@ private:
 		int font_size = 0;
 		int tb_font_size = 0;
 
+		Ref<StyleBox> hovered;
+		Ref<StyleBox> hovered_dimmed;
 		Ref<StyleBox> selected;
 		Ref<StyleBox> selected_focus;
 		Ref<StyleBox> cursor;
 		Ref<StyleBox> cursor_unfocus;
+		Ref<StyleBox> button_hover;
 		Ref<StyleBox> button_pressed;
 		Ref<StyleBox> title_button;
 		Ref<StyleBox> title_button_hover;
@@ -557,6 +560,8 @@ private:
 		Ref<Texture2D> updown;
 
 		Color font_color;
+		Color font_hovered_color;
+		Color font_hovered_dimmed_color;
 		Color font_selected_color;
 		Color font_disabled_color;
 		Color guide_color;
@@ -608,16 +613,17 @@ private:
 		};
 
 		ClickType click_type = Cache::CLICK_NONE;
-		ClickType hover_type = Cache::CLICK_NONE;
 		int click_index = -1;
 		int click_id = -1;
 		TreeItem *click_item = nullptr;
 		int click_column = 0;
-		int hover_index = -1;
+		int hover_header_column = -1;
+		bool hover_header_row = false;
 		Point2 click_pos;
 
 		TreeItem *hover_item = nullptr;
-		int hover_cell = -1;
+		int hover_column = -1;
+		int hover_button_index_in_column = -1;
 
 		bool rtl = false;
 	} cache;
@@ -645,6 +651,7 @@ private:
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
 
 	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const;
+	int _get_item_h_offset(TreeItem *p_item) const;
 
 	/*	float drag_speed;
 	float drag_accum;
