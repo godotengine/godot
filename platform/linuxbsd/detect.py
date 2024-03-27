@@ -309,7 +309,7 @@ def configure(env: "SConsEnvironment"):
         # No pkgconfig file so far, hardcode expected lib name.
         env.Append(LIBS=["embree3"])
 
-    if not env["builtin_openxr"]:
+    if env["openxr"] and not env["builtin_openxr"]:
         env.ParseConfig("pkg-config openxr --cflags --libs")
 
     if env["fontconfig"]:
