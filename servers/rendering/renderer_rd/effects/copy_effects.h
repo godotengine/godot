@@ -165,10 +165,13 @@ private:
 	};
 
 	struct Copy {
-		CopyPushConstant push_constant;
 		CopyShaderRD shader;
+
 		RID shader_version;
 		RID pipelines[COPY_MODE_MAX];
+
+		RID *params_uniform_buffer;
+		RID *params_uniform_set;
 
 	} copy;
 
@@ -209,10 +212,16 @@ private:
 	};
 
 	struct CopyToFb {
-		CopyToFbPushConstant push_constant;
 		CopyToFbShaderRD shader;
 		RID shader_version;
 		PipelineCacheRD pipelines[COPY_TO_FB_MAX];
+
+		// <TF>
+		// @ShadyTF
+		// replace push constants with UBO
+		RID *params_uniform_set;
+		RID *params_uniform_buffer;
+		// </TF>
 
 	} copy_to_fb;
 
@@ -328,6 +337,10 @@ private:
 	} specular_merge;
 
 	static CopyEffects *singleton;
+
+private:
+	void _update_copy_to_fb_uniform_set(const CopyToFbPushConstant *p_buffer);
+	void _update_copy_uniform_set(const CopyPushConstant *p_buffer);
 
 public:
 	static CopyEffects *get_singleton();

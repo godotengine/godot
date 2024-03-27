@@ -1059,7 +1059,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		}
 	}
 
-	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_shader_uniform_set, true);
+	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_shader_uniform_set);
 	RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, MaterialStorage::_material_uniform_set_erased, &self);
 
 	return true;

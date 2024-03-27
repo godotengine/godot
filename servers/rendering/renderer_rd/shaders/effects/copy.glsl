@@ -16,7 +16,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #define FLAG_COPY_ALL_SOURCE (1 << 7)
 #define FLAG_ALPHA_TO_ONE (1 << 8)
 
-layout(push_constant, std430) uniform Params {
+layout(set = 4, binding = 0, std140) uniform Params {
 	ivec4 section;
 	ivec2 target;
 	uint flags;
@@ -34,7 +34,7 @@ layout(push_constant, std430) uniform Params {
 	// DOF.
 	float camera_z_far;
 	float camera_z_near;
-	uint pad2[2];
+	ivec2 pad2;
 
 	vec4 set_color;
 }

@@ -28,7 +28,10 @@ layout(location = 0) out vec3 uv_interp;
 layout(location = 0) out vec2 uv_interp;
 #endif
 
-layout(push_constant, std430) uniform Params {
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+layout(set = 4, binding = 0, std140) uniform Params {
 	vec4 section;
 	vec2 pixel_size;
 	float luminance_multiplier;
@@ -37,6 +40,7 @@ layout(push_constant, std430) uniform Params {
 	vec4 color;
 }
 params;
+// </TF>
 
 void main() {
 	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
@@ -80,7 +84,10 @@ void main() {
 #define FLAG_LINEAR (1 << 6)
 #define FLAG_NORMAL (1 << 7)
 
-layout(push_constant, std430) uniform Params {
+// <TF>
+// @ShadyTF
+// replace push constants with UBO
+layout(set = 4, binding = 0, std140) uniform Params {
 	vec4 section;
 	vec2 pixel_size;
 	float luminance_multiplier;
@@ -89,6 +96,7 @@ layout(push_constant, std430) uniform Params {
 	vec4 color;
 }
 params;
+// </TF>
 
 #ifndef MODE_SET_COLOR
 #ifdef MULTIVIEW

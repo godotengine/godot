@@ -509,11 +509,6 @@ Error RenderingDevice::buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t 
 Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
-			"Updating buffers is forbidden during creation of a draw list");
-	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
-			"Updating buffers is forbidden during creation of a compute list");
-
 	// <TF>
 	// @ShadyTF
 	persistent_uniform_buffer_advance(p_buffer);
@@ -536,6 +531,12 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 		direct_copy_count++;
 		return OK;
 	}
+
+	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
+			"Updating buffers is forbidden during creation of a draw list");
+	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
+			"Updating buffers is forbidden during creation of a compute list");
+
 	gpu_copy_count++;
 	// </TF>
 	return _buffer_update(buffer, p_buffer, p_offset, (uint8_t *)p_data, p_size, true);
