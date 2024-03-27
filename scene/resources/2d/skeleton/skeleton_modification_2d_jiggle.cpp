@@ -139,9 +139,11 @@ void SkeletonModification2DJiggle::_execute(float p_delta) {
 		return;
 	}
 	if (target_node_cache.is_null()) {
-		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
 		update_target_cache();
-		return;
+		if (target_node_cache.is_null()) {
+			ERR_PRINT_ONCE("Target cache is out of date. Failed to update...");
+			return;
+		}
 	}
 	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
 	if (!target || !target->is_inside_tree()) {
@@ -164,8 +166,11 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 	}
 
 	if (jiggle_data_chain[p_joint_idx].bone2d_node_cache.is_null() && !jiggle_data_chain[p_joint_idx].bone2d_node.is_empty()) {
-		WARN_PRINT_ONCE("Bone2D cache for joint " + itos(p_joint_idx) + " is out of date. Updating...");
 		jiggle_joint_update_bone2d_cache(p_joint_idx);
+		if (jiggle_data_chain[p_joint_idx].bone2d_node_cache.is_null()) {
+			ERR_PRINT_ONCE("Bone2D cache for joint " + itos(p_joint_idx) + " is out of date. Failed to update...");
+			return;
+		}
 	}
 
 	Bone2D *operation_bone = stack->skeleton->get_bone(jiggle_data_chain[p_joint_idx].bone_idx);
@@ -313,7 +318,9 @@ void SkeletonModification2DJiggle::jiggle_joint_update_bone2d_cache(int p_joint_
 
 void SkeletonModification2DJiggle::set_target_node(const NodePath &p_target_node) {
 	target_node = p_target_node;
-	update_target_cache();
+	if (is_setup) {
+		update_target_cache();
+	}
 }
 
 NodePath SkeletonModification2DJiggle::get_target_node() const {
@@ -400,7 +407,9 @@ void SkeletonModification2DJiggle::set_jiggle_data_chain_length(int p_length) {
 void SkeletonModification2DJiggle::set_jiggle_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, jiggle_data_chain.size(), "Jiggle joint out of range!");
 	jiggle_data_chain.write[p_joint_idx].bone2d_node = p_target_node;
-	jiggle_joint_update_bone2d_cache(p_joint_idx);
+	if (is_setup) {
+		jiggle_joint_update_bone2d_cache(p_joint_idx);
+	}
 
 	notify_property_list_changed();
 }
@@ -414,20 +423,12 @@ void SkeletonModification2DJiggle::set_jiggle_joint_bone_index(int p_joint_idx, 
 	ERR_FAIL_INDEX_MSG(p_joint_idx, jiggle_data_chain.size(), "Jiggle joint out of range!");
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
-	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
-			jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-			jiggle_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			jiggle_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
-		} else {
-			WARN_PRINT("Cannot verify the Jiggle joint " + itos(p_joint_idx) + " bone index for this modification...");
-			jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-		}
-	} else {
-		WARN_PRINT("Cannot verify the Jiggle joint " + itos(p_joint_idx) + " bone index for this modification...");
-		jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
+	if (is_setup && stack->skeleton) {
+		ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		jiggle_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
+		jiggle_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
 	}
+	jiggle_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
 
 	notify_property_list_changed();
 }

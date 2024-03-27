@@ -327,7 +327,9 @@ void SkeletonModification2DTwoBoneIK::update_joint_two_bone2d_cache() {
 
 void SkeletonModification2DTwoBoneIK::set_target_node(const NodePath &p_target_node) {
 	target_node = p_target_node;
-	update_target_cache();
+	if (is_setup) {
+		update_target_cache();
+	}
 }
 
 NodePath SkeletonModification2DTwoBoneIK::get_target_node() const {
@@ -336,7 +338,9 @@ NodePath SkeletonModification2DTwoBoneIK::get_target_node() const {
 
 void SkeletonModification2DTwoBoneIK::set_joint_one_bone2d_node(const NodePath &p_target_node) {
 	joint_one_bone2d_node = p_target_node;
-	update_joint_one_bone2d_cache();
+	if (is_setup) {
+		update_joint_one_bone2d_cache();
+	}
 	notify_property_list_changed();
 }
 
@@ -378,7 +382,9 @@ NodePath SkeletonModification2DTwoBoneIK::get_joint_one_bone2d_node() const {
 
 void SkeletonModification2DTwoBoneIK::set_joint_two_bone2d_node(const NodePath &p_target_node) {
 	joint_two_bone2d_node = p_target_node;
-	update_joint_two_bone2d_cache();
+	if (is_setup) {
+		update_joint_two_bone2d_cache();
+	}
 	notify_property_list_changed();
 }
 
@@ -389,20 +395,12 @@ NodePath SkeletonModification2DTwoBoneIK::get_joint_two_bone2d_node() const {
 void SkeletonModification2DTwoBoneIK::set_joint_one_bone_idx(int p_bone_idx) {
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
-	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
-			joint_one_bone_idx = p_bone_idx;
-			joint_one_bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			joint_one_bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
-		} else {
-			WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint one...");
-			joint_one_bone_idx = p_bone_idx;
-		}
-	} else {
-		WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint one...");
-		joint_one_bone_idx = p_bone_idx;
+	if (is_setup && stack->skeleton) {
+		ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		joint_one_bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
+		joint_one_bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
 	}
+	joint_one_bone_idx = p_bone_idx;
 
 	notify_property_list_changed();
 }
@@ -414,20 +412,12 @@ int SkeletonModification2DTwoBoneIK::get_joint_one_bone_idx() const {
 void SkeletonModification2DTwoBoneIK::set_joint_two_bone_idx(int p_bone_idx) {
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
-	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
-			joint_two_bone_idx = p_bone_idx;
-			joint_two_bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			joint_two_bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
-		} else {
-			WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint two...");
-			joint_two_bone_idx = p_bone_idx;
-		}
-	} else {
-		WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint two...");
-		joint_two_bone_idx = p_bone_idx;
+	if (is_setup && stack->skeleton) {
+		ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		joint_two_bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
+		joint_two_bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
 	}
+	joint_two_bone_idx = p_bone_idx;
 
 	notify_property_list_changed();
 }

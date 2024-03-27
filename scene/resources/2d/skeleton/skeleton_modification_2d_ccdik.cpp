@@ -165,14 +165,18 @@ void SkeletonModification2DCCDIK::_execute(float p_delta) {
 	}
 
 	if (target_node_cache.is_null()) {
-		WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
 		update_target_cache();
-		return;
+		if (target_node_cache.is_null()) {
+			ERR_PRINT_ONCE("Target cache is out of date. Failed to update...");
+			return;
+		}
 	}
 	if (tip_node_cache.is_null()) {
-		WARN_PRINT_ONCE("Tip cache is out of date. Attempting to update...");
 		update_tip_cache();
-		return;
+		if (tip_node_cache.is_null()) {
+			ERR_PRINT_ONCE("Tip cache is out of date. Failed to update...");
+			return;
+		}
 	}
 
 	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
@@ -337,7 +341,9 @@ void SkeletonModification2DCCDIK::ccdik_joint_update_bone2d_cache(int p_joint_id
 
 void SkeletonModification2DCCDIK::set_target_node(const NodePath &p_target_node) {
 	target_node = p_target_node;
-	update_target_cache();
+	if (is_setup) {
+		update_target_cache();
+	}
 }
 
 NodePath SkeletonModification2DCCDIK::get_target_node() const {
@@ -346,7 +352,9 @@ NodePath SkeletonModification2DCCDIK::get_target_node() const {
 
 void SkeletonModification2DCCDIK::set_tip_node(const NodePath &p_tip_node) {
 	tip_node = p_tip_node;
-	update_tip_cache();
+	if (is_setup) {
+		update_tip_cache();
+	}
 }
 
 NodePath SkeletonModification2DCCDIK::get_tip_node() const {
@@ -365,7 +373,9 @@ int SkeletonModification2DCCDIK::get_ccdik_data_chain_length() {
 void SkeletonModification2DCCDIK::set_ccdik_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].bone2d_node = p_target_node;
-	ccdik_joint_update_bone2d_cache(p_joint_idx);
+	if (is_setup) {
+		ccdik_joint_update_bone2d_cache(p_joint_idx);
+	}
 
 	notify_property_list_changed();
 }
@@ -379,20 +389,12 @@ void SkeletonModification2DCCDIK::set_ccdik_joint_bone_index(int p_joint_idx, in
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCCDIK joint out of range!");
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
-	if (is_setup) {
-		if (stack->skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
-			ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-			ccdik_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
-			ccdik_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
-		} else {
-			WARN_PRINT("Cannot verify the CCDIK joint " + itos(p_joint_idx) + " bone index for this modification...");
-			ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
-		}
-	} else {
-		WARN_PRINT("Cannot verify the CCDIK joint " + itos(p_joint_idx) + " bone index for this modification...");
-		ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
+	if (is_setup && stack->skeleton) {
+		ERR_FAIL_INDEX_MSG(p_bone_idx, stack->skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
+		ccdik_data_chain.write[p_joint_idx].bone2d_node_cache = stack->skeleton->get_bone(p_bone_idx)->get_instance_id();
+		ccdik_data_chain.write[p_joint_idx].bone2d_node = stack->skeleton->get_path_to(stack->skeleton->get_bone(p_bone_idx));
 	}
+	ccdik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
 
 	notify_property_list_changed();
 }
