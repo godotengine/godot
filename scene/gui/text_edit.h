@@ -482,8 +482,9 @@ private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
 
-	float content_height_cache = 0.0;
+	Vector2i content_size_cache;
 	bool fit_content_height = false;
+	bool fit_content_width = false;
 	bool scroll_past_end_of_file_enabled = false;
 
 	// Smooth scrolling.
@@ -943,6 +944,9 @@ public:
 
 	void set_fit_content_height_enabled(const bool p_enabled);
 	bool is_fit_content_height_enabled() const;
+
+	void set_fit_content_width_enabled(const bool p_enabled);
+	bool is_fit_content_width_enabled() const;
 
 	double get_scroll_pos_for_line(int p_line, int p_wrap_index = 0) const;
 
