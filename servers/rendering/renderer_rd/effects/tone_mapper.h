@@ -170,7 +170,7 @@ public:
 // <TF>
 // @ShadyTF
 // replace push constants with UBO
-	void prepare_params(RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const TonemapSettings &p_settings);
+	void prepare_params(const TonemapSettings &p_settings);
 // </TF>
 };
 

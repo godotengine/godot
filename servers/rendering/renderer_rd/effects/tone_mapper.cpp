@@ -298,7 +298,7 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 // <TF>
 // @ShadyTF
 // replace push constant with UBO
-void ToneMapper::prepare_params(RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const TonemapSettings& p_settings ) {
+void ToneMapper::prepare_params(const TonemapSettings& p_settings) {
 
 	memset(&tonemap.push_constant, 0, sizeof(TonemapPushConstant));
 
@@ -308,6 +308,18 @@ void ToneMapper::prepare_params(RID p_source_color, RD::FramebufferFormatID p_ds
 	tonemap.push_constant.bcs[2] = p_settings.saturation;
 
 	tonemap.push_constant.flags |= p_settings.use_glow ? TONEMAP_FLAG_USE_GLOW : 0;
+	tonemap.push_constant.glow_intensity = p_settings.glow_intensity;
+	tonemap.push_constant.glow_map_strength = p_settings.glow_map_strength;
+	tonemap.push_constant.glow_levels[0] = p_settings.glow_levels[0]; // clean this up to just pass by pointer or something
+	tonemap.push_constant.glow_levels[1] = p_settings.glow_levels[1];
+	tonemap.push_constant.glow_levels[2] = p_settings.glow_levels[2];
+	tonemap.push_constant.glow_levels[3] = p_settings.glow_levels[3];
+	tonemap.push_constant.glow_levels[4] = p_settings.glow_levels[4];
+	tonemap.push_constant.glow_levels[5] = p_settings.glow_levels[5];
+	tonemap.push_constant.glow_levels[6] = p_settings.glow_levels[6];
+	tonemap.push_constant.glow_texture_size[0] = p_settings.glow_texture_size.x;
+	tonemap.push_constant.glow_texture_size[1] = p_settings.glow_texture_size.y;
+	tonemap.push_constant.glow_mode = p_settings.glow_mode;
 
 	tonemap.push_constant.tonemapper = p_settings.tonemap_mode;
 	tonemap.push_constant.flags |= p_settings.use_auto_exposure ? TONEMAP_FLAG_USE_AUTO_EXPOSURE : 0;

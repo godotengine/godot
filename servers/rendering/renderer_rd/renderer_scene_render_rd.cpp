@@ -659,6 +659,12 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			}
 		}
 
+		// <TF>
+		// @ShadyTF
+		// replace push constants with UBO
+		tone_mapper->prepare_params(tonemap);
+		// <TF>
+		
 		tone_mapper->tonemapper(color_texture, dest_fb, tonemap);
 
 		RD::get_singleton()->draw_command_end_label();
@@ -742,7 +748,7 @@ void RendererSceneRenderRD::_post_process_prepare_params(RID p_source_texture, c
 	tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(rb->get_render_target());
 
 
-	tone_mapper->prepare_params(p_source_texture, texture_storage->render_target_get_format(rb->get_render_target()), tonemap);
+	tone_mapper->prepare_params(tonemap);
 }
 // </TF>
 
@@ -809,6 +815,11 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(rb->get_render_target());
 
+	// <TF>
+	// @ShadyTF
+	// replace push constants with UBO
+	tone_mapper->prepare_params(tonemap);
+	// <TF>
 	tone_mapper->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
 
 	RD::get_singleton()->draw_command_end_label();
