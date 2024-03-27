@@ -1962,7 +1962,7 @@ static void _collision_cylinder_face(const GodotShape3D *p_a, const Transform3D 
 
 	// Points of B, cylinder lateral surface.
 	for (int i = 0; i < 3; i++) {
-		const Vector3 &point = vertex[i];
+		const Vector3 point = vertex[i] - p_transform_a.origin;
 		Vector3 axis = Plane(cyl_axis).project(point).normalized();
 		if (axis.dot(normal) < 0.0) {
 			axis *= -1.0;
