@@ -2790,6 +2790,10 @@ RenderForwardMobile::RenderForwardMobile() {
 	if (is_using_radiance_cubemap_array()) {
 		defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
 	}
+	if (is_using_material_debanding()) {
+		print_line_rich("[b]Mobile: Using debanding");
+		defines += "\n#define USE_DEBANDING \n";
+	}
 	// defines += "\n#define SDFGI_OCT_SIZE " + itos(gi.sdfgi_get_lightprobe_octahedron_size()) + "\n";
 	defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";
 

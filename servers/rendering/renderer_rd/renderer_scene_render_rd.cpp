@@ -997,6 +997,10 @@ bool RendererSceneRenderRD::is_using_radiance_cubemap_array() const {
 	return sky.sky_use_cubemap_array;
 }
 
+bool RendererSceneRenderRD::is_using_material_debanding() const {
+	return use_material_debanding;
+}
+
 void RendererSceneRenderRD::_update_vrs(Ref<RenderSceneBuffersRD> p_render_buffers) {
 	if (p_render_buffers.is_null()) {
 		return;
@@ -1408,6 +1412,8 @@ void RendererSceneRenderRD::init() {
 	RSG::camera_attributes->camera_attributes_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
 	RSG::camera_attributes->camera_attributes_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter"));
 	use_physical_light_units = GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units");
+
+	use_material_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_material_debanding");
 
 	screen_space_roughness_limiter = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled");
 	screen_space_roughness_limiter_amount = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount");
