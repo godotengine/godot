@@ -433,6 +433,31 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 	}
 }
 
+void ResourceLoader::load_threaded_forget(const String &p_path) {
+	MutexLock lock(thread_load_mutex);
+
+	if (user_load_tokens.has(p_path)) {
+		String local_path = user_load_tokens[p_path]->local_path;
+		if (thread_load_tasks.has(local_path) && thread_load_tasks[local_path].status == THREAD_LOAD_LOADED) {
+			memdelete(user_load_tokens[p_path]);
+		}
+	}
+}
+
+PackedStringArray ResourceLoader::get_requested_paths() {
+	MutexLock lock(thread_load_mutex);
+
+	PackedStringArray requested_paths;
+	for (KeyValue<String, ResourceLoader::LoadToken *> &kvp : user_load_tokens) {
+		String local_path = kvp.value->local_path;
+		if (thread_load_tasks.has(local_path) && thread_load_tasks[local_path].status == THREAD_LOAD_LOADED) {
+			requested_paths.push_back(kvp.key);
+		}
+	}
+
+	return requested_paths;
+}
+
 Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error) {
 	if (r_error) {
 		*r_error = OK;
