@@ -85,6 +85,7 @@ enum {
 	VARIANT_VECTOR4 = 50,
 	VARIANT_VECTOR4I = 51,
 	VARIANT_PROJECTION = 52,
+	VARIANT_PACKED_VECTOR4_ARRAY = 53,
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
@@ -652,6 +653,19 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 #endif
 
 			r_v = array;
+		} break;
+		case VARIANT_PACKED_VECTOR4_ARRAY: {
+			uint32_t len = f->get_32();
+
+			Vector<Vector4> array;
+			array.resize(len);
+			Vector4 *w = array.ptrw();
+			static_assert(sizeof(Vector4) == 4 * sizeof(real_t));
+			const Error err = read_reals(reinterpret_cast<real_t *>(w), f, len * 4);
+			ERR_FAIL_COND_V(err != OK, err);
+
+			r_v = array;
+
 		} break;
 		default: {
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
@@ -1950,6 +1964,20 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 				f->store_float(r[i].g);
 				f->store_float(r[i].b);
 				f->store_float(r[i].a);
+			}
+
+		} break;
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			f->store_32(VARIANT_PACKED_VECTOR4_ARRAY);
+			Vector<Vector4> arr = p_property;
+			int len = arr.size();
+			f->store_32(len);
+			const Vector4 *r = arr.ptr();
+			for (int i = 0; i < len; i++) {
+				f->store_real(r[i].x);
+				f->store_real(r[i].y);
+				f->store_real(r[i].z);
+				f->store_real(r[i].w);
 			}
 
 		} break;

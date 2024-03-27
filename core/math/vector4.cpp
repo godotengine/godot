@@ -194,3 +194,7 @@ Vector4::operator String() const {
 }
 
 static_assert(sizeof(Vector4) == 4 * sizeof(real_t));
+
+Vector4::operator Vector4i() const {
+	return Vector4i(x, y, z, w);
+}

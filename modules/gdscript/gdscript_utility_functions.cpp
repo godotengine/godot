@@ -519,6 +519,10 @@ struct GDScriptUtilityFunctionsDefinitions {
 				Vector<Color> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
+			case Variant::PACKED_VECTOR4_ARRAY: {
+				Vector<Vector4> d = *p_args[0];
+				*r_ret = d.size();
+			} break;
 			default: {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
