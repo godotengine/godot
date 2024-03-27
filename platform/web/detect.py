@@ -26,7 +26,7 @@ def can_build():
     return WhereIs("emcc") is not None
 
 
-def get_opts():
+def get_opts(_gdscript_build: bool):
     from SCons.Variables import BoolVariable
 
     return [

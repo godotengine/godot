@@ -2459,10 +2459,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_expression(bool p_can_assi
 GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
 	IdentifierNode *identifier = static_cast<IdentifierNode *>(parse_identifier(nullptr, false));
 #ifdef DEBUG_ENABLED
+#ifndef GDSCRIPT_BUILD
 	// Check for spoofing here (if available in TextServer) since this isn't called inside expressions. This is only relevant for declarations.
 	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name)) {
 		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.operator String());
 	}
+#endif
 #endif
 	return identifier;
 }
@@ -3290,10 +3292,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 
 			String identifier = previous.get_identifier();
 #ifdef DEBUG_ENABLED
+#ifndef GDSCRIPT_BUILD
 			// Check spoofing.
 			if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier)) {
 				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier);
 			}
+#endif
 #endif
 			get_node->full_path += identifier;
 

@@ -9,31 +9,35 @@ SConscript("unix/SCsub")
 SConscript("windows/SCsub")
 
 # Sounds drivers
-SConscript("alsa/SCsub")
-SConscript("coreaudio/SCsub")
-SConscript("pulseaudio/SCsub")
-if env["platform"] == "windows":
-    SConscript("wasapi/SCsub")
-if env["xaudio2"]:
-    SConscript("xaudio2/SCsub")
+if not env.gdscript_build:
+    SConscript("alsa/SCsub")
+    SConscript("coreaudio/SCsub")
+    SConscript("pulseaudio/SCsub")
+    if env["platform"] == "windows":
+        SConscript("wasapi/SCsub")
+    if env["xaudio2"]:
+        SConscript("xaudio2/SCsub")
 
 # Midi drivers
-SConscript("alsamidi/SCsub")
-SConscript("coremidi/SCsub")
-SConscript("winmidi/SCsub")
+if not env.gdscript_build:
+    SConscript("alsamidi/SCsub")
+    SConscript("coremidi/SCsub")
+    SConscript("winmidi/SCsub")
 
 # Graphics drivers
-if env["vulkan"]:
-    SConscript("vulkan/SCsub")
-if env["d3d12"]:
-    SConscript("d3d12/SCsub")
-if env["opengl3"]:
-    SConscript("gl_context/SCsub")
-    SConscript("gles3/SCsub")
-    SConscript("egl/SCsub")
+if not env.gdscript_build:
+    if env["vulkan"]:
+        SConscript("vulkan/SCsub")
+    if env["d3d12"]:
+        SConscript("d3d12/SCsub")
+    if env["opengl3"]:
+        SConscript("gl_context/SCsub")
+        SConscript("gles3/SCsub")
+        SConscript("egl/SCsub")
 
 # Core dependencies
-SConscript("png/SCsub")
+if not env.gdscript_build:
+    SConscript("png/SCsub")
 
 env.add_source_files(env.drivers_sources, "*.cpp")
 

@@ -159,7 +159,7 @@ def detect_build_env_arch():
     return ""
 
 
-def get_opts():
+def get_opts(_gdscript_build: bool):
     from SCons.Variables import BoolVariable, EnumVariable
 
     mingw = os.getenv("MINGW_PREFIX", "")

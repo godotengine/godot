@@ -176,9 +176,11 @@ void OS_Unix::finalize_core() {
 	NetSocketPosix::cleanup();
 }
 
+#ifndef GDSCRIPT_BUILD
 Vector<String> OS_Unix::get_video_adapter_driver_info() const {
 	return Vector<String>();
 }
+#endif
 
 String OS_Unix::get_stdin_string() {
 	char buff[1024];

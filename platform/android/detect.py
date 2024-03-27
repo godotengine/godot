@@ -17,7 +17,7 @@ def can_build():
     return os.path.exists(get_env_android_sdk_root())
 
 
-def get_opts():
+def get_opts(_gdscript_build: bool):
     from SCons.Variables import BoolVariable
 
     return [

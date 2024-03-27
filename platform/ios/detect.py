@@ -19,7 +19,7 @@ def can_build():
     return False
 
 
-def get_opts():
+def get_opts(_gdscript_build: bool):
     from SCons.Variables import BoolVariable
 
     return [
