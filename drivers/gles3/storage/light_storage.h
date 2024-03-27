@@ -136,6 +136,7 @@ struct ReflectionProbe {
 
 struct Lightmap {
 	RID light_texture;
+	RID shadow_texture;
 	bool uses_spherical_harmonics = false;
 	bool interior = false;
 	AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
@@ -187,6 +188,8 @@ private:
 	float lightmap_probe_capture_update_speed = 4;
 
 	mutable RID_Owner<Lightmap, true> lightmap_owner;
+
+	Vector<RID> shadowmask_textures;
 
 	/* LIGHTMAP INSTANCE */
 
@@ -632,6 +635,8 @@ public:
 	virtual bool lightmap_is_interior(RID p_lightmap) const override;
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override;
 	virtual float lightmap_get_probe_capture_update_speed() const override;
+
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override;
 
 	/* LIGHTMAP INSTANCE */
 

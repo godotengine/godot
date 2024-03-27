@@ -1743,6 +1743,21 @@ void fragment_shader(in SceneData scene_data) {
 		uint shadow0 = 0;
 		uint shadow1 = 0;
 
+		float shadowmask = 1.0;
+
+#ifdef USE_LIGHTMAP
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+			const InstanceData instanceData = instances.data[instance_index];
+
+			const uint ofs = instanceData.gi_offset & 0xFFFF;
+			const uint slice = instanceData.gi_offset >> 16;
+			const vec2 scaled_uv = uv2 * instanceData.lightmap_uv_scale.zw + instanceData.lightmap_uv_scale.xy;
+			const vec3 uvw = vec3(scaled_uv, float(slice));
+
+			shadowmask = textureLod(sampler2DArray(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).x;
+		}
+#endif // USE_LIGHTMAP
+
 		for (uint i = 0; i < 8; i++) {
 			if (i >= scene_data.directional_light_count) {
 				break;
@@ -1942,7 +1957,11 @@ void fragment_shader(in SceneData scene_data) {
 					}
 				}
 
-				shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z)); //done with negative values for performance
+#ifdef USE_LIGHTMAP
+				shadow = min(shadow, shadowmask);
+#endif
+
+				shadow = mix(shadow, shadowmask, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z)); //done with negative values for performance
 
 #undef BIAS_FUNC
 			} // shadows
@@ -1953,6 +1972,7 @@ void fragment_shader(in SceneData scene_data) {
 				shadow1 |= uint(clamp(shadow * 255.0, 0.0, 255.0)) << ((i - 4) * 8);
 			}
 		}
+
 #endif // SHADOWS_DISABLED
 
 		for (uint i = 0; i < 8; i++) {

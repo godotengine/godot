@@ -426,6 +426,8 @@ public:
 	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_bsp_tree, RID)
 	FUNC1(lightmap_set_probe_capture_update_speed, float)
 
+	FUNC2(lightmap_set_shadowmask_textures, RID, RID)
+
 	/* Shadow Atlas */
 	FUNC0R(RID, shadow_atlas_create)
 	FUNC3(shadow_atlas_set_size, RID, int, bool)

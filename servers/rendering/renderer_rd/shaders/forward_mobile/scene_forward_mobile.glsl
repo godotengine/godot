@@ -1308,6 +1308,20 @@ void main() {
 		uint shadow0 = 0;
 		uint shadow1 = 0;
 
+#ifdef USE_LIGHTMAP
+		float shadowmask = 1.0;
+
+		if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+			uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
+			uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
+			vec3 uvw;
+			uvw.xy = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
+			uvw.z = float(slice);
+
+			shadowmask = textureLod(sampler2DArray(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).x;
+		}
+#endif // USE_LIGHTMAP
+
 		for (uint i = 0; i < 8; i++) {
 			if (i >= scene_data.directional_light_count) {
 				break;
@@ -1471,7 +1485,6 @@ void main() {
 				}
 
 				shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z)); //done with negative values for performance
-
 #undef BIAS_FUNC
 			}
 #else
@@ -1566,9 +1579,12 @@ void main() {
 				}
 
 				shadow = mix(shadow, 1.0, smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z)); //done with negative values for performance
-
 #undef BIAS_FUNC
 			}
+#endif
+
+#ifdef USE_LIGHTMAP
+			shadow = min(shadow, shadowmask);
 #endif
 
 			if (i < 4) {

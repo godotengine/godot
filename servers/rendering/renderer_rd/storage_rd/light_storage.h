@@ -328,6 +328,7 @@ private:
 
 	struct Lightmap {
 		RID light_texture;
+		RID shadow_texture;
 		bool uses_spherical_harmonics = false;
 		bool interior = false;
 		AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
@@ -353,6 +354,8 @@ private:
 	float lightmap_probe_capture_update_speed = 4;
 
 	mutable RID_Owner<Lightmap, true> lightmap_owner;
+
+	Vector<RID> shadowmask_textures;
 
 	/* LIGHTMAP INSTANCE */
 
@@ -939,6 +942,8 @@ public:
 
 	Dependency *lightmap_get_dependency(RID p_lightmap) const;
 
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override;
+
 	virtual float lightmap_get_probe_capture_update_speed() const override {
 		return lightmap_probe_capture_update_speed;
 	}
@@ -975,6 +980,12 @@ public:
 	_FORCE_INLINE_ const Vector<RID> &lightmap_array_get_textures() const {
 		ERR_FAIL_COND_V(!using_lightmap_array, lightmap_textures); //only for arrays
 		return lightmap_textures;
+	}
+
+	_FORCE_INLINE_ RID shadowmask_get_texture(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+		ERR_FAIL_NULL_V(lm, RID());
+		return lm->shadow_texture;
 	}
 
 	/* LIGHTMAP INSTANCE */

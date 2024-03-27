@@ -164,6 +164,8 @@ public:
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override {}
 	virtual float lightmap_get_probe_capture_update_speed() const override { return 0; }
 
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override {}
+
 	/* LIGHTMAP INSTANCE */
 
 	RID lightmap_instance_create(RID p_lightmap) override { return RID(); }

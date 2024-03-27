@@ -45,6 +45,8 @@ class LightmapGIData : public Resource {
 
 	Ref<TextureLayered> light_texture;
 	TypedArray<TextureLayered> light_textures;
+	Ref<TextureLayered> shadowmask_texture;
+	TypedArray<TextureLayered> shadowmask_textures;
 
 	bool uses_spherical_harmonics = false;
 	bool interior = false;
@@ -68,6 +70,7 @@ class LightmapGIData : public Resource {
 	Dictionary _get_probe_data() const;
 
 	void _reset_lightmap_textures();
+	void _reset_shadowmask_textures();
 
 protected:
 	static void _bind_methods();
@@ -106,6 +109,10 @@ public:
 
 	void set_lightmap_textures(const TypedArray<TextureLayered> &p_data);
 	TypedArray<TextureLayered> get_lightmap_textures() const;
+
+	void set_shadowmask_textures(const TypedArray<TextureLayered> &p_data);
+	TypedArray<TextureLayered> get_shadowmask_textures() const;
+	void clear_shadowmask_textures();
 
 	virtual RID get_rid() const override;
 	LightmapGIData();
@@ -168,6 +175,7 @@ private:
 	float environment_custom_energy = 1.0;
 	bool directional = false;
 	bool use_texture_for_bounces = true;
+	bool use_shadowmask = true;
 	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
 
@@ -258,6 +266,9 @@ public:
 
 	void set_directional(bool p_enable);
 	bool is_directional() const;
+
+	void set_use_shadowmask(bool p_enable);
+	bool is_using_shadowmask() const;
 
 	void set_use_texture_for_bounces(bool p_enable);
 	bool is_using_texture_for_bounces() const;

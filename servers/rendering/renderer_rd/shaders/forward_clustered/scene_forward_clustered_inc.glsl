@@ -240,7 +240,7 @@ layout(set = 1, binding = 5) uniform texture2D shadow_atlas;
 
 layout(set = 1, binding = 6) uniform texture2D directional_shadow_atlas;
 
-layout(set = 1, binding = 7) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
+layout(set = 1, binding = 7) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES * 2];
 
 layout(set = 1, binding = 8) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 

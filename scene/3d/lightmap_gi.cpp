@@ -130,6 +130,45 @@ TypedArray<TextureLayered> LightmapGIData::get_lightmap_textures() const {
 	return light_textures;
 }
 
+void LightmapGIData::set_shadowmask_textures(const TypedArray<TextureLayered> &p_data) {
+	shadowmask_textures = p_data;
+	if (p_data.is_empty()) {
+		shadowmask_texture = Ref<TextureLayered>();
+		_reset_shadowmask_textures();
+		return;
+	}
+
+	if (p_data.size() == 1) {
+		shadowmask_texture = p_data[0];
+	} else {
+		Vector<Ref<Image>> images;
+		for (int i = 0; i < p_data.size(); i++) {
+			Ref<TextureLayered> texture = p_data[i];
+			ERR_FAIL_COND_MSG(texture.is_null(), vformat("Invalid TextureLayered at index %d.", i));
+			for (int j = 0; j < texture->get_layers(); j++) {
+				images.push_back(texture->get_layer_data(j));
+			}
+		}
+
+		Ref<Texture2DArray> combined_texture;
+		combined_texture.instantiate();
+
+		combined_texture->create_from_images(images);
+		shadowmask_texture = combined_texture;
+	}
+	_reset_shadowmask_textures();
+}
+
+TypedArray<TextureLayered> LightmapGIData::get_shadowmask_textures() const {
+	return shadowmask_textures;
+}
+
+void LightmapGIData::clear_shadowmask_textures() {
+	shadowmask_textures.clear();
+	shadowmask_texture.unref();
+	_reset_shadowmask_textures();
+}
+
 RID LightmapGIData::get_rid() const {
 	return lightmap;
 }
@@ -140,6 +179,10 @@ void LightmapGIData::clear() {
 
 void LightmapGIData::_reset_lightmap_textures() {
 	RS::get_singleton()->lightmap_set_textures(lightmap, light_texture.is_valid() ? light_texture->get_rid() : RID(), uses_spherical_harmonics);
+}
+
+void LightmapGIData::_reset_shadowmask_textures() {
+	RS::get_singleton()->lightmap_set_shadowmask_textures(lightmap, shadowmask_texture.is_valid() ? shadowmask_texture->get_rid() : RID());
 }
 
 void LightmapGIData::set_uses_spherical_harmonics(bool p_enable) {
@@ -252,6 +295,9 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lightmap_textures", "light_textures"), &LightmapGIData::set_lightmap_textures);
 	ClassDB::bind_method(D_METHOD("get_lightmap_textures"), &LightmapGIData::get_lightmap_textures);
 
+	ClassDB::bind_method(D_METHOD("set_shadowmask_textures", "shadowmask_textures"), &LightmapGIData::set_shadowmask_textures);
+	ClassDB::bind_method(D_METHOD("get_shadowmask_textures"), &LightmapGIData::get_shadowmask_textures);
+
 	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &LightmapGIData::set_uses_spherical_harmonics);
 	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &LightmapGIData::is_using_spherical_harmonics);
 
@@ -264,6 +310,7 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "lightmap_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_NO_EDITOR), "set_lightmap_textures", "get_lightmap_textures");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "shadowmask_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_NO_EDITOR), "set_shadowmask_textures", "get_shadowmask_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
@@ -1061,7 +1108,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 	}
 
-	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, bounces, bounce_indirect_energy, bias, max_texture_size, directional, use_texture_for_bounces, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
+	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, bounces, bounce_indirect_energy, bias, max_texture_size, directional, use_shadowmask, use_texture_for_bounces, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
 
 	if (bake_err == Lightmapper::BAKE_ERROR_LIGHTMAP_TOO_SMALL) {
 		return BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL;
@@ -1071,7 +1118,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	// POSTBAKE: Save Textures.
 
-	TypedArray<TextureLayered> textures;
+	TypedArray<TextureLayered> lightmap_textures;
 	{
 		Vector<Ref<Image>> images;
 		images.resize(lightmapper->get_bake_texture_count());
@@ -1086,7 +1133,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		int slices_per_texture = Image::MAX_HEIGHT / slice_height;
 		int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
 
-		textures.resize(texture_count);
+		lightmap_textures.resize(texture_count);
 
 		String base_path = p_image_data_path.get_basename();
 
@@ -1127,7 +1174,68 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			ResourceLoader::import(texture_path);
 			Ref<TextureLayered> t = ResourceLoader::load(texture_path); // If already loaded, it will be updated on refocus?
 			ERR_FAIL_COND_V(t.is_null(), BAKE_ERROR_CANT_CREATE_IMAGE);
-			textures[i] = t;
+			lightmap_textures[i] = t;
+		}
+	}
+
+	int shadowmask_count = lightmapper->get_shadowmask_texture_count();
+
+	TypedArray<TextureLayered> shadowmask_textures;
+	if (use_shadowmask && shadowmask_count > 0) {
+		Vector<Ref<Image>> images;
+		images.resize(shadowmask_count);
+		for (int i = 0; i < images.size(); i++) {
+			images.set(i, lightmapper->get_shadowmask_texture(i));
+		}
+
+		int slice_count = images.size();
+		int slice_width = images[0]->get_width();
+		int slice_height = images[0]->get_height();
+
+		int slices_per_texture = Image::MAX_HEIGHT / slice_height;
+		int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
+
+		shadowmask_textures.resize(texture_count);
+
+		String base_path = p_image_data_path.get_basename();
+
+		int last_count = slice_count % slices_per_texture;
+		for (int i = 0; i < texture_count; i++) {
+			int texture_slice_count = (i == texture_count - 1 && last_count != 0) ? last_count : slices_per_texture;
+
+			Ref<Image> texture_image = Image::create_empty(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
+
+			for (int j = 0; j < texture_slice_count; j++) {
+				texture_image->blit_rect(images[i * slices_per_texture + j], Rect2i(0, 0, slice_width, slice_height), Point2i(0, slice_height * j));
+			}
+
+			String texture_path = texture_count > 1 ? base_path + "_" + itos(i) + "_shadow.png" : base_path + "_shadow.png";
+
+			Ref<ConfigFile> config;
+			config.instantiate();
+
+			if (FileAccess::exists(texture_path + ".import")) {
+				config->load(texture_path + ".import");
+			}
+
+			config->set_value("remap", "importer", "2d_array_texture");
+			config->set_value("remap", "type", "CompressedTexture2DArray");
+			if (!config->has_section_key("params", "compress/mode")) {
+				config->set_value("params", "compress/mode", 2);
+			}
+			config->set_value("params", "compress/channel_pack", 1);
+			config->set_value("params", "mipmaps/generate", false);
+			config->set_value("params", "slices/horizontal", 1);
+			config->set_value("params", "slices/vertical", texture_slice_count);
+
+			config->save(texture_path + ".import");
+
+			Error err = texture_image->save_png(texture_path);
+			ERR_FAIL_COND_V(err, BAKE_ERROR_CANT_CREATE_IMAGE);
+			ResourceLoader::import(texture_path);
+			Ref<TextureLayered> t = ResourceLoader::load(texture_path); // If already loaded, it will be updated on refocus?
+			ERR_FAIL_COND_V(t.is_null(), BAKE_ERROR_CANT_CREATE_IMAGE);
+			shadowmask_textures[i] = t;
 		}
 	}
 
@@ -1142,7 +1250,14 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		gi_data.instantiate();
 	}
 
-	gi_data->set_lightmap_textures(textures);
+	gi_data->set_lightmap_textures(lightmap_textures);
+
+	if (use_shadowmask && shadowmask_count > 0) {
+		gi_data->set_shadowmask_textures(shadowmask_textures);
+	} else {
+		gi_data->clear_shadowmask_textures();
+	}
+
 	gi_data->set_uses_spherical_harmonics(directional);
 
 	for (int i = 0; i < lightmapper->get_bake_mesh_count(); i++) {
@@ -1417,6 +1532,14 @@ bool LightmapGI::is_directional() const {
 	return directional;
 }
 
+void LightmapGI::set_use_shadowmask(bool p_enable) {
+	use_shadowmask = p_enable;
+}
+
+bool LightmapGI::is_using_shadowmask() const {
+	return use_shadowmask;
+}
+
 void LightmapGI::set_use_texture_for_bounces(bool p_enable) {
 	use_texture_for_bounces = p_enable;
 }
@@ -1603,6 +1726,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_directional", "directional"), &LightmapGI::set_directional);
 	ClassDB::bind_method(D_METHOD("is_directional"), &LightmapGI::is_directional);
 
+	ClassDB::bind_method(D_METHOD("set_use_shadowmask", "enable"), &LightmapGI::set_use_shadowmask);
+	ClassDB::bind_method(D_METHOD("is_using_shadowmask"), &LightmapGI::is_using_shadowmask);
+
 	ClassDB::bind_method(D_METHOD("set_use_texture_for_bounces", "use_texture_for_bounces"), &LightmapGI::set_use_texture_for_bounces);
 	ClassDB::bind_method(D_METHOD("is_using_texture_for_bounces"), &LightmapGI::is_using_texture_for_bounces);
 
@@ -1616,6 +1742,7 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounces", PROPERTY_HINT_RANGE, "0,6,1,or_greater"), "set_bounces", "get_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce_indirect_energy", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_bounce_indirect_energy", "get_bounce_indirect_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional"), "set_directional", "is_directional");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_shadowmask"), "set_use_shadowmask", "is_using_shadowmask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_texture_for_bounces"), "set_use_texture_for_bounces", "is_using_texture_for_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");

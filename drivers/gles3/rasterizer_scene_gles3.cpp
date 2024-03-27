@@ -2687,14 +2687,14 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				glBlitFramebuffer(0, 0, size.x, size.y,
 						0, 0, size.x, size.y,
 						GL_COLOR_BUFFER_BIT, GL_NEAREST);
-				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 5);
+				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
 				glBindTexture(GL_TEXTURE_2D, backbuffer);
 			}
 			if (scene_state.used_depth_texture) {
 				glBlitFramebuffer(0, 0, size.x, size.y,
 						0, 0, size.x, size.y,
 						GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
+				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 7);
 				glBindTexture(GL_TEXTURE_2D, backbuffer_depth);
 			}
 		}
@@ -3366,6 +3366,16 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							};
 							glUniformMatrix3fv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::LIGHTMAP_NORMAL_XFORM, shader->version, instance_variant, spec_constants), 1, GL_FALSE, matrix);
 						}
+
+						if (lm->shadow_texture.is_valid()) {
+							tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lm->shadow_texture);
+						} else {
+							RID default_white = GLES3::TextureStorage::get_singleton()->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE);
+							tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(default_white);
+						}
+
+						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 5);
+						glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
 					} else if (inst->lightmap_sh) {
 						glUniform4fv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::LIGHTMAP_CAPTURES, shader->version, instance_variant, spec_constants), 9, reinterpret_cast<const GLfloat *>(inst->lightmap_sh->sh));
 					}

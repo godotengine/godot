@@ -876,6 +876,7 @@ float sample_shadow(highp sampler2DShadow shadow, float shadow_pixel_size, vec4 
 #ifndef DISABLE_LIGHTMAP
 #ifdef USE_LIGHTMAP
 uniform mediump sampler2DArray lightmap_textures; //texunit:-4
+uniform lowp sampler2DArray shadowmask_textures; //texunit:-5
 uniform lowp uint lightmap_slice;
 uniform highp vec4 lightmap_uv_scale;
 uniform float lightmap_exposure_normalization;
@@ -891,8 +892,8 @@ uniform mediump vec4[9] lightmap_captures;
 #endif // !DISABLE_LIGHTMAP
 
 #ifdef USE_MULTIVIEW
-uniform highp sampler2DArray depth_buffer; // texunit:-6
-uniform highp sampler2DArray color_buffer; // texunit:-5
+uniform highp sampler2DArray depth_buffer; // texunit:-7
+uniform highp sampler2DArray color_buffer; // texunit:-6
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
@@ -900,8 +901,8 @@ ivec3 multiview_uv(ivec2 uv) {
 	return ivec3(uv, int(ViewIndex));
 }
 #else
-uniform highp sampler2D depth_buffer; // texunit:-6
-uniform highp sampler2D color_buffer; // texunit:-5
+uniform highp sampler2D depth_buffer; // texunit:-7
+uniform highp sampler2D color_buffer; // texunit:-6
 vec2 multiview_uv(vec2 uv) {
 	return uv;
 }
@@ -1782,6 +1783,15 @@ void main() {
 #if !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)
 
 #ifndef SHADOWS_DISABLED
+// Baked shadowmasks
+#ifdef USE_LIGHTMAP
+	float shadowmask = 1.0f;
+	vec3 uvw;
+	uvw.xy = uv2 * lightmap_uv_scale.zw + lightmap_uv_scale.xy;
+	uvw.z = float(lightmap_slice);
+
+	shadowmask = textureLod(shadowmask_textures, uvw, 0.0).x;
+#endif
 
 // Orthogonal shadows
 #if !defined(LIGHT_USE_PSSM2) && !defined(LIGHT_USE_PSSM4)
@@ -1888,6 +1898,10 @@ void main() {
 #endif //LIGHT_USE_PSSM4
 	directional_shadow = mix(directional_shadow, 1.0, smoothstep(directional_shadows[directional_shadow_index].fade_from, directional_shadows[directional_shadow_index].fade_to, vertex.z));
 	directional_shadow = mix(1.0, directional_shadow, directional_lights[directional_shadow_index].shadow_opacity);
+
+#ifdef USE_LIGHTMAP
+	directional_shadow = min(directional_shadow, shadowmask);
+#endif
 
 #else
 	float directional_shadow = 1.0f;

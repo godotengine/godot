@@ -729,6 +729,20 @@ float LightStorage::lightmap_get_probe_capture_update_speed() const {
 	return lightmap_probe_capture_update_speed;
 }
 
+void LightStorage::lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+	lightmap->shadow_texture = p_shadow;
+
+	GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->shadow_texture);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+}
+
 /* LIGHTMAP INSTANCE */
 
 RID LightStorage::lightmap_instance_create(RID p_lightmap) {

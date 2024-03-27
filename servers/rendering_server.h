@@ -667,6 +667,8 @@ public:
 
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
 
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) = 0;
+
 	/* PARTICLES API */
 
 	virtual RID particles_create() = 0;

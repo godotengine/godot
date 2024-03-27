@@ -71,6 +71,11 @@
 		<member name="use_denoiser" type="bool" setter="set_use_denoiser" getter="is_using_denoiser" default="true">
 			If [code]true[/code], uses a GPU-based denoising algorithm on the generated lightmap. This eliminates most noise within the generated lightmap at the cost of longer bake times. File sizes are generally not impacted significantly by the use of a denoiser, although lossless compression may do a better job at compressing a denoised image.
 		</member>
+		<member name="use_shadowmask" type="bool" setter="set_use_shadowmask" getter="is_using_shadowmask" default="true">
+			If [code]true[/code], bakes shadowmasks alongside the lightmaps. This setting only takes effect when there is at least one [DirectionalLight3D] with [member Light3D.light_bake_mode] set to [constant Light3D.BAKE_DYNAMIC] present in the scene.
+			Shadowmasks behave like regular directional shadows, i.e. they react accordingly to dynamic light sources.
+			[b]Note:[/b] Since the shadowmasks are static, they will need to be rebaked when any [DirectionalLight3D]'s rotation has been changed, or any of the nodes using the [LightmapGI] have been moved.
+		</member>
 		<member name="use_texture_for_bounces" type="bool" setter="set_use_texture_for_bounces" getter="is_using_texture_for_bounces" default="true">
 			If [code]true[/code], a texture with the lighting information will be generated to speed up the generation of indirect lighting at the cost of some accuracy. The geometry might exhibit extra light leak artifacts when using low resolution lightmaps or UVs that stretch the lightmap significantly across surfaces. Leave [member use_texture_for_bounces] at its default value of [code]true[/code] if unsure.
 			[b]Note:[/b] [member use_texture_for_bounces] only has an effect if [member bounces] is set to a value greater than or equal to [code]1[/code].
