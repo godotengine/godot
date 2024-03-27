@@ -83,9 +83,7 @@ Error XMLParser::_parse_closing_xml_element() {
 		next_char();
 	}
 
-	node_name = String::utf8(pBeginClose, (int)(P - pBeginClose));
-
-	node_name = node_name.strip_edges(true, true);
+	node_name = String::utf8(pBeginClose, (int)(P - pBeginClose)).strip_edges();
 
 #ifdef DEBUG_XML
 	print_line("XML CLOSE: " + node_name);
@@ -234,9 +232,8 @@ Error XMLParser::_parse_opening_xml_element() {
 		i--;
 		P_copy++;
 	}
-	if (!found) {
-		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid element, missing closing tag.");
-	}
+
+	ERR_FAIL_COND_V_MSG(!found, ERR_INVALID_DATA, "Invalid element, missing closing tag.");
 
 	// find end of element
 	while (*P && *P != '>' && !_is_white_space(*P)) {
