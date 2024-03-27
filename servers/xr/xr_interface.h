@@ -84,6 +84,11 @@ public:
 		XR_ENV_BLEND_MODE_ALPHA_BLEND, /* Real world is passed through where alpha channel is 0.0 and gradually blends to opaque for value 1.0. */
 	};
 
+	/* VRS */
+	float vrs_min_radius = 20.0;
+	float vrs_strength = 1.0;
+	bool vrs_dirty = true;
+
 protected:
 	_THREAD_SAFE_CLASS_
 
@@ -127,7 +132,6 @@ public:
 	virtual Transform3D get_camera_transform() = 0; /* returns the position of our camera for updating our camera node. For monoscopic this is equal to the views transform, for stereoscopic this should be an average */
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) = 0; /* get each view projection matrix */
-	virtual RID get_vrs_texture(); /* obtain VRS texture */
 	virtual RID get_color_texture(); /* obtain color output texture (if applicable) */
 	virtual RID get_depth_texture(); /* obtain depth output texture (if applicable, used for reprojection) */
 	virtual RID get_velocity_texture(); /* obtain velocity output texture (if applicable, used for spacewarp) */
@@ -145,10 +149,19 @@ public:
 	virtual bool start_passthrough() { return false; }
 	virtual void stop_passthrough() {}
 
-	/** environment blend mode. */
+	/** environment blend mode **/
 	virtual Array get_supported_environment_blend_modes();
 	virtual XRInterface::EnvironmentBlendMode get_environment_blend_mode() const { return XR_ENV_BLEND_MODE_OPAQUE; }
 	virtual bool set_environment_blend_mode(EnvironmentBlendMode mode) { return false; }
+
+	/** VRS **/
+	float get_vrs_min_radius() const;
+	void set_vrs_min_radius(float p_vrs_min_radius);
+	float get_vrs_strength() const;
+	void set_vrs_strength(float p_vrs_strength);
+
+	virtual Vector2 get_eye_focus(uint32_t p_view, float p_aspect); /* Obtain eye focus (if supported) in 2D space NDC coordinates to given view */
+	virtual RID get_vrs_texture(); /* obtain VRS texture */
 
 	XRInterface();
 	~XRInterface();

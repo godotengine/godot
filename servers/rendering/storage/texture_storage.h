@@ -169,6 +169,8 @@ public:
 
 	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) = 0;
 	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const = 0;
+	virtual void render_target_set_vrs_update_mode(RID p_render_target, RS::ViewportVRSUpdateMode p_mode) = 0;
+	virtual RS::ViewportVRSUpdateMode render_target_get_vrs_update_mode(RID p_render_target) const = 0;
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) = 0;
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const = 0;
 

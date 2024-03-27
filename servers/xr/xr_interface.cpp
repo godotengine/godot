@@ -61,8 +61,16 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_play_area_mode", "mode"), &XRInterface::set_play_area_mode);
 	ClassDB::bind_method(D_METHOD("get_play_area"), &XRInterface::get_play_area);
 
+	ClassDB::bind_method(D_METHOD("get_vrs_min_radius"), &XRInterface::get_vrs_min_radius);
+	ClassDB::bind_method(D_METHOD("set_vrs_min_radius", "radius"), &XRInterface::set_vrs_min_radius);
+
+	ClassDB::bind_method(D_METHOD("get_vrs_strength"), &XRInterface::get_vrs_strength);
+	ClassDB::bind_method(D_METHOD("set_vrs_strength", "strength"), &XRInterface::set_vrs_strength);
+
 	ADD_GROUP("XR", "xr_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "xr_play_area_mode", PROPERTY_HINT_ENUM, "Unknown,3DOF,Sitting,Roomscale,Stage"), "set_play_area_mode", "get_play_area_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xr_vrs_min_radius", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_vrs_min_radius", "get_vrs_min_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xr_vrs_strength", PROPERTY_HINT_RANGE, "0.1,10.0,0.1"), "set_vrs_strength", "get_vrs_strength");
 
 	// methods and properties specific to AR....
 	ClassDB::bind_method(D_METHOD("get_anchor_detection_is_enabled"), &XRInterface::get_anchor_detection_is_enabled);
@@ -175,6 +183,50 @@ int XRInterface::get_camera_feed_id() {
 	return 0;
 }
 
+float XRInterface::get_vrs_min_radius() const {
+	return vrs_min_radius;
+}
+
+void XRInterface::set_vrs_min_radius(float p_vrs_min_radius) {
+	if (p_vrs_min_radius < 1.0) {
+		WARN_PRINT_ONCE("VRS minimum radius can not be set below 1.0");
+		vrs_min_radius = 1.0;
+	} else if (p_vrs_min_radius > 100.0) {
+		WARN_PRINT_ONCE("VRS minimum radius can not be set above 100.0");
+		vrs_min_radius = 100.0;
+	} else {
+		vrs_min_radius = p_vrs_min_radius;
+		vrs_dirty = true;
+	}
+}
+
+float XRInterface::get_vrs_strength() const {
+	return vrs_strength;
+}
+
+void XRInterface::set_vrs_strength(float p_vrs_strength) {
+	if (p_vrs_strength < 0.1) {
+		WARN_PRINT_ONCE("VRS strength can not be set below 0.1");
+		vrs_strength = 0.1;
+	} else if (p_vrs_strength > 10.0) {
+		WARN_PRINT_ONCE("VRS strength can not be set above 10.0");
+		vrs_strength = 10.0;
+	} else {
+		vrs_strength = p_vrs_strength;
+		vrs_dirty = true;
+	}
+}
+
+Vector2 XRInterface::get_eye_focus(uint32_t p_view, float p_aspect) {
+	// Our near and far don't matter much for what we're doing here,
+	// but there are some interfaces that will remember this as the near and far and may fail as a result...
+
+	Projection cm = get_projection_for_view(p_view, p_aspect, 0.1, 1000.0);
+	Vector3 center = cm.xform(Vector3(0.0, 0.0, 999.0));
+
+	return Vector2(center.x, center.y);
+}
+
 RID XRInterface::get_vrs_texture() {
 	// Default logic will return a standard VRS image based on our target size and default projections.
 	// Note that this only gets called if VRS is supported on the hardware.
@@ -183,63 +235,53 @@ RID XRInterface::get_vrs_texture() {
 	int32_t texel_height = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_HEIGHT);
 	int view_count = get_view_count();
 	Size2 target_size = get_render_target_size();
+
+	float texel_size = MAX(texel_width, texel_height);
+	float min_radius = vrs_min_radius / texel_size;
+
 	real_t aspect = target_size.x / target_size.y; // is this y/x ?
 	Size2 vrs_size = Size2(round(0.5 + target_size.x / texel_width), round(0.5 + target_size.y / texel_height));
-	real_t radius = vrs_size.length() * 0.5;
+	real_t radius = MAX(1.0, (MAX(vrs_size.x, vrs_size.y) * 0.5 / vrs_strength) - min_radius);
 	Size2 vrs_sizei = vrs_size;
 
-	if (vrs.size != vrs_sizei) {
-		const uint8_t densities[] = {
-			0, // 1x1
-			1, // 1x2
-			// 2, // 1x4 - not supported
-			// 3, // 1x8 - not supported
-			// 4, // 2x1
-			5, // 2x2
-			6, // 2x4
-			// 9, // 4x2
-			10, // 4x4
-		};
+	// Our density map is now unified, with a value of (0.0, 0.0) meaning a 1x1 texel size and (1.0, 1.0) an max texel size.
+	// For our standard VRS extension on Vulkan this means a maximum of 8x8.
+	// For the density map extension this scales depending on the max texel size.
 
-		// out with the old
+	if (vrs.size != vrs_sizei || vrs_dirty) {
+		// Out with the old.
 		if (vrs.vrs_texture.is_valid()) {
 			RS::get_singleton()->free(vrs.vrs_texture);
 			vrs.vrs_texture = RID();
 		}
 
-		// in with the new
+		// In with the new.
 		Vector<Ref<Image>> images;
 		vrs.size = vrs_sizei;
 
 		for (int i = 0; i < view_count && i < 2; i++) {
 			PackedByteArray data;
-			data.resize(vrs_sizei.x * vrs_sizei.y);
+			data.resize(vrs_sizei.x * vrs_sizei.y * 2);
 			uint8_t *data_ptr = data.ptrw();
 
-			// Our near and far don't matter much for what we're doing here, but there are some interfaces that will remember this as the near and far and may fail as a result...
-			Projection cm = get_projection_for_view(i, aspect, 0.1, 1000.0);
-			Vector3 center = cm.xform(Vector3(0.0, 0.0, 999.0));
+			Vector2 eye_focus = get_eye_focus(i, aspect);
 
 			Vector2i view_center;
-			view_center.x = int(vrs_size.x * (center.x + 1.0) * 0.5);
-			view_center.y = int(vrs_size.y * (center.y + 1.0) * 0.5);
+			view_center.x = int(vrs_size.x * (eye_focus.x + 1.0) * 0.5);
+			view_center.y = int(vrs_size.y * (eye_focus.y + 1.0) * 0.5);
 
 			int d = 0;
 			for (int y = 0; y < vrs_sizei.y; y++) {
 				for (int x = 0; x < vrs_sizei.x; x++) {
 					Vector2 offset = Vector2(x - view_center.x, y - view_center.y);
 					offset.y *= aspect;
-					real_t distance = offset.length();
-					int idx = round(5.0 * distance / radius);
-					if (idx > 4) {
-						idx = 4;
-					}
-					uint8_t density = densities[idx];
-
-					data_ptr[d++] = density;
+					real_t density = 255.0 * MAX(0.0, abs(offset.x) - min_radius) / radius;
+					data_ptr[d++] = MIN(255, density);
+					density = 255.0 * MAX(0.0, abs(offset.y) - min_radius) / radius;
+					data_ptr[d++] = MIN(255, density);
 				}
 			}
-			images.push_back(Image::create_from_data(vrs_sizei.x, vrs_sizei.y, false, Image::FORMAT_R8, data));
+			images.push_back(Image::create_from_data(vrs_sizei.x, vrs_sizei.y, false, Image::FORMAT_RG8, data));
 		}
 
 		if (images.size() == 1) {
@@ -247,6 +289,8 @@ RID XRInterface::get_vrs_texture() {
 		} else {
 			vrs.vrs_texture = RS::get_singleton()->texture_2d_layered_create(images, RS::TEXTURE_LAYERED_2D_ARRAY);
 		}
+
+		vrs_dirty = false;
 	}
 
 	return vrs.vrs_texture;
