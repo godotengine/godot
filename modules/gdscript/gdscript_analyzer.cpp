@@ -5584,7 +5584,10 @@ Ref<GDScriptParserRef> GDScriptAnalyzer::get_parser_for(const String &p_path) {
 		ref = depended_parsers[p_path];
 	} else {
 		Error err = OK;
-		ref = GDScriptCache::get_parser(p_path, GDScriptParserRef::EMPTY, err, parser->script_path);
+
+		// If analyzing for autocompletion, analyze dependencies recursively to provide completion for nested subscripts.
+		GDScriptParserRef::Status status = parser->for_completion ? GDScriptParserRef::FULLY_SOLVED : GDScriptParserRef::EMPTY;
+		ref = GDScriptCache::get_parser(p_path, status, err, parser->script_path);
 		if (ref.is_valid()) {
 			depended_parsers[p_path] = ref;
 		}
