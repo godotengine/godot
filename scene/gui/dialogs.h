@@ -57,6 +57,8 @@ class AcceptDialog : public Window {
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 		int buttons_separation = 0;
+		int buttons_min_width = 0;
+		int buttons_min_height = 0;
 	} theme_cache;
 
 	void _custom_action(const String &p_action);
