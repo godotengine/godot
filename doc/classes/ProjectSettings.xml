@@ -1001,6 +1001,9 @@
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
+		<member name="gui/common/show_control_z_index_warning" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [Control] nodes with [member CanvasItem.z_index] different than [code]0[/code] will show a warning in the scene tree. The warning is supposed to inform the user how input works with relation to z-index; disable it if you don't need it.
+		</member>
 		<member name="gui/common/snap_controls_to_pixels" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], snaps [Control] node vertices to the nearest pixel to ensure they remain crisp even when the camera moves or zooms.
 		</member>
