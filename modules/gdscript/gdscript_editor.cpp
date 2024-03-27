@@ -823,6 +823,20 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 		}
 	}
 
+	if (p_function->is_vararg()) {
+		if (!p_function->parameters.is_empty()) {
+			arghint += ", ";
+		}
+		if (p_arg_idx >= p_function->parameters.size()) {
+			arghint += String::chr(0xFFFF);
+		}
+		const GDScriptParser::ParameterNode *rest_par = p_function->rest_parameter;
+		arghint += "..." + rest_par->identifier->name.operator String() + ": " + rest_par->get_datatype().to_string();
+		if (p_arg_idx >= p_function->parameters.size()) {
+			arghint += String::chr(0xFFFF);
+		}
+	}
+
 	arghint += ")";
 
 	return arghint;
@@ -3304,7 +3318,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				}
 				method_hint += "(";
 
-				if (mi.arguments.size()) {
+				if (!mi.arguments.is_empty()) {
 					for (int i = 0; i < mi.arguments.size(); i++) {
 						if (i > 0) {
 							method_hint += ", ";
@@ -3317,6 +3331,15 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						if (use_type_hint) {
 							method_hint += ": " + _get_visual_datatype(mi.arguments[i], true, class_name);
 						}
+					}
+				}
+				if (mi.flags & METHOD_FLAG_VARARG) {
+					if (!mi.arguments.is_empty()) {
+						method_hint += ", ";
+					}
+					method_hint += "...args"; // `MethodInfo` does not support the rest parameter name.
+					if (use_type_hint) {
+						method_hint += ": Array";
 					}
 				}
 				method_hint += ")";
