@@ -189,6 +189,8 @@ class String {
 	void copy_from(const char *p_cstr, const int p_clip_to);
 	void copy_from(const wchar_t *p_cstr);
 	void copy_from(const wchar_t *p_cstr, const int p_clip_to);
+	void copy_from(const char16_t *p_cstr);
+	void copy_from(const char16_t *p_cstr, const int p_clip_to);
 	void copy_from(const char32_t *p_cstr);
 	void copy_from(const char32_t *p_cstr, const int p_clip_to);
 
@@ -232,30 +234,35 @@ public:
 	String operator+(const String &p_str) const;
 	String operator+(char32_t p_char) const;
 
-	String &operator+=(const String &);
+	String &operator+=(const String &p_str);
 	String &operator+=(char32_t p_char);
 	String &operator+=(const char *p_str);
 	String &operator+=(const wchar_t *p_str);
+	String &operator+=(const char16_t *p_str);
 	String &operator+=(const char32_t *p_str);
 
 	/* Compatibility Operators */
 
 	void operator=(const char *p_str);
 	void operator=(const wchar_t *p_str);
+	void operator=(const char16_t *p_str);
 	void operator=(const char32_t *p_str);
 
 	bool operator==(const char *p_str) const;
 	bool operator==(const wchar_t *p_str) const;
+	bool operator==(const char16_t *p_str) const;
 	bool operator==(const char32_t *p_str) const;
 	bool operator==(const StrRange &p_str_range) const;
 
 	bool operator!=(const char *p_str) const;
 	bool operator!=(const wchar_t *p_str) const;
+	bool operator!=(const char16_t *p_str) const;
 	bool operator!=(const char32_t *p_str) const;
 
-	bool operator<(const char32_t *p_str) const;
 	bool operator<(const char *p_str) const;
 	bool operator<(const wchar_t *p_str) const;
+	bool operator<(const char16_t *p_str) const;
+	bool operator<(const char32_t *p_str) const;
 
 	bool operator<(const String &p_str) const;
 	bool operator<=(const String &p_str) const;
@@ -348,10 +355,12 @@ public:
 
 	static int64_t to_int(const char *p_str, int p_len = -1);
 	static int64_t to_int(const wchar_t *p_str, int p_len = -1);
+	static int64_t to_int(const char16_t *p_str, int p_len = -1);
 	static int64_t to_int(const char32_t *p_str, int p_len = -1, bool p_clamp = false);
 
 	static double to_float(const char *p_str);
 	static double to_float(const wchar_t *p_str, const wchar_t **r_end = nullptr);
+	static double to_float(const char16_t *p_str, const char16_t **r_end = nullptr);
 	static double to_float(const char32_t *p_str, const char32_t **r_end = nullptr);
 	static uint32_t num_characters(int64_t p_int);
 
@@ -413,6 +422,8 @@ public:
 
 	static uint32_t hash(const char32_t *p_cstr, int p_len); /* hash the string */
 	static uint32_t hash(const char32_t *p_cstr); /* hash the string */
+	static uint32_t hash(const char16_t *p_cstr, int p_len); /* hash the string */
+	static uint32_t hash(const char16_t *p_cstr); /* hash the string */
 	static uint32_t hash(const wchar_t *p_cstr, int p_len); /* hash the string */
 	static uint32_t hash(const wchar_t *p_cstr); /* hash the string */
 	static uint32_t hash(const char *p_cstr, int p_len); /* hash the string */
@@ -491,20 +502,27 @@ public:
 
 	String(const char *p_str);
 	String(const wchar_t *p_str);
+	String(const char16_t *p_str);
 	String(const char32_t *p_str);
 	String(const char *p_str, int p_clip_to_len);
 	String(const wchar_t *p_str, int p_clip_to_len);
+	String(const char16_t *p_str, int p_clip_to_len);
 	String(const char32_t *p_str, int p_clip_to_len);
 	String(const StrRange &p_range);
 };
 
 bool operator==(const char *p_chr, const String &p_str);
 bool operator==(const wchar_t *p_chr, const String &p_str);
+bool operator==(const char16_t *p_chr, const String &p_str);
+bool operator==(const char32_t *p_chr, const String &p_str);
 bool operator!=(const char *p_chr, const String &p_str);
 bool operator!=(const wchar_t *p_chr, const String &p_str);
-
+bool operator!=(const char16_t *p_chr, const String &p_str);
+bool operator!=(const char32_t *p_chr, const String &p_str);
 String operator+(const char *p_chr, const String &p_str);
 String operator+(const wchar_t *p_chr, const String &p_str);
+String operator+(const char16_t *p_chr, const String &p_str);
+String operator+(const char32_t *p_chr, const String &p_str);
 String operator+(char32_t p_chr, const String &p_str);
 
 String itos(int64_t p_val);
