@@ -1036,9 +1036,9 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 	ERR_FAIL_COND(platform.is_null());
 
 	if (p_path.ends_with(".zip")) {
-		platform->export_zip(current, export_pck_zip_debug->is_pressed(), p_path);
+		platform->export_zip(!export_pck_zip_additional->is_pressed(), current, export_pck_zip_debug->is_pressed(), p_path);
 	} else if (p_path.ends_with(".pck")) {
-		platform->export_pack(current, export_pck_zip_debug->is_pressed(), p_path);
+		platform->export_pack(!export_pck_zip_additional->is_pressed(), current, export_pck_zip_debug->is_pressed(), p_path);
 	} else {
 		ERR_FAIL_MSG("Path must end with .pck or .zip");
 	}
@@ -1558,11 +1558,21 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_debug->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	export_project->get_vbox()->add_child(export_debug);
 
+	HBoxContainer *export_pck_zip_hbc = memnew(HBoxContainer);
+	export_pck_zip_hbc->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	export_pck_zip->get_vbox()->add_child(export_pck_zip_hbc);
+
 	export_pck_zip_debug = memnew(CheckBox);
 	export_pck_zip_debug->set_text(TTR("Export With Debug"));
 	export_pck_zip_debug->set_pressed(true);
-	export_pck_zip_debug->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	export_pck_zip->get_vbox()->add_child(export_pck_zip_debug);
+	export_pck_zip_debug->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	export_pck_zip_hbc->add_child(export_pck_zip_debug);
+
+	export_pck_zip_additional = memnew(CheckBox);
+	export_pck_zip_additional->set_text(TTR("Export As Additional Pack"));
+	export_pck_zip_additional->set_pressed(false);
+	export_pck_zip_additional->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	export_pck_zip_hbc->add_child(export_pck_zip_additional);
 
 	set_hide_on_ok(false);
 

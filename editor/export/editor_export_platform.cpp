@@ -1785,7 +1785,7 @@ Error EditorExportPlatform::save_pack(bool p_main_pack, const Ref<EditorExportPr
 	return OK;
 }
 
-Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
+Error EditorExportPlatform::save_zip(bool p_main_pack, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
 	EditorProgress ep("savezip", TTR("Packing"), 102, true);
 
 	Ref<FileAccess> io_fa;
@@ -1796,7 +1796,7 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bo
 	zd.ep = &ep;
 	zd.zip = zip;
 
-	Error err = export_project_files(false, p_preset, p_debug, _save_zip_file, &zd);
+	Error err = export_project_files(p_main_pack, p_preset, p_debug, _save_zip_file, &zd);
 	if (err != OK && err != ERR_SKIP) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Save ZIP"), TTR("Failed to export project files."));
 	}
@@ -1806,14 +1806,14 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bo
 	return OK;
 }
 
-Error EditorExportPlatform::export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatform::export_pack(bool p_main_pack, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	return save_pack(false, p_preset, p_debug, p_path);
+	return save_pack(p_main_pack, p_preset, p_debug, p_path);
 }
 
-Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatform::export_zip(bool p_main_pack, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	return save_zip(p_preset, p_debug, p_path);
+	return save_zip(p_main_pack, p_preset, p_debug, p_path);
 }
 
 void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
