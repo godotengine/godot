@@ -221,6 +221,7 @@ void TileMapLayer::_rendering_update() {
 	bool quandrant_shape_changed = dirty.flags[DIRTY_FLAGS_LAYER_RENDERING_QUADRANT_SIZE] ||
 			(is_y_sort_enabled() && (dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ENABLED] || dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN] || dirty.flags[DIRTY_FLAGS_LAYER_LOCAL_TRANSFORM] || dirty.flags[DIRTY_FLAGS_LAYER_GROUP_TILE_SET]));
 
+	bool quadrants_were_cleaned_up = false;
 	// Free all quadrants.
 	if (forced_cleanup || quandrant_shape_changed) {
 		for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
@@ -233,12 +234,12 @@ void TileMapLayer::_rendering_update() {
 			kv.value->cells.clear();
 		}
 		rendering_quadrant_map.clear();
-		_rendering_was_cleaned_up = true;
+		quadrants_were_cleaned_up = true;
 	}
 
 	if (!forced_cleanup) {
 		// List all quadrants to update, recreating them if needed.
-		if (dirty.flags[DIRTY_FLAGS_LAYER_GROUP_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || _rendering_was_cleaned_up) {
+		if (dirty.flags[DIRTY_FLAGS_LAYER_GROUP_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || _rendering_was_cleaned_up || quadrants_were_cleaned_up) {
 			// Update all cells.
 			for (KeyValue<Vector2i, CellData> &kv : tile_map) {
 				CellData &cell_data = kv.value;
@@ -419,9 +420,11 @@ void TileMapLayer::_rendering_update() {
 
 	// ----------- Occluders processing -----------
 	if (forced_cleanup) {
-		// Clean everything.
-		for (KeyValue<Vector2i, CellData> &kv : tile_map) {
-			_rendering_occluders_clear_cell(kv.value);
+		if (!_rendering_was_cleaned_up) {
+			// Clean everything.
+			for (KeyValue<Vector2i, CellData> &kv : tile_map) {
+				_rendering_occluders_clear_cell(kv.value);
+			}
 		}
 	} else {
 		if (_rendering_was_cleaned_up || dirty.flags[DIRTY_FLAGS_LAYER_GROUP_TILE_SET]) {
@@ -696,9 +699,11 @@ void TileMapLayer::_physics_update() {
 	// Check if we should cleanup everything.
 	bool forced_cleanup = in_destructor || !enabled || !is_inside_tree() || !tile_set.is_valid();
 	if (forced_cleanup) {
-		// Clean everything.
-		for (KeyValue<Vector2i, CellData> &kv : tile_map) {
-			_physics_clear_cell(kv.value);
+		if (!_physics_was_cleaned_up) {
+			// Clean everything.
+			for (KeyValue<Vector2i, CellData> &kv : tile_map) {
+				_physics_clear_cell(kv.value);
+			}
 		}
 	} else {
 		if (_physics_was_cleaned_up || dirty.flags[DIRTY_FLAGS_LAYER_GROUP_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE]) {
@@ -979,9 +984,11 @@ void TileMapLayer::_navigation_update() {
 
 	// ----------- Navigation regions processing -----------
 	if (forced_cleanup) {
-		// Clean everything.
-		for (KeyValue<Vector2i, CellData> &kv : tile_map) {
-			_navigation_clear_cell(kv.value);
+		if (!_navigation_was_cleaned_up) {
+			// Clean everything.
+			for (KeyValue<Vector2i, CellData> &kv : tile_map) {
+				_navigation_clear_cell(kv.value);
+			}
 		}
 	} else {
 		if (_navigation_was_cleaned_up || dirty.flags[DIRTY_FLAGS_LAYER_GROUP_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || dirty.flags[DIRTY_FLAGS_LAYER_NAVIGATION_MAP]) {
@@ -1230,9 +1237,11 @@ void TileMapLayer::_scenes_update() {
 	bool forced_cleanup = in_destructor || !enabled || !is_inside_tree() || !tile_set.is_valid();
 
 	if (forced_cleanup) {
-		// Clean everything.
-		for (KeyValue<Vector2i, CellData> &kv : tile_map) {
-			_scenes_clear_cell(kv.value);
+		if (!_scenes_was_cleaned_up) {
+			// Clean everything.
+			for (KeyValue<Vector2i, CellData> &kv : tile_map) {
+				_scenes_clear_cell(kv.value);
+			}
 		}
 	} else {
 		if (_scenes_was_cleaned_up || dirty.flags[DIRTY_FLAGS_LAYER_GROUP_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE]) {
@@ -1694,19 +1703,13 @@ void TileMapLayer::_internal_update() {
 		dirty.flags[i] = false;
 	}
 
-	// List the cells to delete definitely.
-	Vector<Vector2i> to_delete;
+	// Remove cells that are empty after the cleanup.
 	for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
 		CellData &cell_data = *cell_data_list_element->self();
 		// Select the cell from tile_map if it is invalid.
 		if (cell_data.cell.source_id == TileSet::INVALID_SOURCE) {
-			to_delete.push_back(cell_data.coords);
+			tile_map.erase(cell_data.coords);
 		}
-	}
-
-	// Remove cells that are empty after the cleanup.
-	for (const Vector2i &coords : to_delete) {
-		tile_map.erase(coords);
 	}
 
 	// Clear the dirty cells list.
