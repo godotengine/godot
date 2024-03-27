@@ -250,20 +250,11 @@ private:
 		uint8_t groups_count = 0;
 		static const D3D12_RESOURCE_STATES DELETED_GROUP = D3D12_RESOURCE_STATES(0xFFFFFFFFU);
 	};
-	PagedAllocator<HashMapElement<ResourceInfo::States *, BarrierRequest>> res_barriers_requests_allocator;
-	HashMap<ResourceInfo::States *, BarrierRequest, HashMapHasherDefault, HashMapComparatorDefault<ResourceInfo::States *>, decltype(res_barriers_requests_allocator)> res_barriers_requests;
 
-	LocalVector<D3D12_RESOURCE_BARRIER> res_barriers;
-	uint32_t res_barriers_count = 0;
-	uint32_t res_barriers_batch = 0;
-#ifdef DEV_ENABLED
-	int frame_barriers_count = 0;
-	int frame_barriers_batches_count = 0;
-	uint64_t frame_barriers_cpu_time = 0;
-#endif
+	struct CommandBufferInfo;
 
-	void _resource_transition_batch(ResourceInfo *p_resource, uint32_t p_subresource, uint32_t p_num_planes, D3D12_RESOURCE_STATES p_new_state);
-	void _resource_transitions_flush(ID3D12GraphicsCommandList *p_cmd_list);
+	void _resource_transition_batch(CommandBufferInfo *p_command_buffer, ResourceInfo *p_resource, uint32_t p_subresource, uint32_t p_num_planes, D3D12_RESOURCE_STATES p_new_state);
+	void _resource_transitions_flush(CommandBufferInfo *p_command_buffer);
 
 	/*****************/
 	/**** BUFFERS ****/
@@ -317,7 +308,6 @@ private:
 	UINT _compute_plane_slice(DataFormat p_format, BitField<TextureAspectBits> p_aspect_bits);
 	UINT _compute_plane_slice(DataFormat p_format, TextureAspect p_aspect);
 
-	struct CommandBufferInfo;
 	void _discard_texture_subresources(const TextureInfo *p_tex_info, const CommandBufferInfo *p_cmd_buf_info);
 
 public:
@@ -474,6 +464,10 @@ private:
 		};
 		LocalVector<FamilyFallbackCopy> family_fallback_copies;
 		uint32_t family_fallback_copy_count = 0;
+		HashMap<ResourceInfo::States *, BarrierRequest> res_barriers_requests;
+		LocalVector<D3D12_RESOURCE_BARRIER> res_barriers;
+		uint32_t res_barriers_count = 0;
+		uint32_t res_barriers_batch = 0;
 	};
 
 public:
@@ -1012,7 +1006,7 @@ private:
 			UniformSetInfo,
 			RenderPassInfo,
 			TimestampQueryPoolInfo>;
-	PagedAllocator<VersatileResource> resources_allocator;
+	PagedAllocator<VersatileResource, true> resources_allocator;
 
 	/******************/
 
