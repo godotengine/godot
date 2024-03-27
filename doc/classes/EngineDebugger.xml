@@ -9,6 +9,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_script_debugger" qualifiers="static">
+			<return type="ScriptDebugger" />
+			<description>
+				Returns the [ScriptDebugger] for this [EngineDebugger].
+			</description>
+		</method>
 		<method name="has_capture">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
@@ -34,6 +40,12 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a profiler with the given name is present and active otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="line_poll">
+			<return type="void" />
+			<description>
+				Triggers the debugger to periodically poll for events. Intended to be run once for every line of script code.
 			</description>
 		</method>
 		<method name="profiler_add_frame_data">

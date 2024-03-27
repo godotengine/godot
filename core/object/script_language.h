@@ -373,6 +373,16 @@ public:
 		String file;
 		String func;
 		int line;
+		static StackInfo from_dict(const Dictionary &p_dict) {
+			StackInfo si;
+			ERR_FAIL_COND_V(!p_dict.has("file"), si);
+			ERR_FAIL_COND_V(!p_dict.has("func"), si);
+			ERR_FAIL_COND_V(!p_dict.has("line"), si);
+			si.file = p_dict["file"];
+			si.func = p_dict["func"];
+			si.line = p_dict["line"];
+			return si;
+		}
 	};
 
 	virtual String debug_get_error() const = 0;

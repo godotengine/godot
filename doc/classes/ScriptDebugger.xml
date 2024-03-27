@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptDebugger" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exposes the internal script debugger.
+	</brief_description>
+	<description>
+		[ScriptDebugger] interfaces with [ScriptLanguage]s to debug user-created scripts.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="debug">
+			<return type="void" />
+			<param index="0" name="lang" type="ScriptLanguage" />
+			<param index="1" name="can_continue" type="bool" default="true" />
+			<param index="2" name="is_error_breakpoint" type="bool" default="false" />
+			<description>
+				Signals to the debugger that execution has paused (i.e. due to a breakpoint or error).
+				Once called, the engine will block execution program-wide then use [method set_lines_left] to signal when the script should step or continue execution.
+			</description>
+		</method>
+		<method name="get_breakpoints">
+			<return type="Dictionary" />
+			<description>
+				Gets all breakpoints set in the debugging session.
+				Returns a [Dictionary] with [int] keys for breakpoint line numbers and [Array] of [StringName] values for the paths of the scripts where the breakpoints are set.
+			</description>
+		</method>
+		<method name="get_depth">
+			<return type="int" />
+			<description>
+				Returns the current function execution depth. Only relevant when [method get_lines_left] returns a value greater than [code]0[/code].
+				Returns [code]-1[/code] when the depth doesn't need to be tracked (e.g. when the engine expects a break immediately, or when stepping through code).
+			</description>
+		</method>
+		<method name="get_lines_left">
+			<return type="int" />
+			<description>
+				Returns the number of lines of code to execute before the [ScriptLanguage] should break or [code]-1[/code] if no break is expected.
+				The [ScriptLanguage] should use [method set_lines_left] to decrement this value on each passing line, then break with [method debug] once the number of lines left hits [code]0[/code].
+				Function execution depth should be tracked through [method set_depth] and [method get_depth] when necessary to ensure the number of lines left isn't erroneously decreased inside a function call
+				(i.e. [method set_lines_left] should only be called when [method get_depth] returns a value of [code]-1[/code] or [code]0[/code]).
+			</description>
+		</method>
+		<method name="is_breakpoint">
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="source" type="StringName" />
+			<description>
+				Returns whether the given [param line] in the given [param source] has an active breakpoint.
+			</description>
+		</method>
+		<method name="send_error">
+			<return type="void" />
+			<param index="0" name="func" type="String" />
+			<param index="1" name="file" type="String" />
+			<param index="2" name="line" type="int" />
+			<param index="3" name="error" type="String" />
+			<param index="4" name="description" type="String" />
+			<param index="5" name="editor_notify" type="bool" />
+			<param index="6" name="is_warning" type="bool" />
+			<param index="7" name="stack_info" type="Dictionary[]" />
+			<description>
+				Sends an error to the debugger with the given information.
+			</description>
+		</method>
+		<method name="set_depth">
+			<return type="void" />
+			<param index="0" name="depth" type="int" />
+			<description>
+				Sets the function execution depth.
+				Only relevant when [method get_depth] returns a value greater than or equal to [code]0[/code] and [method get_lines_left] returns a value greater than [code]0[/code].
+			</description>
+		</method>
+		<method name="set_lines_left">
+			<return type="void" />
+			<param index="0" name="left" type="int" />
+			<description>
+				Sets the number of lines of code to execute before the [ScriptLanguage] should break.
+				Should be used with [method get_lines_left].
+			</description>
+		</method>
+	</methods>
+</class>

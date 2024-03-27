@@ -563,15 +563,7 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_debug_get_current_stack_info, ret);
 		Vector<StackInfo> sret;
 		for (int i = 0; i < ret.size(); i++) {
-			StackInfo si;
-			Dictionary d = ret[i];
-			ERR_CONTINUE(!d.has("file"));
-			ERR_CONTINUE(!d.has("func"));
-			ERR_CONTINUE(!d.has("line"));
-			si.file = d["file"];
-			si.func = d["func"];
-			si.line = d["line"];
-			sret.push_back(si);
+			sret.push_back(StackInfo::from_dict(ret[i]));
 		}
 		return sret;
 	}

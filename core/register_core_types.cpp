@@ -329,6 +329,7 @@ void register_core_singletons() {
 	GDREGISTER_ABSTRACT_CLASS(Input);
 	GDREGISTER_CLASS(InputMap);
 	GDREGISTER_CLASS(Expression);
+	GDREGISTER_CLASS(core_bind::ScriptDebugger);
 	GDREGISTER_CLASS(core_bind::EngineDebugger);
 	GDREGISTER_CLASS(Time);
 
