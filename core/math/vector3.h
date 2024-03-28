@@ -295,7 +295,12 @@ Vector3 Vector3::posmodv(const Vector3 &p_modv) const {
 }
 
 Vector3 Vector3::project(const Vector3 &p_to) const {
-	return p_to * (dot(p_to) / p_to.length_squared());
+	real_t length_squared = p_to.length_squared();
+	if (length_squared == 0) {
+		return Vector3();
+	}
+
+	return p_to * (dot(p_to) / length_squared);
 }
 
 real_t Vector3::angle_to(const Vector3 &p_to) const {
