@@ -59,6 +59,8 @@ class EditorPropertyText : public EditorProperty {
 	GDCLASS(EditorPropertyText, EditorProperty);
 	LineEdit *text = nullptr;
 
+	Label *prefix = nullptr;
+
 	bool updating = false;
 	bool string_name = false;
 	void _text_changed(const String &p_string);
@@ -66,6 +68,7 @@ class EditorPropertyText : public EditorProperty {
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
