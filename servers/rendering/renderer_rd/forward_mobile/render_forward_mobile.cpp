@@ -925,6 +925,10 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			if (p_render_data->directional_light_soft_shadows) {
 				spec_constant_base_flags |= 1 << SPEC_CONSTANT_USING_DIRECTIONAL_SOFT_SHADOWS;
 			}
+
+			if (p_render_data->directional_light_count == 1) {
+				spec_constant_base_flags |= 1 << SPEC_CONSTANT_SINGLE_DIRECTIONAL_LIGHT;
+			}
 		} else {
 			spec_constant_base_flags |= 1 << SPEC_CONSTANT_DISABLE_DIRECTIONAL_LIGHTS;
 		}
