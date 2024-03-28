@@ -43,7 +43,11 @@ class LightmapGIEditorPlugin : public EditorPlugin {
 
 	LightmapGI *lightmap = nullptr;
 
+	Button *bake_preview = nullptr;
 	Button *bake = nullptr;
+
+	// If `true`, low-quality bake settings will be used for the next bake.
+	bool preview_mode = false;
 
 	EditorFileDialog *file_dialog = nullptr;
 	static EditorProgress *tmp_progress;
@@ -51,7 +55,7 @@ class LightmapGIEditorPlugin : public EditorPlugin {
 	static void bake_func_end(uint64_t p_time_started);
 
 	void _bake_select_file(const String &p_file);
-	void _bake();
+	void _bake(bool p_preview_mode = false);
 
 protected:
 	static void _bind_methods();

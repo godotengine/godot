@@ -60,6 +60,12 @@ void initialize_lightmapper_rd_module(ModuleInitializationLevel p_level) {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lightmapping/bake_performance/max_rays_per_probe_pass", PROPERTY_HINT_RANGE, "1,256,1,or_greater"), 64);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lightmapping/denoising/denoiser", PROPERTY_HINT_ENUM, "JNLM,OIDN"), 0);
+
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lightmapping/preview_bake/max_quality", PROPERTY_HINT_ENUM, "Low,Medium,High,Ultra"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lightmapping/preview_bake/max_bounces", PROPERTY_HINT_RANGE, "0,16,1"), 2);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lightmapping/preview_bake/texel_scale_factor", PROPERTY_HINT_RANGE, "0.05,1.0,0.001"), 0.5);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lightmapping/preview_bake/generate_probes_max_subdiv", PROPERTY_HINT_ENUM, "Disabled,4,8,16,32"), 0);
+
 #ifndef _3D_DISABLED
 	GDREGISTER_CLASS(LightmapperRD);
 	Lightmapper::create_gpu = create_lightmapper_rd;
