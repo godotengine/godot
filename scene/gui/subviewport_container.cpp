@@ -67,6 +67,21 @@ bool SubViewportContainer::is_stretch_enabled() const {
 	return stretch;
 }
 
+void SubViewportContainer::set_adjust_viewport_properties(bool p_enable) {
+	if (adjust_viewport_properties == p_enable) {
+		return;
+	}
+
+	adjust_viewport_properties = p_enable;
+	if (adjust_viewport_properties) {
+		_queue_adjust_viewport_properties();
+	}
+}
+
+bool SubViewportContainer::is_adjust_viewport_properties_enabled() const {
+	return adjust_viewport_properties;
+}
+
 void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 	ERR_FAIL_COND(p_shrink < 1);
 	if (shrink == p_shrink) {
@@ -109,25 +124,18 @@ Vector<int> SubViewportContainer::get_allowed_size_flags_vertical() const {
 
 void SubViewportContainer::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			connect("child_entered_tree", callable_mp(this, &SubViewportContainer::_queue_adjust_viewport_properties).unbind(1));
+		}
+
 		case NOTIFICATION_RESIZED: {
 			recalc_force_viewport_sizes();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			for (int i = 0; i < get_child_count(); i++) {
-				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-				if (!c) {
-					continue;
-				}
-
-				if (is_visible_in_tree()) {
-					c->set_update_mode(SubViewport::UPDATE_ALWAYS);
-				} else {
-					c->set_update_mode(SubViewport::UPDATE_DISABLED);
-				}
-
-				c->set_handle_input_locally(false); //do not handle input locally here
+			if (adjust_viewport_properties) {
+				_queue_adjust_viewport_properties();
 			}
 		} break;
 
@@ -168,6 +176,33 @@ void SubViewportContainer::_notify_viewports(int p_notification) {
 		}
 		c->notification(p_notification);
 	}
+}
+
+void SubViewportContainer::_adjust_viewport_properties() {
+	property_adjust_queued = false;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+		if (!c) {
+			continue;
+		}
+
+		if (is_visible_in_tree()) {
+			c->set_update_mode(SubViewport::UPDATE_ALWAYS);
+		} else {
+			c->set_update_mode(SubViewport::UPDATE_DISABLED);
+		}
+
+		c->set_handle_input_locally(false);
+	}
+}
+
+void SubViewportContainer::_queue_adjust_viewport_properties() {
+	if (property_adjust_queued) {
+		return;
+	}
+	callable_mp(this, &SubViewportContainer::_adjust_viewport_properties).call_deferred();
+	property_adjust_queued = true;
 }
 
 void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
@@ -286,8 +321,12 @@ void SubViewportContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stretch_shrink", "amount"), &SubViewportContainer::set_stretch_shrink);
 	ClassDB::bind_method(D_METHOD("get_stretch_shrink"), &SubViewportContainer::get_stretch_shrink);
 
+	ClassDB::bind_method(D_METHOD("set_adjust_viewport_properties", "enable"), &SubViewportContainer::set_adjust_viewport_properties);
+	ClassDB::bind_method(D_METHOD("is_adjust_viewport_properties_enabled"), &SubViewportContainer::is_adjust_viewport_properties_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch"), "set_stretch", "is_stretch_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink"), "set_stretch_shrink", "get_stretch_shrink");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "adjust_viewport_properties"), "set_adjust_viewport_properties", "is_adjust_viewport_properties_enabled");
 
 	GDVIRTUAL_BIND(_propagate_input_event, "event");
 }
