@@ -42,11 +42,6 @@ def get_doc_path():
     return "doc_classes"
 
 
-# Return path with space escaped
-def escape_space_in_path(path):
-    return f'"{path}"'
-    # return path
-
 # Return the ANDROID_HOME environment variable.
 def get_env_android_sdk_root():
     return os.environ.get("ANDROID_HOME", os.environ.get("ANDROID_SDK_ROOT", ""))
@@ -85,7 +80,7 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
     sdk_root = env["ANDROID_HOME"]
     if not os.path.exists(get_android_ndk_root(env)):
         extension = ".bat" if os.name == "nt" else ""
-        sdkmanager = escape_space_in_path(sdk_root + "/cmdline-tools/latest/bin/sdkmanager" + extension)
+        sdkmanager = f'"{(sdk_root + "/cmdline-tools/latest/bin/sdkmanager" + extension)}"'
         if os.path.exists(sdkmanager):
             # Install the Android NDK
             print("Installing Android NDK...")
@@ -171,11 +166,11 @@ def configure(env: "SConsEnvironment"):
     toolchain_path = ndk_root + "/toolchains/llvm/prebuilt/" + host_subpath
     compiler_path = toolchain_path + "/bin"
 
-    env["CC"] = escape_space_in_path(compiler_path + "/clang")
-    env["CXX"] = escape_space_in_path(compiler_path + "/clang++")
-    env["AR"] = escape_space_in_path(compiler_path + "/llvm-ar")
-    env["RANLIB"] = escape_space_in_path(compiler_path + "/llvm-ranlib")
-    env["AS"] = escape_space_in_path(compiler_path + "/clang")
+    env["CC"] = f'"{compiler_path + "/clang"}"'
+    env["CXX"] = f'"{compiler_path + "/clang++"}"'
+    env["AR"] = f'"{compiler_path + "/llvm-ar"}"'
+    env["RANLIB"] = f'"{compiler_path + "/llvm-ranlib"}"'
+    env["AS"] = f'"{compiler_path + "/clang"}"'
 
     env.Append(
         CCFLAGS=(
