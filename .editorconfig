@@ -8,6 +8,8 @@ insert_final_newline = true
 
 [*.{cpp,hpp,c,h,mm}]
 trim_trailing_whitespace = true
+indent_style = tab
+indent_size = 4
 
 [{*.gradle,AndroidManifest.xml}]
 indent_style = space
