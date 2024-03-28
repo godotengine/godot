@@ -100,6 +100,7 @@ static core_bind::Engine *_engine = nullptr;
 static core_bind::special::ClassDB *_classdb = nullptr;
 static core_bind::Marshalls *_marshalls = nullptr;
 static core_bind::EngineDebugger *_engine_debugger = nullptr;
+static core_bind::ScriptDebugger *_script_debugger = nullptr;
 
 static IP *ip = nullptr;
 static Time *_time = nullptr;
@@ -292,6 +293,7 @@ void register_core_types() {
 	_classdb = memnew(core_bind::special::ClassDB);
 	_marshalls = memnew(core_bind::Marshalls);
 	_engine_debugger = memnew(core_bind::EngineDebugger);
+	_script_debugger = memnew(core_bind::ScriptDebugger);
 
 	GDREGISTER_NATIVE_STRUCT(ObjectID, "uint64_t id = 0");
 	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
@@ -329,6 +331,7 @@ void register_core_singletons() {
 	GDREGISTER_ABSTRACT_CLASS(Input);
 	GDREGISTER_CLASS(InputMap);
 	GDREGISTER_CLASS(Expression);
+	GDREGISTER_CLASS(core_bind::ScriptDebugger);
 	GDREGISTER_CLASS(core_bind::EngineDebugger);
 	GDREGISTER_CLASS(Time);
 
@@ -384,6 +387,7 @@ void unregister_core_types() {
 
 	memdelete(worker_thread_pool);
 
+	memdelete(_script_debugger);
 	memdelete(_engine_debugger);
 	memdelete(_marshalls);
 	memdelete(_classdb);

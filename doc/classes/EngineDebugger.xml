@@ -9,6 +9,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="debug">
+			<return type="void" />
+			<param index="0" name="can_continue" type="bool" />
+			<param index="1" name="is_error_breakpoint" type="bool" />
+			<description>
+				Starts a debug break in script execution, optionally specifying whether the program can continue based on [param can_continue] and whether the break was due to a breakpoint.
+			</description>
+		</method>
+		<method name="get_script_debugger">
+			<return type="ScriptDebugger" />
+			<description>
+				Returns the [ScriptDebugger] instance.
+			</description>
+		</method>
 		<method name="has_capture">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
@@ -34,6 +48,12 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a profiler with the given name is present and active otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="line_poll">
+			<return type="void" />
+			<description>
+				Performs a processing loop of debugger events periodically.
 			</description>
 		</method>
 		<method name="profiler_add_frame_data">

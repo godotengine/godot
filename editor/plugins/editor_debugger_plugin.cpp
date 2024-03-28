@@ -56,6 +56,7 @@ void EditorDebuggerSession::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_active"), &EditorDebuggerSession::is_active);
 	ClassDB::bind_method(D_METHOD("add_session_tab", "control"), &EditorDebuggerSession::add_session_tab);
 	ClassDB::bind_method(D_METHOD("remove_session_tab", "control"), &EditorDebuggerSession::remove_session_tab);
+	ClassDB::bind_method(D_METHOD("set_breakpoint", "path", "line", "enabled"), &EditorDebuggerSession::set_breakpoint);
 
 	ADD_SIGNAL(MethodInfo("started"));
 	ADD_SIGNAL(MethodInfo("stopped"));
@@ -98,6 +99,11 @@ bool EditorDebuggerSession::is_debuggable() {
 bool EditorDebuggerSession::is_active() {
 	ERR_FAIL_NULL_V_MSG(debugger, false, "Plugin is not attached to debugger.");
 	return debugger->is_session_active();
+}
+
+void EditorDebuggerSession::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {
+	ERR_FAIL_NULL_MSG(debugger, "Plugin is not attached to debugger.");
+	debugger->set_breakpoint(p_path, p_line, p_enabled);
 }
 
 void EditorDebuggerSession::detach_debugger() {

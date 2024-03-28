@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptDebugger" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exposes the internal script debugger.
+	</brief_description>
+	<description>
+		[ScriptDebugger] handles low level tasks related to debugging, including managing breakpoints and initiating debug breaks.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_breakpoints">
+			<return type="void" />
+			<description>
+				Clears all breakpoints.
+			</description>
+		</method>
+		<method name="debug">
+			<return type="void" />
+			<param index="0" name="language" type="ScriptLanguage" />
+			<param index="1" name="can_continue" type="bool" />
+			<param index="2" name="is_error_breakpoint" type="bool" />
+			<description>
+				Starts a debug break in script execution, optionally specifying whether the program can continue based on [param can_continue] and whether the break was due to a breakpoint.
+			</description>
+		</method>
+		<method name="get_depth" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the current debug depth.
+			</description>
+		</method>
+		<method name="get_lines_left" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of lines that remain.
+			</description>
+		</method>
+		<method name="insert_breakpoint">
+			<return type="void" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="source" type="StringName" />
+			<description>
+				Inserts a new breakpoint with the given [param source] and [param line].
+			</description>
+		</method>
+		<method name="is_breakpoint" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="source" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the given [param source] and [param line] represent an existing breakpoint.
+			</description>
+		</method>
+		<method name="remove_breakpoint">
+			<return type="void" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="source" type="StringName" />
+			<description>
+				Removes a breakpoint with the given [param source] and [param line].
+			</description>
+		</method>
+		<method name="set_depth">
+			<return type="void" />
+			<param index="0" name="depth" type="int" />
+			<description>
+				Sets the current debugging depth.
+			</description>
+		</method>
+		<method name="set_lines_left">
+			<return type="void" />
+			<param index="0" name="lines" type="int" />
+			<description>
+				Sets the current debugging lines that remain.
+			</description>
+		</method>
+	</methods>
+</class>
