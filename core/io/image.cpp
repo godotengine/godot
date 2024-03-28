@@ -4114,7 +4114,7 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 			continue;
 		}
 
-		image_metric_max = MAX(image_metric_max, i);
+		image_metric_max = i;
 
 		double x = i * hist[i];
 
