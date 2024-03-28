@@ -22,7 +22,7 @@
 		<member name="autoshrink_enabled" type="bool" setter="set_autoshrink_enabled" getter="is_autoshrink_enabled" default="true">
 			If [code]true[/code], the frame's rect will be adjusted automatically to enclose all attached [GraphElement]s.
 		</member>
-		<member name="autoshrink_margin" type="int" setter="set_autoshrink_margin" getter="get_autoshrink_margin" default="Vector2i(40, 40)">
+		<member name="autoshrink_margin" type="int" setter="set_autoshrink_margin" getter="get_autoshrink_margin" default="40">
 			The margin around the attached nodes that is used to calculate the size of the frame when [member autoshrink_enabled] is [code]true[/code].
 		</member>
 		<member name="drag_margin" type="int" setter="set_drag_margin" getter="get_drag_margin" default="16">

@@ -412,7 +412,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _node_changed(int p_id);
 
 	void _nodes_linked_to_frame_request(const TypedArray<StringName> &p_nodes, const StringName &p_frame);
-	void _frame_size_changed(const GraphFrame *p_frame, const Vector2 &p_size);
+	void _frame_rect_changed(const GraphFrame *p_frame, const Rect2 &p_new_rect);
 
 	void _edit_port_default_input(Object *p_button, int p_node, int p_port);
 	void _port_edited(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);

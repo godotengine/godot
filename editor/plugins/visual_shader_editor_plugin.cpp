@@ -421,6 +421,7 @@ VisualShader::Type VisualShaderGraphPlugin::get_shader_type() const {
 	return visual_shader->get_shader_type();
 }
 
+// Only updates the linked frames of the given node, not the node itself (in case it's a frame node).
 void VisualShaderGraphPlugin::update_frames(VisualShader::Type p_type, int p_node) {
 	GraphEdit *graph = editor->graph;
 	if (!graph) {
@@ -438,8 +439,8 @@ void VisualShaderGraphPlugin::update_frames(VisualShader::Type p_type, int p_nod
 		return;
 	}
 
-	Ref<VisualShaderNode> frame_node = visual_shader->get_node(p_type, frame_vsnode_id);
-	if (!links.has(frame_vsnode_id)) {
+	Ref<VisualShaderNodeFrame> frame_node = visual_shader->get_node(p_type, frame_vsnode_id);
+	if (!frame_node.is_valid() || !links.has(frame_vsnode_id)) {
 		return;
 	}
 
@@ -4868,7 +4869,7 @@ void VisualShaderEditor::_nodes_linked_to_frame_request(const TypedArray<StringN
 	nodes_link_to_frame_buffer = node_ids;
 }
 
-void VisualShaderEditor::_frame_size_changed(const GraphFrame *p_frame, const Vector2 &p_size) {
+void VisualShaderEditor::_frame_rect_changed(const GraphFrame *p_frame, const Rect2 &p_new_rect) {
 	if (p_frame == nullptr) {
 		return;
 	}
@@ -4878,7 +4879,7 @@ void VisualShaderEditor::_frame_size_changed(const GraphFrame *p_frame, const Ve
 	if (vsnode.is_null()) {
 		return;
 	}
-	vsnode->set_size(p_size);
+	vsnode->set_size(p_new_rect.size);
 }
 
 void VisualShaderEditor::_dup_copy_nodes(int p_type, List<CopyItem> &r_items, List<VisualShader::Connection> &r_connections) {
@@ -6049,7 +6050,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog).bind(false, VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX));
 
 	graph->connect("graph_elements_linked_to_frame_request", callable_mp(this, &VisualShaderEditor::_nodes_linked_to_frame_request));
-	graph->connect("frame_size_changed", callable_mp(this, &VisualShaderEditor::_frame_size_changed));
+	graph->connect("frame_rect_changed", callable_mp(this, &VisualShaderEditor::_frame_rect_changed));
 
 	varying_button = memnew(MenuButton);
 	varying_button->set_text(TTR("Manage Varyings"));

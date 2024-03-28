@@ -235,6 +235,7 @@ void GraphFrame::set_autoshrink_enabled(bool p_shrink) {
 	autoshrink_enabled = p_shrink;
 
 	emit_signal("autoshrink_toggled", get_size());
+	queue_redraw();
 }
 
 bool GraphFrame::is_autoshrink_enabled() const {

@@ -314,7 +314,7 @@ private:
 	void _graph_element_selected(Node *p_node);
 	void _graph_element_deselected(Node *p_node);
 	void _graph_element_resize_request(Vector2 p_new_minsize, Node *p_node);
-	void _graph_frame_shrink_toggled(Vector2 p_new_minsize, Node *p_node);
+	void _graph_frame_shrink_toggled(Vector2 p_new_minsize, GraphFrame *p_node);
 	void _graph_element_moved(Node *p_node);
 	void _graph_node_slot_updated(int p_index, Node *p_node);
 	void _graph_node_rect_changed(GraphNode *p_node);

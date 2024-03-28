@@ -523,17 +523,8 @@ void GraphEdit::_graph_element_resize_request(Vector2 p_new_minsize, Node *p_nod
 	}
 }
 
-void GraphEdit::_graph_frame_shrink_toggled(Vector2 p_new_minsize, Node *p_node) {
-	GraphElement *graph_element = Object::cast_to<GraphElement>(p_node);
-	ERR_FAIL_NULL(graph_element);
-
-	// Update all parent frames recursively bottom-up.
-	if (linked_parent_map.has(graph_element->get_name())) {
-		GraphFrame *parent_frame = Object::cast_to<GraphFrame>(get_node_or_null(NodePath(linked_parent_map[graph_element->get_name()])));
-		if (parent_frame) {
-			_update_graph_frame(parent_frame);
-		}
-	}
+void GraphEdit::_graph_frame_shrink_toggled(Vector2 p_new_minsize, GraphFrame *p_frame) {
+	_update_graph_frame(p_frame);
 
 	minimap->queue_redraw();
 	queue_redraw();
@@ -811,7 +802,7 @@ void GraphEdit::_update_graph_frame(GraphFrame *p_frame) {
 		p_frame->set_position_offset(min_point);
 		p_frame->set_size(max_point - min_point);
 
-		emit_signal(SNAME("frame_size_changed"), p_frame, p_frame->get_size());
+		emit_signal(SNAME("frame_rect_changed"), p_frame, p_frame->get_rect());
 	}
 
 	// Update all parent frames recursively bottom-up.
@@ -2697,7 +2688,7 @@ void GraphEdit::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_deselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("frame_size_changed", PropertyInfo(Variant::OBJECT, "frame", PROPERTY_HINT_RESOURCE_TYPE, "GraphFrame"), PropertyInfo(Variant::VECTOR2, "new_size")));
+	ADD_SIGNAL(MethodInfo("frame_rect_changed", PropertyInfo(Variant::OBJECT, "frame", PROPERTY_HINT_RESOURCE_TYPE, "GraphFrame"), PropertyInfo(Variant::VECTOR2, "new_rect")));
 
 	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2, "position")));
 
