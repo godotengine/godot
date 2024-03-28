@@ -485,8 +485,6 @@ private:
 	static int plugin_init_callback_count;
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
-	String _get_system_info() const;
-
 	bool _should_display_update_spinner() const;
 
 	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {

@@ -43,6 +43,7 @@ class HFlowContainer;
 class LineEdit;
 class LinkButton;
 class MarginContainer;
+class MenuButton;
 class OptionButton;
 class PanelContainer;
 class ProjectDialog;
@@ -68,8 +69,21 @@ class ProjectManager : public Control {
 
 	// Main layout.
 
+	enum MenuOptions {
+		HELP_DOCS,
+		HELP_QA,
+		HELP_REPORT_A_BUG,
+		HELP_COPY_SYSTEM_INFO,
+		HELP_SUGGEST_A_FEATURE,
+		HELP_SEND_DOCS_FEEDBACK,
+		HELP_COMMUNITY,
+		HELP_ABOUT,
+		HELP_SUPPORT_GODOT_DEVELOPMENT,
+	};
+
 	Ref<Theme> theme;
 
+	void _menu_option(int p_option);
 	void _update_size_limits();
 	void _update_theme(bool p_skip_creation = false);
 	void _titlebar_resized();
@@ -83,7 +97,7 @@ class ProjectManager : public Control {
 	Control *left_spacer = nullptr;
 	Control *right_menu_spacer = nullptr;
 	Control *right_spacer = nullptr;
-	Button *title_bar_logo = nullptr;
+	MenuButton *help_button = nullptr;
 	HBoxContainer *main_view_toggles = nullptr;
 	Button *quick_settings_button = nullptr;
 

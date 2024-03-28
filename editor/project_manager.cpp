@@ -43,6 +43,7 @@
 #include "editor/editor_about.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_sysinfo.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
@@ -59,6 +60,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
@@ -183,6 +185,39 @@ void ProjectManager::_update_size_limits() {
 	}
 }
 
+void ProjectManager::_menu_option(int p_option) {
+	switch (p_option) {
+		case HELP_DOCS: {
+			OS::get_singleton()->shell_open(VERSION_DOCS_URL "/");
+		} break;
+		case HELP_QA: {
+			OS::get_singleton()->shell_open("https://godotengine.org/qa/");
+		} break;
+		case HELP_REPORT_A_BUG: {
+			OS::get_singleton()->shell_open("https://github.com/godotengine/godot/issues");
+		} break;
+		case HELP_COPY_SYSTEM_INFO: {
+			String info = get_system_info();
+			DisplayServer::get_singleton()->clipboard_set(info);
+		} break;
+		case HELP_SUGGEST_A_FEATURE: {
+			OS::get_singleton()->shell_open("https://github.com/godotengine/godot-proposals#readme");
+		} break;
+		case HELP_SEND_DOCS_FEEDBACK: {
+			OS::get_singleton()->shell_open("https://github.com/godotengine/godot-docs/issues");
+		} break;
+		case HELP_COMMUNITY: {
+			OS::get_singleton()->shell_open("https://godotengine.org/community");
+		} break;
+		case HELP_ABOUT: {
+			_show_about();
+		} break;
+		case HELP_SUPPORT_GODOT_DEVELOPMENT: {
+			OS::get_singleton()->shell_open("https://godotengine.org/donate");
+		} break;
+	}
+}
+
 void ProjectManager::_update_theme(bool p_skip_creation) {
 	if (!p_skip_creation) {
 		theme = EditorThemeManager::generate_theme(theme);
@@ -222,7 +257,22 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		background_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
 		main_view_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
 
-		title_bar_logo->set_icon(get_editor_theme_icon(SNAME("TitleBarLogo")));
+		help_button->set_icon(get_editor_theme_icon(SNAME("Info")));
+		PopupMenu *help_menu = help_button->get_popup();
+		help_menu->clear();
+		help_menu->add_item(TTR("Online Documentation"), HELP_DOCS);
+		help_menu->add_item(TTR("Questions & Answers"), HELP_QA);
+		help_menu->add_item(TTR("Community"), HELP_COMMUNITY);
+		help_menu->add_separator();
+		help_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTR("Copy System Info"), HELP_COPY_SYSTEM_INFO);
+		help_menu->set_item_tooltip(-1, TTR("Copies the system info as a single-line text into the clipboard."));
+		help_menu->add_item(TTR("Report a Bug"), HELP_REPORT_A_BUG);
+		help_menu->add_item(TTR("Suggest a Feature"), HELP_SUGGEST_A_FEATURE);
+		help_menu->add_item(TTR("Send Docs Feedback"), HELP_SEND_DOCS_FEEDBACK);
+		help_menu->add_separator();
+		help_menu->add_icon_item(get_editor_theme_icon(SNAME("Godot")), TTR("About Godot..."), HELP_ABOUT);
+		help_menu->add_icon_item(get_editor_theme_icon(SNAME("Heart")), TTR("Support Godot Development"), HELP_SUPPORT_GODOT_DEVELOPMENT);
+		help_menu->connect("id_pressed", callable_mp(this, &ProjectManager::_menu_option));
 
 		_set_main_view_icon(MAIN_VIEW_PROJECTS, get_editor_theme_icon(SNAME("ProjectList")));
 		_set_main_view_icon(MAIN_VIEW_ASSETLIB, get_editor_theme_icon(SNAME("AssetLib")));
@@ -1147,10 +1197,9 @@ ProjectManager::ProjectManager() {
 		left_hbox->set_stretch_ratio(1.0);
 		title_bar->add_child(left_hbox);
 
-		title_bar_logo = memnew(Button);
-		title_bar_logo->set_flat(true);
-		left_hbox->add_child(title_bar_logo);
-		title_bar_logo->connect("pressed", callable_mp(this, &ProjectManager::_show_about));
+		help_button = memnew(MenuButton);
+		help_button->set_flat(true);
+		left_hbox->add_child(help_button);
 
 		if (can_expand) {
 			// Spacer to center main toggles.
