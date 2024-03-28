@@ -998,6 +998,10 @@
 		<member name="filesystem/import/fbx2gltf/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/fbx2gltf/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
+		<member name="filesystem/import/gltf/convert_extras_to_meta" type="bool" setter="" getter="" default="true">
+			Setting to control if GLTF node extras will get converted to Godot Node-&gt;meta and vice versa during import/export.
+			[b]Note:[/b] If disabling this is necessary for any reason, please open an issue on [url=https://github.com/godotengine/godot/issues]the GitHub issue tracker[/url].
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
