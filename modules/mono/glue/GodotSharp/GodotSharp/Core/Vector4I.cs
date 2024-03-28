@@ -204,6 +204,42 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4I(Mathf.Max(X, with.X), Mathf.Max(Y, with.Y), Mathf.Max(Z, with.Z), Mathf.Max(W, with.W))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector4I Max(Vector4I with)
+        {
+            return new Vector4I
+            (
+                Mathf.Max(X, with.X),
+                Mathf.Max(Y, with.Y),
+                Mathf.Max(Z, with.Z),
+                Mathf.Max(W, with.W)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4I(Mathf.Min(X, with.X), Mathf.Min(Y, with.Y), Mathf.Min(Z, with.Z), Mathf.Min(W, with.W))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector4I Min(Vector4I with)
+        {
+            return new Vector4I
+            (
+                Mathf.Min(X, with.X),
+                Mathf.Min(Y, with.Y),
+                Mathf.Min(Z, with.Z),
+                Mathf.Min(W, with.W)
+            );
+        }
+
+        /// <summary>
         /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>

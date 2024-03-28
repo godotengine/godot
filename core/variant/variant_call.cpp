@@ -1805,6 +1805,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, sign, sarray(), varray());
 	bind_method(Vector2, clamp, sarray("min", "max"), varray());
 	bind_method(Vector2, snapped, sarray("step"), varray());
+	bind_method(Vector2, min, sarray("with"), varray());
+	bind_method(Vector2, max, sarray("with"), varray());
 
 	bind_static_method(Vector2, from_angle, sarray("angle"), varray());
 
@@ -1821,6 +1823,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2i, abs, sarray(), varray());
 	bind_method(Vector2i, clamp, sarray("min", "max"), varray());
 	bind_method(Vector2i, snapped, sarray("step"), varray());
+	bind_method(Vector2i, min, sarray("with"), varray());
+	bind_method(Vector2i, max, sarray("with"), varray());
 
 	/* Rect2 */
 
@@ -1899,6 +1903,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, reflect, sarray("n"), varray());
 	bind_method(Vector3, sign, sarray(), varray());
 	bind_method(Vector3, octahedron_encode, sarray(), varray());
+	bind_method(Vector3, min, sarray("with"), varray());
+	bind_method(Vector3, max, sarray("with"), varray());
 	bind_static_method(Vector3, octahedron_decode, sarray("uv"), varray());
 
 	/* Vector3i */
@@ -1913,6 +1919,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3i, abs, sarray(), varray());
 	bind_method(Vector3i, clamp, sarray("min", "max"), varray());
 	bind_method(Vector3i, snapped, sarray("step"), varray());
+	bind_method(Vector3i, min, sarray("with"), varray());
+	bind_method(Vector3i, max, sarray("with"), varray());
 
 	/* Vector4 */
 
@@ -1942,6 +1950,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector4, is_zero_approx, sarray(), varray());
 	bind_method(Vector4, is_finite, sarray(), varray());
+	bind_method(Vector4, min, sarray("with"), varray());
+	bind_method(Vector4, max, sarray("with"), varray());
 
 	/* Vector4i */
 
@@ -1953,6 +1963,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4i, abs, sarray(), varray());
 	bind_method(Vector4i, clamp, sarray("min", "max"), varray());
 	bind_method(Vector4i, snapped, sarray("step"), varray());
+	bind_method(Vector4i, min, sarray("with"), varray());
+	bind_method(Vector4i, max, sarray("with"), varray());
 	bind_method(Vector4i, distance_to, sarray("to"), varray());
 	bind_method(Vector4i, distance_squared_to, sarray("to"), varray());
 

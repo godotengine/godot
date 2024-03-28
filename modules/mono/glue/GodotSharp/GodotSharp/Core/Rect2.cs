@@ -69,7 +69,7 @@ namespace Godot
         public readonly Rect2 Abs()
         {
             Vector2 end = End;
-            Vector2 topLeft = new Vector2(Mathf.Min(_position.X, end.X), Mathf.Min(_position.Y, end.Y));
+            Vector2 topLeft = end.Min(_position);
             return new Rect2(topLeft, _size.Abs());
         }
 
@@ -91,14 +91,12 @@ namespace Godot
                 return new Rect2();
             }
 
-            newRect._position.X = Mathf.Max(b._position.X, _position.X);
-            newRect._position.Y = Mathf.Max(b._position.Y, _position.Y);
+            newRect._position = b._position.Max(_position);
 
             Vector2 bEnd = b._position + b._size;
             Vector2 end = _position + _size;
 
-            newRect._size.X = Mathf.Min(bEnd.X, end.X) - newRect._position.X;
-            newRect._size.Y = Mathf.Min(bEnd.Y, end.Y) - newRect._position.Y;
+            newRect._size = bEnd.Min(end) - newRect._position;
 
             return newRect;
         }
@@ -338,11 +336,9 @@ namespace Godot
         {
             Rect2 newRect;
 
-            newRect._position.X = Mathf.Min(b._position.X, _position.X);
-            newRect._position.Y = Mathf.Min(b._position.Y, _position.Y);
+            newRect._position = b._position.Min(_position);
 
-            newRect._size.X = Mathf.Max(b._position.X + b._size.X, _position.X + _size.X);
-            newRect._size.Y = Mathf.Max(b._position.Y + b._size.Y, _position.Y + _size.Y);
+            newRect._size = (b._position + b._size).Max(_position + _size);
 
             newRect._size -= newRect._position; // Make relative again
 
