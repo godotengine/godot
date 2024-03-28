@@ -448,6 +448,9 @@
 			The color to use for the TileMap editor's grid.
 			[b]Note:[/b] Only effective if [member editors/tiles_editor/display_grid] is [code]true[/code].
 		</member>
+		<member name="editors/tiles_editor/highlight_selected_layer" type="bool" setter="" getter="">
+			Highlight the currently selected TileMapLayer by dimming the other ones in the scene.
+		</member>
 		<member name="editors/visual_editors/category_colors/color_color" type="Color" setter="" getter="">
 			The color of a graph node's header when it belongs to the "Color" category.
 		</member>

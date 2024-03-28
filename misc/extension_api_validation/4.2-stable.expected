@@ -99,15 +99,6 @@ Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_indice
 Change AudioStreamPlayer* is_autoplay_enabled and GLTFBufferView getters to be const.
 
 
-GH-87379
---------
-Validate extension JSON: API was removed: classes/TileMap/methods/get_tileset
-Validate extension JSON: API was removed: classes/TileMap/methods/set_tileset
-Validate extension JSON: API was removed: classes/TileMap/properties/tile_set
-
-Moved to the parent TileMapLayerGroup class. No change should be necessary.
-
-
 GH-87340
 --------
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderingDevice/methods/screen_get_framebuffer_format': arguments
