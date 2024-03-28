@@ -293,6 +293,10 @@ public:
 		END_SQUARE,
 		END_ROUND
 	};
+	enum PolyHandedness {
+		RIGHT_HANDED,
+		LEFT_HANDED,
+	};
 
 	static Vector<Vector<Point2>> merge_polygons(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
 		return _polypaths_do_operation(OPERATION_UNION, p_polygon_a, p_polygon_b);
@@ -350,7 +354,7 @@ public:
 		return triangles;
 	}
 
-	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
+	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon, PolyHandedness p_handedness = RIGHT_HANDED) {
 		int c = p_polygon.size();
 		if (c < 3) {
 			return false;
@@ -363,7 +367,11 @@ public:
 			sum += (v2.x - v1.x) * (v2.y + v1.y);
 		}
 
-		return sum > 0.0f;
+		if (p_handedness == RIGHT_HANDED) {
+			return sum > 0.0f;
+		} else {
+			return sum < 0.0f;
+		}
 	}
 
 	// Alternate implementation that should be faster.
