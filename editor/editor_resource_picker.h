@@ -127,6 +127,7 @@ public:
 	Vector<String> get_allowed_types() const;
 
 	void set_edited_resource(Ref<Resource> p_resource);
+	void set_edited_resource_no_check(Ref<Resource> p_resource);
 	Ref<Resource> get_edited_resource();
 
 	void set_toggle_mode(bool p_enable);
