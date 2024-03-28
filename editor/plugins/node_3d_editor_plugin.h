@@ -191,12 +191,19 @@ public:
 		NAVIGATION_GODOT,
 		NAVIGATION_MAYA,
 		NAVIGATION_MODO,
+		NAVIGATION_CUSTOM,
 	};
 
 	enum FreelookNavigationScheme {
 		FREELOOK_DEFAULT,
 		FREELOOK_PARTIALLY_AXIS_LOCKED,
 		FREELOOK_FULLY_AXIS_LOCKED,
+	};
+
+	enum ViewportNavMouseButton {
+		NAVIGATION_LEFT_MOUSE,
+		NAVIGATION_MIDDLE_MOUSE,
+		NAVIGATION_RIGHT_MOUSE,
 	};
 
 private:
@@ -289,6 +296,9 @@ private:
 	void _nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
+
+	bool _is_shortcut_empty(const String &p_name);
+	bool _is_nav_modifier_pressed(const String &p_name);
 
 	float get_znear() const;
 	float get_zfar() const;
