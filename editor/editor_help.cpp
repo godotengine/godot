@@ -3542,8 +3542,11 @@ void EditorHelpHighlighter::reset_cache() {
 }
 
 EditorHelpHighlighter::EditorHelpHighlighter() {
+	const Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
+
 #ifdef MODULE_GDSCRIPT_ENABLED
 	TextEdit *gdscript_text_edit = memnew(TextEdit);
+	gdscript_text_edit->add_theme_color_override("font_color", text_color);
 
 	Ref<GDScript> gdscript;
 	gdscript.instantiate();
@@ -3560,6 +3563,7 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 
 #ifdef MODULE_MONO_ENABLED
 	TextEdit *csharp_text_edit = memnew(TextEdit);
+	csharp_text_edit->add_theme_color_override("font_color", text_color);
 
 	Ref<CSharpScript> csharp;
 	csharp.instantiate();
