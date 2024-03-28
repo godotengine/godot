@@ -181,7 +181,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		// This is important to ensure that we do not wrongly localize the resource path
 		// in an absolute path that just happens to contain this string but points to a
 		// different folder (e.g. "/my/project" as resource_path would be contained in
-		// "/my/project_data", even though the latter is not part of res://.
+		// "/my/project_data", even though the latter is not part of res://).
 		// `path_join("")` is an easy way to ensure we have a trailing '/'.
 		const String res_path = resource_path.path_join("");
 
@@ -1450,7 +1450,8 @@ ProjectSettings::ProjectSettings() {
 	// The default window size is tuned to:
 	// - Have a 16:9 aspect ratio,
 	// - Have both dimensions divisible by 8 to better play along with video recording,
-	// - Be displayable correctly in windowed mode on a 1366×768 display (tested on Windows 10 with default settings).
+	// - Be displayable correctly in windowed mode on a 1366×768 display (tested on Windows 10 with default settings),
+	// - Have a minimum size of 64x64 to prevent issues that can arise when the window is resized to a near-zero size. (GH-37242)
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/viewport_width", PROPERTY_HINT_RANGE, "1,7680,1,or_greater"), 1152); // 8K resolution
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/viewport_height", PROPERTY_HINT_RANGE, "1,4320,1,or_greater"), 648); // 8K resolution
 
@@ -1470,6 +1471,11 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
+
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_minimum_width", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 64);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_minimum_height", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 64);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_maximum_width", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_maximum_height", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0);
 
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on.editor", false);

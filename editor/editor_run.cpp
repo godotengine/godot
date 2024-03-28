@@ -126,16 +126,47 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 
 	int window_placement = EDITOR_GET("run/window_placement/rect");
 	if (screen_rect != Rect2()) {
-		Size2 window_size;
-		window_size.x = GLOBAL_GET("display/window/size/viewport_width");
-		window_size.y = GLOBAL_GET("display/window/size/viewport_height");
+		const Size2i window_override_size = {
+			GLOBAL_GET("display/window/size/window_width_override"),
+			GLOBAL_GET("display/window/size/window_height_override")
+		};
 
-		Size2 desired_size;
-		desired_size.x = GLOBAL_GET("display/window/size/window_width_override");
-		desired_size.y = GLOBAL_GET("display/window/size/window_height_override");
-		if (desired_size.x > 0 && desired_size.y > 0) {
-			window_size = desired_size;
+		const Size2i window_viewport_size = {
+			GLOBAL_GET("display/window/size/viewport_width"),
+			GLOBAL_GET("display/window/size/viewport_height")
+		};
+
+		const Size2i window_min_size = {
+			GLOBAL_GET("display/window/size/window_minimum_width"),
+			GLOBAL_GET("display/window/size/window_minimum_height")
+		};
+		const Size2i window_max_size = {
+			GLOBAL_GET("display/window/size/window_maximum_width"),
+			GLOBAL_GET("display/window/size/window_maximum_height")
+		};
+
+		int desired_width = window_viewport_size.x;
+		int desired_height = window_viewport_size.y;
+
+		if (window_override_size.x != 0) {
+			desired_width = window_override_size.x;
 		}
+		if (window_override_size.y != 0) {
+			desired_height = window_override_size.y;
+		}
+
+		if (window_max_size.x != 0) {
+			desired_width = MIN(desired_width, window_max_size.x);
+		}
+		if (window_max_size.y != 0) {
+			desired_height = MIN(desired_height, window_max_size.y);
+		}
+		desired_width = MAX(desired_width, window_min_size.x);
+		desired_height = MAX(desired_height, window_min_size.y);
+
+		Size2 window_size;
+		window_size.x = desired_width;
+		window_size.y = desired_height;
 
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
 			bool hidpi_proj = GLOBAL_GET("display/window/dpi/allow_hidpi");
