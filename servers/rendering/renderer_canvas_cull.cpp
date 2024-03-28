@@ -1151,35 +1151,35 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 	rect->rect = p_rect;
 }
 
-void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color) {
+void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos, float p_major, float p_minor, const Color &p_color) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
-	Item::CommandPolygon *circle = canvas_item->alloc_command<Item::CommandPolygon>();
-	ERR_FAIL_NULL(circle);
+	Item::CommandPolygon *ellipse = canvas_item->alloc_command<Item::CommandPolygon>();
+	ERR_FAIL_NULL(ellipse);
 
-	circle->primitive = RS::PRIMITIVE_TRIANGLES;
+	ellipse->primitive = RS::PRIMITIVE_TRIANGLES;
 
 	Vector<int> indices;
 	Vector<Vector2> points;
 
-	static const int circle_points = 64;
+	static const int ellipse_points = 64;
 
-	points.resize(circle_points);
+	points.resize(ellipse_points);
 	Vector2 *points_ptr = points.ptrw();
-	const real_t circle_point_step = Math_TAU / circle_points;
+	const real_t ellipse_point_step = Math_TAU / ellipse_points;
 
-	for (int i = 0; i < circle_points; i++) {
-		float angle = i * circle_point_step;
-		points_ptr[i].x = Math::cos(angle) * p_radius;
-		points_ptr[i].y = Math::sin(angle) * p_radius;
+	for (int i = 0; i < ellipse_points; i++) {
+		float angle = i * ellipse_point_step;
+		points_ptr[i].x = Math::cos(angle) * p_major;
+		points_ptr[i].y = Math::sin(angle) * p_minor;
 		points_ptr[i] += p_pos;
 	}
 
-	indices.resize((circle_points - 2) * 3);
+	indices.resize((ellipse_points - 2) * 3);
 	int *indices_ptr = indices.ptrw();
 
-	for (int i = 0; i < circle_points - 2; i++) {
+	for (int i = 0; i < ellipse_points - 2; i++) {
 		indices_ptr[i * 3 + 0] = 0;
 		indices_ptr[i * 3 + 1] = i + 1;
 		indices_ptr[i * 3 + 2] = i + 2;
@@ -1187,7 +1187,11 @@ void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 
 	Vector<Color> color;
 	color.push_back(p_color);
-	circle->polygon.create(indices, points, color);
+	ellipse->polygon.create(indices, points, color);
+}
+
+void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color) {
+	canvas_item_add_ellipse(p_item, p_pos, p_radius, p_radius, p_color);
 }
 
 void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile, const Color &p_modulate, bool p_transpose) {

@@ -43,7 +43,7 @@
 			<param index="6" name="width" type="float" default="-1.0" />
 			<param index="7" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws an unfilled arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. See also [method draw_circle].
+				Draws an unfilled arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. For elliptical arcs, see [method draw_ellipse_arc]. See also [method draw_circle].
 				If [param width] is negative, it will be ignored and the arc will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the arc will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				The arc is drawn from [param start_angle] towards the value of [param end_angle] so in clockwise direction if [code]start_angle &lt; end_angle[/code] and counter-clockwise otherwise. Passing the same angles but in reversed order will produce the same arc. If absolute difference of [param start_angle] and [param end_angle] is greater than [constant @GDScript.TAU] radians, then a full circle arc is drawn (i.e. arc will not overlap itself).
 			</description>
@@ -77,7 +77,7 @@
 			<param index="1" name="radius" type="float" />
 			<param index="2" name="color" type="Color" />
 			<description>
-				Draws a colored, filled circle. See also [method draw_arc], [method draw_polyline] and [method draw_polygon].
+				Draws a colored, filled circle. See also [method draw_ellipse] and [method draw_polygon]. For unfilled shapes, see [method draw_arc] and [method draw_polyline].
 			</description>
 		</method>
 		<method name="draw_colored_polygon">
@@ -101,6 +101,31 @@
 			<description>
 				Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].
 				If [param width] is negative, then a two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the line parts will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+			</description>
+		</method>
+		<method name="draw_ellipse">
+			<return type="void" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="major" type="float" />
+			<param index="2" name="minor" type="float" />
+			<param index="3" name="color" type="Color" />
+			<description>
+				Draws a colored, filled ellipse with semi-major axis [param major] and semi-minor axis [param minor]. See also [method draw_circle] and [method draw_polygon]. For unfilled shapes, see [method draw_ellipse_arc] and [method draw_polyline].
+			</description>
+		</method>
+		<method name="draw_ellipse_arc">
+			<return type="void" />
+			<param index="0" name="center" type="Vector2" />
+			<param index="1" name="major" type="float" />
+			<param index="2" name="minor" type="float" />
+			<param index="3" name="start_angle" type="float" />
+			<param index="4" name="end_angle" type="float" />
+			<param index="5" name="point_count" type="int" />
+			<param index="6" name="color" type="Color" />
+			<param index="7" name="width" type="float" default="-1.0" />
+			<param index="8" name="antialiased" type="bool" default="false" />
+			<description>
+				Draws an unfilled elliptical arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. See also [method draw_arc] for circular arcs.
 			</description>
 		</method>
 		<method name="draw_end_animation">
