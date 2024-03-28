@@ -3123,13 +3123,13 @@ bool TextEdit::can_drop_data(const Point2 &p_point, const Variant &p_data) const
 		return drop_override;
 	}
 
-	return is_editable() && p_data.get_type() == Variant::STRING;
+	return is_editable() && p_data.is_string();
 }
 
 void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 	Control::drop_data(p_point, p_data);
 
-	if (p_data.get_type() == Variant::STRING && is_editable()) {
+	if (p_data.is_string() && is_editable()) {
 		Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
 		int caret_row_tmp = pos.y;
 		int caret_column_tmp = pos.x;

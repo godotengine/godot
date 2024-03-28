@@ -97,7 +97,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 					}
 				} break;
 				case ARG_TYPE_STRING: {
-					if (p_args[i]->get_type() != Variant::STRING) {
+					if (!p_args[i]->is_string()) {
 						arg_expected = Variant::STRING;
 					}
 				} break;
