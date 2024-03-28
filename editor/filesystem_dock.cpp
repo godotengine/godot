@@ -267,7 +267,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	} else {
 		subdirectory_item->set_collapsed(uncollapsed_paths.find(lpath) < 0);
 	}
-	if (searched_string.length() > 0 && dname.to_lower().find(searched_string) >= 0) {
+	if (searched_string.length() > 0 && _matches_all_search_tokens(dname)) {
 		parent_should_expand = true;
 	}
 
@@ -294,7 +294,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 			String file_name = p_dir->get_file(i);
 			if (searched_string.length() > 0) {
-				if (file_name.to_lower().find(searched_string) < 0) {
+				if (!_matches_all_search_tokens(file_name)) {
 					// The searched string is not in the file name, we skip it.
 					continue;
 				} else {
@@ -460,7 +460,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			color = Color(1, 1, 1);
 		}
 
-		if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {
+		if (searched_string.length() == 0 || _matches_all_search_tokens(text)) {
 			TreeItem *ti = tree->create_item(favorites_item);
 			ti->set_text(0, text);
 			ti->set_icon(0, icon);
@@ -857,7 +857,7 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 	for (int i = 0; i < p_path->get_file_count(); i++) {
 		String file = p_path->get_file(i);
 
-		if (file.to_lower().contains(searched_string)) {
+		if (_matches_all_search_tokens(file)) {
 			FileInfo fi;
 			fi.name = file;
 			fi.type = p_path->get_file_type(i);
@@ -984,14 +984,14 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			if (favorite == "res://") {
 				text = "/";
 				icon = folder_icon;
-				if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {
+				if (searched_string.length() == 0 || _matches_all_search_tokens(text)) {
 					files->add_item(text, icon, true);
 					files->set_item_metadata(-1, favorite);
 				}
 			} else if (favorite.ends_with("/")) {
 				text = favorite.substr(0, favorite.length() - 1).get_file();
 				icon = folder_icon;
-				if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {
+				if (searched_string.length() == 0 || _matches_all_search_tokens(text)) {
 					files->add_item(text, icon, true);
 					files->set_item_metadata(-1, favorite);
 				}
@@ -1013,7 +1013,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 					fi.modified_time = 0;
 				}
 
-				if (searched_string.length() == 0 || fi.name.to_lower().find(searched_string) >= 0) {
+				if (searched_string.length() == 0 || _matches_all_search_tokens(fi.name)) {
 					file_list.push_back(fi);
 				}
 			}
@@ -2557,6 +2557,7 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 	}
 
 	searched_string = p_text.to_lower();
+	searched_tokens = searched_string.split(" ", false);
 
 	if (p_from == tree_search_box) {
 		file_list_search_box->set_text(searched_string);
@@ -2575,6 +2576,19 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 			_update_tree(searched_string.length() == 0 ? uncollapsed_paths_before_search : Vector<String>(), false, false, unfold_path);
 		} break;
 	}
+}
+
+bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
+	if (searched_tokens.is_empty()) {
+		return false;
+	}
+	String s = p_text.to_lower();
+	for (const String &t : searched_tokens) {
+		if (!s.contains(t)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 void FileSystemDock::_rescan() {
