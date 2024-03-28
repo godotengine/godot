@@ -2006,13 +2006,71 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				const GDScriptParser::ForNode *for_n = static_cast<const GDScriptParser::ForNode *>(s);
 
 				codegen.start_block();
+
 				GDScriptCodeGenerator::Address iterator = codegen.add_local(for_n->variable->name, _gdtype_from_datatype(for_n->variable->get_datatype(), codegen.script));
+				GDScriptCodeGenerator::Address list;
 
-				gen->start_for(iterator.type, _gdtype_from_datatype(for_n->list->get_datatype(), codegen.script));
+				bool list_resolved = false;
 
-				GDScriptCodeGenerator::Address list = _parse_expression(codegen, err, for_n->list);
-				if (err) {
-					return err;
+				// Optimize non-constant range() call to not allocate an array.
+				// Use int, Vector2i, Vector3i instead, which also can be used as range iterators.
+				// Constant range() is optimized in the analyzer.
+				if (for_n->list && !for_n->list->is_constant && for_n->list->type == GDScriptParser::Node::CALL) {
+					GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(for_n->list);
+					GDScriptParser::Node::Type callee_type = call->get_callee_type();
+					if (callee_type == GDScriptParser::Node::IDENTIFIER) {
+						GDScriptParser::IdentifierNode *callee = static_cast<GDScriptParser::IdentifierNode *>(call->callee);
+						if (callee->name == "range") {
+							list_resolved = true;
+
+							GDScriptDataType list_type;
+							list_type.has_type = true;
+							list_type.kind = GDScriptDataType::BUILTIN;
+							switch (call->arguments.size()) {
+								case 1:
+									list_type.builtin_type = Variant::INT;
+									break;
+								case 2:
+									list_type.builtin_type = Variant::VECTOR2I;
+									break;
+								case 3:
+									list_type.builtin_type = Variant::VECTOR3I;
+									break;
+								default:
+									_set_error(R"*(Analyzer bug: Wrong "range()" argument count.)*", call);
+									return ERR_BUG;
+							}
+
+							gen->start_for(iterator.type, list_type);
+
+							Vector<GDScriptCodeGenerator::Address> args;
+							args.resize(call->arguments.size());
+							for (int j = 0; j < args.size(); j++) {
+								args.write[j] = _parse_expression(codegen, err, call->arguments[j]);
+								if (err) {
+									return err;
+								}
+							}
+
+							list = codegen.add_temporary(list_type);
+							gen->write_construct_for_range(list, args);
+
+							for (int j = 0; j < args.size(); j++) {
+								if (args[j].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+									codegen.generator->pop_temporary();
+								}
+							}
+						}
+					}
+				}
+
+				if (!list_resolved) {
+					gen->start_for(iterator.type, _gdtype_from_datatype(for_n->list->get_datatype(), codegen.script));
+
+					list = _parse_expression(codegen, err, for_n->list);
+					if (err) {
+						return err;
+					}
 				}
 
 				gen->write_for_assignment(list);

@@ -248,6 +248,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CONSTRUCT_ARRAY,                      \
 		&&OPCODE_CONSTRUCT_TYPED_ARRAY,                \
 		&&OPCODE_CONSTRUCT_DICTIONARY,                 \
+		&&OPCODE_CONSTRUCT_FOR_RANGE,                  \
 		&&OPCODE_CALL,                                 \
 		&&OPCODE_CALL_RETURN,                          \
 		&&OPCODE_CALL_ASYNC,                           \
@@ -1660,6 +1661,59 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_INSTRUCTION_ARG(dst, argc * 2);
 
 				*dst = dict;
+
+				ip += 2;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CONSTRUCT_FOR_RANGE) {
+				LOAD_INSTRUCTION_ARGS
+				CHECK_SPACE(1 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+
+				Variant::Type list_type = Variant::NIL;
+				switch (argc) {
+					case 1:
+						list_type = Variant::INT;
+						break;
+					case 2:
+						list_type = Variant::VECTOR2I;
+						break;
+					case 3:
+						list_type = Variant::VECTOR3I;
+						break;
+				}
+#ifdef DEBUG_ENABLED
+				if (argc < 1 || argc > 3) {
+					err_text = R"*(Compiler bug: Wrong "range()" argument count.)*";
+					OPCODE_BREAK;
+				}
+#endif
+
+				Variant **argptrs = instruction_args;
+
+				GET_INSTRUCTION_ARG(dst, argc);
+
+				Callable::CallError ce;
+				Variant::construct(list_type, *dst, (const Variant **)argptrs, argc, ce);
+
+#ifdef DEBUG_ENABLED
+				if (ce.error != Callable::CallError::CALL_OK) {
+					// _get_call_error() is useless here.
+					err_text = R"*(Unknown error in "range()" call.)*";
+					for (int i = 0; i < argc; i++) {
+						Variant::Type arg_type = argptrs[i]->get_type();
+						if (arg_type != Variant::INT && arg_type != Variant::FLOAT && arg_type != Variant::BOOL) {
+							err_text = vformat(R"*(Invalid argument for "range()" call. Cannot convert argument %d from "%s" to "int".)*", i + 1, Variant::get_type_name(arg_type));
+							break;
+						}
+					}
+					OPCODE_BREAK;
+				}
+#endif
 
 				ip += 2;
 			}

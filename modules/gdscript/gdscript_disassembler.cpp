@@ -487,7 +487,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			case OPCODE_CONSTRUCT_ARRAY: {
 				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
-				text += " make_array ";
+				text += "make_array ";
 				text += DADDR(1 + argc);
 				text += " = [";
 
@@ -519,7 +519,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 					type_name = Variant::get_type_name(builtin_type);
 				}
 
-				text += " make_typed_array (";
+				text += "make_typed_array (";
 				text += type_name;
 				text += ") ";
 
@@ -556,6 +556,24 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "}";
 
 				incr += 3 + argc * 2;
+			} break;
+			case OPCODE_CONSTRUCT_FOR_RANGE: {
+				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+				text += "make_for_range ";
+				text += DADDR(1 + argc);
+				text += " = range(";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i);
+				}
+
+				text += ")";
+
+				incr += 3 + argc;
 			} break;
 			case OPCODE_CALL:
 			case OPCODE_CALL_RETURN:
