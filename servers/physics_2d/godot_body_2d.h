@@ -288,6 +288,7 @@ public:
 		if ((!get_space()) || mode == PhysicsServer2D::BODY_MODE_STATIC || mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 			return;
 		}
+		still_time = 0;
 		set_active(true);
 	}
 
