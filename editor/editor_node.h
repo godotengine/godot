@@ -525,6 +525,7 @@ private:
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option, bool p_confirmed);
+	void _cancel_save_dialog();
 
 	void _android_build_source_selected(const String &p_file);
 	void _android_export_preset_selected(int p_index);
