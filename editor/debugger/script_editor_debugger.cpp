@@ -447,10 +447,11 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			d["file"] = stack.frames[i].file;
 			d["function"] = stack.frames[i].func;
 			d["line"] = stack.frames[i].line;
+			d["owner"] = stack.frames[i].owner;
 			stack_dump_info.push_back(d);
 			s->set_metadata(0, d);
 
-			String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]) + " - at function: " + String(d["function"]);
+			String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]) + " - at function: " + String(d["function"]) + " - at scene: " + String(d["owner"]);
 			s->set_text(0, line);
 
 			if (i == 0) {
@@ -1317,6 +1318,15 @@ int ScriptEditorDebugger::get_stack_script_frame() const {
 	}
 	Dictionary d = ti->get_metadata(0);
 	return d["frame"];
+}
+
+String ScriptEditorDebugger::get_stack_script_owner() const {
+	TreeItem *ti = stack_dump->get_selected();
+	if (!ti) {
+		return "";
+	}
+	Dictionary d = ti->get_metadata(0);
+	return d["owner"];
 }
 
 bool ScriptEditorDebugger::request_stack_dump(const int &p_frame) {

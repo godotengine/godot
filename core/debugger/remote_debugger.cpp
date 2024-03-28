@@ -39,6 +39,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "scene/main/node.h"
 
 class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	Object *performance = nullptr;
@@ -478,6 +479,14 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 					frame.file = script_lang->debug_get_stack_level_source(i);
 					frame.line = script_lang->debug_get_stack_level_line(i);
 					frame.func = script_lang->debug_get_stack_level_function(i);
+
+					if (ScriptInstance *instance = script_lang->debug_get_stack_level_instance(i)) {
+						Object *owner = instance->get_owner();
+						if (Node *node = Object::cast_to<Node>(owner)) {
+							frame.owner = node->get_scene_file_path();
+						}
+					}
+
 					dump.frames.push_back(frame);
 				}
 				send_message("stack_dump", dump.serialize());
