@@ -699,11 +699,27 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 											gen->write_call_method_bind(result, base, method, arguments);
 										}
 									} else {
+										// Make temporary if member variable and ref-counted.
+										if (ClassDB::is_parent_class(class_name, "RefCounted") && base.mode == GDScriptCodeGenerator::Address::MEMBER) {
+											GDScriptCodeGenerator::Address temp = codegen.add_temporary(base.type);
+											gen->write_assign(temp, base);
+
+											base = temp;
+										}
+
 										gen->write_call(result, base, call->function_name, arguments);
 									}
 								} else if (base.type.has_type && base.type.kind == GDScriptDataType::BUILTIN) {
 									gen->write_call_builtin_type(result, base, base.type.builtin_type, call->function_name, arguments);
 								} else {
+									// Make temporary if member variable.
+									if (base.mode == GDScriptCodeGenerator::Address::MEMBER) {
+										GDScriptCodeGenerator::Address temp = codegen.add_temporary(base.type);
+										gen->write_assign(temp, base);
+
+										base = temp;
+									}
+
 									gen->write_call(result, base, call->function_name, arguments);
 								}
 								if (base.mode == GDScriptCodeGenerator::Address::TEMPORARY) {

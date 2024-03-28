@@ -2054,6 +2054,10 @@ void Object::detach_from_objectdb() {
 }
 
 Object::~Object() {
+#ifdef DEBUG_ENABLED
+	CRASH_COND_MSG(_lock_index.get() != 1, "TODO message for object.");
+#endif // DEBUG_ENABLED
+
 	if (script_instance) {
 		memdelete(script_instance);
 	}
