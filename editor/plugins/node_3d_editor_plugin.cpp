@@ -843,6 +843,8 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_ray(pos, pos + ray * camera->get_far(), get_tree()->get_root()->get_world_3d()->get_scenario());
 	HashSet<Node3D *> found_nodes;
 
+	Node *edited_scene = get_tree()->get_edited_scene_root();
+
 	for (int i = 0; i < instances.size(); i++) {
 		Node3D *spat = Object::cast_to<Node3D>(ObjectDB::get_instance(instances[i]));
 
@@ -850,11 +852,20 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 			continue;
 		}
 
-		if (found_nodes.has(spat)) {
+		Node3D *item = spat;
+		if (item != edited_scene) {
+			item = Object::cast_to<Node3D>(edited_scene->get_deepest_editable_node(item));
+		}
+
+		if (!item) {
 			continue;
 		}
 
-		if (!p_include_locked_nodes && _is_node_locked(spat)) {
+		if (found_nodes.has(item)) {
+			continue;
+		}
+
+		if (!p_include_locked_nodes && _is_node_locked(item)) {
 			continue;
 		}
 
@@ -881,10 +892,10 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 				continue;
 			}
 
-			found_nodes.insert(spat);
+			found_nodes.insert(item);
 
 			_RayResult res;
-			res.item = spat;
+			res.item = item;
 			res.depth = dist;
 			r_results.push_back(res);
 			break;
@@ -1565,10 +1576,9 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 			if (_is_node_locked(spat)) {
 				locked = 1;
 			} else {
-				Node *ed_scene = EditorNode::get_singleton()->get_edited_scene();
 				Node *node = spat;
 
-				while (node && node != ed_scene->get_parent()) {
+				while (node && node != scene->get_parent()) {
 					Node3D *selected_tmp = Object::cast_to<Node3D>(node);
 					if (selected_tmp && node->has_meta("_edit_group_")) {
 						locked = 2;
