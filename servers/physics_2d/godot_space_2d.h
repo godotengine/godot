@@ -67,14 +67,31 @@ public:
 		ELAPSED_TIME_SOLVE_CONSTRAINTS,
 		ELAPSED_TIME_INTEGRATE_VELOCITIES,
 		ELAPSED_TIME_MAX
-
 	};
 
 private:
+	friend class GodotPhysicsDirectSpaceState2D;
+
 	struct ExcludedShapeSW {
 		GodotShape2D *local_shape = nullptr;
 		const GodotCollisionObject2D *against_object = nullptr;
 		int against_shape_index = 0;
+	};
+
+	struct TestBodyMotionData {
+		Rect2 body_aabb;
+		int excluded_shape_pair_count = 0;
+		real_t margin;
+		real_t min_contact_depth;
+		static const int max_excluded_shape_pairs = 32;
+		ExcludedShapeSW excluded_shape_pairs[max_excluded_shape_pairs];
+		Transform2D body_transform;
+		int best_shape = -1;
+		bool recovered = false; // Required in steps 1 and 3.
+		real_t safe_fraction = 1.0; // Required in steps 2 and 3.
+		real_t unsafe_fraction = 1.0;
+		real_t motion_length;
+		Vector2 motion_normal;
 	};
 
 	uint64_t elapsed_time[ELAPSED_TIME_MAX] = {};
@@ -128,7 +145,9 @@ private:
 	Vector<Vector2> contact_debug;
 	int contact_debug_count = 0;
 
-	friend class GodotPhysicsDirectSpaceState2D;
+	void free_stuck_body(GodotBody2D *p_body, const PhysicsServer2D::MotionParameters &p_parameters, TestBodyMotionData *p_test_data);
+	void attempt_body_motion(GodotBody2D *p_body, const PhysicsServer2D::MotionParameters &p_parameters, TestBodyMotionData *p_test_data);
+	bool retrieve_body_motion_data(GodotBody2D *p_body, const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult *r_result, TestBodyMotionData *p_test_data);
 
 public:
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
