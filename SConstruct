@@ -226,6 +226,7 @@ opts.Add(
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
+opts.Add("num_jobs", "Allow N jobs at once", "")
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -493,16 +494,20 @@ if selected_platform in platform_list:
     altered_num_jobs = initial_num_jobs + 1
     env.SetOption("num_jobs", altered_num_jobs)
     if env.GetOption("num_jobs") == altered_num_jobs:
-        cpu_count = os.cpu_count()
-        if cpu_count is None:
-            print("Couldn't auto-detect CPU count to configure build parallelism. Specify it with the -j argument.")
+        num_jobs = env.get("num_jobs", "")
+        if str(num_jobs).isdigit() and int(num_jobs) > 0:
+            env.SetOption("num_jobs", num_jobs)
         else:
-            safer_cpu_count = cpu_count if cpu_count <= 4 else cpu_count - 1
-            print(
-                "Auto-detected %d CPU cores available for build parallelism. Using %d cores by default. You can override it with the -j argument."
-                % (cpu_count, safer_cpu_count)
-            )
-            env.SetOption("num_jobs", safer_cpu_count)
+            cpu_count = os.cpu_count()
+            if cpu_count is None:
+                print("Couldn't auto-detect CPU count to configure build parallelism. Specify it with the -j argument.")
+            else:
+                safer_cpu_count = cpu_count if cpu_count <= 4 else cpu_count - 1
+                print(
+                    "Auto-detected %d CPU cores available for build parallelism. Using %d cores by default. You can override it with the -j argument."
+                    % (cpu_count, safer_cpu_count)
+                )
+                env.SetOption("num_jobs", safer_cpu_count)
 
     env.extra_suffix = ""
 
