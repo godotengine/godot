@@ -1417,43 +1417,61 @@ void Variant::_clear_internal() {
 	}
 }
 
-Variant::operator signed int() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
-}
-
-Variant::operator unsigned int() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
-}
-
 Variant::operator int64_t() const {
+	switch (type) {
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case FLOAT:
+			return _data._float;
+		case STRING:
+			return operator String().to_int();
+		default: {
+			return 0;
+		}
+	}
+}
+
+Variant::operator int32_t() const {
+	switch (type) {
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case FLOAT:
+			return _data._float;
+		case STRING:
+			return operator String().to_int();
+		default: {
+			return 0;
+		}
+	}
+}
+
+Variant::operator int16_t() const {
+	switch (type) {
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case FLOAT:
+			return _data._float;
+		case STRING:
+			return operator String().to_int();
+		default: {
+			return 0;
+		}
+	}
+}
+
+Variant::operator int8_t() const {
 	switch (type) {
 		case NIL:
 			return 0;
@@ -1489,6 +1507,60 @@ Variant::operator uint64_t() const {
 	}
 }
 
+Variant::operator uint32_t() const {
+	switch (type) {
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case FLOAT:
+			return _data._float;
+		case STRING:
+			return operator String().to_int();
+		default: {
+			return 0;
+		}
+	}
+}
+
+Variant::operator uint16_t() const {
+	switch (type) {
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case FLOAT:
+			return _data._float;
+		case STRING:
+			return operator String().to_int();
+		default: {
+			return 0;
+		}
+	}
+}
+
+Variant::operator uint8_t() const {
+	switch (type) {
+		case NIL:
+			return 0;
+		case BOOL:
+			return _data._bool ? 1 : 0;
+		case INT:
+			return _data._int;
+		case FLOAT:
+			return _data._float;
+		case STRING:
+			return operator String().to_int();
+		default: {
+			return 0;
+		}
+	}
+}
+
 Variant::operator ObjectID() const {
 	if (type == INT) {
 		return ObjectID(_data._int);
@@ -1499,122 +1571,8 @@ Variant::operator ObjectID() const {
 	}
 }
 
-#ifdef NEED_LONG_INT
-Variant::operator signed long() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
-
-	return 0;
-}
-
-Variant::operator unsigned long() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
-
-	return 0;
-}
-#endif
-
-Variant::operator signed short() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
-}
-
-Variant::operator unsigned short() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
-}
-
-Variant::operator signed char() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
-}
-
-Variant::operator unsigned char() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
-}
-
 Variant::operator char32_t() const {
-	return operator unsigned int();
+	return operator uint32_t();
 }
 
 Variant::operator float() const {
@@ -2420,57 +2378,44 @@ Variant::Variant(bool p_bool) {
 	_data._bool = p_bool;
 }
 
-Variant::Variant(signed int p_int) {
+Variant::Variant(int64_t p_int64) {
 	type = INT;
-	_data._int = p_int;
+	_data._int = p_int64;
 }
 
-Variant::Variant(unsigned int p_int) {
+Variant::Variant(int32_t p_int32) {
 	type = INT;
-	_data._int = p_int;
+	_data._int = p_int32;
 }
 
-#ifdef NEED_LONG_INT
-
-Variant::Variant(signed long p_int) {
+Variant::Variant(int16_t p_int16) {
 	type = INT;
-	_data._int = p_int;
+	_data._int = p_int16;
 }
 
-Variant::Variant(unsigned long p_int) {
+Variant::Variant(int8_t p_int8) {
 	type = INT;
-	_data._int = p_int;
-}
-#endif
-
-Variant::Variant(int64_t p_int) {
-	type = INT;
-	_data._int = p_int;
+	_data._int = p_int8;
 }
 
-Variant::Variant(uint64_t p_int) {
+Variant::Variant(uint64_t p_uint64) {
 	type = INT;
-	_data._int = p_int;
+	_data._int = p_uint64;
 }
 
-Variant::Variant(signed short p_short) {
+Variant::Variant(uint32_t p_uint32) {
 	type = INT;
-	_data._int = p_short;
+	_data._int = p_uint32;
 }
 
-Variant::Variant(unsigned short p_short) {
+Variant::Variant(uint16_t p_uint16) {
 	type = INT;
-	_data._int = p_short;
+	_data._int = p_uint16;
 }
 
-Variant::Variant(signed char p_char) {
+Variant::Variant(uint8_t p_uint8) {
 	type = INT;
-	_data._int = p_char;
-}
-
-Variant::Variant(unsigned char p_char) {
-	type = INT;
-	_data._int = p_char;
+	_data._int = p_uint8;
 }
 
 Variant::Variant(float p_float) {
