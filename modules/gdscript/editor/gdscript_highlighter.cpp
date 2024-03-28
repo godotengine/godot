@@ -65,8 +65,10 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 	bool in_function_name = false; // Any call.
 	bool in_function_declaration = false; // Only declaration.
-	bool in_var_const_declaration = false;
 	bool in_signal_declaration = false;
+	bool is_after_func_signal_declaration = false;
+	bool in_var_const_declaration = false;
+	bool is_after_var_const_declaration = false;
 	bool expect_type = false;
 
 	int in_declaration_params = 0; // The number of opened `(` after func/signal name.
@@ -410,6 +412,8 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				col = class_names[word];
 			} else if (reserved_keywords.has(word)) {
 				col = reserved_keywords[word];
+				// Don't highlight `list` as a type in `for elem: Type in list`.
+				expect_type = false;
 			} else if (member_keywords.has(word)) {
 				col = member_keywords[word];
 			}
@@ -480,6 +484,13 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		}
 
 		if (is_a_symbol) {
+			if (in_function_declaration || in_signal_declaration) {
+				is_after_func_signal_declaration = true;
+			}
+			if (in_var_const_declaration) {
+				is_after_var_const_declaration = true;
+			}
+
 			if (in_declaration_params > 0) {
 				switch (str[j]) {
 					case '(':
@@ -495,7 +506,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						in_declaration_param_dicts -= 1;
 						break;
 				}
-			} else if ((in_function_declaration || in_signal_declaration || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) && str[j] == '(') {
+			} else if ((is_after_func_signal_declaration || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) && str[j] == '(') {
 				in_declaration_params = 1;
 				in_declaration_param_dicts = 0;
 			}
@@ -526,19 +537,22 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					expect_type = true;
 					in_type_params = 0;
 				}
-				if ((in_var_const_declaration || (in_declaration_params == 1 && in_declaration_param_dicts == 0)) && str[j] == ':') {
+				if ((is_after_var_const_declaration || (in_declaration_params == 1 && in_declaration_param_dicts == 0)) && str[j] == ':') {
 					expect_type = true;
 					in_type_params = 0;
 				}
 			}
 
+			in_function_name = false;
+			in_function_declaration = false;
+			in_signal_declaration = false;
+			in_var_const_declaration = false;
+			in_lambda = false;
+			in_member_variable = false;
+
 			if (!is_whitespace(str[j])) {
-				in_function_declaration = false;
-				in_var_const_declaration = false;
-				in_signal_declaration = false;
-				in_function_name = false;
-				in_lambda = false;
-				in_member_variable = false;
+				is_after_func_signal_declaration = false;
+				is_after_var_const_declaration = false;
 			}
 		}
 
