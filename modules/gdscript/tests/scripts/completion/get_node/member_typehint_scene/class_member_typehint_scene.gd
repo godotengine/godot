@@ -6,3 +6,4 @@ const A := preload("res://completion/class_a.notest.gd")
 
 func a():
 	test.➡
+    pass
