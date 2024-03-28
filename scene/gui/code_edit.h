@@ -282,7 +282,7 @@ private:
 		Color brace_mismatch_color;
 
 		Ref<Font> font;
-		int font_size = 16;
+		float font_size = 16.0;
 		int line_spacing = 1;
 	} theme_cache;
 

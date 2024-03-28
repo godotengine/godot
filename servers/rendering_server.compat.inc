@@ -34,8 +34,14 @@ void RenderingServer::_environment_set_fog_bind_compat_84792(RID p_env, bool p_e
 	environment_set_fog(p_env, p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_aerial_perspective, p_sky_affect, RS::EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL);
 }
 
+void RenderingServer::_canvas_item_add_msdf_texture_rect_region_compat_87243(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, int p_outline_size, float p_px_range, float p_scale) {
+	canvas_item_add_msdf_texture_rect_region(p_item, p_rect, p_texture, p_src_rect, p_modulate, (float)p_outline_size, p_px_range, p_scale);
+}
+
 void RenderingServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect"), &RenderingServer::_environment_set_fog_bind_compat_84792);
+
+	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_msdf_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate", "outline_size", "px_range", "scale"), &RenderingServer::_canvas_item_add_msdf_texture_rect_region_compat_87243, DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(1.0), DEFVAL(1.0));
 }
 
 #endif

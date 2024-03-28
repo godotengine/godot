@@ -88,8 +88,8 @@ class MenuBar : public Control {
 		Ref<StyleBox> hover_pressed_mirrored;
 
 		Ref<Font> font;
-		int font_size = 0;
-		int outline_size = 0;
+		float font_size = 0;
+		float outline_size = 0;
 		Color font_outline_color;
 
 		Color font_color;

@@ -689,7 +689,7 @@ void ProjectList::_create_project_item_control(int p_index) {
 	ERR_FAIL_COND(item.control != nullptr); // Already created
 
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
-	hb->add_theme_constant_override("separation", 10 * EDSCALE);
+	hb->add_theme_constant_override("separation", (int64_t)(10 * EDSCALE));
 
 	hb->set_project_title(!item.missing ? item.project_name : TTR("Missing Project"));
 	hb->set_project_path(item.path);

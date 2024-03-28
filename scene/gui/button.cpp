@@ -386,8 +386,8 @@ void Button::_notification(int p_what) {
 				}
 
 				Color font_outline_color = theme_cache.font_outline_color;
-				int outline_size = theme_cache.outline_size;
-				if (outline_size > 0 && font_outline_color.a > 0.0f) {
+				float outline_size = theme_cache.outline_size;
+				if (outline_size > 0.0f && font_outline_color.a > 0.0f) {
 					text_buf->draw_outline(ci, text_ofs, outline_size, font_outline_color);
 				}
 				text_buf->draw(ci, text_ofs, font_color);
@@ -465,8 +465,8 @@ void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
 	p_paragraph->clear();
 
 	Ref<Font> font = theme_cache.font;
-	int font_size = theme_cache.font_size;
-	if (font.is_null() || font_size == 0) {
+	float font_size = theme_cache.font_size;
+	if (font.is_null() || font_size == 0.0) {
 		// Can't shape without a valid font and a non-zero size.
 		return;
 	}
@@ -743,7 +743,7 @@ void Button::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, Button, font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, Button, font_size);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, outline_size);
+	BIND_THEME_CONSTANT(Button, outline_size, Variant::FLOAT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_outline_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_normal_color);
@@ -755,8 +755,8 @@ void Button::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Button, icon);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, icon_max_width);
+	BIND_THEME_CONSTANT(Button, h_separation, Variant::INT);
+	BIND_THEME_CONSTANT(Button, icon_max_width, Variant::INT);
 }
 
 Button::Button(const String &p_text) {

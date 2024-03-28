@@ -1277,7 +1277,7 @@ void ItemList::_notification(int p_what) {
 						float text_w = items[i].rect_cache.size.width - theme_cache.h_separation;
 						items.write[i].text_buf->set_width(text_w);
 
-						if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+						if (theme_cache.font_outline_size > 0.0 && theme_cache.font_outline_color.a > 0.0) {
 							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
 						}
 
@@ -1309,7 +1309,7 @@ void ItemList::_notification(int p_what) {
 							items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 						}
 
-						if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+						if (theme_cache.font_outline_size > 0.0 && theme_cache.font_outline_color.a > 0.0) {
 							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
 						}
 
@@ -1856,8 +1856,8 @@ void ItemList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, v_separation);
+	BIND_THEME_CONSTANT(ItemList, h_separation, Variant::INT);
+	BIND_THEME_CONSTANT(ItemList, v_separation, Variant::INT);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, focus_style, "focus");
@@ -1867,11 +1867,11 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_hovered_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_selected_color);
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, ItemList, font_outline_size, "outline_size");
+	BIND_THEME_CONSTANT_CUSTOM(ItemList, font_outline_size, "outline_size", Variant::FLOAT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_outline_color);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, line_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, icon_margin);
+	BIND_THEME_CONSTANT(ItemList, line_separation, Variant::INT);
+	BIND_THEME_CONSTANT(ItemList, icon_margin, Variant::INT);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, hovered_style, "hovered");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, selected_style, "selected");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, selected_focus_style, "selected_focus");

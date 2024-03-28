@@ -159,8 +159,8 @@ public:
 		SUBPIXEL_POSITIONING_ONE_HALF = 2,
 		SUBPIXEL_POSITIONING_ONE_QUARTER = 3,
 
-		SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE = 20,
-		SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE = 16,
+		SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE = 20 << 6, // 26.6
+		SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE = 16 << 6,
 	};
 
 	enum Feature {
@@ -179,6 +179,7 @@ public:
 		FEATURE_USE_SUPPORT_DATA = 1 << 12,
 		FEATURE_UNICODE_IDENTIFIERS = 1 << 13,
 		FEATURE_UNICODE_SECURITY = 1 << 14,
+		FEATURE_USE_26_6_UNITS = 1 << 15,
 	};
 
 	enum ContourPointTag {
@@ -217,7 +218,7 @@ public:
 		FIXED_SIZE_SCALE_ENABLED,
 	};
 
-	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
+	void _draw_hex_code_box_number(const RID &p_canvas, double p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
 	HashMap<char32_t, char32_t> diacritics_map;
@@ -225,6 +226,14 @@ protected:
 	void _init_diacritics_map();
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	bool _shaped_text_add_string_compat_87243(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant());
+	void _shaped_set_span_update_font_compat_87243(const RID &p_shaped, int64_t p_index, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary());
+	void _shaped_text_draw_outline_compat_87243(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -452,13 +461,13 @@ public:
 	virtual void shaped_text_set_spacing(const RID &p_shaped, SpacingType p_spacing, int64_t p_value) = 0;
 	virtual int64_t shaped_text_get_spacing(const RID &p_shaped, SpacingType p_spacing) const = 0;
 
-	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) = 0;
+	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, double p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) = 0;
 	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1, double p_baseline = 0.0) = 0;
 	virtual bool shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, double p_baseline = 0.0) = 0;
 
 	virtual int64_t shaped_get_span_count(const RID &p_shaped) const = 0;
 	virtual Variant shaped_get_span_meta(const RID &p_shaped, int64_t p_index) const = 0;
-	virtual void shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary()) = 0;
+	virtual void shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const TypedArray<RID> &p_fonts, double p_size, const Dictionary &p_opentype_features = Dictionary()) = 0;
 
 	virtual RID shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const = 0; // Copy shaped substring (e.g. line break) without reshaping, but correctly reordered, preservers range.
 	virtual RID shaped_text_get_parent(const RID &p_shaped) const = 0;
@@ -526,7 +535,7 @@ public:
 
 	// The pen position is always placed on the baseline and moveing left to right.
 	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const;
-	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, double p_outline_size = 1.0, const Color &p_color = Color(1, 1, 1)) const;
 
 	// Number conversion.
 	virtual String format_number(const String &p_string, const String &p_language = "") const = 0;

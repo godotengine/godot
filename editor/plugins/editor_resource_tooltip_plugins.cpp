@@ -57,7 +57,7 @@ void EditorResourceTooltipPlugin::_bind_methods() {
 
 VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p_resource_path) {
 	VBoxContainer *vb = memnew(VBoxContainer);
-	vb->add_theme_constant_override("separation", -4 * EDSCALE);
+	vb->add_theme_constant_override("separation", (int64_t)(-4 * EDSCALE));
 	{
 		Label *label = memnew(Label(p_resource_path.get_file()));
 		vb->add_child(label);

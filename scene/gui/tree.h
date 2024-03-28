@@ -114,7 +114,7 @@ private:
 		Vector<Button> buttons;
 
 		Ref<Font> custom_font;
-		int custom_font_size = -1;
+		float custom_font_size = -1;
 
 		Cell() {
 			text_buf.instantiate();
@@ -226,6 +226,13 @@ private:
 	TreeItem *_get_prev_in_tree(bool p_wrap = false, bool p_include_invisible = false);
 	TreeItem *_get_next_in_tree(bool p_wrap = false, bool p_include_invisible = false);
 
+#ifndef DISABLE_DEPRECATED
+	void _set_custom_font_size_compat_87243(int p_column, int p_font_size);
+	int _get_custom_font_size_compat_87243(int p_column) const;
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
@@ -328,8 +335,8 @@ public:
 	void set_custom_font(int p_column, const Ref<Font> &p_font);
 	Ref<Font> get_custom_font(int p_column) const;
 
-	void set_custom_font_size(int p_column, int p_font_size);
-	int get_custom_font_size(int p_column) const;
+	void set_custom_font_size(int p_column, float p_font_size);
+	float get_custom_font_size(int p_column) const;
 
 	void set_custom_bg_color(int p_column, const Color &p_color, bool p_bg_outline = false);
 	void clear_custom_bg_color(int p_column);
@@ -502,7 +509,7 @@ private:
 	void update_item_cell(TreeItem *p_item, int p_col);
 	void update_item_cache(TreeItem *p_item);
 	//void draw_item_text(String p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
-	void draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color);
+	void draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, float p_ol_size, const Color &p_ol_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod);
@@ -527,8 +534,8 @@ private:
 
 		Ref<Font> font;
 		Ref<Font> tb_font;
-		int font_size = 0;
-		int tb_font_size = 0;
+		float font_size = 0;
+		float tb_font_size = 0;
 
 		Ref<StyleBox> selected;
 		Ref<StyleBox> selected_focus;
@@ -568,7 +575,7 @@ private:
 		Color font_outline_color;
 
 		float base_scale = 1.0;
-		int font_outline_size = 0;
+		float font_outline_size = 0;
 
 		int h_separation = 0;
 		int v_separation = 0;

@@ -46,16 +46,28 @@ class ThemeContext;
 // Macros for binding theme items of this class. This information is used for the documentation, theme
 // overrides, etc. This is also the basis for theme cache.
 
-#define BIND_THEME_ITEM(m_data_type, m_class, m_prop)                                                                   \
-	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, #m_prop, [](Node *p_instance) { \
-		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                         \
-		p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, _scs_create(#m_prop));                         \
+#define BIND_THEME_ITEM(m_data_type, m_class, m_prop)                                                                                 \
+	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, #m_prop, Variant::INT, [](Node *p_instance) { \
+		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                                       \
+		p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, _scs_create(#m_prop));                                       \
 	})
 
-#define BIND_THEME_ITEM_CUSTOM(m_data_type, m_class, m_prop, m_item_name)                                                   \
-	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, m_item_name, [](Node *p_instance) { \
-		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                             \
-		p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, _scs_create(m_item_name));                         \
+#define BIND_THEME_ITEM_CUSTOM(m_data_type, m_class, m_prop, m_item_name)                                                                 \
+	ThemeDB::get_singleton()->bind_class_item(m_data_type, get_class_static(), #m_prop, m_item_name, Variant::INT, [](Node *p_instance) { \
+		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                                           \
+		p_cast->theme_cache.m_prop = p_cast->get_theme_item(m_data_type, _scs_create(m_item_name));                                       \
+	})
+
+#define BIND_THEME_CONSTANT(m_class, m_prop, m_constant_type)                                                                                          \
+	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_CONSTANT, get_class_static(), #m_prop, #m_prop, m_constant_type, [](Node *p_instance) { \
+		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                                                        \
+		p_cast->theme_cache.m_prop = p_cast->get_theme_item(Theme::DATA_TYPE_CONSTANT, _scs_create(#m_prop));                                          \
+	})
+
+#define BIND_THEME_CONSTANT_CUSTOM(m_class, m_prop, m_item_name, m_constant_type)                                                                          \
+	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_CONSTANT, get_class_static(), #m_prop, m_item_name, m_constant_type, [](Node *p_instance) { \
+		m_class *p_cast = Object::cast_to<m_class>(p_instance);                                                                                            \
+		p_cast->theme_cache.m_prop = p_cast->get_theme_item(Theme::DATA_TYPE_CONSTANT, _scs_create(m_item_name));                                          \
 	})
 
 // Macro for binding theme items used by this class, but defined/binded by other classes. This is primarily used for
@@ -81,7 +93,7 @@ class ThemeDB : public Object {
 
 	float fallback_base_scale = 1.0;
 	Ref<Font> fallback_font;
-	int fallback_font_size = 16;
+	float fallback_font_size = 16.0;
 	Ref<Texture2D> fallback_icon;
 	Ref<StyleBox> fallback_stylebox;
 
@@ -105,6 +117,7 @@ public:
 		StringName item_name;
 		StringName type_name;
 		bool external = false;
+		Variant::Type constant_type = Variant::NIL;
 
 		ThemeItemSetter setter;
 
@@ -123,6 +136,13 @@ private:
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	void _set_fallback_font_size_compat_87243(int p_font_size);
+	int _get_fallback_font_size_compat_87243();
+
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	void initialize_theme();
@@ -145,8 +165,8 @@ public:
 	void set_fallback_font(const Ref<Font> &p_font);
 	Ref<Font> get_fallback_font();
 
-	void set_fallback_font_size(int p_font_size);
-	int get_fallback_font_size();
+	void set_fallback_font_size(float p_font_size);
+	float get_fallback_font_size();
 
 	void set_fallback_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_fallback_icon();
@@ -167,11 +187,13 @@ public:
 
 	// Theme item binding.
 
-	void bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter);
+	void bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, Variant::Type p_constant_type, ThemeItemSetter p_setter);
 	void bind_class_external_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter);
 	void update_class_instance_items(Node *p_instance);
 
 	void get_class_items(const StringName &p_class_name, List<ThemeItemBind> *r_list, bool p_include_inherited = false, Theme::DataType p_filter_type = Theme::DATA_TYPE_MAX);
+	void get_class_own_items(const StringName &p_class_name, List<ThemeItemBind> *r_list);
+	Variant::Type get_class_constant_type(const StringName &p_class_name, const StringName &p_item_name);
 
 	// Memory management, reference, and initialization.
 

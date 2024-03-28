@@ -641,7 +641,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	event_as_text->set_custom_minimum_size(Size2(500, 0) * EDSCALE);
 	event_as_text->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	event_as_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	event_as_text->add_theme_font_size_override("font_size", 18 * EDSCALE);
+	event_as_text->add_theme_font_size_override("font_size", 18.0 * EDSCALE);
 	main_vbox->add_child(event_as_text);
 
 	event_listener = memnew(EventListenerLineEdit);

@@ -1030,7 +1030,7 @@ void CodeTextEditor::update_editor_settings() {
 	// Appearance: Whitespace
 	text_editor->set_draw_tabs(EDITOR_GET("text_editor/appearance/whitespace/draw_tabs"));
 	text_editor->set_draw_spaces(EDITOR_GET("text_editor/appearance/whitespace/draw_spaces"));
-	text_editor->add_theme_constant_override("line_spacing", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
+	text_editor->add_theme_constant_override("line_spacing", (int64_t)EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
 
 	// Behavior: Navigation
 	text_editor->set_scroll_past_end_of_file_enabled(EDITOR_GET("text_editor/behavior/navigation/scroll_past_end_of_file"));
@@ -1692,7 +1692,7 @@ void CodeTextEditor::_update_text_editor_theme() {
 	warning_button->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 
 	Ref<Font> status_bar_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
-	int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts));
+	float status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts));
 
 	int count = status_bar->get_child_count();
 	for (int i = 0; i < count; i++) {
@@ -1918,12 +1918,12 @@ void CodeTextEditor::remove_all_bookmarks() {
 }
 
 void CodeTextEditor::_zoom_in() {
-	int s = text_editor->get_theme_font_size("font_size");
+	float s = text_editor->get_theme_font_size("font_size");
 	_zoom_to(zoom_factor * (s + MAX(1.0f, EDSCALE)) / s);
 }
 
 void CodeTextEditor::_zoom_out() {
-	int s = text_editor->get_theme_font_size("font_size");
+	float s = text_editor->get_theme_font_size("font_size");
 	_zoom_to(zoom_factor * (s - MAX(1.0f, EDSCALE)) / s);
 }
 
@@ -1944,8 +1944,8 @@ void CodeTextEditor::_zoom_to(float p_zoom_factor) {
 void CodeTextEditor::set_zoom_factor(float p_zoom_factor) {
 	int preset_count = sizeof(ZOOM_FACTOR_PRESETS) / sizeof(float);
 	zoom_factor = CLAMP(p_zoom_factor, ZOOM_FACTOR_PRESETS[0], ZOOM_FACTOR_PRESETS[preset_count - 1]);
-	int neutral_font_size = int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE;
-	int new_font_size = Math::round(zoom_factor * neutral_font_size);
+	float neutral_font_size = float(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE;
+	float new_font_size = zoom_factor * neutral_font_size;
 
 	zoom_button->set_text(itos(Math::round(zoom_factor * 100)) + " %");
 
@@ -2117,5 +2117,5 @@ CodeTextEditor::CodeTextEditor() {
 
 	code_complete_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_code_complete_timer_timeout));
 
-	add_theme_constant_override("separation", 4 * EDSCALE);
+	add_theme_constant_override("separation", (int64_t)(4 * EDSCALE));
 }

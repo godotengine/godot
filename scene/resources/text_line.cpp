@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "text_line.h"
+#include "text_line.compat.inc"
 
 void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TextLine::clear);
@@ -99,7 +100,7 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_underline_thickness"), &TextLine::get_line_underline_thickness);
 
 	ClassDB::bind_method(D_METHOD("draw", "canvas", "pos", "color"), &TextLine::draw, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color"), &TextLine::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color"), &TextLine::draw_outline, DEFVAL(1.0), DEFVAL(Color(1, 1, 1)));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextLine::hit_test);
 }
@@ -203,7 +204,7 @@ void TextLine::set_bidi_override(const Array &p_override) {
 	dirty = true;
 }
 
-bool TextLine::add_string(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language, const Variant &p_meta) {
+bool TextLine::add_string(const String &p_text, const Ref<Font> &p_font, float p_font_size, const String &p_language, const Variant &p_meta) {
 	ERR_FAIL_COND_V(p_font.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language, p_meta);
 	dirty = true;
@@ -417,7 +418,7 @@ void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) co
 	return TS->shaped_text_draw(rid, p_canvas, ofs, clip_l, clip_l + width, p_color);
 }
 
-void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color) const {
+void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, float p_outline_size, const Color &p_color) const {
 	const_cast<TextLine *>(this)->_shape();
 
 	Vector2 ofs = p_pos;
@@ -470,7 +471,7 @@ int TextLine::hit_test(float p_coords) const {
 	return TS->shaped_text_hit_test_position(rid, p_coords);
 }
 
-TextLine::TextLine(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
+TextLine::TextLine(const String &p_text, const Ref<Font> &p_font, float p_font_size, const String &p_language, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	rid = TS->create_shaped_text(p_direction, p_orientation);
 	if (p_font.is_valid()) {
 		TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language);

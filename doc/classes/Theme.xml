@@ -122,7 +122,7 @@
 			</description>
 		</method>
 		<method name="get_constant" qualifiers="const">
-			<return type="int" />
+			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" />
 			<description>
@@ -161,7 +161,7 @@
 			</description>
 		</method>
 		<method name="get_font_size" qualifiers="const">
-			<return type="int" />
+			<return type="float" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" />
 			<description>
@@ -475,7 +475,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" />
-			<param index="2" name="constant" type="int" />
+			<param index="2" name="constant" type="Variant" />
 			<description>
 				Creates or changes the value of the constant property defined by [param name] and [param theme_type]. Use [method clear_constant] to remove the property.
 			</description>
@@ -493,7 +493,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" />
-			<param index="2" name="font_size" type="int" />
+			<param index="2" name="font_size" type="float" />
 			<description>
 				Creates or changes the value of the font size property defined by [param name] and [param theme_type]. Use [method clear_font_size] to remove the property.
 			</description>
@@ -549,7 +549,7 @@
 			The default font of this theme resource. Used as the default value when trying to fetch a font resource that doesn't exist in this theme or is in invalid state. If the default font is also missing or invalid, the engine fallback value is used (see [member ThemeDB.fallback_font]).
 			Use [method has_default_font] to check if this value is valid.
 		</member>
-		<member name="default_font_size" type="int" setter="set_default_font_size" getter="get_default_font_size" default="-1">
+		<member name="default_font_size" type="float" setter="set_default_font_size" getter="get_default_font_size" default="-1.0">
 			The default font size of this theme resource. Used as the default value when trying to fetch a font size value that doesn't exist in this theme or is in invalid state. If the default font size is also missing or invalid, the engine fallback value is used (see [member ThemeDB.fallback_font_size]).
 			Values below [code]0[/code] are invalid and can be used to unset the property. Use [method has_default_font_size] to check if this value is valid.
 		</member>

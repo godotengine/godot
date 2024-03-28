@@ -183,7 +183,7 @@
 			</description>
 		</method>
 		<method name="get_custom_font_size" qualifiers="const">
-			<return type="int" />
+			<return type="float" />
 			<param index="0" name="column" type="int" />
 			<description>
 				Returns custom font size used to draw text in the column [param column].
@@ -604,7 +604,7 @@
 		<method name="set_custom_font_size">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="font_size" type="int" />
+			<param index="1" name="font_size" type="float" />
 			<description>
 				Sets custom font size used to draw text in the given [param column].
 			</description>

@@ -659,7 +659,7 @@ void CurveEdit::set_selected_index(int p_index) {
 
 void CurveEdit::update_view_transform() {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 
 	const real_t margin = font->get_height(font_size) + 2 * EDSCALE;
 
@@ -821,7 +821,7 @@ void CurveEdit::_redraw() {
 	draw_set_transform_matrix(Transform2D());
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	float font_height = font->get_height(font_size);
 	Color text_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 

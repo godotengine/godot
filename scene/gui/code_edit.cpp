@@ -2754,9 +2754,9 @@ void CodeEdit::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CodeEdit, code_completion_style, "completion");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_icon_separation, "h_separation", "ItemList");
 
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_max_width, "completion_max_width");
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_max_lines, "completion_lines");
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_scroll_width, "completion_scroll_width");
+	BIND_THEME_CONSTANT_CUSTOM(CodeEdit, code_completion_max_width, "completion_max_width", Variant::INT);
+	BIND_THEME_CONSTANT_CUSTOM(CodeEdit, code_completion_max_lines, "completion_lines", Variant::INT);
+	BIND_THEME_CONSTANT_CUSTOM(CodeEdit, code_completion_scroll_width, "completion_scroll_width", Variant::INT);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_scroll_color, "completion_scroll_color");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_scroll_hovered_color, "completion_scroll_hovered_color");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_background_color, "completion_background_color");
@@ -2778,7 +2778,7 @@ void CodeEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, CodeEdit, font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, CodeEdit, font_size);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CodeEdit, line_spacing);
+	BIND_THEME_CONSTANT(CodeEdit, line_spacing, Variant::INT);
 }
 
 /* Auto brace completion */

@@ -1290,7 +1290,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="index" type="int" />
 			<param index="2" name="fonts" type="RID[]" />
-			<param index="3" name="size" type="int" />
+			<param index="3" name="size" type="float" />
 			<param index="4" name="opentype_features" type="Dictionary" />
 			<description>
 				[b]Required.[/b]
@@ -1315,7 +1315,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="text" type="String" />
 			<param index="2" name="fonts" type="RID[]" />
-			<param index="3" name="size" type="int" />
+			<param index="3" name="size" type="float" />
 			<param index="4" name="opentype_features" type="Dictionary" />
 			<param index="5" name="language" type="String" />
 			<param index="6" name="meta" type="Variant" />
@@ -1361,7 +1361,7 @@
 			<param index="2" name="pos" type="Vector2" />
 			<param index="3" name="clip_l" type="float" />
 			<param index="4" name="clip_r" type="float" />
-			<param index="5" name="outline_size" type="int" />
+			<param index="5" name="outline_size" type="float" />
 			<param index="6" name="color" type="Color" />
 			<description>
 				[b]Optional.[/b]

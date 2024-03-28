@@ -145,10 +145,10 @@ class EditorHelp : public VBoxContainer {
 		Ref<Font> doc_code_font;
 		Ref<Font> doc_kbd_font;
 
-		int doc_font_size = 0;
-		int doc_title_font_size = 0;
-		int doc_code_font_size = 0;
-		int doc_kbd_font_size = 0;
+		float doc_font_size = 0.0;
+		float doc_title_font_size = 0.0;
+		float doc_code_font_size = 0.0;
+		float doc_kbd_font_size = 0.0;
 	} theme_cache;
 
 	int scroll_to = -1;

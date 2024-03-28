@@ -880,8 +880,8 @@ void GraphNode::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, titlebar_selected);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, slot);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphNode, separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphNode, port_h_offset);
+	BIND_THEME_CONSTANT(GraphNode, separation, Variant::INT);
+	BIND_THEME_CONSTANT(GraphNode, port_h_offset, Variant::INT);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphNode, port);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphNode, resizer);

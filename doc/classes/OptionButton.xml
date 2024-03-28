@@ -243,10 +243,10 @@
 		</signal>
 	</signals>
 	<theme_items>
-		<theme_item name="arrow_margin" data_type="constant" type="int" default="4">
+		<theme_item name="arrow_margin" data_type="constant" type="Variant" default="4">
 			The horizontal space between the arrow icon and the right edge of the button.
 		</theme_item>
-		<theme_item name="modulate_arrow" data_type="constant" type="int" default="0">
+		<theme_item name="modulate_arrow" data_type="constant" type="Variant" default="false">
 			If different than [code]0[/code], the arrow icon will be modulated to the font color.
 		</theme_item>
 		<theme_item name="arrow" data_type="icon" type="Texture2D">

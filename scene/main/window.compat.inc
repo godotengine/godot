@@ -30,7 +30,33 @@
 
 #ifndef DISABLE_DEPRECATED
 
+void Window::_add_theme_font_size_override_compat_87243(const StringName &p_name, int p_font_size) {
+	add_theme_font_size_override(p_name, (float)p_font_size);
+}
+
+int Window::_get_theme_font_size_compat_87243(const StringName &p_name, const StringName &p_theme_type) const {
+	return (int)get_theme_font_size(p_name, p_theme_type);
+}
+
+int Window::_get_theme_default_font_size_compat_87243() const {
+	return (int)get_theme_default_font_size();
+}
+
+void Window::_add_theme_constant_override_compat_87243(const StringName &p_name, int p_constant) {
+	add_theme_constant_override(p_name, (float)p_constant);
+}
+
+int Window::_get_theme_constant_compat_87243(const StringName &p_name, const StringName &p_theme_type) const {
+	return (int)get_theme_constant(p_name, p_theme_type);
+}
+
 void Window::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_theme_font_size_override", "name", "font_size"), &Window::_add_theme_font_size_override_compat_87243);
+	ClassDB::bind_compatibility_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Window::_get_theme_font_size_compat_87243, DEFVAL(""));
+	ClassDB::bind_compatibility_method(D_METHOD("get_theme_default_font_size"), &Window::_get_theme_default_font_size_compat_87243);
+	ClassDB::bind_compatibility_method(D_METHOD("add_theme_constant_override", "name", "constant"), &Window::_add_theme_constant_override_compat_87243);
+	ClassDB::bind_compatibility_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Window::_get_theme_constant_compat_87243, DEFVAL(""));
+
 	ClassDB::bind_compatibility_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Window::get_theme_icon, DEFVAL(""));
 	ClassDB::bind_compatibility_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Window::get_theme_stylebox, DEFVAL(""));
 	ClassDB::bind_compatibility_method(D_METHOD("get_theme_font", "name", "theme_type"), &Window::get_theme_font, DEFVAL(""));

@@ -39,7 +39,7 @@
 
 Size2 EditorObjectSelector::get_minimum_size() const {
 	Ref<Font> font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
+	float font_size = get_theme_font_size(SNAME("font_size"));
 	return Button::get_minimum_size() + Size2(0, font->get_height(font_size));
 }
 
@@ -224,8 +224,8 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 
 	MarginContainer *main_mc = memnew(MarginContainer);
 	main_mc->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	main_mc->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_right", 6 * EDSCALE);
+	main_mc->add_theme_constant_override("margin_left", (int64_t)(4 * EDSCALE));
+	main_mc->add_theme_constant_override("margin_right", (int64_t)(6 * EDSCALE));
 	add_child(main_mc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);

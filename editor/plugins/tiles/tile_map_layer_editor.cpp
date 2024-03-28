@@ -995,7 +995,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 		}
 
 		Ref<Font> font = p_overlay->get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = p_overlay->get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = p_overlay->get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		Point2 msgpos = Point2(20 * EDSCALE, p_overlay->get_size().y - 20 * EDSCALE);
 
 		String text = tile_set->local_to_map(edited_layer->get_local_mouse_position());

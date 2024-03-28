@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "servers/text_server.h"
+#include "servers/text_server.compat.inc"
+
 #include "core/variant/typed_array.h"
 #include "servers/rendering_server.h"
 
@@ -609,6 +611,7 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_USE_SUPPORT_DATA);
 	BIND_ENUM_CONSTANT(FEATURE_UNICODE_IDENTIFIERS);
 	BIND_ENUM_CONSTANT(FEATURE_UNICODE_SECURITY);
+	BIND_ENUM_CONSTANT(FEATURE_USE_26_6_UNITS);
 
 	/* FT Contour Point Types */
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_ON);
@@ -685,14 +688,20 @@ String TextServer::tag_to_name(int64_t p_tag) const {
 }
 
 Vector2 TextServer::get_hex_code_box_size(int64_t p_size, int64_t p_index) const {
-	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
-	int sp = MAX(0, w - 1);
-	int sz = MAX(1, Math::round(p_size / 15.f));
+	bool has_26_6 = has_feature(TextServer::FEATURE_USE_26_6_UNITS);
+	float w = ((p_index <= 0xFF) ? 1.0 : ((p_index <= 0xFFFF) ? 2.0 : 3.0));
+	float sp = MAX(0.0, w - 1.0);
+	float sz = 1.0;
+	if (has_26_6) {
+		sz = MAX(sz, Math::round((double)p_size / 960.f));
+	} else {
+		sz = MAX(sz, Math::round((double)p_size / 15.f));
+	}
 
 	return Vector2(4 + 3 * w + sp + 1, 15) * sz;
 }
 
-void TextServer::_draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const {
+void TextServer::_draw_hex_code_box_number(const RID &p_canvas, double p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const {
 	static uint8_t chars[] = { 0x7E, 0x30, 0x6D, 0x79, 0x33, 0x5B, 0x5F, 0x70, 0x7F, 0x7B, 0x77, 0x1F, 0x4E, 0x3D, 0x4F, 0x47, 0x00 };
 	uint8_t x = chars[p_index];
 	if (x & (1 << 6)) {
@@ -723,9 +732,15 @@ void TextServer::draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Ve
 		return;
 	}
 
-	int w = ((p_index <= 0xFF) ? 1 : ((p_index <= 0xFFFF) ? 2 : 3));
-	int sp = MAX(0, w - 1);
-	int sz = MAX(1, Math::round(p_size / 15.f));
+	bool has_26_6 = has_feature(TextServer::FEATURE_USE_26_6_UNITS);
+	float w = ((p_index <= 0xFF) ? 1.0 : ((p_index <= 0xFFFF) ? 2.0 : 3.0));
+	float sp = MAX(0.0, w - 1.0);
+	float sz = 1.0;
+	if (has_26_6) {
+		sz = MAX(sz, Math::round((double)p_size / 960.f));
+	} else {
+		sz = MAX(sz, Math::round((double)p_size / 15.f));
+	}
 
 	Size2 size = Vector2(4 + 3 * w + sp, 15) * sz;
 	Point2 pos = p_pos - Point2i(0, size.y * 0.85);
@@ -1706,10 +1721,11 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 	}
 }
 
-void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, int64_t p_outline_size, const Color &p_color) const {
+void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, double p_outline_size, const Color &p_color) const {
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 
 	bool rtl = (shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL);
+	bool has_26_6 = has_feature(TextServer::FEATURE_USE_26_6_UNITS);
 
 	int ellipsis_pos = shaped_text_get_ellipsis_pos(p_shaped);
 	int trim_pos = shaped_text_get_trim_pos(p_shaped);
@@ -1725,7 +1741,8 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 	if (rtl && ellipsis_pos >= 0) {
 		for (int i = ellipsis_gl_size - 1; i >= 0; i--) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
-				font_draw_glyph_outline(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, p_outline_size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
+				int32_t size = has_26_6 ? Math::round(p_outline_size * 64.0) : Math::round(p_outline_size);
+				font_draw_glyph_outline(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += ellipsis_glyphs[i].advance;
 				} else {
@@ -1775,7 +1792,8 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 				}
 			}
 			if (glyphs[i].font_rid != RID()) {
-				font_draw_glyph_outline(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, p_outline_size, ofs + p_pos + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
+				int32_t size = has_26_6 ? Math::round(p_outline_size * 64.0) : Math::round(p_outline_size);
+				font_draw_glyph_outline(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, size, ofs + p_pos + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
 			}
 			if (orientation == ORIENTATION_HORIZONTAL) {
 				ofs.x += glyphs[i].advance;
@@ -1788,7 +1806,8 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 	if (!rtl && ellipsis_pos >= 0) {
 		for (int i = 0; i < ellipsis_gl_size; i++) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
-				font_draw_glyph_outline(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, p_outline_size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
+				int32_t size = has_26_6 ? Math::round(p_outline_size * 64.0) : Math::round(p_outline_size);
+				font_draw_glyph_outline(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color);
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += ellipsis_glyphs[i].advance;
 				} else {

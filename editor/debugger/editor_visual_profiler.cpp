@@ -447,7 +447,7 @@ void EditorVisualProfiler::_graph_tex_draw() {
 	}
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	const Color color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 
 	if (seeking) {
@@ -772,7 +772,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	hb->add_child(cursor_metric_edit);
 	cursor_metric_edit->connect("value_changed", callable_mp(this, &EditorVisualProfiler::_cursor_metric_changed));
 
-	hb->add_theme_constant_override("separation", 8 * EDSCALE);
+	hb->add_theme_constant_override("separation", (int64_t)(8 * EDSCALE));
 
 	h_split = memnew(HSplitContainer);
 	add_child(h_split);

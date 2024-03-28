@@ -124,10 +124,10 @@ void MarginContainer::_notification(int p_what) {
 }
 
 void MarginContainer::_bind_methods() {
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MarginContainer, margin_left);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MarginContainer, margin_top);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MarginContainer, margin_right);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MarginContainer, margin_bottom);
+	BIND_THEME_CONSTANT(MarginContainer, margin_left, Variant::INT);
+	BIND_THEME_CONSTANT(MarginContainer, margin_top, Variant::INT);
+	BIND_THEME_CONSTANT(MarginContainer, margin_right, Variant::INT);
+	BIND_THEME_CONSTANT(MarginContainer, margin_bottom, Variant::INT);
 }
 
 MarginContainer::MarginContainer() {

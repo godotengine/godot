@@ -29,16 +29,16 @@
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<theme_items>
-		<theme_item name="margin_bottom" data_type="constant" type="int" default="0">
+		<theme_item name="margin_bottom" data_type="constant" type="Variant" default="0">
 			Offsets towards the inside direct children of the container by this amount of pixels from the bottom.
 		</theme_item>
-		<theme_item name="margin_left" data_type="constant" type="int" default="0">
+		<theme_item name="margin_left" data_type="constant" type="Variant" default="0">
 			Offsets towards the inside direct children of the container by this amount of pixels from the left.
 		</theme_item>
-		<theme_item name="margin_right" data_type="constant" type="int" default="0">
+		<theme_item name="margin_right" data_type="constant" type="Variant" default="0">
 			Offsets towards the inside direct children of the container by this amount of pixels from the right.
 		</theme_item>
-		<theme_item name="margin_top" data_type="constant" type="int" default="0">
+		<theme_item name="margin_top" data_type="constant" type="Variant" default="0">
 			Offsets towards the inside direct children of the container by this amount of pixels from the top.
 		</theme_item>
 	</theme_items>

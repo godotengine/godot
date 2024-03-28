@@ -83,13 +83,13 @@ void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, 
 
 int AnimationTrackEditColor::get_key_height() const {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	return font->get_height(font_size) * 0.8;
 }
 
 Rect2 AnimationTrackEditColor::get_key_rect(int p_index, float p_pixels_sec) {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int fh = font->get_height(font_size) * 0.8;
 	return Rect2(-fh / 2, 0, fh, get_size().height);
 }
@@ -100,7 +100,7 @@ bool AnimationTrackEditColor::is_key_selectable_by_distance() const {
 
 void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int fh = (font->get_height(font_size) * 0.8);
 
 	fh /= 3;
@@ -169,7 +169,7 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 	Color color = get_animation()->track_get_key_value(get_track(), p_index);
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int fh = font->get_height(font_size) * 0.8;
 
 	Rect2 rect(Vector2(p_x - fh / 2, int(get_size().height - fh) / 2), Size2(fh, fh));
@@ -208,7 +208,7 @@ int AnimationTrackEditAudio::get_key_height() const {
 	}
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	return int(font->get_height(font_size) * 1.5);
 }
 
@@ -241,7 +241,7 @@ Rect2 AnimationTrackEditAudio::get_key_rect(int p_index, float p_pixels_sec) {
 		return Rect2(0, 0, len * p_pixels_sec, get_size().height);
 	} else {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		int fh = font->get_height(font_size) * 0.8;
 		return Rect2(0, 0, fh, get_size().height);
 	}
@@ -305,7 +305,7 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		}
 
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		float fh = int(font->get_height(font_size) * 1.5);
 		Rect2 rect = Rect2(from_x, (get_size().height - fh) / 2, to_x - from_x, fh);
 		draw_rect(rect, Color(0.25, 0.25, 0.25));
@@ -335,7 +335,7 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		}
 	} else {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		int fh = font->get_height(font_size) * 0.8;
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
@@ -368,7 +368,7 @@ int AnimationTrackEditSpriteFrame::get_key_height() const {
 	}
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	return int(font->get_height(font_size) * 2);
 }
 
@@ -436,7 +436,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 	size = size.floor();
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int height = int(font->get_height(font_size) * 2);
 	int width = height * size.width / size.height;
 
@@ -527,7 +527,7 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 	}
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int height = int(font->get_height(font_size) * 2);
 
 	int width = height * region.size.width / region.size.height;
@@ -571,7 +571,7 @@ int AnimationTrackEditSubAnim::get_key_height() const {
 	}
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	return int(font->get_height(font_size) * 1.5);
 }
 
@@ -600,7 +600,7 @@ Rect2 AnimationTrackEditSubAnim::get_key_rect(int p_index, float p_pixels_sec) {
 		return Rect2(0, 0, len * p_pixels_sec, get_size().height);
 	} else {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		int fh = font->get_height(font_size) * 0.8;
 		return Rect2(0, 0, fh, get_size().height);
 	}
@@ -655,7 +655,7 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		}
 
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		int fh = font->get_height(font_size) * 1.5;
 
 		Rect2 rect(from_x, int(get_size().height - fh) / 2, to_x - from_x, fh);
@@ -706,7 +706,7 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		}
 	} else {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		int fh = font->get_height(font_size) * 0.8;
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 
@@ -805,7 +805,7 @@ void AnimationTrackEditTypeAudio::_preview_changed(ObjectID p_which) {
 
 int AnimationTrackEditTypeAudio::get_key_height() const {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	return int(font->get_height(font_size) * 1.5);
 }
 
@@ -871,7 +871,7 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	}
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	float fh = int(font->get_height(font_size) * 1.5);
 
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
@@ -1176,7 +1176,7 @@ int AnimationTrackEditTypeAnimation::get_key_height() const {
 	}
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	return int(font->get_height(font_size) * 1.5);
 }
 
@@ -1205,7 +1205,7 @@ Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_
 		return Rect2(0, 0, len * p_pixels_sec, get_size().height);
 	} else {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		int fh = font->get_height(font_size) * 0.8;
 		return Rect2(0, 0, fh, get_size().height);
 	}
@@ -1260,7 +1260,7 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		}
 
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		int fh = font->get_height(font_size) * 1.5;
 
 		Rect2 rect(from_x, int(get_size().height - fh) / 2, to_x - from_x, fh);
@@ -1311,7 +1311,7 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		}
 	} else {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		int fh = font->get_height(font_size) * 0.8;
 		Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
 

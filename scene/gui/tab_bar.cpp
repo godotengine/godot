@@ -551,7 +551,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 		Point2i text_pos = Point2i(rtl ? p_x - tabs[p_index].size_text : p_x,
 				p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[p_index].text_buf->get_size().y) / 2);
 
-		if (theme_cache.outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+		if (theme_cache.outline_size > 0.0 && theme_cache.font_outline_color.a > 0.0) {
 			tabs[p_index].text_buf->draw_outline(ci, text_pos, theme_cache.outline_size, theme_cache.font_outline_color);
 		}
 		tabs[p_index].text_buf->draw(ci, text_pos, p_font_color);
@@ -1861,8 +1861,8 @@ void TabBar::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_SHOW_ALWAYS);
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_MAX);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, icon_max_width);
+	BIND_THEME_CONSTANT(TabBar, h_separation, Variant::INT);
+	BIND_THEME_CONSTANT(TabBar, icon_max_width, Variant::INT);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_unselected_style, "tab_unselected");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_hovered_style, "tab_hovered");
@@ -1885,7 +1885,7 @@ void TabBar::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, TabBar, font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, TabBar, font_size);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, outline_size);
+	BIND_THEME_CONSTANT(TabBar, outline_size, Variant::FLOAT);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, close_icon, "close");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, button_pressed_style, "button_pressed");

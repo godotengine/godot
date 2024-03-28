@@ -96,7 +96,7 @@ void EditorLog::_update_theme() {
 	log->add_theme_constant_override("text_highlight_h_padding", 0);
 	log->add_theme_constant_override("text_highlight_v_padding", 0);
 
-	const int font_size = get_theme_font_size(SNAME("output_source_size"), EditorStringName(EditorFonts));
+	const float font_size = get_theme_font_size(SNAME("output_source_size"), EditorStringName(EditorFonts));
 	log->begin_bulk_theme_override();
 	log->add_theme_font_size_override("normal_font_size", font_size);
 	log->add_theme_font_size_override("bold_font_size", font_size);

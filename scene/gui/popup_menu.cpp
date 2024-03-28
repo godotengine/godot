@@ -866,7 +866,7 @@ void PopupMenu::_draw_items() {
 			if (!text.is_empty()) {
 				Vector2 text_pos = Point2(separator_ofs, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 
-				if (theme_cache.font_separator_outline_size > 0 && theme_cache.font_separator_outline_color.a > 0) {
+				if (theme_cache.font_separator_outline_size > 0.0 && theme_cache.font_separator_outline_color.a > 0.0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_separator_outline_size, theme_cache.font_separator_outline_color);
 				}
 				items[i].text_buf->draw(ci, text_pos, theme_cache.font_separator_color);
@@ -876,13 +876,13 @@ void PopupMenu::_draw_items() {
 
 			if (rtl) {
 				Vector2 text_pos = Size2(control->get_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
-				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+				if (theme_cache.font_outline_size > 0.0 && theme_cache.font_outline_color.a > 0.0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
 				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (i == mouse_over ? theme_cache.font_hover_color : theme_cache.font_color));
 			} else {
 				Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
-				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+				if (theme_cache.font_outline_size > 0.0 && theme_cache.font_outline_color.a > 0.0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
 				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (i == mouse_over ? theme_cache.font_hover_color : theme_cache.font_color));
@@ -897,7 +897,7 @@ void PopupMenu::_draw_items() {
 				item_ofs.x = display_width - theme_cache.panel_style->get_margin(SIDE_RIGHT) - items[i].accel_text_buf->get_size().x - theme_cache.item_end_padding;
 			}
 			Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
-			if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+			if (theme_cache.font_outline_size > 0.0 && theme_cache.font_outline_color.a > 0.0) {
 				items[i].accel_text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 			}
 			items[i].accel_text_buf->draw(ci, text_pos, i == mouse_over ? theme_cache.font_hover_color : theme_cache.font_accelerator_color);
@@ -941,7 +941,7 @@ void PopupMenu::_shape_item(int p_idx) {
 		items.write[p_idx].text_buf->clear();
 
 		Ref<Font> font = items[p_idx].separator ? theme_cache.font_separator : theme_cache.font;
-		int font_size = items[p_idx].separator ? theme_cache.font_separator_size : theme_cache.font_size;
+		float font_size = items[p_idx].separator ? theme_cache.font_separator_size : theme_cache.font_size;
 
 		if (items[p_idx].text_direction == Control::TEXT_DIRECTION_INHERITED) {
 			items.write[p_idx].text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
@@ -2761,12 +2761,12 @@ void PopupMenu::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, labeled_separator_left);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, PopupMenu, labeled_separator_right);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, v_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, indent);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, item_start_padding);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, item_end_padding);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, PopupMenu, icon_max_width);
+	BIND_THEME_CONSTANT(PopupMenu, v_separation, Variant::INT);
+	BIND_THEME_CONSTANT(PopupMenu, h_separation, Variant::INT);
+	BIND_THEME_CONSTANT(PopupMenu, indent, Variant::INT);
+	BIND_THEME_CONSTANT(PopupMenu, item_start_padding, Variant::INT);
+	BIND_THEME_CONSTANT(PopupMenu, item_end_padding, Variant::INT);
+	BIND_THEME_CONSTANT(PopupMenu, icon_max_width, Variant::INT);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, checked);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, PopupMenu, checked_disabled);
@@ -2789,11 +2789,11 @@ void PopupMenu::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_hover_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_disabled_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_accelerator_color);
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, PopupMenu, font_outline_size, "outline_size");
+	BIND_THEME_CONSTANT_CUSTOM(PopupMenu, font_outline_size, "outline_size", Variant::FLOAT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_outline_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_color);
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, PopupMenu, font_separator_outline_size, "separator_outline_size");
+	BIND_THEME_CONSTANT_CUSTOM(PopupMenu, font_separator_outline_size, "separator_outline_size", Variant::FLOAT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_outline_color);
 
 	Item defaults(true);

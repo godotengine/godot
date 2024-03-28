@@ -356,10 +356,10 @@
 			<return type="void" />
 			<param index="0" name="string" type="String" />
 			<param index="1" name="font" type="Font" />
-			<param index="2" name="size" type="int" />
+			<param index="2" name="size" type="float" />
 			<param index="3" name="dropcap_margins" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<param index="4" name="color" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="5" name="outline_size" type="int" default="0" />
+			<param index="5" name="outline_size" type="float" default="0.0" />
 			<param index="6" name="outline_color" type="Color" default="Color(0, 0, 0, 0)" />
 			<description>
 				Adds a [code skip-lint][dropcap][/code] tag to the tag stack. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
@@ -375,7 +375,7 @@
 		<method name="push_font">
 			<return type="void" />
 			<param index="0" name="font" type="Font" />
-			<param index="1" name="font_size" type="int" default="0" />
+			<param index="1" name="font_size" type="float" default="0.0" />
 			<description>
 				Adds a [code skip-lint][font][/code] tag to the tag stack. Overrides default fonts for its duration.
 				Passing [code]0[/code] to [param font_size] will use the existing default font size.
@@ -383,7 +383,7 @@
 		</method>
 		<method name="push_font_size">
 			<return type="void" />
-			<param index="0" name="font_size" type="int" />
+			<param index="0" name="font_size" type="float" />
 			<description>
 				Adds a [code skip-lint][font_size][/code] tag to the tag stack. Overrides default font size for its duration.
 			</description>
@@ -456,7 +456,7 @@
 		</method>
 		<method name="push_outline_size">
 			<return type="void" />
-			<param index="0" name="outline_size" type="int" />
+			<param index="0" name="outline_size" type="float" />
 			<description>
 				Adds a [code skip-lint][outline_size][/code] tag to the tag stack. Overrides default text outline size for its duration.
 			</description>
@@ -785,32 +785,32 @@
 		<theme_item name="table_odd_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			The default background color for odd rows.
 		</theme_item>
-		<theme_item name="line_separation" data_type="constant" type="int" default="0">
+		<theme_item name="line_separation" data_type="constant" type="Variant" default="0">
 			The vertical space between lines.
 		</theme_item>
-		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+		<theme_item name="outline_size" data_type="constant" type="Variant" default="0.0">
 			The size of the text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
-		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
+		<theme_item name="shadow_offset_x" data_type="constant" type="Variant" default="1">
 			The horizontal offset of the font's shadow.
 		</theme_item>
-		<theme_item name="shadow_offset_y" data_type="constant" type="int" default="1">
+		<theme_item name="shadow_offset_y" data_type="constant" type="Variant" default="1">
 			The vertical offset of the font's shadow.
 		</theme_item>
-		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
+		<theme_item name="shadow_outline_size" data_type="constant" type="Variant" default="1.0">
 			The size of the shadow outline.
 		</theme_item>
-		<theme_item name="table_h_separation" data_type="constant" type="int" default="3">
+		<theme_item name="table_h_separation" data_type="constant" type="Variant" default="3">
 			The horizontal separation of elements in a table.
 		</theme_item>
-		<theme_item name="table_v_separation" data_type="constant" type="int" default="3">
+		<theme_item name="table_v_separation" data_type="constant" type="Variant" default="3">
 			The vertical separation of elements in a table.
 		</theme_item>
-		<theme_item name="text_highlight_h_padding" data_type="constant" type="int" default="3">
+		<theme_item name="text_highlight_h_padding" data_type="constant" type="Variant" default="3">
 			The horizontal padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection.
 		</theme_item>
-		<theme_item name="text_highlight_v_padding" data_type="constant" type="int" default="3">
+		<theme_item name="text_highlight_v_padding" data_type="constant" type="Variant" default="3">
 			The vertical padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection.
 		</theme_item>
 		<theme_item name="bold_font" data_type="font" type="Font">
@@ -828,19 +828,19 @@
 		<theme_item name="normal_font" data_type="font" type="Font">
 			The default text font.
 		</theme_item>
-		<theme_item name="bold_font_size" data_type="font_size" type="int">
+		<theme_item name="bold_font_size" data_type="font_size" type="float">
 			The font size used for bold text.
 		</theme_item>
-		<theme_item name="bold_italics_font_size" data_type="font_size" type="int">
+		<theme_item name="bold_italics_font_size" data_type="font_size" type="float">
 			The font size used for bold italics text.
 		</theme_item>
-		<theme_item name="italics_font_size" data_type="font_size" type="int">
+		<theme_item name="italics_font_size" data_type="font_size" type="float">
 			The font size used for italics text.
 		</theme_item>
-		<theme_item name="mono_font_size" data_type="font_size" type="int">
+		<theme_item name="mono_font_size" data_type="font_size" type="float">
 			The font size used for monospace text.
 		</theme_item>
-		<theme_item name="normal_font_size" data_type="font_size" type="int">
+		<theme_item name="normal_font_size" data_type="font_size" type="float">
 			The default text font size.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">

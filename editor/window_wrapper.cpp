@@ -304,10 +304,10 @@ void WindowWrapper::set_margins_enabled(bool p_enabled) {
 	} else if (p_enabled && !margins) {
 		Size2 borders = Size2(4, 4) * EDSCALE;
 		margins = memnew(MarginContainer);
-		margins->add_theme_constant_override("margin_right", borders.width);
-		margins->add_theme_constant_override("margin_top", borders.height);
-		margins->add_theme_constant_override("margin_left", borders.width);
-		margins->add_theme_constant_override("margin_bottom", borders.height);
+		margins->add_theme_constant_override("margin_right", (int64_t)borders.width);
+		margins->add_theme_constant_override("margin_top", (int64_t)borders.height);
+		margins->add_theme_constant_override("margin_left", (int64_t)borders.width);
+		margins->add_theme_constant_override("margin_bottom", (int64_t)borders.height);
 
 		window->add_child(margins);
 		margins->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
@@ -463,10 +463,10 @@ ScreenSelect::ScreenSelect() {
 	popup->add_child(popup_background);
 
 	MarginContainer *popup_root = memnew(MarginContainer);
-	popup_root->add_theme_constant_override("margin_right", borders.width);
-	popup_root->add_theme_constant_override("margin_top", borders.height);
-	popup_root->add_theme_constant_override("margin_left", borders.width);
-	popup_root->add_theme_constant_override("margin_bottom", borders.height);
+	popup_root->add_theme_constant_override("margin_right", (int64_t)borders.width);
+	popup_root->add_theme_constant_override("margin_top", (int64_t)borders.height);
+	popup_root->add_theme_constant_override("margin_left", (int64_t)borders.width);
+	popup_root->add_theme_constant_override("margin_bottom", (int64_t)borders.height);
 	popup->add_child(popup_root);
 
 	VBoxContainer *vb = memnew(VBoxContainer);

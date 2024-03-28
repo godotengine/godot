@@ -274,7 +274,7 @@ RunInstancesDialog::RunInstancesDialog() {
 
 	GridContainer *args_gc = memnew(GridContainer);
 	args_gc->set_columns(3);
-	args_gc->add_theme_constant_override("h_separation", 12 * EDSCALE);
+	args_gc->add_theme_constant_override("h_separation", (int64_t)(12 * EDSCALE));
 	main_vb->add_child(args_gc);
 
 	enable_multiple_instances_checkbox = memnew(CheckBox);

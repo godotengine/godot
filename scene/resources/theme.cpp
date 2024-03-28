@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "theme.h"
+#include "theme.compat.inc"
 
 #include "core/string/print_string.h"
 #include "scene/theme/theme_db.h"
@@ -141,8 +142,8 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Font sizes.
 	for (const KeyValue<StringName, ThemeFontSizeMap> &E : font_size_map) {
-		for (const KeyValue<StringName, int> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/font_sizes/" + F.key, PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"));
+		for (const KeyValue<StringName, float> &F : E.value) {
+			list.push_back(PropertyInfo(Variant::FLOAT, String() + E.key + "/font_sizes/" + F.key, PROPERTY_HINT_RANGE, "0,256,0.015625,or_greater,suffix:px"));
 		}
 	}
 
@@ -155,8 +156,22 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Constants.
 	for (const KeyValue<StringName, ThemeConstantMap> &E : constant_map) {
-		for (const KeyValue<StringName, int> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/constants/" + F.key));
+		for (const KeyValue<StringName, Variant> &F : E.value) {
+			Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(E.key, F.key);
+			switch (expected_type) {
+				case Variant::INT: {
+					list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/constants/" + F.key));
+				} break;
+				case Variant::FLOAT: {
+					list.push_back(PropertyInfo(Variant::FLOAT, String() + E.key + "/constants/" + F.key));
+				} break;
+				case Variant::BOOL: {
+					list.push_back(PropertyInfo(Variant::BOOL, String() + E.key + "/constants/" + F.key));
+				} break;
+				default: {
+					list.push_back(PropertyInfo(Variant::NIL, String() + E.key + "/constants/" + F.key));
+				} break;
+			}
 		}
 	}
 
@@ -242,7 +257,7 @@ bool Theme::has_default_font() const {
 	return default_font.is_valid();
 }
 
-void Theme::set_default_font_size(int p_font_size) {
+void Theme::set_default_font_size(float p_font_size) {
 	if (default_font_size == p_font_size) {
 		return;
 	}
@@ -252,12 +267,12 @@ void Theme::set_default_font_size(int p_font_size) {
 	_emit_theme_changed();
 }
 
-int Theme::get_default_font_size() const {
+float Theme::get_default_font_size() const {
 	return default_font_size;
 }
 
 bool Theme::has_default_font_size() const {
-	return default_font_size > 0;
+	return default_font_size > 0.0;
 }
 
 // Icons.
@@ -593,7 +608,7 @@ void Theme::get_font_type_list(List<StringName> *p_list) const {
 }
 
 // Font sizes.
-void Theme::set_font_size(const StringName &p_name, const StringName &p_theme_type, int p_font_size) {
+void Theme::set_font_size(const StringName &p_name, const StringName &p_theme_type, float p_font_size) {
 	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
 	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
 
@@ -603,8 +618,8 @@ void Theme::set_font_size(const StringName &p_name, const StringName &p_theme_ty
 	_emit_theme_changed(!existing);
 }
 
-int Theme::get_font_size(const StringName &p_name, const StringName &p_theme_type) const {
-	if (font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0)) {
+float Theme::get_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	if (font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0.0)) {
 		return font_size_map[p_theme_type][p_name];
 	} else if (has_default_font_size()) {
 		return default_font_size;
@@ -614,7 +629,7 @@ int Theme::get_font_size(const StringName &p_name, const StringName &p_theme_typ
 }
 
 bool Theme::has_font_size(const StringName &p_name, const StringName &p_theme_type) const {
-	return ((font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0)) || has_default_font_size());
+	return ((font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0.0)) || has_default_font_size());
 }
 
 bool Theme::has_font_size_nocheck(const StringName &p_name, const StringName &p_theme_type) const {
@@ -650,7 +665,7 @@ void Theme::get_font_size_list(const StringName &p_theme_type, List<StringName> 
 		return;
 	}
 
-	for (const KeyValue<StringName, int> &E : font_size_map[p_theme_type]) {
+	for (const KeyValue<StringName, float> &E : font_size_map[p_theme_type]) {
 		p_list->push_back(E.key);
 	}
 }
@@ -767,21 +782,67 @@ void Theme::get_color_type_list(List<StringName> *p_list) const {
 }
 
 // Theme constants.
-void Theme::set_constant(const StringName &p_name, const StringName &p_theme_type, int p_constant) {
+void Theme::set_constant(const StringName &p_name, const StringName &p_theme_type, const Variant &p_constant) {
 	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
 	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
-
+	Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(p_theme_type, p_name);
+	Variant value;
+	if (p_constant.get_type() == Variant::NIL) {
+		switch (expected_type) {
+			case Variant::INT: {
+				value = 0;
+			} break;
+			case Variant::FLOAT: {
+				value = 0.0;
+			} break;
+			case Variant::BOOL: {
+				value = false;
+			} break;
+			default: {
+				value = Variant();
+			} break;
+		}
+	} else {
+		if (expected_type != Variant::NIL && p_constant.get_type() != expected_type) {
+			ERR_FAIL_COND_MSG(!Variant::can_convert_strict(p_constant.get_type(), expected_type), vformat("Invalid constant value type, got '%s' expected '%s'", Variant::get_type_name(p_constant.get_type()), Variant::get_type_name(expected_type)));
+			WARN_PRINT(vformat("Invalid '%s/%s' constant value type, got '%s' expected '%s'", p_theme_type, p_name, Variant::get_type_name(p_constant.get_type()), Variant::get_type_name(expected_type)));
+		}
+		switch (expected_type) {
+			case Variant::INT: {
+				value = (int64_t)p_constant;
+			} break;
+			case Variant::FLOAT: {
+				value = (double)p_constant;
+			} break;
+			case Variant::BOOL: {
+				value = (bool)p_constant;
+			} break;
+			default: {
+				value = p_constant;
+			} break;
+		}
+	}
 	bool existing = has_constant_nocheck(p_name, p_theme_type);
-	constant_map[p_theme_type][p_name] = p_constant;
+	constant_map[p_theme_type][p_name] = value;
 
 	_emit_theme_changed(!existing);
 }
 
-int Theme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
+Variant Theme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	if (constant_map.has(p_theme_type) && constant_map[p_theme_type].has(p_name)) {
 		return constant_map[p_theme_type][p_name];
 	} else {
-		return 0;
+		Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(p_theme_type, p_name);
+		switch (expected_type) {
+			case Variant::INT:
+				return 0;
+			case Variant::FLOAT:
+				return 0.0;
+			case Variant::BOOL:
+				return false;
+			default:
+				return Variant();
+		}
 	}
 }
 
@@ -822,7 +883,7 @@ void Theme::get_constant_list(const StringName &p_theme_type, List<StringName> *
 		return;
 	}
 
-	for (const KeyValue<StringName, int> &E : constant_map[p_theme_type]) {
+	for (const KeyValue<StringName, Variant> &E : constant_map[p_theme_type]) {
 		p_list->push_back(E.key);
 	}
 }
@@ -862,9 +923,43 @@ void Theme::set_theme_item(DataType p_data_type, const StringName &p_name, const
 			set_color(p_name, p_theme_type, color_value);
 		} break;
 		case DATA_TYPE_CONSTANT: {
-			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::INT, "Theme item's data type (int) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
-
-			int constant_value = p_value;
+			Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(p_theme_type, p_name);
+			Variant constant_value;
+			if (p_value.get_type() == Variant::NIL) {
+				switch (expected_type) {
+					case Variant::INT: {
+						constant_value = 0;
+					} break;
+					case Variant::FLOAT: {
+						constant_value = 0.0;
+					} break;
+					case Variant::BOOL: {
+						constant_value = false;
+					} break;
+					default: {
+						constant_value = Variant();
+					} break;
+				}
+			} else {
+				if (expected_type != Variant::NIL && p_value.get_type() != expected_type) {
+					ERR_FAIL_COND_MSG(!Variant::can_convert_strict(p_value.get_type(), expected_type), vformat("Theme item's data type (%s) data type (%s).", Variant::get_type_name(expected_type), Variant::get_type_name(p_value.get_type())));
+					WARN_PRINT(vformat("Theme item's '%s/%s' data type (%s) data type (%s).", p_theme_type, p_name, Variant::get_type_name(p_value.get_type()), Variant::get_type_name(expected_type)));
+				}
+				switch (expected_type) {
+					case Variant::INT: {
+						constant_value = (int64_t)p_value;
+					} break;
+					case Variant::FLOAT: {
+						constant_value = (double)p_value;
+					} break;
+					case Variant::BOOL: {
+						constant_value = (bool)p_value;
+					} break;
+					default: {
+						constant_value = p_value;
+					} break;
+				}
+			}
 			set_constant(p_name, p_theme_type, constant_value);
 		} break;
 		case DATA_TYPE_FONT: {
@@ -874,9 +969,13 @@ void Theme::set_theme_item(DataType p_data_type, const StringName &p_name, const
 			set_font(p_name, p_theme_type, font_value);
 		} break;
 		case DATA_TYPE_FONT_SIZE: {
-			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::INT, "Theme item's data type (int) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+#ifndef DISABLE_DEPRECATED
+			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::FLOAT && p_value.get_type() != Variant::INT, "Theme item's data type (float) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+#else
+			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::FLOAT, "Theme item's data type (float) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+#endif
 
-			int font_size_value = p_value;
+			float font_size_value = p_value;
 			set_font_size(p_name, p_theme_type, font_size_value);
 		} break;
 		case DATA_TYPE_ICON: {
@@ -1564,7 +1663,7 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 	// Constants.
 	{
 		for (const KeyValue<StringName, ThemeConstantMap> &E : p_other->constant_map) {
-			for (const KeyValue<StringName, int> &F : E.value) {
+			for (const KeyValue<StringName, Variant> &F : E.value) {
 				set_constant(F.key, E.key, F.value);
 			}
 		}
@@ -1582,7 +1681,7 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 	// Font sizes.
 	{
 		for (const KeyValue<StringName, ThemeFontSizeMap> &E : p_other->font_size_map) {
-			for (const KeyValue<StringName, int> &F : E.value) {
+			for (const KeyValue<StringName, float> &F : E.value) {
 				set_font_size(F.key, E.key, F.value);
 			}
 		}
@@ -1763,7 +1862,7 @@ void Theme::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "default_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_default_base_scale", "get_default_base_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_default_font_size", "get_default_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "default_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_default_font_size", "get_default_font_size");
 
 	BIND_ENUM_CONSTANT(DATA_TYPE_COLOR);
 	BIND_ENUM_CONSTANT(DATA_TYPE_CONSTANT);

@@ -135,7 +135,7 @@ namespace GodotTools.Build
             _log.AddThemeConstantOverride("text_highlight_h_padding", 0);
             _log.AddThemeConstantOverride("text_highlight_v_padding", 0);
 
-            int font_size = GetThemeFontSize("output_source_size", "EditorFonts");
+            float font_size = GetThemeFontSize("output_source_size", "EditorFonts");
             _log.AddThemeFontSizeOverride("normal_font_size", font_size);
             _log.AddThemeFontSizeOverride("bold_font_size", font_size);
             _log.AddThemeFontSizeOverride("italics_font_size", font_size);

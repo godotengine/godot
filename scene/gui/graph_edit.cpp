@@ -2349,8 +2349,8 @@ void GraphEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEdit, minimap_toggle);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphEdit, layout);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphEdit, port_hotzone_inner_extent);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphEdit, port_hotzone_outer_extent);
+	BIND_THEME_CONSTANT(GraphEdit, port_hotzone_inner_extent, Variant::INT);
+	BIND_THEME_CONSTANT(GraphEdit, port_hotzone_outer_extent, Variant::INT);
 }
 
 GraphEdit::GraphEdit() {

@@ -397,8 +397,8 @@ void Slider::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, grabber_disabled_icon, "grabber_disabled");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, tick_icon, "tick");
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, center_grabber);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_offset);
+	BIND_THEME_CONSTANT(Slider, center_grabber, Variant::BOOL);
+	BIND_THEME_CONSTANT(Slider, grabber_offset, Variant::INT);
 }
 
 Slider::Slider(Orientation p_orientation) {

@@ -785,7 +785,7 @@ CreateDialog::CreateDialog() {
 	favorites->set_allow_reselect(true);
 	favorites->connect("cell_selected", callable_mp(this, &CreateDialog::_favorite_selected));
 	favorites->connect("item_activated", callable_mp(this, &CreateDialog::_favorite_activated));
-	favorites->add_theme_constant_override("draw_guides", 1);
+	favorites->add_theme_constant_override("draw_guides", true);
 	SET_DRAG_FORWARDING_GCD(favorites, CreateDialog);
 	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
 
@@ -800,7 +800,7 @@ CreateDialog::CreateDialog() {
 	recent->set_allow_reselect(true);
 	recent->connect("item_selected", callable_mp(this, &CreateDialog::_history_selected));
 	recent->connect("item_activated", callable_mp(this, &CreateDialog::_history_activated));
-	recent->add_theme_constant_override("draw_guides", 1);
+	recent->add_theme_constant_override("draw_guides", true);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);

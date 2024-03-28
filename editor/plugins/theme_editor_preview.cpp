@@ -266,10 +266,10 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_root->add_child(preview_bg);
 
 	preview_content = memnew(MarginContainer);
-	preview_content->add_theme_constant_override("margin_right", 4 * EDSCALE);
-	preview_content->add_theme_constant_override("margin_top", 4 * EDSCALE);
-	preview_content->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	preview_content->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
+	preview_content->add_theme_constant_override("margin_right", (int64_t)(4 * EDSCALE));
+	preview_content->add_theme_constant_override("margin_top", (int64_t)(4 * EDSCALE));
+	preview_content->add_theme_constant_override("margin_left", (int64_t)(4 * EDSCALE));
+	preview_content->add_theme_constant_override("margin_bottom", (int64_t)(4 * EDSCALE));
 	preview_root->add_child(preview_content);
 
 	preview_overlay = memnew(MarginContainer);
@@ -288,7 +288,7 @@ void DefaultThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
+			test_color_picker_button->set_custom_minimum_size(Size2(0, (int64_t)get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 		} break;
 	}
 }
@@ -298,20 +298,20 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	preview_content->add_child(main_panel);
 
 	MarginContainer *main_mc = memnew(MarginContainer);
-	main_mc->add_theme_constant_override("margin_right", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_top", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
+	main_mc->add_theme_constant_override("margin_right", (int64_t)(4 * EDSCALE));
+	main_mc->add_theme_constant_override("margin_top", (int64_t)(4 * EDSCALE));
+	main_mc->add_theme_constant_override("margin_left", (int64_t)(4 * EDSCALE));
+	main_mc->add_theme_constant_override("margin_bottom", (int64_t)(4 * EDSCALE));
 	preview_content->add_child(main_mc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
 	main_mc->add_child(main_hb);
-	main_hb->add_theme_constant_override("separation", 20 * EDSCALE);
+	main_hb->add_theme_constant_override("separation", (int64_t)(20 * EDSCALE));
 
 	VBoxContainer *first_vb = memnew(VBoxContainer);
 	main_hb->add_child(first_vb);
 	first_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	first_vb->add_theme_constant_override("separation", 10 * EDSCALE);
+	first_vb->add_theme_constant_override("separation", (int64_t)(10 * EDSCALE));
 
 	first_vb->add_child(memnew(Label("Label")));
 
@@ -371,7 +371,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	VBoxContainer *second_vb = memnew(VBoxContainer);
 	second_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_hb->add_child(second_vb);
-	second_vb->add_theme_constant_override("separation", 10 * EDSCALE);
+	second_vb->add_theme_constant_override("separation", (int64_t)(10 * EDSCALE));
 	LineEdit *le = memnew(LineEdit);
 	le->set_text("LineEdit");
 	second_vb->add_child(le);
@@ -411,7 +411,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 
 	VBoxContainer *third_vb = memnew(VBoxContainer);
 	third_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	third_vb->add_theme_constant_override("separation", 10 * EDSCALE);
+	third_vb->add_theme_constant_override("separation", (int64_t)(10 * EDSCALE));
 	main_hb->add_child(third_vb);
 
 	TabContainer *tc = memnew(TabContainer);

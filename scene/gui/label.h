@@ -81,14 +81,14 @@ private:
 		Ref<StyleBox> normal_style;
 		Ref<Font> font;
 
-		int font_size = 0;
+		float font_size = 0;
 		int line_spacing = 0;
 		Color font_color;
 		Color font_shadow_color;
 		Point2 font_shadow_offset;
 		Color font_outline_color;
-		int font_outline_size;
-		int font_shadow_outline_size;
+		float font_outline_size;
+		float font_shadow_outline_size;
 	} theme_cache;
 
 	void _update_visible();

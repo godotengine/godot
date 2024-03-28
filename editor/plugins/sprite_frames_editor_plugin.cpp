@@ -140,7 +140,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 	_sheet_sort_frames();
 
 	Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
-	int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+	float font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 
 	for (int i = 0; i < frames_ordered.size(); ++i) {
 		const int idx = frames_ordered[i].second;
@@ -593,7 +593,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up.
+			add_theme_constant_override("autohide", true); // Fixes the dragger always showing up.
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {

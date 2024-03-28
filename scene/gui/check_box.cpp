@@ -140,8 +140,8 @@ bool CheckBox::is_radio() {
 }
 
 void CheckBox::_bind_methods() {
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckBox, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckBox, check_v_offset);
+	BIND_THEME_CONSTANT(CheckBox, h_separation, Variant::INT);
+	BIND_THEME_CONSTANT(CheckBox, check_v_offset, Variant::INT);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CheckBox, normal_style, "normal");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckBox, checked);

@@ -115,7 +115,7 @@ private:
 	BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 	float width = 500.0;
 
-	int font_size = 32;
+	float font_size = 32.0;
 	Ref<Font> font_override;
 	mutable Ref<Font> theme_font;
 	Color modulate = Color(1, 1, 1, 1);
@@ -123,7 +123,7 @@ private:
 	int outline_render_priority = -1;
 	int render_priority = 0;
 
-	int outline_size = 12;
+	float outline_size = 12.0;
 	Color outline_modulate = Color(0, 0, 0, 1);
 
 	float line_spacing = 0.f;
@@ -163,6 +163,16 @@ protected:
 
 	void _shape();
 
+#ifndef DISABLE_DEPRECATED
+	void _set_font_size_compat_87243(int p_size);
+	int _get_font_size_compat_87243() const;
+
+	void _set_outline_size_compat_87243(int p_size);
+	int _get_outline_size_compat_87243() const;
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;
@@ -198,11 +208,11 @@ public:
 	Ref<Font> get_font() const;
 	Ref<Font> _get_font_or_default() const;
 
-	void set_font_size(int p_size);
-	int get_font_size() const;
+	void set_font_size(float p_size);
+	float get_font_size() const;
 
-	void set_outline_size(int p_size);
-	int get_outline_size() const;
+	void set_outline_size(float p_size);
+	float get_outline_size() const;
 
 	void set_line_spacing(float p_size);
 	float get_line_spacing() const;

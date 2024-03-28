@@ -397,7 +397,21 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				if (data.theme_constant_override.has(E.item_name)) {
 					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 				}
-				p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_constants") + String("/") + E.item_name, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+				Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(get_class_name(), E.item_name);
+				switch (expected_type) {
+					case Variant::INT: {
+						p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_constants") + String("/") + E.item_name, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+					} break;
+					case Variant::FLOAT: {
+						p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("theme_override_constants") + String("/") + E.item_name, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+					} break;
+					case Variant::BOOL: {
+						p_list->push_back(PropertyInfo(Variant::BOOL, PNAME("theme_override_constants") + String("/") + E.item_name, PROPERTY_HINT_NONE, "", usage));
+					} break;
+					default: {
+						p_list->push_back(PropertyInfo(Variant::NIL, PNAME("theme_override_constants") + String("/") + E.item_name, PROPERTY_HINT_NONE, "", usage));
+					} break;
+				}
 			} break;
 
 			case Theme::DATA_TYPE_FONT: {
@@ -411,7 +425,7 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				if (data.theme_font_size_override.has(E.item_name)) {
 					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 				}
-				p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_font_sizes") + String("/") + E.item_name, PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px", usage));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("theme_override_font_sizes") + String("/") + E.item_name, PROPERTY_HINT_RANGE, "1,256,0.015625,or_greater,suffix:px", usage));
 			} break;
 
 			case Theme::DATA_TYPE_ICON: {
@@ -2601,14 +2615,14 @@ Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_
 	return font;
 }
 
-int Control::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
-	ERR_READ_THREAD_GUARD_V(0);
+float Control::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(0.0);
 	if (!data.initialized) {
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
-		const int *font_size = data.theme_font_size_override.getptr(p_name);
+		const float *font_size = data.theme_font_size_override.getptr(p_name);
 		if (font_size && (*font_size) > 0) {
 			return *font_size;
 		}
@@ -2620,7 +2634,7 @@ int Control::get_theme_font_size(const StringName &p_name, const StringName &p_t
 
 	List<StringName> theme_types;
 	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
-	int font_size = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
+	float font_size = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
 	data.theme_font_size_cache[p_theme_type][p_name] = font_size;
 	return font_size;
 }
@@ -2649,14 +2663,14 @@ Color Control::get_theme_color(const StringName &p_name, const StringName &p_the
 	return color;
 }
 
-int Control::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
-	ERR_READ_THREAD_GUARD_V(0);
+Variant Control::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(Variant());
 	if (!data.initialized) {
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
 	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
-		const int *constant = data.theme_constant_override.getptr(p_name);
+		const Variant *constant = data.theme_constant_override.getptr(p_name);
 		if (constant) {
 			return *constant;
 		}
@@ -2668,7 +2682,7 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 
 	List<StringName> theme_types;
 	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, &theme_types);
-	int constant = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
+	Variant constant = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 	data.theme_constant_cache[p_theme_type][p_name] = constant;
 	return constant;
 }
@@ -2843,7 +2857,7 @@ void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> 
 	_notify_theme_override_changed();
 }
 
-void Control::add_theme_font_size_override(const StringName &p_name, int p_font_size) {
+void Control::add_theme_font_size_override(const StringName &p_name, float p_font_size) {
 	ERR_MAIN_THREAD_GUARD;
 	data.theme_font_size_override[p_name] = p_font_size;
 	_notify_theme_override_changed();
@@ -2855,9 +2869,46 @@ void Control::add_theme_color_override(const StringName &p_name, const Color &p_
 	_notify_theme_override_changed();
 }
 
-void Control::add_theme_constant_override(const StringName &p_name, int p_constant) {
+void Control::add_theme_constant_override(const StringName &p_name, const Variant &p_constant) {
 	ERR_MAIN_THREAD_GUARD;
-	data.theme_constant_override[p_name] = p_constant;
+	Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(get_class_name(), p_name);
+	Variant value;
+	if (p_constant.get_type() == Variant::NIL) {
+		switch (expected_type) {
+			case Variant::INT: {
+				value = 0;
+			} break;
+			case Variant::FLOAT: {
+				value = 0.0;
+			} break;
+			case Variant::BOOL: {
+				value = false;
+			} break;
+			default: {
+				value = Variant();
+			} break;
+		}
+	} else {
+		if (expected_type != Variant::NIL && p_constant.get_type() != expected_type) {
+			ERR_FAIL_COND_MSG(!Variant::can_convert_strict(p_constant.get_type(), expected_type), vformat("Invalid '%s/%s' constant value type, got '%s' expected '%s'", get_class_name(), p_name, Variant::get_type_name(p_constant.get_type()), Variant::get_type_name(expected_type)));
+			WARN_PRINT(vformat("Invalid '%s/%s' constant value type, got '%s' expected '%s'", get_class_name(), p_name, Variant::get_type_name(p_constant.get_type()), Variant::get_type_name(expected_type)));
+		}
+		switch (expected_type) {
+			case Variant::INT: {
+				value = (int64_t)p_constant;
+			} break;
+			case Variant::FLOAT: {
+				value = (double)p_constant;
+			} break;
+			case Variant::BOOL: {
+				value = (bool)p_constant;
+			} break;
+			default: {
+				value = p_constant;
+			} break;
+		}
+	}
+	data.theme_constant_override[p_name] = value;
 	_notify_theme_override_changed();
 }
 
@@ -2929,7 +2980,7 @@ bool Control::has_theme_font_override(const StringName &p_name) const {
 
 bool Control::has_theme_font_size_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
-	const int *font_size = data.theme_font_size_override.getptr(p_name);
+	const float *font_size = data.theme_font_size_override.getptr(p_name);
 	return font_size != nullptr;
 }
 
@@ -2941,7 +2992,7 @@ bool Control::has_theme_color_override(const StringName &p_name) const {
 
 bool Control::has_theme_constant_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
-	const int *constant = data.theme_constant_override.getptr(p_name);
+	const Variant *constant = data.theme_constant_override.getptr(p_name);
 	return constant != nullptr;
 }
 
@@ -2957,7 +3008,7 @@ Ref<Font> Control::get_theme_default_font() const {
 	return data.theme_owner->get_theme_default_font();
 }
 
-int Control::get_theme_default_font_size() const {
+float Control::get_theme_default_font_size() const {
 	ERR_READ_THREAD_GUARD_V(0);
 	return data.theme_owner->get_theme_default_font_size();
 }

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "theme_db.h"
+#include "theme_db.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
@@ -159,7 +160,7 @@ Ref<Font> ThemeDB::get_fallback_font() {
 	return fallback_font;
 }
 
-void ThemeDB::set_fallback_font_size(int p_font_size) {
+void ThemeDB::set_fallback_font_size(float p_font_size) {
 	if (fallback_font_size == p_font_size) {
 		return;
 	}
@@ -168,7 +169,7 @@ void ThemeDB::set_fallback_font_size(int p_font_size) {
 	emit_signal(SNAME("fallback_changed"));
 }
 
-int ThemeDB::get_fallback_font_size() {
+float ThemeDB::get_fallback_font_size() {
 	return fallback_font_size;
 }
 
@@ -327,7 +328,7 @@ ThemeContext *ThemeDB::get_nearest_theme_context(Node *p_for_node) const {
 
 // Theme item binding.
 
-void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter) {
+void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, Variant::Type p_constant_type, ThemeItemSetter p_setter) {
 	ERR_FAIL_COND_MSG(theme_item_binds[p_class_name].has(p_prop_name), vformat("Failed to bind theme item '%s' in class '%s': already bound", p_prop_name, p_class_name));
 
 	ThemeItemBind bind;
@@ -335,6 +336,7 @@ void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_c
 	bind.class_name = p_class_name;
 	bind.item_name = p_item_name;
 	bind.setter = p_setter;
+	bind.constant_type = p_constant_type;
 
 	theme_item_binds[p_class_name][p_prop_name] = bind;
 	theme_item_binds_list[p_class_name].push_back(bind);
@@ -412,6 +414,25 @@ void ThemeDB::_sort_theme_items() {
 	}
 }
 
+Variant::Type ThemeDB::get_class_constant_type(const StringName &p_class_name, const StringName &p_item_name) {
+	List<StringName> class_hierarchy;
+	StringName class_name = p_class_name;
+	while (class_name != StringName()) {
+		class_hierarchy.push_front(class_name); // Put parent classes in front.
+		class_name = ClassDB::get_parent_class_nocheck(class_name);
+	}
+
+	for (const StringName &theme_type : class_hierarchy) {
+		const HashMap<StringName, HashMap<StringName, ThemeItemBind>>::Iterator E = theme_item_binds.find(theme_type);
+		if (E) {
+			if (E->value.has(p_item_name) && E->value[p_item_name].data_type == Theme::DATA_TYPE_CONSTANT) {
+				return E->value[p_item_name].constant_type;
+			}
+		}
+	}
+	return Variant::NIL;
+}
+
 // Object methods.
 
 void ThemeDB::_bind_methods() {
@@ -432,7 +453,7 @@ void ThemeDB::_bind_methods() {
 	ADD_GROUP("Fallback values", "fallback_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fallback_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_fallback_base_scale", "get_fallback_base_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_font", PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_NONE), "set_fallback_font", "get_fallback_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fallback_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_fallback_font_size", "get_fallback_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fallback_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_fallback_font_size", "get_fallback_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NONE), "set_fallback_icon", "get_fallback_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_stylebox", PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_NONE), "set_fallback_stylebox", "get_fallback_stylebox");
 

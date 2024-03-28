@@ -817,7 +817,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		} else {
 			hb = memnew(HBoxContainer);
 		}
-		hb->add_theme_constant_override("separation", 7 * EDSCALE);
+		hb->add_theme_constant_override("separation", (int64_t)(7 * EDSCALE));
 
 		// Default value button/property editor.
 		Variant default_value;

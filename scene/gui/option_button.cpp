@@ -601,11 +601,11 @@ void OptionButton::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, OptionButton, font_hover_pressed_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, OptionButton, font_disabled_color);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, h_separation);
+	BIND_THEME_CONSTANT(OptionButton, h_separation, Variant::INT);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, arrow_icon, "arrow");
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, arrow_margin);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, modulate_arrow);
+	BIND_THEME_CONSTANT(OptionButton, arrow_margin, Variant::INT);
+	BIND_THEME_CONSTANT(OptionButton, modulate_arrow, Variant::BOOL);
 }
 
 void OptionButton::set_disable_shortcuts(bool p_disabled) {

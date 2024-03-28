@@ -42,10 +42,10 @@ class LabelSettings : public Resource {
 	real_t line_spacing = 3;
 
 	Ref<Font> font;
-	int font_size = Font::DEFAULT_FONT_SIZE;
+	float font_size = Font::DEFAULT_FONT_SIZE;
 	Color font_color = Color(1, 1, 1);
 
-	int outline_size = 0;
+	float outline_size = 0;
 	Color outline_color = Color(1, 1, 1);
 
 	int shadow_size = 1;
@@ -57,6 +57,16 @@ class LabelSettings : public Resource {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _set_font_size_compat_87243(int p_size);
+	int _get_font_size_compat_87243() const;
+
+	void _set_outline_size_compat_87243(int p_size);
+	int _get_outline_size_compat_87243() const;
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	void set_line_spacing(real_t p_spacing);
 	real_t get_line_spacing() const;
@@ -64,14 +74,14 @@ public:
 	void set_font(const Ref<Font> &p_font);
 	Ref<Font> get_font() const;
 
-	void set_font_size(int p_size);
-	int get_font_size() const;
+	void set_font_size(float p_size);
+	float get_font_size() const;
 
 	void set_font_color(const Color &p_color);
 	Color get_font_color() const;
 
-	void set_outline_size(int p_size);
-	int get_outline_size() const;
+	void set_outline_size(float p_size);
+	float get_outline_size() const;
 
 	void set_outline_color(const Color &p_color);
 	Color get_outline_color() const;

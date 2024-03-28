@@ -24,7 +24,7 @@
 		<member name="font" type="Font" setter="set_font" getter="get_font">
 			Font configuration used to display text.
 		</member>
-		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="16">
+		<member name="font_size" type="float" setter="set_font_size" getter="get_font_size" default="16.0">
 			Font size of the [TextMesh]'s text.
 		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="1">

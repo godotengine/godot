@@ -125,6 +125,12 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	void _push_meta_bind_compat_89024(const Variant &p_meta);
 	void _add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region);
+
+	void _push_dropcap_compat_87243(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
+	void _push_font_compat_87243(const Ref<Font> &p_font, int p_size = 0);
+	void _push_font_size_compat_87243(int p_font_size);
+	void _push_outline_size_compat_87243(int p_font_size);
+
 	static void _bind_compatibility_methods();
 #endif
 
@@ -136,7 +142,7 @@ private:
 
 		Ref<TextParagraph> text_buf;
 		Color dc_color;
-		int dc_ol_size = 0;
+		float dc_ol_size = 0.0;
 		Color dc_ol_color;
 
 		Vector2 offset;
@@ -209,9 +215,9 @@ private:
 	struct ItemDropcap : public Item {
 		String text;
 		Ref<Font> font;
-		int font_size = 0;
+		float font_size = 0.0;
 		Color color;
-		int ol_size = 0;
+		float ol_size = 0.0;
 		Color ol_color;
 		Rect2 dropcap_margins;
 		ItemDropcap() { type = ITEM_DROPCAP; }
@@ -244,12 +250,12 @@ private:
 		Ref<Font> font;
 		bool variation = false;
 		bool def_size = false;
-		int font_size = 0;
+		float font_size = 0.0;
 		ItemFont() { type = ITEM_FONT; }
 	};
 
 	struct ItemFontSize : public Item {
-		int font_size = 16;
+		float font_size = 16.0;
 		ItemFontSize() { type = ITEM_FONT_SIZE; }
 	};
 
@@ -259,7 +265,7 @@ private:
 	};
 
 	struct ItemOutlineSize : public Item {
-		int outline_size = 0;
+		float outline_size = 0.0;
 		ItemOutlineSize() { type = ITEM_OUTLINE_SIZE; }
 	};
 
@@ -541,11 +547,11 @@ private:
 	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
 	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search);
 
-	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset);
-	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h);
+	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, float p_base_font_size, int p_width, float p_h, int *r_char_offset);
+	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, float p_base_font_size, int p_width, float p_h);
 
-	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size);
-	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, int p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, int p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
+	void _update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, float p_base_font_size);
+	int _draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Color &p_base_color, float p_outline_size, const Color &p_outline_color, const Color &p_font_shadow_color, float p_shadow_outline_size, const Point2 &p_shadow_ofs, int &r_processed_glyphs);
 	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false, bool p_meta = false);
 
 	String _roman(int p_num, bool p_capitalize) const;
@@ -556,11 +562,11 @@ private:
 	void _find_frame(Item *p_item, ItemFrame **r_frame, int *r_line);
 	ItemFontSize *_find_font_size(Item *p_item);
 	ItemFont *_find_font(Item *p_item);
-	int _find_outline_size(Item *p_item, int p_default);
+	float _find_outline_size(Item *p_item, int p_default);
 	ItemList *_find_list_item(Item *p_item);
 	ItemDropcap *_find_dc_item(Item *p_item);
 	int _find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list);
-	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
+	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, float p_base_font_size);
 	PackedFloat32Array _find_tab_stops(Item *p_item);
 	HorizontalAlignment _find_alignment(Item *p_item);
 	BitField<TextServer::JustificationFlag> _find_jst_flags(Item *p_item);
@@ -616,27 +622,27 @@ private:
 		int line_separation;
 
 		Ref<Font> normal_font;
-		int normal_font_size;
+		float normal_font_size;
 
 		Color default_color;
 		Color font_selected_color;
 		Color selection_color;
 		Color font_outline_color;
 		Color font_shadow_color;
-		int shadow_outline_size;
+		float shadow_outline_size;
 		int shadow_offset_x;
 		int shadow_offset_y;
-		int outline_size;
+		float outline_size;
 		Color outline_color;
 
 		Ref<Font> bold_font;
-		int bold_font_size;
+		float bold_font_size;
 		Ref<Font> bold_italics_font;
-		int bold_italics_font_size;
+		float bold_italics_font_size;
 		Ref<Font> italics_font;
-		int italics_font_size;
+		float italics_font_size;
 		Ref<Font> mono_font;
-		int mono_font_size;
+		float mono_font_size;
 
 		int text_highlight_h_padding;
 		int text_highlight_v_padding;
@@ -657,12 +663,12 @@ public:
 	void update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
 	void add_newline();
 	bool remove_paragraph(const int p_paragraph);
-	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
+	void push_dropcap(const String &p_string, const Ref<Font> &p_font, float p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), float p_ol_size = 0.0, const Color &p_ol_color = Color(0, 0, 0, 0));
 	void _push_def_font(DefaultFont p_def_font);
-	void _push_def_font_var(DefaultFont p_def_font, const Ref<Font> &p_font, int p_size = -1);
-	void push_font(const Ref<Font> &p_font, int p_size = 0);
-	void push_font_size(int p_font_size);
-	void push_outline_size(int p_font_size);
+	void _push_def_font_var(DefaultFont p_def_font, const Ref<Font> &p_font, float p_size = -1.0);
+	void push_font(const Ref<Font> &p_font, float p_size = 0.0);
+	void push_font_size(float p_font_size);
+	void push_outline_size(float p_font_size);
 	void push_normal();
 	void push_bold();
 	void push_bold_italics();
