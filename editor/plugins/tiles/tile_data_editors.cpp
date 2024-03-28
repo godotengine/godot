@@ -458,7 +458,7 @@ void GenericTilePolygonEditor::_snap_point(Point2 &r_point) {
 			break;
 
 		case SNAP_HALF_PIXEL:
-			r_point = r_point.snapped(Vector2(0.5, 0.5));
+			r_point = r_point.snappedf(0.5);
 			break;
 
 		case SNAP_GRID: {

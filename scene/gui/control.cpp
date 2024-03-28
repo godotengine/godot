@@ -142,8 +142,8 @@ Size2 Control::_edit_get_scale() const {
 
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
-	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)).snapped(Vector2(1, 1)), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
-	set_size(p_edit_rect.size.snapped(Vector2(1, 1)), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
+	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)).snappedf(1), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
+	set_size(p_edit_rect.size.snappedf(1), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
 }
 
 Rect2 Control::_edit_get_rect() const {

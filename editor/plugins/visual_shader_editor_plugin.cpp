@@ -2558,7 +2558,7 @@ void VisualShaderEditor::_node_resized(const Vector2 &p_new_size, int p_type, in
 
 	Vector2 new_size = p_new_size;
 	if (graph->is_snapping_enabled() ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-		new_size = new_size.snapped(Vector2(graph->get_snapping_distance(), graph->get_snapping_distance()));
+		new_size = new_size.snappedf(graph->get_snapping_distance());
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -4294,7 +4294,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 	// Keep dialog within window bounds.
 	Rect2 window_rect = Rect2(get_window()->get_position(), get_window()->get_size());
 	Rect2 dialog_rect = Rect2(members_dialog->get_position(), members_dialog->get_size());
-	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
+	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).maxf(0);
 	members_dialog->set_position(members_dialog->get_position() - difference);
 
 	callable_mp((Control *)node_filter, &Control::grab_focus).call_deferred(); // Still not visible.
@@ -4323,7 +4323,7 @@ void VisualShaderEditor::_show_add_varying_dialog() {
 	// Keep dialog within window bounds.
 	Rect2 window_rect = Rect2(DisplayServer::get_singleton()->window_get_position(), DisplayServer::get_singleton()->window_get_size());
 	Rect2 dialog_rect = Rect2(add_varying_dialog->get_position(), add_varying_dialog->get_size());
-	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
+	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).maxf(0);
 	add_varying_dialog->set_position(add_varying_dialog->get_position() - difference);
 }
 
@@ -4334,7 +4334,7 @@ void VisualShaderEditor::_show_remove_varying_dialog() {
 	// Keep dialog within window bounds.
 	Rect2 window_rect = Rect2(DisplayServer::get_singleton()->window_get_position(), DisplayServer::get_singleton()->window_get_size());
 	Rect2 dialog_rect = Rect2(remove_varying_dialog->get_position(), remove_varying_dialog->get_size());
-	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
+	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).maxf(0);
 	remove_varying_dialog->set_position(remove_varying_dialog->get_position() - difference);
 }
 

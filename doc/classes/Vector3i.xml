@@ -59,6 +59,14 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="clampi" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="min" type="int" />
+			<param index="1" name="max" type="int" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="distance_squared_to" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="to" type="Vector3i" />
@@ -110,6 +118,13 @@
 			<param index="0" name="step" type="Vector3i" />
 			<description>
 				Returns a new vector with each component snapped to the closest multiple of the corresponding component in [param step].
+			</description>
+		</method>
+		<method name="snappedi" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="step" type="int" />
+			<description>
+				Returns a new vector with each component snapped to the closest multiple of [param step].
 			</description>
 		</method>
 	</methods>

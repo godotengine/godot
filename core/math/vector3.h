@@ -80,8 +80,16 @@ struct _NO_DISCARD_ Vector3 {
 		return Vector3(MIN(x, p_vector3.x), MIN(y, p_vector3.y), MIN(z, p_vector3.z));
 	}
 
+	Vector3 minf(real_t p_scalar) const {
+		return Vector3(MIN(x, p_scalar), MIN(y, p_scalar), MIN(z, p_scalar));
+	}
+
 	Vector3 max(const Vector3 &p_vector3) const {
 		return Vector3(MAX(x, p_vector3.x), MAX(y, p_vector3.y), MAX(z, p_vector3.z));
+	}
+
+	Vector3 maxf(real_t p_scalar) const {
+		return Vector3(MAX(x, p_scalar), MAX(y, p_scalar), MAX(z, p_scalar));
 	}
 
 	_FORCE_INLINE_ real_t length() const;
@@ -96,7 +104,9 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ void zero();
 
 	void snap(const Vector3 &p_step);
+	void snapf(real_t p_step);
 	Vector3 snapped(const Vector3 &p_step) const;
+	Vector3 snappedf(real_t p_step) const;
 
 	void rotate(const Vector3 &p_axis, real_t p_angle);
 	Vector3 rotated(const Vector3 &p_axis, real_t p_angle) const;
@@ -127,6 +137,7 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ Vector3 ceil() const;
 	_FORCE_INLINE_ Vector3 round() const;
 	Vector3 clamp(const Vector3 &p_min, const Vector3 &p_max) const;
+	Vector3 clampf(real_t p_min, real_t p_max) const;
 
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_to) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_to) const;

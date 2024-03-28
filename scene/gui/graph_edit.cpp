@@ -1416,7 +1416,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
 				if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					pos = pos.snapped(Vector2(snapping_distance, snapping_distance));
+					pos = pos.snappedf(snapping_distance);
 				}
 
 				graph_element->set_position_offset(pos);

@@ -42,7 +42,7 @@
 
 Point2 GradientTexture2DEdit::_get_handle_pos(const Handle p_handle) {
 	// Get the handle's mouse position in pixels relative to offset.
-	return (p_handle == HANDLE_FROM ? texture->get_fill_from() : texture->get_fill_to()).clamp(Vector2(), Vector2(1, 1)) * size;
+	return (p_handle == HANDLE_FROM ? texture->get_fill_from() : texture->get_fill_to()).clampf(0, 1) * size;
 }
 
 GradientTexture2DEdit::Handle GradientTexture2DEdit::get_handle_at(const Vector2 &p_pos) {
@@ -112,9 +112,9 @@ void GradientTexture2DEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		Vector2 new_pos = (mpos / size).clamp(Vector2(0, 0), Vector2(1, 1));
+		Vector2 new_pos = (mpos / size).clampf(0, 1);
 		if (snap_enabled || mm->is_command_or_control_pressed()) {
-			new_pos = new_pos.snapped(Vector2(1.0 / snap_count, 1.0 / snap_count));
+			new_pos = new_pos.snappedf(1.0 / snap_count);
 		}
 
 		// Allow to snap to an axis with Shift.
