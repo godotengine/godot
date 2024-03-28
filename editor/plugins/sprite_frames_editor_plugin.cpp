@@ -2334,7 +2334,9 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 		EditorNode::get_bottom_panel()->make_item_visible(frames_editor);
 	} else {
 		button->hide();
-		frames_editor->edit(Ref<SpriteFrames>());
+		if (frames_editor->is_visible_in_tree()) {
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
+		}
 	}
 }
 
