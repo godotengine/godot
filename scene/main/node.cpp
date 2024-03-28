@@ -2804,9 +2804,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 				}
 
 			} else {
-				if (value.get_type() != Variant::OBJECT && (value.get_type() != Variant::ARRAY || static_cast<Array>(value).get_typed_builtin() != Variant::OBJECT)) {
-					current_node->set(name, value);
-				}
+				current_node->set(name, value);
 			}
 		}
 	}
