@@ -20,6 +20,14 @@ env.CommandNoCache(
     env.Run(modules_builders.generate_modules_enabled),
 )
 
+# Header with a String array of module names.
+env.Depends("module_names.gen.h", Value(env.module_list))
+env.CommandNoCache(
+    "module_names.gen.h",
+    Value(env.module_list),
+    env.Run(modules_builders.generate_module_names),
+)
+
 
 vs_sources = []
 test_headers = []

@@ -7,6 +7,15 @@ def generate_modules_enabled(target, source, env):
             f.write("#define %s\n" % ("MODULE_" + module.upper() + "_ENABLED"))
 
 
+def generate_module_names(target, source, env):
+    with open(target[0].path, "w") as f:
+        f.write('#include "core/string/ustring.h"\n\n')
+        f.write("static const String module_names[] = {\n")
+        for module in env.module_list:
+            f.write('\t"' + module + '",\n')
+        f.write("};\n")
+
+
 def generate_modules_tests(target, source, env):
     import os
 
