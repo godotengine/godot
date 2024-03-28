@@ -112,6 +112,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_bar.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/native_file_dialog.h"
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
@@ -404,6 +405,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CheckButton);
 	GDREGISTER_CLASS(LinkButton);
 	GDREGISTER_CLASS(Panel);
+	GDREGISTER_CLASS(NativeFileDialog);
 	GDREGISTER_VIRTUAL_CLASS(Range);
 
 	OS::get_singleton()->yield(); // may take time to init

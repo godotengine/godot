@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NativeFileDialog" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Wrapper around operating system-specific file dialogs.
+	</brief_description>
+	<description>
+		NativeFileDialog is a wrapper over OS-specific methods for choosing files and directories. With it, you can request paths from the user using their system's native interface. It supports filter masks and a customizable title, but since it's not a Godot interface object it cannot be customized or themed.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_filter">
+			<return type="void" />
+			<argument index="0" name="filter" type="String" />
+			<description>
+				Adds [code]filter[/code] to the list of filters, which restricts what files can be picked.
+				A [code]filter[/code] should be of the form [code]"filename.extension ; Description"[/code], where filename and extension can be [code]*[/code] to match any string. Filters starting with [code].[/code] (i.e. empty filenames) are not allowed.
+				Example filters: [code]"*.png ; PNG Images"[/code], [code]"project.godot ; Godot Project"[/code].
+			</description>
+		</method>
+		<method name="clear_filters">
+			<return type="void" />
+			<description>
+				Clear all the added filters in the dialog.
+			</description>
+		</method>
+		<method name="has_results">
+			<return type="bool" />
+			<description>
+				Returns whether the dialog has been dismissed by the user. Due to the way native file dialogs work, attempting to get results immediately via [code]get_results()[/code] will block the thread. You can call this method instead to determine whether there are results ready.
+			</description>
+		</method>
+		<method name="get_results">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the file(s) or directory the user selected, or an empty PackedStringArray if the dialog was cancelled. Note that this method will block the thread until the dialog is dismissed, so it's a good idea to check instead for results with [code]has_results()[/code] and only obtain them when you know they're there.
+			</description>
+		</method>
+		<method name="get_result">
+			<return type="String" />
+			<description>
+				Returns a single path corresponding to the file or directory the user selected. If the file dialog allowed multiple selection and the user selected more than one file, this will return only the first. Use [code]get_results()[/code] to get all of them. This method blocks the current thread: see note on [code]get_results()[/code] for more information.
+			</description>
+		</method>
+		<method name="hide">
+			<return type="void" />
+			<description>
+				Dismisses the native dialog if it's currently shown.
+			</description>
+		</method>
+		<method name="show">
+			<return type="void" />
+			<description>
+				Displays the native dialog.
+			</description>
+		</method>
+		<method name="is_supported" qualifiers="static">
+			<return type="bool" />
+			<description>
+				Whether the current system supports native file dialogs. You should check for this before showing a dialog to the user and have a fallback (perhaps a [FileDialog]) available.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="file_mode" type="int" setter="set_file_mode" getter="get_file_mode" enum="NativeFileDialog.NativeFileMode" default="0">
+			The type of file dialog to display.
+		</member>
+		<member name="filters" type="PackedStringArray" setter="set_filters" getter="get_filters" default="PackedStringArray()">
+			The available file type filters. For example, this shows only [code].png[/code] and [code].gd[/code] files: [code]set_filters(PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]))[/code]. Multiple file types can also be specified in a single filter. [code]"*.png, *.jpg, *.jpeg ; Supported Images"[/code] will show both PNG and JPEG files when selected.
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;" />
+		<member name="start_directory" type="String" setter="set_start_directory" getter="get_start_directory" default="&quot;&quot;">
+			The directory at which to open the file dialog.
+		</member>
+	</members>
+	<signals>
+		<signal name="dir_selected">
+			<argument index="0" name="dir" type="String" />
+			<description>
+				Emitted when the user selects a directory.
+			</description>
+		</signal>
+		<signal name="file_selected">
+			<argument index="0" name="path" type="String" />
+			<description>
+				Emitted when the user selects a file by double-clicking it or pressing the [b]OK[/b] button.
+			</description>
+		</signal>
+		<signal name="files_selected">
+			<argument index="0" name="paths" type="PackedStringArray" />
+			<description>
+				Emitted when the user selects multiple files.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="NATIVE_FILE_MODE_OPEN_FILE" value="0" enum="NativeFileMode">
+			The dialog allows selecting one, and only one file.
+		</constant>
+		<constant name="NATIVE_FILE_MODE_OPEN_FILES" value="1" enum="NativeFileMode">
+			The dialog allows selecting multiple files.
+		</constant>
+		<constant name="NATIVE_FILE_MODE_OPEN_DIR" value="2" enum="NativeFileMode">
+			The dialog only allows selecting a directory, disallowing the selection of any file.
+		</constant>
+		<constant name="NATIVE_FILE_MODE_SAVE_FILE" value="3" enum="NativeFileMode">
+			The dialog allows selecting a file path that may or may not exist.
+		</constant>
+	</constants>
+</class>
