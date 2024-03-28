@@ -120,6 +120,8 @@ public:
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
 
+	void queue_update();
+
 	virtual AABB get_aabb() const override;
 
 	virtual PackedStringArray get_configuration_warnings() const override;
