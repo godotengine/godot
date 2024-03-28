@@ -111,6 +111,9 @@ TextureStorage::TextureStorage() {
 			}
 			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK] = texture_allocate();
 			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK], images, RS::TEXTURE_LAYERED_CUBEMAP);
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_EXT] = texture_allocate();
+			texture_external_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_EXT], image);
 		}
 
 		{
@@ -132,6 +135,15 @@ TextureStorage::TextureStorage() {
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT], image);
+		}
+
+		{ // red
+			Ref<Image> image = Image::create_empty(4, 4, true, Image::FORMAT_RGBA8);
+			image->fill(Color(1, 0, 0, 1));
+			image->generate_mipmaps();
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_EXT] = texture_allocate();
+			texture_external_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_EXT], image);
 		}
 
 		{
@@ -765,6 +777,27 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 	texture.active = true;
 	glGenTextures(1, &texture.tex_id);
 	GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, texture.total_data_size, "Texture 2D");
+	texture_owner.initialize_rid(p_texture, texture);
+	texture_set_data(p_texture, p_image);
+}
+
+void TextureStorage::texture_external_initialize(RID p_texture, const Ref<Image> &p_image) {
+	ERR_FAIL_COND(p_image.is_null());
+
+	Texture texture;
+	texture.width = p_image->get_width();
+	texture.height = p_image->get_height();
+	texture.alloc_width = texture.width;
+	texture.alloc_height = texture.height;
+	texture.mipmaps = p_image->get_mipmap_count() + 1;
+	texture.format = p_image->get_format();
+	texture.type = Texture::TYPE_2D;
+	texture.target = _GL_TEXTURE_EXTERNAL_OES;
+	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
+	texture.total_data_size = p_image->get_image_data_size(texture.width, texture.height, texture.format, texture.mipmaps);
+	texture.active = true;
+	glGenTextures(1, &texture.tex_id);
+	GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, texture.total_data_size, "Texture EXT");
 	texture_owner.initialize_rid(p_texture, texture);
 	texture_set_data(p_texture, p_image);
 }
