@@ -498,6 +498,13 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="add_move_array_element_function">
+			<return type="void" />
+			<param index="0" name="class" type="String" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+			</description>
+		</method>
 		<method name="add_node_3d_gizmo_plugin">
 			<return type="void" />
 			<param index="0" name="plugin" type="EditorNode3DGizmoPlugin" />
@@ -676,6 +683,12 @@
 			<param index="0" name="plugin" type="EditorInspectorPlugin" />
 			<description>
 				Removes an inspector plugin registered by [method add_import_plugin]
+			</description>
+		</method>
+		<method name="remove_move_array_element_function">
+			<return type="void" />
+			<param index="0" name="class" type="String" />
+			<description>
 			</description>
 		</method>
 		<method name="remove_node_3d_gizmo_plugin">
