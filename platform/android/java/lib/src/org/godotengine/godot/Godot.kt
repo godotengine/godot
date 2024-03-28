@@ -85,6 +85,9 @@ class Godot(private val context: Context) : SensorEventListener {
 		private val TAG = Godot::class.java.simpleName
 	}
 
+	private val windowManager: WindowManager by lazy {
+		requireActivity().getSystemService(Context.WINDOW_SERVICE) as WindowManager
+	}
 	private val pluginRegistry: GodotPluginRegistry by lazy {
 		GodotPluginRegistry.getPluginRegistry()
 	}
@@ -818,11 +821,8 @@ class Godot(private val context: Context) : SensorEventListener {
 		if (values == null || values.size != 3) {
 			return null
 		}
-		val display =
-			(requireActivity().getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
-		val displayRotation = display.rotation
 		val rotatedValues = FloatArray(3)
-		when (displayRotation) {
+		when (windowManager.defaultDisplay.rotation) {
 			Surface.ROTATION_0 -> {
 				rotatedValues[0] = values[0]
 				rotatedValues[1] = values[1]
@@ -851,40 +851,35 @@ class Godot(private val context: Context) : SensorEventListener {
 		if (renderView == null) {
 			return
 		}
+
+		val rotatedValues = getRotatedValues(event.values)
+
 		when (event.sensor.type) {
 			Sensor.TYPE_ACCELEROMETER -> {
-				getRotatedValues(event.values)?.let { rotatedValues ->
+				rotatedValues?.let {
 					renderView?.queueOnRenderThread {
-						GodotLib.accelerometer(
-							-rotatedValues[0], -rotatedValues[1], -rotatedValues[2]
-						)
+						GodotLib.accelerometer(-it[0], -it[1], -it[2])
 					}
 				}
 			}
 			Sensor.TYPE_GRAVITY -> {
-				getRotatedValues(event.values)?.let { rotatedValues ->
+				rotatedValues?.let {
 					renderView?.queueOnRenderThread {
-						GodotLib.gravity(
-							-rotatedValues[0], -rotatedValues[1], -rotatedValues[2]
-						)
+						GodotLib.gravity(-it[0], -it[1], -it[2])
 					}
 				}
 			}
 			Sensor.TYPE_MAGNETIC_FIELD -> {
-				getRotatedValues(event.values)?.let { rotatedValues ->
+				rotatedValues?.let {
 					renderView?.queueOnRenderThread {
-						GodotLib.magnetometer(
-							-rotatedValues[0], -rotatedValues[1], -rotatedValues[2]
-						)
+						GodotLib.magnetometer(-it[0], -it[1], -it[2])
 					}
 				}
 			}
 			Sensor.TYPE_GYROSCOPE -> {
-				getRotatedValues(event.values)?.let { rotatedValues ->
+				rotatedValues?.let {
 					renderView?.queueOnRenderThread {
-						GodotLib.gyroscope(
-							rotatedValues[0], rotatedValues[1], rotatedValues[2]
-						)
+						GodotLib.gyroscope(it[0], it[1], it[2])
 					}
 				}
 			}
