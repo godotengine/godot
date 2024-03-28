@@ -1391,10 +1391,6 @@ void ImporterMesh::generate_tangents(bool p_force_tangent) {
 			ERR_PRINT("Surface does not have ARRAY_FORMAT_NORMAL flag set.");
 			continue;
 		}
-		if (!(surfaces[surface_i].flags & Mesh::ARRAY_FORMAT_INDEX)) {
-			ERR_PRINT("Surface does not have ARRAY_FORMAT_INDEX flag set.");
-			continue;
-		}
 		SMikkTSpaceInterface space_interface;
 		space_interface.m_getNormal = ImporterMeshTangentGenerationContextUserData::mikktGetNormal;
 		space_interface.m_getNumFaces = ImporterMeshTangentGenerationContextUserData::mikktGetNumFaces;
