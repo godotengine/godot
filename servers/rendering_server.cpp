@@ -356,7 +356,7 @@ void _get_tbn_from_axis_angle(const Vector3 &p_axis, float p_angle, Vector3 &r_n
 	r_normal = tbn.rows[2];
 }
 
-Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_normal_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb, Vector4 &r_uv_scale) {
+Error RenderingServer::_surface_set_data(const Array &p_arrays, uint64_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_normal_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb, Vector4 &r_uv_scale) {
 	uint8_t *vw = r_vertex_array.ptrw();
 	uint8_t *aw = r_attrib_array.ptrw();
 	uint8_t *sw = r_skin_array.ptrw();
@@ -1388,7 +1388,7 @@ void RenderingServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_p
 	mesh_add_surface(p_mesh, sd);
 }
 
-Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb, const Vector4 &p_uv_scale) const {
+Array RenderingServer::_get_array_from_surface(uint64_t p_format, const Vector<uint8_t> &p_vertex_data, const Vector<uint8_t> &p_attrib_data, const Vector<uint8_t> &p_skin_data, int p_vertex_len, const Vector<uint8_t> &p_index_data, int p_index_len, const AABB &p_aabb, const Vector4 &p_uv_scale) const {
 	uint32_t offsets[RS::ARRAY_MAX];
 
 	uint32_t vertex_elem_size;
@@ -2070,7 +2070,7 @@ void RenderingServer::_particles_set_trail_bind_poses(RID p_particles, const Typ
 	particles_set_trail_bind_poses(p_particles, tbposes);
 }
 
-Vector<uint8_t> _convert_surface_version_1_to_surface_version_2(uint64_t p_format, Vector<uint8_t> p_vertex_data, uint32_t p_vertex_count, uint32_t p_old_stride, uint32_t p_vertex_size, uint32_t p_normal_size, uint32_t p_position_stride, uint32_t p_normal_tangent_stride) {
+Vector<uint8_t> _convert_surface_version_1_to_surface_version_2(uint64_t p_format, const Vector<uint8_t> &p_vertex_data, uint32_t p_vertex_count, uint32_t p_old_stride, uint32_t p_vertex_size, uint32_t p_normal_size, uint32_t p_position_stride, uint32_t p_normal_tangent_stride) {
 	Vector<uint8_t> new_vertex_data;
 	new_vertex_data.resize(p_vertex_data.size());
 	uint8_t *dst_vertex_ptr = new_vertex_data.ptrw();

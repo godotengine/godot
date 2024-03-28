@@ -421,7 +421,7 @@ SceneShaderForwardMobile::SceneShaderForwardMobile() {
 	singleton = this;
 }
 
-void SceneShaderForwardMobile::init(const String p_defines) {
+void SceneShaderForwardMobile::init(const String &p_defines) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	/* SCENE SHADER */

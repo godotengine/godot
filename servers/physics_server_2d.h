@@ -789,7 +789,7 @@ class PhysicsServer2DManager : public Object {
 
 		ClassInfo() {}
 
-		ClassInfo(String p_name, Callable p_create_callback) :
+		ClassInfo(const String &p_name, Callable p_create_callback) :
 				name(p_name),
 				create_callback(p_create_callback) {}
 

@@ -797,7 +797,7 @@ public:
 	static uint32_t get_datatype_size(DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
-	static bool is_control_flow_keyword(String p_keyword);
+	static bool is_control_flow_keyword(const String &p_keyword);
 	static void get_builtin_funcs(List<String> *r_keywords);
 
 	struct BuiltInInfo {
@@ -991,7 +991,7 @@ private:
 		_set_error(vformat(RTR("Expected a '%s'."), p_what));
 	}
 
-	void _set_expected_error(const String &p_first, const String p_second) {
+	void _set_expected_error(const String &p_first, const String &p_second) {
 		_set_error(vformat(RTR("Expected a '%s' or '%s'."), p_first, p_second));
 	}
 
@@ -1087,7 +1087,7 @@ private:
 	static bool is_const_suffix_lut_initialized;
 
 	Error _validate_precision(DataType p_type, DataPrecision p_precision);
-	bool _compare_datatypes(DataType p_datatype_a, String p_datatype_name_a, int p_array_size_a, DataType p_datatype_b, String p_datatype_name_b, int p_array_size_b);
+	bool _compare_datatypes(DataType p_datatype_a, const String &p_datatype_name_a, int p_array_size_a, DataType p_datatype_b, const String &p_datatype_name_b, int p_array_size_b);
 	bool _compare_datatypes_in_nodes(Node *a, Node *b);
 
 	bool _validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str, bool *r_is_custom_function = nullptr);

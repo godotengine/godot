@@ -3529,7 +3529,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	return false;
 }
 
-bool ShaderLanguage::_compare_datatypes(DataType p_datatype_a, String p_datatype_name_a, int p_array_size_a, DataType p_datatype_b, String p_datatype_name_b, int p_array_size_b) {
+bool ShaderLanguage::_compare_datatypes(DataType p_datatype_a, const String &p_datatype_name_a, int p_array_size_a, DataType p_datatype_b, const String &p_datatype_name_b, int p_array_size_b) {
 	bool result = true;
 
 	if (p_datatype_a == TYPE_STRUCT || p_datatype_b == TYPE_STRUCT) {
@@ -4360,7 +4360,7 @@ void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 	}
 }
 
-bool ShaderLanguage::is_control_flow_keyword(String p_keyword) {
+bool ShaderLanguage::is_control_flow_keyword(const String &p_keyword) {
 	return p_keyword == "break" ||
 			p_keyword == "case" ||
 			p_keyword == "continue" ||

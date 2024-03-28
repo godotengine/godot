@@ -1090,7 +1090,7 @@ void CopyEffects::cubemap_downsample_raster(RID p_source_cubemap, RID p_dest_fra
 	RD::get_singleton()->draw_list_end();
 }
 
-void CopyEffects::cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap, bool p_use_array) {
+void CopyEffects::cubemap_filter(RID p_source_cubemap, const Vector<RID> &p_dest_cubemap, bool p_use_array) {
 	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use compute based cubemap filter with the mobile renderer.");
 
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();

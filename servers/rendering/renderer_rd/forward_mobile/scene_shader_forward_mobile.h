@@ -205,7 +205,7 @@ public:
 
 	Vector<RD::PipelineSpecializationConstant> default_specialization_constants;
 
-	void init(const String p_defines);
+	void init(const String &p_defines);
 	void set_default_specialization_constants(const Vector<RD::PipelineSpecializationConstant> &p_constants);
 };
 
