@@ -234,6 +234,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_SET_STATIC_VARIABLE,                  \
 		&&OPCODE_GET_STATIC_VARIABLE,                  \
 		&&OPCODE_ASSIGN,                               \
+		&&OPCODE_ASSIGN_NULL,                          \
 		&&OPCODE_ASSIGN_TRUE,                          \
 		&&OPCODE_ASSIGN_FALSE,                         \
 		&&OPCODE_ASSIGN_TYPED_BUILTIN,                 \
@@ -1253,6 +1254,16 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				*dst = *src;
 
 				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ASSIGN_NULL) {
+				CHECK_SPACE(2);
+				GET_VARIANT_PTR(dst, 0);
+
+				*dst = Variant();
+
+				ip += 2;
 			}
 			DISPATCH_OPCODE;
 

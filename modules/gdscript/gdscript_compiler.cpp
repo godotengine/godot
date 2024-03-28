@@ -1826,7 +1826,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 	ERR_FAIL_V_MSG(p_previous_test, "Reaching the end of pattern compilation without matching a pattern.");
 }
 
-List<GDScriptCodeGenerator::Address> GDScriptCompiler::_add_locals_in_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block) {
+List<GDScriptCodeGenerator::Address> GDScriptCompiler::_add_block_locals(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block) {
 	List<GDScriptCodeGenerator::Address> addresses;
 	for (int i = 0; i < p_block->locals.size(); i++) {
 		if (p_block->locals[i].type == GDScriptParser::SuiteNode::Local::PARAMETER || p_block->locals[i].type == GDScriptParser::SuiteNode::Local::FOR_VARIABLE) {
@@ -1838,27 +1838,25 @@ List<GDScriptCodeGenerator::Address> GDScriptCompiler::_add_locals_in_block(Code
 	return addresses;
 }
 
-// Avoid keeping in the stack long-lived references to objects, which may prevent RefCounted objects from being freed.
-void GDScriptCompiler::_clear_addresses(CodeGen &codegen, const List<GDScriptCodeGenerator::Address> &p_addresses) {
-	for (const List<GDScriptCodeGenerator::Address>::Element *E = p_addresses.front(); E; E = E->next()) {
-		GDScriptDataType type = E->get().type;
-		// If not an object and cannot contain an object, no need to clear.
-		if (type.kind != GDScriptDataType::BUILTIN || type.builtin_type == Variant::ARRAY || type.builtin_type == Variant::DICTIONARY) {
-			codegen.generator->write_assign_false(E->get());
+// Avoid keeping in the stack long-lived references to objects, which may prevent `RefCounted` objects from being freed.
+void GDScriptCompiler::_clear_block_locals(CodeGen &codegen, const List<GDScriptCodeGenerator::Address> &p_locals) {
+	for (const GDScriptCodeGenerator::Address &local : p_locals) {
+		if (local.type.can_contain_object()) {
+			codegen.generator->clear_address(local);
 		}
 	}
 }
 
-Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, bool p_add_locals, bool p_reset_locals) {
+Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, bool p_add_locals, bool p_clear_locals) {
 	Error err = OK;
 	GDScriptCodeGenerator *gen = codegen.generator;
 	List<GDScriptCodeGenerator::Address> block_locals;
 
-	gen->clean_temporaries();
+	gen->clear_temporaries();
 	codegen.start_block();
 
 	if (p_add_locals) {
-		block_locals = _add_locals_in_block(codegen, p_block);
+		block_locals = _add_block_locals(codegen, p_block);
 	}
 
 	for (int i = 0; i < p_block->statements.size(); i++) {
@@ -1873,7 +1871,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			case GDScriptParser::Node::MATCH: {
 				const GDScriptParser::MatchNode *match = static_cast<const GDScriptParser::MatchNode *>(s);
 
-				codegen.start_block();
+				codegen.start_block(); // Add an extra block, since the binding pattern and @special variables belong to the branch scope.
 
 				// Evaluate the match expression.
 				GDScriptCodeGenerator::Address value = codegen.add_local("@match_value", _gdtype_from_datatype(match->test->get_datatype(), codegen.script));
@@ -1914,7 +1912,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					codegen.start_block(); // Create an extra block around for binds.
 
 					// Add locals in block before patterns, so temporaries don't use the stack address for binds.
-					List<GDScriptCodeGenerator::Address> branch_locals = _add_locals_in_block(codegen, branch->block);
+					List<GDScriptCodeGenerator::Address> branch_locals = _add_block_locals(codegen, branch->block);
 
 #ifdef DEBUG_ENABLED
 					// Add a newline before each branch, since the debugger needs those.
@@ -1961,7 +1959,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 						return err;
 					}
 
-					_clear_addresses(codegen, branch_locals);
+					_clear_block_locals(codegen, branch_locals);
 
 					codegen.end_block(); // Get out of extra block.
 				}
@@ -2003,7 +2001,8 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			case GDScriptParser::Node::FOR: {
 				const GDScriptParser::ForNode *for_n = static_cast<const GDScriptParser::ForNode *>(s);
 
-				codegen.start_block();
+				codegen.start_block(); // Add an extra block, since the iterator and @special variables belong to the loop scope.
+
 				GDScriptCodeGenerator::Address iterator = codegen.add_local(for_n->variable->name, _gdtype_from_datatype(for_n->variable->get_datatype(), codegen.script));
 
 				gen->start_for(iterator.type, _gdtype_from_datatype(for_n->list->get_datatype(), codegen.script));
@@ -2021,14 +2020,21 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 				gen->write_for(iterator, for_n->use_conversion_assign);
 
-				err = _parse_block(codegen, for_n->loop);
+				// Loop variables must be cleared even when `break`/`continue` is used.
+				List<GDScriptCodeGenerator::Address> loop_locals = _add_block_locals(codegen, for_n->loop);
+
+				//_clear_block_locals(codegen, loop_locals); // Inside loop, before block - for `continue`. // TODO
+
+				err = _parse_block(codegen, for_n->loop, false); // Don't add locals again.
 				if (err) {
 					return err;
 				}
 
 				gen->write_endfor();
 
-				codegen.end_block();
+				_clear_block_locals(codegen, loop_locals); // Outside loop, after block - for `break` and normal exit.
+
+				codegen.end_block(); // Get out of extra block.
 			} break;
 			case GDScriptParser::Node::WHILE: {
 				const GDScriptParser::WhileNode *while_n = static_cast<const GDScriptParser::WhileNode *>(s);
@@ -2046,12 +2052,19 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					codegen.generator->pop_temporary();
 				}
 
-				err = _parse_block(codegen, while_n->loop);
+				// Loop variables must be cleared even when `break`/`continue` is used.
+				List<GDScriptCodeGenerator::Address> loop_locals = _add_block_locals(codegen, while_n->loop);
+
+				//_clear_block_locals(codegen, loop_locals); // Inside loop, before block - for `continue`. // TODO
+
+				err = _parse_block(codegen, while_n->loop, false); // Don't add locals again.
 				if (err) {
 					return err;
 				}
 
 				gen->write_endwhile();
+
+				_clear_block_locals(codegen, loop_locals); // Outside loop, after block - for `break` and normal exit.
 			} break;
 			case GDScriptParser::Node::BREAK: {
 				gen->write_break();
@@ -2134,21 +2147,16 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 						codegen.generator->pop_temporary();
 					}
 					initialized = true;
-				} else if (local_type.has_type) {
-					// Initialize with default for type.
-					if (local_type.has_container_element_type(0)) {
-						codegen.generator->write_construct_typed_array(local, local_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
-						initialized = true;
-					} else if (local_type.kind == GDScriptDataType::BUILTIN) {
-						codegen.generator->write_construct(local, local_type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
-						initialized = true;
-					}
-					// The `else` branch is for objects, in such case we leave it as `null`.
+				} else if ((local_type.has_type && local_type.kind == GDScriptDataType::BUILTIN) || codegen.generator->is_local_dirty(local)) {
+					// Initialize with default for the type. Built-in types must always be cleared (they cannot be `null`).
+					// Objects and untyped variables are assigned to `null` only if the stack address has been re-used and not cleared.
+					codegen.generator->clear_address(local);
+					initialized = true;
 				}
 
-				// Assigns a null for the unassigned variables in loops.
+				// Don't check `is_local_dirty()` since the variable must be assigned to `null` **on each iteration**.
 				if (!initialized && p_block->is_in_loop) {
-					codegen.generator->write_construct(local, Variant::NIL, Vector<GDScriptCodeGenerator::Address>());
+					codegen.generator->clear_address(local);
 				}
 			} break;
 			case GDScriptParser::Node::CONSTANT: {
@@ -2180,11 +2188,11 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			} break;
 		}
 
-		gen->clean_temporaries();
+		gen->clear_temporaries();
 	}
 
-	if (p_add_locals && p_reset_locals) {
-		_clear_addresses(codegen, block_locals);
+	if (p_add_locals && p_clear_locals) {
+		_clear_block_locals(codegen, block_locals);
 	}
 
 	codegen.end_block();
