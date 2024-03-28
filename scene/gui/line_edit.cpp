@@ -1236,13 +1236,12 @@ void LineEdit::undo() {
 		return;
 	}
 
-	if (undo_stack_pos == nullptr) {
-		if (undo_stack.size() <= 1) {
-			return;
-		}
-		undo_stack_pos = undo_stack.back();
-	} else if (undo_stack_pos == undo_stack.front()) {
+	if (!has_undo()) {
 		return;
+	}
+
+	if (undo_stack_pos == nullptr) {
+		undo_stack_pos = undo_stack.back();
 	}
 
 	deselect();
@@ -1263,10 +1262,7 @@ void LineEdit::redo() {
 		return;
 	}
 
-	if (undo_stack_pos == nullptr) {
-		return;
-	}
-	if (undo_stack_pos == undo_stack.back()) {
+	if (!has_redo()) {
 		return;
 	}
 
