@@ -536,6 +536,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 	if (!is_inside_tree()) {
 		callable_mp(this, &TabContainer::_repaint).call_deferred();
 	}
+	notify_property_list_changed();
 }
 
 void TabContainer::move_child_notify(Node *p_child) {
@@ -560,6 +561,7 @@ void TabContainer::move_child_notify(Node *p_child) {
 
 		tab_bar->move_tab(old_idx, get_tab_idx_from_control(c));
 	}
+	notify_property_list_changed();
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
@@ -594,6 +596,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 	if (!is_inside_tree()) {
 		callable_mp(this, &TabContainer::_repaint).call_deferred();
 	}
+	notify_property_list_changed();
 }
 
 TabBar *TabContainer::get_tab_bar() const {
@@ -768,6 +771,12 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 
 String TabContainer::get_tab_title(int p_tab) const {
 	return tab_bar->get_tab_title(p_tab);
+}
+
+bool TabContainer::tab_has_title(int p_tab) const {
+	Control *child = get_tab_control(p_tab);
+	ERR_FAIL_COND_V(!child, false);
+	return child->has_meta("_tab_name");
 }
 
 void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
@@ -955,6 +964,79 @@ Vector<int> TabContainer::get_allowed_size_flags_vertical() const {
 	return Vector<int>();
 }
 
+bool TabContainer::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("tab_") && components[0].trim_prefix("tab_").is_valid_int()) {
+		int tab_index = components[0].trim_prefix("tab_").to_int();
+		if (components[1] == "title") {
+			call_deferred("set_tab_title", tab_index, p_value);
+			return true;
+		} else if (components[1] == "icon") {
+			call_deferred("set_tab_icon", tab_index, p_value);
+			return true;
+		} else if (components[1] == "disabled") {
+			call_deferred("set_tab_disabled", tab_index, p_value);
+			return true;
+		} else if (components[1] == "hidden") {
+			call_deferred("set_tab_hidden", tab_index, p_value);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool TabContainer::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "tab_count") {
+		r_ret = get_tab_count();
+		return true;
+	}
+
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("tab_") && components[0].trim_prefix("tab_").is_valid_int()) {
+		int tab_index = components[0].trim_prefix("tab_").to_int();
+		if (components[1] == "title") {
+			if (tab_has_title(tab_index)) {
+				r_ret = get_tab_title(tab_index);
+			} else {
+				r_ret = "";
+			}
+			return true;
+		} else if (components[1] == "icon") {
+			r_ret = get_tab_icon(tab_index);
+			return true;
+		} else if (components[1] == "disabled") {
+			r_ret = is_tab_disabled(tab_index);
+			return true;
+		} else if (components[1] == "hidden") {
+			r_ret = is_tab_hidden(tab_index);
+			return true;
+		}
+	}
+	return false;
+}
+
+void TabContainer::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::INT, "tab_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_ARRAY, vformat("%s,%s", "Tabs", "tab_")));
+
+	for (int i = 0; i < get_tab_count(); i++) {
+		PropertyInfo pi = PropertyInfo(Variant::STRING, vformat("tab_%d/title", i));
+		pi.usage &= ~(tab_has_title(i) ? 0 : PROPERTY_USAGE_STORAGE);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::OBJECT, vformat("tab_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		pi.usage &= ~(get_tab_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("tab_%d/disabled", i));
+		pi.usage &= ~(is_tab_disabled(i) ? 0 : PROPERTY_USAGE_STORAGE);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("tab_%d/hidden", i));
+		pi.usage &= ~(is_tab_hidden(i) ? 0 : PROPERTY_USAGE_STORAGE);
+		p_list->push_back(pi);
+	}
+}
+
 void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabContainer::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabContainer::set_current_tab);
@@ -975,6 +1057,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("are_tabs_visible"), &TabContainer::are_tabs_visible);
 	ClassDB::bind_method(D_METHOD("set_all_tabs_in_front", "is_front"), &TabContainer::set_all_tabs_in_front);
 	ClassDB::bind_method(D_METHOD("is_all_tabs_in_front"), &TabContainer::is_all_tabs_in_front);
+
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabContainer::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabContainer::get_tab_title);
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabContainer::set_tab_icon);
@@ -987,6 +1070,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_metadata", "tab_idx"), &TabContainer::get_tab_metadata);
 	ClassDB::bind_method(D_METHOD("set_tab_button_icon", "tab_idx", "icon"), &TabContainer::set_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_button_icon", "tab_idx"), &TabContainer::get_tab_button_icon);
+
 	ClassDB::bind_method(D_METHOD("get_tab_idx_at_point", "point"), &TabContainer::get_tab_idx_at_point);
 	ClassDB::bind_method(D_METHOD("get_tab_idx_from_control", "control"), &TabContainer::get_tab_idx_from_control);
 	ClassDB::bind_method(D_METHOD("set_popup", "popup"), &TabContainer::set_popup);
