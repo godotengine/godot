@@ -2041,10 +2041,10 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	vb->add_child(name_hb);
 	name_dialog->register_text_enter(name);
 
-	error_dialog = memnew(ConfirmationDialog);
+	error_dialog = memnew(AcceptDialog);
 	error_dialog->set_ok_button_text(TTR("Close"));
 	error_dialog->set_title(TTR("Error!"));
-	add_child(error_dialog);
+	name_dialog->add_child(error_dialog);
 
 	name_dialog->connect(SNAME("confirmed"), callable_mp(this, &AnimationPlayerEditor::_animation_name_edited));
 

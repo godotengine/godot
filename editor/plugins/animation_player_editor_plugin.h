@@ -128,7 +128,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	} blend_editor;
 
 	ConfirmationDialog *name_dialog = nullptr;
-	ConfirmationDialog *error_dialog = nullptr;
+	AcceptDialog *error_dialog = nullptr;
 	int name_dialog_op = TOOL_NEW_ANIM;
 
 	bool updating = false;
