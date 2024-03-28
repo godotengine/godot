@@ -2014,7 +2014,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			uint32_t opaque_color_pass_flags = using_motion_pass ? (color_pass_flags & ~COLOR_PASS_FLAG_MOTION_VECTORS) : color_pass_flags;
 			RID opaque_framebuffer = using_motion_pass ? rb_data->get_color_pass_fb(opaque_color_pass_flags) : color_framebuffer;
 			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, opaque_color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, spec_constant_base_flags);
-			_render_list_with_draw_list(&render_list_params, opaque_framebuffer, load_color ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, depth_pre_pass ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, c, 1.0, 0);
+			_render_list_with_draw_list(&render_list_params, opaque_framebuffer, load_color ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, depth_pre_pass ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, c, 0.0, 0);
 		}
 
 		RD::get_singleton()->draw_command_end_label();
@@ -2629,7 +2629,7 @@ void RenderForwardClustered::_render_shadow_end() {
 
 	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
 		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, 0, true, false, shadow_pass.rp_uniform_set, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
-		_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, shadow_pass.rect);
+		_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, RD::FINAL_ACTION_STORE, Vector<Color>(), 0.0, 0, shadow_pass.rect);
 	}
 
 	RD::get_singleton()->draw_command_end_label();
@@ -2729,7 +2729,7 @@ void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform
 			Color(0, 0, 0, 0)
 		};
 
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, clear, 1.0, 0, p_region);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, clear, 0.0, 0, p_region);
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), &render_list_params, 0, render_list_params.element_count);
 		RD::get_singleton()->draw_list_end();
 	}
@@ -2779,7 +2779,7 @@ void RenderForwardClustered::_render_uv2(const PagedArray<RenderGeometryInstance
 			Color(0, 0, 0, 0),
 			Color(0, 0, 0, 0)
 		};
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, clear, 1.0, 0, p_region);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, clear, 0.0, 0, p_region);
 
 		const int uv_offset_count = 9;
 		static const Vector2 uv_offsets[uv_offset_count] = {
@@ -2885,7 +2885,7 @@ void RenderForwardClustered::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_bu
 		}
 
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, 0, true, false, rp_uniform_set, false);
-		_render_list_with_draw_list(&render_list_params, E->value, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, Rect2());
+		_render_list_with_draw_list(&render_list_params, E->value, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 0.0, 0, Rect2());
 	}
 
 	RD::get_singleton()->draw_command_end_label();
@@ -4265,7 +4265,7 @@ RenderForwardClustered::RenderForwardClustered() {
 		sampler.mag_filter = RD::SAMPLER_FILTER_NEAREST;
 		sampler.min_filter = RD::SAMPLER_FILTER_NEAREST;
 		sampler.enable_compare = true;
-		sampler.compare_op = RD::COMPARE_OP_LESS;
+		sampler.compare_op = RD::COMPARE_OP_GREATER;
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 

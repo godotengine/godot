@@ -1077,7 +1077,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_BLEND);
-		glDepthFunc(GL_LEQUAL);
+		glDepthFunc(GL_GEQUAL);
 		glColorMask(1, 1, 1, 1);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture->tex_id);

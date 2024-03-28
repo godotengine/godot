@@ -719,7 +719,8 @@ Projection Projection::operator*(const Projection &p_matrix) const {
 	return new_matrix;
 }
 
-void Projection::set_depth_correction(bool p_flip_y) {
+void Projection::set_depth_correction(bool p_flip_y, bool p_reverse_z, bool p_remap_z) {
+	// p_remap_z is used to convert from OpenGL-style clip space (-1 - 1) to Vulkan style (0 - 1).
 	real_t *m = &columns[0][0];
 
 	m[0] = 1;
@@ -732,11 +733,11 @@ void Projection::set_depth_correction(bool p_flip_y) {
 	m[7] = 0.0;
 	m[8] = 0.0;
 	m[9] = 0.0;
-	m[10] = 0.5;
+	m[10] = p_remap_z ? (p_reverse_z ? -0.5 : 0.5) : (p_reverse_z ? -1.0 : 1.0);
 	m[11] = 0.0;
 	m[12] = 0.0;
 	m[13] = 0.0;
-	m[14] = 0.5;
+	m[14] = p_remap_z ? 0.5 : 0.0;
 	m[15] = 1.0;
 }
 

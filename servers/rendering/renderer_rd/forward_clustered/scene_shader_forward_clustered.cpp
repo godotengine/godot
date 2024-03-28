@@ -260,7 +260,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	if (depth_test != DEPTH_TEST_DISABLED) {
 		depth_stencil_state.enable_depth_test = true;
-		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 		depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED ? true : false;
 	}
 	bool depth_pre_pass_enabled = bool(GLOBAL_GET("rendering/driver/depth_prepass/enable"));
@@ -827,7 +827,7 @@ void fragment() {
 		sampler.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 		sampler.min_filter = RD::SAMPLER_FILTER_LINEAR;
 		sampler.enable_compare = true;
-		sampler.compare_op = RD::COMPARE_OP_LESS;
+		sampler.compare_op = RD::COMPARE_OP_GREATER;
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 }

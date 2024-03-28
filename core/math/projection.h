@@ -69,7 +69,7 @@ struct _NO_DISCARD_ Projection {
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
-	void set_depth_correction(bool p_flip_y = true);
+	void set_depth_correction(bool p_flip_y = true, bool p_reverse_z = true, bool p_remap_z = true);
 
 	void set_light_atlas_rect(const Rect2 &p_rect);
 	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov = false);

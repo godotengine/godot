@@ -984,7 +984,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			}
 		}
 
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, load_color ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, c, 1.0, 0);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, load_color ? RD::INITIAL_ACTION_LOAD : RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, c, 0.0, 0);
 		RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 
 		if (copy_canvas) {
@@ -1385,7 +1385,7 @@ void RenderForwardMobile::_render_shadow_end() {
 
 	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
 		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, 0, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
-		_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, RD::FINAL_ACTION_STORE, Vector<Color>(), 1.0, 0, shadow_pass.rect);
+		_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, RD::FINAL_ACTION_STORE, Vector<Color>(), 0.0, 0, shadow_pass.rect);
 	}
 
 	RD::get_singleton()->draw_command_end_label();
@@ -1437,7 +1437,7 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 			Color(0, 0, 0, 0),
 			Color(0, 0, 0, 0)
 		};
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, clear, 1.0, 0, p_region);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, clear, 0.0, 0, p_region);
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), &render_list_params, 0, render_list_params.element_count);
 		RD::get_singleton()->draw_list_end();
 	}
@@ -1483,7 +1483,7 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 			Color(0, 0, 0, 0)
 		};
 
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, clear, 1.0, 0, p_region);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, clear, 0.0, 0, p_region);
 
 		const int uv_offset_count = 9;
 		static const Vector2 uv_offsets[uv_offset_count] = {

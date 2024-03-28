@@ -475,8 +475,8 @@ void main() {
 
 #ifdef MODE_RENDER_DEPTH
 	if (scene_data.pancake_shadows) {
-		if (gl_Position.z <= 0.00001) {
-			gl_Position.z = 0.00001;
+		if (gl_Position.z >= 0.9999) {
+			gl_Position.z = 0.9999;
 		}
 	}
 #endif // MODE_RENDER_DEPTH

@@ -487,8 +487,8 @@ void vertex_shader(vec3 vertex_input,
 
 #ifdef MODE_RENDER_DEPTH
 	if (scene_data.pancake_shadows) {
-		if (gl_Position.z <= 0.00001) {
-			gl_Position.z = 0.00001;
+		if (gl_Position.z >= 0.9999) {
+			gl_Position.z = 0.9999;
 		}
 	}
 #endif
