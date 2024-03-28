@@ -525,11 +525,12 @@ namespace Godot
         /// <returns>The added vector.</returns>
         public static Vector4 operator +(Vector4 left, Vector4 right)
         {
-            left.X += right.X;
-            left.Y += right.Y;
-            left.Z += right.Z;
-            left.W += right.W;
-            return left;
+            Vector4 v;
+            v.X = left.X + right.X;
+            v.Y = left.Y + right.Y;
+            v.Z = left.Z + right.Z;
+            v.W = left.W + right.W;
+            return v;
         }
 
         /// <summary>
@@ -541,11 +542,12 @@ namespace Godot
         /// <returns>The subtracted vector.</returns>
         public static Vector4 operator -(Vector4 left, Vector4 right)
         {
-            left.X -= right.X;
-            left.Y -= right.Y;
-            left.Z -= right.Z;
-            left.W -= right.W;
-            return left;
+            Vector4 v;
+            v.X = left.X - right.X;
+            v.Y = left.Y - right.Y;
+            v.Z = left.Z - right.Z;
+            v.W = left.W - right.W;
+            return v;
         }
 
         /// <summary>
@@ -559,11 +561,12 @@ namespace Godot
         /// <returns>The negated/flipped vector.</returns>
         public static Vector4 operator -(Vector4 vec)
         {
-            vec.X = -vec.X;
-            vec.Y = -vec.Y;
-            vec.Z = -vec.Z;
-            vec.W = -vec.W;
-            return vec;
+            Vector4 v;
+            v.X = -vec.X;
+            v.Y = -vec.Y;
+            v.Z = -vec.Z;
+            v.W = -vec.W;
+            return v;
         }
 
         /// <summary>
@@ -575,11 +578,12 @@ namespace Godot
         /// <returns>The multiplied vector.</returns>
         public static Vector4 operator *(Vector4 vec, real_t scale)
         {
-            vec.X *= scale;
-            vec.Y *= scale;
-            vec.Z *= scale;
-            vec.W *= scale;
-            return vec;
+            Vector4 v;
+            v.X = vec.X * scale;
+            v.Y = vec.Y * scale;
+            v.Z = vec.Z * scale;
+            v.W = vec.W * scale;
+            return v;
         }
 
         /// <summary>
@@ -591,11 +595,12 @@ namespace Godot
         /// <returns>The multiplied vector.</returns>
         public static Vector4 operator *(real_t scale, Vector4 vec)
         {
-            vec.X *= scale;
-            vec.Y *= scale;
-            vec.Z *= scale;
-            vec.W *= scale;
-            return vec;
+            Vector4 v;
+            v.X = vec.X * scale;
+            v.Y = vec.Y * scale;
+            v.Z = vec.Z * scale;
+            v.W = vec.W * scale;
+            return v;
         }
 
         /// <summary>
@@ -607,11 +612,12 @@ namespace Godot
         /// <returns>The multiplied vector.</returns>
         public static Vector4 operator *(Vector4 left, Vector4 right)
         {
-            left.X *= right.X;
-            left.Y *= right.Y;
-            left.Z *= right.Z;
-            left.W *= right.W;
-            return left;
+            Vector4 v;
+            v.X = left.X * right.X;
+            v.Y = left.Y * right.Y;
+            v.Z = left.Z * right.Z;
+            v.W = left.W * right.W;
+            return v;
         }
 
         /// <summary>
@@ -623,11 +629,12 @@ namespace Godot
         /// <returns>The divided vector.</returns>
         public static Vector4 operator /(Vector4 vec, real_t divisor)
         {
-            vec.X /= divisor;
-            vec.Y /= divisor;
-            vec.Z /= divisor;
-            vec.W /= divisor;
-            return vec;
+            Vector4 v;
+            v.X = vec.X / divisor;
+            v.Y = vec.Y / divisor;
+            v.Z = vec.Z / divisor;
+            v.W = vec.W / divisor;
+            return v;
         }
 
         /// <summary>
@@ -639,11 +646,12 @@ namespace Godot
         /// <returns>The divided vector.</returns>
         public static Vector4 operator /(Vector4 vec, Vector4 divisorv)
         {
-            vec.X /= divisorv.X;
-            vec.Y /= divisorv.Y;
-            vec.Z /= divisorv.Z;
-            vec.W /= divisorv.W;
-            return vec;
+            Vector4 v;
+            v.X = vec.X / divisorv.X;
+            v.Y = vec.Y / divisorv.Y;
+            v.Z = vec.Z / divisorv.Z;
+            v.W = vec.W / divisorv.W;
+            return v;
         }
 
         /// <summary>
@@ -664,11 +672,12 @@ namespace Godot
         /// <returns>The remainder vector.</returns>
         public static Vector4 operator %(Vector4 vec, real_t divisor)
         {
-            vec.X %= divisor;
-            vec.Y %= divisor;
-            vec.Z %= divisor;
-            vec.W %= divisor;
-            return vec;
+            Vector4 v;
+            v.X = vec.X % divisor;
+            v.Y = vec.Y % divisor;
+            v.Z = vec.Z % divisor;
+            v.W = vec.W % divisor;
+            return v;
         }
 
         /// <summary>
@@ -689,11 +698,12 @@ namespace Godot
         /// <returns>The remainder vector.</returns>
         public static Vector4 operator %(Vector4 vec, Vector4 divisorv)
         {
-            vec.X %= divisorv.X;
-            vec.Y %= divisorv.Y;
-            vec.Z %= divisorv.Z;
-            vec.W %= divisorv.W;
-            return vec;
+            Vector4 v;
+            v.X = vec.X % divisorv.X;
+            v.Y = vec.Y % divisorv.Y;
+            v.Z = vec.Z % divisorv.Z;
+            v.W = vec.W % divisorv.W;
+            return v;
         }
 
         /// <summary>
