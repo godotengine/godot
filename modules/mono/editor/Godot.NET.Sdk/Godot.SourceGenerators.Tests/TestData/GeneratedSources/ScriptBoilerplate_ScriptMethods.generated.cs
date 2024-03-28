@@ -1,5 +1,6 @@
 using Godot;
 using Godot.NativeInterop;
+using Godot.Bridge;
 
 partial class ScriptBoilerplate
 {
@@ -31,32 +32,39 @@ partial class ScriptBoilerplate
         return methods;
     }
 #pragma warning restore CS0109
+
+    public new static readonly ScriptMethodRegistry<ScriptBoilerplate> MethodRegistry = new ScriptMethodRegistry<ScriptBoilerplate>()
+        .Register(global::Godot.Node.MethodRegistry)
+        .Register(MethodName._Process, 1, (ScriptBoilerplate scriptInstance, NativeVariantPtrArgs args, out godot_variant ret) => 
+        {
+            scriptInstance._Process(global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(args[0]));
+            ret = default;
+        })
+        .Register(MethodName.Bazz, 1, (ScriptBoilerplate scriptInstance, NativeVariantPtrArgs args, out godot_variant ret) => 
+        {
+            var callRet = scriptInstance.Bazz(global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(args[0]));
+            ret = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(callRet);
+        })
+        .Compile();
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool InvokeGodotClassMethod(in godot_string_name method, NativeVariantPtrArgs args, out godot_variant ret)
     {
-        if (method == MethodName._Process && args.Count == 1) {
-            _Process(global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(args[0]));
-            ret = default;
+        if (MethodRegistry.TryGetMethod(in method, args.Count, out var scriptMethod))
+        {
+            scriptMethod(this, args, out ret);
             return true;
         }
-        if (method == MethodName.Bazz && args.Count == 1) {
-            var callRet = Bazz(global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(args[0]));
-            ret = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(callRet);
-            return true;
-        }
-        return base.InvokeGodotClassMethod(method, args, out ret);
+
+        ret = new godot_variant();
+        return false;
     }
+
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     protected override bool HasGodotClassMethod(in godot_string_name method)
     {
-        if (method == MethodName._Process) {
-           return true;
-        }
-        else if (method == MethodName.Bazz) {
-           return true;
-        }
-        return base.HasGodotClassMethod(method);
+        return MethodRegistry.ContainsMethod(method);
     }
 }
