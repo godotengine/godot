@@ -138,7 +138,7 @@ void ActionMapEditor::_action_edited() {
 			return;
 		}
 
-		emit_signal(SNAME("action_renamed"), old_name, new_name);
+		call_deferred(SNAME("emit_signal"), "action_renamed", old_name, new_name);
 	} else if (action_tree->get_selected_column() == 1) {
 		// Deadzone Edited
 		String name = ti->get_meta("__name");
