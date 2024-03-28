@@ -860,8 +860,7 @@ def is_vanilla_clang(env):
     if not using_clang(env):
         return False
     try:
-        command = f"{env.subst(env["CXX"])} --version"
-        version = subprocess.check_output(command).strip().decode("utf-8")
+        version = subprocess.check_output(f"{env.subst(env["CXX"])} --version").strip().decode("utf-8")
     except (subprocess.CalledProcessError, OSError):
         print("Couldn't parse CXX environment variable to infer compiler version.")
         return False
@@ -894,8 +893,7 @@ def get_compiler_version(env):
         # Not using -dumpversion as some GCC distros only return major, and
         # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
         try:
-            command = f"{env.subst(env["CXX"])} --version"
-            version = subprocess.check_output(command).strip().decode("utf-8")
+            version = subprocess.check_output(f"{env.subst(env["CXX"])} --version").strip().decode("utf-8")
         except (subprocess.CalledProcessError, OSError):
             print("Couldn't parse CXX environment variable to infer compiler version.")
             return ret
