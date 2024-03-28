@@ -22,7 +22,7 @@
 	<signals>
 		<signal name="pressed">
 			<param index="0" name="mouse_button" type="int" />
-			<param index="1" name="position" type="Vector2i" />
+			<param index="1" name="mouse_position" type="Vector2i" />
 			<description>
 				Emitted when the status indicator is pressed.
 			</description>

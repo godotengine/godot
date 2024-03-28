@@ -413,9 +413,9 @@
 			</description>
 		</signal>
 		<signal name="popup_request">
-			<param index="0" name="position" type="Vector2" />
+			<param index="0" name="at_position" type="Vector2" />
 			<description>
-				Emitted when a popup is requested. Happens on right-clicking in the GraphEdit. [param position] is the position of the mouse pointer when the signal is sent.
+				Emitted when a popup is requested. Happens on right-clicking in the GraphEdit. [param at_position] is the position of the mouse pointer when the signal is sent.
 			</description>
 		</signal>
 		<signal name="scroll_offset_changed">
