@@ -6918,6 +6918,7 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_terrain"), &TileData::get_terrain);
 	ClassDB::bind_method(D_METHOD("set_terrain_peering_bit", "peering_bit", "terrain"), &TileData::set_terrain_peering_bit);
 	ClassDB::bind_method(D_METHOD("get_terrain_peering_bit", "peering_bit"), &TileData::get_terrain_peering_bit);
+	ClassDB::bind_method(D_METHOD("is_valid_terrain_peering_bit", "peering_bit"), &TileData::is_valid_terrain_peering_bit);
 
 	// Navigation
 	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "layer_id", "navigation_polygon"), &TileData::set_navigation_polygon);
