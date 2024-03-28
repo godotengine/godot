@@ -68,6 +68,14 @@
 				[param to_point] must be in this curve's local space.
 			</description>
 		</method>
+		<method name="get_closest_point_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to_point" type="Vector3" />
+			<description>
+				Returns the index of the closest point on baked segments (in curve's local space) to [param to_point].
+				[param to_point] must be in this curve's local space.
+			</description>
+		</method>
 		<method name="get_point_in" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="idx" type="int" />
