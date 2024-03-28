@@ -563,9 +563,9 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	return res_type;
 }
 
-static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_vector) {
-	if (p_vector->has(p_type)) {
-		// Already added
+static void _add_allowed_type(const StringName &p_type, List<StringName> *p_vector) {
+	if (p_vector->find(p_type)) {
+		// Already added.
 		return;
 	}
 
@@ -573,7 +573,7 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 		// Engine class,
 
 		if (!ClassDB::is_virtual(p_type)) {
-			p_vector->insert(p_type);
+			p_vector->push_back(p_type);
 		}
 
 		List<StringName> inheriters;
@@ -583,7 +583,7 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 		}
 	} else {
 		// Script class.
-		p_vector->insert(p_type);
+		p_vector->push_back(p_type);
 	}
 
 	List<StringName> inheriters;
@@ -594,23 +594,32 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 }
 
 void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const {
-	Vector<String> allowed_types = base_type.split(",");
-	int size = allowed_types.size();
+	const Vector<String> allowed_types = base_type.split(",");
 
-	for (int i = 0; i < size; i++) {
-		String base = allowed_types[i].strip_edges();
+	List<StringName> final_allowed;
 
-		_add_allowed_type(base, p_vector);
+	for (const String &S : allowed_types) {
+		String base = S.strip_edges();
+		if (base.begins_with("-")) {
+			final_allowed.erase(base.right(-1));
+			continue;
+		}
+
+		_add_allowed_type(base, &final_allowed);
 
 		if (p_with_convert) {
 			if (base == "BaseMaterial3D") {
-				p_vector->insert("Texture2D");
+				final_allowed.push_back("Texture2D");
 			} else if (base == "ShaderMaterial") {
-				p_vector->insert("Shader");
+				final_allowed.push_back("Shader");
 			} else if (base == "Texture2D") {
-				p_vector->insert("Image");
+				final_allowed.push_back("Image");
 			}
 		}
+	}
+
+	for (const StringName &SN : final_allowed) {
+		p_vector->insert(SN);
 	}
 }
 
