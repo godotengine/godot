@@ -97,14 +97,6 @@ public:
 		GI_MODE_DYNAMIC
 	};
 
-	enum LightmapScale {
-		LIGHTMAP_SCALE_1X,
-		LIGHTMAP_SCALE_2X,
-		LIGHTMAP_SCALE_4X,
-		LIGHTMAP_SCALE_8X,
-		LIGHTMAP_SCALE_MAX,
-	};
-
 	enum VisibilityRangeFadeMode {
 		VISIBILITY_RANGE_FADE_DISABLED = RS::VISIBILITY_RANGE_FADE_DISABLED,
 		VISIBILITY_RANGE_FADE_SELF = RS::VISIBILITY_RANGE_FADE_SELF,
@@ -131,7 +123,7 @@ private:
 
 	float extra_cull_margin = 0.0;
 	AABB custom_aabb;
-	LightmapScale lightmap_scale = LIGHTMAP_SCALE_1X;
+	float lightmap_scale = 1.0;
 	GIMode gi_mode = GI_MODE_STATIC;
 	bool ignore_occlusion_culling = false;
 
@@ -182,8 +174,8 @@ public:
 	void set_gi_mode(GIMode p_mode);
 	GIMode get_gi_mode() const;
 
-	void set_lightmap_scale(LightmapScale p_scale);
-	LightmapScale get_lightmap_scale() const;
+	void set_lightmap_scale(float p_scale);
+	float get_lightmap_scale() const;
 
 	void set_instance_shader_parameter(const StringName &p_name, const Variant &p_value);
 	Variant get_instance_shader_parameter(const StringName &p_name) const;
@@ -200,7 +192,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(GeometryInstance3D::ShadowCastingSetting);
-VARIANT_ENUM_CAST(GeometryInstance3D::LightmapScale);
 VARIANT_ENUM_CAST(GeometryInstance3D::GIMode);
 VARIANT_ENUM_CAST(GeometryInstance3D::VisibilityRangeFadeMode);
 
