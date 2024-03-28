@@ -30,6 +30,8 @@
 
 #include "crash_handler_windows.h"
 
+#include "launch_debugger_windows.h"
+
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -122,6 +124,12 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	std::vector<module_data> modules;
 	DWORD cbNeeded;
 	std::vector<HMODULE> module_handles(1);
+
+#ifdef DEV_ENABLED
+	if (!IsDebuggerPresent()) {
+		launch_debugger(ep);
+	}
+#endif
 
 	if (OS::get_singleton() == nullptr || OS::get_singleton()->is_disable_crash_handler() || IsDebuggerPresent()) {
 		return EXCEPTION_CONTINUE_SEARCH;

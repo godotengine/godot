@@ -11,6 +11,7 @@ sources = []
 common_win = [
     "godot_windows.cpp",
     "crash_handler_windows.cpp",
+    "launch_debugger_windows.cpp",
     "os_windows.cpp",
     "display_server_windows.cpp",
     "key_mapping_windows.cpp",
