@@ -57,6 +57,13 @@
 				[b]Note:[/b] Does not apply to scripts that are already opened.
 			</description>
 		</method>
+		<method name="reload_open_files">
+			<return type="void" />
+			<param index="0" name="refresh_only" type="bool" default="false" />
+			<description>
+				Reload all currently opened files from disk in case the file contents are newer.
+			</description>
+		</method>
 		<method name="unregister_syntax_highlighter">
 			<return type="void" />
 			<param index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter" />
