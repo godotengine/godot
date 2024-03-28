@@ -11,6 +11,7 @@
 		var string = " ".join(string_array)
 		print(string) # "hello world"
 		[/codeblock]
+		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. The returned packed array of these are a copies, and changing it will [i]not[/i] affect the original value. To update a built-in property you need to modify the returned array, and then assign it to the property again.
 	</description>
 	<tutorials>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
