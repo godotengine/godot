@@ -69,6 +69,13 @@ void RenderingServerDefault::request_frame_drawn_callback(const Callable &p_call
 }
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
+#ifndef _3D_DISABLED
+	XRServer *xr_server = XRServer::get_singleton();
+	if (xr_server != nullptr) {
+		// let our XR server know we're about to render our frames so we can get our frame timing
+		xr_server->pre_render();
+	}
+#endif // _3D_DISABLED
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
 	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
 
@@ -92,15 +99,6 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::canvas_render->update();
 
 	RSG::rasterizer->end_frame(p_swap_buffers);
-
-#ifndef _3D_DISABLED
-	XRServer *xr_server = XRServer::get_singleton();
-	if (xr_server != nullptr) {
-		// let our XR server know we're done so we can get our frame timing
-		xr_server->end_frame();
-	}
-#endif // _3D_DISABLED
-
 	RSG::canvas->update_visibility_notifiers();
 	RSG::scene->update_visibility_notifiers();
 
