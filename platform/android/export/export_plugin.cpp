@@ -1920,7 +1920,15 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
 	if (p_option == "graphics/opengl_debug" ||
 			p_option == "command_line/extra_args" ||
-			p_option == "permissions/custom_permissions") {
+			p_option == "permissions/custom_permissions" ||
+			p_option == "gradle_build/compress_native_libraries" ||
+			p_option == "package/retain_data_on_uninstall" ||
+			p_option == "package/exclude_from_recents" ||
+			p_option == "package/show_in_app_library" ||
+			p_option == "package/show_as_launcher_app" ||
+			p_option == "apk_expansion/enable" ||
+			p_option == "apk_expansion/SALT" ||
+			p_option == "apk_expansion/public_key") {
 		return advanced_options_enabled;
 	}
 	if (p_option == "gradle_build/gradle_build_directory" || p_option == "gradle_build/android_source_template") {
