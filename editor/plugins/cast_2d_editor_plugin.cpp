@@ -102,7 +102,6 @@ bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 
 		node->set("target_position", point);
 		canvas_item_editor->update_viewport();
-		node->notify_property_list_changed();
 
 		return true;
 	}
