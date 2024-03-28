@@ -347,7 +347,6 @@ void initialize_navigation_server() {
 
 	// Fall back to dummy if no default server has been registered.
 	if (!navigation_server_3d) {
-		WARN_PRINT_ONCE("No NavigationServer3D implementation has been registered! Falling back to a dummy implementation: navigation features will be unavailable.");
 		navigation_server_3d = memnew(NavigationServer3DDummy);
 	}
 
@@ -358,7 +357,6 @@ void initialize_navigation_server() {
 	// Init 2D Navigation Server
 	navigation_server_2d = NavigationServer2DManager::new_default_server();
 	if (!navigation_server_2d) {
-		WARN_PRINT_ONCE("No NavigationServer2D implementation has been registered! Falling back to a dummy implementation: navigation features will be unavailable.");
 		navigation_server_2d = memnew(NavigationServer2DDummy);
 	}
 
