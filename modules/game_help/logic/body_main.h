@@ -197,14 +197,17 @@ class CharacterController : public Resource
         ClassDB::bind_method(D_METHOD("set_bt_load_test_id", "id"), &CharacterController::set_bt_load_test_id);
         ClassDB::bind_method(D_METHOD("get_bt_load_test_id"), &CharacterController::get_bt_load_test_id);
 
+        
+        ClassDB::bind_method(D_METHOD("load_test"), &CharacterController::load_test);
+
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboardPlan", "get_blackboardPlan");
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "load_test_player", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBodyMain"), "set_load_test_player", "get_load_test_player");
 
         ADD_GROUP("Load Test", "load_test_");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "load_test_player", PROPERTY_HINT_NODE_TYPE, "CharacterBodyMain"), "set_load_test_player", "get_load_test_player");
 
         ADD_PROPERTY(PropertyInfo(Variant::INT, "load_test_id"), "set_load_test_id", "get_load_test_id");
         // 增加一个按钮属性
-        ADD_PROPERTY(PropertyInfo(Variant::INT, "load_test_bt",PROPERTY_HINT_BUTTON,"#FF22AA;加载测试;load_test()"), "set_bt_load_test_id", "get_bt_load_test_id");
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "load_test_bt",PROPERTY_HINT_BUTTON,"#FF22AA;Load Test;load_test()"), "set_bt_load_test_id", "get_bt_load_test_id");
         
         GDVIRTUAL_BIND(_player_startup, "player","init_data");
         GDVIRTUAL_BIND(_player_pre_update_player,"player");

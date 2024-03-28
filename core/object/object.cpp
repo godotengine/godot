@@ -2365,8 +2365,8 @@ void ObjectDB::remove_instance(Object *p_object) {
 
 	spin_lock.lock();
 
+	if (object_slots == nullptr)return;
 #ifdef DEBUG_ENABLED
-
 	if (object_slots[slot].object != p_object) {
 		spin_lock.unlock();
 		ERR_FAIL_COND(object_slots[slot].object != p_object);
@@ -2435,5 +2435,6 @@ void ObjectDB::cleanup() {
 
 	if (object_slots) {
 		memfree(object_slots);
+		object_slots = nullptr;
 	}
 }

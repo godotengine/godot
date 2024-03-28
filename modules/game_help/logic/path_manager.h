@@ -16,11 +16,7 @@ class PathManager : public Object
     }
 public:
 
-    static PathManager *get_singleton()
-    {
-        static PathManager singleton;
-        return &singleton;
-    }
+    static PathManager *get_singleton();
     // 初始化路径
     void init()
     {
@@ -77,6 +73,9 @@ public:
         }
         return nullptr;
     }
+    PathManager();
+    ~PathManager();
+public:
 
 
     struct DirItem
@@ -117,6 +116,7 @@ public:
                     return dirs[i].load_file_read(sub_path);
                 }
             }
+            return nullptr;
         }
         Ref<FileAccess> load_file_write(String sub_path)const
         {
@@ -126,6 +126,7 @@ public:
                 return dirs[i].load_file_write(sub_path);
                 
             }
+            return nullptr;
         }
     };
     bool is_init = false;

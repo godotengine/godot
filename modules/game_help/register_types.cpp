@@ -73,6 +73,8 @@
 
 static AnimationHelp* animation_help = nullptr;
 static CSV_EditorImportPlugin * csv_editor_import = nullptr;
+static DataTableManager * data_table_manager = nullptr;
+static PathManager* path_manager = nullptr;
 
 void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -83,6 +85,8 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		mp3_import.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(mp3_import);
 #endif
+	data_table_manager = memnew(DataTableManager);
+	path_manager = memnew(PathManager);
 
 	ClassDB::register_class<CSVData>();
 
@@ -145,7 +149,14 @@ void uninitialize_game_help_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 	Engine::get_singleton()->remove_singleton("AnimationHelp");
+	Engine::get_singleton()->remove_singleton("DataTableManager");
+	Engine::get_singleton()->remove_singleton("PathManager");
 	memdelete(animation_help);
 	animation_help = nullptr;
+
+	memdelete(data_table_manager);
+	data_table_manager = nullptr;
+	memdelete(path_manager);
+	path_manager = nullptr;
 
 }

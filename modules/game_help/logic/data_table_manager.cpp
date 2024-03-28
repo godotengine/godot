@@ -1,17 +1,19 @@
 #include "data_table_manager.h"
 #include "../csv/CSV_EditorImportPlugin.h"
 
-
+static DataTableManager* singleton = nullptr;
 DataTableManager::DataTableManager() {
-    
+    singleton = this;
 }
 
 DataTableManager::~DataTableManager() {
-    
+    if(singleton == this)
+    {
+        singleton = nullptr;
+    }
 }
 DataTableManager *DataTableManager::get_singleton() {
-    static DataTableManager dtm;
-    return &dtm;
+    return singleton;
 }
 void DataTableManager::init() {
     Ref<CSVData> db = ResourceLoader::load(data_table_path);
