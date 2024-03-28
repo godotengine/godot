@@ -695,12 +695,8 @@ void CodeEdit::_handle_unicode_input_internal(const uint32_t p_unicode, int p_ca
 }
 
 void CodeEdit::_backspace_internal(int p_caret) {
+	ERR_FAIL_COND(p_caret > get_caret_count());
 	if (!is_editable()) {
-		return;
-	}
-
-	if (has_selection(p_caret)) {
-		delete_selection(p_caret);
 		return;
 	}
 
@@ -708,6 +704,11 @@ void CodeEdit::_backspace_internal(int p_caret) {
 	Vector<int> caret_edit_order = get_caret_index_edit_order();
 	for (const int &i : caret_edit_order) {
 		if (p_caret != -1 && p_caret != i) {
+			continue;
+		}
+
+		if (has_selection(i)) {
+			delete_selection(i);
 			continue;
 		}
 
