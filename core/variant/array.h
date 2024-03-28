@@ -59,7 +59,7 @@ public:
 	void clear();
 
 	bool operator==(const Array &p_array) const;
-	bool operator!=(const Array &p_array) const;
+	INEQUALITY_OPERATOR(const Array &);
 	bool recursive_equal(const Array &p_array, int recursion_count) const;
 
 	uint32_t hash() const;

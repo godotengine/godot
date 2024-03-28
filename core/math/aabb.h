@@ -60,7 +60,7 @@ struct _NO_DISCARD_ AABB {
 	void set_size(const Vector3 &p_size) { size = p_size; }
 
 	bool operator==(const AABB &p_rval) const;
-	bool operator!=(const AABB &p_rval) const;
+	INEQUALITY_OPERATOR(const AABB &);
 
 	bool is_equal_approx(const AABB &p_aabb) const;
 	bool is_finite() const;

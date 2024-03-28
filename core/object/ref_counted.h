@@ -83,9 +83,7 @@ public:
 	_FORCE_INLINE_ bool operator==(const T *p_ptr) const {
 		return reference == p_ptr;
 	}
-	_FORCE_INLINE_ bool operator!=(const T *p_ptr) const {
-		return reference != p_ptr;
-	}
+	INEQUALITY_OPERATOR(const T *);
 
 	_FORCE_INLINE_ bool operator<(const Ref<T> &p_r) const {
 		return reference < p_r.reference;
@@ -93,9 +91,7 @@ public:
 	_FORCE_INLINE_ bool operator==(const Ref<T> &p_r) const {
 		return reference == p_r.reference;
 	}
-	_FORCE_INLINE_ bool operator!=(const Ref<T> &p_r) const {
-		return reference != p_r.reference;
-	}
+	INEQUALITY_OPERATOR(const Ref<T> &);
 
 	_FORCE_INLINE_ T *operator*() const {
 		return reference;
