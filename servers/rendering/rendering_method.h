@@ -48,6 +48,7 @@ public:
 	virtual void camera_initialize(RID p_rid) = 0;
 
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far) = 0;
+	virtual void camera_set_oblique_plane(RID p_camera, bool p_use_ob_frustum, const Vector3 &p_ob_normal, const Vector3 &p_ob_position, float p_ob_offset) = 0;
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) = 0;
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far) = 0;
 	virtual void camera_set_transform(RID p_camera, const Transform3D &p_transform) = 0;

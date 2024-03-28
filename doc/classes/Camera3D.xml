@@ -122,6 +122,13 @@
 				Sets the camera projection to frustum mode (see [constant PROJECTION_FRUSTUM]), by specifying a [param size], an [param offset], and the [param z_near] and [param z_far] clip planes in world space units. See also [member frustum_offset].
 			</description>
 		</method>
+		<method name="set_oblique_plane_from_transform">
+			<return type="void" />
+			<param index="0" name="oblique_transform" type="Transform3D" />
+			<description>
+				Sets the [member oblique_normal] and [member oblique_position] values of an oblique projection camera using a the origin and forward vector of the transform argument. For ease of using plane meshes as portals and mirrors.
+			</description>
+		</method>
 		<method name="set_orthogonal">
 			<return type="void" />
 			<param index="0" name="size" type="float" />
@@ -202,11 +209,23 @@
 		<member name="near" type="float" setter="set_near" getter="get_near" default="0.05">
 			The distance to the near culling boundary for this camera relative to its local Z axis. Lower values allow the camera to see objects more up close to its origin, at the cost of lower precision across the [i]entire[/i] range. Values lower than the default can lead to increased Z-fighting.
 		</member>
+		<member name="oblique_normal" type="Vector3" setter="set_oblique_normal" getter="get_oblique_normal" default="Vector3(0, 1, 0)">
+			The desired normal vector of the world space plane used by an oblique camera as an oblique near clipping plane.
+		</member>
+		<member name="oblique_offset" type="float" setter="set_oblique_offset" getter="get_oblique_offset" default="0.0">
+			The offset value for the oblique plane along its forward vector.
+		</member>
+		<member name="oblique_position" type="Vector3" setter="set_oblique_position" getter="get_oblique_position" default="Vector3(0, 0, 0)">
+			The world space position of the plane used by an oblique camera as an oblique near clipping plane.
+		</member>
 		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera3D.ProjectionType" default="0">
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.
 		</member>
 		<member name="size" type="float" setter="set_size" getter="get_size" default="1.0">
 			The camera's size in meters measured as the diameter of the width or height, depending on [member keep_aspect]. Only applicable in orthogonal and frustum modes.
+		</member>
+		<member name="use_oblique_frustum" type="bool" setter="set_use_oblique_frustum" getter="get_use_oblique_frustum" default="false">
+			Toggle for applying oblique near plane frustum culling.
 		</member>
 		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset" default="0.0">
 			The vertical (Y) offset of the camera viewport.

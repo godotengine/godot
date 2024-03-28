@@ -33,17 +33,18 @@
 /////////////////////////////////////////////////////////////////////////////
 // CameraData
 
-void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter, const uint32_t p_visible_layers) {
+void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_main_projection, const Projection p_shadow_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter, const uint32_t p_visible_layers) {
 	view_count = 1;
 	is_orthogonal = p_is_orthogonal;
 	vaspect = p_vaspect;
 
 	main_transform = p_transform;
-	main_projection = p_projection;
+	main_projection = p_main_projection;
+	shadow_projection = p_shadow_projection;
 
 	visible_layers = p_visible_layers;
 	view_offset[0] = Transform3D();
-	view_projection[0] = p_projection;
+	view_projection[0] = p_main_projection;
 	taa_jitter = p_taa_jitter;
 }
 

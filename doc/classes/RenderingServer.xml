@@ -93,7 +93,7 @@
 				The normalization factor can be calculated from exposure value (EV100) as follows:
 				[codeblock]
 				func get_exposure_normalization(float ev100):
-				    			    return 1.0 / (pow(2.0, ev100) * 1.2)
+				                    return 1.0 / (pow(2.0, ev100) * 1.2)
 				[/codeblock]
 				The exposure value can be calculated from aperture (in f-stops), shutter speed (in seconds), and sensitivity (in ISO) as follows:
 				[codeblock]
@@ -151,6 +151,17 @@
 			<param index="4" name="z_far" type="float" />
 			<description>
 				Sets camera to use frustum projection. This mode allows adjusting the [param offset] argument to create "tilted frustum" effects.
+			</description>
+		</method>
+		<method name="camera_set_oblique_plane">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="use_oblique_frustum" type="bool" />
+			<param index="2" name="oblique_normal" type="Vector3" />
+			<param index="3" name="oblique_position" type="Vector3" />
+			<param index="4" name="oblique_offset" type="float" />
+			<description>
+				Sets the camera to use oblique near plane frustum culling.
 			</description>
 		</method>
 		<method name="camera_set_orthogonal">
