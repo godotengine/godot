@@ -38,7 +38,15 @@
 			<param index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<param index="1" name="value" type="int" />
 			<description>
-				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+				Sets the absolute spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+			</description>
+		</method>
+		<method name="set_spacing_relative">
+			<return type="void" />
+			<param index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Sets the relative spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] (fraction of the font size).
 			</description>
 		</method>
 	</methods>
@@ -53,16 +61,28 @@
 			A set of OpenType feature tags. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
 		</member>
 		<member name="spacing_bottom" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra spacing at the bottom of the line in pixels.
+			Extra spacing at the bottom of the line (in pixels).
+		</member>
+		<member name="spacing_bottom_relative" type="float" setter="set_spacing_relative" getter="get_spacing_relative" default="0.0">
+			Extra spacing at the bottom of the line (fraction of the font size).
 		</member>
 		<member name="spacing_glyph" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra spacing between graphical glyphs.
+			Extra spacing between graphical glyphs (in pixels).
+		</member>
+		<member name="spacing_glyph_relative" type="float" setter="set_spacing_relative" getter="get_spacing_relative" default="0.0">
+			Extra spacing between graphical glyphs (fraction of the font size).
 		</member>
 		<member name="spacing_space" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra width of the space glyphs.
+			Extra width of the space glyphs (in pixels).
+		</member>
+		<member name="spacing_space_relative" type="float" setter="set_spacing_relative" getter="get_spacing_relative" default="0.0">
+			Extra width of the space glyphs (fraction of the font size).
 		</member>
 		<member name="spacing_top" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra spacing at the top of the line in pixels.
+			Extra spacing at the top of the line (in pixels).
+		</member>
+		<member name="spacing_top_relative" type="float" setter="set_spacing_relative" getter="get_spacing_relative" default="0.0">
+			Extra spacing at the top of the line (fraction of the font size).
 		</member>
 		<member name="variation_embolden" type="float" setter="set_variation_embolden" getter="get_variation_embolden" default="0.0">
 			If is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.

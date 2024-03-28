@@ -143,7 +143,15 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<description>
-				Returns spacing for [param spacing] (see [enum TextServer.SpacingType]) in pixels (not relative to the font size).
+				Returns absolute spacing for [param spacing] (see [enum TextServer.SpacingType]) in pixels (not relative to the font size).
+			</description>
+		</method>
+		<method name="get_extra_spacing_relative" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+				Returns relative spacing for [param spacing] (see [enum TextServer.SpacingType]) (fraction of the font size).
 			</description>
 		</method>
 		<method name="get_face_index" qualifiers="const">
@@ -466,7 +474,16 @@
 			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<param index="2" name="value" type="int" />
 			<description>
-				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+				Sets the absolute spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+			</description>
+		</method>
+		<method name="set_extra_spacing_relative">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="2" name="value" type="float" />
+			<description>
+				Sets the relative spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] (fraction of the font size).
 			</description>
 		</method>
 		<method name="set_face_index">

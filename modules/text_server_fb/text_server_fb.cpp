@@ -845,7 +845,14 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 			}
 			FT_Select_Size(fd->face, best_match);
 		} else {
-			FT_Set_Pixel_Sizes(fd->face, 0, Math::round(fd->size.x * fd->oversampling));
+			FT_Size_RequestRec req;
+			req.type = FT_SIZE_REQUEST_TYPE_NOMINAL;
+			req.width = double(fd->size.x * fd->oversampling) * 64.0;
+			req.height = double(fd->size.x * fd->oversampling) * 64.0;
+			req.horiResolution = 0;
+			req.vertResolution = 0;
+
+			FT_Request_Size(fd->face, &req);
 			if (fd->face->size->metrics.y_ppem != 0) {
 				fd->scale = ((double)fd->size.x * fd->oversampling) / (double)fd->face->size->metrics.y_ppem;
 			}
@@ -1425,6 +1432,39 @@ int64_t TextServerFallback::_font_get_spacing(const RID &p_font_rid, SpacingType
 
 		MutexLock lock(fd->mutex);
 		return fd->extra_spacing[p_spacing];
+	}
+}
+
+void TextServerFallback::_font_set_spacing_relative(const RID &p_font_rid, SpacingType p_spacing, double p_value) {
+	ERR_FAIL_INDEX((int)p_spacing, 4);
+	FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		if (fdv->extra_spacing_relative[p_spacing] != p_value) {
+			fdv->extra_spacing_relative[p_spacing] = p_value;
+		}
+	} else {
+		FontFallback *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL(fd);
+
+		MutexLock lock(fd->mutex);
+		if (fd->extra_spacing_relative[p_spacing] != p_value) {
+			_font_clear_cache(fd);
+			fd->extra_spacing_relative[p_spacing] = p_value;
+		}
+	}
+}
+
+double TextServerFallback::_font_get_spacing_relative(const RID &p_font_rid, SpacingType p_spacing) const {
+	ERR_FAIL_INDEX_V((int)p_spacing, 4, 0.0);
+	FontFallbackLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
+	if (fdv) {
+		return fdv->extra_spacing_relative[p_spacing];
+	} else {
+		FontFallback *fd = font_owner.get_or_null(p_font_rid);
+		ERR_FAIL_NULL_V(fd, 0.0);
+
+		MutexLock lock(fd->mutex);
+		return fd->extra_spacing_relative[p_spacing];
 	}
 }
 
@@ -3248,8 +3288,8 @@ bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const V
 			} else {
 				if (gl.font_rid.is_valid()) {
 					if (sd->orientation == ORIENTATION_HORIZONTAL) {
-						sd->ascent = MAX(sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP));
-						sd->descent = MAX(sd->descent, _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM));
+						sd->ascent = MAX(sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP) + _font_get_spacing_relative(gl.font_rid, SPACING_TOP) * (double)gl.font_size);
+						sd->descent = MAX(sd->descent, _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM) + _font_get_spacing_relative(gl.font_rid, SPACING_BOTTOM) * (double)gl.font_size);
 					} else {
 						sd->ascent = MAX(sd->ascent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
 						sd->descent = MAX(sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
@@ -3418,8 +3458,8 @@ RID TextServerFallback::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 				} else {
 					if (gl.font_rid.is_valid()) {
 						if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
-							new_sd->ascent = MAX(new_sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP));
-							new_sd->descent = MAX(new_sd->descent, _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM));
+							new_sd->ascent = MAX(new_sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP) + _font_get_spacing_relative(gl.font_rid, SPACING_TOP) * (double)gl.font_size);
+							new_sd->descent = MAX(new_sd->descent, _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM) + _font_get_spacing_relative(gl.font_rid, SPACING_BOTTOM) * (double)gl.font_size);
 						} else {
 							new_sd->ascent = MAX(new_sd->ascent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
 							new_sd->descent = MAX(new_sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
@@ -3846,6 +3886,10 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 				_font_set_spacing(sysf.rid, SPACING_BOTTOM, key.extra_spacing[SPACING_BOTTOM]);
 				_font_set_spacing(sysf.rid, SPACING_SPACE, key.extra_spacing[SPACING_SPACE]);
 				_font_set_spacing(sysf.rid, SPACING_GLYPH, key.extra_spacing[SPACING_GLYPH]);
+				_font_set_spacing_relative(sysf.rid, SPACING_TOP, key.extra_spacing_relative[SPACING_TOP]);
+				_font_set_spacing_relative(sysf.rid, SPACING_BOTTOM, key.extra_spacing_relative[SPACING_BOTTOM]);
+				_font_set_spacing_relative(sysf.rid, SPACING_SPACE, key.extra_spacing_relative[SPACING_SPACE]);
+				_font_set_spacing_relative(sysf.rid, SPACING_GLYPH, key.extra_spacing_relative[SPACING_GLYPH]);
 
 				if (system_fonts.has(key)) {
 					system_fonts[key].var.push_back(sysf);
@@ -3966,7 +4010,7 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	int ellipsis_width = 0;
 	if (add_ellipsis && whitespace_gl_font_rid.is_valid()) {
-		ellipsis_width = (found_el_char ? 1 : 3) * dot_adv.x + sd->extra_spacing[SPACING_GLYPH] + _font_get_spacing(dot_gl_font_rid, SPACING_GLYPH) + (cut_per_word ? whitespace_adv.x : 0);
+		ellipsis_width = (found_el_char ? 1 : 3) * dot_adv.x + sd->extra_spacing[SPACING_GLYPH] + _font_get_spacing_relative(dot_gl_font_rid, SPACING_GLYPH) * (double)last_gl_font_size + _font_get_spacing(dot_gl_font_rid, SPACING_GLYPH) + (cut_per_word ? whitespace_adv.x : 0);
 	}
 
 	int ell_min_characters = 6;
@@ -4179,8 +4223,8 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 							gl.advance = _font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x;
 							gl.x_off = 0;
 							gl.y_off = _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
-							sd->ascent = MAX(sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP));
-							sd->descent = MAX(sd->descent, _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM));
+							sd->ascent = MAX(sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP) + _font_get_spacing_relative(gl.font_rid, SPACING_TOP) * (double)gl.font_size);
+							sd->descent = MAX(sd->descent, _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM) + _font_get_spacing_relative(gl.font_rid, SPACING_BOTTOM) * (double)gl.font_size);
 						} else {
 							gl.advance = _font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).y;
 							gl.x_off = -Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5) + _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
@@ -4192,9 +4236,9 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 					if (j < sd->end - 1) {
 						// Do not add extra spacing to the last glyph of the string.
 						if (is_whitespace(sd->text[j - sd->start])) {
-							gl.advance += sd->extra_spacing[SPACING_SPACE] + _font_get_spacing(gl.font_rid, SPACING_SPACE);
+							gl.advance += sd->extra_spacing[SPACING_SPACE] + _font_get_spacing(gl.font_rid, SPACING_SPACE) + _font_get_spacing_relative(gl.font_rid, SPACING_SPACE) * (double)gl.font_size;
 						} else {
-							gl.advance += sd->extra_spacing[SPACING_GLYPH] + _font_get_spacing(gl.font_rid, SPACING_GLYPH);
+							gl.advance += sd->extra_spacing[SPACING_GLYPH] + _font_get_spacing(gl.font_rid, SPACING_GLYPH) + _font_get_spacing_relative(gl.font_rid, SPACING_GLYPH) * (double)gl.font_size;
 						}
 					}
 					sd->upos = MAX(sd->upos, _font_get_underline_position(gl.font_rid, gl.font_size));

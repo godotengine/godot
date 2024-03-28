@@ -31,11 +31,11 @@
 #ifndef DISABLE_DEPRECATED
 
 RID Font::_find_variation_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform) const {
-	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, 0, 0, 0, 0, 0.0);
+	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, Vector4i(), Vector4(), 0);
 }
 
 RID Font::_find_variation_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
-	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, 0.0);
+	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, Vector4i(p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph), Vector4(), 0);
 }
 
 void Font::_bind_compatibility_methods() {

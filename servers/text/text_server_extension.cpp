@@ -122,6 +122,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_baseline_offset, "font_rid", "baseline_offset");
 	GDVIRTUAL_BIND(_font_get_baseline_offset, "font_rid");
 
+	GDVIRTUAL_BIND(_font_set_spacing_relative, "font_rid", "spacing", "value");
+	GDVIRTUAL_BIND(_font_get_spacing_relative, "font_rid", "spacing");
+
 	GDVIRTUAL_BIND(_font_set_transform, "font_rid", "transform");
 	GDVIRTUAL_BIND(_font_get_transform, "font_rid");
 
@@ -664,6 +667,16 @@ void TextServerExtension::font_set_baseline_offset(const RID &p_font_rid, float 
 float TextServerExtension::font_get_baseline_offset(const RID &p_font_rid) const {
 	float ret = 0.0;
 	GDVIRTUAL_CALL(_font_get_baseline_offset, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_spacing_relative(const RID &p_font_rid, SpacingType p_spacing, double p_value) {
+	GDVIRTUAL_CALL(_font_set_spacing_relative, p_font_rid, p_spacing, p_value);
+}
+
+double TextServerExtension::font_get_spacing_relative(const RID &p_font_rid, SpacingType p_spacing) const {
+	double ret = 0;
+	GDVIRTUAL_CALL(_font_get_spacing_relative, p_font_rid, p_spacing, ret);
 	return ret;
 }
 

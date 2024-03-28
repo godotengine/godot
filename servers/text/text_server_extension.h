@@ -183,6 +183,11 @@ public:
 	GDVIRTUAL2(_font_set_baseline_offset, const RID &, float);
 	GDVIRTUAL1RC(float, _font_get_baseline_offset, const RID &);
 
+	virtual void font_set_spacing_relative(const RID &p_font_rid, SpacingType p_spacing, double p_value) override;
+	virtual double font_get_spacing_relative(const RID &p_font_rid, SpacingType p_spacing) const override;
+	GDVIRTUAL3(_font_set_spacing_relative, const RID &, SpacingType, double);
+	GDVIRTUAL2RC(double, _font_get_spacing_relative, const RID &, SpacingType);
+
 	virtual void font_set_transform(const RID &p_font_rid, const Transform2D &p_transform) override;
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_transform, RID, Transform2D);

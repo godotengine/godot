@@ -456,6 +456,15 @@
 				Returns the spacing for [param spacing] (see [enum TextServer.SpacingType]) in pixels (not relative to the font size).
 			</description>
 		</method>
+		<method name="_font_get_spacing_relative" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+				[b]Optional.[/b]
+				Returns the relative spacing for [param spacing] (see [enum TextServer.SpacingType]) (fraction of the font size).
+			</description>
+		</method>
 		<method name="_font_get_stretch" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
@@ -999,6 +1008,16 @@
 			<description>
 				[b]Optional.[/b]
 				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+			</description>
+		</method>
+		<method name="_font_set_spacing_relative" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="2" name="value" type="float" />
+			<description>
+				[b]Optional.[/b]
+				Sets the relative spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] (fraction of the font size).
 			</description>
 		</method>
 		<method name="_font_set_stretch" qualifiers="virtual">
