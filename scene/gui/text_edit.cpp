@@ -539,7 +539,6 @@ void TextEdit::_notification(int p_what) {
 			_update_scrollbars();
 
 			RID ci = get_canvas_item();
-			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
 			int xmargin_beg = theme_cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding;
 
 			int xmargin_end = size.width - theme_cache.style_normal->get_margin(SIDE_RIGHT);
@@ -8022,5 +8021,6 @@ TextEdit::TextEdit(const String &p_placeholder) {
 
 	set_placeholder(p_placeholder);
 
+	set_clip_contents(true);
 	set_editable(true);
 }
