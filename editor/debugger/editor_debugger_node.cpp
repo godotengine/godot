@@ -324,6 +324,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			_update_debug_options();
+			initializing = false;
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -535,7 +536,9 @@ void EditorDebuggerNode::_menu_option(int p_id) {
 			bool ischecked = script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR));
 			debug_with_external_editor = !ischecked;
 			script_menu->get_popup()->set_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR), !ischecked);
-			EditorSettings::get_singleton()->set_project_metadata("debug_options", "debug_with_external_editor", !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "debug_with_external_editor", !ischecked);
+			}
 		} break;
 	}
 }
