@@ -3304,6 +3304,30 @@ void DisplayServerWindows::status_indicator_set_callback(IndicatorID p_id, const
 	indicators[p_id].callback = p_callback;
 }
 
+Rect2 DisplayServerWindows::status_indicator_get_rect(IndicatorID p_id) const {
+	ERR_FAIL_COND_V(!indicators.has(p_id), Rect2());
+
+	NOTIFYICONIDENTIFIER nid;
+	ZeroMemory(&nid, sizeof(NOTIFYICONIDENTIFIER));
+	nid.cbSize = sizeof(NOTIFYICONIDENTIFIER);
+	nid.hWnd = windows[MAIN_WINDOW_ID].hWnd;
+	nid.uID = p_id;
+	nid.guidItem = GUID_NULL;
+
+	RECT rect;
+	if (Shell_NotifyIconGetRect(&nid, &rect) != S_OK) {
+		return Rect2();
+	}
+	Rect2 ind_rect = Rect2(Point2(rect.left, rect.top) - _get_screens_origin(), Size2(rect.right - rect.left, rect.bottom - rect.top));
+	for (int i = 0; i < get_screen_count(); i++) {
+		Rect2 screen_rect = Rect2(screen_get_position(i), screen_get_size(i));
+		if (screen_rect.encloses(ind_rect)) {
+			return ind_rect;
+		}
+	}
+	return Rect2();
+}
+
 void DisplayServerWindows::delete_status_indicator(IndicatorID p_id) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
