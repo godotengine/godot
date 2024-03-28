@@ -139,7 +139,7 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	}
 
 	print_error("\n================================================================");
-	print_error(vformat("%s: Program crashed", __FUNCTION__));
+	print_error(vformat("\x1b[1;91m%s: Program crashed.\x1b[0m", __FUNCTION__));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
 	if (String(VERSION_HASH).is_empty()) {
@@ -204,12 +204,12 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
 
 				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line)) {
-					print_error(vformat("[%d] %s (%s:%d)", n, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
+					print_error(vformat("\x1b[94m[%d] \x1b[96m%s \x1b[90m(%s:%d)\x1b[0m", n, fnName.c_str(), line.FileName, uint32_t(line.LineNumber)));
 				} else {
-					print_error(vformat("[%d] %s", n, fnName.c_str()));
+					print_error(vformat("\x1b[94m[%d] \x1b[96m%s\x1b[0m", n, fnName.c_str()));
 				}
 			} else {
-				print_error(vformat("[%d] ???", n));
+				print_error(vformat("\x1b[94m[%d] \x1b[96m???\x1b[0m", n));
 			}
 
 			n++;
