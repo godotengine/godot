@@ -4,6 +4,7 @@
 		Exporter for Windows.
 	</brief_description>
 	<description>
+		The Windows exporter customizes how a Windows build is handled. In the editor's "Export" window, it is created when adding a new "Windows" preset.
 	</description>
 	<tutorials>
 		<link title="Exporting for Windows">$DOCS_URL/tutorials/export/exporting_for_windows.html</link>
