@@ -545,6 +545,11 @@ TEST_CASE("[Array] Recursive self comparison") {
 	a2.clear();
 }
 
+TEST_CASE("[Array] Initial size and fill") {
+	Array a = Array::create_filled_array(5, 1);
+	CHECK_EQ(a, build_array(1, 1, 1, 1, 1));
+}
+
 } // namespace TestArray
 
 #endif // TEST_ARRAY_H
