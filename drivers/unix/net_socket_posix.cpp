@@ -259,7 +259,9 @@ _FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IPAddress p_ip, Str
 	int ret = -1;
 
 	IPAddress if_ip;
+#ifndef JAVASCRIPT_ENABLED
 	uint32_t if_v6id = 0;
+#endif
 	HashMap<String, IP::Interface_Info> if_info;
 	IP::get_singleton()->get_local_interfaces(&if_info);
 	for (KeyValue<String, IP::Interface_Info> &E : if_info) {
@@ -268,7 +270,9 @@ _FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IPAddress p_ip, Str
 			continue;
 		}
 
+#ifndef JAVASCRIPT_ENABLED
 		if_v6id = (uint32_t)c.index.to_int();
+#endif
 		if (type == IP::TYPE_IPV6) {
 			break; // IPv6 uses index.
 		}
@@ -285,17 +289,27 @@ _FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IPAddress p_ip, Str
 
 	if (level == IPPROTO_IP) {
 		ERR_FAIL_COND_V(!if_ip.is_valid(), ERR_INVALID_PARAMETER);
+#ifndef JAVASCRIPT_ENABLED
+		// `setsockopt()` is not available in HTML5. Skip this block to avoid printing error messages to the console.
 		struct ip_mreq greq;
 		int sock_opt = p_add ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP;
 		memcpy(&greq.imr_multiaddr, p_ip.get_ipv4(), 4);
 		memcpy(&greq.imr_interface, if_ip.get_ipv4(), 4);
 		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
+#else
+		ret = 0;
+#endif
 	} else {
+#ifndef JAVASCRIPT_ENABLED
+		// `setsockopt()` is not available in HTML5. Skip this block to avoid printing error messages to the console.
 		struct ipv6_mreq greq;
 		int sock_opt = p_add ? IPV6_ADD_MEMBERSHIP : IPV6_DROP_MEMBERSHIP;
 		memcpy(&greq.ipv6mr_multiaddr, p_ip.get_ipv6(), 16);
 		greq.ipv6mr_interface = if_v6id;
 		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
+#else
+		ret = 0;
+#endif
 	}
 	ERR_FAIL_COND_V(ret != 0, FAILED);
 
@@ -659,11 +673,15 @@ Error NetSocketPosix::set_broadcasting_enabled(bool p_enabled) {
 		return ERR_UNAVAILABLE;
 	}
 
+#ifndef JAVASCRIPT_ENABLED
+	// `setsockopt()` is not available in HTML5. Skip this block to avoid printing error messages to the console.
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, SOL_SOCKET, SO_BROADCAST, SOCK_CBUF(&par), sizeof(int)) != 0) {
 		WARN_PRINT("Unable to change broadcast setting");
 		return FAILED;
 	}
+#endif
+
 	return OK;
 }
 
@@ -693,20 +711,26 @@ void NetSocketPosix::set_ipv6_only_enabled(bool p_enabled) {
 	// This option is only available in IPv6 sockets.
 	ERR_FAIL_COND(_ip_type == IP::TYPE_IPV4);
 
+#ifndef JAVASCRIPT_ENABLED
+	// `setsockopt()` is not available in HTML5. Skip this block to avoid printing error messages to the console.
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, IPPROTO_IPV6, IPV6_V6ONLY, SOCK_CBUF(&par), sizeof(int)) != 0) {
 		WARN_PRINT("Unable to change IPv4 address mapping over IPv6 option");
 	}
+#endif
 }
 
 void NetSocketPosix::set_tcp_no_delay_enabled(bool p_enabled) {
 	ERR_FAIL_COND(!is_open());
 	ERR_FAIL_COND(!_is_stream); // Not TCP
 
+#ifndef JAVASCRIPT_ENABLED
+	// `setsockopt()` is not available in HTML5. Skip this block to avoid printing error messages to the console.
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, IPPROTO_TCP, TCP_NODELAY, SOCK_CBUF(&par), sizeof(int)) < 0) {
 		ERR_PRINT("Unable to set TCP no delay option");
 	}
+#endif
 }
 
 void NetSocketPosix::set_reuse_address_enabled(bool p_enabled) {
@@ -715,10 +739,13 @@ void NetSocketPosix::set_reuse_address_enabled(bool p_enabled) {
 // On Windows, enabling SO_REUSEADDR actually would also enable reuse port, very bad on TCP. Denying...
 // Windows does not have this option, SO_REUSEADDR in this magical world means SO_REUSEPORT
 #ifndef WINDOWS_ENABLED
+#ifndef JAVASCRIPT_ENABLED
+	// `setsockopt()` is not available in HTML5. Skip this block to avoid printing error messages to the console.
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, SOCK_CBUF(&par), sizeof(int)) < 0) {
 		WARN_PRINT("Unable to set socket REUSEADDR option!");
 	}
+#endif
 #endif
 }
 
@@ -729,10 +756,14 @@ void NetSocketPosix::set_reuse_port_enabled(bool p_enabled) {
 #ifdef WINDOWS_ENABLED
 #define SO_REUSEPORT SO_REUSEADDR
 #endif
+
+#ifndef JAVASCRIPT_ENABLED
+	// `setsockopt()` is not available in HTML5. Skip this block to avoid printing error messages to the console.
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEPORT, SOCK_CBUF(&par), sizeof(int)) < 0) {
 		WARN_PRINT("Unable to set socket REUSEPORT option!");
 	}
+#endif
 }
 
 bool NetSocketPosix::is_open() const {
