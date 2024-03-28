@@ -425,6 +425,12 @@
 			Use the Academy Color Encoding System tonemapper. ACES is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. ACES typically has a more contrasted output compared to [constant TONE_MAPPER_REINHARDT] and [constant TONE_MAPPER_FILMIC].
 			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
 		</constant>
+		<constant name="TONE_MAPPER_AGX" value="4" enum="ToneMapper">
+			Use the AgX tonemapper. AgX is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. AgX is less likely to darken parts of the scene compared to [constant TONE_MAPPER_ACES], and can match [constant TONE_MAPPER_FILMIC] more closely with whitepoint values above [code]10.0[/code].
+		</constant>
+		<constant name="TONE_MAPPER_AGX_PUNCHY" value="5" enum="ToneMapper">
+			Use the AgX tonemapper with the "punchy" look. AgX is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. The punchy look increases contrast and saturation, bringing its visuals closer to [constant TONE_MAPPER_ACES].
+		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
 			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.
 		</constant>
