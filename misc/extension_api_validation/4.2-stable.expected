@@ -248,3 +248,10 @@ Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/register_tex
 Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/remove_button/arguments/0': type changed value in new API, from "Control" to "Button".
 
 Changed argument type to the more specific one actually expected by the method. Compatibility method registered.
+
+
+GH-88014
+--------
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment
+
+Removed VisualShaderNodeComment, which is replaced by VisualShaderNodeFrame.

@@ -1528,7 +1528,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_color("resizer_color", "GraphEditMinimap", minimap_resizer_color);
 		}
 
-		// GraphElement & GraphNode.
+		// GraphElement, GraphNode & GraphFrame.
 		{
 			const int gn_margin_top = 2;
 			const int gn_margin_side = 2;
@@ -1619,6 +1619,41 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("shadow_offset_x", "GraphNodeTitleLabel", 0);
 			p_theme->set_constant("shadow_offset_y", "GraphNodeTitleLabel", 1);
 			p_theme->set_constant("line_spacing", "GraphNodeTitleLabel", 3 * EDSCALE);
+
+			// GraphFrame.
+
+			const int gf_corner_width = 7 * EDSCALE;
+			const int gf_border_width = 2 * MAX(1, EDSCALE);
+
+			Ref<StyleBoxFlat> graphframe_sb = make_flat_stylebox(Color(0.0, 0.0, 0.0, 0.2), gn_margin_side, gn_margin_side, gn_margin_side, gn_margin_bottom, gf_corner_width);
+			graphframe_sb->set_expand_margin(SIDE_TOP, 38 * EDSCALE);
+			graphframe_sb->set_border_width_all(gf_border_width);
+			graphframe_sb->set_border_color(high_contrast_borders ? gn_bg_color.lightened(0.2) : gn_bg_color.darkened(0.3));
+			graphframe_sb->set_shadow_size(8 * EDSCALE);
+			graphframe_sb->set_shadow_color(Color(p_config.shadow_color, p_config.shadow_color.a * 0.25));
+			graphframe_sb->set_anti_aliased(true);
+
+			Ref<StyleBoxFlat> graphframe_sb_selected = graphframe_sb->duplicate();
+			graphframe_sb_selected->set_border_color(gn_selected_border_color);
+
+			p_theme->set_stylebox("panel", "GraphFrame", graphframe_sb);
+			p_theme->set_stylebox("panel_selected", "GraphFrame", graphframe_sb_selected);
+			p_theme->set_stylebox("titlebar", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
+			p_theme->set_stylebox("titlebar_selected", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
+			p_theme->set_color("resizer_color", "GraphFrame", gn_decoration_color);
+
+			// GraphFrame's title Label
+			p_theme->set_type_variation("GraphFrameTitleLabel", "Label");
+			p_theme->set_stylebox("normal", "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
+			p_theme->set_font_size("font_size", "GraphFrameTitleLabel", 22);
+			p_theme->set_color("font_color", "GraphFrameTitleLabel", Color(1, 1, 1));
+			p_theme->set_color("font_shadow_color", "GraphFrameTitleLabel", Color(0, 0, 0, 0));
+			p_theme->set_color("font_outline_color", "GraphFrameTitleLabel", Color(1, 1, 1));
+			p_theme->set_constant("shadow_offset_x", "GraphFrameTitleLabel", 1 * EDSCALE);
+			p_theme->set_constant("shadow_offset_y", "GraphFrameTitleLabel", 1 * EDSCALE);
+			p_theme->set_constant("outline_size", "GraphFrameTitleLabel", 0);
+			p_theme->set_constant("shadow_outline_size", "GraphFrameTitleLabel", 1 * EDSCALE);
+			p_theme->set_constant("line_spacing", "GraphFrameTitleLabel", 3 * EDSCALE);
 		}
 	}
 
