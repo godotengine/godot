@@ -236,6 +236,8 @@ static bool validate_extension_api = false;
 static String validate_extension_api_file;
 #endif
 bool profile_gpu = false;
+static String window_title = "";
+static int debug_session_id = -1;
 
 // Constants.
 
@@ -3689,15 +3691,15 @@ int Main::start() {
 			sml->set_auto_accept_quit(GLOBAL_GET("application/config/auto_accept_quit"));
 			sml->set_quit_on_go_back(GLOBAL_GET("application/config/quit_on_go_back"));
 			String appname = GLOBAL_GET("application/config/name");
-			appname = TranslationServer::get_singleton()->translate(appname);
+			window_title = TranslationServer::get_singleton()->translate(appname);
+
 #ifdef DEBUG_ENABLED
 			// Append a suffix to the window title to denote that the project is running
 			// from a debug build (including the editor). Since this results in lower performance,
 			// this should be clearly presented to the user.
-			DisplayServer::get_singleton()->window_set_title(vformat("%s (DEBUG)", appname));
-#else
-			DisplayServer::get_singleton()->window_set_title(appname);
+			window_title = vformat("%s (DEBUG)", window_title);
 #endif
+			DisplayServer::get_singleton()->window_set_title(window_title);
 
 			bool snap_controls = GLOBAL_GET("gui/common/snap_controls_to_pixels");
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
@@ -4040,6 +4042,11 @@ bool Main::iteration() {
 
 	if (EngineDebugger::is_active()) {
 		EngineDebugger::get_singleton()->iteration(frame_time, process_ticks, physics_process_ticks, physics_step);
+		int session_id = EngineDebugger::get_singleton()->get_session_id();
+		if (session_id != debug_session_id) {
+			debug_session_id = session_id;
+			DisplayServer::get_singleton()->window_set_title(vformat("%s (Session %d)", window_title, debug_session_id));
+		}
 	}
 
 	frames++;
