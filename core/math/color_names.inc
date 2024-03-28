@@ -189,5 +189,4 @@ static NamedColor named_colors[] = {
 	{ "WHITE_SMOKE", Color::hex(0xF5F5F5FF) },
 	{ "YELLOW", Color::hex(0xFFFF00FF) },
 	{ "YELLOW_GREEN", Color::hex(0x9ACD32FF) },
-	{ nullptr, Color() },
 };

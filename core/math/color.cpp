@@ -422,23 +422,28 @@ int Color::find_named_color(const String &p_name) {
 	name = name.replace(".", "");
 	name = name.to_upper();
 
-	int idx = 0;
-	while (named_colors[idx].name != nullptr) {
-		if (name == String(named_colors[idx].name).replace("_", "")) {
-			return idx;
+	int low = 0;
+	int high = get_named_color_count() - 1;
+	int middle;
+
+	while (low <= high) {
+		middle = (low + high) / 2;
+		String color_name = String(named_colors[middle].name).replace("_", "");
+
+		if (name < color_name) {
+			high = middle - 1; // Search low end of array.
+		} else if (name > color_name) {
+			low = middle + 1; // Search high end of array.
+		} else {
+			return middle;
 		}
-		idx++;
 	}
 
 	return -1;
 }
 
 int Color::get_named_color_count() {
-	int idx = 0;
-	while (named_colors[idx].name != nullptr) {
-		idx++;
-	}
-	return idx;
+	return sizeof(named_colors) / sizeof(named_colors[0]);
 }
 
 String Color::get_named_color_name(int p_idx) {
