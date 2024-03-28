@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Godot
 {
@@ -194,6 +196,16 @@ namespace Godot
         public T GetParentOrNull<T>() where T : class
         {
             return GetParent() as T;
+        }
+
+        /// <inheritdoc cref="_PhysicsProcess(double)"/>
+        public virtual void _PhysicsProcess(float delta)
+        {
+        }
+
+        /// <inheritdoc cref="_Process(double)"/>
+        public virtual void _Process(float delta)
+        {
         }
     }
 }

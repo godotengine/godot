@@ -128,7 +128,8 @@ namespace Godot.SourceGenerators
             var methodSymbols = members
                 .Where(s => s.Kind == SymbolKind.Method && !s.IsImplicitlyDeclared)
                 .Cast<IMethodSymbol>()
-                .Where(m => m.MethodKind == MethodKind.Ordinary);
+                .Where(m => m.MethodKind == MethodKind.Ordinary)
+                .ToArray();
 
             var godotClassMethods = methodSymbols.WhereHasGodotCompatibleSignature(typeCache)
                 .Distinct(new MethodOverloadEqualityComparer())
@@ -214,7 +215,49 @@ namespace Godot.SourceGenerators
 
                 foreach (var method in godotClassMethods)
                 {
-                    GenerateMethodInvoker(method, source);
+                    string methodName = method.Method.Name;
+
+                    switch (methodName)
+                    {
+                        case "_Process":
+                        case "_PhysicsProcess":
+                        {
+                            source.Append("        if (method == MethodName._Process && args.Count == 1) {\n");
+
+                            var overloads = methodSymbols
+                                .Where(m => m.Name == methodName && m.Parameters.Length == 1)
+                                .ToArray();
+
+                            if (overloads.Any(m => m.Parameters[0].Type.ToString() == "double"))
+                            {
+                                source.Append("            ")
+                                    .Append(methodName)
+                                    .Append("(global::Godot.NativeInterop.VariantUtils.ConvertTo<")
+                                    .Append("double")
+                                    .Append(">(args[0]));\n");
+                            }
+
+                            if (overloads.Any(m => m.Parameters[0].Type.ToString() == "float"))
+                            {
+                                source.Append("            ")
+                                    .Append(methodName)
+                                    .Append("(global::Godot.NativeInterop.VariantUtils.ConvertTo<")
+                                    .Append("float")
+                                    .Append(">(args[0]));\n");
+                            }
+
+                            source.Append("            ret = default;\n");
+                            source.Append("            return true;\n");
+                            source.Append("        };\n");
+
+                            break;
+                        }
+                        default:
+                        {
+                            GenerateMethodInvoker(method, source);
+                            break;
+                        }
+                    }
                 }
 
                 source.Append("        return base.InvokeGodotClassMethod(method, args, out ret);\n");
