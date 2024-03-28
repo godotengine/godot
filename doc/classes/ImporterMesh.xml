@@ -55,7 +55,7 @@
 			</description>
 		</method>
 		<method name="generate_tangents">
-			<return type="void" />
+			<return type="int" enum="Error" />
 			<description>
 				Generates a tangent vector for each vertex. Requires that each vertex have UVs and normals set already.
 			</description>
