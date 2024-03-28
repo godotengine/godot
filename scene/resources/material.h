@@ -219,6 +219,8 @@ public:
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
+		BLEND_MODE_MINIMUM,
+		BLEND_MODE_MAXIMUM, // Not `BLEND_MODE_MAX` because it would conflict with the end-of-enum value.
 		BLEND_MODE_MAX
 	};
 

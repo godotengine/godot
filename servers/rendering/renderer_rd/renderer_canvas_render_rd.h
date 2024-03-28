@@ -162,6 +162,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 			BLEND_MODE_MUL,
 			BLEND_MODE_PMALPHA,
 			BLEND_MODE_DISABLED,
+			BLEND_MODE_MINIMUM,
+			BLEND_MODE_MAXIMUM,
 		};
 
 		bool valid = false;

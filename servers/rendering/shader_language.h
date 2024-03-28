@@ -875,6 +875,29 @@ public:
 			options.push_back(p_arg5);
 			options.push_back(p_arg6);
 		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3, const StringName &p_arg4, const StringName &p_arg5, const StringName &p_arg6, const StringName &p_arg7) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+			options.push_back(p_arg3);
+			options.push_back(p_arg4);
+			options.push_back(p_arg5);
+			options.push_back(p_arg6);
+			options.push_back(p_arg7);
+		}
+
+		ModeInfo(const StringName &p_name, const StringName &p_arg1, const StringName &p_arg2, const StringName &p_arg3, const StringName &p_arg4, const StringName &p_arg5, const StringName &p_arg6, const StringName &p_arg7, const StringName &p_arg8) :
+				name(p_name) {
+			options.push_back(p_arg1);
+			options.push_back(p_arg2);
+			options.push_back(p_arg3);
+			options.push_back(p_arg4);
+			options.push_back(p_arg5);
+			options.push_back(p_arg6);
+			options.push_back(p_arg7);
+			options.push_back(p_arg8);
+		}
 	};
 
 	struct FunctionInfo {

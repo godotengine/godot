@@ -90,6 +90,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MIX);
 	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_mode, BLEND_MODE_SUB);
 	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MUL);
+	actions.render_mode_values["blend_min"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MINIMUM);
+	actions.render_mode_values["blend_max"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MAXIMUM);
 
 	actions.render_mode_values["alpha_to_coverage"] = Pair<int *, int>(&alpha_antialiasing_mode, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE);
 	actions.render_mode_values["alpha_to_coverage_and_one"] = Pair<int *, int>(&alpha_antialiasing_mode, ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE);
@@ -202,7 +204,6 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-
 		} break;
 		case BLEND_MODE_ADD: {
 			blend_attachment.enable_blend = true;
@@ -213,7 +214,6 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 			uses_blend_alpha = true; //force alpha used because of blend
-
 		} break;
 		case BLEND_MODE_SUB: {
 			blend_attachment.enable_blend = true;
@@ -224,7 +224,6 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 			uses_blend_alpha = true; //force alpha used because of blend
-
 		} break;
 		case BLEND_MODE_MUL: {
 			blend_attachment.enable_blend = true;
@@ -244,7 +243,27 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
-		}
+		} break;
+		case BLEND_MODE_MINIMUM: {
+			blend_attachment.enable_blend = true;
+			blend_attachment.alpha_blend_op = RD::BLEND_OP_MINIMUM;
+			blend_attachment.color_blend_op = RD::BLEND_OP_MINIMUM;
+			blend_attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			uses_blend_alpha = true; //force alpha used because of blend
+		} break;
+		case BLEND_MODE_MAXIMUM: {
+			blend_attachment.enable_blend = true;
+			blend_attachment.alpha_blend_op = RD::BLEND_OP_MAXIMUM;
+			blend_attachment.color_blend_op = RD::BLEND_OP_MAXIMUM;
+			blend_attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			uses_blend_alpha = true; //force alpha used because of blend
+		} break;
 	}
 
 	// Color pass -> attachment 0: Color/Diffuse, attachment 1: Separate Specular, attachment 2: Motion Vectors

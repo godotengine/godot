@@ -147,6 +147,8 @@ struct CanvasShaderData : public ShaderData {
 		BLEND_MODE_PMALPHA,
 		BLEND_MODE_DISABLED,
 		BLEND_MODE_LCD,
+		BLEND_MODE_MINIMUM,
+		BLEND_MODE_MAXIMUM,
 	};
 
 	// All these members are (re)initialized in `set_code`.
@@ -249,7 +251,9 @@ struct SceneShaderData : public ShaderData {
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
-		BLEND_MODE_ALPHA_TO_COVERAGE
+		BLEND_MODE_ALPHA_TO_COVERAGE,
+		BLEND_MODE_MINIMUM,
+		BLEND_MODE_MAXIMUM,
 	};
 
 	enum DepthDraw {

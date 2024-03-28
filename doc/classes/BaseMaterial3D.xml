@@ -609,6 +609,12 @@
 		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 			The color of the object is multiplied by the background.
 		</constant>
+		<constant name="BLEND_MODE_MINIMUM" value="4" enum="BlendMode">
+			Minimum blend mode (keeps the darkest pixel between the foreground's and background's color).
+		</constant>
+		<constant name="BLEND_MODE_MAXIMUM" value="5" enum="BlendMode">
+			Maximum blend mode (keeps the brightest pixel between the foreground's and background's color).
+		</constant>
 		<constant name="ALPHA_ANTIALIASING_OFF" value="0" enum="AlphaAntiAliasing">
 			Disables Alpha AntiAliasing for the material.
 		</constant>

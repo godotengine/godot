@@ -2191,6 +2191,8 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MUL);
 	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_mode, BLEND_MODE_PMALPHA);
 	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_mode, BLEND_MODE_DISABLED);
+	actions.render_mode_values["blend_min"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MINIMUM);
+	actions.render_mode_values["blend_max"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MAXIMUM);
 
 	actions.usage_flag_pointers["texture_sdf"] = &uses_sdf;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
@@ -2244,14 +2246,12 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 		} break;
 		case BLEND_MODE_MIX: {
 			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
 			attachment.color_blend_op = RD::BLEND_OP_ADD;
 			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-
-			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-
 		} break;
 		case BLEND_MODE_ADD: {
 			attachment.enable_blend = true;
@@ -2261,7 +2261,6 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-
 		} break;
 		case BLEND_MODE_SUB: {
 			attachment.enable_blend = true;
@@ -2271,7 +2270,6 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-
 		} break;
 		case BLEND_MODE_MUL: {
 			attachment.enable_blend = true;
@@ -2281,7 +2279,6 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ZERO;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
-
 		} break;
 		case BLEND_MODE_PMALPHA: {
 			attachment.enable_blend = true;
@@ -2291,7 +2288,24 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-
+		} break;
+		case BLEND_MODE_MINIMUM: {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_MINIMUM;
+			attachment.color_blend_op = RD::BLEND_OP_MINIMUM;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		} break;
+		case BLEND_MODE_MAXIMUM: {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_MAXIMUM;
+			attachment.color_blend_op = RD::BLEND_OP_MAXIMUM;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 		} break;
 	}
 

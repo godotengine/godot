@@ -688,6 +688,12 @@ void BaseMaterial3D::_update_shader() {
 		case BLEND_MODE_MUL:
 			code += "blend_mul";
 			break;
+		case BLEND_MODE_MINIMUM:
+			code += "blend_min";
+			break;
+		case BLEND_MODE_MAXIMUM:
+			code += "blend_max";
+			break;
 		case BLEND_MODE_MAX:
 			break; // Internal value, skip.
 	}
@@ -1818,6 +1824,12 @@ void fragment() {)";
 	// Detail Blend Mode: Multiply
 	vec3 detail = mix(ALBEDO.rgb, ALBEDO.rgb * detail_tex.rgb, detail_tex.a);
 )";
+			} break;
+			case BLEND_MODE_MINIMUM: {
+				code += "\tvec3 detail = min(ALBEDO.rgb,detail_tex.rgb);\n";
+			} break;
+			case BLEND_MODE_MAXIMUM: {
+				code += "\tvec3 detail = max(ALBEDO.rgb,detail_tex.rgb);\n";
 			} break;
 			case BLEND_MODE_MAX:
 				break; // Internal value, skip.
@@ -3040,7 +3052,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_hash_scale", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_alpha_hash_scale", "get_alpha_hash_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_antialiasing_mode", PROPERTY_HINT_ENUM, "Disabled,Alpha Edge Blend,Alpha Edge Clip"), "set_alpha_antialiasing", "get_alpha_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply"), "set_blend_mode", "get_blend_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply,Minimum,Maximum"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never"), "set_depth_draw_mode", "get_depth_draw_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_flag", "get_flag", FLAG_DISABLE_DEPTH_TEST);
@@ -3153,7 +3165,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("Detail", "detail_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "detail_enabled"), "set_feature", "get_feature", FEATURE_DETAIL);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "detail_mask", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_DETAIL_MASK);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "detail_blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply"), "set_detail_blend_mode", "get_detail_blend_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "detail_blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply,Minimum,Maximum"), "set_detail_blend_mode", "get_detail_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "detail_uv_layer", PROPERTY_HINT_ENUM, "UV1,UV2"), "set_detail_uv", "get_detail_uv");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "detail_albedo", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_DETAIL_ALBEDO);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "detail_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_DETAIL_NORMAL);
@@ -3269,6 +3281,8 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_ADD);
 	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
 	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
+	BIND_ENUM_CONSTANT(BLEND_MODE_MINIMUM);
+	BIND_ENUM_CONSTANT(BLEND_MODE_MAXIMUM);
 
 	BIND_ENUM_CONSTANT(ALPHA_ANTIALIASING_OFF);
 	BIND_ENUM_CONSTANT(ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE);

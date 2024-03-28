@@ -3082,6 +3082,12 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						case GLES3::SceneShaderData::BLEND_MODE_ALPHA_TO_COVERAGE: {
 							// Do nothing for now.
 						} break;
+						case GLES3::SceneShaderData::BLEND_MODE_MINIMUM: {
+							glBlendEquation(GL_MIN);
+						} break;
+						case GLES3::SceneShaderData::BLEND_MODE_MAXIMUM: {
+							glBlendEquation(GL_MAX);
+						} break;
 					}
 					scene_state.current_blend_mode = desired_blend_mode;
 				}
