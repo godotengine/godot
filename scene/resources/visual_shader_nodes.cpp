@@ -6497,6 +6497,58 @@ bool VisualShaderNodeTextureParameter::is_show_prop_names() const {
 	return true;
 }
 
+String VisualShaderNodeTextureParameter::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	if (texture_source != SOURCE_NONE) {
+		String texture_source_str;
+
+		switch (texture_source) {
+			case SOURCE_SCREEN: {
+				texture_source_str = "Screen";
+			} break;
+			case SOURCE_DEPTH: {
+				texture_source_str = "Depth";
+			} break;
+			case SOURCE_NORMAL_ROUGHNESS: {
+				texture_source_str = "NormalRoughness";
+			} break;
+			default:
+				break;
+		}
+
+		if (texture_type == TYPE_NORMAL_MAP || texture_type == TYPE_ANISOTROPY) {
+			String texture_type_str;
+
+			switch (texture_type) {
+				case TYPE_NORMAL_MAP: {
+					texture_type_str = "Normal Map";
+				} break;
+				case TYPE_ANISOTROPY: {
+					texture_type_str = "Anisotropic";
+				} break;
+				default:
+					break;
+			}
+			return vformat(RTR("'%s' type is incompatible with '%s' source."), texture_type_str, texture_source_str);
+		} else if (color_default != COLOR_DEFAULT_WHITE) {
+			String color_default_str;
+
+			switch (color_default) {
+				case COLOR_DEFAULT_BLACK: {
+					color_default_str = "Black";
+				} break;
+				case COLOR_DEFAULT_TRANSPARENT: {
+					color_default_str = "Transparent";
+				} break;
+				default:
+					break;
+			}
+			return vformat(RTR("'%s' default color is incompatible with '%s' source."), color_default_str, texture_source_str);
+		}
+	}
+
+	return "";
+}
+
 HashMap<StringName, String> VisualShaderNodeTextureParameter::get_editable_properties_names() const {
 	HashMap<StringName, String> names;
 	names.insert("texture_type", RTR("Type"));
