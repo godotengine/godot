@@ -120,6 +120,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
+	ClassDB::bind_method(D_METHOD("get_joy_sensors_enabled", "device"), &Input::get_joy_sensors_enabled);
+	ClassDB::bind_method(D_METHOD("set_joy_sensors_enabled", "device", "enabled"), &Input::set_joy_sensors_enabled);
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms"), &Input::vibrate_handheld, DEFVAL(500));
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
@@ -129,6 +131,24 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
 	ClassDB::bind_method(D_METHOD("set_gyroscope", "value"), &Input::set_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_joy_gravity", "device"), &Input::get_joy_gravity);
+	ClassDB::bind_method(D_METHOD("get_joy_accelerometer", "device"), &Input::get_joy_accelerometer);
+	ClassDB::bind_method(D_METHOD("get_joy_gyroscope", "device"), &Input::get_joy_gyroscope);
+	ClassDB::bind_method(D_METHOD("set_joy_gravity", "device", "value"), &Input::set_joy_gravity);
+	ClassDB::bind_method(D_METHOD("set_joy_accelerometer", "device", "value"), &Input::set_joy_accelerometer);
+	ClassDB::bind_method(D_METHOD("set_joy_gyroscope", "device", "value"), &Input::set_joy_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_joy_adaptive_trigger_mode", "device", "axis"), &Input::get_joy_adaptive_trigger_mode);
+	ClassDB::bind_method(D_METHOD("set_joy_adaptive_trigger_mode", "device", "axis", "mode"), &Input::set_joy_adaptive_trigger_mode);
+	ClassDB::bind_method(D_METHOD("get_joy_adaptive_trigger_strength", "device", "axis"), &Input::get_joy_adaptive_trigger_strength);
+	ClassDB::bind_method(D_METHOD("set_joy_adaptive_trigger_strength", "device", "axis", "strength"), &Input::set_joy_adaptive_trigger_strength);
+	ClassDB::bind_method(D_METHOD("get_joy_adaptive_trigger_position", "device", "axis"), &Input::get_joy_adaptive_trigger_position);
+	ClassDB::bind_method(D_METHOD("set_joy_adaptive_trigger_position", "device", "axis", "position"), &Input::set_joy_adaptive_trigger_position);
+	ClassDB::bind_method(D_METHOD("get_joy_battery_state", "device"), &Input::get_joy_battery_state);
+	ClassDB::bind_method(D_METHOD("set_joy_battery_state", "device", "state"), &Input::set_joy_battery_state);
+	ClassDB::bind_method(D_METHOD("get_joy_battery_level", "device"), &Input::get_joy_battery_level);
+	ClassDB::bind_method(D_METHOD("set_joy_battery_level", "device", "level"), &Input::set_joy_battery_level);
+	ClassDB::bind_method(D_METHOD("get_joy_light", "device"), &Input::get_joy_light);
+	ClassDB::bind_method(D_METHOD("set_joy_light", "device", "color"), &Input::set_joy_light);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_velocity"), &Input::get_last_mouse_velocity);
 	ClassDB::bind_method(D_METHOD("get_last_mouse_screen_velocity"), &Input::get_last_mouse_screen_velocity);
 	ClassDB::bind_method(D_METHOD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
@@ -159,6 +179,17 @@ void Input::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CAPTURED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
+
+	BIND_ENUM_CONSTANT(JOY_ADAPTIVE_TRIGGER_MODE_OFF);
+	BIND_ENUM_CONSTANT(JOY_ADAPTIVE_TRIGGER_MODE_FEEDBACK);
+	BIND_ENUM_CONSTANT(JOY_ADAPTIVE_TRIGGER_MODE_WEAPON);
+	BIND_ENUM_CONSTANT(JOY_ADAPTIVE_TRIGGER_MODE_VIBRATION);
+	BIND_ENUM_CONSTANT(JOY_ADAPTIVE_TRIGGER_MODE_SLOPE_FEEDBACK);
+
+	BIND_ENUM_CONSTANT(JOY_BATTERY_STATE_UNKNOWN);
+	BIND_ENUM_CONSTANT(JOY_BATTERY_STATE_DISCHARGING);
+	BIND_ENUM_CONSTANT(JOY_BATTERY_STATE_CHARGING);
+	BIND_ENUM_CONSTANT(JOY_BATTERY_STATE_FULL);
 
 	BIND_ENUM_CONSTANT(CURSOR_ARROW);
 	BIND_ENUM_CONSTANT(CURSOR_IBEAM);
@@ -422,6 +453,14 @@ String Input::get_joy_name(int p_idx) {
 	return joy_names[p_idx].name;
 }
 
+bool Input::get_joy_sensors_enabled(int p_device) const {
+	if (joy_motion.has(p_device)) {
+		return joy_motion[p_device].enabled;
+	} else {
+		return false;
+	}
+}
+
 Vector2 Input::get_joy_vibration_strength(int p_device) {
 	if (joy_vibration.has(p_device)) {
 		return Vector2(joy_vibration[p_device].weak_magnitude, joy_vibration[p_device].strong_magnitude);
@@ -528,6 +567,33 @@ Vector3 Input::get_magnetometer() const {
 Vector3 Input::get_gyroscope() const {
 	_THREAD_SAFE_METHOD_
 	return gyroscope;
+}
+
+Vector3 Input::get_joy_gravity(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	if (joy_motion.has(p_device)) {
+		return joy_motion[p_device].gravity;
+	} else {
+		return Vector3();
+	}
+}
+
+Vector3 Input::get_joy_accelerometer(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	if (joy_motion.has(p_device)) {
+		return joy_motion[p_device].accelerometer;
+	} else {
+		return Vector3();
+	}
+}
+
+Vector3 Input::get_joy_gyroscope(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	if (joy_motion.has(p_device)) {
+		return joy_motion[p_device].gyroscope;
+	} else {
+		return Vector3();
+	}
 }
 
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
@@ -793,6 +859,15 @@ void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_st
 	joy_vibration[p_device] = vibration;
 }
 
+void Input::set_joy_sensors_enabled(int p_device, bool p_enabled) {
+	joy_motion[p_device].enabled = p_enabled;
+	if (!p_enabled) {
+		joy_motion[p_device].gravity = Vector3();
+		joy_motion[p_device].accelerometer = Vector3();
+		joy_motion[p_device].gyroscope = Vector3();
+	}
+}
+
 void Input::stop_joy_vibration(int p_device) {
 	_THREAD_SAFE_METHOD_
 	VibrationInfo vibration;
@@ -829,6 +904,138 @@ void Input::set_gyroscope(const Vector3 &p_gyroscope) {
 	_THREAD_SAFE_METHOD_
 
 	gyroscope = p_gyroscope;
+}
+
+void Input::set_joy_gravity(int p_device, const Vector3 &p_gravity) {
+	_THREAD_SAFE_METHOD_
+
+	joy_motion[p_device].gravity = p_gravity;
+}
+
+void Input::set_joy_accelerometer(int p_device, const Vector3 &p_accel) {
+	_THREAD_SAFE_METHOD_
+
+	joy_motion[p_device].accelerometer = p_accel;
+}
+
+void Input::set_joy_gyroscope(int p_device, const Vector3 &p_gyroscope) {
+	_THREAD_SAFE_METHOD_
+
+	joy_motion[p_device].gyroscope = p_gyroscope;
+}
+
+Input::JoyAdaptiveTriggerMode Input::get_joy_adaptive_trigger_mode(int p_device, JoyAxis p_axis) const {
+	_THREAD_SAFE_METHOD_
+
+	if (p_axis == JoyAxis::TRIGGER_LEFT && joy_ad_trig.has(p_device)) {
+		return joy_ad_trig[p_device].l_mode;
+	} else if (p_axis == JoyAxis::TRIGGER_RIGHT && joy_ad_trig.has(p_device)) {
+		return joy_ad_trig[p_device].r_mode;
+	} else {
+		return JOY_ADAPTIVE_TRIGGER_MODE_OFF;
+	}
+}
+
+void Input::set_joy_adaptive_trigger_mode(int p_device, JoyAxis p_axis, Input::JoyAdaptiveTriggerMode p_mode) {
+	_THREAD_SAFE_METHOD_
+
+	if (p_axis == JoyAxis::TRIGGER_LEFT) {
+		joy_ad_trig[p_device].l_mode = p_mode;
+	} else if (p_axis == JoyAxis::TRIGGER_RIGHT) {
+		joy_ad_trig[p_device].r_mode = p_mode;
+	}
+}
+
+Vector2 Input::get_joy_adaptive_trigger_strength(int p_device, JoyAxis p_axis) const {
+	_THREAD_SAFE_METHOD_
+
+	if (p_axis == JoyAxis::TRIGGER_LEFT && joy_ad_trig.has(p_device)) {
+		return joy_ad_trig[p_device].l_strength;
+	} else if (p_axis == JoyAxis::TRIGGER_RIGHT && joy_ad_trig.has(p_device)) {
+		return joy_ad_trig[p_device].r_strength;
+	} else {
+		return Vector2();
+	}
+}
+
+void Input::set_joy_adaptive_trigger_strength(int p_device, JoyAxis p_axis, const Vector2 &p_strength) {
+	_THREAD_SAFE_METHOD_
+
+	if (p_axis == JoyAxis::TRIGGER_LEFT) {
+		joy_ad_trig[p_device].l_strength = p_strength;
+	} else if (p_axis == JoyAxis::TRIGGER_RIGHT) {
+		joy_ad_trig[p_device].r_strength = p_strength;
+	}
+}
+
+Vector2 Input::get_joy_adaptive_trigger_position(int p_device, JoyAxis p_axis) const {
+	_THREAD_SAFE_METHOD_
+
+	if (p_axis == JoyAxis::TRIGGER_LEFT && joy_ad_trig.has(p_device)) {
+		return joy_ad_trig[p_device].l_position;
+	} else if (p_axis == JoyAxis::TRIGGER_RIGHT && joy_ad_trig.has(p_device)) {
+		return joy_ad_trig[p_device].r_position;
+	} else {
+		return Vector2();
+	}
+}
+
+void Input::set_joy_adaptive_trigger_position(int p_device, JoyAxis p_axis, const Vector2 &p_position) {
+	_THREAD_SAFE_METHOD_
+
+	if (p_axis == JoyAxis::TRIGGER_LEFT) {
+		joy_ad_trig[p_device].l_position = p_position;
+	} else if (p_axis == JoyAxis::TRIGGER_RIGHT) {
+		joy_ad_trig[p_device].r_position = p_position;
+	}
+}
+
+Input::JoyBatteryState Input::get_joy_battery_state(int p_device) const {
+	_THREAD_SAFE_METHOD_
+
+	if (joy_info.has(p_device)) {
+		return joy_info[p_device].batt_state;
+	} else {
+		return JOY_BATTERY_STATE_UNKNOWN;
+	}
+}
+
+void Input::set_joy_battery_state(int p_device, Input::JoyBatteryState p_state) {
+	_THREAD_SAFE_METHOD_
+
+	joy_info[p_device].batt_state = p_state;
+}
+
+float Input::get_joy_battery_level(int p_device) const {
+	_THREAD_SAFE_METHOD_
+
+	if (joy_info.has(p_device)) {
+		return joy_info[p_device].batt_level;
+	} else {
+		return 0.0;
+	}
+}
+
+void Input::set_joy_battery_level(int p_device, float p_level) {
+	_THREAD_SAFE_METHOD_
+
+	joy_info[p_device].batt_level = p_level;
+}
+
+Color Input::get_joy_light(int p_device) const {
+	_THREAD_SAFE_METHOD_
+
+	if (joy_info.has(p_device)) {
+		return joy_info[p_device].light;
+	} else {
+		return Color();
+	}
+}
+
+void Input::set_joy_light(int p_device, Color p_color) {
+	_THREAD_SAFE_METHOD_
+
+	joy_info[p_device].light = p_color;
 }
 
 void Input::set_mouse_position(const Point2 &p_posf) {

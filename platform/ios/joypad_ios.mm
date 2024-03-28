@@ -37,6 +37,102 @@
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "main/main.h"
 
+@implementation RumbleMotor
+
+- (instancetype)initWithController:(GCController *)controller locality:(GCHapticsLocality)locality {
+	self = [super init];
+	self.engine = [controller.haptics createEngineWithLocality:locality];
+	self.player = nil;
+	return self;
+}
+
+- (void)execute_pattern:(CHHapticPattern *)pattern {
+	NSError *error;
+	id<CHHapticPatternPlayer> player = [self.engine createPlayerWithPattern:pattern error:&error];
+
+	// When all players have stopped for an engine, stop the engine.
+	[self.engine notifyWhenPlayersFinished:^CHHapticEngineFinishedAction(NSError *_Nullable error) {
+		return CHHapticEngineFinishedActionStopEngine;
+	}];
+
+	self.player = player;
+
+	// Starts the engine and returns if an error was encountered.
+	if (![self.engine startAndReturnError:&error]) {
+		print_verbose("Couldn't start controller haptic engine");
+		return;
+	}
+	if (![self.player startAtTime:0 error:&error]) {
+		print_verbose("Couldn't execute controller haptic pattern");
+	}
+}
+
+- (void)stop {
+	NSError *error;
+	[self.player stopAtTime:0 error:&error];
+	self.player = nil;
+}
+
+@end
+
+@implementation RumbleContext
+
+- (instancetype)init {
+	self = [super init];
+	self.weak_motor = nil;
+	self.strong_motor = nil;
+	return self;
+}
+
+- (bool)hasMotors {
+	return self.weak_motor != nil && self.strong_motor != nil;
+}
+- (bool)hasActivePlayers {
+	if (![self hasMotors]) {
+		return NO;
+	}
+	return self.weak_motor.player != nil && self.strong_motor.player != nil;
+}
+
+@end
+
+@implementation JoypadData
+
+- (instancetype)init {
+	self = [super init];
+	return self;
+}
+- (instancetype)init:(GCController *)controller {
+	self = [super init];
+	self.controller = controller;
+	self.l_mode = Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF;
+	self.r_mode = Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF;
+
+	if (@available(iOS 14, *)) {
+		// Haptics within the controller is only available in macOS 11+
+		self.rumble_context = [[RumbleContext alloc] init];
+
+		// Create Weak and Strong motors for controller.
+		self.rumble_context.weak_motor = [[RumbleMotor alloc] initWithController:controller locality:GCHapticsLocalityRightHandle];
+		self.rumble_context.strong_motor = [[RumbleMotor alloc] initWithController:controller locality:GCHapticsLocalityLeftHandle];
+
+		// If the rumble motors aren't available, disable force feedback.
+		if (![self.rumble_context hasMotors]) {
+			self.force_feedback = NO;
+		} else {
+			self.force_feedback = YES;
+		}
+	} else {
+		self.force_feedback = NO;
+	}
+
+	self.ff_effect_timestamp = 0;
+
+	return self;
+}
+
+@end
+
 JoypadIOS::JoypadIOS() {
 	observer = [[JoypadIOSObserver alloc] init];
 	[observer startObserving];
@@ -53,14 +149,82 @@ void JoypadIOS::start_processing() {
 	if (observer) {
 		[observer startProcessing];
 	}
+	process_joypads();
+}
+
+API_AVAILABLE(ios(14))
+CHHapticPattern *get_vibration_pattern(float p_magnitude, float p_duration) {
+	// Creates a vibration pattern with an intensity and duration.
+	NSDictionary *hapticDict = @{
+		CHHapticPatternKeyPattern : @[
+			@{
+				CHHapticPatternKeyEvent : @{
+					CHHapticPatternKeyEventType : CHHapticEventTypeHapticContinuous,
+					CHHapticPatternKeyTime : @(CHHapticTimeImmediate),
+					CHHapticPatternKeyEventDuration : [NSNumber numberWithFloat:p_duration],
+
+					CHHapticPatternKeyEventParameters : @[
+						@{
+							CHHapticPatternKeyParameterID : CHHapticEventParameterIDHapticIntensity,
+							CHHapticPatternKeyParameterValue : [NSNumber numberWithFloat:p_magnitude]
+						},
+					],
+				},
+			},
+		],
+	};
+	NSError *error;
+	CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithDictionary:hapticDict error:&error];
+	return pattern;
+}
+
+void JoypadIOS::joypad_vibration_start(JoypadData *p_joypad, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) {
+	if (!p_joypad.force_feedback || p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
+		return;
+	}
+
+	// If there is active vibration players, stop them.
+	if ([p_joypad.rumble_context hasActivePlayers]) {
+		joypad_vibration_stop(p_joypad, p_timestamp);
+	}
+
+	// Gets the default vibration pattern and creates a player for each motor.
+	CHHapticPattern *weak_pattern = get_vibration_pattern(p_weak_magnitude, p_duration);
+	CHHapticPattern *strong_pattern = get_vibration_pattern(p_strong_magnitude, p_duration);
+
+	RumbleMotor *weak_motor = p_joypad.rumble_context.weak_motor;
+	RumbleMotor *strong_motor = p_joypad.rumble_context.strong_motor;
+
+	[weak_motor execute_pattern:weak_pattern];
+	[strong_motor execute_pattern:strong_pattern];
+
+	p_joypad.ff_effect_timestamp = p_timestamp;
+}
+
+void JoypadIOS::joypad_vibration_stop(JoypadData *p_joypad, uint64_t p_timestamp) {
+	if (!p_joypad.force_feedback) {
+		return;
+	}
+	// If there is no active vibration players, exit.
+	if (![p_joypad.rumble_context hasActivePlayers]) {
+		return;
+	}
+
+	RumbleMotor *weak_motor = p_joypad.rumble_context.weak_motor;
+	RumbleMotor *strong_motor = p_joypad.rumble_context.strong_motor;
+
+	[weak_motor stop];
+	[strong_motor stop];
+
+	p_joypad.ff_effect_timestamp = p_timestamp;
 }
 
 @interface JoypadIOSObserver ()
 
 @property(assign, nonatomic) BOOL isObserving;
 @property(assign, nonatomic) BOOL isProcessing;
-@property(strong, nonatomic) NSMutableDictionary *connectedJoypads;
-@property(strong, nonatomic) NSMutableArray *joypadsQueue;
+@property(strong, nonatomic) NSMutableDictionary<NSNumber *, JoypadData *> *connectedJoypads;
+@property(strong, nonatomic) NSMutableArray<JoypadData *> *joypadsQueue;
 
 @end
 
@@ -101,15 +265,15 @@ void JoypadIOS::start_processing() {
 	self.connectedJoypads = [NSMutableDictionary dictionary];
 	self.joypadsQueue = [NSMutableArray array];
 
-	// get told when controllers connect, this will be called right away for
-	// already connected controllers
+	// Get told when controllers connect, this will be called right away for
+	// already connected controllers.
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(controllerWasConnected:)
 				   name:GCControllerDidConnectNotification
 				 object:nil];
 
-	// get told when controllers disconnect
+	// Get told when controllers disconnect.
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(controllerWasDisconnected:)
@@ -133,8 +297,22 @@ void JoypadIOS::start_processing() {
 	[self finishObserving];
 }
 
+- (NSArray<NSNumber *> *)getAllKeysForController:(GCController *)controller {
+	NSArray *keys = [self.connectedJoypads allKeys];
+	NSMutableArray *final_keys = [NSMutableArray array];
+
+	for (NSNumber *key in keys) {
+		JoypadData *joypad = [self.connectedJoypads objectForKey:key];
+		if (joypad.controller == controller) {
+			[final_keys addObject:key];
+		}
+	}
+
+	return final_keys;
+}
+
 - (int)getJoyIdForController:(GCController *)controller {
-	NSArray *keys = [self.connectedJoypads allKeysForObject:controller];
+	NSArray *keys = [self getAllKeysForController:controller];
 
 	for (NSNumber *key in keys) {
 		int joy_id = [key intValue];
@@ -145,7 +323,7 @@ void JoypadIOS::start_processing() {
 }
 
 - (void)addiOSJoypad:(GCController *)controller {
-	//     get a new id for our controller
+	// Get a new id for our controller.
 	int joy_id = Input::get_singleton()->get_unused_joy_id();
 
 	if (joy_id == -1) {
@@ -153,23 +331,38 @@ void JoypadIOS::start_processing() {
 		return;
 	}
 
-	// assign our player index
+	// Assign our player index.
 	if (controller.playerIndex == GCControllerPlayerIndexUnset) {
 		controller.playerIndex = [self getFreePlayerIndex];
 	}
 
-	// tell Godot about our new controller
+	// Read current color and sensors state.
+	if (@available(iOS 14, *)) {
+		if (controller.motion != nil) {
+			Input::get_singleton()->set_joy_sensors_enabled(joy_id, controller.motion.sensorsActive);
+		}
+	}
+
+	JoypadData *joypad = [[JoypadData alloc] init:controller];
+	if (@available(iOS 14, *)) {
+		if (controller.light) {
+			Color c = Color(controller.light.color.red, controller.light.color.green, controller.light.color.blue);
+			joypad.color = c;
+			Input::get_singleton()->set_joy_light(joy_id, c);
+		}
+	}
+	// Tell Godot about our new controller.
 	Input::get_singleton()->joy_connection_changed(joy_id, true, String::utf8([controller.vendorName UTF8String]));
 
-	// add it to our dictionary, this will retain our controllers
-	[self.connectedJoypads setObject:controller forKey:[NSNumber numberWithInt:joy_id]];
+	// Add it to our dictionary, this will retain our controllers.
+	[self.connectedJoypads setObject:joypad forKey:[NSNumber numberWithInt:joy_id]];
 
-	// set our input handler
+	// Set our input handler.
 	[self setControllerInputHandler:controller];
 }
 
 - (void)controllerWasConnected:(NSNotification *)notification {
-	// get our controller
+	// Get our controller.
 	GCController *controller = (GCController *)notification.object;
 
 	if (!controller) {
@@ -177,30 +370,31 @@ void JoypadIOS::start_processing() {
 		return;
 	}
 
-	if ([[self.connectedJoypads allKeysForObject:controller] count] > 0) {
+	if ([[self getAllKeysForController:controller] count] > 0) {
 		print_verbose("Controller is already registered.");
 	} else if (!self.isProcessing) {
-		[self.joypadsQueue addObject:controller];
+		JoypadData *joypad = [[JoypadData alloc] init:controller];
+		[self.joypadsQueue addObject:joypad];
 	} else {
 		[self addiOSJoypad:controller];
 	}
 }
 
 - (void)controllerWasDisconnected:(NSNotification *)notification {
-	// find our joystick, there should be only one in our dictionary
+	// Find our joystick, there should be only one in our dictionary.
 	GCController *controller = (GCController *)notification.object;
 
 	if (!controller) {
 		return;
 	}
 
-	NSArray *keys = [self.connectedJoypads allKeysForObject:controller];
+	NSArray *keys = [self getAllKeysForController:controller];
 	for (NSNumber *key in keys) {
-		// tell Godot this joystick is no longer there
+		// Tell Godot this joystick is no longer there.
 		int joy_id = [key intValue];
 		Input::get_singleton()->joy_connection_changed(joy_id, false, "");
 
-		// and remove it from our dictionary
+		// And remove it from our dictionary.
 		[self.connectedJoypads removeObjectForKey:key];
 	}
 }
@@ -214,7 +408,8 @@ void JoypadIOS::start_processing() {
 	if (self.connectedJoypads == nil) {
 		NSArray *keys = [self.connectedJoypads allKeys];
 		for (NSNumber *key in keys) {
-			GCController *controller = [self.connectedJoypads objectForKey:key];
+			JoypadData *joypad = [self.connectedJoypads objectForKey:key];
+			GCController *controller = joypad.controller;
 			if (controller.playerIndex == GCControllerPlayerIndex1) {
 				have_player_1 = true;
 			} else if (controller.playerIndex == GCControllerPlayerIndex2) {
@@ -305,6 +500,16 @@ void JoypadIOS::start_processing() {
 				Input::get_singleton()->joy_axis(joy_id, JoyAxis::TRIGGER_RIGHT, value);
 			}
 
+			if (@available(iOS 12.1, *)) {
+				if (element == gamepad.leftThumbstickButton) {
+					Input::get_singleton()->joy_button(joy_id, JoyButton::LEFT_STICK,
+							gamepad.leftThumbstickButton.isPressed);
+				} else if (element == gamepad.rightThumbstickButton) {
+					Input::get_singleton()->joy_button(joy_id, JoyButton::RIGHT_STICK,
+							gamepad.rightThumbstickButton.isPressed);
+				}
+			}
+
 			if (@available(iOS 13, *)) {
 				// iOS uses 'buttonOptions' and 'buttonMenu' names for BACK and START joy buttons.
 				if (element == gamepad.buttonOptions) {
@@ -322,10 +527,75 @@ void JoypadIOS::start_processing() {
 					Input::get_singleton()->joy_button(joy_id, JoyButton::GUIDE,
 							gamepad.buttonHome.isPressed);
 				}
+				if ([gamepad isKindOfClass:[GCXboxGamepad class]]) {
+					GCXboxGamepad *xboxGamepad = (GCXboxGamepad *)gamepad;
+					if (element == xboxGamepad.paddleButton1) {
+						Input::get_singleton()->joy_button(joy_id, JoyButton::PADDLE1,
+								xboxGamepad.paddleButton1.isPressed);
+					} else if (element == xboxGamepad.paddleButton2) {
+						Input::get_singleton()->joy_button(joy_id, JoyButton::PADDLE2,
+								xboxGamepad.paddleButton2.isPressed);
+					} else if (element == xboxGamepad.paddleButton3) {
+						Input::get_singleton()->joy_button(joy_id, JoyButton::PADDLE3,
+								xboxGamepad.paddleButton3.isPressed);
+					} else if (element == xboxGamepad.paddleButton4) {
+						Input::get_singleton()->joy_button(joy_id, JoyButton::PADDLE4,
+								xboxGamepad.paddleButton4.isPressed);
+					}
+				}
+				if ([gamepad isKindOfClass:[GCDualShockGamepad class]]) {
+					GCDualShockGamepad *dsGamepad = (GCDualShockGamepad *)gamepad;
+					if (element == dsGamepad.touchpadButton) {
+						Input::get_singleton()->joy_button(joy_id, JoyButton::TOUCHPAD,
+								dsGamepad.touchpadButton.isPressed);
+					}
+					if (element == dsGamepad.touchpadPrimary) {
+						float value = dsGamepad.touchpadPrimary.xAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::PRIMARY_FINGER_X, value);
+						value = -dsGamepad.touchpadPrimary.yAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::PRIMARY_FINGER_Y, value);
+					} else if (element == dsGamepad.touchpadSecondary) {
+						float value = dsGamepad.touchpadSecondary.xAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::SECONDARY_FINGER_X, value);
+						value = -dsGamepad.touchpadSecondary.yAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::SECONDARY_FINGER_Y, value);
+					}
+				}
+			}
+
+			if (@available(iOS 14.5, *)) {
+				if ([gamepad isKindOfClass:[GCDualSenseGamepad class]]) {
+					GCDualSenseGamepad *dsGamepad = (GCDualSenseGamepad *)gamepad;
+					if (element == dsGamepad.touchpadButton) {
+						Input::get_singleton()->joy_button(joy_id, JoyButton::TOUCHPAD,
+								dsGamepad.touchpadButton.isPressed);
+					}
+					if (element == dsGamepad.touchpadPrimary) {
+						float value = dsGamepad.touchpadPrimary.xAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::PRIMARY_FINGER_X, value);
+						value = -dsGamepad.touchpadPrimary.yAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::PRIMARY_FINGER_Y, value);
+					} else if (element == dsGamepad.touchpadSecondary) {
+						float value = dsGamepad.touchpadSecondary.xAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::SECONDARY_FINGER_X, value);
+						value = -dsGamepad.touchpadSecondary.yAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::SECONDARY_FINGER_Y, value);
+					}
+				}
+			}
+
+			if (@available(iOS 15, *)) {
+				if ([gamepad isKindOfClass:[GCXboxGamepad class]]) {
+					GCXboxGamepad *xboxGamepad = (GCXboxGamepad *)gamepad;
+					if (element == xboxGamepad.buttonShare) {
+						Input::get_singleton()->joy_button(joy_id, JoyButton::MISC1,
+								xboxGamepad.buttonShare.isPressed);
+					}
+				}
 			}
 		};
 	} else if (controller.microGamepad != nil) {
-		// micro gamepads were added in OS 9 and feature just 2 buttons and a d-pad
+		// Micro gamepads were added in macOS 10.11 and feature just 2 buttons and a d-pad.
 		_weakify(self);
 		_weakify(controller);
 
@@ -352,11 +622,154 @@ void JoypadIOS::start_processing() {
 		};
 	}
 
-	///@TODO need to add support for controller.motion which gives us access to
-	/// the orientation of the device (if supported)
+	// The orientation of the device (if supported).
+	if (@available(iOS 14, *)) {
+		if (controller.motion != nil) {
+			_weakify(self);
+			_weakify(controller);
 
-	///@TODO need to add support for controllerPausedHandler which should be a
-	/// toggle
+			controller.motion.valueChangedHandler = ^(GCMotion *motion) {
+				_strongify(self);
+				_strongify(controller);
+				int joy_id = [self getJoyIdForController:controller];
+
+				if (motion.hasGravityAndUserAcceleration) {
+					Input::get_singleton()->set_joy_gravity(joy_id, Vector3(motion.gravity.x, motion.gravity.y, motion.gravity.z));
+				}
+				Input::get_singleton()->set_joy_accelerometer(joy_id, Vector3(motion.acceleration.x, motion.acceleration.y, motion.acceleration.z));
+				if (motion.hasRotationRate) {
+					Input::get_singleton()->set_joy_gyroscope(joy_id, Vector3(motion.rotationRate.x, motion.rotationRate.y, motion.rotationRate.z));
+				}
+				Input::get_singleton()->set_joy_sensors_enabled(joy_id, motion.sensorsActive);
+			};
+		}
+	}
 }
 
 @end
+
+void JoypadIOS::process_joypads() {
+	if (@available(iOS 14, *)) {
+		NSArray *keys = [observer.connectedJoypads allKeys];
+
+		for (NSNumber *key in keys) {
+			int id = key.intValue;
+			Input *input = Input::get_singleton();
+			JoypadData *joypad = [observer.connectedJoypads objectForKey:key];
+
+			if (joypad.controller.battery != nil) {
+				switch (joypad.controller.battery.batteryState) {
+					case GCDeviceBatteryStateDischarging: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_DISCHARGING);
+					} break;
+					case GCDeviceBatteryStateCharging: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_CHARGING);
+					} break;
+					case GCDeviceBatteryStateFull: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_FULL);
+					} break;
+					default: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_UNKNOWN);
+					} break;
+				}
+				input->set_joy_battery_level(id, joypad.controller.battery.batteryLevel);
+			}
+			if (joypad.controller.light != nil) {
+				Color color = input->get_joy_light(id);
+				if (joypad.color != color) {
+					joypad.controller.light.color = [[GCColor alloc] initWithRed:color.r green:color.g blue:color.b];
+				}
+			}
+
+			if (@available(iOS 14.5, *)) {
+				if (joypad.controller.extendedGamepad != nil && [joypad.controller.extendedGamepad isKindOfClass:[GCDualSenseGamepad class]]) {
+					GCDualSenseGamepad *dsGamepad = (GCDualSenseGamepad *)joypad.controller.extendedGamepad;
+
+					Input::JoyAdaptiveTriggerMode l_mode = input->get_joy_adaptive_trigger_mode(id, JoyAxis::TRIGGER_LEFT);
+					Vector2 l_strength = input->get_joy_adaptive_trigger_strength(id, JoyAxis::TRIGGER_LEFT);
+					Vector2 l_position = input->get_joy_adaptive_trigger_position(id, JoyAxis::TRIGGER_LEFT);
+					if (l_mode != joypad.l_mode || l_strength != joypad.l_strength || l_position != joypad.l_position) {
+						switch (l_mode) {
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF: {
+								[dsGamepad.leftTrigger setModeOff];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_FEEDBACK: {
+								[dsGamepad.leftTrigger setModeFeedbackWithStartPosition:l_position.x resistiveStrength:l_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_WEAPON: {
+								[dsGamepad.leftTrigger setModeWeaponWithStartPosition:l_position.x endPosition:l_position.y resistiveStrength:l_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_VIBRATION: {
+								[dsGamepad.leftTrigger setModeVibrationWithStartPosition:l_position.x amplitude:l_strength.x frequency:l_strength.y];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_SLOPE_FEEDBACK: {
+								if (@available(iOS 15.4, *)) {
+									[dsGamepad.leftTrigger setModeSlopeFeedbackWithStartPosition:l_position.x endPosition:l_position.y startStrength:l_strength.x endStrength:l_strength.y];
+								}
+							} break;
+							default:
+								break;
+						}
+						joypad.l_mode = l_mode;
+						joypad.l_strength = l_strength;
+						joypad.l_position = l_position;
+					}
+					Input::JoyAdaptiveTriggerMode r_mode = input->get_joy_adaptive_trigger_mode(id, JoyAxis::TRIGGER_RIGHT);
+					Vector2 r_strength = input->get_joy_adaptive_trigger_strength(id, JoyAxis::TRIGGER_RIGHT);
+					Vector2 r_position = input->get_joy_adaptive_trigger_position(id, JoyAxis::TRIGGER_RIGHT);
+					if (r_mode != joypad.r_mode || r_strength != joypad.r_strength || r_position != joypad.r_position) {
+						switch (r_mode) {
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF: {
+								[dsGamepad.rightTrigger setModeOff];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_FEEDBACK: {
+								[dsGamepad.rightTrigger setModeFeedbackWithStartPosition:r_position.x resistiveStrength:r_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_WEAPON: {
+								[dsGamepad.rightTrigger setModeWeaponWithStartPosition:r_position.x endPosition:r_position.y resistiveStrength:r_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_VIBRATION: {
+								[dsGamepad.rightTrigger setModeVibrationWithStartPosition:r_position.x amplitude:r_strength.x frequency:r_strength.y];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_SLOPE_FEEDBACK: {
+								if (@available(iOS 15.4, *)) {
+									[dsGamepad.rightTrigger setModeSlopeFeedbackWithStartPosition:r_position.x endPosition:r_position.y startStrength:r_strength.x endStrength:r_strength.y];
+								}
+							} break;
+							default:
+								break;
+						}
+						joypad.r_mode = r_mode;
+						joypad.r_strength = r_strength;
+						joypad.r_position = r_position;
+					}
+				}
+			}
+
+			if (joypad.controller != nil && joypad.controller.motion != nil) {
+				bool sensors_enabled = input->get_joy_sensors_enabled(id);
+				if (joypad.controller.motion.sensorsActive != sensors_enabled) {
+					joypad.controller.motion.sensorsActive = sensors_enabled;
+				}
+			}
+
+			if (joypad.force_feedback) {
+				uint64_t timestamp = input->get_joy_vibration_timestamp(id);
+
+				if (timestamp > (unsigned)joypad.ff_effect_timestamp) {
+					Vector2 strength = input->get_joy_vibration_strength(id);
+					float duration = input->get_joy_vibration_duration(id);
+					if (duration == 0) {
+						duration = GCHapticDurationInfinite;
+					}
+
+					if (strength.x == 0 && strength.y == 0) {
+						joypad_vibration_stop(joypad, timestamp);
+					} else {
+						joypad_vibration_start(joypad, strength.x, strength.y, duration, timestamp);
+					}
+				}
+			}
+		}
+	}
+}

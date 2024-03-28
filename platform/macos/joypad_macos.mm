@@ -98,7 +98,7 @@
 
 @end
 
-@implementation Joypad
+@implementation JoypadData
 
 - (instancetype)init {
 	self = [super init];
@@ -107,6 +107,8 @@
 - (instancetype)init:(GCController *)controller {
 	self = [super init];
 	self.controller = controller;
+	self.l_mode = Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF;
+	self.r_mode = Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF;
 
 	if (@available(macOS 11, *)) {
 		// Haptics within the controller is only available in macOS 11+.
@@ -182,7 +184,7 @@ CHHapticPattern *get_vibration_pattern(float p_magnitude, float p_duration) {
 	return pattern;
 }
 
-void JoypadMacOS::joypad_vibration_start(Joypad *p_joypad, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) {
+void JoypadMacOS::joypad_vibration_start(JoypadData *p_joypad, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) {
 	if (!p_joypad.force_feedback || p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
 		return;
 	}
@@ -205,7 +207,7 @@ void JoypadMacOS::joypad_vibration_start(Joypad *p_joypad, float p_weak_magnitud
 	p_joypad.ff_effect_timestamp = p_timestamp;
 }
 
-void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) {
+void JoypadMacOS::joypad_vibration_stop(JoypadData *p_joypad, uint64_t p_timestamp) {
 	if (!p_joypad.force_feedback) {
 		return;
 	}
@@ -227,8 +229,8 @@ void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) 
 
 @property(assign, nonatomic) BOOL isObserving;
 @property(assign, nonatomic) BOOL isProcessing;
-@property(strong, nonatomic) NSMutableDictionary<NSNumber *, Joypad *> *connectedJoypads;
-@property(strong, nonatomic) NSMutableArray<Joypad *> *joypadsQueue;
+@property(strong, nonatomic) NSMutableDictionary<NSNumber *, JoypadData *> *connectedJoypads;
+@property(strong, nonatomic) NSMutableArray<JoypadData *> *joypadsQueue;
 
 @end
 
@@ -306,7 +308,7 @@ void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) 
 	NSMutableArray *final_keys = [NSMutableArray array];
 
 	for (NSNumber *key in keys) {
-		Joypad *joypad = [self.connectedJoypads objectForKey:key];
+		JoypadData *joypad = [self.connectedJoypads objectForKey:key];
 		if (joypad.controller == controller) {
 			[final_keys addObject:key];
 		}
@@ -340,10 +342,22 @@ void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) 
 		controller.playerIndex = [self getFreePlayerIndex];
 	}
 
+	// Read current color and sensors state.
+	if (@available(macOS 11, *)) {
+		if (controller.motion != nil) {
+			Input::get_singleton()->set_joy_sensors_enabled(joy_id, controller.motion.sensorsActive);
+		}
+	}
+	JoypadData *joypad = [[JoypadData alloc] init:controller];
+	if (@available(macOS 11, *)) {
+		if (controller.light) {
+			Color c = Color(controller.light.color.red, controller.light.color.green, controller.light.color.blue);
+			joypad.color = c;
+			Input::get_singleton()->set_joy_light(joy_id, c);
+		}
+	}
 	// Tell Godot about our new controller.
 	Input::get_singleton()->joy_connection_changed(joy_id, true, String::utf8([controller.vendorName UTF8String]));
-
-	Joypad *joypad = [[Joypad alloc] init:controller];
 
 	// Add it to our dictionary, this will retain our controllers.
 	[self.connectedJoypads setObject:joypad forKey:[NSNumber numberWithInt:joy_id]];
@@ -364,7 +378,7 @@ void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) 
 	if ([[self getAllKeysForController:controller] count] > 0) {
 		print_verbose("Controller is already registered.");
 	} else if (!self.isProcessing) {
-		Joypad *joypad = [[Joypad alloc] init:controller];
+		JoypadData *joypad = [[JoypadData alloc] init:controller];
 		[self.joypadsQueue addObject:joypad];
 	} else {
 		[self addMacOSJoypad:controller];
@@ -399,7 +413,7 @@ void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) 
 	if (self.connectedJoypads == nil) {
 		NSArray *keys = [self.connectedJoypads allKeys];
 		for (NSNumber *key in keys) {
-			Joypad *joypad = [self.connectedJoypads objectForKey:key];
+			JoypadData *joypad = [self.connectedJoypads objectForKey:key];
 			GCController *controller = joypad.controller;
 			if (controller.playerIndex == GCControllerPlayerIndex1) {
 				have_player_1 = true;
@@ -532,6 +546,45 @@ void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) 
 								xboxGamepad.paddleButton4.isPressed);
 					}
 				}
+				if ([gamepad isKindOfClass:[GCDualShockGamepad class]]) {
+					GCDualShockGamepad *dsGamepad = (GCDualShockGamepad *)gamepad;
+					if (element == dsGamepad.touchpadButton) {
+						Input::get_singleton()->joy_button(joy_id, JoyButton::TOUCHPAD,
+								dsGamepad.touchpadButton.isPressed);
+					}
+					if (element == dsGamepad.touchpadPrimary) {
+						float value = dsGamepad.touchpadPrimary.xAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::PRIMARY_FINGER_X, value);
+						value = -dsGamepad.touchpadPrimary.yAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::PRIMARY_FINGER_Y, value);
+					} else if (element == dsGamepad.touchpadSecondary) {
+						float value = dsGamepad.touchpadSecondary.xAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::SECONDARY_FINGER_X, value);
+						value = -dsGamepad.touchpadSecondary.yAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::SECONDARY_FINGER_Y, value);
+					}
+				}
+			}
+
+			if (@available(macOS 11.3, *)) {
+				if ([gamepad isKindOfClass:[GCDualSenseGamepad class]]) {
+					GCDualSenseGamepad *dsGamepad = (GCDualSenseGamepad *)gamepad;
+					if (element == dsGamepad.touchpadButton) {
+						Input::get_singleton()->joy_button(joy_id, JoyButton::TOUCHPAD,
+								dsGamepad.touchpadButton.isPressed);
+					}
+					if (element == dsGamepad.touchpadPrimary) {
+						float value = dsGamepad.touchpadPrimary.xAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::PRIMARY_FINGER_X, value);
+						value = -dsGamepad.touchpadPrimary.yAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::PRIMARY_FINGER_Y, value);
+					} else if (element == dsGamepad.touchpadSecondary) {
+						float value = dsGamepad.touchpadSecondary.xAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::SECONDARY_FINGER_X, value);
+						value = -dsGamepad.touchpadSecondary.yAxis.value;
+						Input::get_singleton()->joy_axis(joy_id, JoyAxis::SECONDARY_FINGER_Y, value);
+					}
+				}
 			}
 
 			if (@available(macOS 12, *)) {
@@ -574,23 +627,138 @@ void JoypadMacOS::joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp) 
 		};
 	}
 
-	// TODO: Need to add support for controller.motion which gives us access to
-	// the orientation of the device (if supported).
+	if (@available(macOS 11, *)) {
+		// The orientation of the device (if supported).
+		if (controller.motion != nil) {
+			_weakify(self);
+			_weakify(controller);
+
+			controller.motion.valueChangedHandler = ^(GCMotion *motion) {
+				_strongify(self);
+				_strongify(controller);
+				int joy_id = [self getJoyIdForController:controller];
+
+				if (motion.hasGravityAndUserAcceleration) {
+					Input::get_singleton()->set_joy_gravity(joy_id, Vector3(motion.gravity.x, motion.gravity.y, motion.gravity.z));
+				}
+				Input::get_singleton()->set_joy_accelerometer(joy_id, Vector3(motion.acceleration.x, motion.acceleration.y, motion.acceleration.z));
+				if (motion.hasRotationRate) {
+					Input::get_singleton()->set_joy_gyroscope(joy_id, Vector3(motion.rotationRate.x, motion.rotationRate.y, motion.rotationRate.z));
+				}
+				Input::get_singleton()->set_joy_sensors_enabled(joy_id, motion.sensorsActive);
+			};
+		}
+	}
 }
 
 @end
 
 void JoypadMacOS::process_joypads() {
 	if (@available(macOS 11, *)) {
-		// Process vibrations in macOS 11+.
 		NSArray *keys = [observer.connectedJoypads allKeys];
 
 		for (NSNumber *key in keys) {
 			int id = key.intValue;
-			Joypad *joypad = [observer.connectedJoypads objectForKey:key];
+			Input *input = Input::get_singleton();
+			JoypadData *joypad = [observer.connectedJoypads objectForKey:key];
+
+			if (joypad.controller.battery != nil) {
+				switch (joypad.controller.battery.batteryState) {
+					case GCDeviceBatteryStateDischarging: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_DISCHARGING);
+					} break;
+					case GCDeviceBatteryStateCharging: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_CHARGING);
+					} break;
+					case GCDeviceBatteryStateFull: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_FULL);
+					} break;
+					default: {
+						input->set_joy_battery_state(id, Input::JOY_BATTERY_STATE_UNKNOWN);
+					} break;
+				}
+				input->set_joy_battery_level(id, joypad.controller.battery.batteryLevel);
+			}
+			if (joypad.controller.light != nil) {
+				Color color = input->get_joy_light(id);
+				if (joypad.color != color) {
+					joypad.controller.light.color = [[GCColor alloc] initWithRed:color.r green:color.g blue:color.b];
+				}
+			}
+
+			if (@available(macOS 11.3, *)) {
+				if (joypad.controller.extendedGamepad != nil && [joypad.controller.extendedGamepad isKindOfClass:[GCDualSenseGamepad class]]) {
+					GCDualSenseGamepad *dsGamepad = (GCDualSenseGamepad *)joypad.controller.extendedGamepad;
+
+					Input::JoyAdaptiveTriggerMode l_mode = input->get_joy_adaptive_trigger_mode(id, JoyAxis::TRIGGER_LEFT);
+					Vector2 l_strength = input->get_joy_adaptive_trigger_strength(id, JoyAxis::TRIGGER_LEFT);
+					Vector2 l_position = input->get_joy_adaptive_trigger_position(id, JoyAxis::TRIGGER_LEFT);
+					if (l_mode != joypad.l_mode || l_strength != joypad.l_strength || l_position != joypad.l_position) {
+						switch (l_mode) {
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF: {
+								[dsGamepad.leftTrigger setModeOff];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_FEEDBACK: {
+								[dsGamepad.leftTrigger setModeFeedbackWithStartPosition:l_position.x resistiveStrength:l_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_WEAPON: {
+								[dsGamepad.leftTrigger setModeWeaponWithStartPosition:l_position.x endPosition:l_position.y resistiveStrength:l_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_VIBRATION: {
+								[dsGamepad.leftTrigger setModeVibrationWithStartPosition:l_position.x amplitude:l_strength.x frequency:l_strength.y];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_SLOPE_FEEDBACK: {
+								if (@available(macOS 12.3, *)) {
+									[dsGamepad.leftTrigger setModeSlopeFeedbackWithStartPosition:l_position.x endPosition:l_position.y startStrength:l_strength.x endStrength:l_strength.y];
+								}
+							} break;
+							default:
+								break;
+						}
+						joypad.l_mode = l_mode;
+						joypad.l_strength = l_strength;
+						joypad.l_position = l_position;
+					}
+					Input::JoyAdaptiveTriggerMode r_mode = input->get_joy_adaptive_trigger_mode(id, JoyAxis::TRIGGER_RIGHT);
+					Vector2 r_strength = input->get_joy_adaptive_trigger_strength(id, JoyAxis::TRIGGER_RIGHT);
+					Vector2 r_position = input->get_joy_adaptive_trigger_position(id, JoyAxis::TRIGGER_RIGHT);
+					if (r_mode != joypad.r_mode || r_strength != joypad.r_strength || r_position != joypad.r_position) {
+						switch (r_mode) {
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF: {
+								[dsGamepad.rightTrigger setModeOff];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_FEEDBACK: {
+								[dsGamepad.rightTrigger setModeFeedbackWithStartPosition:r_position.x resistiveStrength:r_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_WEAPON: {
+								[dsGamepad.rightTrigger setModeWeaponWithStartPosition:r_position.x endPosition:r_position.y resistiveStrength:r_strength.x];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_VIBRATION: {
+								[dsGamepad.rightTrigger setModeVibrationWithStartPosition:r_position.x amplitude:r_strength.x frequency:r_strength.y];
+							} break;
+							case Input::JOY_ADAPTIVE_TRIGGER_MODE_SLOPE_FEEDBACK: {
+								if (@available(macOS 12.3, *)) {
+									[dsGamepad.rightTrigger setModeSlopeFeedbackWithStartPosition:r_position.x endPosition:r_position.y startStrength:r_strength.x endStrength:r_strength.y];
+								}
+							} break;
+							default:
+								break;
+						}
+						joypad.r_mode = r_mode;
+						joypad.r_strength = r_strength;
+						joypad.r_position = r_position;
+					}
+				}
+			}
+
+			if (joypad.controller != nil && joypad.controller.motion != nil) {
+				bool sensors_enabled = input->get_joy_sensors_enabled(id);
+				if (joypad.controller.motion.sensorsActive != sensors_enabled) {
+					joypad.controller.motion.sensorsActive = sensors_enabled;
+				}
+			}
 
 			if (joypad.force_feedback) {
-				Input *input = Input::get_singleton();
 				uint64_t timestamp = input->get_joy_vibration_timestamp(id);
 
 				if (timestamp > (unsigned)joypad.ff_effect_timestamp) {

@@ -56,6 +56,10 @@ enum class JoyAxis {
 	TRIGGER_LEFT = 4,
 	TRIGGER_RIGHT = 5,
 	SDL_MAX = 6,
+	PRIMARY_FINGER_X = 6,
+	PRIMARY_FINGER_Y = 7,
+	SECONDARY_FINGER_X = 8,
+	SECONDARY_FINGER_Y = 9,
 	MAX = 10, // OpenVR supports up to 5 Joysticks making a total of 10 axes.
 };
 

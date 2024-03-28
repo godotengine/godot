@@ -55,6 +55,21 @@ public:
 		MOUSE_MODE_CONFINED_HIDDEN,
 	};
 
+	enum JoyAdaptiveTriggerMode {
+		JOY_ADAPTIVE_TRIGGER_MODE_OFF,
+		JOY_ADAPTIVE_TRIGGER_MODE_FEEDBACK,
+		JOY_ADAPTIVE_TRIGGER_MODE_WEAPON,
+		JOY_ADAPTIVE_TRIGGER_MODE_VIBRATION,
+		JOY_ADAPTIVE_TRIGGER_MODE_SLOPE_FEEDBACK,
+	};
+
+	enum JoyBatteryState {
+		JOY_BATTERY_STATE_UNKNOWN,
+		JOY_BATTERY_STATE_DISCHARGING,
+		JOY_BATTERY_STATE_CHARGING,
+		JOY_BATTERY_STATE_FULL,
+	};
+
 #undef CursorShape
 	enum CursorShape {
 		CURSOR_ARROW,
@@ -141,6 +156,33 @@ private:
 	};
 
 	HashMap<int, VibrationInfo> joy_vibration;
+
+	struct MotionInfo {
+		Vector3 gravity;
+		Vector3 accelerometer;
+		Vector3 gyroscope;
+		bool enabled = false;
+	};
+	HashMap<int, MotionInfo> joy_motion;
+
+	struct AdaptiveTriggersInfo {
+		JoyAdaptiveTriggerMode l_mode = JOY_ADAPTIVE_TRIGGER_MODE_OFF;
+		Vector2 l_strength;
+		Vector2 l_position;
+
+		JoyAdaptiveTriggerMode r_mode = JOY_ADAPTIVE_TRIGGER_MODE_OFF;
+		Vector2 r_strength;
+		Vector2 r_position;
+	};
+	HashMap<int, AdaptiveTriggersInfo> joy_ad_trig;
+
+	struct MiscInfo {
+		JoyBatteryState batt_state = JOY_BATTERY_STATE_UNKNOWN;
+		float batt_level = 0.0;
+		Color light;
+	};
+
+	HashMap<int, MiscInfo> joy_info;
 
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
@@ -305,6 +347,10 @@ public:
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
 
+	Vector3 get_joy_gravity(int p_device) const;
+	Vector3 get_joy_accelerometer(int p_device) const;
+	Vector3 get_joy_gyroscope(int p_device) const;
+
 	Point2 get_mouse_position() const;
 	Vector2 get_last_mouse_velocity();
 	Vector2 get_last_mouse_screen_velocity();
@@ -321,9 +367,34 @@ public:
 	void set_gyroscope(const Vector3 &p_gyroscope);
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
 
+	void set_joy_gravity(int p_device, const Vector3 &p_gravity);
+	void set_joy_accelerometer(int p_device, const Vector3 &p_accel);
+	void set_joy_gyroscope(int p_device, const Vector3 &p_gyroscope);
+
+	JoyAdaptiveTriggerMode get_joy_adaptive_trigger_mode(int p_device, JoyAxis p_axis) const;
+	void set_joy_adaptive_trigger_mode(int p_device, JoyAxis p_axis, JoyAdaptiveTriggerMode p_mode);
+
+	Vector2 get_joy_adaptive_trigger_strength(int p_device, JoyAxis p_axis) const;
+	void set_joy_adaptive_trigger_strength(int p_device, JoyAxis p_axis, const Vector2 &p_strength);
+
+	Vector2 get_joy_adaptive_trigger_position(int p_device, JoyAxis p_axis) const;
+	void set_joy_adaptive_trigger_position(int p_device, JoyAxis p_axis, const Vector2 &p_position);
+
+	JoyBatteryState get_joy_battery_state(int p_device) const;
+	void set_joy_battery_state(int p_device, JoyBatteryState p_state);
+
+	float get_joy_battery_level(int p_device) const;
+	void set_joy_battery_level(int p_device, float p_level);
+
+	Color get_joy_light(int p_device) const;
+	void set_joy_light(int p_device, Color p_color);
+
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500);
+
+	bool get_joy_sensors_enabled(int p_device) const;
+	void set_joy_sensors_enabled(int p_device, bool p_enabled);
 
 	void set_mouse_position(const Point2 &p_posf);
 
@@ -373,6 +444,8 @@ public:
 };
 
 VARIANT_ENUM_CAST(Input::MouseMode);
+VARIANT_ENUM_CAST(Input::JoyAdaptiveTriggerMode);
+VARIANT_ENUM_CAST(Input::JoyBatteryState);
 VARIANT_ENUM_CAST(Input::CursorShape);
 
 #endif // INPUT_H
