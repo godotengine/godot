@@ -1928,6 +1928,11 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			if (initializer_type.is_variant() || !initializer_type.is_hard_type()) {
 				mark_node_unsafe(p_assignable->initializer);
 				p_assignable->use_conversion_assign = true;
+#ifdef DEBUG_ENABLED
+				if (initializer_type.is_variant() && !initializer_type.is_hard_type()) {
+					parser->push_warning(p_assignable, GDScriptWarning::UNSAFE_ASSIGNMENT, p_assignable->identifier->name);
+				}
+#endif
 				if (!initializer_type.is_variant() && !is_type_compatible(specified_type, initializer_type, true, p_assignable->initializer)) {
 					downgrade_node_type_source(p_assignable->initializer);
 				}
