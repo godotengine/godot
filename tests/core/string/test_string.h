@@ -1200,6 +1200,76 @@ TEST_CASE("[String] pad") {
 	CHECK(s.pad_zeros(1) == U"10.10");
 }
 
+TEST_CASE("[String] format_number") {
+	// Examples with a space below use a thin space character, as opposed to a
+	// regular space character to follow SI conventions.
+	String s = String("");
+	CHECK(s.format_number() == "");
+	CHECK(s.format_number(U" ", ",") == U"");
+
+	s = String("0");
+	CHECK(s.format_number() == "0");
+	CHECK(s.format_number(U" ", ",") == U"0");
+
+	s = String("10.10");
+	CHECK(s.format_number() == "10.10");
+	CHECK(s.format_number(U" ", ",") == U"10,10");
+
+	s = String("1234");
+	CHECK(s.format_number() == "1,234");
+	CHECK(s.format_number(U" ", ",") == U"1 234");
+
+	s = String("-1234");
+	CHECK(s.format_number() == "-1,234");
+	CHECK(s.format_number(U" ", ",") == U"-1 234");
+
+	s = String("12345");
+	CHECK(s.format_number() == "12,345");
+	CHECK(s.format_number(U" ", ",") == U"12 345");
+
+	s = String("-12345");
+	CHECK(s.format_number() == "-12,345");
+	CHECK(s.format_number(U" ", ",") == U"-12 345");
+
+	s = String("123456789");
+	CHECK(s.format_number() == "123,456,789");
+	CHECK(s.format_number(U" ", ",") == U"123 456 789");
+
+	s = String("-123456789");
+	CHECK(s.format_number() == "-123,456,789");
+	CHECK(s.format_number(U" ", ",") == U"-123 456 789");
+
+	s = String("123456789.01");
+	CHECK(s.format_number() == "123,456,789.01");
+	CHECK(s.format_number(U" ", ",") == U"123 456 789,01");
+
+	s = String("-123456789.01");
+	CHECK(s.format_number() == "-123,456,789.01");
+	CHECK(s.format_number(U" ", ",") == U"-123 456 789,01");
+
+	s = String("123456789.01234567");
+	CHECK(s.format_number() == "123,456,789.01234567");
+	CHECK(s.format_number(U" ", ",") == U"123 456 789,01234567");
+
+	s = String("-123456789.01234567");
+	CHECK(s.format_number() == "-123,456,789.01234567");
+	CHECK(s.format_number(U" ", ",") == U"-123 456 789,01234567");
+
+	// Hexadecimal formatting with custom interval.
+	s = String("0x00060d07");
+	CHECK(s.format_number(" ", ".", 4) == "0x0006 0d07");
+
+	s = String("-0x00060d07");
+	CHECK(s.format_number(" ", ".", 4) == "-0x0006 0d07");
+
+	// Zero and negative intervals are invalid, but should not crash and return the string as-is.
+	s = String("123456");
+	ERR_PRINT_OFF;
+	CHECK(s.format_number(" ", ".", 0) == "123456");
+	CHECK(s.format_number(" ", ".", -5) == "123456");
+	ERR_PRINT_ON;
+}
+
 TEST_CASE("[String] is_subsequence_of") {
 	String a = "is subsequence of";
 	CHECK(String("sub").is_subsequence_of(a));

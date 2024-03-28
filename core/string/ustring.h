@@ -313,6 +313,7 @@ public:
 	String erase(int p_pos, int p_chars = 1) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
+	String format_number(const String &p_thousands_separator = ",", const String &p_decimal_separator = ".", int p_delimiter_interval = 3) const;
 	String trim_prefix(const String &p_prefix) const;
 	String trim_suffix(const String &p_suffix) const;
 	String lpad(int min_length, const String &character = " ") const;
