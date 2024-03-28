@@ -93,6 +93,8 @@ private:
 	Color symbol_color;
 	Color number_color;
 
+	bool use_uint_suffix = false;
+
 protected:
 	static void _bind_methods();
 
@@ -139,6 +141,8 @@ public:
 
 	void set_member_variable_color(Color p_color);
 	Color get_member_variable_color() const;
+
+	void set_use_uint_suffix(bool p_use);
 };
 
 #endif // SYNTAX_HIGHLIGHTER_H
