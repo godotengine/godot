@@ -70,6 +70,10 @@ static _FORCE_INLINE_ bool is_unicode_lower_case(char32_t c) {
 	BSEARCH_CHAR_RANGE(lowercase_letter);
 }
 
+static _FORCE_INLINE_ bool is_unicode_letter(char32_t c) {
+	BSEARCH_CHAR_RANGE(letter);
+}
+
 #undef BSEARCH_CHAR_RANGE
 
 static _FORCE_INLINE_ bool is_ascii_upper_case(char32_t c) {

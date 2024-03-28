@@ -7288,6 +7288,17 @@ bool TextServerAdvanced::_is_valid_identifier(const String &p_string) const {
 	return true;
 }
 
+bool TextServerAdvanced::_is_valid_letter(char32_t p_unicode) const {
+#ifndef ICU_STATIC_DATA
+	if (!icu_data_loaded) {
+		WARN_PRINT_ONCE("ICU data is not loaded, Unicode security and spoofing detection disabled.");
+		return TextServer::is_valid_letter(p_unicode);
+	}
+#endif
+
+	return u_isalpha(p_unicode);
+}
+
 TextServerAdvanced::TextServerAdvanced() {
 	_insert_num_systems_lang();
 	_insert_feature_sets();

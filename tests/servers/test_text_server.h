@@ -637,6 +637,36 @@ TEST_SUITE("[TextServer]") {
 			}
 		}
 
+		SUBCASE("[TextServer] Unicode letters") {
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				CHECK_FALSE_MESSAGE(ts.is_null(), "Invalid TS interface.");
+
+				static const char32_t *words[19] = { U"-30", U"100", U"10.1", U"10,1", U"1e2", U"1e-2", U"1e2e3", U"0xAB", U"AB", U"Test1", U"1Test", U"Test*1", U"test_testeT", U"test_tes teT", U"\u0643\u0402\u0716\u0b05", U"\u0643\u0402\u0716\u0b05Test\u30aa\u4e21", U"ӒӖӚӜ", U"_test", U"ÂÃÄÅĀĂĄÇĆĈĊ" };
+				static bool words_with_just_letters[19] = { false, false, false, false, false, false, false, false, true, false, false, false, false, false, true, true, true, false, true };
+				for (int j = 0; j < 19; j++) {
+					String word = String(words[j]);
+					bool contains_just_letters = true;
+					bool allow_only_letters = words_with_just_letters[j];
+					int failed_on_index = -1;
+					for (int k = 0; k < word.length(); k++) {
+						if (!ts->is_valid_letter(word[k])) {
+							contains_just_letters = false;
+							if (allow_only_letters) { // early exit.
+								failed_on_index = k;
+								break;
+							}
+						}
+					}
+					if (allow_only_letters) {
+						CHECK_MESSAGE(contains_just_letters, "In interface ", ts->get_name() + ": Word ", word, " at index ", failed_on_index, " should have been a letter.");
+					} else {
+						CHECK_FALSE_MESSAGE(contains_just_letters, "In interface ", ts->get_name() + ": At index ", j, ", the word ", word, " should have contained some non-letters.");
+					}
+				}
+			}
+		}
+
 		SUBCASE("[TextServer] Strip Diacritics") {
 			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);

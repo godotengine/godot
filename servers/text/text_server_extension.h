@@ -563,6 +563,8 @@ public:
 
 	virtual bool is_valid_identifier(const String &p_string) const override;
 	GDVIRTUAL1RC(bool, _is_valid_identifier, const String &);
+	virtual bool is_valid_letter(char32_t p_unicode) const override;
+	GDVIRTUAL1RC(bool, _is_valid_letter, char32_t);
 
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
