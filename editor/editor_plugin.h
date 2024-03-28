@@ -84,6 +84,7 @@ public:
 	};
 
 	enum DockSlot {
+		DOCK_SLOT_NONE = -1,
 		DOCK_SLOT_LEFT_UL,
 		DOCK_SLOT_LEFT_BL,
 		DOCK_SLOT_LEFT_UR,

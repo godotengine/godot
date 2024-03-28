@@ -820,6 +820,9 @@
 		<constant name="CONTAINER_PROJECT_SETTING_TAB_RIGHT" value="11" enum="CustomControlContainer">
 			Tab of Project Settings dialog, to the right of other tabs.
 		</constant>
+		<constant name="DOCK_SLOT_NONE" value="-1" enum="DockSlot">
+			Dock slot, none. The dock will start closed and will open as a floating window.
+		</constant>
 		<constant name="DOCK_SLOT_LEFT_UL" value="0" enum="DockSlot">
 			Dock slot, left side, upper-left (empty in default layout).
 		</constant>

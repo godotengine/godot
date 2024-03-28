@@ -87,12 +87,12 @@ Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const Stri
 
 void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_NULL(p_control);
-	EditorDockManager::get_singleton()->add_control_to_dock(EditorDockManager::DockSlot(p_slot), p_control, String(), p_shortcut);
+	EditorDockManager::get_singleton()->add_dock(p_control, String(), EditorDockManager::DockSlot(p_slot), p_shortcut);
 }
 
 void EditorPlugin::remove_control_from_docks(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
-	EditorDockManager::get_singleton()->remove_control_from_dock(p_control);
+	EditorDockManager::get_singleton()->remove_dock(p_control);
 }
 
 void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
@@ -654,6 +654,7 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_LEFT);
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_RIGHT);
 
+	BIND_ENUM_CONSTANT(DOCK_SLOT_NONE);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UL);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BL);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UR);
