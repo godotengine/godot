@@ -605,7 +605,7 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 		if (p_with_convert) {
 			if (base == "BaseMaterial3D") {
 				p_vector->insert("Texture2D");
-			} else if (base == "ShaderMaterial") {
+			} else if (base == "ShaderMaterial" || base == "Material") {
 				p_vector->insert("Shader");
 			} else if (base == "Texture2D") {
 				p_vector->insert("Image");
