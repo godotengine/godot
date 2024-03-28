@@ -366,7 +366,9 @@ void main() {
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
 #ifdef USE_INSTANCING
-	vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
+	vec4 instance_color;
+	instance_color.xy = godot_unpackHalf2x16(instance_color_custom_data.x);
+	instance_color.zw = godot_unpackHalf2x16(instance_color_custom_data.y);
 	color_interp *= instance_color;
 #endif
 #endif
@@ -403,7 +405,9 @@ void main() {
 #endif //USE_MULTIVIEW
 
 #ifdef USE_INSTANCING
-	vec4 instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
+	vec4 instance_custom;
+	instance_custom.xy = godot_unpackHalf2x16(instance_color_custom_data.z);
+	instance_custom.zw = godot_unpackHalf2x16(instance_color_custom_data.w);
 #else
 	vec4 instance_custom = vec4(0.0);
 #endif
@@ -1444,8 +1448,8 @@ void main() {
 #endif // !DISABLE_FOG
 #endif // !CUSTOM_FOG_USED
 
-	uint fog_rg = packHalf2x16(fog.rg);
-	uint fog_ba = packHalf2x16(fog.ba);
+	uint fog_rg = godot_packHalf2x16(fog.rg);
+	uint fog_ba = godot_packHalf2x16(fog.ba);
 #endif // !FOG_DISABLED
 
 	// Convert colors to linear
@@ -1747,7 +1751,8 @@ void main() {
 #endif //!MODE_UNSHADED
 
 #ifndef FOG_DISABLED
-	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
+	fog.xy = godot_unpackHalf2x16(fog_rg);
+	fog.zw = godot_unpackHalf2x16(fog_ba);
 
 #ifndef DISABLE_FOG
 	if (scene_data.fog_enabled) {
@@ -1964,7 +1969,8 @@ void main() {
 	vec3 additive_light_color = diffuse_light + specular_light;
 
 #ifndef FOG_DISABLED
-	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
+	fog.xy = godot_unpackHalf2x16(fog_rg);
+	fog.zw = godot_unpackHalf2x16(fog_ba);
 
 #ifndef DISABLE_FOG
 	if (scene_data.fog_enabled) {

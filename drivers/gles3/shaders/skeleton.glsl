@@ -139,11 +139,11 @@ vec2 tang_to_oct(vec4 base) {
 // is no larger than |1| so we can normalize by dividing by the number of blend
 // shapes.
 uvec2 vec4_to_vec2(vec4 p_vec) {
-	return uvec2(packSnorm2x16(p_vec.xy), packSnorm2x16(p_vec.zw));
+	return uvec2(godot_packSnorm2x16(p_vec.xy), godot_packSnorm2x16(p_vec.zw));
 }
 
 vec4 vec2_to_vec4(uvec2 p_vec) {
-	return vec4(unpackSnorm2x16(p_vec.x), unpackSnorm2x16(p_vec.y));
+	return vec4(godot_unpackSnorm2x16(p_vec.x), godot_unpackSnorm2x16(p_vec.y));
 }
 
 void main() {

@@ -339,7 +339,8 @@ void main() {
 				amount = max(0.0, 1.0 - d);
 			} else if (attractors[i].type == ATTRACTOR_TYPE_VECTOR_FIELD) {
 			}
-			amount = pow(amount, attractors[i].attenuation);
+			mediump float attractor_attenuation = attractors[i].attenuation;
+			amount = pow(amount, attractor_attenuation);
 			dir = safe_normalize(mix(dir, attractors[i].transform[2].xyz, attractors[i].directionality));
 			attractor_force -= amount * dir * attractors[i].strength;
 		}
