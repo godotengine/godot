@@ -73,15 +73,13 @@ real_t Vector4::length() const {
 }
 
 void Vector4::normalize() {
-	real_t lengthsq = length_squared();
-	if (lengthsq == 0) {
-		x = y = z = w = 0;
-	} else {
-		real_t length = Math::sqrt(lengthsq);
-		x /= length;
-		y /= length;
-		z /= length;
-		w /= length;
+	real_t lenghtsq = length_squared();
+	if (lenghtsq != 0) {
+		lenghtsq = 1 / Math::sqrt(lenghtsq);
+		x *= lenghtsq;
+		y *= lenghtsq;
+		z *= lenghtsq;
+		w *= lenghtsq;
 	}
 }
 
