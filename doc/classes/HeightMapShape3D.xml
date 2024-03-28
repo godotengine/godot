@@ -6,6 +6,19 @@
 	<description>
 		A 3D heightmap shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D]. This is useful for terrain, but it is limited as overhangs (such as caves) cannot be stored. Holes in a [HeightMapShape3D] are created by assigning very low values to points in the desired area.
 		[b]Performance:[/b] [HeightMapShape3D] is faster to check collisions against than [ConcavePolygonShape3D], but it is significantly slower than primitive shapes like [BoxShape3D].
+		A heightmap collision shape can also be build by using an [Image] reference:
+		[codeblocks]
+		[gdscript]
+		var heightmap_texture: Texture = ResourceLoader.load("res://heightmap_image.exr")
+		var heightmap_image: Image = heightmap_texture.get_image()
+		heightmap_image.convert(Image.FORMAT_RF)
+
+		var height_min: float = 0.0
+		var height_max: float = 10.0
+
+		update_map_data_from_image(heightmap_image, height_min, height_max)
+		[/gdscript]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,6 +33,17 @@
 			<return type="float" />
 			<description>
 				Returns the smallest height value found in [member map_data]. Recalculates only when [member map_data] changes.
+			</description>
+		</method>
+		<method name="update_map_data_from_image">
+			<return type="void" />
+			<param index="0" name="image" type="Image" />
+			<param index="1" name="height_min" type="float" />
+			<param index="2" name="height_max" type="float" />
+			<description>
+				Updates [member map_data] with data read from an [Image] reference. Automatically resizes heightmap [member map_width] and [member map_depth] to fit the full image width and height.
+				The image needs to be in either [constant Image.FORMAT_RF] (32 bit), [constant Image.FORMAT_RH] (16 bit), or [constant Image.FORMAT_R8] (8 bit).
+				Each image pixel is read in as a float on the range from [code]0.0[/code] (black pixel) to [code]1.0[/code] (white pixel). This range value gets remapped to [param height_min] and [param height_max] to form the final height value.
 			</description>
 		</method>
 	</methods>
