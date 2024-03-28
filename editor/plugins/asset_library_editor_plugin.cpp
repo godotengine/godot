@@ -144,6 +144,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	title = memnew(LinkButton);
+	title->set_auto_translate_mode(AutoTranslateMode::AUTO_TRANSLATE_MODE_DISABLED);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(title);
 
