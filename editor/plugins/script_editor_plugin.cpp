@@ -968,8 +968,6 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 			se->trim_trailing_whitespace();
 		}
 
-		se->insert_final_newline();
-
 		if (convert_indent_on_save) {
 			se->convert_indent();
 		}
@@ -1347,8 +1345,6 @@ void ScriptEditor::_menu_option(int p_option) {
 				if (trim_trailing_whitespace_on_save) {
 					current->trim_trailing_whitespace();
 				}
-
-				current->insert_final_newline();
 
 				if (convert_indent_on_save) {
 					current->convert_indent();
@@ -2520,8 +2516,6 @@ void ScriptEditor::save_current_script() {
 		current->trim_trailing_whitespace();
 	}
 
-	current->insert_final_newline();
-
 	if (convert_indent_on_save) {
 		current->convert_indent();
 	}
@@ -2563,8 +2557,6 @@ void ScriptEditor::save_all_scripts() {
 		if (trim_trailing_whitespace_on_save) {
 			se->trim_trailing_whitespace();
 		}
-
-		se->insert_final_newline();
 
 		if (!se->is_unsaved()) {
 			continue;
@@ -2615,6 +2607,7 @@ void ScriptEditor::apply_scripts() const {
 		if (!se) {
 			continue;
 		}
+		se->insert_final_newline();
 		se->apply_code();
 	}
 }
