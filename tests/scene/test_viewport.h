@@ -393,8 +393,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 			SUBCASE("[Viewport][GuiInputEvent] Signal 'gui_focus_changed' is only emitted if a previously unfocused Control grabs focus.") {
 				SIGNAL_WATCH(root, SNAME("gui_focus_changed"));
-				Array node_array;
-				node_array.push_back(node_a);
+				Array node_array{ node_a };
 				Array signal_args;
 				signal_args.push_back(node_array);
 
@@ -1482,15 +1481,8 @@ TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
 	Point2i on_01 = Point2i(10, 50);
 	Point2i on_02 = Point2i(50, 10);
 
-	Array empty_signal_args_2;
-	empty_signal_args_2.push_back(Array());
-	empty_signal_args_2.push_back(Array());
-
-	Array empty_signal_args_4;
-	empty_signal_args_4.push_back(Array());
-	empty_signal_args_4.push_back(Array());
-	empty_signal_args_4.push_back(Array());
-	empty_signal_args_4.push_back(Array());
+	Array empty_signal_args_2{ Array(), Array() };
+	Array empty_signal_args_4{ Array(), Array(), Array(), Array() };
 
 	for (PickingCollider E : v) {
 		E.a->init_signals();

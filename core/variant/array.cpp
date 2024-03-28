@@ -47,6 +47,10 @@ public:
 	Vector<Variant> array;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
+
+	ArrayPrivate() {}
+	ArrayPrivate(std::initializer_list<Variant> p_init) :
+			array(p_init) {}
 };
 
 void Array::_ref(const Array &p_from) const {
@@ -812,6 +816,11 @@ bool Array::is_read_only() const {
 Array::Array(const Array &p_from) {
 	_p = nullptr;
 	_ref(p_from);
+}
+
+Array::Array(std::initializer_list<Variant> p_init) {
+	_p = memnew(ArrayPrivate(p_init));
+	_p->refcount.init();
 }
 
 Array::Array() {

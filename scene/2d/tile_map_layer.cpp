@@ -347,9 +347,7 @@ void TileMapLayer::_rendering_update() {
 					// Random animation offset.
 					real_t random_animation_offset = 0.0;
 					if (atlas_source->get_tile_animation_mode(cell_data.cell.get_atlas_coords()) != TileSetAtlasSource::TILE_ANIMATION_MODE_DEFAULT) {
-						Array to_hash;
-						to_hash.push_back(local_tile_pos);
-						to_hash.push_back(get_instance_id()); // Use instance id as a random hash
+						Array to_hash{ local_tile_pos, get_instance_id() }; // Use instance id as a random hash
 						random_animation_offset = RandomPCG(to_hash.hash()).randf();
 					}
 

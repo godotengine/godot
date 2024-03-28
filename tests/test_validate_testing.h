@@ -125,9 +125,7 @@ TEST_SUITE("Validate tests") {
 		dict["color"] = color;
 		INFO(dict);
 
-		Array arr;
-		arr.push_back(string);
-		arr.push_back(color);
+		Array arr{ string, color };
 		INFO(arr);
 
 		PackedByteArray byte_arr;

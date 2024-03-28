@@ -323,8 +323,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 		String msg_temp;
 		if (num_connections >= 1) {
-			Array arr;
-			arr.push_back(num_connections);
+			Array arr{ num_connections };
 			msg_temp += TTRN("Node has one connection.", "Node has {num} connections.", num_connections).format(arr, "{num}");
 			if (num_groups >= 1) {
 				msg_temp += "\n";

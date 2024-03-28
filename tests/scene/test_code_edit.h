@@ -67,8 +67,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			ERR_PRINT_ON;
 
-			Array arg1;
-			arg1.push_back(0);
+			Array arg1{ 0 };
 			Array args;
 			args.push_back(arg1);
 
@@ -86,8 +85,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->clear_breakpointed_lines();
 			SIGNAL_CHECK_FALSE("breakpoint_toggled");
 
-			Array arg1;
-			arg1.push_back(0);
+			Array arg1{ 0 };
 			Array args;
 			args.push_back(arg1);
 
@@ -101,8 +99,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and set text") {
-			Array arg1;
-			arg1.push_back(0);
+			Array arg1{ 0 };
 			Array args;
 			args.push_back(arg1);
 
@@ -137,8 +134,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and clear") {
-			Array arg1;
-			arg1.push_back(0);
+			Array arg1{ 0 };
 			Array args;
 			args.push_back(arg1);
 
@@ -173,8 +169,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and new lines no text") {
-			Array arg1;
-			arg1.push_back(0);
+			Array arg1{ 0 };
 			Array args;
 			args.push_back(arg1);
 
@@ -185,8 +180,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			/* Normal. */
 			((Array)args[0])[0] = 0;
-			Array arg2;
-			arg2.push_back(1);
+			Array arg2{ 1 };
 			args.push_back(arg2);
 
 			SEND_GUI_ACTION("ui_text_newline");
@@ -215,8 +209,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and new lines with text") {
-			Array arg1;
-			arg1.push_back(0);
+			Array arg1{ 0 };
 			Array args;
 			args.push_back(arg1);
 
@@ -243,8 +236,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			/* Above does move. */
 			((Array)args[0])[0] = 0;
-			Array arg2;
-			arg2.push_back(1);
+			Array arg2{ 1 };
 			args.push_back(arg2);
 
 			code_edit->set_caret_line(0);
@@ -256,8 +248,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and backspace") {
-			Array arg1;
-			arg1.push_back(1);
+			Array arg1{ 1 };
 			Array args;
 			args.push_back(arg1);
 
@@ -291,8 +282,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			code_edit->set_caret_line(1);
 
-			Array arg2;
-			arg2.push_back(1);
+			Array arg2{ 1 };
 			args.push_back(arg2);
 			SEND_GUI_ACTION("ui_text_backspace");
 			ERR_PRINT_OFF;
@@ -303,8 +293,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and delete") {
-			Array arg1;
-			arg1.push_back(1);
+			Array arg1{ 1 };
 			Array args;
 			args.push_back(arg1);
 
@@ -339,8 +328,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			code_edit->set_caret_line(0);
 
-			Array arg2;
-			arg2.push_back(1);
+			Array arg2{ 1 };
 			args.push_back(arg2);
 			SEND_GUI_ACTION("ui_text_delete");
 			ERR_PRINT_OFF;
@@ -351,8 +339,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and delete selection") {
-			Array arg1;
-			arg1.push_back(1);
+			Array arg1{ 1 };
 			Array args;
 			args.push_back(arg1);
 
@@ -377,8 +364,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			code_edit->select(0, 0, 6, 0);
 
-			Array arg2;
-			arg2.push_back(4);
+			Array arg2{ 4 };
 			args.push_back(arg2);
 			SEND_GUI_ACTION("ui_text_newline");
 			ERR_PRINT_OFF;
@@ -404,8 +390,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 		}
 
 		SUBCASE("[CodeEdit] breakpoints and undo") {
-			Array arg1;
-			arg1.push_back(1);
+			Array arg1{ 1 };
 			Array args;
 			args.push_back(arg1);
 
@@ -942,8 +927,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_string_delimiters().size() == 2);
 
 			/* Set should override existing, and test multiline */
-			TypedArray<String> delimiters;
-			delimiters.push_back("^^ ^^");
+			TypedArray<String> delimiters(Array{ "^^ ^^" });
 
 			code_edit->set_string_delimiters(delimiters);
 			CHECK_FALSE(code_edit->has_string_delimiter("\""));
@@ -1008,8 +992,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_comment_delimiters().size() == 2);
 
 			/* Set should override existing, and test multiline. */
-			TypedArray<String> delimiters;
-			delimiters.push_back("^^ ^^");
+			TypedArray<String> delimiters(Array{ "^^ ^^" });
 
 			code_edit->set_comment_delimiters(delimiters);
 			CHECK_FALSE(code_edit->has_comment_delimiter("\""));
@@ -1807,10 +1790,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		CHECK(code_edit->is_indent_using_spaces());
 
 		/* Only the first char is registered. */
-		TypedArray<String> auto_indent_prefixes;
-		auto_indent_prefixes.push_back("::");
-		auto_indent_prefixes.push_back("s");
-		auto_indent_prefixes.push_back("1");
+		TypedArray<String> auto_indent_prefixes(Array{ "::", "s", "1" });
 		code_edit->set_auto_indent_prefixes(auto_indent_prefixes);
 
 		auto_indent_prefixes = code_edit->get_auto_indent_prefixes();
@@ -3329,11 +3309,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(code_edit->is_code_completion_enabled());
 
 		/* Set prefixes, single char only, disallow empty. */
-		TypedArray<String> completion_prefixes;
-		completion_prefixes.push_back("");
-		completion_prefixes.push_back(".");
-		completion_prefixes.push_back(".");
-		completion_prefixes.push_back(",,");
+		TypedArray<String> completion_prefixes(Array{ "", ".", ".", ",," });
 
 		ERR_PRINT_OFF;
 		code_edit->set_code_completion_prefixes(completion_prefixes);
@@ -3352,7 +3328,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->set_code_completion_enabled(true);
 
 		Array signal_args;
-		signal_args.push_back(Array());
+		signal_args.append(Array());
 
 		/* Force request. */
 		code_edit->request_code_completion();
@@ -3365,8 +3341,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Insert prefix. */
-		TypedArray<String> completion_prefixes;
-		completion_prefixes.push_back(".");
+		TypedArray<String> completion_prefixes(Array{ "." });
 		code_edit->set_code_completion_prefixes(completion_prefixes);
 
 		code_edit->insert_text_at_caret(".");
@@ -3894,9 +3869,8 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 		SEND_GUI_KEY_EVENT(Key::CTRL);
 #endif
 
+		Array arg{ "some" };
 		Array signal_args;
-		Array arg;
-		arg.push_back("some");
 		signal_args.push_back(arg);
 		SIGNAL_CHECK("symbol_validate", signal_args);
 

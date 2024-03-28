@@ -186,13 +186,14 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	Ref<FontVariation> japanese_font_bold = make_bold_font(japanese_font, embolden_strength, &fallbacks_bold);
 
 	if (OS::get_singleton()->has_feature("system_fonts")) {
-		PackedStringArray emoji_font_names;
-		emoji_font_names.push_back("Apple Color Emoji");
-		emoji_font_names.push_back("Segoe UI Emoji");
-		emoji_font_names.push_back("Noto Color Emoji");
-		emoji_font_names.push_back("Twitter Color Emoji");
-		emoji_font_names.push_back("OpenMoji");
-		emoji_font_names.push_back("EmojiOne Color");
+		PackedStringArray emoji_font_names{
+			"Apple Color Emoji",
+			"Segoe UI Emoji",
+			"Noto Color Emoji",
+			"Twitter Color Emoji",
+			"OpenMoji",
+			"EmojiOne Color"
+		};
 		Ref<SystemFont> emoji_font = load_system_font(emoji_font_names, font_hinting, font_antialiasing, true, font_subpixel_positioning, false);
 		fallbacks.push_back(emoji_font);
 		fallbacks_bold.push_back(emoji_font);

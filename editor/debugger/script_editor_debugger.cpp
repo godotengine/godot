@@ -75,10 +75,7 @@ using CameraOverride = EditorDebuggerNode::CameraOverride;
 void ScriptEditorDebugger::_put_msg(const String &p_message, const Array &p_data, uint64_t p_thread_id) {
 	ERR_FAIL_COND(p_thread_id == Thread::UNASSIGNED_ID);
 	if (is_session_active()) {
-		Array msg;
-		msg.push_back(p_message);
-		msg.push_back(p_thread_id);
-		msg.push_back(p_data);
+		Array msg{ p_message, p_thread_id, p_data };
 		peer->put_message(msg);
 	}
 }
@@ -99,8 +96,7 @@ void ScriptEditorDebugger::debug_skip_breakpoints() {
 		skip_breakpoints->set_icon(get_editor_theme_icon(SNAME("DebugSkipBreakpointsOff")));
 	}
 
-	Array msg;
-	msg.push_back(skip_breakpoints_value);
+	Array msg{ skip_breakpoints_value };
 	_put_msg("set_skip_breakpoints", msg, debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);
 }
 
@@ -158,9 +154,7 @@ void ScriptEditorDebugger::clear_style() {
 }
 
 void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
-	Array msg;
-	msg.push_back(p_id);
-	msg.push_back(p_file);
+	Array msg{ p_id, p_file };
 	_put_msg("scene:save_node", msg);
 }
 
@@ -253,17 +247,13 @@ const SceneDebuggerTree *ScriptEditorDebugger::get_remote_tree() {
 }
 
 void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value) {
-	Array msg;
-	msg.push_back(p_obj_id);
-	msg.push_back(p_prop);
-	msg.push_back(p_value);
+	Array msg{ p_obj_id, p_prop, p_value };
 	_put_msg("scene:set_object_property", msg);
 }
 
 void ScriptEditorDebugger::request_remote_object(ObjectID p_obj_id) {
 	ERR_FAIL_COND(p_obj_id.is_null());
-	Array msg;
-	msg.push_back(p_obj_id);
+	Array msg{ p_obj_id };
 	_put_msg("scene:inspect_object", msg);
 }
 
@@ -527,11 +517,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		ERR_FAIL_COND_MSG(oe.deserialize(p_data) == false, "Failed to deserialize error message");
 
 		// Format time.
-		Array time_vals;
-		time_vals.push_back(oe.hr);
-		time_vals.push_back(oe.min);
-		time_vals.push_back(oe.sec);
-		time_vals.push_back(oe.msec);
+		Array time_vals{ oe.hr, oe.min, oe.sec, oe.msec };
 		bool e;
 		String time = String("%d:%02d:%02d:%04d").sprintf(time_vals, &e);
 
@@ -539,9 +525,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		bool source_is_project_file = oe.source_file.begins_with("res://");
 
 		// Metadata to highlight error line in scripts.
-		Array source_meta;
-		source_meta.push_back(oe.source_file);
-		source_meta.push_back(oe.source_line);
+		Array source_meta{ oe.source_file, oe.source_line };
 
 		// Create error tree to display above error or warning details.
 		TreeItem *r = error_tree->get_root();
@@ -641,9 +625,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		for (unsigned int i = 0; i < (unsigned int)oe.callstack.size(); i++) {
 			TreeItem *stack_trace = error_tree->create_item(error);
 
-			Array meta;
-			meta.push_back(infos[i].file);
-			meta.push_back(infos[i].line);
+			Array meta{ infos[i].file, infos[i].line };
 			stack_trace->set_metadata(0, meta);
 
 			if (i == 0) {
@@ -902,8 +884,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					transform.scale_basis(Size2(zoom, zoom));
 					transform.columns[2] = -offset * zoom;
 
-					Array msg;
-					msg.push_back(transform);
+					Array msg{ transform };
 					_put_msg("scene:override_camera_2D:transform", msg);
 
 				} else if (camera_override >= CameraOverride::OVERRIDE_3D_1) {
@@ -1086,8 +1067,7 @@ void ScriptEditorDebugger::stop() {
 }
 
 void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
-	Array msg_data;
-	msg_data.push_back(p_enable);
+	Array msg_data{ p_enable };
 	switch (p_type) {
 		case PROFILER_VISUAL:
 			_put_msg("profiler:visual", msg_data);
@@ -1151,9 +1131,7 @@ int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
 	last_path_id++;
 
 	node_path_cache[p_path] = last_path_id;
-	Array msg;
-	msg.push_back(p_path);
-	msg.push_back(last_path_id);
+	Array msg{ p_path, last_path_id };
 	_put_msg("scene:live_node_path", msg);
 
 	return last_path_id;
@@ -1169,9 +1147,7 @@ int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
 	last_path_id++;
 
 	res_path_cache[p_path] = last_path_id;
-	Array msg;
-	msg.push_back(p_path);
-	msg.push_back(last_path_id);
+	Array msg{ p_path, last_path_id };
 	_put_msg("scene:live_res_path", msg);
 
 	return last_path_id;
@@ -1195,9 +1171,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		NodePath path = EditorNode::get_singleton()->get_edited_scene()->get_path_to(node);
 		int pathid = _get_node_path_cache(path);
 
-		Array msg;
-		msg.push_back(pathid);
-		msg.push_back(p_name);
+		Array msg{ pathid, p_name };
 		for (int i = 0; i < p_argcount; i++) {
 			//no pointers, sorry
 			msg.push_back(*p_args[i]);
@@ -1213,9 +1187,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		String respath = res->get_path();
 		int pathid = _get_res_path_cache(respath);
 
-		Array msg;
-		msg.push_back(pathid);
-		msg.push_back(p_name);
+		Array msg{ pathid, p_name };
 		for (int i = 0; i < p_argcount; i++) {
 			//no pointers, sorry
 			msg.push_back(*p_args[i]);
@@ -1240,17 +1212,11 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 		if (p_value.is_ref_counted()) {
 			Ref<Resource> res = p_value;
 			if (res.is_valid() && !res->get_path().is_empty()) {
-				Array msg;
-				msg.push_back(pathid);
-				msg.push_back(p_property);
-				msg.push_back(res->get_path());
+				Array msg{ pathid, p_property, res->get_path() };
 				_put_msg("scene:live_node_prop_res", msg);
 			}
 		} else {
-			Array msg;
-			msg.push_back(pathid);
-			msg.push_back(p_property);
-			msg.push_back(p_value);
+			Array msg{ pathid, p_property, p_value };
 			_put_msg("scene:live_node_prop", msg);
 		}
 
@@ -1266,17 +1232,11 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 		if (p_value.is_ref_counted()) {
 			Ref<Resource> res2 = p_value;
 			if (res2.is_valid() && !res2->get_path().is_empty()) {
-				Array msg;
-				msg.push_back(pathid);
-				msg.push_back(p_property);
-				msg.push_back(res2->get_path());
+				Array msg{ pathid, p_property, res2->get_path() };
 				_put_msg("scene:live_res_prop_res", msg);
 			}
 		} else {
-			Array msg;
-			msg.push_back(pathid);
-			msg.push_back(p_property);
-			msg.push_back(p_value);
+			Array msg{ pathid, p_property, p_value };
 			_put_msg("scene:live_res_prop", msg);
 		}
 
@@ -1322,8 +1282,7 @@ int ScriptEditorDebugger::get_stack_script_frame() const {
 bool ScriptEditorDebugger::request_stack_dump(const int &p_frame) {
 	ERR_FAIL_COND_V(!is_session_active() || p_frame < 0, false);
 
-	Array msg;
-	msg.push_back(p_frame);
+	Array msg{ p_frame };
 	_put_msg("get_stack_frame_vars", msg, debugging_thread_id);
 	return true;
 }
@@ -1367,8 +1326,7 @@ void ScriptEditorDebugger::_live_edit_clear() {
 void ScriptEditorDebugger::update_live_edit_root() {
 	NodePath np = EditorNode::get_editor_data().get_edited_scene_live_edit_root();
 
-	Array msg;
-	msg.push_back(np);
+	Array msg{ np };
 	if (EditorNode::get_singleton()->get_edited_scene()) {
 		msg.push_back(EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path());
 	} else {
@@ -1380,67 +1338,49 @@ void ScriptEditorDebugger::update_live_edit_root() {
 
 void ScriptEditorDebugger::live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name) {
 	if (live_debug) {
-		Array msg;
-		msg.push_back(p_parent);
-		msg.push_back(p_type);
-		msg.push_back(p_name);
+		Array msg{ p_parent, p_type, p_name };
 		_put_msg("scene:live_create_node", msg);
 	}
 }
 
 void ScriptEditorDebugger::live_debug_instantiate_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
 	if (live_debug) {
-		Array msg;
-		msg.push_back(p_parent);
-		msg.push_back(p_path);
-		msg.push_back(p_name);
+		Array msg{ p_parent, p_path, p_name };
 		_put_msg("scene:live_instantiate_node", msg);
 	}
 }
 
 void ScriptEditorDebugger::live_debug_remove_node(const NodePath &p_at) {
 	if (live_debug) {
-		Array msg;
-		msg.push_back(p_at);
+		Array msg{ p_at };
 		_put_msg("scene:live_remove_node", msg);
 	}
 }
 
 void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath &p_at, ObjectID p_keep_id) {
 	if (live_debug) {
-		Array msg;
-		msg.push_back(p_at);
-		msg.push_back(p_keep_id);
+		Array msg{ p_at, p_keep_id };
 		_put_msg("scene:live_remove_and_keep_node", msg);
 	}
 }
 
 void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos) {
 	if (live_debug) {
-		Array msg;
-		msg.push_back(p_id);
-		msg.push_back(p_at);
-		msg.push_back(p_at_pos);
+		Array msg{ p_id, p_at, p_at_pos };
 		_put_msg("scene:live_restore_node", msg);
 	}
 }
 
 void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name) {
 	if (live_debug) {
-		Array msg;
-		msg.push_back(p_at);
-		msg.push_back(p_new_name);
+		Array msg{ p_at, p_new_name };
 		_put_msg("scene:live_duplicate_node", msg);
 	}
 }
 
 void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos) {
 	if (live_debug) {
-		Array msg;
-		msg.push_back(p_at);
-		msg.push_back(p_new_place);
-		msg.push_back(p_new_name);
-		msg.push_back(p_at_pos);
+		Array msg{ p_at, p_new_place, p_new_name, p_at_pos };
 		_put_msg("scene:live_reparent_node", msg);
 	}
 }
@@ -1451,20 +1391,16 @@ CameraOverride ScriptEditorDebugger::get_camera_override() const {
 
 void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
 	if (p_override == CameraOverride::OVERRIDE_2D && camera_override != CameraOverride::OVERRIDE_2D) {
-		Array msg;
-		msg.push_back(true);
+		Array msg{ true };
 		_put_msg("scene:override_camera_2D:set", msg);
 	} else if (p_override != CameraOverride::OVERRIDE_2D && camera_override == CameraOverride::OVERRIDE_2D) {
-		Array msg;
-		msg.push_back(false);
+		Array msg{ false };
 		_put_msg("scene:override_camera_2D:set", msg);
 	} else if (p_override >= CameraOverride::OVERRIDE_3D_1 && camera_override < CameraOverride::OVERRIDE_3D_1) {
-		Array msg;
-		msg.push_back(true);
+		Array msg{ true };
 		_put_msg("scene:override_camera_3D:set", msg);
 	} else if (p_override < CameraOverride::OVERRIDE_3D_1 && camera_override >= CameraOverride::OVERRIDE_3D_1) {
-		Array msg;
-		msg.push_back(false);
+		Array msg{ false };
 		_put_msg("scene:override_camera_3D:set", msg);
 	}
 
@@ -1472,10 +1408,7 @@ void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
 }
 
 void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {
-	Array msg;
-	msg.push_back(p_path);
-	msg.push_back(p_line);
-	msg.push_back(p_enabled);
+	Array msg{ p_path, p_line, p_enabled };
 	_put_msg("breakpoint", msg, debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);
 
 	TreeItem *path_item = breakpoints_tree->search_item_text(p_path);
@@ -1790,9 +1723,7 @@ void ScriptEditorDebugger::send_message(const String &p_message, const Array &p_
 }
 
 void ScriptEditorDebugger::toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data) {
-	Array msg_data;
-	msg_data.push_back(p_enable);
-	msg_data.append_array(p_data);
+	Array msg_data{ p_enable, p_data };
 	_put_msg("profiler:" + p_profiler, msg_data);
 }
 

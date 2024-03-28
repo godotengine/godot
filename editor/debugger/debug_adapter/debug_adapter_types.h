@@ -159,9 +159,7 @@ struct Capabilities {
 		dict["supportsTerminateRequest"] = supportsTerminateRequest;
 		dict["supportsBreakpointLocationsRequest"] = supportsBreakpointLocationsRequest;
 
-		Array arr;
-		arr.push_back(supportedChecksumAlgorithms[0]);
-		arr.push_back(supportedChecksumAlgorithms[1]);
+		Array arr{ supportedChecksumAlgorithms[0], supportedChecksumAlgorithms[1] };
 		dict["supportedChecksumAlgorithms"] = arr;
 
 		return dict;

@@ -2103,15 +2103,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->connect("caret_changed", callable_mp(this, &CodeTextEditor::_line_col_changed));
 	text_editor->connect("text_changed", callable_mp(this, &CodeTextEditor::_text_changed));
 	text_editor->connect("code_completion_requested", callable_mp(this, &CodeTextEditor::_complete_request));
-	TypedArray<String> cs;
-	cs.push_back(".");
-	cs.push_back(",");
-	cs.push_back("(");
-	cs.push_back("=");
-	cs.push_back("$");
-	cs.push_back("@");
-	cs.push_back("\"");
-	cs.push_back("\'");
+	TypedArray<String> cs(Array{ ".", ",", "(", "=", "$", "@", "\"", "\'" });
 	text_editor->set_code_completion_prefixes(cs);
 	idle->connect("timeout", callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
 

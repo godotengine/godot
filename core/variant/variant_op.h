@@ -909,9 +909,7 @@ template <typename S>
 class OperatorEvaluatorStringFormat<S, void> {
 public:
 	_FORCE_INLINE_ static String do_mod(const String &s, bool *r_valid) {
-		Array values;
-		values.push_back(Variant());
-
+		Array values{ Variant() };
 		String a = s.sprintf(values, r_valid);
 		if (r_valid) {
 			*r_valid = !*r_valid;
@@ -962,8 +960,7 @@ template <typename S>
 class OperatorEvaluatorStringFormat<S, Object> {
 public:
 	_FORCE_INLINE_ static String do_mod(const String &s, const Object *p_object, bool *r_valid) {
-		Array values;
-		values.push_back(p_object);
+		Array values{ p_object };
 		String a = s.sprintf(values, r_valid);
 		if (r_valid) {
 			*r_valid = !*r_valid;
@@ -990,8 +987,7 @@ template <typename S, typename T>
 class OperatorEvaluatorStringFormat {
 public:
 	_FORCE_INLINE_ static String do_mod(const String &s, const T &p_value, bool *r_valid) {
-		Array values;
-		values.push_back(p_value);
+		Array values{ p_value };
 		String a = s.sprintf(values, r_valid);
 		if (r_valid) {
 			*r_valid = !*r_valid;
