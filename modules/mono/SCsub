@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import build_scripts.mono_configure as mono_configure
+import build_scripts.build_assemblies as build_assemblies
+from methods import glob_recursive
 
 Import("env")
 Import("env_modules")
@@ -21,3 +23,29 @@ env_mono.add_source_files(env.modules_sources, "utils/*.cpp")
 if env.editor_build:
     env_mono.add_source_files(env.modules_sources, "editor/*.cpp")
     SConscript("editor/script_templates/SCsub")
+
+    # Build glue & assemblies
+
+    if env["build_dotnet"]:
+        glue_targets = [  # Hardcoded names
+            "glue/GodotSharp/GodotSharp/Generated/GD_constants.cs",
+            "glue/GodotSharp/GodotSharp/Generated/GD_extensions.cs",
+            "glue/GodotSharp/GodotSharp/Generated/GeneratedIncludes.props",
+            "glue/GodotSharp/GodotSharp/Generated/NativeCalls.cs",
+            "glue/GodotSharp/GodotSharpEditor/Generated/EditorNativeCalls.cs",
+            "glue/GodotSharp/GodotSharpEditor/Generated/GeneratedIncludes.props",
+        ]
+        glue_sources = [f"#bin/godot{env['PROGSUFFIX']}"]
+        env["BUILDERS"]["DotNetGlue"] = Builder(action=env.Run(build_assemblies.dotnet_glue, "Building DotNet glue..."))
+        env.Alias("dotnet_glue", [env.DotNetGlue(glue_targets, glue_sources)])
+
+        assemblies_targets = []
+        for build_config in ["Debug", "Release"]:
+            assemblies_targets += [
+                f"#bin/GodotSharp/Api/{build_config}/{target}" for target in build_assemblies.target_filenames
+            ]
+        assemblies_sources = glob_recursive("**/*.cs", "glue")
+        env["BUILDERS"]["DotNetAssemblies"] = Builder(
+            action=env.Run(build_assemblies.dotnet_assemblies, "Building DotNet assemblies...")
+        )
+        env.Alias("dotnet_assemblies", [env.DotNetAssemblies(assemblies_targets, assemblies_sources)])
