@@ -48,6 +48,11 @@ class CollisionShape3D : public Node3D {
 #endif
 	bool disabled = false;
 
+	CollisionObject3D *_get_ancestor_collision_object() const;
+	Transform3D _get_transform_to_collision_object() const;
+	void _set_transform_notifications();
+	void _create_shape_owner_in_collision_object();
+
 protected:
 	void _update_in_shape_owner(bool p_xform_only = false);
 
