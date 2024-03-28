@@ -137,12 +137,22 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		}
 	}
 
-	const Ref<Script> scr = _get_edited_resource();
-	if (scr.is_valid()) {
+	const ScriptLanguage *scr_lang = script_language;
+	StringName instance_base;
+
+	if (scr_lang == nullptr) {
+		const Ref<Script> scr = _get_edited_resource();
+		if (scr.is_valid()) {
+			scr_lang = scr->get_language();
+			instance_base = scr->get_instance_base_type();
+		}
+	}
+
+	if (scr_lang != nullptr) {
 		/* Core types. */
 		const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
 		List<String> core_types;
-		scr->get_language()->get_core_type_words(&core_types);
+		scr_lang->get_core_type_words(&core_types);
 		for (const String &E : core_types) {
 			highlighter->add_keyword_color(E, basetype_color);
 		}
@@ -151,9 +161,9 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 		const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
 		List<String> keywords;
-		scr->get_language()->get_reserved_words(&keywords);
+		scr_lang->get_reserved_words(&keywords);
 		for (const String &E : keywords) {
-			if (scr->get_language()->is_control_flow_keyword(E)) {
+			if (scr_lang->is_control_flow_keyword(E)) {
 				highlighter->add_keyword_color(E, control_flow_keyword_color);
 			} else {
 				highlighter->add_keyword_color(E, keyword_color);
@@ -162,7 +172,6 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 		/* Member types. */
 		const Color member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
-		StringName instance_base = scr->get_instance_base_type();
 		if (instance_base != StringName()) {
 			List<PropertyInfo> plist;
 			ClassDB::get_property_list(instance_base, &plist);
@@ -187,7 +196,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		/* Comments */
 		const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 		List<String> comments;
-		scr->get_language()->get_comment_delimiters(&comments);
+		scr_lang->get_comment_delimiters(&comments);
 		for (const String &comment : comments) {
 			String beg = comment.get_slice(" ", 0);
 			String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
@@ -197,7 +206,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		/* Doc comments */
 		const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
 		List<String> doc_comments;
-		scr->get_language()->get_doc_comment_delimiters(&doc_comments);
+		scr_lang->get_doc_comment_delimiters(&doc_comments);
 		for (const String &doc_comment : doc_comments) {
 			String beg = doc_comment.get_slice(" ", 0);
 			String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
@@ -207,7 +216,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		/* Strings */
 		const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 		List<String> strings;
-		scr->get_language()->get_string_delimiters(&strings);
+		scr_lang->get_string_delimiters(&strings);
 		for (const String &string : strings) {
 			String beg = string.get_slice(" ", 0);
 			String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
