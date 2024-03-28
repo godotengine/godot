@@ -1643,84 +1643,125 @@ void CodeEdit::fold_line(int p_line) {
 		return;
 	}
 
-	/* Find the last line to be hidden. */
 	const int line_count = get_line_count() - 1;
 	int end_line = line_count;
 
-	// Fold code region.
 	if (is_line_code_region_start(p_line)) {
-		int region_level = 0;
-		for (int endregion_line = p_line + 1; endregion_line < get_line_count(); endregion_line++) {
-			if (is_line_code_region_start(endregion_line)) {
-				region_level += 1;
-			}
-			if (is_line_code_region_end(endregion_line)) {
-				region_level -= 1;
-				if (region_level == -1) {
-					end_line = endregion_line;
-					break;
-				}
-			}
-		}
-		set_line_background_color(p_line, theme_cache.folded_code_region_color);
+		fold_code_region(p_line, end_line);
+	} else {
+		fold_non_code_region(p_line, end_line, line_count);
 	}
 
+	hide_lines(p_line, end_line);
+	fix_selection(p_line);
+	merge_overlapping_carets();
+	queue_redraw();
+}
+
+void CodeEdit::fold_code_region(int p_line, int &end_line) {
+	int region_level = 0;
+	for (int endregion_line = p_line + 1; endregion_line < get_line_count(); endregion_line++) {
+		if (is_line_code_region_start(endregion_line)) {
+			region_level += 1;
+		}
+		if (is_line_code_region_end(endregion_line)) {
+			region_level -= 1;
+			if (region_level == -1) {
+				end_line = endregion_line;
+				break;
+			}
+		}
+	}
+	set_line_background_color(p_line, theme_cache.folded_code_region_color);
+}
+
+void CodeEdit::fold_non_code_region(int p_line, int &end_line, const int line_count) {
 	int in_comment = is_in_comment(p_line);
 	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
-	if (!is_line_code_region_start(p_line)) {
-		if (in_string != -1 || in_comment != -1) {
-			end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
-			// End line is the same therefore we have a block of single line delimiters.
-			if (end_line == p_line) {
-				for (int i = p_line + 1; i <= line_count; i++) {
-					if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
-						break;
-					}
-					end_line = i;
-				}
-			}
-		} else {
-			int start_indent = get_indent_level(p_line);
-			for (int i = p_line + 1; i <= line_count; i++) {
-				if (get_line(i).strip_edges().size() == 0) {
-					continue;
-				}
-				if (get_indent_level(i) > start_indent) {
-					end_line = i;
-					continue;
-				}
-				if (is_in_string(i) == -1 && is_in_comment(i) == -1) {
-					break;
-				}
-			}
-		}
+	bool in_delimited_block = in_comment != -1 || in_string != -1;
+	if (in_delimited_block) {
+		end_line = get_foldable_delimited_lines(p_line, end_line, line_count, in_string, in_comment);
+	} else {
+		fold_indent_block(p_line, end_line, line_count);
+	}
+}
+
+void CodeEdit::fold_indent_block(int p_line, int &end_line, const int line_count) {
+	int start_indent = get_indent_level(p_line);
+	for (int i = p_line + 1; i <= line_count; i++) {
+		bool is_line_empty = get_line(i).strip_edges().size() == 0;
+		if (is_line_empty)
+			continue;
+
+		int in_comment = is_in_comment(i);
+		int in_string = (in_comment == -1) ? is_in_string(i) : -1;
+		bool in_delimited_block = in_comment != -1 || in_string != -1;
+		bool higher_indent = get_indent_level(i) > start_indent;
+		/* Stop if lowereq code block */
+		if (!higher_indent && !in_delimited_block)
+			break;
+
+		/* Jump over comments/strings */
+		if (in_delimited_block)
+			i = get_foldable_delimited_lines(i, end_line, line_count, in_string, in_comment);
+
+		/* Store fold if higher indent */
+		if (higher_indent)
+			end_line = i;
+	}
+}
+
+int CodeEdit::get_foldable_delimited_lines(int p_line, int end_line, const int line_count, int in_string, int in_comment) {
+	end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
+	if (end_line != p_line) {
+		return end_line;
 	}
 
+	for (int i = p_line + 1; i <= line_count; i++) {
+		bool is_string_end = (in_string != -1 && is_in_string(i) == -1);
+		bool is_comment_end = (in_comment != -1 && is_in_comment(i) == -1);
+		if ((is_string_end) || (is_comment_end)) {
+			break;
+		}
+		end_line = i;
+	}
+	return end_line;
+}
+
+void CodeEdit::hide_lines(int p_line, int end_line) {
 	for (int i = p_line + 1; i <= end_line; i++) {
 		_set_line_as_hidden(i, true);
 	}
+}
 
+void CodeEdit::fix_selection(int p_line) {
 	for (int i = 0; i < get_caret_count(); i++) {
-		// Fix selection.
 		if (has_selection(i)) {
-			if (_is_line_hidden(get_selection_from_line(i)) && _is_line_hidden(get_selection_to_line(i))) {
+			int from_line = get_selection_from_line(i);
+			int to_line = get_selection_to_line(i);
+
+			bool is_from_line_hidden = _is_line_hidden(from_line);
+			bool is_to_line_hidden = _is_line_hidden(to_line);
+
+			if (is_from_line_hidden && is_to_line_hidden) {
 				deselect(i);
-			} else if (_is_line_hidden(get_selection_from_line(i))) {
-				select(p_line, 9999, get_selection_to_line(i), get_selection_to_column(i), i);
-			} else if (_is_line_hidden(get_selection_to_line(i))) {
-				select(get_selection_from_line(i), get_selection_from_column(i), p_line, 9999, i);
+			} else if (is_from_line_hidden) {
+				int to_column = get_selection_to_column(i);
+				select(p_line, 9999, to_line, to_column, i);
+			} else if (is_to_line_hidden) {
+				int from_column = get_selection_from_column(i);
+				select(from_line, from_column, p_line, 9999, i);
 			}
 		}
-
-		// Reset caret.
-		if (_is_line_hidden(get_caret_line(i))) {
-			set_caret_line(p_line, false, false, 0, i);
-			set_caret_column(get_line(p_line).length(), false, i);
-		}
+		reset_caret(p_line, i);
 	}
+}
 
-	merge_overlapping_carets();
-	queue_redraw();
+void CodeEdit::reset_caret(int p_line, int caret_idx) {
+	if (_is_line_hidden(get_caret_line(caret_idx))) {
+		set_caret_line(p_line, false, false, 0, caret_idx);
+		set_caret_column(get_line(p_line).length(), false, caret_idx);
+	}
 }
 
 void CodeEdit::unfold_line(int p_line) {

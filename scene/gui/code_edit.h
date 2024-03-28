@@ -405,6 +405,14 @@ public:
 	bool can_fold_line(int p_line) const;
 
 	void fold_line(int p_line);
+	void fold_code_region(int p_line, int &end_line);
+	void fold_non_code_region(int p_line, int &end_line, const int line_count);
+	void fold_indent_block(int p_line, int &end_line, const int line_count);
+	int get_foldable_delimited_lines(int p_line, int end_line, const int line_count, int in_string, int in_comment);
+	void hide_lines(int p_line, int end_line);
+	void fix_selection(int p_line);
+	void reset_caret(int p_line, int caret_idx);
+
 	void unfold_line(int p_line);
 	void fold_all_lines();
 	void unfold_all_lines();
