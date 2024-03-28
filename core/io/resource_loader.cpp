@@ -1004,17 +1004,17 @@ String ResourceLoader::path_remap(const String &p_path) {
 }
 
 void ResourceLoader::reload_translation_remaps() {
-	ResourceCache::lock.lock();
-
 	List<Resource *> to_reload;
-	SelfList<Resource> *E = remapped_list.first();
 
-	while (E) {
-		to_reload.push_back(E->self());
-		E = E->next();
+	{
+		MutexLock lock(ResourceCache::resources_mutex);
+		SelfList<Resource> *E = remapped_list.first();
+
+		while (E) {
+			to_reload.push_back(E->self());
+			E = E->next();
+		}
 	}
-
-	ResourceCache::lock.unlock();
 
 	//now just make sure to not delete any of these resources while changing locale..
 	while (to_reload.front()) {
