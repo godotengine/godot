@@ -2751,6 +2751,22 @@ void EditorPropertyNodePath::_node_assign() {
 		add_child(scene_tree);
 		scene_tree->connect("selected", callable_mp(this, &EditorPropertyNodePath::_node_selected));
 	}
+
+	scene_tree->get_scene_tree()->set_marked(get_base_node(), true, true);
+	Variant val = get_edited_property_value();
+	Node *n;
+	if (val.get_type() == Variant::Type::NODE_PATH) {
+		NodePath path = val;
+		n = get_base_node()->get_node_or_null(path);
+	} else {
+		n = Object::cast_to<Node>(val);
+	}
+	if (n) {
+		scene_tree->get_scene_tree()->set_selected(n);
+	} else {
+		scene_tree->get_scene_tree()->set_selected(nullptr);
+	}
+
 	scene_tree->popup_scenetree_dialog();
 }
 
@@ -3185,6 +3201,7 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 			scene_tree->connect("selected", callable_mp(this, &EditorPropertyResource::_viewport_selected));
 		}
 
+		scene_tree->get_scene_tree()->set_selected(nullptr);
 		scene_tree->popup_scenetree_dialog();
 	}
 }

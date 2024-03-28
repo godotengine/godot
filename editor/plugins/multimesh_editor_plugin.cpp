@@ -257,10 +257,18 @@ void MultiMeshEditor::_browse(bool p_source) {
 	browsing_source = p_source;
 	std->get_scene_tree()->set_marked(node, false);
 	std->popup_scenetree_dialog();
+	Node *n;
 	if (p_source) {
+		n = node->get_node_or_null(mesh_source->get_text());
 		std->set_title(TTR("Select a Source Mesh:"));
 	} else {
+		n = node->get_node_or_null(surface_source->get_text());
 		std->set_title(TTR("Select a Target Surface:"));
+	}
+	if (n) {
+		std->get_scene_tree()->set_selected(n);
+	} else {
+		std->get_scene_tree()->set_selected(nullptr);
 	}
 }
 

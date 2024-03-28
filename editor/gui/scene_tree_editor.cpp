@@ -926,6 +926,25 @@ void SceneTreeEditor::_notification(int p_what) {
 
 			_update_tree();
 		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				if (selected) {
+					// Scroll to selected node.
+					TreeItem *item = _find(tree->get_root(), selected->get_path());
+					if (item) {
+						tree->scroll_to_item(item, true);
+					}
+				} else if (marked.size() == 1) {
+					// Scroll to a single marked node.
+					Node *marked_node = *marked.begin();
+					TreeItem *item = marked_node ? _find(tree->get_root(), marked_node->get_path()) : nullptr;
+					if (item) {
+						tree->scroll_to_item(item, true);
+					}
+				}
+			}
+		} break;
 	}
 }
 
