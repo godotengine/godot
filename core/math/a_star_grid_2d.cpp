@@ -30,6 +30,7 @@
 
 #include "a_star_grid_2d.h"
 
+#include "core/templates/sort_array.h"
 #include "core/variant/typed_array.h"
 
 static real_t heuristic_euclidean(const Vector2i &p_from, const Vector2i &p_to) {

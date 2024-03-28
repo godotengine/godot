@@ -32,6 +32,7 @@
 #define STATIC_RAYCASTER_H
 
 #include "core/object/ref_counted.h"
+#include "core/templates/hash_set.h"
 
 #if !defined(__aligned)
 

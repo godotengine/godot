@@ -33,6 +33,8 @@
 
 #include "core/object/ref_counted.h"
 
+#include "core/templates/vector.h"
+
 class Expression : public RefCounted {
 	GDCLASS(Expression, RefCounted);
 

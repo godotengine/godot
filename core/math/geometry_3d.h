@@ -31,11 +31,16 @@
 #ifndef GEOMETRY_3D_H
 #define GEOMETRY_3D_H
 
+#include "core/math/color.h"
 #include "core/math/delaunay_3d.h"
 #include "core/math/face3.h"
-#include "core/object/object.h"
+#include "core/math/plane.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
+
+struct Vector3i;
 
 class Geometry3D {
 public:

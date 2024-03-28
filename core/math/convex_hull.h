@@ -46,7 +46,9 @@ subject to the following restrictions:
 #include "core/math/geometry_3d.h"
 #include "core/math/vector3.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/vector.h"
+
+template <typename T>
+class Vector;
 
 /// Convex hull implementation based on Preparata and Hong
 /// See https://code.google.com/archive/p/bullet/issues/275

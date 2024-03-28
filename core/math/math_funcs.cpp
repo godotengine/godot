@@ -30,7 +30,7 @@
 
 #include "math_funcs.h"
 
-#include "core/error/error_macros.h"
+#include "core/math/random_pcg.h"
 
 RandomPCG Math::default_rand(RandomPCG::DEFAULT_SEED, RandomPCG::DEFAULT_INC);
 

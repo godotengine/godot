@@ -31,7 +31,6 @@
 #ifndef VECTOR3_H
 #define VECTOR3_H
 
-#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 

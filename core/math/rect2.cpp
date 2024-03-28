@@ -32,6 +32,7 @@
 
 #include "core/math/rect2i.h"
 #include "core/math/transform_2d.h"
+#include "core/math/vector2i.h"
 #include "core/string/ustring.h"
 
 bool Rect2::is_equal_approx(const Rect2 &p_rect) const {

@@ -33,6 +33,7 @@
 
 #include "core/math/vector3.h"
 #include "core/math/vector4.h"
+#include "core/string/ustring.h"
 
 template <typename T>
 class Vector;

@@ -32,6 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/io/marshalls.h"
+#include "core/math/random_pcg.h"
 #include "scene/gui/control.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"

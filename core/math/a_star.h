@@ -33,7 +33,9 @@
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/oa_hash_map.h"
+#include "core/templates/pair.h"
 
 /**
 	A* pathfinding algorithm.

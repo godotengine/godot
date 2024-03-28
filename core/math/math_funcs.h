@@ -33,13 +33,15 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
-#include "core/math/random_pcg.h"
-#include "core/typedefs.h"
 
-#include "thirdparty/misc/pcg.h"
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
 
 #include <float.h>
 #include <math.h>
+
+class RandomPCG;
 
 class Math {
 	static RandomPCG default_rand;

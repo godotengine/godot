@@ -32,7 +32,6 @@
 #define BASIS_H
 
 #include "core/math/quaternion.h"
-#include "core/math/vector3.h"
 
 struct _NO_DISCARD_ Basis {
 	Vector3 rows[3] = {

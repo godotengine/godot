@@ -32,6 +32,7 @@
 #define PLANE_H
 
 #include "core/math/vector3.h"
+#include "core/string/ustring.h"
 
 class Variant;
 

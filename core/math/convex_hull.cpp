@@ -58,14 +58,11 @@ subject to the following restrictions:
 
 #include "convex_hull.h"
 
-#include "core/error/error_macros.h"
 #include "core/math/aabb.h"
-#include "core/math/math_defs.h"
-#include "core/os/memory.h"
+#include "core/math/plane.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/paged_allocator.h"
-
-#include <string.h>
+#include "core/templates/vector.h"
 
 //#define DEBUG_CONVEX_HULL
 //#define SHOW_ITERATIONS

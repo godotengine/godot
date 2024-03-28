@@ -30,12 +30,8 @@
 
 #include "expression.h"
 
-#include "core/io/marshalls.h"
-#include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
-#include "core/object/ref_counted.h"
-#include "core/os/os.h"
-#include "core/variant/variant_parser.h"
+#include "core/string/char_utils.h"
 
 Error Expression::_get_token(Token &r_token) {
 	while (true) {

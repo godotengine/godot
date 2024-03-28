@@ -30,7 +30,12 @@
 
 #include "quick_hull.h"
 
-#include "core/templates/rb_map.h"
+#include "core/math/aabb.h"
+#include "core/math/vector3.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/hash_set.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/pair.h"
 
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
 
