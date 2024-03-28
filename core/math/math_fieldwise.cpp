@@ -31,6 +31,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "math_fieldwise.h"
+#include "core/variant/variant.h"
 
 #define SETUP_TYPE(m_type)    \
 	m_type source = p_source; \
