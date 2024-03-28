@@ -182,6 +182,32 @@ class FileAccessHandler(val context: Context) {
 		}
 	}
 
+	fun fileLastAccessed(filepath: String?): Long {
+		val storageScope = storageScopeIdentifier.identifyStorageScope(filepath)
+		if (storageScope == StorageScope.UNKNOWN) {
+			return 0L
+		}
+
+		return try {
+			DataAccess.fileLastAccessed(storageScope, context, filepath!!)
+		} catch (e: SecurityException) {
+			0L
+		}
+	}
+
+	fun fileSize(filepath: String?): Long {
+		val storageScope = storageScopeIdentifier.identifyStorageScope(filepath)
+		if (storageScope == StorageScope.UNKNOWN) {
+			return -1L
+		}
+
+		return try {
+			DataAccess.fileSize(storageScope, context, filepath!!)
+		} catch (e: SecurityException) {
+			-1L
+		}
+	}
+
 	fun fileGetPosition(fileId: Int): Long {
 		if (!hasFileId(fileId)) {
 			return 0L

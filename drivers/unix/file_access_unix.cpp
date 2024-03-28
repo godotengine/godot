@@ -360,15 +360,44 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 
 uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	String file = fix_path(p_file);
-	struct stat status = {};
-	int err = stat(file.utf8().get_data(), &status);
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
 
 	if (!err) {
-		return status.st_mtime;
-	} else {
-		print_verbose("Failed to get modified time for: " + p_file + "");
-		return 0;
+		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG) {
+			return st.st_mtime;
+		}
 	}
+	print_verbose("Failed to get modified time for: " + p_file + "");
+	return 0;
+}
+
+uint64_t FileAccessUnix::_get_access_time(const String &p_file) {
+	String file = fix_path(p_file);
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
+
+	if (!err) {
+		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG) {
+			return st.st_atime;
+		}
+	}
+	print_verbose("Failed to get access time for: " + p_file + "");
+	return 0;
+}
+
+int64_t FileAccessUnix::_get_size(const String &p_file) {
+	String file = fix_path(p_file);
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
+
+	if (!err) {
+		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG) {
+			return st.st_size;
+		}
+	}
+	print_verbose("Failed to get size for: " + p_file + "");
+	return -1;
 }
 
 BitField<FileAccess::UnixPermissionFlags> FileAccessUnix::_get_unix_permissions(const String &p_file) {

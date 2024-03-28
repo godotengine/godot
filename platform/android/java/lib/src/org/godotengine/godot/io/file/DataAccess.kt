@@ -85,6 +85,22 @@ internal abstract class DataAccess(private val filePath: String) {
 			}
 		}
 
+		fun fileLastAccessed(storageScope: StorageScope, context: Context, path: String): Long {
+			return when(storageScope) {
+				StorageScope.APP -> FileData.fileLastAccessed(path)
+				StorageScope.SHARED -> MediaStoreData.fileLastAccessed(context, path)
+				StorageScope.UNKNOWN -> 0L
+			}
+		}
+
+		fun fileSize(storageScope: StorageScope, context: Context, path: String): Long {
+			return when(storageScope) {
+				StorageScope.APP -> FileData.fileSize(path)
+				StorageScope.SHARED -> MediaStoreData.fileSize(context, path)
+				StorageScope.UNKNOWN -> -1L
+			}
+		}
+
 		fun removeFile(storageScope: StorageScope, context: Context, path: String): Boolean {
 			return when(storageScope) {
 				StorageScope.APP -> FileData.delete(path)

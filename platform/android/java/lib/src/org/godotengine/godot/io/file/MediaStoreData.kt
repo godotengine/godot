@@ -206,6 +206,20 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 			return dataItem.dateModified.toLong()
 		}
 
+		fun fileLastAccessed(@Suppress("UNUSED_PARAMETER") context: Context, @Suppress("UNUSED_PARAMETER") path: String): Long {
+			return 0L
+		}
+
+		fun fileSize(context: Context, path: String): Long {
+			val result = queryByPath(context, path)
+			if (result.isEmpty()) {
+				return -1L
+			}
+
+			val dataItem = result[0]
+			return dataItem.size.toLong()
+		}
+
 		fun rename(context: Context, from: String, to: String): Boolean {
 			// Ensure the source exists.
 			val sources = queryByPath(context, from)

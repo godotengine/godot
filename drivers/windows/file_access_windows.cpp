@@ -493,11 +493,56 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	int rv = _wstat((LPCWSTR)(file.utf16().get_data()), &st);
 
 	if (rv == 0) {
-		return st.st_mtime;
-	} else {
-		print_verbose("Failed to get modified time for: " + p_file + "");
+		if (S_ISREG(st.st_mode)) {
+			return st.st_mtime;
+		}
+	}
+	print_verbose("Failed to get modified time for: " + p_file + "");
+	return 0;
+}
+
+uint64_t FileAccessWindows::_get_access_time(const String &p_file) {
+	if (is_path_invalid(p_file)) {
 		return 0;
 	}
+
+	String file = fix_path(p_file);
+	if (file.ends_with("/") && file != "/") {
+		file = file.substr(0, file.length() - 1);
+	}
+
+	struct _stat st;
+	int rv = _wstat((LPCWSTR)(file.utf16().get_data()), &st);
+
+	if (rv == 0) {
+		if (S_ISREG(st.st_mode)) {
+			return st.st_atime;
+		}
+	}
+	print_verbose("Failed to get access time for: " + p_file + "");
+	return 0;
+}
+
+int64_t FileAccessWindows::_get_size(const String &p_file) {
+	if (is_path_invalid(p_file)) {
+		return -1;
+	}
+
+	String file = fix_path(p_file);
+	if (file.ends_with("/") && file != "/") {
+		file = file.substr(0, file.length() - 1);
+	}
+
+	struct _stat64 st;
+	int rv = _wstat64((LPCWSTR)(file.utf16().get_data()), &st);
+
+	if (rv == 0) {
+		if (S_ISREG(st.st_mode)) {
+			return st.st_size;
+		}
+	}
+	print_verbose("Failed to get size for: " + p_file + "");
+	return -1;
 }
 
 BitField<FileAccess::UnixPermissionFlags> FileAccessWindows::_get_unix_permissions(const String &p_file) {
