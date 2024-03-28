@@ -128,6 +128,9 @@ struct InstanceData {
 	vec4 compressed_aabb_position_pad; // 16 - 144 // Only .xyz is used. .w is padding.
 	vec4 compressed_aabb_size_pad; // 16 - 160 // Only .xyz is used. .w is padding.
 	vec4 uv_scale; // 16 - 176
+	vec2 lightmap_texture_size; // 8 - 184
+	uint pad0; // 4 - 188
+	uint pad1; // 4 - 192
 };
 
 layout(set = 1, binding = 1, std430) buffer restrict readonly InstanceDataBuffer {

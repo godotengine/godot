@@ -217,6 +217,9 @@ struct InstanceData {
 	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
 	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
 	vec4 uv_scale;
+	vec2 lightmap_texture_size; // Used for bicubic filtering in the scene shader.
+	uint pad0;
+	uint pad1;
 };
 
 layout(set = 1, binding = 2, std430) buffer restrict readonly InstanceDataBuffer {

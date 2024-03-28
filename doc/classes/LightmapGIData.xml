@@ -15,8 +15,9 @@
 			<param index="1" name="uv_scale" type="Rect2" />
 			<param index="2" name="slice_index" type="int" />
 			<param index="3" name="sub_instance" type="int" />
+			<param index="4" name="texture_size" type="Vector2" />
 			<description>
-				Adds an object that is considered baked within this [LightmapGIData].
+				Adds an object that is considered baked within this [LightmapGIData]. [param texture_size] must match the size of the [i]entire[/i] lightmap texture, which is used for bicubic filtering when rendering the lightmap.
 			</description>
 		</method>
 		<method name="clear_users">
