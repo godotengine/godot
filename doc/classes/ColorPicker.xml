@@ -90,6 +90,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="choose_color_close_requested">
+			<description>
+				Emitted when the user requests closing the [ColorPicker] after choosing a color. This occurs when the [ColorPicker] is part of a [ColorPickerButton] and the user holds [kbd]Ctrl[/kbd] when confirming a color choice by left-clicking or pressing [kbd]Enter[/kbd] in a text field.
+			</description>
+		</signal>
 		<signal name="color_changed">
 			<param index="0" name="color" type="Color" />
 			<description>
