@@ -484,7 +484,7 @@ void CSGShape3D::_update_collision_faces() {
 }
 
 bool CSGShape3D::_is_debug_collision_shape_visible() {
-	return is_inside_tree() && (get_tree()->is_debugging_collisions_hint() || Engine::get_singleton()->is_editor_hint());
+	return !Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->is_debugging_collisions_hint();
 }
 
 void CSGShape3D::_update_debug_collision_shape() {
@@ -574,11 +574,6 @@ void CSGShape3D::_notification(int p_what) {
 			if (!is_root_shape() && last_visible != is_visible()) {
 				// Update this node's parent only if its own visibility has changed, not the visibility of parent nodes
 				parent_shape->_make_dirty();
-			}
-			if (is_visible()) {
-				_update_debug_collision_shape();
-			} else {
-				_clear_debug_collision_shape();
 			}
 			last_visible = is_visible();
 		} break;
