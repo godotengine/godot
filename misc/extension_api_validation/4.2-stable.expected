@@ -248,3 +248,10 @@ Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/register_tex
 Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/remove_button/arguments/0': type changed value in new API, from "Control" to "Button".
 
 Changed argument type to the more specific one actually expected by the method. Compatibility method registered.
+
+
+GH-57121
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/duplicate/arguments/0': default_value changed value in new API, from "15" to "31".
+
+The parameter includes a newly added flag. Compat method registered.
