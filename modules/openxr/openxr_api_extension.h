@@ -69,6 +69,7 @@ public:
 	bool is_running();
 
 	uint64_t get_play_space();
+	int64_t get_predicted_display_time();
 	int64_t get_next_frame_time();
 	bool can_render();
 

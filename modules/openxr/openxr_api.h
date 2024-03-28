@@ -57,6 +57,9 @@
 class OpenXRInterface;
 
 class OpenXRAPI {
+protected:
+	_THREAD_SAFE_CLASS_
+
 private:
 	// our singleton
 	static OpenXRAPI *singleton;
@@ -310,6 +313,13 @@ private:
 	// convenience
 	void copy_string_to_char_buffer(const String p_string, char *p_buffer, int p_buffer_len);
 
+	// Render state, Only accessible in rendering thread
+	struct RenderState {
+		XrTime predicted_display_time = 0;
+	} render_state;
+
+	static void _set_render_display_time(XrTime p_predicted_display_time);
+
 public:
 	XrInstance get_instance() const { return instance; };
 	XrSystemId get_system_id() const { return system_id; };
@@ -365,7 +375,11 @@ public:
 	void finish();
 
 	XrSpace get_play_space() const { return play_space; }
-	XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
+	_FORCE_INLINE_ XrTime get_predicted_display_time() { return frame_state.predictedDisplayTime; }
+	_FORCE_INLINE_ XrTime get_next_frame_time() {
+		WARN_PRINT_ONCE("OpenXR: Next frame timing called, verify this is intended."); // In the past we needed to look a frame ahead, may be calling this unintentionally.
+		return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod;
+	}
 	bool can_render() { return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && view_pose_valid && frame_state.shouldRender; }
 
 	XrHandTrackerEXT get_hand_tracker(int p_hand_index);
