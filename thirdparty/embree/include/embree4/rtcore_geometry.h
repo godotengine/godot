@@ -48,7 +48,8 @@ enum RTCGeometryType
   RTC_GEOMETRY_TYPE_NORMAL_ORIENTED_CATMULL_ROM_CURVE  = 60, // flat normal-oriented Catmull-Rom curves
 
   RTC_GEOMETRY_TYPE_USER     = 120, // user-defined geometry
-  RTC_GEOMETRY_TYPE_INSTANCE = 121  // scene instance
+  RTC_GEOMETRY_TYPE_INSTANCE = 121,  // scene instance
+  RTC_GEOMETRY_TYPE_INSTANCE_ARRAY = 122,  // scene instance array
 };
 
 /* Interpolation modes for subdivision surfaces */
@@ -86,14 +87,11 @@ struct RTCIntersectFunctionNArguments
   int* valid;
   void* geometryUserPtr;
   unsigned int primID;
-  struct RTCIntersectContext* context;
+  struct RTCRayQueryContext* context;
   struct RTCRayHitN* rayhit;
   unsigned int N;
   unsigned int geomID;
 };
-
-/* Intersection callback function */
-typedef void (*RTCIntersectFunctionN)(const struct RTCIntersectFunctionNArguments* args);
 
 /* Arguments for RTCOccludedFunctionN */
 struct RTCOccludedFunctionNArguments
@@ -101,14 +99,11 @@ struct RTCOccludedFunctionNArguments
   int* valid;
   void* geometryUserPtr;
   unsigned int primID;
-  struct RTCIntersectContext* context;
+  struct RTCRayQueryContext* context;
   struct RTCRayN* ray;
   unsigned int N;
   unsigned int geomID;
 };
-
-/* Occlusion callback function */
-typedef void (*RTCOccludedFunctionN)(const struct RTCOccludedFunctionNArguments* args);
 
 /* Arguments for RTCDisplacementFunctionN */
 struct RTCDisplacementFunctionNArguments
@@ -192,6 +187,9 @@ RTC_API void rtcSetGeometryIntersectFilterFunction(RTCGeometry geometry, RTCFilt
 /* Sets the occlusion filter callback function of the geometry. */
 RTC_API void rtcSetGeometryOccludedFilterFunction(RTCGeometry geometry, RTCFilterFunctionN filter);
 
+/* Enables argument version of intersection or occlusion filter function. */
+RTC_API void rtcSetGeometryEnableFilterFunctionFromArguments(RTCGeometry geometry, bool enable);
+
 /* Sets the user-defined data pointer of the geometry. */
 RTC_API void rtcSetGeometryUserData(RTCGeometry geometry, void* ptr);
 
@@ -214,14 +212,16 @@ RTC_API void rtcSetGeometryIntersectFunction(RTCGeometry geometry, RTCIntersectF
 RTC_API void rtcSetGeometryOccludedFunction(RTCGeometry geometry, RTCOccludedFunctionN occluded);
 
 /* Invokes the intersection filter from the intersection callback function. */
-RTC_API void rtcFilterIntersection(const struct RTCIntersectFunctionNArguments* args, const struct RTCFilterFunctionNArguments* filterArgs);
+RTC_SYCL_API void rtcInvokeIntersectFilterFromGeometry(const struct RTCIntersectFunctionNArguments* args, const struct RTCFilterFunctionNArguments* filterArgs);
 
 /* Invokes the occlusion filter from the occlusion callback function. */
-RTC_API void rtcFilterOcclusion(const struct RTCOccludedFunctionNArguments* args, const struct RTCFilterFunctionNArguments* filterArgs);
-
+RTC_SYCL_API void rtcInvokeOccludedFilterFromGeometry(const struct RTCOccludedFunctionNArguments* args, const struct RTCFilterFunctionNArguments* filterArgs);
 
 /* Sets the instanced scene of an instance geometry. */
 RTC_API void rtcSetGeometryInstancedScene(RTCGeometry geometry, RTCScene scene);
+
+/* Sets the instanced scenes of an instance array geometry. */
+RTC_API void rtcSetGeometryInstancedScenes(RTCGeometry geometry, RTCScene* scenes, size_t numScenes);
 
 /* Sets the transformation of an instance for the specified time step. */
 RTC_API void rtcSetGeometryTransform(RTCGeometry geometry, unsigned int timeStep, enum RTCFormat format, const void* xfm);
@@ -232,6 +232,12 @@ RTC_API void rtcSetGeometryTransformQuaternion(RTCGeometry geometry, unsigned in
 /* Returns the interpolated transformation of an instance for the specified time. */
 RTC_API void rtcGetGeometryTransform(RTCGeometry geometry, float time, enum RTCFormat format, void* xfm);
 
+/*
+ * Returns the interpolated transformation of the instPrimID'th instance of an
+ * instance array for the specified time. If geometry is an regular instance,
+ * instPrimID must be 0.
+ */
+RTC_API void rtcGetGeometryTransformEx(RTCGeometry geometry, unsigned int instPrimID, float time, enum RTCFormat format, void* xfm);
 
 /* Sets the uniform tessellation rate of the geometry. */
 RTC_API void rtcSetGeometryTessellationRate(RTCGeometry geometry, float tessellationRate);

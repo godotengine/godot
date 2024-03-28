@@ -43,7 +43,7 @@ namespace embree
         template<typename Ray, typename Epilog>
         static __forceinline bool intersect(const vbool<M>& valid_i,
                                             Ray& ray,
-                                            IntersectContext* context,
+                                            RayQueryContext* context,
                                             const LineSegments* geom,
                                             const Precalculations& pre,
                                             const Vec4vf<M>& v0i, const Vec4vf<M>& v1i,
@@ -96,7 +96,7 @@ namespace embree
         template<typename Epilog>
         static __forceinline bool intersect(const vbool<M>& valid_i,
                                             RayK<K>& ray, size_t k,
-                                            IntersectContext* context,
+                                            RayQueryContext* context,
                                             const LineSegments* geom,
                                             const Precalculations& pre,
                                             const Vec4vf<M>& v0i, const Vec4vf<M>& v1i,

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "math.h"
+#include "emath.h"
 
 namespace embree
 {
@@ -34,7 +34,7 @@ namespace embree
     __forceinline          Vec2( const T& x, const T& y ) : x(x), y(y) {}
 
     __forceinline Vec2( const Vec2& other ) { x = other.x; y = other.y; }
-    __forceinline Vec2( const Vec2fa& other );
+    Vec2( const Vec2fa& other );
 
     template<typename T1> __forceinline Vec2( const Vec2<T1>& a ) : x(T(a.x)), y(T(a.y)) {}
     template<typename T1> __forceinline Vec2& operator =( const Vec2<T1>& other ) { x = other.x; y = other.y; return *this; }
@@ -232,4 +232,5 @@ namespace embree
 #if defined(__AVX512F__)
   template<> __forceinline Vec2<vfloat16>::Vec2(const Vec2fa& a) : x(a.x), y(a.y) {}
 #endif
+
 }

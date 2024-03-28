@@ -171,7 +171,7 @@ namespace embree
 
       __forceinline QuadMIntersector1Pluecker(const Ray& ray, const void* ptr) {}
 
-      __forceinline void intersect(RayHit& ray, IntersectContext* context,
+      __forceinline void intersect(RayHit& ray, RayQueryContext* context,
                                    const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3,
                                    const vuint<M>& geomID, const vuint<M>& primID) const
       {
@@ -180,7 +180,7 @@ namespace embree
         PlueckerIntersectorTriangle1::intersect<M>(ray,v2,v3,v1,vbool<M>(true),epilog);
       }
       
-      __forceinline bool occluded(Ray& ray, IntersectContext* context,
+      __forceinline bool occluded(Ray& ray, RayQueryContext* context,
                                   const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3,
                                   const vuint<M>& geomID, const vuint<M>& primID) const
       {
@@ -216,13 +216,13 @@ namespace embree
         return PlueckerIntersectorTriangle1::intersect<8>(ray,vtx0,vtx1,vtx2,flags,epilog); 
       }
       
-      __forceinline bool intersect(RayHit& ray, IntersectContext* context, const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, 
+      __forceinline bool intersect(RayHit& ray, RayQueryContext* context, const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, 
                                    const vuint4& geomID, const vuint4& primID) const
       {
         return intersect(ray,v0,v1,v2,v3,Intersect1EpilogM<8,filter>(ray,context,vuint8(geomID),vuint8(primID)));
       }
       
-      __forceinline bool occluded(Ray& ray, IntersectContext* context, const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3,
+      __forceinline bool occluded(Ray& ray, RayQueryContext* context, const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3,
                                   const vuint4& geomID, const vuint4& primID) const
       {
         return intersect(ray,v0,v1,v2,v3,Occluded1EpilogM<8,filter>(ray,context,vuint8(geomID),vuint8(primID)));
@@ -374,7 +374,7 @@ namespace embree
       __forceinline QuadMIntersectorKPluecker(const vbool<K>& valid, const RayK<K>& ray)
         : QuadMIntersectorKPlueckerBase<M,K,filter>(valid,ray) {}
 
-      __forceinline void intersect1(RayHitK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline void intersect1(RayHitK<K>& ray, size_t k, RayQueryContext* context,
                                     const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3,
                                     const vuint<M>& geomID, const vuint<M>& primID) const
       {
@@ -383,7 +383,7 @@ namespace embree
         PlueckerIntersector1KTriangleM::intersect1<M,K>(ray,k,v2,v3,v1,vbool<M>(true ),epilog);
       }
       
-      __forceinline bool occluded1(RayK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline bool occluded1(RayK<K>& ray, size_t k, RayQueryContext* context,
                                    const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3,
                                    const vuint<M>& geomID, const vuint<M>& primID) const
       {
@@ -418,14 +418,14 @@ namespace embree
         return PlueckerIntersector1KTriangleM::intersect1<8,K>(ray,k,vtx0,vtx1,vtx2,flags,epilog); 
       }
       
-      __forceinline bool intersect1(RayHitK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline bool intersect1(RayHitK<K>& ray, size_t k, RayQueryContext* context,
                                     const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, 
                                     const vuint4& geomID, const vuint4& primID) const
       {
         return intersect1(ray,k,v0,v1,v2,v3,Intersect1KEpilogM<8,K,filter>(ray,k,context,vuint8(geomID),vuint8(primID)));
       }
       
-      __forceinline bool occluded1(RayK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline bool occluded1(RayK<K>& ray, size_t k, RayQueryContext* context,
                                    const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, 
                                    const vuint4& geomID, const vuint4& primID) const
       {

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "math.h"
+#include "emath.h"
 
 namespace embree
 {
@@ -286,6 +286,8 @@ namespace embree
 
   template<> __forceinline Vec3<float>::Vec3(const Vec3fa& a) { x = a.x; y = a.y; z = a.z; }
 
+#if !defined(__SYCL_DEVICE_ONLY__)
+
 #if defined(__AVX__)
   template<> __forceinline Vec3<vfloat4>::Vec3(const Vec3fa& a) {
     x = a.x; y = a.y; z = a.z;
@@ -332,5 +334,24 @@ namespace embree
 
 #if defined(__AVX512F__)
   template<> __forceinline Vec3<vfloat16>::Vec3(const Vec3fa& a) : x(a.x), y(a.y), z(a.z) {}
+#endif
+  
+#else
+
+#if defined(__SSE__)
+  template<> __forceinline Vec3<vfloat4>::Vec3(const Vec3fa& a) {
+    x = a.x; y = a.y; z = a.z;
+  }
+#endif
+#if defined(__AVX__)
+  template<> __forceinline Vec3<vfloat8>::Vec3(const Vec3fa& a) {
+    x = a.x; y = a.y; z = a.z;
+  }
+#endif
+#if defined(__AVX512F__)
+  template<> __forceinline Vec3<vfloat16>::Vec3(const Vec3fa& a) {
+    x = a.x; y = a.y; z = a.z;
+  }
+#endif
 #endif
 }

@@ -27,6 +27,8 @@ enum RTCBufferType
   RTC_BUFFER_TYPE_VERTEX_CREASE_WEIGHT = 21,
   RTC_BUFFER_TYPE_HOLE                 = 22,
 
+  RTC_BUFFER_TYPE_TRANSFORM            = 23,
+
   RTC_BUFFER_TYPE_FLAGS = 32
 };
 

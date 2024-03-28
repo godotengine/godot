@@ -3,21 +3,32 @@
 
 #pragma once
 
-#define RTC_VERSION_MAJOR 3
-#define RTC_VERSION_MINOR 13
-#define RTC_VERSION_PATCH 5
-#define RTC_VERSION 31305
-#define RTC_VERSION_STRING "3.13.5"
+#if !defined(EMBREE_SYCL_SUPPORT)
+// #cmakedefine EMBREE_SYCL_SUPPORT
+#endif
+
+#define RTC_VERSION_MAJOR 4
+#define RTC_VERSION_MINOR 3
+#define RTC_VERSION_PATCH 1
+#define RTC_VERSION 40301
+#define RTC_VERSION_STRING "4.3.1"
 
 #define RTC_MAX_INSTANCE_LEVEL_COUNT 1
+
+// #cmakedefine EMBREE_GEOMETRY_INSTANCE_ARRAY
+#if defined(EMBREE_GEOMETRY_INSTANCE_ARRAY)
+  #define RTC_GEOMETRY_INSTANCE_ARRAY
+#endif
+
+// #cmakedefine01 EMBREE_SYCL_GEOMETRY_CALLBACK
 
 #define EMBREE_MIN_WIDTH 0
 #define RTC_MIN_WIDTH EMBREE_MIN_WIDTH
 
 #if !defined(EMBREE_STATIC_LIB)
-#   define EMBREE_STATIC_LIB
+#define EMBREE_STATIC_LIB
 #endif
-/* #undef EMBREE_API_NAMESPACE*/
+// #cmakedefine EMBREE_API_NAMESPACE
 
 #if defined(EMBREE_API_NAMESPACE)
 #  define RTC_NAMESPACE
@@ -56,3 +67,14 @@
 #else
 #  define RTC_API RTC_API_IMPORT
 #endif
+
+#if defined(ISPC)
+#  define RTC_SYCL_INDIRECTLY_CALLABLE
+#elif defined(__SYCL_DEVICE_ONLY__)
+#  define RTC_SYCL_INDIRECTLY_CALLABLE [[intel::device_indirectly_callable]] SYCL_EXTERNAL
+#  define RTC_SYCL_API                 SYCL_EXTERNAL
+#else
+#  define RTC_SYCL_INDIRECTLY_CALLABLE
+#  define RTC_SYCL_API RTC_API
+#endif
+

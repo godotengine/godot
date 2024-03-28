@@ -18,7 +18,7 @@ namespace embree
       typedef MoellerTrumboreIntersector1<M> Precalculations;
 
       /*! Intersect a ray with the M triangles and updates the hit. */
-      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(normal.trav_prims,1,1,1);
         const Vec3vf<M> time(ray.time());
@@ -29,7 +29,7 @@ namespace embree
       }
 
       /*! Test if the ray is occluded by one of M triangles. */
-      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const Vec3vf<M> time(ray.time());
@@ -53,7 +53,7 @@ namespace embree
       typedef MoellerTrumboreIntersectorK<M,K> Precalculations;
 
       /*! Intersects K rays with M triangles. */
-      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         for (size_t i=0; i<TriangleMvMB<M>::max_size(); i++)
         {
@@ -68,7 +68,7 @@ namespace embree
       }
 
       /*! Test for K rays if they are occluded by any of the M triangles. */
-      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         vbool<K> valid0 = valid_i;
 
@@ -87,7 +87,7 @@ namespace embree
       }
       
       /*! Intersect a ray with M triangles and updates the hit. */
-      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(normal.trav_prims,1,1,1);
         const Vec3vf<M> time(ray.time()[k]);
@@ -98,7 +98,7 @@ namespace embree
       }
 
       /*! Test if the ray is occluded by one of the M triangles. */
-      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const Vec3vf<M> time(ray.time()[k]);
@@ -117,7 +117,7 @@ namespace embree
       typedef PlueckerIntersector1<M> Precalculations;
 
       /*! Intersect a ray with the M triangles and updates the hit. */
-      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(normal.trav_prims,1,1,1);
         const Vec3vf<M> time(ray.time());
@@ -128,7 +128,7 @@ namespace embree
       }
 
       /*! Test if the ray is occluded by one of M triangles. */
-      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const Vec3vf<M> time(ray.time());
@@ -152,7 +152,7 @@ namespace embree
       typedef PlueckerIntersectorK<M,K> Precalculations;
 
       /*! Intersects K rays with M triangles. */
-      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         for (size_t i=0; i<TriangleMvMB<M>::max_size(); i++)
         {
@@ -167,7 +167,7 @@ namespace embree
       }
 
       /*! Test for K rays if they are occluded by any of the M triangles. */
-      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         vbool<K> valid0 = valid_i;
 
@@ -186,7 +186,7 @@ namespace embree
       }
 
       /*! Intersect a ray with M triangles and updates the hit. */
-      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(normal.trav_prims,1,1,1);
         const Vec3vf<M> time(ray.time()[k]);
@@ -197,7 +197,7 @@ namespace embree
       }
 
       /*! Test if the ray is occluded by one of the M triangles. */
-      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const TriangleMvMB<M>& tri)
+      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const TriangleMvMB<M>& tri)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const Vec3vf<M> time(ray.time()[k]);

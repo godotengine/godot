@@ -189,7 +189,7 @@ namespace embree
       memory_monitor_function = fptr;
       memory_monitor_userptr = uptr;
     }
-      
+
     RTCMemoryMonitorFunction memory_monitor_function;
     void* memory_monitor_userptr;
   };

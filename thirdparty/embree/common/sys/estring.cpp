@@ -1,7 +1,7 @@
 // Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-#include "string.h"
+#include "estring.h"
 
 #include <algorithm>
 #include <ctype.h>

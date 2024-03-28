@@ -134,7 +134,7 @@ namespace embree
     Geometry::update();
   }
 
-  void TriangleMesh::commit() 
+  void TriangleMesh::commit()
   {
     /* verify that stride of all time steps are identical */
     for (unsigned int t=0; t<numTimeSteps; t++)
