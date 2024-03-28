@@ -38,6 +38,11 @@ if env.editor_build:
         reg_exporters += "\tregister_" + e + "_exporter_types();\n"
     reg_exporters += "}\n"
 
+    for e in env.platform_exporters:
+        scsub_path = os.path.join(Dir("#platform/%s/editor" % e).abspath, "SCsub")
+        if os.path.exists(scsub_path):
+            SConscript(scsub_path)
+
     # NOTE: It is safe to generate this file here, since this is still executed serially
     with open("register_exporters.gen.cpp", "w", encoding="utf-8", newline="\n") as f:
         f.write(reg_exporters_inc)
