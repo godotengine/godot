@@ -173,7 +173,7 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);
-	~OS_Android();
+	virtual ~OS_Android();
 
 private:
 	// Location where we relocate external dynamic libraries to make them accessible.

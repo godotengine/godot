@@ -48,6 +48,7 @@ protected:
 
 public:
 	OS_Unix();
+	virtual ~OS_Unix();
 
 	virtual Vector<String> get_video_adapter_driver_info() const override;
 

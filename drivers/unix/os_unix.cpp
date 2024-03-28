@@ -869,4 +869,7 @@ OS_Unix::OS_Unix() {
 	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
+OS_Unix::~OS_Unix() {
+}
+
 #endif

@@ -267,7 +267,38 @@ Error AudioDriverOpenSL::init_input_device() {
 	return OK;
 }
 
+void AudioDriverOpenSL::end() {
+	if (recordItf) {
+		(*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_STOPPED);
+		recordItf = nullptr;
+	}
+	if (recorder) {
+		(*recorder)->Destroy(recorder);
+		recorder = nullptr;
+	}
+	if (playItf) {
+		(*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
+		playItf = nullptr;
+	}
+	if (player) {
+		(*player)->Destroy(player);
+		player = nullptr;
+	}
+	if (OutputMix) {
+		(*OutputMix)->Destroy(OutputMix);
+		OutputMix = nullptr;
+	}
+	if (sl) {
+		(*sl)->Destroy(sl);
+		sl = nullptr;
+	}
+}
+
 Error AudioDriverOpenSL::input_start() {
+	if (recordItf || recordBufferQueueItf) {
+		return ERR_ALREADY_IN_USE;
+	}
+
 	if (OS::get_singleton()->request_permission("RECORD_AUDIO")) {
 		return init_input_device();
 	}
@@ -277,6 +308,10 @@ Error AudioDriverOpenSL::input_start() {
 }
 
 Error AudioDriverOpenSL::input_stop() {
+	if (!recordItf || !recordBufferQueueItf) {
+		return ERR_CANT_OPEN;
+	}
+
 	SLuint32 state;
 	SLresult res = (*recordItf)->GetRecordState(recordItf, &state);
 	ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);
@@ -313,13 +348,13 @@ void AudioDriverOpenSL::unlock() {
 }
 
 void AudioDriverOpenSL::finish() {
-	(*sl)->Destroy(sl);
+	end();
 }
 
 void AudioDriverOpenSL::set_pause(bool p_pause) {
 	pause = p_pause;
 
-	if (active) {
+	if (active && playItf) {
 		if (pause) {
 			(*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PAUSED);
 		} else {
@@ -329,4 +364,8 @@ void AudioDriverOpenSL::set_pause(bool p_pause) {
 }
 
 AudioDriverOpenSL::AudioDriverOpenSL() {
+}
+
+AudioDriverOpenSL::~AudioDriverOpenSL() {
+	end();
 }
