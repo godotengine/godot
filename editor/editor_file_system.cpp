@@ -1782,6 +1782,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 	} else {
 		//the file exists and it was updated, and was not added in this step.
 		//this means we must force upon next restart to scan it again, to get proper type and dependencies
+		MutexLock lock(late_update_files_mutex);
 		late_update_files.insert(p_file);
 		_save_late_updated_files(); //files need to be updated in the re-scan
 	}
@@ -2303,7 +2304,7 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 }
 
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
-	p_import_data->max_index = MAX(p_import_data->reimport_from + int(p_index), p_import_data->max_index);
+	p_import_data->max_index.set(MAX(p_import_data->reimport_from + int(p_index), p_import_data->max_index.get()));
 	_reimport_file(p_import_data->reimport_files[p_import_data->reimport_from + p_index].path);
 }
 
@@ -2384,15 +2385,15 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					importer->import_threaded_begin();
 
 					ImportThreadData tdata;
-					tdata.max_index = from;
+					tdata.max_index.set(from);
 					tdata.reimport_from = from;
 					tdata.reimport_files = reimport_files.ptr();
 
 					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &tdata, i - from + 1, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
 					int current_index = from - 1;
 					do {
-						if (current_index < tdata.max_index) {
-							current_index = tdata.max_index;
+						if (current_index < tdata.max_index.get()) {
+							current_index = tdata.max_index.get();
 							pr.step(reimport_files[current_index].path.get_file(), current_index);
 						}
 						OS::get_singleton()->delay_usec(1);

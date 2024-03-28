@@ -173,6 +173,7 @@ class EditorFileSystem : public Node {
 
 	void _scan_filesystem();
 
+	Mutex late_update_files_mutex;
 	HashSet<String> late_update_files;
 
 	void _save_late_updated_files();
@@ -282,7 +283,7 @@ class EditorFileSystem : public Node {
 	struct ImportThreadData {
 		const ImportFile *reimport_files;
 		int reimport_from;
-		int max_index = 0;
+		SafeNumeric<int> max_index;
 	};
 
 	void _reimport_thread(uint32_t p_index, ImportThreadData *p_import_data);
