@@ -30,6 +30,12 @@
 
 #include "mikktspace.h"
 
+#ifdef REAL_T_IS_DOUBLE
+typedef double real_t;
+#else
+typedef float real_t;
+#endif
+
 #define TFALSE		0
 #define TTRUE		1
 
@@ -429,9 +435,9 @@ typedef struct {
 static const int g_iCells = 2048;
 
 #ifdef _MSC_VER
-	#define NOINLINE __declspec(noinline)
+#  define NOINLINE __declspec(noinline)
 #else
-	#define NOINLINE __attribute__ ((noinline))
+#  define NOINLINE __attribute__ ((noinline))
 #endif
 
 // it is IMPORTANT that this function is called to evaluate the hash since
@@ -477,12 +483,14 @@ static void GenerateSharedVerticesIndexList(int piTriList_in_and_out[], const SM
 	if (vDim.y>vDim.x && vDim.y>vDim.z)
 	{
 		iChannel=1;
-		fMin = vMin.y, fMax=vMax.y;
+		fMin = vMin.y;
+		fMax = vMax.y;
 	}
 	else if (vDim.z>vDim.x)
 	{
 		iChannel=2;
-		fMin = vMin.z, fMax=vMax.z;
+		fMin = vMin.z;
+		fMax = vMax.z;
 	}
 
 	// make allocations
@@ -581,10 +589,12 @@ static void MergeVertsFast(int piTriList_in_and_out[], STmpVert pTmpVert[], cons
 	float dx=0, dy=0, dz=0, fSep=0;
 	for (c=0; c<3; c++)
 	{	fvMin[c]=pTmpVert[iL_in].vert[c]; fvMax[c]=fvMin[c];	}
-	for (l=(iL_in+1); l<=iR_in; l++)
-		for (c=0; c<3; c++)
+	for (l=(iL_in+1); l<=iR_in; l++) {
+		for (c=0; c<3; c++) {
 			if (fvMin[c]>pTmpVert[l].vert[c]) fvMin[c]=pTmpVert[l].vert[c];
-			else if (fvMax[c]<pTmpVert[l].vert[c]) fvMax[c]=pTmpVert[l].vert[c];
+			if (fvMax[c]<pTmpVert[l].vert[c]) fvMax[c]=pTmpVert[l].vert[c];
+		}
+	}
 
 	dx = fvMax[0]-fvMin[0];
 	dy = fvMax[1]-fvMin[1];
@@ -595,6 +605,10 @@ static void MergeVertsFast(int piTriList_in_and_out[], STmpVert pTmpVert[], cons
 	else if (dz>dx) channel=2;
 
 	fSep = 0.5f*(fvMax[channel]+fvMin[channel]);
+
+	// stop if all vertices are NaNs
+	if (!isfinite(fSep))
+		return;
 
 	// terminate recursion when the separation/average value
 	// is no longer strictly between fMin and fMax values.
@@ -875,30 +889,33 @@ static int GenerateInitialVerticesIndexList(STriInfo pTriInfos[], int piTriList_
 static SVec3 GetPosition(const SMikkTSpaceContext * pContext, const int index)
 {
 	int iF, iI;
-	SVec3 res; float pos[3];
+	SVec3 res;
+	float *p;
 	IndexToData(&iF, &iI, index);
-	pContext->m_pInterface->m_getPosition(pContext, pos, iF, iI);
-	res.x=pos[0]; res.y=pos[1]; res.z=pos[2];
+	p = (real_t*)((char*)pContext->m_FastPosition + pContext->m_FastPositionIndex[iF * 3 + iI] * pContext->m_FastPositionStride);
+	res.x = (float)p[0]; res.y = (float)p[1]; res.z = (float)p[2];
 	return res;
 }
 
 static SVec3 GetNormal(const SMikkTSpaceContext * pContext, const int index)
 {
 	int iF, iI;
-	SVec3 res; float norm[3];
+	SVec3 res;
+	float *p;
 	IndexToData(&iF, &iI, index);
-	pContext->m_pInterface->m_getNormal(pContext, norm, iF, iI);
-	res.x=norm[0]; res.y=norm[1]; res.z=norm[2];
+	p = (real_t*)((char*)pContext->m_FastNormal + pContext->m_FastNormalIndex[iF * 3 + iI] * pContext->m_FastNormalStride);
+	res.x = p[0]; res.y = p[1]; res.z = p[2];
 	return res;
 }
 
 static SVec3 GetTexCoord(const SMikkTSpaceContext * pContext, const int index)
 {
 	int iF, iI;
-	SVec3 res; float texc[2];
+	SVec3 res;
+	float *p;
 	IndexToData(&iF, &iI, index);
-	pContext->m_pInterface->m_getTexCoord(pContext, texc, iF, iI);
-	res.x=texc[0]; res.y=texc[1]; res.z=1.0f;
+	p = (real_t*)((char*)pContext->m_FastUV + pContext->m_FastUVIndex[iF * 2 + iI] * pContext->m_FastUVStride);
+	res.x = p[0]; res.y = p[1]; res.z = 1.0f;
 	return res;
 }
 
@@ -1660,7 +1677,8 @@ static void QuickSortEdges(SEdge * pSortBuffer, int iLeft, int iRight, const int
 	uSeed=uSeed+t+3;
 	// Random end
 
-	iL=iLeft, iR=iRight;
+	iL = iLeft;
+	iR = iRight;
 	n = (iR-iL)+1;
 	assert(n>=0);
 	index = (int) (uSeed%n);

@@ -89,12 +89,14 @@ private:
 		Vector<Vector3> normals;
 		Vector<Vector2> uvs;
 		Vector<real_t> tans;
+		Vector<int> indices;
 		Ref<Material> material;
 		int last_added = 0;
 
 		Vector3 *verticesw = nullptr;
 		Vector3 *normalsw = nullptr;
 		Vector2 *uvsw = nullptr;
+		int *indexsw = nullptr;
 		real_t *tansw = nullptr;
 	};
 

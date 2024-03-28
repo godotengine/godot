@@ -1154,6 +1154,7 @@ void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, cons
 void SurfaceTool::generate_tangents() {
 	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_TEX_UV));
 	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
+	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_INDEX));
 
 	SMikkTSpaceInterface mkif;
 	mkif.m_getNormal = mikktGetNormal;
@@ -1167,14 +1168,29 @@ void SurfaceTool::generate_tangents() {
 	SMikkTSpaceContext msc;
 	msc.m_pInterface = &mkif;
 
-	TangentGenerationContextUserData triangle_data;
+	TangentGenerationContextUserData triangle_data{};
 	triangle_data.vertices = &vertex_array;
+	triangle_data.indices = &index_array;
+	msc.m_pUserData = &triangle_data;
+
+	Vertex *base_ptr = vertex_array.ptr();
+
+	msc.m_FastPosition = reinterpret_cast<char *>(&base_ptr->vertex);
+	msc.m_FastPositionStride = sizeof(Vertex);
+	msc.m_FastPositionIndex = index_array.ptr();
+
+	msc.m_FastNormal = reinterpret_cast<char *>(&base_ptr->normal);
+	msc.m_FastNormalStride = sizeof(Vertex);
+	msc.m_FastNormalIndex = index_array.ptr();
+
+	msc.m_FastUV = reinterpret_cast<char *>(&base_ptr->uv);
+	msc.m_FastUVStride = sizeof(Vertex);
+	msc.m_FastUVIndex = index_array.ptr();
+
 	for (Vertex &vertex : vertex_array) {
 		vertex.binormal = Vector3();
 		vertex.tangent = Vector3();
 	}
-	triangle_data.indices = &index_array;
-	msc.m_pUserData = &triangle_data;
 
 	bool res = genTangSpaceDefault(&msc);
 
