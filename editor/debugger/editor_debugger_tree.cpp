@@ -31,6 +31,7 @@
 #include "editor_debugger_tree.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/debugger/scene_debugger.h"
@@ -60,6 +61,10 @@ void EditorDebuggerTree::_notification(int p_what) {
 			connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
 			connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
 			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
+		} break;
+		case NOTIFICATION_READY: {
+			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+			add_theme_constant_override("icon_max_width", icon_width);
 		} break;
 	}
 }
@@ -271,11 +276,14 @@ Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
 	}
 
 	String path = selected->get_text(0);
+	const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	TextureRect *tf = memnew(TextureRect);
 	tf->set_texture(selected->get_icon(0));
-	tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+	tf->set_custom_minimum_size(Size2(icon_size, icon_size));
+	tf->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+	tf->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	hb->add_child(tf);
 	Label *label = memnew(Label(path));
 	hb->add_child(label);
