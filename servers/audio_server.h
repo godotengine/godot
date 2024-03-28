@@ -62,6 +62,7 @@ protected:
 	unsigned int input_size = 0;
 
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
+	void audio_server_init_channels_and_buffers();
 	void update_mix_time(int p_frames);
 	void input_buffer_init(int driver_buffer_frames);
 	void input_buffer_write(int32_t sample);
@@ -114,8 +115,6 @@ public:
 	virtual PackedStringArray get_input_device_list();
 	virtual String get_input_device() { return "Default"; }
 	virtual void set_input_device(const String &p_name) {}
-
-	//
 
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;

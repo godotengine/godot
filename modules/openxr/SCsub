@@ -13,6 +13,8 @@ thirdparty_obj = []
 
 # Needs even for build against shared library, at least the defines used in public headers.
 if env["platform"] == "android":
+    env_openxr.Prepend(CPPPATH=["#thirdparty/oboe/include"])
+
     # may need to set OPENXR_ANDROID_VERSION_SUFFIX
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_ANDROID", "XR_USE_PLATFORM_ANDROID"])
     env_openxr.AppendUnique(CPPDEFINES=["JSON_USE_EXCEPTION=0"])

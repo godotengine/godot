@@ -61,6 +61,12 @@ void AudioDriver::set_singleton() {
 	singleton = this;
 }
 
+void AudioDriver::audio_server_init_channels_and_buffers() {
+	if (AudioServer::get_singleton()) {
+		AudioServer::get_singleton()->init_channels_and_buffers();
+	}
+}
+
 void AudioDriver::audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time) {
 	if (p_update_mix_time) {
 		update_mix_time(p_frames);
@@ -202,7 +208,8 @@ int AudioDriverManager::get_driver_count() {
 void AudioDriverManager::initialize(int p_driver) {
 	GLOBAL_DEF_RST("audio/driver/enable_input", false);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate", PROPERTY_HINT_RANGE, "11025,192000,1,or_greater,suffix:Hz"), DEFAULT_MIX_RATE);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate.web", PROPERTY_HINT_RANGE, "0,192000,1,or_greater,suffix:Hz"), 0); // Safer default output_latency for web (use browser default).
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate.android", PROPERTY_HINT_RANGE, "0,192000,1,or_greater,suffix:Hz"), 0); // Safer default mix_rate for android (use device default).
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate.web", PROPERTY_HINT_RANGE, "0,192000,1,or_greater,suffix:Hz"), 0); // Safer default mix_rate for web (use browser default).
 
 	int failed_driver = -1;
 
@@ -252,11 +259,9 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 	uint64_t prof_ticks = OS::get_singleton()->get_ticks_usec();
 #endif
 
-	if (channel_count != get_channel_count()) {
-		// Amount of channels changed due to a output_device change
-		// reinitialize the buses channels and buffers
-		init_channels_and_buffers();
-	}
+	// Amount of channels might have changed due to an output_device change
+	// reinitialize the buses channels and buffers.
+	init_channels_and_buffers();
 
 	ERR_FAIL_COND_MSG(buses.is_empty() && todo, "AudioServer bus count is less than 1.");
 	while (todo) {
@@ -1355,6 +1360,9 @@ void AudioServer::notify_listener_changed() {
 }
 
 void AudioServer::init_channels_and_buffers() {
+	if (channel_count == get_channel_count())
+		return;
+
 	channel_count = get_channel_count();
 	temp_buffer.resize(channel_count);
 	mix_buffer.resize(buffer_size + LOOKAHEAD_BUFFER_SIZE);

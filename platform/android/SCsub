@@ -9,7 +9,7 @@ android_files = [
     "android_input_handler.cpp",
     "file_access_android.cpp",
     "file_access_filesystem_jandroid.cpp",
-    "audio_driver_opensl.cpp",
+    "audio_driver_oboe.cpp",
     "dir_access_jandroid.cpp",
     "tts_android.cpp",
     "thread_jandroid.cpp",
@@ -26,21 +26,51 @@ android_files = [
     "rendering_context_driver_vulkan_android.cpp",
 ]
 
+thirdparty_oboe_dir = "#thirdparty/oboe/"
+thirdparty_oboe_sources = [
+    "aaudio/AAudioLoader.cpp",
+    "aaudio/AudioStreamAAudio.cpp",
+    "common/AdpfWrapper.cpp",
+    "common/AudioStream.cpp",
+    "common/AudioStreamBuilder.cpp",
+    "common/LatencyTuner.cpp",
+    "common/QuirksManager.cpp",
+    "common/Utilities.cpp",
+    "common/Version.cpp",
+    "opensles/AudioInputStreamOpenSLES.cpp",
+    "opensles/AudioOutputStreamOpenSLES.cpp",
+    "opensles/AudioStreamOpenSLES.cpp",
+    "opensles/EngineOpenSLES.cpp",
+    "opensles/OpenSLESUtilities.cpp",
+    "opensles/OutputMixerOpenSLES.cpp",
+]
+
+thirdparty_oboe_sources = [thirdparty_oboe_dir + "src/" + file for file in thirdparty_oboe_sources]
+
 env_android = env.Clone()
 
 android_objects = []
 for x in android_files:
     android_objects.append(env_android.SharedObject(x))
 
+env_android.Prepend(CPPPATH=[thirdparty_oboe_dir + "include"])
+
 env_thirdparty = env_android.Clone()
 env_thirdparty.disable_warnings()
-thirdparty_obj = env_thirdparty.SharedObject("#thirdparty/misc/ifaddrs-android.cc")
-android_objects.append(thirdparty_obj)
+env_thirdparty.Prepend(CPPPATH=[thirdparty_oboe_dir + "src"])
+
+thirdparty_objs = [env_thirdparty.SharedObject("#thirdparty/misc/ifaddrs-android.cc")]
+for x in thirdparty_oboe_sources:
+    thirdparty_objs.append(env_thirdparty.SharedObject(x))
+
+for x in thirdparty_objs:
+    android_objects.append(x)
 
 lib = env_android.add_shared_library("#bin/libgodot", [android_objects], SHLIBSUFFIX=env["SHLIBSUFFIX"])
 
-# Needed to force rebuilding the platform files when the thirdparty code is updated.
-env.Depends(lib, thirdparty_obj)
+for x in thirdparty_objs:
+    # Needed to force rebuilding the platform files when the thirdparty code is updated.
+    env.Depends(lib, x)
 
 lib_arch_dir = ""
 if env["arch"] == "arm32":
