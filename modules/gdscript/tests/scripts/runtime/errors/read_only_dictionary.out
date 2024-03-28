@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR
+>> on function: test()
+>> runtime/errors/read_only_dictionary.gd
+>> 4
+>> Invalid assignment of property or key 'a' with value of type 'int' on a base object of type 'Dictionary'.
