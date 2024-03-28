@@ -46,6 +46,10 @@ void PostImportPluginSkeletonRenamer::get_internal_import_options(InternalImport
 }
 
 void PostImportPluginSkeletonRenamer::_internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options, const HashMap<String, String> &p_rename_map) {
+	if (p_rename_map.is_empty()) {
+		return; // There are no bones to rename
+	}
+
 	// Prepare objects.
 	Object *map = p_options["retarget/bone_map"].get_validated_object();
 	if (!map || !bool(p_options["retarget/bone_renamer/rename_bones"])) {
@@ -186,7 +190,7 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 		}
 
 		// Main process of renaming bones.
-		{
+		if (!pre_rename_map.is_empty()) {
 			// Apply pre-renaming result to prepared main rename map.
 			Vector<String> remove_queue;
 			for (HashMap<String, String>::Iterator E = main_rename_map.begin(); E; ++E) {
