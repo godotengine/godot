@@ -196,7 +196,7 @@ void GroupsEditor::_update_tree() {
 	TreeItem *root = tree->create_item();
 
 	TreeItem *local_root = tree->create_item(root);
-	local_root->set_text(0, "Scene Groups");
+	local_root->set_text(0, TTR("Scene Groups"));
 	local_root->set_icon(0, get_editor_theme_icon(SNAME("PackedScene")));
 	local_root->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 	local_root->set_selectable(0, false);
@@ -233,7 +233,7 @@ void GroupsEditor::_update_tree() {
 	keys.sort_custom<NoCaseComparator>();
 
 	TreeItem *global_root = tree->create_item(root);
-	global_root->set_text(0, "Global Groups");
+	global_root->set_text(0, TTR("Global Groups"));
 	global_root->set_icon(0, get_editor_theme_icon(SNAME("Environment")));
 	global_root->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 	global_root->set_selectable(0, false);
