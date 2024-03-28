@@ -964,6 +964,9 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 				bool valid_escape = true;
 
 				switch (code) {
+					case '0':
+						escaped = '\0';
+						break;
 					case 'a':
 						escaped = '\a';
 						break;
