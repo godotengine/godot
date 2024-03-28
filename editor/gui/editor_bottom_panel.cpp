@@ -37,6 +37,7 @@
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/engine_update_label.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -242,6 +243,13 @@ EditorBottomPanel::EditorBottomPanel() {
 	button_hbox = memnew(HBoxContainer);
 	button_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bottom_hbox->add_child(button_hbox);
+
+#ifdef ALLOW_AUTO_UPDATE
+	EngineUpdateLabel *eul = memnew(EngineUpdateLabel);
+	eul->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	eul->enable_compact_mode();
+	bottom_hbox->add_child(eul);
+#endif
 
 	editor_toaster = memnew(EditorToaster);
 	bottom_hbox->add_child(editor_toaster);
