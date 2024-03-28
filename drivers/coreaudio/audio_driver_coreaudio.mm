@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_driver_coreaudio.cpp                                            */
+/*  audio_driver_coreaudio.mm                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -116,7 +116,24 @@ Error AudioDriverCoreAudio::init() {
 			break;
 	}
 
-	mix_rate = _get_configured_mix_rate();
+#if MACOS_ENABLED
+	AudioDeviceID deviceId;
+	UInt32 devIDsize = sizeof(AudioDeviceID);
+
+	AudioObjectPropertyAddress property_dev_id = { kAudioHardwarePropertyDefaultOutputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+	result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property_dev_id, 0, nullptr, &devIDsize, &deviceId);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	double hw_mix_rate;
+	UInt32 hw_mix_rate_size = sizeof(hw_mix_rate);
+
+	AudioObjectPropertyAddress property_sr = { kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
+	result = AudioObjectGetPropertyData(deviceId, &property_sr, 0, nullptr, &hw_mix_rate_size, &hw_mix_rate);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+#else
+	double hw_mix_rate = [AVAudioSession sharedInstance].sampleRate;
+#endif
+	mix_rate = hw_mix_rate;
 
 	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
@@ -142,10 +159,10 @@ Error AudioDriverCoreAudio::init() {
 
 	unsigned int buffer_size = buffer_frames * channels;
 	samples_in.resize(buffer_size);
-	input_buf.resize(buffer_size);
 
 	print_verbose("CoreAudio: detected " + itos(channels) + " channels");
-	print_verbose("CoreAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
+	print_verbose("CoreAudio: output sampling rate: " + itos(mix_rate) + " Hz");
+	print_verbose("CoreAudio: output audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	AURenderCallbackStruct callback;
 	memset(&callback, 0, sizeof(AURenderCallbackStruct));
@@ -268,6 +285,10 @@ void AudioDriverCoreAudio::stop() {
 
 int AudioDriverCoreAudio::get_mix_rate() const {
 	return mix_rate;
+}
+
+int AudioDriverCoreAudio::get_capture_mix_rate() const {
+	return capture_mix_rate;
 }
 
 AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
@@ -405,13 +426,23 @@ Error AudioDriverCoreAudio::init_input_device() {
 			break;
 	}
 
-	mix_rate = _get_configured_mix_rate();
+#if MACOS_ENABLED
+	double hw_mix_rate;
+	UInt32 hw_mix_rate_size = sizeof(hw_mix_rate);
+
+	AudioObjectPropertyAddress property_sr = { kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
+	result = AudioObjectGetPropertyData(deviceId, &property_sr, 0, nullptr, &hw_mix_rate_size, &hw_mix_rate);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+#else
+	double hw_mix_rate = [AVAudioSession sharedInstance].sampleRate;
+#endif
+	capture_mix_rate = hw_mix_rate;
 
 	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
 	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
 	strdesc.mChannelsPerFrame = capture_channels;
-	strdesc.mSampleRate = mix_rate;
+	strdesc.mSampleRate = capture_mix_rate;
 	strdesc.mFramesPerPacket = 1;
 	strdesc.mBitsPerChannel = 16;
 	strdesc.mBytesPerFrame = strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
@@ -419,6 +450,13 @@ Error AudioDriverCoreAudio::init_input_device() {
 
 	result = AudioUnitSetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	int latency = Engine::get_singleton()->get_audio_output_latency();
+	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
+	capture_buffer_frames = closest_power_of_2(latency * capture_mix_rate / 1000);
+
+	unsigned int buffer_size = capture_buffer_frames * capture_channels;
+	input_buf.resize(buffer_size);
 
 	AURenderCallbackStruct callback;
 	memset(&callback, 0, sizeof(AURenderCallbackStruct));
@@ -429,6 +467,9 @@ Error AudioDriverCoreAudio::init_input_device() {
 
 	result = AudioUnitInitialize(input_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	print_verbose("CoreAudio: input sampling rate: " + itos(capture_mix_rate) + " Hz");
+	print_verbose("CoreAudio: input audio buffer frames: " + itos(capture_buffer_frames) + " calculated latency: " + itos(capture_buffer_frames * 1000 / capture_mix_rate) + "ms");
 
 	return OK;
 }
@@ -472,7 +513,7 @@ void AudioDriverCoreAudio::finish_input_device() {
 }
 
 Error AudioDriverCoreAudio::input_start() {
-	input_buffer_init(buffer_frames);
+	input_buffer_init(capture_buffer_frames);
 
 	OSStatus result = AudioOutputUnitStart(input_unit);
 	if (result != noErr) {
