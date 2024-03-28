@@ -103,7 +103,7 @@ struct _NO_DISCARD_ Transform2D {
 	Transform2D looking_at(const Vector2 &p_target) const;
 
 	bool operator==(const Transform2D &p_transform) const;
-	bool operator!=(const Transform2D &p_transform) const;
+	INEQUALITY_OPERATOR(const Transform2D &)
 
 	void operator*=(const Transform2D &p_transform);
 	Transform2D operator*(const Transform2D &p_transform) const;

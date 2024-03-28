@@ -30,6 +30,7 @@
 
 #include "vector4.h"
 
+#include "core/math/vector4i.h"
 #include "core/string/ustring.h"
 
 Vector4::Axis Vector4::min_axis_index() const {
@@ -191,6 +192,14 @@ Vector4 Vector4::clamp(const Vector4 &p_min, const Vector4 &p_max) const {
 
 Vector4::operator String() const {
 	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ", " + String::num_real(z, false) + ", " + String::num_real(w, false) + ")";
+}
+
+Vector4::operator Vector4i() const {
+	return Vector4i(x, y, z, w);
+}
+
+bool Vector4::operator==(const Vector4i &p_vec4) const {
+	return operator==((Vector4)p_vec4);
 }
 
 static_assert(sizeof(Vector4) == 4 * sizeof(real_t));

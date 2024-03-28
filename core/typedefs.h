@@ -317,4 +317,32 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
 
+// Wrappers for secondary operators, omitted entirely from C++20 builds.
+#ifndef CPP20_ENABLED
+#define INEQUALITY_OPERATOR(m_type) \
+	_ALWAYS_INLINE_ bool operator!=(m_type p_other) const { return !(*this == p_other); }
+#define INEQUALITY_OPERATOR_TEMPLATE(m_type, ...) \
+	template <__VA_ARGS__>                        \
+	_ALWAYS_INLINE_ bool operator!=(m_type p_other) const { return !(*this == p_other); }
+#define INEQUALITY_OPERATOR_GLOBAL(m_type1, m_type2) \
+	_ALWAYS_INLINE_ bool operator!=(m_type1 p_left, m_type2 p_right) { return !(p_left == p_right); }
+#define EXTRA_ORDERING_OPERATORS(m_type)                                                                  \
+	_ALWAYS_INLINE_ bool operator<=(m_type p_other) const { return *this < p_other || *this == p_other; } \
+	_ALWAYS_INLINE_ bool operator>(m_type p_other) const { return p_other < *this; }                      \
+	_ALWAYS_INLINE_ bool operator>=(m_type p_other) const { return p_other < *this || p_other == *this; }
+#define EXTRA_ORDERING_OPERATORS_TEMPLATE(m_type, ...)                                                    \
+	template <__VA_ARGS__>                                                                                \
+	_ALWAYS_INLINE_ bool operator<=(m_type p_other) const { return *this < p_other || *this == p_other; } \
+	template <__VA_ARGS__>                                                                                \
+	_ALWAYS_INLINE_ bool operator>(m_type p_other) const { return p_other < *this; }                      \
+	template <__VA_ARGS__>                                                                                \
+	_ALWAYS_INLINE_ bool operator>=(m_type p_other) const { return p_other < *this || p_other == *this; }
+#else
+#define INEQUALITY_OPERATOR(m_type)
+#define INEQUALITY_OPERATOR_TEMPLATE(m_type, ...)
+#define INEQUALITY_OPERATOR_GLOBAL(m_type1, m_type2)
+#define EXTRA_ORDERING_OPERATORS(m_type)
+#define EXTRA_ORDERING_OPERATORS_TEMPLATE(m_type, ...)
+#endif
+
 #endif // TYPEDEFS_H
