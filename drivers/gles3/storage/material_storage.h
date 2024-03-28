@@ -43,7 +43,6 @@
 #include "servers/rendering/storage/utilities.h"
 
 #include "drivers/gles3/shaders/canvas.glsl.gen.h"
-#include "drivers/gles3/shaders/cubemap_filter.glsl.gen.h"
 #include "drivers/gles3/shaders/particles.glsl.gen.h"
 #include "drivers/gles3/shaders/scene.glsl.gen.h"
 #include "drivers/gles3/shaders/sky.glsl.gen.h"
@@ -543,7 +542,6 @@ public:
 		CanvasShaderGLES3 canvas_shader;
 		SkyShaderGLES3 sky_shader;
 		SceneShaderGLES3 scene_shader;
-		CubemapFilterShaderGLES3 cubemap_filter_shader;
 		ParticlesShaderGLES3 particles_process_shader;
 
 		ShaderCompiler compiler_canvas;

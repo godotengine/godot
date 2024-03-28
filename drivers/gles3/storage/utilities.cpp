@@ -158,6 +158,8 @@ RS::InstanceType Utilities::get_base_type(RID p_rid) const {
 		return RS::INSTANCE_LIGHTMAP;
 	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
 		return RS::INSTANCE_PARTICLES;
+	} else if (GLES3::LightStorage::get_singleton()->owns_reflection_probe(p_rid)) {
+		return RS::INSTANCE_REFLECTION_PROBE;
 	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles_collision(p_rid)) {
 		return RS::INSTANCE_PARTICLES_COLLISION;
 	} else if (owns_visibility_notifier(p_rid)) {
@@ -197,6 +199,15 @@ bool Utilities::free(RID p_rid) {
 	} else if (GLES3::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
 		GLES3::LightStorage::get_singleton()->lightmap_free(p_rid);
 		return true;
+	} else if (GLES3::LightStorage::get_singleton()->owns_reflection_probe(p_rid)) {
+		GLES3::LightStorage::get_singleton()->reflection_probe_free(p_rid);
+		return true;
+	} else if (GLES3::LightStorage::get_singleton()->owns_reflection_atlas(p_rid)) {
+		GLES3::LightStorage::get_singleton()->reflection_atlas_free(p_rid);
+		return true;
+	} else if (GLES3::LightStorage::get_singleton()->owns_reflection_probe_instance(p_rid)) {
+		GLES3::LightStorage::get_singleton()->reflection_probe_instance_free(p_rid);
+		return true;
 	} else if (GLES3::ParticlesStorage::get_singleton()->owns_particles(p_rid)) {
 		GLES3::ParticlesStorage::get_singleton()->particles_free(p_rid);
 		return true;
@@ -229,6 +240,9 @@ void Utilities::base_update_dependency(RID p_base, DependencyTracker *p_instance
 		if (multimesh->mesh.is_valid()) {
 			base_update_dependency(multimesh->mesh, p_instance);
 		}
+	} else if (LightStorage::get_singleton()->owns_reflection_probe(p_base)) {
+		Dependency *dependency = LightStorage::get_singleton()->reflection_probe_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
 	} else if (LightStorage::get_singleton()->owns_light(p_base)) {
 		Light *l = LightStorage::get_singleton()->get_light(p_base);
 		p_instance->update_dependency(&l->dependency);
