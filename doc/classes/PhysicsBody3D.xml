@@ -44,6 +44,7 @@
 			<param index="2" name="safe_margin" type="float" default="0.001" />
 			<param index="3" name="recovery_as_collision" type="bool" default="false" />
 			<param index="4" name="max_collisions" type="int" default="1" />
+			<param index="5" name="cancel_sliding" type="bool" default="true" />
 			<description>
 				Moves the body along the vector [param motion]. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param motion] should be computed using [code]delta[/code].
 				The body will stop if it collides. Returns a [KinematicCollision3D], which contains information about the collision when stopped, or when touching another body along the motion.
@@ -51,6 +52,7 @@
 				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody3D.safe_margin] for more details).
 				If [param recovery_as_collision] is [code]true[/code], any depenetration from the recovery phase is also reported as a collision; this is used e.g. by [CharacterBody3D] for improving floor detection during floor snapping.
 				[param max_collisions] allows to retrieve more than one collision result.
+				If [param cancel_sliding] is [code]true[/code], the direction of motion will be restored to be along original motion, in order to avoid sliding due to recovery.
 			</description>
 		</method>
 		<method name="remove_collision_exception_with">
