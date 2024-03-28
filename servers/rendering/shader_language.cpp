@@ -8361,7 +8361,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						}
 					}
 #endif // DEBUG_ENABLED
-					if (String(shader_type_identifier) != "spatial") {
+					if (shader_type_identifier != StringName() && String(shader_type_identifier) != "spatial") {
 						_set_error(vformat(RTR("Uniform instances are not yet implemented for '%s' shaders."), shader_type_identifier));
 						return ERR_PARSE_ERROR;
 					}
@@ -8848,7 +8848,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										_set_error(RTR("'hint_normal_roughness_texture' is only available when using the Forward+ backend."));
 										return ERR_PARSE_ERROR;
 									}
-									if (String(shader_type_identifier) != "spatial") {
+									if (shader_type_identifier != StringName() && String(shader_type_identifier) != "spatial") {
 										_set_error(vformat(RTR("'hint_normal_roughness_texture' is not supported in '%s' shaders."), shader_type_identifier));
 										return ERR_PARSE_ERROR;
 									}
@@ -8857,7 +8857,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									new_hint = ShaderNode::Uniform::HINT_DEPTH_TEXTURE;
 									--texture_uniforms;
 									--texture_binding;
-									if (String(shader_type_identifier) != "spatial") {
+									if (shader_type_identifier != StringName() && String(shader_type_identifier) != "spatial") {
 										_set_error(vformat(RTR("'hint_depth_texture' is not supported in '%s' shaders."), shader_type_identifier));
 										return ERR_PARSE_ERROR;
 									}
