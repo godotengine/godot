@@ -30,6 +30,7 @@
 
 #include "texture_rect.h"
 
+#include "scene/main/viewport.h"
 #include "scene/resources/atlas_texture.h"
 #include "servers/rendering_server.h"
 
@@ -113,6 +114,14 @@ void TextureRect::_notification(int p_what) {
 		case NOTIFICATION_RESIZED: {
 			update_minimum_size();
 		} break;
+		case NOTIFICATION_MOUSE_ENTER_SELF:
+		case NOTIFICATION_MOUSE_EXIT_SELF: {
+			Ref<ViewportTexture> viewport_texture = texture;
+			if (viewport_texture.is_valid()) {
+				viewport_texture->set_mouse_over_state(p_what == NOTIFICATION_MOUSE_ENTER_SELF);
+			}
+			break;
+		}
 	}
 }
 
