@@ -51,11 +51,11 @@ Vector2i TileMapLayer::_coords_to_debug_quadrant_coords(const Vector2i &p_coords
 			p_coords.y > 0 ? p_coords.y / TILE_MAP_DEBUG_QUADRANT_SIZE : (p_coords.y - (TILE_MAP_DEBUG_QUADRANT_SIZE - 1)) / TILE_MAP_DEBUG_QUADRANT_SIZE);
 }
 
-void TileMapLayer::_debug_update() {
+void TileMapLayer::_debug_update(bool p_force_cleanup) {
 	RenderingServer *rs = RenderingServer::get_singleton();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || tile_set.is_null() || !is_visible_in_tree();
+	bool forced_cleanup = p_force_cleanup || !enabled || tile_set.is_null() || !is_visible_in_tree();
 
 	if (forced_cleanup) {
 		for (KeyValue<Vector2i, Ref<DebugQuadrant>> &kv : debug_quadrant_map) {
@@ -178,11 +178,11 @@ void TileMapLayer::_debug_quadrants_update_cell(CellData &r_cell_data, SelfList<
 #endif // DEBUG_ENABLED
 
 /////////////////////////////// Rendering //////////////////////////////////////
-void TileMapLayer::_rendering_update() {
+void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 	RenderingServer *rs = RenderingServer::get_singleton();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || tile_set.is_null() || !is_visible_in_tree();
+	bool forced_cleanup = p_force_cleanup || !enabled || tile_set.is_null() || !is_visible_in_tree();
 
 	// ----------- Layer level processing -----------
 	if (!forced_cleanup) {
@@ -673,9 +673,9 @@ void TileMapLayer::_rendering_draw_cell_debug(const RID &p_canvas_item, const Ve
 
 /////////////////////////////// Physics //////////////////////////////////////
 
-void TileMapLayer::_physics_update() {
+void TileMapLayer::_physics_update(bool p_force_cleanup) {
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !collision_enabled || !is_inside_tree() || tile_set.is_null();
+	bool forced_cleanup = p_force_cleanup || !enabled || !collision_enabled || !is_inside_tree() || tile_set.is_null();
 	if (forced_cleanup) {
 		// Clean everything.
 		for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
@@ -923,12 +923,12 @@ void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vect
 
 /////////////////////////////// Navigation //////////////////////////////////////
 
-void TileMapLayer::_navigation_update() {
+void TileMapLayer::_navigation_update(bool p_force_cleanup) {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	NavigationServer2D *ns = NavigationServer2D::get_singleton();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !navigation_enabled || !is_inside_tree() || tile_set.is_null();
+	bool forced_cleanup = p_force_cleanup || !enabled || !navigation_enabled || !is_inside_tree() || tile_set.is_null();
 
 	// ----------- Layer level processing -----------
 	// All this processing is kept for compatibility with the TileMap node.
@@ -1196,9 +1196,9 @@ void TileMapLayer::_navigation_draw_cell_debug(const RID &p_canvas_item, const V
 
 /////////////////////////////// Scenes //////////////////////////////////////
 
-void TileMapLayer::_scenes_update() {
+void TileMapLayer::_scenes_update(bool p_force_cleanup) {
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !is_inside_tree() || tile_set.is_null();
+	bool forced_cleanup = p_force_cleanup || !enabled || !is_inside_tree() || tile_set.is_null();
 
 	if (forced_cleanup) {
 		// Clean everything.
@@ -1329,9 +1329,9 @@ void TileMapLayer::_scenes_draw_cell_debug(const RID &p_canvas_item, const Vecto
 
 /////////////////////////////////////////////////////////////////////
 
-void TileMapLayer::_build_runtime_update_tile_data() {
+void TileMapLayer::_build_runtime_update_tile_data(bool p_force_cleanup) {
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || tile_set.is_null() || !is_visible_in_tree();
+	bool forced_cleanup = p_force_cleanup || !enabled || tile_set.is_null() || !is_visible_in_tree();
 	if (!forced_cleanup) {
 		bool valid_runtime_update = GDVIRTUAL_IS_OVERRIDDEN(_use_tile_data_runtime_update) && GDVIRTUAL_IS_OVERRIDDEN(_tile_data_runtime_update);
 		bool valid_runtime_update_for_tilemap = tile_map_node && tile_map_node->GDVIRTUAL_IS_OVERRIDDEN(_use_tile_data_runtime_update) && tile_map_node->GDVIRTUAL_IS_OVERRIDDEN(_tile_data_runtime_update); // For keeping compatibility.
@@ -1635,23 +1635,21 @@ void TileMapLayer::_deferred_internal_update() {
 	}
 
 	// Update dirty quadrants on layers.
-	_internal_update();
-
-	pending_update = false;
+	_internal_update(false);
 }
 
-void TileMapLayer::_internal_update() {
+void TileMapLayer::_internal_update(bool p_force_cleanup) {
 	// Find TileData that need a runtime modification.
 	// This may add cells to the dirty list if a runtime modification has been notified.
-	_build_runtime_update_tile_data();
+	_build_runtime_update_tile_data(p_force_cleanup);
 
 	// Update all subsystems.
-	_rendering_update();
-	_physics_update();
-	_navigation_update();
-	_scenes_update();
+	_rendering_update(p_force_cleanup);
+	_physics_update(p_force_cleanup);
+	_navigation_update(p_force_cleanup);
+	_scenes_update(p_force_cleanup);
 #ifdef DEBUG_ENABLED
-	_debug_update();
+	_debug_update(p_force_cleanup);
 #endif // DEBUG_ENABLED
 
 	_clear_runtime_update_tile_data();
@@ -1678,6 +1676,8 @@ void TileMapLayer::_internal_update() {
 
 	// Clear the dirty cells list.
 	dirty.cell_list.clear();
+
+	pending_update = false;
 }
 
 void TileMapLayer::_notification(int p_what) {
@@ -1694,8 +1694,8 @@ void TileMapLayer::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] = true;
-			// Update immediately on exiting.
-			update_internals();
+			// Update immediately on exiting, and force cleanup.
+			_internal_update(true);
 		} break;
 
 		case TileMap::NOTIFICATION_ENTER_CANVAS: {
@@ -1705,8 +1705,8 @@ void TileMapLayer::_notification(int p_what) {
 
 		case TileMap::NOTIFICATION_EXIT_CANVAS: {
 			dirty.flags[DIRTY_FLAGS_LAYER_IN_CANVAS] = true;
-			// Update immediately on exiting.
-			update_internals();
+			// Update immediately on exiting, and force cleanup.
+			_internal_update(true);
 		} break;
 
 		case TileMap::NOTIFICATION_VISIBILITY_CHANGED: {
@@ -2498,8 +2498,7 @@ Vector2i TileMapLayer::get_coords_for_body_rid(RID p_physics_body) const {
 }
 
 void TileMapLayer::update_internals() {
-	pending_update = true;
-	_deferred_internal_update();
+	_internal_update(false);
 }
 
 void TileMapLayer::notify_runtime_tile_data_update() {
@@ -2825,9 +2824,8 @@ TileMapLayer::TileMapLayer() {
 }
 
 TileMapLayer::~TileMapLayer() {
-	in_destructor = true;
 	clear();
-	_internal_update();
+	_internal_update(true);
 }
 
 HashMap<Vector2i, TileSet::CellNeighbor> TerrainConstraint::get_overlapping_coords_and_peering_bits() const {
