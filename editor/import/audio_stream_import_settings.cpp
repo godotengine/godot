@@ -438,6 +438,7 @@ void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p
 			beats_enabled->set_pressed(beats > 0);
 			loop->set_pressed(config_file->get_value("params", "loop", false));
 			loop_offset->set_value(config_file->get_value("params", "loop_offset", 0));
+			loop_use_samples->set_pressed(config_file->get_value("params", "loop_use_samples", 0));
 			bar_beats_edit->set_value(config_file->get_value("params", "bar_beats", 4));
 
 			List<String> keys;
@@ -453,6 +454,7 @@ void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p
 			bar_beats_edit->set_value(4);
 			loop->set_pressed(false);
 			loop_offset->set_value(0);
+			loop_use_samples->set_pressed(false);
 		}
 
 		_preview_zoom_reset();
@@ -471,12 +473,19 @@ void AudioStreamImportSettingsDialog::_settings_changed() {
 
 	updating_settings = true;
 	stream->call("set_loop", loop->is_pressed());
-	stream->call("set_loop_offset", loop_offset->get_value());
-	if (loop->is_pressed()) {
-		loop_offset->set_editable(true);
+
+	if (loop_use_samples->is_pressed()) {
+		stream->call("set_loop_offset", stream->sample_to_seconds(loop_offset->get_value()));
+		loop_offset->set_suffix("");
 	} else {
-		loop_offset->set_editable(false);
+		stream->call("set_loop_offset", loop_offset->get_value());
+		loop_offset->set_suffix("sec");
 	}
+
+	bool loop_is_pressed = loop->is_pressed();
+	loop_offset_label->set_visible(loop_is_pressed);
+	loop_offset->set_visible(loop_is_pressed);
+	loop_use_samples->set_visible(loop_is_pressed);
 
 	if (bpm_enabled->is_pressed()) {
 		stream->call("set_bpm", bpm_edit->get_value());
@@ -518,6 +527,7 @@ void AudioStreamImportSettingsDialog::_settings_changed() {
 void AudioStreamImportSettingsDialog::_reimport() {
 	params["loop"] = loop->is_pressed();
 	params["loop_offset"] = loop_offset->get_value();
+	params["loop_use_samples"] = loop_use_samples->is_pressed();
 	params["bpm"] = bpm_enabled->is_pressed() ? double(bpm_edit->get_value()) : double(0);
 	params["beat_count"] = (bpm_enabled->is_pressed() && beats_enabled->is_pressed()) ? int(beats_edit->get_value()) : int(0);
 	params["bar_beats"] = (bpm_enabled->is_pressed()) ? int(bar_beats_edit->get_value()) : int(4);
@@ -540,14 +550,20 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	loop->connect("toggled", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop);
 	loop_hb->add_spacer();
-	loop_hb->add_child(memnew(Label(TTR("Offset:"))));
+	loop_offset_label = memnew(Label(TTR("Offset:")));
+	loop_hb->add_child(loop_offset_label);
 	loop_offset = memnew(SpinBox);
-	loop_offset->set_max(10000);
-	loop_offset->set_step(0.001);
-	loop_offset->set_suffix("sec");
+	loop_offset->set_custom_minimum_size(loop_offset->get_custom_minimum_size() + Size2(128, 0));
+	loop_offset->set_max(999999999);
+	loop_offset->set_step(0.00001);
 	loop_offset->set_tooltip_text(TTR("Loop offset (from beginning). Note that if BPM is set, this setting will be ignored."));
 	loop_offset->connect("value_changed", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop_offset);
+	loop_use_samples = memnew(CheckBox);
+	loop_use_samples->set_text(TTR("Use Samples?"));
+	loop_use_samples->set_tooltip_text(TTR("When enabled, the loop offset will be defined in samples instead of in seconds."));
+	loop_use_samples->connect("toggled", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
+	loop_hb->add_child(loop_use_samples);
 	main_vbox->add_margin_child(TTR("Loop:"), loop_hb);
 
 	HBoxContainer *interactive_hb = memnew(HBoxContainer);

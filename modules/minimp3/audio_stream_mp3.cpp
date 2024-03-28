@@ -50,7 +50,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 	bool beat_loop = use_loop && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
 	if (beat_loop) {
-		beat_length_frames = mp3_stream->get_beat_count() * mp3_stream->sample_rate * 60 / mp3_stream->get_bpm();
+		beat_length_frames = mp3_stream->get_beat_count() * mp3_stream->get_sample_rate() * 60 / mp3_stream->get_bpm();
 	}
 
 	while (todo && active) {
@@ -125,7 +125,7 @@ int AudioStreamPlaybackMP3::get_loop_count() const {
 }
 
 double AudioStreamPlaybackMP3::get_playback_position() const {
-	return double(frames_mixed) / mp3_stream->sample_rate;
+	return double(frames_mixed) / mp3_stream->get_sample_rate();
 }
 
 void AudioStreamPlaybackMP3::seek(double p_time) {
@@ -137,7 +137,7 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 		p_time = 0;
 	}
 
-	frames_mixed = uint32_t(mp3_stream->sample_rate * p_time);
+	frames_mixed = uint32_t(mp3_stream->get_sample_rate() * p_time);
 	mp3dec_ex_seek(mp3d, (uint64_t)frames_mixed * mp3_stream->channels);
 }
 
@@ -251,6 +251,10 @@ double AudioStreamMP3::get_length() const {
 
 bool AudioStreamMP3::is_monophonic() const {
 	return false;
+}
+
+float AudioStreamMP3::get_sample_rate() const {
+	return sample_rate;
 }
 
 void AudioStreamMP3::get_parameter_list(List<Parameter> *r_parameters) {

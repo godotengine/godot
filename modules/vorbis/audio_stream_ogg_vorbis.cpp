@@ -513,6 +513,10 @@ bool AudioStreamOggVorbis::is_monophonic() const {
 	return false;
 }
 
+float AudioStreamOggVorbis::get_sample_rate() const {
+	return get_packet_sequence()->get_sampling_rate();
+}
+
 void AudioStreamOggVorbis::get_parameter_list(List<Parameter> *r_parameters) {
 	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
 }
