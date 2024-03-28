@@ -1170,14 +1170,11 @@ void ScriptTextEditor::_update_connected_methods() {
 			continue;
 		}
 
-		// Account for inner classes
-		if (raw_name.contains(".")) {
-			// Strip inner class name from the method, and start from the right since
-			// our inner class might be inside another inner class
-			int pos = raw_name.rfind(".");
-			if (pos != -1) {
-				name = raw_name.substr(pos + 1);
-			}
+		// Account for inner classes by stripping the class names from the method,
+		// starting from the right since our inner class might be inside of another inner class.
+		int pos = raw_name.rfind(".");
+		if (pos != -1) {
+			name = raw_name.substr(pos + 1);
 		}
 
 		String found_base_class;

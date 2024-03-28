@@ -42,6 +42,7 @@
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
+#include "drivers/windows/file_access_windows_pipe.h"
 #include "main/main.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
@@ -178,6 +179,7 @@ void OS_Windows::initialize() {
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
+	FileAccess::make_default<FileAccessWindowsPipe>(FileAccess::ACCESS_PIPE);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
@@ -725,6 +727,105 @@ Dictionary OS_Windows::get_memory_info() const {
 	}
 
 	return meminfo;
+}
+
+Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String> &p_arguments) {
+#define CLEAN_PIPES               \
+	if (pipe_in[0] != 0) {        \
+		CloseHandle(pipe_in[0]);  \
+	}                             \
+	if (pipe_in[1] != 0) {        \
+		CloseHandle(pipe_in[1]);  \
+	}                             \
+	if (pipe_out[0] != 0) {       \
+		CloseHandle(pipe_out[0]); \
+	}                             \
+	if (pipe_out[1] != 0) {       \
+		CloseHandle(pipe_out[1]); \
+	}                             \
+	if (pipe_err[0] != 0) {       \
+		CloseHandle(pipe_err[0]); \
+	}                             \
+	if (pipe_err[1] != 0) {       \
+		CloseHandle(pipe_err[1]); \
+	}
+
+	Dictionary ret;
+
+	String path = p_path.replace("/", "\\");
+	String command = _quote_command_line_argument(path);
+	for (const String &E : p_arguments) {
+		command += " " + _quote_command_line_argument(E);
+	}
+
+	// Create pipes.
+	HANDLE pipe_in[2] = { 0, 0 };
+	HANDLE pipe_out[2] = { 0, 0 };
+	HANDLE pipe_err[2] = { 0, 0 };
+
+	SECURITY_ATTRIBUTES sa;
+	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.bInheritHandle = true;
+	sa.lpSecurityDescriptor = nullptr;
+
+	ERR_FAIL_COND_V(!CreatePipe(&pipe_in[0], &pipe_in[1], &sa, 0), ret);
+	if (!SetHandleInformation(pipe_in[1], HANDLE_FLAG_INHERIT, 0)) {
+		CLEAN_PIPES
+		ERR_FAIL_V(ret);
+	}
+	if (!CreatePipe(&pipe_out[0], &pipe_out[1], &sa, 0)) {
+		CLEAN_PIPES
+		ERR_FAIL_V(ret);
+	}
+	if (!SetHandleInformation(pipe_out[0], HANDLE_FLAG_INHERIT, 0)) {
+		CLEAN_PIPES
+		ERR_FAIL_V(ret);
+	}
+	if (!CreatePipe(&pipe_err[0], &pipe_err[1], &sa, 0)) {
+		CLEAN_PIPES
+		ERR_FAIL_V(ret);
+	}
+	ERR_FAIL_COND_V(!SetHandleInformation(pipe_err[0], HANDLE_FLAG_INHERIT, 0), ret);
+
+	// Create process.
+	ProcessInfo pi;
+	ZeroMemory(&pi.si, sizeof(pi.si));
+	pi.si.cb = sizeof(pi.si);
+	ZeroMemory(&pi.pi, sizeof(pi.pi));
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
+
+	pi.si.dwFlags |= STARTF_USESTDHANDLES;
+	pi.si.hStdInput = pipe_in[0];
+	pi.si.hStdOutput = pipe_out[1];
+	pi.si.hStdError = pipe_err[1];
+
+	DWORD creation_flags = NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW;
+
+	if (!CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, true, creation_flags, nullptr, nullptr, si_w, &pi.pi)) {
+		CLEAN_PIPES
+		ERR_FAIL_V_MSG(ret, "Could not create child process: " + command);
+	}
+	CloseHandle(pipe_in[0]);
+	CloseHandle(pipe_out[1]);
+	CloseHandle(pipe_err[1]);
+
+	ProcessID pid = pi.pi.dwProcessId;
+	process_map->insert(pid, pi);
+
+	Ref<FileAccessWindowsPipe> main_pipe;
+	main_pipe.instantiate();
+	main_pipe->open_existing(pipe_out[0], pipe_in[1]);
+
+	Ref<FileAccessWindowsPipe> err_pipe;
+	err_pipe.instantiate();
+	err_pipe->open_existing(pipe_err[0], 0);
+
+	ret["stdio"] = main_pipe;
+	ret["stderr"] = err_pipe;
+	ret["pid"] = pid;
+
+#undef CLEAN_PIPES
+	return ret;
 }
 
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {

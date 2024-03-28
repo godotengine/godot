@@ -290,6 +290,10 @@ void DisplayServerMacOS::_update_displays_arrangement() {
 	displays_arrangement_dirty = false;
 }
 
+void DisplayServerMacOS::set_menu_delegate(NSMenu *p_menu) {
+	[p_menu setDelegate:menu_delegate];
+}
+
 Point2i DisplayServerMacOS::_get_screens_origin() const {
 	// Returns the native top-left screen coordinate of the smallest rectangle
 	// that encompasses all screens. Needed in get_screen_position(),
@@ -755,6 +759,8 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_NATIVE_DIALOG:
+		case FEATURE_NATIVE_DIALOG_INPUT:
+		case FEATURE_NATIVE_DIALOG_FILE:
 		case FEATURE_IME:
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_HIDPI:

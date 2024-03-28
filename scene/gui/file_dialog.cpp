@@ -68,7 +68,7 @@ void FileDialog::popup(const Rect2i &p_rect) {
 	}
 #endif
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		String root;
 		if (access == ACCESS_RESOURCES) {
 			root = ProjectSettings::get_singleton()->get_resource_path();
@@ -91,7 +91,7 @@ void FileDialog::set_visible(bool p_visible) {
 	}
 #endif
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
 		if (p_visible) {
 			String root;
 			if (access == ACCESS_RESOURCES) {

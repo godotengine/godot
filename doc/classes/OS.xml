@@ -50,9 +50,9 @@
 			<param index="1" name="arguments" type="PackedStringArray" />
 			<param index="2" name="open_console" type="bool" default="false" />
 			<description>
-				Creates a new process that runs independently of Godot. It will not terminate when Godot terminates. The path specified in [param path] must exist and be executable file or macOS .app bundle. Platform path resolution will be used. The [param arguments] are used in the given order and separated by a space.
+				Creates a new process that runs independently of Godot. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened.
-				If the process is successfully created, this method returns its process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). Otherwise this method returns [code]-1[/code].
+				If the process is successfully created, this method returns its process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). Otherwise, this method returns [code]-1[/code].
 				For example, running another instance of the project:
 				[codeblocks]
 				[gdscript]
@@ -63,7 +63,7 @@
 				[/csharp]
 				[/codeblocks]
 				See [method execute] if you wish to run an external command and retrieve the results.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
 			</description>
 		</method>
@@ -120,12 +120,29 @@
 				OS.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, output);
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 				[b]Note:[/b] To execute a Windows command interpreter built-in command, specify [code]cmd.exe[/code] in [param path], [code]/c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
 				[b]Note:[/b] On Android, system commands such as [code]dumpsys[/code] can only be run on a rooted device.
+			</description>
+		</method>
+		<method name="execute_with_pipe">
+			<return type="Dictionary" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="arguments" type="PackedStringArray" />
+			<description>
+				Creates a new process that runs independently of Godot with redirected IO. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
+				If the process cannot be created, this method returns an empty [Dictionary]. Otherwise, this method returns a [Dictionary] with the following keys:
+				- [code]"stdio"[/code] - [FileAccess] to access the process stdin and stdout pipes (read/write).
+				- [code]"stderr"[/code] - [FileAccess] to access the process stderr pipe (read only).
+				- [code]"pid"[/code] - Process ID as an [int], which you can use to monitor the process (and potentially terminate it with [method kill]).
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
+				[b]Note:[/b] To execute a Windows command interpreter built-in command, specify [code]cmd.exe[/code] in [param path], [code]/c[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
 			</description>
 		</method>
 		<method name="find_keycode_from_string" qualifiers="const">
