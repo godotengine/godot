@@ -121,9 +121,10 @@
 			<param index="1" name="coords" type="Vector2i" />
 			<param index="2" name="use_proxies" type="bool" default="false" />
 			<description>
-				Returns the [TileData] object associated with the given cell, or [code]null[/code] if the cell does not exist or is not a [TileSetAtlasSource].
+				Returns the [TileData] object associated with the given cell in the related [TileSet], or [code]null[/code] if the cell does not exist or is not a [TileSetAtlasSource].
 				If [param layer] is negative, the layers are accessed from the last one.
 				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+				[b]Note:[/b] The [TileData] object represents a single tile in a [TileSet], it is per [TileSet]'s tile, not per [TileMap]'s cell.				
 				[codeblock]
 				func get_clicked_tile_power():
 				    var clicked_cell = tile_map.local_to_map(tile_map.get_local_mouse_position())
