@@ -354,6 +354,7 @@ void MultiplayerSynchronizer::set_root_path(const NodePath &p_path) {
 	_stop();
 	root_path = p_path;
 	_start();
+	update_configuration_warnings();
 }
 
 NodePath MultiplayerSynchronizer::get_root_path() const {
