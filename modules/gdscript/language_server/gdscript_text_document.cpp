@@ -130,6 +130,23 @@ void GDScriptTextDocument::notify_client_show_symbol(const lsp::DocumentSymbol *
 	GDScriptLanguageProtocol::get_singleton()->notify_client("gdscript/show_native_symbol", symbol->to_json(true));
 }
 
+void GDScriptTextDocument::notify_client_unsafe_lines(const String &p_path) {
+	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_path);
+	// Notify client about unsafe lines
+	lsp::UnsafeLinesList unsafe_lines;
+	ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts.find(path)->value;
+	HashSet<int> parser_unsafe_lines = parser->get_unsafe_lines();
+	for (int i = 1; i <= parser->get_last_line_number(); i++) {
+		if (parser_unsafe_lines.has(i)) {
+			unsafe_lines.lines.push_back(i);
+		}
+	}
+	unsafe_lines.uri = p_path;
+	if (unsafe_lines.lines.size() > 0) {
+		GDScriptLanguageProtocol::get_singleton()->notify_client("gdscript/unsafe_lines", unsafe_lines.to_json());
+	}
+}
+
 void GDScriptTextDocument::initialize() {
 	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 		for (const KeyValue<StringName, ClassMembers> &E : GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members) {
@@ -487,6 +504,7 @@ void GDScriptTextDocument::sync_script_content(const String &p_path, const Strin
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_script(path, p_content);
 
 	EditorFileSystem::get_singleton()->update_file(path);
+	notify_client_unsafe_lines(p_path);
 }
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {

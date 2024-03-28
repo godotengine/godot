@@ -1109,6 +1109,22 @@ struct CompletionList {
 	Vector<CompletionItem> items;
 };
 
+/**
+ * Custom godot structure that represents a list of unsafe lines to be presented
+ * in the editor.
+ */
+struct UnsafeLinesList {
+	String uri;
+	Vector<int> lines;
+
+	_FORCE_INLINE_ Dictionary to_json() {
+		Dictionary result;
+		result["uri"] = uri;
+		result["lines"] = lines;
+		return result;
+	}
+};
+
 // Use namespace instead of enumeration to follow the LSP specifications
 // `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not
 // And here C++ compilers are unhappy with our enumeration name like `String`, `Array`, `Object` etc
