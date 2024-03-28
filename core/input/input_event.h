@@ -453,6 +453,7 @@ class InputEventAction : public InputEvent {
 
 	StringName action;
 	float strength = 1.0f;
+	int event_id = -1;
 
 protected:
 	static void _bind_methods();
@@ -465,6 +466,9 @@ public:
 
 	void set_strength(float p_strength);
 	float get_strength() const;
+
+	void set_event_id(int p_id);
+	int get_event_id() const;
 
 	virtual bool is_action(const StringName &p_action) const;
 
