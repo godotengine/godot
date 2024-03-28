@@ -483,14 +483,14 @@ Vector2 Projection::get_far_plane_half_extents() const {
 bool Projection::get_endpoints(const Transform3D &p_transform, Vector3 *p_8points) const {
 	Vector<Plane> planes = get_projection_planes(Transform3D());
 	const Planes intersections[8][3] = {
-		{ PLANE_FAR, PLANE_LEFT, PLANE_TOP },
-		{ PLANE_FAR, PLANE_LEFT, PLANE_BOTTOM },
-		{ PLANE_FAR, PLANE_RIGHT, PLANE_TOP },
-		{ PLANE_FAR, PLANE_RIGHT, PLANE_BOTTOM },
 		{ PLANE_NEAR, PLANE_LEFT, PLANE_TOP },
-		{ PLANE_NEAR, PLANE_LEFT, PLANE_BOTTOM },
-		{ PLANE_NEAR, PLANE_RIGHT, PLANE_TOP },
+		{ PLANE_NEAR, PLANE_TOP, PLANE_RIGHT },
 		{ PLANE_NEAR, PLANE_RIGHT, PLANE_BOTTOM },
+		{ PLANE_NEAR, PLANE_BOTTOM, PLANE_LEFT },
+		{ PLANE_FAR, PLANE_LEFT, PLANE_TOP },
+		{ PLANE_FAR, PLANE_TOP, PLANE_RIGHT },
+		{ PLANE_FAR, PLANE_RIGHT, PLANE_BOTTOM },
+		{ PLANE_FAR, PLANE_BOTTOM, PLANE_LEFT },
 	};
 
 	for (int i = 0; i < 8; i++) {
