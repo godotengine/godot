@@ -71,7 +71,7 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [param delta] variable should be constant. [param delta] is in seconds.
+				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [param delta] variable should be constant. [param delta] is in seconds and is multiplied by [member Engine.time_scale]. To get the [param delta] that isn't scaled by [member Engine.time_scale], use [method Engine.get_physics_step].
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
@@ -81,7 +81,7 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [param delta] time since the previous frame is not constant. [param delta] is in seconds.
+				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [param delta] time since the previous frame is not constant. [param delta] is in seconds and is multiplied by [member Engine.time_scale]. To get the [param delta] that isn't scaled by [member Engine.time_scale], use [method Engine.get_process_step].
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
@@ -985,7 +985,7 @@
 			[b]Note:[/b] When changing the name, the following characters will be replaced with an underscore: ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code] [code]%[/code]). In particular, the [code]@[/code] character is reserved for auto-generated names. See also [method String.validate_node_name].
 		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
-			The owner of this node. The owner must be an ancestor of this node. When packing the owner node in a [PackedScene], all the nodes it owns are also saved with it. 
+			The owner of this node. The owner must be an ancestor of this node. When packing the owner node in a [PackedScene], all the nodes it owns are also saved with it.
 			[b]Note:[/b] In the editor, nodes not owned by the scene root are usually not displayed in the Scene dock, and will [b]not[/b] be saved. To prevent this, remember to set the owner after calling [method add_child]. See also (see [member unique_name_in_owner])
 		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" enum="Node.PhysicsInterpolationMode" default="0">
