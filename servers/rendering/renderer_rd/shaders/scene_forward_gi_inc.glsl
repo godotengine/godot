@@ -108,6 +108,36 @@ void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 	out_spec += vec4(irr_light.rgb * blend, blend);
 }
 
+void voxel_gi_compute_irradiance_only(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3 normal_xform, float roughness, vec3 environment, inout vec4 out_spec) {
+	position = (voxel_gi_instances.data[index].xform * vec4(position, 1.0)).xyz;
+	ref_vec = normalize((voxel_gi_instances.data[index].xform * vec4(ref_vec, 0.0)).xyz);
+	normal = normalize((voxel_gi_instances.data[index].xform * vec4(normal, 0.0)).xyz);
+
+	position += normal * voxel_gi_instances.data[index].normal_bias;
+
+	//this causes corrupted pixels, i have no idea why..
+	if (any(bvec2(any(lessThan(position, vec3(0.0))), any(greaterThan(position, voxel_gi_instances.data[index].bounds))))) {
+		return;
+	}
+
+	vec3 blendv = abs(position / voxel_gi_instances.data[index].bounds * 2.0 - 1.0);
+	float blend = clamp(1.0 - max(blendv.x, max(blendv.y, blendv.z)), 0.0, 1.0);
+	//float blend=1.0;
+
+	float max_distance = length(voxel_gi_instances.data[index].bounds);
+	vec3 cell_size = 1.0 / voxel_gi_instances.data[index].bounds;
+
+	//irradiance
+	vec4 irr_light = voxel_cone_trace(voxel_gi_textures[index], cell_size, position, ref_vec, tan(roughness * 0.5 * M_PI * 0.99), max_distance, voxel_gi_instances.data[index].bias);
+	if (voxel_gi_instances.data[index].blend_ambient) {
+		irr_light.rgb = mix(environment, irr_light.rgb, min(1.0, irr_light.a / 0.95));
+	}
+	irr_light.rgb *= voxel_gi_instances.data[index].dynamic_range * voxel_gi_instances.data[index].exposure_normalization;
+	//irr_light=vec3(0.0);
+
+	out_spec += vec4(irr_light.rgb * blend, blend);
+}
+
 vec2 octahedron_wrap(vec2 v) {
 	vec2 signVal;
 	signVal.x = v.x >= 0.0 ? 1.0 : -1.0;
