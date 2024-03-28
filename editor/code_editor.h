@@ -98,7 +98,7 @@ class FindReplaceBar : public HBoxContainer {
 	void _update_results_count();
 	void _update_matches_label();
 
-	void _show_search(bool p_focus_replace = false, bool p_show_only = false);
+	void _show_bar(bool p_replace = false, bool p_show_only = false);
 	void _hide_bar(bool p_force_focus = false);
 
 	void _editor_text_changed();
