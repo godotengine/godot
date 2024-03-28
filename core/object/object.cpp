@@ -142,16 +142,16 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 		args = p_dict["args"];
 	}
 
-	for (int i = 0; i < args.size(); i++) {
-		Dictionary d = args[i];
+	for (const Variant &arg : args) {
+		Dictionary d = arg;
 		mi.arguments.push_back(PropertyInfo::from_dict(d));
 	}
 	Array defargs;
 	if (p_dict.has("default_args")) {
 		defargs = p_dict["default_args"];
 	}
-	for (int i = 0; i < defargs.size(); i++) {
-		mi.default_arguments.push_back(defargs[i]);
+	for (const Variant &defarg : defargs) {
+		mi.default_arguments.push_back(defarg);
 	}
 
 	if (p_dict.has("return")) {
@@ -1233,8 +1233,8 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	MethodInfo mi;
 	mi.name = p_name;
 
-	for (int i = 0; i < p_args.size(); i++) {
-		Dictionary d = p_args[i];
+	for (const Variant &arg : p_args) {
+		Dictionary d = arg;
 		PropertyInfo param;
 
 		if (d.has("name")) {
@@ -1585,8 +1585,8 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 		} break;
 		case Variant::ARRAY: {
 			Array a = p_var;
-			for (int i = 0; i < a.size(); i++) {
-				_clear_internal_resource_paths(a[i]);
+			for (const Variant &var : a) {
+				_clear_internal_resource_paths(var);
 			}
 
 		} break;
