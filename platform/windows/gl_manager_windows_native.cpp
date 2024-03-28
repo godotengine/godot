@@ -88,7 +88,8 @@ typedef int(__cdecl *NvAPI_DRS_CreateApplication_t)(NvDRSSessionHandle, NvDRSPro
 typedef int(__cdecl *NvAPI_DRS_SaveSettings_t)(NvDRSSessionHandle);
 typedef int(__cdecl *NvAPI_DRS_SetSetting_t)(NvDRSSessionHandle, NvDRSProfileHandle, NVDRS_SETTING *);
 typedef int(__cdecl *NvAPI_DRS_FindProfileByName_t)(NvDRSSessionHandle, NvAPI_UnicodeString, NvDRSProfileHandle *);
-typedef int(__cdecl *NvAPI_DRS_FindApplicationByName_t)(NvDRSSessionHandle, NvAPI_UnicodeString, NvDRSProfileHandle *, NVDRS_APPLICATION *);
+typedef int(__cdecl *NvAPI_DRS_GetApplicationInfo_t)(NvDRSSessionHandle, NvDRSProfileHandle, NvAPI_UnicodeString, NVDRS_APPLICATION *);
+typedef int(__cdecl *NvAPI_DRS_DeleteProfile_t)(NvDRSSessionHandle, NvDRSProfileHandle);
 NvAPI_GetErrorMessage_t NvAPI_GetErrorMessage__;
 
 static bool nvapi_err_check(const char *msg, int status) {
@@ -139,7 +140,8 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	NvAPI_DRS_SaveSettings_t NvAPI_DRS_SaveSettings = (NvAPI_DRS_SaveSettings_t)NvAPI_QueryInterface(0xFCBC7E14);
 	NvAPI_DRS_SetSetting_t NvAPI_DRS_SetSetting = (NvAPI_DRS_SetSetting_t)NvAPI_QueryInterface(0x577DD202);
 	NvAPI_DRS_FindProfileByName_t NvAPI_DRS_FindProfileByName = (NvAPI_DRS_FindProfileByName_t)NvAPI_QueryInterface(0x7E4A9A0B);
-	NvAPI_DRS_FindApplicationByName_t NvAPI_DRS_FindApplicationByName = (NvAPI_DRS_FindApplicationByName_t)NvAPI_QueryInterface(0xEEE566B2);
+	NvAPI_DRS_GetApplicationInfo_t NvAPI_DRS_GetApplicationInfo = (NvAPI_DRS_GetApplicationInfo_t)NvAPI_QueryInterface(0xED1F8C69);
+	NvAPI_DRS_DeleteProfile_t NvAPI_DRS_DeleteProfile = (NvAPI_DRS_DeleteProfile_t)NvAPI_QueryInterface(0x17093206);
 
 	if (!nvapi_err_check("NVAPI: Init failed", NvAPI_Initialize())) {
 		return;
@@ -165,23 +167,45 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	}
 
 	String app_executable_name = OS::get_singleton()->get_executable_path().get_file();
-	String app_friendly_name = GLOBAL_GET("application/config/name");
+	String app_profile_name = GLOBAL_GET("application/config/name");
 	// We need a name anyways, so let's use the engine name if an application name is not available
 	// (this is used mostly by the Project Manager)
-	if (app_friendly_name.is_empty()) {
-		app_friendly_name = VERSION_NAME;
+	if (app_profile_name.is_empty()) {
+		app_profile_name = VERSION_NAME;
 	}
-	String app_profile_name = app_friendly_name + " Nvidia Profile";
+	String old_profile_name = app_profile_name + " Nvidia Profile";
 	Char16String app_profile_name_u16 = app_profile_name.utf16();
+	Char16String old_profile_name_u16 = old_profile_name.utf16();
 	Char16String app_executable_name_u16 = app_executable_name.utf16();
-	Char16String app_friendly_name_u16 = app_friendly_name.utf16();
+
+	// A previous error in app creation logic could result in invalid profiles,
+	// clean these if they exist before proceeding.
+	NvDRSProfileHandle old_profile_handle;
+
+	int old_status = NvAPI_DRS_FindProfileByName(session_handle, (NvU16 *)(old_profile_name_u16.ptrw()), &old_profile_handle);
+
+	if (old_status == 0) {
+		print_verbose("NVAPI: Deleting old profile...");
+
+		if (!nvapi_err_check("NVAPI: Error deleting old profile", NvAPI_DRS_DeleteProfile(session_handle, old_profile_handle))) {
+			NvAPI_DRS_DestroySession(session_handle);
+			NvAPI_Unload();
+			return;
+		}
+
+		if (!nvapi_err_check("NVAPI: Error deleting old profile", NvAPI_DRS_SaveSettings(session_handle))) {
+			NvAPI_DRS_DestroySession(session_handle);
+			NvAPI_Unload();
+			return;
+		}
+	}
 
 	NvDRSProfileHandle profile_handle = nullptr;
 
 	int profile_status = NvAPI_DRS_FindProfileByName(session_handle, (NvU16 *)(app_profile_name_u16.ptrw()), &profile_handle);
 
 	if (profile_status != 0) {
-		print_verbose("NVAPI: Profile not found, creating....");
+		print_verbose("NVAPI: Profile not found, creating...");
 
 		NVDRS_PROFILE profile_info;
 		profile_info.version = NVDRS_PROFILE_VER;
@@ -195,22 +219,18 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 		}
 	}
 
-	NvDRSProfileHandle app_profile_handle = nullptr;
 	NVDRS_APPLICATION_V4 app;
 	app.version = NVDRS_APPLICATION_VER_V4;
 
-	int app_status = NvAPI_DRS_FindApplicationByName(session_handle, (NvU16 *)(app_executable_name_u16.ptrw()), &app_profile_handle, &app);
+	int app_status = NvAPI_DRS_GetApplicationInfo(session_handle, profile_handle, (NvU16 *)(app_executable_name_u16.ptrw()), &app);
 
 	if (app_status != 0) {
-		print_verbose("NVAPI: Application not found, adding to profile...");
+		print_verbose("NVAPI: Application not found in profile, creating...");
 
 		app.isPredefined = 0;
-		app.isMetro = 1;
-		app.isCommandLine = 1;
 		memcpy(app.appName, app_executable_name_u16.get_data(), sizeof(char16_t) * app_executable_name_u16.size());
-		memcpy(app.userFriendlyName, app_friendly_name_u16.get_data(), sizeof(char16_t) * app_friendly_name_u16.size());
-		memcpy(app.launcher, L"", 1);
-		memcpy(app.fileInFolder, L"", 1);
+		memcpy(app.launcher, L"", sizeof(wchar_t));
+		memcpy(app.fileInFolder, L"", sizeof(wchar_t));
 
 		if (!nvapi_err_check("NVAPI: Error creating application", NvAPI_DRS_CreateApplication(session_handle, profile_handle, &app))) {
 			NvAPI_DRS_DestroySession(session_handle);
@@ -244,11 +264,13 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 		NvAPI_Unload();
 		return;
 	}
+
 	if (thread_control_val == OGL_THREAD_CONTROL_DISABLE) {
 		print_verbose("NVAPI: Disabled OpenGL threaded optimization successfully");
 	} else {
 		print_verbose("NVAPI: Enabled OpenGL threaded optimization successfully");
 	}
+
 	NvAPI_DRS_DestroySession(session_handle);
 }
 
