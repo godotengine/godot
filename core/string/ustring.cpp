@@ -359,22 +359,30 @@ void String::copy_from(const char *p_cstr, const int p_clip_to) {
 
 void String::copy_from(const wchar_t *p_cstr) {
 #ifdef WINDOWS_ENABLED
-	// wchar_t is 16-bit, parse as UTF-16
-	parse_utf16((const char16_t *)p_cstr);
+	// wchar_t is 16-bit
+	copy_from((const char16_t *)p_cstr);
 #else
-	// wchar_t is 32-bit, copy directly
+	// wchar_t is 32-bit
 	copy_from((const char32_t *)p_cstr);
 #endif
 }
 
 void String::copy_from(const wchar_t *p_cstr, const int p_clip_to) {
 #ifdef WINDOWS_ENABLED
-	// wchar_t is 16-bit, parse as UTF-16
-	parse_utf16((const char16_t *)p_cstr, p_clip_to);
+	// wchar_t is 16-bit
+	copy_from((const char16_t *)p_cstr, p_clip_to);
 #else
-	// wchar_t is 32-bit, copy directly
+	// wchar_t is 32-bit
 	copy_from((const char32_t *)p_cstr, p_clip_to);
 #endif
+}
+
+void String::copy_from(const char16_t *p_cstr) {
+	parse_utf16(p_cstr);
+}
+
+void String::copy_from(const char16_t *p_cstr, const int p_clip_to) {
+	parse_utf16(p_cstr, p_clip_to);
 }
 
 void String::copy_from(const char32_t &p_char) {
@@ -473,6 +481,10 @@ void String::operator=(const char *p_str) {
 	copy_from(p_str);
 }
 
+void String::operator=(const char16_t *p_str) {
+	copy_from(p_str);
+}
+
 void String::operator=(const char32_t *p_str) {
 	copy_from(p_str);
 }
@@ -502,11 +514,23 @@ String operator+(const char *p_chr, const String &p_str) {
 String operator+(const wchar_t *p_chr, const String &p_str) {
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit
-	String tmp = String::utf16((const char16_t *)p_chr);
+	String tmp = (const char16_t *)p_chr;
 #else
 	// wchar_t is 32-bit
 	String tmp = (const char32_t *)p_chr;
 #endif
+	tmp += p_str;
+	return tmp;
+}
+
+String operator+(const char16_t *p_chr, const String &p_str) {
+	String tmp = p_chr;
+	tmp += p_str;
+	return tmp;
+}
+
+String operator+(const char32_t *p_chr, const String &p_str) {
+	String tmp = p_chr;
 	tmp += p_str;
 	return tmp;
 }
@@ -571,11 +595,16 @@ String &String::operator+=(const char *p_str) {
 String &String::operator+=(const wchar_t *p_str) {
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit
-	*this += String::utf16((const char16_t *)p_str);
+	*this += String((const char16_t *)p_str);
 #else
 	// wchar_t is 32-bit
 	*this += String((const char32_t *)p_str);
 #endif
+	return *this;
+}
+
+String &String::operator+=(const char16_t *p_str) {
+	*this += String(p_str);
 	return *this;
 }
 
@@ -642,11 +671,15 @@ bool String::operator==(const char *p_str) const {
 bool String::operator==(const wchar_t *p_str) const {
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit, parse as UTF-16
-	return *this == String::utf16((const char16_t *)p_str);
+	return *this == (const char16_t *)p_str;
 #else
 	// wchar_t is 32-bit, compare char by char
 	return *this == (const char32_t *)p_str;
 #endif
+}
+
+bool String::operator==(const char16_t *p_str) const {
+	return *this == String(p_str);
 }
 
 bool String::operator==(const char32_t *p_str) const {
@@ -728,13 +761,21 @@ bool operator==(const char *p_chr, const String &p_str) {
 	return p_str == p_chr;
 }
 
+bool operator==(const char16_t *p_chr, const String &p_str) {
+	return p_str == p_chr;
+}
+
+bool operator==(const char32_t *p_chr, const String &p_str) {
+	return p_str == p_chr;
+}
+
 bool operator==(const wchar_t *p_chr, const String &p_str) {
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit
-	return p_str == String::utf16((const char16_t *)p_chr);
+	return p_str == (const char16_t *)p_chr;
 #else
-	// wchar_t is 32-bi
-	return p_str == String((const char32_t *)p_chr);
+	// wchar_t is 32-bit
+	return p_str == (const char32_t *)p_chr;
 #endif
 }
 
@@ -742,12 +783,20 @@ bool operator!=(const char *p_chr, const String &p_str) {
 	return !(p_str == p_chr);
 }
 
+bool operator!=(const char16_t *p_chr, const String &p_str) {
+	return !(p_str == p_chr);
+}
+
+bool operator!=(const char32_t *p_chr, const String &p_str) {
+	return !(p_str == p_chr);
+}
+
 bool operator!=(const wchar_t *p_chr, const String &p_str) {
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit
-	return !(p_str == String::utf16((const char16_t *)p_chr));
+	return !(p_str == String((const char16_t *)p_chr));
 #else
-	// wchar_t is 32-bi
+	// wchar_t is 32-bit
 	return !(p_str == String((const char32_t *)p_chr));
 #endif
 }
@@ -757,6 +806,10 @@ bool String::operator!=(const char *p_str) const {
 }
 
 bool String::operator!=(const wchar_t *p_str) const {
+	return (!(*this == p_str));
+}
+
+bool String::operator!=(const char16_t *p_str) const {
 	return (!(*this == p_str));
 }
 
@@ -800,11 +853,22 @@ bool String::operator<(const wchar_t *p_str) const {
 
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit
-	return is_str_less(get_data(), String::utf16((const char16_t *)p_str).get_data());
+	return is_str_less(get_data(), String((const char16_t *)p_str).get_data());
 #else
 	// wchar_t is 32-bit
 	return is_str_less(get_data(), (const char32_t *)p_str);
 #endif
+}
+
+bool String::operator<(const char16_t *p_str) const {
+	if (is_empty() && p_str[0] == 0) {
+		return false;
+	}
+	if (is_empty()) {
+		return true;
+	}
+
+	return is_str_less(get_data(), String(p_str).get_data());
 }
 
 bool String::operator<(const char32_t *p_str) const {
@@ -2291,6 +2355,10 @@ String::String(const wchar_t *p_str) {
 	copy_from(p_str);
 }
 
+String::String(const char16_t *p_str) {
+	copy_from(p_str);
+}
+
 String::String(const char32_t *p_str) {
 	copy_from(p_str);
 }
@@ -2300,6 +2368,10 @@ String::String(const char *p_str, int p_clip_to_len) {
 }
 
 String::String(const wchar_t *p_str, int p_clip_to_len) {
+	copy_from(p_str, p_clip_to_len);
+}
+
+String::String(const char16_t *p_str, int p_clip_to_len) {
 	copy_from(p_str, p_clip_to_len);
 }
 
@@ -2466,6 +2538,37 @@ int64_t String::to_int(const wchar_t *p_str, int p_len) {
 
 	for (int i = 0; i < to; i++) {
 		wchar_t c = p_str[i];
+		if (is_digit(c)) {
+			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
+			integer *= 10;
+			integer += c - '0';
+
+		} else if (c == '-' && integer == 0) {
+			sign = -sign;
+		} else if (c != ' ') {
+			break;
+		}
+	}
+
+	return integer * sign;
+}
+
+int64_t String::to_int(const char16_t *p_str, int p_len) {
+	int to = 0;
+	if (p_len >= 0) {
+		to = p_len;
+	} else {
+		while (p_str[to] != 0 && p_str[to] != '.') {
+			to++;
+		}
+	}
+
+	int64_t integer = 0;
+	int64_t sign = 1;
+
+	for (int i = 0; i < to; i++) {
+		char16_t c = p_str[i];
 		if (is_digit(c)) {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
 			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as a 64-bit signed integer, since the value is " + (sign == 1 ? "too large." : "too small."));
@@ -2734,6 +2837,10 @@ double String::to_float(const char *p_str) {
 	return built_in_strtod<char>(p_str);
 }
 
+double String::to_float(const char16_t *p_str, const char16_t **r_end) {
+	return built_in_strtod<char16_t>(p_str, (char16_t **)r_end);
+}
+
 double String::to_float(const char32_t *p_str, const char32_t **r_end) {
 	return built_in_strtod<char32_t>(p_str, (char32_t **)r_end);
 }
@@ -2875,6 +2982,27 @@ uint32_t String::hash(const wchar_t *p_cstr) {
 	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
 		c = static_cast<wide_unsigned>(*p_cstr++);
+	}
+
+	return hashv;
+}
+
+uint32_t String::hash(const char16_t *p_cstr, int p_len) {
+	uint32_t hashv = 5381;
+	for (int i = 0; i < p_len; i++) {
+		hashv = ((hashv << 5) + hashv) + p_cstr[i]; /* hash * 33 + c */
+	}
+
+	return hashv;
+}
+
+uint32_t String::hash(const char16_t *p_cstr) {
+	uint32_t hashv = 5381;
+	uint32_t c = *p_cstr++;
+
+	while (c) {
+		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		c = *p_cstr++;
 	}
 
 	return hashv;
