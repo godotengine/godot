@@ -409,20 +409,9 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 		c.acc_impulse -= j_vec;
 
-		// contact query reporting...
-
-		if (A->can_report_contacts() || B->can_report_contacts()) {
-			Vector3 crB = B->get_angular_velocity().cross(c.rB) + B->get_linear_velocity();
-			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
-
-			if (A->can_report_contacts()) {
-				A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, crA, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
-			}
-
-			if (B->can_report_contacts()) {
-				B->add_contact(global_B + offset_A, c.normal, depth, shape_B, crB, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA, -c.acc_impulse);
-			}
-		}
+		// reuse pre calculated values for contact reporting later
+		c.local_CA = global_A + offset_A;
+		c.local_CB = global_B + offset_A;
 
 		if (report_contacts_only) {
 			collided = false;
@@ -591,6 +580,21 @@ void GodotBodyPair3D::solve(real_t p_step) {
 			c.acc_impulse -= jt;
 
 			c.active = true;
+		}
+
+		// contact query reporting...
+
+		if (A->can_report_contacts() || B->can_report_contacts()) {
+			Vector3 crA2 = crA + A->get_linear_velocity();
+			Vector3 crB2 = crB + B->get_linear_velocity();
+
+			if (A->can_report_contacts()) {
+				A->add_contact(c.local_CA, -c.normal, c.depth, shape_A, crA2, c.local_CB, shape_B, B->get_instance_id(), B->get_self(), crB2, c.acc_impulse);
+			}
+
+			if (B->can_report_contacts()) {
+				B->add_contact(c.local_CB, c.normal, c.depth, shape_B, crB2, c.local_CA, shape_A, A->get_instance_id(), A->get_self(), crA2, -c.acc_impulse);
+			}
 		}
 	}
 }
