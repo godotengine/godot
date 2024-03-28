@@ -1385,15 +1385,15 @@ Error ImporterMesh::generate_tangents() {
 	for (int surface_i = 0; surface_i < surface_count; surface_i++) {
 		if (!(surfaces[surface_i].flags & Mesh::ARRAY_FORMAT_TEX_UV)) {
 			ERR_PRINT("Surface does not have ARRAY_FORMAT_TEX_UV flag set.");
-			return ERR_INVALID_DATA;
+			continue;
 		}
 		if (!(surfaces[surface_i].flags & Mesh::ARRAY_FORMAT_NORMAL)) {
 			ERR_PRINT("Surface does not have ARRAY_FORMAT_NORMAL flag set.");
-			return ERR_INVALID_DATA;
+			continue;
 		}
 		if (!(surfaces[surface_i].flags & Mesh::ARRAY_FORMAT_INDEX)) {
 			ERR_PRINT("Surface does not have ARRAY_FORMAT_INDEX flag set.");
-			return ERR_INVALID_DATA;
+			continue;
 		}
 		SMikkTSpaceInterface space_interface;
 		space_interface.m_getNormal = ImporterMeshTangentGenerationContextUserData::mikktGetNormal;
@@ -1418,14 +1418,11 @@ Error ImporterMesh::generate_tangents() {
 		}
 		Vector<Vector3> normal_array = surface_arrays[Mesh::ARRAY_NORMAL];
 		Vector<Vector2> uv_array = surface_arrays[Mesh::ARRAY_TEX_UV];
-		Vector<Vector2> uv2_array = surface_arrays[Mesh::ARRAY_TEX_UV2];
-		Vector<int32_t> bones_array = surface_arrays[Mesh::ARRAY_BONES];
-		Vector<float_t> weights_array = surface_arrays[Mesh::ARRAY_WEIGHTS];
 
 		ImporterMeshTangentGenerationContextUserData triangle_data{};
 		triangle_data.vertices->resize(vertex_array.size());
 		LocalVector<ImporterMeshTangentGenerationContextUserData::Vertex> importer_mesh_vertex_array;
-		for (int vertex_i = 0; vertex_i < vertex_array.size(); ++vertex_i) {
+		for (int vertex_i = 0; vertex_i < vertex_array.size(); vertex_i++) {
 			ImporterMeshTangentGenerationContextUserData::Vertex &vertex = importer_mesh_vertex_array[vertex_i];
 			// Check if arrays exist before accessing them.
 			if (!vertex_array.is_empty()) {
@@ -1443,8 +1440,29 @@ Error ImporterMesh::generate_tangents() {
 		triangle_data.indices = &local_index_array;
 		space_context.m_pUserData = &triangle_data;
 
-		bool res = genTangSpaceDefault(&space_context);
-		ERR_FAIL_COND_V_MSG(res == 0, FAILED, "Couldn't generate tangents.");
+		bool have_tangents = genTangSpaceDefault(&space_context);
+		if (!have_tangents) {
+			continue;
+		}
+		Array array = surface_arrays;
+		Vector<float> tangents;
+		tangents.resize(vertex_array.size() * 4);
+		for (int vertex_i = 0; vertex_i < vertex_array.size(); vertex_i++) {
+			ImporterMeshTangentGenerationContextUserData::Vertex &vertex = importer_mesh_vertex_array[vertex_i];
+			Vector3 tangent = vertex.tangent;
+			Vector3 bitangent = vertex.binormal;
+			Vector3 generated_bitangent = vertex.normal.cross(tangent);
+			tangents.write[vertex_i * 4] = tangent[0];
+			tangents.write[vertex_i * 4 + 1] = tangent[1];
+			tangents.write[vertex_i * 4 + 2] = tangent[2];
+			if (generated_bitangent.dot(bitangent) < 0.0f) {
+				tangents.write[vertex_i * 4 + 3] = -1.0f;
+			} else {
+				tangents.write[vertex_i * 4 + 3] = 1.0f;
+			}
+		}
+		array[Mesh::ARRAY_TANGENT] = tangents;
+		surfaces.write[surface_i].arrays = array;
 		surfaces.write[surface_i].flags |= Mesh::ARRAY_FORMAT_TANGENT;
 	}
 	return OK;
