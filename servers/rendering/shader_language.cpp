@@ -5409,9 +5409,34 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 											}
 										}
 										if (!error && varname != StringName()) {
-											if (shader->constants.has(varname)) {
-												error = true;
-											} else if (shader->uniforms.has(varname)) {
+											bool found = false;
+
+											const BlockNode *block = p_block;
+											while (block) {
+												if (block->variables.has(varname)) {
+													found = true;
+													break;
+												}
+												if (block->parent_function) {
+													for (FunctionNode::Argument arg : block->parent_function->arguments) {
+														if (arg.name == varname) {
+															found = true;
+															break;
+														}
+													}
+												}
+												block = block->parent_block;
+											}
+
+											if (!found) {
+												if (shader->constants.has(varname)) {
+													error = true;
+												}
+											}
+										}
+
+										if (!error) {
+											if (shader->uniforms.has(varname)) {
 												error = true;
 											} else if (p_function_info.built_ins.has(varname)) {
 												BuiltInInfo info = p_function_info.built_ins[varname];
@@ -6689,10 +6714,35 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			}
 
 			if (_is_operator_assign(op->op)) {
-				String assign_message;
-				if (!_validate_assign(expression[next_op - 1].node, p_function_info, &assign_message)) {
-					_set_error(assign_message);
-					return nullptr;
+				bool found = false;
+
+				if (expression[next_op - 1].node->type == Node::NODE_TYPE_VARIABLE) {
+					VariableNode *var = static_cast<VariableNode *>(expression[next_op - 1].node);
+
+					const BlockNode *block = p_block;
+					while (block) {
+						if (block->variables.has(var->name)) {
+							found = true;
+							break;
+						}
+						if (block->parent_function) {
+							for (FunctionNode::Argument arg : block->parent_function->arguments) {
+								if (arg.name == var->name) {
+									found = true;
+									break;
+								}
+							}
+						}
+						block = block->parent_block;
+					}
+				}
+
+				if (!found) {
+					String assign_message;
+					if (!_validate_assign(expression[next_op - 1].node, p_function_info, &assign_message)) {
+						_set_error(assign_message);
+						return nullptr;
+					}
 				}
 			}
 
@@ -7021,7 +7071,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				StringName name = tk.text;
 				ShaderLanguage::IdentifierType itype;
 				if (_find_identifier(p_block, true, p_function_info, name, (ShaderLanguage::DataType *)nullptr, &itype)) {
-					if (itype != IDENTIFIER_FUNCTION) {
+					if (itype != IDENTIFIER_FUNCTION && itype != IDENTIFIER_CONSTANT) {
 						_set_redefinition_error(String(name));
 						return ERR_PARSE_ERROR;
 					}
@@ -9696,7 +9746,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 					ShaderLanguage::IdentifierType itype;
 					if (_find_identifier(func_node->body, false, builtins, param_name, (ShaderLanguage::DataType *)nullptr, &itype)) {
-						if (itype != IDENTIFIER_FUNCTION) {
+						if (itype != IDENTIFIER_FUNCTION && itype != IDENTIFIER_CONSTANT) {
 							_set_redefinition_error(String(param_name));
 							return ERR_PARSE_ERROR;
 						}
