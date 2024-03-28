@@ -757,5 +757,5 @@ void TextureProgressBar::_bind_methods() {
 }
 
 TextureProgressBar::TextureProgressBar() {
-	set_mouse_filter(MOUSE_FILTER_PASS);
+	set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 }

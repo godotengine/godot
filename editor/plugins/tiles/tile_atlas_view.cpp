@@ -656,13 +656,13 @@ TileAtlasView::TileAtlasView() {
 
 	// Base tiles.
 	Label *base_tile_label = memnew(Label);
-	base_tile_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	base_tile_label->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 	base_tile_label->set_text(TTR("Base Tiles"));
 	base_tile_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	left_vbox->add_child(base_tile_label);
 
 	base_tiles_root_control = memnew(Control);
-	base_tiles_root_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	base_tiles_root_control->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 	base_tiles_root_control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	base_tiles_root_control->connect("gui_input", callable_mp(this, &TileAtlasView::_base_tiles_root_control_gui_input));
 	left_vbox->add_child(base_tiles_root_control);
@@ -705,7 +705,7 @@ TileAtlasView::TileAtlasView() {
 	right_vbox->add_child(alternative_tiles_label);
 
 	alternative_tiles_root_control = memnew(Control);
-	alternative_tiles_root_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	alternative_tiles_root_control->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 	alternative_tiles_root_control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	alternative_tiles_root_control->connect("gui_input", callable_mp(this, &TileAtlasView::_alternative_tiles_root_control_gui_input));
 	right_vbox->add_child(alternative_tiles_root_control);

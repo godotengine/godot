@@ -4205,7 +4205,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 
 	// Wide empty separation control. (like BoxContainer::add_spacer())
 	Control *c = memnew(Control);
-	c->set_mouse_filter(MOUSE_FILTER_PASS);
+	c->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	c->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_map_toolbar->add_child(c);
 

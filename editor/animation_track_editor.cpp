@@ -1893,7 +1893,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	name_limit = 150 * EDSCALE;
 
 	play_position = memnew(Control);
-	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
+	play_position->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	add_child(play_position);
 	play_position->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	play_position->connect("draw", callable_mp(this, &AnimationTimelineEdit::_play_position_draw));
@@ -3360,12 +3360,12 @@ void AnimationTrackEdit::_bind_methods() {
 
 AnimationTrackEdit::AnimationTrackEdit() {
 	play_position = memnew(Control);
-	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
+	play_position->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	add_child(play_position);
 	play_position->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	play_position->connect("draw", callable_mp(this, &AnimationTrackEdit::_play_position_draw));
 	set_focus_mode(FOCUS_CLICK);
-	set_mouse_filter(MOUSE_FILTER_PASS); // Scroll has to work too for selection.
+	set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP); // Scroll has to work too for selection.
 }
 
 //////////////////////////////////////
@@ -3488,7 +3488,7 @@ void AnimationTrackEditGroup::_zoom_changed() {
 }
 
 AnimationTrackEditGroup::AnimationTrackEditGroup() {
-	set_mouse_filter(MOUSE_FILTER_PASS);
+	set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 }
 
 //////////////////////////////////////

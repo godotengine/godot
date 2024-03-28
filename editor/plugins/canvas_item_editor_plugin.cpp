@@ -5137,7 +5137,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	viewport_scrollable = memnew(Control);
 	right_panel_split->add_child(viewport_scrollable);
-	viewport_scrollable->set_mouse_filter(MOUSE_FILTER_PASS);
+	viewport_scrollable->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	viewport_scrollable->set_clip_contents(true);
 	viewport_scrollable->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	viewport_scrollable->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -5206,7 +5206,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	viewport = memnew(CanvasItemEditorViewport(this));
 	viewport_scrollable->add_child(viewport);
-	viewport->set_mouse_filter(MOUSE_FILTER_PASS);
+	viewport->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	viewport->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	viewport->set_clip_contents(true);
 	viewport->set_focus_mode(FOCUS_ALL);

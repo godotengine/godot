@@ -127,7 +127,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 			il->add_theme_constant_override("h_separation", 16 * EDSCALE);
 			if (p_allow_website) {
 				il->set_focus_mode(Control::FOCUS_CLICK);
-				il->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+				il->set_mouse_filter(Control::MOUSE_FILTER_PROPAGATE_UP);
 
 				il->connect("item_activated", callable_mp(this, &EditorAbout::_item_with_website_selected).bind(il));
 				il->connect("resized", callable_mp(this, &EditorAbout::_item_list_resized).bind(il));

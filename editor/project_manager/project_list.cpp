@@ -214,7 +214,7 @@ ProjectListItemControl::ProjectListItemControl() {
 	favorite_button = memnew(TextureButton);
 	favorite_button->set_name("FavoriteButton");
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
-	favorite_button->set_mouse_filter(MOUSE_FILTER_PASS);
+	favorite_button->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	favorite_box->add_child(favorite_button);
 	favorite_button->connect("pressed", callable_mp(this, &ProjectListItemControl::_favorite_button_pressed));
 
@@ -229,7 +229,7 @@ ProjectListItemControl::ProjectListItemControl() {
 
 	Control *ec = memnew(Control);
 	ec->set_custom_minimum_size(Size2(0, 1));
-	ec->set_mouse_filter(MOUSE_FILTER_PASS);
+	ec->set_mouse_filter(MOUSE_FILTER_PROPAGATE_UP);
 	main_vbox->add_child(ec);
 
 	// Top half, title, tags and unsupported features labels.
