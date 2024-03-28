@@ -55,6 +55,23 @@ void XRHandTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hand_joint_angular_velocity", "joint", "angular_velocity"), &XRHandTracker::set_hand_joint_angular_velocity);
 	ClassDB::bind_method(D_METHOD("get_hand_joint_angular_velocity", "joint"), &XRHandTracker::get_hand_joint_angular_velocity);
 
+	ClassDB::bind_method(D_METHOD("set_hand_capsule_transform", "capsule_index", "transform"), &XRHandTracker::set_hand_capsule_transform);
+	ClassDB::bind_method(D_METHOD("get_hand_capsule_transform", "capsule_index"), &XRHandTracker::get_hand_capsule_transform);
+
+	ClassDB::bind_method(D_METHOD("set_hand_capsule_height", "capsule_index", "height"), &XRHandTracker::set_hand_capsule_height);
+	ClassDB::bind_method(D_METHOD("get_hand_capsule_height", "capsule_index"), &XRHandTracker::get_hand_capsule_height);
+
+	ClassDB::bind_method(D_METHOD("set_hand_capsule_radius", "capsule_index", "radius"), &XRHandTracker::set_hand_capsule_radius);
+	ClassDB::bind_method(D_METHOD("get_hand_capsule_radius", "capsule_index"), &XRHandTracker::get_hand_capsule_radius);
+
+	ClassDB::bind_method(D_METHOD("set_hand_capsule_joint", "capsule_index", "joint"), &XRHandTracker::set_hand_capsule_joint);
+	ClassDB::bind_method(D_METHOD("get_hand_capsule_joint", "capsule_index"), &XRHandTracker::get_hand_capsule_joint);
+
+	ClassDB::bind_method(D_METHOD("set_hand_capsule_count", "capsule_count"), &XRHandTracker::set_hand_capsule_count);
+	ClassDB::bind_method(D_METHOD("get_hand_capsule_count"), &XRHandTracker::get_hand_capsule_count);
+
+	ClassDB::bind_method(D_METHOD("has_hand_capsule_data"), &XRHandTracker::has_hand_capsule_data);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hand", PROPERTY_HINT_ENUM, "Left,Right"), "set_hand", "get_hand");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "has_tracking_data", PROPERTY_HINT_NONE), "set_has_tracking_data", "get_has_tracking_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hand_tracking_source", PROPERTY_HINT_ENUM, "Unknown,Unobstructed,Controller"), "set_hand_tracking_source", "get_hand_tracking_source");
@@ -176,4 +193,56 @@ void XRHandTracker::set_hand_joint_angular_velocity(XRHandTracker::HandJoint p_j
 Vector3 XRHandTracker::get_hand_joint_angular_velocity(XRHandTracker::HandJoint p_joint) const {
 	ERR_FAIL_INDEX_V(p_joint, HAND_JOINT_MAX, Vector3());
 	return hand_joint_angular_velocities[p_joint];
+}
+
+void XRHandTracker::set_hand_capsule_transform(int p_capsule_index, const Transform3D &p_transform) {
+	ERR_FAIL_INDEX_MSG(p_capsule_index, hand_capsules.size(), vformat("Invalid capsule index %d", p_capsule_index));
+	hand_capsules.write[p_capsule_index].transform = p_transform;
+}
+
+Transform3D XRHandTracker::get_hand_capsule_transform(int p_capsule_index) const {
+	ERR_FAIL_INDEX_V_MSG(p_capsule_index, hand_capsules.size(), Transform3D(), vformat("Invalid capsule index %d", p_capsule_index));
+	return hand_capsules[p_capsule_index].transform;
+}
+
+void XRHandTracker::set_hand_capsule_height(int p_capsule_index, float p_height) {
+	ERR_FAIL_INDEX_MSG(p_capsule_index, hand_capsules.size(), vformat("Invalid capsule index %d", p_capsule_index));
+	hand_capsules.write[p_capsule_index].height = p_height;
+}
+
+float XRHandTracker::get_hand_capsule_height(int p_capsule_index) const {
+	ERR_FAIL_INDEX_V_MSG(p_capsule_index, hand_capsules.size(), 0.0, vformat("Invalid capsule index %d", p_capsule_index));
+	return hand_capsules[p_capsule_index].height;
+}
+
+void XRHandTracker::set_hand_capsule_radius(int p_capsule_index, float p_radius) {
+	ERR_FAIL_INDEX_MSG(p_capsule_index, hand_capsules.size(), vformat("Invalid capsule index %d", p_capsule_index));
+	hand_capsules.write[p_capsule_index].radius = p_radius;
+}
+
+float XRHandTracker::get_hand_capsule_radius(int p_capsule_index) const {
+	ERR_FAIL_INDEX_V_MSG(p_capsule_index, hand_capsules.size(), 0.0, vformat("Invalid capsule index %d", p_capsule_index));
+	return hand_capsules[p_capsule_index].radius;
+}
+
+void XRHandTracker::set_hand_capsule_joint(int p_capsule_index, HandJoint p_joint) {
+	ERR_FAIL_INDEX_MSG(p_capsule_index, hand_capsules.size(), vformat("Invalid capsule index %d", p_capsule_index));
+	hand_capsules.write[p_capsule_index].joint = p_joint;
+}
+
+XRHandTracker::HandJoint XRHandTracker::get_hand_capsule_joint(int p_capsule_index) {
+	ERR_FAIL_INDEX_V_MSG(p_capsule_index, hand_capsules.size(), HandJoint(0), vformat("Invalid capsule index %d", p_capsule_index));
+	return hand_capsules[p_capsule_index].joint;
+}
+
+void XRHandTracker::set_hand_capsule_count(int p_capsule_count) {
+	hand_capsules.resize(p_capsule_count);
+}
+
+int XRHandTracker::get_hand_capsule_count() const {
+	return hand_capsules.size();
+}
+
+bool XRHandTracker::has_hand_capsule_data() const {
+	return hand_capsules.size() > 0;
 }

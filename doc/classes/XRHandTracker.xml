@@ -11,6 +11,40 @@
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_hand_capsule_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of capsules this hand tracker is storing.
+			</description>
+		</method>
+		<method name="get_hand_capsule_height" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="capsule_index" type="int" />
+			<description>
+				Returns the height of the capsule at the given index.
+			</description>
+		</method>
+		<method name="get_hand_capsule_joint">
+			<return type="int" enum="XRHandTracker.HandJoint" />
+			<param index="0" name="capsule_index" type="int" />
+			<description>
+				Returns the parent hand joint of the capsule at the given index.
+			</description>
+		</method>
+		<method name="get_hand_capsule_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="capsule_index" type="int" />
+			<description>
+				Returns the radius of the capsule at the given index.
+			</description>
+		</method>
+		<method name="get_hand_capsule_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="capsule_index" type="int" />
+			<description>
+				Returns the transform of the capsule at the given index.
+			</description>
+		</method>
 		<method name="get_hand_joint_angular_velocity" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
@@ -44,6 +78,51 @@
 			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
 			<description>
 				Returns the transform for the given hand joint.
+			</description>
+		</method>
+		<method name="has_hand_capsule_data" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if this hand tracker is storing any capsule data.
+			</description>
+		</method>
+		<method name="set_hand_capsule_count">
+			<return type="void" />
+			<param index="0" name="capsule_count" type="int" />
+			<description>
+				Sets the number of capsules this hand tracker is storing.
+			</description>
+		</method>
+		<method name="set_hand_capsule_height">
+			<return type="void" />
+			<param index="0" name="capsule_index" type="int" />
+			<param index="1" name="height" type="float" />
+			<description>
+				Sets the height of the capsule at the given index.
+			</description>
+		</method>
+		<method name="set_hand_capsule_joint">
+			<return type="void" />
+			<param index="0" name="capsule_index" type="int" />
+			<param index="1" name="joint" type="int" enum="XRHandTracker.HandJoint" />
+			<description>
+				Sets the parent hant joint of the capsule at the given index.
+			</description>
+		</method>
+		<method name="set_hand_capsule_radius">
+			<return type="void" />
+			<param index="0" name="capsule_index" type="int" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Sets the radius of the capsule at the given index.
+			</description>
+		</method>
+		<method name="set_hand_capsule_transform">
+			<return type="void" />
+			<param index="0" name="capsule_index" type="int" />
+			<param index="1" name="transform" type="Transform3D" />
+			<description>
+				Sets the transform of the capsule at the given index.
 			</description>
 		</method>
 		<method name="set_hand_joint_angular_velocity">
