@@ -56,7 +56,7 @@ class EditorDirDialog : public ConfirmationDialog {
 	void _update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path = String());
 
 	void _make_dir();
-	void _make_dir_confirm(const String &p_path);
+	void _make_dir_confirm(const String &p_path, const String &p_base_dir);
 
 	void _copy_pressed();
 	void ok_pressed() override;
