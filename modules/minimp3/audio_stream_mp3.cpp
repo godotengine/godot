@@ -62,7 +62,12 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 		if (samples_mixed) {
 			p_buffer[p_frames - todo] = AudioFrame(buf_frame[0], buf_frame[samples_mixed - 1]);
 			if (loop_fade_remaining < FADE_SIZE) {
-				p_buffer[p_frames - todo] += loop_fade[loop_fade_remaining] * (float(FADE_SIZE - loop_fade_remaining) / float(FADE_SIZE));
+				float c = (float(FADE_SIZE - loop_fade_remaining) / float(FADE_SIZE));
+				if (mp3_stream->loop_offset > 0) {
+					// Only fade-in if loop-offset > 0
+					p_buffer[p_frames - todo] *= 1.0 - c;
+				}
+				p_buffer[p_frames - todo] += loop_fade[loop_fade_remaining] * c;
 				loop_fade_remaining++;
 			}
 			--todo;
