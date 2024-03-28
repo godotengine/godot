@@ -87,13 +87,13 @@
 				Returns an array of dictionaries representing the current call stack. See also [method print_stack].
 				[codeblock]
 				func _ready():
-				    foo()
+					foo()
 
 				func foo():
-				    bar()
+					bar()
 
 				func bar():
-				    print(get_stack())
+					print(get_stack())
 				[/codeblock]
 				Starting from [code]_ready()[/code], [code]bar()[/code] would print:
 				[codeblock lang=text]
@@ -112,9 +112,9 @@
 				[codeblock]
 				var foo = "bar"
 				func _ready():
-				    var d = inst_to_dict(self)
-				    print(d.keys())
-				    print(d.values())
+					var d = inst_to_dict(self)
+					print(d.keys())
+					print(d.values())
 				[/codeblock]
 				Prints out:
 				[codeblock lang=text]
@@ -231,7 +231,7 @@
 				[codeblock]
 				var array = [3, 6, 9]
 				for i in range(array.size() - 1, -1, -1):
-				    print(array[i])
+					print(array[i])
 				[/codeblock]
 				Output:
 				[codeblock lang=text]
@@ -242,7 +242,7 @@
 				To iterate over [float], convert them in the loop.
 				[codeblock]
 				for i in range (3, 0, -1):
-				    print(i / 10.0)
+					print(i / 10.0)
 				[/codeblock]
 				Output:
 				[codeblock lang=text]
@@ -741,10 +741,10 @@
 				Mark the following statement to ignore the specified [param warning]. See [url=$DOCS_URL/tutorials/scripting/gdscript/warning_system.html]GDScript warning system[/url].
 				[codeblock]
 				func test():
-				    print("hello")
-				    return
-				    @warning_ignore("unreachable_code")
-				    print("unreachable")
+					print("hello")
+					return
+					@warning_ignore("unreachable_code")
+					print("unreachable")
 				[/codeblock]
 			</description>
 		</annotation>

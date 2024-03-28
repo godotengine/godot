@@ -45,10 +45,10 @@
 				settings.set("category/property_name", 0)
 
 				var property_info = {
-				    "name": "category/property_name",
-				    "type": TYPE_INT,
-				    "hint": PROPERTY_HINT_ENUM,
-				    "hint_string": "one,two,three"
+					"name": "category/property_name",
+					"type": TYPE_INT,
+					"hint": PROPERTY_HINT_ENUM,
+					"hint_string": "one,two,three"
 				}
 
 				settings.add_property_info(property_info)
@@ -59,10 +59,10 @@
 
 				var propertyInfo = new Godot.Collections.Dictionary
 				{
-				    {"name", "category/propertyName"},
-				    {"type", Variant.Type.Int},
-				    {"hint", PropertyHint.Enum},
-				    {"hint_string", "one,two,three"}
+					{"name", "category/propertyName"},
+					{"type", Variant.Type.Int},
+					{"hint", PropertyHint.Enum},
+					{"hint_string", "one,two,three"}
 				};
 
 				settings.AddPropertyInfo(propertyInfo);

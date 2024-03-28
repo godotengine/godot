@@ -187,29 +187,29 @@
 				[gdscript]
 				var arguments = {}
 				for argument in OS.get_cmdline_args():
-				    if argument.contains("="):
-				        var key_value = argument.split("=")
-				        arguments[key_value[0].lstrip("--")] = key_value[1]
-				    else:
-				        # Options without an argument will be present in the dictionary,
-				        # with the value set to an empty string.
-				        arguments[argument.lstrip("--")] = ""
+					if argument.contains("="):
+						var key_value = argument.split("=")
+						arguments[key_value[0].lstrip("--")] = key_value[1]
+					else:
+						# Options without an argument will be present in the dictionary,
+						# with the value set to an empty string.
+						arguments[argument.lstrip("--")] = ""
 				[/gdscript]
 				[csharp]
 				var arguments = new Godot.Collections.Dictionary();
 				foreach (var argument in OS.GetCmdlineArgs())
 				{
-				    if (argument.Contains('='))
-				    {
-				        string[] keyValue = argument.Split("=");
-				        arguments[keyValue[0].LStrip("--")] = keyValue[1];
-				    }
-				    else
-				    {
-				        // Options without an argument will be present in the dictionary,
-				        // with the value set to an empty string.
-				        arguments[keyValue[0].LStrip("--")] = "";
-				    }
+					if (argument.Contains('='))
+					{
+						string[] keyValue = argument.Split("=");
+						arguments[keyValue[0].LStrip("--")] = keyValue[1];
+					}
+					else
+					{
+						// Options without an argument will be present in the dictionary,
+						// with the value set to an empty string.
+						arguments[keyValue[0].LStrip("--")] = "";
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -364,44 +364,44 @@
 				[codeblocks]
 				[gdscript]
 				match OS.get_name():
-				    "Windows":
-				        print("Welcome to Windows!")
-				    "macOS":
-				        print("Welcome to macOS!")
-				    "Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD":
-				        print("Welcome to Linux/BSD!")
-				    "Android":
-				        print("Welcome to Android!")
-				    "iOS":
-				        print("Welcome to iOS!")
-				    "Web":
-				        print("Welcome to the Web!")
+					"Windows":
+						print("Welcome to Windows!")
+					"macOS":
+						print("Welcome to macOS!")
+					"Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD":
+						print("Welcome to Linux/BSD!")
+					"Android":
+						print("Welcome to Android!")
+					"iOS":
+						print("Welcome to iOS!")
+					"Web":
+						print("Welcome to the Web!")
 				[/gdscript]
 				[csharp]
 				switch (OS.GetName())
 				{
-				    case "Windows":
-				        GD.Print("Welcome to Windows");
-				        break;
-				    case "macOS":
-				        GD.Print("Welcome to macOS!");
-				        break;
-				    case "Linux":
-				    case "FreeBSD":
-				    case "NetBSD":
-				    case "OpenBSD":
-				    case "BSD":
-				        GD.Print("Welcome to Linux/BSD!");
-				        break;
-				    case "Android":
-				        GD.Print("Welcome to Android!");
-				        break;
-				    case "iOS":
-				        GD.Print("Welcome to iOS!");
-				        break;
-				    case "Web":
-				        GD.Print("Welcome to the Web!");
-				        break;
+					case "Windows":
+						GD.Print("Welcome to Windows");
+						break;
+					case "macOS":
+						GD.Print("Welcome to macOS!");
+						break;
+					case "Linux":
+					case "FreeBSD":
+					case "NetBSD":
+					case "OpenBSD":
+					case "BSD":
+						GD.Print("Welcome to Linux/BSD!");
+						break;
+					case "Android":
+						GD.Print("Welcome to Android!");
+						break;
+					case "iOS":
+						GD.Print("Welcome to iOS!");
+						break;
+					case "Web":
+						GD.Print("Welcome to the Web!");
+						break;
 				}
 				[/csharp]
 				[/codeblocks]
