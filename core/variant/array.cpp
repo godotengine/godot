@@ -32,13 +32,11 @@
 
 #include "container_type_validate.h"
 #include "core/math/math_funcs.h"
-#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/search_array.h"
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
-#include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
 
 class ArrayPrivate {

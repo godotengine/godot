@@ -31,7 +31,6 @@
 #ifndef VARIANT_H
 #define VARIANT_H
 
-#include "core/input/input_enums.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -51,7 +50,6 @@
 #include "core/math/vector4.h"
 #include "core/math/vector4i.h"
 #include "core/object/object_id.h"
-#include "core/os/keyboard.h"
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
 #include "core/templates/paged_allocator.h"
@@ -59,6 +57,13 @@
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+
+enum class JoyAxis;
+enum class JoyButton;
+enum class Key;
+enum class KeyLocation;
+enum class MIDIMessage;
+enum class MouseButton;
 
 class Object;
 
