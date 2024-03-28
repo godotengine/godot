@@ -441,7 +441,7 @@ Color CodeHighlighter::get_keyword_color(const String &p_keyword) const {
 	return keywords[p_keyword];
 }
 
-void CodeHighlighter::set_keyword_colors(const Dictionary p_keywords) {
+void CodeHighlighter::set_keyword_colors(const Dictionary &p_keywords) {
 	keywords.clear();
 	keywords = p_keywords;
 	clear_highlighting_cache();

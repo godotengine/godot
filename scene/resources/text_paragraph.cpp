@@ -430,7 +430,7 @@ void TextParagraph::set_bidi_override(const Array &p_override) {
 	lines_dirty = true;
 }
 
-bool TextParagraph::add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length, float p_baseline) {
+bool TextParagraph::add_object(const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length, float p_baseline) {
 	_THREAD_SAFE_METHOD_
 
 	bool res = TS->shaped_text_add_object(rid, p_key, p_size, p_inline_align, p_length, p_baseline);
@@ -438,7 +438,7 @@ bool TextParagraph::add_object(Variant p_key, const Size2 &p_size, InlineAlignme
 	return res;
 }
 
-bool TextParagraph::resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, float p_baseline) {
+bool TextParagraph::resize_object(const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, float p_baseline) {
 	_THREAD_SAFE_METHOD_
 
 	bool res = TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align, p_baseline);
@@ -593,7 +593,7 @@ Array TextParagraph::get_line_objects(int p_line) const {
 	return TS->shaped_text_get_objects(lines_rid[p_line]);
 }
 
-Rect2 TextParagraph::get_line_object_rect(int p_line, Variant p_key) const {
+Rect2 TextParagraph::get_line_object_rect(int p_line, const Variant &p_key) const {
 	_THREAD_SAFE_METHOD_
 
 	const_cast<TextParagraph *>(this)->_shape_lines();

@@ -576,7 +576,7 @@ Error SceneMultiplayer::rpcp(Object *p_obj, int p_peer_id, const StringName &p_m
 	return rpc->rpcp(p_obj, p_peer_id, p_method, p_arg, p_argcount);
 }
 
-Error SceneMultiplayer::object_configuration_add(Object *p_obj, Variant p_config) {
+Error SceneMultiplayer::object_configuration_add(Object *p_obj, const Variant &p_config) {
 	if (p_obj == nullptr && p_config.get_type() == Variant::NODE_PATH) {
 		set_root_path(p_config);
 		return OK;
@@ -591,7 +591,7 @@ Error SceneMultiplayer::object_configuration_add(Object *p_obj, Variant p_config
 	return ERR_INVALID_PARAMETER;
 }
 
-Error SceneMultiplayer::object_configuration_remove(Object *p_obj, Variant p_config) {
+Error SceneMultiplayer::object_configuration_remove(Object *p_obj, const Variant &p_config) {
 	if (p_obj == nullptr && p_config.get_type() == Variant::NODE_PATH) {
 		ERR_FAIL_COND_V(root_path != p_config.operator NodePath(), ERR_INVALID_PARAMETER);
 		set_root_path(NodePath());

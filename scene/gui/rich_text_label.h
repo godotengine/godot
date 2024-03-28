@@ -591,8 +591,8 @@ private:
 	Item *_get_prev_item(Item *p_item, bool p_free = false) const;
 
 	Rect2 _get_text_rect();
-	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
-	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
+	Ref<RichTextEffect> _get_custom_effect_by_code(const String &p_bbcode_identifier);
+	virtual Dictionary parse_expressions_for_values(const Vector<String> &p_expressions);
 
 	Size2 _get_image_size(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Rect2 &p_region = Rect2());
 
@@ -687,7 +687,7 @@ public:
 	void push_pulse(const Color &p_color, float p_frequency, float p_ease);
 	void push_bgcolor(const Color &p_color);
 	void push_fgcolor(const Color &p_color);
-	void push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment);
+	void push_customfx(Ref<RichTextEffect> p_custom_effect, const Dictionary &p_environment);
 	void push_context();
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
 	void set_cell_row_background_color(const Color &p_odd_row_bg, const Color &p_even_row_bg);
@@ -803,7 +803,7 @@ public:
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_visible_characters(int p_visible);
@@ -819,10 +819,10 @@ public:
 	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
 	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
 
-	void set_effects(Array p_effects);
+	void set_effects(const Array &p_effects);
 	Array get_effects();
 
-	void install_effect(const Variant effect);
+	void install_effect(const Variant &effect);
 
 	virtual Size2 get_minimum_size() const override;
 

@@ -333,7 +333,7 @@ void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
 	}
 }
 #ifdef TOOLS_ENABLED
-void BoneAttachment3D::notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Dictionary p_rename_map) {
+void BoneAttachment3D::notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, const Dictionary &p_rename_map) {
 	const Skeleton3D *parent = nullptr;
 	if (use_external_skeleton) {
 		if (external_skeleton_node_cache.is_valid()) {

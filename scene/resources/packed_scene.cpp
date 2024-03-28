@@ -1251,7 +1251,7 @@ Ref<SceneState> SceneState::get_base_scene_state() const {
 	return Ref<SceneState>();
 }
 
-void SceneState::update_instance_resource(String p_path, Ref<PackedScene> p_packed_scene) {
+void SceneState::update_instance_resource(const String &p_path, Ref<PackedScene> p_packed_scene) {
 	ERR_FAIL_COND(p_packed_scene.is_null());
 
 	for (const NodeData &nd : nodes) {

@@ -290,7 +290,7 @@ void ImageTextureLayered::_set_images(const TypedArray<Image> &p_images) {
 	ERR_FAIL_COND(_create_from_images(p_images) != OK);
 }
 
-Error ImageTextureLayered::create_from_images(Vector<Ref<Image>> p_images) {
+Error ImageTextureLayered::create_from_images(const Vector<Ref<Image>> &p_images) {
 	int new_layers = p_images.size();
 	ERR_FAIL_COND_V(new_layers == 0, ERR_INVALID_PARAMETER);
 	if (layered_type == LAYERED_TYPE_CUBEMAP) {

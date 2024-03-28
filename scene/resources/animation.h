@@ -505,13 +505,13 @@ public:
 	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests.
 
 	// Helper functions for Variant.
-	static bool is_variant_interpolatable(const Variant p_value);
+	static bool is_variant_interpolatable(const Variant &p_value);
 
-	static Variant cast_to_blendwise(const Variant p_value);
-	static Variant cast_from_blendwise(const Variant p_value, const Variant::Type p_type);
+	static Variant cast_to_blendwise(const Variant &p_value);
+	static Variant cast_from_blendwise(const Variant &p_value, const Variant::Type p_type);
 
-	static Variant string_to_array(const Variant p_value);
-	static Variant array_to_string(const Variant p_value);
+	static Variant string_to_array(const Variant &p_value);
+	static Variant array_to_string(const Variant &p_value);
 
 	static Variant add_variant(const Variant &a, const Variant &b);
 	static Variant subtract_variant(const Variant &a, const Variant &b);

@@ -1535,7 +1535,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	}
 }
 
-void LineEdit::set_text(String p_text) {
+void LineEdit::set_text(const String &p_text) {
 	clear_internal();
 	insert_text_at_caret(p_text);
 	_create_undo_state();
@@ -1623,7 +1623,7 @@ TextServer::StructuredTextParser LineEdit::get_structured_text_bidi_override() c
 	return st_parser;
 }
 
-void LineEdit::set_structured_text_bidi_override_options(Array p_args) {
+void LineEdit::set_structured_text_bidi_override_options(const Array &p_args) {
 	st_args = p_args;
 	_shape();
 	queue_redraw();
@@ -1657,7 +1657,7 @@ String LineEdit::get_text() const {
 	return text;
 }
 
-void LineEdit::set_placeholder(String p_text) {
+void LineEdit::set_placeholder(const String &p_text) {
 	if (placeholder == p_text) {
 		return;
 	}

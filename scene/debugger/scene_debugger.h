@@ -101,7 +101,7 @@ public:
 			VIEW_VISIBLE_IN_TREE = 1 << 3,
 		};
 
-		RemoteNode(int p_child, const String &p_name, const String &p_type, ObjectID p_id, const String p_scene_file_path, int p_view_flags) {
+		RemoteNode(int p_child, const String &p_name, const String &p_type, ObjectID p_id, const String &p_scene_file_path, int p_view_flags) {
 			child_count = p_child;
 			name = p_name;
 			type_name = p_type;

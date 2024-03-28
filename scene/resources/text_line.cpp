@@ -210,13 +210,13 @@ bool TextLine::add_string(const String &p_text, const Ref<Font> &p_font, int p_f
 	return res;
 }
 
-bool TextLine::add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length, float p_baseline) {
+bool TextLine::add_object(const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, int p_length, float p_baseline) {
 	bool res = TS->shaped_text_add_object(rid, p_key, p_size, p_inline_align, p_length, p_baseline);
 	dirty = true;
 	return res;
 }
 
-bool TextLine::resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align, float p_baseline) {
+bool TextLine::resize_object(const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, float p_baseline) {
 	const_cast<TextLine *>(this)->_shape();
 	return TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align, p_baseline);
 }
@@ -225,7 +225,7 @@ Array TextLine::get_objects() const {
 	return TS->shaped_text_get_objects(rid);
 }
 
-Rect2 TextLine::get_object_rect(Variant p_key) const {
+Rect2 TextLine::get_object_rect(const Variant &p_key) const {
 	Vector2 ofs;
 
 	float length = TS->shaped_text_get_width(rid);

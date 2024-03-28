@@ -568,7 +568,7 @@ const NodePath &SoftBody3D::get_parent_collision_ignore() const {
 	return parent_collision_ignore;
 }
 
-void SoftBody3D::set_pinned_points_indices(Vector<SoftBody3D::PinnedPoint> p_pinned_points_indices) {
+void SoftBody3D::set_pinned_points_indices(const Vector<SoftBody3D::PinnedPoint> &p_pinned_points_indices) {
 	pinned_points = p_pinned_points_indices;
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
 		pin_point(p_pinned_points_indices[i].point_index, true);

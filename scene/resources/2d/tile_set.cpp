@@ -292,7 +292,7 @@ int TileSet::TerrainsPattern::get_terrain_peering_bit(TileSet::CellNeighbor p_pe
 	return bits[p_peering_bit];
 }
 
-void TileSet::TerrainsPattern::from_array(Array p_terrains) {
+void TileSet::TerrainsPattern::from_array(const Array &p_terrains) {
 	set_terrain(p_terrains[0]);
 	int in_array_index = 1;
 	for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
@@ -831,7 +831,7 @@ void TileSet::remove_terrain(int p_terrain_set, int p_index) {
 	emit_changed();
 }
 
-void TileSet::set_terrain_name(int p_terrain_set, int p_terrain_index, String p_name) {
+void TileSet::set_terrain_name(int p_terrain_set, int p_terrain_index, const String &p_name) {
 	ERR_FAIL_INDEX(p_terrain_set, terrain_sets.size());
 	ERR_FAIL_INDEX(p_terrain_index, terrain_sets[p_terrain_set].terrains.size());
 	terrain_sets.write[p_terrain_set].terrains.write[p_terrain_index].name = p_name;
@@ -1081,7 +1081,7 @@ void TileSet::remove_custom_data_layer(int p_index) {
 	emit_changed();
 }
 
-int TileSet::get_custom_data_layer_by_name(String p_value) const {
+int TileSet::get_custom_data_layer_by_name(const String &p_value) const {
 	if (custom_data_layers_by_name.has(p_value)) {
 		return custom_data_layers_by_name[p_value];
 	} else {
@@ -1089,7 +1089,7 @@ int TileSet::get_custom_data_layer_by_name(String p_value) const {
 	}
 }
 
-void TileSet::set_custom_data_layer_name(int p_layer_id, String p_value) {
+void TileSet::set_custom_data_layer_name(int p_layer_id, const String &p_value) {
 	ERR_FAIL_INDEX(p_layer_id, custom_data_layers.size());
 
 	// Exit if another property has the same name.
@@ -6285,7 +6285,7 @@ void TileData::remove_collision_polygon(int p_layer_id, int p_polygon_index) {
 	emit_signal(SNAME("changed"));
 }
 
-void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon) {
+void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index, const Vector<Vector2> &p_polygon) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
 	ERR_FAIL_COND_MSG(p_polygon.size() != 0 && p_polygon.size() < 3, "Invalid polygon. Needs either 0 or more than 3 points.");
@@ -6514,21 +6514,21 @@ float TileData::get_probability() const {
 }
 
 // Custom data
-void TileData::set_custom_data(String p_layer_name, Variant p_value) {
+void TileData::set_custom_data(const String &p_layer_name, const Variant &p_value) {
 	ERR_FAIL_NULL(tile_set);
 	int p_layer_id = tile_set->get_custom_data_layer_by_name(p_layer_name);
 	ERR_FAIL_COND_MSG(p_layer_id < 0, vformat("TileSet has no layer with name: %s", p_layer_name));
 	set_custom_data_by_layer_id(p_layer_id, p_value);
 }
 
-Variant TileData::get_custom_data(String p_layer_name) const {
+Variant TileData::get_custom_data(const String &p_layer_name) const {
 	ERR_FAIL_NULL_V(tile_set, Variant());
 	int p_layer_id = tile_set->get_custom_data_layer_by_name(p_layer_name);
 	ERR_FAIL_COND_V_MSG(p_layer_id < 0, Variant(), vformat("TileSet has no layer with name: %s", p_layer_name));
 	return get_custom_data_by_layer_id(p_layer_id);
 }
 
-void TileData::set_custom_data_by_layer_id(int p_layer_id, Variant p_value) {
+void TileData::set_custom_data_by_layer_id(int p_layer_id, const Variant &p_value) {
 	ERR_FAIL_INDEX(p_layer_id, custom_data.size());
 	custom_data.write[p_layer_id] = p_value;
 	emit_signal(SNAME("changed"));

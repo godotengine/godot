@@ -710,7 +710,7 @@ TextServer::StructuredTextParser Label3D::get_structured_text_bidi_override() co
 	return st_parser;
 }
 
-void Label3D::set_structured_text_bidi_override_options(Array p_args) {
+void Label3D::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args != p_args) {
 		st_args = p_args;
 		dirty_text = true;

@@ -76,9 +76,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_arrays(PackedVector3Array p_vertices, PackedInt32Array p_indices);
-	void set_vertices(PackedVector3Array p_vertices);
-	void set_indices(PackedInt32Array p_indices);
+	void set_arrays(const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices);
+	void set_vertices(const PackedVector3Array &p_vertices);
+	void set_indices(const PackedInt32Array &p_indices);
 
 	ArrayOccluder3D();
 	~ArrayOccluder3D();
@@ -171,7 +171,7 @@ private:
 	void _occluder_changed();
 
 	static bool _bake_material_check(Ref<Material> p_material);
-	static void _bake_surface(const Transform3D &p_transform, Array p_surface_arrays, Ref<Material> p_material, float p_simplification_dist, PackedVector3Array &r_vertices, PackedInt32Array &r_indices);
+	static void _bake_surface(const Transform3D &p_transform, const Array &p_surface_arrays, Ref<Material> p_material, float p_simplification_dist, PackedVector3Array &r_vertices, PackedInt32Array &r_indices);
 	void _bake_node(Node *p_node, PackedVector3Array &r_vertices, PackedInt32Array &r_indices);
 
 	bool _is_editable_3d_polygon() const;
