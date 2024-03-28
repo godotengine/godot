@@ -2078,6 +2078,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Signal, disconnect, sarray("callable"), varray());
 	bind_method(Signal, is_connected, sarray("callable"), varray());
 	bind_method(Signal, get_connections, sarray(), varray());
+	bind_method(Signal, has_connections, sarray(), varray());
 
 	bind_custom(Signal, emit, _VariantCall::func_Signal_emit, false, Variant);
 

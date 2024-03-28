@@ -192,6 +192,7 @@ public:
 	Error connect(const Callable &p_callable, uint32_t p_flags = 0);
 	void disconnect(const Callable &p_callable);
 	bool is_connected(const Callable &p_callable) const;
+	bool has_connections() const;
 
 	Array get_connections() const;
 	Signal(const Object *p_object, const StringName &p_name);
