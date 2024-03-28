@@ -57,7 +57,7 @@ TEST_CASE("[Rect2] Constructor methods") {
 TEST_CASE("[Rect2] String conversion") {
 	// Note: This also depends on the Vector2 string representation.
 	CHECK_MESSAGE(
-			String(Rect2(0, 100, 1280, 720)) == "[P: (0, 100), S: (1280, 720)]",
+			String(Rect2(0, 100, 1280, 720)) == "[P: (0.0, 100.0), S: (1280.0, 720.0)]",
 			"The string representation should match the expected value.");
 }
 
