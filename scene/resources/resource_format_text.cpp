@@ -39,7 +39,8 @@
 
 // Version 2: changed names for Basis, AABB, Vectors, etc.
 // Version 3: new string ID for ext/subresources, breaks forward compat.
-#define FORMAT_VERSION 3
+// Version 4: PackedByteArray is now stored as base64 encoded.
+#define FORMAT_VERSION 4
 
 #define BINARY_FORMAT_VERSION 4
 
