@@ -31,7 +31,6 @@
 #include "group_settings_editor.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
@@ -521,6 +520,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	hbc->add_child(add_button);
 
 	tree = memnew(Tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_SINGLE);
 	tree->set_allow_reselect(true);

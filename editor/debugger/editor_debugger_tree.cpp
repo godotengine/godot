@@ -41,6 +41,7 @@
 EditorDebuggerTree::EditorDebuggerTree() {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 	set_allow_rmb_select(true);
+	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	// Popup
 	item_menu = memnew(PopupMenu);
