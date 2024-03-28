@@ -568,6 +568,21 @@ bool OpenXRAPI::load_supported_view_configuration_views(XrViewConfigurationType 
 		print_verbose(String(" - recommended render sample count: ") + itos(view_configuration_views[i].recommendedSwapchainSampleCount));
 	}
 
+	// Allocate buffers we'll be populating with view information.
+	views = (XrView *)memalloc(sizeof(XrView) * view_count);
+	ERR_FAIL_NULL_V_MSG(views, false, "OpenXR Couldn't allocate memory for views");
+	memset(views, 0, sizeof(XrView) * view_count);
+
+	projection_views = (XrCompositionLayerProjectionView *)memalloc(sizeof(XrCompositionLayerProjectionView) * view_count);
+	ERR_FAIL_NULL_V_MSG(projection_views, false, "OpenXR Couldn't allocate memory for projection views");
+	memset(projection_views, 0, sizeof(XrCompositionLayerProjectionView) * view_count);
+
+	if (submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
+		depth_views = (XrCompositionLayerDepthInfoKHR *)memalloc(sizeof(XrCompositionLayerDepthInfoKHR) * view_count);
+		ERR_FAIL_NULL_V_MSG(depth_views, false, "OpenXR Couldn't allocate memory for depth views");
+		memset(depth_views, 0, sizeof(XrCompositionLayerDepthInfoKHR) * view_count);
+	}
+
 	return true;
 }
 
@@ -899,6 +914,8 @@ bool OpenXRAPI::create_swapchains() {
 		as we render 3D content into internal buffers that are copied into the swapchain, we do now have (basic) VRS support
 	*/
 
+	new_swapchains_required = false; // We're (re)creating them now, if we fail we don't want to keep trying.
+
 	Size2 recommended_size = get_recommended_target_size();
 	uint32_t sample_count = 1;
 
@@ -929,12 +946,6 @@ bool OpenXRAPI::create_swapchains() {
 		}
 	}
 
-	views = (XrView *)memalloc(sizeof(XrView) * view_count);
-	ERR_FAIL_NULL_V_MSG(views, false, "OpenXR Couldn't allocate memory for views");
-
-	projection_views = (XrCompositionLayerProjectionView *)memalloc(sizeof(XrCompositionLayerProjectionView) * view_count);
-	ERR_FAIL_NULL_V_MSG(projection_views, false, "OpenXR Couldn't allocate memory for projection views");
-
 	// We create our depth swapchain if:
 	// - we've enabled submitting depth buffer
 	// - we support our depth layer extension
@@ -963,9 +974,6 @@ bool OpenXRAPI::create_swapchains() {
 			if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, sample_count, view_count, swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain, &swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data)) {
 				return false;
 			}
-
-			depth_views = (XrCompositionLayerDepthInfoKHR *)memalloc(sizeof(XrCompositionLayerDepthInfoKHR) * view_count);
-			ERR_FAIL_NULL_V_MSG(depth_views, false, "OpenXR Couldn't allocate memory for depth views");
 		}
 	}
 
@@ -1009,6 +1017,15 @@ bool OpenXRAPI::create_swapchains() {
 	return true;
 };
 
+void OpenXRAPI::free_swapchains() {
+	for (int i = 0; i < OPENXR_SWAPCHAIN_MAX; i++) {
+		if (swapchains[i].swapchain != XR_NULL_HANDLE) {
+			xrDestroySwapchain(swapchains[i].swapchain);
+			swapchains[i].swapchain = XR_NULL_HANDLE;
+		}
+	}
+}
+
 void OpenXRAPI::destroy_session() {
 	if (running && session != XR_NULL_HANDLE) {
 		xrEndSession(session);
@@ -1033,12 +1050,7 @@ void OpenXRAPI::destroy_session() {
 		depth_views = nullptr;
 	}
 
-	for (int i = 0; i < OPENXR_SWAPCHAIN_MAX; i++) {
-		if (swapchains[i].swapchain != XR_NULL_HANDLE) {
-			xrDestroySwapchain(swapchains[i].swapchain);
-			swapchains[i].swapchain = XR_NULL_HANDLE;
-		}
-	}
+	free_swapchains();
 
 	if (supported_swapchain_formats != nullptr) {
 		memfree(supported_swapchain_formats);
@@ -1880,6 +1892,14 @@ void OpenXRAPI::pre_render() {
 		return;
 	}
 
+	if (new_swapchains_required) {
+		// Out with the old.
+		free_swapchains();
+
+		// In with the new.
+		create_swapchains();
+	}
+
 	// Waitframe does 2 important things in our process:
 	// 1) It provides us with predictive timing, telling us when OpenXR expects to display the frame we're about to commit
 	// 2) It will use the previous timing to pause our thread so that rendering starts as close to displaying as possible
@@ -2170,7 +2190,10 @@ double OpenXRAPI::get_render_target_size_multiplier() const {
 }
 
 void OpenXRAPI::set_render_target_size_multiplier(double multiplier) {
-	render_target_size_multiplier = multiplier;
+	if (render_target_size_multiplier != multiplier) {
+		render_target_size_multiplier = multiplier;
+		new_swapchains_required = true;
+	}
 }
 
 bool OpenXRAPI::is_foveation_supported() const {
