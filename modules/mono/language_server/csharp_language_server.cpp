@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  csharp_language_server.cpp                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,75 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#include "csharp_language_server.h"
 
-#include "csharp_script.h"
-
-#include "core/config/engine.h"
-
-#ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "language_server/csharp_language_server.h"
-#endif
+#include "editor/editor_settings.h"
 
-CSharpLanguage *script_language_cs = nullptr;
-Ref<ResourceFormatLoaderCSharpScript> resource_loader_cs;
-Ref<ResourceFormatSaverCSharpScript> resource_saver_cs;
-
-mono_bind::GodotSharp *_godotsharp = nullptr;
-
-#ifdef TOOLS_ENABLED
-static void _editor_init() {
-	CSharpLanguageServer *csharp_plugin = memnew(CSharpLanguageServer);
-	EditorNode::get_singleton()->add_editor_plugin(csharp_plugin);
-}
-#endif
-
-void initialize_mono_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
+void CSharpLanguageServer::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			EditorNode *editor_node = EditorNode::get_singleton();
+			editor_node->connect("script_add_function_request", callable_mp(this, &CSharpLanguageServer::add_method_in_external_editor));
+		} break;
 	}
-
-	GDREGISTER_CLASS(CSharpScript);
-
-	_godotsharp = memnew(mono_bind::GodotSharp);
-
-	GDREGISTER_CLASS(mono_bind::GodotSharp);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSharp", mono_bind::GodotSharp::get_singleton()));
-
-	script_language_cs = memnew(CSharpLanguage);
-	script_language_cs->set_language_index(ScriptServer::get_language_count());
-	ScriptServer::register_language(script_language_cs);
-
-	resource_loader_cs.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_cs);
-
-	resource_saver_cs.instantiate();
-	ResourceSaver::add_resource_format_saver(resource_saver_cs);
-
-#ifdef TOOLS_ENABLED
-	EditorNode::add_init_callback(_editor_init);
-#endif
 }
 
-void uninitialize_mono_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+void CSharpLanguageServer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_method_in_external_editor", "obj", "method", "args"), &CSharpLanguageServer::add_method_in_external_editor);
+}
 
-	ScriptServer::unregister_language(script_language_cs);
-
-	if (script_language_cs) {
-		memdelete(script_language_cs);
-	}
-
-	ResourceLoader::remove_resource_format_loader(resource_loader_cs);
-	resource_loader_cs.unref();
-
-	ResourceSaver::remove_resource_format_saver(resource_saver_cs);
-	resource_saver_cs.unref();
-
-	if (_godotsharp) {
-		memdelete(_godotsharp);
+void CSharpLanguageServer::add_method_in_external_editor(Object *p_obj, const String &p_method, const PackedStringArray &p_args) {
+	Ref<Script> scr = p_obj->get_script();
+	bool use_external_editor =
+			EDITOR_GET("text_editor/external/use_external_editor") ||
+			(scr.is_valid() && scr->get_language()->overrides_external_editor());
+	if (use_external_editor && scr->get_language()->get_name() == "C#") {
+		CSharpLanguage::get_singleton()->get_godotsharp_editor()->call("AddMethodInExternalEditor", scr, p_method, p_args);
 	}
 }

@@ -21,3 +21,5 @@ env_mono.add_source_files(env.modules_sources, "utils/*.cpp")
 if env.editor_build:
     env_mono.add_source_files(env.modules_sources, "editor/*.cpp")
     SConscript("editor/script_templates/SCsub")
+
+    env_mono.add_source_files(env.modules_sources, "language_server/*.cpp")
