@@ -894,7 +894,7 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	}
 	action_state.exact = true;
 	action_state.api_pressed = true;
-	action_state.api_strength = p_strength;
+	action_state.api_strength = CLAMP(p_strength, 0.0f, 1.0f);
 	_update_action_cache(p_action, action_state);
 }
 
