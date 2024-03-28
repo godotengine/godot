@@ -71,7 +71,8 @@ enum Metadata {
 	METADATA_INT_IS_UINT32,
 	METADATA_INT_IS_UINT64,
 	METADATA_REAL_IS_FLOAT,
-	METADATA_REAL_IS_DOUBLE
+	METADATA_REAL_IS_DOUBLE,
+	METADATA_OBJECT_IS_REQUIRED,
 };
 }
 
@@ -235,6 +236,27 @@ template <typename T>
 struct GetTypeInfo<const T *, typename EnableIf<TypeInherits<Object, T>::value>::type> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(StringName(T::get_class_static()));
+	}
+};
+
+template <class T>
+class RequiredPtr;
+
+template <typename T>
+struct GetTypeInfo<RequiredPtr<T>, typename EnableIf<TypeInherits<Object, T>::value>::type> {
+	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_OBJECT_IS_REQUIRED;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(StringName(T::get_class_static()));
+	}
+};
+
+template <typename T>
+struct GetTypeInfo<const RequiredPtr<T> &, typename EnableIf<TypeInherits<Object, T>::value>::type> {
+	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_OBJECT_IS_REQUIRED;
 	static inline PropertyInfo get_class_info() {
 		return PropertyInfo(StringName(T::get_class_static()));
 	}
