@@ -1395,14 +1395,13 @@ Error ImporterMesh::generate_tangents() {
 			ERR_PRINT("Surface does not have ARRAY_FORMAT_INDEX flag set.");
 			return ERR_INVALID_DATA;
 		}
-		bool is_8_weights = surfaces[surface_i].flags & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
 		SMikkTSpaceInterface space_interface;
-		space_interface.m_getNormal = mikktGetNormal;
-		space_interface.m_getNumFaces = mikktGetNumFaces;
-		space_interface.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
-		space_interface.m_getPosition = mikktGetPosition;
-		space_interface.m_getTexCoord = mikktGetTexCoord;
-		space_interface.m_setTSpace = mikktSetTSpaceDefault;
+		space_interface.m_getNormal = ImporterMeshTangentGenerationContextUserData::mikktGetNormal;
+		space_interface.m_getNumFaces = ImporterMeshTangentGenerationContextUserData::mikktGetNumFaces;
+		space_interface.m_getNumVerticesOfFace = ImporterMeshTangentGenerationContextUserData::mikktGetNumVerticesOfFace;
+		space_interface.m_getPosition = ImporterMeshTangentGenerationContextUserData::mikktGetPosition;
+		space_interface.m_getTexCoord = ImporterMeshTangentGenerationContextUserData::mikktGetTexCoord;
+		space_interface.m_setTSpace = ImporterMeshTangentGenerationContextUserData::mikktSetTSpaceDefault;
 		space_interface.m_setTSpaceBasic = nullptr;
 
 		SMikkTSpaceContext space_context;
@@ -1417,7 +1416,6 @@ Error ImporterMesh::generate_tangents() {
 		for (int32_t index : index_array) {
 			local_index_array[index] = index_array[index];
 		}
-		Vector<Color> color_array = surface_arrays[Mesh::ARRAY_COLOR];
 		Vector<Vector3> normal_array = surface_arrays[Mesh::ARRAY_NORMAL];
 		Vector<Vector2> uv_array = surface_arrays[Mesh::ARRAY_TEX_UV];
 		Vector<Vector2> uv2_array = surface_arrays[Mesh::ARRAY_TEX_UV2];
@@ -1429,21 +1427,16 @@ Error ImporterMesh::generate_tangents() {
 		LocalVector<ImporterMeshTangentGenerationContextUserData::Vertex> importer_mesh_vertex_array;
 		for (int vertex_i = 0; vertex_i < vertex_array.size(); ++vertex_i) {
 			ImporterMeshTangentGenerationContextUserData::Vertex &vertex = importer_mesh_vertex_array[vertex_i];
-			vertex.vertex = vertex_array[vertex_i];
-			vertex.color = color_array[vertex_i];
-			vertex.normal = normal_array[vertex_i];
-			vertex.uv = uv_array[vertex_i];
-			vertex.uv2 = uv2_array[vertex_i];
-			const int32_t weight_count = is_8_weights ? 8 : 4;
-			for (int bone_i = 0; bone_i < weight_count; bone_i++) {
-				int index = vertex_i * weight_count + bone_i;
-				vertex.bones.push_back(bones_array[index]);
-				vertex.weights.push_back(weights_array[index]);
+			// Check if arrays exist before accessing them.
+			if (!vertex_array.is_empty()) {
+				vertex.vertex = vertex_array[vertex_i];
 			}
-			for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; ++i) {
-				vertex.custom[i] = Color();
+			if (!normal_array.is_empty()) {
+				vertex.normal = normal_array[vertex_i];
 			}
-			vertex.smooth_group = 0;
+			if (!uv_array.is_empty()) {
+				vertex.uv = uv_array[vertex_i];
+			}
 		}
 
 		triangle_data.vertices = &importer_mesh_vertex_array;
@@ -1455,82 +1448,4 @@ Error ImporterMesh::generate_tangents() {
 		surfaces.write[surface_i].flags |= Mesh::ARRAY_FORMAT_TANGENT;
 	}
 	return OK;
-}
-
-void ImporterMesh::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
-		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
-	ImporterMeshTangentGenerationContextUserData &triangle_data = *reinterpret_cast<ImporterMeshTangentGenerationContextUserData *>(pContext->m_pUserData);
-	ImporterMeshTangentGenerationContextUserData::Vertex *vtx = nullptr;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			vtx = &triangle_data.vertices->operator[](index);
-		}
-	} else {
-		vtx = &triangle_data.vertices->operator[](iFace * 3 + iVert);
-	}
-
-	if (vtx != nullptr) {
-		vtx->tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
-		vtx->binormal = Vector3(-fvBiTangent[0], -fvBiTangent[1], -fvBiTangent[2]); // for some reason these are reversed, something with the coordinate system in Godot
-	}
-}
-void ImporterMesh::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
-	ImporterMeshTangentGenerationContextUserData &triangle_data = *reinterpret_cast<ImporterMeshTangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vector2 v;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			v = triangle_data.vertices->operator[](index).uv;
-		}
-	} else {
-		v = triangle_data.vertices->operator[](iFace * 3 + iVert).uv;
-	}
-
-	fvTexcOut[0] = v.x;
-	fvTexcOut[1] = v.y;
-}
-void ImporterMesh::mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
-	ImporterMeshTangentGenerationContextUserData &triangle_data = *reinterpret_cast<ImporterMeshTangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vector3 v;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			v = triangle_data.vertices->operator[](index).normal;
-		}
-	} else {
-		v = triangle_data.vertices->operator[](iFace * 3 + iVert).normal;
-	}
-
-	fvNormOut[0] = v.x;
-	fvNormOut[1] = v.y;
-	fvNormOut[2] = v.z;
-}
-void ImporterMesh::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
-	ImporterMeshTangentGenerationContextUserData &triangle_data = *reinterpret_cast<ImporterMeshTangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vector3 v;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			v = triangle_data.vertices->operator[](index).vertex;
-		}
-	} else {
-		v = triangle_data.vertices->operator[](iFace * 3 + iVert).vertex;
-	}
-
-	fvPosOut[0] = v.x;
-	fvPosOut[1] = v.y;
-	fvPosOut[2] = v.z;
-}
-int ImporterMesh::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
-	return 3; //always 3
-}
-int ImporterMesh::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
-	ImporterMeshTangentGenerationContextUserData &triangle_data = *reinterpret_cast<ImporterMeshTangentGenerationContextUserData *>(pContext->m_pUserData);
-
-	if (triangle_data.indices->size() > 0) {
-		return triangle_data.indices->size() / 3;
-	} else {
-		return triangle_data.vertices->size() / 3;
-	}
 }
