@@ -244,6 +244,16 @@ void ResourceUID::clear() {
 	unique_ids.clear();
 	changed = false;
 }
+
+uint32_t ResourceUID::generate_random_u32() const {
+	uint32_t num;
+	Error err = ((CryptoCore::RandomGenerator *)crypto)->get_random_bytes((uint8_t *)&num, sizeof(uint32_t));
+	if (err != OK) {
+		num = 0;
+	}
+	return num;
+}
+
 void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("id_to_text", "id"), &ResourceUID::id_to_text);
 	ClassDB::bind_method(D_METHOD("text_to_id", "text_id"), &ResourceUID::text_to_id);

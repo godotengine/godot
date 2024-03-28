@@ -40,7 +40,11 @@ class SceneState : public RefCounted {
 	Vector<StringName> names;
 	Vector<Variant> variants;
 	Vector<NodePath> node_paths;
+	mutable Vector<NodePath> node_paths_expanded_cache;
+	TypedArray<PackedInt32Array> node_path_ids;
 	Vector<NodePath> editable_instances;
+	Vector<int> id_to_node_map;
+
 	mutable HashMap<NodePath, int> node_path_cache;
 	mutable HashMap<int, int> base_scene_node_remap;
 
@@ -59,6 +63,7 @@ class SceneState : public RefCounted {
 		int name = 0;
 		int instance = 0;
 		int index = 0;
+		int unique_id = 0;
 
 		struct Property {
 			int name = 0;
@@ -89,7 +94,7 @@ class SceneState : public RefCounted {
 
 	Vector<ConnectionData> connections;
 
-	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
+	Error _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, RBMap<int32_t, int32_t> &id_to_node_rbmap);
 	Error _parse_connections(Node *p_owner, Node *p_node, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map);
 
 	String path;
@@ -100,7 +105,18 @@ class SceneState : public RefCounted {
 
 	Vector<String> _get_node_groups(int p_idx) const;
 
+	NodePath _get_path_by_index(int p_idx, bool p_expand_ids = true) const;
+
 	int _find_base_scene_node_remap_key(int p_idx) const;
+	int _find_node_by_id(int p_id) const;
+
+	struct NodeToIdSort {
+		int id;
+		int node;
+		bool operator<(const NodeToIdSort &p_sort) const {
+			return id < p_sort.id;
+		}
+	};
 
 #ifdef TOOLS_ENABLED
 public:
@@ -170,13 +186,14 @@ public:
 	int get_node_count() const;
 	StringName get_node_type(int p_idx) const;
 	StringName get_node_name(int p_idx) const;
-	NodePath get_node_path(int p_idx, bool p_for_parent = false) const;
-	NodePath get_node_owner_path(int p_idx) const;
+	NodePath get_node_path(int p_idx, bool p_for_parent = false, bool p_no_dot = false, bool p_expand_ids = true) const;
+	NodePath get_node_owner_path(int p_idx, bool p_expand_ids = false) const;
 	Ref<PackedScene> get_node_instance(int p_idx) const;
 	String get_node_instance_placeholder(int p_idx) const;
 	bool is_node_instance_placeholder(int p_idx) const;
 	Vector<StringName> get_node_groups(int p_idx) const;
 	int get_node_index(int p_idx) const;
+	int get_node_unique_id(int p_idx) const;
 
 	int get_node_property_count(int p_idx) const;
 	StringName get_node_property_name(int p_idx, int p_prop) const;
@@ -184,9 +201,9 @@ public:
 	Vector<String> get_node_deferred_nodepath_properties(int p_idx) const;
 
 	int get_connection_count() const;
-	NodePath get_connection_source(int p_idx) const;
+	NodePath get_connection_source(int p_idx, bool p_expand_ids = true) const;
 	StringName get_connection_signal(int p_idx) const;
-	NodePath get_connection_target(int p_idx) const;
+	NodePath get_connection_target(int p_idx, bool p_expand_ids = true) const;
 	StringName get_connection_method(int p_idx) const;
 	int get_connection_flags(int p_idx) const;
 	int get_connection_unbinds(int p_idx) const;
@@ -201,12 +218,14 @@ public:
 	int add_name(const StringName &p_name);
 	int add_value(const Variant &p_value);
 	int add_node_path(const NodePath &p_path);
-	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index);
+	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index, int p_unique_id);
 	void add_node_property(int p_node, int p_name, int p_value, bool p_deferred_node_path = false);
 	void add_node_group(int p_node, int p_group);
 	void set_base_scene(int p_idx);
 	void add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, int p_unbinds, const Vector<int> &p_binds);
 	void add_editable_instance(const NodePath &p_path);
+
+	void finalize_adding();
 
 	bool remove_group_references(const StringName &p_name);
 	bool rename_group_references(const StringName &p_old_name, const StringName &p_new_name);

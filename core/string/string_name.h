@@ -109,6 +109,18 @@ public:
 			return (char32_t)_data->name[0] == (char32_t)UNIQUE_NODE_PREFIX[0];
 		}
 	}
+
+	_FORCE_INLINE_ bool is_node_unique_id() const {
+		if (!_data) {
+			return false;
+		}
+		if (_data->cname != nullptr) {
+			return (char32_t)_data->cname[0] == (char32_t)'@' && (char32_t)_data->cname[1] == (char32_t)'@';
+		} else {
+			return (char32_t)_data->name[0] == (char32_t)'@' && (char32_t)_data->name[1] == (char32_t)'@';
+		}
+	}
+
 	_FORCE_INLINE_ bool operator<(const StringName &p_name) const {
 		return _data < p_name._data;
 	}

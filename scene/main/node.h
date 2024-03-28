@@ -126,6 +126,10 @@ public:
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
 
+	enum {
+		UNIQUE_SCENE_ID_UNASSIGNED = 0
+	};
+
 	static int orphan_node_count;
 
 	void _update_process(bool p_enable, bool p_for_children);
@@ -238,6 +242,8 @@ private:
 		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 		mutable bool is_auto_translating = true;
 		mutable bool is_auto_translate_dirty = true;
+
+		int32_t unique_scene_id = UNIQUE_SCENE_ID_UNASSIGNED;
 
 		mutable NodePath *path_cache = nullptr;
 
@@ -437,6 +443,9 @@ public:
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true);
 	Node *get_parent() const;
 	Node *find_parent(const String &p_pattern) const;
+
+	void set_unique_scene_id(int32_t p_unique_id);
+	int32_t get_unique_scene_id() const;
 
 	Window *get_window() const;
 	Window *get_last_exclusive_window() const;

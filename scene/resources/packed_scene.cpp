@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
+#include "core/crypto/crypto_core.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
 #include "core/templates/local_vector.h"
@@ -45,7 +46,9 @@
 #include "scene/main/missing_node.h"
 #include "scene/property_utils.h"
 
-#define PACKED_SCENE_VERSION 3
+#define PACKED_SCENE_VERSION 4
+
+#define MIN_UNIQUE_ID_PACKED_SCENE_VERSION 4
 
 #ifdef TOOLS_ENABLED
 SceneState::InstantiationWarningNotify SceneState::instantiation_warn_notify = nullptr;
@@ -129,14 +132,14 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	// Nodes where instantiation failed (because something is missing.)
 	List<Node *> stray_instances;
 
-#define NODE_FROM_ID(p_name, p_id)                      \
-	Node *p_name;                                       \
-	if (p_id & FLAG_ID_IS_PATH) {                       \
-		NodePath np = node_paths[p_id & FLAG_MASK];     \
-		p_name = ret_nodes[0]->get_node_or_null(np);    \
-	} else {                                            \
-		ERR_FAIL_INDEX_V(p_id &FLAG_MASK, nc, nullptr); \
-		p_name = ret_nodes[p_id & FLAG_MASK];           \
+#define NODE_FROM_ID(p_name, p_id)                          \
+	Node *p_name;                                           \
+	if (p_id & FLAG_ID_IS_PATH) {                           \
+		NodePath np = _get_path_by_index(p_id & FLAG_MASK); \
+		p_name = ret_nodes[0]->get_node_or_null(np);        \
+	} else {                                                \
+		ERR_FAIL_INDEX_V(p_id &FLAG_MASK, nc, nullptr);     \
+		p_name = ret_nodes[p_id & FLAG_MASK];               \
 	}
 
 	int nc = nodes.size();
@@ -177,8 +180,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			NODE_FROM_ID(nparent, n.parent);
 #ifdef DEBUG_ENABLED
 			if (!nparent && (n.parent & FLAG_ID_IS_PATH)) {
-				WARN_PRINT(String("Parent path '" + String(node_paths[n.parent & FLAG_MASK]) + "' for node '" + String(snames[n.name]) + "' has vanished when instantiating: '" + get_path() + "'.").ascii().get_data());
-				old_parent_path = String(node_paths[n.parent & FLAG_MASK]).trim_prefix("./").replace("/", "@");
+				WARN_PRINT(String("Parent path '" + String(_get_path_by_index(n.parent & FLAG_MASK)) + "' for node '" + String(snames[n.name]) + "' has vanished when instantiating: '" + get_path() + "'.").ascii().get_data());
+				old_parent_path = String(_get_path_by_index(n.parent & FLAG_MASK)).trim_prefix("./").replace("/", "@");
 				nparent = ret_nodes[0];
 			}
 #endif
@@ -478,6 +481,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				node->set_name(old_parent_path + "#" + node->get_name());
 			}
 
+			node->set_unique_scene_id(uint32_t(n.unique_id));
+
 			if (n.owner >= 0) {
 				NODE_FROM_ID(owner, n.owner);
 				if (owner) {
@@ -655,7 +660,7 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int, Varia
 	return idx;
 }
 
-Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map) {
+Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int, VariantHasher, VariantComparator> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, RBMap<int32_t, int32_t> &id_to_node_rbmap) {
 	// this function handles all the work related to properly packing scenes, be it
 	// instantiated or inherited.
 	// given the complexity of this process, an attempt will be made to properly
@@ -915,13 +920,36 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			nd.parent = p_parent_idx;
 		}
 
+		int32_t unique_scene_id = p_node->get_unique_scene_id();
+		if (unique_scene_id == Node::UNIQUE_SCENE_ID_UNASSIGNED || id_to_node_rbmap.has(unique_scene_id)) {
+			// Unassigned or clash somehow.
+
+			while (true) {
+				unique_scene_id = int32_t(ResourceUID::get_singleton()->generate_random_u32());
+
+				if (unique_scene_id == Node::UNIQUE_SCENE_ID_UNASSIGNED) {
+					unique_scene_id = 1;
+				}
+				if (id_to_node_rbmap.has(unique_scene_id)) {
+					// While there is one in a four billion chance for a clash, the scenario where one scene is instantiated multiple times is common, so it must reassign the local id.
+					continue;
+				}
+				break;
+			}
+
+			p_node->set_unique_scene_id(unique_scene_id);
+		}
+
+		nd.unique_id = int32_t(unique_scene_id); // cast to int32_t to fit on array, but its fine.
+		id_to_node_rbmap.insert(unique_scene_id, idx);
+
 		parent_node = idx;
 		nodes.push_back(nd);
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		Error err = _parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map);
+		Error err = _parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map, id_to_node_rbmap);
 		if (err) {
 			return err;
 		}
@@ -1139,6 +1167,7 @@ Error SceneState::pack(Node *p_scene) {
 	HashMap<Variant, int, VariantHasher, VariantComparator> variant_map;
 	HashMap<Node *, int> node_map;
 	HashMap<Node *, int> nodepath_map;
+	RBMap<int32_t, int32_t> id_to_node_rbmap; // Needs to be sorted, so RBMap.
 
 	// If using scene inheritance, pack the scene it inherits from.
 	if (scene->get_scene_inherited_state().is_valid()) {
@@ -1150,7 +1179,7 @@ Error SceneState::pack(Node *p_scene) {
 	}
 
 	// Instanced, only direct sub-scenes are supported of course.
-	Error err = _parse_node(scene, scene, -1, name_map, variant_map, node_map, nodepath_map);
+	Error err = _parse_node(scene, scene, -1, name_map, variant_map, node_map, nodepath_map, id_to_node_rbmap);
 	if (err) {
 		clear();
 		ERR_FAIL_V(err);
@@ -1177,13 +1206,42 @@ Error SceneState::pack(Node *p_scene) {
 
 	node_paths.resize(nodepath_map.size());
 	for (const KeyValue<Node *, int> &E : nodepath_map) {
-		node_paths.write[E.value] = scene->get_path_to(E.key);
+		Vector<StringName> id_path;
+
+		bool id_path_valid = false;
+		Node *base = E.key;
+		while (base && base->get_unique_scene_id() != Node::UNIQUE_SCENE_ID_UNASSIGNED) {
+			id_path.push_back("@@" + itos(base->get_unique_scene_id()));
+			base = base->get_owner();
+			if (base == p_scene) {
+				id_path_valid = true;
+				break;
+			}
+		}
+
+		if (id_path_valid) {
+			id_path.reverse();
+			node_paths.write[E.value] = NodePath(id_path, false);
+		} else {
+			node_paths.write[E.value] = scene->get_path_to(E.key);
+		}
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// Build node path cache
 		for (const KeyValue<Node *, int> &E : node_map) {
 			node_path_cache[scene->get_path_to(E.key)] = E.value;
+		}
+	}
+
+	id_to_node_map.resize(id_to_node_rbmap.size() * 2);
+	{
+		int *id_to_node_mapw = id_to_node_map.ptrw();
+		int map_idx = 0;
+		for (const KeyValue<int32_t, int32_t> &K : id_to_node_rbmap) {
+			id_to_node_mapw[map_idx + 0] = K.key;
+			id_to_node_mapw[map_idx + 1] = K.value;
+			map_idx += 2;
 		}
 	}
 
@@ -1205,6 +1263,8 @@ void SceneState::clear() {
 	connections.clear();
 	node_path_cache.clear();
 	node_paths.clear();
+	node_paths_expanded_cache.clear();
+	id_to_node_map.clear();
 	editable_instances.clear();
 	base_scene_idx = -1;
 }
@@ -1232,6 +1292,9 @@ Error SceneState::copy_from(const Ref<SceneState> &p_scene_state) {
 	for (const NodePath &E : p_scene_state->node_paths) {
 		node_paths.append(E);
 	}
+
+	id_to_node_map = p_scene_state->id_to_node_map;
+
 	for (const NodePath &E : p_scene_state->editable_instances) {
 		editable_instances.append(E);
 	}
@@ -1461,6 +1524,9 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 			nd.index = (name_index >> NAME_INDEX_BITS);
 			nd.index--; //0 is invalid, stored as 1
 			nd.instance = r[idx++];
+			if (version >= MIN_UNIQUE_ID_PACKED_SCENE_VERSION) {
+				nd.unique_id = r[idx++];
+			}
 			nd.properties.resize(r[idx++]);
 			for (int j = 0; j < nd.properties.size(); j++) {
 				nd.properties.write[j].name = r[idx++];
@@ -1513,6 +1579,10 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 		base_scene_idx = p_dictionary["base_scene"];
 	}
 
+	if (p_dictionary.has("id_to_nodes")) {
+		id_to_node_map = p_dictionary["id_to_nodes"];
+	}
+
 	editable_instances.resize(ei.size());
 	for (int i = 0; i < editable_instances.size(); i++) {
 		editable_instances.write[i] = ei[i];
@@ -1551,6 +1621,7 @@ Dictionary SceneState::get_bundled_scene() const {
 		}
 		rnodes.push_back(name_index);
 		rnodes.push_back(nd.instance);
+		rnodes.push_back(nd.unique_id);
 		rnodes.push_back(nd.properties.size());
 		for (int j = 0; j < nd.properties.size(); j++) {
 			rnodes.push_back(nd.properties[j].name);
@@ -1600,6 +1671,8 @@ Dictionary SceneState::get_bundled_scene() const {
 		d["base_scene"] = base_scene_idx;
 	}
 
+	d["id_to_nodes"] = id_to_node_map;
+
 	d["version"] = PACKED_SCENE_VERSION;
 
 	return d;
@@ -1625,6 +1698,11 @@ StringName SceneState::get_node_name(int p_idx) const {
 int SceneState::get_node_index(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), -1);
 	return nodes[p_idx].index;
+}
+
+int SceneState::get_node_unique_id(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, nodes.size(), -1);
+	return nodes[p_idx].unique_id;
 }
 
 bool SceneState::is_node_instance_placeholder(int p_idx) const {
@@ -1670,7 +1748,94 @@ Vector<StringName> SceneState::get_node_groups(int p_idx) const {
 	return groups;
 }
 
-NodePath SceneState::get_node_path(int p_idx, bool p_for_parent) const {
+int SceneState::_find_node_by_id(int p_id) const {
+	if (id_to_node_map.size() == 0) {
+		return -1; // No node.
+	}
+
+	int map_size = id_to_node_map.size();
+	ERR_FAIL_COND_V(map_size & 1, -1);
+	const int *map = id_to_node_map.ptr();
+
+	int low = 0;
+	int high = map_size / 2;
+	int middle = 0;
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V(low > high, -1);
+#endif
+
+	while (low <= high) {
+		middle = (low + high) / 2;
+		int pos = middle << 1;
+		int id = map[pos];
+		if (id == p_id) { //match
+			return map[pos + 1];
+		} else if (p_id < id) {
+			high = middle - 1; //search low end of array
+		} else {
+			low = middle + 1; //search high end of array
+		}
+	}
+
+	return -1;
+}
+
+NodePath SceneState::_get_path_by_index(int p_idx, bool p_expand_ids) const {
+	if (p_expand_ids) {
+		// Use cache when available.
+		if (node_paths_expanded_cache.size() == 0) {
+			node_paths_expanded_cache.resize(node_paths.size());
+		} else if (!node_paths_expanded_cache[p_idx].is_empty()) {
+			return node_paths_expanded_cache[p_idx];
+		}
+
+		Vector<StringName> ret_path;
+		Vector<StringName> path_names = node_paths[p_idx].get_names();
+		const SceneState *base_state = this; // Start by this one.
+
+		for (int i = 0; i < path_names.size(); i++) {
+			if (path_names[i].is_node_unique_id()) {
+				int32_t subindex_id = String::to_int(path_names[i].operator String().ptr() + 2);
+				int node_index = -1;
+
+				while (node_index == -1) {
+					node_index = base_state->_find_node_by_id(subindex_id);
+					if (base_state->base_scene_idx != -1) {
+						// There is inheritance at play, try with parent.
+						Ref<PackedScene> parent = base_state->variants[base_state->base_scene_idx];
+						if (parent.is_valid()) {
+							base_state = parent->get_state().ptr();
+							continue;
+						}
+					}
+					break;
+				}
+
+				ERR_FAIL_COND_V_MSG(node_index == -1, NodePath(), "Failed to locate node by unique scene id: " + itos(subindex_id) + " May have been removed");
+
+				NodePath path_part = base_state->get_node_path(node_index, false, true);
+				// Append it.
+				ret_path.append_array(path_part.get_names());
+				if (i + 1 < path_names.size() && path_names[i + 1].is_node_unique_id()) {
+					// Get the next scene state from the node instance and continue.
+					Ref<PackedScene> sdata = base_state->variants[base_state->nodes[node_index].instance & FLAG_MASK];
+					base_state = sdata->get_state().ptr();
+				}
+			} else {
+				ret_path.append(path_names[i]);
+			}
+		}
+
+		NodePath ret(ret_path, false);
+		node_paths_expanded_cache.write[p_idx] = ret;
+		return ret;
+	} else {
+		return node_paths[p_idx];
+	}
+}
+
+NodePath SceneState::get_node_path(int p_idx, bool p_for_parent, bool p_no_dot, bool p_expand_ids) const {
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), NodePath());
 
 	if (nodes[p_idx].parent < 0 || nodes[p_idx].parent == NO_PARENT_SAVED) {
@@ -1686,7 +1851,9 @@ NodePath SceneState::get_node_path(int p_idx, bool p_for_parent) const {
 	int nidx = p_idx;
 	while (true) {
 		if (nodes[nidx].parent == NO_PARENT_SAVED || nodes[nidx].parent < 0) {
-			sub_path.insert(0, ".");
+			if (!p_no_dot || sub_path.size() == 0) {
+				sub_path.insert(0, ".");
+			}
 			break;
 		}
 
@@ -1695,7 +1862,8 @@ NodePath SceneState::get_node_path(int p_idx, bool p_for_parent) const {
 		}
 
 		if (nodes[nidx].parent & FLAG_ID_IS_PATH) {
-			base_path = node_paths[nodes[nidx].parent & FLAG_MASK];
+			int path_index = nodes[nidx].parent & FLAG_MASK;
+			base_path = _get_path_by_index(path_index, p_expand_ids);
 			break;
 		} else {
 			nidx = nodes[nidx].parent & FLAG_MASK;
@@ -1755,15 +1923,15 @@ Variant SceneState::get_node_property_value(int p_idx, int p_prop) const {
 	return variants[nodes[p_idx].properties[p_prop].value];
 }
 
-NodePath SceneState::get_node_owner_path(int p_idx) const {
+NodePath SceneState::get_node_owner_path(int p_idx, bool p_expand_ids) const {
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), NodePath());
 	if (nodes[p_idx].owner < 0 || nodes[p_idx].owner == NO_PARENT_SAVED) {
 		return NodePath(); //root likely
 	}
 	if (nodes[p_idx].owner & FLAG_ID_IS_PATH) {
-		return node_paths[nodes[p_idx].owner & FLAG_MASK];
+		return _get_path_by_index(nodes[p_idx].owner & FLAG_MASK, p_expand_ids);
 	} else {
-		return get_node_path(nodes[p_idx].owner & FLAG_MASK);
+		return get_node_path(nodes[p_idx].owner & FLAG_MASK, false, false, p_expand_ids);
 	}
 }
 
@@ -1771,12 +1939,12 @@ int SceneState::get_connection_count() const {
 	return connections.size();
 }
 
-NodePath SceneState::get_connection_source(int p_idx) const {
+NodePath SceneState::get_connection_source(int p_idx, bool p_expand_ids) const {
 	ERR_FAIL_INDEX_V(p_idx, connections.size(), NodePath());
 	if (connections[p_idx].from & FLAG_ID_IS_PATH) {
-		return node_paths[connections[p_idx].from & FLAG_MASK];
+		return _get_path_by_index(connections[p_idx].from & FLAG_MASK, p_expand_ids);
 	} else {
-		return get_node_path(connections[p_idx].from & FLAG_MASK);
+		return get_node_path(connections[p_idx].from & FLAG_MASK, false, false, p_expand_ids);
 	}
 }
 
@@ -1785,12 +1953,12 @@ StringName SceneState::get_connection_signal(int p_idx) const {
 	return names[connections[p_idx].signal];
 }
 
-NodePath SceneState::get_connection_target(int p_idx) const {
+NodePath SceneState::get_connection_target(int p_idx, bool p_expand_ids) const {
 	ERR_FAIL_INDEX_V(p_idx, connections.size(), NodePath());
 	if (connections[p_idx].to & FLAG_ID_IS_PATH) {
-		return node_paths[connections[p_idx].to & FLAG_MASK];
+		return _get_path_by_index(connections[p_idx].to & FLAG_MASK, p_expand_ids);
 	} else {
-		return get_node_path(connections[p_idx].to & FLAG_MASK);
+		return get_node_path(connections[p_idx].to & FLAG_MASK, false, false, p_expand_ids);
 	}
 }
 
@@ -1829,7 +1997,7 @@ bool SceneState::has_connection(const NodePath &p_node_from, const StringName &p
 			NodePath np_from;
 
 			if (c.from & FLAG_ID_IS_PATH) {
-				np_from = ss->node_paths[c.from & FLAG_MASK];
+				np_from = ss->_get_path_by_index(c.from & FLAG_MASK);
 			} else {
 				np_from = ss->get_node_path(c.from);
 			}
@@ -1837,7 +2005,7 @@ bool SceneState::has_connection(const NodePath &p_node_from, const StringName &p
 			NodePath np_to;
 
 			if (c.to & FLAG_ID_IS_PATH) {
-				np_to = ss->node_paths[c.to & FLAG_MASK];
+				np_to = ss->_get_path_by_index(c.to & FLAG_MASK);
 			} else {
 				np_to = ss->get_node_path(c.to);
 			}
@@ -1881,7 +2049,7 @@ int SceneState::add_node_path(const NodePath &p_path) {
 	return (node_paths.size() - 1) | FLAG_ID_IS_PATH;
 }
 
-int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index) {
+int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index, int p_unique_id) {
 	NodeData nd;
 	nd.parent = p_parent;
 	nd.owner = p_owner;
@@ -1890,9 +2058,16 @@ int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int 
 	nd.instance = p_instance;
 	nd.index = p_index;
 
+	int node_id = nodes.size();
+
+	if (p_unique_id != Node::UNIQUE_SCENE_ID_UNASSIGNED) {
+		id_to_node_map.push_back(p_unique_id);
+		id_to_node_map.push_back(node_id);
+	}
+
 	nodes.push_back(nd);
 
-	return nodes.size() - 1;
+	return node_id;
 }
 
 void SceneState::add_node_property(int p_node, int p_name, int p_value, bool p_deferred_node_path) {
@@ -1940,6 +2115,13 @@ void SceneState::add_connection(int p_from, int p_to, int p_signal, int p_method
 
 void SceneState::add_editable_instance(const NodePath &p_path) {
 	editable_instances.push_back(p_path);
+}
+
+void SceneState::finalize_adding() {
+	if (id_to_node_map.size()) {
+		SortArray<NodeToIdSort> sort;
+		sort.sort((NodeToIdSort *)(id_to_node_map.ptrw()), id_to_node_map.size() / 2);
+	}
 }
 
 bool SceneState::remove_group_references(const StringName &p_name) {

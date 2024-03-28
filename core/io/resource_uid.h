@@ -77,6 +77,8 @@ public:
 	Error save_to_cache();
 	Error update_cache();
 
+	uint32_t generate_random_u32() const;
+
 	void clear();
 
 	static ResourceUID *get_singleton() { return singleton; }
