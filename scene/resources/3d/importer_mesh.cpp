@@ -1501,7 +1501,6 @@ void ImporterMesh::generate_tangents() {
 		tangents.resize(vertex_array.size() * 4);
 		if (!(surfaces[surface_i].flags & Mesh::ARRAY_FORMAT_TEX_UV)) {
 			ERR_PRINT("Surface does not have ARRAY_FORMAT_TEX_UV flag set.");
-			Vector<float> tangents;
 			int32_t vertex_num = vertex_array.size();
 			tangents.resize(vertex_array.size() * 4);
 			float *tangentsw = tangents.ptrw();
