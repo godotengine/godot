@@ -37,6 +37,9 @@ using namespace RendererRD;
 
 ToneMapper::ToneMapper() {
 	{
+		params_uniform_buffer = (RID *)memalloc(sizeof(RID) * RD::get_singleton()->get_frame_delay());
+		params_uniform_set = (RID *)memalloc(sizeof(RID) * RD::get_singleton()->get_frame_delay());
+
 		// Initialize tonemapper
 		Vector<String> tonemap_modes;
 		tonemap_modes.push_back("\n");
@@ -78,15 +81,10 @@ ToneMapper::ToneMapper() {
 // <TF>
 // @ShadyTF 
 // prepare uniform set and buffer
-	uint32_t params_size = sizeof(TonemapPushConstant);
-	params_uniform_buffer = RD::RenderingDevice::get_singleton()->uniform_buffer_create(params_size);
-	Vector<RD::Uniform> params_uniforms;
-	RD::Uniform u;
-	u.binding = 0;
-	u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-	u.append_id(params_uniform_buffer);
-	params_uniforms.push_back(u);
-	params_uniform_set = RD::RenderingDevice::get_singleton()->uniform_set_create(params_uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 4);
+		uint32_t params_size = sizeof(TonemapPushConstant);
+		for (uint32_t i = 0; i < RD::get_singleton()->get_frame_delay(); i++) {
+			params_uniform_buffer[i] = RD::RenderingDevice::get_singleton()->uniform_buffer_create(params_size, Vector<uint8_t>(), RD::BUFFER_CREATION_PERSISTENT_BIT | RD::BUFFER_CREATION_LINEAR_BIT);
+		}
 // </TF>
 	}
 }
@@ -95,13 +93,19 @@ ToneMapper::~ToneMapper() {
 // <TF>
 // @ShadyTF 
 // prepare uniform set and buffer
-	if (params_uniform_buffer.is_valid()) {
-		RD::RenderingDevice::get_singleton()->free(params_uniform_set);
+	for (uint32_t i = 0; i < RD::get_singleton()->get_frame_delay(); i++) {
+		if (params_uniform_buffer[i].is_valid()) {
+			RD::RenderingDevice::get_singleton()->free(params_uniform_buffer[i]);
+		}
+		if (params_uniform_set[i].is_valid()) {
+			RD::RenderingDevice::get_singleton()->free(params_uniform_set[i]);
+		}
 	}
-	if (params_uniform_set.is_valid()) {
-		RD::RenderingDevice::get_singleton()->free(params_uniform_set);
-	}
-// </TF>
+
+	memfree(params_uniform_set);
+	memfree(params_uniform_buffer);
+
+	// </TF>
 	tonemap.shader.version_free(tonemap.shader_version);
 }
 
@@ -203,8 +207,8 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 // replace push constant with UBO
 // was:
 	//RD::get_singleton()->draw_list_set_push_constant(draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, params_uniform_set, 4);
-// </TF>
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, params_uniform_set[RD::get_singleton()->get_current_frame_index()], 4);
+	// </TF>
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 	RD::get_singleton()->draw_list_end();
 }
@@ -290,8 +294,8 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 // replace push constant with UBO
 // was:
 	//RD::get_singleton()->draw_list_set_push_constant(p_subpass_draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
-	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, params_uniform_set, 4);
-// </TF>
+	RD::get_singleton()->draw_list_bind_uniform_set(p_subpass_draw_list, params_uniform_set[RD::get_singleton()->get_current_frame_index()], 4);
+	// </TF>
 	RD::get_singleton()->draw_list_draw(p_subpass_draw_list, false, 1u, 3u);
 }
 
@@ -334,7 +338,16 @@ void ToneMapper::prepare_params(const TonemapSettings& p_settings) {
 
 	tonemap.push_constant.flags |= p_settings.convert_to_srgb ? TONEMAP_FLAG_CONVERT_TO_SRGB : 0;
 
-	RD::RenderingDevice::get_singleton()->buffer_update(params_uniform_buffer, 0, sizeof(TonemapPushConstant), &tonemap.push_constant);
+	uint32_t frame = RD::get_singleton()->get_current_frame_index();
+	RD::RenderingDevice::get_singleton()->buffer_update(params_uniform_buffer[frame], 0, sizeof(TonemapPushConstant), &tonemap.push_constant);
+
+	Vector<RD::Uniform> params_uniforms;
+	RD::Uniform u;
+	u.binding = 0;
+	u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+	u.append_id(params_uniform_buffer[frame]);
+	params_uniforms.push_back(u);
+	params_uniform_set[frame] = RD::RenderingDevice::get_singleton()->uniform_set_create(params_uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 4, true);
 
 }
 // </TF>

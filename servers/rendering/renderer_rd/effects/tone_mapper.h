@@ -112,8 +112,8 @@ private:
 // @ShadyTF 
 // replacing push constants with uniform buffer
 // new uniform set and uniform buffer for draw call params
-		RID params_uniform_set;
-		RID params_uniform_buffer;
+		RID *params_uniform_set;
+		RID *params_uniform_buffer;
 // <TF>
 
 public:
