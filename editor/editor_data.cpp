@@ -437,7 +437,7 @@ int EditorData::get_scene_history_id_from_path(const String &p_path) const {
 }
 
 int EditorData::get_current_edited_scene_history_id() const {
-	if (current_edited_scene != -1) {
+	if (current_edited_scene != -1 && !(current_edited_scene < 0 && current_edited_scene < edited_scene.size())) {
 		return edited_scene[current_edited_scene].history_id;
 	}
 	return 0;
