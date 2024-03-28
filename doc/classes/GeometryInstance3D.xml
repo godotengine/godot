@@ -66,6 +66,7 @@
 			The transparency applied to the whole geometry (as a multiplier of the materials' existing transparency). [code]0.0[/code] is fully opaque, while [code]1.0[/code] is fully transparent. Values greater than [code]0.0[/code] (exclusive) will force the geometry's materials to go through the transparent pipeline, which is slower to render and can exhibit rendering issues due to incorrect transparency sorting. However, unlike using a transparent material, setting [member transparency] to a value greater than [code]0.0[/code] (exclusive) will [i]not[/i] disable shadow rendering.
 			In spatial shaders, [code]1.0 - transparency[/code] is set as the default value of the [code]ALPHA[/code] built-in.
 			[b]Note:[/b] [member transparency] is clamped between [code]0.0[/code] and [code]1.0[/code], so this property cannot be used to make transparent materials more opaque than they originally are.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method. When using the Mobile or Compatibility rendering method, [member transparency] is ignored and is considered as always being [code]0.0[/code].
 		</member>
 		<member name="visibility_range_begin" type="float" setter="set_visibility_range_begin" getter="get_visibility_range_begin" default="0.0" keywords="lod_begin, hlod_begin">
 			Starting distance from which the GeometryInstance3D will be visible, taking [member visibility_range_begin_margin] into account as well. The default value of 0 is used to disable the range check.
@@ -130,9 +131,11 @@
 		</constant>
 		<constant name="VISIBILITY_RANGE_FADE_SELF" value="1" enum="VisibilityRangeFadeMode">
 			Will fade-out itself when reaching the limits of its own visibility range. This is slower than [constant VISIBILITY_RANGE_FADE_DISABLED], but it can provide smoother transitions. The fading range is determined by [member visibility_range_begin_margin] and [member visibility_range_end_margin].
+			[b]Note:[/b] Only supported when using the Forward+ rendering method. When using the Mobile or Compatibility rendering method, this mode acts like [constant VISIBILITY_RANGE_FADE_DISABLED] but with hysteresis disabled.
 		</constant>
 		<constant name="VISIBILITY_RANGE_FADE_DEPENDENCIES" value="2" enum="VisibilityRangeFadeMode">
 			Will fade-in its visibility dependencies (see [member Node3D.visibility_parent]) when reaching the limits of its own visibility range. This is slower than [constant VISIBILITY_RANGE_FADE_DISABLED], but it can provide smoother transitions. The fading range is determined by [member visibility_range_begin_margin] and [member visibility_range_end_margin].
+			[b]Note:[/b] Only supported when using the Forward+ rendering method. When using the Mobile or Compatibility rendering method, this mode acts like [constant VISIBILITY_RANGE_FADE_DISABLED] but with hysteresis disabled.
 		</constant>
 	</constants>
 </class>
