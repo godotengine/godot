@@ -1,17 +1,21 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotSharp", "GodotSharp\GodotSharp.csproj", "{AEBF0036-DA76-4341-B651-A3F2856AB2FA}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.34607.79
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GodotSharp", "GodotSharp\GodotSharp.csproj", "{AEBF0036-DA76-4341-B651-A3F2856AB2FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotSharpEditor", "GodotSharpEditor\GodotSharpEditor.csproj", "{8FBEC238-D944-4074-8548-B3B524305905}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GodotSharpEditor", "GodotSharpEditor\GodotSharpEditor.csproj", "{8FBEC238-D944-4074-8548-B3B524305905}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotPlugins", "GodotPlugins\GodotPlugins.csproj", "{944B77DB-497B-47F5-A1E3-81C35E3E9D4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GodotPlugins", "GodotPlugins\GodotPlugins.csproj", "{944B77DB-497B-47F5-A1E3-81C35E3E9D4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Godot.SourceGenerators.Internal", "Godot.SourceGenerators.Internal\Godot.SourceGenerators.Internal.csproj", "{7749662B-E30C-419A-B745-13852573360A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Godot.SourceGenerators.Internal", "Godot.SourceGenerators.Internal\Godot.SourceGenerators.Internal.csproj", "{7749662B-E30C-419A-B745-13852573360A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotSharpBenchmarks", "Benchmarks\GodotSharpBenchmarks.csproj", "{261F52EB-F756-4802-8DCC-8143D091424F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-	Debug|Any CPU = Debug|Any CPU
-	Release|Any CPU = Release|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{AEBF0036-DA76-4341-B651-A3F2856AB2FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -30,5 +34,15 @@ Global
 		{7749662B-E30C-419A-B745-13852573360A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7749662B-E30C-419A-B745-13852573360A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7749662B-E30C-419A-B745-13852573360A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{261F52EB-F756-4802-8DCC-8143D091424F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{261F52EB-F756-4802-8DCC-8143D091424F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{261F52EB-F756-4802-8DCC-8143D091424F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{261F52EB-F756-4802-8DCC-8143D091424F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6ED4A37F-B10E-4356-B1FC-4FDBF48E1611}
 	EndGlobalSection
 EndGlobal
