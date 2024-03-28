@@ -506,6 +506,9 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			event_item->set_button_color(2, 1, Color(1, 1, 1, 0.75));
 		}
 	}
+
+	// Update UI.
+	clear_all_search->set_disabled(action_list_search->get_text().is_empty() && action_list_search_by_event->get_event().is_null());
 }
 
 void ActionMapEditor::show_message(const String &p_message) {
@@ -551,8 +554,9 @@ ActionMapEditor::ActionMapEditor() {
 	action_list_search_by_event->connect(SceneStringNames::get_singleton()->focus_exited, callable_mp(this, &ActionMapEditor::_on_filter_unfocused));
 	top_hbox->add_child(action_list_search_by_event);
 
-	Button *clear_all_search = memnew(Button);
+	clear_all_search = memnew(Button);
 	clear_all_search->set_text(TTR("Clear All"));
+	clear_all_search->set_tooltip_text(TTR("Clear all search filters"));
 	clear_all_search->connect("pressed", callable_mp(action_list_search_by_event, &EventListenerLineEdit::clear_event));
 	clear_all_search->connect("pressed", callable_mp(action_list_search, &LineEdit::clear));
 	top_hbox->add_child(clear_all_search);

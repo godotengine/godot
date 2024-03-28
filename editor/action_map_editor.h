@@ -85,6 +85,7 @@ private:
 	CheckButton *show_builtin_actions_checkbutton = nullptr;
 	LineEdit *action_list_search = nullptr;
 	EventListenerLineEdit *action_list_search_by_event = nullptr;
+	Button *clear_all_search = nullptr;
 
 	HBoxContainer *add_hbox = nullptr;
 	LineEdit *add_edit = nullptr;
