@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+"@oninstantiated" annotation cannot be used with "@onready".

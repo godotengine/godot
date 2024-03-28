@@ -681,6 +681,16 @@
 				[b]Note:[/b] Unlike other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
 			</description>
 		</annotation>
+		<annotation name="@oninstantiated">
+			<return type="void" />
+			<description>
+				Mark the following property as assigned when the [Node] receives notification [constant Node.NOTIFICATION_SCENE_INSTANTIATED]. Values for these properties are not assigned immediately when the node is initialized ([method Object._init]), and instead are computed and stored right before [method Node._scene_instantiated].
+				[codeblock]
+				@oninstantiated var character_name: Label = $Label
+				[/codeblock]
+				[b]Note:[/b] This annotation should only be used with scene root node variables, since child nodes do not receive the [constant Node.NOTIFICATION_SCENE_INSTANTIATED] notification. See [method Node._scene_instantiated] for details.
+			</description>
+		</annotation>
 		<annotation name="@onready">
 			<return type="void" />
 			<description>

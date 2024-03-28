@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+"@oninstantiated" can only be used in classes that inherit "Node".
