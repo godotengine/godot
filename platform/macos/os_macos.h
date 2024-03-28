@@ -111,6 +111,7 @@ public:
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 
 	virtual String get_unique_id() const override;
+	virtual int get_physical_processor_count() const override;
 	virtual String get_processor_name() const override;
 
 	virtual bool is_sandboxed() const override;

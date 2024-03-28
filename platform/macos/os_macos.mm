@@ -67,6 +67,14 @@ void OS_MacOS::initialize() {
 	initialize_core();
 }
 
+int OS_MacOS::get_physical_processor_count() const {
+	uint32_t num_cores = 0;
+	size_t num_cores_len = sizeof(num_cores);
+	sysctlbyname("hw.physicalcpu", &num_cores, &num_cores_len, 0, 0);
+
+	return num_cores;
+}
+
 String OS_MacOS::get_processor_name() const {
 	char buffer[256];
 	size_t buffer_len = 256;

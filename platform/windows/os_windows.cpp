@@ -1444,6 +1444,29 @@ BOOL is_wow64() {
 	return wow64;
 }
 
+int OS_Windows::get_physical_processor_count() const {
+	DWORD length = 0;
+	GetLogicalProcessorInformationEx(RelationProcessorCore, nullptr, &length);
+	ERR_FAIL_COND_V_MSG(GetLastError() != ERROR_INSUFFICIENT_BUFFER, get_processor_count(), "Couldn't get the physical processor count. Returning the logical processor count.");
+
+	std::unique_ptr<uint8_t[]> buffer(new uint8_t[length]);
+	const PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX info =
+			reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(buffer.get());
+
+	const BOOL result_second = GetLogicalProcessorInformationEx(RelationProcessorCore, info, &length);
+	ERR_FAIL_COND_V_MSG(result_second == FALSE, get_processor_count(), "Couldn't get the physical processor count. Returning the logical processor count.");
+
+	size_t nb_physical_cores = 0;
+	size_t offset = 0;
+	do {
+		const PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX current_info = reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(buffer.get() + offset);
+		offset += current_info->Size;
+		nb_physical_cores += 1;
+	} while (offset < length);
+
+	return nb_physical_cores;
+}
+
 String OS_Windows::get_processor_name() const {
 	const String id = "Hardware\\Description\\System\\CentralProcessor\\0";
 
