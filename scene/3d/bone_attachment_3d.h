@@ -39,12 +39,23 @@
 class BoneAttachment3D : public Node3D {
 	GDCLASS(BoneAttachment3D, Node3D);
 
+public:
+	enum BonePoseMode {
+		BONE_POSE,
+		BONE_POSE_OVERRIDE,
+		BONE_POSE_NO_OVERRIDE,
+		BONE_REST
+	};
+
+private:
 	bool bound = false;
 	String bone_name;
 	int bone_idx = -1;
 
 	bool override_pose = false;
 	bool _override_dirty = false;
+
+	BonePoseMode bone_pose_mode = BONE_POSE;
 
 	bool use_external_skeleton = false;
 	NodePath external_skeleton_node;
@@ -81,6 +92,9 @@ public:
 
 	void set_override_pose(bool p_override);
 	bool get_override_pose() const;
+
+	void set_bone_pose_mode(BonePoseMode p_pose_mode);
+	BonePoseMode get_bone_pose_mode() const;
 
 	void set_use_external_skeleton(bool p_external_skeleton);
 	bool get_use_external_skeleton() const;
