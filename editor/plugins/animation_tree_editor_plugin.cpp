@@ -34,25 +34,15 @@
 #include "animation_blend_space_2d_editor.h"
 #include "animation_blend_tree_editor_plugin.h"
 #include "animation_state_machine_editor.h"
-#include "core/config/project_settings.h"
-#include "core/input/input.h"
-#include "core/io/resource_loader.h"
-#include "core/math/delaunay_2d.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"
-#include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
-#include "scene/animation/animation_player.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/panel.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
-#include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
@@ -115,6 +105,7 @@ void AnimationTreeEditor::_update_path() {
 	path_hb->add_child(b);
 	for (int i = 0; i < button_path.size(); i++) {
 		b = memnew(Button);
+		b->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		b->set_text(button_path[i]);
 		b->set_toggle_mode(true);
 		b->set_button_group(group);

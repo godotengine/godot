@@ -50,7 +50,6 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"
-#include "scene/resources/packed_scene.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
@@ -1562,6 +1561,7 @@ ConnectionsDock::ConnectionsDock() {
 	vbc->add_child(search_box);
 
 	tree = memnew(ConnectionsDockTree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(1);
 	tree->set_select_mode(Tree::SELECT_ROW);
 	tree->set_hide_root(true);
