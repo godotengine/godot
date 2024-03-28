@@ -3826,6 +3826,9 @@ int initialize_asound(int verbose) {
   char *error;
   handle = dlopen("libasound.so.2", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libasound.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }

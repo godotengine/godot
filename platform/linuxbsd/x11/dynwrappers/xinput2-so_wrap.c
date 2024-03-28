@@ -119,6 +119,9 @@ int initialize_xinput2(int verbose) {
   char *error;
   handle = dlopen("libXi.so.6", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libXi.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }

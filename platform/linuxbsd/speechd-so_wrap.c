@@ -238,6 +238,9 @@ int initialize_speechd(int verbose) {
   char *error;
   handle = dlopen("libspeechd.so.2", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libspeechd.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }

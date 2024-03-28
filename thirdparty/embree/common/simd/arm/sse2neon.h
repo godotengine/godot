@@ -5954,7 +5954,13 @@ FORCE_INLINE void _mm_storeu_si32(void *p, __m128i a)
 FORCE_INLINE void _mm_stream_pd(double *p, __m128d a)
 {
 #if __has_builtin(__builtin_nontemporal_store)
+// -- GODOT start --
+#if defined(__aarch64__)
+    __builtin_nontemporal_store(a, (float64x2_t *) p);
+#else
     __builtin_nontemporal_store(a, (float32x4_t *) p);
+#endif
+// -- GODOT end --
 #elif defined(__aarch64__)
     vst1q_f64(p, vreinterpretq_f64_m128d(a));
 #else

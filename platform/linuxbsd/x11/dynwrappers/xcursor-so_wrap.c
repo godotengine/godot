@@ -194,6 +194,9 @@ int initialize_xcursor(int verbose) {
   char *error;
   handle = dlopen("libXcursor.so.1", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libXcursor.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }

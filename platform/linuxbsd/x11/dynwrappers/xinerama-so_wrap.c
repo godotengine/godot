@@ -29,6 +29,9 @@ int initialize_xinerama(int verbose) {
   char *error;
   handle = dlopen("libXinerama.so.1", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libXinerama.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }
