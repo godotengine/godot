@@ -193,12 +193,21 @@
 		<member name="cell_center_z" type="bool" setter="set_center_z" getter="get_center_z" default="true">
 			If [code]true[/code], grid items are centered on the Z axis.
 		</member>
+		<member name="cell_layout" type="int" setter="set_cell_layout" getter="get_cell_layout" enum="GridMap.CellLayout" default="0">
+			For all half-offset shapes (Hexagonal and Half-Offset square), changes the way cells are indexed in the GridMap grid.
+		</member>
 		<member name="cell_octant_size" type="int" setter="set_octant_size" getter="get_octant_size" default="8">
 			The size of each octant measured in number of cells. This applies to all three axis.
+		</member>
+		<member name="cell_offset_axis" type="int" setter="set_cell_offset_axis" getter="get_cell_offset_axis" enum="GridMap.CellOffsetAxis" default="0">
+			For all half-offset shapes (Hexagonal and Half-Offset square), determines the offset axis.
 		</member>
 		<member name="cell_scale" type="float" setter="set_cell_scale" getter="get_cell_scale" default="1.0">
 			The scale of the cell items.
 			This does not affect the size of the grid cells themselves, only the items in them. This can be used to make cell items overlap their neighbors.
+		</member>
+		<member name="cell_shape" type="int" setter="set_cell_shape" getter="get_cell_shape" enum="GridMap.CellShape" default="0">
+			The shape of the grid's cells.
 		</member>
 		<member name="cell_size" type="Vector3" setter="set_cell_size" getter="get_cell_size" default="Vector3(2, 2, 2)">
 			The dimensions of the grid's cells.
@@ -235,6 +244,45 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="CELL_SHAPE_SQUARE" value="0" enum="CellShape">
+			Rectangular cell shape.
+		</constant>
+		<constant name="CELL_SHAPE_HEXAGON" value="1" enum="CellShape">
+			Hexagonal cell shape.
+		</constant>
+		<constant name="CELL_SHAPE_MAX" value="2" enum="CellShape">
+			Count of all cell shapes. Not a valid selection.
+		</constant>
+		<constant name="CELL_LAYOUT_STACKED" value="0" enum="CellLayout">
+			Cell coordinates layout where both axes stay consistent with their respective local horizontal and vertical axis.
+		</constant>
+		<constant name="CELL_LAYOUT_STACKED_OFFSET" value="1" enum="CellLayout">
+			Same as [constant CELL_LAYOUT_STACKED], but the first half-offset is negative instead of positive.
+		</constant>
+		<constant name="CELL_LAYOUT_STAIRS_RIGHT" value="2" enum="CellLayout">
+			Cell coordinates layout where the horizontal axis stays horizontal, and the vertical goes down-right.
+		</constant>
+		<constant name="CELL_LAYOUT_STAIRS_DOWN" value="3" enum="CellLayout">
+			Cell coordinates layout where the vertical axis stays vertical, and the horizontal goes down-right.
+		</constant>
+		<constant name="CELL_LAYOUT_DIAMOND_RIGHT" value="4" enum="CellLayout">
+			Cell coordinates layout where the horizontal axis goes up-right, and the vertical  goes down-right.
+		</constant>
+		<constant name="CELL_LAYOUT_DIAMOND_DOWN" value="5" enum="CellLayout">
+			Cell coordinates layout where the horizontal axis goes down-right, and the vertical goes down-left.
+		</constant>
+		<constant name="CELL_LAYOUT_MAX" value="6" enum="CellLayout">
+			Count of all cell layouts. Not a valid selection.
+		</constant>
+		<constant name="CELL_OFFSET_AXIS_HORIZONTAL" value="0" enum="CellOffsetAxis">
+			Horizontal half-offset.
+		</constant>
+		<constant name="CELL_OFFSET_AXIS_VERTICAL" value="1" enum="CellOffsetAxis">
+			Vertical half-offset.
+		</constant>
+		<constant name="CELL_OFFSET_AXIS_MAX" value="2" enum="CellOffsetAxis">
+			Count of all cell offset axes. Not a valid selection.
+		</constant>
 		<constant name="INVALID_CELL_ITEM" value="-1">
 			Invalid cell item that can be used in [method set_cell_item] to clear cells (or represent an empty cell in [method get_cell_item]).
 		</constant>
