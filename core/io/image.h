@@ -238,6 +238,9 @@ public:
 	 */
 	Format get_format() const;
 
+	static Format get_format_with_alpha(Format p_format);
+	static Format get_format_without_alpha(Format p_format);
+
 	int get_mipmap_byte_size(int p_mipmap) const; //get where the mipmap begins in data
 	int get_mipmap_offset(int p_mipmap) const; //get where the mipmap begins in data
 	void get_mipmap_offset_and_size(int p_mipmap, int &r_ofs, int &r_size) const; //get where the mipmap begins in data
