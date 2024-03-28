@@ -47,7 +47,7 @@
 //     /*.custom_maven_repos =*/{}
 // };
 
-String PluginConfigAndroid::resolve_local_dependency_path(String plugin_config_dir, String dependency_path) {
+String PluginConfigAndroid::resolve_local_dependency_path(const String &plugin_config_dir, const String &dependency_path) {
 	String absolute_path;
 	if (!dependency_path.is_empty()) {
 		if (dependency_path.is_absolute_path()) {
@@ -60,7 +60,7 @@ String PluginConfigAndroid::resolve_local_dependency_path(String plugin_config_d
 	return absolute_path;
 }
 
-PluginConfigAndroid PluginConfigAndroid::resolve_prebuilt_plugin(PluginConfigAndroid prebuilt_plugin, String plugin_config_dir) {
+PluginConfigAndroid PluginConfigAndroid::resolve_prebuilt_plugin(PluginConfigAndroid prebuilt_plugin, const String &plugin_config_dir) {
 	PluginConfigAndroid resolved = prebuilt_plugin;
 	resolved.binary = resolved.binary_type == PluginConfigAndroid::BINARY_TYPE_LOCAL ? resolve_local_dependency_path(plugin_config_dir, prebuilt_plugin.binary) : prebuilt_plugin.binary;
 	if (!prebuilt_plugin.local_dependencies.is_empty()) {
@@ -72,7 +72,7 @@ PluginConfigAndroid PluginConfigAndroid::resolve_prebuilt_plugin(PluginConfigAnd
 	return resolved;
 }
 
-Vector<PluginConfigAndroid> PluginConfigAndroid::get_prebuilt_plugins(String plugins_base_dir) {
+Vector<PluginConfigAndroid> PluginConfigAndroid::get_prebuilt_plugins(const String &plugins_base_dir) {
 	Vector<PluginConfigAndroid> prebuilt_plugins;
 	return prebuilt_plugins;
 }
@@ -147,7 +147,7 @@ PluginConfigAndroid PluginConfigAndroid::load_plugin_config(Ref<ConfigFile> conf
 	return plugin_config;
 }
 
-void PluginConfigAndroid::get_plugins_binaries(String binary_type, Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result) {
+void PluginConfigAndroid::get_plugins_binaries(const String &binary_type, const Vector<PluginConfigAndroid> &plugins_configs, Vector<String> &r_result) {
 	if (!plugins_configs.is_empty()) {
 		for (int i = 0; i < plugins_configs.size(); i++) {
 			PluginConfigAndroid config = plugins_configs[i];
@@ -170,7 +170,7 @@ void PluginConfigAndroid::get_plugins_binaries(String binary_type, Vector<Plugin
 	}
 }
 
-void PluginConfigAndroid::get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result) {
+void PluginConfigAndroid::get_plugins_custom_maven_repos(const Vector<PluginConfigAndroid> &plugins_configs, Vector<String> &r_result) {
 	if (!plugins_configs.is_empty()) {
 		for (int i = 0; i < plugins_configs.size(); i++) {
 			PluginConfigAndroid config = plugins_configs[i];
@@ -183,7 +183,7 @@ void PluginConfigAndroid::get_plugins_custom_maven_repos(Vector<PluginConfigAndr
 	}
 }
 
-void PluginConfigAndroid::get_plugins_names(Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result) {
+void PluginConfigAndroid::get_plugins_names(const Vector<PluginConfigAndroid> &plugins_configs, Vector<String> &r_result) {
 	if (!plugins_configs.is_empty()) {
 		for (int i = 0; i < plugins_configs.size(); i++) {
 			PluginConfigAndroid config = plugins_configs[i];
