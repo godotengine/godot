@@ -66,8 +66,6 @@ class CPUParticles2DEditorPlugin : public EditorPlugin {
 	HBoxContainer *toolbar = nullptr;
 	MenuButton *menu = nullptr;
 
-	SpinBox *epoints = nullptr;
-
 	ConfirmationDialog *emission_mask = nullptr;
 	OptionButton *emission_mask_mode = nullptr;
 	CheckBox *emission_mask_centered = nullptr;

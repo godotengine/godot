@@ -23,9 +23,10 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<param index="1" name="values" type="PackedStringArray" />
-			<param index="2" name="index" type="int" />
+			<param index="2" name="default_value_index" type="int" />
 			<description>
 				Adds an additional [OptionButton] to the file dialog. If [param values] is empty, a [CheckBox] is added instead.
+				[param default_value_index] should be an index of the value in the [param values]. If [param values] is empty it should be either [code]1[/code] (checked), or [code]0[/code] (unchecked).
 			</description>
 		</method>
 		<method name="clear_filters">
@@ -90,7 +91,7 @@
 		<method name="set_option_default">
 			<return type="void" />
 			<param index="0" name="option" type="int" />
-			<param index="1" name="index" type="int" />
+			<param index="1" name="default_value_index" type="int" />
 			<description>
 				Sets the default value index of the [OptionButton] or [CheckBox] with index [param option].
 			</description>

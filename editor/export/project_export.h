@@ -154,8 +154,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	EditorFileDialog *export_pck_zip = nullptr;
 	EditorFileDialog *export_project = nullptr;
-	CheckBox *export_debug = nullptr;
-	CheckBox *export_pck_zip_debug = nullptr;
 
 	CheckButton *enc_pck = nullptr;
 	CheckButton *enc_directory = nullptr;

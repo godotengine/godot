@@ -59,6 +59,17 @@ void FileDialog::_focus_file_text() {
 	}
 }
 
+void FileDialog::_native_popup() {
+	// Show native dialog directly.
+	String root;
+	if (access == ACCESS_RESOURCES) {
+		root = ProjectSettings::get_singleton()->get_resource_path();
+	} else if (access == ACCESS_USERDATA) {
+		root = OS::get_singleton()->get_user_data_dir();
+	}
+	DisplayServer::get_singleton()->file_dialog_with_options_show(get_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb));
+}
+
 void FileDialog::popup(const Rect2i &p_rect) {
 	_update_option_controls();
 
@@ -69,20 +80,16 @@ void FileDialog::popup(const Rect2i &p_rect) {
 #endif
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
-		String root;
-		if (access == ACCESS_RESOURCES) {
-			root = ProjectSettings::get_singleton()->get_resource_path();
-		} else if (access == ACCESS_USERDATA) {
-			root = OS::get_singleton()->get_user_data_dir();
-		}
-		DisplayServer::get_singleton()->file_dialog_with_options_show(get_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb));
+		_native_popup();
 	} else {
 		ConfirmationDialog::popup(p_rect);
 	}
 }
 
 void FileDialog::set_visible(bool p_visible) {
-	_update_option_controls();
+	if (p_visible) {
+		_update_option_controls();
+	}
 
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
@@ -92,67 +99,62 @@ void FileDialog::set_visible(bool p_visible) {
 #endif
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
-		if (p_visible) {
-			String root;
-			if (access == ACCESS_RESOURCES) {
-				root = ProjectSettings::get_singleton()->get_resource_path();
-			} else if (access == ACCESS_USERDATA) {
-				root = OS::get_singleton()->get_user_data_dir();
-			}
-			DisplayServer::get_singleton()->file_dialog_with_options_show(get_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb));
-		}
+		_native_popup();
 	} else {
 		ConfirmationDialog::set_visible(p_visible);
 	}
 }
 
 void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options) {
-	if (p_ok) {
-		if (p_files.size() > 0) {
-			Vector<String> files = p_files;
-			if (access != ACCESS_FILESYSTEM) {
-				for (String &file_name : files) {
-					file_name = ProjectSettings::get_singleton()->localize_path(file_name);
-				}
-			}
-			String f = files[0];
-			if (mode == FILE_MODE_OPEN_FILES) {
-				emit_signal(SNAME("files_selected"), files);
-			} else {
-				if (mode == FILE_MODE_SAVE_FILE) {
-					if (p_filter >= 0 && p_filter < filters.size()) {
-						bool valid = false;
-						String flt = filters[p_filter].get_slice(";", 0);
-						int filter_slice_count = flt.get_slice_count(",");
-						for (int j = 0; j < filter_slice_count; j++) {
-							String str = (flt.get_slice(",", j).strip_edges());
-							if (f.match(str)) {
-								valid = true;
-								break;
-							}
-						}
-
-						if (!valid && filter_slice_count > 0) {
-							String str = (flt.get_slice(",", 0).strip_edges());
-							f += str.substr(1, str.length() - 1);
-						}
-					}
-					emit_signal(SNAME("file_selected"), f);
-				} else if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
-					emit_signal(SNAME("file_selected"), f);
-				} else if (mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_DIR) {
-					emit_signal(SNAME("dir_selected"), f);
-				}
-			}
-			file->set_text(f);
-			dir->set_text(f.get_base_dir());
-			selected_options = p_selected_options;
-			filter->select(p_filter);
-		}
-	} else {
+	if (!p_ok) {
 		file->set_text("");
 		emit_signal(SNAME("canceled"));
+		return;
 	}
+
+	if (p_files.is_empty()) {
+		return;
+	}
+
+	Vector<String> files = p_files;
+	if (access != ACCESS_FILESYSTEM) {
+		for (String &file_name : files) {
+			file_name = ProjectSettings::get_singleton()->localize_path(file_name);
+		}
+	}
+	String f = files[0];
+	if (mode == FILE_MODE_OPEN_FILES) {
+		emit_signal(SNAME("files_selected"), files);
+	} else {
+		if (mode == FILE_MODE_SAVE_FILE) {
+			if (p_filter >= 0 && p_filter < filters.size()) {
+				bool valid = false;
+				String flt = filters[p_filter].get_slice(";", 0);
+				int filter_slice_count = flt.get_slice_count(",");
+				for (int j = 0; j < filter_slice_count; j++) {
+					String str = (flt.get_slice(",", j).strip_edges());
+					if (f.match(str)) {
+						valid = true;
+						break;
+					}
+				}
+
+				if (!valid && filter_slice_count > 0) {
+					String str = (flt.get_slice(",", 0).strip_edges());
+					f += str.substr(1, str.length() - 1);
+				}
+			}
+			emit_signal(SNAME("file_selected"), f);
+		} else if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
+			emit_signal(SNAME("file_selected"), f);
+		} else if (mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_DIR) {
+			emit_signal(SNAME("dir_selected"), f);
+		}
+	}
+	file->set_text(f);
+	dir->set_text(f.get_base_dir());
+	selected_options = p_selected_options;
+	filter->select(p_filter);
 }
 
 VBoxContainer *FileDialog::get_vbox() {
@@ -1110,7 +1112,7 @@ void FileDialog::_update_option_controls() {
 	}
 	options_dirty = false;
 
-	while (grid_options->get_child_count(false) > 0) {
+	while (grid_options->get_child_count() > 0) {
 		Node *child = grid_options->get_child(0);
 		grid_options->remove_child(child);
 		child->queue_free();
@@ -1222,9 +1224,8 @@ void FileDialog::add_option(const String &p_name, const Vector<String> &p_values
 
 void FileDialog::set_option_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
-	int prev_size = options.size();
 
-	if (prev_size == p_count) {
+	if (options.size() == p_count) {
 		return;
 	}
 	options.resize(p_count);
@@ -1298,10 +1299,10 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_option_default", "option"), &FileDialog::get_option_default);
 	ClassDB::bind_method(D_METHOD("set_option_name", "option", "name"), &FileDialog::set_option_name);
 	ClassDB::bind_method(D_METHOD("set_option_values", "option", "values"), &FileDialog::set_option_values);
-	ClassDB::bind_method(D_METHOD("set_option_default", "option", "index"), &FileDialog::set_option_default);
+	ClassDB::bind_method(D_METHOD("set_option_default", "option", "default_value_index"), &FileDialog::set_option_default);
 	ClassDB::bind_method(D_METHOD("set_option_count", "count"), &FileDialog::set_option_count);
 	ClassDB::bind_method(D_METHOD("get_option_count"), &FileDialog::get_option_count);
-	ClassDB::bind_method(D_METHOD("add_option", "name", "values", "index"), &FileDialog::add_option);
+	ClassDB::bind_method(D_METHOD("add_option", "name", "values", "default_value_index"), &FileDialog::add_option);
 	ClassDB::bind_method(D_METHOD("get_selected_options"), &FileDialog::get_selected_options);
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &FileDialog::get_current_dir);
 	ClassDB::bind_method(D_METHOD("get_current_file"), &FileDialog::get_current_file);
