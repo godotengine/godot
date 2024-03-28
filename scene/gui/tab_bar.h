@@ -34,6 +34,8 @@
 #include "scene/gui/control.h"
 #include "scene/resources/text_line.h"
 
+class JoypadHelper;
+
 class TabBar : public Control {
 	GDCLASS(TabBar, Control);
 
@@ -111,9 +113,8 @@ private:
 	bool initialized = false;
 	int queued_current = -1;
 
-	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
-	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
-	float gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+	Ref<JoypadHelper> helper;
+	void _tab_cursor_move(const Vector2i &p_movement);
 
 	struct ThemeCache {
 		int h_separation = 0;
