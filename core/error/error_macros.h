@@ -67,8 +67,10 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, const char *p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const String &p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, const String &p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
-void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message = "", bool p_editor_notify = false, bool fatal = false);
-void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify = false, bool fatal = false);
+void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message = "", bool p_editor_notify = false, bool p_fatal = false, const char *p_return = "");
+void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify = false, bool p_fatal = false, const char *p_return = "");
+void _err_print_index_error(const char *p_function, const char *p_file, int p_line, uint64_t p_index, uint64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message = "", bool p_editor_notify = false, bool p_fatal = false, const char *p_return = "");
+void _err_print_index_error(const char *p_function, const char *p_file, int p_line, uint64_t p_index, uint64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify = false, bool p_fatal = false, const char *p_return = "");
 void _err_flush_stdout();
 
 #ifdef __GNUC__
@@ -80,12 +82,14 @@ void _err_flush_stdout();
 
 #ifdef _MSC_VER
 /**
- * Don't use GENERATE_TRAP() directly, should only be used be the macros below.
+ * Don't use `GENERATE_TRAP` directly.
+ * It should only be used by the macros in `core/error/error_macros.h`.
  */
 #define GENERATE_TRAP() __debugbreak()
 #else
 /**
- * Don't use GENERATE_TRAP() directly, should only be used be the macros below.
+ * Don't use `GENERATE_TRAP` directly.
+ * It should only be used by the macros in `core/error/error_macros.h`.
  */
 #define GENERATE_TRAP() __builtin_trap()
 #endif
@@ -118,32 +122,32 @@ void _err_flush_stdout();
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, the current function returns.
  */
-#define ERR_FAIL_INDEX(m_index, m_size)                                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                     \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return;                                                                                                 \
-	} else                                                                                                      \
+#define ERR_FAIL_INDEX(m_index, m_size)                                                                                           \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                       \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (int64_t)m_index, (int64_t)m_size, _STR(m_index), _STR(m_size)); \
+		return;                                                                                                                   \
+	} else                                                                                                                        \
 		((void)0)
 
 /**
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, prints `m_msg` and the current function returns.
  */
-#define ERR_FAIL_INDEX_MSG(m_index, m_size, m_msg)                                                                     \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                            \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
-		return;                                                                                                        \
-	} else                                                                                                             \
+#define ERR_FAIL_INDEX_MSG(m_index, m_size, m_msg)                                                                                       \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                              \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (int64_t)m_index, (int64_t)m_size, _STR(m_index), _STR(m_size), m_msg); \
+		return;                                                                                                                          \
+	} else                                                                                                                               \
 		((void)0)
 
 /**
- * Same as `ERR_FAIL_INDEX_MSG` but also notifies the editor.
+ * Same as `ERR_FAIL_INDEX_MSG`, but also notifies the editor.
  */
-#define ERR_FAIL_INDEX_EDMSG(m_index, m_size, m_msg)                                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                  \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		return;                                                                                                              \
-	} else                                                                                                                   \
+#define ERR_FAIL_INDEX_EDMSG(m_index, m_size, m_msg)                                                                                           \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                                    \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (int64_t)m_index, (int64_t)m_size, _STR(m_index), _STR(m_size), m_msg, true); \
+		return;                                                                                                                                \
+	} else                                                                                                                                     \
 		((void)0)
 
 /**
@@ -153,32 +157,32 @@ void _err_flush_stdout();
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, the current function returns `m_retval`.
  */
-#define ERR_FAIL_INDEX_V(m_index, m_size, m_retval)                                                             \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                     \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return m_retval;                                                                                        \
-	} else                                                                                                      \
+#define ERR_FAIL_INDEX_V(m_index, m_size, m_retval)                                                                                                                 \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                                                         \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (int64_t)m_index, (int64_t)m_size, _STR(m_index), _STR(m_size), "", false, false, _STR(m_retval)); \
+		return m_retval;                                                                                                                                            \
+	} else                                                                                                                                                          \
 		((void)0)
 
 /**
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, prints `m_msg` and the current function returns `m_retval`.
  */
-#define ERR_FAIL_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                            \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
-		return m_retval;                                                                                               \
-	} else                                                                                                             \
+#define ERR_FAIL_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                                                                         \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                                                            \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (int64_t)m_index, (int64_t)m_size, _STR(m_index), _STR(m_size), m_msg, false, false, _STR(m_retval)); \
+		return m_retval;                                                                                                                                               \
+	} else                                                                                                                                                             \
 		((void)0)
 
 /**
- * Same as `ERR_FAIL_INDEX_V_MSG` but also notifies the editor.
+ * Same as `ERR_FAIL_INDEX_V_MSG`, but also notifies the editor.
  */
-#define ERR_FAIL_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                             \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                  \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		return m_retval;                                                                                                     \
-	} else                                                                                                                   \
+#define ERR_FAIL_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                                                                      \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                                                           \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (int64_t)m_index, (int64_t)m_size, _STR(m_index), _STR(m_size), m_msg, true, false, _STR(m_retval)); \
+		return m_retval;                                                                                                                                              \
+	} else                                                                                                                                                            \
 		((void)0)
 
 /**
@@ -189,12 +193,12 @@ void _err_flush_stdout();
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, the application crashes.
  */
-#define CRASH_BAD_INDEX(m_index, m_size)                                                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                      \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", false, true); \
-		_err_flush_stdout();                                                                                                     \
-		GENERATE_TRAP();                                                                                                         \
-	} else                                                                                                                       \
+#define CRASH_BAD_INDEX(m_index, m_size)                                                                                                           \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                                        \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (int64_t)m_index, (int64_t)m_size, _STR(m_index), _STR(m_size), "", false, true); \
+		_err_flush_stdout();                                                                                                                       \
+		GENERATE_TRAP();                                                                                                                           \
+	} else                                                                                                                                         \
 		((void)0)
 
 /**
@@ -204,12 +208,12 @@ void _err_flush_stdout();
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, prints `m_msg` and the application crashes.
  */
-#define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                                 \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                         \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
-		_err_flush_stdout();                                                                                                        \
-		GENERATE_TRAP();                                                                                                            \
-	} else                                                                                                                          \
+#define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                                                   \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                                           \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (int64_t)m_index, (int64_t)m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
+		_err_flush_stdout();                                                                                                                          \
+		GENERATE_TRAP();                                                                                                                              \
+	} else                                                                                                                                            \
 		((void)0)
 
 // Unsigned integer index out of bounds error macros.
@@ -221,32 +225,32 @@ void _err_flush_stdout();
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, the current function returns.
  */
-#define ERR_FAIL_UNSIGNED_INDEX(m_index, m_size)                                                                \
-	if (unlikely((m_index) >= (m_size))) {                                                                      \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return;                                                                                                 \
-	} else                                                                                                      \
+#define ERR_FAIL_UNSIGNED_INDEX(m_index, m_size)                                                                                    \
+	if (unlikely((m_index) >= (m_size))) {                                                                                          \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (uint64_t)m_index, (uint64_t)m_size, _STR(m_index), _STR(m_size)); \
+		return;                                                                                                                     \
+	} else                                                                                                                          \
 		((void)0)
 
 /**
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, prints `m_msg` and the current function returns.
  */
-#define ERR_FAIL_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                            \
-	if (unlikely((m_index) >= (m_size))) {                                                                             \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
-		return;                                                                                                        \
-	} else                                                                                                             \
+#define ERR_FAIL_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                                \
+	if (unlikely((m_index) >= (m_size))) {                                                                                                 \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (uint64_t)m_index, (uint64_t)m_size, _STR(m_index), _STR(m_size), m_msg); \
+		return;                                                                                                                            \
+	} else                                                                                                                                 \
 		((void)0)
 
 /**
- * Same as `ERR_FAIL_UNSIGNED_INDEX_MSG` but also notifies the editor.
+ * Same as `ERR_FAIL_UNSIGNED_INDEX_MSG`, but also notifies the editor.
  */
-#define ERR_FAIL_UNSIGNED_INDEX_EDMSG(m_index, m_size, m_msg)                                                                \
-	if (unlikely((m_index) >= (m_size))) {                                                                                   \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		return;                                                                                                              \
-	} else                                                                                                                   \
+#define ERR_FAIL_UNSIGNED_INDEX_EDMSG(m_index, m_size, m_msg)                                                                                    \
+	if (unlikely((m_index) >= (m_size))) {                                                                                                       \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (uint64_t)m_index, (uint64_t)m_size, _STR(m_index), _STR(m_size), m_msg, true); \
+		return;                                                                                                                                  \
+	} else                                                                                                                                       \
 		((void)0)
 
 /**
@@ -256,32 +260,32 @@ void _err_flush_stdout();
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, the current function returns `m_retval`.
  */
-#define ERR_FAIL_UNSIGNED_INDEX_V(m_index, m_size, m_retval)                                                    \
-	if (unlikely((m_index) >= (m_size))) {                                                                      \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return m_retval;                                                                                        \
-	} else                                                                                                      \
+#define ERR_FAIL_UNSIGNED_INDEX_V(m_index, m_size, m_retval)                                                                                                          \
+	if (unlikely((m_index) >= (m_size))) {                                                                                                                            \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (uint64_t)m_index, (uint64_t)m_size, _STR(m_index), _STR(m_size), "", false, false, _STR(m_retval)); \
+		return m_retval;                                                                                                                                              \
+	} else                                                                                                                                                            \
 		((void)0)
 
 /**
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, prints `m_msg` and the current function returns `m_retval`.
  */
-#define ERR_FAIL_UNSIGNED_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                \
-	if (unlikely((m_index) >= (m_size))) {                                                                             \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
-		return m_retval;                                                                                               \
-	} else                                                                                                             \
+#define ERR_FAIL_UNSIGNED_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                                                                  \
+	if (unlikely((m_index) >= (m_size))) {                                                                                                                               \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (uint64_t)m_index, (uint64_t)m_size, _STR(m_index), _STR(m_size), m_msg, false, false, _STR(m_retval)); \
+		return m_retval;                                                                                                                                                 \
+	} else                                                                                                                                                               \
 		((void)0)
 
 /**
- * Same as `ERR_FAIL_UNSIGNED_INDEX_V_EDMSG` but also notifies the editor.
+ * Same as `ERR_FAIL_UNSIGNED_INDEX_V_EDMSG`, but also notifies the editor.
  */
-#define ERR_FAIL_UNSIGNED_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                    \
-	if (unlikely((m_index) >= (m_size))) {                                                                                   \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		return m_retval;                                                                                                     \
-	} else                                                                                                                   \
+#define ERR_FAIL_UNSIGNED_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                                                               \
+	if (unlikely((m_index) >= (m_size))) {                                                                                                                              \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (uint64_t)m_index, (uint64_t)m_size, _STR(m_index), _STR(m_size), m_msg, true, false, _STR(m_retval)); \
+		return m_retval;                                                                                                                                                \
+	} else                                                                                                                                                              \
 		((void)0)
 
 /**
@@ -292,12 +296,12 @@ void _err_flush_stdout();
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, the application crashes.
  */
-#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                                \
-	if (unlikely((m_index) >= (m_size))) {                                                                                       \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", false, true); \
-		_err_flush_stdout();                                                                                                     \
-		GENERATE_TRAP();                                                                                                         \
-	} else                                                                                                                       \
+#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                                                    \
+	if (unlikely((m_index) >= (m_size))) {                                                                                                           \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (uint64_t)m_index, (uint64_t)m_size, _STR(m_index), _STR(m_size), "", false, true); \
+		_err_flush_stdout();                                                                                                                         \
+		GENERATE_TRAP();                                                                                                                             \
+	} else                                                                                                                                           \
 		((void)0)
 
 /**
@@ -307,12 +311,12 @@ void _err_flush_stdout();
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, prints `m_msg` and the application crashes.
  */
-#define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                        \
-	if (unlikely((m_index) >= (m_size))) {                                                                                          \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
-		_err_flush_stdout();                                                                                                        \
-		GENERATE_TRAP();                                                                                                            \
-	} else                                                                                                                          \
+#define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                                            \
+	if (unlikely((m_index) >= (m_size))) {                                                                                                              \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, (uint64_t)m_index, (uint64_t)m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
+		_err_flush_stdout();                                                                                                                            \
+		GENERATE_TRAP();                                                                                                                                \
+	} else                                                                                                                                              \
 		((void)0)
 
 // Null reference error macros.
@@ -343,7 +347,7 @@ void _err_flush_stdout();
 		((void)0)
 
 /**
- * Same as `ERR_FAIL_NULL_MSG` but also notifies the editor.
+ * Same as `ERR_FAIL_NULL_MSG`, but also notifies the editor.
  */
 #define ERR_FAIL_NULL_EDMSG(m_param, m_msg)                                                                          \
 	if (unlikely(m_param == nullptr)) {                                                                              \
@@ -359,32 +363,32 @@ void _err_flush_stdout();
  * Ensures a pointer `m_param` is not null.
  * If it is null, the current function returns `m_retval`.
  */
-#define ERR_FAIL_NULL_V(m_param, m_retval)                                                              \
-	if (unlikely(m_param == nullptr)) {                                                                 \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null."); \
-		return m_retval;                                                                                \
-	} else                                                                                              \
+#define ERR_FAIL_NULL_V(m_param, m_retval)                                                                                             \
+	if (unlikely(m_param == nullptr)) {                                                                                                \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null. Returning: " _STR(m_retval) "."); \
+		return m_retval;                                                                                                               \
+	} else                                                                                                                             \
 		((void)0)
 
 /**
  * Ensures a pointer `m_param` is not null.
  * If it is null, prints `m_msg` and the current function returns `m_retval`.
  */
-#define ERR_FAIL_NULL_V_MSG(m_param, m_retval, m_msg)                                                          \
-	if (unlikely(m_param == nullptr)) {                                                                        \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg); \
-		return m_retval;                                                                                       \
-	} else                                                                                                     \
+#define ERR_FAIL_NULL_V_MSG(m_param, m_retval, m_msg)                                                                                         \
+	if (unlikely(m_param == nullptr)) {                                                                                                       \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null. Returning: " _STR(m_retval) ".", m_msg); \
+		return m_retval;                                                                                                                      \
+	} else                                                                                                                                    \
 		((void)0)
 
 /**
- * Same as `ERR_FAIL_NULL_V_MSG` but also notifies the editor.
+ * Same as `ERR_FAIL_NULL_V_MSG`, but also notifies the editor.
  */
-#define ERR_FAIL_NULL_V_EDMSG(m_param, m_retval, m_msg)                                                              \
-	if (unlikely(m_param == nullptr)) {                                                                              \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null.", m_msg, true); \
-		return m_retval;                                                                                             \
-	} else                                                                                                           \
+#define ERR_FAIL_NULL_V_EDMSG(m_param, m_retval, m_msg)                                                                                             \
+	if (unlikely(m_param == nullptr)) {                                                                                                             \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter \"" _STR(m_param) "\" is null. Returning: " _STR(m_retval) ".", m_msg, true); \
+		return m_retval;                                                                                                                            \
+	} else                                                                                                                                          \
 		((void)0)
 
 /**
@@ -418,7 +422,7 @@ void _err_flush_stdout();
 		((void)0)
 
 /**
- * Same as `ERR_FAIL_COND_MSG` but also notifies the editor.
+ * Same as `ERR_FAIL_COND_MSG`, but also notifies the editor.
  */
 #define ERR_FAIL_COND_EDMSG(m_cond, m_msg)                                                                          \
 	if (unlikely(m_cond)) {                                                                                         \
@@ -436,11 +440,11 @@ void _err_flush_stdout();
  * Ensures `m_cond` is false.
  * If `m_cond` is true, the current function returns `m_retval`.
  */
-#define ERR_FAIL_COND_V(m_cond, m_retval)                                                                                         \
-	if (unlikely(m_cond)) {                                                                                                       \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Returning: " _STR(m_retval)); \
-		return m_retval;                                                                                                          \
-	} else                                                                                                                        \
+#define ERR_FAIL_COND_V(m_cond, m_retval)                                                                                             \
+	if (unlikely(m_cond)) {                                                                                                           \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Returning: " _STR(m_retval) "."); \
+		return m_retval;                                                                                                              \
+	} else                                                                                                                            \
 		((void)0)
 
 /**
@@ -450,21 +454,21 @@ void _err_flush_stdout();
  * If checking for null use ERR_FAIL_NULL_V_MSG instead.
  * If checking index bounds use ERR_FAIL_INDEX_V_MSG instead.
  */
-#define ERR_FAIL_COND_V_MSG(m_cond, m_retval, m_msg)                                                                                     \
-	if (unlikely(m_cond)) {                                                                                                              \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Returning: " _STR(m_retval), m_msg); \
-		return m_retval;                                                                                                                 \
-	} else                                                                                                                               \
+#define ERR_FAIL_COND_V_MSG(m_cond, m_retval, m_msg)                                                                                         \
+	if (unlikely(m_cond)) {                                                                                                                  \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Returning: " _STR(m_retval) ".", m_msg); \
+		return m_retval;                                                                                                                     \
+	} else                                                                                                                                   \
 		((void)0)
 
 /**
- * Same as `ERR_FAIL_COND_V_MSG` but also notifies the editor.
+ * Same as `ERR_FAIL_COND_V_MSG`, but also notifies the editor.
  */
-#define ERR_FAIL_COND_V_EDMSG(m_cond, m_retval, m_msg)                                                                                         \
-	if (unlikely(m_cond)) {                                                                                                                    \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Returning: " _STR(m_retval), m_msg, true); \
-		return m_retval;                                                                                                                       \
-	} else                                                                                                                                     \
+#define ERR_FAIL_COND_V_EDMSG(m_cond, m_retval, m_msg)                                                                                             \
+	if (unlikely(m_cond)) {                                                                                                                        \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true. Returning: " _STR(m_retval) ".", m_msg, true); \
+		return m_retval;                                                                                                                           \
+	} else                                                                                                                                         \
 		((void)0)
 
 /**
@@ -493,7 +497,7 @@ void _err_flush_stdout();
 		((void)0)
 
 /**
- * Same as `ERR_CONTINUE_MSG` but also notifies the editor.
+ * Same as `ERR_CONTINUE_MSG`, but also notifies the editor.
  */
 #define ERR_CONTINUE_EDMSG(m_cond, m_msg)                                                                                       \
 	if (unlikely(m_cond)) {                                                                                                     \
@@ -528,7 +532,7 @@ void _err_flush_stdout();
 		((void)0)
 
 /**
- * Same as `ERR_BREAK_MSG` but also notifies the editor.
+ * Same as `ERR_BREAK_MSG`, but also notifies the editor.
  */
 #define ERR_BREAK_EDMSG(m_cond, m_msg)                                                                                        \
 	if (unlikely(m_cond)) {                                                                                                   \
@@ -598,7 +602,7 @@ void _err_flush_stdout();
 		((void)0)
 
 /**
- * Same as `ERR_FAIL_MSG` but also notifies the editor.
+ * Same as `ERR_FAIL_MSG`, but also notifies the editor.
  */
 #define ERR_FAIL_EDMSG(m_msg)                                                                       \
 	if (true) {                                                                                     \
@@ -614,11 +618,11 @@ void _err_flush_stdout();
  *
  * The current function returns `m_retval`.
  */
-#define ERR_FAIL_V(m_retval)                                                                                      \
-	if (true) {                                                                                                   \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval)); \
-		return m_retval;                                                                                          \
-	} else                                                                                                        \
+#define ERR_FAIL_V(m_retval)                                                                                          \
+	if (true) {                                                                                                       \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval) "."); \
+		return m_retval;                                                                                              \
+	} else                                                                                                            \
 		((void)0)
 
 /**
@@ -627,21 +631,21 @@ void _err_flush_stdout();
  *
  * Prints `m_msg`, and the current function returns `m_retval`.
  */
-#define ERR_FAIL_V_MSG(m_retval, m_msg)                                                                                  \
-	if (true) {                                                                                                          \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval), m_msg); \
-		return m_retval;                                                                                                 \
-	} else                                                                                                               \
+#define ERR_FAIL_V_MSG(m_retval, m_msg)                                                                                      \
+	if (true) {                                                                                                              \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval) ".", m_msg); \
+		return m_retval;                                                                                                     \
+	} else                                                                                                                   \
 		((void)0)
 
 /**
- * Same as `ERR_FAIL_V_MSG` but also notifies the editor.
+ * Same as `ERR_FAIL_V_MSG`, but also notifies the editor.
  */
-#define ERR_FAIL_V_EDMSG(m_retval, m_msg)                                                                                      \
-	if (true) {                                                                                                                \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval), m_msg, true); \
-		return m_retval;                                                                                                       \
-	} else                                                                                                                     \
+#define ERR_FAIL_V_EDMSG(m_retval, m_msg)                                                                                          \
+	if (true) {                                                                                                                    \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Method/function failed. Returning: " _STR(m_retval) ".", m_msg, true); \
+		return m_retval;                                                                                                           \
+	} else                                                                                                                         \
 		((void)0)
 
 /**
@@ -655,7 +659,7 @@ void _err_flush_stdout();
 	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg)
 
 /**
- * Same as `ERR_PRINT` but also notifies the editor.
+ * Same as `ERR_PRINT`, but also notifies the editor.
  */
 #define ERR_PRINT_ED(m_msg) \
 	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg, true)
@@ -674,7 +678,7 @@ void _err_flush_stdout();
 		((void)0)
 
 /**
- * Same as `ERR_PRINT_ONCE` but also notifies the editor.
+ * Same as `ERR_PRINT_ONCE`, but also notifies the editor.
  */
 #define ERR_PRINT_ONCE_ED(m_msg)                                             \
 	if (true) {                                                              \
@@ -697,7 +701,7 @@ void _err_flush_stdout();
 	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg, false, ERR_HANDLER_WARNING)
 
 /**
- * Same as `WARN_PRINT` but also notifies the editor.
+ * Same as `WARN_PRINT`, but also notifies the editor.
  */
 #define WARN_PRINT_ED(m_msg) \
 	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_msg, true, ERR_HANDLER_WARNING)
@@ -718,7 +722,7 @@ void _err_flush_stdout();
 		((void)0)
 
 /**
- * Same as `WARN_PRINT_ONCE` but also notifies the editor.
+ * Same as `WARN_PRINT_ONCE`, but also notifies the editor.
  */
 #define WARN_PRINT_ONCE_ED(m_msg)                                                                 \
 	if (true) {                                                                                   \
@@ -795,30 +799,45 @@ void _err_flush_stdout();
 	} else                                                                                           \
 		((void)0)
 
+#ifdef DEV_ENABLED
 /**
  * Note: IN MOST CASES YOU SHOULD NOT USE THIS MACRO.
  * Do not use unless you understand the trade-offs.
  *
- * DEV macros will be compiled out in releases, they are wrapped in DEV_ENABLED.
+ * DEV macros will be compiled out in releases, they are wrapped in `DEV_ENABLED`.
  *
- * Prefer WARNINGS / ERR_FAIL macros (which fail without crashing) - ERR_FAIL should be used in most cases.
- * Then CRASH_NOW_MSG macros (on rare occasions where error cannot be recovered).
+ * Prefer `WARN_PRINT` / `ERR_FAIL` macros (which fail without crashing) - `ERR_FAIL` should be used in most cases.
+ * Then `CRASH_NOW_MSG` macros (on rare occasions where error cannot be recovered).
  *
- * DEV_ASSERT should generally only be used when both of the following conditions are met:
+ * `DEV_ASSERT` should generally only be used when both of the following conditions are met:
  * 1) Bottleneck code where a check in release would be too expensive.
  * 2) Situations where the check would fail obviously and straight away during the maintenance of the code
  *    (i.e. strict conditions that should be true no matter what)
  *    and that can't fail for other contributors once the code is finished and merged.
  */
-#ifdef DEV_ENABLED
 #define DEV_ASSERT(m_cond)                                                                                              \
 	if (unlikely(!(m_cond))) {                                                                                          \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: DEV_ASSERT failed  \"" _STR(m_cond) "\" is false."); \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: DEV_ASSERT failed. \"" _STR(m_cond) "\" is false."); \
 		_err_flush_stdout();                                                                                            \
 		GENERATE_TRAP();                                                                                                \
 	} else                                                                                                              \
 		((void)0)
 #else
+/**
+ * Note: IN MOST CASES YOU SHOULD NOT USE THIS MACRO.
+ * Do not use unless you understand the trade-offs.
+ *
+ * DEV macros will be compiled out in releases, they are wrapped in `DEV_ENABLED`.
+ *
+ * Prefer `WARN_PRINT` / `ERR_FAIL` macros (which fail without crashing) - `ERR_FAIL` should be used in most cases.
+ * Then `CRASH_NOW_MSG` macros (on rare occasions where error cannot be recovered).
+ *
+ * `DEV_ASSERT` should generally only be used when both of the following conditions are met:
+ * 1) Bottleneck code where a check in release would be too expensive.
+ * 2) Situations where the check would fail obviously and straight away during the maintenance of the code
+ *    (i.e. strict conditions that should be true no matter what)
+ *    and that can't fail for other contributors once the code is finished and merged.
+ */
 #define DEV_ASSERT(m_cond)
 #endif
 
