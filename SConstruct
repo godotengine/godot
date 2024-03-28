@@ -535,11 +535,24 @@ if selected_platform in platform_list:
             Exit(255)
     methods.write_disabled_classes(disabled_classes)
 
+    # It is isn't possible to discover if variable has "default" value because of profile settings or
+    # because SCons just set it to default value provided on opts.Add() call :/ so it is isn't possible to
+    # use env_base so here we create new Variables
+    platform_flags_filter = Variables(customs, ARGUMENTS)
+    for flag in platform_flags[selected_platform]:
+        platform_flags_filter.Add(flag[0])
+
+    # Contains only variables from profile file (custom.py) and command line args and only
+    # if they are declared in the platform_flags
+    profile_flags = Environment(variables=platform_flags_filter)
+
     # Platform specific flags.
     # These can sometimes override default options.
     flag_list = platform_flags[selected_platform]
     for f in flag_list:
-        if not (f[0] in ARGUMENTS) or ARGUMENTS[f[0]] == "auto":  # Allow command line to override platform flags
+        # Allow profile and command line flags to override platform flags
+        if not (f[0] in profile_flags) or profile_flags[f[0]] == "auto" or profile_flags[f[0]] == None:
+            print(f[0], f[1])
             env[f[0]] = f[1]
 
     # 'dev_mode' and 'production' are aliases to set default options if they haven't been
