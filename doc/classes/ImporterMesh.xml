@@ -54,6 +54,12 @@
 				[param bone_transform_array] is an [Array] which can be either empty or contain [Transform3D]s which, for each of the mesh's bone IDs, will apply mesh skinning when generating the LOD mesh variations. This is usually used to account for discrepancies in scale between the mesh itself and its skinning data.
 			</description>
 		</method>
+		<method name="generate_tangents">
+			<return type="void" />
+			<description>
+				Generates a tangent vector for each vertex. Requires that each vertex have UVs and normals set already.
+			</description>
+		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
 			<return type="int" />
 			<description>

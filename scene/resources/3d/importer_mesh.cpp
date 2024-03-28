@@ -30,10 +30,13 @@
 
 #include "importer_mesh.h"
 
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
 #include "core/math/convex_hull.h"
 #include "core/math/random_pcg.h"
 #include "core/math/static_raycaster.h"
+#include "core/math/vector3.h"
 #include "scene/resources/surface_tool.h"
 
 #include <cstdint>
@@ -1364,6 +1367,7 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_surface_name", "surface_idx", "name"), &ImporterMesh::set_surface_name);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface_idx", "material"), &ImporterMesh::set_surface_material);
 
+	ClassDB::bind_method(D_METHOD("generate_tangents"), &ImporterMesh::generate_tangents);
 	ClassDB::bind_method(D_METHOD("generate_lods", "normal_merge_angle", "normal_split_angle", "bone_transform_array"), &ImporterMesh::generate_lods);
 	ClassDB::bind_method(D_METHOD("get_mesh", "base_mesh"), &ImporterMesh::get_mesh, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("clear"), &ImporterMesh::clear);
@@ -1375,4 +1379,183 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &ImporterMesh::get_lightmap_size_hint);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
+}
+
+void ImporterMesh::generate_tangents() {
+	int surface_count = get_surface_count();
+	for (int surface_i = 0; surface_i < surface_count; surface_i++) {
+		Array surface_arrays = get_surface_arrays(surface_i);
+		Vector<Vector3> vertex_array = surface_arrays[Mesh::ARRAY_VERTEX];
+		Vector<int32_t> index_array = surface_arrays[Mesh::ARRAY_INDEX];
+		Vector<Vector3> normal_array = surface_arrays[Mesh::ARRAY_NORMAL];
+		Vector<Color> color_array = surface_arrays[Mesh::ARRAY_COLOR];
+		Vector<Vector2> uv_array = surface_arrays[Mesh::ARRAY_TEX_UV];
+		Vector<Vector2> uv2_array = surface_arrays[Mesh::ARRAY_TEX_UV2];
+		Vector<int32_t> bones_array = surface_arrays[Mesh::ARRAY_BONES];
+		Vector<float_t> weights_array = surface_arrays[Mesh::ARRAY_WEIGHTS];
+
+		LocalVector<ImporterMeshTangentGenerationContextUserData::Vertex> importer_mesh_vertex_array;
+		bool is_8_weights = surfaces[surface_i].flags & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+		for (int vertex_i = 0; vertex_i < vertex_array.size(); vertex_i++) {
+			ImporterMeshTangentGenerationContextUserData::Vertex &vertex = importer_mesh_vertex_array[vertex_i];
+			// Check if arrays exist before accessing them.
+			vertex.vertex = vertex_array[vertex_i];
+			vertex.color = color_array[vertex_i];
+			vertex.normal = normal_array[vertex_i];
+			vertex.uv = uv_array[vertex_i];
+			vertex.uv2 = uv2_array[vertex_i];
+			const int32_t weight_count = is_8_weights ? 8 : 4;
+			for (int bone_i = 0; bone_i < weight_count; bone_i++) {
+				int index = vertex_i * weight_count + bone_i;
+				vertex.bones.push_back(bones_array[index]);
+				vertex.weights.push_back(weights_array[index]);
+			}
+			for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; ++i) {
+				vertex.custom[i] = Color();
+			}
+			vertex.smooth_group = 0;
+		}
+		if (!(surfaces[surface_i].flags & Mesh::ARRAY_FORMAT_NORMAL)) {
+			ERR_PRINT("Surface does not have ARRAY_FORMAT_NORMAL flag set.");
+
+			ERR_FAIL_COND(surfaces[surface_i].primitive != Mesh::PRIMITIVE_TRIANGLES);
+
+			bool was_indexed = index_array.size();
+			{
+				if (index_array.size() == 0) {
+					continue; //nothing to deindex
+				}
+				Vector<Vector3> old_vertex_array = vertex_array;
+				index_array.clear();
+				for (const int &index : index_array) {
+					ERR_FAIL_COND(uint32_t(index) >= old_vertex_array.size());
+					vertex_array.push_back(old_vertex_array[index]);
+				}
+				surfaces.write[surface_i].flags &= ~Mesh::ARRAY_FORMAT_INDEX;
+				index_array.clear();
+			}
+
+			ERR_FAIL_COND((vertex_array.size() % 3) != 0);
+
+			HashMap<ImporterMeshTangentGenerationContextUserData::SmoothGroupVertex, Vector3, ImporterMeshTangentGenerationContextUserData::SmoothGroupVertexHasher> smooth_hash;
+
+			for (uint32_t vi = 0; vi < vertex_array.size(); vi += 3) {
+				ImporterMeshTangentGenerationContextUserData::Vertex *v = &importer_mesh_vertex_array[vi];
+
+				Vector3 normal;
+				normal = Plane(v[0].vertex, v[1].vertex, v[2].vertex).normal;
+
+				for (int i = 0; i < 3; i++) {
+					// Add face normal to smooth vertex influence if vertex is member of a smoothing group
+					if (v[i].smooth_group != UINT32_MAX) {
+						Vector3 *lv = smooth_hash.getptr(v[i]);
+						if (!lv) {
+							smooth_hash.insert(v[i], normal);
+						} else {
+							(*lv) += normal;
+						}
+					} else {
+						v[i].normal = normal;
+					}
+				}
+			}
+
+			for (ImporterMeshTangentGenerationContextUserData::Vertex &vertex : importer_mesh_vertex_array) {
+				if (vertex.smooth_group != UINT32_MAX) {
+					Vector3 *lv = smooth_hash.getptr(vertex);
+					if (!lv) {
+						vertex.normal = Vector3();
+					} else {
+						vertex.normal = lv->normalized();
+					}
+				}
+			}
+
+			surfaces.write[surface_i].flags |= Mesh::ARRAY_FORMAT_NORMAL;
+
+			if (was_indexed) {
+				if (index_array.size()) {
+					HashMap<ImporterMeshTangentGenerationContextUserData::Vertex, int, ImporterMeshTangentGenerationContextUserData::VertexHasher> indices;
+					LocalVector<ImporterMeshTangentGenerationContextUserData::Vertex> old_vertex_array = importer_mesh_vertex_array;
+					importer_mesh_vertex_array.clear();
+
+					for (const ImporterMeshTangentGenerationContextUserData::Vertex &current_vertex : old_vertex_array) {
+						int *idxptr = indices.getptr(current_vertex);
+						int idx;
+						if (!idxptr) {
+							idx = indices.size();
+							importer_mesh_vertex_array.push_back(current_vertex);
+							indices[current_vertex] = idx;
+						} else {
+							idx = *idxptr;
+						}
+
+						index_array.push_back(idx);
+					}
+
+					surfaces.write[surface_i].flags |= Mesh::ARRAY_FORMAT_INDEX;
+				}
+			}
+		}
+		Vector<float> tangents;
+		tangents.resize(vertex_array.size() * 4);
+		if (!(surfaces[surface_i].flags & Mesh::ARRAY_FORMAT_TEX_UV)) {
+			ERR_PRINT("Surface does not have ARRAY_FORMAT_TEX_UV flag set.");
+			int32_t vertex_num = vertex_array.size();
+			tangents.resize(vertex_array.size() * 4);
+			float *tangentsw = tangents.ptrw();
+			for (int k = 0; k < vertex_num; k++) {
+				Vector3 tan = Vector3(normal_array[k].z, -normal_array[k].x, normal_array[k].y).cross(normal_array[k].normalized()).normalized();
+				tangentsw[k * 4 + 0] = tan.x;
+				tangentsw[k * 4 + 1] = tan.y;
+				tangentsw[k * 4 + 2] = tan.z;
+				tangentsw[k * 4 + 3] = 1.0;
+			}
+		}
+		SMikkTSpaceInterface space_interface;
+		space_interface.m_getNormal = ImporterMeshTangentGenerationContextUserData::mikktGetNormal;
+		space_interface.m_getNumFaces = ImporterMeshTangentGenerationContextUserData::mikktGetNumFaces;
+		space_interface.m_getNumVerticesOfFace = ImporterMeshTangentGenerationContextUserData::mikktGetNumVerticesOfFace;
+		space_interface.m_getPosition = ImporterMeshTangentGenerationContextUserData::mikktGetPosition;
+		space_interface.m_getTexCoord = ImporterMeshTangentGenerationContextUserData::mikktGetTexCoord;
+		space_interface.m_setTSpace = ImporterMeshTangentGenerationContextUserData::mikktSetTSpaceDefault;
+		space_interface.m_setTSpaceBasic = nullptr;
+
+		SMikkTSpaceContext space_context;
+		space_context.m_pInterface = &space_interface;
+		LocalVector<int32_t> local_index_array;
+		local_index_array.resize(index_array.size());
+		for (int32_t index : index_array) {
+			local_index_array[index] = index_array[index];
+		}
+		ImporterMeshTangentGenerationContextUserData triangle_data{};
+		triangle_data.vertices->resize(vertex_array.size());
+
+		triangle_data.vertices = &importer_mesh_vertex_array;
+		triangle_data.indices = &local_index_array;
+		space_context.m_pUserData = &triangle_data;
+
+		bool have_tangents = genTangSpaceDefault(&space_context);
+		if (!have_tangents) {
+			continue;
+		}
+		Array array = surface_arrays;
+		for (int vertex_i = 0; vertex_i < vertex_array.size(); vertex_i++) {
+			ImporterMeshTangentGenerationContextUserData::Vertex &vertex = importer_mesh_vertex_array[vertex_i];
+			Vector3 tangent = vertex.tangent;
+			Vector3 bitangent = vertex.binormal;
+			Vector3 generated_bitangent = vertex.normal.cross(tangent);
+			tangents.write[vertex_i * 4] = tangent[0];
+			tangents.write[vertex_i * 4 + 1] = tangent[1];
+			tangents.write[vertex_i * 4 + 2] = tangent[2];
+			if (generated_bitangent.dot(bitangent) < 0.0f) {
+				tangents.write[vertex_i * 4 + 3] = -1.0f;
+			} else {
+				tangents.write[vertex_i * 4 + 3] = 1.0f;
+			}
+		}
+		array[Mesh::ARRAY_TANGENT] = tangents;
+		surfaces.write[surface_i].arrays = array;
+		surfaces.write[surface_i].flags |= Mesh::ARRAY_FORMAT_TANGENT;
+	}
 }
