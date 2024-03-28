@@ -36,6 +36,7 @@
 #include "godot_application_delegate.h"
 #include "macos_terminal_logger.h"
 
+#include "core/core_bind.h"
 #include "core/crypto/crypto_core.h"
 #include "core/version_generated.gen.h"
 #include "main/main.h"
@@ -593,36 +594,75 @@ String OS_MacOS::get_executable_path() const {
 }
 
 Error OS_MacOS::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
+	return _create_process(p_path, p_arguments, r_child_id, p_open_console, false);
+}
+
+void OS_MacOS::sandbox_use_url_for_instance_argumments(const String &p_schema) {
+	url_schema = p_schema;
+}
+
+Error OS_MacOS::_create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console, bool p_instance) {
 	// Use NSWorkspace if path is an .app bundle.
-	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
+	NSURL *url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:p_path.utf8().get_data()]];
 	NSBundle *bundle = [NSBundle bundleWithURL:url];
 	if (bundle) {
+		bool sb_use_url = is_sandboxed() && p_instance;
 		NSMutableArray *arguments = [[NSMutableArray alloc] init];
-		for (const String &arg : p_arguments) {
-			[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
+		if (sb_use_url) {
+			Array args_arr;
+			for (const String &arg : p_arguments) {
+				args_arr.push_back(arg);
+			}
+			String args_b64 = core_bind::Marshalls::get_singleton()->variant_to_base64(args_arr).replace("+", "~").replace("/", "_");
+			NSURLComponents *components = [NSURLComponents new];
+			components.scheme = [NSString stringWithUTF8String:url_schema.utf8().get_data()];
+			components.path = [NSString stringWithUTF8String:args_b64.utf8().get_data()];
+			[arguments addObject:[components URL]];
+		} else {
+			for (const String &arg : p_arguments) {
+				[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
+			}
 		}
 #if defined(__x86_64__)
 		if (@available(macOS 10.15, *)) {
 #endif
 			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
-			[configuration setArguments:arguments];
+			if (!sb_use_url) {
+				[configuration setArguments:arguments];
+			}
 			[configuration setCreatesNewApplicationInstance:YES];
 			__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
 			__block Error err = ERR_TIMEOUT;
 			__block pid_t pid = 0;
 
-			[[NSWorkspace sharedWorkspace] openApplicationAtURL:url
-												  configuration:configuration
-											  completionHandler:^(NSRunningApplication *app, NSError *error) {
-												  if (error) {
-													  err = ERR_CANT_FORK;
-													  NSLog(@"Failed to execute: %@", error.localizedDescription);
-												  } else {
-													  pid = [app processIdentifier];
-													  err = OK;
-												  }
-												  dispatch_semaphore_signal(lock);
-											  }];
+			if (sb_use_url) {
+				[[NSWorkspace sharedWorkspace] openURLs:arguments
+								   withApplicationAtURL:url
+										  configuration:configuration
+									  completionHandler:^(NSRunningApplication *app, NSError *error) {
+										  if (error) {
+											  err = ERR_CANT_FORK;
+											  NSLog(@"Failed to execute: %@", error.localizedDescription);
+										  } else {
+											  pid = [app processIdentifier];
+											  err = OK;
+										  }
+										  dispatch_semaphore_signal(lock);
+									  }];
+			} else {
+				[[NSWorkspace sharedWorkspace] openApplicationAtURL:url
+													  configuration:configuration
+												  completionHandler:^(NSRunningApplication *app, NSError *error) {
+													  if (error) {
+														  err = ERR_CANT_FORK;
+														  NSLog(@"Failed to execute: %@", error.localizedDescription);
+													  } else {
+														  pid = [app processIdentifier];
+														  err = OK;
+													  }
+													  dispatch_semaphore_signal(lock);
+												  }];
+			}
 			dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
 
 			if (err == OK) {
@@ -660,9 +700,9 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	if (nsappname != nil) {
 		String path;
 		path.parse_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
-		return create_process(path, p_arguments, r_child_id, false);
+		return _create_process(path, p_arguments, r_child_id, false, true);
 	} else {
-		return create_process(get_executable_path(), p_arguments, r_child_id, false);
+		return _create_process(get_executable_path(), p_arguments, r_child_id, false, false);
 	}
 }
 

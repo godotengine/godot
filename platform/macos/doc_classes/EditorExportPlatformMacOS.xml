@@ -118,6 +118,9 @@
 		<member name="codesign/entitlements/app_sandbox/network_server" type="bool" setter="" getter="">
 			Enable to allow app to listen for incoming network connections. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_network_server]com.apple.security.network.server[/url].
 		</member>
+		<member name="codesign/entitlements/app_sandbox/url_schema" type="String" setter="" getter="">
+			Sets URI schema name to use for passing command line arguments when using [method OS.create_instance].
+		</member>
 		<member name="codesign/entitlements/apple_events" type="bool" setter="" getter="">
 			Enable to allow app to send Apple events to other apps. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_automation_apple-events]com.apple.security.automation.apple-events[/url].
 		</member>
