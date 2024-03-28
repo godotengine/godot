@@ -516,6 +516,13 @@ Patch `godot-node-debug-fix.patch` workarounds shadowing of Godot's Node class
 in the MSVC debugger.
 
 
+## lzfse
+
+- Upstream: https://github.com/lzfse/lzfse
+- Version: git (e634ca58b4821d9f3d560cdc6df5dec02ffc93fd, 2017)
+- License: BSD-3-Clause
+
+
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
