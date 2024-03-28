@@ -588,6 +588,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
 		Token id = make_identifier(name);
 
 #ifdef DEBUG_ENABLED
+#ifndef GDSCRIPT_BUILD
 		// Additional checks for identifiers but only in debug and if it's available in TextServer.
 		if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY)) {
 			int64_t confusable = TS->is_confusable(name, keyword_list);
@@ -595,6 +596,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
 				push_error(vformat(R"(Identifier "%s" is visually similar to the GDScript keyword "%s" and thus not allowed.)", name, keyword_list[confusable]));
 			}
 		}
+#endif
 #endif // DEBUG_ENABLED
 
 		// Cannot be a keyword, as keywords are ASCII only.

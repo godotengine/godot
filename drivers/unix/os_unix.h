@@ -49,8 +49,9 @@ protected:
 public:
 	OS_Unix();
 
+#ifndef GDSCRIPT_BUILD
 	virtual Vector<String> get_video_adapter_driver_info() const override;
-
+#endif
 	virtual String get_stdin_string() override;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
