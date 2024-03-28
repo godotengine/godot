@@ -687,7 +687,12 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			style_tooltip->set_shadow_size(0);
 			style_tooltip->set_content_margin_all(p_config.base_margin * EDSCALE * 0.5);
 			style_tooltip->set_bg_color(p_config.dark_color_3 * Color(0.8, 0.8, 0.8, 0.9));
-			style_tooltip->set_border_width_all(0);
+			if (p_config.draw_extra_borders) {
+				style_tooltip->set_border_width_all(Math::round(EDSCALE));
+				style_tooltip->set_border_color(p_config.extra_border_color_2);
+			} else {
+				style_tooltip->set_border_width_all(0);
+			}
 			p_theme->set_stylebox("panel", "TooltipPanel", style_tooltip);
 		}
 
