@@ -978,9 +978,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			idx = i + port_offset;
 		}
 		if (!is_comment) {
-			GraphNode *graph_node = Object::cast_to<GraphNode>(node);
-
-			graph_node->set_slot(idx, valid_left, port_left, type_color[port_left], valid_right, port_right, type_color[port_right]);
+			node->set_slot(idx, valid_left, port_left, type_color[port_left], valid_right, port_right, type_color[port_right]);
 
 			if (vsnode->_is_output_port_expanded(i)) {
 				switch (vsnode->get_output_port_type(i)) {
@@ -991,7 +989,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 						if (valid_left) {
 							port_left = vsnode->get_input_port_type(i + 1);
 						}
-						graph_node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[0]);
+						node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[0]);
 						port_offset++;
 
 						valid_left = (i + 2) < vsnode->get_input_port_count();
@@ -999,7 +997,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 						if (valid_left) {
 							port_left = vsnode->get_input_port_type(i + 2);
 						}
-						graph_node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[1]);
+						node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[1]);
 
 						expanded_type = VisualShaderNode::PORT_TYPE_VECTOR_2D;
 					} break;
@@ -1010,7 +1008,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 						if (valid_left) {
 							port_left = vsnode->get_input_port_type(i + 1);
 						}
-						graph_node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[0]);
+						node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[0]);
 						port_offset++;
 
 						valid_left = (i + 2) < vsnode->get_input_port_count();
@@ -1018,7 +1016,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 						if (valid_left) {
 							port_left = vsnode->get_input_port_type(i + 2);
 						}
-						graph_node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[1]);
+						node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[1]);
 						port_offset++;
 
 						valid_left = (i + 3) < vsnode->get_input_port_count();
@@ -1026,7 +1024,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 						if (valid_left) {
 							port_left = vsnode->get_input_port_type(i + 3);
 						}
-						graph_node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[2]);
+						node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[2]);
 
 						expanded_type = VisualShaderNode::PORT_TYPE_VECTOR_3D;
 					} break;
@@ -1037,7 +1035,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 						if (valid_left) {
 							port_left = vsnode->get_input_port_type(i + 1);
 						}
-						graph_node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[0]);
+						node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[0]);
 						port_offset++;
 
 						valid_left = (i + 2) < vsnode->get_input_port_count();
@@ -1045,7 +1043,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 						if (valid_left) {
 							port_left = vsnode->get_input_port_type(i + 2);
 						}
-						graph_node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[1]);
+						node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[1]);
 						port_offset++;
 
 						valid_left = (i + 3) < vsnode->get_input_port_count();
@@ -1053,7 +1051,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 						if (valid_left) {
 							port_left = vsnode->get_input_port_type(i + 3);
 						}
-						graph_node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[2]);
+						node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[2]);
 						port_offset++;
 
 						valid_left = (i + 4) < vsnode->get_input_port_count();
@@ -1061,7 +1059,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 						if (valid_left) {
 							port_left = vsnode->get_input_port_type(i + 4);
 						}
-						graph_node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[3]);
+						node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], true, VisualShaderNode::PORT_TYPE_SCALAR, vector_expanded_color[3]);
 
 						expanded_type = VisualShaderNode::PORT_TYPE_VECTOR_4D;
 					} break;
