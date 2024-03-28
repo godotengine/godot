@@ -55,39 +55,39 @@ func test():
 	untyped_basic.push_back(430.0)
 	inferred_basic.push_back(263.0)
 	typed_basic.push_back(518.0)
-	assert(str(empty_floats) == '[705, 430, 263, 518]')
-	assert(str(untyped_basic) == '[705, 430, 263, 518]')
-	assert(str(inferred_basic) == '[705, 430, 263, 518]')
-	assert(str(typed_basic) == '[705, 430, 263, 518]')
+	assert(str(empty_floats) == '[705.0, 430.0, 263.0, 518.0]')
+	assert(str(untyped_basic) == '[705.0, 430.0, 263.0, 518.0]')
+	assert(str(inferred_basic) == '[705.0, 430.0, 263.0, 518.0]')
+	assert(str(typed_basic) == '[705.0, 430.0, 263.0, 518.0]')
 
 
 	const constant_float := 950.0
 	const constant_int := 170
 	var typed_float := 954.0
 	var filled_floats: Array[float] = [constant_float, constant_int, typed_float, empty_floats[1] + empty_floats[2]]
-	assert(str(filled_floats) == '[950, 170, 954, 693]')
+	assert(str(filled_floats) == '[950.0, 170.0, 954.0, 693.0]')
 	assert(filled_floats.get_typed_builtin() == TYPE_FLOAT)
 
 	var casted_floats := [empty_floats[2] * 2] as Array[float]
-	assert(str(casted_floats) == '[526]')
+	assert(str(casted_floats) == '[526.0]')
 	assert(casted_floats.get_typed_builtin() == TYPE_FLOAT)
 
 	var returned_floats = (func () -> Array[float]: return [554]).call()
-	assert(str(returned_floats) == '[554]')
+	assert(str(returned_floats) == '[554.0]')
 	assert(returned_floats.get_typed_builtin() == TYPE_FLOAT)
 
 	var passed_floats = floats_identity([663.0 if randf() > 0.5 else 663.0])
-	assert(str(passed_floats) == '[663]')
+	assert(str(passed_floats) == '[663.0]')
 	assert(passed_floats.get_typed_builtin() == TYPE_FLOAT)
 
 	var default_floats = (func (floats: Array[float] = [364.0]): return floats).call()
-	assert(str(default_floats) == '[364]')
+	assert(str(default_floats) == '[364.0]')
 	assert(default_floats.get_typed_builtin() == TYPE_FLOAT)
 
 	var typed_int := 556
 	var converted_floats: Array[float] = [typed_int]
 	converted_floats.push_back(498)
-	assert(str(converted_floats) == '[556, 498]')
+	assert(str(converted_floats) == '[556.0, 498.0]')
 	assert(converted_floats.get_typed_builtin() == TYPE_FLOAT)
 
 
@@ -96,7 +96,7 @@ func test():
 	assert(constant_basic.get_typed_builtin() == TYPE_NIL)
 
 	const constant_floats: Array[float] = [constant_float - constant_basic[0] - constant_int]
-	assert(str(constant_floats) == '[552]')
+	assert(str(constant_floats) == '[552.0]')
 	assert(constant_floats.get_typed_builtin() == TYPE_FLOAT)
 
 
@@ -104,15 +104,15 @@ func test():
 	untyped_basic = source_floats
 	var destination_floats: Array[float] = untyped_basic
 	destination_floats[0] -= 0.74
-	assert(str(source_floats) == '[999]')
-	assert(str(untyped_basic) == '[999]')
-	assert(str(destination_floats) == '[999]')
+	assert(str(source_floats) == '[999.0]')
+	assert(str(untyped_basic) == '[999.0]')
+	assert(str(destination_floats) == '[999.0]')
 	assert(destination_floats.get_typed_builtin() == TYPE_FLOAT)
 
 
 	var duplicated_floats := empty_floats.duplicate().slice(2, 3)
 	duplicated_floats[0] *= 3
-	assert(str(duplicated_floats) == '[789]')
+	assert(str(duplicated_floats) == '[789.0]')
 	assert(duplicated_floats.get_typed_builtin() == TYPE_FLOAT)
 
 
