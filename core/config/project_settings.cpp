@@ -1529,6 +1529,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 2000);
 
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
+	GLOBAL_DEF("gui/common/show_control_z_index_warning", true);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/frame_queue_size", PROPERTY_HINT_RANGE, "2,3,1"), 2);
