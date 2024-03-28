@@ -182,6 +182,14 @@
 				Returns the current status of the underlying [HTTPClient]. See [enum HTTPClient.Status].
 			</description>
 		</method>
+		<method name="load_default_proxies">
+			<return type="void" />
+			<description>
+				Sets HTTP and HTTPS proxies according to environment variables. Does not override existing proxies.
+				[b]Note:[/b] HTTP proxy is detected from [code]http_proxy[/code], [code]HTTP_PROXY[/code], [code]all_proxy[/code], [code]ALL_PROXY[/code] environment variables. HTTPS proxy is detected from [code]https_proxy[/code], [code]HTTPS_PROXY[/code], [code]all_proxy[/code], [code]ALL_PROXY[/code] environment variables.
+				[b]Note:[/b] This method is not supported on the web platform. It does nothing.
+			</description>
+		</method>
 		<method name="request">
 			<return type="int" enum="Error" />
 			<param index="0" name="url" type="String" />
@@ -238,6 +246,10 @@
 			Any Response body declaring a [code]Content-Encoding[/code] of either [code]gzip[/code] or [code]deflate[/code] will then be automatically decompressed, and the uncompressed bytes will be delivered via [signal request_completed].
 			If the user has specified their own [code]Accept-Encoding[/code] header, then no header will be added regardless of [member accept_gzip].
 			If [code]false[/code] no header will be added, and no decompression will be performed on response bodies. The raw bytes of the response body will be returned via [signal request_completed].
+		</member>
+		<member name="auto_detect_proxies" type="bool" setter="set_auto_detect_proxies" getter="get_auto_detect_proxies" default="true">
+			If [code]true[/code], detects system proxy when the scene loads.
+			[b]Note:[/b] Godot currently supports loading proxy settings from environment variables. See [method load_default_proxies].
 		</member>
 		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
 			Maximum allowed size for response bodies. If the response body is compressed, this will be used as the maximum allowed size for the decompressed body.

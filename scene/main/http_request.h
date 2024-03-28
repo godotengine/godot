@@ -101,6 +101,8 @@ private:
 
 	double timeout = 0;
 
+	bool auto_detect_proxies = true;
+
 	void _redirect_request(const String &p_new_url);
 
 	bool _handle_response(bool *ret_value);
@@ -160,6 +162,9 @@ public:
 
 	void set_http_proxy(const String &p_host, int p_port);
 	void set_https_proxy(const String &p_host, int p_port);
+	void load_default_proxies();
+	void set_auto_detect_proxies(bool p_enable);
+	bool get_auto_detect_proxies() const;
 
 	void set_tls_options(const Ref<TLSOptions> &p_options);
 

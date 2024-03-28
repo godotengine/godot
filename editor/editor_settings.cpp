@@ -818,6 +818,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/network_mode", 0, "Offline,Online");
 
 	// HTTP Proxy
+	_initial_set("network/http_proxy/auto_detect", true);
 	_initial_set("network/http_proxy/host", "");
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "network/http_proxy/port", 8080, "1,65535,1")
 
