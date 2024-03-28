@@ -582,6 +582,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GPUParticlesAttractorVectorField3D);
 	GDREGISTER_CLASS(CPUParticles3D);
 	GDREGISTER_CLASS(Marker3D);
+
 	GDREGISTER_CLASS(RootMotionView);
 
 	OS::get_singleton()->yield(); // may take time to init
