@@ -7,6 +7,9 @@ using System.ComponentModel;
 
 namespace Godot;
 
+#nullable enable
+
+#pragma warning disable CS1734 // XML comment on 'X' has a paramref tag for 'Y', but there is no parameter by that name.
 // TODO: This is currently disabled because of https://github.com/dotnet/roslyn/issues/52904
 #pragma warning disable IDE0040 // Add accessibility modifiers.
 
@@ -14,7 +17,7 @@ partial class EditorUndoRedoManager
 {
     /// <inheritdoc cref="CreateAction(string, UndoRedo.MergeMode, GodotObject, bool)"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void CreateAction(string name, UndoRedo.MergeMode mergeMode, GodotObject customContext)
+    public void CreateAction(string name, UndoRedo.MergeMode mergeMode, GodotObject? customContext)
     {
         CreateAction(name, mergeMode, customContext, backwardUndoOps: false);
     }
