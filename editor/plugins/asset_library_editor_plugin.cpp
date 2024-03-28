@@ -766,13 +766,13 @@ const char *EditorAssetLibrary::sort_text[SORT_MAX] = {
 };
 
 const char *EditorAssetLibrary::support_key[SUPPORT_MAX] = {
-	"official",
+	"official", // Former name for the Featured support level (still used on the API backend).
 	"community",
 	"testing",
 };
 
 const char *EditorAssetLibrary::support_text[SUPPORT_MAX] = {
-	TTRC("Official"),
+	TTRC("Featured"),
 	TTRC("Community"),
 	TTRC("Testing"),
 };
@@ -1674,10 +1674,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(support);
 	support->set_text(TTR("Support"));
 	support->get_popup()->set_hide_on_checkable_item_selection(false);
-	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_OFFICIAL]), SUPPORT_OFFICIAL);
+	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_FEATURED]), SUPPORT_FEATURED);
 	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_COMMUNITY]), SUPPORT_COMMUNITY);
 	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_TESTING]), SUPPORT_TESTING);
-	support->get_popup()->set_item_checked(SUPPORT_OFFICIAL, true);
+	support->get_popup()->set_item_checked(SUPPORT_FEATURED, true);
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, true);
 	support->get_popup()->connect("id_pressed", callable_mp(this, &EditorAssetLibrary::_support_toggled));
 

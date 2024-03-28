@@ -225,7 +225,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _force_online_mode();
 
 	enum Support {
-		SUPPORT_OFFICIAL,
+		SUPPORT_FEATURED,
 		SUPPORT_COMMUNITY,
 		SUPPORT_TESTING,
 		SUPPORT_MAX
