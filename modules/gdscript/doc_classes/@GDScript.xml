@@ -281,6 +281,12 @@
 		</constant>
 	</constants>
 	<annotations>
+		<annotation name="@abstract">
+			<return type="void" />
+			<description>
+				Mark the current class as abstract. Abstract classes are not intended to be used directly, instead other scripts should inherit them. They will be either unselectable or hidden in the Create New Node dialog (unselectable if there are non-abstract classes inheriting it, otherwise hidden).
+			</description>
+		</annotation>
 		<annotation name="@export">
 			<return type="void" />
 			<description>
