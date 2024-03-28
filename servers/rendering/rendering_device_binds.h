@@ -262,6 +262,8 @@ protected:
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_tesselation_control"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_TESSELATION_CONTROL);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_tesselation_evaluation"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_TESSELATION_EVALUATION);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_compute"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_COMPUTE);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_mesh_task"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_MESH_TASK);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "source_mesh"), "set_stage_source", "get_stage_source", RD::SHADER_STAGE_MESH);
 		ADD_GROUP("Syntax", "source_");
 		ADD_PROPERTY(PropertyInfo(Variant::INT, "language", PROPERTY_HINT_RANGE, "GLSL,HLSL"), "set_language", "get_language");
 	}
@@ -321,12 +323,16 @@ protected:
 		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_tesselation_control"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_TESSELATION_CONTROL);
 		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_tesselation_evaluation"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_TESSELATION_EVALUATION);
 		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_compute"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_COMPUTE);
+		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_mesh_task"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_MESH_TASK);
+		ADD_PROPERTYI(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytecode_mesh"), "set_stage_bytecode", "get_stage_bytecode", RD::SHADER_STAGE_MESH);
 		ADD_GROUP("Compile Error", "compile_error_");
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_vertex"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_VERTEX);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_fragment"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_FRAGMENT);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_tesselation_control"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_TESSELATION_CONTROL);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_tesselation_evaluation"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_TESSELATION_EVALUATION);
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_compute"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_COMPUTE);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_mesh_task"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_MESH_TASK);
+		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "compile_error_mesh"), "set_stage_compile_error", "get_stage_compile_error", RD::SHADER_STAGE_MESH);
 	}
 };
 
@@ -389,7 +395,9 @@ public:
 							"fragment",
 							"tesselation_control",
 							"tesselation_evaluation",
-							"compute"
+							"compute",
+							"mesh_task",
+							"mesh"
 						};
 
 						ERR_PRINT("Error parsing shader '" + p_file + "', version '" + String(E.key) + "', stage '" + stage_str[i] + "':\n\n" + error);

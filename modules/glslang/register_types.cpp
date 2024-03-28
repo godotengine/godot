@@ -49,7 +49,9 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		EShLangFragment,
 		EShLangTessControl,
 		EShLangTessEvaluation,
-		EShLangCompute
+		EShLangCompute,
+		EShLangTask,
+		EShLangMesh
 	};
 
 	int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100

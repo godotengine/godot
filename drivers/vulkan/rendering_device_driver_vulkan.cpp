@@ -440,6 +440,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_MAINTENANCE_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_EXT_MESH_SHADER_EXTENSION_NAME, false);
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
@@ -610,6 +611,7 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
 		VkPhysicalDeviceMultiviewFeatures multiview_features = {};
 		VkPhysicalDevicePipelineCreationCacheControlFeatures pipeline_cache_control_features = {};
+		VkPhysicalDeviceMeshShaderFeaturesEXT mesh_shader_features = {};
 
 		const bool use_1_2_features = physical_device_properties.apiVersion >= VK_API_VERSION_1_2;
 		if (use_1_2_features) {
@@ -644,6 +646,12 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			pipeline_cache_control_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES;
 			pipeline_cache_control_features.pNext = next_features;
 			next_features = &pipeline_cache_control_features;
+		}
+
+		if (enabled_device_extension_names.has(VK_EXT_MESH_SHADER_EXTENSION_NAME)) {
+			mesh_shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
+			mesh_shader_features.pNext = next_features;
+			next_features = &mesh_shader_features;
 		}
 
 		VkPhysicalDeviceFeatures2 device_features_2 = {};
@@ -688,6 +696,14 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		if (enabled_device_extension_names.has(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME)) {
 			pipeline_cache_control_support = pipeline_cache_control_features.pipelineCreationCacheControl;
 		}
+
+		if (enabled_device_extension_names.has(VK_EXT_MESH_SHADER_EXTENSION_NAME)) {
+			mesh_shader_capabilities.task_shader_is_supported = mesh_shader_features.taskShader;
+			mesh_shader_capabilities.mesh_shader_is_supported = mesh_shader_features.meshShader;
+			mesh_shader_capabilities.multiview_mesh_shader_is_supported = mesh_shader_features.multiviewMeshShader;
+			mesh_shader_capabilities.primitive_fragment_shading_rate_mesh_shader_is_supported = mesh_shader_features.primitiveFragmentShadingRateMeshShader;
+			mesh_shader_capabilities.mesh_shader_queries_is_supported = mesh_shader_features.meshShaderQueries;
+		}
 	}
 
 	if (functions.GetPhysicalDeviceProperties2 != nullptr) {
@@ -697,6 +713,7 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		VkPhysicalDeviceSubgroupProperties subgroup_properties = {};
 		VkPhysicalDeviceSubgroupSizeControlProperties subgroup_size_control_properties = {};
 		VkPhysicalDeviceProperties2 physical_device_properties_2 = {};
+		VkPhysicalDeviceMeshShaderPropertiesEXT mesh_shader_properties = {};
 
 		const bool use_1_1_properties = physical_device_properties.apiVersion >= VK_API_VERSION_1_1;
 		if (use_1_1_properties) {
@@ -722,6 +739,12 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			vrs_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
 			vrs_properties.pNext = next_properties;
 			next_properties = &vrs_properties;
+		}
+
+		if (mesh_shader_capabilities.task_shader_is_supported || mesh_shader_capabilities.mesh_shader_is_supported) {
+			mesh_shader_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT;
+			mesh_shader_properties.pNext = next_properties;
+			next_properties = &mesh_shader_properties;
 		}
 
 		physical_device_properties_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
@@ -778,6 +801,19 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			print_verbose("  max instances: " + itos(multiview_capabilities.max_instance_count));
 		} else {
 			print_verbose("- Vulkan multiview not supported");
+		}
+
+		if (mesh_shader_capabilities.task_shader_is_supported || mesh_shader_capabilities.mesh_shader_is_supported) {
+			mesh_shader_capabilities.max_task_work_group_count[0] = mesh_shader_properties.maxTaskWorkGroupCount[0];
+			mesh_shader_capabilities.max_task_work_group_count[1] = mesh_shader_properties.maxTaskWorkGroupCount[1];
+			mesh_shader_capabilities.max_task_work_group_count[2] = mesh_shader_properties.maxTaskWorkGroupCount[2];
+			mesh_shader_capabilities.max_mesh_work_group_count[0] = mesh_shader_properties.maxMeshWorkGroupCount[0];
+			mesh_shader_capabilities.max_mesh_work_group_count[1] = mesh_shader_properties.maxMeshWorkGroupCount[1];
+			mesh_shader_capabilities.max_mesh_work_group_count[2] = mesh_shader_properties.maxMeshWorkGroupCount[2];
+
+			print_verbose("- Vulkan Mesh Shader supported:");
+		} else {
+			print_verbose("- Vulkan Mesh Shader not supported");
 		}
 
 		print_verbose("- Vulkan subgroup:");
@@ -852,6 +888,18 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		pipeline_cache_control_features.pNext = create_info_next;
 		pipeline_cache_control_features.pipelineCreationCacheControl = pipeline_cache_control_support;
 		create_info_next = &pipeline_cache_control_features;
+	}
+
+	VkPhysicalDeviceMeshShaderFeaturesEXT mesh_shader_features = {};
+	if (mesh_shader_capabilities.task_shader_is_supported || mesh_shader_capabilities.mesh_shader_is_supported) {
+		mesh_shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
+		mesh_shader_features.pNext = create_info_next;
+		mesh_shader_features.taskShader = mesh_shader_capabilities.task_shader_is_supported;
+		mesh_shader_features.meshShader = mesh_shader_capabilities.mesh_shader_is_supported;
+		mesh_shader_features.multiviewMeshShader = mesh_shader_capabilities.multiview_mesh_shader_is_supported;
+		mesh_shader_features.primitiveFragmentShadingRateMeshShader = mesh_shader_capabilities.primitive_fragment_shading_rate_mesh_shader_is_supported;
+		mesh_shader_features.meshShaderQueries = mesh_shader_capabilities.mesh_shader_queries_is_supported;
+		create_info_next = &mesh_shader_features;
 	}
 
 	VkPhysicalDeviceVulkan11Features vulkan_1_1_features = {};
@@ -2864,6 +2912,8 @@ static VkShaderStageFlagBits RD_STAGE_TO_VK_SHADER_STAGE_BITS[RDD::SHADER_STAGE_
 	VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
 	VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
 	VK_SHADER_STAGE_COMPUTE_BIT,
+	VK_SHADER_STAGE_TASK_BIT_EXT,
+	VK_SHADER_STAGE_MESH_BIT_EXT,
 };
 
 String RenderingDeviceDriverVulkan::shader_get_binary_cache_key() {
@@ -4177,6 +4227,21 @@ void RenderingDeviceDriverVulkan::command_render_draw_indirect_count(CommandBuff
 	vkCmdDrawIndirectCount((VkCommandBuffer)p_cmd_buffer.id, indirect_buf_info->vk_buffer, p_offset, count_buf_info->vk_buffer, p_count_buffer_offset, p_max_draw_count, p_stride);
 }
 
+void RenderingDeviceDriverVulkan::command_render_dispatch_mesh(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
+	vkCmdDrawMeshTasksEXT((VkCommandBuffer)p_cmd_buffer.id, p_x_groups, p_y_groups, p_z_groups);
+}
+
+void RenderingDeviceDriverVulkan::command_render_dispatch_mesh_indirect(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, uint32_t p_draw_count, uint32_t p_stride) {
+	const BufferInfo *buf_info = (const BufferInfo *)p_indirect_buffer.id;
+	vkCmdDrawMeshTasksIndirectEXT((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, p_offset, p_draw_count, p_stride);
+}
+
+void RenderingDeviceDriverVulkan::command_render_dispatch_mesh_indirect_count(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, BufferID p_count_buffer, uint64_t p_count_buffer_offset, uint32_t p_max_draw_count, uint32_t p_stride) {
+	const BufferInfo *indirect_buf_info = (const BufferInfo *)p_indirect_buffer.id;
+	const BufferInfo *count_buf_info = (const BufferInfo *)p_count_buffer.id;
+	vkCmdDrawMeshTasksIndirectCountEXT((VkCommandBuffer)p_cmd_buffer.id, indirect_buf_info->vk_buffer, p_offset, count_buf_info->vk_buffer, p_count_buffer_offset, p_max_draw_count, p_stride);
+}
+
 void RenderingDeviceDriverVulkan::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) {
 	VkBuffer *vk_buffers = ALLOCA_ARRAY(VkBuffer, p_binding_count);
 	for (uint32_t i = 0; i < p_binding_count; i++) {
@@ -4873,6 +4938,18 @@ uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 			return limits.maxViewportDimensions[0];
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_Y:
 			return limits.maxViewportDimensions[1];
+		case LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_X:
+			return mesh_shader_capabilities.max_task_work_group_count[0];
+		case LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_Y:
+			return mesh_shader_capabilities.max_task_work_group_count[1];
+		case LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_Z:
+			return mesh_shader_capabilities.max_task_work_group_count[2];
+		case LIMIT_MAX_MESH_WORKGROUP_COUNT_X:
+			return mesh_shader_capabilities.max_mesh_work_group_count[0];
+		case LIMIT_MAX_MESH_WORKGROUP_COUNT_Y:
+			return mesh_shader_capabilities.max_mesh_work_group_count[1];
+		case LIMIT_MAX_MESH_WORKGROUP_COUNT_Z:
+			return mesh_shader_capabilities.max_mesh_work_group_count[2];
 		case LIMIT_SUBGROUP_SIZE:
 			return subgroup_capabilities.size;
 		case LIMIT_SUBGROUP_MIN_SIZE:
@@ -4913,6 +4990,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 			return vrs_capabilities.attachment_vrs_supported && physical_device_features.shaderStorageImageExtendedFormats;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
+		case SUPPORTS_MESH_SHADER:
+			return mesh_shader_capabilities.task_shader_is_supported && mesh_shader_capabilities.mesh_shader_is_supported;
 		default:
 			return false;
 	}

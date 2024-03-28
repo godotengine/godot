@@ -2811,6 +2811,8 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 					/* SHADER_STAGE_TESSELATION_CONTROL */ MESA_SHADER_TESS_CTRL,
 					/* SHADER_STAGE_TESSELATION_EVALUATION */ MESA_SHADER_TESS_EVAL,
 					/* SHADER_STAGE_COMPUTE */ MESA_SHADER_COMPUTE,
+					/* SHADER_STAGE_MESH_TASK */ MESA_SHADER_TASK,
+					/* SHADER_STAGE_MESH */ MESA_SHADER_MESH,
 				};
 
 				nir_shader *shader = spirv_to_nir(
@@ -3207,14 +3209,18 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 		D3D12_ROOT_SIGNATURE_FLAGS root_sig_flags =
 				D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 				D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS |
-				D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS;
+				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 		if (!stages_processed.has_flag(SHADER_STAGE_VERTEX_BIT)) {
 			root_sig_flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
 		}
 		if (!stages_processed.has_flag(SHADER_STAGE_FRAGMENT_BIT)) {
 			root_sig_flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+		}
+		if (!stages_processed.has_flag(SHADER_STAGE_MESH_TASK_BIT)) {
+			root_sig_flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS;
+		}
+		if (!stages_processed.has_flag(SHADER_STAGE_MESH_BIT)) {
+			root_sig_flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS;
 		}
 		if (binary_data.vertex_input_mask) {
 			root_sig_flags |= D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -5176,6 +5182,29 @@ void RenderingDeviceDriverD3D12::command_render_draw_indirect_count(CommandBuffe
 	cmd_buf_info->cmd_list->ExecuteIndirect(indirect_cmd_signatures.draw.Get(), p_max_draw_count, indirect_buf_info->resource, p_offset, count_buf_info->resource, p_count_buffer_offset);
 }
 
+void RenderingDeviceDriverD3D12::command_render_dispatch_mesh(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	((ID3D12GraphicsCommandList6 *)cmd_buf_info->cmd_list.Get())->DispatchMesh(p_x_groups, p_y_groups, p_z_groups);
+}
+
+void RenderingDeviceDriverD3D12::command_render_dispatch_mesh_indirect(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, uint32_t p_draw_count, uint32_t p_stride) {
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	BufferInfo *indirect_buf_info = (BufferInfo *)p_indirect_buffer.id;
+	_resource_transition_batch(indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	cmd_buf_info->cmd_list->ExecuteIndirect(indirect_cmd_signatures.dispatch_mesh.Get(), p_draw_count, indirect_buf_info->resource, p_offset, nullptr, 0);
+}
+
+void RenderingDeviceDriverD3D12::command_render_dispatch_mesh_indirect_count(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, BufferID p_count_buffer, uint64_t p_count_buffer_offset, uint32_t p_max_draw_count, uint32_t p_stride) {
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	BufferInfo *indirect_buf_info = (BufferInfo *)p_indirect_buffer.id;
+	BufferInfo *count_buf_info = (BufferInfo *)p_count_buffer.id;
+	_resource_transition_batch(indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+	_resource_transition_batch(count_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	cmd_buf_info->cmd_list->ExecuteIndirect(indirect_cmd_signatures.dispatch_mesh.Get(), p_max_draw_count, indirect_buf_info->resource, p_offset, count_buf_info->resource, p_count_buffer_offset);
+}
+
 void RenderingDeviceDriverD3D12::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) {
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 
@@ -5899,6 +5928,18 @@ uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 			return D3D12_CS_THREAD_GROUP_MAX_Y;
 		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z:
 			return D3D12_CS_THREAD_GROUP_MAX_Z;
+		case LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_X:
+			return MeshShaderCapabilities::MAX_THREAD_GROUPS;
+		case LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_Y:
+			return MeshShaderCapabilities::MAX_THREAD_GROUPS;
+		case LIMIT_MAX_MESH_TASK_WORKGROUP_COUNT_Z:
+			return MeshShaderCapabilities::MAX_THREAD_GROUPS;
+		case LIMIT_MAX_MESH_WORKGROUP_COUNT_X:
+			return MeshShaderCapabilities::MAX_THREAD_GROUPS;
+		case LIMIT_MAX_MESH_WORKGROUP_COUNT_Y:
+			return MeshShaderCapabilities::MAX_THREAD_GROUPS;
+		case LIMIT_MAX_MESH_WORKGROUP_COUNT_Z:
+			return MeshShaderCapabilities::MAX_THREAD_GROUPS;
 		case LIMIT_SUBGROUP_SIZE:
 		// Note in min/max. Shader model 6.6 supports it (see https://microsoft.github.io/DirectX-Specs/d3d/HLSL_SM_6_6_WaveSize.html),
 		// but at this time I don't know the implications on the transpilation to DXIL, etc.
@@ -5952,6 +5993,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 			return vrs_capabilities.ss_image_supported;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
+		case SUPPORTS_MESH_SHADER:
+			return mesh_shader_capabilities.is_supported;
 		default:
 			return false;
 	}
@@ -6223,6 +6266,14 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 		}
 	}
 
+	D3D12_FEATURE_DATA_D3D12_OPTIONS7 options7 = {};
+	res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &options7, sizeof(options7));
+	if (SUCCEEDED(res)) {
+		if (options7.MeshShaderTier >= D3D12_MESH_SHADER_TIER_1) {
+			mesh_shader_capabilities.is_supported = true;
+		}
+	}
+
 	D3D12_FEATURE_DATA_D3D12_OPTIONS12 options12 = {};
 	res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &options12, sizeof(options12));
 	if (SUCCEEDED(res)) {
@@ -6267,6 +6318,12 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 #endif
 	} else {
 		print_verbose("- Relaxed casting not supported");
+	}
+
+	if (mesh_shader_capabilities.is_supported) {
+		print_verbose("- D3D12 Mesh Shader supported");
+	} else {
+		print_verbose("- D3D12 Mesh Shader not supported");
 	}
 
 	print_verbose(String("- D3D12 16-bit ops supported: ") + (shader_capabilities.native_16bit_ops ? "yes" : "no"));
@@ -6376,6 +6433,9 @@ Error RenderingDeviceDriverD3D12::_initialize_command_signatures() {
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
 	err = create_command_signature(device.Get(), D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH, sizeof(D3D12_DISPATCH_ARGUMENTS), &indirect_cmd_signatures.dispatch);
+	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+
+	err = create_command_signature(device.Get(), D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH, sizeof(D3D12_DISPATCH_MESH_ARGUMENTS), &indirect_cmd_signatures.dispatch_mesh);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
 	return OK;
