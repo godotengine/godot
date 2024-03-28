@@ -21,9 +21,7 @@ class Members:
 		return true
 
 
-@warning_ignore("unsafe_method_access")
-@warning_ignore("assert_always_true")
-@warning_ignore("return_value_discarded")
+@warning_ignore_start('unsafe_method_access', 'assert_always_true', 'return_value_discarded')
 func test():
 	var untyped_basic = [459]
 	assert(str(untyped_basic) == '[459]')
@@ -208,7 +206,7 @@ func test():
 
 	var a := A.new()
 	var typed_natives: Array[RefCounted] = [a]
-	var typed_scripts = Array(typed_natives, TYPE_OBJECT, "RefCounted", A)
+	var typed_scripts = Array(typed_natives, TYPE_OBJECT, 'RefCounted', A)
 	assert(typed_scripts[0] == a)
 
 

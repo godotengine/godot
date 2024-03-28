@@ -3,7 +3,7 @@ const const_color: Color = 'red'
 func func_color(arg_color: Color = 'blue') -> bool:
 	return arg_color == Color.BLUE
 
-@warning_ignore("assert_always_true")
+@warning_ignore_start('assert_always_true')
 func test():
 	assert(const_color == Color.RED)
 

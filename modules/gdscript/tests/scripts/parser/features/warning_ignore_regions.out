@@ -1,0 +1,21 @@
+GDTEST_OK
+>> WARNING
+>> Line: 3
+>> UNUSED_PRIVATE_CLASS_VARIABLE
+>> The class variable "_a" is declared but never used in the class.
+>> WARNING
+>> Line: 8
+>> UNUSED_PRIVATE_CLASS_VARIABLE
+>> The class variable "_d" is declared but never used in the class.
+>> WARNING
+>> Line: 13
+>> UNUSED_VARIABLE
+>> The local variable "a" is declared but never used in the block. If this is intended, prefix it with an underscore: "_a".
+>> WARNING
+>> Line: 18
+>> UNUSED_VARIABLE
+>> The local variable "d" is declared but never used in the block. If this is intended, prefix it with an underscore: "_d".
+>> WARNING
+>> Line: 22
+>> NARROWING_CONVERSION
+>> Narrowing conversion (float is converted to int and loses precision).
