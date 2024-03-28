@@ -58,6 +58,7 @@
 				Adds [param action] as a group task to be executed by the worker threads. The [Callable] will be called a number of times based on [param elements], with the first thread calling it with the value [code]0[/code] as a parameter, and each consecutive execution incrementing this value by 1 until it reaches [code]element - 1[/code].
 				The number of threads the task is distributed to is defined by [param tasks_needed], where the default value [code]-1[/code] means it is distributed to all worker threads. [param high_priority] determines if the task has a high priority or a low priority (default). You can optionally provide a [param description] to help with debugging.
 				Returns a group task ID that can be used by other methods.
+				[b]Warning:[/b] Every task must be waited for completion using [method wait_for_task_completion] or [method wait_for_group_task_completion] at some point so that any allocated resources inside the task can be cleaned up.
 			</description>
 		</method>
 		<method name="add_task">
@@ -68,6 +69,7 @@
 			<description>
 				Adds [param action] as a task to be executed by a worker thread. [param high_priority] determines if the task has a high priority or a low priority (default). You can optionally provide a [param description] to help with debugging.
 				Returns a task ID that can be used by other methods.
+				[b]Warning:[/b] Every task must be waited for completion using [method wait_for_task_completion] or [method wait_for_group_task_completion] at some point so that any allocated resources inside the task can be cleaned up.
 			</description>
 		</method>
 		<method name="get_group_processed_element_count" qualifiers="const">
@@ -83,6 +85,7 @@
 			<param index="0" name="group_id" type="int" />
 			<description>
 				Returns [code]true[/code] if the group task with the given ID is completed.
+				[b]Note:[/b] You should only call this method between adding the group task and awaiting its completion.
 			</description>
 		</method>
 		<method name="is_task_completed" qualifiers="const">
@@ -90,6 +93,7 @@
 			<param index="0" name="task_id" type="int" />
 			<description>
 				Returns [code]true[/code] if the task with the given ID is completed.
+				[b]Note:[/b] You should only call this method between adding the task and awaiting its completion.
 			</description>
 		</method>
 		<method name="wait_for_group_task_completion">
