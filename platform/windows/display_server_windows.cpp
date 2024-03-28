@@ -114,6 +114,8 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_ICON:
 		case FEATURE_NATIVE_ICON:
 		case FEATURE_NATIVE_DIALOG:
+		case FEATURE_NATIVE_DIALOG_INPUT:
+		case FEATURE_NATIVE_DIALOG_FILE:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_TEXT_TO_SPEECH:
