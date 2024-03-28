@@ -187,7 +187,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error generate_tangents();
+	void generate_tangents(bool p_force_tangent);
 	void add_blend_shape(const String &p_name);
 	int get_blend_shape_count() const;
 	String get_blend_shape_name(int p_blend_shape) const;

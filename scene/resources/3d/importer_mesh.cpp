@@ -1380,7 +1380,7 @@ void ImporterMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
 }
 
-Error ImporterMesh::generate_tangents() {
+void ImporterMesh::generate_tangents(bool p_force_tangent) {
 	int surface_count = get_surface_count();
 	for (int surface_i = 0; surface_i < surface_count; surface_i++) {
 		if (!(surfaces[surface_i].flags & Mesh::ARRAY_FORMAT_TEX_UV)) {
@@ -1465,5 +1465,4 @@ Error ImporterMesh::generate_tangents() {
 		surfaces.write[surface_i].arrays = array;
 		surfaces.write[surface_i].flags |= Mesh::ARRAY_FORMAT_TANGENT;
 	}
-	return OK;
 }
