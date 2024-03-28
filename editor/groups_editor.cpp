@@ -157,10 +157,14 @@ void GroupsEditor::_update_groups() {
 
 	_load_scene_groups(scene_root_node);
 
-	for (const KeyValue<StringName, bool> &E : scene_groups) {
-		if (global_groups.has(E.key)) {
-			scene_groups.erase(E.key);
+	for (HashMap<StringName, bool>::Iterator E = scene_groups.begin(); E;) {
+		HashMap<StringName, bool>::Iterator next = E;
+		++next;
+
+		if (global_groups.has(E->key)) {
+			scene_groups.erase(E->key);
 		}
+		E = next;
 	}
 
 	updating_groups = false;
