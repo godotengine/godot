@@ -718,7 +718,7 @@ void CodeEdit::_backspace_internal(int p_caret) {
 			continue;
 		}
 
-		if (cl > 0 && _is_line_hidden(cl - 1)) {
+		if (cl > 0 && cc == 0 && _is_line_hidden(cl - 1)) {
 			unfold_line(get_caret_line(i) - 1);
 		}
 

@@ -3972,6 +3972,26 @@ TEST_CASE("[SceneTree][CodeEdit] Backspace delete") {
 	code_edit->backspace();
 	CHECK(code_edit->get_text() == "line 1\nline 2\nline 3");
 
+	SUBCASE("[CodeEdit] folding") {
+		code_edit->set_line_folding_enabled(true);
+
+		// Unfold previous folded line on backspace if caret is at the first column.
+		code_edit->set_text("line 1\n\tline 2\nline 3");
+		code_edit->set_caret_line(2);
+		code_edit->set_caret_column(0);
+		code_edit->fold_line(0);
+		code_edit->backspace();
+		CHECK_FALSE(code_edit->is_line_folded(0));
+
+		// Do not unfold previous line on backspace if the caret is not at the first column.
+		code_edit->set_text("line 1\n\tline 2\nline 3");
+		code_edit->set_caret_line(2);
+		code_edit->set_caret_column(4);
+		code_edit->fold_line(0);
+		code_edit->backspace();
+		CHECK(code_edit->is_line_folded(0));
+	}
+
 	memdelete(code_edit);
 }
 
