@@ -34,10 +34,12 @@ import org.godotengine.godot.input.GodotEditText;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -348,6 +350,15 @@ public class GodotIO {
 			}
 		} else {
 			return activity.getExternalFilesDir(what).getAbsolutePath();
+		}
+	}
+
+	public boolean isMediaPlaying() {
+		AudioManager audioManager = (AudioManager)activity.getSystemService(Context.AUDIO_SERVICE);
+		if (audioManager != null && audioManager.isMusicActive()) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 

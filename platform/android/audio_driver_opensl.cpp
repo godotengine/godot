@@ -177,7 +177,7 @@ void AudioDriverOpenSL::start() {
 		res = (*bufferQueueItf)->Enqueue(bufferQueueItf, buffers[i], 4 * buffer_size); /* Size given in */
 	}
 
-	res = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
+	res = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING); // BREAKS AudioManager.isMusicActive()
 	ERR_FAIL_COND(res != SL_RESULT_SUCCESS);
 
 	active = true;
@@ -323,7 +323,7 @@ void AudioDriverOpenSL::set_pause(bool p_pause) {
 		if (pause) {
 			(*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PAUSED);
 		} else {
-			(*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
+			(*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING); // BREAKS AudioManager.isMusicActive()
 		}
 	}
 }

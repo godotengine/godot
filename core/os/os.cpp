@@ -370,6 +370,11 @@ int OS::get_processor_count() const {
 	return THREADING_NAMESPACE::thread::hardware_concurrency();
 }
 
+bool OS::is_media_playing() const {
+	WARN_PRINT("Media playback checking is not supported on this platform.");
+	return false;
+}
+
 String OS::get_processor_name() const {
 	return "";
 }
