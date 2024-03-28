@@ -55,6 +55,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
@@ -602,11 +603,26 @@ Rect2 CanvasItemEditor::_get_encompassing_rect(const Node *p_node) {
 	return rect;
 }
 
+Vector2 CanvasItemEditor::_get_screen_size() const {
+	if (!_is_viewport_overriden()) {
+		return Vector2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+	}
+	SubViewport *svp = Object::cast_to<SubViewport>(current_viewport);
+	if (svp) {
+		return svp->get_size();
+	}
+	Window *w = Object::cast_to<Window>(current_viewport);
+	if (w) {
+		return w->get_size();
+	}
+	return Vector2();
+}
+
 void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	if (!p_node) {
 		return;
 	}
-	if (Object::cast_to<Viewport>(p_node)) {
+	if (Object::cast_to<Viewport>(p_node) && p_node != current_viewport) {
 		return;
 	}
 
@@ -624,6 +640,10 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 			CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
 			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
 		}
+	}
+
+	if (_is_viewport_overriden() && p_node->get_viewport() != current_viewport) {
+		return;
 	}
 
 	if (ci && ci->is_visible_in_tree()) {
@@ -782,7 +802,7 @@ List<CanvasItem *> CanvasItemEditor::_get_edited_canvas_items(bool retrieve_lock
 	List<CanvasItem *> selection;
 	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
 		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
-		if (ci && ci->is_visible_in_tree() && ci->get_viewport() == EditorNode::get_singleton()->get_scene_root() && (retrieve_locked || !_is_node_locked(ci))) {
+		if (ci && ci->is_visible_in_tree() && ci->get_viewport() == current_viewport && (retrieve_locked || !_is_node_locked(ci))) {
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
 			if (se) {
 				selection.push_back(ci);
@@ -1036,6 +1056,43 @@ void CanvasItemEditor::_on_grid_menu_id_pressed(int p_id) {
 		}
 	}
 	viewport->queue_redraw();
+}
+
+void CanvasItemEditor::_set_viewport_override(Viewport *p_viewport) {
+	if (p_viewport && p_viewport == current_viewport) {
+		return;
+	}
+
+	const Callable update_size = callable_mp(this, &CanvasItemEditor::_update_viewport_size);
+	const Callable redraw = callable_mp((CanvasItem *)viewport, &CanvasItem::queue_redraw);
+
+	if (current_viewport && _is_viewport_overriden()) {
+		current_viewport->disconnect("size_changed", update_size);
+		current_viewport->disconnect("size_changed", redraw);
+	}
+
+	if (p_viewport) {
+		p_viewport->connect("size_changed", update_size);
+		p_viewport->connect("size_changed", redraw);
+		scene_view_display->set_global_canvas_transform(EditorNode::get_singleton()->get_scene_root()->get_global_canvas_transform());
+	} else {
+		p_viewport = EditorNode::get_singleton()->get_scene_root();
+		p_viewport->set_global_canvas_transform(scene_view_display->get_global_canvas_transform());
+		scene_view_display->set_global_canvas_transform(Transform2D());
+	}
+
+	current_viewport = p_viewport;
+	scene_view->set_texture(p_viewport->get_texture());
+	_update_viewport_size();
+	viewport->queue_redraw();
+}
+
+void CanvasItemEditor::_update_viewport_size() {
+	EditorNode::get_singleton()->get_scene_root()->set_size(scene_tree->get_size());
+}
+
+bool CanvasItemEditor::_is_viewport_overriden() const {
+	return current_viewport != EditorNode::get_singleton()->get_scene_root();
 }
 
 void CanvasItemEditor::_switch_theme_preview(int p_mode) {
@@ -3637,13 +3694,13 @@ void CanvasItemEditor::_draw_axis() {
 
 		Color area_axis_color = EDITOR_GET("editors/2d/viewport_border_color");
 
-		Size2 screen_size = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+		Size2 viewport_size = _get_screen_size();
 
 		Vector2 screen_endpoints[4] = {
 			transform.xform(Vector2(0, 0)),
-			transform.xform(Vector2(screen_size.width, 0)),
-			transform.xform(Vector2(screen_size.width, screen_size.height)),
-			transform.xform(Vector2(0, screen_size.height))
+			transform.xform(Vector2(viewport_size.width, 0)),
+			transform.xform(Vector2(viewport_size.width, viewport_size.height)),
+			transform.xform(Vector2(0, viewport_size.height))
 		};
 
 		for (int i = 0; i < 4; i++) {
@@ -3832,7 +3889,11 @@ void CanvasItemEditor::_draw_viewport() {
 	transform = Transform2D();
 	transform.scale_basis(Size2(zoom, zoom));
 	transform.columns[2] = -view_offset * zoom;
-	EditorNode::get_singleton()->get_scene_root()->set_global_canvas_transform(transform);
+	if (_is_viewport_overriden()) {
+		scene_view_display->set_global_canvas_transform(transform);
+	} else {
+		current_viewport->set_global_canvas_transform(transform);
+	}
 
 	_draw_grid();
 	_draw_ruler_tool();
@@ -3889,6 +3950,7 @@ void CanvasItemEditor::_update_editor_settings() {
 	snap_config_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 	skeleton_menu->set_icon(get_editor_theme_icon(SNAME("Bone")));
 	override_camera_button->set_icon(get_editor_theme_icon(SNAME("Camera2D")));
+	override_viewport_button->set_icon(get_editor_theme_icon(SNAME("Viewport")));
 	pan_button->set_icon(get_editor_theme_icon(SNAME("ToolPan")));
 	ruler_button->set_icon(get_editor_theme_icon(SNAME("Ruler")));
 	pivot_button->set_icon(get_editor_theme_icon(SNAME("EditPivot")));
@@ -3919,7 +3981,7 @@ void CanvasItemEditor::_update_editor_settings() {
 }
 
 void CanvasItemEditor::_project_settings_changed() {
-	EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
+	current_viewport->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
 }
 
 void CanvasItemEditor::_notification(int p_what) {
@@ -4061,6 +4123,10 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 	}
 }
 
+void CanvasItemEditor::edit_viewport(Viewport *p_viewport) {
+	_update_override_viewport_button(p_viewport);
+}
+
 void CanvasItemEditor::_update_scrollbars() {
 	updating_scroll = true;
 
@@ -4073,7 +4139,7 @@ void CanvasItemEditor::_update_scrollbars() {
 	Size2 vmin = v_scroll->get_minimum_size();
 
 	// Get the visible frame.
-	Size2 screen_rect = Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+	Size2 screen_rect = _get_screen_size();
 	Rect2 local_rect = Rect2(Point2(), viewport->get_size() - Size2(vmin.width, hmin.height));
 
 	// Calculate scrollable area.
@@ -4194,6 +4260,15 @@ void CanvasItemEditor::_button_override_camera(bool p_pressed) {
 	}
 }
 
+void CanvasItemEditor::_button_override_viewport(bool p_pressed) {
+	if (p_pressed) {
+		Viewport *vp = Object::cast_to<Viewport>(override_viewport_button->get_meta("viewport"));
+		_set_viewport_override(vp);
+	} else {
+		_set_viewport_override(nullptr);
+	}
+}
+
 void CanvasItemEditor::_button_tool_select(int p_index) {
 	Button *tb[TOOL_MAX] = { select_button, list_select_button, move_button, scale_button, rotate_button, pivot_button, pan_button, ruler_button };
 	for (int i = 0; i < TOOL_MAX; i++) {
@@ -4219,7 +4294,7 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			continue;
 		}
 
-		if (ci->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
+		if (ci->get_viewport() != current_viewport) {
 			continue;
 		}
 
@@ -4296,6 +4371,28 @@ void CanvasItemEditor::_update_override_camera_button(bool p_game_running) {
 		override_camera_button->set_disabled(true);
 		override_camera_button->set_pressed(false);
 		override_camera_button->set_tooltip_text(TTR("Project Camera Override\nNo project instance running. Run the project from the editor to use this feature."));
+	}
+}
+
+void CanvasItemEditor::_update_override_viewport_button(Viewport *p_viewport) {
+	if (p_viewport) {
+		override_viewport_button->set_disabled(false);
+		if (p_viewport == current_viewport) {
+			override_viewport_button->set_pressed_no_signal(true);
+		} else {
+			override_viewport_button->set_pressed_no_signal(false);
+			override_viewport_button->set_meta("viewport", p_viewport);
+		}
+
+	} else {
+		if (_is_viewport_overriden()) {
+			override_viewport_button->set_disabled(false);
+			override_viewport_button->set_pressed_no_signal(true);
+		} else {
+			override_viewport_button->set_disabled(true);
+			override_viewport_button->set_pressed_no_signal(false);
+		}
+		override_viewport_button->set_meta(SNAME("viewport"), Variant());
 	}
 }
 
@@ -4436,7 +4533,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!ci || !ci->is_inside_tree()) {
 					continue;
 				}
-				if (ci->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
+				if (ci->get_viewport() != current_viewport) {
 					continue;
 				}
 
@@ -4458,7 +4555,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!ci || !ci->is_inside_tree()) {
 					continue;
 				}
-				if (ci->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
+				if (ci->get_viewport() != current_viewport) {
 					continue;
 				}
 
@@ -4480,7 +4577,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!ci || !ci->is_inside_tree()) {
 					continue;
 				}
-				if (ci->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
+				if (ci->get_viewport() != current_viewport) {
 					continue;
 				}
 
@@ -4502,7 +4599,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!ci || !ci->is_inside_tree()) {
 					continue;
 				}
-				if (ci->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
+				if (ci->get_viewport() != current_viewport) {
 					continue;
 				}
 
@@ -4543,7 +4640,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				}
 
-				if (ci->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
+				if (ci->get_viewport() != current_viewport) {
 					continue;
 				}
 
@@ -4589,7 +4686,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				}
 
-				if (ci->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
+				if (ci->get_viewport() != current_viewport) {
 					continue;
 				}
 
@@ -4712,7 +4809,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		if (!ci) {
 			continue;
 		}
-		if (ci->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
+		if (ci->get_viewport() != current_viewport) {
 			continue;
 		}
 
@@ -5010,6 +5107,8 @@ void CanvasItemEditor::clear() {
 	snap_rotation_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_step", Math::deg_to_rad(15.0));
 	snap_rotation_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_offset", 0.0);
 	snap_scale_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_scale_step", 0.1);
+
+	edit_viewport(nullptr);
 }
 
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
@@ -5089,7 +5188,7 @@ void CanvasItemEditor::focus_selection() {
 }
 
 void CanvasItemEditor::center_at(const Point2 &p_pos) {
-	Vector2 offset = viewport->get_size() / 2 - EditorNode::get_singleton()->get_scene_root()->get_global_canvas_transform().xform(p_pos);
+	Vector2 offset = viewport->get_size() / 2 - current_viewport->get_global_canvas_transform().xform(p_pos);
 	view_offset -= (offset / zoom).round();
 	update_viewport();
 }
@@ -5143,11 +5242,19 @@ CanvasItemEditor::CanvasItemEditor() {
 	viewport_scrollable->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	viewport_scrollable->connect("draw", callable_mp(this, &CanvasItemEditor::_update_scrollbars));
 
-	SubViewportContainer *scene_tree = memnew(SubViewportContainer);
+	scene_tree = memnew(SubViewportContainer);
 	viewport_scrollable->add_child(scene_tree);
 	scene_tree->set_stretch(true);
 	scene_tree->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	scene_tree->add_child(EditorNode::get_singleton()->get_scene_root());
+	scene_tree->connect("item_rect_changed", callable_mp(this, &CanvasItemEditor::_update_viewport_size));
+
+	scene_view_display = memnew(SubViewport);
+	scene_tree->add_child(scene_view_display);
+
+	scene_view = memnew(TextureRect);
+	scene_view_display->add_child(scene_view);
+	scene_view->set_clip_contents(true);
+	scene_view->add_child(EditorNode::get_singleton()->get_scene_root());
 
 	controls_vb = memnew(VBoxContainer);
 	controls_vb->set_begin(Point2(5, 5));
@@ -5213,6 +5320,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	viewport->connect("draw", callable_mp(this, &CanvasItemEditor::_draw_viewport));
 	viewport->connect("gui_input", callable_mp(this, &CanvasItemEditor::_gui_input_viewport));
 	viewport->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
+	_set_viewport_override(nullptr);
 
 	h_scroll = memnew(HScrollBar);
 	viewport->add_child(h_scroll);
@@ -5412,6 +5520,14 @@ CanvasItemEditor::CanvasItemEditor() {
 	override_camera_button->set_disabled(true);
 	_update_override_camera_button(false);
 
+	override_viewport_button = memnew(Button);
+	override_viewport_button->set_flat(true);
+	main_menu_hbox->add_child(override_viewport_button);
+	override_viewport_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_override_viewport));
+	override_viewport_button->set_toggle_mode(true);
+	override_viewport_button->set_disabled(true);
+	_update_override_viewport_button(nullptr);
+
 	main_menu_hbox->add_child(memnew(VSeparator));
 
 	view_menu = memnew(MenuButton);
@@ -5585,10 +5701,11 @@ CanvasItemEditor *CanvasItemEditor::singleton = nullptr;
 
 void CanvasItemEditorPlugin::edit(Object *p_object) {
 	canvas_item_editor->edit(Object::cast_to<CanvasItem>(p_object));
+	canvas_item_editor->edit_viewport(Object::cast_to<Viewport>(p_object));
 }
 
 bool CanvasItemEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("CanvasItem");
+	return Object::cast_to<CanvasItem>(p_object) || Object::cast_to<SubViewport>(p_object) || Object::cast_to<Window>(p_object);
 }
 
 void CanvasItemEditorPlugin::make_visible(bool p_visible) {
