@@ -3083,6 +3083,19 @@ const ShaderLanguage::BuiltinFuncConstArgs ShaderLanguage::builtin_func_const_ar
 	{ nullptr, 0, 0, 0 }
 };
 
+const ShaderLanguage::BuiltinFuncFragLight ShaderLanguage::builtin_func_fragment_light_only[] = {
+	{ "dFdx" },
+	{ "dFdxCoarse" },
+	{ "dFdxFine" },
+	{ "dFdy" },
+	{ "dFdyCoarse" },
+	{ "dFdyFine" },
+	{ "fwidth" },
+	{ "fwidthCoarse" },
+	{ "fwidthFine" },
+	{ nullptr }
+};
+
 bool ShaderLanguage::is_const_suffix_lut_initialized = false;
 
 bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str, bool *r_is_custom_function) {
@@ -3135,6 +3148,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	if (argcount <= 4) {
 		// test builtins
 		int idx = 0;
+		bool is_non_frag_light = current_function != "fragment" && current_function != "light";
 
 		while (builtin_func_defs[idx].name) {
 			if (completion_class != builtin_func_defs[idx].tag) {
@@ -3168,6 +3182,18 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 							unsupported_builtin = true;
 							builtin_idx = idx;
 						}
+					}
+				}
+
+				if (!fail && is_non_frag_light) {
+					int arg_idx = 0;
+
+					while (builtin_func_fragment_light_only[arg_idx].name) {
+						if (String(name) == builtin_func_fragment_light_only[arg_idx].name) {
+							_set_error(vformat(RTR("'%s' cannot be used outside of the 'fragment()' or 'light()' processor functions."), String(name)));
+							return false;
+						}
+						arg_idx++;
 					}
 				}
 
@@ -10280,11 +10306,33 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					}
 				}
 
+				bool is_non_frag_light = current_function != "fragment" && current_function != "light";
+
 				while (builtin_func_defs[idx].name) {
 					if (low_end && builtin_func_defs[idx].high_end) {
 						idx++;
 						continue;
 					}
+
+					if (is_non_frag_light) {
+						bool found = false;
+						{
+							int idx2 = 0;
+							while (builtin_func_fragment_light_only[idx2].name) {
+								if (String(builtin_func_fragment_light_only[idx2].name) == builtin_func_defs[idx].name) {
+									found = true;
+									break;
+								}
+								idx2++;
+							}
+						}
+
+						if (found) {
+							idx++;
+							continue;
+						}
+					}
+
 					matches.insert(String(builtin_func_defs[idx].name), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 					idx++;
 				}
@@ -10446,7 +10494,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				int idx2 = 0;
 				HashSet<int> out_args;
 				while (builtin_func_out_args[idx2].name != nullptr) {
-					if (builtin_func_out_args[idx2].name == builtin_func_defs[idx].name) {
+					if (String(builtin_func_out_args[idx2].name) == builtin_func_defs[idx].name) {
 						for (int i = 0; i < BuiltinFuncOutArgs::MAX_ARGS; i++) {
 							int arg = builtin_func_out_args[idx2].arguments[i];
 							if (arg == -1) {
