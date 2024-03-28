@@ -493,29 +493,45 @@ void GDScriptLanguage::get_public_annotations(List<MethodInfo> *p_annotations) c
 
 String GDScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
 #ifdef TOOLS_ENABLED
-	bool th = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
+	const bool use_type_hints = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
+	const String param_prefix = GLOBAL_GET("editor/naming/function_parameter_prefix");
 #else
-	bool th = false;
+	const bool use_type_hints = false;
+	const String param_prefix;
 #endif
 
-	String s = "func " + p_name + "(";
-	if (p_args.size()) {
-		for (int i = 0; i < p_args.size(); i++) {
-			if (i > 0) {
-				s += ", ";
+	String result = "func " + p_name + "(";
+
+	for (int i = 0; i < p_args.size(); i++) {
+		if (i > 0) {
+			result += ", ";
+		}
+
+		String param_name = p_args[i].get_slice(":", 0);
+		if (param_prefix.is_empty()) {
+			if (is_reserved_word(param_name)) {
+				param_name = "p_" + param_name;
 			}
-			s += p_args[i].get_slice(":", 0);
-			if (th) {
-				String type = p_args[i].get_slice(":", 1);
-				if (!type.is_empty()) {
-					s += ": " + type;
-				}
+		} else if (!param_name.begins_with(param_prefix)) {
+			param_name = param_prefix + param_name;
+		}
+		result += param_name;
+
+		if (use_type_hints) {
+			const String param_type = p_args[i].get_slice(":", 1);
+			if (!param_type.is_empty()) {
+				result += ": " + param_type;
 			}
 		}
 	}
-	s += String(")") + (th ? " -> void" : "") + ":\n" + _get_indentation() + "pass # Replace with function body.\n";
 
-	return s;
+	result += ")";
+	if (use_type_hints) {
+		result += " -> void";
+	}
+	result += ":\n" + _get_indentation() + "pass # Replace with function body.\n";
+
+	return result;
 }
 
 //////// COMPLETION //////////
@@ -3284,8 +3300,6 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				break;
 			}
 
-			bool use_type_hint = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints").operator bool();
-
 			List<MethodInfo> virtual_methods;
 			ClassDB::get_virtual_methods(class_name, &virtual_methods);
 
@@ -3297,30 +3311,36 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				virtual_methods.push_back(static_init);
 			}
 
+			const bool use_type_hints = EditorSettings::get_singleton()->get_setting("text_editor/completion/add_type_hints");
+			const String param_prefix = GLOBAL_GET("editor/naming/function_parameter_prefix");
+
 			for (const MethodInfo &mi : virtual_methods) {
-				String method_hint = mi.name;
-				if (method_hint.contains(":")) {
-					method_hint = method_hint.get_slice(":", 0);
-				}
-				method_hint += "(";
+				String method_hint = mi.name + "(";
 
 				if (mi.arguments.size()) {
 					for (int i = 0; i < mi.arguments.size(); i++) {
 						if (i > 0) {
 							method_hint += ", ";
 						}
-						String arg = mi.arguments[i].name;
-						if (arg.contains(":")) {
-							arg = arg.substr(0, arg.find(":"));
+
+						String param_name = mi.arguments[i].name;
+						if (param_prefix.is_empty()) {
+							if (is_reserved_word(param_name)) {
+								param_name = "p_" + param_name;
+							}
+						} else if (!param_name.begins_with(param_prefix)) {
+							param_name = param_prefix + param_name;
 						}
-						method_hint += arg;
-						if (use_type_hint) {
+						method_hint += param_name;
+
+						if (use_type_hints) {
 							method_hint += ": " + _get_visual_datatype(mi.arguments[i], true, class_name);
 						}
 					}
 				}
+
 				method_hint += ")";
-				if (use_type_hint) {
+				if (use_type_hints) {
 					method_hint += " -> " + _get_visual_datatype(mi.return_val, false, class_name);
 				}
 				method_hint += ":";
