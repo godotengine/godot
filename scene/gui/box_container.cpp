@@ -200,6 +200,8 @@ void BoxContainer::_resort() {
 		delta = -1;
 	}
 
+	cached_children_nodes.clear();
+
 	for (int i = start; i != end; i += delta) {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c || !c->is_visible_in_tree()) {
@@ -238,6 +240,7 @@ void BoxContainer::_resort() {
 		}
 
 		fit_child_in_rect(c, rect);
+		cached_children_nodes.push_back(c);
 
 		ofs = to;
 		idx++;
@@ -287,6 +290,35 @@ Size2 BoxContainer::get_minimum_size() const {
 	}
 
 	return minimum;
+}
+
+Vector<CanvasItem *> BoxContainer::get_children_at_pos(const Point2 &p_pos) const {
+	if (cached_children_nodes.is_empty()) {
+		return Vector<CanvasItem *>();
+	}
+
+	int coord = vertical ? p_pos.y : p_pos.x;
+	// Custom binary search; we are searching for the closest value to coord, not an exact one.
+	int bin_start = 0;
+	int bin_end = cached_children_nodes.size();
+	while (bin_start < bin_end) {
+		int mid = (bin_start + bin_end) / 2;
+		if (coord < (vertical ? cached_children_nodes[mid]->get_rect().position.y : cached_children_nodes[mid]->get_rect().position.x)) {
+			bin_end = mid;
+		} else {
+			bin_start = mid + 1;
+		}
+	}
+
+	Vector<CanvasItem *> children;
+	int idx = MAX(bin_start - 1, 0);
+	ERR_FAIL_INDEX_V(idx, cached_children_nodes.size(), children);
+
+	CanvasItem *child = Object::cast_to<CanvasItem>(cached_children_nodes[idx]);
+	if (child) {
+		children.push_back(child);
+	}
+	return children;
 }
 
 void BoxContainer::_notification(int p_what) {
