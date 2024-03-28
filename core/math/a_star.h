@@ -151,6 +151,7 @@ public:
 
 	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id);
 	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id);
+	real_t get_path_score(int64_t p_from_id, int64_t p_to_id);
 
 	AStar3D() {}
 	~AStar3D();
@@ -201,6 +202,7 @@ public:
 
 	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id);
 	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id);
+	real_t get_path_score(int64_t p_from_id, int64_t p_to_id);
 
 	AStar2D() {}
 	~AStar2D() {}
