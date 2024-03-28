@@ -341,6 +341,8 @@ protected:
 
 	/* ---- Blending processor ---- */
 	virtual void _process_animation(double p_delta, bool p_update_only = false);
+
+	// For post process with retrieved key value during blending.
 	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
 	Variant post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
 	GDVIRTUAL5RC(Variant, _post_process_key_value, Ref<Animation>, int, Variant, ObjectID, int);
@@ -377,7 +379,6 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	virtual Variant _post_process_key_value_bind_compat_86687(const Ref<Animation> &p_anim, int p_track, Variant p_value, Object *p_object, int p_object_idx = -1);
-
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -436,7 +437,7 @@ public:
 	void make_animation_instance(const StringName &p_name, const PlaybackInfo p_playback_info);
 	void clear_animation_instances();
 	virtual void advance(double p_time);
-	virtual void clear_caches(); ///< must be called by hand if an animation was modified after added
+	virtual void clear_caches(); // Must be called by hand if an animation was modified after added.
 
 	/* ---- Capture feature ---- */
 	void capture(const StringName &p_name, double p_duration, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);

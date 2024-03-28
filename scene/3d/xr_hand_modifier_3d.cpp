@@ -30,7 +30,6 @@
 
 #include "xr_hand_modifier_3d.h"
 
-#include "scene/3d/skeleton_3d.h"
 #include "servers/xr/xr_pose.h"
 #include "servers/xr_server.h"
 
@@ -38,14 +37,10 @@ void XRHandModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hand_tracker", "tracker_name"), &XRHandModifier3D::set_hand_tracker);
 	ClassDB::bind_method(D_METHOD("get_hand_tracker"), &XRHandModifier3D::get_hand_tracker);
 
-	ClassDB::bind_method(D_METHOD("set_target", "target"), &XRHandModifier3D::set_target);
-	ClassDB::bind_method(D_METHOD("get_target"), &XRHandModifier3D::get_target);
-
 	ClassDB::bind_method(D_METHOD("set_bone_update", "bone_update"), &XRHandModifier3D::set_bone_update);
 	ClassDB::bind_method(D_METHOD("get_bone_update"), &XRHandModifier3D::get_bone_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "hand_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/left,/user/right"), "set_hand_tracker", "get_hand_tracker");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_target", "get_target");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_update", PROPERTY_HINT_ENUM, "Full,Rotation Only"), "set_bone_update", "get_bone_update");
 
 	BIND_ENUM_CONSTANT(BONE_UPDATE_FULL);
@@ -61,18 +56,6 @@ StringName XRHandModifier3D::get_hand_tracker() const {
 	return tracker_name;
 }
 
-void XRHandModifier3D::set_target(const NodePath &p_target) {
-	target = p_target;
-
-	if (is_inside_tree()) {
-		_get_joint_data();
-	}
-}
-
-NodePath XRHandModifier3D::get_target() const {
-	return target;
-}
-
 void XRHandModifier3D::set_bone_update(BoneUpdate p_bone_update) {
 	ERR_FAIL_INDEX(p_bone_update, BONE_UPDATE_MAX);
 	bone_update = p_bone_update;
@@ -82,21 +65,11 @@ XRHandModifier3D::BoneUpdate XRHandModifier3D::get_bone_update() const {
 	return bone_update;
 }
 
-Skeleton3D *XRHandModifier3D::get_skeleton() {
-	if (!has_node(target)) {
-		return nullptr;
-	}
-
-	Node *node = get_node(target);
-	if (!node) {
-		return nullptr;
-	}
-
-	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
-	return skeleton;
-}
-
 void XRHandModifier3D::_get_joint_data() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
 	// Table of bone names for different rig types.
 	static const String bone_names[XRHandTracker::HAND_JOINT_MAX] = {
 		"Palm",
@@ -197,7 +170,7 @@ void XRHandModifier3D::_get_joint_data() {
 	}
 }
 
-void XRHandModifier3D::_update_skeleton() {
+void XRHandModifier3D::_process_modification() {
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton) {
 		return;
@@ -276,6 +249,10 @@ void XRHandModifier3D::_tracker_changed(StringName p_tracker_name, const Ref<XRH
 	}
 }
 
+void XRHandModifier3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) {
+	_get_joint_data();
+}
+
 void XRHandModifier3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -287,8 +264,6 @@ void XRHandModifier3D::_notification(int p_what) {
 			}
 
 			_get_joint_data();
-
-			set_process_internal(true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			XRServer *xr_server = XRServer::get_singleton();
@@ -298,15 +273,10 @@ void XRHandModifier3D::_notification(int p_what) {
 				xr_server->disconnect("hand_tracker_removed", callable_mp(this, &XRHandModifier3D::_tracker_changed).bind(Ref<XRHandTracker>()));
 			}
 
-			set_process_internal(false);
-
 			for (int i = 0; i < XRHandTracker::HAND_JOINT_MAX; i++) {
 				joints[i].bone = -1;
 				joints[i].parent_joint = -1;
 			}
-		} break;
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			_update_skeleton();
 		} break;
 		default: {
 		} break;

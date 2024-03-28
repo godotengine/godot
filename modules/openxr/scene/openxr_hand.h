@@ -31,16 +31,15 @@
 #ifndef OPENXR_HAND_H
 #define OPENXR_HAND_H
 
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
+#include "scene/3d/skeleton_modifier_3d.h"
 
 #include <openxr/openxr.h>
 
 class OpenXRAPI;
 class OpenXRHandTrackingExtension;
 
-class OpenXRHand : public Node3D {
-	GDCLASS(OpenXRHand, Node3D);
+class OpenXRHand : public SkeletonModifier3D {
+	GDCLASS(OpenXRHand, SkeletonModifier3D);
 
 public:
 	enum Hands { // Deprecated, need to change this to OpenXRInterface::Hands.
@@ -86,12 +85,12 @@ private:
 
 	void _set_motion_range();
 
-	Skeleton3D *get_skeleton();
 	void _get_joint_data();
-	void _update_skeleton();
 
 protected:
 	static void _bind_methods();
+
+	virtual void _process_modification() override;
 
 public:
 	OpenXRHand();
@@ -101,9 +100,6 @@ public:
 
 	void set_motion_range(MotionRange p_motion_range);
 	MotionRange get_motion_range() const;
-
-	void set_hand_skeleton(const NodePath &p_hand_skeleton);
-	NodePath get_hand_skeleton() const;
 
 	void set_skeleton_rig(SkeletonRig p_skeleton_rig);
 	SkeletonRig get_skeleton_rig() const;

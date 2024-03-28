@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  xr_body_modifier_3d.h                                                 */
+/*  skeleton_modifier_3d.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,72 +28,54 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef XR_BODY_MODIFIER_3D_H
-#define XR_BODY_MODIFIER_3D_H
+#ifndef SKELETON_MODIFIER_3D_H
+#define SKELETON_MODIFIER_3D_H
 
-#include "scene/3d/skeleton_modifier_3d.h"
-#include "servers/xr/xr_body_tracker.h"
+#include "scene/3d/node_3d.h"
 
-class Skeleton3D;
+#include "scene/3d/skeleton_3d.h"
+#include "scene/animation/animation_mixer.h"
 
-/**
-	The XRBodyModifier3D node drives a body skeleton using body tracking
-	data from an XRBodyTracker instance.
- */
+class SkeletonModifier3D : public Node3D {
+	GDCLASS(SkeletonModifier3D, Node3D);
 
-class XRBodyModifier3D : public SkeletonModifier3D {
-	GDCLASS(XRBodyModifier3D, SkeletonModifier3D);
-
-public:
-	enum BodyUpdate {
-		BODY_UPDATE_UPPER_BODY = 1,
-		BODY_UPDATE_LOWER_BODY = 2,
-		BODY_UPDATE_HANDS = 4,
-	};
-
-	enum BoneUpdate {
-		BONE_UPDATE_FULL,
-		BONE_UPDATE_ROTATION_ONLY,
-		BONE_UPDATE_MAX
-	};
-
-	void set_body_tracker(const StringName &p_tracker_name);
-	StringName get_body_tracker() const;
-
-	void set_body_update(BitField<BodyUpdate> p_body_update);
-	BitField<BodyUpdate> get_body_update() const;
-
-	void set_bone_update(BoneUpdate p_bone_update);
-	BoneUpdate get_bone_update() const;
-
-	void set_show_when_tracked(bool p_show_when_tracked);
-	bool get_show_when_tracked() const;
-
-	void _notification(int p_what);
+	void rebind();
 
 protected:
+	bool active = true;
+	real_t influence = 1.0;
+
+	// Cache them for the performance reason since finding node with NodePath is slow.
+	ObjectID skeleton_id;
+
+	void _update_skeleton();
+	void _update_skeleton_path();
+
+	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new);
+
+	void _validate_property(PropertyInfo &p_property) const;
+	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) override;
-	virtual void _process_modification() override;
+	virtual void _set_active(bool p_active);
 
-private:
-	struct JointData {
-		int bone = -1;
-		int parent_joint = -1;
-	};
+	virtual void _process_modification();
 
-	StringName tracker_name = "/user/body";
-	BitField<BodyUpdate> body_update = BODY_UPDATE_UPPER_BODY | BODY_UPDATE_LOWER_BODY | BODY_UPDATE_HANDS;
-	BoneUpdate bone_update = BONE_UPDATE_FULL;
-	bool show_when_tracked = true;
-	JointData joints[XRBodyTracker::JOINT_MAX];
+public:
+	virtual PackedStringArray get_configuration_warnings() const override;
+	virtual bool has_process() const { return false; } // Return true if modifier needs to modify bone pose without external animation such as physics, jiggle and etc.
 
-	void _get_joint_data();
-	void _tracker_changed(const StringName &p_tracker_name, const Ref<XRBodyTracker> &p_tracker);
+	void set_active(bool p_active);
+	bool is_active() const;
+
+	void set_influence(real_t p_influence);
+	real_t get_influence() const;
+
+	Skeleton3D *get_skeleton() const;
+
+	void process_modification();
+
+	SkeletonModifier3D();
 };
 
-VARIANT_BITFIELD_CAST(XRBodyModifier3D::BodyUpdate)
-VARIANT_ENUM_CAST(XRBodyModifier3D::BoneUpdate)
-
-#endif // XR_BODY_MODIFIER_3D_H
+#endif // SKELETON_MODIFIER_3D_H
