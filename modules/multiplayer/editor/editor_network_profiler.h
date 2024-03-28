@@ -62,8 +62,11 @@ private:
 
 	bool dirty = false;
 	Timer *refresh_timer = nullptr;
+
 	Button *activate = nullptr;
 	Button *clear_button = nullptr;
+	Button *autostart_button = nullptr;
+
 	Tree *counters_display = nullptr;
 	LineEdit *incoming_bandwidth_text = nullptr;
 	LineEdit *outgoing_bandwidth_text = nullptr;
@@ -86,13 +89,17 @@ private:
 		Ref<Texture2D> incoming_bandwidth_icon;
 		Ref<Texture2D> outgoing_bandwidth_icon;
 
+		Ref<Texture2D> autoplay_profiler_icon;
+
 		Color incoming_bandwidth_color;
 		Color outgoing_bandwidth_color;
 	} theme_cache;
 
 	void _activate_pressed();
 	void _clear_pressed();
+	void _autostart_pressed();
 	void _refresh();
+	void _update_button_text();
 	void _replication_button_clicked(TreeItem *p_item, int p_column, int p_idx, MouseButton p_button);
 
 protected:
@@ -111,6 +118,10 @@ public:
 	void add_sync_frame_data(const SyncInfo &p_frame);
 	void set_bandwidth(int p_incoming, int p_outgoing);
 	bool is_profiling();
+
+	void set_pressed(bool p_pressed);
+	void started();
+	void stopped();
 
 	EditorNetworkProfiler();
 };

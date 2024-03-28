@@ -42,6 +42,7 @@ void EditorNetworkProfiler::_bind_methods() {
 
 void EditorNetworkProfiler::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (activate->is_pressed()) {
 				activate->set_icon(theme_cache.stop_icon);
@@ -52,6 +53,8 @@ void EditorNetworkProfiler::_notification(int p_what) {
 
 			incoming_bandwidth_text->set_right_icon(theme_cache.incoming_bandwidth_icon);
 			outgoing_bandwidth_text->set_right_icon(theme_cache.outgoing_bandwidth_icon);
+
+			autostart_button->set_icon(theme_cache.autoplay_profiler_icon);
 
 			// This needs to be done here to set the faded color when the profiler is first opened
 			incoming_bandwidth_text->add_theme_color_override("font_uneditable_color", theme_cache.incoming_bandwidth_color * Color(1, 1, 1, 0.5));
@@ -76,6 +79,8 @@ void EditorNetworkProfiler::_update_theme_item_cache() {
 
 	theme_cache.incoming_bandwidth_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 	theme_cache.outgoing_bandwidth_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+
+	theme_cache.autoplay_profiler_icon = get_editor_theme_icon(SNAME("AutoPlay"));
 }
 
 void EditorNetworkProfiler::_refresh() {
@@ -170,15 +175,42 @@ void EditorNetworkProfiler::add_node_data(const NodeInfo &p_info) {
 }
 
 void EditorNetworkProfiler::_activate_pressed() {
+	_update_button_text();
+
 	if (activate->is_pressed()) {
 		refresh_timer->start();
+	} else {
+		refresh_timer->stop();
+	}
+
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
+}
+
+void EditorNetworkProfiler::_update_button_text() {
+	if (activate->is_pressed()) {
 		activate->set_icon(theme_cache.stop_icon);
 		activate->set_text(TTR("Stop"));
 	} else {
-		refresh_timer->stop();
 		activate->set_icon(theme_cache.play_icon);
 		activate->set_text(TTR("Start"));
 	}
+}
+
+void EditorNetworkProfiler::started() {
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_network_profiler", false)) {
+		set_pressed(true);
+		refresh_timer->start();
+	}
+}
+
+void EditorNetworkProfiler::stopped() {
+	set_pressed(false);
+	refresh_timer->stop();
+}
+
+void EditorNetworkProfiler::set_pressed(bool p_pressed) {
+	activate->set_pressed(p_pressed);
+	_update_button_text();
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
@@ -190,6 +222,11 @@ void EditorNetworkProfiler::_clear_pressed() {
 	set_bandwidth(0, 0);
 	refresh_rpc_data();
 	refresh_replication_data();
+}
+
+void EditorNetworkProfiler::_autostart_pressed() {
+	autostart_button->release_focus();
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_network_profiler", autostart_button->is_pressed());
 }
 
 void EditorNetworkProfiler::_replication_button_clicked(TreeItem *p_item, int p_column, int p_idx, MouseButton p_button) {
@@ -267,6 +304,13 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	clear_button->set_text(TTR("Clear"));
 	clear_button->connect("pressed", callable_mp(this, &EditorNetworkProfiler::_clear_pressed));
 	hb->add_child(clear_button);
+
+	autostart_button = memnew(Button);
+	autostart_button->set_toggle_mode(true);
+	autostart_button->set_text(TTR("Auto Start"));
+	autostart_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_network_profiler", false));
+	autostart_button->connect("pressed", callable_mp(this, &EditorNetworkProfiler::_autostart_pressed));
+	hb->add_child(autostart_button);
 
 	hb->add_spacer();
 

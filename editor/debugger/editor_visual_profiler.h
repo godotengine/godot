@@ -71,6 +71,7 @@ public:
 private:
 	Button *activate = nullptr;
 	Button *clear_button = nullptr;
+	Button *autostart_button = nullptr;
 
 	TextureRect *graph = nullptr;
 	Ref<ImageTexture> graph_texture;
@@ -109,6 +110,7 @@ private:
 
 	void _activate_pressed();
 	void _clear_pressed();
+	void _autostart_pressed();
 
 	String _get_time_as_text(float p_time);
 

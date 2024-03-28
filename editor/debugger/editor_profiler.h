@@ -96,6 +96,7 @@ public:
 private:
 	Button *activate = nullptr;
 	Button *clear_button = nullptr;
+	Button *autostart_button = nullptr;
 	TextureRect *graph = nullptr;
 	Ref<ImageTexture> graph_texture;
 	Vector<uint8_t> graph_image;
@@ -133,6 +134,7 @@ private:
 
 	void _activate_pressed();
 	void _clear_pressed();
+	void _autostart_pressed();
 
 	void _internal_profiles_pressed();
 

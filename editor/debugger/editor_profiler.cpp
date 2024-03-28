@@ -176,8 +176,8 @@ void EditorProfiler::_item_edited() {
 }
 
 void EditorProfiler::_update_plot() {
-	const int w = graph->get_size().width;
-	const int h = graph->get_size().height;
+	const int w = graph->get_size().width + 1; // `+1` is to prevent from crashing when profiler is auto started.
+	const int h = graph->get_size().height + 1;
 	bool reset_texture = false;
 	const int desired_len = w * h * 4;
 
@@ -415,6 +415,11 @@ void EditorProfiler::_internal_profiles_pressed() {
 	_combo_changed(0);
 }
 
+void EditorProfiler::_autostart_pressed() {
+	autostart_button->release_focus();
+	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_profiler", autostart_button->is_pressed());
+}
+
 void EditorProfiler::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -423,6 +428,7 @@ void EditorProfiler::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+			autostart_button->set_icon(get_editor_theme_icon(SNAME("AutoPlay")));
 		} break;
 	}
 }
@@ -532,6 +538,7 @@ void EditorProfiler::set_enabled(bool p_enable, bool p_clear) {
 void EditorProfiler::set_pressed(bool p_pressed) {
 	activate->set_pressed(p_pressed);
 	_update_button_text();
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 bool EditorProfiler::is_profiling() {
@@ -622,6 +629,13 @@ EditorProfiler::EditorProfiler() {
 	clear_button->connect("pressed", callable_mp(this, &EditorProfiler::_clear_pressed));
 	clear_button->set_disabled(true);
 	hb->add_child(clear_button);
+
+	autostart_button = memnew(Button);
+	autostart_button->set_toggle_mode(true);
+	autostart_button->set_text(TTR("Auto Start"));
+	autostart_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false));
+	autostart_button->connect("pressed", callable_mp(this, &EditorProfiler::_autostart_pressed));
+	hb->add_child(autostart_button);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
