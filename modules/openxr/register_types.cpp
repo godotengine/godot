@@ -135,7 +135,9 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 				const char *init_error_message =
 						"OpenXR was requested but failed to start.\n"
 						"Please check if your HMD is connected.\n"
-						"When using Windows MR please note that WMR only has DirectX support, make sure SteamVR is your default OpenXR runtime.\n"
+#ifdef WINDOWS_ENABLED
+						"When using Windows Mixed Reality, note that WMR only has DirectX support. Make sure SteamVR is your default OpenXR runtime.\n"
+#endif
 						"Godot will start in normal mode.\n";
 
 				WARN_PRINT(init_error_message);
