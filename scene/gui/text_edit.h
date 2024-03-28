@@ -456,6 +456,7 @@ private:
 
 	bool selection_drag_attempt = false;
 	bool dragging_selection = false;
+	bool moved_word_selection = false;
 
 	Timer *click_select_held = nullptr;
 	uint64_t last_dblclk = 0;
