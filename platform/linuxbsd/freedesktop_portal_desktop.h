@@ -60,9 +60,9 @@ private:
 
 	struct FileDialogData {
 		Vector<String> filter_names;
-		DBusConnection *connection = nullptr;
 		DisplayServer::WindowID prev_focus = DisplayServer::INVALID_WINDOW_ID;
 		Callable callback;
+		String filter;
 		String path;
 		bool opt_in_cb = false;
 	};
@@ -71,8 +71,8 @@ private:
 	Vector<FileDialogData> file_dialogs;
 	Thread monitor_thread;
 	SafeFlag monitor_thread_abort;
+	DBusConnection *monitor_connection = nullptr;
 
-	DBusConnection *theme_connection = nullptr;
 	String theme_path;
 	Callable system_theme_changed;
 	void _system_theme_changed_callback();
