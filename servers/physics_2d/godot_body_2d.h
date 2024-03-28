@@ -254,8 +254,18 @@ public:
 	}
 
 	_FORCE_INLINE_ void apply_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) {
-		applied_force += p_force;
-		applied_torque += (p_position - center_of_mass).cross(p_force);
+		const Vector2 lever = p_position - center_of_mass;
+
+		if (lever.is_zero_approx()) {
+			applied_force += p_force;
+			return;
+		}
+
+		const real_t torque = lever.cross(p_force) / 2;
+		Vector2 lever_normal_counterclockwise = -lever.orthogonal().normalized();
+		Vector2 force_for_torque = torque / lever.length() * lever_normal_counterclockwise;
+		applied_torque += torque;
+		applied_force += p_force - force_for_torque;
 	}
 
 	_FORCE_INLINE_ void apply_torque(real_t p_torque) {
