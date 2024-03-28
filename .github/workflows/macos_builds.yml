@@ -26,6 +26,13 @@ jobs:
             tests: true
             bin: "./bin/godot.macos.editor.x86_64"
 
+          - name: Editor (target=editor, tests=no, arch=arm64)
+            cache-name: macos-editor
+            target: editor
+            tests: false
+            sconsflags: arch=arm64 metal=yes
+            bin: "./bin/godot.macos.editor.arm64"
+
           - name: Template (target=template_release)
             cache-name: macos-template
             target: template_release
@@ -53,7 +60,7 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }}
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
           platform: macos
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
