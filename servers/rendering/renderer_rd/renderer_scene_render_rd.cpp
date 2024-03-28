@@ -843,6 +843,32 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 		copy_effects->copy_to_fb_rect(_render_buffers_get_normal_texture(rb), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false, false, false, RID(), false, false, false, true);
 	}
 
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER && _render_buffers_get_depth_texture(rb).is_valid()) {
+		Size2 rtsize = texture_storage->render_target_get_size(render_target);
+
+		RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
+		RD::DataFormat format = _render_buffers_get_color_format();
+		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+
+		RID debug_depth_texture = rb->has_texture(RB_SCOPE_FORWARD_CLUSTERED, SNAME("debug_depth")) ? rb->get_texture(RB_SCOPE_FORWARD_CLUSTERED, SNAME("debug_depth")) : rb->create_texture(RB_SCOPE_FORWARD_CLUSTERED, SNAME("debug_depth"), format, usage_bits, texture_samples);
+		double z_near = p_render_data->scene_data->cam_projection.get_z_near();
+		double z_far = p_render_data->scene_data->cam_projection.get_z_far();
+		copy_effects->copy_depth_to_rect_and_linearize(
+				_render_buffers_get_depth_texture(rb),
+				debug_depth_texture,
+				Rect2(Vector2(), rtsize),
+				false,
+				z_near,
+				z_far,
+				1.0);
+		copy_effects->copy_to_fb_rect(
+				debug_depth_texture,
+				texture_storage->render_target_get_rd_framebuffer(render_target),
+				Rect2(Vector2(), rtsize),
+				false,
+				false);
+	}
+
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS) {
 		if (p_render_data->occluder_debug_tex.is_valid()) {
 			Size2i rtsize = texture_storage->render_target_get_size(render_target);
