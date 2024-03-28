@@ -236,6 +236,7 @@ public:
 	void viewport_set_texture_mipmap_bias(RID p_viewport, float p_mipmap_bias);
 
 	void viewport_set_update_mode(RID p_viewport, RS::ViewportUpdateMode p_mode);
+	RS::ViewportUpdateMode viewport_get_update_mode(RID p_viewport) const;
 	void viewport_set_vflip(RID p_viewport, bool p_enable);
 
 	void viewport_set_clear_mode(RID p_viewport, RS::ViewportClearMode p_clear_mode);

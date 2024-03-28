@@ -873,6 +873,7 @@ public:
 	};
 
 	virtual void viewport_set_update_mode(RID p_viewport, ViewportUpdateMode p_mode) = 0;
+	virtual ViewportUpdateMode viewport_get_update_mode(RID p_viewport) const = 0;
 
 	enum ViewportClearMode {
 		VIEWPORT_CLEAR_ALWAYS,
