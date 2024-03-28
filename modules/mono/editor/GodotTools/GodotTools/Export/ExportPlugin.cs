@@ -310,6 +310,38 @@ namespace GodotTools.Export
                             {
                                 if (embedBuildResults)
                                 {
+                                    if (platform == OS.Platforms.Android)
+                                    {
+                                        if (IsSharedObject(Path.GetFileName(path)))
+                                        {
+                                            AddSharedObject(path, tags: new string[] { arch },
+                                                Path.Join(projectDataDirName,
+                                                    Path.GetRelativePath(publishOutputDir,
+                                                        Path.GetDirectoryName(path)!)));
+
+                                            return;
+                                        }
+
+                                        static bool IsSharedObject(string fileName)
+                                        {
+                                            if (fileName.StartsWith("libmono-component"))
+                                            {
+                                                // The mono components are automatically loaded by monosgen,
+                                                // but they need to be added as shared objects so they can be found.
+                                                return true;
+                                            }
+
+                                            if (fileName.EndsWith("System.Security.Cryptography.Native.Android.so"))
+                                            {
+                                                // This library is loaded from Java using `System.loadLibrary`,
+                                                // so it needs to be added as a shared object.
+                                                return true;
+                                            }
+
+                                            return false;
+                                        }
+                                    }
+
                                     string filePath = SanitizeSlashes(Path.GetRelativePath(publishOutputDir, path));
                                     byte[] fileData = File.ReadAllBytes(path);
                                     string hash = Convert.ToBase64String(SHA512.HashData(fileData));

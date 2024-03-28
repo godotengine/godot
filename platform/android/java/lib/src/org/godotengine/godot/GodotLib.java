@@ -48,6 +48,7 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class GodotLib {
 	static {
+		System.loadLibrary("System.Security.Cryptography.Native.Android");
 		System.loadLibrary("godot_android");
 	}
 

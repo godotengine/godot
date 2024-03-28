@@ -58,6 +58,9 @@ dependencies {
     if (pluginsBinaries != null && pluginsBinaries.size() > 0) {
         implementation files(pluginsBinaries)
     }
+
+    // .NET dependencies
+    implementation files('../../../../modules/mono/thirdparty/libSystem.Security.Cryptography.Native.Android.jar')
 }
 
 android {
