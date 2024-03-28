@@ -4370,6 +4370,8 @@ void EditorNode::_project_run_started() {
 	if (bool(EDITOR_GET("run/output/always_open_output_on_play"))) {
 		bottom_panel->make_item_visible(log);
 	}
+
+	emit_signal(SNAME("project_run_started"));
 }
 
 void EditorNode::_project_run_stopped() {
@@ -6102,6 +6104,7 @@ void EditorNode::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
+	ADD_SIGNAL(MethodInfo("project_run_started"));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
 	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("scene_changed"));

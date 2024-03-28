@@ -507,6 +507,25 @@ public:
 			}
 		}
 	}
+	virtual void debug_get_stack_level_locals(int p_level, Vector<String> *p_locals, Array *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
+		Dictionary ret;
+		GDVIRTUAL_REQUIRED_CALL(_debug_get_stack_level_locals, p_level, p_max_subitems, p_max_depth, ret);
+		if (ret.is_empty()) {
+			return;
+		}
+		if (p_locals != nullptr && ret.has("locals")) {
+			PackedStringArray strings = ret["locals"];
+			for (const String &str : strings) {
+				p_locals->push_back(str);
+			}
+		}
+		if (p_values != nullptr && ret.has("values")) {
+			Array values = ret["values"];
+			for (int i = 0; i < values.size(); i++) {
+				p_values->push_back(values[i]);
+			}
+		}
+	}
 	GDVIRTUAL3R(Dictionary, _debug_get_stack_level_members, int, int, int)
 	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;

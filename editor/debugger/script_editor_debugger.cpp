@@ -37,6 +37,7 @@
 #include "core/string/ustring.h"
 #include "core/version.h"
 #include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
+#include "editor/debugger/editor_expression_evaluator.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
 #include "editor/debugger/editor_visual_profiler.h"
@@ -810,7 +811,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		if (EditorFileSystem::get_singleton()) {
 			EditorFileSystem::get_singleton()->update_file(p_data[0]);
 		}
-	} else {
+	}
+#ifdef DEBUG_ENABLED
+	else if (p_msg == "evaluation_return") {
+		expression_evaluator->add_value(p_data);
+	}
+#endif
+	else {
 		int colon_index = p_msg.find_char(':');
 		ERR_FAIL_COND_MSG(colon_index < 1, "Invalid message received");
 
@@ -2001,6 +2008,15 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		file_dialog->connect("file_selected", callable_mp(this, &ScriptEditorDebugger::_file_selected));
 		add_child(file_dialog);
 	}
+
+#ifdef DEBUG_ENABLED
+	{ // expression evaluator
+		expression_evaluator = memnew(EditorExpressionEvaluator);
+		expression_evaluator->set_name(TTR("Evaluator"));
+		expression_evaluator->set_editor_debugger(this);
+		tabs->add_child(expression_evaluator);
+	}
+#endif
 
 	{ //profiler
 		profiler = memnew(EditorProfiler);
