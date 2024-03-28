@@ -5375,6 +5375,7 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 		return;
 	}
 
+	String err_msg = "";
 	VkDeviceFaultInfoEXT fault_info = { };
 	fault_info.sType = VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT;
 	fault_info.pVendorInfos = fault_counts.vendorInfoCount
@@ -5389,15 +5390,15 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 	if (vkres != VK_SUCCESS) {
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault info, skipping VK_EXT_device_fault report...");
 	} else {
-		print_line("** Report from VK_EXT_device_fault **");
-		print_line("Description: %s", fault_info.description);
-		print_line("Vendor infos");
+		err_msg += "** Report from VK_EXT_device_fault **\n";
+		err_msg += "Description: " + String(fault_info.description) + "\n";
+		err_msg += "Vendor infos\n";
 		for (uint32_t vd = 0; vd < fault_counts.vendorInfoCount; ++vd) {
 			const VkDeviceFaultVendorInfoEXT *vendor_info = &fault_info.pVendorInfos[vd];
-			print_line("Info[%u]", vd);
-			print_line("   Description: %s", vendor_info->description);
-			print_line("   Fault code : %zu", (size_t)vendor_info->vendorFaultCode);
-			print_line("   Fault data : %zu", (size_t)vendor_info->vendorFaultData);
+			err_msg += "Info " + itos(vd) + "\n";
+			err_msg += "   Description: " + String(vendor_info->description) + "\n";
+			err_msg += "   Fault code : " + itos(vendor_info->vendorFaultCode) + "\n";
+			err_msg += "   Fault data : " + itos(vendor_info->vendorFaultData) + "\n";
 		}
 
 		static constexpr const char *addressTypeNames[] = {
@@ -5409,23 +5410,27 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 			"INSTRUCTION_POINTER_INVALID",
 			"INSTRUCTION_POINTER_FAULT",
 		};
-		print_line("Address infos");
+		err_msg += "Address infosn\n";
 		for (uint32_t ad = 0; ad < fault_counts.addressInfoCount; ++ad) {
 			const VkDeviceFaultAddressInfoEXT *addr_info = &fault_info.pAddressInfos[ad];
 			// From https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkDeviceFaultAddressInfoEXT.html
 			const VkDeviceAddress lower = (addr_info->reportedAddress & ~(addr_info->addressPrecision - 1));
 			const VkDeviceAddress upper = (addr_info->reportedAddress | (addr_info->addressPrecision - 1));
-			print_line("Info[%u]", ad);
-			print_line("   Type            : %s", addressTypeNames[addr_info->addressType]);
-			print_line("   Reported address: %zu", (size_t)addr_info->reportedAddress);
-			print_line("   Lower address   : %zu", (size_t)lower);
-			print_line("   Upper address   : %zu", (size_t)upper);
-			print_line("   Precision       : %zu", (size_t)addr_info->addressPrecision);
+			err_msg += "Info " + itos(ad);
+			err_msg += "   Type            : " + String(addressTypeNames[addr_info->addressType]);
+			err_msg += "   Reported address: " + itos(addr_info->reportedAddress);
+			err_msg += "   Lower address   : " + itos(lower);
+			err_msg += "   Upper address   : " + itos(upper);
+			err_msg += "   Precision       : " + itos(addr_info->addressPrecision);
 		}
 	}
 
-	memfree(fault_info.pVendorInfos);
-	memfree(fault_info.pAddressInfos);
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, err_msg);
+
+	if (fault_info.pVendorInfos)
+		memfree(fault_info.pVendorInfos);
+	if (fault_info.pAddressInfos)
+		memfree(fault_info.pAddressInfos);
 }
 
 void RenderingDeviceDriverVulkan::print_lost_device_info() {
