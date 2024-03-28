@@ -1,5 +1,5 @@
-/**************************************************************************/
-/*  bone_map.h                                                            */
+﻿/**************************************************************************/
+/*  post_import_plugin_skeleton_track_organizer.h                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BONE_MAP_H
-#define BONE_MAP_H
+#ifndef POST_IMPORT_PLUGIN_ANIMATION_MIRROR_H
+#define POST_IMPORT_PLUGIN_ANIMATION_MIRROR_H
 
-#include "skeleton_profile.h"
+#ifdef TOOLS_ENABLED
 
-class BoneMap : public Resource {
-	GDCLASS(BoneMap, Resource);
+#include "editor/import/3d/resource_importer_scene.h"
 
-	Ref<SkeletonProfile> profile;
-	HashMap<StringName, StringName> bone_map;
+class AnimationPlayer;
 
-	void _update_profile();
-	void _validate_bone_map();
-
-protected:
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-	void _validate_property(PropertyInfo &p_property) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-	static void _bind_methods();
+class PostImportPluginAnimationMirror : public EditorScenePostImportPlugin {
+	GDCLASS(PostImportPluginAnimationMirror, EditorScenePostImportPlugin);
 
 public:
-	Ref<SkeletonProfile> get_profile() const;
-	void set_profile(const Ref<SkeletonProfile> &p_profile);
+	virtual void get_internal_import_options(InternalImportCategory p_category, List<ResourceImporter::ImportOption> *r_options) override;
+	virtual void internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options) override;
 
-	int get_skeleton_bone_name_count(const StringName &p_skeleton_bone_name) const;
+	PostImportPluginAnimationMirror();
 
-	StringName get_skeleton_bone_name(const StringName &p_profile_bone_name) const;
-	void set_skeleton_bone_name(const StringName &p_profile_bone_name, const StringName &p_skeleton_bone_name);
-	void _set_skeleton_bone_name(const StringName &p_profile_bone_name, const StringName &p_skeleton_bone_name); // Avoid to emit signal for editor.
+private:
+	void mirror_node_path(Animation *p_animation, const AnimationPlayer *p_animation_player, const int &p_track_index) const;
 
-	StringName find_profile_bone_name(const StringName &p_skeleton_bone_name) const;
-	StringName get_bone_counterpart_name(const StringName &p_skeleton_bone_name) const;
-
-	BoneMap();
-	~BoneMap();
+	static void mirror_position_track(Animation *p_animation, const int &p_track_index);
+	static void mirror_rotation_track(Animation *p_animation, const int &p_track_index);
 };
 
-#endif // BONE_MAP_H
+#endif // TOOLS_ENABLED
+#endif // POST_IMPORT_PLUGIN_ANIMATION_MIRROR_H
