@@ -355,19 +355,14 @@ public:
 	const Variant &operator[](const Variant &p_key) const = delete;
 
 	operator bool() const;
-	operator signed int() const;
-	operator unsigned int() const; // this is the real one
-	operator signed short() const;
-	operator unsigned short() const;
-	operator signed char() const;
-	operator unsigned char() const;
-	//operator long unsigned int() const;
 	operator int64_t() const;
+	operator int32_t() const;
+	operator int16_t() const;
+	operator int8_t() const;
 	operator uint64_t() const;
-#ifdef NEED_LONG_INT
-	operator signed long() const;
-	operator unsigned long() const;
-#endif
+	operator uint32_t() const;
+	operator uint16_t() const;
+	operator uint8_t() const;
 
 	operator ObjectID() const;
 
@@ -430,18 +425,14 @@ public:
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
 
 	Variant(bool p_bool);
-	Variant(signed int p_int); // real one
-	Variant(unsigned int p_int);
-#ifdef NEED_LONG_INT
-	Variant(signed long p_long); // real one
-	Variant(unsigned long p_long);
-#endif
-	Variant(signed short p_short); // real one
-	Variant(unsigned short p_short);
-	Variant(signed char p_char); // real one
-	Variant(unsigned char p_char);
-	Variant(int64_t p_int); // real one
-	Variant(uint64_t p_int);
+	Variant(int64_t p_int64);
+	Variant(int32_t p_int32);
+	Variant(int16_t p_int16);
+	Variant(int8_t p_int8);
+	Variant(uint64_t p_uint64);
+	Variant(uint32_t p_uint32);
+	Variant(uint16_t p_uint16);
+	Variant(uint8_t p_uint8);
 	Variant(float p_float);
 	Variant(double p_double);
 	Variant(const ObjectID &p_id);
