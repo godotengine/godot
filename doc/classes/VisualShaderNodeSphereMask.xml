@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeSphereMask" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A visual shader node that smoothly masks via multiplication.
+	</brief_description>
+	<description>
+		The SphereMask Node offers circular masking options with optional harshness and center specifications. It can be used to blend out the outer edges of a sprite.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
