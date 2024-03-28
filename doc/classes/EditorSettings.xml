@@ -293,7 +293,7 @@
 			See also [member editors/3d/navigation/navigation_scheme].
 		</member>
 		<member name="editors/3d/freelook/freelook_sensitivity" type="float" setter="" getter="">
-			The mouse sensitivity to use while freelook mode is active in the 3D editor. See also [member editors/3d/navigation_feel/orbit_sensitivity].
+			The mouse/trackpad sensitivity to use while freelook mode is active in the 3D editor. See also [member editors/3d/navigation_feel/orbit_sensitivity], [member editors/3d/navigation/zoom_sensitivity], and [member editors/3d/navigation/pan_sensitivity].
 		</member>
 		<member name="editors/3d/freelook/freelook_speed_zoom_link" type="bool" setter="" getter="">
 			If [code]true[/code], freelook speed is linked to the zoom value used in the camera orbit mode in the 3D editor.
@@ -350,12 +350,18 @@
 			The modifier key that must be held to pan in the 3D editor.
 			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
 		</member>
+		<member name="editors/3d/navigation/pan_sensitivity" type="float" setter="" getter="">
+			The mouse/trackpad sensitivity to use when panning in the 3D editor. See also [member editors/3d/freelook/freelook_sensitivity], [member editors/3d/navigation/zoom_sensitivity], and [member editors/3d/navigation_feel/orbit_sensitivity].
+		</member>
 		<member name="editors/3d/navigation/warped_mouse_panning" type="bool" setter="" getter="">
 			If [code]true[/code], warps the mouse around the 3D viewport while panning in the 3D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
 		</member>
 		<member name="editors/3d/navigation/zoom_modifier" type="int" setter="" getter="">
 			The modifier key that must be held to zoom in the 3D editor.
 			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+		</member>
+		<member name="editors/3d/navigation/zoom_sensitivity" type="float" setter="" getter="">
+			The mouse/trackpad sensitivity to use when zooming the 3D editor. See also [member editors/3d/freelook/freelook_sensitivity], [member editors/3d/navigation_feel/orbit_sensitivity], and [member editors/3d/navigation/pan_sensitivity].
 		</member>
 		<member name="editors/3d/navigation/zoom_style" type="int" setter="" getter="">
 			The mouse cursor movement direction to use when zooming by moving the mouse. This does not affect zooming with the mouse wheel.
@@ -364,7 +370,7 @@
 			The inertia to use when orbiting in the 3D editor. Higher values make the camera start and stop slower, which looks smoother but adds latency.
 		</member>
 		<member name="editors/3d/navigation_feel/orbit_sensitivity" type="float" setter="" getter="">
-			The mouse sensitivity to use when orbiting in the 3D editor. See also [member editors/3d/freelook/freelook_sensitivity].
+			The mouse/trackpad sensitivity to use when orbiting in the 3D editor. See also [member editors/3d/freelook/freelook_sensitivity], [member editors/3d/navigation/zoom_sensitivity], and [member editors/3d/navigation/pan_sensitivity].
 		</member>
 		<member name="editors/3d/navigation_feel/translation_inertia" type="float" setter="" getter="">
 			The inertia to use when panning in the 3D editor. Higher values make the camera start and stop slower, which looks smoother but adds latency.
