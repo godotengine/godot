@@ -98,6 +98,7 @@ void MultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "peer", "force"), &MultiplayerPeer::disconnect_peer, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_connection_status"), &MultiplayerPeer::get_connection_status);
+	ClassDB::bind_method(D_METHOD("is_offline_peer"), &MultiplayerPeer::is_offline_peer);
 	ClassDB::bind_method(D_METHOD("get_unique_id"), &MultiplayerPeer::get_unique_id);
 	ClassDB::bind_method(D_METHOD("generate_unique_id"), &MultiplayerPeer::generate_unique_id);
 
