@@ -4440,6 +4440,14 @@ void Tree::item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mous
 	if (p_item != nullptr && p_column >= 0 && p_column < p_item->cells.size()) {
 		edited_item->cells.write[p_column].dirty = true;
 	}
+	if (blocked > 0) {
+		callable_mp(this, &Tree::emit_item_edited).call_deferred(p_custom_mouse_index);
+	} else {
+		emit_item_edited(p_custom_mouse_index);
+	}
+}
+
+void Tree::emit_item_edited(MouseButton p_custom_mouse_index) {
 	emit_signal(SNAME("item_edited"));
 	if (p_custom_mouse_index != MouseButton::NONE) {
 		emit_signal(SNAME("custom_item_clicked"), p_custom_mouse_index);

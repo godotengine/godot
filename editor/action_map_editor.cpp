@@ -429,6 +429,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		// Update Tree...
 
 		TreeItem *action_item = action_tree->create_item(root);
+		ERR_FAIL_NULL(action_item);
 		action_item->set_meta("__action", action_info.action);
 		action_item->set_meta("__name", action_info.name);
 

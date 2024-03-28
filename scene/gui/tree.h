@@ -515,6 +515,7 @@ private:
 	void popup_select(int p_option);
 
 	void item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mouse_index = MouseButton::NONE);
+	void emit_item_edited(MouseButton p_custom_mouse_index);
 	void item_changed(int p_column, TreeItem *p_item);
 	void item_selected(int p_column, TreeItem *p_item);
 	void item_deselected(int p_column, TreeItem *p_item);
