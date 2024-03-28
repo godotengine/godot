@@ -61,7 +61,7 @@ protected:
 		Transform3D reference_pose;
 		Vector2 handle_offset;
 		StringName group;
-		bool require = false;
+		bool required = false;
 	};
 
 	StringName root_bone;
@@ -104,22 +104,22 @@ public:
 	void set_bone_parent(int p_bone_idx, const StringName &p_bone_parent);
 
 	TailDirection get_tail_direction(int p_bone_idx) const;
-	void set_tail_direction(int p_bone_idx, const TailDirection p_tail_direction);
+	void set_tail_direction(int p_bone_idx, TailDirection p_tail_direction);
 
 	StringName get_bone_tail(int p_bone_idx) const;
 	void set_bone_tail(int p_bone_idx, const StringName &p_bone_tail);
 
 	Transform3D get_reference_pose(int p_bone_idx) const;
-	void set_reference_pose(int p_bone_idx, const Transform3D p_reference_pose);
+	void set_reference_pose(int p_bone_idx, const Transform3D &p_reference_pose);
 
 	Vector2 get_handle_offset(int p_bone_idx) const;
-	void set_handle_offset(int p_bone_idx, const Vector2 p_handle_offset);
+	void set_handle_offset(int p_bone_idx, const Vector2 &p_handle_offset);
 
 	StringName get_group(int p_bone_idx) const;
 	void set_group(int p_bone_idx, const StringName &p_group);
 
-	bool is_require(int p_bone_idx) const;
-	void set_require(int p_bone_idx, const bool p_require);
+	bool is_required(int p_bone_idx) const;
+	void set_required(int p_bone_idx, bool p_required);
 
 	bool has_bone(const StringName &p_bone_name);
 
