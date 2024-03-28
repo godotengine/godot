@@ -4689,7 +4689,6 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_undo_method(this, "_set_owner_for_node_and_children", n2d, editor_root);
 			}
 			undo_redo->commit_action();
-
 		} break;
 	}
 }
@@ -5767,8 +5766,8 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 	}
 
-	if (Object::cast_to<TouchScreenButton>(child) || Object::cast_to<TextureButton>(child)) {
-		undo_redo->add_do_property(child, "texture_normal", texture);
+	if (child->has_method("set_texture_normal")) {
+		undo_redo->add_do_method(child, "set_texture_normal", texture);
 	} else {
 		undo_redo->add_do_property(child, "texture", texture);
 	}
