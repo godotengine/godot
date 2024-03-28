@@ -929,7 +929,12 @@ CSGBrush *CSGMesh3D::_build_brush() {
 
 void CSGMesh3D::_mesh_changed() {
 	_make_dirty();
-	update_gizmos();
+
+	if (likely(is_accessible_from_caller_thread())) {
+		update_gizmos();
+	} else {
+		callable_mp((Node3D *)this, &Node3D::update_gizmos).call_deferred();
+	}
 }
 
 void CSGMesh3D::set_material(const Ref<Material> &p_material) {
