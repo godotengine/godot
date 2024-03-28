@@ -1143,6 +1143,9 @@ GDScript *GDScript::find_class(const String &p_qualified_name) {
 		// Script path could have a class path separator("::") in it.
 		class_names = p_qualified_name.trim_prefix(get_root_script()->path).split("::");
 		result = get_root_script();
+	} else if (path.begins_with(get_root_script()->path)) {
+		class_names = path.trim_prefix(get_root_script()->path).split("::");
+		result = get_root_script();
 	} else if (HashMap<StringName, Ref<GDScript>>::Iterator E = subclasses.find(first)) {
 		class_names = p_qualified_name.split("::");
 		result = E->value.ptr();
