@@ -148,6 +148,9 @@ void AudioStreamInteractiveTransitionEditor::_update_selection() {
 }
 
 void AudioStreamInteractiveTransitionEditor::_cell_selected(TreeItem *p_item, int p_column, bool p_selected) {
+	if (!p_item->has_meta("to")) {
+		return;
+	}
 	int to = p_item->get_meta("to");
 	int from = p_column == audio_stream_interactive->get_clip_count() ? AudioStreamInteractive::CLIP_ANY : p_column;
 	if (p_selected) {
@@ -293,7 +296,7 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 			name = audio_stream_interactive->get_clip_name(i);
 		}
 
-		int min_w = header_font->get_string_size(name + "XX").width;
+		int min_w = Math::ceil(EDSCALE * float(header_font->get_string_size(name + "XX").width));
 		tree->set_column_expand(cell_index, false);
 		tree->set_column_custom_minimum_width(cell_index, min_w);
 		max_w = MAX(max_w, min_w);
@@ -331,6 +334,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	set_title(TTR("AudioStreamInteractive Transition Editor"));
 	split = memnew(HSplitContainer);
 	add_child(split);
+
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
 	tree->add_theme_constant_override("draw_guides", 1);
