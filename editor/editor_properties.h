@@ -224,13 +224,14 @@ class EditorPropertyEnum : public EditorProperty {
 	OptionButton *options = nullptr;
 
 	void _option_selected(int p_which);
+	void _find_enum_constant_descriptions(const Object *p_object, const StringName p_property_name, Vector<String> *descriptions);
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	static void _bind_methods();
 
 public:
-	void setup(const Vector<String> &p_options);
+	void setup(const Vector<String> &p_options, const Object *p_object = nullptr, const StringName p_path = "");
 	virtual void update_property() override;
 	void set_option_button_clip(bool p_enable);
 	EditorPropertyEnum();
