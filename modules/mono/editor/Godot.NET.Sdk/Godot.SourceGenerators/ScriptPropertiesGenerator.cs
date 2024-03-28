@@ -278,7 +278,7 @@ namespace Godot.SourceGenerators
                         AppendGroupingPropertyInfo(source, groupingInfo);
 
                     var propertyInfo = DeterminePropertyInfo(context, typeCache,
-                        member.Symbol, member.Type);
+                        member.Symbol, member.Type, symbol.Name);
 
                     if (propertyInfo == null)
                         continue;
@@ -390,6 +390,7 @@ namespace Godot.SourceGenerators
                 .Append(propertyInfo.HintString)
                 .Append("\", usage: (global::Godot.PropertyUsageFlags)")
                 .Append((int)propertyInfo.Usage)
+                .Append(propertyInfo.Exported ? (", \"" + propertyInfo.ClassName + "\" ") : "")
                 .Append(", exported: ")
                 .Append(propertyInfo.Exported ? "true" : "false")
                 .Append("));\n");
@@ -426,7 +427,8 @@ namespace Godot.SourceGenerators
             GeneratorExecutionContext context,
             MarshalUtils.TypeCache typeCache,
             ISymbol memberSymbol,
-            MarshalType marshalType
+            MarshalType marshalType,
+            string className
         )
         {
             var exportAttr = memberSymbol.GetAttributes()
@@ -503,7 +505,7 @@ namespace Godot.SourceGenerators
                 propUsage |= PropertyUsageFlags.NilIsVariant;
 
             return new PropertyInfo(memberVariantType, memberName,
-                hint, hintString, propUsage, exported: true);
+                hint, hintString, propUsage, className, exported: true);
         }
 
         private static bool TryGetMemberExportHint(
