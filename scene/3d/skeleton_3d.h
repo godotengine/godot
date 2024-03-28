@@ -91,6 +91,7 @@ private:
 		Quaternion pose_rotation;
 		Vector3 pose_scale = Vector3(1, 1, 1);
 
+		bool inherit_scale = true;
 		Transform3D pose_global;
 		Transform3D pose_global_no_override;
 
@@ -197,6 +198,9 @@ public:
 	void set_bone_pose_position(int p_bone, const Vector3 &p_position);
 	void set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation);
 	void set_bone_pose_scale(int p_bone, const Vector3 &p_scale);
+
+	bool is_bone_inherit_scale(int p_bone) const;
+	void set_bone_inherit_scale(int p_bone, bool inherit_scale);
 
 	Transform3D get_bone_pose(int p_bone) const;
 

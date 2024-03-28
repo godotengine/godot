@@ -170,6 +170,13 @@
 				Returns whether the bone pose for the bone at [param bone_idx] is enabled.
 			</description>
 		</method>
+		<method name="is_bone_inherit_scale" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns whether the bone should inherit the scale of its parent bone.
+			</description>
+		</method>
 		<method name="localize_rests">
 			<return type="void" />
 			<description>
@@ -244,6 +251,14 @@
 				Sets the global pose transform, [param pose], for the bone at [param bone_idx].
 				[param amount] is the interpolation strength that will be used when applying the pose, and [param persistent] determines if the applied pose will remain.
 				[b]Note:[/b] The pose transform needs to be a global pose! To convert a world transform from a [Node3D] to a global bone pose, multiply the [method Transform3D.affine_inverse] of the node's [member Node3D.global_transform] by the desired world transform.
+			</description>
+		</method>
+		<method name="set_bone_inherit_scale">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="inherit_scale" type="bool" default="true" />
+			<description>
+				Sets whether the parent's scale should be inherited by the bone.
 			</description>
 		</method>
 		<method name="set_bone_name">
