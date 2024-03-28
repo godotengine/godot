@@ -128,14 +128,122 @@ struct ImporterMeshTangentGenerationContextUserData {
 
 	struct Vertex {
 		Vector3 vertex;
+		Color color;
 		Vector3 normal; // normal, binormal, tangent
 		Vector3 binormal;
 		Vector3 tangent;
 		Vector2 uv;
+		Vector2 uv2;
+		Vector<int> bones;
+		Vector<float> weights;
+		Color custom[RS::ARRAY_CUSTOM_COUNT];
+		uint32_t smooth_group = 0;
+		bool operator==(const Vertex &p_vertex) const {
+			if (vertex != p_vertex.vertex) {
+				return false;
+			}
 
-		bool operator==(const Vertex &p_vertex) const;
+			if (uv != p_vertex.uv) {
+				return false;
+			}
 
+			if (uv2 != p_vertex.uv2) {
+				return false;
+			}
+
+			if (normal != p_vertex.normal) {
+				return false;
+			}
+
+			if (binormal != p_vertex.binormal) {
+				return false;
+			}
+
+			if (tangent != p_vertex.tangent) {
+				return false;
+			}
+
+			if (color != p_vertex.color) {
+				return false;
+			}
+
+			if (bones.size() != p_vertex.bones.size()) {
+				return false;
+			}
+
+			for (int i = 0; i < bones.size(); i++) {
+				if (bones[i] != p_vertex.bones[i]) {
+					return false;
+				}
+			}
+
+			for (int i = 0; i < weights.size(); i++) {
+				if (weights[i] != p_vertex.weights[i]) {
+					return false;
+				}
+			}
+
+			for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
+				if (custom[i] != p_vertex.custom[i]) {
+					return false;
+				}
+			}
+
+			if (smooth_group != p_vertex.smooth_group) {
+				return false;
+			}
+
+			return true;
+		}
 		Vertex() {}
+	};
+
+	struct SmoothGroupVertex {
+		Vector3 vertex;
+		uint32_t smooth_group = 0;
+
+		bool operator==(const SmoothGroupVertex &p_vertex) const {
+			if (vertex != p_vertex.vertex) {
+				return false;
+			}
+
+			if (smooth_group != p_vertex.smooth_group) {
+				return false;
+			}
+
+			return true;
+		}
+
+		SmoothGroupVertex(const Vertex &p_vertex) {
+			vertex = p_vertex.vertex;
+			smooth_group = p_vertex.smooth_group;
+		};
+	};
+	struct SmoothGroupVertexHasher {
+		static _FORCE_INLINE_ uint32_t hash(const SmoothGroupVertex &p_vtx) {
+			uint32_t h = hash_djb2_buffer((const uint8_t *)&p_vtx.vertex, sizeof(real_t) * 3);
+			h = hash_murmur3_one_32(p_vtx.smooth_group, h);
+			h = hash_fmix32(h);
+			return h;
+		}
+	};
+
+	struct VertexHasher {
+		static _FORCE_INLINE_ uint32_t hash(const Vertex &p_vtx) {
+			uint32_t h = hash_djb2_buffer((const uint8_t *)&p_vtx.vertex, sizeof(real_t) * 3);
+			h = hash_djb2_buffer((const uint8_t *)&p_vtx.normal, sizeof(real_t) * 3, h);
+			h = hash_djb2_buffer((const uint8_t *)&p_vtx.binormal, sizeof(real_t) * 3, h);
+			h = hash_djb2_buffer((const uint8_t *)&p_vtx.tangent, sizeof(real_t) * 3, h);
+			h = hash_djb2_buffer((const uint8_t *)&p_vtx.uv, sizeof(real_t) * 2, h);
+			h = hash_djb2_buffer((const uint8_t *)&p_vtx.uv2, sizeof(real_t) * 2, h);
+			h = hash_djb2_buffer((const uint8_t *)&p_vtx.color, sizeof(real_t) * 4, h);
+			h = hash_djb2_buffer((const uint8_t *)p_vtx.bones.ptr(), p_vtx.bones.size() * sizeof(int), h);
+			h = hash_djb2_buffer((const uint8_t *)p_vtx.weights.ptr(), p_vtx.weights.size() * sizeof(float), h);
+			h = hash_djb2_buffer((const uint8_t *)&p_vtx.custom[0], sizeof(Color) * RS::ARRAY_CUSTOM_COUNT, h);
+			h = hash_murmur3_one_32(p_vtx.smooth_group, h);
+			h = hash_fmix32(h);
+			return h;
+		}
 	};
 	LocalVector<Vertex> *vertices;
 	LocalVector<int> *indices;
@@ -187,7 +295,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void generate_tangents(bool p_force_tangent);
+	void generate_tangents();
 	void add_blend_shape(const String &p_name);
 	int get_blend_shape_count() const;
 	String get_blend_shape_name(int p_blend_shape) const;
