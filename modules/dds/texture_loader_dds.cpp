@@ -42,14 +42,18 @@ enum {
 	DDSD_PITCH = 0x00000008,
 	DDSD_LINEARSIZE = 0x00080000,
 	DDSD_MIPMAPCOUNT = 0x00020000,
-	DDPF_FOURCC = 0x00000004,
 	DDPF_ALPHAPIXELS = 0x00000001,
-	DDPF_RGB = 0x00000040
+	DDPF_ALPHAONLY = 0x00000002,
+	DDPF_FOURCC = 0x00000004,
+	DDPF_RGB = 0x00000040,
+	DDPF_RG_SNORM = 0x00080000
 };
 
 enum DDSFourCC {
 	DDFCC_DXT1 = PF_FOURCC("DXT1"),
+	DDFCC_DXT2 = PF_FOURCC("DXT2"),
 	DDFCC_DXT3 = PF_FOURCC("DXT3"),
+	DDFCC_DXT4 = PF_FOURCC("DXT4"),
 	DDFCC_DXT5 = PF_FOURCC("DXT5"),
 	DDFCC_ATI1 = PF_FOURCC("ATI1"),
 	DDFCC_BC4U = PF_FOURCC("BC4U"),
@@ -57,6 +61,8 @@ enum DDSFourCC {
 	DDFCC_BC5U = PF_FOURCC("BC5U"),
 	DDFCC_A2XY = PF_FOURCC("A2XY"),
 	DDFCC_DX10 = PF_FOURCC("DX10"),
+	DDFCC_RGBA16UN = 36,
+	DDFCC_RGBA16SN = 110,
 	DDFCC_R16F = 111,
 	DDFCC_RG16F = 112,
 	DDFCC_RGBA16F = 113,
@@ -68,17 +74,33 @@ enum DDSFourCC {
 // Reference: https://learn.microsoft.com/en-us/windows/win32/api/dxgiformat/ne-dxgiformat-dxgi_format
 enum DXGIFormat {
 	DXGI_R32G32B32A32_FLOAT = 2,
+	DXGI_R32G32B32_FLOAT = 6,
 	DXGI_R16G16B16A16_FLOAT = 10,
+	DXGI_R16G16B16A16_UNORM = 11,
+	DXGI_R16G16B16A16_SNORM = 13,
 	DXGI_R32G32_FLOAT = 16,
 	DXGI_R10G10B10A2_UNORM = 24,
 	DXGI_R8G8B8A8_UNORM = 28,
+	DXGI_R8G8B8A8_UNORM_SRGB = 29,
+	DXGI_R8G8B8A8_SNORM = 31,
 	DXGI_R16G16_FLOAT = 34,
+	DXGI_R16G16_UNORM = 35,
+	DXGI_R16G16_SNORM = 37,
 	DXGI_R32_FLOAT = 41,
+	DXGI_R8G8_UNORM = 49,
+	DXGI_R8G8_SNORM = 51,
 	DXGI_R16_FLOAT = 54,
+	DXGI_R16_UNORM = 56,
+	DXGI_R16_SNORM = 58,
+	DXGI_R8_UNORM = 61,
+	DXGI_A8_UNORM = 65,
 	DXGI_R9G9B9E5 = 67,
 	DXGI_BC1_UNORM = 71,
+	DXGI_BC1_UNORM_SRGB = 72,
 	DXGI_BC2_UNORM = 74,
+	DXGI_BC2_UNORM_SRGB = 75,
 	DXGI_BC3_UNORM = 77,
+	DXGI_BC3_UNORM_SRGB = 78,
 	DXGI_BC4_UNORM = 80,
 	DXGI_BC5_UNORM = 83,
 	DXGI_B5G6R5_UNORM = 85,
@@ -87,6 +109,7 @@ enum DXGIFormat {
 	DXGI_BC6H_UF16 = 95,
 	DXGI_BC6H_SF16 = 96,
 	DXGI_BC7_UNORM = 98,
+	DXGI_BC7_UNORM_SRGB = 99,
 	DXGI_B4G4R4A4_UNORM = 115
 };
 
@@ -100,25 +123,37 @@ enum DDSFormat {
 	DDS_ATI2,
 	DDS_BC6U,
 	DDS_BC6S,
-	DDS_BC7U,
+	DDS_BC7,
+	DDS_RG8SN,
+	DDS_RGBA8SN,
+	DDS_R16UN,
+	DDS_R16SN,
+	DDS_RG16UN,
+	DDS_RG16SN,
+	DDS_RGBA16UN,
+	DDS_RGBA16SN,
 	DDS_R16F,
 	DDS_RG16F,
 	DDS_RGBA16F,
 	DDS_R32F,
 	DDS_RG32F,
+	DDS_RGB32F,
 	DDS_RGBA32F,
 	DDS_RGB9E5,
-	DDS_BGRA8,
-	DDS_BGR8,
-	DDS_RGBA8,
 	DDS_RGB8,
+	DDS_RGBA8,
+	DDS_BGR8,
+	DDS_BGRA8,
 	DDS_BGR5A1,
 	DDS_BGR565,
+	DDS_B2GR3,
+	DDS_B2GR3A8,
 	DDS_BGR10A2,
 	DDS_RGB10A2,
 	DDS_BGRA4,
 	DDS_LUMINANCE,
 	DDS_LUMINANCE_ALPHA,
+	DDS_LUMINANCE_ALPHA_4,
 	DDS_MAX
 };
 
@@ -132,31 +167,43 @@ struct DDSFormatInfo {
 
 static const DDSFormatInfo dds_format_info[DDS_MAX] = {
 	{ "DXT1/BC1", true, 4, 8, Image::FORMAT_DXT1 },
-	{ "DXT3/BC2", true, 4, 16, Image::FORMAT_DXT3 },
-	{ "DXT5/BC3", true, 4, 16, Image::FORMAT_DXT5 },
+	{ "DXT2/DXT3/BC2", true, 4, 16, Image::FORMAT_DXT3 },
+	{ "DXT4/DXT5/BC3", true, 4, 16, Image::FORMAT_DXT5 },
 	{ "ATI1/BC4", true, 4, 8, Image::FORMAT_RGTC_R },
 	{ "ATI2/A2XY/BC5", true, 4, 16, Image::FORMAT_RGTC_RG },
 	{ "BC6U", true, 4, 16, Image::FORMAT_BPTC_RGBFU },
 	{ "BC6S", true, 4, 16, Image::FORMAT_BPTC_RGBF },
-	{ "BC7U", true, 4, 16, Image::FORMAT_BPTC_RGBA },
+	{ "BC7", true, 4, 16, Image::FORMAT_BPTC_RGBA },
+	{ "RG8SN", false, 1, 2, Image::FORMAT_RG8 },
+	{ "RGBA8SN", false, 1, 4, Image::FORMAT_RGBA8 },
+	{ "R16UN", false, 1, 2, Image::FORMAT_RH },
+	{ "R16SN", false, 1, 2, Image::FORMAT_RH },
+	{ "RG16UN", false, 1, 4, Image::FORMAT_RGH },
+	{ "RG16SN", false, 1, 4, Image::FORMAT_RGH },
+	{ "RGBA16UN", false, 1, 8, Image::FORMAT_RGBAH },
+	{ "RGBA16SN", false, 1, 8, Image::FORMAT_RGBAH },
 	{ "R16F", false, 1, 2, Image::FORMAT_RH },
 	{ "RG16F", false, 1, 4, Image::FORMAT_RGH },
 	{ "RGBA16F", false, 1, 8, Image::FORMAT_RGBAH },
 	{ "R32F", false, 1, 4, Image::FORMAT_RF },
 	{ "RG32F", false, 1, 8, Image::FORMAT_RGF },
+	{ "RGB32F", false, 1, 12, Image::FORMAT_RGBF },
 	{ "RGBA32F", false, 1, 16, Image::FORMAT_RGBAF },
 	{ "RGB9E5", false, 1, 4, Image::FORMAT_RGBE9995 },
-	{ "BGRA8", false, 1, 4, Image::FORMAT_RGBA8 },
-	{ "BGR8", false, 1, 3, Image::FORMAT_RGB8 },
-	{ "RGBA8", false, 1, 4, Image::FORMAT_RGBA8 },
 	{ "RGB8", false, 1, 3, Image::FORMAT_RGB8 },
+	{ "RGBA8", false, 1, 4, Image::FORMAT_RGBA8 },
+	{ "BGR8", false, 1, 3, Image::FORMAT_RGB8 },
+	{ "BGRA8", false, 1, 4, Image::FORMAT_RGBA8 },
 	{ "BGR5A1", false, 1, 2, Image::FORMAT_RGBA8 },
 	{ "BGR565", false, 1, 2, Image::FORMAT_RGB8 },
+	{ "B2GR3", false, 1, 1, Image::FORMAT_RGB8 },
+	{ "B2GR3A8", false, 1, 2, Image::FORMAT_RGBA8 },
 	{ "BGR10A2", false, 1, 4, Image::FORMAT_RGBA8 },
 	{ "RGB10A2", false, 1, 4, Image::FORMAT_RGBA8 },
 	{ "BGRA4", false, 1, 2, Image::FORMAT_RGBA8 },
 	{ "GRAYSCALE", false, 1, 1, Image::FORMAT_L8 },
-	{ "GRAYSCALE_ALPHA", false, 1, 2, Image::FORMAT_LA8 }
+	{ "GRAYSCALE_ALPHA", false, 1, 2, Image::FORMAT_LA8 },
+	{ "GRAYSCALE_ALPHA_4", false, 1, 1, Image::FORMAT_LA8 }
 };
 
 static DDSFormat dxgi_to_dds_format(uint32_t p_dxgi_format) {
@@ -164,8 +211,17 @@ static DDSFormat dxgi_to_dds_format(uint32_t p_dxgi_format) {
 		case DXGI_R32G32B32A32_FLOAT: {
 			return DDS_RGBA32F;
 		}
+		case DXGI_R32G32B32_FLOAT: {
+			return DDS_RGB32F;
+		}
 		case DXGI_R16G16B16A16_FLOAT: {
 			return DDS_RGBA16F;
+		}
+		case DXGI_R16G16B16A16_UNORM: {
+			return DDS_RGBA16UN;
+		}
+		case DXGI_R16G16B16A16_SNORM: {
+			return DDS_RGBA16SN;
 		}
 		case DXGI_R32G32_FLOAT: {
 			return DDS_RG32F;
@@ -173,28 +229,57 @@ static DDSFormat dxgi_to_dds_format(uint32_t p_dxgi_format) {
 		case DXGI_R10G10B10A2_UNORM: {
 			return DDS_RGB10A2;
 		}
-		case DXGI_R8G8B8A8_UNORM: {
+		case DXGI_R8G8B8A8_UNORM:
+		case DXGI_R8G8B8A8_UNORM_SRGB: {
 			return DDS_RGBA8;
+		}
+		case DXGI_R8G8B8A8_SNORM: {
+			return DDS_RGBA8SN;
 		}
 		case DXGI_R16G16_FLOAT: {
 			return DDS_RG16F;
 		}
+		case DXGI_R16G16_UNORM: {
+			return DDS_RG16UN;
+		}
+		case DXGI_R16G16_SNORM: {
+			return DDS_RG16SN;
+		}
 		case DXGI_R32_FLOAT: {
 			return DDS_R32F;
+		}
+		case DXGI_R8_UNORM:
+		case DXGI_A8_UNORM: {
+			return DDS_LUMINANCE;
 		}
 		case DXGI_R16_FLOAT: {
 			return DDS_R16F;
 		}
+		case DXGI_R16_UNORM: {
+			return DDS_R16UN;
+		}
+		case DXGI_R16_SNORM: {
+			return DDS_R16SN;
+		}
+		case DXGI_R8G8_UNORM: {
+			return DDS_LUMINANCE_ALPHA;
+		}
+		case DXGI_R8G8_SNORM: {
+			return DDS_RG8SN;
+		}
 		case DXGI_R9G9B9E5: {
 			return DDS_RGB9E5;
 		}
-		case DXGI_BC1_UNORM: {
+		case DXGI_BC1_UNORM:
+		case DXGI_BC1_UNORM_SRGB: {
 			return DDS_DXT1;
 		}
-		case DXGI_BC2_UNORM: {
+		case DXGI_BC2_UNORM:
+		case DXGI_BC2_UNORM_SRGB: {
 			return DDS_DXT3;
 		}
-		case DXGI_BC3_UNORM: {
+		case DXGI_BC3_UNORM:
+		case DXGI_BC3_UNORM_SRGB: {
 			return DDS_DXT5;
 		}
 		case DXGI_BC4_UNORM: {
@@ -218,8 +303,9 @@ static DDSFormat dxgi_to_dds_format(uint32_t p_dxgi_format) {
 		case DXGI_BC6H_SF16: {
 			return DDS_BC6S;
 		}
-		case DXGI_BC7_UNORM: {
-			return DDS_BC7U;
+		case DXGI_BC7_UNORM:
+		case DXGI_BC7_UNORM_SRGB: {
+			return DDS_BC7;
 		}
 		case DXGI_B4G4R4A4_UNORM: {
 			return DDS_BGRA4;
@@ -299,9 +385,11 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 			case DDFCC_DXT1: {
 				dds_format = DDS_DXT1;
 			} break;
+			case DDFCC_DXT2:
 			case DDFCC_DXT3: {
 				dds_format = DDS_DXT3;
 			} break;
+			case DDFCC_DXT4:
 			case DDFCC_DXT5: {
 				dds_format = DDS_DXT5;
 			} break;
@@ -313,6 +401,12 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 			case DDFCC_BC5U:
 			case DDFCC_A2XY: {
 				dds_format = DDS_ATI2;
+			} break;
+			case DDFCC_RGBA16UN: {
+				dds_format = DDS_RGBA16UN;
+			} break;
+			case DDFCC_RGBA16SN: {
+				dds_format = DDS_RGBA16SN;
 			} break;
 			case DDFCC_R16F: {
 				dds_format = DDS_R16F;
@@ -363,6 +457,8 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 				dds_format = DDS_RGB10A2;
 			} else if (format_rgb_bits == 16 && format_red_mask == 0xf00 && format_green_mask == 0xf0 && format_blue_mask == 0xf && format_alpha_mask == 0xf000) {
 				dds_format = DDS_BGRA4;
+			} else if (format_rgb_bits == 16 && format_red_mask == 0xe0 && format_green_mask == 0x1c && format_blue_mask == 0x3 && format_alpha_mask == 0xff00) {
+				dds_format = DDS_B2GR3A8;
 			}
 
 		} else {
@@ -373,15 +469,49 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 				dds_format = DDS_RGB8;
 			} else if (format_rgb_bits == 16 && format_red_mask == 0x0000f800 && format_green_mask == 0x000007e0 && format_blue_mask == 0x0000001f) {
 				dds_format = DDS_BGR565;
+			} else if (format_rgb_bits == 8 && format_red_mask == 0xe0 && format_green_mask == 0x1c && format_blue_mask == 0x3) {
+				dds_format = DDS_B2GR3;
+			} else if (format_rgb_bits == 32 && format_red_mask == 0xffff && format_green_mask == 0xffff0000) {
+				dds_format = DDS_RG16UN;
 			}
 		}
 
 	} else {
 		// Other formats.
-		if (format_flags & DDPF_ALPHAPIXELS && format_rgb_bits == 16 && format_red_mask == 0xff && format_alpha_mask == 0xff00) {
-			dds_format = DDS_LUMINANCE_ALPHA;
-		} else if (!(format_flags & DDPF_ALPHAPIXELS) && format_rgb_bits == 8 && format_red_mask == 0xff) {
+		if (format_flags & DDPF_RG_SNORM) {
+			// Signed normalized integer.
+			if (format_rgb_bits == 32 && format_red_mask == 0xffff && format_green_mask == 0xffff0000) {
+				dds_format = DDS_RG16SN;
+			} else if (format_rgb_bits == 16 && format_red_mask == 0xff && format_green_mask == 0xff00) {
+				dds_format = DDS_RG8SN;
+			} else if (format_rgb_bits == 32 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000 && format_alpha_mask == 0xff000000) {
+				dds_format = DDS_RGBA8SN;
+			}
+
+		} else if (format_flags & DDPF_ALPHAONLY && format_rgb_bits == 8 && format_alpha_mask == 0xff) {
+			// Alpha only.
 			dds_format = DDS_LUMINANCE;
+		}
+	}
+
+	// Depending on the writer, luminance formats may or may not have the DDPF_RGB or DDPF_LUMINANCE flags defined,
+	// so we check for these formats after everything else failed.
+	if (dds_format == DDS_MAX) {
+		if (format_flags & DDPF_ALPHAPIXELS) {
+			// With alpha.
+			if (format_rgb_bits == 16 && format_red_mask == 0xff && format_alpha_mask == 0xff00) {
+				dds_format = DDS_LUMINANCE_ALPHA;
+			} else if (format_rgb_bits == 8 && format_red_mask == 0xf && format_alpha_mask == 0xf0) {
+				dds_format = DDS_LUMINANCE_ALPHA_4;
+			}
+
+		} else {
+			// Without alpha.
+			if (format_rgb_bits == 8 && format_red_mask == 0xff) {
+				dds_format = DDS_LUMINANCE;
+			} else if (format_rgb_bits == 16 && format_red_mask == 0xffff) {
+				dds_format = DDS_R16UN;
+			}
 		}
 	}
 
@@ -433,10 +563,24 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 		}
 
 		// Calculate the space these formats will take up after decoding.
-		if (dds_format == DDS_BGR565) {
-			size = size * 3 / 2;
-		} else if (dds_format == DDS_BGR5A1 || dds_format == DDS_BGRA4) {
-			size = size * 2;
+		switch (dds_format) {
+			case DDS_BGR565:
+				size = size * 3 / 2;
+				break;
+
+			case DDS_BGR5A1:
+			case DDS_BGRA4:
+			case DDS_B2GR3A8:
+			case DDS_LUMINANCE_ALPHA_4:
+				size = size * 2;
+				break;
+
+			case DDS_B2GR3:
+				size = size * 3;
+				break;
+
+			default:
+				break;
 		}
 
 		src_data.resize(size);
@@ -503,6 +647,44 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 				}
 
 			} break;
+			case DDS_B2GR3: {
+				// To RGB8.
+				int colcount = size / 3;
+
+				for (int i = colcount - 1; i >= 0; i--) {
+					int src_ofs = i;
+					int dst_ofs = i * 3;
+
+					uint8_t b = (wb[src_ofs] & 0x3) << 6;
+					uint8_t g = (wb[src_ofs] & 0x1C) << 3;
+					uint8_t r = (wb[src_ofs] & 0xE0);
+
+					wb[dst_ofs] = r;
+					wb[dst_ofs + 1] = g;
+					wb[dst_ofs + 2] = b;
+				}
+
+			} break;
+			case DDS_B2GR3A8: {
+				// To RGBA8.
+				int colcount = size / 4;
+
+				for (int i = colcount - 1; i >= 0; i--) {
+					int src_ofs = i * 2;
+					int dst_ofs = i * 4;
+
+					uint8_t b = (wb[src_ofs] & 0x3) << 6;
+					uint8_t g = (wb[src_ofs] & 0x1C) << 3;
+					uint8_t r = (wb[src_ofs] & 0xE0);
+					uint8_t a = wb[src_ofs + 1];
+
+					wb[dst_ofs] = r;
+					wb[dst_ofs + 1] = g;
+					wb[dst_ofs + 2] = b;
+					wb[dst_ofs + 3] = a;
+				}
+
+			} break;
 			case DDS_RGB10A2: {
 				// To RGBA8.
 				int colcount = size / 4;
@@ -549,6 +731,8 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 				}
 
 			} break;
+
+			// Channel-swapped.
 			case DDS_BGRA8: {
 				// To RGBA8.
 				int colcount = size / 4;
@@ -564,6 +748,132 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 
 				for (int i = 0; i < colcount; i++) {
 					SWAP(wb[i * 3 + 0], wb[i * 3 + 2]);
+				}
+
+			} break;
+
+			// 8 bits per channel signed.
+			case DDS_RG8SN: {
+				// To RG8.
+				int colcount = size / 2;
+
+				for (int i = 0; i < colcount; i++) {
+					int ofs = i * 2;
+
+					wb[ofs] = wb[ofs] ^ 0x80;
+					wb[ofs + 1] = wb[ofs + 1] ^ 0x80;
+				}
+
+			} break;
+			case DDS_RGBA8SN: {
+				// To RGBA8.
+				int colcount = size / 4;
+
+				for (int i = 0; i < colcount; i++) {
+					int ofs = i * 4;
+
+					wb[ofs] = wb[ofs] ^ 0x80;
+					wb[ofs + 1] = wb[ofs + 1] ^ 0x80;
+					wb[ofs + 2] = wb[ofs + 2] ^ 0x80;
+					wb[ofs + 3] = wb[ofs + 3] ^ 0x80;
+				}
+
+			} break;
+
+			// Convert unorm-16 to half since Godot doesn't support 16-bit uint image formats.
+			case DDS_R16UN: {
+				// To RH.
+				int colcount = size / 2;
+				uint16_t *wb16 = reinterpret_cast<uint16_t *>(wb);
+
+				for (int i = 0; i < colcount; i++) {
+					wb16[i] = Math::make_half_float(wb16[i] / 65535.0f);
+				}
+
+			} break;
+			case DDS_RG16UN: {
+				// To RGH.
+				int colcount = size / 4;
+				uint16_t *wb16 = reinterpret_cast<uint16_t *>(wb);
+
+				for (int i = 0; i < colcount; i++) {
+					int ofs = i * 2;
+
+					wb16[ofs] = Math::make_half_float(wb16[ofs] / 65535.0f);
+					wb16[ofs + 1] = Math::make_half_float(wb16[ofs + 1] / 65535.0f);
+				}
+
+			} break;
+			case DDS_RGBA16UN: {
+				// To RGBAH.
+				int colcount = size / 8;
+				uint16_t *wb16 = reinterpret_cast<uint16_t *>(wb);
+
+				for (int i = 0; i < colcount; i++) {
+					int ofs = i * 4;
+
+					wb16[ofs] = Math::make_half_float(wb16[ofs] / 65535.0f);
+					wb16[ofs + 1] = Math::make_half_float(wb16[ofs + 1] / 65535.0f);
+					wb16[ofs + 2] = Math::make_half_float(wb16[ofs + 2] / 65535.0f);
+					wb16[ofs + 3] = Math::make_half_float(wb16[ofs + 3] / 65535.0f);
+				}
+
+			} break;
+
+			// Convert snorm-16 to half since Godot doesn't support 16-bit int image formats.
+			case DDS_R16SN: {
+				// To RH.
+				int colcount = size / 2;
+				uint16_t *wb16 = reinterpret_cast<uint16_t *>(wb);
+
+				for (int i = 0; i < colcount; i++) {
+					wb16[i] = Math::make_half_float((wb16[i] ^ 0x8000) / 65535.0f);
+				}
+
+			} break;
+			case DDS_RG16SN: {
+				// To RGH.
+				int colcount = size / 4;
+				uint16_t *wb16 = reinterpret_cast<uint16_t *>(wb);
+
+				for (int i = 0; i < colcount; i++) {
+					int ofs = i * 2;
+
+					wb16[ofs] = Math::make_half_float((wb16[i] ^ 0x8000) / 65535.0f);
+					wb16[ofs + 1] = Math::make_half_float((wb16[i + 1] ^ 0x8000) / 65535.0f);
+				}
+
+			} break;
+			case DDS_RGBA16SN: {
+				// To RGBAH.
+				int colcount = size / 8;
+				uint16_t *wb16 = reinterpret_cast<uint16_t *>(wb);
+
+				for (int i = 0; i < colcount; i++) {
+					int ofs = i * 4;
+
+					wb16[ofs] = Math::make_half_float((wb16[i] ^ 0x8000) / 65535.0f);
+					wb16[ofs + 1] = Math::make_half_float((wb16[i + 1] ^ 0x8000) / 65535.0f);
+					wb16[ofs + 2] = Math::make_half_float((wb16[i + 2] ^ 0x8000) / 65535.0f);
+					wb16[ofs + 3] = Math::make_half_float((wb16[i + 3] ^ 0x8000) / 65535.0f);
+				}
+
+			} break;
+
+			// Grayscale.
+			case DDS_LUMINANCE_ALPHA_4: {
+				// To LA8.
+				int colcount = size / 2;
+
+				for (int i = colcount - 1; i >= 0; i--) {
+					int src_ofs = i;
+					int dst_ofs = i * 2;
+
+					uint8_t l = wb[src_ofs] & 0x0F;
+					uint8_t a = wb[src_ofs] & 0xF0;
+
+					wb[dst_ofs] = (l << 4) | l;
+					wb[dst_ofs + 1] = a | (a >> 4);
 				}
 
 			} break;
