@@ -2016,6 +2016,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 		case Variant::ARRAY: {
 			Array varray = p_variant;
+			_find_resources(varray.get_typed_script());
 			int len = varray.size();
 			for (int i = 0; i < len; i++) {
 				const Variant &v = varray.get(i);
