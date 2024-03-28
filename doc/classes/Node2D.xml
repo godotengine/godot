@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Node2D" inherits="CanvasItem" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 2D game object, inherited by all 2D-related nodes. Has a position, rotation, scale, and Z index.
+		A 2D game object, inherited by most 2D-related nodes.
 	</brief_description>
 	<description>
 		A 2D game object, with a transform (position, rotation, and scale). All 2D nodes, including physics objects and sprites, inherit from Node2D. Use Node2D as a parent node to move, scale and rotate children in a 2D project. Also gives control of the node's render order.
@@ -22,7 +22,7 @@
 			<return type="float" />
 			<param index="0" name="point" type="Vector2" />
 			<description>
-				Returns the angle between the node and the [param point] in radians.
+				Returns the angle between the node and the global [param point] in radians.
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/node2d_get_angle_to.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>
@@ -37,14 +37,14 @@
 			<return type="void" />
 			<param index="0" name="offset" type="Vector2" />
 			<description>
-				Adds the [param offset] vector to the node's global position.
+				Adds the [param offset] vector to the node's [member global_position].
 			</description>
 		</method>
 		<method name="look_at">
 			<return type="void" />
 			<param index="0" name="point" type="Vector2" />
 			<description>
-				Rotates the node so it points towards the [param point], which is expected to use global coordinates.
+				Rotates the node to point towards the given [param point] in global space.
 			</description>
 		</method>
 		<method name="move_local_x">
@@ -74,14 +74,16 @@
 			<return type="Vector2" />
 			<param index="0" name="local_point" type="Vector2" />
 			<description>
-				Transforms the provided local position into a position in global coordinate space. The input is expected to be local relative to the [Node2D] it is called on. e.g. Applying this method to the positions of child nodes will correctly transform their positions into the global coordinate space, but applying it to a node's own position will give an incorrect result, as it will incorporate the node's own transformation into its global position.
+				<!-- Transforms the provided local position into a position in global coordinate space. The input is expected to be local relative to the [Node2D] it is called on. e.g. Applying this method to the positions of child nodes will correctly transform their positions into the global coordinate space, but applying it to a node's own position will give an incorrect result, as it will incorporate the node's own transformation into its global position. -->
+				Returns the [param local_point] converted from this node's local space to global space. This is the opposite of [method to_local].
 			</description>
 		</method>
 		<method name="to_local" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="global_point" type="Vector2" />
 			<description>
-				Transforms the provided global position into a position in local coordinate space. The output will be local relative to the [Node2D] it is called on. e.g. It is appropriate for determining the positions of child nodes, but it is not appropriate for determining its own position relative to its parent.
+				<!-- Transforms the provided global position into a position in local coordinate space. The output will be local relative to the [Node2D] it is called on. e.g. It is appropriate for determining the positions of child nodes, but it is not appropriate for determining its own position relative to its parent. -->
+				Returns the [param global_point] converted from global space to this node's local space. This is the opposite of [method to_global].
 			</description>
 		</method>
 		<method name="translate">
@@ -94,43 +96,46 @@
 	</methods>
 	<members>
 		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
-			Global position.
+			Global position (translation) of this node in global space (relative to the world). This is equivalent to the [member global_transform]'s [member Transform2D.origin].
 		</member>
 		<member name="global_rotation" type="float" setter="set_global_rotation" getter="get_global_rotation">
-			Global rotation in radians.
+			Global rotation of this node in radians, in global space (relative to the world).
 		</member>
 		<member name="global_rotation_degrees" type="float" setter="set_global_rotation_degrees" getter="get_global_rotation_degrees">
-			Helper property to access [member global_rotation] in degrees instead of radians.
+			The [member global_rotation] of this node, in degrees instead of radians.
 		</member>
 		<member name="global_scale" type="Vector2" setter="set_global_scale" getter="get_global_scale">
-			Global scale.
+			Global scale of this node in global space (relative to the world).
+			[b]Note:[/b] The behavior of some 2D node types is not affected by this property. These include [Camera2D], [AudioStreamPlayer2D], etc.
 		</member>
 		<member name="global_skew" type="float" setter="set_global_skew" getter="get_global_skew">
-			Global skew in radians.
+			Global skew applied to this node in the X axis, in radians and in global space (relative to the world). Higher values distort the node more.
 		</member>
 		<member name="global_transform" type="Transform2D" setter="set_global_transform" getter="get_global_transform">
-			Global [Transform2D].
+			Global transformations of this node in global space (relative to the world). Contains and represents this node's [member position], [member rotation], [member scale], and [member skew].
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
-			Position, relative to the node's parent.
+			Local position (translation) of this node in local space (relative to the parent node). This is equivalent to the [member transform]'s [member Transform2D.origin].
 		</member>
 		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
-			Rotation in radians, relative to the node's parent.
-			[b]Note:[/b] This property is edited in the inspector in degrees. If you want to use degrees in a script, use [member rotation_degrees].
+			Local rotation of this node in radians, in local space (relative to the parent node).
+			[b]Note:[/b] This property is edited in degrees in the inspector. If you want to use degrees in a script, use [member rotation_degrees].
 		</member>
 		<member name="rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees">
-			Helper property to access [member rotation] in degrees instead of radians.
+			The [member rotation] of this node, in degrees instead of radians.
+			[b]Note:[/b] This is [b]not[/b] the property available in the Inspector dock.
 		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
-			The node's scale. Unscaled value: [code](1, 1)[/code].
-			[b]Note:[/b] Negative X scales in 2D are not decomposable from the transformation matrix. Due to the way scale is represented with transformation matrices in Godot, negative scales on the X axis will be changed to negative scales on the Y axis and a rotation of 180 degrees when decomposed.
+			Local scale of this node in local space (relative to the parent node).
+			[b]Note:[/b] The behavior of some 2D node types is not affected by this property. These include [Camera2D], [AudioStreamPlayer2D], etc.
+			[b]Warning:[/b] Mixed negative scales in 2D are not decomposable from the transformation matrix. Due to the way scale is represented with transformation matrices in Godot, the scale values will either be all positive or all negative.
 		</member>
 		<member name="skew" type="float" setter="set_skew" getter="get_skew" default="0.0">
-			Slants the node.
-			[b]Note:[/b] Skew is X axis only.
+			Local skew applied to this node in the X axis, in radians and in local space (relative to the parent node). Higher values distort the node more.
+			[b]Note:[/b] This property is edited in degrees in the inspector. If you want to use degrees in a script, convert this property's value with [method @GlobalScope.rad_to_deg].
 		</member>
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
-			Local [Transform2D].
+			Local transformations of this node in local space (relative to the parent node). Contains and represents this node's [member position], [member rotation], [member scale], and [member skew].
 		</member>
 	</members>
 </class>
