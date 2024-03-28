@@ -101,6 +101,13 @@ void GodotStep2D::_solve_island(uint32_t p_island_index, void *p_userdata) const
 	}
 }
 
+void GodotStep2D::_post_solve_island(LocalVector<GodotConstraint2D *> &p_constraint_island) const {
+	uint32_t constraint_count = p_constraint_island.size();
+	for (uint32_t constraint_index = 0; constraint_index < constraint_count; ++constraint_index) {
+		p_constraint_island[constraint_index]->post_solve(delta);
+	}
+}
+
 void GodotStep2D::_check_suspend(LocalVector<GodotBody2D *> &p_body_island) const {
 	bool can_sleep = true;
 
@@ -267,6 +274,11 @@ void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta) {
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(GodotSpace2D::ELAPSED_TIME_SOLVE_CONSTRAINTS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
+	}
+
+	// Warning: This doesn't run on threads, because it involves thread-unsafe processing.
+	for (uint32_t island_index = 0; island_index < island_count; ++island_index) {
+		_post_solve_island(constraint_islands[island_index]);
 	}
 
 	/* INTEGRATE VELOCITIES */
