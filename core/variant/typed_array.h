@@ -46,10 +46,15 @@ public:
 		_ref(p_array);
 	}
 	_FORCE_INLINE_ TypedArray(const Variant &p_variant) :
-			Array(Array(p_variant), Variant::OBJECT, T::get_class_static(), Variant()) {
+			TypedArray(Array(p_variant)) {
 	}
-	_FORCE_INLINE_ TypedArray(const Array &p_array) :
-			Array(p_array, Variant::OBJECT, T::get_class_static(), Variant()) {
+	_FORCE_INLINE_ TypedArray(const Array &p_array) {
+		set_typed(Variant::OBJECT, T::get_class_static(), Variant());
+		if (is_same_typed(p_array)) {
+			_ref(p_array);
+		} else {
+			assign(p_array);
+		}
 	}
 	_FORCE_INLINE_ TypedArray() {
 		set_typed(Variant::OBJECT, T::get_class_static(), Variant());
@@ -78,10 +83,15 @@ struct VariantInternalAccessor<const TypedArray<T> &> {
 			_ref(p_array);                                                                                       \
 		}                                                                                                        \
 		_FORCE_INLINE_ TypedArray(const Variant &p_variant) :                                                    \
-				Array(Array(p_variant), m_variant_type, StringName(), Variant()) {                               \
+				TypedArray(Array(p_variant)) {                                                                   \
 		}                                                                                                        \
-		_FORCE_INLINE_ TypedArray(const Array &p_array) :                                                        \
-				Array(p_array, m_variant_type, StringName(), Variant()) {                                        \
+		_FORCE_INLINE_ TypedArray(const Array &p_array) {                                                        \
+			set_typed(m_variant_type, StringName(), Variant());                                                  \
+			if (is_same_typed(p_array)) {                                                                        \
+				_ref(p_array);                                                                                   \
+			} else {                                                                                             \
+				assign(p_array);                                                                                 \
+			}                                                                                                    \
 		}                                                                                                        \
 		_FORCE_INLINE_ TypedArray() {                                                                            \
 			set_typed(m_variant_type, StringName(), Variant());                                                  \
