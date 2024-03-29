@@ -51,7 +51,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallbacks"), &Font::get_fallbacks);
 
 	// Output.
-	ClassDB::bind_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform", "spacing_top", "spacing_bottom", "spacing_space", "spacing_glyph", "baseline_offset"), &Font::find_variation, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform", "spacing", "spacing_relative", "baseline_offset"), &Font::find_variation, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()), DEFVAL(Vector4i()), DEFVAL(Vector4()), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("get_rids"), &Font::get_rids);
 
 	// Font metrics.
@@ -69,6 +69,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_font_stretch"), &Font::get_font_stretch);
 
 	ClassDB::bind_method(D_METHOD("get_spacing", "spacing"), &Font::get_spacing);
+	ClassDB::bind_method(D_METHOD("get_spacing_relative", "spacing"), &Font::get_spacing_relative);
 	ClassDB::bind_method(D_METHOD("get_opentype_features"), &Font::get_opentype_features);
 
 	// Drawing string.
@@ -196,7 +197,7 @@ real_t Font::get_height(int p_font_size) const {
 	for (int i = 0; i < rids.size(); i++) {
 		ret = MAX(ret, TS->font_get_ascent(rids[i], p_font_size) + TS->font_get_descent(rids[i], p_font_size));
 	}
-	return ret + get_spacing(TextServer::SPACING_BOTTOM) + get_spacing(TextServer::SPACING_TOP);
+	return ret + get_spacing(TextServer::SPACING_BOTTOM) + get_spacing(TextServer::SPACING_TOP) + (get_spacing_relative(TextServer::SPACING_BOTTOM) + get_spacing_relative(TextServer::SPACING_TOP)) * (double)p_font_size;
 }
 
 real_t Font::get_ascent(int p_font_size) const {
@@ -207,7 +208,7 @@ real_t Font::get_ascent(int p_font_size) const {
 	for (int i = 0; i < rids.size(); i++) {
 		ret = MAX(ret, TS->font_get_ascent(rids[i], p_font_size));
 	}
-	return ret + get_spacing(TextServer::SPACING_TOP);
+	return ret + get_spacing(TextServer::SPACING_TOP) + get_spacing_relative(TextServer::SPACING_TOP) * (double)p_font_size;
 }
 
 real_t Font::get_descent(int p_font_size) const {
@@ -218,7 +219,7 @@ real_t Font::get_descent(int p_font_size) const {
 	for (int i = 0; i < rids.size(); i++) {
 		ret = MAX(ret, TS->font_get_descent(rids[i], p_font_size));
 	}
-	return ret + get_spacing(TextServer::SPACING_BOTTOM);
+	return ret + get_spacing(TextServer::SPACING_BOTTOM) + get_spacing_relative(TextServer::SPACING_BOTTOM) * (double)p_font_size;
 }
 
 real_t Font::get_underline_position(int p_font_size) const {
@@ -229,7 +230,7 @@ real_t Font::get_underline_position(int p_font_size) const {
 	for (int i = 0; i < rids.size(); i++) {
 		ret = MAX(ret, TS->font_get_underline_position(rids[i], p_font_size));
 	}
-	return ret + get_spacing(TextServer::SPACING_TOP);
+	return ret + get_spacing(TextServer::SPACING_TOP) + get_spacing_relative(TextServer::SPACING_TOP) * (double)p_font_size;
 }
 
 real_t Font::get_underline_thickness(int p_font_size) const {
@@ -938,6 +939,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extra_spacing", "cache_index", "spacing", "value"), &FontFile::set_extra_spacing);
 	ClassDB::bind_method(D_METHOD("get_extra_spacing", "cache_index", "spacing"), &FontFile::get_extra_spacing);
 
+	ClassDB::bind_method(D_METHOD("set_extra_spacing_relative", "cache_index", "spacing", "value"), &FontFile::set_extra_spacing_relative);
+	ClassDB::bind_method(D_METHOD("get_extra_spacing_relative", "cache_index", "spacing"), &FontFile::get_extra_spacing_relative);
+
 	ClassDB::bind_method(D_METHOD("set_extra_baseline_offset", "cache_index", "baseline_offset"), &FontFile::set_extra_baseline_offset);
 	ClassDB::bind_method(D_METHOD("get_extra_baseline_offset", "cache_index"), &FontFile::get_extra_baseline_offset);
 
@@ -1165,6 +1169,18 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (tokens.size() == 3 && tokens[2] == "spacing_glyph") {
 			set_extra_spacing(cache_index, TextServer::SPACING_GLYPH, p_value);
 			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_top_relative") {
+			set_extra_spacing_relative(cache_index, TextServer::SPACING_TOP, p_value);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_bottom_relative") {
+			set_extra_spacing_relative(cache_index, TextServer::SPACING_BOTTOM, p_value);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_space_relative") {
+			set_extra_spacing_relative(cache_index, TextServer::SPACING_SPACE, p_value);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_glyph_relative") {
+			set_extra_spacing_relative(cache_index, TextServer::SPACING_GLYPH, p_value);
+			return true;
 		} else if (tokens.size() == 3 && tokens[2] == "baseline_offset") {
 			set_extra_baseline_offset(cache_index, p_value);
 			return true;
@@ -1259,6 +1275,18 @@ bool FontFile::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (tokens.size() == 3 && tokens[2] == "spacing_glyph") {
 			r_ret = get_extra_spacing(cache_index, TextServer::SPACING_GLYPH);
 			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_top_relative") {
+			r_ret = get_extra_spacing_relative(cache_index, TextServer::SPACING_TOP);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_bottom_relative") {
+			r_ret = get_extra_spacing_relative(cache_index, TextServer::SPACING_BOTTOM);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_space_relative") {
+			r_ret = get_extra_spacing_relative(cache_index, TextServer::SPACING_SPACE);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "spacing_glyph_relative") {
+			r_ret = get_extra_spacing_relative(cache_index, TextServer::SPACING_GLYPH);
+			return true;
 		} else if (tokens.size() == 3 && tokens[2] == "baseline_offset") {
 			r_ret = get_extra_baseline_offset(cache_index);
 			return true;
@@ -1337,6 +1365,10 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_bottom", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_glyph", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "spacing_top_relative", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "spacing_bottom_relative", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "spacing_space_relative", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "spacing_glyph_relative", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "baseline_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 
 		for (int j = 0; j < sizes.size(); j++) {
@@ -2289,7 +2321,7 @@ real_t FontFile::get_oversampling() const {
 	return oversampling;
 }
 
-RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, const Vector4i &p_spacing, const Vector4 &p_spacing_relative, float p_baseline_offset) const {
 	// Find existing variation cache.
 	const Dictionary &supported_coords = get_supported_variation_list();
 	int make_linked_from = -1;
@@ -2301,10 +2333,14 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 			match = match && (TS->font_get_face_index(cache[i]) == p_face_index);
 			match = match && (TS->font_get_embolden(cache[i]) == p_strength);
 			match = match && (TS->font_get_transform(cache[i]) == p_transform);
-			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_TOP) == p_spacing_top);
-			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_BOTTOM) == p_spacing_bottom);
-			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_SPACE) == p_spacing_space);
-			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_GLYPH) == p_spacing_glyph);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_TOP) == p_spacing.x);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_BOTTOM) == p_spacing.y);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_SPACE) == p_spacing.z);
+			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_GLYPH) == p_spacing.w);
+			match_linked = match_linked && (TS->font_get_spacing_relative(cache[i], TextServer::SPACING_TOP) == p_spacing_relative.x);
+			match_linked = match_linked && (TS->font_get_spacing_relative(cache[i], TextServer::SPACING_BOTTOM) == p_spacing_relative.y);
+			match_linked = match_linked && (TS->font_get_spacing_relative(cache[i], TextServer::SPACING_SPACE) == p_spacing_relative.z);
+			match_linked = match_linked && (TS->font_get_spacing_relative(cache[i], TextServer::SPACING_GLYPH) == p_spacing_relative.w);
 			match_linked = match_linked && (TS->font_get_baseline_offset(cache[i]) == p_baseline_offset);
 			for (const Variant *V = supported_coords.next(nullptr); V && match; V = supported_coords.next(V)) {
 				const Vector3 &def = supported_coords[*V];
@@ -2345,10 +2381,14 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 	int idx = cache.size();
 	if (make_linked_from >= 0) {
 		_ensure_rid(idx, make_linked_from);
-		TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing_top);
-		TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
-		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
-		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing.x);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing.y);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing.z);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing.w);
+		TS->font_set_spacing_relative(cache[idx], TextServer::SPACING_TOP, p_spacing_relative.x);
+		TS->font_set_spacing_relative(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_relative.y);
+		TS->font_set_spacing_relative(cache[idx], TextServer::SPACING_SPACE, p_spacing_relative.z);
+		TS->font_set_spacing_relative(cache[idx], TextServer::SPACING_GLYPH, p_spacing_relative.w);
 		TS->font_set_baseline_offset(cache[idx], p_baseline_offset);
 	} else {
 		_ensure_rid(idx);
@@ -2356,10 +2396,14 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 		TS->font_set_face_index(cache[idx], p_face_index);
 		TS->font_set_embolden(cache[idx], p_strength);
 		TS->font_set_transform(cache[idx], p_transform);
-		TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing_top);
-		TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
-		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
-		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing.x);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing.y);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing.z);
+		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing.w);
+		TS->font_set_spacing_relative(cache[idx], TextServer::SPACING_TOP, p_spacing_relative.x);
+		TS->font_set_spacing_relative(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_relative.y);
+		TS->font_set_spacing_relative(cache[idx], TextServer::SPACING_SPACE, p_spacing_relative.z);
+		TS->font_set_spacing_relative(cache[idx], TextServer::SPACING_GLYPH, p_spacing_relative.w);
 		TS->font_set_baseline_offset(cache[idx], p_baseline_offset);
 	}
 	return cache[idx];
@@ -2453,6 +2497,18 @@ int64_t FontFile::get_extra_spacing(int p_cache_index, TextServer::SpacingType p
 	ERR_FAIL_COND_V(p_cache_index < 0, 0);
 	_ensure_rid(p_cache_index);
 	return TS->font_get_spacing(cache[p_cache_index], p_spacing);
+}
+
+void FontFile::set_extra_spacing_relative(int p_cache_index, TextServer::SpacingType p_spacing, double p_value) {
+	ERR_FAIL_COND(p_cache_index < 0);
+	_ensure_rid(p_cache_index);
+	TS->font_set_spacing_relative(cache[p_cache_index], p_spacing, p_value);
+}
+
+double FontFile::get_extra_spacing_relative(int p_cache_index, TextServer::SpacingType p_spacing) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0.0);
+	_ensure_rid(p_cache_index);
+	return TS->font_get_spacing_relative(cache[p_cache_index], p_spacing);
 }
 
 float FontFile::get_extra_baseline_offset(int p_cache_index) const {
@@ -2794,6 +2850,7 @@ void FontVariation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_opentype_features", "features"), &FontVariation::set_opentype_features);
 
 	ClassDB::bind_method(D_METHOD("set_spacing", "spacing", "value"), &FontVariation::set_spacing);
+	ClassDB::bind_method(D_METHOD("set_spacing_relative", "spacing", "value"), &FontVariation::set_spacing_relative);
 
 	ClassDB::bind_method(D_METHOD("set_baseline_offset", "baseline_offset"), &FontVariation::set_baseline_offset);
 	ClassDB::bind_method(D_METHOD("get_baseline_offset"), &FontVariation::get_baseline_offset);
@@ -2814,6 +2871,10 @@ void FontVariation::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_space", PROPERTY_HINT_NONE, "suffix:px"), "set_spacing", "get_spacing", TextServer::SPACING_SPACE);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_top", PROPERTY_HINT_NONE, "suffix:px"), "set_spacing", "get_spacing", TextServer::SPACING_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_bottom", PROPERTY_HINT_NONE, "suffix:px"), "set_spacing", "get_spacing", TextServer::SPACING_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spacing_glyph_relative", PROPERTY_HINT_NONE, ""), "set_spacing_relative", "get_spacing_relative", TextServer::SPACING_GLYPH);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spacing_space_relative", PROPERTY_HINT_NONE, ""), "set_spacing_relative", "get_spacing_relative", TextServer::SPACING_SPACE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spacing_top_relative", PROPERTY_HINT_NONE, ""), "set_spacing_relative", "get_spacing_relative", TextServer::SPACING_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spacing_bottom_relative", PROPERTY_HINT_NONE, ""), "set_spacing_relative", "get_spacing_relative", TextServer::SPACING_BOTTOM);
 
 	ADD_GROUP("Baseline", "baseline_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "baseline_offset", PROPERTY_HINT_RANGE, "-2,2,0.005"), "set_baseline_offset", "get_baseline_offset");
@@ -2855,6 +2916,7 @@ void FontVariation::reset_state() {
 
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		extra_spacing[i] = 0;
+		extra_spacing_relative[i] = 0.0;
 	}
 	baseline_offset = 0.0;
 
@@ -3001,6 +3063,19 @@ int FontVariation::get_spacing(TextServer::SpacingType p_spacing) const {
 	return extra_spacing[p_spacing];
 }
 
+double FontVariation::get_spacing_relative(TextServer::SpacingType p_spacing) const {
+	ERR_FAIL_INDEX_V((int)p_spacing, TextServer::SPACING_MAX, 0);
+	return extra_spacing_relative[p_spacing];
+}
+
+void FontVariation::set_spacing_relative(TextServer::SpacingType p_spacing, double p_value) {
+	ERR_FAIL_INDEX((int)p_spacing, TextServer::SPACING_MAX);
+	if (extra_spacing_relative[p_spacing] != p_value) {
+		extra_spacing_relative[p_spacing] = p_value;
+		_invalidate_rids();
+	}
+}
+
 void FontVariation::set_baseline_offset(float p_baseline_offset) {
 	if (baseline_offset != p_baseline_offset) {
 		baseline_offset = p_baseline_offset;
@@ -3012,10 +3087,10 @@ float FontVariation::get_baseline_offset() const {
 	return baseline_offset;
 }
 
-RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, const Vector4i &p_spacing, const Vector4 &p_spacing_relative, float p_baseline_offset) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
+		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing, p_spacing_relative, p_baseline_offset);
 	}
 	return RID();
 }
@@ -3023,7 +3098,7 @@ RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int
 RID FontVariation::_get_rid() const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		return f->find_variation(variation.opentype, variation.face_index, variation.embolden, variation.transform, extra_spacing[TextServer::SPACING_TOP], extra_spacing[TextServer::SPACING_BOTTOM], extra_spacing[TextServer::SPACING_SPACE], extra_spacing[TextServer::SPACING_GLYPH], baseline_offset);
+		return f->find_variation(variation.opentype, variation.face_index, variation.embolden, variation.transform, Vector4i(extra_spacing[TextServer::SPACING_TOP], extra_spacing[TextServer::SPACING_BOTTOM], extra_spacing[TextServer::SPACING_SPACE], extra_spacing[TextServer::SPACING_GLYPH]), Vector4(extra_spacing_relative[TextServer::SPACING_TOP], extra_spacing_relative[TextServer::SPACING_BOTTOM], extra_spacing_relative[TextServer::SPACING_SPACE], extra_spacing_relative[TextServer::SPACING_GLYPH]), baseline_offset);
 	}
 	return RID();
 }
@@ -3031,6 +3106,7 @@ RID FontVariation::_get_rid() const {
 FontVariation::FontVariation() {
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		extra_spacing[i] = 0;
+		extra_spacing_relative[i] = 0.0;
 	}
 }
 
@@ -3503,7 +3579,15 @@ int SystemFont::get_spacing(TextServer::SpacingType p_spacing) const {
 	}
 }
 
-RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+double SystemFont::get_spacing_relative(TextServer::SpacingType p_spacing) const {
+	if (base_font.is_valid()) {
+		return base_font->get_spacing_relative(p_spacing);
+	} else {
+		return 0.0;
+	}
+}
+
+RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, const Vector4i &p_spacing, const Vector4 &p_spacing_relative, float p_baseline_offset) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
 		Dictionary var = p_variation_coordinates;
@@ -3519,9 +3603,9 @@ RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_
 
 		if (!face_indeces.is_empty()) {
 			int face_index = CLAMP(p_face_index, 0, face_indeces.size() - 1);
-			return f->find_variation(var, face_indeces[face_index], p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
+			return f->find_variation(var, face_indeces[face_index], p_strength, p_transform, p_spacing, p_spacing_relative, p_baseline_offset);
 		} else {
-			return f->find_variation(var, 0, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
+			return f->find_variation(var, 0, p_strength, p_transform, p_spacing, p_spacing_relative, p_baseline_offset);
 		}
 	}
 	return RID();

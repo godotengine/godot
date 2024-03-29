@@ -70,7 +70,7 @@ get_connection_line was made const.
 
 GH-87668
 --------
-Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 8 to 9.
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 8 to 7.
 
 Added optional "baseline_offset" argument. Compatibility method registered.
 
@@ -248,3 +248,18 @@ Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/register_tex
 Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/remove_button/arguments/0': type changed value in new API, from "Control" to "Button".
 
 Changed argument type to the more specific one actually expected by the method. Compatibility method registered.
+
+
+GH-87179
+--------
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': meta was removed.
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': meta was removed.
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments/4': default_value changed value in new API, from "0" to "Vector4i(0, 0, 0, 0)".
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments/4': type changed value in new API, from "int" to "Vector4i".
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments/5': default_value changed value in new API, from "0" to "Vector4(0, 0, 0, 0)".
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments/5': type changed value in new API, from "int" to "Vector4".
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments/6': default_value changed value in new API, from "0" to "0.0".
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments/6': meta changed value in new API, from "int32" to "float".
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments/6': type changed value in new API, from "int" to "float".
+
+Changed argument type. Compatibility method registered.

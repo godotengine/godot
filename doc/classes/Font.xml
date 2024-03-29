@@ -114,11 +114,9 @@
 			<param index="1" name="face_index" type="int" default="0" />
 			<param index="2" name="strength" type="float" default="0.0" />
 			<param index="3" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
-			<param index="4" name="spacing_top" type="int" default="0" />
-			<param index="5" name="spacing_bottom" type="int" default="0" />
-			<param index="6" name="spacing_space" type="int" default="0" />
-			<param index="7" name="spacing_glyph" type="int" default="0" />
-			<param index="8" name="baseline_offset" type="float" default="0.0" />
+			<param index="4" name="spacing" type="Vector4i" default="Vector4i(0, 0, 0, 0)" />
+			<param index="5" name="spacing_relative" type="Vector4" default="Vector4(0, 0, 0, 0)" />
+			<param index="6" name="baseline_offset" type="float" default="0.0" />
 			<description>
 				Returns [TextServer] RID of the font cache for specific variation.
 			</description>
@@ -230,7 +228,14 @@
 			<return type="int" />
 			<param index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<description>
-				Returns the spacing for the given [code]type[/code] (see [enum TextServer.SpacingType]).
+				Returns the absolute spacing (pixels) for the given [code]type[/code] (see [enum TextServer.SpacingType]).
+			</description>
+		</method>
+		<method name="get_spacing_relative" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+				Returns the relative spacing (fraction of font size) for the given [code]type[/code] (see [enum TextServer.SpacingType]).
 			</description>
 		</method>
 		<method name="get_string_size" qualifiers="const">
