@@ -2751,7 +2751,7 @@ void CanvasItemEditor::_draw_text_at_position(Point2 p_position, const String &p
 	Color color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 	color.a = 0.8;
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	Size2 text_size = font->get_string_size(p_string, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 	switch (p_side) {
 		case SIDE_LEFT:
@@ -2823,7 +2823,7 @@ void CanvasItemEditor::_draw_guides() {
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_V_GUIDE) {
 		String str = TS->format_number(vformat("%d px", Math::round(xform.affine_inverse().xform(dragged_guide_pos).x)));
 		Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
-		int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+		float font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 		Size2 text_size = font->get_string_size(str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 		viewport->draw_string_outline(font, Point2(dragged_guide_pos.x + 10, RULER_WIDTH + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 		viewport->draw_string(font, Point2(dragged_guide_pos.x + 10, RULER_WIDTH + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
@@ -2832,7 +2832,7 @@ void CanvasItemEditor::_draw_guides() {
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_H_GUIDE) {
 		String str = TS->format_number(vformat("%d px", Math::round(xform.affine_inverse().xform(dragged_guide_pos).y)));
 		Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
-		int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+		float font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 		Size2 text_size = font->get_string_size(str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 		viewport->draw_string_outline(font, Point2(RULER_WIDTH + 10, dragged_guide_pos.y + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 		viewport->draw_string(font, Point2(RULER_WIDTH + 10, dragged_guide_pos.y + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
@@ -2860,7 +2860,7 @@ void CanvasItemEditor::_draw_rulers() {
 	Color font_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 	font_color.a = 0.8;
 	Ref<Font> font = get_theme_font(SNAME("rulers"), EditorStringName(EditorFonts));
-	int font_size = get_theme_font_size(SNAME("rulers_size"), EditorStringName(EditorFonts));
+	float font_size = get_theme_font_size(SNAME("rulers_size"), EditorStringName(EditorFonts));
 
 	// The rule transform
 	Transform2D ruler_transform;
@@ -3034,7 +3034,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		const real_t vertical_angle_rad = Math_PI / 2.0 - horizontal_angle_rad;
 
 		Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
-		int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+		float font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 		Color font_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 		Color font_secondary_color = font_color;
 		font_secondary_color.set_v(font_secondary_color.get_v() > 0.5 ? 0.7 : 0.3);
@@ -3694,14 +3694,14 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 
 void CanvasItemEditor::_draw_hover() {
 	List<Rect2> previous_rects;
-	Vector2 icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+	Vector2 icon_size = Vector2(1, 1) * (int64_t)get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 	for (int i = 0; i < hovering_results.size(); i++) {
 		Ref<Texture2D> node_icon = hovering_results[i].icon;
 		String node_name = hovering_results[i].name;
 
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		Size2 node_name_size = font->get_string_size(node_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 		Size2 item_size = Size2(icon_size.x + 4 + node_name_size.x, MAX(icon_size.y, node_name_size.y - 3));
 
@@ -3775,7 +3775,7 @@ void CanvasItemEditor::_draw_message() {
 	}
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	Point2 msgpos = Point2(RULER_WIDTH + 5 * EDSCALE, viewport->get_size().y - 20 * EDSCALE);
 	viewport->draw_string(font, msgpos + Point2(1, 1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
 	viewport->draw_string(font, msgpos + Point2(-1, -1), message, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
@@ -5110,8 +5110,8 @@ CanvasItemEditor::CanvasItemEditor() {
 	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
 	// which looks ugly.
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
-	toolbar_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	toolbar_margin->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	toolbar_margin->add_theme_constant_override("margin_left", (int64_t)(4 * EDSCALE));
+	toolbar_margin->add_theme_constant_override("margin_right", (int64_t)(4 * EDSCALE));
 	add_child(toolbar_margin);
 
 	// A fluid container for all toolbars.
@@ -6130,14 +6130,14 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_it
 
 	label = memnew(Label);
 	label->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1));
-	label->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
+	label->add_theme_constant_override("shadow_outline_size", 1.0 * EDSCALE);
 	label->hide();
 	canvas_item_editor->get_controls_container()->add_child(label);
 
 	label_desc = memnew(Label);
 	label_desc->add_theme_color_override("font_color", Color(0.6f, 0.6f, 0.6f, 1));
 	label_desc->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
-	label_desc->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
+	label_desc->add_theme_constant_override("shadow_outline_size", 1.0 * EDSCALE);
 	label_desc->add_theme_constant_override("line_spacing", 0);
 	label_desc->hide();
 	canvas_item_editor->get_controls_container()->add_child(label_desc);

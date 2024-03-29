@@ -212,7 +212,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 
 	// Update styles.
 	{
-		const int top_bar_separation = get_theme_constant(SNAME("top_bar_separation"), EditorStringName(Editor));
+		const int top_bar_separation = (int64_t)get_theme_constant(SNAME("top_bar_separation"), EditorStringName(Editor));
 		root_container->add_theme_constant_override("margin_left", top_bar_separation);
 		root_container->add_theme_constant_override("margin_top", top_bar_separation);
 		root_container->add_theme_constant_override("margin_bottom", top_bar_separation);
@@ -1286,7 +1286,7 @@ ProjectManager::ProjectManager() {
 			{
 				empty_list_placeholder = memnew(VBoxContainer);
 				empty_list_placeholder->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-				empty_list_placeholder->add_theme_constant_override("separation", 16 * EDSCALE);
+				empty_list_placeholder->add_theme_constant_override("separation", (int64_t)(16 * EDSCALE));
 				empty_list_placeholder->hide();
 				project_list_panel->add_child(empty_list_placeholder);
 

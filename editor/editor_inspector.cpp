@@ -67,8 +67,8 @@ bool EditorInspector::_property_path_matches(const String &p_property_path, cons
 Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-	ms.height = label.is_empty() ? 0 : font->get_height(font_size) + 4 * EDSCALE;
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
+	ms.height = label.is_empty() ? 0.0 : font->get_height(font_size) + 4 * EDSCALE;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -91,21 +91,21 @@ Size2 EditorProperty::get_minimum_size() const {
 
 	if (keying) {
 		Ref<Texture2D> key = get_editor_theme_icon(SNAME("Key"));
-		ms.width += key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+		ms.width += key->get_width() + (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 	}
 
 	if (deletable) {
 		Ref<Texture2D> key = get_editor_theme_icon(SNAME("Close"));
-		ms.width += key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+		ms.width += key->get_width() + (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 	}
 
 	if (checkable) {
 		Ref<Texture2D> check = get_theme_icon(SNAME("checked"), SNAME("CheckBox"));
-		ms.width += check->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("CheckBox")) + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+		ms.width += check->get_width() + (int64_t)get_theme_constant(SNAME("h_separation"), SNAME("CheckBox")) + (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 	}
 
 	if (bottom_editor != nullptr && bottom_editor->is_visible()) {
-		ms.height += label.is_empty() ? 0 : get_theme_constant(SNAME("v_separation"));
+		ms.height += label.is_empty() ? 0 : (int64_t)get_theme_constant(SNAME("v_separation"));
 		Size2 bems = bottom_editor->get_combined_minimum_size();
 		//bems.width += get_constant("item_margin", "Tree");
 		ms.height += bems.height;
@@ -136,7 +136,7 @@ void EditorProperty::_notification(int p_what) {
 			{
 				int child_room = size.width * (1.0 - split_ratio);
 				Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-				int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
+				float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 				int height = label.is_empty() ? 0 : font->get_height(font_size) + 4 * EDSCALE;
 				bool no_children = true;
 
@@ -175,7 +175,7 @@ void EditorProperty::_notification(int p_what) {
 				}
 
 				if (bottom_editor) {
-					int v_offset = label.is_empty() ? 0 : get_theme_constant(SNAME("v_separation"));
+					int v_offset = label.is_empty() ? 0 : (int64_t)get_theme_constant(SNAME("v_separation"));
 					bottom_rect = Rect2(0, rect.size.height + v_offset, size.width, bottom_editor->get_combined_minimum_size().height);
 				}
 
@@ -188,9 +188,9 @@ void EditorProperty::_notification(int p_what) {
 						key = get_editor_theme_icon(SNAME("Key"));
 					}
 
-					rect.size.x -= key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+					rect.size.x -= key->get_width() + (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 					if (is_layout_rtl()) {
-						rect.position.x += key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+						rect.position.x += key->get_width() + (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 					}
 
 					if (no_children) {
@@ -203,10 +203,10 @@ void EditorProperty::_notification(int p_what) {
 
 					close = get_editor_theme_icon(SNAME("Close"));
 
-					rect.size.x -= close->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+					rect.size.x -= close->get_width() + (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 
 					if (is_layout_rtl()) {
-						rect.position.x += close->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+						rect.position.x += close->get_width() + (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 					}
 
 					if (no_children) {
@@ -242,12 +242,12 @@ void EditorProperty::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
+			float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
 			bool rtl = is_layout_rtl();
 
 			Size2 size = get_size();
 			if (bottom_editor) {
-				size.height = bottom_editor->get_offset(SIDE_TOP) - get_theme_constant(SNAME("v_separation"));
+				size.height = bottom_editor->get_offset(SIDE_TOP) - (int64_t)get_theme_constant(SNAME("v_separation"));
 			} else if (label_reference) {
 				size.height = label_reference->get_size().height;
 			}
@@ -303,7 +303,7 @@ void EditorProperty::_notification(int p_what) {
 				} else {
 					draw_texture(checkbox, check_rect.position, color2);
 				}
-				int check_ofs = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) + checkbox->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("CheckBox"));
+				int check_ofs = (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree")) + checkbox->get_width() + (int64_t)get_theme_constant(SNAME("h_separation"), SNAME("CheckBox"));
 				ofs += check_ofs;
 				text_limit -= check_ofs;
 			} else {
@@ -312,7 +312,7 @@ void EditorProperty::_notification(int p_what) {
 
 			if (can_revert && !is_read_only()) {
 				Ref<Texture2D> reload_icon = get_editor_theme_icon(SNAME("ReloadSmall"));
-				text_limit -= reload_icon->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
+				text_limit -= reload_icon->get_width() + (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 				revert_rect = Rect2(ofs + text_limit, (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
 
 				Color color2(1, 1, 1);
@@ -332,7 +332,7 @@ void EditorProperty::_notification(int p_what) {
 
 			if (!pin_hidden && pinned) {
 				Ref<Texture2D> pinned_icon = get_editor_theme_icon(SNAME("Pin"));
-				int margin_w = get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
+				int margin_w = (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree")) * 2;
 				int total_icon_w = margin_w + pinned_icon->get_width();
 				int text_w = font->get_string_size(label, rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT, text_limit - total_icon_w, font_size).x;
 				int y = (size.height - pinned_icon->get_height()) / 2;
@@ -362,7 +362,7 @@ void EditorProperty::_notification(int p_what) {
 					key = get_editor_theme_icon(SNAME("Key"));
 				}
 
-				ofs -= key->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+				ofs -= key->get_width() + (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 
 				Color color2(1, 1, 1);
 				if (keying_hover) {
@@ -386,7 +386,7 @@ void EditorProperty::_notification(int p_what) {
 
 				close = get_editor_theme_icon(SNAME("Close"));
 
-				ofs -= close->get_width() + get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
+				ofs -= close->get_width() + (int64_t)get_theme_constant(SNAME("hseparator"), SNAME("Tree"));
 
 				Color color2(1, 1, 1);
 				if (delete_hover) {
@@ -1151,7 +1151,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 			draw_style_box(sb, Rect2(Vector2(), get_size()));
 
 			Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
-			int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+			float font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 
 			int hs = get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 			int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
@@ -1183,7 +1183,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
 	Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
-	int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+	float font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 
 	Size2 ms;
 	ms.height = font->get_height(font_size);
@@ -1191,7 +1191,7 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 		int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 		ms.height = MAX(icon_size, ms.height);
 	}
-	ms.height += get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
+	ms.height += (int64_t)get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
 
 	return ms;
 }
@@ -1258,14 +1258,14 @@ Ref<Texture2D> EditorInspectorSection::_get_arrow() {
 
 int EditorInspectorSection::_get_header_height() {
 	Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
-	int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+	float font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 
 	int header_height = font->get_height(font_size);
 	Ref<Texture2D> arrow = _get_arrow();
 	if (arrow.is_valid()) {
 		header_height = MAX(header_height, arrow->get_height());
 	}
-	header_height += get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
+	header_height += (int64_t)get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
 
 	return header_height;
 }
@@ -1365,14 +1365,14 @@ void EditorInspectorSection::_notification(int p_what) {
 				bool folded = foldable && !object->editor_is_section_unfolded(section);
 
 				Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
-				int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
+				float font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
 				Color font_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
 
 				if (folded && revertable_properties.size()) {
 					int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, available, font_size, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS).x;
 
 					Ref<Font> light_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
-					int light_font_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
+					float light_font_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
 					Color light_font_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
 
 					// Can we fit the long version of the revertable count text?
@@ -1466,9 +1466,9 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 	}
 
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-	ms.height += font->get_height(font_size) + get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
-	ms.width += get_theme_constant(SNAME("inspector_margin"), EditorStringName(Editor));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
+	ms.height += font->get_height(font_size) + (int64_t)get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
+	ms.width += (int64_t)get_theme_constant(SNAME("inspector_margin"), EditorStringName(Editor));
 
 	int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
 	if (indent_depth > 0 && section_indent_size > 0) {
@@ -2126,10 +2126,10 @@ void EditorInspectorArray::_setup() {
 		if (is_inside_tree()) {
 			Size2 min_size = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles))->get_minimum_size();
 			ae.margin->begin_bulk_theme_override();
-			ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
-			ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
-			ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
-			ae.margin->add_theme_constant_override("margin_bottom", min_size.y / 2);
+			ae.margin->add_theme_constant_override("margin_left", (int64_t)(min_size.x / 2));
+			ae.margin->add_theme_constant_override("margin_top", (int64_t)(min_size.y / 2));
+			ae.margin->add_theme_constant_override("margin_right", (int64_t)(min_size.x / 2));
+			ae.margin->add_theme_constant_override("margin_bottom", (int64_t)(min_size.y / 2));
 			ae.margin->end_bulk_theme_override();
 		}
 		ae.panel->add_child(ae.margin);
@@ -2276,10 +2276,10 @@ void EditorInspectorArray::_notification(int p_what) {
 				}
 				Size2 min_size = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles))->get_minimum_size();
 				ae.margin->begin_bulk_theme_override();
-				ae.margin->add_theme_constant_override("margin_left", min_size.x / 2);
-				ae.margin->add_theme_constant_override("margin_top", min_size.y / 2);
-				ae.margin->add_theme_constant_override("margin_right", min_size.x / 2);
-				ae.margin->add_theme_constant_override("margin_bottom", min_size.y / 2);
+				ae.margin->add_theme_constant_override("margin_left", (int64_t)(min_size.x / 2));
+				ae.margin->add_theme_constant_override("margin_top", (int64_t)(min_size.y / 2));
+				ae.margin->add_theme_constant_override("margin_right", (int64_t)(min_size.x / 2));
+				ae.margin->add_theme_constant_override("margin_bottom", (int64_t)(min_size.y / 2));
 				ae.margin->end_bulk_theme_override();
 
 				if (ae.erase) {

@@ -426,7 +426,7 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
-	search_options->add_theme_constant_override("draw_guides", 1);
+	search_options->add_theme_constant_override("draw_guides", true);
 }
 
 /////////////////////////////////

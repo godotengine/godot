@@ -545,19 +545,19 @@ void EditorThemeManager::_create_shared_styles(const Ref<EditorTheme> &p_theme, 
 
 		// Controls may rely on the scale for their internal drawing logic.
 		p_theme->set_default_base_scale(EDSCALE);
-		p_theme->set_constant("scale", EditorStringName(Editor), EDSCALE);
+		p_theme->set_constant("scale", EditorStringName(Editor), (double)EDSCALE);
 
-		p_theme->set_constant("thumb_size", EditorStringName(Editor), p_config.thumb_size);
-		p_theme->set_constant("class_icon_size", EditorStringName(Editor), p_config.class_icon_size);
-		p_theme->set_constant("color_picker_button_height", EditorStringName(Editor), p_config.color_picker_button_height);
-		p_theme->set_constant("gizmo_handle_scale", EditorStringName(Editor), p_config.gizmo_handle_scale);
+		p_theme->set_constant("thumb_size", EditorStringName(Editor), (int64_t)p_config.thumb_size);
+		p_theme->set_constant("class_icon_size", EditorStringName(Editor), (int64_t)p_config.class_icon_size);
+		p_theme->set_constant("color_picker_button_height", EditorStringName(Editor), (int64_t)p_config.color_picker_button_height);
+		p_theme->set_constant("gizmo_handle_scale", EditorStringName(Editor), (double)p_config.gizmo_handle_scale);
 
-		p_theme->set_constant("base_margin", EditorStringName(Editor), p_config.base_margin);
-		p_theme->set_constant("increased_margin", EditorStringName(Editor), p_config.increased_margin);
-		p_theme->set_constant("window_border_margin", EditorStringName(Editor), p_config.window_border_margin);
-		p_theme->set_constant("top_bar_separation", EditorStringName(Editor), p_config.top_bar_separation);
+		p_theme->set_constant("base_margin", EditorStringName(Editor), (int64_t)p_config.base_margin);
+		p_theme->set_constant("increased_margin", EditorStringName(Editor), (int64_t)p_config.increased_margin);
+		p_theme->set_constant("window_border_margin", EditorStringName(Editor), (int64_t)p_config.window_border_margin);
+		p_theme->set_constant("top_bar_separation", EditorStringName(Editor), (int64_t)p_config.top_bar_separation);
 
-		p_theme->set_constant("dark_theme", EditorStringName(Editor), p_config.dark_theme);
+		p_theme->set_constant("dark_theme", EditorStringName(Editor), (bool)p_config.dark_theme);
 	}
 
 	// Styleboxes.
@@ -720,8 +720,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("icon_pressed_color", "Button", p_config.icon_pressed_color);
 		p_theme->set_color("icon_disabled_color", "Button", p_config.icon_disabled_color);
 
-		p_theme->set_constant("h_separation", "Button", 4 * EDSCALE);
-		p_theme->set_constant("outline_size", "Button", 0);
+		p_theme->set_constant("h_separation", "Button", (int64_t)(4 * EDSCALE));
+		p_theme->set_constant("outline_size", "Button", (double)0.0);
 
 		// MenuButton.
 
@@ -737,7 +737,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("font_focus_color", "MenuButton", p_config.font_focus_color);
 		p_theme->set_color("font_outline_color", "MenuButton", p_config.font_outline_color);
 
-		p_theme->set_constant("outline_size", "MenuButton", 0);
+		p_theme->set_constant("outline_size", "MenuButton", (double)0.0);
 
 		// MenuBar.
 
@@ -760,8 +760,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("icon_pressed_color", "MenuBar", p_config.icon_pressed_color);
 		p_theme->set_color("icon_disabled_color", "MenuBar", p_config.icon_disabled_color);
 
-		p_theme->set_constant("h_separation", "MenuBar", 4 * EDSCALE);
-		p_theme->set_constant("outline_size", "MenuBar", 0);
+		p_theme->set_constant("h_separation", "MenuBar", (int64_t)(4 * EDSCALE));
+		p_theme->set_constant("outline_size", "MenuBar", (double)0.0);
 
 		// OptionButton.
 		{
@@ -803,10 +803,10 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_color("icon_disabled_color", "OptionButton", p_config.icon_disabled_color);
 
 			p_theme->set_icon("arrow", "OptionButton", p_theme->get_icon(SNAME("GuiOptionArrow"), EditorStringName(EditorIcons)));
-			p_theme->set_constant("arrow_margin", "OptionButton", p_config.widget_margin.x - 2 * EDSCALE);
+			p_theme->set_constant("arrow_margin", "OptionButton", (int64_t)(p_config.widget_margin.x - 2 * EDSCALE));
 			p_theme->set_constant("modulate_arrow", "OptionButton", true);
-			p_theme->set_constant("h_separation", "OptionButton", 4 * EDSCALE);
-			p_theme->set_constant("outline_size", "OptionButton", 0);
+			p_theme->set_constant("h_separation", "OptionButton", (int64_t)(4 * EDSCALE));
+			p_theme->set_constant("outline_size", "OptionButton", (double)0.0);
 		}
 
 		// CheckButton.
@@ -841,9 +841,9 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("icon_pressed_color", "CheckButton", p_config.icon_pressed_color);
 		p_theme->set_color("icon_disabled_color", "CheckButton", p_config.icon_disabled_color);
 
-		p_theme->set_constant("h_separation", "CheckButton", 8 * EDSCALE);
-		p_theme->set_constant("check_v_offset", "CheckButton", 0);
-		p_theme->set_constant("outline_size", "CheckButton", 0);
+		p_theme->set_constant("h_separation", "CheckButton", (int64_t)(8 * EDSCALE));
+		p_theme->set_constant("check_v_offset", "CheckButton", (int64_t)0);
+		p_theme->set_constant("outline_size", "CheckButton", (double)0.0);
 
 		// CheckBox.
 		{
@@ -878,9 +878,9 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_color("icon_pressed_color", "CheckBox", p_config.icon_pressed_color);
 			p_theme->set_color("icon_disabled_color", "CheckBox", p_config.icon_disabled_color);
 
-			p_theme->set_constant("h_separation", "CheckBox", 8 * EDSCALE);
-			p_theme->set_constant("check_v_offset", "CheckBox", 0);
-			p_theme->set_constant("outline_size", "CheckBox", 0);
+			p_theme->set_constant("h_separation", "CheckBox", (int64_t)(8 * EDSCALE));
+			p_theme->set_constant("check_v_offset", "CheckBox", (int64_t)0);
+			p_theme->set_constant("outline_size", "CheckBox", (double)0.0);
 		}
 
 		// LinkButton.
@@ -894,7 +894,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("font_disabled_color", "LinkButton", p_config.font_disabled_color);
 		p_theme->set_color("font_outline_color", "LinkButton", p_config.font_outline_color);
 
-		p_theme->set_constant("outline_size", "LinkButton", 0);
+		p_theme->set_constant("outline_size", "LinkButton", (double)0.0);
 	}
 
 	// Tree & ItemList.
@@ -935,24 +935,24 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_color("title_button_color", "Tree", p_config.font_color);
 			p_theme->set_color("drop_position_color", "Tree", p_config.accent_color);
 
-			p_theme->set_constant("v_separation", "Tree", p_config.separation_margin);
-			p_theme->set_constant("h_separation", "Tree", (p_config.increased_margin + 2) * EDSCALE);
-			p_theme->set_constant("guide_width", "Tree", p_config.border_width);
-			p_theme->set_constant("item_margin", "Tree", 3 * p_config.increased_margin * EDSCALE);
-			p_theme->set_constant("inner_item_margin_top", "Tree", p_config.separation_margin);
-			p_theme->set_constant("inner_item_margin_bottom", "Tree", p_config.separation_margin);
-			p_theme->set_constant("inner_item_margin_left", "Tree", p_config.increased_margin * EDSCALE);
-			p_theme->set_constant("inner_item_margin_right", "Tree", p_config.increased_margin * EDSCALE);
-			p_theme->set_constant("button_margin", "Tree", p_config.base_margin * EDSCALE);
-			p_theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
-			p_theme->set_constant("scroll_speed", "Tree", 12);
-			p_theme->set_constant("outline_size", "Tree", 0);
-			p_theme->set_constant("scrollbar_margin_left", "Tree", 0);
-			p_theme->set_constant("scrollbar_margin_top", "Tree", 0);
-			p_theme->set_constant("scrollbar_margin_right", "Tree", 0);
-			p_theme->set_constant("scrollbar_margin_bottom", "Tree", 0);
-			p_theme->set_constant("scrollbar_h_separation", "Tree", 1 * EDSCALE);
-			p_theme->set_constant("scrollbar_v_separation", "Tree", 1 * EDSCALE);
+			p_theme->set_constant("v_separation", "Tree", (int64_t)p_config.separation_margin);
+			p_theme->set_constant("h_separation", "Tree", (int64_t)((p_config.increased_margin + 2) * EDSCALE));
+			p_theme->set_constant("guide_width", "Tree", (int64_t)p_config.border_width);
+			p_theme->set_constant("item_margin", "Tree", (int64_t)(3 * p_config.increased_margin * EDSCALE));
+			p_theme->set_constant("inner_item_margin_top", "Tree", (int64_t)p_config.separation_margin);
+			p_theme->set_constant("inner_item_margin_bottom", "Tree", (int64_t)p_config.separation_margin);
+			p_theme->set_constant("inner_item_margin_left", "Tree", (int64_t)(p_config.increased_margin * EDSCALE));
+			p_theme->set_constant("inner_item_margin_right", "Tree", (int64_t)(p_config.increased_margin * EDSCALE));
+			p_theme->set_constant("button_margin", "Tree", (int64_t)(p_config.base_margin * EDSCALE));
+			p_theme->set_constant("scroll_border", "Tree", (int64_t)(40 * EDSCALE));
+			p_theme->set_constant("scroll_speed", "Tree", (int64_t)12);
+			p_theme->set_constant("outline_size", "Tree", (double)0.0);
+			p_theme->set_constant("scrollbar_margin_left", "Tree", (int64_t)0);
+			p_theme->set_constant("scrollbar_margin_top", "Tree", (int64_t)0);
+			p_theme->set_constant("scrollbar_margin_right", "Tree", (int64_t)0);
+			p_theme->set_constant("scrollbar_margin_bottom", "Tree", (int64_t)0);
+			p_theme->set_constant("scrollbar_h_separation", "Tree", (int64_t)EDSCALE);
+			p_theme->set_constant("scrollbar_v_separation", "Tree", (int64_t)EDSCALE);
 
 			Color relationship_line_color = p_config.mono_color * Color(1, 1, 1, p_config.relationship_line_opacity);
 
@@ -963,11 +963,11 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			Color parent_line_color = p_config.mono_color * Color(1, 1, 1, CLAMP(p_config.relationship_line_opacity + 0.45, 0.0, 1.0));
 			Color children_line_color = p_config.mono_color * Color(1, 1, 1, CLAMP(p_config.relationship_line_opacity + 0.25, 0.0, 1.0));
 
-			p_theme->set_constant("draw_relationship_lines", "Tree", p_config.relationship_line_opacity >= 0.01);
-			p_theme->set_constant("relationship_line_width", "Tree", relationship_line_width);
-			p_theme->set_constant("parent_hl_line_width", "Tree", relationship_line_width * 2);
-			p_theme->set_constant("children_hl_line_width", "Tree", relationship_line_width);
-			p_theme->set_constant("parent_hl_line_margin", "Tree", relationship_line_width * 3);
+			p_theme->set_constant("draw_relationship_lines", "Tree", (bool)(p_config.relationship_line_opacity >= 0.01));
+			p_theme->set_constant("relationship_line_width", "Tree", (int64_t)relationship_line_width);
+			p_theme->set_constant("parent_hl_line_width", "Tree", (int64_t)(relationship_line_width * 2));
+			p_theme->set_constant("children_hl_line_width", "Tree", (int64_t)relationship_line_width);
+			p_theme->set_constant("parent_hl_line_margin", "Tree", (int64_t)(relationship_line_width * 3));
 			p_theme->set_color("relationship_line_color", "Tree", relationship_line_color);
 			p_theme->set_color("parent_hl_line_color", "Tree", parent_line_color);
 			p_theme->set_color("children_hl_line_color", "Tree", children_line_color);
@@ -1036,11 +1036,11 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_color("font_selected_color", "ItemList", p_config.mono_color);
 			p_theme->set_color("font_outline_color", "ItemList", p_config.font_outline_color);
 			p_theme->set_color("guide_color", "ItemList", Color(1, 1, 1, 0));
-			p_theme->set_constant("v_separation", "ItemList", p_config.forced_even_separation * EDSCALE);
-			p_theme->set_constant("h_separation", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
-			p_theme->set_constant("icon_margin", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
-			p_theme->set_constant("line_separation", "ItemList", p_config.separation_margin);
-			p_theme->set_constant("outline_size", "ItemList", 0);
+			p_theme->set_constant("v_separation", "ItemList", (int64_t)(p_config.forced_even_separation * EDSCALE));
+			p_theme->set_constant("h_separation", "ItemList", (int64_t)((p_config.increased_margin + 2) * EDSCALE));
+			p_theme->set_constant("icon_margin", "ItemList", (int64_t)((p_config.increased_margin + 2) * EDSCALE));
+			p_theme->set_constant("line_separation", "ItemList", (int64_t)p_config.separation_margin);
+			p_theme->set_constant("outline_size", "ItemList", (double)0.0);
 		}
 	}
 
@@ -1135,10 +1135,10 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_icon("drop_mark", "TabContainer", p_theme->get_icon(SNAME("GuiTabDropMark"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("drop_mark", "TabBar", p_theme->get_icon(SNAME("GuiTabDropMark"), EditorStringName(EditorIcons)));
 
-		p_theme->set_constant("side_margin", "TabContainer", 0);
-		p_theme->set_constant("outline_size", "TabContainer", 0);
-		p_theme->set_constant("h_separation", "TabBar", 4 * EDSCALE);
-		p_theme->set_constant("outline_size", "TabBar", 0);
+		p_theme->set_constant("side_margin", "TabContainer", (int64_t)0);
+		p_theme->set_constant("outline_size", "TabContainer", (double)0.0);
+		p_theme->set_constant("h_separation", "TabBar", (int64_t)(4 * EDSCALE));
+		p_theme->set_constant("outline_size", "TabBar", (double)0.0);
 	}
 
 	// Separators.
@@ -1188,9 +1188,9 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("clear_button_color", "LineEdit", p_config.font_color);
 		p_theme->set_color("clear_button_color_pressed", "LineEdit", p_config.accent_color);
 
-		p_theme->set_constant("minimum_character_width", "LineEdit", 4);
-		p_theme->set_constant("outline_size", "LineEdit", 0);
-		p_theme->set_constant("caret_width", "LineEdit", 1);
+		p_theme->set_constant("minimum_character_width", "LineEdit", (int64_t)4);
+		p_theme->set_constant("outline_size", "LineEdit", (double)0.0);
+		p_theme->set_constant("caret_width", "LineEdit", (int64_t)1);
 
 		// TextEdit.
 
@@ -1209,28 +1209,28 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("selection_color", "TextEdit", p_config.selection_color);
 		p_theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
 
-		p_theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
-		p_theme->set_constant("outline_size", "TextEdit", 0);
-		p_theme->set_constant("caret_width", "TextEdit", 1);
+		p_theme->set_constant("line_spacing", "TextEdit", (int64_t)(4 * EDSCALE));
+		p_theme->set_constant("outline_size", "TextEdit", (double)0.0);
+		p_theme->set_constant("caret_width", "TextEdit", (int64_t)1);
 	}
 
 	// Containers.
 	{
-		p_theme->set_constant("separation", "BoxContainer", p_config.separation_margin);
-		p_theme->set_constant("separation", "HBoxContainer", p_config.separation_margin);
-		p_theme->set_constant("separation", "VBoxContainer", p_config.separation_margin);
-		p_theme->set_constant("margin_left", "MarginContainer", 0);
-		p_theme->set_constant("margin_top", "MarginContainer", 0);
-		p_theme->set_constant("margin_right", "MarginContainer", 0);
-		p_theme->set_constant("margin_bottom", "MarginContainer", 0);
-		p_theme->set_constant("h_separation", "GridContainer", p_config.separation_margin);
-		p_theme->set_constant("v_separation", "GridContainer", p_config.separation_margin);
-		p_theme->set_constant("h_separation", "FlowContainer", p_config.separation_margin);
-		p_theme->set_constant("v_separation", "FlowContainer", p_config.separation_margin);
-		p_theme->set_constant("h_separation", "HFlowContainer", p_config.separation_margin);
-		p_theme->set_constant("v_separation", "HFlowContainer", p_config.separation_margin);
-		p_theme->set_constant("h_separation", "VFlowContainer", p_config.separation_margin);
-		p_theme->set_constant("v_separation", "VFlowContainer", p_config.separation_margin);
+		p_theme->set_constant("separation", "BoxContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("separation", "HBoxContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("separation", "VBoxContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("margin_left", "MarginContainer", (int64_t)0);
+		p_theme->set_constant("margin_top", "MarginContainer", (int64_t)0);
+		p_theme->set_constant("margin_right", "MarginContainer", (int64_t)0);
+		p_theme->set_constant("margin_bottom", "MarginContainer", (int64_t)0);
+		p_theme->set_constant("h_separation", "GridContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("v_separation", "GridContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("h_separation", "FlowContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("v_separation", "FlowContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("h_separation", "HFlowContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("v_separation", "HFlowContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("h_separation", "VFlowContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("v_separation", "VFlowContainer", (int64_t)p_config.separation_margin);
 
 		// SplitContainer.
 
@@ -1239,16 +1239,16 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_icon("grabber", "VSplitContainer", p_theme->get_icon(SNAME("GuiVsplitter"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("grabber", "HSplitContainer", p_theme->get_icon(SNAME("GuiHsplitter"), EditorStringName(EditorIcons)));
 
-		p_theme->set_constant("separation", "SplitContainer", p_config.separation_margin);
-		p_theme->set_constant("separation", "HSplitContainer", p_config.separation_margin);
-		p_theme->set_constant("separation", "VSplitContainer", p_config.separation_margin);
+		p_theme->set_constant("separation", "SplitContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("separation", "HSplitContainer", (int64_t)p_config.separation_margin);
+		p_theme->set_constant("separation", "VSplitContainer", (int64_t)p_config.separation_margin);
 
-		p_theme->set_constant("minimum_grab_thickness", "SplitContainer", p_config.increased_margin * EDSCALE);
-		p_theme->set_constant("minimum_grab_thickness", "HSplitContainer", p_config.increased_margin * EDSCALE);
-		p_theme->set_constant("minimum_grab_thickness", "VSplitContainer", p_config.increased_margin * EDSCALE);
+		p_theme->set_constant("minimum_grab_thickness", "SplitContainer", (int64_t)(p_config.increased_margin * EDSCALE));
+		p_theme->set_constant("minimum_grab_thickness", "HSplitContainer", (int64_t)(p_config.increased_margin * EDSCALE));
+		p_theme->set_constant("minimum_grab_thickness", "VSplitContainer", (int64_t)(p_config.increased_margin * EDSCALE));
 
 		// GridContainer.
-		p_theme->set_constant("v_separation", "GridContainer", Math::round(p_config.widget_margin.y - 2 * EDSCALE));
+		p_theme->set_constant("v_separation", "GridContainer", (int64_t)Math::round(p_config.widget_margin.y - 2 * EDSCALE));
 	}
 
 	// Window and dialogs.
@@ -1261,16 +1261,16 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("title_color", "Window", p_config.font_color);
 		p_theme->set_icon("close", "Window", p_theme->get_icon(SNAME("GuiClose"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("close_pressed", "Window", p_theme->get_icon(SNAME("GuiClose"), EditorStringName(EditorIcons)));
-		p_theme->set_constant("close_h_offset", "Window", 22 * EDSCALE);
-		p_theme->set_constant("close_v_offset", "Window", 20 * EDSCALE);
-		p_theme->set_constant("title_height", "Window", 24 * EDSCALE);
-		p_theme->set_constant("resize_margin", "Window", 4 * EDSCALE);
+		p_theme->set_constant("close_h_offset", "Window", (int64_t)(22 * EDSCALE));
+		p_theme->set_constant("close_v_offset", "Window", (int64_t)(20 * EDSCALE));
+		p_theme->set_constant("title_height", "Window", (int64_t)(24 * EDSCALE));
+		p_theme->set_constant("resize_margin", "Window", (int64_t)(4 * EDSCALE));
 		p_theme->set_font("title_font", "Window", p_theme->get_font(SNAME("title"), EditorStringName(EditorFonts)));
 		p_theme->set_font_size("title_font_size", "Window", p_theme->get_font_size(SNAME("title_size"), EditorStringName(EditorFonts)));
 
 		// AcceptDialog.
 		p_theme->set_stylebox("panel", "AcceptDialog", p_config.dialog_style);
-		p_theme->set_constant("buttons_separation", "AcceptDialog", 8 * EDSCALE);
+		p_theme->set_constant("buttons_separation", "AcceptDialog", (int64_t)(8 * EDSCALE));
 
 		// FileDialog.
 		p_theme->set_icon("folder", "FileDialog", p_theme->get_icon(SNAME("Folder"), EditorStringName(EditorIcons)));
@@ -1350,10 +1350,10 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_icon("visibility_visible", "PopupMenu", p_theme->get_icon(SNAME("GuiVisibilityVisible"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("visibility_xray", "PopupMenu", p_theme->get_icon(SNAME("GuiVisibilityXray"), EditorStringName(EditorIcons)));
 
-			p_theme->set_constant("v_separation", "PopupMenu", p_config.forced_even_separation * EDSCALE);
-			p_theme->set_constant("outline_size", "PopupMenu", 0);
-			p_theme->set_constant("item_start_padding", "PopupMenu", p_config.separation_margin);
-			p_theme->set_constant("item_end_padding", "PopupMenu", p_config.separation_margin);
+			p_theme->set_constant("v_separation", "PopupMenu", (int64_t)(p_config.forced_even_separation * EDSCALE));
+			p_theme->set_constant("outline_size", "PopupMenu", (double)0.0);
+			p_theme->set_constant("item_start_padding", "PopupMenu", (int64_t)p_config.separation_margin);
+			p_theme->set_constant("item_end_padding", "PopupMenu", (int64_t)p_config.separation_margin);
 		}
 	}
 
@@ -1405,8 +1405,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_stylebox("slider", "HSlider", make_flat_stylebox(p_config.dark_color_3, 0, p_config.base_margin / 2, 0, p_config.base_margin / 2, p_config.corner_radius));
 		p_theme->set_stylebox("grabber_area", "HSlider", make_flat_stylebox(p_config.contrast_color_1, 0, p_config.base_margin / 2, 0, p_config.base_margin / 2, p_config.corner_radius));
 		p_theme->set_stylebox("grabber_area_highlight", "HSlider", make_flat_stylebox(p_config.contrast_color_1, 0, p_config.base_margin / 2, 0, p_config.base_margin / 2));
-		p_theme->set_constant("center_grabber", "HSlider", 0);
-		p_theme->set_constant("grabber_offset", "HSlider", 0);
+		p_theme->set_constant("center_grabber", "HSlider", false);
+		p_theme->set_constant("grabber_offset", "HSlider", (int64_t)0);
 
 		// VSlider.
 		p_theme->set_icon("grabber", "VSlider", p_theme->get_icon(SNAME("GuiSliderGrabber"), EditorStringName(EditorIcons)));
@@ -1414,8 +1414,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_stylebox("slider", "VSlider", make_flat_stylebox(p_config.dark_color_3, p_config.base_margin / 2, 0, p_config.base_margin / 2, 0, p_config.corner_radius));
 		p_theme->set_stylebox("grabber_area", "VSlider", make_flat_stylebox(p_config.contrast_color_1, p_config.base_margin / 2, 0, p_config.base_margin / 2, 0, p_config.corner_radius));
 		p_theme->set_stylebox("grabber_area_highlight", "VSlider", make_flat_stylebox(p_config.contrast_color_1, p_config.base_margin / 2, 0, p_config.base_margin / 2, 0));
-		p_theme->set_constant("center_grabber", "VSlider", 0);
-		p_theme->set_constant("grabber_offset", "VSlider", 0);
+		p_theme->set_constant("center_grabber", "VSlider", false);
+		p_theme->set_constant("grabber_offset", "VSlider", (int64_t)0);
 	}
 
 	// Labels.
@@ -1430,10 +1430,10 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("font_outline_color", "RichTextLabel", p_config.font_outline_color);
 		p_theme->set_color("selection_color", "RichTextLabel", p_config.selection_color);
 
-		p_theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * EDSCALE);
-		p_theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * EDSCALE);
-		p_theme->set_constant("shadow_outline_size", "RichTextLabel", 1 * EDSCALE);
-		p_theme->set_constant("outline_size", "RichTextLabel", 0);
+		p_theme->set_constant("shadow_offset_x", "RichTextLabel", (int64_t)EDSCALE);
+		p_theme->set_constant("shadow_offset_y", "RichTextLabel", (int64_t)EDSCALE);
+		p_theme->set_constant("shadow_outline_size", "RichTextLabel", (double)EDSCALE);
+		p_theme->set_constant("outline_size", "RichTextLabel", (double)0.0);
 
 		// Label.
 
@@ -1443,11 +1443,11 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("font_shadow_color", "Label", Color(0, 0, 0, 0));
 		p_theme->set_color("font_outline_color", "Label", p_config.font_outline_color);
 
-		p_theme->set_constant("shadow_offset_x", "Label", 1 * EDSCALE);
-		p_theme->set_constant("shadow_offset_y", "Label", 1 * EDSCALE);
-		p_theme->set_constant("shadow_outline_size", "Label", 1 * EDSCALE);
-		p_theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
-		p_theme->set_constant("outline_size", "Label", 0);
+		p_theme->set_constant("shadow_offset_x", "Label", (int64_t)EDSCALE);
+		p_theme->set_constant("shadow_offset_y", "Label", (int64_t)EDSCALE);
+		p_theme->set_constant("shadow_outline_size", "Label", (double)EDSCALE);
+		p_theme->set_constant("line_spacing", "Label", (int64_t)(3 * EDSCALE));
+		p_theme->set_constant("outline_size", "Label", (double)0.0);
 	}
 
 	// SpinBox.
@@ -1459,7 +1459,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 	p_theme->set_stylebox("fill", "ProgressBar", make_stylebox(p_theme->get_icon(SNAME("GuiProgressFill"), EditorStringName(EditorIcons)), 6, 6, 6, 6, 2, 1, 2, 1));
 	p_theme->set_color("font_color", "ProgressBar", p_config.font_color);
 	p_theme->set_color("font_outline_color", "ProgressBar", p_config.font_outline_color);
-	p_theme->set_constant("outline_size", "ProgressBar", 0);
+	p_theme->set_constant("outline_size", "ProgressBar", (double)0.0);
 
 	// GraphEdit and related nodes.
 	{
@@ -1602,8 +1602,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 			p_theme->set_color("resizer_color", "GraphNode", gn_decoration_color);
 
-			p_theme->set_constant("port_h_offset", "GraphNode", 1);
-			p_theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
+			p_theme->set_constant("port_h_offset", "GraphNode", (int64_t)1);
+			p_theme->set_constant("separation", "GraphNode", (int64_t)EDSCALE);
 
 			Ref<ImageTexture> port_icon = p_theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
 			// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
@@ -1615,10 +1615,10 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_stylebox("normal", "GraphNodeTitleLabel", make_empty_stylebox(0, 0, 0, 0));
 			p_theme->set_color("font_color", "GraphNodeTitleLabel", p_config.dark_theme ? p_config.font_color : Color(1, 1, 1)); // Also use a bright font color for light themes.
 			p_theme->set_color("font_shadow_color", "GraphNodeTitleLabel", Color(0, 0, 0, 0.35));
-			p_theme->set_constant("shadow_outline_size", "GraphNodeTitleLabel", 4);
-			p_theme->set_constant("shadow_offset_x", "GraphNodeTitleLabel", 0);
-			p_theme->set_constant("shadow_offset_y", "GraphNodeTitleLabel", 1);
-			p_theme->set_constant("line_spacing", "GraphNodeTitleLabel", 3 * EDSCALE);
+			p_theme->set_constant("shadow_outline_size", "GraphNodeTitleLabel", (int64_t)4);
+			p_theme->set_constant("shadow_offset_x", "GraphNodeTitleLabel", (int64_t)0);
+			p_theme->set_constant("shadow_offset_y", "GraphNodeTitleLabel", (int64_t)1);
+			p_theme->set_constant("line_spacing", "GraphNodeTitleLabel", (int64_t)(3 * EDSCALE));
 		}
 	}
 
@@ -1626,12 +1626,12 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 	{
 		// ColorPicker.
 
-		p_theme->set_constant("margin", "ColorPicker", p_config.base_margin);
-		p_theme->set_constant("sv_width", "ColorPicker", 256 * EDSCALE);
-		p_theme->set_constant("sv_height", "ColorPicker", 256 * EDSCALE);
-		p_theme->set_constant("h_width", "ColorPicker", 30 * EDSCALE);
-		p_theme->set_constant("label_width", "ColorPicker", 10 * EDSCALE);
-		p_theme->set_constant("center_slider_grabbers", "ColorPicker", 1);
+		p_theme->set_constant("margin", "ColorPicker", (int64_t)p_config.base_margin);
+		p_theme->set_constant("sv_width", "ColorPicker", (int64_t)(256 * EDSCALE));
+		p_theme->set_constant("sv_height", "ColorPicker", (int64_t)(256 * EDSCALE));
+		p_theme->set_constant("h_width", "ColorPicker", (int64_t)(30 * EDSCALE));
+		p_theme->set_constant("label_width", "ColorPicker", (int64_t)(10 * EDSCALE));
+		p_theme->set_constant("center_slider_grabbers", "ColorPicker", true);
 
 		p_theme->set_icon("screen_picker", "ColorPicker", p_theme->get_icon(SNAME("ColorPick"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("shape_circle", "ColorPicker", p_theme->get_icon(SNAME("PickerShapeCircle"), EditorStringName(EditorIcons)));
@@ -1658,7 +1658,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 	// Project manager.
 	{
 		p_theme->set_stylebox("project_list", "ProjectManager", p_config.tree_panel_style);
-		p_theme->set_constant("sidebar_button_icon_separation", "ProjectManager", int(6 * EDSCALE));
+		p_theme->set_constant("sidebar_button_icon_separation", "ProjectManager", (int64_t)(6 * EDSCALE));
 		p_theme->set_icon("browse_folder", "ProjectManager", p_theme->get_icon(SNAME("FolderBrowse"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("browse_file", "ProjectManager", p_theme->get_icon(SNAME("FileBrowse"), EditorStringName(EditorIcons)));
 
@@ -1815,10 +1815,10 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 	{
 		// Custom theme type for MarginContainer with 4px margins.
 		p_theme->set_type_variation("MarginContainer4px", "MarginContainer");
-		p_theme->set_constant("margin_left", "MarginContainer4px", 4 * EDSCALE);
-		p_theme->set_constant("margin_top", "MarginContainer4px", 4 * EDSCALE);
-		p_theme->set_constant("margin_right", "MarginContainer4px", 4 * EDSCALE);
-		p_theme->set_constant("margin_bottom", "MarginContainer4px", 4 * EDSCALE);
+		p_theme->set_constant("margin_left", "MarginContainer4px", (int64_t)(4 * EDSCALE));
+		p_theme->set_constant("margin_top", "MarginContainer4px", (int64_t)(4 * EDSCALE));
+		p_theme->set_constant("margin_right", "MarginContainer4px", (int64_t)(4 * EDSCALE));
+		p_theme->set_constant("margin_bottom", "MarginContainer4px", (int64_t)(4 * EDSCALE));
 
 		// Header LinkButton variation.
 		p_theme->set_type_variation("HeaderSmallLink", "LinkButton");
@@ -1915,7 +1915,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			p_theme->set_type_variation("InspectorActionButton", "Button");
 
 			const float action_extra_margin = 32 * EDSCALE;
-			p_theme->set_constant("h_separation", "InspectorActionButton", action_extra_margin);
+			p_theme->set_constant("h_separation", "InspectorActionButton", (int64_t)action_extra_margin);
 
 			Color color_inspector_action = p_config.dark_color_1.lerp(p_config.mono_color, 0.12);
 			color_inspector_action.a = 0.5;
@@ -2036,8 +2036,8 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_stylebox("bg", "EditorProperty", memnew(StyleBoxEmpty));
 		p_theme->set_stylebox("bg_selected", "EditorProperty", style_property_bg);
 		p_theme->set_stylebox("child_bg", "EditorProperty", style_property_child_bg);
-		p_theme->set_constant("font_offset", "EditorProperty", 8 * EDSCALE);
-		p_theme->set_constant("v_separation", "EditorProperty", p_config.increased_margin * EDSCALE);
+		p_theme->set_constant("font_offset", "EditorProperty", (int64_t)(8 * EDSCALE));
+		p_theme->set_constant("v_separation", "EditorProperty", (int64_t)(p_config.increased_margin * EDSCALE));
 
 		const Color property_color = p_config.font_color.lerp(Color(0.5, 0.5, 0.5), 0.5);
 		const Color readonly_color = property_color.lerp(p_config.dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.25);
@@ -2063,7 +2063,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		inspector_indent_color.a = 0.2;
 		Ref<StyleBoxFlat> inspector_indent_style = make_flat_stylebox(inspector_indent_color, 2.0 * EDSCALE, 0, 2.0 * EDSCALE, 0);
 		p_theme->set_stylebox("indent_box", "EditorInspectorSection", inspector_indent_style);
-		p_theme->set_constant("indent_size", "EditorInspectorSection", 6.0 * EDSCALE);
+		p_theme->set_constant("indent_size", "EditorInspectorSection", (int64_t)(6.0 * EDSCALE));
 
 		Color prop_category_color = p_config.dark_color_1.lerp(p_config.mono_color, 0.12);
 		Color prop_section_color = p_config.dark_color_1.lerp(p_config.mono_color, 0.09);
@@ -2080,7 +2080,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		category_bg->set_border_color(prop_category_color);
 		p_theme->set_stylebox("bg", "EditorInspectorCategory", category_bg);
 
-		p_theme->set_constant("inspector_margin", EditorStringName(Editor), 12 * EDSCALE);
+		p_theme->set_constant("inspector_margin", EditorStringName(Editor), (int64_t)(12 * EDSCALE));
 
 		// Dictionary editor.
 
@@ -2116,11 +2116,11 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_color("code_bg_color", "EditorHelp", p_config.dark_color_3);
 		p_theme->set_color("kbd_bg_color", "EditorHelp", p_config.dark_color_1);
 		p_theme->set_color("param_bg_color", "EditorHelp", p_config.dark_color_1);
-		p_theme->set_constant("line_separation", "EditorHelp", Math::round(6 * EDSCALE));
-		p_theme->set_constant("table_h_separation", "EditorHelp", 16 * EDSCALE);
-		p_theme->set_constant("table_v_separation", "EditorHelp", 6 * EDSCALE);
-		p_theme->set_constant("text_highlight_h_padding", "EditorHelp", 1 * EDSCALE);
-		p_theme->set_constant("text_highlight_v_padding", "EditorHelp", 2 * EDSCALE);
+		p_theme->set_constant("line_separation", "EditorHelp", (int64_t)Math::round(6 * EDSCALE));
+		p_theme->set_constant("table_h_separation", "EditorHelp", (int64_t)(16 * EDSCALE));
+		p_theme->set_constant("table_v_separation", "EditorHelp", (int64_t)(6 * EDSCALE));
+		p_theme->set_constant("text_highlight_h_padding", "EditorHelp", (int64_t)(EDSCALE));
+		p_theme->set_constant("text_highlight_v_padding", "EditorHelp", (int64_t)(2 * EDSCALE));
 	}
 
 	// Asset Library.
@@ -2360,7 +2360,7 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	p_theme->set_icon("breakpoint",           "CodeEdit", p_theme->get_icon(SNAME("Breakpoint"), EditorStringName(EditorIcons)));
 	/* clang-format on */
 
-	p_theme->set_constant("line_spacing", "CodeEdit", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
+	p_theme->set_constant("line_spacing", "CodeEdit", (int64_t)EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
 
 	const Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
 	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(background_color, p_config.widget_margin.x, p_config.widget_margin.y, p_config.widget_margin.x, p_config.widget_margin.y, p_config.corner_radius);

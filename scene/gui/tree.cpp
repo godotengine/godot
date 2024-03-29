@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "tree.h"
+#include "tree.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -1378,7 +1379,7 @@ Ref<Font> TreeItem::get_custom_font(int p_column) const {
 	return cells[p_column].custom_font;
 }
 
-void TreeItem::set_custom_font_size(int p_column, int p_font_size) {
+void TreeItem::set_custom_font_size(int p_column, float p_font_size) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
 	if (cells[p_column].custom_font_size == p_font_size) {
@@ -1391,7 +1392,7 @@ void TreeItem::set_custom_font_size(int p_column, int p_font_size) {
 	_changed_notify(p_column);
 }
 
-int TreeItem::get_custom_font_size(int p_column) const {
+float TreeItem::get_custom_font_size(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
 	return cells[p_column].custom_font_size;
 }
@@ -1891,7 +1892,7 @@ int Tree::get_item_height(TreeItem *p_item) const {
 	return height;
 }
 
-void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color) {
+void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, float p_ol_size, const Color &p_ol_color) {
 	ERR_FAIL_COND(theme_cache.font.is_null());
 
 	Rect2i rect = p_rect.grow_individual(-theme_cache.inner_item_margin_left, -theme_cache.inner_item_margin_top, -theme_cache.inner_item_margin_right, -theme_cache.inner_item_margin_bottom);
@@ -2027,8 +2028,8 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 		font = theme_cache.font;
 	}
 
-	int font_size;
-	if (p_item->cells[p_col].custom_font_size > 0) {
+	float font_size;
+	if (p_item->cells[p_col].custom_font_size > 0.0) {
 		font_size = p_item->cells[p_col].custom_font_size;
 	} else {
 		font_size = theme_cache.font_size;
@@ -2268,7 +2269,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 
 			Color font_outline_color = theme_cache.font_outline_color;
-			int outline_size = theme_cache.font_outline_size;
+			float outline_size = theme_cache.font_outline_size;
 			Color icon_col = p_item->cells[i].icon_color;
 
 			if (p_item->cells[i].dirty) {
@@ -2332,12 +2333,12 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						int cell_width = item_rect.size.x - downarrow->get_width();
 
 						if (rtl) {
-							if (outline_size > 0 && font_outline_color.a > 0) {
+							if (outline_size > 0.0 && font_outline_color.a > 0.0) {
 								p_item->cells[i].text_buf->draw_outline(ci, text_pos + Vector2(cell_width - text_width, 0), outline_size, font_outline_color);
 							}
 							p_item->cells[i].text_buf->draw(ci, text_pos + Vector2(cell_width - text_width, 0), cell_color);
 						} else {
-							if (outline_size > 0 && font_outline_color.a > 0) {
+							if (outline_size > 0.0 && font_outline_color.a > 0.0) {
 								p_item->cells[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
 							}
 							p_item->cells[i].text_buf->draw(ci, text_pos, cell_color);
@@ -2354,12 +2355,12 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						int cell_width = item_rect.size.x - updown->get_width();
 
 						if (rtl) {
-							if (outline_size > 0 && font_outline_color.a > 0) {
+							if (outline_size > 0.0 && font_outline_color.a > 0.0) {
 								p_item->cells[i].text_buf->draw_outline(ci, text_pos + Vector2(cell_width - text_width, 0), outline_size, font_outline_color);
 							}
 							p_item->cells[i].text_buf->draw(ci, text_pos + Vector2(cell_width - text_width, 0), cell_color);
 						} else {
-							if (outline_size > 0 && font_outline_color.a > 0) {
+							if (outline_size > 0.0 && font_outline_color.a > 0.0) {
 								p_item->cells[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
 							}
 							p_item->cells[i].text_buf->draw(ci, text_pos, cell_color);
@@ -4331,7 +4332,7 @@ void Tree::_notification(int p_what) {
 						}
 					}
 
-					if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+					if (theme_cache.font_outline_size > 0.0 && theme_cache.font_outline_color.a > 0.0) {
 						columns[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 					}
 					columns[i].text_buf->draw(ci, text_pos, theme_cache.title_button_color);
@@ -5649,39 +5650,39 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_selected_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_disabled_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, drop_position_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, v_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_bottom);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_left);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_right);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_top);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, item_margin);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, button_margin);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, icon_max_width);
+	BIND_THEME_CONSTANT(Tree, h_separation, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, v_separation, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, inner_item_margin_bottom, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, inner_item_margin_left, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, inner_item_margin_right, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, inner_item_margin_top, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, item_margin, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, button_margin, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, icon_max_width, Variant::INT);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_outline_color);
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Tree, font_outline_size, "outline_size");
+	BIND_THEME_CONSTANT_CUSTOM(Tree, font_outline_size, "outline_size", Variant::FLOAT);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, draw_guides);
+	BIND_THEME_CONSTANT(Tree, draw_guides, Variant::BOOL);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, guide_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, draw_relationship_lines);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, relationship_line_width);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, parent_hl_line_width);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, children_hl_line_width);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, parent_hl_line_margin);
+	BIND_THEME_CONSTANT(Tree, draw_relationship_lines, Variant::BOOL);
+	BIND_THEME_CONSTANT(Tree, relationship_line_width, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, parent_hl_line_width, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, children_hl_line_width, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, parent_hl_line_margin, Variant::INT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, relationship_line_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, parent_hl_line_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, children_hl_line_color);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scroll_border);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scroll_speed);
+	BIND_THEME_CONSTANT(Tree, scroll_border, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, scroll_speed, Variant::INT);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_margin_top);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_margin_right);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_margin_bottom);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_margin_left);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scrollbar_v_separation);
+	BIND_THEME_CONSTANT(Tree, scrollbar_margin_top, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, scrollbar_margin_right, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, scrollbar_margin_bottom, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, scrollbar_margin_left, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, scrollbar_h_separation, Variant::INT);
+	BIND_THEME_CONSTANT(Tree, scrollbar_v_separation, Variant::INT);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button, "title_button_normal");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button_pressed);

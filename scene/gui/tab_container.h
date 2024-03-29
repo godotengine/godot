@@ -72,7 +72,7 @@ private:
 		// TabBar overrides.
 		int icon_separation = 0;
 		int icon_max_width = 0;
-		int outline_size = 0;
+		float outline_size = 0;
 
 		Ref<StyleBox> tab_unselected_style;
 		Ref<StyleBox> tab_hovered_style;
@@ -94,7 +94,7 @@ private:
 		Color font_outline_color;
 
 		Ref<Font> tab_font;
-		int tab_font_size;
+		float tab_font_size;
 	} theme_cache;
 
 	int _get_tab_height() const;

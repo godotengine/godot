@@ -41,6 +41,7 @@
 			<param index="4" name="color" type="Color" />
 			<description>
 				Draws box displaying character hexadecimal code. Used for replacing missing characters.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_clear_glyphs">
@@ -49,6 +50,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Removes all rendered glyph information from the cache entry.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
 			</description>
 		</method>
@@ -58,6 +60,7 @@
 			<param index="1" name="size" type="int" />
 			<description>
 				Removes all kerning overrides.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_clear_size_cache">
@@ -86,6 +89,7 @@
 			<param index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph into a canvas item at the position, using [param font_rid] at the size [param size].
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
 				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
 			</description>
@@ -101,6 +105,7 @@
 			<param index="6" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph outline of size [param outline_size] into a canvas item at the position, using [param font_rid] at the size [param size].
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
 				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
 			</description>
@@ -118,6 +123,7 @@
 			<param index="1" name="size" type="int" />
 			<description>
 				Returns the font ascent (number of pixels above the baseline).
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_baseline_offset" qualifiers="const">
@@ -134,6 +140,7 @@
 			<param index="2" name="glyph_index" type="int" />
 			<description>
 				Returns character code associated with [param glyph_index], or [code]0[/code] if [param glyph_index] is invalid. See [method font_get_glyph_index].
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_descent" qualifiers="const">
@@ -142,6 +149,7 @@
 			<param index="1" name="size" type="int" />
 			<description>
 				Returns the font descent (number of pixels below the baseline).
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_disable_embedded_bitmaps" qualifiers="const">
@@ -176,7 +184,7 @@
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns bitmap font fixed size.
+				Returns bitmap font fixed size (26.6 fixed point).
 			</description>
 		</method>
 		<method name="font_get_fixed_size_scale_mode" qualifiers="const">
@@ -206,6 +214,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns glyph advance (offset of the next glyph).
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
 			</description>
 		</method>
@@ -219,6 +228,7 @@
 				[code]points[/code]         - [PackedVector3Array], containing outline points. [code]x[/code] and [code]y[/code] are point coordinates. [code]z[/code] is the type of the point, using the [enum ContourPointTag] values.
 				[code]contours[/code]       - [PackedInt32Array], containing indices the end points of each contour.
 				[code]orientation[/code]    - [bool], contour orientation. If [code]true[/code], clockwise contours must be filled.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_glyph_index" qualifiers="const">
@@ -229,6 +239,7 @@
 			<param index="3" name="variation_selector" type="int" />
 			<description>
 				Returns the glyph index of a [param char], optionally modified by the [param variation_selector]. See [method font_get_char_from_glyph_index].
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_glyph_list" qualifiers="const">
@@ -237,6 +248,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Returns list of rendered glyphs in the cache entry.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_glyph_offset" qualifiers="const">
@@ -246,6 +258,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns glyph offset from the baseline.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_glyph_size" qualifiers="const">
@@ -255,6 +268,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns size of the glyph.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_glyph_texture_idx" qualifiers="const">
@@ -264,6 +278,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns index of the cache texture containing the glyph.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_glyph_texture_rid" qualifiers="const">
@@ -273,6 +288,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns resource ID of the cache texture containing the glyph.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
 			</description>
 		</method>
@@ -283,6 +299,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns size of the cache texture containing the glyph.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
 			</description>
 		</method>
@@ -293,6 +310,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns rectangle in the cache texture containing the glyph.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_hinting" qualifiers="const">
@@ -309,6 +327,7 @@
 			<param index="2" name="glyph_pair" type="Vector2i" />
 			<description>
 				Returns kerning for the pair of glyphs.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_kerning_list" qualifiers="const">
@@ -317,6 +336,7 @@
 			<param index="1" name="size" type="int" />
 			<description>
 				Returns list of the kerning overrides.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_language_support_override">
@@ -345,7 +365,7 @@
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns source font size used to generate MSDF textures.
+				Returns source font size used to generate MSDF textures (26.6 fixed point).
 			</description>
 		</method>
 		<method name="font_get_name" qualifiers="const">
@@ -382,6 +402,7 @@
 			<param index="1" name="size" type="int" />
 			<description>
 				Returns scaling factor of the color bitmap font.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_script_support_override">
@@ -455,6 +476,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Returns number of textures used by font cache entry.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_texture_image" qualifiers="const">
@@ -463,7 +485,8 @@
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="texture_index" type="int" />
 			<description>
-				Returns font cache texture image data.
+				Returns a copy of the font cache texture image.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_texture_offsets" qualifiers="const">
@@ -473,6 +496,7 @@
 			<param index="2" name="texture_index" type="int" />
 			<description>
 				Returns array containing glyph packing data.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_transform" qualifiers="const">
@@ -488,6 +512,7 @@
 			<param index="1" name="size" type="int" />
 			<description>
 				Returns pixel offset of the underline below the baseline.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_underline_thickness" qualifiers="const">
@@ -496,6 +521,7 @@
 			<param index="1" name="size" type="int" />
 			<description>
 				Returns thickness of the underline in pixels.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_get_variation_coordinates" qualifiers="const">
@@ -564,6 +590,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Removes specified rendered glyph information from the cache entry.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
 			</description>
 		</method>
@@ -574,6 +601,7 @@
 			<param index="2" name="glyph_pair" type="Vector2i" />
 			<description>
 				Removes kerning override for the pair of glyphs.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_remove_language_support_override">
@@ -598,6 +626,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Removes specified font size from the cache entry.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_remove_texture">
@@ -607,6 +636,7 @@
 			<param index="2" name="texture_index" type="int" />
 			<description>
 				Removes specified texture from the cache entry.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 				[b]Note:[/b] This function will not remove glyphs associated with the texture, remove them manually, using [method font_remove_glyph].
 			</description>
 		</method>
@@ -617,6 +647,7 @@
 			<param index="2" name="index" type="int" />
 			<description>
 				Renders specified glyph to the font cache texture.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_render_range">
@@ -627,6 +658,7 @@
 			<param index="3" name="end" type="int" />
 			<description>
 				Renders the range of characters to the font cache texture.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_allow_system_fallback">
@@ -652,6 +684,7 @@
 			<param index="2" name="ascent" type="float" />
 			<description>
 				Sets the font ascent (number of pixels above the baseline).
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_baseline_offset">
@@ -677,6 +710,7 @@
 			<param index="2" name="descent" type="float" />
 			<description>
 				Sets the font descent (number of pixels below the baseline).
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_disable_embedded_bitmaps">
@@ -708,7 +742,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="fixed_size" type="int" />
 			<description>
-				Sets bitmap font fixed size. If set to value greater than zero, same cache entry will be used for all font sizes.
+				Sets bitmap font fixed size (26.6 fixed point). If set to value greater than zero, same cache entry will be used for all font sizes.
 			</description>
 		</method>
 		<method name="font_set_fixed_size_scale_mode">
@@ -751,6 +785,7 @@
 			<param index="3" name="advance" type="Vector2" />
 			<description>
 				Sets glyph advance (offset of the next glyph).
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
 			</description>
 		</method>
@@ -762,6 +797,7 @@
 			<param index="3" name="offset" type="Vector2" />
 			<description>
 				Sets glyph offset from the baseline.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_glyph_size">
@@ -772,6 +808,7 @@
 			<param index="3" name="gl_size" type="Vector2" />
 			<description>
 				Sets size of the glyph.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_glyph_texture_idx">
@@ -782,6 +819,7 @@
 			<param index="3" name="texture_idx" type="int" />
 			<description>
 				Sets index of the cache texture containing the glyph.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_glyph_uv_rect">
@@ -792,6 +830,7 @@
 			<param index="3" name="uv_rect" type="Rect2" />
 			<description>
 				Sets rectangle in the cache texture containing the glyph.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_hinting">
@@ -810,6 +849,7 @@
 			<param index="3" name="kerning" type="Vector2" />
 			<description>
 				Sets kerning for the pair of glyphs.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_language_support_override">
@@ -834,7 +874,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="msdf_size" type="int" />
 			<description>
-				Sets source font size used to generate MSDF textures.
+				Sets source font size used to generate MSDF textures (26.6 fixed point).
 			</description>
 		</method>
 		<method name="font_set_multichannel_signed_distance_field">
@@ -877,6 +917,7 @@
 			<param index="2" name="scale" type="float" />
 			<description>
 				Sets scaling factor of the color bitmap font.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_script_support_override">
@@ -939,6 +980,7 @@
 			<param index="3" name="image" type="Image" />
 			<description>
 				Sets font cache texture image data.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_texture_offsets">
@@ -949,6 +991,7 @@
 			<param index="3" name="offset" type="PackedInt32Array" />
 			<description>
 				Sets array containing glyph packing data.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_transform">
@@ -967,6 +1010,7 @@
 			<param index="2" name="underline_position" type="float" />
 			<description>
 				Sets pixel offset of the underline below the baseline.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_underline_thickness">
@@ -976,6 +1020,7 @@
 			<param index="2" name="underline_thickness" type="float" />
 			<description>
 				Sets thickness of the underline in pixels.
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="font_set_variation_coordinates">
@@ -1037,6 +1082,7 @@
 			<param index="1" name="index" type="int" />
 			<description>
 				Returns size of the replacement character (box with character hexadecimal code that is drawn in place of invalid characters).
+				[b]Note:[/b] [param size] is 26.6 fixed point value.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
@@ -1170,7 +1216,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="index" type="int" />
 			<param index="2" name="fonts" type="RID[]" />
-			<param index="3" name="size" type="int" />
+			<param index="3" name="size" type="float" />
 			<param index="4" name="opentype_features" type="Dictionary" default="{}" />
 			<description>
 				Changes text span font, font size, and OpenType features, without changing the text.
@@ -1193,7 +1239,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="text" type="String" />
 			<param index="2" name="fonts" type="RID[]" />
-			<param index="3" name="size" type="int" />
+			<param index="3" name="size" type="float" />
 			<param index="4" name="opentype_features" type="Dictionary" default="{}" />
 			<param index="5" name="language" type="String" default="&quot;&quot;" />
 			<param index="6" name="meta" type="Variant" default="null" />
@@ -1235,7 +1281,7 @@
 			<param index="2" name="pos" type="Vector2" />
 			<param index="3" name="clip_l" type="float" default="-1" />
 			<param index="4" name="clip_r" type="float" default="-1" />
-			<param index="5" name="outline_size" type="int" default="1" />
+			<param index="5" name="outline_size" type="float" default="1" />
 			<param index="6" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
@@ -1986,10 +2032,10 @@
 		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER" value="3" enum="SubpixelPositioning">
 			Glyph horizontal position is rounded to one quarter of the pixel size, each glyph is rasterized up to four times.
 		</constant>
-		<constant name="SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE" value="20" enum="SubpixelPositioning">
+		<constant name="SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE" value="1280" enum="SubpixelPositioning">
 			Maximum font size which will use one half of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
 		</constant>
-		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE" value="16" enum="SubpixelPositioning">
+		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE" value="1024" enum="SubpixelPositioning">
 			Maximum font size which will use one quarter of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
 		</constant>
 		<constant name="FEATURE_SIMPLE_LAYOUT" value="1" enum="Feature">
@@ -2036,6 +2082,8 @@
 		</constant>
 		<constant name="FEATURE_UNICODE_SECURITY" value="16384" enum="Feature">
 			TextServer supports [url=https://unicode.org/reports/tr36/]Unicode Technical Report #36[/url] and [url=https://unicode.org/reports/tr39/]Unicode Technical Standard #39[/url] based spoof detection features.
+		</constant>
+		<constant name="FEATURE_USE_26_6_UNITS" value="32768" enum="Feature">
 		</constant>
 		<constant name="CONTOUR_CURVE_TAG_ON" value="1" enum="ContourPointTag">
 			Contour point is on the curve.

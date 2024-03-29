@@ -252,7 +252,7 @@
 		<method name="add_theme_constant_override">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="constant" type="int" />
+			<param index="1" name="constant" type="Variant" />
 			<description>
 				Creates a local override for a theme constant with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_constant_override].
 				See also [method get_theme_constant].
@@ -270,7 +270,7 @@
 		<method name="add_theme_font_size_override">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="font_size" type="int" />
+			<param index="1" name="font_size" type="float" />
 			<description>
 				Creates a local override for a theme font size with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_size_override].
 				See also [method get_theme_font_size].
@@ -482,7 +482,7 @@
 			</description>
 		</method>
 		<method name="get_theme_constant" qualifiers="const">
-			<return type="int" />
+			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
@@ -505,7 +505,7 @@
 			</description>
 		</method>
 		<method name="get_theme_default_font_size" qualifiers="const">
-			<return type="int" />
+			<return type="float" />
 			<description>
 				Returns the default font size value from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font_size] value.
 				See [method get_theme_color] for details.
@@ -521,7 +521,7 @@
 			</description>
 		</method>
 		<method name="get_theme_font_size" qualifiers="const">
-			<return type="int" />
+			<return type="float" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>

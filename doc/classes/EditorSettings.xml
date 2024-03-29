@@ -613,7 +613,7 @@
 			List of alternative characters to use, if supported by the currently configured code font. Not all fonts include support for custom variations. The string should follow the OpenType specification.
 			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has alternate characters in its font file, but there is no documented list yet.
 		</member>
-		<member name="interface/editor/code_font_size" type="int" setter="" getter="">
+		<member name="interface/editor/code_font_size" type="float" setter="" getter="">
 			The size of the font in the script editor. This setting does not impact the font size of the Output panel (see [member run/output/font_size]).
 		</member>
 		<member name="interface/editor/custom_display_scale" type="float" setter="" getter="">
@@ -667,7 +667,7 @@
 		<member name="interface/editor/main_font_bold" type="String" setter="" getter="">
 			The font to use for bold text in the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
 		</member>
-		<member name="interface/editor/main_font_size" type="int" setter="" getter="">
+		<member name="interface/editor/main_font_size" type="float" setter="" getter="">
 			The size of the font in the editor interface.
 		</member>
 		<member name="interface/editor/mouse_extra_buttons_navigate_history" type="bool" setter="" getter="">
@@ -901,7 +901,7 @@
 		<member name="run/output/always_open_output_on_play" type="bool" setter="" getter="">
 			If [code]true[/code], the editor will expand the Output panel when running the project.
 		</member>
-		<member name="run/output/font_size" type="int" setter="" getter="">
+		<member name="run/output/font_size" type="float" setter="" getter="">
 			The size of the font in the [b]Output[/b] panel at the bottom of the editor. This setting does not impact the font size of the script editor (see [member interface/editor/code_font_size]).
 		</member>
 		<member name="run/platforms/linuxbsd/prefer_wayland" type="bool" setter="" getter="">
@@ -1067,13 +1067,13 @@
 		<member name="text_editor/help/class_reference_examples" type="int" setter="" getter="">
 			Controls which multi-line code blocks should be displayed in the editor help. This setting does not affect single-line code literals in the editor help.
 		</member>
-		<member name="text_editor/help/help_font_size" type="int" setter="" getter="">
+		<member name="text_editor/help/help_font_size" type="float" setter="" getter="">
 			The font size to use for the editor help (built-in class reference).
 		</member>
-		<member name="text_editor/help/help_source_font_size" type="int" setter="" getter="">
+		<member name="text_editor/help/help_source_font_size" type="float" setter="" getter="">
 			The font size to use for code samples in the editor help (built-in class reference).
 		</member>
-		<member name="text_editor/help/help_title_font_size" type="int" setter="" getter="">
+		<member name="text_editor/help/help_title_font_size" type="float" setter="" getter="">
 			The font size to use for headings in the editor help (built-in class reference).
 		</member>
 		<member name="text_editor/help/show_help_index" type="bool" setter="" getter="">

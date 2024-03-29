@@ -960,7 +960,7 @@ void DynamicFontImportSettingsDialog::_re_import() {
 		Dictionary preload_config;
 		preload_config["name"] = vars_item->get_text(0);
 
-		Size2i conf_size = Vector2i(16, 0);
+		Size2 conf_size = Vector2(16.0, 0.0);
 		for (const KeyValue<StringName, Variant> &E : import_variation_data->settings) {
 			if (E.key == "size") {
 				conf_size.x = E.value;
@@ -1155,7 +1155,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 					double embolden = preload_config.has("variation_embolden") ? preload_config["variation_embolden"].operator double() : 0;
 					int face_index = preload_config.has("variation_face_index") ? preload_config["variation_face_index"].operator int() : 0;
 					Transform2D transform = preload_config.has("variation_transform") ? preload_config["variation_transform"].operator Transform2D() : Transform2D();
-					Vector2i font_size = preload_config.has("size") ? preload_config["size"].operator Vector2i() : Vector2i(16, 0);
+					Vector2 font_size = preload_config.has("size") ? preload_config["size"].operator Vector2() : Vector2(16.0, 0.0);
 					String cfg_name = preload_config.has("name") ? preload_config["name"].operator String() : vformat("Configuration %d", i);
 
 					TreeItem *vars_item = vars_list->create_item(vars_list_root);
@@ -1251,7 +1251,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "disable_embedded_bitmaps"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
@@ -1272,8 +1272,8 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	options_text.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::DICTIONARY, "opentype_features"), Dictionary()));
 	options_text.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), ""));
 
-	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "size", PROPERTY_HINT_RANGE, "0,127,1"), 16));
-	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1"), 0));
+	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0,127,0.015625"), 16));
+	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "outline_size", PROPERTY_HINT_RANGE, "0,127,0.015625"), 0));
 	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Variation", PROPERTY_HINT_NONE, "variation", PROPERTY_USAGE_GROUP), Variant()));
 	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::DICTIONARY, "variation_opentype"), Dictionary()));
 	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "variation_embolden", PROPERTY_HINT_RANGE, "-2,2,0.01"), 0));

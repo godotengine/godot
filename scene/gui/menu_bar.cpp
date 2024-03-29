@@ -479,8 +479,8 @@ void MenuBar::_draw_menu_item(int p_index) {
 	Point2 text_ofs = item_rect.position + Point2(style->get_margin(SIDE_LEFT), style->get_margin(SIDE_TOP));
 
 	Color font_outline_color = theme_cache.font_outline_color;
-	int outline_size = theme_cache.outline_size;
-	if (outline_size > 0 && font_outline_color.a > 0) {
+	float outline_size = theme_cache.outline_size;
+	if (outline_size > 0.0 && font_outline_color.a > 0.0) {
 		menu_cache[p_index].text_buf->draw_outline(ci, text_ofs, outline_size, font_outline_color);
 	}
 	menu_cache[p_index].text_buf->draw(ci, text_ofs, color);
@@ -703,7 +703,7 @@ void MenuBar::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, MenuBar, font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, MenuBar, font_size);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, outline_size);
+	BIND_THEME_CONSTANT(MenuBar, outline_size, Variant::FLOAT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_outline_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_color);
@@ -713,7 +713,7 @@ void MenuBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_hover_pressed_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_focus_color);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, h_separation);
+	BIND_THEME_CONSTANT(MenuBar, h_separation, Variant::INT);
 }
 
 void MenuBar::set_switch_on_hover(bool p_enabled) {

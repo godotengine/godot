@@ -54,7 +54,7 @@ void TextEdit::Text::set_font(const Ref<Font> &p_font) {
 	is_dirty = true;
 }
 
-void TextEdit::Text::set_font_size(int p_font_size) {
+void TextEdit::Text::set_font_size(float p_font_size) {
 	if (font_size == p_font_size) {
 		return;
 	}
@@ -296,7 +296,7 @@ void TextEdit::Text::invalidate_font() {
 	max_width = -1;
 	line_height = -1;
 
-	if (font.is_valid() && font_size > 0) {
+	if (font.is_valid() && font_size > 0.0) {
 		font_height = font->get_height(font_size);
 	}
 
@@ -314,7 +314,7 @@ void TextEdit::Text::invalidate_all() {
 	max_width = -1;
 	line_height = -1;
 
-	if (font.is_valid() && font_size > 0) {
+	if (font.is_valid() && font_size > 0.0) {
 		font_height = font->get_height(font_size);
 	}
 
@@ -1225,12 +1225,12 @@ void TextEdit::_notification(int p_what) {
 					int last_visible_char = TS->shaped_text_get_range(rid).x;
 
 					float char_ofs = 0;
-					if (theme_cache.outline_size > 0 && theme_cache.outline_color.a > 0) {
+					if (theme_cache.outline_size > 0.0 && theme_cache.outline_color.a > 0.0) {
 						for (int j = 0; j < gl_size; j++) {
 							for (int k = 0; k < glyphs[j].repeat; k++) {
 								if ((char_ofs + char_margin) >= xmargin_beg && (char_ofs + glyphs[j].advance + char_margin) <= xmargin_end) {
 									if (glyphs[j].font_rid != RID()) {
-										TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, theme_cache.outline_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, theme_cache.outline_color);
+										TS->font_draw_glyph_outline(glyphs[j].font_rid, ci, glyphs[j].font_size, Font::to_26_6(theme_cache.outline_size), Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, theme_cache.outline_color);
 									}
 								}
 								char_ofs += glyphs[j].advance;
@@ -2967,7 +2967,7 @@ void TextEdit::_get_above_below_caret_line_column(int p_old_line, int p_old_wrap
 }
 
 void TextEdit::_update_placeholder() {
-	if (theme_cache.font.is_null() || theme_cache.font_size <= 0) {
+	if (theme_cache.font.is_null() || theme_cache.font_size <= 0.0) {
 		return; // Not in tree?
 	}
 
@@ -6627,7 +6627,7 @@ void TextEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, search_result_border_color);
 
 	/* Caret */
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, caret_width);
+	BIND_THEME_CONSTANT(TextEdit, caret_width, Variant::INT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, caret_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, caret_background_color);
 
@@ -6649,10 +6649,10 @@ void TextEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, font_readonly_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, font_placeholder_color);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, outline_size);
+	BIND_THEME_CONSTANT(TextEdit, outline_size, Variant::FLOAT);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, TextEdit, outline_color, "font_outline_color");
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TextEdit, line_spacing);
+	BIND_THEME_CONSTANT(TextEdit, line_spacing, Variant::INT);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, background_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TextEdit, current_line_color);

@@ -273,7 +273,7 @@ void ProgressBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, ProgressBar, font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, ProgressBar, font_size);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ProgressBar, font_color);
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, ProgressBar, font_outline_size, "outline_size");
+	BIND_THEME_CONSTANT_CUSTOM(ProgressBar, font_outline_size, "outline_size", Variant::FLOAT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ProgressBar, font_outline_color);
 }
 

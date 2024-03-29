@@ -533,7 +533,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	add_child(main_vbox);
 
 	HBoxContainer *loop_hb = memnew(HBoxContainer);
-	loop_hb->add_theme_constant_override("separation", 4 * EDSCALE);
+	loop_hb->add_theme_constant_override("separation", (int64_t)(4 * EDSCALE));
 	loop = memnew(CheckBox);
 	loop->set_text(TTR("Enable"));
 	loop->set_tooltip_text(TTR("Enable looping."));
@@ -551,7 +551,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	main_vbox->add_margin_child(TTR("Loop:"), loop_hb);
 
 	HBoxContainer *interactive_hb = memnew(HBoxContainer);
-	interactive_hb->add_theme_constant_override("separation", 4 * EDSCALE);
+	interactive_hb->add_theme_constant_override("separation", (int64_t)(4 * EDSCALE));
 	bpm_enabled = memnew(CheckBox);
 	bpm_enabled->set_text((TTR("BPM:")));
 	bpm_enabled->connect("toggled", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));

@@ -180,19 +180,19 @@ class PopupMenu : public Popup {
 		Ref<Texture2D> submenu_mirrored;
 
 		Ref<Font> font;
-		int font_size = 0;
+		float font_size = 0;
 		Ref<Font> font_separator;
-		int font_separator_size = 0;
+		float font_separator_size = 0;
 
 		Color font_color;
 		Color font_hover_color;
 		Color font_disabled_color;
 		Color font_accelerator_color;
-		int font_outline_size = 0;
+		float font_outline_size = 0;
 		Color font_outline_color;
 
 		Color font_separator_color;
-		int font_separator_outline_size = 0;
+		float font_separator_outline_size = 0;
 		Color font_separator_outline_color;
 	} theme_cache;
 

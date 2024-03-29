@@ -45,9 +45,9 @@ class ProgressBar : public Range {
 		Ref<StyleBox> fill_style;
 
 		Ref<Font> font;
-		int font_size = 0;
+		float font_size = 0;
 		Color font_color;
-		int font_outline_size = 0;
+		float font_outline_size = 0;
 		Color font_outline_color;
 	} theme_cache;
 

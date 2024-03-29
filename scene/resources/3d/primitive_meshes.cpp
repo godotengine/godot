@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "primitive_meshes.h"
+#include "primitive_meshes.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "scene/resources/theme.h"
@@ -3343,7 +3344,7 @@ void TextMesh::_bind_methods() {
 	ADD_GROUP("Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "font_size", PROPERTY_HINT_RANGE, "1,256,0.015625,or_greater,suffix:px"), "set_font_size", "get_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
@@ -3492,16 +3493,16 @@ Ref<Font> TextMesh::_get_font_or_default() const {
 	return global_context->get_fallback_theme()->get_font(theme_name, StringName());
 }
 
-void TextMesh::set_font_size(int p_size) {
+void TextMesh::set_font_size(float p_size) {
 	if (font_size != p_size) {
-		font_size = CLAMP(p_size, 1, 127);
+		font_size = CLAMP(p_size, 1.0, 127.0);
 		dirty_font = true;
 		dirty_cache = true;
 		request_update();
 	}
 }
 
-int TextMesh::get_font_size() const {
+float TextMesh::get_font_size() const {
 	return font_size;
 }
 

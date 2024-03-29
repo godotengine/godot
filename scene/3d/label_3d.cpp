@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "label_3d.h"
+#include "label_3d.compat.inc"
 
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
@@ -148,8 +149,8 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "outline_modulate"), "set_outline_modulate", "get_outline_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1,suffix:px"), "set_outline_size", "get_outline_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "font_size", PROPERTY_HINT_RANGE, "1,256,0.015625,or_greater,suffix:px"), "set_font_size", "get_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "outline_size", PROPERTY_HINT_RANGE, "0,127,0.015625,suffix:px"), "set_outline_size", "get_outline_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
@@ -601,11 +602,11 @@ void Label3D::_shape() {
 		}
 		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
 
-		if (outline_modulate.a != 0.0 && outline_size > 0) {
+		if (outline_modulate.a != 0.0 && outline_size > 0.0) {
 			// Outline surfaces.
 			Vector2 ol_offset = offset;
 			for (int j = 0; j < gl_size; j++) {
-				_generate_glyph_surfaces(glyphs[j], ol_offset, outline_modulate, outline_render_priority, outline_size);
+				_generate_glyph_surfaces(glyphs[j], ol_offset, outline_modulate, outline_render_priority, Font::to_26_6(outline_size));
 			}
 		}
 
@@ -830,7 +831,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 	return f;
 }
 
-void Label3D::set_font_size(int p_size) {
+void Label3D::set_font_size(float p_size) {
 	if (font_size != p_size) {
 		font_size = p_size;
 		dirty_font = true;
@@ -838,18 +839,18 @@ void Label3D::set_font_size(int p_size) {
 	}
 }
 
-int Label3D::get_font_size() const {
+float Label3D::get_font_size() const {
 	return font_size;
 }
 
-void Label3D::set_outline_size(int p_size) {
+void Label3D::set_outline_size(float p_size) {
 	if (outline_size != p_size) {
 		outline_size = p_size;
 		_queue_update();
 	}
 }
 
-int Label3D::get_outline_size() const {
+float Label3D::get_outline_size() const {
 	return outline_size;
 }
 

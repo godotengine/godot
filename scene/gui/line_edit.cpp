@@ -946,14 +946,14 @@ void LineEdit::_notification(int p_what) {
 			// Draw text.
 			ofs.y += TS->shaped_text_get_ascent(text_rid);
 			Color font_outline_color = theme_cache.font_outline_color;
-			int outline_size = theme_cache.font_outline_size;
-			if (outline_size > 0 && font_outline_color.a > 0) {
+			float outline_size = theme_cache.font_outline_size;
+			if (outline_size > 0.0 && font_outline_color.a > 0.0) {
 				Vector2 oofs = ofs;
 				for (int i = 0; i < gl_size; i++) {
 					for (int j = 0; j < glyphs[i].repeat; j++) {
 						if (ceil(oofs.x) >= x_ofs && (oofs.x + glyphs[i].advance) <= ofs_max) {
 							if (glyphs[i].font_rid != RID()) {
-								TS->font_draw_glyph_outline(glyphs[i].font_rid, ci, glyphs[i].font_size, outline_size, oofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, font_outline_color);
+								TS->font_draw_glyph_outline(glyphs[i].font_rid, ci, glyphs[i].font_size, Font::to_26_6(outline_size), oofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, font_outline_color);
 							}
 						}
 						oofs.x += glyphs[i].advance;
@@ -1807,7 +1807,7 @@ void LineEdit::clear_internal() {
 Size2 LineEdit::get_minimum_size() const {
 	Ref<StyleBox> style = theme_cache.normal;
 	Ref<Font> font = theme_cache.font;
-	int font_size = theme_cache.font_size;
+	float font_size = theme_cache.font_size;
 
 	Size2 min_size;
 
@@ -2315,7 +2315,7 @@ PackedStringArray LineEdit::get_configuration_warnings() const {
 
 void LineEdit::_shape() {
 	const Ref<Font> &font = theme_cache.font;
-	int font_size = theme_cache.font_size;
+	float font_size = theme_cache.font_size;
 	if (font.is_null()) {
 		return;
 	}
@@ -2704,12 +2704,12 @@ void LineEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, font_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, font_uneditable_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, font_selected_color);
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, LineEdit, font_outline_size, "outline_size");
+	BIND_THEME_CONSTANT_CUSTOM(LineEdit, font_outline_size, "outline_size", Variant::FLOAT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, font_outline_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, font_placeholder_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LineEdit, caret_width);
+	BIND_THEME_CONSTANT(LineEdit, caret_width, Variant::INT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, caret_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LineEdit, minimum_character_width);
+	BIND_THEME_CONSTANT(LineEdit, minimum_character_width, Variant::INT);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, selection_color);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, LineEdit, clear_icon, "clear");

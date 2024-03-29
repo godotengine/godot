@@ -133,8 +133,8 @@ private:
 		Color drop_mark_color;
 
 		Ref<Font> font;
-		int font_size;
-		int outline_size = 0;
+		float font_size = 0.0;
+		float outline_size = 0.0;
 
 		Color font_selected_color;
 		Color font_hovered_color;

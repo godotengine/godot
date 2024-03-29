@@ -50,14 +50,24 @@ Color EditorTheme::get_color(const StringName &p_name, const StringName &p_theme
 }
 
 // Keep in sync with Theme::get_constant.
-int EditorTheme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
+Variant EditorTheme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	if (constant_map.has(p_theme_type) && constant_map[p_theme_type].has(p_name)) {
 		return constant_map[p_theme_type][p_name];
 	} else {
 		if (editor_theme_types.has(p_theme_type)) {
 			WARN_PRINT(vformat("Trying to access a non-existing editor theme constant '%s' in '%s'.", p_name, p_theme_type));
 		}
-		return 0;
+		Variant::Type expected_type = ThemeDB::get_singleton()->get_class_constant_type(p_theme_type, p_name);
+		switch (expected_type) {
+			case Variant::INT:
+				return 0;
+			case Variant::FLOAT:
+				return 0.0;
+			case Variant::BOOL:
+				return false;
+			default:
+				return Variant();
+		}
 	}
 }
 
@@ -79,7 +89,7 @@ Ref<Font> EditorTheme::get_font(const StringName &p_name, const StringName &p_th
 }
 
 // Keep in sync with Theme::get_font_size.
-int EditorTheme::get_font_size(const StringName &p_name, const StringName &p_theme_type) const {
+float EditorTheme::get_font_size(const StringName &p_name, const StringName &p_theme_type) const {
 	if (font_size_map.has(p_theme_type) && font_size_map[p_theme_type].has(p_name) && (font_size_map[p_theme_type][p_name] > 0)) {
 		return font_size_map[p_theme_type][p_name];
 	} else if (has_default_font_size()) {

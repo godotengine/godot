@@ -204,7 +204,7 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 		double embolden = preload_config.has("variation_embolden") ? preload_config["variation_embolden"].operator double() : 0;
 		int face_index = preload_config.has("variation_face_index") ? preload_config["variation_face_index"].operator int() : 0;
 		Transform2D transform = preload_config.has("variation_transform") ? preload_config["variation_transform"].operator Transform2D() : Transform2D();
-		Vector2i size = preload_config.has("size") ? preload_config["size"].operator Vector2i() : Vector2i(16, 0);
+		Vector2 size = preload_config.has("size") ? preload_config["size"].operator Vector2() : Vector2(16.0, 0.0);
 		String name = preload_config.has("name") ? preload_config["name"].operator String() : vformat("Configuration %d", i);
 
 		RID conf_rid = font->find_variation(variation, face_index, embolden, transform);
@@ -212,13 +212,13 @@ Error ResourceImporterDynamicFont::import(const String &p_source_file, const Str
 		Array chars = preload_config["chars"];
 		for (int j = 0; j < chars.size(); j++) {
 			char32_t c = chars[j].operator int();
-			TS->font_render_range(conf_rid, size, c, c);
+			TS->font_render_range(conf_rid, Font::to_26_6(size), c, c);
 		}
 
 		Array glyphs = preload_config["glyphs"];
 		for (int j = 0; j < glyphs.size(); j++) {
 			int32_t c = glyphs[j];
-			TS->font_render_glyph(conf_rid, size, c);
+			TS->font_render_glyph(conf_rid, Font::to_26_6(size), c);
 		}
 	}
 

@@ -708,7 +708,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 							tid.data_type = "color";
 							break;
 						case Theme::DATA_TYPE_CONSTANT:
-							tid.type = "int";
+							tid.type = "Variant";
 							tid.data_type = "constant";
 							break;
 						case Theme::DATA_TYPE_FONT:
@@ -716,7 +716,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 							tid.data_type = "font";
 							break;
 						case Theme::DATA_TYPE_FONT_SIZE:
-							tid.type = "int";
+							tid.type = "float";
 							tid.data_type = "font_size";
 							break;
 						case Theme::DATA_TYPE_ICON:

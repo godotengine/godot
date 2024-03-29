@@ -49,7 +49,7 @@ class Font : public Resource {
 
 	struct ShapedTextKey {
 		String text;
-		int font_size = 14;
+		int32_t font_size = 14 << 6; // Note: 26.6 fixed point value.
 		float width = 0.f;
 		BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_NONE;
 		BitField<TextServer::LineBreakFlag> brk_flags = TextServer::BREAK_MANDATORY;
@@ -61,7 +61,7 @@ class Font : public Resource {
 		}
 
 		ShapedTextKey() {}
-		ShapedTextKey(const String &p_text, int p_font_size, float p_width, BitField<TextServer::JustificationFlag> p_jst_flags, BitField<TextServer::LineBreakFlag> p_brk_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
+		ShapedTextKey(const String &p_text, int32_t p_font_size, float p_width, BitField<TextServer::JustificationFlag> p_jst_flags, BitField<TextServer::LineBreakFlag> p_brk_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 			text = p_text;
 			font_size = p_font_size;
 			width = p_width;
@@ -86,6 +86,12 @@ class Font : public Resource {
 	mutable LRUCache<ShapedTextKey, Ref<TextLine>, ShapedTextKeyHasher> cache;
 	mutable LRUCache<ShapedTextKey, Ref<TextParagraph>, ShapedTextKeyHasher> cache_wrap;
 
+public:
+	static constexpr float DEFAULT_FONT_SIZE = 16.0;
+#ifndef DISABLE_DEPRECATED
+	static constexpr int DEFAULT_FONT_SIZE_COMPAT_87243 = 16;
+#endif
+
 protected:
 	// Output.
 	mutable TypedArray<RID> rids;
@@ -106,13 +112,68 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	RID _find_variation_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const;
 	RID _find_variation_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const;
+
+	real_t _get_height_compat_87243(int p_font_size) const;
+	real_t _get_ascent_compat_87243(int p_font_size) const;
+	real_t _get_descent_compat_87243(int p_font_size) const;
+	real_t _get_underline_position_compat_87243(int p_font_size) const;
+	real_t _get_underline_thickness_compat_87243(int p_font_size) const;
+
+	Size2 _get_string_size_compat_87243(const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE_COMPAT_87243, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	Size2 _get_multiline_string_size_compat_87243(const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE_COMPAT_87243, int p_max_lines = -1, BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+
+	void _draw_string_compat_87243(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE_COMPAT_87243, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	void _draw_multiline_string_compat_87243(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE_COMPAT_87243, int p_max_lines = -1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+
+	void _draw_string_outline_compat_87243(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE_COMPAT_87243, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	void _draw_multiline_string_outline_compat_87243(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE_COMPAT_87243, int p_max_lines = -1, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+
+	// Drawing char.
+	Size2 _get_char_size_compat_87243(char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE_COMPAT_87243) const;
+	real_t _draw_char_compat_87243(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE_COMPAT_87243, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
+	real_t _draw_char_outline_compat_87243(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE_COMPAT_87243, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
+
 	static void _bind_compatibility_methods();
 #endif
 
 public:
-	virtual void _invalidate_rids();
+	_FORCE_INLINE_ static int32_t to_26_6(float p_font_size) {
+#ifndef DISABLE_DEPRECATED
+		if (!TS->has_feature(TextServer::FEATURE_USE_26_6_UNITS)) {
+			return Math::round(p_font_size);
+		}
+#endif
+		return Math::round(p_font_size * 64.0);
+	}
 
-	static constexpr int DEFAULT_FONT_SIZE = 16;
+	_FORCE_INLINE_ static Vector2i to_26_6(const Vector2 &p_font_size) {
+#ifndef DISABLE_DEPRECATED
+		if (!TS->has_feature(TextServer::FEATURE_USE_26_6_UNITS)) {
+			return p_font_size.round();
+		}
+#endif
+		return (p_font_size * 64.0).round();
+	}
+
+	_FORCE_INLINE_ static int32_t check_26_6(int32_t p_font_size) {
+#ifndef DISABLE_DEPRECATED
+		if (!TS->has_feature(TextServer::FEATURE_USE_26_6_UNITS)) {
+			return p_font_size / 64;
+		}
+#endif
+		return p_font_size;
+	}
+
+	_FORCE_INLINE_ static Vector2i check_26_6(const Vector2i &p_font_size) {
+#ifndef DISABLE_DEPRECATED
+		if (!TS->has_feature(TextServer::FEATURE_USE_26_6_UNITS)) {
+			return p_font_size / 64;
+		}
+#endif
+		return p_font_size;
+	}
+
+	virtual void _invalidate_rids();
 
 	// Fallbacks.
 	virtual void set_fallbacks(const TypedArray<Font> &p_fallbacks);
@@ -124,11 +185,11 @@ public:
 	virtual TypedArray<RID> get_rids() const;
 
 	// Font metrics.
-	virtual real_t get_height(int p_font_size) const;
-	virtual real_t get_ascent(int p_font_size) const;
-	virtual real_t get_descent(int p_font_size) const;
-	virtual real_t get_underline_position(int p_font_size) const;
-	virtual real_t get_underline_thickness(int p_font_size) const;
+	virtual real_t get_height(float p_font_size) const;
+	virtual real_t get_ascent(float p_font_size) const;
+	virtual real_t get_descent(float p_font_size) const;
+	virtual real_t get_underline_position(float p_font_size) const;
+	virtual real_t get_underline_thickness(float p_font_size) const;
 
 	virtual String get_font_name() const;
 	virtual String get_font_style_name() const;
@@ -143,19 +204,19 @@ public:
 	// Drawing string.
 	virtual void set_cache_capacity(int p_single_line, int p_multi_line);
 
-	virtual Size2 get_string_size(const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
-	virtual Size2 get_multiline_string_size(const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	virtual Size2 get_string_size(const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, float p_font_size = DEFAULT_FONT_SIZE, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	virtual Size2 get_multiline_string_size(const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, float p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
 
-	virtual void draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
-	virtual void draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	virtual void draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, float p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	virtual void draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, float p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
 
-	virtual void draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
-	virtual void draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	virtual void draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, float p_font_size = DEFAULT_FONT_SIZE, float p_outline_size = 1.0, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	virtual void draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, float p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, float p_outline_size = 1.0, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
 
 	// Drawing char.
-	virtual Size2 get_char_size(char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE) const;
-	virtual real_t draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
-	virtual real_t draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
+	virtual Size2 get_char_size(char32_t p_char, float p_font_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, float p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
+	virtual real_t draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, float p_font_size = DEFAULT_FONT_SIZE, float p_outline_size = 1.0, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
 
 	// Helper functions.
 	virtual bool has_char(char32_t p_char) const;
@@ -186,12 +247,13 @@ class FontFile : public Font {
 	PackedByteArray data;
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
+	bool use_26_6_fractional_units = true;
 	bool mipmaps = false;
 	bool disable_embedded_bitmaps = true;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
-	int msdf_size = 48;
-	int fixed_size = 0;
+	float msdf_size = 48.0;
+	float fixed_size = 0.0;
 	TextServer::FixedSizeScaleMode fixed_size_scale_mode = TextServer::FIXED_SIZE_SCALE_DISABLE;
 	bool force_autohinter = false;
 	bool allow_system_fallback = true;
@@ -226,6 +288,16 @@ protected:
 
 	virtual void reset_state() override;
 
+#ifndef DISABLE_DEPRECATED
+	void _set_msdf_size_compat_87243(int p_msdf_size);
+	int _get_msdf_size_compat_87243() const;
+
+	void _set_fixed_size_compat_87243(int p_fixed_size);
+	int _get_fixed_size_compat_87243() const;
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	Error _load_bitmap_font(const String &p_path, List<String> *r_image_files);
 
@@ -259,11 +331,11 @@ public:
 	virtual void set_msdf_pixel_range(int p_msdf_pixel_range);
 	virtual int get_msdf_pixel_range() const;
 
-	virtual void set_msdf_size(int p_msdf_size);
-	virtual int get_msdf_size() const;
+	virtual void set_msdf_size(float p_msdf_size);
+	virtual float get_msdf_size() const;
 
-	virtual void set_fixed_size(int p_fixed_size);
-	virtual int get_fixed_size() const;
+	virtual void set_fixed_size(float p_fixed_size);
+	virtual float get_fixed_size() const;
 
 	virtual void set_fixed_size_scale_mode(TextServer::FixedSizeScaleMode p_fixed_size_scale_mode);
 	virtual TextServer::FixedSizeScaleMode get_fixed_size_scale_mode() const;
@@ -483,7 +555,7 @@ class SystemFont : public Font {
 	real_t oversampling = 0.f;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
-	int msdf_size = 48;
+	float msdf_size = 48.0;
 
 protected:
 	static void _bind_methods();
@@ -492,6 +564,13 @@ protected:
 	virtual void _update_rids() const override;
 
 	virtual void reset_state() override;
+
+#ifndef DISABLE_DEPRECATED
+	void _set_msdf_size_compat_87243(int p_msdf_size);
+	int _get_msdf_size_compat_87243() const;
+
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	virtual Ref<Font> _get_base_font_or_default() const;
@@ -526,8 +605,8 @@ public:
 	virtual void set_msdf_pixel_range(int p_msdf_pixel_range);
 	virtual int get_msdf_pixel_range() const;
 
-	virtual void set_msdf_size(int p_msdf_size);
-	virtual int get_msdf_size() const;
+	virtual void set_msdf_size(float p_msdf_size);
+	virtual float get_msdf_size() const;
 
 	virtual void set_font_names(const PackedStringArray &p_names);
 	virtual PackedStringArray get_font_names() const;

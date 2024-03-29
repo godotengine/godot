@@ -1026,7 +1026,7 @@ void TabContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(POSITION_BOTTOM);
 	BIND_ENUM_CONSTANT(POSITION_MAX);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, side_margin);
+	BIND_THEME_CONSTANT(TabContainer, side_margin, Variant::INT);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tabbar_style, "tabbar_background");
@@ -1035,8 +1035,8 @@ void TabContainer::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabContainer, menu_hl_icon, "menu_highlight");
 
 	// TabBar overrides.
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, icon_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, icon_max_width);
+	BIND_THEME_CONSTANT(TabContainer, icon_separation, Variant::INT);
+	BIND_THEME_CONSTANT(TabContainer, icon_max_width, Variant::INT);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_unselected_style, "tab_unselected");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tab_hovered_style, "tab_hovered");
@@ -1059,7 +1059,7 @@ void TabContainer::_bind_methods() {
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT, TabContainer, tab_font, "font");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT_SIZE, TabContainer, tab_font_size, "font_size");
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, outline_size);
+	BIND_THEME_CONSTANT(TabContainer, outline_size, Variant::FLOAT);
 }
 
 TabContainer::TabContainer() {

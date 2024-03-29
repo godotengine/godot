@@ -1434,7 +1434,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			}
 
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+			float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 
 			int zoomw = key_range;
@@ -1626,7 +1626,7 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 Size2 AnimationTimelineEdit::get_minimum_size() const {
 	Size2 ms = add_track->get_minimum_size();
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	ms.height = MAX(ms.height, font->get_height(font_size));
 	ms.width = get_buttons_width() + add_track->get_minimum_size().width + get_editor_theme_icon(SNAME("Hsize"))->get_width() + 2;
 	return ms;
@@ -1982,7 +1982,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			}
 
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+			float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 			int hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 			Color linecolor = color;
@@ -2030,7 +2030,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 					text_color.a *= 0.7;
 				} else if (node) {
 					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
-					const Vector2 icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+					const Vector2 icon_size = Vector2(1, 1) * (int64_t)get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 					draw_texture_rect(icon, Rect2(Point2(ofs, int(get_size().height - icon_size.y) / 2), icon_size));
 					icon_cache = icon;
@@ -2359,7 +2359,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 
 	if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
 		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 		Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 		color.a = 0.5;
 
@@ -2484,7 +2484,7 @@ NodePath AnimationTrackEdit::get_path() const {
 Size2 AnimationTrackEdit::get_minimum_size() const {
 	Ref<Texture2D> texture = get_editor_theme_icon(SNAME("Object"));
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
 	int max_h = MAX(texture->get_height(), font->get_height(font_size));
@@ -3396,12 +3396,12 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 void AnimationTrackEditGroup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+			icon_size = Vector2(1, 1) * (int64_t)get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 		} break;
 
 		case NOTIFICATION_DRAW: {
 			Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-			int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+			float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 			int separation = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Label"));
 
@@ -3466,7 +3466,7 @@ void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, co
 
 Size2 AnimationTrackEditGroup::get_minimum_size() const {
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	float font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
 
 	return Vector2(0, MAX(font->get_height(font_size), icon_size.y) + separation);

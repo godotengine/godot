@@ -105,7 +105,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		Ref<StyleBox> node_frame_end;
 
 		Ref<Font> node_title_font;
-		int node_title_font_size = 0;
+		float node_title_font_size = 0;
 		Color node_title_font_color;
 
 		Ref<Texture2D> play_node;
