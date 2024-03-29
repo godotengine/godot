@@ -315,7 +315,7 @@ Error EGLManager::window_create(DisplayServer::WindowID p_window_id, void *p_dis
 }
 
 void EGLManager::window_destroy(DisplayServer::WindowID p_window_id) {
-	ERR_FAIL_INDEX(p_window_id, (int)windows.size());
+	ERR_FAIL_INDEX(p_window_id, windows.size());
 
 	GLWindow &glwindow = windows[p_window_id];
 
@@ -325,7 +325,7 @@ void EGLManager::window_destroy(DisplayServer::WindowID p_window_id) {
 
 	glwindow.initialized = false;
 
-	ERR_FAIL_INDEX(glwindow.gldisplay_id, (int)displays.size());
+	ERR_FAIL_INDEX(glwindow.gldisplay_id, displays.size());
 	GLDisplay &gldisplay = displays[glwindow.gldisplay_id];
 
 	if (glwindow.egl_surface != EGL_NO_SURFACE) {

@@ -339,14 +339,14 @@ int ImmediateMesh::get_surface_count() const {
 	return surfaces.size();
 }
 int ImmediateMesh::surface_get_array_len(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, int(surfaces.size()), -1);
+	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), -1);
 	return surfaces[p_idx].array_len;
 }
 int ImmediateMesh::surface_get_array_index_len(int p_idx) const {
 	return 0;
 }
 Array ImmediateMesh::surface_get_arrays(int p_surface) const {
-	ERR_FAIL_INDEX_V(p_surface, int(surfaces.size()), Array());
+	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
 	return RS::get_singleton()->mesh_surface_get_arrays(mesh, p_surface);
 }
 TypedArray<Array> ImmediateMesh::surface_get_blend_shape_arrays(int p_surface) const {
@@ -356,15 +356,15 @@ Dictionary ImmediateMesh::surface_get_lods(int p_surface) const {
 	return Dictionary();
 }
 BitField<Mesh::ArrayFormat> ImmediateMesh::surface_get_format(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, int(surfaces.size()), 0);
+	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), 0);
 	return surfaces[p_idx].format;
 }
 Mesh::PrimitiveType ImmediateMesh::surface_get_primitive_type(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, int(surfaces.size()), PRIMITIVE_MAX);
+	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), PRIMITIVE_MAX);
 	return surfaces[p_idx].primitive;
 }
 void ImmediateMesh::surface_set_material(int p_idx, const Ref<Material> &p_material) {
-	ERR_FAIL_INDEX(p_idx, int(surfaces.size()));
+	ERR_FAIL_INDEX(p_idx, surfaces.size());
 	surfaces[p_idx].material = p_material;
 	RID mat;
 	if (p_material.is_valid()) {
@@ -373,7 +373,7 @@ void ImmediateMesh::surface_set_material(int p_idx, const Ref<Material> &p_mater
 	RS::get_singleton()->mesh_surface_set_material(mesh, p_idx, mat);
 }
 Ref<Material> ImmediateMesh::surface_get_material(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, int(surfaces.size()), Ref<Material>());
+	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), Ref<Material>());
 	return surfaces[p_idx].material;
 }
 int ImmediateMesh::get_blend_shape_count() const {

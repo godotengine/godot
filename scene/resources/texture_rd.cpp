@@ -169,7 +169,7 @@ RID TextureLayeredRD::get_rid() const {
 }
 
 Ref<Image> TextureLayeredRD::get_layer_data(int p_layer) const {
-	ERR_FAIL_INDEX_V(p_layer, (int)layers, Ref<Image>());
+	ERR_FAIL_INDEX_V(p_layer, layers, Ref<Image>());
 	return RS::get_singleton()->texture_2d_layer_get(texture_rid, p_layer);
 }
 

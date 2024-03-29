@@ -378,8 +378,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	if (unsupported) {
 		return FAILED;
 	}
-
-	ERR_FAIL_INDEX_V(int(p_mode), DisplayServer::FILE_DIALOG_MODE_SAVE_MAX, FAILED);
+	ERR_FAIL_INDEX_V(p_mode, DisplayServer::FILE_DIALOG_MODE_SAVE_MAX, FAILED);
 	ERR_FAIL_NULL_V(monitor_connection, FAILED);
 
 	Vector<String> filter_names;

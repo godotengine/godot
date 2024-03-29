@@ -249,9 +249,9 @@ PackedInt32Array AudioStreamInteractive::get_transition_list() const {
 void AudioStreamInteractive::add_transition(int p_from_clip, int p_to_clip, TransitionFromTime p_from_time, TransitionToTime p_to_time, FadeMode p_fade_mode, float p_fade_beats, bool p_use_filler_flip, int p_filler_clip, bool p_hold_previous) {
 	ERR_FAIL_COND(p_from_clip < CLIP_ANY || p_from_clip >= clip_count);
 	ERR_FAIL_COND(p_to_clip < CLIP_ANY || p_to_clip >= clip_count);
-	ERR_FAIL_UNSIGNED_INDEX(p_from_time, TRANSITION_FROM_TIME_MAX);
-	ERR_FAIL_UNSIGNED_INDEX(p_to_time, TRANSITION_TO_TIME_MAX);
-	ERR_FAIL_UNSIGNED_INDEX(p_fade_mode, FADE_MAX);
+	ERR_FAIL_INDEX(p_from_time, TRANSITION_FROM_TIME_MAX);
+	ERR_FAIL_INDEX(p_to_time, TRANSITION_TO_TIME_MAX);
+	ERR_FAIL_INDEX(p_fade_mode, FADE_MAX);
 
 	Transition tr;
 	tr.from_time = p_from_time;
@@ -353,8 +353,8 @@ static void _test_and_swap(T &p_elem, uint32_t p_a, uint32_t p_b) {
 }
 
 void AudioStreamInteractive::_inspector_array_swap_clip(uint32_t p_item_a, uint32_t p_item_b) {
-	ERR_FAIL_UNSIGNED_INDEX(p_item_a, (uint32_t)clip_count);
-	ERR_FAIL_UNSIGNED_INDEX(p_item_b, (uint32_t)clip_count);
+	ERR_FAIL_INDEX(p_item_a, clip_count);
+	ERR_FAIL_INDEX(p_item_b, clip_count);
 
 	for (int i = 0; i < clip_count; i++) {
 		_test_and_swap(clips[i].auto_advance_next_clip, p_item_a, p_item_b);

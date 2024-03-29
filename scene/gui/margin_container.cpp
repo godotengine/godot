@@ -75,7 +75,7 @@ Vector<int> MarginContainer::get_allowed_size_flags_vertical() const {
 }
 
 int MarginContainer::get_margin_size(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 
 	switch (p_side) {
 		case SIDE_LEFT:

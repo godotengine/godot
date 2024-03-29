@@ -149,13 +149,13 @@ int MeshInstance3D::find_blend_shape_by_name(const StringName &p_name) {
 
 float MeshInstance3D::get_blend_shape_value(int p_blend_shape) const {
 	ERR_FAIL_COND_V(mesh.is_null(), 0.0);
-	ERR_FAIL_INDEX_V(p_blend_shape, (int)blend_shape_tracks.size(), 0);
+	ERR_FAIL_INDEX_V(p_blend_shape, blend_shape_tracks.size(), 0);
 	return blend_shape_tracks[p_blend_shape];
 }
 
 void MeshInstance3D::set_blend_shape_value(int p_blend_shape, float p_value) {
 	ERR_FAIL_COND(mesh.is_null());
-	ERR_FAIL_INDEX(p_blend_shape, (int)blend_shape_tracks.size());
+	ERR_FAIL_INDEX(p_blend_shape, blend_shape_tracks.size());
 	blend_shape_tracks[p_blend_shape] = p_value;
 	RenderingServer::get_singleton()->instance_set_blend_shape_weight(get_instance(), p_blend_shape, p_value);
 }

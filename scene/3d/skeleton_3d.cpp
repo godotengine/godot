@@ -89,7 +89,7 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 		return true;
 	}
 
-	ERR_FAIL_UNSIGNED_INDEX_V(which, bones.size(), false);
+	ERR_FAIL_INDEX_V(which, bones.size(), false);
 
 	if (what == "parent") {
 		set_bone_parent(which, p_value);
@@ -156,7 +156,7 @@ bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 	uint32_t which = path.get_slicec('/', 1).to_int();
 	String what = path.get_slicec('/', 2);
 
-	ERR_FAIL_UNSIGNED_INDEX_V(which, bones.size(), false);
+	ERR_FAIL_INDEX_V(which, bones.size(), false);
 
 	if (what == "name") {
 		r_ret = get_bone_name(which);

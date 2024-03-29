@@ -318,14 +318,14 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							// We cannot know if the referenced nodes exist yet, so instead of deferring, we write the NodePaths directly.
 
 							uint32_t name_idx = nprops[j].name & (FLAG_PATH_PROPERTY_IS_NODE - 1);
-							ERR_FAIL_UNSIGNED_INDEX_V(name_idx, (uint32_t)sname_count, nullptr);
+							ERR_FAIL_INDEX_V(name_idx, (uint32_t)sname_count, nullptr);
 
 							node->set(snames[name_idx], props[nprops[j].value], &valid);
 							continue;
 						}
 
 						uint32_t name_idx = nprops[j].name & (FLAG_PATH_PROPERTY_IS_NODE - 1);
-						ERR_FAIL_UNSIGNED_INDEX_V(name_idx, (uint32_t)sname_count, nullptr);
+						ERR_FAIL_INDEX_V(name_idx, sname_count, nullptr);
 
 						DeferredNodePathProperties dnp;
 						dnp.value = props[nprops[j].value];

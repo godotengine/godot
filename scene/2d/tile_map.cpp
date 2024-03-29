@@ -38,14 +38,14 @@
 	if (layer < 0) {                                 \
 		layer = layers.size() + layer;               \
 	};                                               \
-	ERR_FAIL_INDEX(layer, (int)layers.size());       \
+	ERR_FAIL_INDEX(layer, layers.size());            \
 	layers[layer]->function(__VA_ARGS__);
 
 #define TILEMAP_CALL_FOR_LAYER_V(layer, err_value, function, ...) \
 	if (layer < 0) {                                              \
 		layer = layers.size() + layer;                            \
 	};                                                            \
-	ERR_FAIL_INDEX_V(layer, (int)layers.size(), err_value);       \
+	ERR_FAIL_INDEX_V(layer, layers.size(), err_value);            \
 	return layers[layer]->function(__VA_ARGS__);
 
 void TileMap::_tile_set_changed() {
@@ -263,7 +263,7 @@ void TileMap::add_layer(int p_to_pos) {
 		p_to_pos = layers.size() + p_to_pos + 1;
 	}
 
-	ERR_FAIL_INDEX(p_to_pos, (int)layers.size() + 1);
+	ERR_FAIL_INDEX(p_to_pos, layers.size() + 1);
 
 	// Must clear before adding the layer.
 	TileMapLayer *new_layer = memnew(TileMapLayer);
@@ -285,8 +285,8 @@ void TileMap::add_layer(int p_to_pos) {
 }
 
 void TileMap::move_layer(int p_layer, int p_to_pos) {
-	ERR_FAIL_INDEX(p_layer, (int)layers.size());
-	ERR_FAIL_INDEX(p_to_pos, (int)layers.size() + 1);
+	ERR_FAIL_INDEX(p_layer, layers.size());
+	ERR_FAIL_INDEX(p_to_pos, layers.size() + 1);
 
 	// Clear before shuffling layers.
 	TileMapLayer *layer = layers[p_layer];
@@ -304,7 +304,7 @@ void TileMap::move_layer(int p_layer, int p_to_pos) {
 }
 
 void TileMap::remove_layer(int p_layer) {
-	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	ERR_FAIL_INDEX(p_layer, layers.size());
 
 	// Clear before removing the layer.
 	TileMapLayer *removed = layers[p_layer];

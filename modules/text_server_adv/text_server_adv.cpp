@@ -2517,7 +2517,7 @@ double TextServerAdvanced::_font_get_embolden(const RID &p_font_rid) const {
 }
 
 void TextServerAdvanced::_font_set_spacing(const RID &p_font_rid, SpacingType p_spacing, int64_t p_value) {
-	ERR_FAIL_INDEX((int)p_spacing, 4);
+	ERR_FAIL_INDEX(p_spacing, SpacingType::SPACING_MAX);
 	FontAdvancedLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
 	if (fdv) {
 		if (fdv->extra_spacing[p_spacing] != p_value) {
@@ -2535,7 +2535,7 @@ void TextServerAdvanced::_font_set_spacing(const RID &p_font_rid, SpacingType p_
 }
 
 int64_t TextServerAdvanced::_font_get_spacing(const RID &p_font_rid, SpacingType p_spacing) const {
-	ERR_FAIL_INDEX_V((int)p_spacing, 4, 0);
+	ERR_FAIL_INDEX_V(p_spacing, SpacingType::SPACING_MAX, 0);
 	FontAdvancedLinkedVariation *fdv = font_var_owner.get_or_null(p_font_rid);
 	if (fdv) {
 		return fdv->extra_spacing[p_spacing];
@@ -4402,7 +4402,7 @@ bool TextServerAdvanced::_shaped_text_get_preserve_control(const RID &p_shaped) 
 }
 
 void TextServerAdvanced::_shaped_text_set_spacing(const RID &p_shaped, SpacingType p_spacing, int64_t p_value) {
-	ERR_FAIL_INDEX((int)p_spacing, 4);
+	ERR_FAIL_INDEX(p_spacing, SpacingType::SPACING_MAX);
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_NULL(sd);
 
@@ -4417,7 +4417,7 @@ void TextServerAdvanced::_shaped_text_set_spacing(const RID &p_shaped, SpacingTy
 }
 
 int64_t TextServerAdvanced::_shaped_text_get_spacing(const RID &p_shaped, SpacingType p_spacing) const {
-	ERR_FAIL_INDEX_V((int)p_spacing, 4, 0);
+	ERR_FAIL_INDEX_V(p_spacing, SpacingType::SPACING_MAX, 0);
 
 	const ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_NULL_V(sd, 0);

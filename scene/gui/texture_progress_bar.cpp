@@ -49,7 +49,7 @@ Ref<Texture2D> TextureProgressBar::get_over_texture() const {
 }
 
 void TextureProgressBar::set_stretch_margin(Side p_side, int p_size) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 
 	if (stretch_margin[p_side] == p_size) {
 		return;
@@ -61,7 +61,7 @@ void TextureProgressBar::set_stretch_margin(Side p_side, int p_size) {
 }
 
 int TextureProgressBar::get_stretch_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 	return stretch_margin[p_side];
 }
 

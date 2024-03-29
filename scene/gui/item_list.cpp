@@ -603,7 +603,7 @@ ItemList::SelectMode ItemList::get_select_mode() const {
 }
 
 void ItemList::set_icon_mode(IconMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 2);
+	ERR_FAIL_INDEX(p_mode, 2);
 	if (icon_mode != p_mode) {
 		icon_mode = p_mode;
 		for (int i = 0; i < items.size(); i++) {

@@ -120,7 +120,7 @@ public:
 	}
 	void free(const U &p_id) {
 		// should not be on free list already
-		ERR_FAIL_UNSIGNED_INDEX(p_id, list.size());
+		ERR_FAIL_INDEX(p_id, list.size());
 		freelist.push_back(p_id);
 		ERR_FAIL_COND_MSG(!_used_size, "_used_size has become out of sync, have you double freed an item?");
 		_used_size--;

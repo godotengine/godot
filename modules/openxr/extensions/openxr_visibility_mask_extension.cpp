@@ -171,7 +171,7 @@ RID OpenXRVisibilityMaskExtension::get_mesh() {
 
 void OpenXRVisibilityMaskExtension::_update_mesh_data(uint32_t p_view) {
 	if (available) {
-		ERR_FAIL_UNSIGNED_INDEX(p_view, 4);
+		ERR_FAIL_INDEX(p_view, 4);
 
 		OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 		ERR_FAIL_NULL(openxr_api);

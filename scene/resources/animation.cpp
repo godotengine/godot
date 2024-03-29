@@ -119,7 +119,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (what == "compressed_track") {
 			int index = p_value;
 			ERR_FAIL_COND_V(!compression.enabled, false);
-			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)index, compression.bounds.size(), false);
+			ERR_FAIL_INDEX_V(index, compression.bounds.size(), false);
 			Track *t = tracks[track];
 			t->interpolation = INTERPOLATION_LINEAR; //only linear supported
 			switch (t->type) {
@@ -2750,7 +2750,7 @@ void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND(t->type != TYPE_VALUE);
-	ERR_FAIL_INDEX((int)p_mode, 3);
+	ERR_FAIL_INDEX(p_mode, 3);
 
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 	vt->update_mode = p_mode;
@@ -5290,7 +5290,7 @@ bool Animation::_blend_shape_interpolate_compressed(uint32_t p_compressed_track,
 template <uint32_t COMPONENTS>
 bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Vector3i &r_current_value, double &r_current_time, Vector3i &r_next_value, double &r_next_time, uint32_t *key_index) const {
 	ERR_FAIL_COND_V(!compression.enabled, false);
-	ERR_FAIL_UNSIGNED_INDEX_V(p_compressed_track, compression.bounds.size(), false);
+	ERR_FAIL_INDEX_V(p_compressed_track, compression.bounds.size(), false);
 	p_time = CLAMP(p_time, 0, length);
 	if (key_index) {
 		*key_index = 0;
@@ -5436,7 +5436,7 @@ bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Ve
 template <uint32_t COMPONENTS>
 void Animation::_get_compressed_key_indices_in_range(uint32_t p_compressed_track, double p_time, double p_delta, List<int> *r_indices) const {
 	ERR_FAIL_COND(!compression.enabled);
-	ERR_FAIL_UNSIGNED_INDEX(p_compressed_track, compression.bounds.size());
+	ERR_FAIL_INDEX(p_compressed_track, compression.bounds.size());
 
 	double frame_to_sec = 1.0 / double(compression.fps);
 	uint32_t key_index = 0;
@@ -5517,7 +5517,7 @@ void Animation::_get_compressed_key_indices_in_range(uint32_t p_compressed_track
 
 int Animation::_get_compressed_key_count(uint32_t p_compressed_track) const {
 	ERR_FAIL_COND_V(!compression.enabled, -1);
-	ERR_FAIL_UNSIGNED_INDEX_V(p_compressed_track, compression.bounds.size(), -1);
+	ERR_FAIL_INDEX_V(p_compressed_track, compression.bounds.size(), -1);
 
 	int key_count = 0;
 
@@ -5553,7 +5553,7 @@ float Animation::_uncompress_blend_shape(const Vector3i &p_value) const {
 template <uint32_t COMPONENTS>
 bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_index, Vector3i &r_value, double &r_time) const {
 	ERR_FAIL_COND_V(!compression.enabled, false);
-	ERR_FAIL_UNSIGNED_INDEX_V(p_compressed_track, compression.bounds.size(), false);
+	ERR_FAIL_INDEX_V(p_compressed_track, compression.bounds.size(), false);
 
 	for (const Compression::Page &page : compression.pages) {
 		const uint8_t *page_data = page.data.ptr();

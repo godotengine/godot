@@ -189,7 +189,7 @@ bool AStarGrid2D::is_jumping_enabled() const {
 }
 
 void AStarGrid2D::set_diagonal_mode(DiagonalMode p_diagonal_mode) {
-	ERR_FAIL_INDEX((int)p_diagonal_mode, (int)DIAGONAL_MODE_MAX);
+	ERR_FAIL_INDEX(p_diagonal_mode, DIAGONAL_MODE_MAX);
 	diagonal_mode = p_diagonal_mode;
 }
 
@@ -198,7 +198,7 @@ AStarGrid2D::DiagonalMode AStarGrid2D::get_diagonal_mode() const {
 }
 
 void AStarGrid2D::set_default_compute_heuristic(Heuristic p_heuristic) {
-	ERR_FAIL_INDEX((int)p_heuristic, (int)HEURISTIC_MAX);
+	ERR_FAIL_INDEX(p_heuristic, HEURISTIC_MAX);
 	default_compute_heuristic = p_heuristic;
 }
 
@@ -207,7 +207,7 @@ AStarGrid2D::Heuristic AStarGrid2D::get_default_compute_heuristic() const {
 }
 
 void AStarGrid2D::set_default_estimate_heuristic(Heuristic p_heuristic) {
-	ERR_FAIL_INDEX((int)p_heuristic, (int)HEURISTIC_MAX);
+	ERR_FAIL_INDEX(p_heuristic, HEURISTIC_MAX);
 	default_estimate_heuristic = p_heuristic;
 }
 

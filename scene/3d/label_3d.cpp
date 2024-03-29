@@ -650,7 +650,7 @@ String Label3D::get_text() const {
 }
 
 void Label3D::set_horizontal_alignment(HorizontalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX(p_alignment, 4);
 	if (horizontal_alignment != p_alignment) {
 		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 			dirty_lines = true; // Reshape lines.
@@ -665,7 +665,7 @@ HorizontalAlignment Label3D::get_horizontal_alignment() const {
 }
 
 void Label3D::set_vertical_alignment(VerticalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX(p_alignment, 4);
 	if (vertical_alignment != p_alignment) {
 		vertical_alignment = p_alignment;
 		_queue_update();

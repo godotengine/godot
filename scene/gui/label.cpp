@@ -968,7 +968,7 @@ int Label::get_visible_line_count() const {
 }
 
 void Label::set_horizontal_alignment(HorizontalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX(p_alignment, 4);
 	if (horizontal_alignment == p_alignment) {
 		return;
 	}
@@ -988,7 +988,7 @@ HorizontalAlignment Label::get_horizontal_alignment() const {
 }
 
 void Label::set_vertical_alignment(VerticalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX(p_alignment, 4);
 
 	if (vertical_alignment == p_alignment) {
 		return;

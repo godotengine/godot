@@ -718,7 +718,7 @@ void Control::_set_anchor(Side p_side, real_t p_anchor) {
 
 void Control::set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset, bool p_push_opposite_anchor) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 
 	Rect2 parent_rect = get_parent_anchorable_rect();
 	real_t parent_range = (p_side == SIDE_LEFT || p_side == SIDE_RIGHT) ? parent_rect.size.x : parent_rect.size.y;
@@ -751,14 +751,14 @@ void Control::set_anchor(Side p_side, real_t p_anchor, bool p_keep_offset, bool 
 
 real_t Control::get_anchor(Side p_side) const {
 	ERR_READ_THREAD_GUARD_V(0);
-	ERR_FAIL_INDEX_V(int(p_side), 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 
 	return data.anchor[p_side];
 }
 
 void Control::set_offset(Side p_side, real_t p_value) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 	if (data.offset[p_side] == p_value) {
 		return;
 	}
@@ -769,7 +769,7 @@ void Control::set_offset(Side p_side, real_t p_value) {
 
 real_t Control::get_offset(Side p_side) const {
 	ERR_READ_THREAD_GUARD_V(0);
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 
 	return data.offset[p_side];
 }
@@ -819,7 +819,7 @@ void Control::set_h_grow_direction(GrowDirection p_direction) {
 		return;
 	}
 
-	ERR_FAIL_INDEX((int)p_direction, 3);
+	ERR_FAIL_INDEX(p_direction, 3);
 
 	data.h_grow = p_direction;
 	_size_changed();
@@ -836,7 +836,7 @@ void Control::set_v_grow_direction(GrowDirection p_direction) {
 		return;
 	}
 
-	ERR_FAIL_INDEX((int)p_direction, 3);
+	ERR_FAIL_INDEX(p_direction, 3);
 
 	data.v_grow = p_direction;
 	_size_changed();
@@ -1069,7 +1069,7 @@ int Control::_get_anchors_layout_preset() const {
 
 void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX((int)p_preset, 16);
+	ERR_FAIL_INDEX(p_preset, 16);
 
 	//Left
 	switch (p_preset) {
@@ -1186,8 +1186,8 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 
 void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode, int p_margin) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX((int)p_preset, 16);
-	ERR_FAIL_INDEX((int)p_resize_mode, 4);
+	ERR_FAIL_INDEX(p_preset, 16);
+	ERR_FAIL_INDEX(p_resize_mode, 4);
 
 	// Calculate the size if the node is not resized
 	Size2 min_size = get_minimum_size();
@@ -2000,7 +2000,7 @@ bool Control::is_drag_successful() const {
 
 void Control::set_focus_mode(FocusMode p_focus_mode) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX((int)p_focus_mode, 3);
+	ERR_FAIL_INDEX(p_focus_mode, 3);
 
 	if (is_inside_tree() && p_focus_mode == FOCUS_NONE && data.focus_mode != FOCUS_NONE && has_focus()) {
 		release_focus();
@@ -2223,13 +2223,13 @@ Control *Control::find_prev_valid_focus() const {
 
 void Control::set_focus_neighbor(Side p_side, const NodePath &p_neighbor) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 	data.focus_neighbor[p_side] = p_neighbor;
 }
 
 NodePath Control::get_focus_neighbor(Side p_side) const {
 	ERR_READ_THREAD_GUARD_V(NodePath());
-	ERR_FAIL_INDEX_V((int)p_side, 4, NodePath());
+	ERR_FAIL_INDEX_V(p_side, 4, NodePath());
 	return data.focus_neighbor[p_side];
 }
 
@@ -2256,7 +2256,7 @@ NodePath Control::get_focus_previous() const {
 #define MAX_NEIGHBOR_SEARCH_COUNT 512
 
 Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
-	ERR_FAIL_INDEX_V((int)p_side, 4, nullptr);
+	ERR_FAIL_INDEX_V(p_side, 4, nullptr);
 
 	if (p_count >= MAX_NEIGHBOR_SEARCH_COUNT) {
 		return nullptr;
@@ -2420,7 +2420,7 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 
 void Control::set_default_cursor_shape(CursorShape p_shape) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX(int(p_shape), CURSOR_MAX);
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
 	if (data.default_cursor == p_shape) {
 		return;

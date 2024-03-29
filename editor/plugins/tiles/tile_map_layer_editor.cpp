@@ -3310,7 +3310,7 @@ void TileMapLayerEditorTerrainsPlugin::_update_terrains_cache() {
 					TileData *tile_data = atlas_source->get_tile_data(tile_id, alternative_id);
 					int terrain_set = tile_data->get_terrain_set();
 					if (terrain_set >= 0) {
-						ERR_FAIL_INDEX(terrain_set, (int)per_terrain_terrains_patterns.size());
+						ERR_FAIL_INDEX(terrain_set, per_terrain_terrains_patterns.size());
 
 						TileMapCell cell;
 						cell.source_id = source_id;

@@ -920,7 +920,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void LineEdit::set_horizontal_alignment(HorizontalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX(p_alignment, 4);
 	if (alignment == p_alignment) {
 		return;
 	}

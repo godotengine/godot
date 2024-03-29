@@ -48,7 +48,7 @@ Size2 StyleBox::get_minimum_size() const {
 }
 
 void StyleBox::set_content_margin(Side p_side, float p_value) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 
 	content_margin[p_side] = p_value;
 	emit_changed();
@@ -70,13 +70,13 @@ void StyleBox::set_content_margin_individual(float p_left, float p_top, float p_
 }
 
 float StyleBox::get_content_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 
 	return content_margin[p_side];
 }
 
 float StyleBox::get_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 
 	if (content_margin[p_side] < 0) {
 		return get_style_margin(p_side);

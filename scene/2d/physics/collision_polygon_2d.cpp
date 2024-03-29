@@ -203,7 +203,7 @@ Vector<Point2> CollisionPolygon2D::get_polygon() const {
 }
 
 void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 2);
+	ERR_FAIL_INDEX(p_mode, 2);
 	build_mode = p_mode;
 	if (collision_object) {
 		_build_polygon();

@@ -127,7 +127,7 @@ bool RenderingLightCuller::cull_directional_light(const RendererSceneCull::Insta
 		return true;
 	}
 
-	ERR_FAIL_INDEX_V(p_directional_light_id, (int32_t)data.directional_cull_planes.size(), true);
+	ERR_FAIL_INDEX_V(p_directional_light_id, data.directional_cull_planes.size(), true);
 
 	LightCullPlanes &cull_planes = data.directional_cull_planes[p_directional_light_id];
 

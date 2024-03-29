@@ -1407,12 +1407,12 @@ int TileSet::add_pattern(Ref<TileMapPattern> p_pattern, int p_index) {
 }
 
 Ref<TileMapPattern> TileSet::get_pattern(int p_index) {
-	ERR_FAIL_INDEX_V(p_index, (int)patterns.size(), Ref<TileMapPattern>());
+	ERR_FAIL_INDEX_V(p_index, patterns.size(), Ref<TileMapPattern>());
 	return patterns[p_index];
 }
 
 void TileSet::remove_pattern(int p_index) {
-	ERR_FAIL_INDEX(p_index, (int)patterns.size());
+	ERR_FAIL_INDEX(p_index, patterns.size());
 	patterns.remove_at(p_index);
 	emit_changed();
 }
@@ -5162,7 +5162,7 @@ int TileSetAtlasSource::get_tile_animation_frames_count(const Vector2i p_atlas_c
 
 void TileSetAtlasSource::set_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index, real_t p_duration) {
 	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
-	ERR_FAIL_INDEX(p_frame_index, (int)tiles[p_atlas_coords].animation_frames_durations.size());
+	ERR_FAIL_INDEX(p_frame_index, tiles[p_atlas_coords].animation_frames_durations.size());
 	ERR_FAIL_COND(p_duration <= 0.0);
 
 	tiles[p_atlas_coords].animation_frames_durations[p_frame_index] = p_duration;
@@ -5172,7 +5172,7 @@ void TileSetAtlasSource::set_tile_animation_frame_duration(const Vector2i p_atla
 
 real_t TileSetAtlasSource::get_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index) const {
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
-	ERR_FAIL_INDEX_V(p_frame_index, (int)tiles[p_atlas_coords].animation_frames_durations.size(), 0.0);
+	ERR_FAIL_INDEX_V(p_frame_index, tiles[p_atlas_coords].animation_frames_durations.size(), 0.0);
 	return tiles[p_atlas_coords].animation_frames_durations[p_frame_index];
 }
 
@@ -5296,7 +5296,7 @@ PackedVector2Array TileSetAtlasSource::get_tiles_to_be_removed_on_change(Ref<Tex
 
 Rect2i TileSetAtlasSource::get_tile_texture_region(Vector2i p_atlas_coords, int p_frame) const {
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Rect2i(), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_INDEX_V(p_frame, (int)tiles[p_atlas_coords].animation_frames_durations.size(), Rect2i());
+	ERR_FAIL_INDEX_V(p_frame, tiles[p_atlas_coords].animation_frames_durations.size(), Rect2i());
 
 	const TileAlternativesData &tad = tiles[p_atlas_coords];
 
@@ -5346,7 +5346,7 @@ Ref<Texture2D> TileSetAtlasSource::get_runtime_texture() const {
 
 Rect2i TileSetAtlasSource::get_runtime_tile_texture_region(Vector2i p_atlas_coords, int p_frame) const {
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Rect2i(), vformat("TileSetAtlasSource has no tile at %s.", String(p_atlas_coords)));
-	ERR_FAIL_INDEX_V(p_frame, (int)tiles[p_atlas_coords].animation_frames_durations.size(), Rect2i());
+	ERR_FAIL_INDEX_V(p_frame, tiles[p_atlas_coords].animation_frames_durations.size(), Rect2i());
 
 	Rect2i src_rect = get_tile_texture_region(p_atlas_coords, p_frame);
 	if (use_texture_padding) {
@@ -6462,7 +6462,7 @@ int TileData::get_collision_polygon_shapes_count(int p_layer_id, int p_polygon_i
 Ref<ConvexPolygonShape2D> TileData::get_collision_polygon_shape(int p_layer_id, int p_polygon_index, int shape_index, bool p_flip_h, bool p_flip_v, bool p_transpose) const {
 	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Ref<ConvexPolygonShape2D>());
 	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), Ref<ConvexPolygonShape2D>());
-	ERR_FAIL_INDEX_V(shape_index, (int)physics[p_layer_id].polygons[p_polygon_index].shapes.size(), Ref<ConvexPolygonShape2D>());
+	ERR_FAIL_INDEX_V(shape_index, physics[p_layer_id].polygons[p_polygon_index].shapes.size(), Ref<ConvexPolygonShape2D>());
 
 	const PhysicsLayerTileData &layer_tile_data = physics[p_layer_id];
 	const PhysicsLayerTileData::PolygonShapeTileData &shapes_data = layer_tile_data.polygons[p_polygon_index];

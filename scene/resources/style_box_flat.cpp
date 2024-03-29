@@ -33,7 +33,7 @@
 #include "servers/rendering_server.h"
 
 float StyleBoxFlat::get_style_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 	return border_width[p_side];
 }
 
@@ -74,13 +74,13 @@ int StyleBoxFlat::get_border_width_min() const {
 }
 
 void StyleBoxFlat::set_border_width(Side p_side, int p_width) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 	border_width[p_side] = p_width;
 	emit_changed();
 }
 
 int StyleBoxFlat::get_border_width(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 	return border_width[p_side];
 }
 
@@ -94,7 +94,7 @@ bool StyleBoxFlat::get_border_blend() const {
 }
 
 void StyleBoxFlat::set_corner_radius(const Corner p_corner, const int radius) {
-	ERR_FAIL_INDEX((int)p_corner, 4);
+	ERR_FAIL_INDEX(p_corner, 4);
 	corner_radius[p_corner] = radius;
 	emit_changed();
 }
@@ -117,7 +117,7 @@ void StyleBoxFlat::set_corner_radius_individual(const int radius_top_left, const
 }
 
 int StyleBoxFlat::get_corner_radius(const Corner p_corner) const {
-	ERR_FAIL_INDEX_V((int)p_corner, 4, 0);
+	ERR_FAIL_INDEX_V(p_corner, 4, 0);
 	return corner_radius[p_corner];
 }
 
@@ -131,7 +131,7 @@ int StyleBoxFlat::get_corner_detail() const {
 }
 
 void StyleBoxFlat::set_expand_margin(Side p_side, float p_size) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 	expand_margin[p_side] = p_size;
 	emit_changed();
 }
@@ -152,7 +152,7 @@ void StyleBoxFlat::set_expand_margin_individual(float p_left, float p_top, float
 }
 
 float StyleBoxFlat::get_expand_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 	return expand_margin[p_side];
 }
 
