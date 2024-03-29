@@ -114,8 +114,9 @@
 		<method name="is_polygon_clockwise">
 			<return type="bool" />
 			<param index="0" name="polygon" type="PackedVector2Array" />
+			<param index="1" name="handedness" type="int" enum="Geometry2D.PolyHandedness" default="0" />
 			<description>
-				Returns [code]true[/code] if [param polygon]'s vertices are ordered in clockwise order, otherwise returns [code]false[/code].
+				Returns [code]true[/code] if [param polygon]'s vertices are ordered in clockwise order, otherwise returns [code]false[/code]. The result depends on [param handedness], which is used to determine if the coordinate space of the vertices is [constant RIGHT_HANDED] or [constant LEFT_HANDED].
 			</description>
 		</method>
 		<method name="line_intersects_line">
@@ -265,6 +266,12 @@
 		</constant>
 		<constant name="END_ROUND" value="4" enum="PolyEndType">
 			Endpoints are rounded off and extended by [code]delta[/code] units.
+		</constant>
+		<constant name="RIGHT_HANDED" value="0" enum="PolyHandedness">
+			Vertices are in a right-handed coordinate system (the x-axis is positive rightwards and the y-axis is positive upwards or the x-axis is positive leftwards and the y-axis is positive downwards).
+		</constant>
+		<constant name="LEFT_HANDED" value="1" enum="PolyHandedness">
+			Vertices are in a left-handed coordinate system (the x-axis is positive rightwards and the y-axis is positive downwards or the x-axis is positive leftwards and the y-axis is positive upwards).
 		</constant>
 	</constants>
 </class>

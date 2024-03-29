@@ -248,3 +248,10 @@ Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/register_tex
 Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/remove_button/arguments/0': type changed value in new API, from "Control" to "Button".
 
 Changed argument type to the more specific one actually expected by the method. Compatibility method registered.
+
+
+GH-89635
+--------
+Validate extension JSON: Error: Field 'classes/Geometry2D/methods/is_polygon_clockwise/arguments': size changed value in new API, from 1 to 2.
+
+Added handedness argument. Compatibility method registered.
