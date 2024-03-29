@@ -99,6 +99,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
+		register_annotation(MethodInfo("@observable", PropertyInfo(Variant::STRING, "signal_name"), PropertyInfo(Variant::BOOL, "compare_values")), AnnotationInfo::VARIABLE, &GDScriptParser::observable_annotation, varray(true));
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 		register_annotation(MethodInfo("@export_storage"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
@@ -4105,6 +4106,200 @@ bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node
 	return true;
 }
 
+bool GDScriptParser::observable_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, R"("@observable" annotation can only be applied to class variables.)");
+	ERR_FAIL_COND_V_MSG(p_annotation->resolved_arguments.is_empty(), false, R"("@observable" annotation requires at least 1 argument.)");
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+
+	if (variable->observable) {
+		push_error(R"("@observable" annotation can only be used once per variable.)", p_annotation);
+		return false;
+	}
+
+	if (variable->is_static) {
+		push_error(R"("@observable" annotation cannot be applied to a static variable.)", p_annotation);
+		return false;
+	}
+
+	if (variable->property != VariableNode::PROP_NONE) {
+		push_error(R"("@observable" annotation cannot be applied to properties.)", p_annotation);
+		return false;
+	}
+
+	String signal_name = p_annotation->resolved_arguments[0];
+
+	bool create_new_signal = true;
+	SignalNode *signal = nullptr;
+
+	if (current_class->has_member(signal_name)) {
+		ClassNode::Member existing_signal = current_class->get_member(signal_name);
+		if (existing_signal.type == ClassNode::Member::SIGNAL) {
+			create_new_signal = false;
+			signal = existing_signal.signal;
+		} else {
+			push_error(R"("@observable" annotation must provide a unique name or the name of an existing signal.)", p_annotation);
+			return false;
+		}
+	}
+
+	bool compare_values = true;
+
+	if (p_annotation->resolved_arguments.size() > 1) {
+		compare_values = p_annotation->resolved_arguments[1];
+	}
+
+	// This annotation will effectively generate the following code:
+	//
+	//     @observable("my_variable_changed")
+	//     var my_variable: float
+	//         set(@new_value):
+	//             if is_same(my_variable, @new_value): return
+	//             var @old_value: float = my_variable
+	//             my_variable = @new_value
+	//             my_variable_changed.emit(my_variable, @old_value)
+	//
+	//     signal my_variable_changed(new_value: float, old_value: float)
+
+	// Create a helper reference for the target variable.
+
+	IdentifierNode *variable_ref = alloc_node<IdentifierNode>();
+	variable_ref->name = variable->identifier->name;
+	variable_ref->source = IdentifierNode::MEMBER_VARIABLE;
+	variable_ref->variable_source = variable;
+
+	// Create the signal.
+
+	if (create_new_signal) {
+		signal = alloc_node<SignalNode>();
+		signal->identifier = alloc_node<IdentifierNode>();
+		signal->identifier->name = signal_name;
+		reset_extents(signal, p_annotation);
+
+		ParameterNode *signal_parameter_new = alloc_node<ParameterNode>();
+		signal_parameter_new->identifier = alloc_node<IdentifierNode>();
+		signal_parameter_new->identifier->name = "new_value";
+		signal_parameter_new->datatype_specifier = variable->datatype_specifier;
+		signal_parameter_new->datatype = variable->datatype;
+		signal->parameters.push_back(signal_parameter_new);
+
+		ParameterNode *signal_parameter_old = alloc_node<ParameterNode>();
+		signal_parameter_old->identifier = alloc_node<IdentifierNode>();
+		signal_parameter_old->identifier->name = "old_value";
+		signal_parameter_old->datatype_specifier = variable->datatype_specifier;
+		signal_parameter_old->datatype = variable->datatype;
+		signal->parameters.push_back(signal_parameter_old);
+	}
+
+	// Create the setter function.
+
+	FunctionNode *setter_function = alloc_node<FunctionNode>();
+	setter_function->identifier = alloc_node<IdentifierNode>();
+	setter_function->identifier->name = "@" + variable->identifier->name + "_setter";
+
+	SuiteNode *setter_body = alloc_node<SuiteNode>();
+	setter_function->body = setter_body;
+
+	ParameterNode *setter_parameter = alloc_node<ParameterNode>();
+	setter_parameter->identifier = alloc_node<IdentifierNode>();
+	setter_parameter->identifier->name = "@new_value";
+	setter_parameter->datatype_specifier = variable->datatype_specifier;
+	setter_parameter->datatype = variable->datatype;
+	setter_function->parameters.push_back(setter_parameter);
+	setter_function->parameters_indices[setter_parameter->identifier->name] = 0;
+	setter_body->add_local(setter_parameter, setter_function);
+
+	IdentifierNode *setter_parameter_ref = alloc_node<IdentifierNode>();
+	setter_parameter_ref->name = setter_parameter->identifier->name;
+	setter_parameter_ref->source = IdentifierNode::FUNCTION_PARAMETER;
+	setter_parameter_ref->parameter_source = setter_parameter;
+
+	// Create the setter if-statement.
+
+	if (compare_values) {
+		IdentifierNode *is_same_ref = alloc_node<IdentifierNode>();
+		is_same_ref->name = "is_same";
+
+		CallNode *is_same_call = alloc_node<CallNode>();
+		is_same_call->callee = is_same_ref;
+		is_same_call->function_name = is_same_ref->name;
+		is_same_call->arguments.push_back(variable_ref);
+		is_same_call->arguments.push_back(setter_parameter_ref);
+
+		SuiteNode *setter_if_block = alloc_node<SuiteNode>();
+		setter_if_block->statements.push_back(alloc_node<ReturnNode>());
+
+		IfNode *setter_if = alloc_node<IfNode>();
+		setter_if->condition = is_same_call;
+		setter_if->true_block = setter_if_block;
+
+		setter_body->statements.push_back(setter_if);
+	}
+
+	// Create variable to hold the old value.
+
+	VariableNode *old_value_variable = alloc_node<VariableNode>();
+	old_value_variable->identifier = alloc_node<IdentifierNode>();
+	old_value_variable->identifier->name = "@old_value";
+	old_value_variable->datatype_specifier = variable->datatype_specifier;
+	old_value_variable->datatype = variable->datatype;
+	old_value_variable->initializer = variable_ref;
+	old_value_variable->assignments = 1;
+	reset_extents(old_value_variable, p_annotation);
+
+	setter_body->add_local(old_value_variable, setter_function);
+	setter_body->statements.push_back(old_value_variable);
+
+	// Create the setter assignment.
+
+	AssignmentNode *setter_assignment = alloc_node<AssignmentNode>();
+	setter_assignment->assignee = variable_ref;
+	setter_assignment->assigned_value = setter_parameter_ref;
+
+	setter_body->statements.push_back(setter_assignment);
+
+	// Create the signal emit call.
+
+	IdentifierNode *signal_ref = alloc_node<IdentifierNode>();
+	signal_ref->name = signal->identifier->name;
+	signal_ref->source = IdentifierNode::MEMBER_SIGNAL;
+	signal_ref->signal_source = signal;
+
+	SubscriptNode *emit_subscript = alloc_node<SubscriptNode>();
+	emit_subscript->base = signal_ref;
+	emit_subscript->attribute = alloc_node<IdentifierNode>();
+	emit_subscript->attribute->name = "emit";
+	emit_subscript->is_attribute = true;
+
+	CallNode *emit_call = alloc_node<CallNode>();
+	emit_call->callee = emit_subscript;
+	emit_call->function_name = emit_subscript->attribute->name;
+
+	IdentifierNode *old_value_ref = alloc_node<IdentifierNode>();
+	old_value_ref->name = old_value_variable->identifier->name;
+	old_value_ref->source = IdentifierNode::LOCAL_VARIABLE;
+	old_value_ref->variable_source = old_value_variable;
+	old_value_variable->usages++;
+
+	emit_call->arguments.push_back(variable_ref);
+	emit_call->arguments.push_back(old_value_ref);
+
+	setter_body->statements.push_back(emit_call);
+
+	// Actually modify the parse context by adding the signal and the setter.
+
+	if (create_new_signal) {
+		current_class->add_member(signal);
+	}
+
+	variable->property = VariableNode::PROP_INLINE;
+	variable->setter = setter_function;
+	variable->setter_parameter = setter_parameter->identifier;
+	variable->observable = true;
+
+	return true;
+}
+
 static String _get_annotation_error_string(const StringName &p_annotation_name, const Vector<Variant::Type> &p_expected_types, const GDScriptParser::DataType &p_provided_type) {
 	Vector<String> types;
 	for (int i = 0; i < p_expected_types.size(); i++) {
@@ -4875,7 +5070,7 @@ void GDScriptParser::reset_extents(Node *p_node, GDScriptTokenizer::Token p_toke
 	p_node->rightmost_column = p_token.rightmost_column;
 }
 
-void GDScriptParser::reset_extents(Node *p_node, Node *p_from) {
+void GDScriptParser::reset_extents(Node *p_node, const Node *p_from) {
 	if (p_from == nullptr) {
 		return;
 	}
