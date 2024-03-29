@@ -1784,7 +1784,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	VkImageView vk_image_view = VK_NULL_HANDLE;
 	err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
 	if (err) {
-		vkDestroyImage(vk_device, vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER));
+		vkDestroyImage(vk_device, vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE));
 		vmaFreeMemory(allocator, allocation);
 		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
 	}

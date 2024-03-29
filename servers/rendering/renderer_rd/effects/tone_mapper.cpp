@@ -37,8 +37,12 @@ using namespace RendererRD;
 
 ToneMapper::ToneMapper() {
 	{
-		params_uniform_buffer = (RID *)memalloc(sizeof(RID) * RD::get_singleton()->get_frame_delay());
-		params_uniform_set = (RID *)memalloc(sizeof(RID) * RD::get_singleton()->get_frame_delay());
+		uint32_t RID_size = sizeof(RID) * RD::get_singleton()->get_frame_delay();
+		params_uniform_buffer = (RID *)memalloc(RID_size);
+		params_uniform_set = (RID *)memalloc(RID_size);
+
+		memset(params_uniform_buffer, 0, RID_size);
+		memset(params_uniform_set, 0, RID_size);
 
 		// Initialize tonemapper
 		Vector<String> tonemap_modes;
@@ -347,6 +351,8 @@ void ToneMapper::prepare_params(const TonemapSettings& p_settings) {
 	u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 	u.append_id(params_uniform_buffer[frame]);
 	params_uniforms.push_back(u);
+	if (params_uniform_set[frame].is_valid())
+		RD::get_singleton()->free(params_uniform_set[frame]);
 	params_uniform_set[frame] = RD::RenderingDevice::get_singleton()->uniform_set_create(params_uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 4, true);
 
 }

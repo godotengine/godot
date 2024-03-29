@@ -47,11 +47,16 @@ CopyEffects::CopyEffects(bool p_prefer_raster_effects) {
 	singleton = this;
 	prefer_raster_effects = p_prefer_raster_effects;
 
-	copy_to_fb.params_uniform_buffer = (RID *)memalloc(sizeof(RID) * RD::get_singleton()->get_frame_delay());
-	copy_to_fb.params_uniform_set = (RID *)memalloc(sizeof(RID) * RD::get_singleton()->get_frame_delay());
+	uint32_t RID_size = sizeof(RID) * RD::get_singleton()->get_frame_delay();
+	copy_to_fb.params_uniform_buffer = (RID *)memalloc(RID_size);
+	copy_to_fb.params_uniform_set = (RID *)memalloc(RID_size);
+	memset(copy_to_fb.params_uniform_buffer, 0, RID_size);
+	memset(copy_to_fb.params_uniform_set, 0, RID_size);
 
-	copy.params_uniform_buffer = (RID *)memalloc(sizeof(RID) * RD::get_singleton()->get_frame_delay());
-	copy.params_uniform_set = (RID *)memalloc(sizeof(RID) * RD::get_singleton()->get_frame_delay());
+	copy.params_uniform_buffer = (RID *)memalloc(RID_size);
+	copy.params_uniform_set = (RID *)memalloc(RID_size);
+	memset(copy.params_uniform_buffer, 0, RID_size);
+	memset(copy.params_uniform_set, 0, RID_size);
 
 	if (prefer_raster_effects) {
 		// init blur shader (on compute use copy shader)
@@ -409,11 +414,15 @@ CopyEffects::~CopyEffects() {
 // </TF>
 
 	for (uint32_t i = 0; i < RD::get_singleton()->get_frame_delay(); i++) {
-		RD::get_singleton()->free(copy.params_uniform_buffer[i]);
-		RD::get_singleton()->free(copy.params_uniform_set[i]);
+		if (copy.params_uniform_buffer[i].is_valid())
+			RD::get_singleton()->free(copy.params_uniform_buffer[i]);
+		if (copy.params_uniform_set[i].is_valid())
+			RD::get_singleton()->free(copy.params_uniform_set[i]);
 
-		RD::get_singleton()->free(copy_to_fb.params_uniform_buffer[i]);
-		RD::get_singleton()->free(copy_to_fb.params_uniform_set[i]);
+		if (copy_to_fb.params_uniform_buffer[i].is_valid())
+			RD::get_singleton()->free(copy_to_fb.params_uniform_buffer[i]);
+		if (copy_to_fb.params_uniform_set[i].is_valid())
+			RD::get_singleton()->free(copy_to_fb.params_uniform_set[i]);
 	}
 
 	memfree(copy_to_fb.params_uniform_buffer);
@@ -434,6 +443,9 @@ void CopyEffects::_update_copy_to_fb_uniform_set(const CopyToFbPushConstant* p_b
 		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 		u.append_id(copy_to_fb.params_uniform_buffer[frame]);
 		params_uniforms.push_back(u);
+
+		if (copy_to_fb.params_uniform_set[frame].is_valid())
+			RD::get_singleton()->free(copy_to_fb.params_uniform_set[frame]);
 		copy_to_fb.params_uniform_set[frame] = RD::RenderingDevice::get_singleton()->uniform_set_create(params_uniforms, copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, 0), 4, true);
 	}
 }
@@ -448,6 +460,9 @@ void CopyEffects::_update_copy_uniform_set(const CopyPushConstant* p_buffer) {
 		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 		u.append_id(copy.params_uniform_buffer[frame]);
 		params_uniforms.push_back(u);
+
+		if (copy.params_uniform_set[frame].is_valid())
+			RD::get_singleton()->free(copy.params_uniform_set[frame]);
 		copy.params_uniform_set[frame] = RD::RenderingDevice::get_singleton()->uniform_set_create(params_uniforms, copy.shader.version_get_shader(copy.shader_version, 0), 4, true);
 	}
 }
