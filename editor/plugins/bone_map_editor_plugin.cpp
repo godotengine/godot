@@ -1138,7 +1138,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 				children.erase(ls_idx);
 				children.erase(rs_idx);
 				String word = "spine"; // It would be better to limit the search with "spine" because it could be mistaken with breast, wing and etc...
-				for (int i = 0; children.size(); i++) {
+				for (int i = 0; i < children.size(); i++) {
 					bone_idx = children[i];
 					if (is_match_with_bone_name(skeleton->get_bone_name(bone_idx), word)) {
 						neck = bone_idx;
