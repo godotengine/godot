@@ -47,6 +47,7 @@ class MovieWriter : public Object {
 
 	String project_name;
 
+
 	LocalVector<int32_t> audio_mix_buffer;
 
 	enum {
@@ -56,6 +57,8 @@ class MovieWriter : public Object {
 	static uint32_t writer_count;
 
 protected:
+	String base_path;
+
 	virtual uint32_t get_audio_mix_rate() const;
 	virtual AudioServer::SpeakerMode get_audio_speaker_mode() const;
 
