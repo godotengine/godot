@@ -287,8 +287,8 @@ int AudioDriverCoreAudio::get_mix_rate() const {
 	return mix_rate;
 }
 
-int AudioDriverCoreAudio::get_capture_mix_rate() const {
-	return capture_mix_rate;
+int AudioDriverCoreAudio::get_input_mix_rate() const {
+	return input_mix_rate;
 }
 
 AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
@@ -436,13 +436,13 @@ Error AudioDriverCoreAudio::init_input_device() {
 #else
 	double hw_mix_rate = [AVAudioSession sharedInstance].sampleRate;
 #endif
-	capture_mix_rate = hw_mix_rate;
+	input_mix_rate = hw_mix_rate;
 
 	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
 	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
 	strdesc.mChannelsPerFrame = capture_channels;
-	strdesc.mSampleRate = capture_mix_rate;
+	strdesc.mSampleRate = input_mix_rate;
 	strdesc.mFramesPerPacket = 1;
 	strdesc.mBitsPerChannel = 16;
 	strdesc.mBytesPerFrame = strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
@@ -453,7 +453,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 
 	int latency = Engine::get_singleton()->get_audio_output_latency();
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
-	capture_buffer_frames = closest_power_of_2(latency * capture_mix_rate / 1000);
+	capture_buffer_frames = closest_power_of_2(latency * input_mix_rate / 1000);
 
 	unsigned int buffer_size = capture_buffer_frames * capture_channels;
 	input_buf.resize(buffer_size);
@@ -468,8 +468,8 @@ Error AudioDriverCoreAudio::init_input_device() {
 	result = AudioUnitInitialize(input_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	print_verbose("CoreAudio: input sampling rate: " + itos(capture_mix_rate) + " Hz");
-	print_verbose("CoreAudio: input audio buffer frames: " + itos(capture_buffer_frames) + " calculated latency: " + itos(capture_buffer_frames * 1000 / capture_mix_rate) + "ms");
+	print_verbose("CoreAudio: input sampling rate: " + itos(input_mix_rate) + " Hz");
+	print_verbose("CoreAudio: input audio buffer frames: " + itos(capture_buffer_frames) + " calculated latency: " + itos(capture_buffer_frames * 1000 / input_mix_rate) + "ms");
 
 	return OK;
 }
