@@ -4,7 +4,8 @@
 		Imports a WAV audio file for playback.
 	</brief_description>
 	<description>
-		WAV is an uncompressed format, which can provide higher quality compared to Ogg Vorbis and MP3. It also has the lowest CPU cost to decode. This means high numbers of WAV sounds can be played at the same time, even on low-end deviceS.
+		WAV is an uncompressed format, which can provide higher quality compared to Ogg Vorbis and MP3. It also has the lowest CPU cost to decode. This means high numbers of WAV sounds can be played at the same time, even on low-end devices.
+		If you wish to save space while sacrificing a bit of quality, consider importing as QOA instead.
 	</description>
 	<tutorials>
 		<link title="Importing audio samples">$DOCS_URL/tutorials/assets_pipeline/importing_audio_samples.html</link>

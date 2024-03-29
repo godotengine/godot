@@ -36,6 +36,10 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/audio_stream_wav.h"
 
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_QOA_ENABLED
+#include "modules/qoa/audio_stream_qoa.h"
+#endif
 // AudioStreamEditor
 
 void AudioStreamEditor::_notification(int p_what) {
@@ -266,7 +270,11 @@ AudioStreamEditor::AudioStreamEditor() {
 // EditorInspectorPluginAudioStream
 
 bool EditorInspectorPluginAudioStream::can_handle(Object *p_object) {
+#ifdef MODULE_QOA_ENABLED
+	return Object::cast_to<AudioStreamQOA>(p_object) != nullptr || Object::cast_to<AudioStreamWAV>(p_object) != nullptr;
+#else
 	return Object::cast_to<AudioStreamWAV>(p_object) != nullptr;
+#endif
 }
 
 void EditorInspectorPluginAudioStream::parse_begin(Object *p_object) {
