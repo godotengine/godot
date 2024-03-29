@@ -65,7 +65,7 @@ struct _NO_DISCARD_ Projection {
 		return columns[p_axis];
 	}
 
-	float determinant() const;
+	real_t determinant() const;
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
@@ -148,7 +148,7 @@ struct _NO_DISCARD_ Projection {
 		return !(*this == p_cam);
 	}
 
-	float get_lod_multiplier() const;
+	real_t get_lod_multiplier() const;
 
 	Projection();
 	Projection(const Vector4 &p_x, const Vector4 &p_y, const Vector4 &p_z, const Vector4 &p_w);
