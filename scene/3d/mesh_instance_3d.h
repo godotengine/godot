@@ -75,6 +75,8 @@ public:
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
 
+	Ref<SkinReference> get_skin_reference() const;
+
 	int get_blend_shape_count() const;
 	int find_blend_shape_by_name(const StringName &p_name);
 	float get_blend_shape_value(int p_blend_shape) const;
