@@ -1,4 +1,5 @@
 #include "body_animator.h"
+#include "body_main.h"
 
 void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array)
 {
@@ -148,7 +149,7 @@ void CharacterAnimatorLayer::layer_blend_apply() {
 						return;
 					}
 					if (t->loc_used) {
-                        if(m_BlendType == BT_Blend)
+                        if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
                         {
 						    t_skeleton->set_bone_pose_position(t->bone_idx, t_skeleton->get_bone_pose_position(t->bone_idx).lerp(t->loc,blend_weight));
                         }
@@ -158,7 +159,7 @@ void CharacterAnimatorLayer::layer_blend_apply() {
                         }
 					}
 					if (t->rot_used) {
-                        if(m_BlendType == BT_Blend)
+                        if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
                         {
                             t_skeleton->set_bone_pose_rotation(t->bone_idx, t_skeleton->get_bone_pose_rotation(t->bone_idx).slerp(t->rot,blend_weight));
                         }
@@ -168,7 +169,7 @@ void CharacterAnimatorLayer::layer_blend_apply() {
                         }                        
 					}
 					if (t->scale_used) {
-                        if(m_BlendType == BT_Blend)
+                        if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
                         {
                             t_skeleton->set_bone_pose_scale(t->bone_idx, t_skeleton->get_bone_pose_scale(t->bone_idx).lerp(t->scale,blend_weight));
                         }
@@ -184,7 +185,7 @@ void CharacterAnimatorLayer::layer_blend_apply() {
 						return;
 					}
 					if (t->loc_used) {
-                        if(m_BlendType == BT_Blend)
+                        if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
                         {
                             t_node_3d->set_position(t_node_3d->get_position().lerp(t->loc,blend_weight));
                         }
@@ -194,7 +195,7 @@ void CharacterAnimatorLayer::layer_blend_apply() {
                         }
 					}
 					if (t->rot_used) {
-                        if(m_BlendType == BT_Blend)
+                        if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
                         {
                             t_node_3d->set_rotation(t_node_3d->get_rotation().slerp(t->rot.get_euler(),blend_weight));
                         }
@@ -204,7 +205,7 @@ void CharacterAnimatorLayer::layer_blend_apply() {
                         }
 					}
 					if (t->scale_used) {
-                        if(m_BlendType == BT_Blend)
+                        if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
                         {
                             t_node_3d->set_scale(t_node_3d->get_scale().lerp(t->scale,blend_weight));
                         }
@@ -222,7 +223,7 @@ void CharacterAnimatorLayer::layer_blend_apply() {
 
 				MeshInstance3D *t_mesh_3d = Object::cast_to<MeshInstance3D>(ObjectDB::get_instance(t->object_id));
 				if (t_mesh_3d) {
-                    if(m_BlendType == BT_Blend)
+                    if(config->get_blend_type() == CharacterAnimatorLayerConfig::BT_Blend)
                     {
                         t_mesh_3d->set_blend_shape_value(t->shape_index, Math::lerp( t_mesh_3d->get_blend_shape_value(t->shape_index),t->value,blend_weight));
                     }
@@ -333,8 +334,10 @@ void CharacterAnimatorLayer::play_animation(Ref<CharacterAnimatorNodeBase> p_nod
     CharacterAnimationInstance ins;
     ins.node = p_node;
     ins.m_PlayState = CharacterAnimationInstance::PS_Play;
-    if(m_Mask.is_valid())
-        ins.disable_path = m_Mask->disable_path;
+    if(config.is_valid() && config->get_mask().is_valid())
+    {
+        ins.disable_path = config->get_mask()->disable_path;
+    }
     m_AnimationInstances.push_back(ins);
 }
 
@@ -346,5 +349,29 @@ CharacterAnimatorLayer::~CharacterAnimatorLayer()
 }
 
 
+void CharacterAnimator::add_layer(const StringName& name,const Ref<CharacterAnimatorLayerConfig>& _mask)
+{
+    if(m_Body == nullptr || _mask.is_null())
+    {
+        return ;
+    }
+
+    CharacterAnimatorLayer* layer = memnew(CharacterAnimatorLayer);
+    layer->config = _mask;
+    layer->set_name(name.str());
+    layer->m_Animator = this;
+
+    m_Body->add_child(layer);
+    layer->set_owner(m_Body);
+    m_LayerList.push_back(layer);
+}
+void CharacterAnimator::clear_layer()
+{
+    while(m_LayerList.size()>0)
+    {
+        CharacterAnimatorLayer* layer = *m_LayerList.begin();
+        memdelete(layer);
+    }
+}
 
 

@@ -71,7 +71,7 @@
 
 
 
-static AnimationHelp* animation_help = nullptr;
+static AnimationManager* animation_help = nullptr;
 static CSV_EditorImportPlugin * csv_editor_import = nullptr;
 static DataTableManager * data_table_manager = nullptr;
 static PathManager* path_manager = nullptr;
@@ -92,7 +92,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 
 	initialize_terrain_3d(p_level);
 	initialize_filiage_manager(p_level);
-	ClassDB::register_class<AnimationHelp>();
+	ClassDB::register_class<AnimationManager>();
 
 	ClassDB::register_class<DataTableManager>();
 	ClassDB::register_class<PathManager>();
@@ -107,14 +107,15 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<CharacterAnimatorNodeBase>();
 	ClassDB::register_class<CharacterAnimatorNode1D>();
 	ClassDB::register_class<CharacterAnimatorNode2D>();
+	ClassDB::register_class<CharacterAnimatorLayerConfig>();
 	ClassDB::register_class<CharacterAnimatorLayer>();
 	ClassDB::register_class<CharacterAnimator>();
 
-	animation_help = memnew(AnimationHelp);
+	animation_help = memnew(AnimationManager);
 
-	Engine::get_singleton()->add_singleton(Engine::Singleton("AnimationHelp", animation_help));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("DataTableManager", DataTableManager::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("PathManager", PathManager::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("AnimationManager", animation_help));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("DataTableManager", data_table_manager));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PathManager", path_manager));
 
 
 

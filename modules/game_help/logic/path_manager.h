@@ -18,30 +18,7 @@ public:
 
     static PathManager *get_singleton();
     // 初始化路径
-    void init()
-    {
-        if(is_init)
-            return;
-        
-        Ref<CSVData> table = ResourceLoader::load("res://path_table.csv");
-        if(!table.is_valid())
-        {
-            ERR_FAIL_MSG("path table not found:res://path_table.csv");
-        }
-        Array data = table->get_data().values();
-        
-        for (int i = 0; i < data.size(); i++) {
-            Dictionary d = data[i];
-            if(d.has("group") && d.has("path") && d.has("enable")){
-                String name = d["name"];
-                String path = d["path"];
-                bool enable = d["enable"];
-                add_path(name,path,enable);
-            }
-        }
-
-        is_init = true;
-    }
+    void init();
 
     void reload()
     {
@@ -130,5 +107,6 @@ public:
         }
     };
     bool is_init = false;
+    int data_version = 0;
     HashMap<StringName,PathGroup> groups;
 };

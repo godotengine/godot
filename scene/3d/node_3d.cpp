@@ -343,7 +343,10 @@ Transform3D Node3D::get_transform() const {
 }
 
 Transform3D Node3D::get_global_transform() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), Transform3D());
+	if (!is_inside_tree())
+	{
+		return Transform3D();
+	}
 
 	/* Due to how threads work at scene level, while this global transform won't be able to be changed from outside a thread,
 	 * it is possible that multiple threads can access it while it's dirty from previous work. Due to this, we must ensure that

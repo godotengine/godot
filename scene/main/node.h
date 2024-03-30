@@ -41,7 +41,7 @@ class Window;
 class SceneState;
 class Tween;
 class PropertyTweener;
-class NodeCompoent;
+class NodeComponent;
 
 SAFE_FLAG_TYPE_PUN_GUARANTEES
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
@@ -247,12 +247,6 @@ private:
 
 	Ref<MultiplayerAPI> multiplayer;
 
-
-	// 节点组件
-	TypedArray<NodeCompoent> compoent;
-
-	void set_compoent(const TypedArray<NodeCompoent>& p_compoent);
-	TypedArray<NodeCompoent> get_compoent();
 	
 	virtual void node_process(double delta)const;
 	virtual void node_physics_process(double delta)const;
@@ -334,6 +328,19 @@ private:
 
 	Variant _call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_thread_safe_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+public:
+	// 节点组件数据
+	struct NodeComponentData {
+		Ref<NodeComponent> component;
+		Dictionary properties;
+		friend bool operator == (const NodeComponentData &p_a, const NodeComponentData &p_b);
+		friend bool operator == (const NodeComponentData &p_a, const Ref<NodeComponent> &p_b);
+		friend bool operator == (const Ref<NodeComponent> &p_a, const NodeComponentData &p_b) ;
+	};
+	mutable List<NodeComponentData> component_data;
+
+	void set_components(const TypedArray<NodeComponent>& p_compoent);
+	TypedArray<NodeComponent> get_components();
 
 protected:
 	void _block() { data.blocked++; }
@@ -767,6 +774,9 @@ public:
 	void set_thread_safe(const StringName &p_property, const Variant &p_value);
 	void notify_thread_safe(int p_notification);
 
+	
+	String log_node(const String & _space = "");
+
 	// These inherited functions need proper multithread locking when overridden in Node.
 #ifdef DEBUG_ENABLED
 
@@ -794,9 +804,9 @@ public:
 	Node();
 	~Node();
 };
-class NodeCompoent : public Resource
+class NodeComponent : public Resource
 {
-	GDCLASS(NodeCompoent, Resource);
+	GDCLASS(NodeComponent, Resource);
 	static void _bind_methods();
 public:
 	virtual bool is_supper_class(Node* node) 
@@ -809,103 +819,112 @@ public:
 		}
 		return true; 
 	}
-	virtual void remove_to_node(Node* node) 
+	virtual void add_to_node(Node* node,Dictionary& com_property) 
 	{
-		if(GDVIRTUAL_IS_OVERRIDDEN(_remove_to_node))
+		if(GDVIRTUAL_IS_OVERRIDDEN(_add_to_node))
 		{
-			GDVIRTUAL_CALL(_remove_to_node,node);
+			GDVIRTUAL_CALL(_add_to_node,node,com_property);
 		}
 		
 	}
-	virtual void node_process( Node* node,double delta)
+	virtual void remove_to_node(Node* node,Dictionary& com_property) 
+	{
+		if(GDVIRTUAL_IS_OVERRIDDEN(_remove_to_node))
+		{
+			GDVIRTUAL_CALL(_remove_to_node,node,com_property);
+		}
+		
+	}
+	virtual void node_process( Node* node,double delta,Dictionary& com_property)
 	{
 		if(GDVIRTUAL_IS_OVERRIDDEN(_node_process))
 		{
-			GDVIRTUAL_CALL(_node_process,node,delta);
+			GDVIRTUAL_CALL(_node_process,node,delta,com_property);
 		}
 	}
-	virtual void node_physics_process(Node* node, double delta)
+	virtual void node_physics_process(Node* node, double delta,Dictionary& com_property)
 	{
 		if(GDVIRTUAL_IS_OVERRIDDEN(_node_physics_process))
 		{
-			GDVIRTUAL_CALL(_node_physics_process,node,delta);
+			GDVIRTUAL_CALL(_node_physics_process,node,delta,com_property);
 		}
 	}
-	virtual void node_enter_tree(Node* node)
+	virtual void node_enter_tree(Node* node,Dictionary& com_property)
 	{
 		if(GDVIRTUAL_IS_OVERRIDDEN(_node_enter_tree))
 		{
-			GDVIRTUAL_CALL(_node_enter_tree,node);
+			GDVIRTUAL_CALL(_node_enter_tree,node,com_property);
 		}
 	}
-	virtual void node_exit_tree(Node* node)
+	virtual void node_exit_tree(Node* node,Dictionary& com_property)
 	{
 		if(GDVIRTUAL_IS_OVERRIDDEN(_node_exit_tree))
 		{
-			GDVIRTUAL_CALL(_node_exit_tree,node);
+			GDVIRTUAL_CALL(_node_exit_tree,node,com_property);
 		}
 	}
-	virtual void node_ready(Node* node)
+	virtual void node_ready(Node* node,Dictionary& com_property)
 	{
 		if(GDVIRTUAL_IS_OVERRIDDEN(_node_ready))
 		{
-			GDVIRTUAL_CALL(_node_ready,node);
+			GDVIRTUAL_CALL(_node_ready,node,com_property);
 		}
 	}
-	virtual Vector<String> node_get_configuration_warnings(Node* node)
+	virtual Vector<String> node_get_configuration_warnings(Node* node,Dictionary& com_property)
 	{
 		if(GDVIRTUAL_IS_OVERRIDDEN(_node_get_configuration_warnings))
 		{
 			Vector<String> warnings;
-			GDVIRTUAL_CALL(_node_get_configuration_warnings,node,warnings);
+			GDVIRTUAL_CALL(_node_get_configuration_warnings,node,com_property,warnings);
 			return warnings;
 		}
 		return Vector<String>();
 	}
 	
-	virtual void node_input(Node* node,const Ref<InputEvent> &p_event)
+	virtual void node_input(Node* node,const Ref<InputEvent> &p_event,Dictionary& com_property)
 	{
 		if(GDVIRTUAL_IS_OVERRIDDEN(_node_input))
 		{
-			GDVIRTUAL_CALL(_node_input,node,p_event);
+			GDVIRTUAL_CALL(_node_input,node,p_event,com_property);
 		}
 	}
-	virtual void node_shortcut_input(Node* node,const Ref<InputEvent> &p_key_event)
+	virtual void node_shortcut_input(Node* node,const Ref<InputEvent> &p_key_event,Dictionary& com_property)
 	{
 		if(GDVIRTUAL_IS_OVERRIDDEN(_node_shortcut_input))
 		{
-			GDVIRTUAL_CALL(_node_shortcut_input,node,p_key_event);
+			GDVIRTUAL_CALL(_node_shortcut_input,node,p_key_event,com_property);
 		}
 	}
-	virtual void node_unhandled_input(Node* node,const Ref<InputEvent> &p_event)
+	virtual void node_unhandled_input(Node* node,const Ref<InputEvent> &p_event,Dictionary& com_property)
 	{
 		if(GDVIRTUAL_IS_OVERRIDDEN(_node_unhandled_input))
 		{
-			GDVIRTUAL_CALL(_node_unhandled_input,node,p_event);
+			GDVIRTUAL_CALL(_node_unhandled_input,node,p_event,com_property);
 		}
 	}
-	virtual void node_unhandled_key_input(Node* node,const Ref<InputEvent> &p_key_event)
+	virtual void node_unhandled_key_input(Node* node,const Ref<InputEvent> &p_key_event,Dictionary& com_property)
 	{
 		if(GDVIRTUAL_IS_OVERRIDDEN(_node_unhandled_key_input))
 		{
-			GDVIRTUAL_CALL(_node_unhandled_key_input,node,p_key_event);
+			GDVIRTUAL_CALL(_node_unhandled_key_input,node,p_key_event,com_property);
 		}
 	}
 
 
 	GDVIRTUAL1RC(bool,_is_supper_class, Node*)
-	GDVIRTUAL1(_remove_to_node, Node*)
-	GDVIRTUAL2(_node_process, Node*,double)
-	GDVIRTUAL2(_node_physics_process,Node*, double)
-	GDVIRTUAL1(_node_enter_tree,Node*)
-	GDVIRTUAL1(_node_exit_tree,Node*)
-	GDVIRTUAL1(_node_ready,Node*)
-	GDVIRTUAL1RC(Vector<String>, _node_get_configuration_warnings,Node*)
+	GDVIRTUAL2(_add_to_node, Node*,Dictionary)
+	GDVIRTUAL2(_remove_to_node, Node*,Dictionary)
+	GDVIRTUAL3(_node_process, Node*,double,Dictionary)
+	GDVIRTUAL3(_node_physics_process,Node*, double,Dictionary)
+	GDVIRTUAL2(_node_enter_tree,Node*,Dictionary)
+	GDVIRTUAL2(_node_exit_tree,Node*,Dictionary)
+	GDVIRTUAL2(_node_ready,Node*,Dictionary)
+	GDVIRTUAL2RC(Vector<String>, _node_get_configuration_warnings,Node*,Dictionary)
 
-	GDVIRTUAL2(_node_input,Node*,Ref<InputEvent>)
-	GDVIRTUAL2(_node_shortcut_input,Node*, Ref<InputEvent>)
-	GDVIRTUAL2(_node_unhandled_input,Node*, Ref<InputEvent>)
-	GDVIRTUAL2(_node_unhandled_key_input,Node*, Ref<InputEvent>)
+	GDVIRTUAL3(_node_input,Node*,Ref<InputEvent>,Dictionary)
+	GDVIRTUAL3(_node_shortcut_input,Node*, Ref<InputEvent>,Dictionary)
+	GDVIRTUAL3(_node_unhandled_input,Node*, Ref<InputEvent>,Dictionary)
+	GDVIRTUAL3(_node_unhandled_key_input,Node*, Ref<InputEvent>,Dictionary)
 };
 
 VARIANT_ENUM_CAST(Node::DuplicateFlags);

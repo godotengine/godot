@@ -11,6 +11,7 @@ env_game_help.add_source_files(env.modules_sources, "Terrain3D/src/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "foliage_manager/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "game_gui/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "logic/*.cpp")
+env_game_help.add_source_files(env.modules_sources, "csv/*.cpp")
 # mterrain
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/height_brushes/*.cpp")

@@ -36,6 +36,8 @@ public:
     // 初始化身體
     void init_main_body(String p_skeleton_file_path,StringName p_animation_group);
     void clear_all();
+    CharacterBodyMain();
+    ~CharacterBodyMain();
 
 public:
 	void set_behavior_tree(const Ref<BehaviorTree> &p_tree)
@@ -57,6 +59,9 @@ public:
 	int get_update_mode() { return (int)(get_bt_player()->get_update_mode()); }
 
 	Ref<Blackboard> get_blackboard()  { return player_blackboard; }
+
+    void set_skeleton(Skeleton3D *p_skeleton) { }
+    Skeleton3D *get_skeleton() { return skeleton; }
     // 设置黑板
 	void set_blackboard(const Ref<Blackboard> &p_blackboard) 
     { 
@@ -78,38 +83,22 @@ public:
 
     void set_controller(const Ref<class CharacterController> &p_controller);
     Ref<class CharacterController> get_controller();
+    // 技能相关
 public:
-    bool play_skill(String p_skill_name)
-    {
-        if(btSkillPlayer != nullptr)
-        {
-            return false;
-        }
-        btSkillPlayer = memnew(BTPlayer);
-        btSkillPlayer->set_owner((Node*)this);
-        btSkillPlayer->set_name("BTPlayer_Skill");
-        btSkillPlayer->connect("behavior_tree_finished", callable_mp(this, &CharacterBodyMain::skill_tree_finished));
-        btSkillPlayer->connect("updated", callable_mp(this, &CharacterBodyMain::skill_tree_update));
-        add_child(btSkillPlayer);
-        if(has_method("skill_tree_init"))
-        {
-            call("skill_tree_init",p_skill_name);
-        }
-        btSkillPlayer->get_blackboard()->set_parent(player_blackboard);
+    bool play_skill(String p_skill_name);
+    void stop_skill();
 
-        get_blackboard()->set_var("skill_name",p_skill_name);
-        get_blackboard()->set_var("skill_play",true);
-        return true;
-    }
-    void stop_skill()
+    // 动画相关
+public:
+    void set_animator(const Ref<CharacterAnimator> &p_animator)
     {
-        get_blackboard()->set_var("skill_name","");
-        get_blackboard()->set_var("skill_play",false);
-		callable_mp(this, &CharacterBodyMain::_stop_skill).call_deferred();
+
     }
 
-    CharacterBodyMain();
-    ~CharacterBodyMain();
+    Ref<CharacterAnimator> get_animator()
+    {
+        return animator;
+    }
 public:
     
 	virtual void input(const Ref<InputEvent> &p_event) override
@@ -152,7 +141,6 @@ protected:
 protected:
     Skeleton3D *skeleton = nullptr;
     AnimationPlayer *player = nullptr;
-    AnimationTree *tree = nullptr;
     mutable BTPlayer *btPlayer = nullptr;
     bool is_skill_stop = false;
     // 技能播放器
@@ -197,8 +185,9 @@ class CharacterController : public Resource
         ClassDB::bind_method(D_METHOD("set_bt_load_test_id", "id"), &CharacterController::set_bt_load_test_id);
         ClassDB::bind_method(D_METHOD("get_bt_load_test_id"), &CharacterController::get_bt_load_test_id);
 
-        
+
         ClassDB::bind_method(D_METHOD("load_test"), &CharacterController::load_test);
+        ClassDB::bind_method(D_METHOD("log_player"), &CharacterController::log_player);
 
         ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboardPlan", "get_blackboardPlan");
 
@@ -280,6 +269,7 @@ public:
         return 0;
     }
     void load_test();
+    void log_player();
 public:
     void startup(CharacterBodyMain* p_player,const Dictionary& p_init_data)
     {

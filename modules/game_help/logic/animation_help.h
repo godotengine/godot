@@ -6,14 +6,19 @@
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/3d/node_3d.h"
+#include "../csv/CSV_EditorImportPlugin.h"
 
-class AnimationHelp : public Object
+class AnimationManager : public Object
 {
-    GDCLASS(AnimationHelp, Object);
+    GDCLASS(AnimationManager, Object);
     static void _bind_methods();
-    static AnimationHelp *singleton;
+    static AnimationManager *singleton;
     double lastTickTime = 0;
     NodePath animationPlayer = NodePath("AnimationPlayer");
+    bool is_init = false;
+
+
+
     struct AnimationInfo
     {
         String animationPath;
@@ -135,7 +140,7 @@ class AnimationHelp : public Object
                 anim.last_using_time = time;
                 return anim.animation;
             }
-            return AnimationHelp::getNullAnimation();
+            return AnimationManager::getNullAnimation();
         }
         // 配置动画树
         void setup_animation_player(Node* node,AnimationPlayer* player)
@@ -210,6 +215,18 @@ public:
             return;
         }
         singleton->load_animation_tree(node,group); 
+    }
+    String animation_config_path = "res://animation_config.tres";
+    void init()
+    {
+        if(is_init)
+        {
+            return;
+        }
+        animationGroup.clear();
+
+
+        is_init = true;
     }
     // 增加一个动画分组
     void add_animation_group(StringName group_name,String animation_tree_path,String animation_library_path)

@@ -1,17 +1,122 @@
 #pragma once
 #include "core/io/resource_loader.h"
 
+
+class DataTableItem : public RefCounted
+{
+    public:
+    int version = 0;
+    Dictionary data;
+};
+
 class DataTableManager : public Object
 {
     GDCLASS(DataTableManager, Object);
     static void _bind_methods();
 public:
+    // 一些表名
+    StringName animation_table_name = StringName("animation_table");
+    StringName path_table_name = StringName("path_table");
+    StringName body_table_name = StringName("body_table");
+    StringName mesh_part_table_name = StringName("mesh_part_table");
+    StringName charecter_table_name = StringName("charecter_table");
+    StringName scene_table_name = StringName("scene_table");
+    StringName item_table_name = StringName("item_table_name");
+    StringName skill_table_name = StringName("skill_table_name");
+
+    void set_animation_table_name(const StringName& name)
+    {
+        animation_table_name = name;
+        reload();
+    }
+    StringName get_animation_table_name()
+    {
+        return animation_table_name;
+    }
+
+    void set_path_table_name(const StringName& name)
+    {
+        path_table_name = name;
+        reload();
+    }
+    StringName get_path_table_name()
+    {
+        return path_table_name;
+    }
+
+    void set_body_table_name(const StringName& name)
+    {
+        body_table_name = name;
+        reload();
+    }
+    StringName get_body_table_name()
+    {
+        return body_table_name;
+    }
+
+    void set_mesh_part_table_name(const StringName& name)
+    {
+        mesh_part_table_name = name;
+        reload();
+    }
+    StringName get_mesh_part_table_name()
+    {
+        return mesh_part_table_name;
+    }
+
+    void set_charecter_table_name(const StringName& name)
+    {
+        charecter_table_name = name;
+        reload();
+    }
+    StringName get_charecter_table_name()
+    {
+        return charecter_table_name;
+    }
+
+    void set_scene_table_name(const StringName& name)
+    {
+        scene_table_name = name;
+        reload();
+    }
+    StringName get_scene_table_name()
+    {
+        return scene_table_name;
+    }
+
+    void set_item_table_name(const StringName& name)
+    {
+        item_table_name = name;
+        reload();
+    }
+    StringName get_item_table_name()
+    {
+        return item_table_name;
+    }
+
+    void set_skill_table_name(const StringName& name)
+    {
+        skill_table_name = name;
+        reload();
+    }
+    StringName get_skill_table_name()
+    {
+        return skill_table_name;
+    }
+
+
+public:
     DataTableManager();
     ~DataTableManager();
 
+    void on_table_load()
+    {
+        is_init = false;
+    }
+
     static DataTableManager* get_singleton();
 
-    void set_data_atble_path(String path)
+    void set_data_table_path(String path)
     {
         data_table_path = path;
         is_init = false;
@@ -19,11 +124,10 @@ public:
     void init();
     void reload()
     {
-        data_table.clear();
         is_init = false;
     }
     // 获取一个表
-    Dictionary get_data_table(String name)
+    Ref<DataTableItem> get_data_table(String name)
     {
         if(!is_init)
         {
@@ -31,12 +135,26 @@ public:
         }
         if(!data_table.has(name))
         {
-            return Dictionary();
+            return Ref<DataTableItem>();
         }
         return data_table[name];
     }
+    Dictionary _get_data_table(String name)
+    {
+        Ref<DataTableItem> item = get_data_table(name);
+        if(!item.is_valid())
+        {
+            return Dictionary();
+        }
+        return item->data;
+    }
+    int get_data_table_version()
+    {
+        return version;
+    }
 
     bool is_init = false;
-    HashMap<String,Dictionary> data_table;
+    int version = 0;
+    HashMap<StringName,Ref<DataTableItem>> data_table;
     String data_table_path = "res://data_table.csv";
 };

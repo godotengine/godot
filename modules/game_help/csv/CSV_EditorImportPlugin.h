@@ -132,6 +132,7 @@ public:
     {
         return true;
     }
+    void on_table_loaded();
 
     Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) override
     {
@@ -180,6 +181,7 @@ public:
         String file_name = p_save_path + ".tres";
         Error err =  ResourceSaver::save(csv,file_name);
         ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Cannot create file from path '" + file_name + "'.");
+        on_table_loaded();
         return err;
 
     }

@@ -355,7 +355,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(Object);
 
-	GDREGISTER_VIRTUAL_CLASS(NodeCompoent);
+	GDREGISTER_CLASS(NodeComponent);
 	GDREGISTER_CLASS(Node);
 	GDREGISTER_VIRTUAL_CLASS(MissingNode);
 	GDREGISTER_ABSTRACT_CLASS(InstancePlaceholder);

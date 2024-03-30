@@ -553,6 +553,49 @@ struct CharacterAnimationInstance
     // 动画节点
     Ref<CharacterAnimatorNodeBase> node;
 };
+// 角色动画层的配置信息
+class CharacterAnimatorLayerConfig : public Resource
+{
+    GDCLASS(CharacterAnimatorLayerConfig, Resource);
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_blend_type", "blend_type"), &CharacterAnimatorLayerConfig::set_blend_type);
+        ClassDB::bind_method(D_METHOD("get_blend_type"), &CharacterAnimatorLayerConfig::get_blend_type);
+        ClassDB::bind_method(D_METHOD("set_mask", "mask"), &CharacterAnimatorLayerConfig::set_mask);
+        ClassDB::bind_method(D_METHOD("get_mask"), &CharacterAnimatorLayerConfig::get_mask);
+        ClassDB::bind_method(D_METHOD("set_layer_name", "layer_name"), &CharacterAnimatorLayerConfig::set_layer_name);
+        ClassDB::bind_method(D_METHOD("get_layer_name"), &CharacterAnimatorLayerConfig::get_layer_name);
+
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_type"), "set_blend_type", "get_blend_type");
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mask", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorMask"), "set_mask", "get_mask");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "layer_name"), "set_layer_name", "get_layer_name");
+    }
+    public:
+    enum BlendType
+    {
+        // 混合
+        BT_Blend,
+        // 覆盖
+        BT_Override,
+    };
+
+
+    void set_mask(const Ref<CharacterAnimatorMask>& p_mask) { _mask = p_mask; }
+    Ref<CharacterAnimatorMask> get_mask() { return _mask; }
+
+    void set_layer_name(const StringName& p_layer_name) { layer_name = p_layer_name; }
+    StringName get_layer_name() { return layer_name; }
+
+    void set_blend_type(BlendType p_blend_type) { m_BlendType = p_blend_type; }
+    BlendType get_blend_type() { return m_BlendType; }
+protected:
+    // 动画层的名称
+    StringName layer_name;
+    // 动画遮罩
+    Ref<CharacterAnimatorMask> _mask;
+    // 混合类型
+    BlendType m_BlendType = BT_Blend;
+};
 // 动画分层
 class CharacterAnimatorLayer: public AnimationMixer
 {
@@ -561,26 +604,22 @@ class CharacterAnimatorLayer: public AnimationMixer
     List<Ref<CharacterAnimatorNodeBase>> play_list;
 public:
 
-    Ref<CharacterAnimatorMask> mask;
+    Ref<CharacterAnimatorLayerConfig> config;
 
-    enum BlendType
-    {
-        // 混合
-        BT_Blend,
-        // 覆盖
-        BT_Override,
-    };
     // 处理动画
     void _process_animation(Blackboard *p_playback_info,double p_delta,bool is_first = true);
     void layer_blend_apply() ;
     Vector<Vector2> m_ChildInputVectorArray;
     Vector<int> m_TempCropArray;
     Vector<float> m_TotalAnimationWeight;
-    Ref<CharacterAnimatorMask> m_Mask;
     List<CharacterAnimationInstance> m_AnimationInstances;
     float blend_weight = 1.0f;
-    BlendType m_BlendType;
     class CharacterAnimator* m_Animator = nullptr;
+    void init(CharacterAnimator* p_animator,const Ref<CharacterAnimatorLayerConfig>& _config)
+    {
+         m_Animator = p_animator; 
+         config = _config;
+    }
 
     void play_animation(Ref<CharacterAnimatorNodeBase> p_node);
     ~CharacterAnimatorLayer();
@@ -610,6 +649,10 @@ public:
 
     void set_body(class CharacterBodyMain* p_body) { m_Body = p_body; }
 
+    void add_layer(const StringName& name,const Ref<CharacterAnimatorLayerConfig>& _mask);
+
+    void clear_layer();
+
     void on_layer_delete(CharacterAnimatorLayer *p_layer)
     {
         auto it = m_LayerList.begin();
@@ -626,6 +669,12 @@ public:
             }
         }
     }
+    ~CharacterAnimator()
+    {
+        clear_layer();
+    }
 
 };
+VARIANT_ENUM_CAST(CharacterAnimatorLayerConfig::BlendType)
+VARIANT_ENUM_CAST(CharacterAnimatorNode2D::BlendType)
 #endif

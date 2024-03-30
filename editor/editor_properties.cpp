@@ -3051,10 +3051,14 @@ void EditorPropertyButton::_button_pressed()
 }
 
 EditorPropertyButton::EditorPropertyButton() {
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(hb);
+	set_bottom_editor(hb);
 	button = memnew(Button);
-	button->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_child(button);
 	button->connect("pressed", callable_mp(this, &EditorPropertyButton::_button_pressed));
-	add_child(button);
+	button->set_h_size_flags(SIZE_EXPAND_FILL);
 }
 
 ////////////// RESOURCE //////////////////////
@@ -3508,9 +3512,20 @@ bool EditorInspectorDefaultPlugin::can_handle(Object *p_object) {
 }
 
 bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
-	Control *editor = EditorInspectorDefaultPlugin::get_editor_for_property(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
-	if (editor) {
-		add_property_editor(p_path, editor);
+	
+	
+	if (p_hint == PROPERTY_HINT_BUTTON) {
+		EditorPropertyButton *editor = memnew(EditorPropertyButton);
+		editor->setup(p_hint_text);
+		add_property_editor(p_path,editor);
+	}
+	else
+	{
+		Control *editor = EditorInspectorDefaultPlugin::get_editor_for_property(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
+		if (editor) {
+			add_property_editor(p_path, editor);
+		}
+
 	}
 	return false;
 }
@@ -3591,11 +3606,6 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	
 
-	if (p_hint == PROPERTY_HINT_BUTTON) {
-		EditorPropertyButton *editor = memnew(EditorPropertyButton);
-		editor->setup(p_hint_text);
-		return editor;
-	}
 	
 	double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
 	switch (p_type) {

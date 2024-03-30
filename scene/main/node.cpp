@@ -3667,6 +3667,7 @@ void Node::_bind_methods() {
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_id", &Node::_rpc_id_bind, mi);
 	}
 
+#define RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 	ClassDB::bind_method(D_METHOD("update_configuration_warnings"), &Node::update_configuration_warnings);
 
 	{
@@ -3689,8 +3690,10 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_thread_safe", "property", "value"), &Node::set_thread_safe);
 	ClassDB::bind_method(D_METHOD("notify_thread_safe", "what"), &Node::notify_thread_safe);
 
-	ClassDB::bind_method(D_METHOD("set_compoent"), &Node::set_compoent);
-	ClassDB::bind_method(D_METHOD("get_compoent"), &Node::get_compoent);
+	ClassDB::bind_method(D_METHOD("set_components", "components"), &Node::set_components);
+	ClassDB::bind_method(D_METHOD("get_components"), &Node::get_components);
+
+	ClassDB::bind_method(D_METHOD("log_node","space"), &Node::log_node,DEFVAL(""));
 
 	BIND_CONSTANT(NOTIFICATION_ENTER_TREE);
 	BIND_CONSTANT(NOTIFICATION_EXIT_TREE);
@@ -3787,8 +3790,12 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "compoent",PROPERTY_HINT_RESOURCE_TYPE,"NodeCompoent"), "set_components", "get_components");
 
+	ADD_GROUP("Compoent List", "");
+
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "compoent_list", PROPERTY_HINT_ARRAY_TYPE, RESOURCE_TYPE_HINT("NodeComponent")), "set_components", "get_components");
+	
+	
 	ADD_GROUP("Process", "process_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
@@ -3819,7 +3826,7 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_unhandled_input, "event");
 	GDVIRTUAL_BIND(_unhandled_key_input, "event");
 }
-
+#undef RESOURCE_TYPE_HINT
 String Node::_get_name_num_separator() {
 	switch (GLOBAL_GET("editor/naming/node_name_num_separator").operator int()) {
 		case 0:
@@ -3880,133 +3887,191 @@ Node::~Node() {
 }
 
 
-void Node::set_compoent(const TypedArray<NodeCompoent>& p_compoent)
+void Node::set_components(const TypedArray<NodeComponent>& p_compoent)
 {
 
 	// 处理移除的组件消息回调
-	for(int i = 0;i<compoent.size();i++)
+	for(auto & comp : component_data)
 	{
-		if(p_compoent.find(compoent[i])==-1)
+		if(comp.component.is_null())
+			continue;
+		if(p_compoent.find(comp.component)==-1)
 		{
-			Ref<NodeCompoent> comp = compoent[i];
-			comp->remove_to_node((Node*)this);
+			comp.component->remove_to_node((Node*)this,comp.properties);
 		}
 	}
-	compoent.clear();
+
+
+	List<NodeComponentData> old_component_data = component_data;
+	component_data.clear();
 	for(int i=0;i<p_compoent.size();i++)
 	{
-		Ref<NodeCompoent> comp = p_compoent[i];
-		if(comp.is_valid() && comp->is_supper_class(this))
+		Ref<NodeComponent> comp = p_compoent[i];
+		if(!comp.is_valid())
 		{
-			compoent.push_back(p_compoent[i]);
+			component_data.push_back(NodeComponentData());
+		}
+		else if(comp->is_supper_class(this))
+		{
+			
+			auto it = old_component_data.find(comp);
+			if(it != nullptr)
+			{
+				component_data.push_back(it->get());
+			}
+			else
+			{
+				NodeComponentData _data;
+				_data.component = p_compoent[i];
+				component_data.push_back(_data);
+			}
+		}
+		else
+		{
+			component_data.push_back(NodeComponentData());
 		}
 	}
 }
-TypedArray<NodeCompoent> Node::get_compoent()
+TypedArray<NodeComponent> Node::get_components()
 {
-	return compoent;
+	TypedArray<NodeComponent> ret;
+	for(auto & comp : component_data)
+	{
+		ret.push_back(comp.component);
+	}
+	return ret;
+}
+
+
+String Node::log_node(const String & _space)
+{
+	String rs;
+	for(int i=0;i<get_child_count();i++)
+	{
+		Node *n = get_child(i);
+		rs += _space + n->get_name() + "-> type:" + n->get_class() ;
+		rs += " owner:" + String(n->get_owner() ? n->get_owner()->get_name() : "null") ;
+		rs += "\n";
+		if(n->get_child_count()>0)
+		{
+			rs += n->log_node(_space + " ");
+		}
+	}
+	return rs;
+
+}
+
+bool operator == (const Node::NodeComponentData &p_a, const Node::NodeComponentData &p_b) {
+	return p_a.component == p_b.component;
+}
+bool operator == (const Node::NodeComponentData &p_a, const Ref<NodeComponent> &p_b) {
+	return p_a.component == p_b;
+}
+bool operator == (const Ref<NodeComponent> &p_a, const Node::NodeComponentData &p_b) {
+	return p_a == p_b.component;
 }
 
 void Node::node_process(double delta)const
 {
-	for(int i=0;i<compoent.size();i++)
+	for(int i=0;i<component_data.size();i++)
 	{
-		Ref<NodeCompoent> comp = compoent[i];
-		if(comp.is_valid())		
-			comp->node_process((Node*)this,delta);
+		auto& comp = component_data[i];
+		if(comp.component.is_valid())		
+			comp.component->node_process((Node*)this,delta,comp.properties);
 	}
 }
 void Node::node_physics_process(double delta)const
 {
-	for(int i=0;i<compoent.size();i++)
+	for(int i=0;i<component_data.size();i++)
 	{
-		Ref<NodeCompoent> comp = compoent[i];
-		if(comp.is_valid())
-			comp->node_physics_process((Node*)this,delta);
+		auto& comp = component_data[i];
+		if(comp.component.is_valid())		
+			comp.component->node_physics_process((Node*)this,delta,comp.properties);
 	}
 }
 void Node::node_enter_tree()const
 {
-	for(int i=0;i<compoent.size();i++)
+	for(int i=0;i<component_data.size();i++)
 	{
-		Ref<NodeCompoent> comp = compoent[i];
-		if(comp.is_valid())
-			comp->node_enter_tree((Node*)this);
+		auto& comp = component_data[i];
+		if(comp.component.is_valid())		
+			comp.component->node_enter_tree((Node*)this,comp.properties);
 	}
 }
 void Node::node_exit_tree()const
 {
 
-	for(int i=0;i<compoent.size();i++)
+	for(int i=0;i<component_data.size();i++)
 	{
-		Ref<NodeCompoent> comp = compoent[i];
-		if(comp.is_valid())
-			comp->node_exit_tree((Node*)this);
+		auto& comp = component_data[i];
+		if(comp.component.is_valid())		
+			comp.component->node_exit_tree((Node*)this,comp.properties);
 	}
 
 }
 void Node::node_ready()const
 {
-	for(int i=0;i<compoent.size();i++)
+	for(int i=0;i<component_data.size();i++)
 	{
-		Ref<NodeCompoent> comp = compoent[i];
-		if(comp.is_valid())
-			comp->node_ready((Node*)this);
+		auto& comp = component_data[i];
+		if(comp.component.is_valid())		
+			comp.component->node_ready((Node*)this,comp.properties);
 	}
 }
 Vector<String> Node::node_get_configuration_warnings()const
 {
 	Vector<String> rs;
-	for(int i=0;i<compoent.size();i++)
+	for(int i=0;i<component_data.size();i++)
 	{
-		Ref<NodeCompoent> comp = compoent[i];
-		if(comp.is_valid())
-			rs.append_array(comp->node_get_configuration_warnings((Node*)this));
+		auto& comp = component_data[i];
+		if(comp.component.is_valid())		
+			rs.append_array(comp.component->node_get_configuration_warnings((Node*)this,comp.properties));
 	}
 	return rs;
 }
 
 void Node::node_input(const Ref<InputEvent> &p_event)const
 {
-	for(int i=0;i<compoent.size();i++)
+	for(int i=0;i<component_data.size();i++)
 	{
-		Ref<NodeCompoent> comp = compoent[i];
-		if(comp.is_valid())
-			comp->node_input((Node*)this,p_event);
+		auto& comp = component_data[i];
+		if(comp.component.is_valid())		
+			comp.component->node_input((Node*)this,p_event,comp.properties);
 	}
 }
 void Node::node_shortcut_input(const Ref<InputEvent> &p_key_event)const
 {
-	for(int i=0;i<compoent.size();i++)
+	for(int i=0;i<component_data.size();i++)
 	{
-		Ref<NodeCompoent> comp = compoent[i];
-		if(comp.is_valid())
-			comp->node_shortcut_input((Node*)this,p_key_event);
+		auto& comp = component_data[i];
+		if(comp.component.is_valid())		
+			comp.component->node_shortcut_input((Node*)this,p_key_event,comp.properties);
 
 	}
 }
 void Node::node_unhandled_input(const Ref<InputEvent> &p_event)const
 {
-	for(int i=0;i<compoent.size();i++)
+	for(int i=0;i<component_data.size();i++)
 	{
-		Ref<NodeCompoent> comp = compoent[i];
-		if(comp.is_valid())
-			comp->node_unhandled_input((Node*)this,p_event);
+		auto& comp = component_data[i];
+		if(comp.component.is_valid())		
+			comp.component->node_unhandled_input((Node*)this,p_event,comp.properties);
 	}
 }
 void Node::node_unhandled_key_input(const Ref<InputEvent> &p_key_event)const
 {
-	for(int i=0;i<compoent.size();i++)
+	for(int i=0;i<component_data.size();i++)
 	{
-		Ref<NodeCompoent> comp = compoent[i];
-		if(comp.is_valid())
-			comp->node_unhandled_key_input((Node*)this,p_key_event);
+		auto& comp = component_data[i];
+		if(comp.component.is_valid())		
+			comp.component->node_unhandled_key_input((Node*)this,p_key_event,comp.properties);
 	}
 }
 
-void NodeCompoent::_bind_methods()
+void NodeComponent::_bind_methods()
 {
 	GDVIRTUAL_BIND(_is_supper_class,"node");
+	GDVIRTUAL_BIND(_add_to_node,"node");
 	GDVIRTUAL_BIND(_remove_to_node,"node");
 	GDVIRTUAL_BIND(_node_process,"node","delta");
 	GDVIRTUAL_BIND(_node_physics_process,"node","delta");
