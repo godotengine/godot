@@ -629,17 +629,22 @@ public:
 		return binds;
 	}
 
-	void replace_by(Node *p_node, bool p_keep_data = false);
-
+	void replace_by(Node *p_node, bool p_keep_data = false, bool p_keep_children = true);
 	void set_process_mode(ProcessMode p_mode);
 	ProcessMode get_process_mode() const;
 	bool can_process() const;
 	bool can_process_notification(int p_what) const;
 
 	void set_physics_interpolation_mode(PhysicsInterpolationMode p_mode);
-	PhysicsInterpolationMode get_physics_interpolation_mode() const { return data.physics_interpolation_mode; }
-	_FORCE_INLINE_ bool is_physics_interpolated() const { return data.physics_interpolated; }
-	_FORCE_INLINE_ bool is_physics_interpolated_and_enabled() const { return is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && is_physics_interpolated(); }
+	PhysicsInterpolationMode get_physics_interpolation_mode() const {
+		return data.physics_interpolation_mode;
+	}
+	_FORCE_INLINE_ bool is_physics_interpolated() const {
+		return data.physics_interpolated;
+	}
+	_FORCE_INLINE_ bool is_physics_interpolated_and_enabled() const {
+		return is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && is_physics_interpolated();
+	}
 	void reset_physics_interpolation();
 
 	bool is_enabled() const;
@@ -664,7 +669,9 @@ public:
 	//hacks for speed
 	static void init_node_hrcr();
 
-	void force_parent_owned() { data.parent_owned = true; } //hack to avoid duplicate nodes
+	void force_parent_owned() {
+		data.parent_owned = true;
+	} //hack to avoid duplicate nodes
 
 	void set_import_path(const NodePath &p_import_path); //path used when imported, used by scene editors to keep tracking
 	NodePath get_import_path() const;
@@ -673,7 +680,9 @@ public:
 
 	void clear_internal_tree_resource_paths();
 
-	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
+	_FORCE_INLINE_ Viewport *get_viewport() const {
+		return data.viewport;
+	}
 
 	virtual PackedStringArray get_configuration_warnings() const;
 
@@ -707,8 +716,12 @@ public:
 	AutoTranslateMode get_auto_translate_mode() const;
 	bool can_auto_translate() const;
 
-	_FORCE_INLINE_ String atr(const String p_message, const StringName p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
-	_FORCE_INLINE_ String atr_n(const String p_message, const StringName &p_message_plural, int p_n, const StringName p_context = "") const { return can_auto_translate() ? tr_n(p_message, p_message_plural, p_n, p_context) : p_message; }
+	_FORCE_INLINE_ String atr(const String p_message, const StringName p_context = "") const {
+		return can_auto_translate() ? tr(p_message, p_context) : p_message;
+	}
+	_FORCE_INLINE_ String atr_n(const String p_message, const StringName &p_message_plural, int p_n, const StringName p_context = "") const {
+		return can_auto_translate() ? tr_n(p_message, p_message_plural, p_n, p_context) : p_message;
+	}
 
 	/* THREADING */
 
