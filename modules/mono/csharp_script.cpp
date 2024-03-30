@@ -1623,6 +1623,24 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 	return true;
 }
 
+void CSharpInstance::get_configuration_info(List<ConfigurationInfo> *p_infos) const {
+	ERR_FAIL_COND(script.is_null());
+
+	Variant ret;
+	Callable::CallError call_error;
+	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
+			gchandle.get_intptr(), &SNAME("_get_configuration_info"), nullptr, 0, &call_error, &ret);
+
+	if (call_error.error != Callable::CallError::CALL_OK || ret.get_type() != Variant::ARRAY) {
+		return;
+	}
+
+	Array infos = ret;
+	for (const Variant &info : infos) {
+		p_infos->push_back(ConfigurationInfo::from_variant(info));
+	}
+}
+
 void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
 	if (!script->is_valid() || !script->valid) {
 		return;

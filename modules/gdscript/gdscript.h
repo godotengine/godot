@@ -37,6 +37,7 @@
 #include "core/doc_data.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/configuration_info.h"
 #include "core/object/script_language.h"
 #include "core/templates/rb_set.h"
 
@@ -402,6 +403,7 @@ public:
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
 	virtual void notification(int p_notification, bool p_reversed = false);
+	virtual void get_configuration_info(List<ConfigurationInfo> *p_infos) const;
 	String to_string(bool *r_valid);
 
 	virtual Ref<Script> get_script() const;
@@ -580,6 +582,7 @@ public:
 		StringName _property_can_revert;
 		StringName _property_get_revert;
 		StringName _script_source;
+		StringName _get_configuration_info;
 
 	} strings;
 

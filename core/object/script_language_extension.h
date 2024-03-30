@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/extension/ext_wrappers.gen.inc"
+#include "core/object/configuration_info.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
@@ -780,6 +781,19 @@ public:
 				p_property.hint = (PropertyHint)gdext_prop.hint;
 				p_property.hint_string = *reinterpret_cast<String *>(gdext_prop.hint_string);
 				p_property.usage = gdext_prop.usage;
+			}
+		}
+	}
+	virtual void get_configuration_info(List<ConfigurationInfo> *p_infos) const override {
+		if (native_info->get_configuration_info_func) {
+			uint32_t info_count;
+			const GDExtensionConfigurationInfo *config_info = native_info->get_configuration_info_func(instance, &info_count);
+
+			for (uint32_t i = 0; i < info_count; i++) {
+				p_infos->push_back(ConfigurationInfo(config_info[i]));
+			}
+			if (native_info->free_configuration_info_func) {
+				native_info->free_configuration_info_func(instance, config_info, info_count);
 			}
 		}
 	}

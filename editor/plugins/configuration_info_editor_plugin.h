@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_string_names.h                                                 */
+/*  configuration_info_editor_plugin.h                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,25 +30,58 @@
 
 #pragma once
 
-#include "core/string/string_name.h"
+#include "editor/editor_inspector.h"
+#include "editor/plugins/editor_plugin.h"
+#include "scene/gui/margin_container.h"
 
-class EditorStringNames {
-	inline static EditorStringNames *singleton = nullptr;
+class GridContainer;
+class Label;
+class PanelContainer;
+class RichTextLabel;
+class TextureRect;
+
+// Inspector controls.
+class ConfigurationInfoList : public MarginContainer {
+	GDCLASS(ConfigurationInfoList, MarginContainer);
+
+	Object *object = nullptr;
+	Ref<StyleBox> bg_style;
+	Ref<StyleBox> bg_style_hover;
+
+	PanelContainer *bg_panel = nullptr;
+	GridContainer *grid = nullptr;
+	TextureRect *expand_icon = nullptr;
+	Label *title_label = nullptr;
+	RichTextLabel *config_info_text = nullptr;
+	Control *list_filler_right = nullptr;
+
+	String _get_summary_text(const Vector<ConfigurationInfo> &p_config_infos) const;
+	void _update_background(bool p_hovering);
+	void _update_content();
+	void _update_toggler();
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+protected:
+	void _notification(int p_notification);
 
 public:
-	static void create() { singleton = memnew(EditorStringNames); }
-	static void free() {
-		memdelete(singleton);
-		singleton = nullptr;
-	}
+	void set_object(Object *p_object);
 
-	_FORCE_INLINE_ static EditorStringNames *get_singleton() { return singleton; }
-
-	const StringName configuration_info_changed = StringName("configuration_info_changed");
-	const StringName Editor = StringName("Editor");
-	const StringName EditorFonts = StringName("EditorFonts");
-	const StringName EditorIcons = StringName("EditorIcons");
-	const StringName EditorStyles = StringName("EditorStyles");
+	ConfigurationInfoList();
 };
 
-#define EditorStringName(m_name) EditorStringNames::get_singleton()->m_name
+class EditorInspectorPluginConfigurationInfo : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginConfigurationInfo, EditorInspectorPlugin);
+
+public:
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
+};
+
+// Editor plugin.
+class ConfigurationInfoEditorPlugin : public EditorPlugin {
+	GDCLASS(ConfigurationInfoEditorPlugin, EditorPlugin);
+
+public:
+	ConfigurationInfoEditorPlugin();
+};

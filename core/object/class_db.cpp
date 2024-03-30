@@ -163,6 +163,14 @@ public:
 	static void placeholder_instance_notification(GDExtensionClassInstancePtr p_instance, int32_t p_what, GDExtensionBool p_reversed) {
 	}
 
+	static const GDExtensionConfigurationInfo *placeholder_instance_get_configuration_info(GDExtensionClassInstancePtr p_instance, uint32_t *r_count) {
+		*r_count = 0;
+		return nullptr;
+	}
+
+	static void placeholder_instance_free_configuration_info(GDExtensionClassInstancePtr p_instance, const GDExtensionConfigurationInfo *p_list, uint32_t p_count) {
+	}
+
 	static void placeholder_instance_to_string(GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr p_out) {
 		*r_is_valid = true;
 	}
@@ -706,6 +714,8 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	placeholder_extension->free_property_list = nullptr;
 #endif // DISABLE_DEPRECATED
 	placeholder_extension->notification2 = &PlaceholderExtensionInstance::placeholder_instance_notification;
+	placeholder_extension->get_configuration_info = &PlaceholderExtensionInstance::placeholder_instance_get_configuration_info;
+	placeholder_extension->free_configuration_info = &PlaceholderExtensionInstance::placeholder_instance_free_configuration_info;
 	placeholder_extension->to_string = &PlaceholderExtensionInstance::placeholder_instance_to_string;
 	placeholder_extension->reference = &PlaceholderExtensionInstance::placeholder_instance_reference;
 	placeholder_extension->unreference = &PlaceholderExtensionInstance::placeholder_instance_unreference;

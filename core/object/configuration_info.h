@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_string_names.h                                                 */
+/*  configuration_info.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,25 +30,61 @@
 
 #pragma once
 
-#include "core/string/string_name.h"
+#include "core/extension/gdextension_interface.h"
+#include "core/templates/hash_set.h"
+#include "core/variant/variant.h"
 
-class EditorStringNames {
-	inline static EditorStringNames *singleton = nullptr;
+#define CONFIG_WARNING(code, message) p_infos->push_back(ConfigurationInfo(code, message, "", ConfigurationInfo::Severity::WARNING));
+#define CONFIG_WARNING_P(code, message, property_name) p_infos->push_back(ConfigurationInfo(code, message, property_name, ConfigurationInfo::Severity::WARNING));
+
+class ConfigurationInfo {
+public:
+	enum class Severity {
+		INFO,
+		WARNING,
+		ERROR,
+		MAX,
+		NONE = -1,
+	};
+
+private:
+	String message;
+	StringName code;
+	StringName property_name;
+	Severity severity;
+
+	inline static HashSet<String> queued_errors_to_print;
+
+	static void queue_error_print(const String &p_error);
+	static void _print_errors_from_queue();
 
 public:
-	static void create() { singleton = memnew(EditorStringNames); }
-	static void free() {
-		memdelete(singleton);
-		singleton = nullptr;
+	static void (*configuration_info_changed_func)(Object *p_object);
+
+	static ConfigurationInfo from_variant(const Variant &p_variant);
+	static Severity string_to_severity(const String &p_severity);
+
+	bool ensure_valid(Object *p_owner) const;
+	String get_message() const { return message; }
+	StringName get_code() const { return code; }
+	StringName get_property_name() const { return property_name; }
+	Severity get_severity() const { return severity; }
+
+	bool operator==(const ConfigurationInfo &p_val) const {
+		return (message == p_val.message) &&
+				(code == p_val.code) &&
+				(property_name == p_val.property_name) &&
+				(severity == p_val.severity);
 	}
 
-	_FORCE_INLINE_ static EditorStringNames *get_singleton() { return singleton; }
+	ConfigurationInfo();
+	ConfigurationInfo(const Dictionary &p_dict);
 
-	const StringName configuration_info_changed = StringName("configuration_info_changed");
-	const StringName Editor = StringName("Editor");
-	const StringName EditorFonts = StringName("EditorFonts");
-	const StringName EditorIcons = StringName("EditorIcons");
-	const StringName EditorStyles = StringName("EditorStyles");
+	explicit ConfigurationInfo(const GDExtensionConfigurationInfo &p_config_info) :
+			message(*reinterpret_cast<String *>(p_config_info.message)),
+			code(*reinterpret_cast<StringName *>(p_config_info.code)),
+			property_name(*reinterpret_cast<StringName *>(p_config_info.property_name)),
+			severity((Severity)p_config_info.severity) {}
+
+	ConfigurationInfo(const StringName &p_code, const String &p_message, const StringName &p_property_name = StringName(), Severity p_severity = Severity::WARNING);
 };
-
-#define EditorStringName(m_name) EditorStringNames::get_singleton()->m_name

@@ -349,6 +349,40 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="_get_configuration_info" qualifiers="virtual const" experimental="">
+			<return type="Array" />
+			<description>
+				Override this method to inform the user about the configuration of this object.
+				Call [method update_configuration_info] when the messages need to be updated for this object.
+				The elements in the array returned from this method are displayed at the top of the Inspector dock, as well as an icon in the Scene dock for [Node]. The script that overrides it must be a [code]tool[/code] script.
+				Each array element must either be a [String] or a [Dictionary].
+				A dictionary element must contain a key [code]message[/code] of type [String] which is shown in the user interface. Following optional keys are supported:
+				- [code]property[/code] of type [StringName], which adds an icon next to the property with the same name.
+				- [code]code[/code] of type [StringName], to identify this configuration info. In the future, this will be used to allow discarding messages in the editor. While the message may change due to translation or string formatting, the code field should not change.
+				- [code]severity[/code] can be set to [code]"error"[/code], [code]"warning"[/code], or [code]"info"[/code] to change the icon and text color. Defaults to warning.
+				If a string is found in the returned array, it is treated as a warning message with no property set.
+				Returning an empty array produces no messages.
+				[b]Note:[/b] This method only has an effect in the editor and its availability should not be relied upon in an exported project.
+				[codeblock]
+				@tool
+				extends Node
+
+				@export var energy = 0:
+				    set(value):
+				        energy = value
+				        update_configuration_info()
+
+				func _get_configuration_info():
+				    if energy &lt; 0:
+				        return [{
+				            "property": "energy",
+				            "message": "Energy must be 0 or greater."
+				        }]
+				    else:
+				        return []
+				[/codeblock]
+			</description>
+		</method>
 		<method name="_validate_property" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="property" type="Dictionary" />
@@ -1001,6 +1035,13 @@
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url].
 				[b]Note:[/b] Negative and [float] numbers may not properly apply to some countable subjects. It's recommended to handle these cases with [method tr].
 				[b]Note:[/b] This method can't be used without an [Object] instance, as it requires the [method can_translate_messages] method. To translate strings in a static context, use [method TranslationServer.translate_plural].
+			</description>
+		</method>
+		<method name="update_configuration_info">
+			<return type="void" />
+			<description>
+				Refreshes the configuration information displayed for this object in the Scene dock and Inspector dock. Use [method _get_configuration_info] to customize the messages to display.
+				[b]Note:[/b] This method only has an effect in the editor. In exported projects, calling it does nothing.
 			</description>
 		</method>
 	</methods>

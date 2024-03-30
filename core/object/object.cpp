@@ -652,6 +652,46 @@ Variant Object::property_get_revert(const StringName &p_name) const {
 	return Variant();
 }
 
+void Object::get_configuration_info(List<ConfigurationInfo> *p_infos) const {
+#ifdef TOOLS_ENABLED
+	_get_configuration_infov(p_infos);
+
+	if (_extension) {
+		const ObjectGDExtension *current_extension = _extension;
+		while (current_extension) {
+			if (current_extension->get_configuration_info) {
+				// If this is a placeholder, we can't call into the GDExtension on the parent class,
+				// because we don't have a real instance of the class to give it.
+				if (likely(!_extension->is_placeholder)) {
+					uint32_t info_count;
+					const GDExtensionConfigurationInfo *config_info = current_extension->get_configuration_info(_extension_instance, &info_count);
+					for (uint32_t i = 0; i < info_count; i++) {
+						p_infos->push_back(ConfigurationInfo(config_info[i]));
+					}
+					if (current_extension->free_configuration_info) {
+						current_extension->free_configuration_info(_extension_instance, config_info, info_count);
+					}
+				}
+			}
+
+			current_extension = current_extension->parent;
+		}
+	}
+
+	if (script_instance) {
+		script_instance->get_configuration_info(p_infos);
+	}
+#endif
+}
+
+void Object::update_configuration_info() {
+#ifdef TOOLS_ENABLED
+	if (ConfigurationInfo::configuration_info_changed_func) {
+		ConfigurationInfo::configuration_info_changed_func(this);
+	}
+#endif // TOOLS_ENABLED
+}
+
 void Object::get_method_list(List<MethodInfo> *p_list) const {
 	ClassDB::get_method_list(get_class_name(), p_list);
 	if (script_instance) {
@@ -1848,6 +1888,8 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_queued_for_deletion"), &Object::is_queued_for_deletion);
 	ClassDB::bind_method(D_METHOD("cancel_free"), &Object::cancel_free);
 
+	ClassDB::bind_method(D_METHOD("update_configuration_info"), &Object::update_configuration_info);
+
 	ClassDB::add_virtual_method("Object", MethodInfo("free"), false);
 
 	ADD_SIGNAL(MethodInfo("script_changed"));
@@ -1901,6 +1943,8 @@ void Object::_bind_methods() {
 		mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		BIND_OBJ_CORE_METHOD(mi);
 	}
+
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::ARRAY, "_get_configuration_info"));
 
 	// These are actually `Variant` methods, but that doesn't matter since scripts can't inherit built-in types.
 

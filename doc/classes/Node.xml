@@ -50,7 +50,7 @@
 				Return a human-readable description of the position of [param node] child in the custom container, added to the node name.
 			</description>
 		</method>
-		<method name="_get_configuration_warnings" qualifiers="virtual const">
+		<method name="_get_configuration_warnings" qualifiers="virtual const" deprecated="Use [method Object._get_configuration_info] instead.">
 			<return type="PackedStringArray" />
 			<description>
 				The elements in the array returned from this method are displayed as warnings in the Scene dock if the script that overrides it is a [code]tool[/code] script.
@@ -1026,7 +1026,7 @@
 				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
 			</description>
 		</method>
-		<method name="update_configuration_warnings">
+		<method name="update_configuration_warnings" deprecated="Use [method Object.update_configuration_info] instead.">
 			<return type="void" />
 			<description>
 				Refreshes the warnings displayed for this node in the Scene dock. Use [method _get_configuration_warnings] to customize the warning messages to display.
