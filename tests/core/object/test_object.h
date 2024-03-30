@@ -114,6 +114,8 @@ public:
 	}
 	void notification(int p_notification, bool p_reversed = false) override {
 	}
+	void get_configuration_info(List<ConfigurationInfo> *p_infos) const override {
+	}
 	Ref<Script> get_script() const override {
 		return Ref<Script>();
 	}
