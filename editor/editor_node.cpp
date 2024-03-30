@@ -4478,7 +4478,7 @@ void EditorNode::replace_history_reimported_nodes(Node *p_original_root_node, No
 	}
 }
 
-void EditorNode::open_request(const String &p_path) {
+void EditorNode::open_request(const String &p_path, bool p_set_inherited) {
 	if (!opening_prev) {
 		List<String>::Element *prev_scene_item = previous_scenes.find(p_path);
 		if (prev_scene_item != nullptr) {
@@ -4486,7 +4486,7 @@ void EditorNode::open_request(const String &p_path) {
 		}
 	}
 
-	load_scene(p_path); // As it will be opened in separate tab.
+	load_scene(p_path, false, p_set_inherited); // As it will be opened in separate tab.
 }
 
 bool EditorNode::has_previous_scenes() const {

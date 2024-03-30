@@ -90,7 +90,7 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	void _popup_node_selector_bind_compat_94323(const Callable &p_callback, const TypedArray<StringName> &p_valid_types = TypedArray<StringName>());
 	void _popup_property_selector_bind_compat_94323(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter = PackedInt32Array());
-
+	void _open_scene_from_path_bind_compat_90057(const String &scene_path);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -167,7 +167,7 @@ public:
 	void edit_resource(const Ref<Resource> &p_resource);
 	void edit_node(Node *p_node);
 	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);
-	void open_scene_from_path(const String &scene_path);
+	void open_scene_from_path(const String &scene_path, bool p_set_inherited = false);
 	void reload_scene_from_path(const String &scene_path);
 
 	PackedStringArray get_open_scenes() const;
