@@ -204,6 +204,10 @@ Ref<Skin> MeshInstance3D::get_skin() const {
 	return skin;
 }
 
+Ref<SkinReference> MeshInstance3D::get_skin_reference() const {
+	return skin_ref;
+}
+
 void MeshInstance3D::set_skeleton_path(const NodePath &p_skeleton) {
 	skeleton_path = p_skeleton;
 	if (!is_inside_tree()) {
@@ -518,6 +522,7 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &MeshInstance3D::get_skeleton_path);
 	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &MeshInstance3D::set_skin);
 	ClassDB::bind_method(D_METHOD("get_skin"), &MeshInstance3D::get_skin);
+	ClassDB::bind_method(D_METHOD("get_skin_reference"), &MeshInstance3D::get_skin_reference);
 
 	ClassDB::bind_method(D_METHOD("get_surface_override_material_count"), &MeshInstance3D::get_surface_override_material_count);
 	ClassDB::bind_method(D_METHOD("set_surface_override_material", "surface", "material"), &MeshInstance3D::set_surface_override_material);

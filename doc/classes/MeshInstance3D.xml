@@ -70,6 +70,12 @@
 				Returns the value of the blend shape at the given [param blend_shape_idx]. Returns [code]0.0[/code] and produces an error if [member mesh] is [code]null[/code] or doesn't have a blend shape at that index.
 			</description>
 		</method>
+		<method name="get_skin_reference" qualifiers="const">
+			<return type="SkinReference" />
+			<description>
+				Returns the internal [SkinReference] containing the skeleton's [RID] attached to this RID. See also [method Resource.get_rid], [method SkinReference.get_skeleton], and [method RenderingServer.instance_attach_skeleton].
+			</description>
+		</method>
 		<method name="get_surface_override_material" qualifiers="const">
 			<return type="Material" />
 			<param index="0" name="surface" type="int" />
