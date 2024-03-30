@@ -2324,7 +2324,8 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 
 	if (class_desc->is_ready()) {
-		callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).call_deferred(line);
+		// call_deferred() is not enough.
+		class_desc->connect("draw", callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(line), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 	} else {
 		scroll_to = line;
 	}
