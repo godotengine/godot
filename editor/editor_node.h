@@ -768,7 +768,7 @@ public:
 	void replace_resources_in_scenes(
 			const Vector<Ref<Resource>> &p_source_resources,
 			const Vector<Ref<Resource>> &p_target_resource);
-	void open_request(const String &p_path);
+	void open_request(const String &p_path, bool p_set_inherited = false);
 	void edit_foreign_resource(Ref<Resource> p_resource);
 
 	bool is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_resources_are_writable = false);
