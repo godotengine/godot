@@ -624,6 +624,35 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				gen->write_call_utility(result, call->function_name, arguments);
 			} else if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptUtilityFunctions::function_exists(call->function_name)) {
 				// GDScript utility function.
+				if (call->function_name == "load") {
+					if (unlikely(call->arguments.is_empty())) {
+						_set_error("Parser bug: Failed to get load() argument.", call);
+						r_error = ERR_COMPILATION_FAILED;
+						return GDScriptCodeGenerator::Address();
+					}
+
+					const GDScriptParser::ExpressionNode *path_expr = call->arguments[0];
+
+					if (path_expr->is_constant) {
+						String path = path_expr->reduced_value;
+						if (path.is_relative_path()) {
+							path = main_script->get_path().get_base_dir().path_join(path);
+							GDScriptCodeGenerator::Address converted_path = codegen.add_constant(path);
+							if (arguments[0].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+								gen->pop_temporary();
+							}
+							arguments.write[0] = converted_path;
+						}
+					} else {
+						// `arguments.size() == call->arguments.size()`.
+						GDScriptCodeGenerator::Address converted_path = codegen.add_temporary(arguments[0].type);
+						codegen.generator->write_convert_relative_path(converted_path, arguments[0]);
+						if (arguments[0].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+							gen->pop_temporary();
+						}
+						arguments.write[0] = converted_path;
+					}
+				}
 				gen->write_call_gdscript_utility(result, call->function_name, arguments);
 			} else {
 				// Regular function.
