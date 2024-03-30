@@ -264,6 +264,7 @@ public:
 		MOUSE_MODE_CAPTURED,
 		MOUSE_MODE_CONFINED,
 		MOUSE_MODE_CONFINED_HIDDEN,
+		MOUSE_MODE_CAPTURED_CUSTOM, // only use for node_3d_editor_plugin freelook
 	};
 
 	virtual void mouse_set_mode(MouseMode p_mode);

@@ -405,7 +405,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 		return;
 	}
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED_CUSTOM) {
 		XUngrabPointer(x11_display, CurrentTime);
 	}
 
@@ -433,7 +433,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	}
 	mouse_mode = p_mode;
 
-	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED_CUSTOM) {
 		//flush pending motion events
 		_flush_mouse_motion();
 		WindowID window_id = _get_focused_window_or_popup();
@@ -452,6 +452,15 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 		if (mouse_mode == MOUSE_MODE_CAPTURED) {
 			center.x = window.size.width / 2;
 			center.y = window.size.height / 2;
+
+			XWarpPointer(x11_display, None, window.x11_window,
+					0, 0, 0, 0, (int)center.x, (int)center.y);
+
+			Input::get_singleton()->set_mouse_position(center);
+		} else if (mouse_mode == MOUSE_MODE_CAPTURED_CUSTOM){
+			const Vector2 mouseCenter = Input::get_singleton()->get_mouse_captured_center();
+			center.x = mouseCenter.x;
+			center.y = mouseCenter.y;
 
 			XWarpPointer(x11_display, None, window.x11_window,
 					0, 0, 0, 0, (int)center.x, (int)center.y);
@@ -4306,7 +4315,7 @@ void DisplayServerX11::process_events() {
 	do_mouse_warp = false;
 
 	// Is the current mouse mode one where it needs to be grabbed.
-	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN;
+	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED_CUSTOM;
 
 	xi.pressure = 0;
 	xi.tilt = Vector2();
@@ -4626,7 +4635,7 @@ void DisplayServerX11::process_events() {
 					for (const KeyValue<WindowID, WindowData> &E : windows) {
 						if (mouse_mode == MOUSE_MODE_CONFINED) {
 							XUndefineCursor(x11_display, E.value.x11_window);
-						} else if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) { // Or re-hide it.
+						} else if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED_CUSTOM) { // Or re-hide it.
 							XDefineCursor(x11_display, E.value.x11_window, null_cursor);
 						}
 
@@ -4674,7 +4683,7 @@ void DisplayServerX11::process_events() {
 				if (mouse_mode_grab) {
 					for (const KeyValue<WindowID, WindowData> &E : windows) {
 						//dear X11, I try, I really try, but you never work, you do whatever you want.
-						if (mouse_mode == MOUSE_MODE_CAPTURED) {
+						if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CAPTURED_CUSTOM) {
 							// Show the cursor if we're in captured mode so it doesn't look weird.
 							XUndefineCursor(x11_display, E.value.x11_window);
 						}
@@ -4716,7 +4725,7 @@ void DisplayServerX11::process_events() {
 				}
 				/* exit in case of a mouse button press */
 				last_timestamp = event.xbutton.time;
-				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+				if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CAPTURED_CUSTOM) {
 					event.xbutton.x = last_mouse_pos.x;
 					event.xbutton.y = last_mouse_pos.y;
 				}
@@ -4830,6 +4839,16 @@ void DisplayServerX11::process_events() {
 						break;
 					}
 
+					if (mouse_mode == MOUSE_MODE_CAPTURED_CUSTOM){
+						cosnt Vector2 mouseCenter = Input::get_singleton()->get_mouse_captured_center();
+
+						if (event.xmotion.x == mouseCenter.x && event.xmotion.y == mouseCenter.y){
+							//this is likely the warp event since it was warped here
+							center = Vector2(event.xmotion.x, event.xmotion.y);
+							break;
+						}
+					}
+
 					if (event_index + 1 < events.size()) {
 						const XEvent &next_event = events[event_index + 1];
 						if (next_event.type == MotionNotify) {
@@ -4865,7 +4884,7 @@ void DisplayServerX11::process_events() {
 				const WindowData &wd = windows[window_id];
 				bool focused = wd.focused;
 
-				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+				if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CAPTURED_CUSTOM) {
 					if (xi.relative_motion.x == 0 && xi.relative_motion.y == 0) {
 						break;
 					}
@@ -4890,7 +4909,7 @@ void DisplayServerX11::process_events() {
 				Point2i rel;
 
 				// Only use raw input if in capture mode. Otherwise use the classic behavior.
-				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+				if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CAPTURED_CUSTOM) {
 					rel = xi.relative_motion;
 				} else {
 					rel = pos - last_mouse_pos;
@@ -4901,6 +4920,9 @@ void DisplayServerX11::process_events() {
 				xi.relative_motion.y = 0;
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
 					pos = Point2i(windows[focused_window_id].size.width / 2, windows[focused_window_id].size.height / 2);
+				} else if (mouse_mode == MOUSE_MODE_CAPTURED_CUSTOM) {
+					const Vector2 mouseCenter = Input::get_singleton()->get_mouse_captured_center();
+					pos = Point2i(mouseCenter.x, mouseCenter.y);
 				}
 
 				Ref<InputEventMouseMotion> mm;

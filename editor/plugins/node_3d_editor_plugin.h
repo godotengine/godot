@@ -386,7 +386,7 @@ private:
 	void reset_fov();
 	void scale_cursor_distance(real_t scale);
 
-	void set_freelook_active(bool active_now);
+	void set_freelook_active(bool active_now, bool custom = false);
 	void scale_freelook_speed(real_t scale);
 
 	real_t zoom_indicator_delay;

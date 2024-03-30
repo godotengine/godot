@@ -85,12 +85,22 @@ Input *Input::get_singleton() {
 }
 
 void Input::set_mouse_mode(MouseMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 5);
+	ERR_FAIL_INDEX((int)p_mode, 6);
 	set_mouse_mode_func(p_mode);
 }
 
 Input::MouseMode Input::get_mouse_mode() const {
 	return get_mouse_mode_func();
+}
+
+void Input::set_mouse_captured_center(const Vector2 &p_captured_center){
+	_THREAD_SAFE_METHOD_
+	captured_center = p_captured_center;
+}
+
+Vector2 Input::get_mouse_captured_center() const {
+	_THREAD_SAFE_METHOD_
+	return captured_center;
 }
 
 void Input::_bind_methods() {

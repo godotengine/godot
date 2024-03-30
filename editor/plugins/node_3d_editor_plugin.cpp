@@ -1695,7 +1695,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					const Key mod = _get_key_modifier(b);
 					if (!orthogonal) {
 						if (mod == _get_key_modifier_setting("editors/3d/freelook/freelook_activation_modifier")) {
-							set_freelook_active(true);
+							set_freelook_active(true, true);
 						}
 					}
 				} else {
@@ -2361,7 +2361,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 		// Freelook doesn't work in orthogonal mode.
 		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event)) {
-			set_freelook_active(!is_freelook_active());
+			set_freelook_active(!is_freelook_active(), true);
 
 		} else if (k->get_keycode() == Key::ESCAPE) {
 			set_freelook_active(false);
@@ -2512,7 +2512,7 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 	_update_name();
 }
 
-void Node3DEditorViewport::set_freelook_active(bool active_now) {
+void Node3DEditorViewport::set_freelook_active(bool active_now, bool custom) {
 	if (!freelook_active && active_now) {
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
 		cursor = camera_cursor;
@@ -2532,7 +2532,12 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 		previous_mouse_position = get_local_mouse_position();
 
 		// Hide mouse like in an FPS (warping doesn't work)
-		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+		if (custom) {
+			Input::get_singleton()->set_mouse_captured_center(surface->get_global_position() + (surface->get_size() / 2));
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED_CUSTOM);
+		} else {
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+		}
 
 	} else if (freelook_active && !active_now) {
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
