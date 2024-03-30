@@ -44,18 +44,18 @@ class VSet {
 			return 0;
 		}
 
-		int low = 0;
+		uint32_t low = 0;
 		int high = _data.size() - 1;
 		const T *a = &_data[0];
-		int middle = 0;
+		uint32_t middle = 0;
 
 #ifdef DEBUG_ENABLED
-		if (low > high) {
+		if ((int)low > high) {
 			ERR_PRINT("low > high, this may be a bug");
 		}
 #endif
 
-		while (low <= high) {
+		while ((int)low <= high) {
 			middle = (low + high) / 2;
 
 			if (p_val < a[middle]) {
@@ -80,12 +80,12 @@ class VSet {
 			return -1;
 		}
 
-		int low = 0;
+		uint32_t low = 0;
 		int high = _data.size() - 1;
-		int middle;
+		uint32_t middle;
 		const T *a = &_data[0];
 
-		while (low <= high) {
+		while ((int)low <= high) {
 			middle = (low + high) / 2;
 
 			if (p_val < a[middle]) {
