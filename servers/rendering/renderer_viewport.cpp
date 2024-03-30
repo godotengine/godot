@@ -1191,6 +1191,9 @@ void RendererViewport::viewport_set_canvas_transform(RID p_viewport, RID p_canva
 void RendererViewport::viewport_set_transparent_background(RID p_viewport, bool p_enabled) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
+	if (viewport->transparent_bg == p_enabled) {
+		return;
+	}
 
 	RSG::texture_storage->render_target_set_transparent(viewport->render_target, p_enabled);
 	viewport->transparent_bg = p_enabled;
