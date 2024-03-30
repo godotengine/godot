@@ -53,7 +53,6 @@ public:
 		MOUSE_MODE_CAPTURED,
 		MOUSE_MODE_CONFINED,
 		MOUSE_MODE_CONFINED_HIDDEN,
-		MOUSE_MODE_CAPTURED_CUSTOM, // only use for node_3d_editor_plugin freelook
 	};
 
 #undef CursorShape
@@ -265,16 +264,12 @@ private:
 
 	EventDispatchFunc event_dispatch_function = nullptr;
 
-	Vector2 captured_center;
 protected:
 	static void _bind_methods();
 
 public:
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
-
-	void set_mouse_captured_center(const Vector2 &p_captured_center);
-	Vector2 get_mouse_captured_center() const;
 
 #ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
