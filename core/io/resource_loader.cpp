@@ -378,7 +378,7 @@ static String _validate_local_path(const String &p_path) {
 	if (uid != ResourceUID::INVALID_ID) {
 		return ResourceUID::get_singleton()->get_id_path(uid);
 	} else if (p_path.is_relative_path()) {
-		return "res://" + p_path;
+		return ("res://" + p_path).simplify_path();
 	} else {
 		return ProjectSettings::get_singleton()->localize_path(p_path);
 	}
