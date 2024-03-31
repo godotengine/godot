@@ -108,6 +108,7 @@
 			<param index="0" name="with" type="Vector3" />
 			<description>
 				Returns the cross product of this vector and [param with].
+				This returns a vector perpendicular to both this and [param with], which would be the normal vector of the plane defined by the two vectors. As there are two such vectors, in opposite directions, this method returns the vector defined by a right-handed coordinate system. If the two vectors are parallel this returns an empty vector, making it useful for testing if two vectors are parallel.
 			</description>
 		</method>
 		<method name="cubic_interpolate" qualifiers="const">
