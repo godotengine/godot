@@ -7,6 +7,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
 #include "body_part.h"
 #include "animation_help.h"
 #include "body_animator.h"
@@ -83,6 +84,27 @@ public:
 
     void set_controller(const Ref<class CharacterController> &p_controller);
     Ref<class CharacterController> get_controller();
+
+    void set_main_shape(const Ref<Shape3D>& p_shape) {
+        if(mainShape != nullptr)
+        {
+            mainShape->set_shape(p_shape);
+        }
+    }
+    Ref<Shape3D> get_main_shape()
+     {
+        if(mainShape == nullptr)
+        {
+            return mainShape->get_shape();
+        }
+        return mainShape; 
+    }
+public:
+    // 初始化身體分組信息
+    void init_body_part_array(const Array& p_part_array);
+    // 身體部位
+    void set_body_part(const Dictionary& part);
+    Dictionary get_body_part();
     // 技能相关
 public:
     bool play_skill(String p_skill_name);
@@ -141,6 +163,7 @@ protected:
 protected:
     Skeleton3D *skeleton = nullptr;
     AnimationPlayer *player = nullptr;
+    CollisionShape3D * mainShape = nullptr;
     mutable BTPlayer *btPlayer = nullptr;
     bool is_skill_stop = false;
     // 技能播放器
@@ -156,7 +179,7 @@ protected:
     // 插槽信息
     HashMap<StringName,BodySocket> socket;
     // 身体部件信息
-    HashMap<StringName,CharacterBodyPartInstane> bodyPart;
+    HashMap<StringName,Ref<CharacterBodyPartInstane>> bodyPart;
     Ref<CharacterAnimator>    animator;
     Ref<class CharacterController>  controller;
     // 初始化数据

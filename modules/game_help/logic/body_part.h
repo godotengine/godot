@@ -27,6 +27,7 @@ public:
     void set_skin(const Ref<Skin>& p_skin)
     {
         skin = p_skin;
+	    emit_signal(SNAME("changed"));
     }
     Ref<Skin>    get_skin() const
     {
@@ -36,6 +37,7 @@ public:
     void set_mesh(const Ref<Mesh>& p_mesh)
     {
         mesh = p_mesh;
+	    emit_signal(SNAME("changed"));
     }
 
     Ref<Mesh>    get_mesh() const
@@ -46,6 +48,7 @@ public:
     void set_material(const Ref<Material>& p_material)
     {
         material = p_material;
+	    emit_signal(SNAME("changed"));
     }
 
     Ref<Material>    get_material() const
@@ -87,43 +90,99 @@ struct CharacterBodyBoneAttachment
     }
 
 };
-struct CharacterBodyPartInstane
+class CharacterBodyPartInstane : public Resource
 {
+    GDCLASS(CharacterBodyPartInstane, Resource);
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("_on_part_changed"), &CharacterBodyPartInstane::_on_part_changed);
+        ClassDB::bind_method(D_METHOD("set_part","p_part"), &CharacterBodyPartInstane::set_part);
+        ClassDB::bind_method(D_METHOD("get_part"), &CharacterBodyPartInstane::get_part);
+
+        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "part", PROPERTY_HINT_RESOURCE_TYPE, "CharacterBodyPart"), "set_part", "get_part");
+
+        
+    }
+public:
     Ref<CharacterBodyPart> part;
-    Ref<Skin> skin;
+    Ref<Skin>    skin;
     MeshInstance3D *mesh_instance = nullptr;
     Skeleton3D *skeleton = nullptr;
 
-    void init(Node* scene,Ref<CharacterBodyPart> p_part,Skeleton3D *p_skeleton)
+    void set_part(Ref<CharacterBodyPart> p_part)
     {
+        if(part == p_part)
+        {
+            return;
+        }
+        if(part.is_valid())
+        {
+            part->disconnect("changed",Callable(this,"_on_part_changed"));
+        }
         part = p_part;
         if(part.is_valid())
         {
+            part->connect("changed",Callable(this,"_on_part_changed"));
+        }
+        init();
+    }
+    Ref<CharacterBodyPart> get_part() 
+    {
+        return part;
+    }
+    void set_skeleton(Skeleton3D *p_skeleton)
+    {
+        if(skeleton == p_skeleton)
+        {
+            return;
+        }
+        skeleton = p_skeleton;
+        init();
+    }
+    void init()
+    {
+        if(skeleton == nullptr)
+        {
+            clear();
+            return;
+        }
+        if(part.is_valid())
+        {
             skin = part->get_skin();
+            if(mesh_instance != nullptr)
+            {
+                mesh_instance->queue_free();
+            }
             mesh_instance = memnew(MeshInstance3D);
             if(mesh_instance)
             {
-                mesh_instance->set_owner(scene);
-                p_skeleton->add_child(mesh_instance, true);
+                skeleton->add_child(mesh_instance, true);
+                mesh_instance->set_owner(skeleton->get_owner());
                 if(skin.is_valid())
                 {
                     skin = skin->duplicate();
+                    mesh_instance->set_skeleton_path(NodePath("../Skeleton3D"));
                 }
                 mesh_instance->set_mesh(part->get_mesh());
                 mesh_instance->set_skin(skin);
                 mesh_instance->set_material_override(part->get_material());
             }
-            skeleton = p_skeleton;
         }
 
     }
+    void _on_part_changed()
+    {
+        clear();
+        init();
+    }
+
     void clear()
     {
         part.unref();
         skin.unref();
         if(mesh_instance != nullptr)
         {
-            memdelete(mesh_instance);
+            mesh_instance->queue_free();
             mesh_instance = nullptr;
         }
         skeleton = nullptr;

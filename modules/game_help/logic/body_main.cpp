@@ -28,16 +28,28 @@ void CharacterBodyMain::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_animator", "animator"), &CharacterBodyMain::set_animator);
     ClassDB::bind_method(D_METHOD("get_animator"), &CharacterBodyMain::get_animator);
 
+    ClassDB::bind_method(D_METHOD("set_main_shape", "shape"), &CharacterBodyMain::set_main_shape);
+    ClassDB::bind_method(D_METHOD("get_main_shape"), &CharacterBodyMain::get_main_shape);
+
+    ClassDB::bind_method(D_METHOD("init_body_part_array", "part_array"), &CharacterBodyMain::init_body_part_array);
+    ClassDB::bind_method(D_METHOD("set_body_part", "part"), &CharacterBodyMain::set_body_part);
+    ClassDB::bind_method(D_METHOD("get_body_part", "part"), &CharacterBodyMain::get_body_part);
+
+
     
 
 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "behavior_tree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_behavior_tree", "get_behavior_tree");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,Manual"), "set_update_mode", "get_update_mode");	
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard",PROPERTY_USAGE_NONE), "set_blackboard", "get_blackboard");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard",PROPERTY_USAGE_EDITOR), "set_blackboard", "get_blackboard");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_blackboard_plan", "get_blackboard_plan");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "controller", PROPERTY_HINT_RESOURCE_TYPE, "CharacterController"), "set_controller", "get_controller");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skeleton", PROPERTY_HINT_NODE_TYPE, "Skeleton",PROPERTY_USAGE_EDITOR), "set_skeleton", "get_skeleton");    
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator"), "set_animator", "get_animator");
+    // 只能編輯不能保存
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_EDITOR), "set_animator", "get_animator");
+
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "main_shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D",PROPERTY_USAGE_DEFAULT), "set_main_shape", "get_main_shape");
+    ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "body_part", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT), "set_body_part", "get_body_part");
 
 
 	ADD_SIGNAL(MethodInfo("behavior_tree_finished", PropertyInfo(Variant::INT, "status")));
@@ -105,19 +117,18 @@ void CharacterBodyMain::load_skeleton()
 void CharacterBodyMain::load_mesh(const StringName& part_name,String p_mesh_file_path)
 {
     auto old_ins = bodyPart.find(part_name);
-    if(old_ins != bodyPart.end())
+    if(old_ins == bodyPart.end())
     {
-        old_ins->value.clear();
-        bodyPart.remove(old_ins);
+        ERR_FAIL_MSG("not found body part:" + part_name.str());
+        return;
     }
     Ref<CharacterBodyPart> mesh = ResourceLoader::load(p_mesh_file_path);
     if(!mesh.is_valid())
     {
         return;
     }
-    CharacterBodyPartInstane ins;
-    ins.init(this,mesh,skeleton);
-    bodyPart.insert(mesh->get_name(),ins);
+    Ref<CharacterBodyPartInstane> ins = old_ins->value;
+    ins->set_part(mesh);
 }
 void CharacterBodyMain::behavior_tree_finished(int last_status)
 {
@@ -190,11 +201,91 @@ void CharacterBodyMain::stop_skill()
     callable_mp(this, &CharacterBodyMain::_stop_skill).call_deferred();
 }
 
+
+void CharacterBodyMain::init_body_part_array(const Array& p_part_array)
+{
+    for(auto & a : bodyPart)
+    {
+        a.value->clear();
+    }
+    bodyPart.clear();
+
+    for(int i = 0;i < p_part_array.size();i++)
+    {
+        StringName part_name = p_part_array[i];    
+        if(part_name.is_empty())
+        {
+            continue;
+        }
+        Ref<CharacterBodyPartInstane> p;
+        p.instantiate();
+        p->set_skeleton(skeleton);
+        bodyPart[part_name] = p;
+    }
+}
+
+void CharacterBodyMain::set_body_part(const Dictionary& part)
+{
+    Array keys = part.keys();
+    
+    HashMap<StringName,Ref<CharacterBodyPartInstane>> old_bodyPart = bodyPart;
+    bodyPart.clear();
+    for(int i = 0;i < keys.size();i++)
+    {
+        StringName part_name = keys[i];
+
+        Ref<CharacterBodyPartInstane> p = part[part_name];
+        if(old_bodyPart.has(part_name))
+        {
+            Ref<CharacterBodyPartInstane> mesh = old_bodyPart[part_name];
+            if(p->get_part() != mesh->get_part())
+            {
+                mesh->set_part(p->get_part());
+            }
+            bodyPart[part_name] = mesh;        
+            old_bodyPart.erase(part_name);       
+
+        }
+        else
+        {
+            // 克隆一份
+            if(!p.is_valid())
+            {
+                p.instantiate();
+            }
+            else
+            {
+                p = p->duplicate();
+            }
+            p->set_skeleton(skeleton);
+            bodyPart[part_name] = p; 
+        }
+    }
+    for(auto & a : old_bodyPart)
+    {
+        a.value->clear();
+    }
+}
+Dictionary CharacterBodyMain::get_body_part()
+{
+    Dictionary ret;
+    for(auto & a : bodyPart)
+    {
+        ret[a.key] = a.value;
+    }
+    return ret;
+}
+
+
 CharacterBodyMain::CharacterBodyMain()
 {
     player_blackboard.instantiate();
     animator.instantiate();
     animator->set_body(this);
+    mainShape = memnew(CollisionShape3D);
+    mainShape->set_name("MainCollision");
+    add_child(mainShape);
+    mainShape->set_owner(this);
 }
 CharacterBodyMain::~CharacterBodyMain()
 {
