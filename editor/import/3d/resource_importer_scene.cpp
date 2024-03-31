@@ -1046,10 +1046,10 @@ Node *ResourceImporterScene::_pre_fix_animations(Node *p_node, Node *p_root, con
 	return p_node;
 }
 
-Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps) {
+Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps, bool p_remove_immutable_tracks) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *r = _post_fix_animations(p_node->get_child(i), p_root, p_node_data, p_animation_data, p_animation_fps);
+		Node *r = _post_fix_animations(p_node->get_child(i), p_root, p_node_data, p_animation_data, p_animation_fps, p_remove_immutable_tracks);
 		if (!r) {
 			i--; //was erased
 		}
@@ -1077,6 +1077,164 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
+		List<StringName> anims;
+		ap->get_animation_list(&anims);
+
+		if (p_remove_immutable_tracks) {
+			AnimationImportTracks import_tracks_mode[TRACK_CHANNEL_MAX] = {
+				AnimationImportTracks(int(node_settings["import_tracks/position"])),
+				AnimationImportTracks(int(node_settings["import_tracks/rotation"])),
+				AnimationImportTracks(int(node_settings["import_tracks/scale"]))
+			};
+			HashMap<NodePath, bool> used_tracks[TRACK_CHANNEL_MAX];
+
+			for (const StringName &name : anims) {
+				Ref<Animation> anim = ap->get_animation(name);
+				int track_count = anim->get_track_count();
+				LocalVector<int> tracks_to_keep;
+				for (int track_i = 0; track_i < track_count; track_i++) {
+					tracks_to_keep.push_back(track_i);
+					int track_channel_type = 0;
+					switch (anim->track_get_type(track_i)) {
+						case Animation::TYPE_POSITION_3D:
+							track_channel_type = TRACK_CHANNEL_POSITION;
+							break;
+						case Animation::TYPE_ROTATION_3D:
+							track_channel_type = TRACK_CHANNEL_ROTATION;
+							break;
+						case Animation::TYPE_SCALE_3D:
+							track_channel_type = TRACK_CHANNEL_SCALE;
+							break;
+						default:
+							continue;
+					}
+					AnimationImportTracks track_mode = import_tracks_mode[track_channel_type];
+					NodePath path = anim->track_get_path(track_i);
+					Node *n = p_root->get_node(path);
+					Node3D *n3d = Object::cast_to<Node3D>(n);
+					Skeleton3D *skel = Object::cast_to<Skeleton3D>(n);
+					bool keep_track = false;
+					Vector3 loc;
+					Quaternion rot;
+					Vector3 scale;
+					if (skel && path.get_subname_count() > 0) {
+						StringName bone = path.get_subname(0);
+						int bone_idx = skel->find_bone(bone);
+						if (bone_idx == -1) {
+							continue;
+						}
+						// Note that this is using get_bone_pose to update the bone pose cache.
+						Transform3D bone_rest = skel->get_bone_rest(bone_idx);
+						loc = bone_rest.origin / skel->get_motion_scale();
+						rot = bone_rest.basis.get_rotation_quaternion();
+						scale = bone_rest.basis.get_scale();
+					} else if (n3d) {
+						loc = n3d->get_position();
+						rot = n3d->get_transform().basis.get_rotation_quaternion();
+						scale = n3d->get_scale();
+					} else {
+						continue;
+					}
+
+					if (track_mode == ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL) {
+						if (used_tracks[track_channel_type].has(path)) {
+							if (used_tracks[track_channel_type][path]) {
+								continue;
+							}
+						} else {
+							used_tracks[track_channel_type].insert(path, false);
+						}
+					}
+
+					for (int key_i = 0; key_i < anim->track_get_key_count(track_i) && !keep_track; key_i++) {
+						switch (track_channel_type) {
+							case TRACK_CHANNEL_POSITION: {
+								Vector3 key_pos;
+								anim->position_track_get_key(track_i, key_i, &key_pos);
+								if (!key_pos.is_equal_approx(loc)) {
+									keep_track = true;
+									if (track_mode == ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL) {
+										used_tracks[track_channel_type][path] = true;
+									}
+								}
+							} break;
+							case TRACK_CHANNEL_ROTATION: {
+								Quaternion key_rot;
+								anim->rotation_track_get_key(track_i, key_i, &key_rot);
+								if (!key_rot.is_equal_approx(rot)) {
+									keep_track = true;
+									if (track_mode == ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL) {
+										used_tracks[track_channel_type][path] = true;
+									}
+								}
+							} break;
+							case TRACK_CHANNEL_SCALE: {
+								Vector3 key_scl;
+								anim->scale_track_get_key(track_i, key_i, &key_scl);
+								if (!key_scl.is_equal_approx(scale)) {
+									keep_track = true;
+									if (track_mode == ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL) {
+										used_tracks[track_channel_type][path] = true;
+									}
+								}
+							} break;
+							default:
+								break;
+						}
+					}
+					if (track_mode != ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL && !keep_track) {
+						tracks_to_keep.remove_at(tracks_to_keep.size() - 1);
+					}
+				}
+				for (int dst_track_i = 0; dst_track_i < (int)tracks_to_keep.size(); dst_track_i++) {
+					int src_track_i = tracks_to_keep[dst_track_i];
+					if (src_track_i != dst_track_i) {
+						anim->track_swap(src_track_i, dst_track_i);
+					}
+				}
+				for (int track_i = track_count - 1; track_i >= (int)tracks_to_keep.size(); track_i--) {
+					anim->remove_track(track_i);
+				}
+			}
+			for (const StringName &name : anims) {
+				Ref<Animation> anim = ap->get_animation(name);
+				int track_count = anim->get_track_count();
+				LocalVector<int> tracks_to_keep;
+				for (int track_i = 0; track_i < track_count; track_i++) {
+					tracks_to_keep.push_back(track_i);
+					int track_channel_type = 0;
+					switch (anim->track_get_type(track_i)) {
+						case Animation::TYPE_POSITION_3D:
+							track_channel_type = TRACK_CHANNEL_POSITION;
+							break;
+						case Animation::TYPE_ROTATION_3D:
+							track_channel_type = TRACK_CHANNEL_ROTATION;
+							break;
+						case Animation::TYPE_SCALE_3D:
+							track_channel_type = TRACK_CHANNEL_SCALE;
+							break;
+						default:
+							continue;
+					}
+					AnimationImportTracks track_mode = import_tracks_mode[track_channel_type];
+					if (track_mode == ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL) {
+						NodePath path = anim->track_get_path(track_i);
+						if (used_tracks[track_channel_type].has(path) && !used_tracks[track_channel_type][path]) {
+							tracks_to_keep.remove_at(tracks_to_keep.size() - 1);
+						}
+					}
+				}
+				for (int dst_track_i = 0; dst_track_i < (int)tracks_to_keep.size(); dst_track_i++) {
+					int src_track_i = tracks_to_keep[dst_track_i];
+					if (src_track_i != dst_track_i) {
+						anim->track_swap(src_track_i, dst_track_i);
+					}
+				}
+				for (int track_i = track_count - 1; track_i >= (int)tracks_to_keep.size(); track_i--) {
+					anim->remove_track(track_i);
+				}
+			}
+		}
 
 		bool use_optimizer = node_settings["optimizer/enabled"];
 		float anim_optimizer_linerr = node_settings["optimizer/max_velocity_error"];
@@ -1094,8 +1252,6 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 			_compress_animations(ap, anim_compression_page_size);
 		}
 
-		List<StringName> anims;
-		ap->get_animation_list(&anims);
 		for (const StringName &name : anims) {
 			Ref<Animation> anim = ap->get_animation(name);
 			Array animation_slices;
@@ -2784,9 +2940,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	if (p_options.has(SNAME("animation/fps"))) {
 		fps = (float)p_options[SNAME("animation/fps")];
 	}
+	bool remove_immutable_tracks = p_options.has("animation/remove_immutable_tracks") ? (bool)p_options["animation/remove_immutable_tracks"] : true;
 	_pre_fix_animations(scene, scene, node_data, animation_data, fps);
 	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps, apply_root ? root_scale : 1.0);
-	_post_fix_animations(scene, scene, node_data, animation_data, fps);
+	_post_fix_animations(scene, scene, node_data, animation_data, fps, remove_immutable_tracks);
 
 	String root_type = p_options["nodes/root_type"];
 	if (!root_type.is_empty()) {
