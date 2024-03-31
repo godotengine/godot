@@ -1210,7 +1210,10 @@ void EditorAudioBuses::_load_layout() {
 void EditorAudioBuses::_load_default_layout() {
 	String layout_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
 
-	Ref<AudioBusLayout> state = ResourceLoader::load(layout_path, "", true);
+	Ref<AudioBusLayout> state;
+	if (ResourceLoader::exists(layout_path)) {
+		state = ResourceLoader::load(layout_path, "", true);
+	}
 	if (state.is_null()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("There is no '%s' file."), layout_path));
 		return;
