@@ -3490,7 +3490,13 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		hint.or_less = false;
 
 		hint.min = slices[0].to_float();
+		if (slices[0] == "-inf") {
+			hint.min = -INFINITY;
+		}
 		hint.max = slices[1].to_float();
+		if (slices[1] == "inf") {
+			hint.max = INFINITY;
+		}
 
 		if (slices.size() >= 3 && slices[2].is_valid_float()) {
 			// Step is optional, could be something else if not a number.
@@ -3512,6 +3518,11 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 			} else if (slice == "allow_inf_input") {
 				hint.allow_inf_input = true;
 			}
+		}
+
+		// The slider does not work properly if max or min is set to inf.
+		if (hint.max == INFINITY || hint.min == -INFINITY) {
+			hint.hide_slider = true;
 		}
 	}
 	bool degrees = false;

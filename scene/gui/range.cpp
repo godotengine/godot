@@ -109,7 +109,10 @@ void Range::_set_value_no_signal(double p_val, bool p_allow_inf, bool p_allow_na
 	}
 
 	if (shared->step > 0) {
-		p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
+		// This breaks if min is inf.
+		if (Math::is_finite(shared->min)) {
+			p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
+		}
 	}
 
 	if (_rounded_values) {
