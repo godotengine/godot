@@ -388,7 +388,7 @@ public:
 
 	Rect2i fit_rect_in_parent(Rect2i p_rect, const Rect2i &p_parent_rect) const;
 	Size2 get_contents_minimum_size() const;
-	Size2 get_clamped_minimum_size() const;
+	Size2i get_clamped_minimum_size() const;
 
 	void grab_focus();
 	bool has_focus() const;

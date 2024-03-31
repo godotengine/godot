@@ -997,7 +997,7 @@ bool Window::is_visible() const {
 
 Size2i Window::_clamp_window_size(const Size2i &p_size) {
 	Size2i window_size_clamped = p_size;
-	Size2 minsize = get_clamped_minimum_size();
+	Size2i minsize = get_clamped_minimum_size();
 	window_size_clamped = window_size_clamped.max(minsize);
 
 	if (max_size_used != Size2i()) {
@@ -1903,13 +1903,13 @@ Size2 Window::get_contents_minimum_size() const {
 	return _get_contents_minimum_size();
 }
 
-Size2 Window::get_clamped_minimum_size() const {
-	ERR_READ_THREAD_GUARD_V(Size2());
+Size2i Window::get_clamped_minimum_size() const {
+	ERR_READ_THREAD_GUARD_V(Size2i());
 	if (!wrap_controls) {
 		return min_size;
 	}
 
-	return min_size.max(get_contents_minimum_size());
+	return min_size.max(get_contents_minimum_size().ceil());
 }
 
 void Window::grab_focus() {
