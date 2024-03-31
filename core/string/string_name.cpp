@@ -275,17 +275,17 @@ StringName::StringName(const char *p_name, bool p_static) {
 		return; //empty, ignore
 	}
 
-	MutexLock lock(mutex);
-
 	uint32_t hash = String::hash(p_name);
+	uint32_t hash_mixed = hash_fmix32(hash);
 
-	uint32_t idx = hash & STRING_TABLE_MASK;
+	uint32_t idx = hash_mixed & STRING_TABLE_MASK;
 
+	MutexLock lock(mutex);
 	_data = _table[idx];
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_name)) {
+		if (_data->hash_mixed == hash_mixed && _data->operator==(p_name)) {
 			break;
 		}
 		_data = _data->next;
@@ -313,6 +313,7 @@ StringName::StringName(const char *p_name, bool p_static) {
 	_data->cname = nullptr;
 	_data->next = _table[idx];
 	_data->prev = nullptr;
+	_data->hash_mixed = hash_mixed;
 
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
@@ -334,17 +335,17 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 
 	ERR_FAIL_COND(!p_static_string.ptr || !p_static_string.ptr[0]);
 
-	MutexLock lock(mutex);
-
 	uint32_t hash = String::hash(p_static_string.ptr);
+	uint32_t hash_mixed = hash_fmix32(hash);
 
-	uint32_t idx = hash & STRING_TABLE_MASK;
+	uint32_t idx = hash_mixed & STRING_TABLE_MASK;
 
+	MutexLock lock(mutex);
 	_data = _table[idx];
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_static_string.ptr)) {
+		if (_data->hash_mixed == hash_mixed && _data->operator==(p_static_string.ptr)) {
 			break;
 		}
 		_data = _data->next;
@@ -372,6 +373,8 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 	_data->cname = p_static_string.ptr;
 	_data->next = _table[idx];
 	_data->prev = nullptr;
+
+	_data->hash_mixed = hash_mixed;
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
 		// Keep in memory, force static.
@@ -394,15 +397,15 @@ StringName::StringName(const String &p_name, bool p_static) {
 		return;
 	}
 
-	MutexLock lock(mutex);
-
 	uint32_t hash = p_name.hash();
-	uint32_t idx = hash & STRING_TABLE_MASK;
+	uint32_t hash_mixed = hash_fmix32(hash);
+	uint32_t idx = hash_mixed & STRING_TABLE_MASK;
 
+	MutexLock lock(mutex);
 	_data = _table[idx];
 
 	while (_data) {
-		if (_data->hash == hash && _data->operator==(p_name)) {
+		if (_data->hash_mixed == hash_mixed && _data->operator==(p_name)) {
 			break;
 		}
 		_data = _data->next;
@@ -430,6 +433,7 @@ StringName::StringName(const String &p_name, bool p_static) {
 	_data->cname = nullptr;
 	_data->next = _table[idx];
 	_data->prev = nullptr;
+	_data->hash_mixed = hash_mixed;
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
 		// Keep in memory, force static.
@@ -454,7 +458,7 @@ StringName StringName::search(const char *p_name) {
 
 	MutexLock lock(mutex);
 
-	uint32_t hash = String::hash(p_name);
+	uint32_t hash = hash_fmix32(String::hash(p_name));
 	uint32_t idx = hash & STRING_TABLE_MASK;
 
 	_Data *_data = _table[idx];
@@ -490,7 +494,7 @@ StringName StringName::search(const char32_t *p_name) {
 
 	MutexLock lock(mutex);
 
-	uint32_t hash = String::hash(p_name);
+	uint32_t hash = hash_fmix32(String::hash(p_name));
 
 	uint32_t idx = hash & STRING_TABLE_MASK;
 
@@ -516,7 +520,7 @@ StringName StringName::search(const String &p_name) {
 
 	MutexLock lock(mutex);
 
-	uint32_t hash = p_name.hash();
+	uint32_t hash = hash_fmix32(p_name.hash());
 
 	uint32_t idx = hash & STRING_TABLE_MASK;
 
