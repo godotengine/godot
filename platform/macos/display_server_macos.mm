@@ -3094,7 +3094,7 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
+	if (wd.fullscreen) {
 		return;
 	}
 
