@@ -3212,17 +3212,6 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
-		return;
-	}
-
-	Point2i position = p_position;
-	// macOS native y-coordinate relative to _get_screens_origin() is negative,
-	// Godot passes a positive value.
-	position.y *= -1;
-	position += _get_screens_origin();
-	position /= screen_get_max_scale();
-
 	// Remove titlebar / window border size.
 	const NSRect contentRect = [wd.window_view frame];
 	const NSRect windowRect = [wd.window_object frame];
@@ -3231,6 +3220,14 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 	offset.x = (nsrect.origin.x - windowRect.origin.x);
 	offset.y = (nsrect.origin.y + nsrect.size.height);
 	offset.y -= (windowRect.origin.y + windowRect.size.height);
+
+
+	Point2i position = p_position;
+	// macOS native y-coordinate relative to _get_screens_origin() is negative,
+	// Godot passes a positive value.
+	position.y *= -1;
+	position += _get_screens_origin();
+	position /= screen_get_max_scale();
 
 	[wd.window_object setFrameTopLeftPoint:NSMakePoint(position.x - offset.x, position.y - offset.y)];
 
