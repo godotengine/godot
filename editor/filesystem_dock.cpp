@@ -576,9 +576,9 @@ void FileSystemDock::_notification(int p_what) {
 					if ((String(dd["favorite"]) == "all")) {
 						tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
 					}
-				} else if ((String(dd["type"]) == "files") || (String(dd["type"]) == "files_and_dirs") || (String(dd["type"]) == "resource")) {
+				} else if ((String(dd["type"]) == "files") || (String(dd["type"]) == "files_and_dirs")) {
 					tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM | Tree::DROP_MODE_INBETWEEN);
-				} else if ((String(dd["type"]) == "nodes")) {
+				} else if ((String(dd["type"]) == "nodes") || (String(dd["type"]) == "resource")) {
 					holding_branch = true;
 					TreeItem *item = tree->get_next_selected(tree->get_root());
 					while (item) {
@@ -2757,7 +2757,7 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		String to_dir;
 		bool favorite;
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
-		return !to_dir.is_empty();
+		return !favorite;
 	}
 
 	if (drag_data.has("type") && (String(drag_data["type"]) == "files" || String(drag_data["type"]) == "files_and_dirs")) {
@@ -2872,7 +2872,12 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		Ref<Resource> res = drag_data["resource"];
 		String to_dir;
 		bool favorite;
+		tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+		if (to_dir.is_empty()) {
+			to_dir = get_current_directory();
+		}
+
 		if (res.is_valid() && !to_dir.is_empty()) {
 			EditorNode::get_singleton()->push_item(res.ptr());
 			EditorNode::get_singleton()->save_resource_as(res, to_dir);
@@ -2918,7 +2923,11 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	if (drag_data.has("type") && String(drag_data["type"]) == "nodes") {
 		String to_dir;
 		bool favorite;
+		tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+		if (to_dir.is_empty()) {
+			to_dir = get_current_directory();
+		}
 		SceneTreeDock::get_singleton()->save_branch_to_file(to_dir);
 	}
 }
@@ -2931,6 +2940,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 	if (p_from == files) {
 		int pos = files->get_item_at_position(p_point, true);
 		if (pos == -1) {
+			target = get_current_directory();
 			return;
 		}
 
@@ -3454,37 +3464,41 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && holding_branch) {
-		const int item_idx = files->get_item_at_position(mm->get_position());
+		const int item_idx = files->get_item_at_position(mm->get_position(), true);
+		files->deselect_all();
+		String fpath;
 		if (item_idx != -1) {
-			files->deselect_all();
-			String fpath = files->get_item_metadata(item_idx);
+			fpath = files->get_item_metadata(item_idx);
 			if (fpath.ends_with("/") || fpath == "res://") {
 				files->select(item_idx);
 			}
+		} else {
+			fpath = get_current_directory();
+		}
 
-			TreeItem *deselect_item = tree->get_next_selected(tree->get_root());
-			while (deselect_item) {
-				deselect_item->deselect(0);
-				deselect_item = tree->get_next_selected(deselect_item);
+		TreeItem *deselect_item = tree->get_next_selected(tree->get_root());
+		while (deselect_item) {
+			deselect_item->deselect(0);
+			deselect_item = tree->get_next_selected(deselect_item);
+		}
+
+		// Try to select the corresponding tree item.
+		TreeItem *tree_item = (item_idx != -1) ? tree->get_item_with_text(files->get_item_text(item_idx)) : nullptr;
+
+		if (tree_item) {
+			tree_item->select(0);
+		} else {
+			// Find parent folder.
+			fpath = fpath.substr(0, fpath.rfind("/") + 1);
+			if (fpath.size() > String("res://").size()) {
+				fpath = fpath.left(fpath.size() - 2); // Remove last '/'.
+				const int slash_idx = fpath.rfind("/");
+				fpath = fpath.substr(slash_idx + 1, fpath.size() - slash_idx - 1);
 			}
 
-			// Try to select the corresponding tree item.
-			TreeItem *tree_item = tree->get_item_with_text(files->get_item_text(item_idx));
+			tree_item = tree->get_item_with_text(fpath);
 			if (tree_item) {
 				tree_item->select(0);
-			} else {
-				// Find parent folder.
-				fpath = fpath.substr(0, fpath.rfind("/") + 1);
-				if (fpath.size() > String("res://").size()) {
-					fpath = fpath.left(fpath.size() - 2); // Remove last '/'.
-					const int slash_idx = fpath.rfind("/");
-					fpath = fpath.substr(slash_idx + 1, fpath.size() - slash_idx - 1);
-				}
-
-				tree_item = tree->get_item_with_text(fpath);
-				if (tree_item) {
-					tree_item->select(0);
-				}
 			}
 		}
 	}
