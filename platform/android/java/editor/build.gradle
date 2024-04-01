@@ -20,7 +20,7 @@ ext {
         String versionStatus = System.getenv("GODOT_VERSION_STATUS")
         if (versionStatus != null && !versionStatus.isEmpty()) {
             try {
-                buildNumber = Integer.parseInt(versionStatus.replaceAll("[^0-9]", ""));
+                buildNumber = Integer.parseInt(versionStatus.replaceAll("[^0-9]", ""))
             } catch (NumberFormatException ignored) {
                 buildNumber = 0
             }
