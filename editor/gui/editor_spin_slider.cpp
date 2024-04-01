@@ -312,6 +312,8 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 	value_input->add_theme_style_override("normal", stylebox);
 }
 
+// When did this become so complex? Can it be rewriten cleanly?
+// I don't know, but I'm starting to lose the last bits of hope that I didn't even know I still had.
 void EditorSpinSlider::_draw_spin_slider() {
 	updown_offset = -1;
 

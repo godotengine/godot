@@ -5409,6 +5409,7 @@ bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p
 }
 
 bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p_search_previous) {
+	// This is madness. Give me back regular GUI logic...
 	ERR_FAIL_COND_V(!selection.enabled, false);
 
 	if (p_string.size() == 0) {

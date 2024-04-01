@@ -334,7 +334,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 						new_color = gradient->get_color(point_to_copy);
 					}
 				}
-				// Add a temporary point for the user to adjust before adding it permanently.
+				// this is bad and unsafe
 				gradient->add_point(new_offset, new_color);
 				set_selected_index(_predict_insertion_index(new_offset));
 				grabbing = GRAB_ADD;

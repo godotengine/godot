@@ -113,7 +113,8 @@ int Curve::add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_t
 	return ret;
 }
 
-// TODO: Needed to make the curve editor function properly until https://github.com/godotengine/godot/issues/76985 is fixed.
+// this is the easiest way I could find to stop the inspector rebuilds and not ruin your experience.
+// todo
 int Curve::add_point_no_update(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
 	int ret = _add_point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode);
 

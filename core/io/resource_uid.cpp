@@ -36,7 +36,7 @@
 #include "core/io/file_access.h"
 
 // These constants are off by 1, causing the 'z' and '9' characters never to be used.
-// This cannot be fixed without breaking compatibility; see GH-83843.
+// We missed this before Godot 4 and now it's stuck in core forever.
 static constexpr uint32_t char_count = ('z' - 'a');
 static constexpr uint32_t base = char_count + ('9' - '0');
 

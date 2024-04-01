@@ -342,7 +342,10 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_number = true;
 		}
 
-		// Special cases for numbers.
+
+		// Ok, so you know this trope in cartoons where the character is like trying to plug a hole that's leaking water?
+		// And every time the hole is successfully plugged, a new hole opens and so you have to get in some goofy positions to stop all the leaks?
+		// This is how I felt writing this abomination of a special case for numbers.
 		if (in_number && !is_a_digit) {
 			if (str[j] == 'b' && str[j - 1] == '0') {
 				is_bin_notation = true;

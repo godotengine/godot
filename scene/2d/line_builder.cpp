@@ -42,6 +42,7 @@ static inline Vector2 interpolate(const Rect2 &r, const Vector2 &v) {
 LineBuilder::LineBuilder() {
 }
 
+// I bet there are a lot of secret "features" in here. So many secret "features" even I don't know where they are.
 void LineBuilder::build() {
 	// Need at least 2 points to draw a line, so clear the output and return.
 	if (points.size() < 2) {

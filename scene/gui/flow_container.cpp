@@ -222,6 +222,7 @@ void FlowContainer::_resort() {
 Size2 FlowContainer::get_minimum_size() const {
 	Size2i minimum;
 
+	// Hi code reviewers! I was hoping you wouldn't get this far.
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c) {

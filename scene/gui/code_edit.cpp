@@ -1564,6 +1564,7 @@ bool CodeEdit::is_line_folding_enabled() const {
 	return line_folding_enabled;
 }
 
+// yep yep, this is toootally under control.
 bool CodeEdit::can_fold_line(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
 	if (!line_folding_enabled) {

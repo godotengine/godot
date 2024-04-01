@@ -1982,7 +1982,7 @@ void Node::_release_unique_name_in_owner() {
 }
 
 void Node::_acquire_unique_name_in_owner() {
-	ERR_FAIL_NULL(data.owner); // Safety check.
+	ERR_FAIL_NULL(data.owner); // Safety check, but it won't save you from using this incorrectly.
 	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {

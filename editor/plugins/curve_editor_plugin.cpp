@@ -1002,6 +1002,10 @@ void CurveEditor::_notification(int p_what) {
 }
 
 CurveEditor::CurveEditor() {
+	// I don't know why.
+	// I don't want to know why.
+	// I shouldn't have to wonder why.
+	// But for some reason, EVERY TIME the size of the points array changes, this thing is COMPLETELY rebuilt.
 	HFlowContainer *toolbar = memnew(HFlowContainer);
 	add_child(toolbar);
 

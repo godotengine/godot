@@ -200,6 +200,8 @@ private:
 		}
 	}
 
+	// I could have just become an aerospace engineer
+	// rocket science is simpler than modern C++
 	void _init_from(const HashSet &p_other) {
 		capacity_index = p_other.capacity_index;
 		num_elements = p_other.num_elements;

@@ -7175,7 +7175,7 @@ void TextEdit::_reset_caret_blink_timer() {
 void TextEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
 	if (is_visible_in_tree() && has_focus() && window_has_focus) {
-		queue_redraw();
+		queue_redraw();  // This kills battery life. Too bad!
 	}
 }
 

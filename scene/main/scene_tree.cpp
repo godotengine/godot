@@ -966,6 +966,7 @@ void SceneTree::_process_groups_thread(uint32_t p_index, bool p_physics) {
 	Node::current_process_thread_group = nullptr;
 }
 
+// I fear no man, but this, thing... It scares me...
 void SceneTree::_process(bool p_physics) {
 	if (process_groups_dirty) {
 		{
