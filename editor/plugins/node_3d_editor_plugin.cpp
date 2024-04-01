@@ -1674,6 +1674,19 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 					_edit.gizmo = Ref<EditorNode3DGizmo>();
 				}
+				
+				// cancel select
+				if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+					selection_in_progress = false;
+
+					if (cursor.region_select) {
+						cursor.region_begin = b->get_position();
+						cursor.region_end = b->get_position();
+						cursor.region_select = false;
+						_select_region();
+						surface->queue_redraw();
+					}
+				}
 
 				if (_edit.mode == TRANSFORM_NONE && b->is_pressed()) {
 					if (b->is_alt_pressed()) {
@@ -1896,14 +1909,15 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
-						selection_in_progress = false;
-
 						if (clicked.is_valid()) {
 							_select_clicked(false);
 						}
 
 						if (cursor.region_select) {
-							_select_region();
+							if (selection_in_progress) {
+								_select_region();
+							}
+
 							cursor.region_select = false;
 							surface->queue_redraw();
 						}
@@ -3089,7 +3103,7 @@ void Node3DEditorViewport::_draw() {
 		get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles))->draw(surface->get_canvas_item(), r);
 	}
 
-	if (cursor.region_select) {
+	if (cursor.region_select && selection_in_progress) {
 		const Rect2 selection_rect = Rect2(cursor.region_begin, cursor.region_end - cursor.region_begin);
 
 		surface->draw_rect(
