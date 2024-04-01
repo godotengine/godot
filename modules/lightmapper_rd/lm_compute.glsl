@@ -454,6 +454,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 
 		float power = 0.0;
 		int power_accm = 0;
+		vec3 color = vec3(0.0);
 		vec3 prev_pos = p_position;
 		for (uint j = 0; j < shadowing_ray_count; j++) {
 			p_position = prev_pos;
@@ -481,6 +482,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 			light_disk_to_point = normalize(light_to_point + disk_sample.x * light_to_point_tan + disk_sample.y * light_to_point_bitan);
 
 			float sample_penumbra = 0.0;
+			vec3 sample_color = light_data.color;
 			bool sample_did_hit = false;
 			for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
 				vec4 hit_albedo = vec4(1.0);
@@ -503,6 +505,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 					if (contribute)
 						sample_penumbra = max(sample_penumbra - hit_albedo.a - EPSILON, 0.0);
 					p_position = hit_position + r_light_dir * bake_params.bias;
+					sample_color = mix(sample_color, hit_albedo.rgb, sample_penumbra * hit_albedo.a);
 
 					if (sample_penumbra - EPSILON <= 0)
 						break;
@@ -511,9 +514,12 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 
 			power += sample_penumbra;
 			power_accm += 1;
+
+			color += sample_color;
 		}
 
 		penumbra = power / float(power_accm);
+		light_data.color.rgb = (color / float(power_accm));
 	} else {
 		bool did_hit = false;
 		penumbra = 0.0;
@@ -535,6 +541,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 				if (contribute)
 					penumbra = max(penumbra - hit_albedo.a - EPSILON, 0.0);
 				p_position = hit_position + r_light_dir * bake_params.bias;
+				light_data.color.rgb = mix(light_data.color.rgb, hit_albedo.rgb, penumbra * hit_albedo.a);
 
 				if (penumbra - EPSILON <= 0)
 					break;
