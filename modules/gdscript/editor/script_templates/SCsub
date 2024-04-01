@@ -13,4 +13,4 @@ env["BUILDERS"]["MakeGDTemplateBuilder"] = Builder(
 # Template files
 templates_sources = Glob("*/*.gd")
 
-env.Alias("editor_template_gd", [env.MakeGDTemplateBuilder("templates.gen.h", templates_sources)])
+env.Alias("editor_template_gd", [env.NoClean(env.MakeGDTemplateBuilder("templates.gen.h", templates_sources))])

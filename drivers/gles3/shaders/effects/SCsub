@@ -14,4 +14,4 @@ if "GLES3_GLSL" in env["BUILDERS"]:
 
     # compile shaders
     for glsl_file in glsl_files:
-        env.GLES3_GLSL(glsl_file)
+        env.NoClean(env.GLES3_GLSL(glsl_file))

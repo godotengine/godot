@@ -63,10 +63,12 @@ if env.editor_build:
 
     docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
-    env.CommandNoCache(
-        "#editor/doc_data_compressed.gen.h",
-        docs,
-        env.Run(editor_builders.make_doc_header),
+    env.NoClean(
+        env.CommandNoCache(
+            "#editor/doc_data_compressed.gen.h",
+            docs,
+            env.Run(editor_builders.make_doc_header),
+        )
     )
 
     # Editor interface and class reference translations incur a significant size
@@ -78,38 +80,46 @@ if env.editor_build:
     # Editor translations
     tlist = glob.glob(env.Dir("#editor/translations/editor").abspath + "/*.po")
     env.Depends("#editor/editor_translations.gen.h", tlist)
-    env.CommandNoCache(
-        "#editor/editor_translations.gen.h",
-        tlist,
-        env.Run(editor_builders.make_editor_translations_header),
+    env.NoClean(
+        env.CommandNoCache(
+            "#editor/editor_translations.gen.h",
+            tlist,
+            env.Run(editor_builders.make_editor_translations_header),
+        )
     )
 
     # Property translations
     tlist = glob.glob(env.Dir("#editor/translations/properties").abspath + "/*.po")
     env.Depends("#editor/property_translations.gen.h", tlist)
-    env.CommandNoCache(
-        "#editor/property_translations.gen.h",
-        tlist,
-        env.Run(editor_builders.make_property_translations_header),
+    env.NoClean(
+        env.CommandNoCache(
+            "#editor/property_translations.gen.h",
+            tlist,
+            env.Run(editor_builders.make_property_translations_header),
+        )
     )
 
     # Documentation translations
     tlist = glob.glob(env.Dir("#doc/translations").abspath + "/*.po")
     env.Depends("#editor/doc_translations.gen.h", tlist)
-    env.CommandNoCache(
-        "#editor/doc_translations.gen.h",
-        tlist,
-        env.Run(editor_builders.make_doc_translations_header),
+    env.NoClean(
+        env.CommandNoCache(
+            "#editor/doc_translations.gen.h",
+            tlist,
+            env.Run(editor_builders.make_doc_translations_header),
+        )
     )
 
     # Extractable translations
     tlist = glob.glob(env.Dir("#editor/translations/extractable").abspath + "/*.po")
     tlist.extend(glob.glob(env.Dir("#editor/translations/extractable").abspath + "/extractable.pot"))
     env.Depends("#editor/extractable_translations.gen.h", tlist)
-    env.CommandNoCache(
-        "#editor/extractable_translations.gen.h",
-        tlist,
-        env.Run(editor_builders.make_extractable_translations_header),
+    env.NoClean(
+        env.CommandNoCache(
+            "#editor/extractable_translations.gen.h",
+            tlist,
+            env.Run(editor_builders.make_extractable_translations_header),
+        )
     )
 
     env.add_source_files(env.editor_sources, "*.cpp")

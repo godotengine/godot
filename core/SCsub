@@ -199,26 +199,30 @@ env.Depends(
     "#core/io/certs_compressed.gen.h",
     ["#thirdparty/certs/ca-certificates.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
 )
-env.CommandNoCache(
-    "#core/io/certs_compressed.gen.h",
-    "#thirdparty/certs/ca-certificates.crt",
-    env.Run(core_builders.make_certs_header),
+env.NoClean(
+    env.CommandNoCache(
+        "#core/io/certs_compressed.gen.h",
+        "#thirdparty/certs/ca-certificates.crt",
+        env.Run(core_builders.make_certs_header),
+    )
 )
 
 # Authors
 env.Depends("#core/authors.gen.h", "../AUTHORS.md")
-env.CommandNoCache("#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header))
+env.NoClean(env.CommandNoCache("#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header)))
 
 # Donors
 env.Depends("#core/donors.gen.h", "../DONORS.md")
-env.CommandNoCache("#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header))
+env.NoClean(env.CommandNoCache("#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header)))
 
 # License
 env.Depends("#core/license.gen.h", ["../COPYRIGHT.txt", "../LICENSE.txt"])
-env.CommandNoCache(
-    "#core/license.gen.h",
-    ["../COPYRIGHT.txt", "../LICENSE.txt"],
-    env.Run(core_builders.make_license_header),
+env.NoClean(
+    env.CommandNoCache(
+        "#core/license.gen.h",
+        ["../COPYRIGHT.txt", "../LICENSE.txt"],
+        env.Run(core_builders.make_license_header),
+    )
 )
 
 # Chain load SCsubs

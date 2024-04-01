@@ -13,4 +13,4 @@ env["BUILDERS"]["MakeCSharpTemplateBuilder"] = Builder(
 # Template files
 templates_sources = Glob("*/*.cs")
 
-env.Alias("editor_template_cs", [env.MakeCSharpTemplateBuilder("templates.gen.h", templates_sources)])
+env.Alias("editor_template_cs", [env.NoClean(env.MakeCSharpTemplateBuilder("templates.gen.h", templates_sources))])

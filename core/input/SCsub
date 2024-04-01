@@ -11,10 +11,12 @@ controller_databases = [
     "godotcontrollerdb.txt",
 ]
 
-gensource = env.CommandNoCache(
-    "default_controller_mappings.gen.cpp",
-    controller_databases,
-    env.Run(input_builders.make_default_controller_mappings),
+gensource = env.NoClean(
+    env.CommandNoCache(
+        "default_controller_mappings.gen.cpp",
+        controller_databases,
+        env.Run(input_builders.make_default_controller_mappings),
+    )
 )
 
 env.add_source_files(env.core_sources, "*.cpp")

@@ -16,5 +16,5 @@ icon_sources = Glob("*.svg")
 
 env.Alias(
     "default_theme_icons",
-    [env.MakeDefaultThemeIconsBuilder("#scene/theme/default_theme_icons.gen.h", icon_sources)],
+    [env.NoClean(env.MakeDefaultThemeIconsBuilder("#scene/theme/default_theme_icons.gen.h", icon_sources))],
 )
