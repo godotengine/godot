@@ -47,6 +47,8 @@ void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) c
 Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t p_flags,
 		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
+	ERR_FAIL_COND_V(p_options.is_empty(), nullptr);
+
 	Ref<GLTFDocument> gltf;
 	gltf.instantiate();
 	Ref<GLTFState> state;

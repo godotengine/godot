@@ -1798,6 +1798,8 @@ void EditorSceneFormatImporterCollada::get_extensions(List<String> *r_extensions
 }
 
 Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
+	ERR_FAIL_COND_V(p_options.is_empty(), nullptr);
+
 	if (r_err) {
 		*r_err = OK;
 	}
