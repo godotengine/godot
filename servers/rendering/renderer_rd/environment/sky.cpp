@@ -162,6 +162,10 @@ bool SkyRD::SkyShaderData::casts_shadows() const {
 	return false;
 }
 
+RendererRD::MaterialStorage::ShaderData::CullMode SkyRD::SkyShaderData::get_cull_mode() const {
+	return CULL_DISABLED;
+}
+
 RS::ShaderNativeSourceCode SkyRD::SkyShaderData::get_native_source_code() const {
 	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 

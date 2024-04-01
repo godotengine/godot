@@ -1718,6 +1718,10 @@ bool ParticlesStorage::ParticlesShaderData::casts_shadows() const {
 	return false;
 }
 
+RendererRD::MaterialStorage::ShaderData::CullMode ParticlesStorage::ParticlesShaderData::get_cull_mode() const {
+	return CULL_DISABLED;
+}
+
 RS::ShaderNativeSourceCode ParticlesStorage::ParticlesShaderData::get_native_source_code() const {
 	return ParticlesStorage::get_singleton()->particles_shader.shader.version_get_native_source_code(version);
 }

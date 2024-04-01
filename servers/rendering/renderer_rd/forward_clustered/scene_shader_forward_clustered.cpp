@@ -410,6 +410,10 @@ bool SceneShaderForwardClustered::ShaderData::casts_shadows() const {
 	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
 }
 
+RendererRD::MaterialStorage::ShaderData::CullMode SceneShaderForwardClustered::ShaderData::get_cull_mode() const {
+	return static_cast<RendererRD::MaterialStorage::ShaderData::CullMode>(cull_mode);
+}
+
 RS::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_source_code() const {
 	SceneShaderForwardClustered *shader_singleton = (SceneShaderForwardClustered *)SceneShaderForwardClustered::singleton;
 

@@ -202,6 +202,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
+		virtual RendererRD::MaterialStorage::ShaderData::CullMode get_cull_mode() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 
 		FogShaderData() {}

@@ -362,6 +362,10 @@ bool SceneShaderForwardMobile::ShaderData::casts_shadows() const {
 	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
 }
 
+RendererRD::MaterialStorage::ShaderData::CullMode SceneShaderForwardMobile::ShaderData::get_cull_mode() const {
+	return RendererRD::MaterialStorage::ShaderData::CullMode::CULL_DISABLED;
+}
+
 RS::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_source_code() const {
 	SceneShaderForwardMobile *shader_singleton = (SceneShaderForwardMobile *)SceneShaderForwardMobile::singleton;
 

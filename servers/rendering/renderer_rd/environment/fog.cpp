@@ -362,6 +362,10 @@ bool Fog::FogShaderData::casts_shadows() const {
 	return false;
 }
 
+RendererRD::MaterialStorage::ShaderData::CullMode Fog::FogShaderData::get_cull_mode() const {
+	return CULL_DISABLED;
+}
+
 RS::ShaderNativeSourceCode Fog::FogShaderData::get_native_source_code() const {
 	Fog *fog_singleton = Fog::get_singleton();
 

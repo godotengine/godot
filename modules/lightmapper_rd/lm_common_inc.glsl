@@ -18,6 +18,7 @@ layout(set = 0, binding = 0) uniform BakeParameters {
 	uint bounces;
 
 	float bounce_indirect_energy;
+	uint transparency_rays;
 }
 bake_params;
 
@@ -33,11 +34,15 @@ layout(set = 0, binding = 1, std430) restrict readonly buffer Vertices {
 }
 vertices;
 
+#define CULL_DISABLED 0
+#define CULL_FRONT 1
+#define CULL_BACK 2
+
 struct Triangle {
 	uvec3 indices;
 	uint slice;
 	vec3 min_bounds;
-	uint pad0;
+	uint cull_mode;
 	vec3 max_bounds;
 	uint pad1;
 };
