@@ -416,6 +416,11 @@ private:
 	void _update_freelook(real_t delta);
 	Node3DEditor *spatial_editor = nullptr;
 
+	void emit_viewport_gui_input(const Ref<InputEvent> &p_event);
+	void emit_rotation_gui_input(const Ref<InputEvent> &p_event);
+	void emit_view_menu_popup();
+	void emit_view_menu_gui_input(const Ref<InputEvent> &p_event);
+
 	Camera3D *previewing = nullptr;
 	Camera3D *preview = nullptr;
 
@@ -472,6 +477,8 @@ protected:
 public:
 	void update_surface() { surface->queue_redraw(); }
 	void update_transform_gizmo_view();
+
+	void call_sinput(const Ref<InputEvent> &p_event);
 
 	void set_can_preview(Camera3D *p_preview);
 	void set_state(const Dictionary &p_state);
@@ -830,6 +837,13 @@ private:
 	void _add_environment_to_scene(bool p_already_added_sun = false);
 
 	void _update_theme();
+
+	int is_freelook_active() const;
+
+	void _viewport_gui_input(const Ref<InputEvent> &p_event, int index);
+	void _viewport_rotation_gui_input(const Ref<InputEvent> &p_event, int index);
+	void _viewport_viewport_gui_input(const Ref<InputEvent> &p_event, int index);
+	void _viewport_base_gui_input(const Ref<InputEvent> &p_event);
 
 protected:
 	void _notification(int p_what);

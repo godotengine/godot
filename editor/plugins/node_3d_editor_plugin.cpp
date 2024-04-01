@@ -2667,6 +2667,18 @@ void Node3DEditorViewport::_update_freelook(real_t delta) {
 	cursor.eye_pos += motion;
 }
 
+void Node3DEditorViewport::emit_viewport_gui_input(const Ref<InputEvent> &p_event) {
+	emit_signal("viewport_gui_input", p_event, index);
+}
+
+void Node3DEditorViewport::emit_rotation_gui_input(const Ref<InputEvent> &p_event) {
+	emit_signal("viewport_rotation_gui_input", p_event, index);
+}
+
+void Node3DEditorViewport::emit_view_menu_gui_input(const Ref<InputEvent> &p_event) {
+	emit_signal("viewport_view_menu_gui_input", p_event, index);
+}
+
 void Node3DEditorViewport::set_message(const String &p_message, float p_time) {
 	message = p_message;
 	message_time = p_time;
@@ -2991,7 +3003,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			surface->connect("draw", callable_mp(this, &Node3DEditorViewport::_draw));
-			surface->connect("gui_input", callable_mp(this, &Node3DEditorViewport::_sinput));
+			surface->connect("gui_input", callable_mp(this, &Node3DEditorViewport::emit_viewport_gui_input));
 			surface->connect("mouse_entered", callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
 			surface->connect("mouse_exited", callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
 			surface->connect("focus_entered", callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
@@ -3860,6 +3872,10 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
 }
 
+void Node3DEditorViewport::call_sinput(const Ref<InputEvent> &p_event) {
+	_sinput(p_event);
+}
+
 void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 	if (p_state.has("position")) {
 		cursor.pos = p_state["position"];
@@ -4027,6 +4043,9 @@ Dictionary Node3DEditorViewport::get_state() const {
 void Node3DEditorViewport::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
 	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(Variant::OBJECT, "viewport")));
+	ADD_SIGNAL(MethodInfo("viewport_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::INT, "index", PROPERTY_HINT_RANGE, "0, 3")));
+	ADD_SIGNAL(MethodInfo("viewport_rotation_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::INT, "index", PROPERTY_HINT_RANGE, "0, 3")));
+	ADD_SIGNAL(MethodInfo("viewport_view_menu_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::INT, "index", PROPERTY_HINT_RANGE, "0, 3")));
 }
 
 void Node3DEditorViewport::reset() {
@@ -5192,6 +5211,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_menu_option));
 	display_submenu->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_menu_option));
 	view_menu->set_disable_shortcuts(true);
+	view_menu->connect("gui_input", callable_mp(this, &Node3DEditorViewport::emit_view_menu_gui_input));
 
 	// TODO: Re-evaluate with new OpenGL3 renderer, and implement.
 	//if (OS::get_singleton()->get_current_video_driver() == OS::RENDERING_DRIVER_OPENGL3) {
@@ -5344,6 +5364,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	rotation_control->set_custom_minimum_size(Size2(80, 80) * EDSCALE);
 	rotation_control->set_h_size_flags(SIZE_SHRINK_END);
 	rotation_control->set_viewport(this);
+	rotation_control->connect("gui_input", callable_mp(this, &Node3DEditorViewport::emit_rotation_gui_input));
 	top_right_vbox->add_child(rotation_control);
 
 	// Individual Labels are used to allow coloring each label with its own color.
@@ -7702,6 +7723,52 @@ void Node3DEditor::_update_theme() {
 	context_toolbar_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 }
 
+int Node3DEditor::is_freelook_active() const {
+	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
+		if (viewports[i]->is_freelook_active()) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+void Node3DEditor::_viewport_gui_input(const Ref<InputEvent> &p_event, int index) {
+	const int i = is_freelook_active();
+	if (i != -1){
+		viewports[i]->call_sinput(p_event);
+		return;
+	}
+
+	viewports[index]->call_sinput(p_event);
+}
+
+void Node3DEditor::_viewport_rotation_gui_input(const Ref<InputEvent> &p_event, int index) {
+	const int i = is_freelook_active();
+	if (i != -1) {
+		viewports[i]->call_sinput(p_event);
+		viewports[i]->accept_event();
+		return;
+	}
+}
+
+void Node3DEditor::_viewport_viewport_gui_input(const Ref<InputEvent> &p_event, int index) {
+	const int i = is_freelook_active();
+	if (i != -1) {
+		viewports[i]->call_sinput(p_event);
+		viewports[i]->accept_event();
+		return;
+	}
+}
+
+void Node3DEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) {
+	const int i = is_freelook_active();
+	if (i != -1){		
+		viewports[i]->call_sinput(p_event);
+		viewport_base->accept_event();
+		return;
+	}
+}
+
 void Node3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -8591,11 +8658,15 @@ Node3DEditor::Node3DEditor() {
 	viewport_base = memnew(Node3DEditorViewportContainer);
 	shader_split->add_child(viewport_base);
 	viewport_base->set_v_size_flags(SIZE_EXPAND_FILL);
+	viewport_base->connect("gui_input", callable_mp(this, &Node3DEditor::_viewport_base_gui_input));
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
 		viewports[i] = memnew(Node3DEditorViewport(this, i));
 		viewports[i]->connect("toggle_maximize_view", callable_mp(this, &Node3DEditor::_toggle_maximize_view));
 		viewports[i]->connect("clicked", callable_mp(this, &Node3DEditor::_update_camera_override_viewport));
 		viewports[i]->assign_pending_data_pointers(preview_node, &preview_bounds, accept);
+		viewports[i]->connect("viewport_gui_input", callable_mp(this, &Node3DEditor::_viewport_gui_input));
+		viewports[i]->connect("viewport_rotation_gui_input", callable_mp(this, &Node3DEditor::_viewport_rotation_gui_input));
+		viewports[i]->connect("viewport_view_menu_gui_input", callable_mp(this, &Node3DEditor::_viewport_viewport_gui_input));
 		viewport_base->add_child(viewports[i]);
 	}
 
