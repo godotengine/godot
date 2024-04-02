@@ -730,6 +730,9 @@ void DisplayServer::delete_status_indicator(IndicatorID p_id) {
 	WARN_PRINT("Status indicator not supported by this display server.");
 }
 
+void DisplayServer::beep() const {
+}
+
 int64_t DisplayServer::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
 	WARN_PRINT("Native handle not supported by this display server.");
 	return 0;
@@ -984,6 +987,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tablet_get_driver_name", "idx"), &DisplayServer::tablet_get_driver_name);
 	ClassDB::bind_method(D_METHOD("tablet_get_current_driver"), &DisplayServer::tablet_get_current_driver);
 	ClassDB::bind_method(D_METHOD("tablet_set_current_driver", "name"), &DisplayServer::tablet_set_current_driver);
+
+	ClassDB::bind_method(D_METHOD("beep"), &DisplayServer::beep);
 
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);

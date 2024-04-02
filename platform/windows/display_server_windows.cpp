@@ -3374,6 +3374,10 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 	return DisplayServer::VSYNC_ENABLED;
 }
 
+void DisplayServerWindows::beep() const {
+	MessageBeep(MB_OK);
+}
+
 void DisplayServerWindows::set_context(Context p_context) {
 }
 

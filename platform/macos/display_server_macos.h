@@ -437,6 +437,8 @@ public:
 	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
 	virtual void delete_status_indicator(IndicatorID p_id) override;
 
+	virtual void beep() const override;
+
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 

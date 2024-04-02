@@ -112,6 +112,7 @@ public:
 	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
 	int hit_test(float p_coords) const;
+	int hit_test_visual(float p_coords) const;
 
 	TextLine(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language = "", TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
 	TextLine();

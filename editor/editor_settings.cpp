@@ -603,6 +603,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/appearance/caret/caret_blink_interval", 0.5, "0.1,10,0.01")
 	_initial_set("text_editor/appearance/caret/highlight_current_line", true);
 	_initial_set("text_editor/appearance/caret/highlight_all_occurrences", true);
+	_initial_set("text_editor/appearance/caret/use_visual_caret_movement_style", false);
+	_initial_set("text_editor/appearance/caret/visual_caret_suppress_ambiguous_deletes", false);
+	_initial_set("text_editor/appearance/caret/visual_caret_selection", true);
 
 	// Appearance: Guidelines
 	_initial_set("text_editor/appearance/guidelines/show_line_length_guidelines", true);

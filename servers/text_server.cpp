@@ -36,6 +36,8 @@
 
 TextServerManager *TextServerManager::singleton = nullptr;
 
+#define GLYPH_NOT_FOUND -2
+
 void TextServerManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_interface", "interface"), &TextServerManager::add_interface);
 	ClassDB::bind_method(D_METHOD("get_interface_count"), &TextServerManager::get_interface_count);
@@ -463,6 +465,7 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shaped_text_hit_test_grapheme", "shaped", "coords"), &TextServer::shaped_text_hit_test_grapheme);
 	ClassDB::bind_method(D_METHOD("shaped_text_hit_test_position", "shaped", "coords"), &TextServer::shaped_text_hit_test_position);
+	ClassDB::bind_method(D_METHOD("shaped_text_hit_test_visual_position", "shaped", "coords"), &TextServer::shaped_text_hit_test_visual_position);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_grapheme_bounds", "shaped", "pos"), &TextServer::shaped_text_get_grapheme_bounds);
 	ClassDB::bind_method(D_METHOD("shaped_text_next_grapheme_pos", "shaped", "pos"), &TextServer::shaped_text_next_grapheme_pos);
@@ -472,6 +475,13 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_next_character_pos", "shaped", "pos"), &TextServer::shaped_text_next_character_pos);
 	ClassDB::bind_method(D_METHOD("shaped_text_prev_character_pos", "shaped", "pos"), &TextServer::shaped_text_prev_character_pos);
 	ClassDB::bind_method(D_METHOD("shaped_text_closest_character_pos", "shaped", "pos"), &TextServer::shaped_text_closest_character_pos);
+
+	ClassDB::bind_method(D_METHOD("shaped_text_next_visual_character_pos", "shaped", "pos"), &TextServer::shaped_text_next_visual_character_pos);
+	ClassDB::bind_method(D_METHOD("shaped_text_prev_visual_character_pos", "shaped", "pos"), &TextServer::shaped_text_prev_visual_character_pos);
+
+	ClassDB::bind_method(D_METHOD("shaped_text_allowed_visual_caret_operations", "shaped", "pos"), &TextServer::shaped_text_allowed_visual_caret_operations);
+	ClassDB::bind_method(D_METHOD("shaped_text_visual_selection_glyphs", "shaped", "pos"), &TextServer::shaped_text_visual_selection_glyphs);
+	ClassDB::bind_method(D_METHOD("shaped_text_visual_validate_selection", "shaped", "glyphs", "chars"), &TextServer::shaped_text_visual_validate_selection);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_draw", "shaped", "canvas", "pos", "clip_l", "clip_r", "color"), &TextServer::shaped_text_draw, DEFVAL(-1), DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("shaped_text_draw_outline", "shaped", "canvas", "pos", "clip_l", "clip_r", "outline_size", "color"), &TextServer::shaped_text_draw_outline, DEFVAL(-1), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1, 1, 1)));
@@ -643,6 +653,10 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FIXED_SIZE_SCALE_DISABLE);
 	BIND_ENUM_CONSTANT(FIXED_SIZE_SCALE_INTEGER_ONLY);
 	BIND_ENUM_CONSTANT(FIXED_SIZE_SCALE_ENABLED);
+
+	/* Visual caret edit operations */
+	BIND_BITFIELD_FLAG(VC_OP_BACKSPACE);
+	BIND_BITFIELD_FLAG(VC_OP_DELETE);
 }
 
 _FORCE_INLINE_ int32_t ot_tag_from_string(const char *p_str, int p_len) {
@@ -1130,10 +1144,9 @@ PackedInt32Array TextServer::shaped_text_get_word_breaks(const RID &p_shaped, Bi
 }
 
 CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_position) const {
-	Vector<Rect2> carets;
-
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
-	const Vector2 &range = shaped_text_get_range(p_shaped);
+	bool b_rtl = shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL;
+	const Vector2i &range = shaped_text_get_range(p_shaped);
 	real_t ascent = shaped_text_get_ascent(p_shaped);
 	real_t descent = shaped_text_get_descent(p_shaped);
 	real_t height = (ascent + descent) / 2;
@@ -1146,25 +1159,43 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
-	for (int i = 0; i < v_size; i++) {
-		if (glyphs[i].count > 0) {
+	Glyph before_start;
+	Glyph after_end;
+	before_start.count = 1;
+	after_end.count = 1;
+	if (b_rtl) {
+		before_start.flags = GRAPHEME_IS_RTL;
+		before_start.start = range.y;
+		before_start.end = range.y + 1;
+		after_end.flags = GRAPHEME_IS_RTL;
+		after_end.start = range.x - 1;
+		after_end.end = range.x;
+	} else {
+		before_start.flags = 0;
+		before_start.start = range.x - 1;
+		before_start.end = range.x;
+		after_end.flags = 0;
+		after_end.start = range.y;
+		after_end.end = range.y + 1;
+	}
+	for (int i = -1; i <= v_size; i++) {
+		const Glyph &gl = (i >= 0 && i < v_size) ? glyphs[i] : ((i == -1) ? before_start : after_end);
+		if (gl.count > 0) {
 			// Caret before grapheme (top / left).
-			if (p_position == glyphs[i].start && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
+			if (p_position == gl.start && ((gl.flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
 				real_t advance = 0.f;
-				for (int j = 0; j < glyphs[i].count; j++) {
-					advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+				if (i >= 0 && i < v_size) {
+					for (int j = 0; j < gl.count; j++) {
+						advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+					}
 				}
-				real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
+				real_t char_adv = advance / (real_t)(gl.end - gl.start);
 				Rect2 cr;
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					if (glyphs[i].start == range.x) {
-						cr.size.y = height * 2;
-					} else {
-						cr.size.y = height;
-					}
+					cr.size.y = height;
 					cr.position.y = -ascent;
 					cr.position.x = off;
-					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+					if ((gl.flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 						caret.t_dir = DIRECTION_RTL;
 						cr.position.x += advance;
 						cr.size.x = -char_adv;
@@ -1173,14 +1204,10 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 						cr.size.x = char_adv;
 					}
 				} else {
-					if (glyphs[i].start == range.x) {
-						cr.size.x = height * 2;
-					} else {
-						cr.size.x = height;
-					}
+					cr.size.x = height;
 					cr.position.x = -ascent;
 					cr.position.y = off;
-					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+					if ((gl.flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 						caret.t_dir = DIRECTION_RTL;
 						cr.position.y += advance;
 						cr.size.y = -char_adv;
@@ -1192,23 +1219,20 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 				caret.t_caret = cr;
 			}
 			// Caret after grapheme (bottom / right).
-			if (p_position == glyphs[i].end && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
+			if (p_position == gl.end && ((gl.flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
 				real_t advance = 0.f;
-				for (int j = 0; j < glyphs[i].count; j++) {
-					advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+				if (i >= 0 && i < v_size) {
+					for (int j = 0; j < gl.count; j++) {
+						advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+					}
 				}
-				real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
+				real_t char_adv = advance / (real_t)(gl.end - gl.start);
 				Rect2 cr;
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					if (glyphs[i].end == range.y) {
-						cr.size.y = height * 2;
-						cr.position.y = -ascent;
-					} else {
-						cr.size.y = height;
-						cr.position.y = -ascent + height;
-					}
+					cr.size.y = height;
+					cr.position.y = -ascent + height;
 					cr.position.x = off;
-					if ((glyphs[i].flags & GRAPHEME_IS_RTL) != GRAPHEME_IS_RTL) {
+					if ((gl.flags & GRAPHEME_IS_RTL) != GRAPHEME_IS_RTL) {
 						caret.l_dir = DIRECTION_LTR;
 						cr.position.x += advance;
 						cr.size.x = -char_adv;
@@ -1218,15 +1242,10 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 					}
 				} else {
 					cr.size.y = 1.0f;
-					if (glyphs[i].end == range.y) {
-						cr.size.x = height * 2;
-						cr.position.x = -ascent;
-					} else {
-						cr.size.x = height;
-						cr.position.x = -ascent + height;
-					}
+					cr.size.x = height;
+					cr.position.x = -ascent + height;
 					cr.position.y = off;
-					if ((glyphs[i].flags & GRAPHEME_IS_RTL) != GRAPHEME_IS_RTL) {
+					if ((gl.flags & GRAPHEME_IS_RTL) != GRAPHEME_IS_RTL) {
 						caret.l_dir = DIRECTION_LTR;
 						cr.position.y += advance;
 						cr.size.y = -char_adv;
@@ -1239,31 +1258,33 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 				caret.l_caret = cr;
 			}
 			// Caret inside grapheme (middle).
-			if (p_position > glyphs[i].start && p_position < glyphs[i].end && (glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL) {
+			if (p_position > gl.start && p_position < gl.end && (gl.flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL) {
 				real_t advance = 0.f;
-				for (int j = 0; j < glyphs[i].count; j++) {
-					advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+				if (i >= 0 && i < v_size) {
+					for (int j = 0; j < gl.count; j++) {
+						advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+					}
 				}
-				real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
+				real_t char_adv = advance / (real_t)(gl.end - gl.start);
 				Rect2 cr;
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					cr.size.y = height * 2;
 					cr.position.y = -ascent;
-					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-						cr.position.x = off + char_adv * (glyphs[i].end - p_position);
+					if ((gl.flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+						cr.position.x = off + char_adv * (gl.end - p_position);
 						cr.size.x = -char_adv;
 					} else {
-						cr.position.x = off + char_adv * (p_position - glyphs[i].start);
+						cr.position.x = off + char_adv * (p_position - gl.start);
 						cr.size.x = char_adv;
 					}
 				} else {
 					cr.size.x = height * 2;
 					cr.position.x = -ascent;
-					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
-						cr.position.y = off + char_adv * (glyphs[i].end - p_position);
+					if ((gl.flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+						cr.position.y = off + char_adv * (gl.end - p_position);
 						cr.size.y = -char_adv;
 					} else {
-						cr.position.y = off + char_adv * (p_position - glyphs[i].start);
+						cr.position.y = off + char_adv * (p_position - gl.start);
 						cr.size.y = char_adv;
 					}
 				}
@@ -1271,7 +1292,7 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 				caret.l_caret = cr;
 			}
 		}
-		off += glyphs[i].advance * glyphs[i].repeat;
+		off += gl.advance * gl.repeat;
 	}
 	return caret;
 }
@@ -1427,9 +1448,9 @@ int64_t TextServer::shaped_text_hit_test_position(const RID &p_shaped, double p_
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
-	// Cursor placement hit test.
+	// Cursor placement hit test logical caret.
 
-	// Place caret to the left of the leftmost grapheme, or to position 0 if string is empty.
+	// Place caret to the left of the leftmost grapheme, or to start position if string is empty.
 	if (p_coords <= 0) {
 		if (v_size > 0) {
 			if ((glyphs[0].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
@@ -1438,11 +1459,11 @@ int64_t TextServer::shaped_text_hit_test_position(const RID &p_shaped, double p_
 				return glyphs[0].start;
 			}
 		} else {
-			return 0;
+			return shaped_text_get_range(p_shaped).x;
 		}
 	}
 
-	// Place caret to the right of the rightmost grapheme, or to position 0 if string is empty.
+	// Place caret to the right of the rightmost grapheme, or to start position if string is empty.
 	if (p_coords >= shaped_text_get_width(p_shaped)) {
 		if (v_size > 0) {
 			if ((glyphs[v_size - 1].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
@@ -1451,7 +1472,7 @@ int64_t TextServer::shaped_text_hit_test_position(const RID &p_shaped, double p_
 				return glyphs[v_size - 1].end;
 			}
 		} else {
-			return 0;
+			return shaped_text_get_range(p_shaped).x;
 		}
 	}
 
@@ -1516,6 +1537,129 @@ int64_t TextServer::shaped_text_hit_test_position(const RID &p_shaped, double p_
 	return 0;
 }
 
+int64_t TextServer::shaped_text_hit_test_visual_position(const RID &p_shaped, double p_coords) const {
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+	bool b_rtl = shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL;
+	const Vector2i &range = shaped_text_get_range(p_shaped);
+
+	// Cursor placement hit test for visual caret.
+
+	// Place caret to the left of the leftmost grapheme.
+	if (p_coords <= 0) {
+		if (b_rtl) {
+			return range.y;
+		} else {
+			return range.x;
+		}
+	}
+
+	// Place caret to the right of the rightmost grapheme.
+	if (p_coords >= shaped_text_get_width(p_shaped)) {
+		if (b_rtl) {
+			return range.x;
+		} else {
+			return range.y;
+		}
+	}
+
+	real_t off = 0.0f;
+	for (int i = 0; i < v_size; i++) {
+		if (glyphs[i].count > 0) {
+			real_t advance = 0.f;
+			for (int j = 0; j < glyphs[i].count; j++) {
+				advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+			}
+			if (((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) == GRAPHEME_IS_VIRTUAL) && (p_coords >= off && p_coords < off + advance)) {
+				if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+					return glyphs[i].end;
+				} else {
+					return glyphs[i].start;
+				}
+			}
+			// Ligature, handle mid-grapheme hit.
+			if (p_coords >= off && p_coords < off + advance && glyphs[i].end > glyphs[i].start + 1) {
+				int cnt = glyphs[i].end - glyphs[i].start;
+				real_t char_adv = advance / (real_t)(cnt);
+				real_t sub_off = off;
+				for (int j = 0; j < cnt; j++) {
+					// Place caret to the left of clicked sub-grapheme.
+					if (p_coords >= sub_off && p_coords < sub_off + char_adv / 2) {
+						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+							return glyphs[i].end - j;
+						} else {
+							return glyphs[i].start + j;
+						}
+					}
+					// Place caret to the right of clicked sub-grapheme.
+					if (p_coords >= sub_off + char_adv / 2 && p_coords < sub_off + char_adv) {
+						if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
+							return glyphs[i].start + (cnt - 1) - j;
+						} else {
+							return glyphs[i].end - (cnt - 1) + j;
+						}
+					}
+					sub_off += char_adv;
+				}
+			}
+			// Place caret to the left of clicked grapheme.
+			if (p_coords >= off && p_coords < off + advance / 2) {
+				bool gl_rtl = (glyphs[i].flags & GRAPHEME_IS_RTL);
+				if (b_rtl == gl_rtl) {
+					if (gl_rtl) {
+						return glyphs[i].end;
+					} else {
+						return glyphs[i].start;
+					}
+				} else {
+					bool prev_rtl = (i == 0) ? b_rtl : (glyphs[i - 1].flags & GRAPHEME_IS_RTL);
+					if (prev_rtl != gl_rtl) {
+						if (prev_rtl) {
+							return (i == 0) ? range.y : glyphs[i - 1].start;
+						} else {
+							return (i == 0) ? range.x : glyphs[i - 1].end;
+						}
+					} else {
+						if (gl_rtl) {
+							return glyphs[i].end;
+						} else {
+							return glyphs[i].start;
+						}
+					}
+				}
+			}
+			// Place caret to the right of clicked grapheme.
+			if (p_coords >= off + advance / 2 && p_coords < off + advance) {
+				bool gl_rtl = (glyphs[i].flags & GRAPHEME_IS_RTL);
+				if (b_rtl == gl_rtl) {
+					if (gl_rtl) {
+						return glyphs[i].start;
+					} else {
+						return glyphs[i].end;
+					}
+				} else {
+					bool next_rtl = (i + 1 >= v_size) ? b_rtl : (glyphs[i + 1].flags & GRAPHEME_IS_RTL);
+					if (next_rtl != gl_rtl) {
+						if (next_rtl) {
+							return (i + 1 >= v_size) ? range.x : glyphs[i + 1].end;
+						} else {
+							return (i + 1 >= v_size) ? range.y : glyphs[i + 1].start;
+						}
+					} else {
+						if (gl_rtl) {
+							return glyphs[i].start;
+						} else {
+							return glyphs[i].end;
+						}
+					}
+				}
+			}
+		}
+		off += glyphs[i].advance * glyphs[i].repeat;
+	}
+	return 0;
+}
+
 Vector2 TextServer::shaped_text_get_grapheme_bounds(const RID &p_shaped, int64_t p_pos) const {
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
@@ -1557,6 +1701,415 @@ int64_t TextServer::shaped_text_prev_grapheme_pos(const RID &p_shaped, int64_t p
 		}
 	}
 
+	return p_pos;
+}
+
+Vector2i TextServer::shaped_text_visual_validate_selection(const RID &p_shaped, const Vector2i &p_glyphs, const Vector2i &p_chars) const {
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+
+	bool is_cont = true;
+	bool is_first_run = true;
+	bool is_first_rtl = false;
+	Vector2i cont_char_range = Vector2i(INT_MAX, 0);
+	List<Vector2i> selected_ranges;
+	int step = (p_glyphs.x < p_glyphs.y) ? +1 : -1;
+	int end = (p_glyphs.x < p_glyphs.y) ? p_glyphs.y + 1 : p_glyphs.y - 1;
+	for (int i = p_glyphs.x; i != end; i += step) {
+		const Glyph &gl = glyphs[i];
+		if (gl.count == 0) {
+			continue;
+		}
+		if (i == p_glyphs.x) {
+			is_first_rtl = (gl.flags & GRAPHEME_IS_RTL);
+		}
+		is_first_run = is_first_run && (bool((gl.flags & GRAPHEME_IS_RTL)) == is_first_rtl);
+		if (is_first_run) {
+			cont_char_range.x = MIN(cont_char_range.x, gl.start);
+			cont_char_range.y = MAX(cont_char_range.y, gl.end);
+		}
+		if (gl.start < MIN(p_chars.x, p_chars.y) || gl.end > MAX(p_chars.x, p_chars.y)) {
+			is_cont = false;
+		} else {
+			Vector2i new_range = Vector2i(gl.start, gl.end);
+			for (List<Vector2i>::Element *range = selected_ranges.front(); range;) {
+				List<Vector2i>::Element *next = range->next();
+				if (new_range.y >= range->get().x && new_range.x <= range->get().y) {
+					new_range.x = MIN(new_range.x, range->get().x);
+					new_range.y = MAX(new_range.y, range->get().y);
+					range->erase();
+				}
+				range = next;
+			}
+			selected_ranges.push_back(new_range);
+		}
+	}
+	if (is_cont && selected_ranges.size() == 1) {
+		return selected_ranges.front()->get();
+	} else {
+		return cont_char_range;
+	}
+}
+
+Vector2i TextServer::shaped_text_visual_selection_glyphs(const RID &p_shaped, int64_t p_pos) const {
+	bool b_rtl = shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL;
+	const Vector2i &range = shaped_text_get_range(p_shaped);
+	int l_index = GLYPH_NOT_FOUND;
+	int t_index = GLYPH_NOT_FOUND;
+	bool l_rtl = b_rtl;
+	bool t_rtl = b_rtl;
+
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+
+	Glyph before_start;
+	Glyph after_end;
+	before_start.count = 1;
+	after_end.count = 1;
+	if (b_rtl) {
+		before_start.flags = GRAPHEME_IS_RTL;
+		before_start.start = range.y;
+		before_start.end = range.y + 1;
+		after_end.flags = GRAPHEME_IS_RTL;
+		after_end.start = range.x - 1;
+		after_end.end = range.x;
+	} else {
+		before_start.flags = 0;
+		before_start.start = range.x - 1;
+		before_start.end = range.x;
+		after_end.flags = 0;
+		after_end.start = range.y;
+		after_end.end = range.y + 1;
+	}
+	for (int i = -1; i <= v_size; i++) {
+		const Glyph &gl = (i >= 0 && i < v_size) ? glyphs[i] : ((i == -1) ? before_start : after_end);
+		if (gl.count == 0) {
+			continue;
+		}
+		if (p_pos > gl.start && p_pos < gl.end) {
+			// Mid. grapheme caret.
+			return Vector2i(i, i);
+		} else if (p_pos == gl.end) {
+			// Trailing glyph.
+			t_index = i;
+			t_rtl = (gl.flags & GRAPHEME_IS_RTL);
+		} else if (p_pos == gl.start) {
+			// Leading glyph.
+			l_index = i;
+			l_rtl = (gl.flags & GRAPHEME_IS_RTL);
+		}
+		if (l_index != GLYPH_NOT_FOUND && t_index != GLYPH_NOT_FOUND) {
+			break;
+		}
+	}
+
+	if (b_rtl) {
+		if (t_index != GLYPH_NOT_FOUND && t_rtl) {
+			return Vector2i(t_index - 1, t_index);
+		}
+		if (l_index != GLYPH_NOT_FOUND && l_rtl) {
+			return Vector2i(l_index, l_index + 1);
+		}
+		if (l_index != GLYPH_NOT_FOUND && !l_rtl) {
+			return Vector2i(l_index - 1, l_index);
+		}
+		if (t_index != GLYPH_NOT_FOUND && !t_rtl) {
+			return Vector2i(t_index, t_index + 1);
+		}
+
+	} else {
+		if (t_index != GLYPH_NOT_FOUND && !t_rtl) {
+			return Vector2i(t_index, t_index + 1);
+		}
+		if (l_index != GLYPH_NOT_FOUND && !l_rtl) {
+			return Vector2i(l_index - 1, l_index);
+		}
+		if (l_index != GLYPH_NOT_FOUND && l_rtl) {
+			return Vector2i(l_index, l_index + 1);
+		}
+		if (t_index != GLYPH_NOT_FOUND && t_rtl) {
+			return Vector2i(t_index - 1, t_index);
+		}
+	}
+	return Vector2i();
+}
+
+BitField<TextServer::VisualCaretOperations> TextServer::shaped_text_allowed_visual_caret_operations(const RID &p_shaped, int64_t p_pos) const {
+	BitField<TextServer::VisualCaretOperations> ret = 0;
+
+	bool b_rtl = shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL;
+	int l_gl = -1;
+	int t_gl = -1;
+	bool l_rtl = b_rtl;
+	bool t_rtl = b_rtl;
+
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+	// Find trailing and leading glyphs.
+	for (int i = 0; i < v_size; i++) {
+		if (glyphs[i].count == 0) {
+			continue;
+		}
+		if (p_pos > glyphs[i].start && p_pos < glyphs[i].end) {
+			// Mid. grapheme caret.
+			if (glyphs[i].flags & GRAPHEME_IS_RTL) {
+				return glyphs[i].start;
+			} else {
+				return glyphs[i].end;
+			}
+		} else if (p_pos == glyphs[i].end) {
+			// Trailing glyph.
+			t_gl = i;
+			t_rtl = (glyphs[i].flags & GRAPHEME_IS_RTL);
+		} else if (p_pos == glyphs[i].start) {
+			// Leading glyph.
+			l_gl = i;
+			l_rtl = (glyphs[i].flags & GRAPHEME_IS_RTL);
+		}
+		if (l_gl != -1 && t_gl != -1) {
+			break;
+		}
+	}
+
+	if (l_rtl == t_rtl) {
+		ret.set_flag(TextServer::VC_OP_BACKSPACE);
+		ret.set_flag(TextServer::VC_OP_DELETE);
+	} else if ((b_rtl && l_rtl) || (!b_rtl && !l_rtl)) {
+		ret.set_flag(TextServer::VC_OP_DELETE);
+	} else if ((b_rtl && !l_rtl) || (!b_rtl && l_rtl)) {
+		ret.set_flag(TextServer::VC_OP_BACKSPACE);
+	}
+	return ret;
+}
+
+int64_t TextServer::shaped_text_next_visual_character_pos(const RID &p_shaped, int64_t p_pos) const {
+	bool b_rtl = shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL;
+	const Vector2i &range = shaped_text_get_range(p_shaped);
+	int l_index = GLYPH_NOT_FOUND;
+	int t_index = GLYPH_NOT_FOUND;
+	bool l_rtl = b_rtl;
+	bool t_rtl = b_rtl;
+	Glyph l_glyph;
+	Glyph t_glyph;
+
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+
+	Glyph before_start;
+	Glyph after_end;
+	before_start.count = 1;
+	after_end.count = 1;
+	if (b_rtl) {
+		before_start.flags = GRAPHEME_IS_RTL;
+		before_start.start = range.y;
+		before_start.end = range.y + 1;
+		after_end.flags = GRAPHEME_IS_RTL;
+		after_end.start = range.x - 1;
+		after_end.end = range.x;
+	} else {
+		before_start.flags = 0;
+		before_start.start = range.x - 1;
+		before_start.end = range.x;
+		after_end.flags = 0;
+		after_end.start = range.y;
+		after_end.end = range.y + 1;
+	}
+	for (int i = -1; i <= v_size; i++) {
+		const Glyph &gl = (i >= 0 && i < v_size) ? glyphs[i] : ((i == -1) ? before_start : after_end);
+		if (gl.count == 0) {
+			continue;
+		}
+		if (p_pos > gl.start && p_pos < gl.end) {
+			// Mid. grapheme caret.
+			if (gl.flags & GRAPHEME_IS_RTL) {
+				return gl.start;
+			} else {
+				return gl.end;
+			}
+		} else if (p_pos == gl.end) {
+			// Trailing glyph.
+			t_index = i;
+			t_rtl = (gl.flags & GRAPHEME_IS_RTL);
+			t_glyph = gl;
+		} else if (p_pos == gl.start) {
+			// Leading glyph.
+			l_index = i;
+			l_rtl = (gl.flags & GRAPHEME_IS_RTL);
+			l_glyph = gl;
+		}
+		if (l_index != GLYPH_NOT_FOUND && t_index != GLYPH_NOT_FOUND) {
+			break;
+		}
+	}
+
+	if (b_rtl) {
+		if (t_index != GLYPH_NOT_FOUND && t_rtl) {
+			return t_glyph.start;
+		}
+		if (l_index != GLYPH_NOT_FOUND && l_rtl) {
+			int next = l_index + l_glyph.count;
+			if (next <= v_size) {
+				const Glyph &next_glyph = (next < v_size) ? glyphs[next] : after_end;
+				if (next_glyph.end != p_pos) {
+					return next_glyph.end;
+				} else {
+					return next_glyph.start;
+				}
+			}
+		}
+		if (l_index != GLYPH_NOT_FOUND && !l_rtl) {
+			int next = l_index + l_glyph.count;
+			if (next <= v_size) {
+				const Glyph &next_glyph = (next < v_size) ? glyphs[next] : after_end;
+				if (next_glyph.flags & GRAPHEME_IS_RTL) {
+					return next_glyph.end;
+				} else {
+					return next_glyph.start;
+				}
+			}
+		}
+	} else {
+		if (l_index != GLYPH_NOT_FOUND && !l_rtl) {
+			return l_glyph.end;
+		}
+		if (t_index != GLYPH_NOT_FOUND && !t_rtl) {
+			int next = t_index + t_glyph.count;
+			if (next <= v_size) {
+				const Glyph &next_glyph = (next < v_size) ? glyphs[next] : after_end;
+				if (next_glyph.start != p_pos) {
+					return next_glyph.start;
+				} else {
+					return next_glyph.end;
+				}
+			}
+		}
+		if (t_index != GLYPH_NOT_FOUND && t_rtl) {
+			int next = t_index + t_glyph.count;
+			if (next <= v_size) {
+				const Glyph &next_glyph = (next < v_size) ? glyphs[next] : after_end;
+				if (next_glyph.flags & GRAPHEME_IS_RTL) {
+					return next_glyph.end;
+				} else {
+					return next_glyph.start;
+				}
+			}
+		}
+	}
+	return p_pos;
+}
+
+int64_t TextServer::shaped_text_prev_visual_character_pos(const RID &p_shaped, int64_t p_pos) const {
+	bool b_rtl = shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL;
+	const Vector2i &range = shaped_text_get_range(p_shaped);
+	int l_index = GLYPH_NOT_FOUND;
+	int t_index = GLYPH_NOT_FOUND;
+	bool l_rtl = b_rtl;
+	bool t_rtl = b_rtl;
+	Glyph l_glyph;
+	Glyph t_glyph;
+
+	int v_size = shaped_text_get_glyph_count(p_shaped);
+	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
+
+	Glyph before_start;
+	Glyph after_end;
+	before_start.count = 1;
+	after_end.count = 1;
+	if (b_rtl) {
+		before_start.flags = GRAPHEME_IS_RTL;
+		before_start.start = range.y;
+		before_start.end = range.y + 1;
+		after_end.flags = GRAPHEME_IS_RTL;
+		after_end.start = range.x - 1;
+		after_end.end = range.x;
+	} else {
+		before_start.flags = 0;
+		before_start.start = range.x - 1;
+		before_start.end = range.x;
+		after_end.flags = 0;
+		after_end.start = range.y;
+		after_end.end = range.y + 1;
+	}
+	for (int i = -1; i <= v_size; i++) {
+		const Glyph &gl = (i >= 0 && i < v_size) ? glyphs[i] : ((i == -1) ? before_start : after_end);
+		if (gl.count == 0) {
+			continue;
+		}
+		if (p_pos > gl.start && p_pos < gl.end) {
+			// Mid. grapheme caret.
+			if (gl.flags & GRAPHEME_IS_RTL) {
+				return gl.end;
+			} else {
+				return gl.start;
+			}
+		} else if (p_pos == gl.end) {
+			// Trailing glyph.
+			t_index = i;
+			t_rtl = (gl.flags & GRAPHEME_IS_RTL);
+			t_glyph = gl;
+		} else if (p_pos == gl.start) {
+			// Leading glyph.
+			l_index = i;
+			l_rtl = (gl.flags & GRAPHEME_IS_RTL);
+			l_glyph = gl;
+		}
+		if (l_index != GLYPH_NOT_FOUND && t_index != GLYPH_NOT_FOUND) {
+			break;
+		}
+	}
+
+	if (b_rtl) {
+		if (l_index != GLYPH_NOT_FOUND && l_rtl) {
+			return l_glyph.end;
+		}
+		if (t_index != GLYPH_NOT_FOUND && t_rtl) {
+			int prev = t_index - 1;
+			if (prev >= -1) {
+				const Glyph &prev_glyph = (prev >= 0) ? glyphs[prev] : before_start;
+				if (prev_glyph.start != p_pos) {
+					return prev_glyph.start;
+				} else {
+					return prev_glyph.end;
+				}
+			}
+		}
+		if (t_index != GLYPH_NOT_FOUND && !t_rtl) {
+			int prev = t_index - 1;
+			if (prev >= -1) {
+				const Glyph &prev_glyph = (prev >= 0) ? glyphs[prev] : before_start;
+				if (prev_glyph.flags & GRAPHEME_IS_RTL) {
+					return prev_glyph.start;
+				} else {
+					return prev_glyph.end;
+				}
+			}
+		}
+	} else {
+		if (t_index != GLYPH_NOT_FOUND && !t_rtl) {
+			return t_glyph.start;
+		}
+		if (l_index != GLYPH_NOT_FOUND && !l_rtl) {
+			int prev = l_index - 1;
+			if (prev >= -1) {
+				const Glyph &prev_glyph = (prev >= 0) ? glyphs[prev] : before_start;
+				if (prev_glyph.end != p_pos) {
+					return prev_glyph.end;
+				} else {
+					return prev_glyph.start;
+				}
+			}
+		}
+		if (l_index != GLYPH_NOT_FOUND && l_rtl) {
+			int prev = l_index - 1;
+			if (prev >= -1) {
+				const Glyph &prev_glyph = (prev >= 0) ? glyphs[prev] : before_start;
+				if (prev_glyph.flags & GRAPHEME_IS_RTL) {
+					return prev_glyph.start;
+				} else {
+					return prev_glyph.end;
+				}
+			}
+		}
+	}
 	return p_pos;
 }
 

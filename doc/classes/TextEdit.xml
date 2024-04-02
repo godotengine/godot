@@ -1126,6 +1126,9 @@
 			If [code]true[/code], a right-click moves the caret at the mouse position before displaying the context menu.
 			If [code]false[/code], the context menu ignores mouse location.
 		</member>
+		<member name="caret_movement_style" type="int" setter="set_caret_movement_style" getter="get_caret_movement_style" enum="TextEdit.CaretMovementStyle" default="0">
+			Sets caret movement style.
+		</member>
 		<member name="caret_multiple" type="bool" setter="set_multiple_carets_enabled" getter="is_multiple_carets_enabled" default="true">
 			Sets if multiple carets are allowed.
 		</member>
@@ -1390,6 +1393,15 @@
 		</constant>
 		<constant name="CARET_TYPE_BLOCK" value="1" enum="CaretType">
 			Block caret.
+		</constant>
+		<constant name="CARET_MOVEMENT_DEFAULT" value="0" enum="CaretMovementStyle">
+			Caret movement style is determinaed by [member ProjectSettings.gui/common/use_visual_caret_movement_style].
+		</constant>
+		<constant name="CARET_MOVEMENT_LOGICAL" value="1" enum="CaretMovementStyle">
+			Logical caret movement style (move between character as they would be read in the text).
+		</constant>
+		<constant name="CARET_MOVEMENT_VISUAL" value="2" enum="CaretMovementStyle">
+			Visual caret movement style (move between character as they appear on the screen).
 		</constant>
 		<constant name="SELECTION_MODE_NONE" value="0" enum="SelectionMode">
 			Not selecting.

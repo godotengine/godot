@@ -1324,6 +1324,14 @@
 				Adds text span and font to draw it to the text buffer.
 			</description>
 		</method>
+		<method name="_shaped_text_allowed_visual_caret_operations" qualifiers="virtual const">
+			<return type="int" enum="TextServer.VisualCaretOperations" is_bitfield="true" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns set of possible non-ambiguous edit operations for the visual caret is at specified character position.
+			</description>
+		</method>
 		<method name="_shaped_text_clear" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
@@ -1685,7 +1693,16 @@
 			<param index="1" name="coord" type="float" />
 			<description>
 				[b]Optional.[/b]
-				Returns caret character offset at the specified pixel offset at the baseline. This function always returns a valid position.
+				Returns logical caret character offset at the specified pixel offset at the baseline. This function always returns a valid position.
+			</description>
+		</method>
+		<method name="_shaped_text_hit_test_visual_position" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="coord" type="float" />
+			<description>
+				[b]Optional.[/b]
+				Returns visual caret character offset at the specified pixel offset at the baseline. This function always returns a valid position.
 			</description>
 		</method>
 		<method name="_shaped_text_is_ready" qualifiers="virtual const">
@@ -1714,6 +1731,15 @@
 				Returns grapheme end position closest to the [param pos].
 			</description>
 		</method>
+		<method name="_shaped_text_next_visual_character_pos" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				[b]Optional.[/b]
+				Returns character position corresponding to the next visual caret position.
+			</description>
+		</method>
 		<method name="_shaped_text_overrun_trim_to_width" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
@@ -1740,6 +1766,15 @@
 			<description>
 				[b]Optional.[/b]
 				Returns grapheme start position closest to the [param pos].
+			</description>
+		</method>
+		<method name="_shaped_text_prev_visual_character_pos" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				[b]Optional.[/b]
+				Returns character position corresponding to the previous visual caret position.
 			</description>
 		</method>
 		<method name="_shaped_text_resize_object" qualifiers="virtual">
@@ -1876,6 +1911,23 @@
 			<description>
 				[b]Optional.[/b]
 				Updates justification points in the shaped text. This method is called by default implementation of text justification functions.
+			</description>
+		</method>
+		<method name="_shaped_text_visual_selection_glyphs" qualifiers="virtual const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				[b]Optional.[/b]
+				Returns selection glyph indices for visual caret.
+			</description>
+		</method>
+		<method name="_shaped_text_visual_validate_selection" qualifiers="virtual const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="glyphs" type="Vector2i" />
+			<param index="2" name="chars" type="Vector2i" />
+			<description>
 			</description>
 		</method>
 		<method name="_spoof_check" qualifiers="virtual const">

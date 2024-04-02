@@ -313,6 +313,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_hit_test_grapheme, "shaped", "coord");
 	GDVIRTUAL_BIND(_shaped_text_hit_test_position, "shaped", "coord");
+	GDVIRTUAL_BIND(_shaped_text_hit_test_visual_position, "shaped", "coord");
 
 	GDVIRTUAL_BIND(_shaped_text_draw, "shaped", "canvas", "pos", "clip_l", "clip_r", "color");
 	GDVIRTUAL_BIND(_shaped_text_draw_outline, "shaped", "canvas", "pos", "clip_l", "clip_r", "outline_size", "color");
@@ -325,6 +326,13 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_next_character_pos, "shaped", "pos");
 	GDVIRTUAL_BIND(_shaped_text_prev_character_pos, "shaped", "pos");
 	GDVIRTUAL_BIND(_shaped_text_closest_character_pos, "shaped", "pos");
+
+	GDVIRTUAL_BIND(_shaped_text_next_visual_character_pos, "shaped", "pos");
+	GDVIRTUAL_BIND(_shaped_text_prev_visual_character_pos, "shaped", "pos");
+
+	GDVIRTUAL_BIND(_shaped_text_allowed_visual_caret_operations, "shaped", "pos");
+	GDVIRTUAL_BIND(_shaped_text_visual_selection_glyphs, "shaped", "pos");
+	GDVIRTUAL_BIND(_shaped_text_visual_validate_selection, "shaped", "glyphs", "chars");
 
 	GDVIRTUAL_BIND(_format_number, "number", "language");
 	GDVIRTUAL_BIND(_parse_number, "number", "language");
@@ -1392,6 +1400,14 @@ int64_t TextServerExtension::shaped_text_hit_test_position(const RID &p_shaped, 
 	return TextServer::shaped_text_hit_test_position(p_shaped, p_coords);
 }
 
+int64_t TextServerExtension::shaped_text_hit_test_visual_position(const RID &p_shaped, double p_coords) const {
+	int64_t ret;
+	if (GDVIRTUAL_CALL(_shaped_text_hit_test_visual_position, p_shaped, p_coords, ret)) {
+		return ret;
+	}
+	return TextServer::shaped_text_hit_test_visual_position(p_shaped, p_coords);
+}
+
 void TextServerExtension::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l, double p_clip_r, const Color &p_color) const {
 	if (GDVIRTUAL_CALL(_shaped_text_draw, p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_color)) {
 		return;
@@ -1452,6 +1468,46 @@ int64_t TextServerExtension::shaped_text_prev_character_pos(const RID &p_shaped,
 		return ret;
 	}
 	return TextServer::shaped_text_prev_character_pos(p_shaped, p_pos);
+}
+
+BitField<TextServer::VisualCaretOperations> TextServerExtension::shaped_text_allowed_visual_caret_operations(const RID &p_shaped, int64_t p_pos) const {
+	BitField<TextServer::VisualCaretOperations> ret;
+	if (GDVIRTUAL_CALL(_shaped_text_allowed_visual_caret_operations, p_shaped, p_pos, ret)) {
+		return ret;
+	}
+	return TextServer::shaped_text_allowed_visual_caret_operations(p_shaped, p_pos);
+}
+
+Vector2i TextServerExtension::shaped_text_visual_selection_glyphs(const RID &p_shaped, int64_t p_pos) const {
+	Vector2i ret;
+	if (GDVIRTUAL_CALL(_shaped_text_visual_selection_glyphs, p_shaped, p_pos, ret)) {
+		return ret;
+	}
+	return TextServer::shaped_text_visual_selection_glyphs(p_shaped, p_pos);
+}
+
+Vector2i TextServerExtension::shaped_text_visual_validate_selection(const RID &p_shaped, const Vector2i &p_glyphs, const Vector2i &p_chars) const {
+	Vector2i ret;
+	if (GDVIRTUAL_CALL(_shaped_text_visual_validate_selection, p_shaped, p_glyphs, p_chars, ret)) {
+		return ret;
+	}
+	return TextServer::shaped_text_visual_validate_selection(p_shaped, p_glyphs, p_chars);
+}
+
+int64_t TextServerExtension::shaped_text_next_visual_character_pos(const RID &p_shaped, int64_t p_pos) const {
+	int64_t ret;
+	if (GDVIRTUAL_CALL(_shaped_text_next_visual_character_pos, p_shaped, p_pos, ret)) {
+		return ret;
+	}
+	return TextServer::shaped_text_next_visual_character_pos(p_shaped, p_pos);
+}
+
+int64_t TextServerExtension::shaped_text_prev_visual_character_pos(const RID &p_shaped, int64_t p_pos) const {
+	int64_t ret;
+	if (GDVIRTUAL_CALL(_shaped_text_prev_visual_character_pos, p_shaped, p_pos, ret)) {
+		return ret;
+	}
+	return TextServer::shaped_text_prev_visual_character_pos(p_shaped, p_pos);
 }
 
 int64_t TextServerExtension::shaped_text_closest_character_pos(const RID &p_shaped, int64_t p_pos) const {

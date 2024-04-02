@@ -135,6 +135,7 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_dropcap_outline", "canvas", "pos", "outline_size", "color"), &TextParagraph::draw_dropcap_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextParagraph::hit_test);
+	ClassDB::bind_method(D_METHOD("hit_test_visual", "coords"), &TextParagraph::hit_test_visual);
 }
 
 void TextParagraph::_shape_lines() {
@@ -978,6 +979,36 @@ int TextParagraph::hit_test(const Point2 &p_coords) const {
 		} else {
 			if ((p_coords.x >= ofs.x) && (p_coords.x <= ofs.x + TS->shaped_text_get_size(line_rid).x)) {
 				return TS->shaped_text_hit_test_position(line_rid, p_coords.y);
+			}
+			ofs.y += TS->shaped_text_get_size(line_rid).x;
+		}
+	}
+	return TS->shaped_text_get_range(rid).y;
+}
+
+int TextParagraph::hit_test_visual(const Point2 &p_coords) const {
+	_THREAD_SAFE_METHOD_
+
+	const_cast<TextParagraph *>(this)->_shape_lines();
+	Vector2 ofs;
+	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+		if (ofs.y < 0) {
+			return 0;
+		}
+	} else {
+		if (ofs.x < 0) {
+			return 0;
+		}
+	}
+	for (const RID &line_rid : lines_rid) {
+		if (TS->shaped_text_get_orientation(line_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+			if ((p_coords.y >= ofs.y) && (p_coords.y <= ofs.y + TS->shaped_text_get_size(line_rid).y)) {
+				return TS->shaped_text_hit_test_visual_position(line_rid, p_coords.x);
+			}
+			ofs.y += TS->shaped_text_get_size(line_rid).y;
+		} else {
+			if ((p_coords.x >= ofs.x) && (p_coords.x <= ofs.x + TS->shaped_text_get_size(line_rid).x)) {
+				return TS->shaped_text_hit_test_visual_position(line_rid, p_coords.y);
 			}
 			ofs.y += TS->shaped_text_get_size(line_rid).x;
 		}

@@ -83,6 +83,12 @@ public:
 		KEYBOARD_TYPE_URL
 	};
 
+	enum CaretMovementStyle {
+		CARET_MOVEMENT_DEFAULT,
+		CARET_MOVEMENT_LOGICAL,
+		CARET_MOVEMENT_VISUAL,
+	};
+
 private:
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
@@ -114,6 +120,7 @@ private:
 	PopupMenu *menu_ctl = nullptr;
 
 	bool caret_mid_grapheme_enabled = false;
+	CaretMovementStyle caret_caret_movement_style = CARET_MOVEMENT_DEFAULT;
 
 	int caret_column = 0;
 	float scroll_offset = 0.0;
@@ -228,6 +235,9 @@ private:
 	void set_caret_at_pixel_pos(int p_x);
 	Vector2 get_caret_pixel_pos();
 
+	bool _is_caret_visual() const;
+	bool _caret_visual_no_delete() const;
+	bool _caret_visual_select() const;
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
 	void _validate_caret_can_draw();
@@ -327,6 +337,9 @@ public:
 	void set_caret_force_displayed(const bool p_enabled);
 	bool is_caret_force_displayed() const;
 
+	void set_caret_movement_style(CaretMovementStyle p_style);
+	CaretMovementStyle get_caret_movement_style() const;
+
 	void copy_text();
 	void cut_text();
 	void paste_text();
@@ -395,5 +408,6 @@ public:
 
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
 VARIANT_ENUM_CAST(LineEdit::VirtualKeyboardType);
+VARIANT_ENUM_CAST(LineEdit::CaretMovementStyle);
 
 #endif // LINE_EDIT_H
