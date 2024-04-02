@@ -336,7 +336,8 @@ void GraphNode::_notification(int p_what) {
 
 			int width = get_size().width - sb_panel->get_minimum_size().x;
 
-			if (get_child_count() > 0) {
+			// Take the HboxContainer child into account.
+			if (get_child_count(false) > 0) {
 				int slot_index = 0;
 				for (const KeyValue<int, Slot> &E : slot_table) {
 					if (E.key < 0 || E.key >= slot_y_cache.size()) {
