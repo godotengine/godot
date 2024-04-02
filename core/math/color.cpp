@@ -382,8 +382,14 @@ bool Color::html_is_valid(const String &p_color) {
 
 	// Check if the amount of hex digits is valid.
 	int len = color.length();
-	if (!(len == 3 || len == 4 || len == 6 || len == 8)) {
-		return false;
+	switch (len) {
+		case 3:
+		case 4:
+		case 6:
+		case 8:
+			break;
+		default:
+			return false;
 	}
 
 	// Check if each hex digit is valid.
