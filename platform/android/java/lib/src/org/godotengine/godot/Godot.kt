@@ -56,6 +56,7 @@ import org.godotengine.godot.io.directory.DirectoryAccessHandler
 import org.godotengine.godot.io.file.FileAccessHandler
 import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.godotengine.godot.tts.GodotTTS
+import org.godotengine.godot.utils.CommandLineFileParser
 import org.godotengine.godot.utils.GodotNetUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.PermissionsUtil.requestPermission
@@ -68,7 +69,7 @@ import org.godotengine.godot.xr.XRMode
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import java.nio.charset.StandardCharsets
+import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
 
@@ -120,6 +121,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	val directoryAccessHandler = DirectoryAccessHandler(context)
 	val fileAccessHandler = FileAccessHandler(context)
 	val netUtils = GodotNetUtils(context)
+	private val commandLineFileParser = CommandLineFileParser()
 
 	/**
 	 * Tracks whether [onCreate] was completed successfully.
@@ -915,47 +917,18 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	private fun getCommandLine(): MutableList<String> {
-		val original: MutableList<String> = parseCommandLine()
-		val hostCommandLine = primaryHost?.commandLine
-		if (!hostCommandLine.isNullOrEmpty()) {
-			original.addAll(hostCommandLine)
-		}
-		return original
-	}
-
-	private fun parseCommandLine(): MutableList<String> {
-		val inputStream: InputStream
-		return try {
-			inputStream = requireActivity().assets.open("_cl_")
-			val len = ByteArray(4)
-			var r = inputStream.read(len)
-			if (r < 4) {
-				return mutableListOf()
-			}
-			val argc =
-				(len[3].toInt() and 0xFF) shl 24 or ((len[2].toInt() and 0xFF) shl 16) or ((len[1].toInt() and 0xFF) shl 8) or (len[0].toInt() and 0xFF)
-			val cmdline = ArrayList<String>(argc)
-			for (i in 0 until argc) {
-				r = inputStream.read(len)
-				if (r < 4) {
-					return mutableListOf()
-				}
-				val strlen =
-					(len[3].toInt() and 0xFF) shl 24 or ((len[2].toInt() and 0xFF) shl 16) or ((len[1].toInt() and 0xFF) shl 8) or (len[0].toInt() and 0xFF)
-				if (strlen > 65535) {
-					return mutableListOf()
-				}
-				val arg = ByteArray(strlen)
-				r = inputStream.read(arg)
-				if (r == strlen) {
-					cmdline.add(String(arg, StandardCharsets.UTF_8))
-				}
-			}
-			cmdline
-		} catch (e: Exception) {
-			// The _cl_ file can be missing with no adverse effect
+		val commandLine = try {
+			commandLineFileParser.parseCommandLine(requireActivity().assets.open("_cl_"))
+		} catch (ignored: Exception) {
 			mutableListOf()
 		}
+
+		val hostCommandLine = primaryHost?.commandLine
+		if (!hostCommandLine.isNullOrEmpty()) {
+			commandLine.addAll(hostCommandLine)
+		}
+
+		return commandLine
 	}
 
 	/**
