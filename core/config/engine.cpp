@@ -72,7 +72,6 @@ void Engine::set_max_fps(int p_fps) {
 	} else {
 		_max_fps = 0;
 	}
-
 }
 
 int Engine::get_max_fps() const {
