@@ -67,7 +67,12 @@ double Engine::get_physics_jitter_fix() const {
 }
 
 void Engine::set_max_fps(int p_fps) {
-	_max_fps = p_fps > 0 ? p_fps : 0;
+	if (p_fps > 0) {
+    	_max_fps = p_fps;
+	} else {
+		_max_fps = 0;
+	}
+
 }
 
 int Engine::get_max_fps() const {
