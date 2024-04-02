@@ -229,10 +229,11 @@ class EditorFileSystem : public Node {
 
 	List<String> sources_changed;
 	List<ItemAction> scan_actions;
+	String export_presets_path;
 
 	bool _update_scan_actions();
-
 	void _update_extensions();
+	void _project_settings_changed();
 
 	Error _reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options = HashMap<StringName, Variant>(), const String &p_custom_importer = String(), Variant *generator_parameters = nullptr);
 	Error _reimport_group(const String &p_group_file, const Vector<String> &p_files);
