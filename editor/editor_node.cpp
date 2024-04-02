@@ -5444,7 +5444,18 @@ PopupMenu *EditorNode::get_export_as_menu() {
 }
 
 void EditorNode::_dropped_files(const Vector<String> &p_files) {
-	String to_path = ProjectSettings::get_singleton()->globalize_path(FileSystemDock::get_singleton()->get_current_directory());
+	String to_path;
+
+	ItemList *item_list_control = FileSystemDock::get_singleton()->get_file_list_control();
+	int item_index = item_list_control->get_item_at_mouse_position(true);
+	if (item_index != -1) {
+		to_path = item_list_control->get_item_text(item_index).get_base_dir();
+	} else if (TreeItem *item = FileSystemDock::get_singleton()->get_tree_control()->get_item_at_mouse_position()) {
+		const String file_metadata = item->get_metadata(0);
+		to_path = file_metadata.get_base_dir();
+	} else {
+		to_path = ProjectSettings::get_singleton()->globalize_path(FileSystemDock::get_singleton()->get_current_directory());
+	}
 
 	_add_dropped_files_recursive(p_files, to_path);
 
