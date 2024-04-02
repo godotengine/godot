@@ -39,6 +39,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_run_bar.h"
+#include "editor/gui/editor_scene_tabs.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
@@ -452,6 +453,7 @@ void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) 
 
 void EditorInterface::mark_scene_as_unsaved() {
 	EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(EditorNode::get_editor_data().get_current_edited_scene_history_id());
+	EditorSceneTabs::get_singleton()->update_scene_tabs();
 }
 
 void EditorInterface::save_all_scenes() {
