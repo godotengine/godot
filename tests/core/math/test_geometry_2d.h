@@ -711,12 +711,12 @@ TEST_CASE("[Geometry2D] Clip polyline with polygon") {
 		r = Geometry2D::clip_polyline_with_polygon(l, p);
 		REQUIRE_MESSAGE(r.size() == 2, "There should be 2 resulting clipped lines.");
 		REQUIRE_MESSAGE(r[0].size() == 3, "The resulting clipped line should have 3 vertices.");
-		CHECK(r[0][0].is_equal_approx(Vector2(160, 320)));
+		CHECK(r[0][0].is_equal_approx(Vector2(121.412682, 225.038757)));
 		CHECK(r[0][1].is_equal_approx(Vector2(122, 250)));
-		CHECK(r[0][2].is_equal_approx(Vector2(121.412682, 225.038757)));
+		CHECK(r[0][2].is_equal_approx(Vector2(160, 320)));
 		REQUIRE_MESSAGE(r[1].size() == 2, "The resulting clipped line should have 2 vertices.");
-		CHECK(r[1][0].is_equal_approx(Vector2(53.07737, 116.143021)));
-		CHECK(r[1][1].is_equal_approx(Vector2(55, 70)));
+		CHECK(r[1][0].is_equal_approx(Vector2(55, 70)));
+		CHECK(r[1][1].is_equal_approx(Vector2(53.07737, 116.143021)));
 	}
 }
 

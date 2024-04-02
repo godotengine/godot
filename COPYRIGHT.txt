@@ -360,12 +360,6 @@ Copyright: 1998-2010, Gilles Vollant
  2009-2010, Mathias Svensson
 License: Zlib
 
-Files: ./thirdparty/misc/clipper.cpp
- ./thirdparty/misc/clipper.hpp
-Comment: Clipper
-Copyright: 2010-2017, Angus Johnson
-License: BSL-1.0
-
 Files: ./thirdparty/misc/cubemap_coeffs.h
 Comment: Fast Filtering of Reflection Probes
 Copyright: 2016, Activision Publishing, Inc.
