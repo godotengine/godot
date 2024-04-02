@@ -287,91 +287,21 @@ public:
 						(-p_pre + 3.0f * p_from - 3.0f * p_to + p_post) * (p_weight * p_weight * p_weight));
 	}
 
-	static _ALWAYS_INLINE_ double cubic_interpolate_angle(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
-		double from_rot = fmod(p_from, Math_TAU);
+	static double cubic_interpolate_angle(double p_from, double p_to, double p_pre, double p_post, double p_weight);
 
-		double pre_diff = fmod(p_pre - from_rot, Math_TAU);
-		double pre_rot = from_rot + fmod(2.0 * pre_diff, Math_TAU) - pre_diff;
+	static float cubic_interpolate_angle(float p_from, float p_to, float p_pre, float p_post, float p_weight);
 
-		double to_diff = fmod(p_to - from_rot, Math_TAU);
-		double to_rot = from_rot + fmod(2.0 * to_diff, Math_TAU) - to_diff;
+	static double cubic_interpolate_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
+			double p_to_t, double p_pre_t, double p_post_t);
 
-		double post_diff = fmod(p_post - to_rot, Math_TAU);
-		double post_rot = to_rot + fmod(2.0 * post_diff, Math_TAU) - post_diff;
+	static float cubic_interpolate_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
+			float p_to_t, float p_pre_t, float p_post_t);
 
-		return cubic_interpolate(from_rot, to_rot, pre_rot, post_rot, p_weight);
-	}
+	static double cubic_interpolate_angle_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
+			double p_to_t, double p_pre_t, double p_post_t);
 
-	static _ALWAYS_INLINE_ float cubic_interpolate_angle(float p_from, float p_to, float p_pre, float p_post, float p_weight) {
-		float from_rot = fmod(p_from, (float)Math_TAU);
-
-		float pre_diff = fmod(p_pre - from_rot, (float)Math_TAU);
-		float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)Math_TAU) - pre_diff;
-
-		float to_diff = fmod(p_to - from_rot, (float)Math_TAU);
-		float to_rot = from_rot + fmod(2.0f * to_diff, (float)Math_TAU) - to_diff;
-
-		float post_diff = fmod(p_post - to_rot, (float)Math_TAU);
-		float post_rot = to_rot + fmod(2.0f * post_diff, (float)Math_TAU) - post_diff;
-
-		return cubic_interpolate(from_rot, to_rot, pre_rot, post_rot, p_weight);
-	}
-
-	static _ALWAYS_INLINE_ double cubic_interpolate_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
-			double p_to_t, double p_pre_t, double p_post_t) {
-		/* Barry-Goldman method */
-		double t = Math::lerp(0.0, p_to_t, p_weight);
-		double a1 = Math::lerp(p_pre, p_from, p_pre_t == 0 ? 0.0 : (t - p_pre_t) / -p_pre_t);
-		double a2 = Math::lerp(p_from, p_to, p_to_t == 0 ? 0.5 : t / p_to_t);
-		double a3 = Math::lerp(p_to, p_post, p_post_t - p_to_t == 0 ? 1.0 : (t - p_to_t) / (p_post_t - p_to_t));
-		double b1 = Math::lerp(a1, a2, p_to_t - p_pre_t == 0 ? 0.0 : (t - p_pre_t) / (p_to_t - p_pre_t));
-		double b2 = Math::lerp(a2, a3, p_post_t == 0 ? 1.0 : t / p_post_t);
-		return Math::lerp(b1, b2, p_to_t == 0 ? 0.5 : t / p_to_t);
-	}
-
-	static _ALWAYS_INLINE_ float cubic_interpolate_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
-			float p_to_t, float p_pre_t, float p_post_t) {
-		/* Barry-Goldman method */
-		float t = Math::lerp(0.0f, p_to_t, p_weight);
-		float a1 = Math::lerp(p_pre, p_from, p_pre_t == 0 ? 0.0f : (t - p_pre_t) / -p_pre_t);
-		float a2 = Math::lerp(p_from, p_to, p_to_t == 0 ? 0.5f : t / p_to_t);
-		float a3 = Math::lerp(p_to, p_post, p_post_t - p_to_t == 0 ? 1.0f : (t - p_to_t) / (p_post_t - p_to_t));
-		float b1 = Math::lerp(a1, a2, p_to_t - p_pre_t == 0 ? 0.0f : (t - p_pre_t) / (p_to_t - p_pre_t));
-		float b2 = Math::lerp(a2, a3, p_post_t == 0 ? 1.0f : t / p_post_t);
-		return Math::lerp(b1, b2, p_to_t == 0 ? 0.5f : t / p_to_t);
-	}
-
-	static _ALWAYS_INLINE_ double cubic_interpolate_angle_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
-			double p_to_t, double p_pre_t, double p_post_t) {
-		double from_rot = fmod(p_from, Math_TAU);
-
-		double pre_diff = fmod(p_pre - from_rot, Math_TAU);
-		double pre_rot = from_rot + fmod(2.0 * pre_diff, Math_TAU) - pre_diff;
-
-		double to_diff = fmod(p_to - from_rot, Math_TAU);
-		double to_rot = from_rot + fmod(2.0 * to_diff, Math_TAU) - to_diff;
-
-		double post_diff = fmod(p_post - to_rot, Math_TAU);
-		double post_rot = to_rot + fmod(2.0 * post_diff, Math_TAU) - post_diff;
-
-		return cubic_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, p_weight, p_to_t, p_pre_t, p_post_t);
-	}
-
-	static _ALWAYS_INLINE_ float cubic_interpolate_angle_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
-			float p_to_t, float p_pre_t, float p_post_t) {
-		float from_rot = fmod(p_from, (float)Math_TAU);
-
-		float pre_diff = fmod(p_pre - from_rot, (float)Math_TAU);
-		float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)Math_TAU) - pre_diff;
-
-		float to_diff = fmod(p_to - from_rot, (float)Math_TAU);
-		float to_rot = from_rot + fmod(2.0f * to_diff, (float)Math_TAU) - to_diff;
-
-		float post_diff = fmod(p_post - to_rot, (float)Math_TAU);
-		float post_rot = to_rot + fmod(2.0f * post_diff, (float)Math_TAU) - post_diff;
-
-		return cubic_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, p_weight, p_to_t, p_pre_t, p_post_t);
-	}
+	static float cubic_interpolate_angle_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
+			float p_to_t, float p_pre_t, float p_post_t);
 
 	static _ALWAYS_INLINE_ double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
 		/* Formula from Wikipedia article on Bezier curves. */
@@ -541,7 +471,13 @@ public:
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
 	static int range_step_decimals(double p_step); // For editor use only.
-	static double snapped(double p_value, double p_step);
+
+	static _ALWAYS_INLINE_ double snapped(double p_value, double p_step) {
+		if (p_step != 0) {
+			p_value = Math::floor(p_value / p_step + 0.5) * p_step;
+		}
+		return p_value;
+	}
 
 	static uint32_t larger_prime(uint32_t p_val);
 
@@ -733,19 +669,7 @@ public:
 		return p_step != 0 ? Math::snapped(p_target - p_offset, p_step) + p_offset : p_target;
 	}
 
-	static _ALWAYS_INLINE_ float snap_scalar_separation(float p_offset, float p_step, float p_target, float p_separation) {
-		if (p_step != 0) {
-			float a = Math::snapped(p_target - p_offset, p_step + p_separation) + p_offset;
-			float b = a;
-			if (p_target >= 0) {
-				b -= p_separation;
-			} else {
-				b += p_step;
-			}
-			return (Math::abs(p_target - a) < Math::abs(p_target - b)) ? a : b;
-		}
-		return p_target;
-	}
+	static float snap_scalar_separation(float p_offset, float p_step, float p_target, float p_separation);
 };
 
 #endif // MATH_FUNCS_H
