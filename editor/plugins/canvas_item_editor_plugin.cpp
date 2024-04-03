@@ -1275,18 +1275,18 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	panner->set_enable_rmb(true);
 	bool panner_active = panner->gui_input(p_event, warped_panning ? viewport->get_global_rect() : Rect2());
 	if (panner->is_panning() != pan_pressed) {
-		if (my_flag == true)
+		if (is_right_button_down == true)
 		{
 			Ref<InputEventMouseMotion> m = p_event;
 			if (m.is_valid()) {
 				//print_line(m->get_relative());
-				my_move_record += m->get_relative();
-				if (my_move_record.length() > 5) {
+				mouse_move_record += m->get_relative();
+				if (mouse_move_record.length() > 5) {
 					pan_pressed = panner->is_panning();
 					_update_cursor();
-					my_flag = false;
-					my_move_record.x = 0;
-					my_move_record.y = 0;
+					is_right_button_down = false;
+					mouse_move_record.x = 0;
+					mouse_move_record.y = 0;
 				}
 			}
 		} else {
@@ -2340,9 +2340,9 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		}
 
 		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
-			my_flag = true;
+			is_right_button_down = true;
 		}
-		if (my_flag == true && b.is_valid() && !b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
+		if (is_right_button_down == true && b.is_valid() && !b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
 			my_flag = false;
 			add_node_menu->clear();
 			add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("Add")), TTR("Add Node Here..."), ADD_NODE);
