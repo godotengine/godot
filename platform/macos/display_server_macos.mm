@@ -3221,7 +3221,6 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 	offset.y = (nsrect.origin.y + nsrect.size.height);
 	offset.y -= (windowRect.origin.y + windowRect.size.height);
 
-
 	Point2i position = p_position;
 	// macOS native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot passes a positive value.
