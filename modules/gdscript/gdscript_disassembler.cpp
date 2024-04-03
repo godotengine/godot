@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) || defined(GDSCRIPT_BUILD)
 
 #include "gdscript.h"
 #include "gdscript_function.h"
@@ -1128,4 +1128,16 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 	}
 }
 
-#endif // DEBUG_ENABLED
+String GDScriptFunction::signature() const {
+	const MethodInfo &mi = get_method_info();
+	String signature = mi.name + "(";
+	for (int i = 0; i < mi.arguments.size(); i++) {
+		if (i > 0) {
+			signature += ", ";
+		}
+		signature += mi.arguments[i].name;
+	}
+	signature += ")";
+	return signature;
+}
+#endif // DEBUG_ENABLED || GDSCRIPT_BUILD

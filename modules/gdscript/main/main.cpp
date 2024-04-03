@@ -35,10 +35,11 @@
 #include "modules/gdscript/gdscript.h"
 #include "modules/gdscript/gdscript_analyzer.h"
 #include "modules/gdscript/gdscript_compiler.h"
+#include "modules/gdscript/gdscript_function.h"
 #include "modules/gdscript/gdscript_parser.h"
 #include "modules/register_module_types.h"
 
-static Vector<String> args;
+static List<String> args;
 static Engine *engine;
 static ProjectSettings *globals;
 
@@ -47,8 +48,6 @@ int Main::test_entrypoint(int p_argc, char *p_argv[], bool &r_tests_need_run) {
 }
 
 Error Main::setup(const char *p_execpath, int p_argc, char *p_argv[], bool p_second_phase) {
-	if (p_argc < 1)
-		return ERR_BUG;
 	for (int i = 0; i < p_argc; i++) {
 		args.push_back(String::utf8(p_argv[i]));
 	}
@@ -69,14 +68,57 @@ Error Main::setup(const char *p_execpath, int p_argc, char *p_argv[], bool p_sec
 	return OK;
 }
 
+Error disassemble_functions(const Ref<GDScript> &script, const Vector<String> &functions) {
+	Vector<String> lines = script->get_source_code().split("\n", false);
+	for (const KeyValue<StringName, GDScriptFunction *> &E : script->get_member_functions()) {
+		const GDScriptFunction *func = E.value;
+		if (!functions.is_empty() && functions.find(func->get_name()) == -1) {
+			continue;
+		}
+		print_line("Disassembling " + func->signature());
+		func->disassemble(lines);
+		print_line("");
+	}
+	return OK;
+}
+
 int Main::start() {
 	Error err = OK;
+	String source_file;
+
+	Vector<String> functions_to_dump;
+	bool dump_all_functions = false;
+	bool run_code = true;
+	List<String>::Element *I = args.front();
+	while (I) {
+		List<String>::Element *N = I->next();
+		if (I->get() == "--dump-bytecode") {
+			if (I->next()) {
+				functions_to_dump = I->next()->get().split(",", false);
+				N = I->next()->next();
+			} else {
+				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "	--dump-bytecode requires a list of functions to dump.");
+			}
+		} else if (I->get() == "--dump-all-bytecode") {
+			dump_all_functions = true;
+		} else if (I->get() == "--no-run") {
+			run_code = false;
+		} else {
+			if (source_file.is_empty()) {
+				source_file = I->get();
+			} else {
+				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Multiple source files provided (" + source_file + ", " + I->get() + ").");
+			}
+		}
+		I = N;
+	}
+	ERR_FAIL_COND_V_MSG(source_file.is_empty(), ERR_INVALID_PARAMETER, "No source file provided.");
+
 	Ref<GDScript> script;
 	script.instantiate();
-	const String &source_file = args[0];
 	script->set_path(source_file);
 	err = script->load_source_code(source_file);
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Could not load source code for: '" + source_file + "'");
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Could not load source code for: '" + source_file + "'.");
 	GDScriptParser parser;
 	err = parser.parse(script->get_source_code(), source_file, false);
 	if (err != OK) {
@@ -102,11 +144,22 @@ int Main::start() {
 		print_line(compiler.get_error());
 		return err;
 	}
+
+	if (!functions_to_dump.is_empty() || dump_all_functions) {
+		err = disassemble_functions(script, functions_to_dump);
+		if (err != OK) {
+			return err;
+		}
+	}
+
+	if (!run_code) {
+		return OK;
+	}
 	const HashMap<StringName, GDScriptFunction *>::ConstIterator main_func = script->get_member_functions().find("main");
-	ERR_FAIL_COND_V_MSG(!main_func, ERR_CANT_RESOLVE, "Could not find main function in: '" + source_file + "'");
+	ERR_FAIL_COND_V_MSG(!main_func, ERR_CANT_RESOLVE, "Could not find main function in: '" + source_file + "'.");
 
 	err = script->reload();
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Could not reload script: '" + source_file + "'");
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Could not reload script: '" + source_file + "'.");
 
 	Object *obj = ClassDB::instantiate(script->get_native()->get_name());
 	Ref<RefCounted> obj_ref;
@@ -119,7 +172,7 @@ int Main::start() {
 	Callable::CallError call_err;
 	instance->callp("main", nullptr, 0, call_err);
 
-	ERR_FAIL_COND_V_MSG(call_err.error != Callable::CallError::CALL_OK, ERR_SCRIPT_FAILED, "Could not call main function in: '" + source_file + "'");
+	ERR_FAIL_COND_V_MSG(call_err.error != Callable::CallError::CALL_OK, ERR_SCRIPT_FAILED, "Could not call main function in: '" + source_file + "'.");
 
 	if (obj_ref.is_null()) {
 		memdelete(obj);

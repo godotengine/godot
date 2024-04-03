@@ -135,7 +135,7 @@ There are many other classes in the GDScript module. Here is a brief overview of
 - [`GDScriptFunction`](gdscript_function.h), which represents an executable GDScript function. The relevant file contains both static as well as runtime information.
 - The [virtual machine](gdscript_vm.cpp) is essentially defined as calling `GDScriptFunction::call()`.
 - Editor-related functions can be found in parts of `GDScriptLanguage`, originally declared in [`gdscript.h`](gdscript.h) but defined in [`gdscript_editor.cpp`](gdscript_editor.cpp). Code highlighting can be found in [`GDScriptSyntaxHighlighter`](editor/gdscript_highlighter.h).
-- GDScript decompilation is found in [`gdscript_disassembler.cpp`](gdscript_disassembler.h), defined as `GDScriptFunction::disassemble()`.
+- GDScript decompilation is found in [`gdscript_disassembler.cpp`](gdscript_disassembler.cpp), defined as `GDScriptFunction::disassemble()`.
 - Documentation generation from GDScript comments in [`GDScriptDocGen`](editor/gdscript_docgen.h)
 
 A dedicated binary for developing GDScript (built with `target=gdscript` is located in [`main`](main/main.cpp).
