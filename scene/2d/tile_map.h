@@ -294,7 +294,6 @@ private:
 		bool flags[DIRTY_FLAGS_MAX] = { false };
 		SelfList<CellData>::List cell_list;
 	} dirty;
-	bool in_destructor = false;
 
 	// Rect cache.
 	mutable Rect2 rect_cache;
@@ -304,7 +303,7 @@ private:
 
 	// Runtime tile data.
 	bool _runtime_update_tile_data_was_cleaned_up = false;
-	void _build_runtime_update_tile_data();
+	void _build_runtime_update_tile_data(bool p_force_cleanup);
 	void _build_runtime_update_tile_data_for_cell(CellData &r_cell_data, bool p_auto_add_to_dirty_list = false);
 	void _clear_runtime_update_tile_data();
 
@@ -313,13 +312,13 @@ private:
 	HashMap<Vector2i, Ref<DebugQuadrant>> debug_quadrant_map;
 	Vector2i _coords_to_debug_quadrant_coords(const Vector2i &p_coords) const;
 	bool _debug_was_cleaned_up = false;
-	void _debug_update();
+	void _debug_update(bool p_force_cleanup);
 	void _debug_quadrants_update_cell(CellData &r_cell_data, SelfList<DebugQuadrant>::List &r_dirty_debug_quadrant_list);
 #endif // DEBUG_ENABLED
 
 	HashMap<Vector2i, Ref<RenderingQuadrant>> rendering_quadrant_map;
 	bool _rendering_was_cleaned_up = false;
-	void _rendering_update();
+	void _rendering_update(bool p_force_cleanup);
 	void _rendering_quadrants_update_cell(CellData &r_cell_data, SelfList<RenderingQuadrant>::List &r_dirty_rendering_quadrant_list);
 	void _rendering_occluders_clear_cell(CellData &r_cell_data);
 	void _rendering_occluders_update_cell(CellData &r_cell_data);
@@ -329,7 +328,7 @@ private:
 
 	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
 	bool _physics_was_cleaned_up = false;
-	void _physics_update();
+	void _physics_update(bool p_force_cleanup);
 	void _physics_notify_tilemap_change(DirtyFlags p_what);
 	void _physics_clear_cell(CellData &r_cell_data);
 	void _physics_update_cell(CellData &r_cell_data);
@@ -338,7 +337,7 @@ private:
 #endif // DEBUG_ENABLED
 
 	bool _navigation_was_cleaned_up = false;
-	void _navigation_update();
+	void _navigation_update(bool p_force_cleanup);
 	void _navigation_clear_cell(CellData &r_cell_data);
 	void _navigation_update_cell(CellData &r_cell_data);
 #ifdef DEBUG_ENABLED
@@ -346,7 +345,7 @@ private:
 #endif // DEBUG_ENABLED
 
 	bool _scenes_was_cleaned_up = false;
-	void _scenes_update();
+	void _scenes_update(bool p_force_cleanup);
 	void _scenes_clear_cell(CellData &r_cell_data);
 	void _scenes_update_cell(CellData &r_cell_data);
 #ifdef DEBUG_ENABLED
@@ -379,7 +378,7 @@ public:
 	void set_tile_data(DataFormat p_format, const Vector<int> &p_data);
 	Vector<int> get_tile_data() const;
 	void notify_tile_map_change(DirtyFlags p_what);
-	void internal_update();
+	void internal_update(bool p_force_cleanup);
 
 	// --- Exposed in TileMap ---
 
@@ -476,6 +475,9 @@ private:
 	HashMap<Pair<Ref<Resource>, int>, Ref<Resource>, PairHash<Ref<Resource>, int>> polygon_cache;
 	PackedVector2Array _get_transformed_vertices(const PackedVector2Array &p_vertices, int p_alternative_id);
 
+	void _deferred_internal_update();
+	void _internal_update(bool p_force_cleanup);
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -507,7 +509,6 @@ public:
 
 	// Called by TileMapLayers.
 	void queue_internal_update();
-	void _internal_update();
 
 	void set_tileset(const Ref<TileSet> &p_tileset);
 	Ref<TileSet> get_tileset() const;

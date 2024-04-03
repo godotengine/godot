@@ -50,12 +50,12 @@ Vector2i TileMapLayer::_coords_to_debug_quadrant_coords(const Vector2i &p_coords
 			p_coords.y > 0 ? p_coords.y / TILE_MAP_DEBUG_QUADRANT_SIZE : (p_coords.y - (TILE_MAP_DEBUG_QUADRANT_SIZE - 1)) / TILE_MAP_DEBUG_QUADRANT_SIZE);
 }
 
-void TileMapLayer::_debug_update() {
+void TileMapLayer::_debug_update(bool p_force_cleanup) {
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 	RenderingServer *rs = RenderingServer::get_singleton();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_visible_in_tree();
+	bool forced_cleanup = p_force_cleanup || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_visible_in_tree();
 
 	if (forced_cleanup) {
 		for (KeyValue<Vector2i, Ref<DebugQuadrant>> &kv : debug_quadrant_map) {
@@ -178,12 +178,12 @@ void TileMapLayer::_debug_quadrants_update_cell(CellData &r_cell_data, SelfList<
 #endif // DEBUG_ENABLED
 
 /////////////////////////////// Rendering //////////////////////////////////////
-void TileMapLayer::_rendering_update() {
+void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 	RenderingServer *rs = RenderingServer::get_singleton();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_visible_in_tree();
+	bool forced_cleanup = p_force_cleanup || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_visible_in_tree();
 
 	// ----------- Layer level processing -----------
 	if (forced_cleanup) {
@@ -677,11 +677,11 @@ void TileMapLayer::_rendering_draw_cell_debug(const RID &p_canvas_item, const Ve
 
 /////////////////////////////// Physics //////////////////////////////////////
 
-void TileMapLayer::_physics_update() {
+void TileMapLayer::_physics_update(bool p_force_cleanup) {
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid();
+	bool forced_cleanup = p_force_cleanup || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid();
 	if (forced_cleanup) {
 		// Clean everything.
 		for (KeyValue<Vector2i, CellData> &kv : tile_map) {
@@ -944,13 +944,13 @@ void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vect
 
 /////////////////////////////// Navigation //////////////////////////////////////
 
-void TileMapLayer::_navigation_update() {
+void TileMapLayer::_navigation_update(bool p_force_cleanup) {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 	NavigationServer2D *ns = NavigationServer2D::get_singleton();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !navigation_enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid();
+	bool forced_cleanup = p_force_cleanup || !enabled || !navigation_enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid();
 
 	// ----------- Layer level processing -----------
 	if (forced_cleanup) {
@@ -1210,11 +1210,11 @@ void TileMapLayer::_navigation_draw_cell_debug(const RID &p_canvas_item, const V
 
 /////////////////////////////// Scenes //////////////////////////////////////
 
-void TileMapLayer::_scenes_update() {
+void TileMapLayer::_scenes_update(bool p_force_cleanup) {
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid();
+	bool forced_cleanup = p_force_cleanup || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid();
 
 	if (forced_cleanup) {
 		// Clean everything.
@@ -1337,11 +1337,11 @@ void TileMapLayer::_scenes_draw_cell_debug(const RID &p_canvas_item, const Vecto
 
 /////////////////////////////////////////////////////////////////////
 
-void TileMapLayer::_build_runtime_update_tile_data() {
+void TileMapLayer::_build_runtime_update_tile_data(bool p_force_cleanup) {
 	const Ref<TileSet> &tile_set = tile_map_node->get_tileset();
 
 	// Check if we should cleanup everything.
-	bool forced_cleanup = in_destructor || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_visible_in_tree();
+	bool forced_cleanup = p_force_cleanup || !enabled || !tile_map_node->is_inside_tree() || !tile_set.is_valid() || !tile_map_node->is_visible_in_tree();
 	if (!forced_cleanup) {
 		if (tile_map_node->GDVIRTUAL_IS_OVERRIDDEN(_use_tile_data_runtime_update) && tile_map_node->GDVIRTUAL_IS_OVERRIDDEN(_tile_data_runtime_update)) {
 			if (_runtime_update_tile_data_was_cleaned_up || dirty.flags[DIRTY_FLAGS_TILE_MAP_TILE_SET]) {
@@ -2029,18 +2029,18 @@ void TileMapLayer::notify_tile_map_change(DirtyFlags p_what) {
 	_physics_notify_tilemap_change(p_what);
 }
 
-void TileMapLayer::internal_update() {
+void TileMapLayer::internal_update(bool p_force_cleanup) {
 	// Find TileData that need a runtime modification.
 	// This may add cells to the dirty list is a runtime modification has been notified.
-	_build_runtime_update_tile_data();
+	_build_runtime_update_tile_data(p_force_cleanup);
 
 	// Update all subsystems.
-	_rendering_update();
-	_physics_update();
-	_navigation_update();
-	_scenes_update();
+	_rendering_update(p_force_cleanup);
+	_physics_update(p_force_cleanup);
+	_navigation_update(p_force_cleanup);
+	_scenes_update(p_force_cleanup);
 #ifdef DEBUG_ENABLED
-	_debug_update();
+	_debug_update(p_force_cleanup);
 #endif // DEBUG_ENABLED
 
 	_clear_runtime_update_tile_data();
@@ -2545,9 +2545,8 @@ TileMapLayer::~TileMapLayer() {
 		return;
 	}
 
-	in_destructor = true;
 	clear();
-	internal_update();
+	internal_update(true);
 }
 
 HashMap<Vector2i, TileSet::CellNeighbor> TerrainConstraint::get_overlapping_coords_and_peering_bits() const {
@@ -3023,8 +3022,8 @@ void TileMap::_notification(int p_what) {
 			for (Ref<TileMapLayer> &layer : layers) {
 				layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_IN_TREE);
 			}
-			// Update on exit to prevent threading problems.
-			_internal_update();
+			// Update on exit to prevent threading problems, and force cleanup.
+			_internal_update(true);
 		} break;
 
 		case TileMap::NOTIFICATION_ENTER_CANVAS: {
@@ -3037,8 +3036,8 @@ void TileMap::_notification(int p_what) {
 			for (Ref<TileMapLayer> &layer : layers) {
 				layer->notify_tile_map_change(TileMapLayer::DIRTY_FLAGS_TILE_MAP_IN_CANVAS);
 			}
-			// Update on exit to prevent threading problems.
-			_internal_update();
+			// Update on exit to prevent threading problems, and force cleanup.
+			_internal_update(true);
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -3116,16 +3115,20 @@ void TileMap::queue_internal_update() {
 	// Don't update when outside the tree, it doesn't do anything useful, and causes threading problems.
 	if (is_inside_tree()) {
 		pending_update = true;
-		callable_mp(this, &TileMap::_internal_update).call_deferred();
+		callable_mp(this, &TileMap::_deferred_internal_update).call_deferred();
 	}
 }
 
-void TileMap::_internal_update() {
+void TileMap::_deferred_internal_update() {
 	// Other updates.
 	if (!pending_update) {
 		return;
 	}
 
+	_internal_update(false);
+}
+
+void TileMap::_internal_update(bool p_force_cleanup) {
 	// FIXME: This should only clear polygons that are no longer going to be used, but since it's difficult to determine,
 	// the cache is never cleared at runtime to prevent invalidating used polygons.
 	if (Engine::get_singleton()->is_editor_hint()) {
@@ -3133,7 +3136,7 @@ void TileMap::_internal_update() {
 	}
 	// Update dirty quadrants on layers.
 	for (Ref<TileMapLayer> &layer : layers) {
-		layer->internal_update();
+		layer->internal_update(p_force_cleanup);
 	}
 
 	pending_update = false;
@@ -3582,8 +3585,7 @@ void TileMap::clear() {
 }
 
 void TileMap::update_internals() {
-	pending_update = true;
-	_internal_update();
+	_internal_update(false);
 }
 
 void TileMap::notify_runtime_tile_data_update(int p_layer) {
