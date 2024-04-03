@@ -1280,7 +1280,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 			if (m.is_valid()) {
 				//print_line(m->get_relative());
 				mouse_move_record += m->get_relative();
-				if (mouse_move_record.length() > 5) {
+				if (mouse_move_record.length_squared() > 25.0) {
 					pan_pressed = panner->is_panning();
 					_update_cursor();
 					is_right_button_down = false;
