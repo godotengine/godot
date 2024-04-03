@@ -174,6 +174,19 @@ String Variant::get_type_name(Variant::Type p_type) {
 	return "";
 }
 
+bool Variant::can_match(Variant::Type p_type_test, Variant::Type p_type_pattern) {
+	if (p_type_test == p_type_pattern) {
+		return true;
+	}
+	if (p_type_test == STRING && p_type_pattern == STRING_NAME) {
+		return true;
+	}
+	if (p_type_test == STRING_NAME && p_type_pattern == STRING) {
+		return true;
+	}
+	return false;
+}
+
 bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 	if (p_type_from == p_type_to) {
 		return true;
