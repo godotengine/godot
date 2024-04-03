@@ -187,7 +187,7 @@ private:
 	};
 
 	bool is_right_button_down = false;
-	Vector2 mouse_move_record = Vector2(0,0);
+	Vector2 mouse_move_record;
 
 	bool selection_menu_additive_selection = false;
 
