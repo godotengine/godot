@@ -1275,8 +1275,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	panner->set_enable_rmb(true);
 	bool panner_active = panner->gui_input(p_event, warped_panning ? viewport->get_global_rect() : Rect2());
 	if (panner->is_panning() != pan_pressed) {
-		if (is_right_button_down == true)
-		{
+		if (is_right_button_down) {
 			Ref<InputEventMouseMotion> m = p_event;
 			if (m.is_valid()) {
 				//print_line(m->get_relative());
