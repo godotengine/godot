@@ -2343,7 +2343,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			is_right_button_down = true;
 		}
 		if (is_right_button_down == true && b.is_valid() && !b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
-			my_flag = false;
+			is_right_button_down = false;
 			add_node_menu->clear();
 			add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("Add")), TTR("Add Node Here..."), ADD_NODE);
 			add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("Instance")), TTR("Instantiate Scene Here..."), ADD_INSTANCE);
