@@ -31,12 +31,28 @@
 #ifndef TEST_UTILS_H
 #define TEST_UTILS_H
 
+#include "core/string/char_utils.h"
+#include "tests/test_macros.h"
+
 class String;
 
 namespace TestUtils {
 
 String get_data_path(const String &p_file);
 String get_executable_dir();
+
+TEST_CASE("[UTILS] Test cjk chr") {
+	CHECK(is_cjk_character(0x53D8) == true); // '变'
+	CHECK(is_cjk_character(0x5909) == true); // '変'
+	CHECK(is_cjk_character(0xB3D9) == true); // '변'
+}
+
+TEST_CASE("[UTILS] Test cjk chr") {
+	CHECK(is_cjk_punctuation(0x3002) == true); // Ideographic full stop
+	CHECK(is_cjk_punctuation(0x3001) == true); // Ideographic comma
+	CHECK(is_cjk_punctuation(0x3005) == true); // Ideographic iteration mark
+}
+
 } // namespace TestUtils
 
 #endif // TEST_UTILS_H

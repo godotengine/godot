@@ -5400,13 +5400,18 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 			} else {
 				while (ubrk_next(bi) != UBRK_DONE) {
 					int pos = _convert_pos(sd, ubrk_current(bi)) + r_start;
-					if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_HARD) && (ubrk_getRuleStatus(bi) < UBRK_LINE_HARD_LIMIT)) {
+					int pos_p = pos - 1 - sd->start;
+					char32_t c = sd->text[pos_p];
+
+					if (is_cjk_character(c)) {
+						if (is_cjk_punctuation(c)) {
+							sd->breaks[pos] = true;
+						}
+					} else if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_HARD) && (ubrk_getRuleStatus(bi) < UBRK_LINE_HARD_LIMIT)) {
 						sd->breaks[pos] = true;
 					} else if ((ubrk_getRuleStatus(bi) >= UBRK_LINE_SOFT) && (ubrk_getRuleStatus(bi) < UBRK_LINE_SOFT_LIMIT)) {
 						sd->breaks[pos] = false;
 					}
-					int pos_p = pos - 1 - sd->start;
-					char32_t c = sd->text[pos_p];
 					if (pos - sd->start != sd->end && !is_whitespace(c) && (c != 0xfffc)) {
 						sd->break_inserts++;
 					}

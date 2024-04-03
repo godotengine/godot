@@ -128,4 +128,12 @@ static _FORCE_INLINE_ bool is_underscore(char32_t p_char) {
 	return (p_char == '_');
 }
 
+static _FORCE_INLINE_ bool is_cjk_character(char32_t c) {
+	return (c >= 0x4E00 && c <= 0x9FFF) || (c >= 0x3400 && c <= 0x4DBF) || (c >= 0x3040 && c <= 0x30FF) || (c >= 0x31F0 && c <= 0x31FF) || (c >= 0xAC00 && c <= 0xD7AF) || (c >= 0x1100 && c <= 0x11FF) || (c >= 0x3130 && c <= 0x318F);
+}
+
+static _FORCE_INLINE_ bool is_cjk_punctuation(char32_t c) {
+	return (c >= 0x3000 && c <= 0x303F) || (c >= 0xFF00 && c <= 0xFFEF);
+}
+
 #endif // CHAR_UTILS_H
