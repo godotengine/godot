@@ -408,6 +408,8 @@ void ManyBoneIK3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pin_weight", "index"), &ManyBoneIK3D::get_pin_weight);
 	ClassDB::bind_method(D_METHOD("get_pin_enabled", "index"), &ManyBoneIK3D::get_pin_enabled);
 	ClassDB::bind_method(D_METHOD("get_constraint_name", "index"), &ManyBoneIK3D::get_constraint_name);
+	ClassDB::bind_method(D_METHOD("get_iterations_per_frame"), &ManyBoneIK3D::get_iterations_per_frame);
+	ClassDB::bind_method(D_METHOD("set_iterations_per_frame", "count"), &ManyBoneIK3D::set_iterations_per_frame);
 	ClassDB::bind_method(D_METHOD("find_constraint", "name"), &ManyBoneIK3D::find_constraint);
 	ClassDB::bind_method(D_METHOD("find_pin", "name"), &ManyBoneIK3D::find_pin);
 	ClassDB::bind_method(D_METHOD("get_constraint_count"), &ManyBoneIK3D::get_constraint_count);
@@ -425,6 +427,7 @@ void ManyBoneIK3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pin_bone_name", "index", "name"), &ManyBoneIK3D::set_pin_bone_name);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton_node_path"), "set_skeleton_node_path", "get_skeleton_node_path");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "iterations_per_frame", PROPERTY_HINT_RANGE, "1,150,1,or_greater"), "set_iterations_per_frame", "get_iterations_per_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "default_damp", PROPERTY_HINT_RANGE, "0.01,180.0,0.1,radians,exp", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_default_damp", "get_default_damp");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "constraint_mode"), "set_constraint_mode", "get_constraint_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ui_selected_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_ui_selected_bone", "get_ui_selected_bone");
@@ -637,6 +640,13 @@ void ManyBoneIK3D::_set_constraint_name(int32_t p_index, String p_name) {
 Vector<Ref<IKBoneSegment3D>> ManyBoneIK3D::get_segmented_skeletons() {
 	return segmented_skeletons;
 }
+float ManyBoneIK3D::get_iterations_per_frame() const {
+	return iterations_per_frame;
+}
+
+void ManyBoneIK3D::set_iterations_per_frame(const float &p_iterations_per_frame) {
+	iterations_per_frame = p_iterations_per_frame;
+}
 
 void ManyBoneIK3D::set_pin_bone_name(int32_t p_effector_index, StringName p_name) const {
 	ERR_FAIL_INDEX(p_effector_index, pins.size());
@@ -701,11 +711,13 @@ void ManyBoneIK3D::_execute(real_t delta) {
 		return;
 	}
 	_update_ik_bones_transform();
-	for (Ref<IKBoneSegment3D> segmented_skeleton : segmented_skeletons) {
-		if (segmented_skeleton.is_null()) {
-			continue;
+	for (int32_t i = 0; i < get_iterations_per_frame(); i++) {
+		for (Ref<IKBoneSegment3D> segmented_skeleton : segmented_skeletons) {
+			if (segmented_skeleton.is_null()) {
+				continue;
+			}
+			segmented_skeleton->segment_solver(bone_damp, get_default_damp(), get_constraint_mode(), i, get_iterations_per_frame());
 		}
-		segmented_skeleton->segment_solver(bone_damp, get_default_damp(), get_constraint_mode());
 	}
 	_update_skeleton_bones_transform();
 }
@@ -766,8 +778,8 @@ void ManyBoneIK3D::_skeleton_changed(Skeleton3D *p_skeleton) {
 			const Vector2 axial_limit = get_kusudama_twist(constraint_i);
 			constraint->enable_axial_limits();
 			constraint->set_axial_limits(axial_limit.x, axial_limit.y);
-			constraint->_update_constraint(ik_bone_3d->get_constraint_twist_transform());
 			ik_bone_3d->add_constraint(constraint);
+			constraint->_update_constraint(ik_bone_3d->get_constraint_twist_transform());
 			break;
 		}
 	}

@@ -136,6 +136,7 @@ public:
 	StringName NonFavorite;
 	StringName normal;
 	StringName panel;
+	StringName plan_changed;
 	StringName popup_hide;
 	StringName pressed;
 	StringName probability_clicked;

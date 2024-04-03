@@ -26,6 +26,8 @@ private:
 protected:
 	static void _bind_methods();
 
+	virtual void _update_blackboard_plan() override;
+
 	virtual String _generate_name() override;
 	virtual Status _tick(double p_delta) override;
 
@@ -35,6 +37,9 @@ public:
 
 	virtual void initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard) override;
 	virtual PackedStringArray get_configuration_warnings() override;
+
+	BTSubtree() = default;
+	~BTSubtree();
 };
 
 #endif // BT_SUBTREE_H

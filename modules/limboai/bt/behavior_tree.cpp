@@ -48,7 +48,7 @@ void BehaviorTree::set_blackboard_plan(const Ref<BlackboardPlan> &p_plan) {
 		blackboard_plan->connect(LW_NAME(changed), callable_mp(this, &BehaviorTree::_plan_changed));
 	}
 
-	emit_changed();
+	_plan_changed();
 }
 
 void BehaviorTree::set_root_task(const Ref<BTTask> &p_value) {
@@ -79,6 +79,7 @@ Ref<BTTask> BehaviorTree::instantiate(Node *p_agent, const Ref<Blackboard> &p_bl
 }
 
 void BehaviorTree::_plan_changed() {
+	emit_signal(LW_NAME(plan_changed));
 	emit_changed();
 }
 
@@ -96,6 +97,8 @@ void BehaviorTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description", PROPERTY_HINT_MULTILINE_TEXT), "set_description", "get_description");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_blackboard_plan", "get_blackboard_plan");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root_task", PROPERTY_HINT_RESOURCE_TYPE, "BTTask", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_root_task", "get_root_task");
+
+	ADD_SIGNAL(MethodInfo("plan_changed"));
 }
 
 BehaviorTree::BehaviorTree() {

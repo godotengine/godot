@@ -224,6 +224,7 @@ IKBone3D::IKBone3D(StringName p_bone, Skeleton3D *p_skeleton, const Ref<IKBone3D
 
 	float predamp = 1.0 - get_stiffness();
 	dampening = get_parent().is_null() ? Math_PI : predamp * p_default_dampening;
+	float iterations = p_many_bone_ik->get_iterations_per_frame();
 	if (get_constraint().is_null()) {
 		Ref<IKKusudama3D> new_constraint;
 		new_constraint.instantiate();
@@ -231,14 +232,16 @@ IKBone3D::IKBone3D(StringName p_bone, Skeleton3D *p_skeleton, const Ref<IKBone3D
 	}
 	float returnfulness = get_constraint()->get_resistance();
 	float falloff = 0.2f;
-	half_returnfulness_dampened.resize(1);
-	cos_half_returnfulness_dampened.resize(1);
-	float iterations_pow = Math::pow(1, falloff * 1 * returnfulness);
-	float iteration_scalar = ((iterations_pow)-Math::pow(1, falloff * returnfulness)) / (iterations_pow);
-	float iteration_return_clamp = iteration_scalar * returnfulness * dampening;
-	float cos_iteration_return_clamp = Math::cos(iteration_return_clamp / 2.0);
-	half_returnfulness_dampened.write[0] = iteration_return_clamp;
-	cos_half_returnfulness_dampened.write[0] = cos_iteration_return_clamp;
+	half_returnfulness_dampened.resize(iterations);
+	cos_half_returnfulness_dampened.resize(iterations);
+	float iterations_pow = Math::pow(iterations, falloff * iterations * returnfulness);
+	for (float i = 0; i < iterations; i++) {
+		float iteration_scalar = ((iterations_pow)-Math::pow(i, falloff * iterations * returnfulness)) / (iterations_pow);
+		float iteration_return_clamp = iteration_scalar * returnfulness * dampening;
+		float cos_iteration_return_clamp = Math::cos(iteration_return_clamp / 2.0);
+		half_returnfulness_dampened.write[i] = iteration_return_clamp;
+		cos_half_returnfulness_dampened.write[i] = cos_iteration_return_clamp;
+	}
 }
 
 float IKBone3D::get_cos_half_dampen() const {

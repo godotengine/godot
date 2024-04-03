@@ -26,7 +26,9 @@ private:
 protected:
 	static void _bind_methods();
 
-	void set_blackboard_plan(const Ref<BlackboardPlan> &p_plan) { blackboard_plan = p_plan; }
+	virtual void _update_blackboard_plan() {}
+
+	void set_blackboard_plan(const Ref<BlackboardPlan> &p_plan);
 	Ref<BlackboardPlan> get_blackboard_plan() const { return blackboard_plan; }
 
 	virtual Status _tick(double p_delta) override;

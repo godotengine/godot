@@ -29,11 +29,6 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
-permissions:
-  actions: write
-  contents: read
-  packages: read
-
 jobs:
   android-builds:
     runs-on: "ubuntu-20.04"
@@ -189,7 +184,7 @@ jobs:
           ls -l out/*
 
       - name: Delete Android template builds
-        uses: geekyeggo/delete-artifact@v4
+        uses: geekyeggo/delete-artifact@v5
         with:
           name: tmp-android-templates-*
           useGlob: true

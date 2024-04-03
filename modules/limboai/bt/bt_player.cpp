@@ -63,17 +63,21 @@ void BTPlayer::_load_tree() {
 void BTPlayer::_update_blackboard_plan() {
 	if (blackboard_plan.is_null()) {
 		blackboard_plan = Ref<BlackboardPlan>(memnew(BlackboardPlan));
+	} else if (!RESOURCE_IS_BUILT_IN(blackboard_plan)) {
+		WARN_PRINT_ED("BTPlayer: Using external resource for derived blackboard plan is not supported. Converted to built-in resource.");
+		blackboard_plan = blackboard_plan->duplicate();
 	}
+
 	blackboard_plan->set_base_plan(behavior_tree.is_valid() ? behavior_tree->get_blackboard_plan() : nullptr);
 }
 
 void BTPlayer::set_behavior_tree(const Ref<BehaviorTree> &p_tree) {
 	if (Engine::get_singleton()->is_editor_hint()) {
-		if (behavior_tree.is_valid() && behavior_tree->is_connected(LW_NAME(changed), callable_mp(this, &BTPlayer::_update_blackboard_plan))) {
-			behavior_tree->disconnect(LW_NAME(changed), callable_mp(this, &BTPlayer::_update_blackboard_plan));
+		if (behavior_tree.is_valid() && behavior_tree->is_connected(LW_NAME(plan_changed), callable_mp(this, &BTPlayer::_update_blackboard_plan))) {
+			behavior_tree->disconnect(LW_NAME(plan_changed), callable_mp(this, &BTPlayer::_update_blackboard_plan));
 		}
 		if (p_tree.is_valid()) {
-			p_tree->connect(LW_NAME(changed), callable_mp(this, &BTPlayer::_update_blackboard_plan));
+			p_tree->connect(LW_NAME(plan_changed), callable_mp(this, &BTPlayer::_update_blackboard_plan));
 		}
 		behavior_tree = p_tree;
 		_update_blackboard_plan();
@@ -212,8 +216,8 @@ void BTPlayer::_notification(int p_notification) {
 #endif // DEBUG_ENABLED
 
 			if (Engine::get_singleton()->is_editor_hint()) {
-				if (behavior_tree.is_valid() && behavior_tree->is_connected(LW_NAME(changed), callable_mp(this, &BTPlayer::_update_blackboard_plan))) {
-					behavior_tree->disconnect(LW_NAME(changed), callable_mp(this, &BTPlayer::_update_blackboard_plan));
+				if (behavior_tree.is_valid() && behavior_tree->is_connected(LW_NAME(plan_changed), callable_mp(this, &BTPlayer::_update_blackboard_plan))) {
+					behavior_tree->disconnect(LW_NAME(plan_changed), callable_mp(this, &BTPlayer::_update_blackboard_plan));
 				}
 			}
 
@@ -244,7 +248,7 @@ void BTPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,Manual"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "get_active");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_NONE, "Blackboard", 0), "set_blackboard", "get_blackboard");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_blackboard_plan", "get_blackboard_plan");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT | PROPERTY_USAGE_ALWAYS_DUPLICATE), "set_blackboard_plan", "get_blackboard_plan");
 
 	BIND_ENUM_CONSTANT(IDLE);
 	BIND_ENUM_CONSTANT(PHYSICS);

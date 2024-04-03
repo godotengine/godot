@@ -25,22 +25,28 @@
 
 void BTState::set_behavior_tree(const Ref<BehaviorTree> &p_tree) {
 	if (Engine::get_singleton()->is_editor_hint()) {
-		if (behavior_tree.is_valid() && behavior_tree->is_connected(LW_NAME(changed), callable_mp(this, &BTState::_update_blackboard_plan))) {
-			behavior_tree->disconnect(LW_NAME(changed), callable_mp(this, &BTState::_update_blackboard_plan));
+		if (behavior_tree.is_valid() && behavior_tree->is_connected(LW_NAME(plan_changed), callable_mp(this, &BTState::_update_blackboard_plan))) {
+			behavior_tree->disconnect(LW_NAME(plan_changed), callable_mp(this, &BTState::_update_blackboard_plan));
 		}
 		if (p_tree.is_valid()) {
-			p_tree->connect(LW_NAME(changed), callable_mp(this, &BTState::_update_blackboard_plan));
+			p_tree->connect(LW_NAME(plan_changed), callable_mp(this, &BTState::_update_blackboard_plan));
 		}
+		behavior_tree = p_tree;
 		_update_blackboard_plan();
+	} else {
+		behavior_tree = p_tree;
 	}
-	behavior_tree = p_tree;
 }
 
 void BTState::_update_blackboard_plan() {
 	if (get_blackboard_plan().is_null()) {
-		set_blackboard_plan(Ref<BlackboardPlan>(memnew(BlackboardPlan)));
+		set_blackboard_plan(memnew(BlackboardPlan));
+	} else if (!RESOURCE_IS_BUILT_IN(get_blackboard_plan())) {
+		WARN_PRINT_ED("BTState: Using external resource for derived blackboard plan is not supported. Converted to built-in resource.");
+		set_blackboard_plan(get_blackboard_plan()->duplicate());
+	} else {
+		get_blackboard_plan()->set_base_plan(behavior_tree.is_valid() ? behavior_tree->get_blackboard_plan() : nullptr);
 	}
-	get_blackboard_plan()->set_base_plan(behavior_tree.is_valid() ? behavior_tree->get_blackboard_plan() : nullptr);
 }
 
 void BTState::_setup() {
@@ -91,8 +97,8 @@ void BTState::_notification(int p_notification) {
 #endif // DEBUG_ENABLED
 
 			if (Engine::get_singleton()->is_editor_hint()) {
-				if (behavior_tree.is_valid() && behavior_tree->is_connected(LW_NAME(changed), callable_mp(this, &BTState::_update_blackboard_plan))) {
-					behavior_tree->disconnect(LW_NAME(changed), callable_mp(this, &BTState::_update_blackboard_plan));
+				if (behavior_tree.is_valid() && behavior_tree->is_connected(LW_NAME(plan_changed), callable_mp(this, &BTState::_update_blackboard_plan))) {
+					behavior_tree->disconnect(LW_NAME(plan_changed), callable_mp(this, &BTState::_update_blackboard_plan));
 				}
 			}
 		} break;

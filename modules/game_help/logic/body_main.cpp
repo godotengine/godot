@@ -280,6 +280,7 @@ Dictionary CharacterBodyMain::get_body_part()
 CharacterBodyMain::CharacterBodyMain()
 {
     player_blackboard.instantiate();
+    player_blackboard.instantiate();
     animator.instantiate();
     animator->set_body(this);
     mainShape = memnew(CollisionShape3D);

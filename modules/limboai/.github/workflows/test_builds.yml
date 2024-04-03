@@ -29,11 +29,6 @@ env:
   GODOT_REF: "4.2"
   GODOT_CPP_REF: "4.2"
 
-permissions:
-  actions: write
-  contents: read
-  packages: read
-
 jobs:
   unit-tests:
     name: 🧪 Unit tests

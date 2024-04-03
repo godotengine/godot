@@ -67,7 +67,7 @@ protected:
 
 public:
 	void set_blackboard_plan(const Ref<BlackboardPlan> &p_plan);
-	Ref<BlackboardPlan> get_blackboard_plan() const { return blackboard_plan; }
+	_FORCE_INLINE_ Ref<BlackboardPlan> get_blackboard_plan() const { return blackboard_plan; }
 
 	Ref<Blackboard> get_blackboard() const { return blackboard; }
 

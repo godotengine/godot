@@ -35,38 +35,56 @@
 #include "math/ik_node_3d.h"
 
 void IKKusudama3D::_update_constraint(Ref<IKNode3D> p_limiting_axes) {
-	// Avoiding antipodal singularities by reorienting the axes
+	// Avoiding antipodal singularities by reorienting the axes.
 	Vector<Vector3> directions;
 
-	if (limit_cones.size() == 1) {
+	if (limit_cones.size() == 1 && limit_cones[0] != nullptr) {
 		directions.push_back(limit_cones[0]->get_control_point());
 	} else {
 		for (int i = 0; i < limit_cones.size() - 1; i++) {
+			if (limit_cones[i] == nullptr || limit_cones[i + 1] == nullptr) {
+				continue;
+			}
+
 			Vector3 this_control_point = limit_cones[i]->get_control_point();
 			Vector3 next_control_point = limit_cones[i + 1]->get_control_point();
+
 			Quaternion this_to_next = Quaternion(this_control_point, next_control_point);
 
-			Quaternion half_this_to_next = Quaternion(this_to_next.get_axis(), this_to_next.get_angle() / 2.0f);
-			Vector3 half_angle = half_this_to_next.xform(this_control_point);
-			half_angle.normalize();
+			Vector3 axis = this_to_next.get_axis();
+			double angle = this_to_next.get_angle() / 2.0;
+
+			Vector3 half_angle = this_control_point.rotated(axis, angle);
 			half_angle *= this_to_next.get_angle();
+			half_angle.normalize();
+
 			directions.push_back(half_angle);
 		}
 	}
+
 	Vector3 new_y;
 	for (Vector3 direction_vector : directions) {
 		new_y += direction_vector;
 	}
-	new_y /= directions.size();
-	new_y.normalize();
+
+	if (!directions.is_empty()) {
+		new_y /= directions.size();
+		new_y.normalize();
+	}
+
 	Transform3D new_y_ray = Transform3D(Basis(), new_y);
 	Quaternion old_y_to_new_y = Quaternion(p_limiting_axes->get_global_transform().get_basis().get_column(Vector3::AXIS_Y).normalized(), p_limiting_axes->get_global_transform().get_basis().xform(new_y_ray.origin).normalized());
 	p_limiting_axes->rotate_local_with_global(old_y_to_new_y);
+
 	for (Ref<IKLimitCone3D> limit_cone : limit_cones) {
-		Vector3 transformed_control_point = p_limiting_axes->get_global_transform().basis.xform_inv(limit_cone->get_control_point());
-		transformed_control_point = p_limiting_axes->get_global_transform().basis.xform(transformed_control_point);
-		limit_cone->set_control_point(transformed_control_point.normalized());
+		if (limit_cone == nullptr) {
+			continue;
+		}
+
+		Vector3 control_point = limit_cone->get_control_point();
+		limit_cone->set_control_point(control_point.normalized());
 	}
+
 	update_tangent_radii();
 }
 
@@ -108,7 +126,6 @@ void IKKusudama3D::set_snap_to_twist_limit(Ref<IKNode3D> p_bone_direction, Ref<I
 	Quaternion twist_rotation, swing_rotation; // Hold the ik transform's decomposed swing and twist away from global_twist_centers's global basis.
 	get_swing_twist(align_rot.get_rotation_quaternion(), Vector3(0, 1, 0), swing_rotation, twist_rotation);
 	twist_rotation = IKBoneSegment3D::clamp_to_quadrance_angle(twist_rotation, twist_half_range_half_cos);
-	twist_rotation.normalize();
 	Basis recomposition = (global_twist_center * (swing_rotation * twist_rotation)).orthonormalized();
 	Basis rotation = parent_global_inverse * recomposition;
 	p_to_set->set_transform(Transform3D(rotation, p_to_set->get_transform().origin));

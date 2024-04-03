@@ -37,11 +37,6 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
-permissions:
-  actions: write
-  contents: read
-  packages: read
-
 jobs:
   macos-builds:
     runs-on: "macos-latest"
@@ -298,7 +293,7 @@ jobs:
           echo "${GODOT_VERSION}.limboai+${LIMBOAI_VERSION}" > out/templates/version.txt
           ls out/templates/
 
-      - uses: geekyeggo/delete-artifact@v4
+      - uses: geekyeggo/delete-artifact@v5
         with:
           name: tmp-macos-*
           useGlob: true

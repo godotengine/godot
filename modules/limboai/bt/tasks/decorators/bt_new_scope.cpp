@@ -11,6 +11,15 @@
 
 #include "bt_new_scope.h"
 
+void BTNewScope::set_blackboard_plan(const Ref<BlackboardPlan> &p_plan) {
+	blackboard_plan = p_plan;
+	if (blackboard_plan.is_null()) {
+		blackboard_plan.instantiate();
+	}
+	_update_blackboard_plan();
+	emit_changed();
+}
+
 void BTNewScope::initialize(Node *p_agent, const Ref<Blackboard> &p_blackboard) {
 	ERR_FAIL_COND(p_agent == nullptr);
 	ERR_FAIL_COND(p_blackboard == nullptr);

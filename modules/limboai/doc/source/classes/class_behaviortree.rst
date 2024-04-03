@@ -73,6 +73,23 @@ Methods
 
 .. rst-class:: classref-descriptions-group
 
+Signals
+-------
+
+.. _class_BehaviorTree_signal_plan_changed:
+
+.. rst-class:: classref-signal
+
+**plan_changed** **(** **)**
+
+Emitted when the :ref:`BlackboardPlan<class_BlackboardPlan>` changes.
+
+.. rst-class:: classref-section-separator
+
+----
+
+.. rst-class:: classref-descriptions-group
+
 Property Descriptions
 ---------------------
 

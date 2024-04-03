@@ -15,11 +15,6 @@ on:
         type: string
         default: 4.2
 
-permissions:
-  actions: write
-  contents: read
-  packages: read
-
 jobs:
   cache-sha:
     name: Cache SHA

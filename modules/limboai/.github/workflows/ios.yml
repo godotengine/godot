@@ -29,11 +29,6 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
-permissions:
-  actions: write
-  contents: read
-  packages: read
-
 jobs:
   ios-builds:
     runs-on: "macos-latest"
@@ -204,7 +199,7 @@ jobs:
           path: out/*
 
       - name: Delete templates artifact
-        uses: geekyeggo/delete-artifact@v4
+        uses: geekyeggo/delete-artifact@v5
         with:
           name: tmp-ios-templates-*
           useGlob: true

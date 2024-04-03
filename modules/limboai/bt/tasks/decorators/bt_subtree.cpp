@@ -11,9 +11,25 @@
 
 #include "bt_subtree.h"
 
-void BTSubtree::set_subtree(const Ref<BehaviorTree> &p_value) {
-	subtree = p_value;
+void BTSubtree::set_subtree(const Ref<BehaviorTree> &p_subtree) {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (subtree.is_valid() && subtree->is_connected(LW_NAME(changed), callable_mp(this, &BTSubtree::_update_blackboard_plan))) {
+			subtree->disconnect(LW_NAME(changed), callable_mp(this, &BTSubtree::_update_blackboard_plan));
+		}
+		if (p_subtree.is_valid()) {
+			p_subtree->connect(LW_NAME(changed), callable_mp(this, &BTSubtree::_update_blackboard_plan));
+		}
+	}
+	subtree = p_subtree;
+	_update_blackboard_plan();
 	emit_changed();
+}
+
+void BTSubtree::_update_blackboard_plan() {
+	if (get_blackboard_plan().is_null()) {
+		set_blackboard_plan(Ref<BlackboardPlan>(memnew(BlackboardPlan)));
+	}
+	get_blackboard_plan()->set_base_plan(subtree.is_valid() ? subtree->get_blackboard_plan() : nullptr);
 }
 
 String BTSubtree::_generate_name() {
@@ -56,4 +72,12 @@ void BTSubtree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_subtree"), &BTSubtree::get_subtree);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "subtree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_subtree", "get_subtree");
+}
+
+BTSubtree::~BTSubtree() {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (subtree.is_valid() && subtree->is_connected(LW_NAME(changed), callable_mp(this, &BTSubtree::_update_blackboard_plan))) {
+			subtree->disconnect(LW_NAME(changed), callable_mp(this, &BTSubtree::_update_blackboard_plan));
+		}
+	}
 }

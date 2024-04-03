@@ -225,7 +225,7 @@ public:
     {
         int column_count = headers.size();
         if(column_count!=csv_row.size()){
-            WARN_PRINT("[csv-importer]:csv row data not enough file:" + file_name + " line:\n" + itos(line_index) + itos(column_count) + " - > " + itos(csv_row.size()) +" = " + VariantUtilityFunctions::var_to_str( csv_row));
+            //WARN_PRINT("[csv-importer]:csv row data not enough file:" + file_name + " line:\n" + itos(line_index) + itos(column_count) + " - > " + itos(csv_row.size()) +" = " + VariantUtilityFunctions::var_to_str( csv_row));
             return  Vector<Variant>();
         }
 

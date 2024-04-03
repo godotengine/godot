@@ -122,6 +122,7 @@ LimboStringNames::LimboStringNames() {
 	NonFavorite = SN("NonFavorite");
 	normal = SN("normal");
 	panel = SN("panel");
+	plan_changed = SN("plan_changed");
 	popup_hide = SN("popup_hide");
 	pressed = SN("pressed");
 	probability_clicked = SN("probability_clicked");

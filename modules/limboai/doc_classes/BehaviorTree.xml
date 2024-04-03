@@ -58,4 +58,11 @@
 			User-provided description of the BehaviorTree.
 		</member>
 	</members>
+	<signals>
+		<signal name="plan_changed">
+			<description>
+				Emitted when the [BlackboardPlan] changes.
+			</description>
+		</signal>
+	</signals>
 </class>
