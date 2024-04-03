@@ -1284,8 +1284,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 					pan_pressed = panner->is_panning();
 					_update_cursor();
 					is_right_button_down = false;
-					mouse_move_record.x = 0;
-					mouse_move_record.y = 0;
+					mouse_move_record = Vector2();
 				}
 			}
 		} else {
