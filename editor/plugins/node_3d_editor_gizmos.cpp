@@ -979,10 +979,11 @@ Ref<StandardMaterial3D> EditorNode3DGizmoPlugin::get_material(const String &p_na
 
 	Ref<StandardMaterial3D> mat = materials[p_name][index];
 
-	if (current_state == ON_TOP && p_gizmo->is_selected()) {
+	bool on_top_mat = mat->get_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST);
+
+	if (!on_top_mat && current_state == ON_TOP && p_gizmo->is_selected()) {
+		mat = mat->duplicate();
 		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
-	} else {
-		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, false);
 	}
 
 	return mat;
