@@ -59,10 +59,9 @@ public:
     }
 	int get_update_mode() { return (int)(get_bt_player()->get_update_mode()); }
 
-	Ref<Blackboard> get_blackboard()  { return player_blackboard; }
-
     void set_skeleton(Skeleton3D *p_skeleton) { }
     Skeleton3D *get_skeleton() { return skeleton; }
+
     // 设置黑板
 	void set_blackboard(const Ref<Blackboard> &p_blackboard) 
     { 
@@ -73,6 +72,12 @@ public:
             btSkillPlayer->get_blackboard()->set_parent(player_blackboard); 
         }
     }
+	void _set_blackboard(const Ref<Blackboard> &p_blackboard) 
+    {
+        
+    }
+
+	Ref<Blackboard> get_blackboard()  { return player_blackboard; }
 
 	void restart()
     {

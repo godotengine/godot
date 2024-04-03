@@ -58,6 +58,7 @@ void DataTableManager::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_data_table_path","path"),&DataTableManager::set_data_table_path);
     ClassDB::bind_method(D_METHOD("reload"),&DataTableManager::reload);
     ClassDB::bind_method(D_METHOD("get_data_table","name"),&DataTableManager::_get_data_table);
+    ClassDB::bind_method(D_METHOD("get_data_item","name"),&DataTableManager::_get_data_item);
 
     ClassDB::bind_method(D_METHOD("set_animation_table_name","name"),&DataTableManager::set_animation_table_name);
     ClassDB::bind_method(D_METHOD("get_animation_table_name"),&DataTableManager::get_animation_table_name);

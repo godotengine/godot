@@ -127,7 +127,7 @@ public:
         is_init = false;
     }
     // 获取一个表
-    Ref<DataTableItem> get_data_table(String name)
+    Ref<DataTableItem> get_data_table(const StringName& name)
     {
         if(!is_init)
         {
@@ -139,7 +139,7 @@ public:
         }
         return data_table[name];
     }
-    Dictionary _get_data_table(String name)
+    Dictionary _get_data_table(const StringName& name)
     {
         Ref<DataTableItem> item = get_data_table(name);
         if(!item.is_valid())
@@ -147,6 +147,19 @@ public:
             return Dictionary();
         }
         return item->data;
+    }
+    Dictionary _get_data_item(const StringName& name,int id)
+    {
+        Ref<DataTableItem> item = get_data_table(name);
+        if(!item.is_valid())
+        {
+            return Dictionary();
+        }
+        if(!item->data.has(id))
+        {
+            return Dictionary();
+        }
+        return item->data[id];
     }
     int get_data_table_version()
     {
