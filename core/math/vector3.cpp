@@ -101,14 +101,14 @@ Vector2 Vector3::octahedron_encode() const {
 Vector3 Vector3::octahedron_decode(const Vector2 &p_oct) {
 	Vector2 f(p_oct.x * 2.0f - 1.0f, p_oct.y * 2.0f - 1.0f);
 	Vector3 n(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
-	float t = CLAMP(-n.z, 0.0f, 1.0f);
+	const real_t t = CLAMP(-n.z, 0.0f, 1.0f);
 	n.x += n.x >= 0 ? -t : t;
 	n.y += n.y >= 0 ? -t : t;
 	return n.normalized();
 }
 
 Vector2 Vector3::octahedron_tangent_encode(float p_sign) const {
-	const float bias = 1.0f / 32767.0f;
+	const real_t bias = 1.0f / (real_t)32767.0f;
 	Vector2 res = octahedron_encode();
 	res.y = MAX(res.y, bias);
 	res.y = res.y * 0.5f + 0.5f;

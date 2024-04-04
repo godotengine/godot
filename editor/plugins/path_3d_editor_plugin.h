@@ -38,6 +38,7 @@
 
 class HBoxContainer;
 class MenuButton;
+class ConfirmationDialog;
 
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
@@ -106,13 +107,22 @@ public:
 class Path3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path3DEditorPlugin, EditorPlugin);
 
+	friend class Path3DGizmo;
+	friend class Path3DGizmoPlugin;
+
+	Ref<Path3DGizmoPlugin> path_3d_gizmo_plugin;
+
 	HBoxContainer *topmenu_bar = nullptr;
 	Button *curve_create = nullptr;
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
+	Button *curve_edit_tilt = nullptr;
 	Button *curve_del = nullptr;
 	Button *curve_close = nullptr;
+	Button *curve_clear_points = nullptr;
 	MenuButton *handle_menu = nullptr;
+
+	ConfirmationDialog *clear_points_dialog = nullptr;
 
 	float disk_size = 0.8;
 
@@ -120,6 +130,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 		MODE_CREATE,
 		MODE_EDIT,
 		MODE_EDIT_CURVE,
+		MODE_EDIT_TILT,
 		MODE_DELETE,
 		ACTION_CLOSE
 	};
@@ -134,6 +145,11 @@ class Path3DEditorPlugin : public EditorPlugin {
 	bool handle_clicked = false;
 	bool mirror_handle_angle;
 	bool mirror_handle_length;
+
+	void _confirm_clear_points();
+	void _clear_points();
+	void _clear_curve_points();
+	void _restore_curve_points(const PackedVector3Array &p_points);
 
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,

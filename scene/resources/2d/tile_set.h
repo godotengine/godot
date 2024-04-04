@@ -619,6 +619,8 @@ public:
 		TRANSFORM_TRANSPOSE = 1 << 14,
 	};
 
+	static const int16_t UNTRANSFORM_MASK = ~(TileSetAtlasSource::TRANSFORM_FLIP_H + TileSetAtlasSource::TRANSFORM_FLIP_V + TileSetAtlasSource::TRANSFORM_TRANSPOSE);
+
 private:
 	struct TileAlternativesData {
 		Vector2i size_in_atlas = Vector2i(1, 1);

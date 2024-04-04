@@ -67,7 +67,7 @@ void StatusIndicator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &StatusIndicator::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &StatusIndicator::is_visible);
 
-	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::INT, "mouse_button"), PropertyInfo(Variant::VECTOR2I, "position")));
+	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::INT, "mouse_button"), PropertyInfo(Variant::VECTOR2I, "mouse_position")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tooltip", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip", "get_tooltip");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Image"), "set_icon", "get_icon");

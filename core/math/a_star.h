@@ -60,6 +60,10 @@ class AStar3D : public RefCounted {
 		real_t f_score = 0;
 		uint64_t open_pass = 0;
 		uint64_t closed_pass = 0;
+
+		// Used for getting closest_point_of_last_pathing_call.
+		real_t abs_g_score = 0;
+		real_t abs_f_score = 0;
 	};
 
 	struct SortPoints {
@@ -109,6 +113,7 @@ class AStar3D : public RefCounted {
 
 	OAHashMap<int64_t, Point *> points;
 	HashSet<Segment, Segment> segments;
+	Point *last_closest_point = nullptr;
 
 	bool _solve(Point *begin_point, Point *end_point);
 
@@ -120,6 +125,12 @@ protected:
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
+
+#ifndef DISABLE_DEPRECATED
+	Vector<int64_t> _get_id_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector3> _get_point_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	int64_t get_available_point_id() const;
@@ -149,8 +160,8 @@ public:
 	int64_t get_closest_point(const Vector3 &p_point, bool p_include_disabled = false) const;
 	Vector3 get_closest_position_in_segment(const Vector3 &p_point) const;
 
-	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id);
-	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector3> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
+	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 
 	AStar3D() {}
 	~AStar3D();
@@ -170,6 +181,12 @@ protected:
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
+
+#ifndef DISABLE_DEPRECATED
+	Vector<int64_t> _get_id_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector2> _get_point_path_bind_compat_88047(int64_t p_from_id, int64_t p_to_id);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	int64_t get_available_point_id() const;
@@ -199,8 +216,8 @@ public:
 	int64_t get_closest_point(const Vector2 &p_point, bool p_include_disabled = false) const;
 	Vector2 get_closest_position_in_segment(const Vector2 &p_point) const;
 
-	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id);
-	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id);
+	Vector<Vector2> get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
+	Vector<int64_t> get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path = false);
 
 	AStar2D() {}
 	~AStar2D() {}

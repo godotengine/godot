@@ -802,8 +802,6 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 		} else
 #endif // _3D_DISABLED
 		{
-			RSG::texture_storage->render_target_set_override(vp->render_target, RID(), RID(), RID());
-
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
 			// render standard mono camera
@@ -1062,6 +1060,13 @@ void RendererViewport::viewport_set_update_mode(RID p_viewport, RS::ViewportUpda
 	viewport->update_mode = p_mode;
 }
 
+RS::ViewportUpdateMode RendererViewport::viewport_get_update_mode(RID p_viewport) const {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL_V(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+
+	return viewport->update_mode;
+}
+
 RID RendererViewport::viewport_get_render_target(RID p_viewport) const {
 	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL_V(viewport, RID());
@@ -1191,6 +1196,9 @@ void RendererViewport::viewport_set_canvas_transform(RID p_viewport, RID p_canva
 void RendererViewport::viewport_set_transparent_background(RID p_viewport, bool p_enabled) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
+	if (viewport->transparent_bg == p_enabled) {
+		return;
+	}
 
 	RSG::texture_storage->render_target_set_transparent(viewport->render_target, p_enabled);
 	viewport->transparent_bg = p_enabled;

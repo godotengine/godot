@@ -258,7 +258,7 @@ struct BVH_ABB {
 	}
 
 	// Actually surface area metric.
-	float get_area() const {
+	real_t get_area() const {
 		POINT d = calculate_size();
 		return 2.0f * (d.x * d.y + d.y * d.z + d.z * d.x);
 	}

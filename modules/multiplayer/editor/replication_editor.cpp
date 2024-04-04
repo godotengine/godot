@@ -131,7 +131,7 @@ void ReplicationEditor::_pick_new_property() {
 		EditorNode::get_singleton()->show_warning(TTR("Not possible to add a new property to synchronize without a root."));
 		return;
 	}
-	pick_node->popup_scenetree_dialog();
+	pick_node->popup_scenetree_dialog(nullptr, current);
 	pick_node->get_filter_line_edit()->clear();
 	pick_node->get_filter_line_edit()->grab_focus();
 }
@@ -600,7 +600,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	item->set_text_alignment(2, HORIZONTAL_ALIGNMENT_CENTER);
 	item->set_cell_mode(2, TreeItem::CELL_MODE_RANGE);
 	item->set_range_config(2, 0, 2, 1);
-	item->set_text(2, "Never,Always,On Change");
+	item->set_text(2, TTR("Never", "Replication Mode") + "," + TTR("Always", "Replication Mode") + "," + TTR("On Change", "Replication Mode"));
 	item->set_range(2, (int)p_mode);
 	item->set_editable(2, true);
 }

@@ -448,6 +448,9 @@
 			The color to use for the TileMap editor's grid.
 			[b]Note:[/b] Only effective if [member editors/tiles_editor/display_grid] is [code]true[/code].
 		</member>
+		<member name="editors/tiles_editor/highlight_selected_layer" type="bool" setter="" getter="">
+			Highlight the currently selected TileMapLayer by dimming the other ones in the scene.
+		</member>
 		<member name="editors/visual_editors/category_colors/color_color" type="Color" setter="" getter="">
 			The color of a graph node's header when it belongs to the "Color" category.
 		</member>
@@ -713,6 +716,9 @@
 		<member name="interface/editor/use_embedded_menu" type="bool" setter="" getter="">
 			If [code]true[/code], editor main menu is using embedded [MenuBar] instead of system global menu.
 			Specific to the macOS platform.
+		</member>
+		<member name="interface/editor/use_native_file_dialogs" type="bool" setter="" getter="">
+			If [code]true[/code], editor UI uses OS native file/directory selection dialogs.
 		</member>
 		<member name="interface/editor/vsync_mode" type="int" setter="" getter="">
 			Sets the V-Sync mode for the editor. Does not affect the project when run from the editor (this is controlled by [member ProjectSettings.display/window/vsync/vsync_mode]).

@@ -99,15 +99,6 @@ Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_indice
 Change AudioStreamPlayer* is_autoplay_enabled and GLTFBufferView getters to be const.
 
 
-GH-87379
---------
-Validate extension JSON: API was removed: classes/TileMap/methods/get_tileset
-Validate extension JSON: API was removed: classes/TileMap/methods/set_tileset
-Validate extension JSON: API was removed: classes/TileMap/properties/tile_set
-
-Moved to the parent TileMapLayerGroup class. No change should be necessary.
-
-
 GH-87340
 --------
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderingDevice/methods/screen_get_framebuffer_format': arguments
@@ -248,3 +239,30 @@ Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/register_tex
 Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/remove_button/arguments/0': type changed value in new API, from "Control" to "Button".
 
 Changed argument type to the more specific one actually expected by the method. Compatibility method registered.
+
+
+GH-89992
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/replace_by/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument to prevent children to be reparented during replace_by. Compatibility method registered.
+
+
+GH-88047
+--------
+Validate extension JSON: Error: Field 'classes/AStar2D/methods/get_id_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStar2D/methods/get_point_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStar3D/methods/get_id_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStar3D/methods/get_point_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStarGrid2D/methods/get_id_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStarGrid2D/methods/get_point_path/arguments': size changed value in new API, from 2 to 3.
+
+Added optional "allow_partial_path" argument to get_id_path and get_point_path methods in AStar classes.
+Compatibility methods registered.
+
+
+GH-88014
+--------
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment
+
+Removed VisualShaderNodeComment, which is replaced by VisualShaderNodeFrame.

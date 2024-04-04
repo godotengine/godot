@@ -251,7 +251,7 @@ void CPUParticles2DEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
-			menu->set_icon(epoints->get_editor_theme_icon(SNAME("CPUParticles2D")));
+			menu->set_icon(file->get_editor_theme_icon(SNAME("CPUParticles2D")));
 			file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
 		} break;
 	}
@@ -283,13 +283,6 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	}
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);
-
-	epoints = memnew(SpinBox);
-	epoints->set_min(1);
-	epoints->set_max(8192);
-	epoints->set_step(1);
-	epoints->set_value(512);
-	file->get_vbox()->add_margin_child(TTR("Generated Point Count:"), epoints);
 
 	emission_mask = memnew(ConfirmationDialog);
 	emission_mask->set_title(TTR("Load Emission Mask"));

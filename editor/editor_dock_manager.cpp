@@ -149,7 +149,39 @@ void EditorDockManager::_update_layout() {
 	}
 	EditorNode::get_singleton()->edit_current();
 	dock_context_popup->docks_updated();
+	_update_docks_menu();
 	EditorNode::get_singleton()->save_editor_layout_delayed();
+}
+
+void EditorDockManager::_update_docks_menu() {
+	docks_menu->clear();
+	docks_menu->reset_size();
+
+	const Ref<Texture2D> icon = docks_menu->get_editor_theme_icon(SNAME("Window"));
+	const Color closed_icon_color_mod = Color(1, 1, 1, 0.5);
+
+	// Add docks.
+	docks_menu_docks.clear();
+	int id = 0;
+	for (const KeyValue<Control *, DockInfo> &dock : all_docks) {
+		if (dock.value.shortcut.is_valid()) {
+			docks_menu->add_shortcut(dock.value.shortcut, id);
+			docks_menu->set_item_text(id, dock.value.title);
+		} else {
+			docks_menu->add_item(dock.value.title, id);
+		}
+		docks_menu->set_item_icon(id, icon);
+		if (!dock.value.open) {
+			docks_menu->set_item_icon_modulate(id, closed_icon_color_mod);
+		}
+		docks_menu->set_item_disabled(id, !dock.value.enabled);
+		docks_menu_docks.push_back(dock.key);
+		id++;
+	}
+}
+
+void EditorDockManager::_docks_menu_option(int p_id) {
+	focus_dock(docks_menu_docks[p_id]);
 }
 
 void EditorDockManager::_window_close_request(WindowWrapper *p_wrapper) {
@@ -157,9 +189,13 @@ void EditorDockManager::_window_close_request(WindowWrapper *p_wrapper) {
 	Control *dock = _close_window(p_wrapper);
 	ERR_FAIL_COND(!all_docks.has(dock));
 
-	all_docks[dock].open = false;
-	open_dock(dock);
-	focus_dock(dock);
+	if (all_docks[dock].previous_at_bottom || all_docks[dock].dock_slot_index != DOCK_SLOT_NONE) {
+		all_docks[dock].open = false;
+		open_dock(dock);
+		focus_dock(dock);
+	} else {
+		close_dock(dock);
+	}
 }
 
 Control *EditorDockManager::_close_window(WindowWrapper *p_wrapper) {
@@ -174,7 +210,7 @@ Control *EditorDockManager::_close_window(WindowWrapper *p_wrapper) {
 	return dock;
 }
 
-void EditorDockManager::_open_dock_in_window(Control *p_dock, bool p_show_window) {
+void EditorDockManager::_open_dock_in_window(Control *p_dock, bool p_show_window, bool p_reset_size) {
 	ERR_FAIL_NULL(p_dock);
 
 	Size2 borders = Size2(4, 4) * EDSCALE;
@@ -201,6 +237,12 @@ void EditorDockManager::_open_dock_in_window(Control *p_dock, bool p_show_window
 	if (p_show_window) {
 		wrapper->restore_window(Rect2i(dock_screen_pos, dock_size), EditorNode::get_singleton()->get_gui_base()->get_window()->get_current_screen());
 		_update_layout();
+		if (p_reset_size) {
+			// Use a default size of one third the current window size.
+			Size2i popup_size = EditorNode::get_singleton()->get_window()->get_size() / 3.0;
+			p_dock->get_window()->set_size(popup_size);
+			p_dock->get_window()->move_to_center();
+		}
 		p_dock->get_window()->grab_focus();
 	}
 }
@@ -338,6 +380,10 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 			p_layout->set_value(p_section, "dock_" + itos(i + 1) + "_selected_tab_idx", selected_tab_idx);
 		}
 	}
+	if (p_layout->has_section_key(p_section, "dock_0")) {
+		// Clear the keys where the dock has no slot so it is overridden.
+		p_layout->erase_section_key(p_section, "dock_0");
+	}
 
 	// Save docks in windows.
 	Dictionary floating_docks_dump;
@@ -425,8 +471,8 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 		dock_map[dock.key->get_name()] = dock.key;
 	}
 
-	// Load docks by slot.
-	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
+	// Load docks by slot. Index -1 is for docks that have no slot.
+	for (int i = -1; i < DOCK_SLOT_MAX; i++) {
 		if (!p_layout->has_section_key(p_section, "dock_" + itos(i + 1))) {
 			continue;
 		}
@@ -450,7 +496,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 				_restore_dock_to_saved_window(dock, floating_docks_dump[name]);
 			} else if (dock_bottom.has(name)) {
 				_dock_move_to_bottom(dock);
-			} else {
+			} else if (i >= 0) {
 				_move_dock(dock, dock_slot[i], 0);
 			}
 
@@ -465,7 +511,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 			}
 
 			all_docks[dock].dock_slot_index = i;
-			all_docks[dock].previous_tab_index = j;
+			all_docks[dock].previous_tab_index = i >= 0 ? j : 0;
 		}
 	}
 
@@ -500,6 +546,8 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 	}
 
 	FileSystemDock::get_singleton()->load_layout_from_config(p_layout, p_section);
+
+	_update_docks_menu();
 }
 
 void EditorDockManager::bottom_dock_show_placement_popup(const Rect2i &p_position, Control *p_dock) {
@@ -564,13 +612,16 @@ void EditorDockManager::open_dock(Control *p_dock, bool p_set_current) {
 	// Open dock to its previous location.
 	if (all_docks[p_dock].previous_at_bottom) {
 		_dock_move_to_bottom(p_dock);
-	} else {
+	} else if (all_docks[p_dock].dock_slot_index != DOCK_SLOT_NONE) {
 		TabContainer *slot = dock_slot[all_docks[p_dock].dock_slot_index];
 		int tab_index = all_docks[p_dock].previous_tab_index;
 		if (tab_index < 0) {
 			tab_index = slot->get_tab_count();
 		}
 		_move_dock(p_dock, slot, tab_index, p_set_current);
+	} else {
+		_open_dock_in_window(p_dock, true, true);
+		return;
 	}
 
 	_update_layout();
@@ -615,9 +666,8 @@ void EditorDockManager::focus_dock(Control *p_dock) {
 	tab_container->set_current_tab(tab_index);
 }
 
-void EditorDockManager::add_control_to_dock(DockSlot p_slot, Control *p_dock, const String &p_title, const Ref<Shortcut> &p_shortcut) {
+void EditorDockManager::add_dock(Control *p_dock, const String &p_title, DockSlot p_slot, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_NULL(p_dock);
-	ERR_FAIL_INDEX(p_slot, DOCK_SLOT_MAX);
 	ERR_FAIL_COND_MSG(all_docks.has(p_dock), vformat("Cannot add dock '%s', already added.", p_dock->get_name()));
 
 	DockInfo dock_info;
@@ -626,10 +676,17 @@ void EditorDockManager::add_control_to_dock(DockSlot p_slot, Control *p_dock, co
 	dock_info.shortcut = p_shortcut;
 	all_docks[p_dock] = dock_info;
 
-	open_dock(p_dock, false);
+	if (p_slot != DOCK_SLOT_NONE) {
+		ERR_FAIL_INDEX(p_slot, DOCK_SLOT_MAX);
+		open_dock(p_dock, false);
+	} else {
+		closed_dock_parent->add_child(p_dock);
+		p_dock->hide();
+		_update_layout();
+	}
 }
 
-void EditorDockManager::remove_control_from_dock(Control *p_dock) {
+void EditorDockManager::remove_dock(Control *p_dock) {
 	ERR_FAIL_NULL(p_dock);
 	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot remove unknown dock '%s'.", p_dock->get_name()));
 
@@ -688,6 +745,10 @@ int EditorDockManager::get_vsplit_count() const {
 	return vsplits.size();
 }
 
+PopupMenu *EditorDockManager::get_docks_menu() {
+	return docks_menu;
+}
+
 EditorDockManager::EditorDockManager() {
 	singleton = this;
 
@@ -695,6 +756,10 @@ EditorDockManager::EditorDockManager() {
 
 	dock_context_popup = memnew(DockContextPopup);
 	EditorNode::get_singleton()->get_gui_base()->add_child(dock_context_popup);
+
+	docks_menu = memnew(PopupMenu);
+	docks_menu->connect("id_pressed", callable_mp(this, &EditorDockManager::_docks_menu_option));
+	EditorNode::get_singleton()->get_gui_base()->connect("theme_changed", callable_mp(this, &EditorDockManager::_update_docks_menu));
 }
 
 void DockContextPopup::_notification(int p_what) {
@@ -715,6 +780,7 @@ void DockContextPopup::_notification(int p_what) {
 				tab_move_right_button->set_tooltip_text(TTR("Move this dock right one tab."));
 			}
 			dock_to_bottom_button->set_icon(get_editor_theme_icon(SNAME("ControlAlignBottomWide")));
+			close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
 		} break;
 	}
 }
@@ -739,6 +805,11 @@ void DockContextPopup::_tab_move_right() {
 	dock_manager->_move_dock(context_dock, tab_container, new_index);
 	dock_manager->_update_layout();
 	dock_select->queue_redraw();
+}
+
+void DockContextPopup::_close_dock() {
+	hide();
+	dock_manager->close_dock(context_dock);
 }
 
 void DockContextPopup::_float_dock() {
@@ -975,4 +1046,12 @@ DockContextPopup::DockContextPopup() {
 	dock_to_bottom_button->connect("pressed", callable_mp(this, &DockContextPopup::_move_dock_to_bottom));
 	dock_to_bottom_button->hide();
 	dock_select_popup_vb->add_child(dock_to_bottom_button);
+
+	close_button = memnew(Button);
+	close_button->set_text(TTR("Close"));
+	close_button->set_tooltip_text(TTR("Close this dock."));
+	close_button->set_focus_mode(Control::FOCUS_NONE);
+	close_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	close_button->connect("pressed", callable_mp(this, &DockContextPopup::_close_dock));
+	dock_select_popup_vb->add_child(close_button);
 }

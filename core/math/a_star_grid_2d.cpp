@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "a_star_grid_2d.h"
+#include "a_star_grid_2d.compat.inc"
 
 #include "core/variant/typed_array.h"
 
@@ -446,6 +447,7 @@ void AStarGrid2D::_get_nbors(Point *p_point, LocalVector<Point *> &r_nbors) {
 }
 
 bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
+	last_closest_point = nullptr;
 	pass++;
 
 	if (p_end_point->solid) {
@@ -459,11 +461,18 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 
 	p_begin_point->g_score = 0;
 	p_begin_point->f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
+	p_begin_point->abs_g_score = 0;
+	p_begin_point->abs_f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
 	open_list.push_back(p_begin_point);
 	end = p_end_point;
 
 	while (!open_list.is_empty()) {
 		Point *p = open_list[0]; // The currently processed point.
+
+		// Find point closer to end_point, or same distance to end_point but closer to begin_point.
+		if (last_closest_point == nullptr || last_closest_point->abs_f_score > p->abs_f_score || (last_closest_point->abs_f_score >= p->abs_f_score && last_closest_point->abs_g_score > p->abs_g_score)) {
+			last_closest_point = p;
+		}
 
 		if (p == p_end_point) {
 			found_route = true;
@@ -508,6 +517,9 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 			e->g_score = tentative_g_score;
 			e->f_score = e->g_score + _estimate_cost(e->id, p_end_point->id);
 
+			e->abs_g_score = tentative_g_score;
+			e->abs_f_score = e->f_score - e->g_score;
+
 			if (new_point) { // The position of the new points is already known.
 				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptr());
 			} else {
@@ -546,7 +558,7 @@ Vector2 AStarGrid2D::get_point_position(const Vector2i &p_id) const {
 	return _get_point_unchecked(p_id)->pos;
 }
 
-Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vector2i &p_to_id) {
+Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path) {
 	ERR_FAIL_COND_V_MSG(dirty, Vector<Vector2>(), "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), Vector<Vector2>(), vformat("Can't get id path. Point %s out of bounds %s.", p_from_id, region));
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), Vector<Vector2>(), vformat("Can't get id path. Point %s out of bounds %s.", p_to_id, region));
@@ -565,7 +577,12 @@ Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vec
 
 	bool found_route = _solve(begin_point, end_point);
 	if (!found_route) {
-		return Vector<Vector2>();
+		if (!p_allow_partial_path || last_closest_point == nullptr) {
+			return Vector<Vector2>();
+		}
+
+		// Use closest point instead.
+		end_point = last_closest_point;
 	}
 
 	Point *p = end_point;
@@ -594,7 +611,7 @@ Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vec
 	return path;
 }
 
-TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const Vector2i &p_to_id) {
+TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const Vector2i &p_to_id, bool p_allow_partial_path) {
 	ERR_FAIL_COND_V_MSG(dirty, TypedArray<Vector2i>(), "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point %s out of bounds %s.", p_from_id, region));
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point %s out of bounds %s.", p_to_id, region));
@@ -613,7 +630,12 @@ TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const V
 
 	bool found_route = _solve(begin_point, end_point);
 	if (!found_route) {
-		return TypedArray<Vector2i>();
+		if (!p_allow_partial_path || last_closest_point == nullptr) {
+			return TypedArray<Vector2i>();
+		}
+
+		// Use closest point instead.
+		end_point = last_closest_point;
 	}
 
 	Point *p = end_point;
@@ -672,8 +694,8 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &AStarGrid2D::clear);
 
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStarGrid2D::get_point_position);
-	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStarGrid2D::get_point_path);
-	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStarGrid2D::get_id_path);
+	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStarGrid2D::get_point_path, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStarGrid2D::get_id_path, DEFVAL(false));
 
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")

@@ -343,6 +343,11 @@ public:
 	TypedArray<NodeComponent> get_components();
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	void _replace_by_bind_compat_89992(Node *p_node, bool p_keep_data = false);
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 	void _block() { data.blocked++; }
 	void _unblock() { data.blocked--; }
 
@@ -665,7 +670,7 @@ public:
 		return binds;
 	}
 
-	void replace_by(Node *p_node, bool p_keep_data = false);
+	void replace_by(Node *p_node, bool p_keep_groups = false, bool p_keep_children = true);
 
 	void set_process_mode(ProcessMode p_mode);
 	ProcessMode get_process_mode() const;
