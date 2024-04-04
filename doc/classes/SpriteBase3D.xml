@@ -98,6 +98,9 @@
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
 			Filter flags for the texture. See [enum BaseMaterial3D.TextureFilter] for options.
 		</member>
+		<member name="texture_repeat" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], the texture will repeat.
+		</member>
 		<member name="transparent" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
 			If [code]true[/code], the texture's transparency and the opacity are used to make those parts of the sprite invisible.
 		</member>
@@ -118,7 +121,10 @@
 		<constant name="FLAG_FIXED_SIZE" value="4" enum="DrawFlags">
 			Label is scaled by depth so that it always appears the same size on screen.
 		</constant>
-		<constant name="FLAG_MAX" value="5" enum="DrawFlags">
+		<constant name="FLAG_USE_TEXTURE_REPEAT" value="5" enum="DrawFlags">
+			If set, texture will repeat across the sprite.
+		</constant>
+		<constant name="FLAG_MAX" value="6" enum="DrawFlags">
 			Represents the size of the [enum DrawFlags] enum.
 		</constant>
 		<constant name="ALPHA_CUT_DISABLED" value="0" enum="AlphaCutMode">
