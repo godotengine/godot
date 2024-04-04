@@ -66,7 +66,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, M
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), &ext);
 	for (const String &E : ext) {
-		search->add_filter("*" + E);
+		search->add_filter("*." + E);
 	}
 	search->popup_file_dialog();
 }

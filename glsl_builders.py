@@ -38,7 +38,7 @@ class RDHeaderStruct:
 
 
 def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth: int) -> RDHeaderStruct:
-    with open(filename, "r") as fs:
+    with open(filename, "r", encoding="utf-8") as fs:
         line = fs.readline()
 
         while line:
@@ -172,7 +172,7 @@ class RAWHeaderStruct:
 
 
 def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, depth: int) -> None:
-    with open(filename, "r") as fs:
+    with open(filename, "r", encoding="utf-8") as fs:
         line = fs.readline()
 
         while line:

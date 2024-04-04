@@ -10,7 +10,7 @@ String _debug_aabb_to_string(const BVHABB_CLASS &aabb) const {
 	POINT size = aabb.calculate_size();
 
 	String sz;
-	float vol = 0.0;
+	real_t vol = 0.0;
 
 	for (int i = 0; i < POINT::AXIS_COUNT; ++i) {
 		sz += "(";

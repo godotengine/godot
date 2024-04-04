@@ -735,7 +735,7 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 	bool library_copied = false;
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (!FileAccess::exists(abs_path)) {
-			ERR_PRINT("GDExtension library not found: " + library_path);
+			ERR_PRINT("GDExtension library not found: " + abs_path);
 			return ERR_FILE_NOT_FOUND;
 		}
 
@@ -750,7 +750,7 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 
 		Error copy_err = DirAccess::copy_absolute(abs_path, copy_path);
 		if (copy_err) {
-			ERR_PRINT("Error copying GDExtension library: " + library_path);
+			ERR_PRINT("Error copying GDExtension library: " + abs_path);
 			return ERR_CANT_CREATE;
 		}
 		FileAccess::set_hidden_attribute(copy_path, true);

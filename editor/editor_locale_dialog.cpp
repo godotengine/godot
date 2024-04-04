@@ -322,7 +322,7 @@ void EditorLocaleDialog::_update_tree() {
 
 	if (!is_edit_mode) {
 		TreeItem *t = cnt_list->create_item(c_root);
-		t->set_text(0, "[Default]");
+		t->set_text(0, TTR("[Default]"));
 		t->set_metadata(0, "");
 	}
 

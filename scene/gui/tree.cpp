@@ -2195,9 +2195,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			if ((select_mode == SELECT_ROW && selected_item == p_item) || p_item->cells[i].selected || !p_item->has_meta("__focus_rect")) {
 				Rect2i r = cell_rect;
 
-				p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
-
 				if (select_mode != SELECT_ROW) {
+					p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
 					if (rtl) {
 						r.position.x = get_size().width - r.position.x - r.size.x;
 					}
@@ -2208,6 +2207,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 							theme_cache.selected->draw(ci, r);
 						}
 					}
+				} else {
+					p_item->set_meta("__focus_col_" + itos(i), Rect2(r.position, r.size));
 				}
 			}
 
@@ -2693,7 +2694,6 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 			if (p_selected == p_current && (!c.selected || allow_reselect)) {
 				c.selected = true;
 				selected_item = p_selected;
-				selected_col = 0;
 				if (!emitted_row) {
 					emit_signal(SNAME("item_selected"));
 					emitted_row = true;
@@ -2703,6 +2703,9 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					// Deselect other rows.
 					c.selected = false;
 				}
+			}
+			if (&selected_cell == &c) {
+				selected_col = i;
 			}
 		} else if (select_mode == SELECT_SINGLE || select_mode == SELECT_MULTI) {
 			if (!r_in_range && &selected_cell == &c) {
@@ -3778,7 +3781,12 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 						warp_mouse(range_drag_capture_pos);
 					} else {
-						Rect2 rect = get_selected()->get_meta("__focus_rect");
+						Rect2 rect;
+						if (select_mode == SELECT_ROW) {
+							rect = get_selected()->get_meta("__focus_col_" + itos(selected_col));
+						} else {
+							rect = get_selected()->get_meta("__focus_rect");
+						}
 						Point2 mpos = mb->get_position();
 						int icon_size_x = 0;
 						Ref<Texture2D> icon = get_selected()->get_icon(selected_col);
@@ -3987,7 +3995,12 @@ bool Tree::edit_selected(bool p_force_edit) {
 		return false;
 	}
 
-	Rect2 rect = s->get_meta("__focus_rect");
+	Rect2 rect;
+	if (select_mode == SELECT_ROW) {
+		rect = s->get_meta("__focus_col_" + itos(selected_col));
+	} else {
+		rect = s->get_meta("__focus_rect");
+	}
 	popup_edited_item = s;
 	popup_edited_item_col = col;
 
@@ -5593,8 +5606,8 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_selected"));
 	ADD_SIGNAL(MethodInfo("cell_selected"));
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::OBJECT, "item", PROPERTY_HINT_RESOURCE_TYPE, "TreeItem"), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::BOOL, "selected")));
-	ADD_SIGNAL(MethodInfo("item_mouse_selected", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::INT, "mouse_button_index")));
-	ADD_SIGNAL(MethodInfo("empty_clicked", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::INT, "mouse_button_index")));
+	ADD_SIGNAL(MethodInfo("item_mouse_selected", PropertyInfo(Variant::VECTOR2, "mouse_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
+	ADD_SIGNAL(MethodInfo("empty_clicked", PropertyInfo(Variant::VECTOR2, "click_position"), PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("item_edited"));
 	ADD_SIGNAL(MethodInfo("custom_item_clicked", PropertyInfo(Variant::INT, "mouse_button_index")));
 	ADD_SIGNAL(MethodInfo("item_icon_double_clicked"));

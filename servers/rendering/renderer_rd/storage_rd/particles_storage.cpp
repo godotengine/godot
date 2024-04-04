@@ -1388,6 +1388,11 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	}
 }
 void ParticlesStorage::update_particles() {
+	if (!particle_update_list.first()) {
+		return;
+	}
+
+	RENDER_TIMESTAMP("Update GPUParticles");
 	uint32_t frame = RSG::rasterizer->get_frame_number();
 	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
 	while (particle_update_list.first()) {

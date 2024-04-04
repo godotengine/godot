@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRBodyModifier3D" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRBodyModifier3D" inherits="SkeletonModifier3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node for driving body meshes from [XRBodyTracker] data.
 	</brief_description>
@@ -23,9 +23,6 @@
 		</member>
 		<member name="show_when_tracked" type="bool" setter="set_show_when_tracked" getter="get_show_when_tracked" default="true">
 			If true then the nodes visibility is determined by whether tracking data is available.
-		</member>
-		<member name="target" type="NodePath" setter="set_target" getter="get_target" default="NodePath(&quot;&quot;)">
-			A [NodePath] to a [Skeleton3D] to animate.
 		</member>
 	</members>
 	<constants>

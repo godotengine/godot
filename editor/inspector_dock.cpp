@@ -702,6 +702,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	forward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_forward));
 
 	history_menu = memnew(MenuButton);
+	history_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	history_menu->set_flat(false);
 	history_menu->set_theme_type_variation("FlatMenuButton");
 	history_menu->set_tooltip_text(TTR("History of recently edited objects."));

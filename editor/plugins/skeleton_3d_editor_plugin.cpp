@@ -377,6 +377,11 @@ void Skeleton3DEditor::create_physical_skeleton() {
 	bones_infos.resize(bone_count);
 
 	ur->create_action(TTR("Create physical bones"), UndoRedo::MERGE_ALL);
+
+	PhysicalBoneSimulator3D *simulator = memnew(PhysicalBoneSimulator3D);
+	ur->add_do_method(skeleton, "add_child", simulator);
+	ur->add_do_method(simulator, "set_owner", owner);
+	ur->add_do_method(simulator, "set_name", "PhysicalBoneSimulator3D");
 	for (int bone_id = 0; bone_count > bone_id; ++bone_id) {
 		const int parent = skeleton->get_bone_parent(bone_id);
 
@@ -395,7 +400,7 @@ void Skeleton3DEditor::create_physical_skeleton() {
 					if (collision_shape) {
 						bones_infos.write[parent].physical_bone = physical_bone;
 
-						ur->add_do_method(skeleton, "add_child", physical_bone);
+						ur->add_do_method(simulator, "add_child", physical_bone);
 						ur->add_do_method(physical_bone, "set_owner", owner);
 						ur->add_do_method(collision_shape, "set_owner", owner);
 						ur->add_do_property(physical_bone, "bone_name", skeleton->get_bone_name(parent));
@@ -409,12 +414,13 @@ void Skeleton3DEditor::create_physical_skeleton() {
 						ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, collision_shape);
 
 						ur->add_do_reference(physical_bone);
-						ur->add_undo_method(skeleton, "remove_child", physical_bone);
+						ur->add_undo_method(simulator, "remove_child", physical_bone);
 					}
 				}
 			}
 		}
 	}
+	ur->add_undo_method(skeleton, "remove_child", simulator);
 	ur->commit_action();
 }
 
@@ -670,7 +676,7 @@ void Skeleton3DEditor::update_joint_tree() {
 
 	items.insert(-1, root);
 
-	Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("BoneAttachment3D"));
+	Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("Bone"));
 
 	Vector<int> bones_to_process = skeleton->get_parentless_bones();
 	while (bones_to_process.size() > 0) {

@@ -223,6 +223,11 @@ RID NativeMenuMacOS::get_system_menu(SystemMenus p_menu_id) const {
 RID NativeMenuMacOS::create_menu() {
 	MenuData *md = memnew(MenuData);
 	md->menu = [[NSMenu alloc] initWithTitle:@""];
+	[md->menu setAutoenablesItems:NO];
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->set_menu_delegate(md->menu);
+	}
 	RID rid = menus.make_rid(md);
 	menu_lookup[md->menu] = rid;
 	return rid;

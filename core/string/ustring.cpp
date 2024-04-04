@@ -1043,12 +1043,11 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 
 static _FORCE_INLINE_ signed char file_cmp_common(const char32_t *&r_this_str, const char32_t *&r_that_str) {
 	// Compare leading `_` sequences.
-	while (*r_this_str && *r_that_str) {
+	while ((*r_this_str == '_' && *r_that_str) || (*r_this_str && *r_that_str == '_')) {
 		// Sort `_` lower than everything except `.`
-		if (*r_this_str != '_' && *r_that_str == '_') {
+		if (*r_this_str != '_') {
 			return *r_this_str == '.' ? -1 : 1;
-		}
-		if (*r_this_str == '_' && *r_that_str != '_') {
+		} else if (*r_that_str != '_') {
 			return *r_that_str == '.' ? 1 : -1;
 		}
 		r_this_str++;

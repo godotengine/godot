@@ -1334,6 +1334,12 @@
 		<member name="input/ui_text_select_word_under_caret.macos" type="Dictionary" setter="" getter="">
 			macOS specific override for the shortcut to select the word currently under the caret.
 		</member>
+		<member name="input/ui_text_skip_selection_for_next_occurrence" type="Dictionary" setter="" getter="">
+			If no selection is currently active with the last caret in text fields, searches for the next occurrence of the the word currently under the caret and moves the caret to the next occurrence. The action can be performed sequentially for other occurrences of the word under the last caret.
+			If a selection is currently active with the last caret in text fields, searches for the next occurrence of the selection, adds a caret, selects the next occurrence then deselects the previous selection and its associated caret. The action can be performed sequentially for other occurrences of the selection of the last caret.
+			The viewport is adjusted to the latest newly added caret.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_text_submit" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to submit a text field.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -2636,6 +2642,9 @@
 		<member name="rendering/occlusion_culling/bvh_build_quality" type="int" setter="" getter="" default="2">
 			The [url=https://en.wikipedia.org/wiki/Bounding_volume_hierarchy]Bounding Volume Hierarchy[/url] quality to use when rendering the occlusion culling buffer. Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage. See also [member rendering/occlusion_culling/occlusion_rays_per_thread].
 			[b]Note:[/b] This property is only read when the project starts. To adjust the BVH build quality at runtime, use [method RenderingServer.viewport_set_occlusion_culling_build_quality].
+		</member>
+		<member name="rendering/occlusion_culling/jitter_projection" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the projection used for rendering the occlusion buffer will be jittered. This can help prevent objects being incorrectly culled when visible through small gaps.
 		</member>
 		<member name="rendering/occlusion_culling/occlusion_rays_per_thread" type="int" setter="" getter="" default="512">
 			The number of occlusion rays traced per CPU thread. Higher values will result in more accurate occlusion culling, at the cost of higher CPU usage. The occlusion culling buffer's pixel count is roughly equal to [code]occlusion_rays_per_thread * number_of_logical_cpu_cores[/code], so it will depend on the system's CPU. Therefore, CPUs with fewer cores will use a lower resolution to attempt keeping performance costs even across devices. See also [member rendering/occlusion_culling/bvh_build_quality].

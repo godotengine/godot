@@ -802,6 +802,153 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selected_text(3) == "test");
 		}
 
+		SUBCASE("[TextEdit] skip selection for next occurrence") {
+			text_edit->set_text("\ntest   other_test\nrandom   test\nword test word nonrandom");
+			text_edit->set_caret_column(0);
+			text_edit->set_caret_line(1);
+
+			// Without selection on the current caret, the caret as 'jumped' to the next occurrence of the word under the caret.
+			text_edit->skip_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 1);
+			CHECK_FALSE(text_edit->has_selection(0));
+			CHECK(text_edit->get_caret_line(0) == 1);
+			CHECK(text_edit->get_caret_column(0) == 13);
+
+			// Repeating previous action.
+			// This time caret is in 'other_test' (other_|test)
+			// so the searched term will be 'other_test' or not just 'test'
+			// => no occurrence, as a side effect, the caret will move to start of the term.
+			text_edit->skip_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 1);
+			CHECK_FALSE(text_edit->has_selection(0));
+			CHECK(text_edit->get_caret_line(0) == 1);
+			CHECK(text_edit->get_caret_column(0) == 7);
+
+			// Repeating action again should do nothing now
+			text_edit->skip_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 1);
+			CHECK_FALSE(text_edit->has_selection(0));
+			CHECK(text_edit->get_caret_line(0) == 1);
+			CHECK(text_edit->get_caret_column(0) == 7);
+
+			// Moving back to the first 'test' occurrence.
+			text_edit->set_caret_column(0);
+			text_edit->set_caret_line(1);
+
+			// But this time, create a selection of it.
+			text_edit->add_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 1);
+			CHECK(text_edit->has_selection(0));
+			CHECK(text_edit->get_selected_text(0) == "test");
+			CHECK(text_edit->get_selection_from_line(0) == 1);
+			CHECK(text_edit->get_selection_from_column(0) == 0);
+			CHECK(text_edit->get_selection_to_line(0) == 1);
+			CHECK(text_edit->get_selection_to_column(0) == 4);
+			CHECK(text_edit->get_caret_line(0) == 1);
+			CHECK(text_edit->get_caret_column(0) == 4);
+
+			// Then, skipping it, but this time, selection has been made on the next occurrence.
+			text_edit->skip_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 1);
+			CHECK(text_edit->has_selection(0));
+			CHECK(text_edit->get_selected_text(0) == "test");
+			CHECK(text_edit->get_selection_from_line(0) == 1);
+			CHECK(text_edit->get_selection_from_column(0) == 13);
+			CHECK(text_edit->get_selection_to_line(0) == 1);
+			CHECK(text_edit->get_selection_to_column(0) == 17);
+			CHECK(text_edit->get_caret_line(0) == 1);
+			CHECK(text_edit->get_caret_column(0) == 17);
+
+			text_edit->skip_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 1);
+			CHECK(text_edit->has_selection(0));
+			CHECK(text_edit->get_selected_text(0) == "test");
+			CHECK(text_edit->get_selection_from_line(0) == 2);
+			CHECK(text_edit->get_selection_from_column(0) == 9);
+			CHECK(text_edit->get_selection_to_line(0) == 2);
+			CHECK(text_edit->get_selection_to_column(0) == 13);
+			CHECK(text_edit->get_caret_line(0) == 2);
+			CHECK(text_edit->get_caret_column(0) == 13);
+
+			text_edit->skip_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 1);
+			CHECK(text_edit->has_selection(0));
+			CHECK(text_edit->get_selected_text(0) == "test");
+			CHECK(text_edit->get_selection_from_line(0) == 3);
+			CHECK(text_edit->get_selection_from_column(0) == 5);
+			CHECK(text_edit->get_selection_to_line(0) == 3);
+			CHECK(text_edit->get_selection_to_column(0) == 9);
+			CHECK(text_edit->get_caret_line(0) == 3);
+			CHECK(text_edit->get_caret_column(0) == 9);
+
+			// Last skip, we are back to the first occurrence.
+			text_edit->skip_selection_for_next_occurrence();
+			CHECK(text_edit->has_selection(0));
+			CHECK(text_edit->get_selected_text(0) == "test");
+			CHECK(text_edit->get_selection_from_line(0) == 1);
+			CHECK(text_edit->get_selection_from_column(0) == 0);
+			CHECK(text_edit->get_selection_to_line(0) == 1);
+			CHECK(text_edit->get_selection_to_column(0) == 4);
+			CHECK(text_edit->get_caret_line(0) == 1);
+			CHECK(text_edit->get_caret_column(0) == 4);
+
+			// Adding first occurrence to selections/carets list
+			// and select occurrence on 'other_test'.
+			text_edit->add_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 2);
+			CHECK(text_edit->has_selection(0));
+			CHECK(text_edit->get_selected_text(0) == "test");
+
+			CHECK(text_edit->has_selection(1));
+			CHECK(text_edit->get_selected_text(1) == "test");
+			CHECK(text_edit->get_selection_from_line(1) == 1);
+			CHECK(text_edit->get_selection_from_column(1) == 13);
+			CHECK(text_edit->get_selection_to_line(1) == 1);
+			CHECK(text_edit->get_selection_to_column(1) == 17);
+			CHECK(text_edit->get_caret_line(1) == 1);
+			CHECK(text_edit->get_caret_column(1) == 17);
+
+			// We don't want this occurrence.
+			// Let's skip it.
+			text_edit->skip_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 2);
+			CHECK(text_edit->has_selection(0));
+			CHECK(text_edit->get_selected_text(0) == "test");
+
+			CHECK(text_edit->get_selected_text(1) == "test");
+			CHECK(text_edit->get_selection_from_line(1) == 2);
+			CHECK(text_edit->get_selection_from_column(1) == 9);
+			CHECK(text_edit->get_selection_to_line(1) == 2);
+			CHECK(text_edit->get_selection_to_column(1) == 13);
+			CHECK(text_edit->get_caret_line(1) == 2);
+			CHECK(text_edit->get_caret_column(1) == 13);
+
+			text_edit->skip_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 2);
+			CHECK(text_edit->has_selection(0));
+			CHECK(text_edit->get_selected_text(0) == "test");
+
+			CHECK(text_edit->get_selected_text(1) == "test");
+			CHECK(text_edit->get_selection_from_line(1) == 3);
+			CHECK(text_edit->get_selection_from_column(1) == 5);
+			CHECK(text_edit->get_selection_to_line(1) == 3);
+			CHECK(text_edit->get_selection_to_column(1) == 9);
+			CHECK(text_edit->get_caret_line(1) == 3);
+			CHECK(text_edit->get_caret_column(1) == 9);
+
+			// We are back the first occurrence.
+			text_edit->skip_selection_for_next_occurrence();
+			CHECK(text_edit->get_caret_count() == 1);
+			CHECK(text_edit->has_selection(0));
+			CHECK(text_edit->get_selected_text(0) == "test");
+			CHECK(text_edit->get_selection_from_line(0) == 1);
+			CHECK(text_edit->get_selection_from_column(0) == 0);
+			CHECK(text_edit->get_selection_to_line(0) == 1);
+			CHECK(text_edit->get_selection_to_column(0) == 4);
+			CHECK(text_edit->get_caret_line(0) == 1);
+			CHECK(text_edit->get_caret_column(0) == 4);
+		}
+
 		SUBCASE("[TextEdit] deselect on focus loss") {
 			text_edit->set_text("test");
 

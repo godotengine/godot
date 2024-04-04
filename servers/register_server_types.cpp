@@ -43,6 +43,7 @@
 #include "audio/effects/audio_effect_distortion.h"
 #include "audio/effects/audio_effect_eq.h"
 #include "audio/effects/audio_effect_filter.h"
+#include "audio/effects/audio_effect_hard_limiter.h"
 #include "audio/effects/audio_effect_limiter.h"
 #include "audio/effects/audio_effect_panner.h"
 #include "audio/effects/audio_effect_phaser.h"
@@ -56,11 +57,11 @@
 #include "camera/camera_feed.h"
 #include "camera_server.h"
 #include "debugger/servers_debugger.h"
+#include "display/native_menu.h"
 #include "display_server.h"
 #include "movie_writer/movie_writer.h"
 #include "movie_writer/movie_writer_mjpeg.h"
 #include "movie_writer/movie_writer_pngwav.h"
-#include "native_menu.h"
 #include "rendering/renderer_compositor.h"
 #include "rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_data_rd.h"
@@ -210,6 +211,7 @@ void register_server_types() {
 		GDREGISTER_CLASS(AudioEffectDelay);
 		GDREGISTER_CLASS(AudioEffectCompressor);
 		GDREGISTER_CLASS(AudioEffectLimiter);
+		GDREGISTER_CLASS(AudioEffectHardLimiter);
 		GDREGISTER_CLASS(AudioEffectPitchShift);
 		GDREGISTER_CLASS(AudioEffectPhaser);
 
