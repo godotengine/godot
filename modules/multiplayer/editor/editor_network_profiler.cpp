@@ -225,7 +225,6 @@ void EditorNetworkProfiler::_clear_pressed() {
 }
 
 void EditorNetworkProfiler::_autostart_pressed() {
-	autostart_button->release_focus();
 	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_network_profiler", autostart_button->is_pressed());
 }
 

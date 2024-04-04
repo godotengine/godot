@@ -426,7 +426,6 @@ void EditorVisualProfiler::_clear_pressed() {
 }
 
 void EditorVisualProfiler::_autostart_pressed() {
-	autostart_button->release_focus();
 	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_visual_profiler", autostart_button->is_pressed());
 }
 
