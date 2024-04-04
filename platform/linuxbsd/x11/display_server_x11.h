@@ -312,6 +312,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	bool do_mouse_warp = false;
 
+	bool xcursor_loaded = false;
 	const char *cursor_theme = nullptr;
 	int cursor_size = 0;
 	XcursorImage *cursor_img[CURSOR_MAX];

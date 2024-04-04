@@ -1066,6 +1066,9 @@ int initialize_pulse(int verbose) {
   char *error;
   handle = dlopen("libpulse.so.0", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libpulse.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }

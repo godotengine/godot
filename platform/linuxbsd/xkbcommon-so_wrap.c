@@ -285,6 +285,9 @@ int initialize_xkbcommon(int verbose) {
   char *error;
   handle = dlopen("libxkbcommon.so.0", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libxkbcommon.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }

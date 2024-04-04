@@ -227,6 +227,9 @@ int initialize_xrandr(int verbose) {
   char *error;
   handle = dlopen("libXrandr.so.2", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libXrandr.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }

@@ -727,6 +727,9 @@ int initialize_dbus(int verbose) {
   char *error;
   handle = dlopen("libdbus-1.so.3", RTLD_LAZY);
   if (!handle) {
+    handle = dlopen("libdbus-1.so", RTLD_LAZY);
+  }
+  if (!handle) {
     if (verbose) {
       fprintf(stderr, "%s\n", dlerror());
     }

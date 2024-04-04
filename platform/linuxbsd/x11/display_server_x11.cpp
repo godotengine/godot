@@ -424,11 +424,13 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 		}
 	}
 
-	for (const KeyValue<WindowID, WindowData> &E : windows) {
-		if (show_cursor) {
-			XDefineCursor(x11_display, E.value.x11_window, cursors[current_cursor]); // show cursor
-		} else {
-			XDefineCursor(x11_display, E.value.x11_window, null_cursor); // hide cursor
+	if (xcursor_loaded) {
+		for (const KeyValue<WindowID, WindowData> &E : windows) {
+			if (show_cursor) {
+				XDefineCursor(x11_display, E.value.x11_window, cursors[current_cursor]); // show cursor
+			} else {
+				XDefineCursor(x11_display, E.value.x11_window, null_cursor); // hide cursor
+			}
 		}
 	}
 	mouse_mode = p_mode;
@@ -3032,14 +3034,16 @@ void DisplayServerX11::cursor_set_shape(CursorShape p_shape) {
 		return;
 	}
 
-	if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
-		if (cursors[p_shape] != None) {
-			for (const KeyValue<WindowID, WindowData> &E : windows) {
-				XDefineCursor(x11_display, E.value.x11_window, cursors[p_shape]);
-			}
-		} else if (cursors[CURSOR_ARROW] != None) {
-			for (const KeyValue<WindowID, WindowData> &E : windows) {
-				XDefineCursor(x11_display, E.value.x11_window, cursors[CURSOR_ARROW]);
+	if (xcursor_loaded) {
+		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+			if (cursors[p_shape] != None) {
+				for (const KeyValue<WindowID, WindowData> &E : windows) {
+					XDefineCursor(x11_display, E.value.x11_window, cursors[p_shape]);
+				}
+			} else if (cursors[CURSOR_ARROW] != None) {
+				for (const KeyValue<WindowID, WindowData> &E : windows) {
+					XDefineCursor(x11_display, E.value.x11_window, cursors[CURSOR_ARROW]);
+				}
 			}
 		}
 	}
@@ -3055,6 +3059,10 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+
+	if (!xcursor_loaded) {
+		return;
+	}
 
 	if (p_cursor.is_valid()) {
 		HashMap<CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);
@@ -5689,7 +5697,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	}
 
 	//set cursor
-	if (cursors[current_cursor] != None) {
+	if (xcursor_loaded && (cursors[current_cursor] != None)) {
 		XDefineCursor(x11_display, wd.x11_window, cursors[current_cursor]);
 	}
 
@@ -5769,10 +5777,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		ERR_FAIL_MSG("Can't load Xlib dynamically.");
 	}
 
-	if (initialize_xcursor(dylibloader_verbose) != 0) {
-		r_error = ERR_UNAVAILABLE;
-		ERR_FAIL_MSG("Can't load XCursor dynamically.");
-	}
+	xcursor_loaded = (initialize_xcursor(dylibloader_verbose) != 0);
+
 #ifdef XKB_ENABLED
 	bool xkb_loaded = (initialize_xkbcommon(dylibloader_verbose) == 0);
 	xkb_loaded_v05p = xkb_loaded;
@@ -5809,6 +5815,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		ERR_FAIL_MSG("Can't load Xinput2 dynamically.");
 	}
 #else
+	xcursor_loaded = true;
 #ifdef XKB_ENABLED
 	bool xkb_loaded = true;
 	xkb_loaded_v05p = true;
@@ -5840,12 +5847,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	r_error = OK;
 
 #ifdef SOWRAP_ENABLED
-	{
+	if (xcursor_loaded) {
 		if (!XcursorImageCreate || !XcursorImageLoadCursor || !XcursorImageDestroy || !XcursorGetDefaultSize || !XcursorGetTheme || !XcursorLibraryLoadImage) {
 			// There's no API to check version, check if functions are available instead.
-			ERR_PRINT("Unsupported Xcursor library version.");
-			r_error = ERR_UNAVAILABLE;
-			return;
+			xcursor_loaded = false;
+			print_verbose("Unsupported Xcursor library version.");
 		}
 	}
 #endif
@@ -6196,94 +6202,96 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		XISelectEvents(x11_display, DefaultRootWindow(x11_display), &all_master_event_mask, 1);
 	}
 
-	cursor_size = XcursorGetDefaultSize(x11_display);
-	cursor_theme = XcursorGetTheme(x11_display);
+	if (xcursor_loaded) {
+		cursor_size = XcursorGetDefaultSize(x11_display);
+		cursor_theme = XcursorGetTheme(x11_display);
 
-	if (!cursor_theme) {
-		print_verbose("XcursorGetTheme could not get cursor theme");
-		cursor_theme = "default";
-	}
-
-	for (int i = 0; i < CURSOR_MAX; i++) {
-		static const char *cursor_file[] = {
-			"left_ptr",
-			"xterm",
-			"hand2",
-			"cross",
-			"watch",
-			"left_ptr_watch",
-			"fleur",
-			"dnd-move",
-			"crossed_circle",
-			"v_double_arrow",
-			"h_double_arrow",
-			"size_bdiag",
-			"size_fdiag",
-			"move",
-			"row_resize",
-			"col_resize",
-			"question_arrow"
-		};
-
-		cursor_img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
-		if (!cursor_img[i]) {
-			const char *fallback = nullptr;
-
-			switch (i) {
-				case CURSOR_POINTING_HAND:
-					fallback = "pointer";
-					break;
-				case CURSOR_CROSS:
-					fallback = "crosshair";
-					break;
-				case CURSOR_WAIT:
-					fallback = "wait";
-					break;
-				case CURSOR_BUSY:
-					fallback = "progress";
-					break;
-				case CURSOR_DRAG:
-					fallback = "grabbing";
-					break;
-				case CURSOR_CAN_DROP:
-					fallback = "hand1";
-					break;
-				case CURSOR_FORBIDDEN:
-					fallback = "forbidden";
-					break;
-				case CURSOR_VSIZE:
-					fallback = "ns-resize";
-					break;
-				case CURSOR_HSIZE:
-					fallback = "ew-resize";
-					break;
-				case CURSOR_BDIAGSIZE:
-					fallback = "fd_double_arrow";
-					break;
-				case CURSOR_FDIAGSIZE:
-					fallback = "bd_double_arrow";
-					break;
-				case CURSOR_MOVE:
-					cursor_img[i] = cursor_img[CURSOR_DRAG];
-					break;
-				case CURSOR_VSPLIT:
-					fallback = "sb_v_double_arrow";
-					break;
-				case CURSOR_HSPLIT:
-					fallback = "sb_h_double_arrow";
-					break;
-				case CURSOR_HELP:
-					fallback = "help";
-					break;
-			}
-			if (fallback != nullptr) {
-				cursor_img[i] = XcursorLibraryLoadImage(fallback, cursor_theme, cursor_size);
-			}
+		if (!cursor_theme) {
+			print_verbose("XcursorGetTheme could not get cursor theme");
+			cursor_theme = "default";
 		}
-		if (cursor_img[i]) {
-			cursors[i] = XcursorImageLoadCursor(x11_display, cursor_img[i]);
-		} else {
-			print_verbose("Failed loading custom cursor: " + String(cursor_file[i]));
+
+		for (int i = 0; i < CURSOR_MAX; i++) {
+			static const char *cursor_file[] = {
+				"left_ptr",
+				"xterm",
+				"hand2",
+				"cross",
+				"watch",
+				"left_ptr_watch",
+				"fleur",
+				"dnd-move",
+				"crossed_circle",
+				"v_double_arrow",
+				"h_double_arrow",
+				"size_bdiag",
+				"size_fdiag",
+				"move",
+				"row_resize",
+				"col_resize",
+				"question_arrow"
+			};
+
+			cursor_img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
+			if (!cursor_img[i]) {
+				const char *fallback = nullptr;
+
+				switch (i) {
+					case CURSOR_POINTING_HAND:
+						fallback = "pointer";
+						break;
+					case CURSOR_CROSS:
+						fallback = "crosshair";
+						break;
+					case CURSOR_WAIT:
+						fallback = "wait";
+						break;
+					case CURSOR_BUSY:
+						fallback = "progress";
+						break;
+					case CURSOR_DRAG:
+						fallback = "grabbing";
+						break;
+					case CURSOR_CAN_DROP:
+						fallback = "hand1";
+						break;
+					case CURSOR_FORBIDDEN:
+						fallback = "forbidden";
+						break;
+					case CURSOR_VSIZE:
+						fallback = "ns-resize";
+						break;
+					case CURSOR_HSIZE:
+						fallback = "ew-resize";
+						break;
+					case CURSOR_BDIAGSIZE:
+						fallback = "fd_double_arrow";
+						break;
+					case CURSOR_FDIAGSIZE:
+						fallback = "bd_double_arrow";
+						break;
+					case CURSOR_MOVE:
+						cursor_img[i] = cursor_img[CURSOR_DRAG];
+						break;
+					case CURSOR_VSPLIT:
+						fallback = "sb_v_double_arrow";
+						break;
+					case CURSOR_HSPLIT:
+						fallback = "sb_h_double_arrow";
+						break;
+					case CURSOR_HELP:
+						fallback = "help";
+						break;
+				}
+				if (fallback != nullptr) {
+					cursor_img[i] = XcursorLibraryLoadImage(fallback, cursor_theme, cursor_size);
+				}
+			}
+			if (cursor_img[i]) {
+				cursors[i] = XcursorImageLoadCursor(x11_display, cursor_img[i]);
+			} else {
+				print_verbose("Failed loading custom cursor: " + String(cursor_file[i]));
+			}
 		}
 	}
 
@@ -6432,12 +6440,14 @@ DisplayServerX11::~DisplayServerX11() {
 		dlclose(xrandr_handle);
 	}
 
-	for (int i = 0; i < CURSOR_MAX; i++) {
-		if (cursors[i] != None) {
-			XFreeCursor(x11_display, cursors[i]);
-		}
-		if (cursor_img[i] != nullptr) {
-			XcursorImageDestroy(cursor_img[i]);
+	if (xcursor_loaded) {
+		for (int i = 0; i < CURSOR_MAX; i++) {
+			if (cursors[i] != None) {
+				XFreeCursor(x11_display, cursors[i]);
+			}
+			if (cursor_img[i] != nullptr) {
+				XcursorImageDestroy(cursor_img[i]);
+			}
 		}
 	}
 
