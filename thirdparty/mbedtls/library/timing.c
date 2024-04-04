@@ -403,6 +403,7 @@ int mbedtls_timing_self_test(int verbose)
     uint32_t a = 0, b = 0;
     mbedtls_timing_delay_context ctx;
 
+    memset(&ctx, 0, sizeof(ctx));
     if (verbose != 0) {
         mbedtls_printf("  TIMING tests note: will take some time!\n");
     }
