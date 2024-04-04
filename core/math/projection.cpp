@@ -37,7 +37,7 @@
 #include "core/math/transform_3d.h"
 #include "core/string/ustring.h"
 
-float Projection::determinant() const {
+real_t Projection::determinant() const {
 	return columns[0][3] * columns[1][2] * columns[2][1] * columns[3][0] - columns[0][2] * columns[1][3] * columns[2][1] * columns[3][0] -
 			columns[0][3] * columns[1][1] * columns[2][2] * columns[3][0] + columns[0][1] * columns[1][3] * columns[2][2] * columns[3][0] +
 			columns[0][2] * columns[1][1] * columns[2][3] * columns[3][0] - columns[0][1] * columns[1][2] * columns[2][3] * columns[3][0] -
@@ -832,13 +832,13 @@ real_t Projection::get_fov() const {
 	}
 }
 
-float Projection::get_lod_multiplier() const {
+real_t Projection::get_lod_multiplier() const {
 	if (is_orthogonal()) {
 		return get_viewport_half_extents().x;
 	} else {
-		float zn = get_z_near();
-		float width = get_viewport_half_extents().x * 2.0;
-		return 1.0 / (zn / width);
+		const real_t zn = get_z_near();
+		const real_t width = get_viewport_half_extents().x * 2.0f;
+		return 1.0f / (zn / width);
 	}
 
 	// Usage is lod_size / (lod_distance * multiplier) < threshold
