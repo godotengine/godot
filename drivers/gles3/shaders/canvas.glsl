@@ -160,15 +160,18 @@ void main() {
 	if (gl_VertexID % 3 == 0) {
 		vertex = read_draw_data_point_a;
 		uv = read_draw_data_uv_a;
-		color = vec4(unpackHalf2x16(read_draw_data_color_a_rg), unpackHalf2x16(read_draw_data_color_a_ba));
+		color.xy = unpackHalf2x16(read_draw_data_color_a_rg);
+		color.zw = unpackHalf2x16(read_draw_data_color_a_ba);
 	} else if (gl_VertexID % 3 == 1) {
 		vertex = read_draw_data_point_b;
 		uv = read_draw_data_uv_b;
-		color = vec4(unpackHalf2x16(read_draw_data_color_b_rg), unpackHalf2x16(read_draw_data_color_b_ba));
+		color.xy = unpackHalf2x16(read_draw_data_color_b_rg);
+		color.zw = unpackHalf2x16(read_draw_data_color_b_ba);
 	} else {
 		vertex = read_draw_data_point_c;
 		uv = read_draw_data_uv_c;
-		color = vec4(unpackHalf2x16(read_draw_data_color_c_rg), unpackHalf2x16(read_draw_data_color_c_ba));
+		color.xy = unpackHalf2x16(read_draw_data_color_c_rg);
+		color.zw = unpackHalf2x16(read_draw_data_color_c_ba);
 	}
 
 #elif defined(USE_ATTRIBUTES)
@@ -178,11 +181,14 @@ void main() {
 
 #ifdef USE_INSTANCING
 	if (bool(read_draw_data_flags & FLAGS_INSTANCING_HAS_COLORS)) {
-		vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
+		vec4 instance_color;
+		instance_color.xy = unpackHalf2x16(uint(instance_color_custom_data.x));
+		instance_color.zw = unpackHalf2x16(uint(instance_color_custom_data.y));
 		color *= instance_color;
 	}
 	if (bool(read_draw_data_flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
-		instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
+		instance_custom.xy = unpackHalf2x16(instance_color_custom_data.z);
+		instance_custom.zw = unpackHalf2x16(instance_color_custom_data.w);
 	}
 #endif // !USE_INSTANCING
 
