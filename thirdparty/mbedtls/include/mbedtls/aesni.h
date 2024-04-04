@@ -46,7 +46,7 @@
  *       macros that may change in future releases.
  */
 #undef MBEDTLS_AESNI_HAVE_INTRINSICS
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__clang__)
 /* Visual Studio supports AESNI intrinsics since VS 2008 SP1. We only support
  * VS 2013 and up for other reasons anyway, so no need to check the version. */
 #define MBEDTLS_AESNI_HAVE_INTRINSICS
@@ -54,7 +54,7 @@
 /* GCC-like compilers: currently, we only support intrinsics if the requisite
  * target flag is enabled when building the library (e.g. `gcc -mpclmul -msse2`
  * or `clang -maes -mpclmul`). */
-#if defined(__GNUC__) && defined(__AES__) && defined(__PCLMUL__)
+#if (defined(__GNUC__) || defined(__clang__)) && defined(__AES__) && defined(__PCLMUL__)
 #define MBEDTLS_AESNI_HAVE_INTRINSICS
 #endif
 
