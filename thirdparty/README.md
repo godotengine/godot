@@ -60,7 +60,7 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (3aaca635bad074a0ce5c15fa8aa0dff47f5c639a, 2023)
+- Version: git (c5a419971b1bec220368c619aaafd0b818aa119f, 2024)
 - License: MPL 2.0
 
 
