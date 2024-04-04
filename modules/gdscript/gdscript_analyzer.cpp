@@ -3293,6 +3293,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 	if (get_function_signature(p_call, is_constructor, base_type, p_call->function_name, return_type, par_types, default_arg_count, method_flags)) {
 		// If the method is implemented in the class hierarchy, the virtual flag will not be set for that MethodInfo and the search stops there.
 		// Virtual check only possible for super() calls because class hierarchy is known. Node/Objects may have scripts attached we don't know of at compile-time.
+		p_call->is_static = method_flags.has_flag(METHOD_FLAG_STATIC);
 		if (p_call->is_super && method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
 			push_error(vformat(R"*(Cannot call the parent class' virtual function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
 		}
@@ -3311,7 +3312,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			base_type.is_meta_type = false;
 		}
 
-		if (is_self && static_context && !method_flags.has_flag(METHOD_FLAG_STATIC)) {
+		if (is_self && static_context && !p_call->is_static) {
 			// Get the parent function above any lambda.
 			GDScriptParser::FunctionNode *parent_function = parser->current_function;
 			while (parent_function && parent_function->source_lambda) {
@@ -3323,10 +3324,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			} else {
 				push_error(vformat(R"*(Cannot call non-static function "%s()" from a static variable initializer.)*", p_call->function_name), p_call);
 			}
-		} else if (!is_self && base_type.is_meta_type && !method_flags.has_flag(METHOD_FLAG_STATIC)) {
+		} else if (!is_self && base_type.is_meta_type && !p_call->is_static) {
 			base_type.is_meta_type = false; // For `to_string()`.
 			push_error(vformat(R"*(Cannot call non-static function "%s()" on the class "%s" directly. Make an instance instead.)*", p_call->function_name, base_type.to_string()), p_call);
-		} else if (is_self && !method_flags.has_flag(METHOD_FLAG_STATIC)) {
+		} else if (is_self && !p_call->is_static) {
 			mark_lambda_use_self();
 		}
 
