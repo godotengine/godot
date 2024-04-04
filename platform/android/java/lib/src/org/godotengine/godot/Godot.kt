@@ -396,16 +396,19 @@ class Godot(private val context: Context) : SensorEventListener {
 			}
 
 			if (host == primaryHost) {
-				renderView!!.startRenderer()
+				renderView?.startRenderer()
 			}
-			val view: View = renderView!!.view
-			containerLayout?.addView(
-					view,
+
+			renderView?.let {
+				containerLayout?.addView(
+					it.view,
 					ViewGroup.LayoutParams(
 							ViewGroup.LayoutParams.MATCH_PARENT,
 							ViewGroup.LayoutParams.MATCH_PARENT
 					)
-			)
+				)
+			}
+
 			editText.setView(renderView)
 			io?.setEdit(editText)
 
@@ -448,20 +451,23 @@ class Godot(private val context: Context) : SensorEventListener {
 				})
 			} else {
 				// Infer the virtual keyboard height using visible area.
-				view.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+				renderView?.view?.viewTreeObserver?.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
 					// Don't allocate a new Rect every time the callback is called.
 					val visibleSize = Rect()
 					override fun onGlobalLayout() {
-						val surfaceView = renderView!!.view
-						surfaceView.getWindowVisibleDisplayFrame(visibleSize)
-						val keyboardHeight = surfaceView.height - visibleSize.bottom
-						GodotLib.setVirtualKeyboardHeight(keyboardHeight)
+						renderView?.let {
+							val surfaceView = it.view
+
+							surfaceView.getWindowVisibleDisplayFrame(visibleSize)
+							val keyboardHeight = surfaceView.height - visibleSize.bottom
+							GodotLib.setVirtualKeyboardHeight(keyboardHeight)
+						}
 					}
 				})
 			}
 
 			if (host == primaryHost) {
-				renderView!!.queueOnRenderThread {
+				renderView?.queueOnRenderThread {
 					for (plugin in pluginRegistry.allPlugins) {
 						plugin.onRegisterPluginWithGodotNative()
 					}
@@ -495,7 +501,7 @@ class Godot(private val context: Context) : SensorEventListener {
 			return
 		}
 
-		renderView!!.onActivityStarted()
+		renderView?.onActivityStarted()
 	}
 
 	fun onResume(host: GodotHost) {
@@ -503,7 +509,7 @@ class Godot(private val context: Context) : SensorEventListener {
 			return
 		}
 
-		renderView!!.onActivityResumed()
+		renderView?.onActivityResumed()
 		if (mAccelerometer != null) {
 			mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME)
 		}
@@ -535,7 +541,7 @@ class Godot(private val context: Context) : SensorEventListener {
 			return
 		}
 
-		renderView!!.onActivityPaused()
+		renderView?.onActivityPaused()
 		mSensorManager.unregisterListener(this)
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainPause()
@@ -547,7 +553,7 @@ class Godot(private val context: Context) : SensorEventListener {
 			return
 		}
 
-		renderView!!.onActivityStopped()
+		renderView?.onActivityStopped()
 	}
 
 	fun onDestroy(primaryHost: GodotHost) {
@@ -569,7 +575,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	 * Configuration change callback
 	*/
 	fun onConfigurationChanged(newConfig: Configuration) {
-		var newDarkMode = newConfig.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		val newDarkMode = newConfig.uiMode.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 		if (darkMode != newDarkMode) {
 			darkMode = newDarkMode
 			GodotLib.onNightModeChanged()
@@ -686,9 +692,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	 * This must be called after the render thread has started.
 	 */
 	fun runOnRenderThread(action: Runnable) {
-		if (renderView != null) {
-			renderView!!.queueOnRenderThread(action)
-		}
+		renderView?.queueOnRenderThread(action)
 	}
 
 	/**
@@ -765,7 +769,7 @@ class Godot(private val context: Context) : SensorEventListener {
 		return mClipboard.hasPrimaryClip()
 	}
 
-	fun getClipboard(): String? {
+	fun getClipboard(): String {
 		val clipData = mClipboard.primaryClip ?: return ""
 		val text = clipData.getItemAt(0).text ?: return ""
 		return text.toString()
@@ -782,15 +786,14 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	@Keep
 	private fun forceQuit(instanceId: Int): Boolean {
-		if (primaryHost == null) {
-			return false
-		}
-		return if (instanceId == 0) {
-			primaryHost!!.onGodotForceQuit(this)
-			true
-		} else {
-			primaryHost!!.onGodotForceQuit(instanceId)
-		}
+		primaryHost?.let {
+			if (instanceId == 0) {
+				it.onGodotForceQuit(this)
+				return true
+			} else {
+				return it.onGodotForceQuit(instanceId)
+			}
+		} ?: return false
 	}
 
 	fun onBackPressed(host: GodotHost) {
@@ -804,14 +807,14 @@ class Godot(private val context: Context) : SensorEventListener {
 				shouldQuit = false
 			}
 		}
-		if (shouldQuit && renderView != null) {
-			renderView!!.queueOnRenderThread { GodotLib.back() }
+		if (shouldQuit) {
+			renderView?.queueOnRenderThread { GodotLib.back() }
 		}
 	}
 
 	private fun getRotatedValues(values: FloatArray?): FloatArray? {
 		if (values == null || values.size != 3) {
-			return values
+			return null
 		}
 		val display =
 			(requireActivity().getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
@@ -848,35 +851,39 @@ class Godot(private val context: Context) : SensorEventListener {
 		}
 		when (event.sensor.type) {
 			Sensor.TYPE_ACCELEROMETER -> {
-				val rotatedValues = getRotatedValues(event.values)
-				renderView!!.queueOnRenderThread {
-					GodotLib.accelerometer(
-						-rotatedValues!![0], -rotatedValues[1], -rotatedValues[2]
-					)
+				getRotatedValues(event.values)?.let { rotatedValues ->
+					renderView?.queueOnRenderThread {
+						GodotLib.accelerometer(
+							-rotatedValues[0], -rotatedValues[1], -rotatedValues[2]
+						)
+					}
 				}
 			}
 			Sensor.TYPE_GRAVITY -> {
-				val rotatedValues = getRotatedValues(event.values)
-				renderView!!.queueOnRenderThread {
-					GodotLib.gravity(
-						-rotatedValues!![0], -rotatedValues[1], -rotatedValues[2]
-					)
+				getRotatedValues(event.values)?.let { rotatedValues ->
+					renderView?.queueOnRenderThread {
+						GodotLib.gravity(
+							-rotatedValues[0], -rotatedValues[1], -rotatedValues[2]
+						)
+					}
 				}
 			}
 			Sensor.TYPE_MAGNETIC_FIELD -> {
-				val rotatedValues = getRotatedValues(event.values)
-				renderView!!.queueOnRenderThread {
-					GodotLib.magnetometer(
-						-rotatedValues!![0], -rotatedValues[1], -rotatedValues[2]
-					)
+				getRotatedValues(event.values)?.let { rotatedValues ->
+					renderView?.queueOnRenderThread {
+						GodotLib.magnetometer(
+							-rotatedValues[0], -rotatedValues[1], -rotatedValues[2]
+						)
+					}
 				}
 			}
 			Sensor.TYPE_GYROSCOPE -> {
-				val rotatedValues = getRotatedValues(event.values)
-				renderView!!.queueOnRenderThread {
-					GodotLib.gyroscope(
-						rotatedValues!![0], rotatedValues[1], rotatedValues[2]
-					)
+				getRotatedValues(event.values)?.let { rotatedValues ->
+					renderView?.queueOnRenderThread {
+						GodotLib.gyroscope(
+							rotatedValues[0], rotatedValues[1], rotatedValues[2]
+						)
+					}
 				}
 			}
 		}
@@ -1039,7 +1046,7 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	@Keep
 	private fun initInputDevices() {
-		renderView!!.initInputDevices()
+		renderView?.initInputDevices()
 	}
 
 	@Keep
