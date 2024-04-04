@@ -86,11 +86,11 @@ int OpenXRCompositionLayerExtension::get_composition_layer_order(int p_index) {
 	return composition_layers[p_index]->get_sort_order();
 }
 
-void OpenXRCompositionLayerExtension::register_composition_layer_provider(OpenXRViewportCompositionLayerProvider *p_composition_layer) {
+void OpenXRCompositionLayerExtension::register_viewport_composition_layer_provider(OpenXRViewportCompositionLayerProvider *p_composition_layer) {
 	composition_layers.push_back(p_composition_layer);
 }
 
-void OpenXRCompositionLayerExtension::unregister_composition_layer_provider(OpenXRViewportCompositionLayerProvider *p_composition_layer) {
+void OpenXRCompositionLayerExtension::unregister_viewport_composition_layer_provider(OpenXRViewportCompositionLayerProvider *p_composition_layer) {
 	composition_layers.erase(p_composition_layer);
 }
 
@@ -123,6 +123,10 @@ OpenXRViewportCompositionLayerProvider::OpenXRViewportCompositionLayerProvider(X
 }
 
 OpenXRViewportCompositionLayerProvider::~OpenXRViewportCompositionLayerProvider() {
+	for (OpenXRExtensionWrapper *extension : OpenXRAPI::get_registered_extension_wrappers()) {
+		extension->on_viewport_composition_layer_destroyed(composition_layer);
+	}
+
 	// This will reset the viewport and free the swapchain too.
 	set_viewport(RID(), Size2i());
 }
@@ -157,6 +161,11 @@ void OpenXRViewportCompositionLayerProvider::set_viewport(RID p_viewport, Size2i
 			viewport_size = Size2i();
 		}
 	}
+}
+
+void OpenXRViewportCompositionLayerProvider::set_extension_property_values(const Dictionary &p_extension_property_values) {
+	extension_property_values = p_extension_property_values;
+	extension_property_values_changed = true;
 }
 
 void OpenXRViewportCompositionLayerProvider::on_pre_render() {
@@ -231,6 +240,19 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 		default: {
 			return nullptr;
 		} break;
+	}
+
+	if (extension_property_values_changed) {
+		extension_property_values_changed = false;
+
+		void *next_pointer = nullptr;
+		for (OpenXRExtensionWrapper *extension : OpenXRAPI::get_registered_extension_wrappers()) {
+			void *np = extension->set_viewport_composition_layer_and_get_next_pointer(composition_layer, extension_property_values, next_pointer);
+			if (np) {
+				next_pointer = np;
+			}
+		}
+		composition_layer->next = next_pointer;
 	}
 
 	return composition_layer;
