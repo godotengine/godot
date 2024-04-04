@@ -176,8 +176,8 @@ void EditorProfiler::_item_edited() {
 }
 
 void EditorProfiler::_update_plot() {
-	const int w = graph->get_size().width + 1; // `+1` is to prevent from crashing when profiler is auto started.
-	const int h = graph->get_size().height + 1;
+	const int w = MAX(1, graph->get_size().width); // Clamp to 1 to prevent from crashing when profiler is autostarted.
+	const int h = MAX(1, graph->get_size().height);
 	bool reset_texture = false;
 	const int desired_len = w * h * 4;
 
