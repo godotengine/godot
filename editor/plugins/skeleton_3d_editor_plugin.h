@@ -59,6 +59,7 @@ class BoneTransformEditor : public VBoxContainer {
 	EditorPropertyVector3 *position_property = nullptr;
 	EditorPropertyQuaternion *rotation_property = nullptr;
 	EditorPropertyVector3 *scale_property = nullptr;
+	EditorPropertyCheck *inherit_scale_property = nullptr;
 
 	EditorInspectorSection *rest_section = nullptr;
 	EditorPropertyTransform3D *rest_matrix = nullptr;

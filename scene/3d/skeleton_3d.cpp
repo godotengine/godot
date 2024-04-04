@@ -96,6 +96,8 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 		set_bone_pose_rotation(which, p_value);
 	} else if (what == "scale") {
 		set_bone_pose_scale(which, p_value);
+	} else if (what == "inherit_scale") {
+		set_bone_inherit_scale(which, p_value);
 #ifndef DISABLE_DEPRECATED
 	} else if (what == "pose" || what == "bound_children") {
 		// Kept for compatibility from 3.x to 4.x.
@@ -157,6 +159,8 @@ bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 		r_ret = get_bone_pose_rotation(which);
 	} else if (what == "scale") {
 		r_ret = get_bone_pose_scale(which);
+	} else if (what == "inherit_scale") {
+		r_ret = is_bone_inherit_scale(which);
 	} else {
 		return false;
 	}
@@ -174,6 +178,7 @@ void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + PNAME("position"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::QUATERNION, prep + PNAME("rotation"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prep + PNAME("scale"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, prep + PNAME("inherit_scale"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
 	for (PropertyInfo &E : *p_list) {
@@ -200,6 +205,9 @@ void Skeleton3D::_validate_property(PropertyInfo &p_property) const {
 			if (split[2] == "scale") {
 				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
+			if (split[2] == "inherit_scale") {
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
 		} else if (!is_bone_enabled(split[1].to_int())) {
 			if (split[2] == "position") {
 				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
@@ -208,6 +216,9 @@ void Skeleton3D::_validate_property(PropertyInfo &p_property) const {
 				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 			if (split[2] == "scale") {
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+			}
+			if (split[2] == "inherit_scale") {
 				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			}
 		}
@@ -619,6 +630,23 @@ void Skeleton3D::set_bone_pose_scale(int p_bone, const Vector3 &p_scale) {
 	}
 }
 
+bool Skeleton3D::is_bone_inherit_scale(int p_bone) const {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX_V(p_bone, bone_size, false);
+	return bones[p_bone].inherit_scale;
+}
+
+void Skeleton3D::set_bone_inherit_scale(int p_bone, bool inherit_scale) {
+	const int bone_size = bones.size();
+	ERR_FAIL_INDEX(p_bone, bone_size);
+
+	bones.write[p_bone].inherit_scale = inherit_scale;
+	bones.write[p_bone].pose_cache_dirty = true;
+	if (is_inside_tree()) {
+		_make_dirty();
+	}
+}
+
 Vector3 Skeleton3D::get_bone_pose_position(int p_bone) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Vector3());
@@ -941,6 +969,21 @@ void Skeleton3D::force_update_all_bone_transforms() {
 	rest_dirty = false;
 }
 
+// Applies transform to child while preserving child scale, and corrects rotation if inherit is false.
+// Otherwise, just does a regular transformation.
+Transform3D transform_local_scale(Transform3D parent, Transform3D child, bool inherit) {
+	if (inherit == true) {
+		return parent * child;
+	} else {
+		// apply full transform
+		Transform3D output = parent * child;
+
+		// replace basis with custom scaled
+		output.basis = Basis(parent.basis.get_rotation_quaternion() * child.basis.get_rotation_quaternion(), child.basis.get_scale());
+		return output;
+	}
+}
+
 void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone_idx, bone_size);
@@ -961,23 +1004,23 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 			Transform3D pose = b.pose_cache;
 
 			if (b.parent >= 0) {
-				b.pose_global = bonesptr[b.parent].pose_global * pose;
-				b.pose_global_no_override = bonesptr[b.parent].pose_global_no_override * pose;
+				b.pose_global = transform_local_scale(bonesptr[b.parent].pose_global, pose, b.inherit_scale);
+				b.pose_global_no_override = transform_local_scale(bonesptr[b.parent].pose_global_no_override, pose, b.inherit_scale);
 			} else {
 				b.pose_global = pose;
 				b.pose_global_no_override = pose;
 			}
 		} else {
 			if (b.parent >= 0) {
-				b.pose_global = bonesptr[b.parent].pose_global * b.rest;
-				b.pose_global_no_override = bonesptr[b.parent].pose_global_no_override * b.rest;
+				b.pose_global = transform_local_scale(bonesptr[b.parent].pose_global, b.rest, b.inherit_scale);
+				b.pose_global_no_override = transform_local_scale(bonesptr[b.parent].pose_global_no_override, b.rest, b.inherit_scale);
 			} else {
 				b.pose_global = b.rest;
 				b.pose_global_no_override = b.rest;
 			}
 		}
 		if (rest_dirty) {
-			b.global_rest = b.parent >= 0 ? bonesptr[b.parent].global_rest * b.rest : b.rest;
+			b.global_rest = b.parent >= 0 ? transform_local_scale(bonesptr[b.parent].global_rest, b.rest, b.inherit_scale) : b.rest;
 		}
 
 		if (b.global_pose_override_amount >= CMP_EPSILON) {
@@ -1031,6 +1074,9 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_pose_position", "bone_idx", "position"), &Skeleton3D::set_bone_pose_position);
 	ClassDB::bind_method(D_METHOD("set_bone_pose_rotation", "bone_idx", "rotation"), &Skeleton3D::set_bone_pose_rotation);
 	ClassDB::bind_method(D_METHOD("set_bone_pose_scale", "bone_idx", "scale"), &Skeleton3D::set_bone_pose_scale);
+
+	ClassDB::bind_method(D_METHOD("is_bone_inherit_scale", "bone_idx"), &Skeleton3D::is_bone_inherit_scale);
+	ClassDB::bind_method(D_METHOD("set_bone_inherit_scale", "bone_idx", "inherit_scale"), &Skeleton3D::set_bone_inherit_scale, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_bone_pose_position", "bone_idx"), &Skeleton3D::get_bone_pose_position);
 	ClassDB::bind_method(D_METHOD("get_bone_pose_rotation", "bone_idx"), &Skeleton3D::get_bone_pose_rotation);
