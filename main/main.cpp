@@ -2276,6 +2276,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// Editor and project manager cannot run with rendering in a separate thread (they will crash on startup).
 			rtm = OS::RENDER_THREAD_SAFE;
 		}
+#if !defined(THREADS_ENABLED)
+		rtm = OS::RENDER_THREAD_SAFE;
+#endif
 		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
 	}
 
@@ -2719,7 +2722,9 @@ Error Main::setup2() {
 	}
 
 	if (OS::get_singleton()->_render_thread_mode == OS::RENDER_SEPARATE_THREAD) {
-		WARN_PRINT("The Multi-Threaded rendering thread model is experimental, and has known issues which can lead to project crashes. Use the Single-Safe option in the project settings instead.");
+		WARN_PRINT("The Multi-Threaded rendering thread model is experimental. Feel free to try it since it will eventually become a stable feature.\n"
+				   "However, bear in mind that at the moment it can lead to project crashes or instability.\n"
+				   "So, unless you want to test the engine, use the Single-Safe option in the project settings instead.");
 	}
 
 	/* Initialize Pen Tablet Driver */
@@ -4027,11 +4032,11 @@ bool Main::iteration() {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (RenderingServer::get_singleton()->has_changed()) {
 				RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
-				Engine::get_singleton()->frames_drawn++;
+				Engine::get_singleton()->increment_frames_drawn();
 			}
 		} else {
 			RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
-			Engine::get_singleton()->frames_drawn++;
+			Engine::get_singleton()->increment_frames_drawn();
 			force_redraw_requested = false;
 		}
 	}

@@ -248,16 +248,17 @@
 #define CMD_TYPE(N) Command##N<T, M COMMA(N) COMMA_SEP_LIST(TYPE_ARG, N)>
 #define CMD_ASSIGN_PARAM(N) cmd->p##N = p##N
 
-#define DECL_PUSH(N)                                                         \
-	template <typename T, typename M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
-	void push(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) { \
-		CMD_TYPE(N) *cmd = allocate_and_lock<CMD_TYPE(N)>();                 \
-		cmd->instance = p_instance;                                          \
-		cmd->method = p_method;                                              \
-		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                 \
-		unlock();                                                            \
-		if (sync)                                                            \
-			sync->post();                                                    \
+#define DECL_PUSH(N)                                                            \
+	template <typename T, typename M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>    \
+	void push(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) {    \
+		CMD_TYPE(N) *cmd = allocate_and_lock<CMD_TYPE(N)>();                    \
+		cmd->instance = p_instance;                                             \
+		cmd->method = p_method;                                                 \
+		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                    \
+		if (pump_task_id != WorkerThreadPool::INVALID_TASK_ID) {                \
+			WorkerThreadPool::get_singleton()->notify_yield_over(pump_task_id); \
+		}                                                                       \
+		unlock();                                                               \
 	}
 
 #define CMD_RET_TYPE(N) CommandRet##N<T, M, COMMA_SEP_LIST(TYPE_ARG, N) COMMA(N) R>
@@ -272,9 +273,10 @@
 		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                                   \
 		cmd->ret = r_ret;                                                                      \
 		cmd->sync_sem = ss;                                                                    \
+		if (pump_task_id != WorkerThreadPool::INVALID_TASK_ID) {                               \
+			WorkerThreadPool::get_singleton()->notify_yield_over(pump_task_id);                \
+		}                                                                                      \
 		unlock();                                                                              \
-		if (sync)                                                                              \
-			sync->post();                                                                      \
 		ss->sem.wait();                                                                        \
 		ss->in_use = false;                                                                    \
 	}
@@ -290,9 +292,10 @@
 		cmd->method = p_method;                                                       \
 		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                          \
 		cmd->sync_sem = ss;                                                           \
+		if (pump_task_id != WorkerThreadPool::INVALID_TASK_ID) {                      \
+			WorkerThreadPool::get_singleton()->notify_yield_over(pump_task_id);       \
+		}                                                                             \
 		unlock();                                                                     \
-		if (sync)                                                                     \
-			sync->post();                                                             \
 		ss->sem.wait();                                                               \
 		ss->in_use = false;                                                           \
 	}
@@ -340,7 +343,7 @@ class CommandQueueMT {
 	LocalVector<uint8_t> command_mem;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex mutex;
-	Semaphore *sync = nullptr;
+	WorkerThreadPool::TaskID pump_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	uint64_t flush_read_ptr = 0;
 
 	template <typename T>
@@ -420,12 +423,16 @@ public:
 	}
 
 	void wait_and_flush() {
-		ERR_FAIL_NULL(sync);
-		sync->wait();
+		ERR_FAIL_COND(pump_task_id == WorkerThreadPool::INVALID_TASK_ID);
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(pump_task_id);
 		_flush();
 	}
 
-	CommandQueueMT(bool p_sync);
+	void set_pump_task_id(WorkerThreadPool::TaskID p_task_id) {
+		pump_task_id = p_task_id;
+	}
+
+	CommandQueueMT();
 	~CommandQueueMT();
 };
 
