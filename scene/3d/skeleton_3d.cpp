@@ -253,6 +253,27 @@ void Skeleton3D::_update_process_order() {
 	process_order_dirty = false;
 }
 
+
+Quaternion get_shortest_arc(const Quaternion &q_current, const Quaternion &q_prev) {
+	// Avoid the quaternion taking the longest path for this versions's new rotation vs the last
+	if(q_current.dot(q_prev) < 0.0) {
+		return q_current*-1.0;
+	}
+	return q_current;
+}
+
+
+Quaternion quat_trans_2UDQ(const Quaternion &q0, const Vector3 &t) {
+	//Reference https://users.cs.utah.edu/~ladislav/dq/dqconv.c
+	return Quaternion(
+		0.5*( t.x*q0.w + t.y*q0.z - t.z*q0.y),
+		0.5*(-t.x*q0.z + t.y*q0.w + t.z*q0.x),
+		0.5*( t.x*q0.y - t.y*q0.x + t.z*q0.w),
+		-0.5*(t.x*q0.x + t.y*q0.y + t.z*q0.z)
+	);
+}
+
+
 void Skeleton3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -322,7 +343,22 @@ void Skeleton3D::_notification(int p_what) {
 				for (uint32_t i = 0; i < bind_count; i++) {
 					uint32_t bone_index = E->skin_bone_indices_ptrs[i];
 					ERR_CONTINUE(bone_index >= (uint32_t)len);
-					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].pose_global * skin->get_bind_pose(i));
+
+					Transform3D Mj = bonesptr[bone_index].pose_global * skin->get_bind_pose(i);
+					Vector3 t = Mj.origin;
+					Quaternion prev_q0, prev_q1;
+					Basis dq = rs->skeleton_bone_get_dq_transform(skeleton, i);
+
+					// This works to keep quaternions stable, basing it off the shortest path between the
+					// previous frame's linear transformation and the new one
+					Quaternion q0 = get_shortest_arc( 
+						Mj.basis.scaled(Mj.basis.get_scale_local().inverse()).get_rotation_quaternion(),
+						Quaternion(dq.rows[0][0], dq.rows[0][1], dq.rows[0][2], dq.rows[1][0])
+					);
+					Quaternion q1 = quat_trans_2UDQ(q0, t);
+
+					rs->skeleton_bone_set_transform(skeleton, i, Mj);
+					rs->skeleton_bone_set_dq_transform(skeleton, i, q0, q1);
 				}
 			}
 			emit_signal(SceneStringNames::get_singleton()->pose_updated);
