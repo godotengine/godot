@@ -38,6 +38,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "node_3d_editor_plugin.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/resources/curve.h"
 
@@ -735,6 +736,47 @@ void Path3DEditorPlugin::_handle_option_pressed(int p_option) {
 	}
 }
 
+void Path3DEditorPlugin::_confirm_clear_points() {
+	if (!path || path->get_curve().is_null() || path->get_curve()->get_point_count() == 0) {
+		return;
+	}
+	clear_points_dialog->reset_size();
+	clear_points_dialog->popup_centered();
+}
+
+void Path3DEditorPlugin::_clear_points() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	PackedVector3Array points = path->get_curve()->get_points().duplicate();
+
+	undo_redo->create_action(TTR("Clear Curve Points"));
+	undo_redo->add_do_method(this, "_clear_curve_points");
+	undo_redo->add_undo_method(this, "_restore_curve_points", points);
+	undo_redo->commit_action();
+}
+
+void Path3DEditorPlugin::_clear_curve_points() {
+	if (!path || path->get_curve().is_null() || path->get_curve()->get_point_count() == 0) {
+		return;
+	}
+	Ref<Curve3D> curve = path->get_curve();
+	curve->clear_points();
+}
+
+void Path3DEditorPlugin::_restore_curve_points(const PackedVector3Array &p_points) {
+	if (!path || path->get_curve().is_null()) {
+		return;
+	}
+	Ref<Curve3D> curve = path->get_curve();
+
+	if (curve->get_point_count() > 0) {
+		curve->clear_points();
+	}
+
+	for (int i = 0; i < p_points.size(); i += 3) {
+		curve->add_point(p_points[i + 2], p_points[i], p_points[i + 1]);
+	}
+}
+
 void Path3DEditorPlugin::_update_theme() {
 	// TODO: Split the EditorPlugin instance from the UI instance and connect this properly.
 	// See the 2D path editor for inspiration.
@@ -744,6 +786,7 @@ void Path3DEditorPlugin::_update_theme() {
 	curve_create->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveCreate"), EditorStringName(EditorIcons)));
 	curve_del->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveDelete"), EditorStringName(EditorIcons)));
 	curve_close->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("CurveClose"), EditorStringName(EditorIcons)));
+	curve_clear_points->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Clear"), EditorStringName(EditorIcons)));
 }
 
 void Path3DEditorPlugin::_notification(int p_what) {
@@ -769,6 +812,8 @@ void Path3DEditorPlugin::_notification(int p_what) {
 }
 
 void Path3DEditorPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_clear_curve_points"), &Path3DEditorPlugin::_clear_curve_points);
+	ClassDB::bind_method(D_METHOD("_restore_curve_points"), &Path3DEditorPlugin::_restore_curve_points);
 }
 
 Path3DEditorPlugin *Path3DEditorPlugin::singleton = nullptr;
@@ -830,7 +875,18 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_close->set_tooltip_text(TTR("Close Curve"));
 	topmenu_bar->add_child(curve_close);
 
-	PopupMenu *menu;
+	curve_clear_points = memnew(Button);
+	curve_clear_points->set_theme_type_variation("FlatButton");
+	curve_clear_points->set_focus_mode(Control::FOCUS_NONE);
+	curve_clear_points->set_tooltip_text(TTR("Clear Points"));
+	curve_clear_points->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_confirm_clear_points));
+	topmenu_bar->add_child(curve_clear_points);
+
+	clear_points_dialog = memnew(ConfirmationDialog);
+	clear_points_dialog->set_title(TTR("Please Confirm..."));
+	clear_points_dialog->set_text(TTR("Remove all curve points?"));
+	clear_points_dialog->connect("confirmed", callable_mp(this, &Path3DEditorPlugin::_clear_points));
+	topmenu_bar->add_child(clear_points_dialog);
 
 	handle_menu = memnew(MenuButton);
 	handle_menu->set_flat(false);
@@ -838,6 +894,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	handle_menu->set_text(TTR("Options"));
 	topmenu_bar->add_child(handle_menu);
 
+	PopupMenu *menu;
 	menu = handle_menu->get_popup();
 	menu->add_check_item(TTR("Mirror Handle Angles"));
 	menu->set_item_checked(HANDLE_OPTION_ANGLE, mirror_handle_angle);
