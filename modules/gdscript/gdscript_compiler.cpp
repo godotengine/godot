@@ -648,7 +648,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								// Not exact arguments, but still can use method bind call.
 								gen->write_call_method_bind(result, self, method, arguments);
 							}
-						} else if (codegen.is_static || (codegen.function_node && codegen.function_node->is_static) || call->function_name == "new") {
+						} else if (call->is_static || codegen.is_static || (codegen.function_node && codegen.function_node->is_static) || call->function_name == "new") {
 							GDScriptCodeGenerator::Address self;
 							self.mode = GDScriptCodeGenerator::Address::CLASS;
 							if (is_awaited) {
