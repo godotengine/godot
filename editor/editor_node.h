@@ -570,6 +570,7 @@ private:
 	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
 	void _discard_changes(const String &p_str = String());
 	void _scene_tab_closed(int p_tab);
+	void _cancel_close_scene_tab();
 
 	void _inherit_request(String p_file);
 	void _instantiate_request(const Vector<String> &p_files);
