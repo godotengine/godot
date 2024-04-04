@@ -3520,6 +3520,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			/* Single click selects. */
 			caret_pos.y += code_edit->get_line_height() * 2;
 			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(caret_pos, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 2);
 
 			/* Double click inserts. */
