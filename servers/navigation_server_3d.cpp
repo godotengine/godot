@@ -294,7 +294,11 @@ void NavigationServer3D::set_debug_enabled(bool p_enabled) {
 	debug_enabled = p_enabled;
 
 	if (debug_dirty) {
+		navigation_debug_dirty = true;
 		callable_mp(this, &NavigationServer3D::_emit_navigation_debug_changed_signal).call_deferred();
+
+		avoidance_debug_dirty = true;
+		callable_mp(this, &NavigationServer3D::_emit_avoidance_debug_changed_signal).call_deferred();
 	}
 #endif // DEBUG_ENABLED
 }
