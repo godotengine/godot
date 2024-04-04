@@ -69,9 +69,6 @@ void RenderingServerDefault::request_frame_drawn_callback(const Callable &p_call
 }
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
-	//needs to be done before changes is reset to 0, to not force the editor to redraw
-	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
-
 	changes = 0;
 
 	RSG::rasterizer->begin_frame(frame_step);
@@ -220,16 +217,9 @@ void RenderingServerDefault::_finish() {
 
 void RenderingServerDefault::init() {
 	if (create_thread) {
-		print_verbose("RenderingServerWrapMT: Creating render thread");
+		print_verbose("RenderingServerWrapMT: Starting render thread");
 		DisplayServer::get_singleton()->release_rendering_thread();
-		if (create_thread) {
-			thread.start(_thread_callback, this);
-			print_verbose("RenderingServerWrapMT: Starting render thread");
-		}
-		while (!draw_thread_up.is_set()) {
-			OS::get_singleton()->delay_usec(1000);
-		}
-		print_verbose("RenderingServerWrapMT: Finished render thread");
+		server_task_id = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &RenderingServerDefault::_thread_loop), true);
 	} else {
 		_init();
 	}
@@ -238,8 +228,9 @@ void RenderingServerDefault::init() {
 void RenderingServerDefault::finish() {
 	if (create_thread) {
 		command_queue.push(this, &RenderingServerDefault::_thread_exit);
-		if (thread.is_started()) {
-			thread.wait_to_finish();
+		if (server_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(server_task_id);
+			server_task_id = WorkerThreadPool::INVALID_TASK_ID;
 		}
 	} else {
 		_finish();
@@ -337,20 +328,11 @@ Size2i RenderingServerDefault::get_maximum_viewport_size() const {
 }
 
 void RenderingServerDefault::_thread_exit() {
-	exit.set();
+	exit = true;
 }
 
 void RenderingServerDefault::_thread_draw(bool p_swap_buffers, double frame_step) {
 	_draw(p_swap_buffers, frame_step);
-}
-
-void RenderingServerDefault::_thread_flush() {
-}
-
-void RenderingServerDefault::_thread_callback(void *_instance) {
-	RenderingServerDefault *vsmt = reinterpret_cast<RenderingServerDefault *>(_instance);
-
-	vsmt->_thread_loop();
 }
 
 void RenderingServerDefault::_thread_loop() {
@@ -359,15 +341,16 @@ void RenderingServerDefault::_thread_loop() {
 	DisplayServer::get_singleton()->gl_window_make_current(DisplayServer::MAIN_WINDOW_ID); // Move GL to this thread.
 	_init();
 
-	draw_thread_up.set();
-	while (!exit.is_set()) {
-		// flush commands one by one, until exit is requested
-		command_queue.wait_and_flush();
+	command_queue.set_pump_task_id(server_task_id);
+	while (!exit) {
+		WorkerThreadPool::get_singleton()->yield();
+		command_queue.flush_all();
 	}
 
-	command_queue.flush_all(); // flush all
+	command_queue.flush_all();
 
 	_finish();
+	DisplayServer::get_singleton()->release_rendering_thread();
 }
 
 /* INTERPOLATION */
@@ -383,15 +366,15 @@ void RenderingServerDefault::set_physics_interpolation_enabled(bool p_enabled) {
 /* EVENT QUEUING */
 
 void RenderingServerDefault::sync() {
-	if (create_thread) {
-		command_queue.push_and_sync(this, &RenderingServerDefault::_thread_flush);
-	} else {
-		command_queue.flush_all(); //flush all pending from other threads
+	if (!create_thread) {
+		command_queue.flush_all(); // Flush all pending from other threads.
 	}
 }
 
 void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Manually triggering the draw function from the RenderingServer can only be done on the main thread. Call this function from the main thread or use call_deferred().");
+	// Needs to be done before changes is reset to 0, to not force the editor to redraw.
+	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
 	if (create_thread) {
 		command_queue.push(this, &RenderingServerDefault::_thread_draw, p_swap_buffers, frame_step);
 	} else {
@@ -403,21 +386,14 @@ void RenderingServerDefault::_call_on_render_thread(const Callable &p_callable) 
 	p_callable.call();
 }
 
-RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
-		command_queue(p_create_thread) {
+RenderingServerDefault::RenderingServerDefault(bool p_create_thread) {
 	RenderingServer::init();
 
-#ifdef THREADS_ENABLED
 	create_thread = p_create_thread;
 	if (!create_thread) {
-		server_thread = Thread::get_caller_id();
-	} else {
-		server_thread = 0;
+		server_thread = Thread::MAIN_ID;
 	}
-#else
-	create_thread = false;
-	server_thread = Thread::get_main_id();
-#endif
+
 	RSG::threaded = create_thread;
 
 	RSG::canvas = memnew(RendererCanvasCull);
