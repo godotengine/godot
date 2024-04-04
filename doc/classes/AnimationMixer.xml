@@ -80,7 +80,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns the first [AnimationLibrary] with key [param name] or [code]null[/code] if not found.
-				To get the [AnimationPlayer]'s global animation library, use [code]get_animation_library("")[/code].
+				To get the [AnimationMixer]'s global animation library, use [code]get_animation_library("")[/code].
 			</description>
 		</method>
 		<method name="get_animation_library_list" qualifiers="const">
@@ -239,14 +239,14 @@
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] with key [param name].
+				Returns [code]true[/code] if the [AnimationMixer] stores an [Animation] with key [param name].
 			</description>
 		</method>
 		<method name="has_animation_library" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the [AnimationPlayer] stores an [AnimationLibrary] with key [param name].
+				Returns [code]true[/code] if the [AnimationMixer] stores an [AnimationLibrary] with key [param name].
 			</description>
 		</method>
 		<method name="remove_animation_library">
@@ -333,9 +333,14 @@
 				Notifies when the caches have been cleared, either automatically, or manually via [method clear_caches].
 			</description>
 		</signal>
+		<signal name="mixer_applied">
+			<description>
+				Notifies when the blending result related have been applied to the target objects.
+			</description>
+		</signal>
 		<signal name="mixer_updated">
 			<description>
-				Editor only. Notifies when the property have been updated to update dummy [AnimationPlayer] in animation player editor.
+				Notifies when the property related process have been updated.
 			</description>
 		</signal>
 	</signals>
