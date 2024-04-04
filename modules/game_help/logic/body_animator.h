@@ -46,6 +46,28 @@ public:
 
         uint32_t m_Count;
         Vector<uint32_t> m_NeighborArray;
+    };  
+    struct AnimationItem
+    {
+        StringName m_Name;
+        Ref<CharacterAnimatorNodeBase> m_animation_node;
+        float m_Speed = 1.0f;
+        bool isClip = true;
+    };
+    Vector<AnimationItem>    m_ChildAnimationArray;
+    StringName               m_PropertyName;
+
+ // Constant data for direct blend node types - parameters
+    struct BlendDirectDataConstant
+    {
+
+        BlendDirectDataConstant() : m_ChildCount(0), m_NormalizedBlendValues(0)
+        {
+        }
+
+        uint32_t            m_ChildCount;
+        Vector<uint32_t> m_ChildBlendEventIDArray;
+        bool                m_NormalizedBlendValues;
     };
     struct Blend1dDataConstant
     {
@@ -78,27 +100,7 @@ public:
         Vector<MotionNeighborList>   m_ChildNeighborListArray; // Used by type 2, (3 TODO)
 
     };
-        // Constant data for direct blend node types - parameters
-    struct BlendDirectDataConstant
-    {
-
-        BlendDirectDataConstant() : m_ChildCount(0), m_NormalizedBlendValues(0)
-        {
-        }
-
-        uint32_t            m_ChildCount;
-        Vector<uint32_t> m_ChildBlendEventIDArray;
-        bool                m_NormalizedBlendValues;
-    };
-    struct AnimationItem
-    {
-        StringName m_Name;
-        Ref<CharacterAnimatorNodeBase> m_animation_node;
-        float m_Speed = 1.0f;
-        bool isClip = true;
-    };
-
-
+     
 
     static float weight_for_index(const float* thresholdArray, uint32_t count, uint32_t index, float blend);
     static void get_weights_simple_directional(const Blend2dDataConstant& blendConstant,
@@ -114,15 +116,13 @@ public:
     static void get_weights1d(const Blend1dDataConstant& blendConstant, float* weightArray, float blendValue);
 
 
-    Vector<AnimationItem>    m_ChildAnimationArray;
-    StringName               m_PropertyName;
 };
 class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
 {
     GDCLASS(CharacterAnimatorNode1D, CharacterAnimatorNodeBase);
 public:
     virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard) override;
-protected:
+public:
     Blend1dDataConstant   m_BlendData;
 };
 class CharacterAnimatorNode2D : public CharacterAnimatorNodeBase
@@ -136,7 +136,7 @@ public:
         FreeformCartesian2D = 3,
     };
     virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard) override;
-protected:
+public:
     BlendType m_BlendType;
     Blend2dDataConstant m_BlendData;
 };

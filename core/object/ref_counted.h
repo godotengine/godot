@@ -154,8 +154,7 @@ public:
 	}
 
 	
-	void operator=(T* p_variant) {
-		Object *object = p_variant.get_validated_object();
+	void operator=(T* object) {
 
 		if (object == reference) {
 			return;
