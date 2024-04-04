@@ -388,13 +388,6 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);
 
-	epoints = memnew(SpinBox);
-	epoints->set_min(1);
-	epoints->set_max(8192);
-	epoints->set_step(1);
-	epoints->set_value(512);
-	file->get_vbox()->add_margin_child(TTR("Generated Point Count:"), epoints);
-
 	generate_visibility_rect = memnew(ConfirmationDialog);
 	generate_visibility_rect->set_title(TTR("Generate Visibility Rect"));
 	VBoxContainer *genvb = memnew(VBoxContainer);

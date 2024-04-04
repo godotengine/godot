@@ -2066,8 +2066,9 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 
 		case FILE_EXPORT_MESH_LIBRARY: {
-			bool merge_with_existing_library = file_export_lib_merge->is_pressed();
-			bool apply_mesh_instance_transforms = file_export_lib_apply_xforms->is_pressed();
+			const Dictionary &fd_options = file_export_lib->get_selected_options();
+			bool merge_with_existing_library = fd_options.get(TTR("Merge With Existing"), true);
+			bool apply_mesh_instance_transforms = fd_options.get(TTR("Apply MeshInstance Transforms"), false);
 
 			Ref<MeshLibrary> ml;
 			if (merge_with_existing_library && FileAccess::exists(p_file)) {
@@ -2723,8 +2724,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				root_name = EditorNode::adjust_scene_name_casing(root_name);
 				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());
 			}
-			file->popup_file_dialog();
 			file->set_title(TTR("Save Scene As..."));
+			file->popup_file_dialog();
 
 		} break;
 
@@ -3238,8 +3239,8 @@ void EditorNode::_export_as_menu_option(int p_idx) {
 			file_export_lib->add_filter("*." + E);
 		}
 
-		file_export_lib->popup_file_dialog();
 		file_export_lib->set_title(TTR("Export Mesh Library"));
+		file_export_lib->popup_file_dialog();
 	} else { // Custom menu options added by plugins
 		if (export_as_menu->get_item_submenu(p_idx).is_empty()) { // If not a submenu
 			Callable callback = export_as_menu->get_item_metadata(p_idx);
@@ -7130,16 +7131,8 @@ EditorNode::EditorNode() {
 	file_export_lib->set_title(TTR("Export Library"));
 	file_export_lib->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_export_lib->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
-	file_export_lib_merge = memnew(CheckBox);
-	file_export_lib_merge->set_text(TTR("Merge With Existing"));
-	file_export_lib_merge->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	file_export_lib_merge->set_pressed(true);
-	file_export_lib->get_vbox()->add_child(file_export_lib_merge);
-	file_export_lib_apply_xforms = memnew(CheckBox);
-	file_export_lib_apply_xforms->set_text(TTR("Apply MeshInstance Transforms"));
-	file_export_lib_apply_xforms->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	file_export_lib_apply_xforms->set_pressed(false);
-	file_export_lib->get_vbox()->add_child(file_export_lib_apply_xforms);
+	file_export_lib->add_option(TTR("Merge With Existing"), Vector<String>(), true);
+	file_export_lib->add_option(TTR("Apply MeshInstance Transforms"), Vector<String>(), false);
 	gui_base->add_child(file_export_lib);
 
 	file_script = memnew(EditorFileDialog);
