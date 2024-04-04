@@ -631,7 +631,7 @@ EditorProfiler::EditorProfiler() {
 
 	autostart_button = memnew(Button);
 	autostart_button->set_toggle_mode(true);
-	autostart_button->set_text(TTR("Auto Start"));
+	autostart_button->set_text(TTR("Autostart"));
 	autostart_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false));
 	autostart_button->connect("pressed", callable_mp(this, &EditorProfiler::_autostart_pressed));
 	hb->add_child(autostart_button);
