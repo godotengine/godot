@@ -170,7 +170,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
 			name->connect("text_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;
-			agnode->set_closable(true);
+			agnode->set_deletable(true);
 
 			if (!read_only) {
 				Button *delete_button = memnew(Button);
@@ -541,7 +541,7 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<String
 			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 			if (gn && gn->is_selected()) {
 				Ref<AnimationNode> anode = blend_tree->get_node(gn->get_name());
-				if (anode->is_closable()) {
+				if (anode->is_deletable()) {
 					to_erase.push_back(gn->get_name());
 				}
 			}
@@ -549,7 +549,7 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<String
 	} else {
 		for (int i = 0; i < p_nodes.size(); i++) {
 			Ref<AnimationNode> anode = blend_tree->get_node(p_nodes[i]);
-			if (anode->is_closable()) {
+			if (anode->is_deletable()) {
 				to_erase.push_back(p_nodes[i]);
 			}
 		}
