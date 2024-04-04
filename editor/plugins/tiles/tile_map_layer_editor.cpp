@@ -1846,7 +1846,8 @@ void TileMapLayerEditorTilesPlugin::_tile_atlas_control_draw() {
 	Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 	Color selection_color = Color().from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);
 	for (const TileMapCell &E : tile_set_selection) {
-		if (E.source_id == source_id && E.alternative_tile == 0) {
+		int16_t untransformed_alternative_id = E.alternative_tile & TileSetAtlasSource::UNTRANSFORM_MASK;
+		if (E.source_id == source_id && untransformed_alternative_id == 0) {
 			for (int frame = 0; frame < atlas->get_tile_animation_frames_count(E.get_atlas_coords()); frame++) {
 				Color color = selection_color;
 				if (frame > 0) {
@@ -2029,8 +2030,9 @@ void TileMapLayerEditorTilesPlugin::_tile_alternatives_control_draw() {
 
 	// Draw the selection.
 	for (const TileMapCell &E : tile_set_selection) {
-		if (E.source_id == source_id && E.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && E.alternative_tile > 0) {
-			Rect2i rect = tile_atlas_view->get_alternative_tile_rect(E.get_atlas_coords(), E.alternative_tile);
+		int16_t untransformed_alternative_id = E.alternative_tile & TileSetAtlasSource::UNTRANSFORM_MASK;
+		if (E.source_id == source_id && E.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && untransformed_alternative_id > 0) {
+			Rect2i rect = tile_atlas_view->get_alternative_tile_rect(E.get_atlas_coords(), untransformed_alternative_id);
 			if (rect != Rect2i()) {
 				TilesEditorUtils::draw_selection_rect(alternative_tiles_control, rect);
 			}
