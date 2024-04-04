@@ -480,7 +480,7 @@ in the MSVC debugger.
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.28.7 (555f84735aecdbd76a566cf087ec8425dfb0c8ab, 2024)
+- Version: 2.28.8 (5a764e5555c64337ed17444410269ff21cb617b1, 2024)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:

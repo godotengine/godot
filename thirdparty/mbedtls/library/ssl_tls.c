@@ -992,8 +992,7 @@ static int ssl_populate_transform(mbedtls_ssl_transform *transform,
     !defined(MBEDTLS_SSL_EXPORT_KEYS) && \
     !defined(MBEDTLS_SSL_DTLS_CONNECTION_ID) && \
     !defined(MBEDTLS_DEBUG_C)
-    ssl = NULL; /* make sure we don't use it except for those cases */
-    (void) ssl;
+    (void) ssl; /* ssl is unused except for those cases */
 #endif
 
     /*
@@ -5205,6 +5204,12 @@ const mbedtls_ssl_session *mbedtls_ssl_get_session_pointer(const mbedtls_ssl_con
 #define SSL_SERIALIZED_SESSION_CONFIG_CRT 0
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
+#if defined(MBEDTLS_SSL_KEEP_PEER_CERTIFICATE)
+#define SSL_SERIALIZED_SESSION_CONFIG_KEEP_PEER_CRT 1
+#else
+#define SSL_SERIALIZED_SESSION_CONFIG_KEEP_PEER_CRT 0
+#endif /* MBEDTLS_SSL_SESSION_TICKETS */
+
 #if defined(MBEDTLS_SSL_CLI_C) && defined(MBEDTLS_SSL_SESSION_TICKETS)
 #define SSL_SERIALIZED_SESSION_CONFIG_CLIENT_TICKET 1
 #else
@@ -5242,6 +5247,7 @@ const mbedtls_ssl_session *mbedtls_ssl_get_session_pointer(const mbedtls_ssl_con
 #define SSL_SERIALIZED_SESSION_CONFIG_TRUNC_HMAC_BIT    4
 #define SSL_SERIALIZED_SESSION_CONFIG_ETM_BIT           5
 #define SSL_SERIALIZED_SESSION_CONFIG_TICKET_BIT        6
+#define SSL_SERIALIZED_SESSION_CONFIG_KEEP_PEER_CRT_BIT 7
 
 #define SSL_SERIALIZED_SESSION_CONFIG_BITFLAG                           \
     ((uint16_t) (                                                      \
@@ -5253,9 +5259,11 @@ const mbedtls_ssl_session *mbedtls_ssl_get_session_pointer(const mbedtls_ssl_con
          (SSL_SERIALIZED_SESSION_CONFIG_TRUNC_HMAC << \
              SSL_SERIALIZED_SESSION_CONFIG_TRUNC_HMAC_BIT) | \
          (SSL_SERIALIZED_SESSION_CONFIG_ETM << SSL_SERIALIZED_SESSION_CONFIG_ETM_BIT) | \
-         (SSL_SERIALIZED_SESSION_CONFIG_TICKET << SSL_SERIALIZED_SESSION_CONFIG_TICKET_BIT)))
+         (SSL_SERIALIZED_SESSION_CONFIG_TICKET << SSL_SERIALIZED_SESSION_CONFIG_TICKET_BIT) | \
+         (SSL_SERIALIZED_SESSION_CONFIG_KEEP_PEER_CRT << \
+             SSL_SERIALIZED_SESSION_CONFIG_KEEP_PEER_CRT_BIT)))
 
-static unsigned char ssl_serialized_session_header[] = {
+static const unsigned char ssl_serialized_session_header[] = {
     MBEDTLS_VERSION_MAJOR,
     MBEDTLS_VERSION_MINOR,
     MBEDTLS_VERSION_PATCH,
@@ -5279,19 +5287,36 @@ static unsigned char ssl_serialized_session_header[] = {
  *                               // the setting of those compile-time
  *                               // configuration options which influence
  *                               // the structure of mbedtls_ssl_session.
- *  uint64 start_time;
- *  uint8 ciphersuite[2];        // defined by the standard
- *  uint8 compression;           // 0 or 1
- *  uint8 session_id_len;        // at most 32
- *  opaque session_id[32];
- *  opaque master[48];           // fixed length in the standard
- *  uint32 verify_result;
- *  opaque peer_cert<0..2^24-1>; // length 0 means no peer cert
- *  opaque ticket<0..2^24-1>;    // length 0 means no ticket
- *  uint32 ticket_lifetime;
- *  uint8 mfl_code;              // up to 255 according to standard
- *  uint8 trunc_hmac;            // 0 or 1
- *  uint8 encrypt_then_mac;      // 0 or 1
+ * #if defined(MBEDTLS_HAVE_TIME)
+ *     uint64 start_time;
+ * #endif
+ *     uint8 ciphersuite[2];        // defined by the standard
+ *     uint8 compression;           // 0 or 1
+ *     uint8 session_id_len;        // at most 32
+ *     opaque session_id[32];
+ *     opaque master[48];           // fixed length in the standard
+ *     uint32 verify_result;
+ * #if defined(MBEDTLS_X509_CRT_PARSE_C)
+ * #if defined(MBEDTLS_SSL_KEEP_PEER_CERTIFICATE)
+ *     opaque peer_cert<0..2^24-1>; // length 0 means no peer cert
+ * #else
+ *     uint8 peer_cert_digest_type;
+ *     opaque peer_cert_digest<0..2^8-1>
+ * #endif
+ * #endif
+ * #if defined(MBEDTLS_SSL_SESSION_TICKETS) && defined(MBEDTLS_SSL_CLI_C)
+ *     opaque ticket<0..2^24-1>;    // length 0 means no ticket
+ *     uint32 ticket_lifetime;
+ * #endif
+ * #if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
+ *     uint8 mfl_code;              // up to 255 according to standard
+ * #endif
+ * #if defined(MBEDTLS_SSL_TRUNCATED_HMAC)
+ *     uint8 trunc_hmac;            // 0 or 1
+ * #endif
+ * #if defined(MBEDTLS_SSL_ENCRYPT_THEN_MAC)
+ *     uint8 encrypt_then_mac;      // 0 or 1
+ * #endif
  *
  * The order is the same as in the definition of the structure, except
  * verify_result is put before peer_cert so that all mandatory fields come
@@ -6124,7 +6149,7 @@ void mbedtls_ssl_session_free(mbedtls_ssl_session *session)
          (SSL_SERIALIZED_CONTEXT_CONFIG_ALPN << SSL_SERIALIZED_CONTEXT_CONFIG_ALPN_BIT) | \
          0u))
 
-static unsigned char ssl_serialized_context_header[] = {
+static const unsigned char ssl_serialized_context_header[] = {
     MBEDTLS_VERSION_MAJOR,
     MBEDTLS_VERSION_MINOR,
     MBEDTLS_VERSION_PATCH,
@@ -6655,7 +6680,7 @@ static int ssl_context_load(mbedtls_ssl_context *ssl,
             /* alpn_chosen should point to an item in the configured list */
             for (cur = ssl->conf->alpn_list; *cur != NULL; cur++) {
                 if (strlen(*cur) == alpn_len &&
-                    memcmp(p, cur, alpn_len) == 0) {
+                    memcmp(p, *cur, alpn_len) == 0) {
                     ssl->alpn_chosen = *cur;
                     break;
                 }
@@ -6822,7 +6847,7 @@ void mbedtls_ssl_config_init(mbedtls_ssl_config *conf)
 }
 
 #if defined(MBEDTLS_KEY_EXCHANGE_WITH_CERT_ENABLED)
-static int ssl_preset_default_hashes[] = {
+static const int ssl_preset_default_hashes[] = {
 #if defined(MBEDTLS_SHA512_C)
     MBEDTLS_MD_SHA512,
 #endif
@@ -6840,14 +6865,14 @@ static int ssl_preset_default_hashes[] = {
 };
 #endif
 
-static int ssl_preset_suiteb_ciphersuites[] = {
+static const int ssl_preset_suiteb_ciphersuites[] = {
     MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
     MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
     0
 };
 
 #if defined(MBEDTLS_KEY_EXCHANGE_WITH_CERT_ENABLED)
-static int ssl_preset_suiteb_hashes[] = {
+static const int ssl_preset_suiteb_hashes[] = {
     MBEDTLS_MD_SHA256,
     MBEDTLS_MD_SHA384,
     MBEDTLS_MD_NONE
@@ -6855,7 +6880,7 @@ static int ssl_preset_suiteb_hashes[] = {
 #endif
 
 #if defined(MBEDTLS_ECP_C)
-static mbedtls_ecp_group_id ssl_preset_suiteb_curves[] = {
+static const mbedtls_ecp_group_id ssl_preset_suiteb_curves[] = {
 #if defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED)
     MBEDTLS_ECP_DP_SECP256R1,
 #endif
