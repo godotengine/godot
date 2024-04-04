@@ -367,6 +367,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	}
 
 	ERR_FAIL_INDEX_V(int(p_mode), DisplayServer::FILE_DIALOG_MODE_SAVE_MAX, FAILED);
+	ERR_FAIL_NULL_V(monitor_connection, FAILED);
 
 	Vector<String> filter_names;
 	Vector<String> filter_exts;
@@ -406,24 +407,16 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	Error rng_err = rng.get_random_bytes(uuid, 64);
 	ERR_FAIL_COND_V_MSG(rng_err, rng_err, "Failed to generate unique token.");
 
-	fd.connection = dbus_bus_get(DBUS_BUS_SESSION, &err);
-	if (dbus_error_is_set(&err)) {
-		ERR_PRINT(vformat("Failed to open DBus connection: %s", err.message));
-		dbus_error_free(&err);
-		unsupported = true;
-		return FAILED;
-	}
-
-	String dbus_unique_name = String::utf8(dbus_bus_get_unique_name(fd.connection));
+	String dbus_unique_name = String::utf8(dbus_bus_get_unique_name(monitor_connection));
 	String token = String::hex_encode_buffer(uuid, 64);
 	String path = vformat("/org/freedesktop/portal/desktop/request/%s/%s", dbus_unique_name.replace(".", "_").replace(":", ""), token);
 
-	fd.path = vformat("type='signal',sender='org.freedesktop.portal.Desktop',path='%s',interface='org.freedesktop.portal.Request',member='Response',destination='%s'", path, dbus_unique_name);
-	dbus_bus_add_match(fd.connection, fd.path.utf8().get_data(), &err);
+	fd.path = path;
+	fd.filter = vformat("type='signal',sender='org.freedesktop.portal.Desktop',path='%s',interface='org.freedesktop.portal.Request',member='Response',destination='%s'", path, dbus_unique_name);
+	dbus_bus_add_match(monitor_connection, fd.filter.utf8().get_data(), &err);
 	if (dbus_error_is_set(&err)) {
 		ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
 		dbus_error_free(&err);
-		dbus_connection_unref(fd.connection);
 		return FAILED;
 	}
 
@@ -460,14 +453,13 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 		dbus_message_iter_close_container(&iter, &arr_iter);
 	}
 
-	DBusMessage *reply = dbus_connection_send_with_reply_and_block(fd.connection, message, DBUS_TIMEOUT_INFINITE, &err);
+	DBusMessage *reply = dbus_connection_send_with_reply_and_block(monitor_connection, message, DBUS_TIMEOUT_INFINITE, &err);
 	dbus_message_unref(message);
 
 	if (!reply || dbus_error_is_set(&err)) {
 		ERR_PRINT(vformat("Failed to send DBus message: %s", err.message));
 		dbus_error_free(&err);
-		dbus_bus_remove_match(fd.connection, fd.path.utf8().get_data(), &err);
-		dbus_connection_unref(fd.connection);
+		dbus_bus_remove_match(monitor_connection, fd.filter.utf8().get_data(), &err);
 		return FAILED;
 	}
 
@@ -479,19 +471,17 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 				const char *new_path = nullptr;
 				dbus_message_iter_get_basic(&iter, &new_path);
 				if (String::utf8(new_path) != path) {
-					dbus_bus_remove_match(fd.connection, fd.path.utf8().get_data(), &err);
+					dbus_bus_remove_match(monitor_connection, fd.filter.utf8().get_data(), &err);
 					if (dbus_error_is_set(&err)) {
 						ERR_PRINT(vformat("Failed to remove DBus match: %s", err.message));
 						dbus_error_free(&err);
-						dbus_connection_unref(fd.connection);
 						return FAILED;
 					}
-					fd.path = String::utf8(new_path);
-					dbus_bus_add_match(fd.connection, fd.path.utf8().get_data(), &err);
+					fd.filter = String::utf8(new_path);
+					dbus_bus_add_match(monitor_connection, fd.filter.utf8().get_data(), &err);
 					if (dbus_error_is_set(&err)) {
 						ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
 						dbus_error_free(&err);
-						dbus_connection_unref(fd.connection);
 						return FAILED;
 					}
 				}
@@ -532,57 +522,9 @@ void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 	FreeDesktopPortalDesktop *portal = (FreeDesktopPortalDesktop *)p_ud;
 
 	while (!portal->monitor_thread_abort.is_set()) {
-		{
-			MutexLock lock(portal->file_dialog_mutex);
-			for (int i = portal->file_dialogs.size() - 1; i >= 0; i--) {
-				bool remove = false;
-				{
-					FreeDesktopPortalDesktop::FileDialogData &fd = portal->file_dialogs.write[i];
-					if (fd.connection) {
-						while (true) {
-							DBusMessage *msg = dbus_connection_pop_message(fd.connection);
-							if (!msg) {
-								break;
-							} else if (dbus_message_is_signal(msg, "org.freedesktop.portal.Request", "Response")) {
-								DBusMessageIter iter;
-								if (dbus_message_iter_init(msg, &iter)) {
-									bool cancel = false;
-									Vector<String> uris;
-									Dictionary options;
-									int index = 0;
-									file_chooser_parse_response(&iter, fd.filter_names, cancel, uris, index, options);
-
-									if (fd.callback.is_valid()) {
-										callable_mp(portal, &FreeDesktopPortalDesktop::_file_dialog_callback).call_deferred(fd.callback, !cancel, uris, index, options, fd.opt_in_cb);
-									}
-									if (fd.prev_focus != DisplayServer::INVALID_WINDOW_ID) {
-										callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(fd.prev_focus);
-									}
-								}
-								dbus_message_unref(msg);
-
-								DBusError err;
-								dbus_error_init(&err);
-								dbus_bus_remove_match(fd.connection, fd.path.utf8().get_data(), &err);
-								dbus_error_free(&err);
-								dbus_connection_unref(fd.connection);
-								remove = true;
-								break;
-							}
-							dbus_message_unref(msg);
-						}
-						dbus_connection_read_write(fd.connection, 0);
-					}
-				}
-				if (remove) {
-					portal->file_dialogs.remove_at(i);
-				}
-			}
-		}
-
-		if (portal->theme_connection) {
+		if (portal->monitor_connection) {
 			while (true) {
-				DBusMessage *msg = dbus_connection_pop_message(portal->theme_connection);
+				DBusMessage *msg = dbus_connection_pop_message(portal->monitor_connection);
 				if (!msg) {
 					break;
 				} else if (dbus_message_is_signal(msg, "org.freedesktop.portal.Settings", "SettingChanged")) {
@@ -599,12 +541,41 @@ void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 							callable_mp(portal, &FreeDesktopPortalDesktop::_system_theme_changed_callback).call_deferred();
 						}
 					}
-					dbus_message_unref(msg);
-					break;
+				} else if (dbus_message_is_signal(msg, "org.freedesktop.portal.Request", "Response")) {
+					String path = String::utf8(dbus_message_get_path(msg));
+					MutexLock lock(portal->file_dialog_mutex);
+					for (int i = 0; i < portal->file_dialogs.size(); i++) {
+						FreeDesktopPortalDesktop::FileDialogData &fd = portal->file_dialogs.write[i];
+						if (fd.path == path) {
+							DBusMessageIter iter;
+							if (dbus_message_iter_init(msg, &iter)) {
+								bool cancel = false;
+								Vector<String> uris;
+								Dictionary options;
+								int index = 0;
+								file_chooser_parse_response(&iter, fd.filter_names, cancel, uris, index, options);
+
+								if (fd.callback.is_valid()) {
+									callable_mp(portal, &FreeDesktopPortalDesktop::_file_dialog_callback).call_deferred(fd.callback, !cancel, uris, index, options, fd.opt_in_cb);
+								}
+								if (fd.prev_focus != DisplayServer::INVALID_WINDOW_ID) {
+									callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(fd.prev_focus);
+								}
+							}
+
+							DBusError err;
+							dbus_error_init(&err);
+							dbus_bus_remove_match(portal->monitor_connection, fd.filter.utf8().get_data(), &err);
+							dbus_error_free(&err);
+
+							portal->file_dialogs.remove_at(i);
+							break;
+						}
+					}
 				}
 				dbus_message_unref(msg);
 			}
-			dbus_connection_read_write(portal->theme_connection, 0);
+			dbus_connection_read_write(portal->monitor_connection, 0);
 		}
 
 		usleep(50000);
@@ -647,18 +618,18 @@ FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
 
 	DBusError err;
 	dbus_error_init(&err);
-	theme_connection = dbus_bus_get(DBUS_BUS_SESSION, &err);
+	monitor_connection = dbus_bus_get(DBUS_BUS_SESSION, &err);
 	if (dbus_error_is_set(&err)) {
 		dbus_error_free(&err);
 	} else {
 		theme_path = "type='signal',sender='org.freedesktop.portal.Desktop',interface='org.freedesktop.portal.Settings',member='SettingChanged'";
-		dbus_bus_add_match(theme_connection, theme_path.utf8().get_data(), &err);
+		dbus_bus_add_match(monitor_connection, theme_path.utf8().get_data(), &err);
 		if (dbus_error_is_set(&err)) {
 			dbus_error_free(&err);
-			dbus_connection_unref(theme_connection);
-			theme_connection = nullptr;
+			dbus_connection_unref(monitor_connection);
+			monitor_connection = nullptr;
 		}
-		dbus_connection_read_write(theme_connection, 0);
+		dbus_connection_read_write(monitor_connection, 0);
 	}
 
 	if (!unsupported) {
@@ -673,21 +644,17 @@ FreeDesktopPortalDesktop::~FreeDesktopPortalDesktop() {
 		monitor_thread.wait_to_finish();
 	}
 
-	for (FreeDesktopPortalDesktop::FileDialogData &fd : file_dialogs) {
-		if (fd.connection) {
-			DBusError err;
-			dbus_error_init(&err);
-			dbus_bus_remove_match(fd.connection, fd.path.utf8().get_data(), &err);
-			dbus_error_free(&err);
-			dbus_connection_unref(fd.connection);
-		}
-	}
-	if (theme_connection) {
+	if (monitor_connection) {
 		DBusError err;
+		for (FreeDesktopPortalDesktop::FileDialogData &fd : file_dialogs) {
+			dbus_error_init(&err);
+			dbus_bus_remove_match(monitor_connection, fd.filter.utf8().get_data(), &err);
+			dbus_error_free(&err);
+		}
 		dbus_error_init(&err);
-		dbus_bus_remove_match(theme_connection, theme_path.utf8().get_data(), &err);
+		dbus_bus_remove_match(monitor_connection, theme_path.utf8().get_data(), &err);
 		dbus_error_free(&err);
-		dbus_connection_unref(theme_connection);
+		dbus_connection_unref(monitor_connection);
 	}
 }
 
