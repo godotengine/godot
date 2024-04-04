@@ -3156,7 +3156,7 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 			const EditorPropertyNameProcessor::Style style = InspectorDock::get_singleton()->get_property_name_style();
 			menu_properties->clear();
 			for (const String &p : valid_properties) {
-				menu_properties->add_item(EditorPropertyNameProcessor::get_singleton()->process_name(p, style));
+				menu_properties->add_item(EditorPropertyNameProcessor::get_singleton()->process_name(p, style, p, node->get_class_name()));
 				menu_properties->set_item_metadata(-1, p);
 			}
 

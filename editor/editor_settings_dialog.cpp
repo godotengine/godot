@@ -452,8 +452,8 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 		TreeItem *section = shortcuts->create_item(root);
 
-		const String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, name_style);
-		const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, tooltip_style);
+		const String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, name_style, E);
+		const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, tooltip_style, E);
 
 		section->set_text(0, item_name);
 		section->set_tooltip_text(0, tooltip);
