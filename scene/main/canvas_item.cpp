@@ -1401,14 +1401,17 @@ void CanvasItem::_refresh_texture_filter_cache() const {
 	}
 }
 
+void CanvasItem::_update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) {
+	RS::get_singleton()->canvas_item_set_default_texture_filter(get_canvas_item(), p_texture_filter);
+	queue_redraw();
+}
+
 void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 	if (!is_inside_tree()) {
 		return;
 	}
 	_refresh_texture_filter_cache();
-
-	RS::get_singleton()->canvas_item_set_default_texture_filter(get_canvas_item(), texture_filter_cache);
-	queue_redraw();
+	_update_self_texture_filter(texture_filter_cache);
 
 	if (p_propagate) {
 		for (CanvasItem *E : children_items) {
@@ -1452,14 +1455,18 @@ void CanvasItem::_refresh_texture_repeat_cache() const {
 	}
 }
 
+void CanvasItem::_update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat) {
+	RS::get_singleton()->canvas_item_set_default_texture_repeat(get_canvas_item(), p_texture_repeat);
+	queue_redraw();
+}
+
 void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 	if (!is_inside_tree()) {
 		return;
 	}
 	_refresh_texture_repeat_cache();
+	_update_self_texture_repeat(texture_repeat_cache);
 
-	RS::get_singleton()->canvas_item_set_default_texture_repeat(get_canvas_item(), texture_repeat_cache);
-	queue_redraw();
 	if (p_propagate) {
 		for (CanvasItem *E : children_items) {
 			if (!E->top_level && E->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
