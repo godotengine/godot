@@ -546,6 +546,7 @@ public:
 	// Other string operations.
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const = 0;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const = 0;
+	virtual String string_to_title(const String &p_string, const String &p_language = "") const = 0;
 
 	TypedArray<Vector3i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 

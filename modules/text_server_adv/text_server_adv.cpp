@@ -6976,6 +6976,34 @@ String TextServerAdvanced::_string_to_lower(const String &p_string, const String
 	return String::utf16(lower.ptr(), len);
 }
 
+String TextServerAdvanced::_string_to_title(const String &p_string, const String &p_language) const {
+#ifndef ICU_STATIC_DATA
+	if (!icu_data_loaded) {
+		return p_string.capitalize();
+	}
+#endif
+
+	if (p_string.is_empty()) {
+		return p_string;
+	}
+	const String lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+
+	// Convert to UTF-16.
+	Char16String utf16 = p_string.utf16();
+
+	Vector<char16_t> upper;
+	UErrorCode err = U_ZERO_ERROR;
+	int32_t len = u_strToTitle(nullptr, 0, utf16.get_data(), -1, nullptr, lang.ascii().get_data(), &err);
+	ERR_FAIL_COND_V_MSG(err != U_BUFFER_OVERFLOW_ERROR, p_string, u_errorName(err));
+	upper.resize(len);
+	err = U_ZERO_ERROR;
+	u_strToTitle(upper.ptrw(), len, utf16.get_data(), -1, nullptr, lang.ascii().get_data(), &err);
+	ERR_FAIL_COND_V_MSG(U_FAILURE(err), p_string, u_errorName(err));
+
+	// Convert back to UTF-32.
+	return String::utf16(upper.ptr(), len);
+}
+
 PackedInt32Array TextServerAdvanced::_string_get_word_breaks(const String &p_string, const String &p_language, int64_t p_chars_per_line) const {
 	const String lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 	// Convert to UTF-16.

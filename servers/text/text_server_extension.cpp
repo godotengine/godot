@@ -341,6 +341,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_string_to_upper, "string", "language");
 	GDVIRTUAL_BIND(_string_to_lower, "string", "language");
+	GDVIRTUAL_BIND(_string_to_title, "string", "language");
 
 	GDVIRTUAL_BIND(_parse_structured_text, "parser_type", "args", "text");
 
@@ -1502,6 +1503,14 @@ String TextServerExtension::strip_diacritics(const String &p_string) const {
 String TextServerExtension::string_to_upper(const String &p_string, const String &p_language) const {
 	String ret;
 	if (GDVIRTUAL_CALL(_string_to_upper, p_string, p_language, ret)) {
+		return ret;
+	}
+	return p_string;
+}
+
+String TextServerExtension::string_to_title(const String &p_string, const String &p_language) const {
+	String ret;
+	if (GDVIRTUAL_CALL(_string_to_title, p_string, p_language, ret)) {
 		return ret;
 	}
 	return p_string;
