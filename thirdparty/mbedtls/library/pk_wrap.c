@@ -53,7 +53,23 @@ static int rsa_can_do(mbedtls_pk_type_t type)
 static size_t rsa_get_bitlen(const void *ctx)
 {
     const mbedtls_rsa_context *rsa = (const mbedtls_rsa_context *) ctx;
-    return 8 * mbedtls_rsa_get_len(rsa);
+    /* Unfortunately, the rsa.h interface does not have a direct way
+     * to access the bit-length that works with MBEDTLS_RSA_ALT.
+     * So we have to do a little work here.
+     */
+    mbedtls_mpi N;
+    mbedtls_mpi_init(&N);
+    int ret = mbedtls_rsa_export(rsa, &N, NULL, NULL, NULL, NULL);
+    /* If the export fails for some reason (e.g. the RSA_ALT implementation
+     * does not support export, or there is not enough memory),
+     * we have no way of returning an error from this function.
+     * As a fallback, return the byte-length converted in bits, which is
+     * the correct  value if the modulus size is a multiple of 8 bits, which
+     * is very often the case in practice. */
+    size_t bitlen = (ret == 0 ? mbedtls_mpi_bitlen(&N) :
+                     8 * mbedtls_rsa_get_len(rsa));
+    mbedtls_mpi_free(&N);
+    return bitlen;
 }
 
 static int rsa_verify_wrap(void *ctx, mbedtls_md_type_t md_alg,
