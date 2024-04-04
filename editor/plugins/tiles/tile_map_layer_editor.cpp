@@ -3883,7 +3883,11 @@ void TileMapLayerEditor::_highlight_selected_layer_button_toggled(bool p_pressed
 	}
 
 	EditorSettings::get_singleton()->set("editors/tiles_editor/highlight_selected_layer", p_pressed);
-	_update_all_layers_highlighting();
+	if (p_pressed) {
+		_update_all_layers_highlighting();
+	} else {
+		_clear_all_layers_highlighting();
+	}
 }
 
 void TileMapLayerEditor::_advanced_menu_button_id_pressed(int p_id) {
