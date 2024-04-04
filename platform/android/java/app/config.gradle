@@ -194,17 +194,17 @@ final String VALUE_SEPARATOR_REGEX = "\\|"
 
 // get the list of ABIs the project should be exported to
 ext.getExportEnabledABIs = { ->
-    String enabledABIs = project.hasProperty("export_enabled_abis") ? project.property("export_enabled_abis") : "";
+    String enabledABIs = project.hasProperty("export_enabled_abis") ? project.property("export_enabled_abis") : ""
     if (enabledABIs == null || enabledABIs.isEmpty()) {
         enabledABIs = "armeabi-v7a|arm64-v8a|x86|x86_64|"
     }
-    Set<String> exportAbiFilter = [];
+    Set<String> exportAbiFilter = []
     for (String abi_name : enabledABIs.split(VALUE_SEPARATOR_REGEX)) {
         if (!abi_name.trim().isEmpty()){
-            exportAbiFilter.add(abi_name);
+            exportAbiFilter.add(abi_name)
         }
     }
-    return exportAbiFilter;
+    return exportAbiFilter
 }
 
 ext.getExportPath = {

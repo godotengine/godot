@@ -121,7 +121,7 @@ android {
                 case "dev":
                 default:
                     sconsTarget += "_debug"
-                    break;
+                    break
             }
         }
 
