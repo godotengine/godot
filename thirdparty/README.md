@@ -838,11 +838,13 @@ folder.
 
 Files extracted from upstream source:
 
+- `LICENSE.txt`
 - All `.cpp`, `.h` and `.inl` files
 
-Important: Some files have Godot-made changes.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
-comments and a patch is provided in the squish/ folder.
+Some downstream changes have been made and are identified by
+`// -- GODOT begin --` and `// -- GODOT end --` comments.
+They can be reapplied using the patches included in the `patches`
+folder.
 
 
 ## tinyexr
