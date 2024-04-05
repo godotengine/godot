@@ -20,3 +20,12 @@ env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/co
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/grass/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "MTerrain/gdextension/src/navmesh/*.cpp")
 
+
+
+env_game_help.add_source_files(env.modules_sources, "yaml/*.cpp")
+env_game_help.add_source_files(env.modules_sources, "yaml/std/*.cpp")
+env_game_help.add_source_files(env.modules_sources, "yaml/detail/*.cpp")
+
+
+env_game_help.add_source_files(env.modules_sources, "yaml/c4/*.cpp")
+

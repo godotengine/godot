@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?> 
+
+<!--
+Very good intro:
+@see https://code.msdn.microsoft.com/windowsdesktop/Writing-type-visualizers-2eae77a2
+See also:
+@see http://blogs.msdn.com/b/vcblog/archive/2013/06/28/using-visual-studio-2013-to-write-maintainable-native-visualizations-natvis.aspx?PageIndex=2
+@see http://blogs.msdn.com/b/vcblog/archive/2015/09/28/debug-visualizers-in-visual-c-2015.aspx
+@see http://stackoverflow.com/questions/36883414/limit-display-of-char-in-natvis-file-to-specific-length
+-->
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="c4::basic_substring&lt;*&gt;">
+    <DisplayString>{str,[len]} (sz={len})</DisplayString>
+    <StringView>str,[len]</StringView>
+    <Expand>
+      <Item Name="[size]">len</Item>
+      <ArrayItems>
+        <Size>len</Size>
+        <ValuePointer>str</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::span&lt;*&gt;">
+    <DisplayString>{m_ptr,[m_size]} (sz={m_size})</DisplayString>
+    <Expand>
+      <Item Name="[size]">m_size</Item>
+      <ArrayItems>
+        <Size>m_size</Size>
+        <ValuePointer>m_ptr</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <Type Name="c4::spanrs&lt;*&gt;">
+    <DisplayString>{m_ptr,[m_size]} (sz={m_size}, cap={m_capacity})</DisplayString>
+    <Expand>
+      <Item Name="[size]">m_size</Item>
+      <Item Name="[capacity]">m_capacity</Item>
+      <ArrayItems>
+        <Size>m_size</Size>
+        <ValuePointer>m_ptr</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <!-- display span<char>/span<const char> as a string too -->
+  <Type Name="c4::span&lt;char,*&gt;">
+    <DisplayString>{m_ptr,[m_size]} (sz={m_size})</DisplayString>
+    <StringView>m_ptr,[m_size]</StringView>
+    <Expand>
+      <Item Name="[size]">m_size</Item>
+      <ArrayItems>
+        <Size>m_size</Size>
+        <ValuePointer>m_ptr</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <Type Name="c4::span&lt;const char,*&gt;">
+    <DisplayString>{m_ptr,[m_size]} (sz={m_size})</DisplayString>
+    <StringView>m_ptr,[m_size]</StringView>
+    <Expand>
+      <Item Name="[size]">m_size</Item>
+      <ArrayItems>
+        <Size>m_size</Size>
+        <ValuePointer>m_ptr</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <!-- display spanrs<char>/spanrs<const char> as a string too -->
+  <Type Name="c4::spanrs&lt;char,*&gt;">
+    <DisplayString>{m_ptr,[m_size]} (sz={m_size}, cap={m_capacity})</DisplayString>
+    <StringView>m_ptr,[m_size]</StringView>
+    <Expand>
+      <Item Name="[size]">m_size</Item>
+      <Item Name="[capacity]">m_capacity</Item>
+      <ArrayItems>
+        <Size>m_size</Size>
+        <ValuePointer>m_ptr</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <Type Name="c4::spanrs&lt;const char,*&gt;">
+    <DisplayString>{m_ptr,[m_size]} (sz={m_size}, cap={m_capacity})</DisplayString>
+    <StringView>m_ptr,[m_size]</StringView>
+    <Expand>
+      <Item Name="[size]">m_size</Item>
+      <Item Name="[capacity]">m_capacity</Item>
+      <ArrayItems>
+        <Size>m_size</Size>
+        <ValuePointer>m_ptr</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- =========================================================================================== -->
+  <Type Name="c4::string_impl&lt;*,*,*,*&gt;">
+    <DisplayString>{(($T3*)this)->m_str,[(($T3*)this)->m_size]} (sz={(($T3*)this)->m_size})</DisplayString>
+    <StringView>(($T3*)this)->m_str,[(($T3*)this)->m_size]</StringView>
+    <Expand>
+      <Synthetic Name="m_str">
+        <DisplayString>{(($T3*)this)->m_str,[(($T3*)this)->m_size]}</DisplayString>
+        <StringView>(($T3*)this)->m_str,[(($T3*)this)->m_size]</StringView>
+      </Synthetic>
+      <Synthetic Name="m_size">
+        <DisplayString>{(($T3*)this)->m_size}</DisplayString>
+      </Synthetic>
+    </Expand>
+  </Type>
+  <Type Name="c4::basic_substring&lt;*,*&gt;">
+    <DisplayString>{m_str,[m_size]} (sz={m_size})</DisplayString>
+    <StringView>m_str,[m_size]</StringView>
+    <Expand>
+      <Synthetic Name="[size]">
+        <DisplayString>{m_size}</DisplayString>
+      </Synthetic>
+    </Expand>
+  </Type>
+  <Type Name="c4::basic_substringrs&lt;*,*&gt;">
+    <DisplayString>{m_str,[m_size]} (sz={m_size},cap={m_capacity})</DisplayString>
+    <StringView>m_str,[m_size]</StringView>
+    <Expand>
+      <Synthetic Name="[size]">
+        <DisplayString>{m_size}</DisplayString>
+      </Synthetic>
+      <Synthetic Name="[capacity]">
+        <DisplayString>{m_capacity}</DisplayString>
+      </Synthetic>
+      <Synthetic Name="[full]">
+        <DisplayString>{m_str,[m_capacity]}</DisplayString>
+        <StringView>m_str,[m_capacity]</StringView>
+      </Synthetic>
+    </Expand>
+  </Type>
+  <Type Name="c4::basic_string&lt;*,*,*&gt;">
+    <DisplayString>{m_str,[m_size]} (sz={m_size},cap={m_capacity})</DisplayString>
+    <StringView>m_str,[m_size]</StringView>
+    <Expand>
+      <Synthetic Name="[size]">
+        <DisplayString>{m_size}</DisplayString>
+      </Synthetic>
+      <Synthetic Name="[full]">
+        <DisplayString>{m_str,[m_capacity]}</DisplayString>
+        <StringView>m_str,[m_capacity]</StringView>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <!-- enum symbols -->
+  <Type Name="c4::EnumSymbols&lt;*&gt;::Sym">
+    <DisplayString>{value} - {name}</DisplayString>
+    <Expand>
+      <Item Name="[value]">value</Item>
+      <Item Name="[name]">name</Item>
+    </Expand>
+  </Type>
+  <Type Name="c4::EnumSymbols&lt;*&gt;">
+    <DisplayString>{m_symbols,[m_num]} (sz={m_num})</DisplayString>
+    <Expand>
+      <Item Name="[size]">m_num</Item>
+      <ArrayItems>
+        <Size>m_num</Size>
+        <ValuePointer>m_symbols</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+</AutoVisualizer>

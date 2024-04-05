@@ -1,5 +1,6 @@
 #pragma once
 #include "core/io/resource_loader.h"
+#include "core/io/json.h"
 
 
 class DataTableItem : public RefCounted
@@ -165,6 +166,8 @@ public:
     {
         return version;
     }
+
+    Ref<JSON> parse_yaml(const String& text);
 
     bool is_init = false;
     int version = 0;
