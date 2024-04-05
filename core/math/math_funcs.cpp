@@ -93,27 +93,18 @@ int Math::range_step_decimals(double p_step) {
 }
 
 double Math::ease(double p_x, double p_c) {
-	if (p_x < 0) {
-		p_x = 0;
-	} else if (p_x > 1.0) {
-		p_x = 1.0;
-	}
+	// Ensure that p_x stays within the range [0, 1]
+	p_x = (p_x < 0.0) ? 0.0 : ((p_x > 1.0) ? 1.0 : p_x);
+	
 	if (p_c > 0) {
-		if (p_c < 1.0) {
-			return 1.0 - Math::pow(1.0 - p_x, 1.0 / p_c);
-		} else {
-			return Math::pow(p_x, p_c);
-		}
+		// Apply ease-in function when p_c is positive
+		return (p_c < 1.0) ? 1.0 - Math::pow(1.0 - p_x, 1.0 / p_c) : Math::pow(p_x, p_c);
 	} else if (p_c < 0) {
-		//inout ease
-
-		if (p_x < 0.5) {
-			return Math::pow(p_x * 2.0, -p_c) * 0.5;
-		} else {
-			return (1.0 - Math::pow(1.0 - (p_x - 0.5) * 2.0, -p_c)) * 0.5 + 0.5;
-		}
+		// Apply ease-inout function when p_c is negative
+		return (p_x < 0.5) ? Math::pow(p_x * 2.0, -p_c) * 0.5 : 0.5 * (2.0 - Math::pow(2.0 * (1.0 - p_x), -p_c));
 	} else {
-		return 0; // no ease (raw)
+		// No easing, return raw value
+		return 0; 
 	}
 }
 
