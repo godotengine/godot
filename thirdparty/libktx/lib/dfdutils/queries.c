@@ -41,15 +41,15 @@ getDFDComponentInfoUnpacked(const uint32_t* DFD, uint32_t* numComponents,
 {
     const uint32_t *BDFDB = DFD+1;
     uint32_t numSamples = KHR_DFDSAMPLECOUNT(BDFDB);
-    uint32_t sampleCounter;
+    uint32_t sampleNumber;
     uint32_t currentChannel = ~0U; /* Don't start matched. */
 
     /* This is specifically for unpacked formats which means the size of */
     /* each component is the same. */
     *numComponents = 0;
-    for (sampleCounter = 0; sampleCounter < numSamples; ++sampleCounter) {
-        uint32_t sampleByteLength = (KHR_DFDSVAL(BDFDB, sampleCounter, BITLENGTH) + 1) >> 3U;
-        uint32_t sampleChannel = KHR_DFDSVAL(BDFDB, sampleCounter, CHANNELID);
+    for (sampleNumber = 0; sampleNumber < numSamples; ++sampleNumber) {
+        uint32_t sampleByteLength = (KHR_DFDSVAL(BDFDB, sampleNumber, BITLENGTH) + 1) >> 3U;
+        uint32_t sampleChannel = KHR_DFDSVAL(BDFDB, sampleNumber, CHANNELID);
 
         if (sampleChannel == currentChannel) {
             /* Continuation of the same channel. */
@@ -85,10 +85,10 @@ uint32_t getDFDNumComponents(const uint32_t* DFD)
     uint32_t currentChannel = ~0U; /* Don't start matched. */
     uint32_t numComponents = 0;
     uint32_t numSamples = KHR_DFDSAMPLECOUNT(BDFDB);
-    uint32_t sampleCounter;
+    uint32_t sampleNumber;
 
-    for (sampleCounter = 0; sampleCounter < numSamples; ++sampleCounter) {
-        uint32_t sampleChannel = KHR_DFDSVAL(BDFDB, sampleCounter, CHANNELID);
+    for (sampleNumber = 0; sampleNumber < numSamples; ++sampleNumber) {
+        uint32_t sampleChannel = KHR_DFDSVAL(BDFDB, sampleNumber, CHANNELID);
         if (sampleChannel != currentChannel) {
             numComponents++;
             currentChannel = sampleChannel;
@@ -97,14 +97,73 @@ uint32_t getDFDNumComponents(const uint32_t* DFD)
     return numComponents;
 }
 
+
 /**
  * @~English
- * @brief Recreate the value of bytesPlane0 from sample info.
+ * @brief Reconstruct the value of bytesPlane0 from sample info.
  *
- * This can be use to recreate the value of bytesPlane0 for data that
- * has been variable-rate compressed so has bytesPlane0 = 0.  For DFDs
- * that are valid for KTX files. Little-endian data only and no multi-plane
- * formats.
+ * Reconstruct the value for data that has been variable-rate compressed so
+ * has bytesPlane0 = 0.  For DFDs that are valid for KTX files. Little-endian
+ * data only and no multi-plane formats.
+ *
+ * @param DFD Pointer to a Data Format Descriptor for which,
+ *            described as 32-bit words in native endianness.
+ *            Note that this is the whole descriptor, not just
+ *            the basic descriptor block.
+ */
+uint32_t
+reconstructDFDBytesPlane0FromSamples(const uint32_t* DFD)
+{
+    const uint32_t *BDFDB = DFD+1;
+    uint32_t numSamples = KHR_DFDSAMPLECOUNT(BDFDB);
+    uint32_t sampleNumber;
+
+    uint32_t bitsPlane0 = 0;
+    int32_t largestOffset = 0;
+    uint32_t sampleNumberWithLargestOffset = 0;
+
+    // Special case these depth{,-stencil} formats. The unused bits are
+    // in the MSBs so have no visibility in the DFD therefore the max offset
+    // algorithm below returns a value that is too small.
+    if (KHR_DFDSVAL(BDFDB, 0, CHANNELID) == KHR_DF_CHANNEL_COMMON_DEPTH) {
+        if (numSamples == 1) {
+            if (KHR_DFDSVAL(BDFDB, 0, BITLENGTH) + 1 == 24) {
+                // X8_D24_UNORM_PACK32,
+                return 4;
+            }
+        } else if (numSamples == 2) {
+            if (KHR_DFDSVAL(BDFDB, 0, BITLENGTH) + 1 == 16) {
+                // D16_UNORM_S8_UINT
+                return 4;
+            }
+            if (KHR_DFDSVAL(BDFDB, 0, BITLENGTH) + 1 == 32
+                && KHR_DFDSVAL(BDFDB, 1, CHANNELID) == KHR_DF_CHANNEL_COMMON_STENCIL) {
+                // D32_SFLOAT_S8_UINT
+                return 8;
+            }
+        }
+    }
+    for (sampleNumber = 0; sampleNumber < numSamples; ++sampleNumber) {
+        int32_t sampleBitOffset = KHR_DFDSVAL(BDFDB, sampleNumber, BITOFFSET);
+        if (sampleBitOffset > largestOffset) {
+            largestOffset = sampleBitOffset;
+            sampleNumberWithLargestOffset = sampleNumber;
+        }
+    }
+
+    /* The sample bitLength field stores the bit length - 1. */
+    uint32_t sampleBitLength = KHR_DFDSVAL(BDFDB, sampleNumberWithLargestOffset, BITLENGTH) + 1;
+    bitsPlane0 = largestOffset + sampleBitLength;
+    return bitsPlane0 >> 3U;
+}
+
+/**
+ * @~English
+ * @brief Reconstruct the value of bytesPlane0 from sample info.
+ *
+ * @see reconstructDFDBytesPlane0FromSamples for details.
+ * @deprecated For backward comparibility only. Use
+ *             reconstructDFDBytesPlane0FromSamples.
  *
  * @param DFD Pointer to a Data Format Descriptor for which,
  *            described as 32-bit words in native endianness.
@@ -116,31 +175,5 @@ uint32_t getDFDNumComponents(const uint32_t* DFD)
 void
 recreateBytesPlane0FromSampleInfo(const uint32_t* DFD, uint32_t* bytesPlane0)
 {
-    const uint32_t *BDFDB = DFD+1;
-    uint32_t numSamples = KHR_DFDSAMPLECOUNT(BDFDB);
-    uint32_t sampleCounter;
-
-    uint32_t bitsPlane0 = 0;
-    uint32_t* bitOffsets = malloc(sizeof(uint32_t) * numSamples);
-    memset(bitOffsets, -1, sizeof(uint32_t) * numSamples);
-    for (sampleCounter = 0; sampleCounter < numSamples; ++sampleCounter) {
-        uint32_t sampleBitOffset = KHR_DFDSVAL(BDFDB, sampleCounter, BITOFFSET);
-        /* The sample bitLength field stores the bit length - 1. */
-        uint32_t sampleBitLength = KHR_DFDSVAL(BDFDB, sampleCounter, BITLENGTH) + 1;
-        uint32_t i;
-        for (i = 0; i < numSamples; i++) {
-            if (sampleBitOffset == bitOffsets[i]) {
-                // This sample is being repeated as in e.g. RGB9E5.
-                break;
-            }
-        }
-        if (i == numSamples) {
-            // Previously unseen bitOffset. Bump size.
-            bitsPlane0 += sampleBitLength;
-            bitOffsets[sampleCounter] = sampleBitOffset;
-        }
-    }
-    free(bitOffsets);
-    *bytesPlane0 = bitsPlane0 >> 3U;
+    *bytesPlane0 = reconstructDFDBytesPlane0FromSamples(DFD);
 }
-
