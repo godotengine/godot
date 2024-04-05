@@ -203,7 +203,7 @@ void Light2D::_physics_interpolated_changed() {
 
 void Light2D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_CANVAS: {
 			RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
 			_update_light_visibility();
 		} break;
@@ -227,7 +227,7 @@ void Light2D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_EXIT_TREE: {
+		case NOTIFICATION_EXIT_CANVAS: {
 			RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
 			_update_light_visibility();
 		} break;
