@@ -2979,9 +2979,25 @@ void DisplayServerWindows::force_process_and_drop_events() {
 }
 
 void DisplayServerWindows::release_rendering_thread() {
+#if defined(GLES3_ENABLED)
+	if (gl_manager_angle) {
+		gl_manager_angle->release_current();
+	}
+	if (gl_manager_native) {
+		gl_manager_native->release_current();
+	}
+#endif
 }
 
 void DisplayServerWindows::make_rendering_thread() {
+#if defined(GLES3_ENABLED)
+	if (gl_manager_angle) {
+		gl_manager_angle->make_current();
+	}
+	if (gl_manager_native) {
+		gl_manager_native->make_current();
+	}
+#endif
 }
 
 void DisplayServerWindows::swap_buffers() {

@@ -3047,9 +3047,25 @@ void DisplayServerMacOS::force_process_and_drop_events() {
 }
 
 void DisplayServerMacOS::release_rendering_thread() {
+#if defined(GLES3_ENABLED)
+	if (gl_manager_angle) {
+		gl_manager_angle->release_current();
+	}
+	if (gl_manager_legacy) {
+		gl_manager_legacy->release_current();
+	}
+#endif
 }
 
 void DisplayServerMacOS::make_rendering_thread() {
+#if defined(GLES3_ENABLED)
+	if (gl_manager_angle) {
+		gl_manager_angle->make_current();
+	}
+	if (gl_manager_legacy) {
+		gl_manager_legacy->make_current();
+	}
+#endif
 }
 
 void DisplayServerMacOS::swap_buffers() {
