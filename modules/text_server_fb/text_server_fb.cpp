@@ -4439,6 +4439,10 @@ String TextServerFallback::_string_to_lower(const String &p_string, const String
 	return p_string.to_lower();
 }
 
+String TextServerFallback::_string_to_title(const String &p_string, const String &p_language) const {
+	return p_string.capitalize();
+}
+
 PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_string, const String &p_language, int64_t p_chars_per_line) const {
 	PackedInt32Array ret;
 
