@@ -495,8 +495,13 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 	}
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
-		ERR_PRINT("Class '" + String(p_class) + "' can only be instantiated by editor.");
-		return nullptr;
+		if (ti->inherits == "SyntaxHighlighter") {
+			WARN_PRINT("Class '" + String(p_class) + "' should only be instantiated by editor.");
+			return ti->creation_func();
+		} else {
+			ERR_PRINT("Class '" + String(p_class) + "' can only be instantiated by editor.");
+			return nullptr;
+		}
 	}
 #endif
 	if (ti->gdextension && ti->gdextension->create_instance) {
