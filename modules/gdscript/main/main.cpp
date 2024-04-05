@@ -87,6 +87,7 @@ int Main::start() {
 	String source_file;
 
 	Vector<String> functions_to_dump;
+	String entrypoint = "main";
 	bool dump_all_functions = false;
 	bool run_code = true;
 	List<String>::Element *I = args.front();
@@ -103,6 +104,13 @@ int Main::start() {
 			dump_all_functions = true;
 		} else if (I->get() == "--no-run") {
 			run_code = false;
+		} else if (I->get() == "--entrypoint") {
+			if (I->next()) {
+				entrypoint = I->next()->get();
+				N = I->next()->next();
+			} else {
+				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "	--entrypoint requires a function name.");
+			}
 		} else {
 			if (source_file.is_empty()) {
 				source_file = I->get();
@@ -155,8 +163,8 @@ int Main::start() {
 	if (!run_code) {
 		return OK;
 	}
-	const HashMap<StringName, GDScriptFunction *>::ConstIterator main_func = script->get_member_functions().find("main");
-	ERR_FAIL_COND_V_MSG(!main_func, ERR_CANT_RESOLVE, "Could not find main function in: '" + source_file + "'.");
+	const HashMap<StringName, GDScriptFunction *>::ConstIterator entrypoint_func = script->get_member_functions().find(entrypoint);
+	ERR_FAIL_COND_V_MSG(!entrypoint_func, ERR_CANT_RESOLVE, "Could not find '" + entrypoint + "' function in: '" + source_file + "'.");
 
 	err = script->reload();
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Could not reload script: '" + source_file + "'.");
@@ -170,9 +178,9 @@ int Main::start() {
 	GDScriptInstance *instance = static_cast<GDScriptInstance *>(obj->get_script_instance());
 
 	Callable::CallError call_err;
-	instance->callp("main", nullptr, 0, call_err);
+	instance->callp(entrypoint, nullptr, 0, call_err);
 
-	ERR_FAIL_COND_V_MSG(call_err.error != Callable::CallError::CALL_OK, ERR_SCRIPT_FAILED, "Could not call main function in: '" + source_file + "'.");
+	ERR_FAIL_COND_V_MSG(call_err.error != Callable::CallError::CALL_OK, ERR_SCRIPT_FAILED, "Could not call '" + entrypoint + "' function in: '" + source_file + "'.");
 
 	if (obj_ref.is_null()) {
 		memdelete(obj);
