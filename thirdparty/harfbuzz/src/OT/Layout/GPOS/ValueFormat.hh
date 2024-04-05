@@ -116,7 +116,7 @@ struct ValueFormat : HBUINT16
 
     if (!use_x_device && !use_y_device) return ret;
 
-    const VariationStore &store = c->var_store;
+    const ItemVariationStore &store = c->var_store;
     auto *cache = c->var_store_cache;
 
     /* pixel -> fractional pixel */
