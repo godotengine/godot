@@ -575,8 +575,6 @@ void NavMeshGenerator2D::generator_parse_tilemap_node(const Ref<NavigationPolygo
 		return;
 	}
 
-	int tilemap_layer = 0; // only main tile map layer is supported
-
 	Ref<TileSet> tile_set = tilemap->get_tileset();
 	if (!tile_set.is_valid()) {
 		return;
@@ -589,77 +587,115 @@ void NavMeshGenerator2D::generator_parse_tilemap_node(const Ref<NavigationPolygo
 		return;
 	}
 
+	HashSet<Vector2i> cells_with_navigation_polygon;
+	HashSet<Vector2i> cells_with_collision_polygon;
+
 	const Transform2D tilemap_xform = p_source_geometry_data->root_node_transform * tilemap->get_global_transform();
-	TypedArray<Vector2i> used_cells = tilemap->get_used_cells(tilemap_layer);
 
-	for (int used_cell_index = 0; used_cell_index < used_cells.size(); used_cell_index++) {
-		const Vector2i &cell = used_cells[used_cell_index];
+#ifdef DEBUG_ENABLED
+	int error_print_counter = 0;
+	int error_print_max = 10;
+#endif // DEBUG_ENABLED
 
-		const TileData *tile_data = tilemap->get_cell_tile_data(tilemap_layer, cell, false);
-		if (tile_data == nullptr) {
-			continue;
-		}
+	for (int tilemap_layer = 0; tilemap_layer < tilemap->get_layers_count(); tilemap_layer++) {
+		TypedArray<Vector2i> used_cells = tilemap->get_used_cells(tilemap_layer);
 
-		// Transform flags.
-		const int alternative_id = tilemap->get_cell_alternative_tile(tilemap_layer, cell, false);
-		bool flip_h = (alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_H);
-		bool flip_v = (alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_V);
-		bool transpose = (alternative_id & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
+		for (int used_cell_index = 0; used_cell_index < used_cells.size(); used_cell_index++) {
+			const Vector2i &cell = used_cells[used_cell_index];
 
-		Transform2D tile_transform;
-		tile_transform.set_origin(tilemap->map_to_local(cell));
+			const TileData *tile_data = tilemap->get_cell_tile_data(tilemap_layer, cell, false);
+			if (tile_data == nullptr) {
+				continue;
+			}
 
-		const Transform2D tile_transform_offset = tilemap_xform * tile_transform;
+			// Transform flags.
+			const int alternative_id = tilemap->get_cell_alternative_tile(tilemap_layer, cell, false);
+			bool flip_h = (alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_H);
+			bool flip_v = (alternative_id & TileSetAtlasSource::TRANSFORM_FLIP_V);
+			bool transpose = (alternative_id & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
 
-		if (navigation_layers_count > 0) {
-			Ref<NavigationPolygon> navigation_polygon = tile_data->get_navigation_polygon(tilemap_layer, flip_h, flip_v, transpose);
-			if (navigation_polygon.is_valid()) {
-				for (int outline_index = 0; outline_index < navigation_polygon->get_outline_count(); outline_index++) {
-					const Vector<Vector2> &navigation_polygon_outline = navigation_polygon->get_outline(outline_index);
-					if (navigation_polygon_outline.size() == 0) {
-						continue;
+			Transform2D tile_transform;
+			tile_transform.set_origin(tilemap->map_to_local(cell));
+
+			const Transform2D tile_transform_offset = tilemap_xform * tile_transform;
+
+			if (navigation_layers_count > 0) {
+				Ref<NavigationPolygon> navigation_polygon = tile_data->get_navigation_polygon(tilemap_layer, flip_h, flip_v, transpose);
+				if (navigation_polygon.is_valid()) {
+					if (cells_with_navigation_polygon.has(cell)) {
+#ifdef DEBUG_ENABLED
+						error_print_counter++;
+						if (error_print_counter <= error_print_max) {
+							WARN_PRINT(vformat("TileMap navigation mesh baking error. The TileMap cell key Vector2i(%s, %s) has navigation mesh from 2 or more different TileMap layers assigned. This can cause unexpected navigation mesh baking results. The duplicated cell data was ignored.", cell.x, cell.y));
+						}
+#endif // DEBUG_ENABLED
+					} else {
+						cells_with_navigation_polygon.insert(cell);
+
+						for (int outline_index = 0; outline_index < navigation_polygon->get_outline_count(); outline_index++) {
+							const Vector<Vector2> &navigation_polygon_outline = navigation_polygon->get_outline(outline_index);
+							if (navigation_polygon_outline.size() == 0) {
+								continue;
+							}
+
+							Vector<Vector2> traversable_outline;
+							traversable_outline.resize(navigation_polygon_outline.size());
+
+							const Vector2 *navigation_polygon_outline_ptr = navigation_polygon_outline.ptr();
+							Vector2 *traversable_outline_ptrw = traversable_outline.ptrw();
+
+							for (int traversable_outline_index = 0; traversable_outline_index < traversable_outline.size(); traversable_outline_index++) {
+								traversable_outline_ptrw[traversable_outline_index] = tile_transform_offset.xform(navigation_polygon_outline_ptr[traversable_outline_index]);
+							}
+
+							p_source_geometry_data->_add_traversable_outline(traversable_outline);
+						}
 					}
-
-					Vector<Vector2> traversable_outline;
-					traversable_outline.resize(navigation_polygon_outline.size());
-
-					const Vector2 *navigation_polygon_outline_ptr = navigation_polygon_outline.ptr();
-					Vector2 *traversable_outline_ptrw = traversable_outline.ptrw();
-
-					for (int traversable_outline_index = 0; traversable_outline_index < traversable_outline.size(); traversable_outline_index++) {
-						traversable_outline_ptrw[traversable_outline_index] = tile_transform_offset.xform(navigation_polygon_outline_ptr[traversable_outline_index]);
-					}
-
-					p_source_geometry_data->_add_traversable_outline(traversable_outline);
 				}
 			}
-		}
 
-		if (physics_layers_count > 0 && (parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_STATIC_COLLIDERS || parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_BOTH) && (tile_set->get_physics_layer_collision_layer(tilemap_layer) & parsed_collision_mask)) {
-			for (int collision_polygon_index = 0; collision_polygon_index < tile_data->get_collision_polygons_count(tilemap_layer); collision_polygon_index++) {
-				PackedVector2Array collision_polygon_points = tile_data->get_collision_polygon_points(tilemap_layer, collision_polygon_index);
-				if (collision_polygon_points.size() == 0) {
-					continue;
+			if (physics_layers_count > 0 && (parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_STATIC_COLLIDERS || parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_BOTH) && (tile_set->get_physics_layer_collision_layer(tilemap_layer) & parsed_collision_mask)) {
+				if (cells_with_collision_polygon.has(cell)) {
+#ifdef DEBUG_ENABLED
+					error_print_counter++;
+					if (error_print_counter <= error_print_max) {
+						WARN_PRINT(vformat("TileMap navigation mesh baking error. The cell key Vector2i(%s, %s) has collision polygons from 2 or more different TileMap layers assigned that all match the parsed collision mask. This can cause unexpected navigation mesh baking results. The duplicated cell data was ignored.", cell.x, cell.y));
+					}
+#endif // DEBUG_ENABLED
+				} else {
+					cells_with_collision_polygon.insert(cell);
+
+					for (int collision_polygon_index = 0; collision_polygon_index < tile_data->get_collision_polygons_count(tilemap_layer); collision_polygon_index++) {
+						PackedVector2Array collision_polygon_points = tile_data->get_collision_polygon_points(tilemap_layer, collision_polygon_index);
+						if (collision_polygon_points.size() == 0) {
+							continue;
+						}
+
+						if (flip_h || flip_v || transpose) {
+							collision_polygon_points = TileData::get_transformed_vertices(collision_polygon_points, flip_h, flip_v, transpose);
+						}
+
+						Vector<Vector2> obstruction_outline;
+						obstruction_outline.resize(collision_polygon_points.size());
+
+						const Vector2 *collision_polygon_points_ptr = collision_polygon_points.ptr();
+						Vector2 *obstruction_outline_ptrw = obstruction_outline.ptrw();
+
+						for (int obstruction_outline_index = 0; obstruction_outline_index < obstruction_outline.size(); obstruction_outline_index++) {
+							obstruction_outline_ptrw[obstruction_outline_index] = tile_transform_offset.xform(collision_polygon_points_ptr[obstruction_outline_index]);
+						}
+
+						p_source_geometry_data->_add_obstruction_outline(obstruction_outline);
+					}
 				}
-
-				if (flip_h || flip_v || transpose) {
-					collision_polygon_points = TileData::get_transformed_vertices(collision_polygon_points, flip_h, flip_v, transpose);
-				}
-
-				Vector<Vector2> obstruction_outline;
-				obstruction_outline.resize(collision_polygon_points.size());
-
-				const Vector2 *collision_polygon_points_ptr = collision_polygon_points.ptr();
-				Vector2 *obstruction_outline_ptrw = obstruction_outline.ptrw();
-
-				for (int obstruction_outline_index = 0; obstruction_outline_index < obstruction_outline.size(); obstruction_outline_index++) {
-					obstruction_outline_ptrw[obstruction_outline_index] = tile_transform_offset.xform(collision_polygon_points_ptr[obstruction_outline_index]);
-				}
-
-				p_source_geometry_data->_add_obstruction_outline(obstruction_outline);
 			}
 		}
 	}
+#ifdef DEBUG_ENABLED
+	if (error_print_counter > error_print_max) {
+		ERR_PRINT(vformat("TileMap navigation mesh baking error. A total of %s cells with navigation or collision polygons from 2 or more different TileMap layers overlap. This can cause unexpected navigation mesh baking results. The duplicated cell data was ignored.", error_print_counter));
+	}
+#endif // DEBUG_ENABLED
 }
 
 void NavMeshGenerator2D::generator_parse_navigationobstacle_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node) {
