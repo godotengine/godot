@@ -228,7 +228,32 @@ def get_version_info(module_version_string="", silent=False):
     return version_info
 
 
+_cleanup_env = None
+_cleanup_bool = False
+
+
 def write_file_if_needed(path, string):
+    """Generates a file only if it doesn't already exist or the content has changed.
+
+    Utilizes a dedicated SCons environment to ensure the files are properly removed
+    during cleanup; will not attempt to create files during cleanup.
+
+    - `path` - Path to the file in question; used to create cleanup logic.
+    - `string` - Content to compare against an existing file.
+    """
+    global _cleanup_env
+    global _cleanup_bool
+
+    if _cleanup_env is None:
+        from SCons.Environment import Environment
+
+        _cleanup_env = Environment()
+        _cleanup_bool = _cleanup_env.GetOption("clean")
+
+    _cleanup_env.Clean("#", path)
+    if _cleanup_bool:
+        return
+
     try:
         with open(path, "r", encoding="utf-8", newline="\n") as f:
             if f.read() == string:
