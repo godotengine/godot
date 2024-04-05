@@ -5324,7 +5324,7 @@ bool EditorNode::is_distraction_free_mode_enabled() const {
 	return distraction_free->is_pressed();
 }
 
-Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
+Dictionary EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 	Control *drag_control = memnew(Control);
 	TextureRect *drag_preview = memnew(TextureRect);
 	Label *label = memnew(Label);
@@ -5364,7 +5364,7 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 	return drag_data;
 }
 
-Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from) {
+Dictionary EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from) {
 	bool has_folder = false;
 	bool has_file = false;
 	for (int i = 0; i < p_paths.size(); i++) {
