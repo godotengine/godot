@@ -155,7 +155,7 @@ commits.
 ## enet
 
 - Upstream: https://github.com/lsalzman/enet
-- Version: git (ea4607a90dbfbcf4da2669ea998585253d8e70b1, 2023)
+- Version: git (c44b7d0f7ff21edb702745e4c019d0537928c373, 2024)
 - License: MIT
 
 Files extracted from upstream source:
