@@ -123,6 +123,7 @@ class SceneTreeEditor : public Control {
 	void _set_item_custom_color(TreeItem *p_item, Color p_color);
 	void _update_node_tooltip(Node *p_node, TreeItem *p_item);
 	void _queue_update_node_tooltip(Node *p_node, TreeItem *p_item);
+	void _tree_scroll_to_item(ObjectID p_item_id);
 
 	void _selection_changed();
 	Node *get_scene_node() const;
