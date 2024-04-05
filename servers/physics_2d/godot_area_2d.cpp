@@ -75,6 +75,10 @@ void GodotArea2D::set_space(GodotSpace2D *p_space) {
 	monitored_areas.clear();
 
 	_set_space(p_space);
+
+	if (!moved_list.in_list() && get_space()) {
+		get_space()->area_add_to_moved_list(&moved_list);
+	}
 }
 
 void GodotArea2D::set_monitor_callback(const Callable &p_callback) {
