@@ -78,7 +78,7 @@ struct hb_vector_t
     if (unlikely (in_error ())) return;
     copy_array (o);
   }
-  hb_vector_t (hb_vector_t &&o)
+  hb_vector_t (hb_vector_t &&o) noexcept
   {
     allocated = o.allocated;
     length = o.length;
@@ -122,7 +122,7 @@ struct hb_vector_t
     resize (0);
   }
 
-  friend void swap (hb_vector_t& a, hb_vector_t& b)
+  friend void swap (hb_vector_t& a, hb_vector_t& b) noexcept
   {
     hb_swap (a.allocated, b.allocated);
     hb_swap (a.length, b.length);
@@ -139,7 +139,7 @@ struct hb_vector_t
 
     return *this;
   }
-  hb_vector_t& operator = (hb_vector_t &&o)
+  hb_vector_t& operator = (hb_vector_t &&o) noexcept
   {
     hb_swap (*this, o);
     return *this;

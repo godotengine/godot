@@ -309,6 +309,7 @@ hb_buffer_t::clear ()
 
   deallocate_var_all ();
   serial = 0;
+  random_state = 1;
   scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
 }
 
@@ -1359,6 +1360,49 @@ hb_buffer_get_not_found_glyph (const hb_buffer_t *buffer)
   return buffer->not_found;
 }
 
+/**
+ * hb_buffer_set_random_state:
+ * @buffer: An #hb_buffer_t
+ * @state: the new random state
+ *
+ * Sets the random state of the buffer. The state changes
+ * every time a glyph uses randomness (eg. the `rand`
+ * OpenType feature). This function together with
+ * hb_buffer_get_random_state() allow for transferring
+ * the current random state to a subsequent buffer, to
+ * get better randomness distribution.
+ *
+ * Defaults to 1 and when buffer contents are cleared.
+ * A value of 0 disables randomness during shaping.
+ *
+ * Since: 8.4.0
+ **/
+void
+hb_buffer_set_random_state (hb_buffer_t    *buffer,
+			    unsigned        state)
+{
+  if (unlikely (hb_object_is_immutable (buffer)))
+    return;
+
+  buffer->random_state = state;
+}
+
+/**
+ * hb_buffer_get_random_state:
+ * @buffer: An #hb_buffer_t
+ *
+ * See hb_buffer_set_random_state().
+ *
+ * Return value:
+ * The @buffer random state
+ *
+ * Since: 8.4.0
+ **/
+unsigned
+hb_buffer_get_random_state (const hb_buffer_t *buffer)
+{
+  return buffer->random_state;
+}
 
 /**
  * hb_buffer_clear_contents:

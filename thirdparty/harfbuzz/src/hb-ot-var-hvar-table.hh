@@ -188,7 +188,7 @@ struct hvarvvar_subset_plan_t
   ~hvarvvar_subset_plan_t() { fini (); }
 
   void init (const hb_array_t<const DeltaSetIndexMap *> &index_maps,
-	     const VariationStore &_var_store,
+	     const ItemVariationStore &_var_store,
 	     const hb_subset_plan_t *plan)
   {
     index_map_plans.resize (index_maps.length);
@@ -263,7 +263,7 @@ struct hvarvvar_subset_plan_t
   hb_inc_bimap_t outer_map;
   hb_vector_t<hb_inc_bimap_t> inner_maps;
   hb_vector_t<index_map_subset_plan_t> index_map_plans;
-  const VariationStore *var_store;
+  const ItemVariationStore *var_store;
 
   protected:
   hb_vector_t<hb_set_t *> inner_sets;
@@ -296,7 +296,7 @@ struct HVARVVAR
 		  rsbMap.sanitize (c, this));
   }
 
-  const VariationStore& get_var_store () const
+  const ItemVariationStore& get_var_store () const
   { return this+varStore; }
 
   void listup_index_maps (hb_vector_t<const DeltaSetIndexMap *> &index_maps) const
@@ -384,7 +384,7 @@ struct HVARVVAR
 
   float get_advance_delta_unscaled (hb_codepoint_t  glyph,
 				    const int *coords, unsigned int coord_count,
-				    VariationStore::cache_t *store_cache = nullptr) const
+				    ItemVariationStore::cache_t *store_cache = nullptr) const
   {
     uint32_t varidx = (this+advMap).map (glyph);
     return (this+varStore).get_delta (varidx,
@@ -405,7 +405,7 @@ struct HVARVVAR
   public:
   FixedVersion<>version;	/* Version of the metrics variation table
 				 * initially set to 0x00010000u */
-  Offset32To<VariationStore>
+  Offset32To<ItemVariationStore>
 		varStore;	/* Offset to item variation store table. */
   Offset32To<DeltaSetIndexMap>
 		advMap;		/* Offset to advance var-idx mapping. */

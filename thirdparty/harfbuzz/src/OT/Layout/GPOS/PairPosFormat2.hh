@@ -324,17 +324,8 @@ struct PairPosFormat2_4 : ValueBase
       }
     }
 
-    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto it =
-    + hb_iter (this+coverage)
-    | hb_filter (glyphset)
-    | hb_map_retains_sorting (glyph_map)
-    ;
-
-    out->coverage.serialize_serialize (c->serializer, it);
-    return_trace (out->class1Count && out->class2Count && bool (it));
+    bool ret = out->coverage.serialize_subset(c, coverage, this);
+    return_trace (out->class1Count && out->class2Count && ret);
   }
 
 
