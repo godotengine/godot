@@ -897,6 +897,14 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 	}
 }
 
+void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {
+	ERR_FAIL_NULL(tree);
+	TreeItem *item = Object::cast_to<TreeItem>(ObjectDB::get_instance(p_item_id));
+	if (item) {
+		tree->scroll_to_item(item, true);
+	}
+}
+
 void SceneTreeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -942,7 +950,8 @@ void SceneTreeEditor::_notification(int p_what) {
 
 				if (item) {
 					// Must wait until tree is properly sized before scrolling.
-					callable_mp(tree, &Tree::scroll_to_item).call_deferred(item, true);
+					ObjectID item_id = item->get_instance_id();
+					callable_mp(this, &SceneTreeEditor::_tree_scroll_to_item).call_deferred(item_id);
 				}
 			}
 		} break;
