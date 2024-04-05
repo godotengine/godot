@@ -126,7 +126,12 @@ Vector2 Vector2::posmodv(const Vector2 &p_modv) const {
 }
 
 Vector2 Vector2::project(const Vector2 &p_to) const {
-	return p_to * (dot(p_to) / p_to.length_squared());
+	real_t length_squared = p_to.length_squared();
+	if (length_squared == 0) {
+		return Vector2();
+	}
+
+	return p_to * (dot(p_to) / length_squared);
 }
 
 Vector2 Vector2::clamp(const Vector2 &p_min, const Vector2 &p_max) const {

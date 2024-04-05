@@ -369,6 +369,13 @@ TEST_CASE("[Vector3] Plane methods") {
 	const Vector3 vector_y = Vector3(0, 1, 0);
 	const Vector3 vector_normal = Vector3(0.88763458893247992491, 0.26300284116517923701, 0.37806658417494515320);
 	const Vector3 vector_non_normal = Vector3(5.4, 1.6, 2.3);
+	const Vector3 vector_zero = Vector3(0.0, 0.0, 0.0);
+#ifdef REAL_T_IS_DOUBLE
+	const Vector3 vector_tiny = Vector3(0.0, 0.0, 2.22507385850720138309e-308);
+#else
+	const Vector3 vector_tiny = Vector3(0.0, 0.0, 1.17549435e-38);
+#endif // REAL_T_IS_DOUBLE
+
 	CHECK_MESSAGE(
 			vector.bounce(vector_y) == Vector3(1.2, -3.4, 5.6),
 			"Vector3 bounce on a plane with normal of the Y axis should.");
@@ -381,12 +388,20 @@ TEST_CASE("[Vector3] Plane methods") {
 	CHECK_MESSAGE(
 			vector.reflect(vector_normal).is_equal_approx(Vector3(6.0369629829775736287, -1.25571467171034855444, -2.517589840583626047)),
 			"Vector3 reflect with normal should return expected value.");
+
 	CHECK_MESSAGE(
 			vector.project(vector_y) == Vector3(0, 3.4, 0),
 			"Vector3 projected on the Y axis should only give the Y component.");
 	CHECK_MESSAGE(
 			vector.project(vector_normal).is_equal_approx(Vector3(3.61848149148878681437, 1.0721426641448257227776, 1.54120507970818697649)),
 			"Vector3 projected on a normal should return expected value.");
+	CHECK_MESSAGE(
+			vector.project(vector_zero) == Vector3(),
+			"Vector3 projected onto zero should return finite.");
+	CHECK_MESSAGE(
+			vector.project(vector_tiny) == Vector3(),
+			"Vector3 projected onto a very small normal should return finite.");
+
 	CHECK_MESSAGE(
 			vector.slide(vector_y) == Vector3(1.2, 0, 5.6),
 			"Vector3 slide on a plane with normal of the Y axis should set the Y to zero.");
