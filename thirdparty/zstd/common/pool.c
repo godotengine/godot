@@ -223,7 +223,7 @@ static int POOL_resize_internal(POOL_ctx* ctx, size_t numThreads)
     {   ZSTD_pthread_t* const threadPool = (ZSTD_pthread_t*)ZSTD_customCalloc(numThreads * sizeof(ZSTD_pthread_t), ctx->customMem);
         if (!threadPool) return 1;
         /* replace existing thread pool */
-        ZSTD_memcpy(threadPool, ctx->threads, ctx->threadCapacity * sizeof(*threadPool));
+        ZSTD_memcpy(threadPool, ctx->threads, ctx->threadCapacity * sizeof(ZSTD_pthread_t));
         ZSTD_customFree(ctx->threads, ctx->customMem);
         ctx->threads = threadPool;
         /* Initialize additional threads */
