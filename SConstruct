@@ -335,7 +335,7 @@ if selected_platform not in platform_list:
     elif selected_platform != "list":
         print(f'Invalid target platform "{selected_platform}".')
 
-    print(f"The following platforms are available:\n\t{'\n\t'.join(platform_list)}\n")
+    print("The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list)))
     print("Please run SCons again and select a valid platform: platform=<string>.")
     Exit(0 if selected_platform == "list" else 255)
 
