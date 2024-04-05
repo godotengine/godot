@@ -1,5 +1,5 @@
 diff --git a/thirdparty/enet/enet/enet.h b/thirdparty/enet/enet/enet.h
-index fc45cbd0c9..77f8004b80 100644
+index 4a207041b3..5232f8a869 100644
 --- a/thirdparty/enet/enet/enet.h
 +++ b/thirdparty/enet/enet/enet.h
 @@ -10,13 +10,19 @@ extern "C"
@@ -22,7 +22,7 @@ index fc45cbd0c9..77f8004b80 100644
  
  #include "enet/types.h"
  #include "enet/protocol.h"
-@@ -86,11 +92,15 @@ typedef enum _ENetSocketShutdown
+@@ -87,11 +93,15 @@ typedef enum _ENetSocketShutdown
   * but not for enet_host_create.  Once a server responds to a broadcast, the
   * address is updated from ENET_HOST_BROADCAST to the server's actual IP address.
   */
@@ -38,7 +38,7 @@ index fc45cbd0c9..77f8004b80 100644
  
  /**
   * Packet flag bit constants.
-@@ -604,6 +614,10 @@ ENET_API size_t enet_range_coder_decompress (void *, const enet_uint8 *, size_t,
+@@ -608,6 +618,10 @@ ENET_API size_t enet_range_coder_decompress (void *, const enet_uint8 *, size_t,
     
  extern size_t enet_protocol_command_size (enet_uint8);
  
@@ -50,7 +50,7 @@ index fc45cbd0c9..77f8004b80 100644
  }
  #endif
 diff --git a/thirdparty/enet/host.c b/thirdparty/enet/host.c
-index 3b2180f7fd..21ab27e247 100644
+index fff946a392..adb3533cf1 100644
 --- a/thirdparty/enet/host.c
 +++ b/thirdparty/enet/host.c
 @@ -87,7 +87,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
@@ -63,10 +63,10 @@ index 3b2180f7fd..21ab27e247 100644
      host -> receivedData = NULL;
      host -> receivedDataLength = 0;
 diff --git a/thirdparty/enet/protocol.c b/thirdparty/enet/protocol.c
-index 9d654f1d96..d7fe80f117 100644
+index 843a719af3..5f18700599 100644
 --- a/thirdparty/enet/protocol.c
 +++ b/thirdparty/enet/protocol.c
-@@ -309,7 +309,7 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
+@@ -318,7 +318,7 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
          }
          else 
          if (currentPeer -> state != ENET_PEER_STATE_CONNECTING &&
@@ -75,7 +75,7 @@ index 9d654f1d96..d7fe80f117 100644
          {
              if (currentPeer -> address.port == host -> receivedAddress.port &&
                  currentPeer -> connectID == command -> connect.connectID)
-@@ -1031,9 +1031,8 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
+@@ -1043,9 +1043,8 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
  
         if (peer -> state == ENET_PEER_STATE_DISCONNECTED ||
             peer -> state == ENET_PEER_STATE_ZOMBIE ||
@@ -87,7 +87,7 @@ index 9d654f1d96..d7fe80f117 100644
             (peer -> outgoingPeerID < ENET_PROTOCOL_MAXIMUM_PEER_ID &&
              sessionID != peer -> incomingSessionID))
           return 0;
-@@ -1075,7 +1074,7 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
+@@ -1090,7 +1089,7 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
         
      if (peer != NULL)
      {

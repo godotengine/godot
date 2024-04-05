@@ -328,6 +328,7 @@ void EditorPropertyArray::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
+			slots.clear();
 		}
 		return;
 	}
@@ -586,7 +587,7 @@ void EditorPropertyArray::_edit_pressed() {
 	Variant array = get_edited_property_value();
 	if (!array.is_array() && edit->is_pressed()) {
 		initialize_array(array);
-		get_edited_object()->set(get_edited_property(), array);
+		emit_changed(get_edited_property(), array);
 	}
 
 	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
@@ -867,7 +868,7 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint) {
 void EditorPropertyDictionary::update_property() {
 	Variant updated_val = get_edited_property_value();
 
-	if (updated_val.get_type() == Variant::NIL) {
+	if (updated_val.get_type() != Variant::DICTIONARY) {
 		edit->set_text(TTR("Dictionary (Nil)")); // This provides symmetry with the array property.
 		edit->set_pressed(false);
 		if (container) {
@@ -875,6 +876,7 @@ void EditorPropertyDictionary::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
+			slots.clear();
 		}
 		return;
 	}
@@ -1021,7 +1023,7 @@ void EditorPropertyDictionary::_edit_pressed() {
 	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
 		VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
-		get_edited_object()->set(get_edited_property(), prop_val);
+		emit_changed(get_edited_property(), prop_val);
 	}
 
 	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
