@@ -48,6 +48,7 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _on_extension_property_list_changed();
 
 	bool _set_extension_setting(const String &p_name_str, const Variant &p_value);
 	bool _get_extension_setting(const String &p_name_str, Variant &r_ret) const;

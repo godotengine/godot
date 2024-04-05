@@ -36,12 +36,13 @@
 #include "core/string/print_string.h"
 
 #define COMPACT_CHUNK(m_entry, m_to_pos)                      \
-	do {                                                      \
+	if constexpr (true) {                                     \
 		void *_dst = &((unsigned char *)pool)[m_to_pos];      \
 		void *_src = &((unsigned char *)pool)[(m_entry).pos]; \
 		memmove(_dst, _src, aligned((m_entry).len));          \
 		(m_entry).pos = m_to_pos;                             \
-	} while (0);
+	} else                                                    \
+		((void)0)
 
 void PoolAllocator::mt_lock() const {
 }

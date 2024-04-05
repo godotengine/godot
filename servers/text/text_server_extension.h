@@ -566,8 +566,10 @@ public:
 
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
+	virtual String string_to_title(const String &p_string, const String &p_language = "") const override;
 	GDVIRTUAL2RC(String, _string_to_upper, const String &, const String &);
 	GDVIRTUAL2RC(String, _string_to_lower, const String &, const String &);
+	GDVIRTUAL2RC(String, _string_to_title, const String &, const String &);
 
 	TypedArray<Vector3i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 	GDVIRTUAL3RC(TypedArray<Vector3i>, _parse_structured_text, StructuredTextParser, const Array &, const String &);

@@ -848,6 +848,7 @@ public:
 
 	MODBIND2RC(String, string_to_upper, const String &, const String &);
 	MODBIND2RC(String, string_to_lower, const String &, const String &);
+	MODBIND2RC(String, string_to_title, const String &, const String &);
 
 	MODBIND0(cleanup);
 
