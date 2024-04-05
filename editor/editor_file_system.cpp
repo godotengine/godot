@@ -1350,6 +1350,10 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 	String f = ProjectSettings::get_singleton()->localize_path(p_file);
 
+	// Note: Only checks if base directory is case sensitive.
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	bool fs_case_sensitive = dir->is_case_sensitive("res://");
+
 	if (!f.begins_with("res://")) {
 		return false;
 	}
@@ -1373,9 +1377,16 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 		int idx = -1;
 		for (int j = 0; j < fs->get_subdir_count(); j++) {
-			if (fs->get_subdir(j)->get_name() == path[i]) {
-				idx = j;
-				break;
+			if (fs_case_sensitive) {
+				if (fs->get_subdir(j)->get_name() == path[i]) {
+					idx = j;
+					break;
+				}
+			} else {
+				if (fs->get_subdir(j)->get_name().to_lower() == path[i].to_lower()) {
+					idx = j;
+					break;
+				}
 			}
 		}
 
