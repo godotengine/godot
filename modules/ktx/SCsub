@@ -22,6 +22,7 @@ thirdparty_sources = [
     "lib/texture1.c",
     "lib/texture2.c",
     "lib/vkformat_check.c",
+    "lib/vkformat_typesize.c",
     "lib/dfdutils/createdfd.c",
     "lib/dfdutils/colourspaces.c",
     "lib/dfdutils/interpretdfd.c",
