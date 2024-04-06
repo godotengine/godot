@@ -80,6 +80,7 @@ private:
 	Vector3 head_angular_velocity;
 	XRPose::TrackingConfidence head_confidence;
 	Transform3D transform_for_view[2]; // We currently assume 2, but could be 4 for VARJO which we do not support yet
+	OpenXROverlayExtension *overlay_wrapper = nullptr;
 
 	XRVRS xr_vrs;
 
