@@ -170,6 +170,20 @@ void FileDialog::_validate_property(PropertyInfo &p_property) const {
 
 void FileDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+#ifdef TOOLS_ENABLED
+			if (is_part_of_edited_scene()) {
+				return;
+			}
+#endif
+
+			// Replace the built-in dialog with the native one if it started visible.
+			if (is_visible() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+				ConfirmationDialog::set_visible(false);
+				_native_popup();
+			}
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				set_process_shortcut_input(false);
@@ -1392,6 +1406,18 @@ void FileDialog::set_default_show_hidden_files(bool p_show) {
 
 void FileDialog::set_use_native_dialog(bool p_native) {
 	use_native_dialog = p_native;
+
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
+		return;
+	}
+#endif
+
+	// Replace the built-in dialog with the native one if it's currently visible.
+	if (is_visible() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE) && (use_native_dialog || OS::get_singleton()->is_sandboxed())) {
+		ConfirmationDialog::set_visible(false);
+		_native_popup();
+	}
 }
 
 bool FileDialog::get_use_native_dialog() const {
