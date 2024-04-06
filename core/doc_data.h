@@ -698,6 +698,67 @@ public:
 		}
 	};
 
+	struct StructDoc {
+		String name;
+		String description;
+		Vector<PropertyDoc> properties;
+		bool is_deprecated = false;
+		bool is_experimental = false;
+		bool operator<(const StructDoc &p_struct) const {
+			return name < p_struct.name;
+		}
+		static StructDoc from_dict(const Dictionary &p_dict) {
+			StructDoc doc;
+
+			if (p_dict.has("name")) {
+				doc.name = p_dict["name"];
+			}
+
+			if (p_dict.has("description")) {
+				doc.description = p_dict["description"];
+			}
+
+			Array properties;
+			if (p_dict.has("properties")) {
+				properties = p_dict["properties"];
+			}
+			for (int i = 0; i < properties.size(); i++) {
+				doc.properties.push_back(PropertyDoc::from_dict(properties[i]));
+			}
+
+			if (p_dict.has("is_experimental")) {
+				doc.is_experimental = p_dict["is_experimental"];
+			}
+
+			return doc;
+		}
+		static Dictionary to_dict(const StructDoc &p_doc) {
+			Dictionary dict;
+
+			if (!p_doc.name.is_empty()) {
+				dict["name"] = p_doc.name;
+			}
+
+			if (!p_doc.description.is_empty()) {
+				dict["description"] = p_doc.description;
+			}
+
+			if (!p_doc.properties.is_empty()) {
+				Array properties;
+				for (int i = 0; i < p_doc.properties.size(); i++) {
+					properties.push_back(PropertyDoc::to_dict(p_doc.properties[i]));
+				}
+				dict["properties"] = properties;
+			}
+
+			dict["is_deprecated"] = p_doc.is_deprecated;
+
+			dict["is_experimental"] = p_doc.is_experimental;
+
+			return dict;
+		}
+	};
+
 	struct ClassDoc {
 		String name;
 		String inherits;
@@ -713,6 +774,7 @@ public:
 		HashMap<String, EnumDoc> enums;
 		Vector<PropertyDoc> properties;
 		Vector<MethodDoc> annotations;
+		Vector<StructDoc> structs;
 		Vector<ThemeItemDoc> theme_properties;
 		bool is_deprecated = false;
 		String deprecated_message;
@@ -816,6 +878,14 @@ public:
 			}
 			for (int i = 0; i < annotations.size(); i++) {
 				doc.annotations.push_back(MethodDoc::from_dict(annotations[i]));
+			}
+
+			Array structs;
+			if (p_dict.has("structs")) {
+				structs = p_dict["structs"];
+			}
+			for (int i = 0; i < structs.size(); i++) {
+				doc.structs.push_back(StructDoc::from_dict(structs[i]));
 			}
 
 			Array theme_properties;
@@ -947,6 +1017,13 @@ public:
 				dict["annotations"] = annotations;
 			}
 
+			if (!p_doc.structs.is_empty()) {
+				Array structs;
+				for (int i = 0; i < p_doc.structs.size(); i++) {
+					structs.push_back(StructDoc::to_dict(p_doc.structs[i]));
+				}
+			}
+
 			if (!p_doc.theme_properties.is_empty()) {
 				Array theme_properties;
 				for (int i = 0; i < p_doc.theme_properties.size(); i++) {
@@ -982,6 +1059,7 @@ public:
 	static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo);
 	static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo);
 	static void property_doc_from_scriptmemberinfo(DocData::PropertyDoc &p_property, const ScriptMemberInfo &p_memberinfo);
+	static void struct_doc_from_structinfo(DocData::StructDoc &p_struct, const StructInfo &p_structinfo);
 	static void method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc);
 	static void constant_doc_from_variant(DocData::ConstantDoc &p_const, const StringName &p_name, const Variant &p_value, const String &p_desc);
 	static void signal_doc_from_methodinfo(DocData::MethodDoc &p_signal, const MethodInfo &p_methodinfo, const String &p_desc);

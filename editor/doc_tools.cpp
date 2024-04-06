@@ -258,6 +258,32 @@ static void merge_properties(Vector<DocData::PropertyDoc> &p_to, const Vector<Do
 	}
 }
 
+static void merge_structs(Vector<DocData::StructDoc> &p_to, const Vector<DocData::StructDoc> &p_from) {
+	// Get data from `p_to`, to avoid mutation checks. Searching will be done in the sorted `p_to` from the (potentially) unsorted `p_from`.
+	DocData::StructDoc *to_ptrw = p_to.ptrw();
+	int64_t to_size = p_to.size();
+
+	SearchArray<DocData::StructDoc> search_array;
+
+	for (const DocData::StructDoc &from : p_from) {
+		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+
+		if (found >= to_size) {
+			continue;
+		}
+
+		DocData::StructDoc &to = to_ptrw[found];
+
+		// Check found entry on name and data type.
+		if (to.name == from.name) {
+			to.description = from.description;
+			to.is_deprecated = from.is_deprecated;
+			to.is_experimental = from.is_experimental;
+			merge_properties(to.properties, from.properties);
+		}
+	}
+}
+
 static void merge_theme_properties(Vector<DocData::ThemeItemDoc> &p_to, const Vector<DocData::ThemeItemDoc> &p_from) {
 	// Get data from `p_to`, to avoid mutation checks. Searching will be done in the sorted `p_to` from the (potentially) unsorted `p_from`.
 	DocData::ThemeItemDoc *to_ptrw = p_to.ptrw();
@@ -344,6 +370,8 @@ void DocTools::merge_from(const DocTools &p_data) {
 		merge_methods(c.annotations, cf.annotations);
 
 		merge_properties(c.properties, cf.properties);
+
+		merge_structs(c.structs, cf.structs);
 
 		merge_theme_properties(c.theme_properties, cf.theme_properties);
 
@@ -677,6 +705,15 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				constant.enumeration = ClassDB::get_integer_constant_enum(name, E);
 				constant.is_bitfield = ClassDB::is_enum_bitfield(name, constant.enumeration);
 				c.constants.push_back(constant);
+			}
+
+			List<StructInfo> struct_list;
+			ClassDB::get_struct_list(name, &struct_list, true);
+
+			for (const StructInfo &E : struct_list) {
+				DocData::StructDoc struct_doc;
+				DocData::struct_doc_from_structinfo(struct_doc, E);
+				c.structs.push_back(struct_doc);
 			}
 
 			// Theme items.
@@ -1114,85 +1151,83 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 	String element = section.substr(0, section.length() - 1);
 
 	while (parser->read() == OK) {
-		if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
-			if (parser->get_node_name() == element) {
-				DocData::MethodDoc method;
-				ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-				method.name = parser->get_named_attribute_value("name");
-				if (parser->has_attribute("qualifiers")) {
-					method.qualifiers = parser->get_named_attribute_value("qualifiers");
-				}
+		if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == section) {
+			break;
+		}
+		if (parser->get_node_type() != XMLParser::NODE_ELEMENT) {
+			continue;
+		}
+		ERR_FAIL_COND_V_MSG(parser->get_node_name() != element, ERR_FILE_CORRUPT, "Invalid tag in doc file: " + parser->get_node_name() + ", expected " + element + ".");
+		DocData::MethodDoc method;
+		ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
+		method.name = parser->get_named_attribute_value("name");
+		if (parser->has_attribute("qualifiers")) {
+			method.qualifiers = parser->get_named_attribute_value("qualifiers");
+		}
 #ifndef DISABLE_DEPRECATED
-				if (parser->has_attribute("is_deprecated")) {
-					method.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
-				}
-				if (parser->has_attribute("is_experimental")) {
-					method.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
-				}
+		if (parser->has_attribute("is_deprecated")) {
+			method.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
+		}
+		if (parser->has_attribute("is_experimental")) {
+			method.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
+		}
 #endif
-				if (parser->has_attribute("deprecated")) {
-					method.is_deprecated = true;
-					method.deprecated_message = parser->get_named_attribute_value("deprecated");
+		if (parser->has_attribute("deprecated")) {
+			method.is_deprecated = true;
+			method.deprecated_message = parser->get_named_attribute_value("deprecated");
+		}
+		if (parser->has_attribute("experimental")) {
+			method.is_experimental = true;
+			method.experimental_message = parser->get_named_attribute_value("experimental");
+		}
+		if (parser->has_attribute("keywords")) {
+			method.keywords = parser->get_named_attribute_value("keywords");
+		}
+
+		while (parser->read() == OK) {
+			if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == element) {
+				break;
+			}
+			if (parser->get_node_type() != XMLParser::NODE_ELEMENT) {
+				continue;
+			}
+			String name = parser->get_node_name();
+			if (name == "return") {
+				ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
+				method.return_type = parser->get_named_attribute_value("type");
+				if (parser->has_attribute("enum")) {
+					method.return_enum = parser->get_named_attribute_value("enum");
+					if (parser->has_attribute("is_bitfield")) {
+						method.return_is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+					}
 				}
-				if (parser->has_attribute("experimental")) {
-					method.is_experimental = true;
-					method.experimental_message = parser->get_named_attribute_value("experimental");
-				}
-				if (parser->has_attribute("keywords")) {
-					method.keywords = parser->get_named_attribute_value("keywords");
-				}
-
-				while (parser->read() == OK) {
-					if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
-						String name = parser->get_node_name();
-						if (name == "return") {
-							ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
-							method.return_type = parser->get_named_attribute_value("type");
-							if (parser->has_attribute("enum")) {
-								method.return_enum = parser->get_named_attribute_value("enum");
-								if (parser->has_attribute("is_bitfield")) {
-									method.return_is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
-								}
-							}
-						} else if (name == "returns_error") {
-							ERR_FAIL_COND_V(!parser->has_attribute("number"), ERR_FILE_CORRUPT);
-							method.errors_returned.push_back(parser->get_named_attribute_value("number").to_int());
-						} else if (name == "param") {
-							DocData::ArgumentDoc argument;
-							ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-							argument.name = parser->get_named_attribute_value("name");
-							ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
-							argument.type = parser->get_named_attribute_value("type");
-							if (parser->has_attribute("enum")) {
-								argument.enumeration = parser->get_named_attribute_value("enum");
-								if (parser->has_attribute("is_bitfield")) {
-									argument.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
-								}
-							}
-
-							method.arguments.push_back(argument);
-
-						} else if (name == "description") {
-							parser->read();
-							if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-								method.description = parser->get_node_data();
-							}
-						}
-
-					} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == element) {
-						break;
+			} else if (name == "returns_error") {
+				ERR_FAIL_COND_V(!parser->has_attribute("number"), ERR_FILE_CORRUPT);
+				method.errors_returned.push_back(parser->get_named_attribute_value("number").to_int());
+			} else if (name == "param") {
+				DocData::ArgumentDoc argument;
+				ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
+				argument.name = parser->get_named_attribute_value("name");
+				ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
+				argument.type = parser->get_named_attribute_value("type");
+				if (parser->has_attribute("enum")) {
+					argument.enumeration = parser->get_named_attribute_value("enum");
+					if (parser->has_attribute("is_bitfield")) {
+						argument.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
 					}
 				}
 
-				methods.push_back(method);
+				method.arguments.push_back(argument);
 
-			} else {
-				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + parser->get_node_name() + ", expected " + element + ".");
+			} else if (name == "description") {
+				parser->read();
+				if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+					method.description = parser->get_node_data();
+				}
 			}
-
-		} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == section) {
-			break;
 		}
+
+		methods.push_back(method);
 	}
 
 	return OK;
@@ -1269,7 +1304,7 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 		ERR_FAIL_COND_V(parser->get_node_name() != "class", ERR_FILE_CORRUPT);
 
 		ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-		String name = parser->get_named_attribute_value("name");
+		const String name = parser->get_named_attribute_value("name");
 		class_list[name] = DocData::ClassDoc();
 		DocData::ClassDoc &c = class_list[name];
 
@@ -1302,216 +1337,286 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 		}
 
 		while (parser->read() == OK) {
-			if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
-				String name2 = parser->get_node_name();
+			if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "class") {
+				break; // End of <class>.
+			}
+			if (parser->get_node_type() != XMLParser::NODE_ELEMENT) {
+				continue;
+			}
+			const String tag = parser->get_node_name();
 
-				if (name2 == "brief_description") {
-					parser->read();
-					if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-						c.brief_description = parser->get_node_data();
-					}
-
-				} else if (name2 == "description") {
-					parser->read();
-					if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-						c.description = parser->get_node_data();
-					}
-				} else if (name2 == "tutorials") {
-					while (parser->read() == OK) {
-						if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
-							String name3 = parser->get_node_name();
-
-							if (name3 == "link") {
-								DocData::TutorialDoc tutorial;
-								if (parser->has_attribute("title")) {
-									tutorial.title = parser->get_named_attribute_value("title");
-								}
-								parser->read();
-								if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-									tutorial.link = parser->get_node_data().strip_edges();
-									c.tutorials.push_back(tutorial);
-								}
-							} else {
-								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
-							}
-						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "tutorials") {
-							break; // End of <tutorials>.
-						}
-					}
-				} else if (name2 == "constructors") {
-					Error err2 = _parse_methods(parser, c.constructors);
-					ERR_FAIL_COND_V(err2, err2);
-				} else if (name2 == "methods") {
-					Error err2 = _parse_methods(parser, c.methods);
-					ERR_FAIL_COND_V(err2, err2);
-				} else if (name2 == "operators") {
-					Error err2 = _parse_methods(parser, c.operators);
-					ERR_FAIL_COND_V(err2, err2);
-				} else if (name2 == "signals") {
-					Error err2 = _parse_methods(parser, c.signals);
-					ERR_FAIL_COND_V(err2, err2);
-				} else if (name2 == "annotations") {
-					Error err2 = _parse_methods(parser, c.annotations);
-					ERR_FAIL_COND_V(err2, err2);
-				} else if (name2 == "members") {
-					while (parser->read() == OK) {
-						if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
-							String name3 = parser->get_node_name();
-
-							if (name3 == "member") {
-								DocData::PropertyDoc prop2;
-
-								ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-								prop2.name = parser->get_named_attribute_value("name");
-								ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
-								prop2.type = parser->get_named_attribute_value("type");
-								if (parser->has_attribute("setter")) {
-									prop2.setter = parser->get_named_attribute_value("setter");
-								}
-								if (parser->has_attribute("getter")) {
-									prop2.getter = parser->get_named_attribute_value("getter");
-								}
-								if (parser->has_attribute("enum")) {
-									prop2.enumeration = parser->get_named_attribute_value("enum");
-									if (parser->has_attribute("is_bitfield")) {
-										prop2.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
-									}
-								}
-#ifndef DISABLE_DEPRECATED
-								if (parser->has_attribute("is_deprecated")) {
-									prop2.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
-								}
-								if (parser->has_attribute("is_experimental")) {
-									prop2.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
-								}
-#endif
-								if (parser->has_attribute("deprecated")) {
-									prop2.is_deprecated = true;
-									prop2.deprecated_message = parser->get_named_attribute_value("deprecated");
-								}
-								if (parser->has_attribute("experimental")) {
-									prop2.is_experimental = true;
-									prop2.experimental_message = parser->get_named_attribute_value("experimental");
-								}
-								if (parser->has_attribute("keywords")) {
-									prop2.keywords = parser->get_named_attribute_value("keywords");
-								}
-								if (!parser->is_empty()) {
-									parser->read();
-									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-										prop2.description = parser->get_node_data();
-									}
-								}
-								c.properties.push_back(prop2);
-							} else {
-								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
-							}
-
-						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "members") {
-							break; // End of <members>.
-						}
-					}
-
-				} else if (name2 == "theme_items") {
-					while (parser->read() == OK) {
-						if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
-							String name3 = parser->get_node_name();
-
-							if (name3 == "theme_item") {
-								DocData::ThemeItemDoc prop2;
-
-								ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-								prop2.name = parser->get_named_attribute_value("name");
-								ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
-								prop2.type = parser->get_named_attribute_value("type");
-								ERR_FAIL_COND_V(!parser->has_attribute("data_type"), ERR_FILE_CORRUPT);
-								prop2.data_type = parser->get_named_attribute_value("data_type");
-								if (parser->has_attribute("deprecated")) {
-									prop2.is_deprecated = true;
-									prop2.deprecated_message = parser->get_named_attribute_value("deprecated");
-								}
-								if (parser->has_attribute("experimental")) {
-									prop2.is_experimental = true;
-									prop2.experimental_message = parser->get_named_attribute_value("experimental");
-								}
-								if (parser->has_attribute("keywords")) {
-									prop2.keywords = parser->get_named_attribute_value("keywords");
-								}
-								if (!parser->is_empty()) {
-									parser->read();
-									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-										prop2.description = parser->get_node_data();
-									}
-								}
-								c.theme_properties.push_back(prop2);
-							} else {
-								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
-							}
-
-						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "theme_items") {
-							break; // End of <theme_items>.
-						}
-					}
-
-				} else if (name2 == "constants") {
-					while (parser->read() == OK) {
-						if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
-							String name3 = parser->get_node_name();
-
-							if (name3 == "constant") {
-								DocData::ConstantDoc constant2;
-								ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-								constant2.name = parser->get_named_attribute_value("name");
-								ERR_FAIL_COND_V(!parser->has_attribute("value"), ERR_FILE_CORRUPT);
-								constant2.value = parser->get_named_attribute_value("value");
-								constant2.is_value_valid = true;
-								if (parser->has_attribute("enum")) {
-									constant2.enumeration = parser->get_named_attribute_value("enum");
-									if (parser->has_attribute("is_bitfield")) {
-										constant2.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
-									}
-								}
-#ifndef DISABLE_DEPRECATED
-								if (parser->has_attribute("is_deprecated")) {
-									constant2.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
-								}
-								if (parser->has_attribute("is_experimental")) {
-									constant2.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
-								}
-#endif
-								if (parser->has_attribute("deprecated")) {
-									constant2.is_deprecated = true;
-									constant2.deprecated_message = parser->get_named_attribute_value("deprecated");
-								}
-								if (parser->has_attribute("experimental")) {
-									constant2.is_experimental = true;
-									constant2.experimental_message = parser->get_named_attribute_value("experimental");
-								}
-								if (parser->has_attribute("keywords")) {
-									constant2.keywords = parser->get_named_attribute_value("keywords");
-								}
-								if (!parser->is_empty()) {
-									parser->read();
-									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-										constant2.description = parser->get_node_data();
-									}
-								}
-								c.constants.push_back(constant2);
-							} else {
-								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
-							}
-
-						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "constants") {
-							break; // End of <constants>.
-						}
-					}
-
-				} else {
-					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name2 + ".");
+			if (tag == "brief_description") {
+				parser->read();
+				if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+					c.brief_description = parser->get_node_data();
 				}
 
-			} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "class") {
-				break; // End of <class>.
+			} else if (tag == "description") {
+				parser->read();
+				if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+					c.description = parser->get_node_data();
+				}
+			} else if (tag == "tutorials") {
+				while (parser->read() == OK) {
+					if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "tutorials") {
+						break; // End of <tutorials>.
+					}
+					if (parser->get_node_type() != XMLParser::NODE_ELEMENT) {
+						continue;
+					}
+					const String link_tag = parser->get_node_name();
+					ERR_FAIL_COND_V_MSG(link_tag != "link", ERR_FILE_CORRUPT, "Invalid tag in doc file: " + link_tag + ", expected link.");
+					DocData::TutorialDoc tutorial;
+					if (parser->has_attribute("title")) {
+						tutorial.title = parser->get_named_attribute_value("title");
+					}
+					parser->read();
+					if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+						tutorial.link = parser->get_node_data().strip_edges();
+						c.tutorials.push_back(tutorial);
+					}
+				}
+			} else if (tag == "constructors") {
+				const Error err2 = _parse_methods(parser, c.constructors);
+				ERR_FAIL_COND_V(err2, err2);
+			} else if (tag == "methods") {
+				const Error err2 = _parse_methods(parser, c.methods);
+				ERR_FAIL_COND_V(err2, err2);
+			} else if (tag == "operators") {
+				const Error err2 = _parse_methods(parser, c.operators);
+				ERR_FAIL_COND_V(err2, err2);
+			} else if (tag == "signals") {
+				const Error err2 = _parse_methods(parser, c.signals);
+				ERR_FAIL_COND_V(err2, err2);
+			} else if (tag == "annotations") {
+				const Error err2 = _parse_methods(parser, c.annotations);
+				ERR_FAIL_COND_V(err2, err2);
+			} else if (tag == "members") {
+				while (parser->read() == OK) {
+					if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "members") {
+						break; // End of <members>.
+					}
+					if (parser->get_node_type() != XMLParser::NODE_ELEMENT) {
+						continue;
+					}
+					String member_tag = parser->get_node_name();
+					ERR_FAIL_COND_V_MSG(member_tag != "member", ERR_FILE_CORRUPT, "Invalid tag in doc file: " + member_tag + ", expected member.");
+					DocData::PropertyDoc property_doc;
+
+					ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
+					property_doc.name = parser->get_named_attribute_value("name");
+					ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
+					property_doc.type = parser->get_named_attribute_value("type");
+					if (parser->has_attribute("setter")) {
+						property_doc.setter = parser->get_named_attribute_value("setter");
+					}
+					if (parser->has_attribute("getter")) {
+						property_doc.getter = parser->get_named_attribute_value("getter");
+					}
+					if (parser->has_attribute("enum")) {
+						property_doc.enumeration = parser->get_named_attribute_value("enum");
+						if (parser->has_attribute("is_bitfield")) {
+							property_doc.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+						}
+					}
+#ifndef DISABLE_DEPRECATED
+					if (parser->has_attribute("is_deprecated")) {
+						property_doc.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
+					}
+					if (parser->has_attribute("is_experimental")) {
+						property_doc.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
+					}
+#endif
+					if (parser->has_attribute("deprecated")) {
+						property_doc.is_deprecated = true;
+						property_doc.deprecated_message = parser->get_named_attribute_value("deprecated");
+					}
+					if (parser->has_attribute("experimental")) {
+						property_doc.is_experimental = true;
+						property_doc.experimental_message = parser->get_named_attribute_value("experimental");
+					}
+					if (parser->has_attribute("keywords")) {
+						property_doc.keywords = parser->get_named_attribute_value("keywords");
+					}
+					if (!parser->is_empty()) {
+						parser->read();
+						if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+							property_doc.description = parser->get_node_data();
+						}
+					}
+					c.properties.push_back(property_doc);
+				}
+			} else if (tag == "structs") {
+				while (parser->read() == OK) {
+					if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "structs") {
+						break; // End of <structs>.
+					}
+					if (parser->get_node_type() != XMLParser::NODE_ELEMENT) {
+						continue;
+					}
+					const String struct_tag = parser->get_node_name();
+					ERR_FAIL_COND_V_MSG(struct_tag != "struct", ERR_FILE_CORRUPT, "Invalid tag in doc file: " + struct_tag + ", expected struct.");
+
+					DocData::StructDoc struct_doc;
+
+					ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
+					struct_doc.name = parser->get_named_attribute_value("name");
+
+					if (parser->has_attribute("is_deprecated")) {
+						struct_doc.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
+					}
+
+					if (parser->has_attribute("is_experimental")) {
+						struct_doc.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
+					}
+
+					while (parser->read() == OK) {
+						if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "struct") {
+							break; // End of <struct>
+						}
+						if (parser->get_node_type() != XMLParser::NODE_ELEMENT) {
+							continue;
+						}
+						const String member_tag = parser->get_node_name();
+						ERR_FAIL_COND_V_MSG(member_tag != "member", ERR_FILE_CORRUPT, "Invalid tag in doc file: " + member_tag + ", expected member.");
+						DocData::PropertyDoc member_doc;
+
+						ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
+						member_doc.name = parser->get_named_attribute_value("name");
+
+						ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
+						member_doc.type = parser->get_named_attribute_value("type");
+
+						ERR_FAIL_COND_V(!parser->has_attribute("default"), ERR_FILE_CORRUPT);
+						member_doc.default_value = parser->get_named_attribute_value("default");
+
+						if (parser->has_attribute("enum")) {
+							member_doc.enumeration = parser->get_named_attribute_value("enum");
+							if (parser->has_attribute("is_bitfield")) {
+								member_doc.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+							}
+						}
+
+						if (parser->has_attribute("is_deprecated")) {
+							member_doc.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
+						}
+
+						if (parser->has_attribute("is_experimental")) {
+							member_doc.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
+						}
+
+						// TODO: figure out description
+
+						//						if (!parser->is_empty()) {
+						//							parser->read();
+						//							if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+						//								member_doc.description = parser->get_node_data().strip_edges();
+						//							}
+						//						}
+
+						struct_doc.properties.push_back(member_doc);
+					}
+
+					//					if (!parser->is_empty()) {
+					//						parser->read();
+					//						if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+					//							struct_doc.description = parser->get_node_data().strip_edges();
+					//						}
+					//					}
+
+					c.structs.push_back(struct_doc);
+				}
+			} else if (tag == "theme_items") {
+				while (parser->read() == OK) {
+					if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "theme_items") {
+						break; // End of <theme_items>.
+					}
+					if (parser->get_node_type() != XMLParser::NODE_ELEMENT) {
+						continue;
+					}
+					const String theme_item_tag = parser->get_node_name();
+					ERR_FAIL_COND_V_MSG(theme_item_tag != "theme_item", ERR_FILE_CORRUPT, "Invalid tag in doc file: " + theme_item_tag + ", expected theme_item.");
+
+					DocData::ThemeItemDoc theme_item_doc;
+
+					ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
+					theme_item_doc.name = parser->get_named_attribute_value("name");
+					ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
+					theme_item_doc.type = parser->get_named_attribute_value("type");
+					ERR_FAIL_COND_V(!parser->has_attribute("data_type"), ERR_FILE_CORRUPT);
+					theme_item_doc.data_type = parser->get_named_attribute_value("data_type");
+					if (parser->has_attribute("deprecated")) {
+						theme_item_doc.is_deprecated = true;
+						theme_item_doc.deprecated_message = parser->get_named_attribute_value("deprecated");
+					}
+					if (parser->has_attribute("experimental")) {
+						theme_item_doc.is_experimental = true;
+						theme_item_doc.experimental_message = parser->get_named_attribute_value("experimental");
+					}
+					if (parser->has_attribute("keywords")) {
+						theme_item_doc.keywords = parser->get_named_attribute_value("keywords");
+					}
+					if (!parser->is_empty()) {
+						parser->read();
+						if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+							theme_item_doc.description = parser->get_node_data();
+						}
+					}
+					c.theme_properties.push_back(theme_item_doc);
+				}
+			} else if (tag == "constants") {
+				while (parser->read() == OK) {
+					if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "constants") {
+						break; // End of <constants>.
+					}
+					if (parser->get_node_type() != XMLParser::NODE_ELEMENT) {
+						continue;
+					}
+					const String constant_tag = parser->get_node_name();
+
+					ERR_FAIL_COND_V_MSG(constant_tag != "constant", ERR_FILE_CORRUPT, "Invalid tag in doc file: " + constant_tag + ", expected constant.");
+
+					DocData::ConstantDoc constant_doc;
+					ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
+					constant_doc.name = parser->get_named_attribute_value("name");
+					ERR_FAIL_COND_V(!parser->has_attribute("value"), ERR_FILE_CORRUPT);
+					constant_doc.value = parser->get_named_attribute_value("value");
+					constant_doc.is_value_valid = true;
+					if (parser->has_attribute("enum")) {
+						constant_doc.enumeration = parser->get_named_attribute_value("enum");
+						if (parser->has_attribute("is_bitfield")) {
+							constant_doc.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+						}
+					}
+#ifndef DISABLE_DEPRECATED
+					if (parser->has_attribute("is_deprecated")) {
+						constant_doc.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
+					}
+					if (parser->has_attribute("is_experimental")) {
+						constant_doc.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
+					}
+#endif
+					if (parser->has_attribute("deprecated")) {
+						constant_doc.is_deprecated = true;
+						constant_doc.deprecated_message = parser->get_named_attribute_value("deprecated");
+					}
+					if (parser->has_attribute("experimental")) {
+						constant_doc.is_experimental = true;
+						constant_doc.experimental_message = parser->get_named_attribute_value("experimental");
+					}
+					if (parser->has_attribute("keywords")) {
+						constant_doc.keywords = parser->get_named_attribute_value("keywords");
+					}
+					if (!parser->is_empty()) {
+						parser->read();
+						if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+							constant_doc.description = parser->get_node_data();
+						}
+					}
+					c.constants.push_back(constant_doc);
+				}
+			} else {
+				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + tag + ".");
 			}
 		}
 
@@ -1742,6 +1847,53 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		}
 
 		_write_method_doc(f, "annotation", c.annotations);
+
+		if (!c.structs.is_empty()) {
+			_write_string(f, 1, "<structs>");
+			for (int i = 0; i < c.structs.size(); i++) {
+				const DocData::StructDoc &s = c.structs[i];
+
+				String struct_header = "<struct name=\"" + s.name.xml_escape(true) + "\"";
+				if (s.is_deprecated) {
+					struct_header += " is_deprecated=\"true\"";
+				}
+				if (s.is_experimental) {
+					struct_header += " is_experimental=\"true\"";
+				}
+				struct_header += ">";
+				_write_string(f, 2, struct_header);
+
+				if (!s.description.is_empty()) {
+					_write_string(f, 3, "<description>" + s.description.xml_escape() + "</description>");
+				}
+
+				for (int j = 0; j < s.properties.size(); j++) {
+					const DocData::PropertyDoc &m = s.properties[j];
+					String member_line = "<member name=\"" + m.name.xml_escape(true) + "\" type=\"" + m.type.xml_escape(true) + "\" default=\"" + m.default_value.xml_escape(true) + "\"";
+
+					if (!m.description.is_empty()) {
+						member_line += " description=\"" + m.description.xml_escape() + "\"";
+					}
+					if (!m.enumeration.is_empty()) {
+						member_line += " enum=\"" + m.enumeration.xml_escape() + "\"";
+					}
+					if (m.is_bitfield) {
+						member_line += " is_bitfield=\"true\"";
+					}
+					if (m.is_deprecated) {
+						member_line += " is_deprecated=\"true\"";
+					}
+					if (m.is_experimental) {
+						member_line += " is_experimental=\"true\"";
+					}
+					member_line += "/>";
+					_write_string(f, 3, member_line);
+				}
+
+				_write_string(f, 2, "</struct>");
+			}
+			_write_string(f, 1, "</structs>");
+		}
 
 		if (!c.theme_properties.is_empty()) {
 			_write_string(f, 1, "<theme_items>");

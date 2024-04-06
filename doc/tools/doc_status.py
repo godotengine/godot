@@ -66,6 +66,7 @@ table_columns = [
     "description",
     "methods",
     "constants",
+    "structs",
     "members",
     "theme_items",
     "signals",
@@ -78,6 +79,7 @@ table_column_names = [
     "Desc.",
     "Methods",
     "Constants",
+    "Structs",
     "Members",
     "Theme Items",
     "Signals",
@@ -191,6 +193,7 @@ class ClassStatus:
         self.progresses: Dict[str, ClassStatusProgress] = {
             "methods": ClassStatusProgress(),
             "constants": ClassStatusProgress(),
+            "structs": ClassStatusProgress(),
             "members": ClassStatusProgress(),
             "theme_items": ClassStatusProgress(),
             "signals": ClassStatusProgress(),
@@ -239,7 +242,7 @@ class ClassStatus:
         )
         items_progress = ClassStatusProgress()
 
-        for k in ["methods", "constants", "members", "theme_items", "signals", "constructors", "operators"]:
+        for k in ["methods", "constants", "structs", "members", "theme_items", "signals", "constructors", "operators"]:
             items_progress += self.progresses[k]
             output[k] = self.progresses[k].to_configured_colored_string()
 
@@ -284,7 +287,7 @@ class ClassStatus:
                     descr = sub_tag.find("description")
                     has_descr = (descr is not None) and (descr.text is not None) and len(descr.text.strip()) > 0
                     status.progresses[tag.tag].increment(is_deprecated or is_experimental or has_descr)
-            elif tag.tag in ["constants", "members", "theme_items"]:
+            elif tag.tag in ["constants", "structs", "members", "theme_items"]:
                 for sub_tag in list(tag):
                     if sub_tag.text is not None:
                         is_deprecated = "deprecated" in sub_tag.attrib
@@ -327,7 +330,7 @@ for arg in sys.argv[1:]:
         sys.exit(1)
 
 if flags["i"]:
-    for r in ["methods", "constants", "members", "signals", "theme_items"]:
+    for r in ["methods", "constants", "structs", "members", "signals", "theme_items"]:
         index = table_columns.index(r)
         del table_column_names[index]
         del table_columns[index]
