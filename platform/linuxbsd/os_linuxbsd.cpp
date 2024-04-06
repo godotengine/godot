@@ -43,10 +43,6 @@
 #include "x11/display_server_x11.h"
 #endif
 
-#ifdef HAVE_MNTENT
-#include <mntent.h>
-#endif
-
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,6 +51,10 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+
+#ifdef HAVE_MNTENT
+#include <mntent.h>
+#endif
 
 #if defined(__FreeBSD__)
 #include <sys/sysctl.h>
