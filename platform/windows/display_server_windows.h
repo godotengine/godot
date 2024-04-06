@@ -402,7 +402,6 @@ class DisplayServerWindows : public DisplayServer {
 
 		// Timers.
 		uint32_t move_timer_id = 0U;
-		uint32_t focus_timer_id = 0U;
 
 		HANDLE wtctx;
 		LOGCONTEXTW wtlc;
