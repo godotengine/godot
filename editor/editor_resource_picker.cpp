@@ -615,6 +615,13 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 }
 
 bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
+	{
+		const ObjectID source_picker = p_drag_data.get("source_picker", ObjectID());
+		if (source_picker == get_instance_id()) {
+			return false;
+		}
+	}
+
 	if (base_type.is_empty()) {
 		return true;
 	}
@@ -670,7 +677,9 @@ bool EditorResourcePicker::_is_type_valid(const String &p_type_name, const HashS
 
 Variant EditorResourcePicker::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (edited_resource.is_valid()) {
-		return EditorNode::get_singleton()->drag_resource(edited_resource, p_from);
+		Dictionary drag_data = EditorNode::get_singleton()->drag_resource(edited_resource, p_from);
+		drag_data["source_picker"] = get_instance_id();
+		return drag_data;
 	}
 
 	return Variant();
