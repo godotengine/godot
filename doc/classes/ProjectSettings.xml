@@ -60,6 +60,16 @@
 				Clears the whole configuration (not recommended, may break things).
 			</description>
 		</method>
+		<method name="find_layer" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="type" type="int" enum="ProjectSettings.LayerType" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Returns the first layer of the given type with the name matching [param name]. Returns [code]0[/code] if no such layer is found.
+				[b]Note:[/b] This function returns the layer number. Useful for methods like [method CollisionObject2D.set_collision_layer_value].
+				[b]Note:[/b] Finding a layer by name may not be optimal in terms of performance. It's recommended to cache the result. See also annotations like [annotation @GDScript.@export_flags_2d_navigation], which can export variables as a bit field consisting of multiple layers.
+			</description>
+		</method>
 		<method name="get_global_class_list">
 			<return type="Dictionary[]" />
 			<description>
@@ -70,6 +80,13 @@
 				- [code]language[/code] is a name of a programming language in which the global class is written;
 				- [code]path[/code] is a path to a file containing the global class.
 				[b]Note:[/b] Both the script and the icon paths are local to the project filesystem, i.e. they start with [code]res://[/code].
+			</description>
+		</method>
+		<method name="get_layer_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="type" type="int" enum="ProjectSettings.LayerType" />
+			<description>
+				Returns the number of layers of the specified type.
 			</description>
 		</method>
 		<method name="get_order" qualifiers="const">
@@ -2918,4 +2935,27 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="LAYER_PHYSICS_2D" value="0" enum="LayerType">
+			2D physics layer.
+		</constant>
+		<constant name="LAYER_RENDER_2D" value="1" enum="LayerType">
+			2D render layer.
+		</constant>
+		<constant name="LAYER_NAVIGATION_2D" value="2" enum="LayerType">
+			2D navigation layer.
+		</constant>
+		<constant name="LAYER_PHYSICS_3D" value="3" enum="LayerType">
+			3D physics layer.
+		</constant>
+		<constant name="LAYER_RENDER_3D" value="4" enum="LayerType">
+			3D render layer.
+		</constant>
+		<constant name="LAYER_NAVIGATION_3D" value="5" enum="LayerType">
+			3D navigation layer.
+		</constant>
+		<constant name="LAYER_AVOIDANCE" value="6" enum="LayerType">
+			Navigation avoidance layer.
+		</constant>
+	</constants>
 </class>
