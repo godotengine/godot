@@ -89,6 +89,8 @@ public:
 
 	virtual PackedStringArray get_configuration_warnings() const override;
 
+	virtual Vector2 intersects_ray(const Vector3 &p_origin, const Vector3 &p_direction) const;
+
 	OpenXRCompositionLayer();
 	~OpenXRCompositionLayer();
 };

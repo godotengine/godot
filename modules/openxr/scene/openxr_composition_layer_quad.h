@@ -54,6 +54,8 @@ public:
 	void set_quad_size(const Size2 &p_size);
 	Size2 get_quad_size() const;
 
+	virtual Vector2 intersects_ray(const Vector3 &p_origin, const Vector3 &p_direction) const override;
+
 	OpenXRCompositionLayerQuad();
 	~OpenXRCompositionLayerQuad();
 };
