@@ -4,8 +4,10 @@
 		A packed array of bytes.
 	</brief_description>
 	<description>
-		An array specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold bytes. It packs data tightly, so it saves memory for large array sizes.
 		[PackedByteArray] also provides methods to encode/decode various types to/from bytes. The way values are encoded is an implementation detail and shouldn't be relied upon when interacting with external apps.
+		[b]Note:[/b] PackedByteArray is a reference type. This means that changing the elements of an array will be reflected in other references to that array. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
+		[b]Note:[/b] Erasing elements while iterating over PackedByteArrays is [b]not[/b] supported and will result in unpredictable behavior.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -4,8 +4,10 @@
 		A packed array of 64-bit floating-point values.
 	</brief_description>
 	<description>
-		An array specifically designed to hold 64-bit floating-point values (double). Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold 64-bit floating-point values (double). It packs data tightly, so it saves memory for large array sizes.
 		If you only need to pack 32-bit floats tightly, see [PackedFloat32Array] for a more memory-friendly alternative.
+		[b]Note:[/b] PackedFloat64Array is a reference type. This means that changing the elements of an array will be reflected in other references to that array. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
+		[b]Note:[/b] Erasing elements while iterating over PackedFloat64Arrays is [b]not[/b] supported and will result in unpredictable behavior.
 	</description>
 	<tutorials>
 	</tutorials>

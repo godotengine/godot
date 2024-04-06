@@ -4,7 +4,9 @@
 		A packed array of [Vector2]s.
 	</brief_description>
 	<description>
-		An array specifically designed to hold [Vector2]. Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold [Vector2]. It packs data tightly, so it saves memory for large array sizes.
+		[b]Note:[/b] PackedVector2Array is a reference type. This means that changing the elements of an array will be reflected in other references to that array. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
+		[b]Note:[/b] Erasing elements while iterating over PackedVector2Arrays is [b]not[/b] supported and will result in unpredictable behavior.
 	</description>
 	<tutorials>
 		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
