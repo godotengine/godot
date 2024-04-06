@@ -1561,10 +1561,42 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 }
 
 void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const {
-	// Update the paths in ResourceUID, so that UIDs remain valid.
-	for (const KeyValue<String, ResourceUID::ID> &pair : p_uids) {
-		if (p_renames.has(pair.key)) {
-			ResourceUID::get_singleton()->set_id(pair.value, p_renames[pair.key]);
+	for (const KeyValue<String, String> &pair : p_renames) {
+		// Update UID path.
+		const String &old_path = pair.key;
+		const String &new_path = pair.value;
+
+		const HashMap<String, ResourceUID::ID>::ConstIterator I = p_uids.find(old_path);
+		if (I) {
+			ResourceUID::get_singleton()->set_id(I->value, new_path);
+		}
+
+		ScriptServer::remove_global_class_by_path(old_path);
+
+		int index = -1;
+		EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->find_file(old_path, &index);
+
+		if (!efd || index < 0) {
+			// The file was removed.
+			continue;
+		}
+
+		// Update paths for global classes.
+		if (!efd->get_file_script_class_name(index).is_empty()) {
+			String lang;
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				if (ScriptServer::get_language(i)->handles_global_class_type(efd->get_file_type(index))) {
+					lang = ScriptServer::get_language(i)->get_name();
+					break;
+				}
+			}
+			if (lang.is_empty()) {
+				continue; // No language found that can handle this global class.
+			}
+
+			ScriptServer::add_global_class(efd->get_file_script_class_name(index), efd->get_file_script_class_extends(index), lang, new_path);
+			EditorNode::get_editor_data().script_class_set_icon_path(efd->get_file_script_class_name(index), efd->get_file_script_class_icon_path(index));
+			EditorNode::get_editor_data().script_class_set_name(new_path, efd->get_file_script_class_name(index));
 		}
 	}
 
@@ -1583,10 +1615,13 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 
 		if (p_renames.has(base_path)) {
 			base_path = p_renames[base_path];
+			r->set_path(base_path + extra_path);
 		}
-
-		r->set_path(base_path + extra_path);
 	}
+
+	ScriptServer::save_global_classes();
+	EditorNode::get_editor_data().script_class_save_icon_paths();
+	EditorFileSystem::get_singleton()->emit_signal(SNAME("script_classes_updated"));
 }
 
 void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const {
@@ -1710,6 +1745,13 @@ void FileSystemDock::_make_scene_confirm() {
 }
 
 void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
+	const Ref<Script> &scr = p_resource;
+	if (scr.is_valid()) {
+		ScriptServer::remove_global_class_by_path(scr->get_path());
+		ScriptServer::save_global_classes();
+		EditorNode::get_editor_data().script_class_save_icon_paths();
+		EditorFileSystem::get_singleton()->emit_signal(SNAME("script_classes_updated"));
+	}
 	emit_signal(SNAME("resource_removed"), p_resource);
 }
 
