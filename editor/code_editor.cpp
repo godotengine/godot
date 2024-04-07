@@ -1183,7 +1183,7 @@ void CodeTextEditor::convert_case(CaseStyle p_case) {
 
 void CodeTextEditor::set_indent_using_spaces(bool p_use_spaces) {
 	text_editor->set_indent_using_spaces(p_use_spaces);
-	indentation_txt->set_text(p_use_spaces ? TTR("Spaces", "Indentation") : TTR("Tabs", "Indentation"));
+	indentation_button->set_text(p_use_spaces ? TTR("Spaces", "Indentation") : TTR("Tabs", "Indentation"));
 }
 
 void CodeTextEditor::move_lines_up() {
@@ -1769,6 +1769,10 @@ void CodeTextEditor::_zoom_popup_id_pressed(int p_idx) {
 	_zoom_to(zoom_button->get_popup()->get_item_metadata(p_idx));
 }
 
+void CodeTextEditor::_indentation_button_pressed() {
+	set_indent_using_spaces(!text_editor->is_indent_using_spaces());
+}
+
 void CodeTextEditor::_set_show_errors_panel(bool p_show) {
 	is_errors_panel_opened = p_show;
 	emit_signal(SNAME("show_errors_panel"), p_show);
@@ -2093,11 +2097,13 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(memnew(VSeparator));
 
 	// Indentation
-	indentation_txt = memnew(Label);
-	status_bar->add_child(indentation_txt);
-	indentation_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	indentation_txt->set_tooltip_text(TTR("Indentation"));
-	indentation_txt->set_mouse_filter(MOUSE_FILTER_STOP);
+	indentation_button = memnew(Button);
+	status_bar->add_child(indentation_button);
+	indentation_button->set_flat(true);
+	indentation_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	indentation_button->set_tooltip_text(TTR("Indentation"));
+	indentation_button->set_mouse_filter(MOUSE_FILTER_STOP);
+	indentation_button->connect("pressed", callable_mp(this, &CodeTextEditor::_indentation_button_pressed));
 
 	text_editor->connect("gui_input", callable_mp(this, &CodeTextEditor::_text_editor_gui_input));
 	text_editor->connect("caret_changed", callable_mp(this, &CodeTextEditor::_line_col_changed));
