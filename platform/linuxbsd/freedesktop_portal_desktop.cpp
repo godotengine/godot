@@ -582,6 +582,14 @@ dbus_bool_t FreeDesktopPortalDesktop::_dbus_message_iter_append_uint32_variant(D
 DBusHandlerResult FreeDesktopPortalDesktop::_handle_message(DBusConnection *connection, DBusMessage *message, void *user_data) {
 	FreeDesktopPortalDesktop *portal = (FreeDesktopPortalDesktop *)user_data;
 
+	if (dbus_message_is_signal(message, BUS_INTERFACE_STATUS_NOTIFIER_WATCHER, "StatusNotifierHostRegistered")) {
+		// Looks like a new status bar is in town. We'll re-register all indicators to let it know them.
+		for (KeyValue<DisplayServer::IndicatorID, StatusNotifierItem> &kv : portal->indicators) {
+			portal->indicator_register(kv.key);
+		}
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
 	if (dbus_message_is_signal(message, "org.freedesktop.portal.Settings", "SettingChanged")) {
 		DBusMessageIter iter;
 		if (dbus_message_iter_init(message, &iter)) {
@@ -922,6 +930,22 @@ DBusHandlerResult FreeDesktopPortalDesktop::_status_notifier_item_handle_message
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
+bool FreeDesktopPortalDesktop::indicator_register(DisplayServer::IndicatorID p_id) {
+	MutexLock mutex_lock(dbus_mutex);
+
+	ERR_FAIL_COND_V(!indicators.has(p_id), false);
+
+	StatusNotifierItem &item = indicators[p_id];
+
+	DBusMessage *message = dbus_message_new_method_call(BUS_STATUS_NOTIFIER_WATCHER_NAME, BUS_STATUS_NOTIFIER_WATCHER_PATH, BUS_INTERFACE_STATUS_NOTIFIER_WATCHER, "RegisterStatusNotifierItem");
+	dbus_message_append_args(message, DBUS_TYPE_STRING, item.name.utf8(), DBUS_TYPE_INVALID);
+
+	dbus_connection_send(monitor_connection, message, NULL);
+	dbus_message_unref(message);
+
+	return true;
+}
+
 bool FreeDesktopPortalDesktop::indicator_create(DisplayServer::IndicatorID p_id, const Ref<Image> &p_icon) {
 	MutexLock mutex_lock(dbus_mutex);
 
@@ -953,6 +977,8 @@ bool FreeDesktopPortalDesktop::indicator_create(DisplayServer::IndicatorID p_id,
 		return false;
 	}
 
+	item.name_assigned = true;
+
 	indicator_id_map[name] = p_id;
 
 	StatusNotifierItem &item = indicators[p_id];
@@ -961,21 +987,7 @@ bool FreeDesktopPortalDesktop::indicator_create(DisplayServer::IndicatorID p_id,
 
 	// TODO: Error handling.
 	indicator_set_icon(p_id, p_icon);
-
-	const char *name_ptr = name.utf8();
-
-	DBusMessage *message = dbus_message_new_method_call(
-			BUS_STATUS_NOTIFIER_WATCHER_NAME, BUS_STATUS_NOTIFIER_WATCHER_PATH, BUS_INTERFACE_STATUS_NOTIFIER_WATCHER,
-			"RegisterStatusNotifierItem");
-	dbus_message_append_args(
-			message,
-			DBUS_TYPE_STRING, &name_ptr,
-			DBUS_TYPE_INVALID);
-
-	dbus_connection_send(bus, message, NULL);
-	dbus_message_unref(message);
-
-	item.registered = true;
+	indicator_register(p_id);
 
 	return true;
 }
@@ -1017,7 +1029,7 @@ Error FreeDesktopPortalDesktop::indicator_set_icon(DisplayServer::IndicatorID p_
 		item.icon_data.append(image_data[i + 2]); // B
 	}
 
-	if (item.registered) {
+	if (item.name_assigned) {
 		DBusMessage *signal = dbus_message_new_signal(BUS_STATUS_NOTIFIER_ITEM_PATH, BUS_INTERFACE_STATUS_NOTIFIER_ITEM, "NewIcon");
 		dbus_connection_send(monitor_connection, signal, NULL);
 		dbus_message_unref(signal);
@@ -1035,7 +1047,7 @@ void FreeDesktopPortalDesktop::indicator_set_tooltip(DisplayServer::IndicatorID 
 
 	item.tooltip = p_tooltip;
 
-	if (item.registered) {
+	if (item.name_assigned) {
 		DBusMessage *signal = dbus_message_new_signal(BUS_STATUS_NOTIFIER_ITEM_PATH, BUS_INTERFACE_STATUS_NOTIFIER_ITEM, "NewToolTip");
 		dbus_connection_send(monitor_connection, signal, NULL);
 		dbus_message_unref(signal);
@@ -1124,6 +1136,16 @@ FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
 		dbus_error_init(&error);
 
 		dbus_connection_try_register_object_path(monitor_connection, BUS_STATUS_NOTIFIER_ITEM_PATH, &status_indicator_item_vtable, this, &error);
+		if (dbus_error_is_set(&error)) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT(vformat("Error on D-Bus communication: %s", error.message));
+			}
+		}
+		dbus_error_free(&error);
+
+		// We need this for catching status bar reloads (e.g. swaybar restarts)
+		const char *signal_match = "type='signal',interface='org.freedesktop.StatusNotifierWatcher',member='StatusNotifierHostRegistered'";
+		dbus_bus_add_match(monitor_connection, signal_match, &error);
 		if (dbus_error_is_set(&error)) {
 			if (OS::get_singleton()->is_stdout_verbose()) {
 				ERR_PRINT(vformat("Error on D-Bus communication: %s", error.message));

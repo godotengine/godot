@@ -95,7 +95,7 @@ private:
 		String name;
 		String tooltip;
 		Callable activate_callback;
-		bool registered = false;
+		bool name_assigned = false;
 		Size2i icon_size;
 		Vector<uint8_t> icon_data;
 	};
@@ -156,6 +156,7 @@ public:
 		system_theme_changed = p_system_theme_changed;
 	}
 
+	bool indicator_register(DisplayServer::IndicatorID p_id);
 	bool indicator_create(DisplayServer::IndicatorID p_id, const Ref<Image> &p_icon);
 	Error indicator_set_icon(DisplayServer::IndicatorID p_id, const Ref<Image> &p_icon);
 	void indicator_set_tooltip(DisplayServer::IndicatorID p_id, const String &p_tooltip);
