@@ -136,7 +136,7 @@ void Joint2D::set_node_a(const NodePath &p_node_a) {
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// When in editor, the setter may be called as a result of node rename.
 		// It happens before the node actually changes its name, which triggers false warning.
-		callable_mp(this, &Joint2D::_update_joint).call_deferred();
+		callable_mp(this, &Joint2D::_update_joint).call_deferred(false);
 	} else {
 		_update_joint();
 	}
@@ -157,7 +157,7 @@ void Joint2D::set_node_b(const NodePath &p_node_b) {
 
 	b = p_node_b;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		callable_mp(this, &Joint2D::_update_joint).call_deferred();
+		callable_mp(this, &Joint2D::_update_joint).call_deferred(false);
 	} else {
 		_update_joint();
 	}
