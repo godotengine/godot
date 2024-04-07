@@ -867,7 +867,9 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	CloseHandle(pipe_err[1]);
 
 	ProcessID pid = pi.pi.dwProcessId;
+	process_map_mutex.lock();
 	process_map->insert(pid, pi);
+	process_map_mutex.unlock();
 
 	Ref<FileAccessWindowsPipe> main_pipe;
 	main_pipe.instantiate();
@@ -1014,13 +1016,16 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	if (r_child_id) {
 		*r_child_id = pid;
 	}
+	process_map_mutex.lock();
 	process_map->insert(pid, pi);
+	process_map_mutex.unlock();
 
 	return OK;
 }
 
 Error OS_Windows::kill(const ProcessID &p_pid) {
 	int ret = 0;
+	MutexLock lock(process_map_mutex);
 	if (process_map->has(p_pid)) {
 		const PROCESS_INFORMATION pi = (*process_map)[p_pid].pi;
 		process_map->erase(p_pid);
@@ -1046,22 +1051,56 @@ int OS_Windows::get_process_id() const {
 }
 
 bool OS_Windows::is_process_running(const ProcessID &p_pid) const {
+	MutexLock lock(process_map_mutex);
 	if (!process_map->has(p_pid)) {
 		return false;
 	}
 
-	const PROCESS_INFORMATION &pi = (*process_map)[p_pid].pi;
+	const ProcessInfo &info = (*process_map)[p_pid];
+	if (!info.is_running) {
+		return false;
+	}
 
+	const PROCESS_INFORMATION &pi = info.pi;
 	DWORD dw_exit_code = 0;
 	if (!GetExitCodeProcess(pi.hProcess, &dw_exit_code)) {
 		return false;
 	}
 
 	if (dw_exit_code != STILL_ACTIVE) {
+		info.is_running = false;
+		info.exit_code = dw_exit_code;
 		return false;
 	}
 
 	return true;
+}
+
+int OS_Windows::get_process_exit_code(const ProcessID &p_pid) const {
+	MutexLock lock(process_map_mutex);
+	if (!process_map->has(p_pid)) {
+		return -1;
+	}
+
+	const ProcessInfo &info = (*process_map)[p_pid];
+	if (!info.is_running) {
+		return info.exit_code;
+	}
+
+	const PROCESS_INFORMATION &pi = info.pi;
+
+	DWORD dw_exit_code = 0;
+	if (!GetExitCodeProcess(pi.hProcess, &dw_exit_code)) {
+		return -1;
+	}
+
+	if (dw_exit_code == STILL_ACTIVE) {
+		return -1;
+	}
+
+	info.is_running = false;
+	info.exit_code = dw_exit_code;
+	return dw_exit_code;
 }
 
 Error OS_Windows::set_cwd(const String &p_cwd) {

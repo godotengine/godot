@@ -176,6 +176,7 @@ public:
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
+	virtual int get_process_exit_code(const ProcessID &p_pid) const = 0;
 	virtual void vibrate_handheld(int p_duration_ms = 500) {}
 
 	virtual Error shell_open(const String &p_uri);
