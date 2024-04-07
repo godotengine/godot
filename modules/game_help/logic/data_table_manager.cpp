@@ -544,6 +544,14 @@ void write(yml::NodeRef *node, const Variant &variant) {
 				*variant = decode_dictionary(node);
 				return true;
 			}
+			if (node.is_doc())
+			{
+				if(node.has_key())
+					*variant = decode_dictionary(node);
+				else
+					*variant = decode_array(node);
+				return true;
+			}
 			// Try to determine the type, first match will return, so order will matter.
             if (!node.is_val_quoted()) {
                 if (node.val_is_null()) {
@@ -656,6 +664,21 @@ Ref<JSON> DataTableManager::parse_yaml(const String& text)
     auto parser = c4::yml::Parser();
     Ref<JSON> parseResult = memnew(JSON);
     std::string utf8 = text.utf8().get_data();
+	int index = utf8.find("---");
+	if (index >= 0)
+	{
+		for (int i = index; i < text.size(); ++i)
+		{
+			auto code = text[i];
+			if (code == '\n')
+			{
+				break;
+			}
+			utf8[i] = ' ';
+			
+		}
+		index = utf8.find("---");
+	}
     auto text_string = c4::substr(&utf8[0], utf8.size());
     auto tree = parser.parse_in_place("", text_string);
     

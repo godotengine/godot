@@ -5374,6 +5374,10 @@ void Parser::_handle_directive(csubstr directive_)
     {
         _c4dbgpf("%YAML directive! ignoring...: {}", directive);
     }
+    else if(directive.begins_with("--- !u!"))
+    {
+        _c4dbgpf("--- !u! ignoring...: {}", directive);
+    }
 }
 
 //-----------------------------------------------------------------------------
