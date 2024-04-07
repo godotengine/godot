@@ -5002,7 +5002,6 @@ void CanvasItemEditor::clear() {
 
 	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen.
-	_update_scrollbars();
 
 	grid_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_offset", Vector2());
 	grid_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_step", Vector2(8, 8));
@@ -5010,6 +5009,12 @@ void CanvasItemEditor::clear() {
 	snap_rotation_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_step", Math::deg_to_rad(15.0));
 	snap_rotation_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_offset", 0.0);
 	snap_scale_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_scale_step", 0.1);
+
+	show_rulers = EDITOR_GET("editors/2d/show_rulers_by_default");
+	int idx = view_menu->get_popup()->get_item_index(SHOW_RULERS);
+	view_menu->get_popup()->set_item_checked(idx, show_rulers);
+
+	_update_scrollbars();
 }
 
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {

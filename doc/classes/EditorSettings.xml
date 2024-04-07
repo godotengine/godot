@@ -255,6 +255,9 @@
 		<member name="editors/2d/guides_color" type="Color" setter="" getter="">
 			The guides color to use in the 2D editor. Guides can be created by dragging the mouse cursor from the rulers.
 		</member>
+		<member name="editors/2d/show_rulers_by_default" type="bool" setter="" getter="">
+			If [code]true[/code], the 2D editor will show rulers by default.
+		</member>
 		<member name="editors/2d/smart_snapping_line_color" type="Color" setter="" getter="">
 			The color to use when drawing smart snapping lines in the 2D editor. The smart snapping lines will automatically display when moving 2D nodes if smart snapping is enabled in the Snapping Options menu at the top of the 2D editor viewport.
 		</member>
