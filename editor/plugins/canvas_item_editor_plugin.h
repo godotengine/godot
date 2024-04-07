@@ -35,10 +35,8 @@
 #include "editor/editor_plugin.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/spin_box.h"
 
 class CanvasItemEditorViewport;
 
@@ -120,7 +118,9 @@ private:
 		SHOW_GUIDES,
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
-		SHOW_EDIT_LOCKS,
+		SHOW_POSITION_GIZMOS,
+		SHOW_LOCK_GIZMOS,
+		SHOW_GROUP_GIZMOS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -259,7 +259,9 @@ private:
 	bool show_origin;
 	bool show_viewport;
 	bool show_helpers;
-	bool show_edit_locks;
+	bool show_position_gizmos;
+	bool show_lock_gizmos;
+	bool show_group_gizmos;
 	float zoom;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
@@ -379,6 +381,7 @@ private:
 	ToolButton *override_camera_button;
 	MenuButton *view_menu;
 	PopupMenu *grid_menu;
+	PopupMenu *gizmos_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
 
