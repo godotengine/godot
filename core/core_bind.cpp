@@ -1531,6 +1531,10 @@ StringName ClassDB::class_get_integer_constant_enum(const StringName &p_class, c
 	return ::ClassDB::get_integer_constant_enum(p_class, p_name, p_no_inheritance);
 }
 
+bool ClassDB::is_class_enum_bitfield(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance) const {
+	return ::ClassDB::is_enum_bitfield(p_class, p_enum, p_no_inheritance);
+}
+
 bool ClassDB::is_class_enabled(const StringName &p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
@@ -1547,7 +1551,7 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 				pf == "class_has_method" || pf == "class_get_method_list" ||
 				pf == "class_get_integer_constant_list" || pf == "class_has_integer_constant" || pf == "class_get_integer_constant" ||
 				pf == "class_has_enum" || pf == "class_get_enum_list" || pf == "class_get_enum_constants" || pf == "class_get_integer_constant_enum" ||
-				pf == "is_class_enabled");
+				pf == "is_class_enabled" || pf == "is_class_enum_bitfield");
 	}
 	if (first_argument_is_class || pf == "is_parent_class") {
 		for (const String &E : get_class_list()) {
@@ -1591,6 +1595,8 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &ClassDB::class_get_enum_list, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::class_get_enum_constants, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::class_get_integer_constant_enum, DEFVAL(false));
+
+	::ClassDB::bind_method(D_METHOD("is_class_enum_bitfield", "class", "enum", "no_inheritance"), &ClassDB::is_class_enum_bitfield, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
 }

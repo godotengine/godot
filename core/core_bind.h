@@ -462,6 +462,8 @@ public:
 	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
+	bool is_class_enum_bitfield(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
+
 	bool is_class_enabled(const StringName &p_class) const;
 
 #ifdef TOOLS_ENABLED
