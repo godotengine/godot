@@ -37,6 +37,13 @@
 #include "drivers/unix/ip_unix.h"
 
 class OS_Unix : public OS {
+	struct ProcessInfo {
+		mutable bool is_running = true;
+		mutable int exit_code = -1;
+	};
+	HashMap<ProcessID, ProcessInfo> *process_map = nullptr;
+	Mutex process_map_mutex;
+
 protected:
 	// UNIX only handles the core functions.
 	// inheriting platforms under unix (eg. X11) should handle the rest
@@ -81,6 +88,7 @@ public:
 	virtual Error kill(const ProcessID &p_pid) override;
 	virtual int get_process_id() const override;
 	virtual bool is_process_running(const ProcessID &p_pid) const override;
+	virtual int get_process_exit_code(const ProcessID &p_pid) const override;
 
 	virtual bool has_environment(const String &p_var) const override;
 	virtual String get_environment(const String &p_var) const override;
