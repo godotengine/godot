@@ -127,4 +127,36 @@ void UnknoterImpl::flip_vertex(int x, int y) {
 }
 
 void UnknoterImpl::shift_edges(int x, int y, int select_offset, int perpendicular_offset) {
+  int sign_select = (select_offset > 0) - (select_offset < 0);
+  int sign_perpendicular = (perpendicular_offset > 0) - (perpendicular_offset < 0);
+
+  if (sign_select != 0) {
+    for (int i = sign_select; i != select_offset + sign_select; i += sign_select) {
+      int x1 = x + i * !is_edge_alt(x, y);
+      int y1 = y + i * is_edge_alt(x, y);
+      coords_to_player[x1][y1] = get_edge_player(x, y);
+      if (i != select_offset) {
+        coords_to_player[x - (i - sign_select) * !is_edge_alt(x, y)][y - (i - sign_select) * is_edge_alt(x, y)] = -1; 
+      }
+    }
+  }
+  if (sign_perpendicular != 0) {
+    for (int i = sign_perpendicular; i != perpendicular_offset + sign_perpendicular; i += sign_perpendicular) {
+      int x1 = x;
+      int y1 = y;
+      if (is_edge_alt(x, y)) {
+        y1 += 2 * i;
+      } else {
+        x1 += 2 * i;
+      }
+      coords_to_player[x1][y1] = get_edge_player(x, y);
+      if (i != select_offset) {
+        coords_to_player[x - (i - sign_select) * !is_edge_alt(x, y)][y - (i - sign_select) * is_edge_alt(x, y)] = -1; 
+      }
+      if (i != perpendicular_offset) {
+        coords_to_player[x][y - (i - sign_perpendicular)] = -1; 
+      }
+    }
+  }
 }
+
