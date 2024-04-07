@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  dictionary.h                                                          */
+/*  property_info.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,75 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DICTIONARY_H
-#define DICTIONARY_H
+#include "property_info.h"
+#include "core/variant/typed_array.h"
 
-#include "core/string/ustring.h"
-#include "core/templates/list.h"
-#include "core/variant/array.h"
+Variant::Type PropertyInfo::type::from_variant(const Variant &p_variant) {
+	return (Variant::Type)(int)p_variant;
+}
 
-class Variant;
+PropertyHint PropertyInfo::hint::from_variant(const Variant &p_variant) {
+	return (PropertyHint)(int)p_variant;
+}
 
-struct DictionaryPrivate;
+PropertyInfo::operator Dictionary() const {
+	Dictionary d;
+	d["name"] = name;
+	d["class_name"] = class_name;
+	d["type"] = type;
+	d["hint"] = hint;
+	d["hint_string"] = hint_string;
+	d["usage"] = usage;
+	return d;
+}
 
-class Dictionary {
-	mutable DictionaryPrivate *_p;
+PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
+	PropertyInfo pi;
 
-	void _ref(const Dictionary &p_from) const;
-	void _unref() const;
+	if (p_dict.has("type")) {
+		pi.type = Variant::Type(int(p_dict["type"]));
+	}
 
-public:
-	void get_key_list(List<Variant> *p_keys) const;
-	Variant get_key_at_index(int p_index) const;
-	Variant get_value_at_index(int p_index) const;
+	if (p_dict.has("name")) {
+		pi.name = p_dict["name"];
+	}
 
-	Variant &operator[](const Variant &p_key);
-	const Variant &operator[](const Variant &p_key) const;
+	if (p_dict.has("class_name")) {
+		pi.class_name = p_dict["class_name"];
+	}
 
-	const Variant *getptr(const Variant &p_key) const;
-	Variant *getptr(const Variant &p_key);
+	if (p_dict.has("hint")) {
+		pi.hint = PropertyHint(int(p_dict["hint"]));
+	}
 
-	Variant get_valid(const Variant &p_key) const;
-	Variant get(const Variant &p_key, const Variant &p_default) const;
-	Variant get_or_add(const Variant &p_key, const Variant &p_default);
+	if (p_dict.has("hint_string")) {
+		pi.hint_string = p_dict["hint_string"];
+	}
 
-	int size() const;
-	bool is_empty() const;
-	void clear();
-	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);
-	Dictionary merged(const Dictionary &p_dictionary, bool p_overwrite = false) const;
+	if (p_dict.has("usage")) {
+		pi.usage = p_dict["usage"];
+	}
 
-	bool has(const Variant &p_key) const;
-	bool has_all(const Array &p_keys) const;
-	Variant find_key(const Variant &p_value) const;
+	return pi;
+}
 
-	bool erase(const Variant &p_key);
+TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
+	TypedArray<Dictionary> va;
+	for (const List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
+		va.push_back(Dictionary(E->get()));
+	}
 
-	bool operator==(const Dictionary &p_dictionary) const;
-	bool operator!=(const Dictionary &p_dictionary) const;
-	bool recursive_equal(const Dictionary &p_dictionary, int recursion_count) const;
-
-	uint32_t hash() const;
-	uint32_t recursive_hash(int recursion_count) const;
-	void operator=(const Dictionary &p_dictionary);
-
-	const Variant *next(const Variant *p_key = nullptr) const;
-
-	Array keys() const;
-	Array values() const;
-
-	Dictionary duplicate(bool p_deep = false) const;
-	Dictionary recursive_duplicate(bool p_deep, int recursion_count) const;
-
-	void make_read_only();
-	bool is_read_only() const;
-
-	const void *id() const;
-
-	Dictionary(const Dictionary &p_from);
-	Dictionary(const Array &p_from, const StructInfo &p_struct_info);
-	Dictionary();
-	~Dictionary();
-};
-
-#endif // DICTIONARY_H
+	return va;
+}

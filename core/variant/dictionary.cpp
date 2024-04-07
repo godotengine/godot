@@ -403,6 +403,15 @@ Dictionary::Dictionary(const Dictionary &p_from) {
 	_ref(p_from);
 }
 
+Dictionary::Dictionary(const Array &p_from, const StructInfo &p_struct_info) {
+	_p = memnew(DictionaryPrivate);
+	_p->refcount.init();
+	for (int i = 0; i < p_struct_info.count; i++) { // TODO: is there a more efficient way to do this?
+		Variant value = (0 <= i && i < p_from.size()) ? p_from[i] : p_struct_info.default_values[i];
+		_p->variant_map.insert(p_struct_info.names[i], value);
+	}
+}
+
 Dictionary::Dictionary() {
 	_p = memnew(DictionaryPrivate);
 	_p->refcount.init();

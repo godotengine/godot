@@ -428,6 +428,7 @@ class ClassDB : public Object {
 
 protected:
 	static void _bind_methods();
+	static void _bind_compatibility_methods();
 
 public:
 	PackedStringArray get_class_list() const;
@@ -440,9 +441,12 @@ public:
 
 	bool class_has_signal(const StringName &p_class, const StringName &p_signal) const;
 	Dictionary class_get_signal(const StringName &p_class, const StringName &p_signal) const;
+	Struct<MethodInfo> class_get_signal_as_struct(const StringName &p_class, const StringName &p_signal) const;
 	TypedArray<Dictionary> class_get_signal_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	TypedArray<Struct<MethodInfo>> class_get_signal_list_as_structs(const StringName &p_class, bool p_no_inheritance = false) const;
 
 	TypedArray<Dictionary> class_get_property_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	TypedArray<Struct<PropertyInfo>> class_get_property_list_as_structs(const StringName &p_class, bool p_no_inheritance = false) const;
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
@@ -451,6 +455,7 @@ public:
 	int class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
 	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	TypedArray<Struct<MethodInfo>> class_get_method_list_as_structs(const StringName &p_class, bool p_no_inheritance = false) const;
 
 	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool class_has_integer_constant(const StringName &p_class, const StringName &p_name) const;
@@ -460,6 +465,17 @@ public:
 	PackedStringArray class_get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
+
+	bool class_has_struct(const StringName &p_class, const StringName &p_struct, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_struct_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_struct_members(const StringName &p_class, const StringName &p_struct) const;
+
+#ifndef DISABLE_DEPRECATED
+	Dictionary class_get_signal_compat_82198(const StringName &p_class, const StringName &p_signal) const;
+	TypedArray<Dictionary> class_get_signal_list_compat_82198(const StringName &p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_property_list_compat_82198(const StringName &p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_method_list_compat_82198(const StringName &p_class, bool p_no_inheritance = false) const;
+#endif
 
 	bool is_class_enabled(const StringName &p_class) const;
 

@@ -354,8 +354,7 @@
 		</method>
 		<method name="add_user_signal">
 			<return type="void" />
-			<param index="0" name="signal" type="String" />
-			<param index="1" name="arguments" type="Array" default="[]" />
+			<param index="0" name="signal" type="Object.MethodInfo[]" default="[&quot;&quot;, Array[Object.PropertyInfo]([]), [], 1, 0, Array[Object.PropertyInfo]([&quot;&quot;, &amp;&quot;&quot;, 0, 0, &quot;&quot;, 6]), 0, PackedInt32Array()]" />
 			<description>
 				Adds a user-defined [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal].
 				[codeblocks]
@@ -657,7 +656,7 @@
 			</description>
 		</method>
 		<method name="get_incoming_connections" qualifiers="const">
-			<return type="Dictionary[]" />
+			<return type="Object.Connection[]" />
 			<description>
 				Returns an [Array] of signal connections received by this object. Each connection is represented as a [Dictionary] that contains three entries:
 				- [code]signal[/code] is a reference to the [Signal];
@@ -720,7 +719,7 @@
 			</description>
 		</method>
 		<method name="get_method_list" qualifiers="const">
-			<return type="Dictionary[]" />
+			<return type="Object.MethodInfo[]" />
 			<description>
 				Returns this object's methods and their signatures as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
 				- [code]name[/code] is the name of the method, as a [String];
@@ -733,7 +732,7 @@
 			</description>
 		</method>
 		<method name="get_property_list" qualifiers="const">
-			<return type="Dictionary[]" />
+			<return type="Object.PropertyInfo[]" />
 			<description>
 				Returns the object's property list as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
 				- [code]name[/code] is the property's name, as a [String];
@@ -752,7 +751,7 @@
 			</description>
 		</method>
 		<method name="get_signal_connection_list" qualifiers="const">
-			<return type="Dictionary[]" />
+			<return type="Object.Connection[]" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns an [Array] of connections for the given [param signal] name. Each connection is represented as a [Dictionary] that contains three entries:
@@ -762,7 +761,7 @@
 			</description>
 		</method>
 		<method name="get_signal_list" qualifiers="const">
-			<return type="Dictionary[]" />
+			<return type="Object.MethodInfo[]" />
 			<description>
 				Returns the list of existing signals as an [Array] of dictionaries.
 				[b]Note:[/b] Due of the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
@@ -1080,4 +1079,29 @@
 			Reference-counted connections can be assigned to the same [Callable] multiple times. Each disconnection decreases the internal counter. The signal fully disconnects only when the counter reaches 0.
 		</constant>
 	</constants>
+	<structs>
+		<struct name="Object.PropertyInfo">
+			<member name="name" type="String" default="&quot;&quot;"/>
+			<member name="class_name" type="StringName" default="&amp;&quot;&quot;"/>
+			<member name="type" type="int" default="0"/>
+			<member name="hint" type="int" default="0"/>
+			<member name="hint_string" type="String" default="&quot;&quot;"/>
+			<member name="usage" type="int" default="6"/>
+		</struct>
+		<struct name="Object.MethodInfo">
+			<member name="name" type="String" default="&quot;&quot;"/>
+			<member name="args" type="Array" default="[]"/>
+			<member name="default_args" type="Array" default="[]"/>
+			<member name="flags" type="int" default="1"/>
+			<member name="id" type="int" default="0"/>
+			<member name="return" type="Array" default="[&quot;&quot;, &amp;&quot;&quot;, 0, 0, &quot;&quot;, 6]"/>
+			<member name="return_val_metadata" type="int" default="0"/>
+			<member name="arguments_metadata" type="PackedInt32Array" default="PackedInt32Array()"/>
+		</struct>
+		<struct name="Object.Connection">
+			<member name="signal" type="Signal" default="Signal()"/>
+			<member name="callable" type="Callable" default="Callable()"/>
+			<member name="flags" type="int" default="0"/>
+		</struct>
+	</structs>
 </class>

@@ -75,7 +75,7 @@
 			</description>
 		</method>
 		<method name="class_get_method_list" qualifiers="const">
-			<return type="Dictionary[]" />
+			<return type="Object.MethodInfo[]" />
 			<param index="0" name="class" type="StringName" />
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
@@ -92,7 +92,7 @@
 			</description>
 		</method>
 		<method name="class_get_property_list" qualifiers="const">
-			<return type="Dictionary[]" />
+			<return type="Object.PropertyInfo[]" />
 			<param index="0" name="class" type="StringName" />
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
@@ -100,7 +100,7 @@
 			</description>
 		</method>
 		<method name="class_get_signal" qualifiers="const">
-			<return type="Dictionary" />
+			<return type="Object.MethodInfo[]" />
 			<param index="0" name="class" type="StringName" />
 			<param index="1" name="signal" type="StringName" />
 			<description>
@@ -108,11 +108,25 @@
 			</description>
 		</method>
 		<method name="class_get_signal_list" qualifiers="const">
-			<return type="Dictionary[]" />
+			<return type="Object.MethodInfo[]" />
 			<param index="0" name="class" type="StringName" />
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
 				Returns an array with all the signals of [param class] or its ancestry if [param no_inheritance] is [code]false[/code]. Every element of the array is a [Dictionary] as described in [method class_get_signal].
+			</description>
+		</method>
+		<method name="class_get_struct_list" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="no_inheritance" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="class_get_struct_members" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="struct" type="StringName" />
+			<description>
 			</description>
 		</method>
 		<method name="class_has_enum" qualifiers="const">
@@ -147,6 +161,14 @@
 			<param index="1" name="signal" type="StringName" />
 			<description>
 				Returns whether [param class] or its ancestry has a signal called [param signal] or not.
+			</description>
+		</method>
+		<method name="class_has_struct" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="struct" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
 			</description>
 		</method>
 		<method name="class_set_property" qualifiers="const">

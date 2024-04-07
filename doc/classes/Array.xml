@@ -54,6 +54,15 @@
 		<constructor name="Array">
 			<return type="Array" />
 			<param index="0" name="base" type="Array" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="struct_name" type="StringName" />
+			<param index="3" name="member_names" type="PackedStringArray" />
+			<description>
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="base" type="Array" />
 			<param index="1" name="type" type="int" />
 			<param index="2" name="class_name" type="StringName" />
 			<param index="3" name="script" type="Variant" />
