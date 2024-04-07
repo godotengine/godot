@@ -1925,7 +1925,10 @@ void PopupMenu::add_submenu_node_item(const String &p_label, PopupMenu *p_submen
 	queue_accessibility_update();
 	control->queue_redraw();
 
-	p_submenu->connect("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden));
+	// Can be already connected if the submenu was not freed with clear().
+	if (!p_submenu->is_connected("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden))) {
+		p_submenu->connect("popup_hide", callable_mp(this, &PopupMenu::_submenu_hidden));
+	}
 	child_controls_changed();
 	notify_property_list_changed();
 	_menu_changed();

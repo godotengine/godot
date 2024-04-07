@@ -987,6 +987,45 @@ void ScriptEditor::_copy_script_uid() {
 	}
 }
 
+PackedStringArray ScriptEditor::_get_script_docs(const Ref<Script> &p_script) const {
+	PackedStringArray ret;
+	if (p_script.is_null()) {
+		return ret;
+	}
+
+	const Vector<DocData::ClassDoc> docs = p_script->get_documentation();
+	if (docs.is_empty()) {
+		return ret;
+	}
+
+	const DocTools *doc_data = EditorHelp::get_doc_data();
+	for (const DocData::ClassDoc &doc : docs) {
+		if (!doc.name.is_empty() && doc_data->class_list.has(doc.name)) {
+			ret.append(doc.name);
+		}
+	}
+	return ret;
+}
+
+void ScriptEditor::_add_docs_to_menu(PopupMenu *p_menu, const Ref<Script> &p_from_script) const {
+	const PackedStringArray script_docs = _get_script_docs(p_from_script);
+
+	p_menu->clear();
+	if (script_docs.is_empty()) {
+		p_menu->add_item(TTRC("No generated docs"));
+		p_menu->set_item_disabled(-1, true);
+	} else {
+		for (const String &doc_name : script_docs) {
+			p_menu->add_item(doc_name);
+			p_menu->set_item_auto_translate_mode(-1, AutoTranslateMode::AUTO_TRANSLATE_MODE_DISABLED);
+		}
+	}
+}
+
+void ScriptEditor::_open_generated_doc(int p_idx, PopupMenu *p_from_menu) {
+	_help_class_open(p_from_menu->get_item_text(p_idx));
+}
+
 void ScriptEditor::_close_other_tabs() {
 	int current_idx = tab_container->get_current_tab();
 	for (int i = tab_container->get_tab_count() - 1; i >= 0; i--) {
@@ -1748,6 +1787,7 @@ void ScriptEditor::_prepare_file_menu() {
 	PopupMenu *menu = file_menu->get_popup();
 	ScriptEditorBase *editor = _get_current_editor();
 	const Ref<Resource> res = editor ? editor->get_edited_resource() : Ref<Resource>();
+	_add_docs_to_menu(docs_submenu, res);
 
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_REOPEN_CLOSED), previous_scripts.is_empty());
 
@@ -3489,7 +3529,7 @@ void ScriptEditor::_script_list_clicked(int p_item, Vector2 p_local_mouse_pos, M
 }
 
 void ScriptEditor::_make_script_list_context_menu() {
-	context_menu->clear();
+	context_menu->clear(false);
 
 	int selected = tab_container->get_current_tab();
 	if (selected < 0 || selected >= tab_container->get_tab_count()) {
@@ -3519,6 +3559,8 @@ void ScriptEditor::_make_script_list_context_menu() {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_uid"), FILE_MENU_COPY_UID);
 		context_menu->set_item_disabled(-1, ResourceLoader::get_resource_uid(se->get_edited_resource()->get_path()) == ResourceUID::INVALID_ID);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), FILE_MENU_SHOW_IN_FILE_SYSTEM);
+		context_menu->add_submenu_node_item(TTRC("Open Generated Documentation"), context_docs_submenu, FILE_MENU_OPEN_GENERATED_DOCUMENTATION);
+		_add_docs_to_menu(context_docs_submenu, scr);
 		context_menu->add_separator();
 	}
 
@@ -4271,6 +4313,10 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	add_child(context_menu);
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_menu_option));
 
+	context_docs_submenu = memnew(PopupMenu);
+	context_menu->add_child(context_docs_submenu);
+	context_docs_submenu->connect("index_pressed", callable_mp(this, &ScriptEditor::_open_generated_doc).bind(context_docs_submenu));
+
 	overview_vbox = memnew(VBoxContainer);
 	overview_vbox->set_custom_minimum_size(Size2(0, 90));
 	overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -4367,6 +4413,10 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTRC("Copy Script Path")), FILE_MENU_COPY_PATH);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_uid", TTRC("Copy Script UID")), FILE_MENU_COPY_UID);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/show_in_file_system", TTRC("Show in FileSystem")), FILE_MENU_SHOW_IN_FILE_SYSTEM);
+
+	docs_submenu = memnew(PopupMenu);
+	docs_submenu->connect("index_pressed", callable_mp(this, &ScriptEditor::_open_generated_doc).bind(docs_submenu));
+	file_menu->get_popup()->add_submenu_node_item(TTRC("Open Generated Documentation"), docs_submenu, FILE_MENU_OPEN_GENERATED_DOCUMENTATION);
 	file_menu->get_popup()->add_separator();
 
 	file_menu->get_popup()->add_shortcut(

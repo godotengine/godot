@@ -271,6 +271,7 @@ class ScriptEditor : public PanelContainer {
 		FILE_MENU_COPY_PATH,
 		FILE_MENU_COPY_UID,
 		FILE_MENU_SHOW_IN_FILE_SYSTEM,
+		FILE_MENU_OPEN_GENERATED_DOCUMENTATION,
 
 		FILE_MENU_HISTORY_PREV,
 		FILE_MENU_HISTORY_NEXT,
@@ -325,7 +326,9 @@ class ScriptEditor : public PanelContainer {
 	MenuButton *edit_menu = nullptr;
 	MenuButton *script_search_menu = nullptr;
 	MenuButton *debug_menu = nullptr;
+	PopupMenu *docs_submenu = nullptr;
 	PopupMenu *context_menu = nullptr;
+	PopupMenu *context_docs_submenu = nullptr;
 	Timer *autosave_timer = nullptr;
 	uint64_t idle = 0;
 
@@ -435,6 +438,10 @@ class ScriptEditor : public PanelContainer {
 
 	void _copy_script_path();
 	void _copy_script_uid();
+
+	PackedStringArray _get_script_docs(const Ref<Script> &p_script) const;
+	void _add_docs_to_menu(PopupMenu *p_menu, const Ref<Script> &p_from_script) const;
+	void _open_generated_doc(int p_idx, PopupMenu *p_from_menu);
 
 	void _ask_close_current_unsaved_tab(ScriptEditorBase *current);
 
