@@ -90,6 +90,7 @@ bool UnknoterImpl::can_player_shift_edges(int player, int x, int y, int select_o
     return false;
   }
   int sign = (select_offset > 0) - (select_offset < 0);
+  int sign_perpendicular = (perpendicular_offset > 0) - (perpendicular_offset < 0);
   if (sign != 0) {
     for (int i = sign; i != select_offset + sign; i += sign) {
       int x1 = x;
@@ -98,6 +99,20 @@ bool UnknoterImpl::can_player_shift_edges(int player, int x, int y, int select_o
         x1 += 2 * i;
       } else {
         y1 += 2 * i;
+      }
+      if (get_edge_player(x1, y1) != player) {
+        return false;
+      }
+    }
+  }
+  if (sign_perpendicular != 0) {
+    for (int i = sign_perpendicular; i != perpendicular_offset + sign_perpendicular; i += sign_perpendicular) {
+      int x1 = x;
+      int y1 = y;
+      if (is_edge_alt(x, y)) {
+        y1 += 2 * i;
+      } else {
+        x1 += 2 * i;
       }
       if (get_edge_player(x1, y1) != player) {
         return false;
