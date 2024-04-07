@@ -4792,6 +4792,7 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id, WPARAM 
 			SetFocus(windows[p_window_id].hWnd);
 		}
 		windows[p_window_id].window_focused = true;
+		windows[p_window_id].window_has_focus = true;
 		_send_window_event(windows[p_window_id], WINDOW_EVENT_FOCUS_IN);
 	} else { // WM_INACTIVE.
 		Input::get_singleton()->release_pressed_events();
@@ -4800,6 +4801,7 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id, WPARAM 
 		ReleaseCapture();
 		alt_mem = false;
 		windows[p_window_id].window_focused = false;
+		windows[p_window_id].window_has_focus = false;
 		_send_window_event(windows[p_window_id], WINDOW_EVENT_FOCUS_OUT);
 	}
 
