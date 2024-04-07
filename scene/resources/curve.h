@@ -182,6 +182,7 @@ class Curve2D : public Resource {
 	mutable PackedVector2Array baked_forward_vector_cache;
 	mutable Vector<real_t> baked_dist_cache;
 	mutable real_t baked_max_ofs = 0.0;
+	mutable Vector<real_t> baked_point_dist_cache;
 
 	void mark_dirty();
 
@@ -189,6 +190,7 @@ class Curve2D : public Resource {
 	void _bake() const;
 
 	real_t bake_interval = 5.0;
+	int debug_preview_resolution = 32;
 
 	struct Interval {
 		int idx;
@@ -233,8 +235,11 @@ public:
 
 	void set_bake_interval(real_t p_tolerance);
 	real_t get_bake_interval() const;
+	void set_debug_preview_resolution(int p_resolution);
+	int get_debug_preview_resolution() const;
 
 	real_t get_baked_length() const;
+	real_t get_baked_distance_at_point(int p_index) const;
 	Vector2 sample_baked(real_t p_offset, bool p_cubic = false) const;
 	Transform2D sample_baked_with_rotation(real_t p_offset, bool p_cubic = false) const;
 	PackedVector2Array get_points() const;
@@ -271,6 +276,7 @@ class Curve3D : public Resource {
 	mutable PackedVector3Array baked_forward_vector_cache;
 	mutable Vector<real_t> baked_dist_cache;
 	mutable real_t baked_max_ofs = 0.0;
+	mutable Vector<real_t> baked_point_dist_cache;
 
 	void mark_dirty();
 
@@ -288,6 +294,7 @@ class Curve3D : public Resource {
 	Basis _compose_posture(int p_index) const;
 
 	real_t bake_interval = 0.2;
+	int debug_preview_resolution = 32;
 	bool up_vector_enabled = true;
 
 	void _bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
@@ -332,10 +339,13 @@ public:
 
 	void set_bake_interval(real_t p_tolerance);
 	real_t get_bake_interval() const;
+	void set_debug_preview_resolution(int p_resolution);
+	int get_debug_preview_resolution() const;
 	void set_up_vector_enabled(bool p_enable);
 	bool is_up_vector_enabled() const;
 
 	real_t get_baked_length() const;
+	real_t get_baked_distance_at_point(int p_index) const;
 	Vector3 sample_baked(real_t p_offset, bool p_cubic = false) const;
 	Transform3D sample_baked_with_rotation(real_t p_offset, bool p_cubic = false, bool p_apply_tilt = false) const;
 	real_t sample_baked_tilt(real_t p_offset) const;
