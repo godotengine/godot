@@ -150,8 +150,11 @@ protected:
 	struct ProcessInfo {
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
+		mutable bool is_running = true;
+		mutable int exit_code = -1;
 	};
 	HashMap<ProcessID, ProcessInfo> *process_map = nullptr;
+	Mutex process_map_mutex;
 
 public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
@@ -189,6 +192,7 @@ public:
 	virtual Error kill(const ProcessID &p_pid) override;
 	virtual int get_process_id() const override;
 	virtual bool is_process_running(const ProcessID &p_pid) const override;
+	virtual int get_process_exit_code(const ProcessID &p_pid) const override;
 
 	virtual bool has_environment(const String &p_var) const override;
 	virtual String get_environment(const String &p_var) const override;

@@ -164,6 +164,7 @@ public:
 	Error shell_show_in_file_manager(const String &p_path, bool p_open_folder = true);
 
 	bool is_process_running(int p_pid) const;
+	int get_process_exit_code(int p_pid) const;
 	int get_process_id() const;
 
 	void set_restart_on_exit(bool p_restart, const Vector<String> &p_restart_arguments = Vector<String>());
