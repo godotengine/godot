@@ -11,6 +11,18 @@ std::vector<std::vector<std::pair<int, int>>> get_field() {
   };
 }
 
+void UnknoterImpl::_set_field(const std::vector<std::vector<int>>& field) {
+    coords_to_player = field;
+}
+
+int UnknoterImpl::get_width() {
+  return width;
+}
+
+int UnknoterImpl::get_height() {
+  return height;
+}
+
 void UnknoterImpl::reset(int players, int width_, int height_) {
   width = width_;
   height = height_;
