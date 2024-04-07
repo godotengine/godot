@@ -47,10 +47,14 @@ void XRBodyModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_show_when_tracked", "show"), &XRBodyModifier3D::set_show_when_tracked);
 	ClassDB::bind_method(D_METHOD("get_show_when_tracked"), &XRBodyModifier3D::get_show_when_tracked);
 
+	ClassDB::bind_method(D_METHOD("set_use_root_motion", "use_root_motion"), &XRBodyModifier3D::set_use_root_motion);
+	ClassDB::bind_method(D_METHOD("is_using_root_motion"), &XRBodyModifier3D::is_using_root_motion);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "body_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/body"), "set_body_tracker", "get_body_tracker");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_update", PROPERTY_HINT_FLAGS, "Upper Body,Lower Body,Hands"), "set_body_update", "get_body_update");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_update", PROPERTY_HINT_ENUM, "Full,Rotation Only"), "set_bone_update", "get_bone_update");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_when_tracked"), "set_show_when_tracked", "get_show_when_tracked");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_root_motion"), "set_use_root_motion", "is_using_root_motion");
 
 	BIND_BITFIELD_FLAG(BODY_UPDATE_UPPER_BODY);
 	BIND_BITFIELD_FLAG(BODY_UPDATE_LOWER_BODY);
@@ -92,6 +96,14 @@ void XRBodyModifier3D::set_show_when_tracked(bool p_show_when_tracked) {
 
 bool XRBodyModifier3D::get_show_when_tracked() const {
 	return show_when_tracked;
+}
+
+void XRBodyModifier3D::set_use_root_motion(bool p_use_root_motion) {
+	use_root_motion = p_use_root_motion;
+}
+
+bool XRBodyModifier3D::is_using_root_motion() const {
+	return use_root_motion;
 }
 
 void XRBodyModifier3D::_get_joint_data() {
@@ -277,7 +289,7 @@ void XRBodyModifier3D::_process_modification() {
 	}
 
 	// Get the world and skeleton scale.
-	const float ws = xr_server->get_world_scale();
+	const float ws = 1.0 / xr_server->get_world_scale();
 	const float ss = skeleton->get_motion_scale();
 
 	// Read the relevant tracking data. This applies the skeleton motion scale to
@@ -291,7 +303,7 @@ void XRBodyModifier3D::_process_modification() {
 
 		if (has_valid_data[joint]) {
 			transforms[joint] = tracker->get_joint_transform(static_cast<XRBodyTracker::Joint>(joint));
-			transforms[joint].origin *= ss;
+			transforms[joint].origin = transforms[joint].origin * ws * ss;
 			inv_transforms[joint] = transforms[joint].inverse();
 		}
 	}
@@ -329,13 +341,25 @@ void XRBodyModifier3D::_process_modification() {
 		}
 
 		// Always update the bone rotation.
-		skeleton->set_bone_pose_rotation(joints[joint].bone, Quaternion(relative_transform.basis));
+		skeleton->set_bone_pose_rotation(joints[joint].bone, relative_transform.basis.get_rotation_quaternion());
 	}
 
 	// Transform to the tracking data root pose. This also applies the XR world-scale to allow
 	// scaling the avatars mesh and skeleton appropriately (if they are child nodes).
-	set_transform(
-			transforms[XRBodyTracker::JOINT_ROOT] * ws);
+	if (!use_root_motion) {
+		skeleton->set_bone_pose_position(joints[XRBodyTracker::JOINT_ROOT].bone, transforms[XRBodyTracker::JOINT_ROOT].origin);
+		skeleton->set_bone_pose_rotation(joints[XRBodyTracker::JOINT_ROOT].bone, transforms[XRBodyTracker::JOINT_ROOT].basis.get_rotation_quaternion());
+	} else {
+		Node3D *node = cast_to<Node3D>(get_node_or_null(skeleton->get_root_motion_target()));
+		if (node) {
+			Quaternion current_q = transforms[XRBodyTracker::JOINT_ROOT].basis.get_rotation_quaternion();
+			Quaternion delta_q = prev_root_bone_rotation.inverse() * current_q;
+			skeleton->set_root_motion_position(((xr_server->get_reference_frame().basis.get_rotation_quaternion().inverse() * current_q).inverse() * node->get_quaternion() * delta_q).xform(transforms[XRBodyTracker::JOINT_ROOT].origin - prev_root_bone_position));
+			skeleton->set_root_motion_rotation(delta_q);
+			prev_root_bone_position = transforms[XRBodyTracker::JOINT_ROOT].origin;
+			prev_root_bone_rotation = current_q;
+		}
+	}
 
 	// If tracking-state determines visibility then show the node.
 	if (show_when_tracked) {

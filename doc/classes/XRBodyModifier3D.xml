@@ -22,7 +22,11 @@
 			Specifies the type of updates to perform on the bones.
 		</member>
 		<member name="show_when_tracked" type="bool" setter="set_show_when_tracked" getter="get_show_when_tracked" default="true">
-			If true then the nodes visibility is determined by whether tracking data is available.
+			If [code]true[/code], then the nodes visibility is determined by whether tracking data is available.
+		</member>
+		<member name="use_root_motion" type="bool" setter="set_use_root_motion" getter="is_using_root_motion" default="false">
+			If [code]true[/code], apply root delta as root motion to [Skeleton3D].
+			If [code]false[/code], transforms the root bone directly.
 		</member>
 	</members>
 	<constants>

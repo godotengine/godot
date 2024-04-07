@@ -161,6 +161,20 @@
 				Returns an array with all of the bones that are parentless. Another way to look at this is that it returns the indexes of all the bones that are not dependent or modified by other bones in the Skeleton.
 			</description>
 		</method>
+		<method name="get_root_motion_position" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the root motion position.
+				[b]Note:[/b] If you get this value outside of the update process, it may not be the correct value, as it may be overwritten from [SkeletonModifier3D]. See also [member root_motion_target].
+			</description>
+		</method>
+		<method name="get_root_motion_rotation" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
+				Returns the root motion rotation.
+				[b]Note:[/b] If you get this value outside of the update process, it may not be the correct value, as it may be overwritten from [SkeletonModifier3D]. See also [member root_motion_target].
+			</description>
+		</method>
 		<method name="get_version" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -340,6 +354,9 @@
 			Multiplies the 3D position track animation.
 			[b]Note:[/b] Unless this value is [code]1.0[/code], the key value in animation will not match the actual position value.
 		</member>
+		<member name="root_motion_target" type="NodePath" setter="set_root_motion_target" getter="get_root_motion_target" default="NodePath(&quot;&quot;)">
+			When the root motion is set from [AnimationMixer] or [SkeletonModifier3D], the motion is added to the [NodePath] transform.
+		</member>
 		<member name="show_rest_only" type="bool" setter="set_show_rest_only" getter="is_show_rest_only" default="false">
 			If [code]true[/code], forces the bones in their default rest pose, regardless of their values. In the editor, this also prevents the bones from being edited.
 		</member>
@@ -359,6 +376,13 @@
 			<description>
 				Emitted when the pose is updated.
 				[b]Note:[/b] During the update process, this signal is not fired, so modification by [SkeletonModifier3D] is not detected.
+			</description>
+		</signal>
+		<signal name="root_motion_processed">
+			<param index="0" name="root_motion_position" type="Vector3" />
+			<param index="1" name="root_motion_rotation" type="Quaternion" />
+			<description>
+				Emitted when the root motion is applied to [member root_motion_target], or can be applied for setting the root motion manually within the update process.
 			</description>
 		</signal>
 		<signal name="show_rest_only_changed">

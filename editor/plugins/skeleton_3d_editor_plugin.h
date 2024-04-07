@@ -271,4 +271,40 @@ public:
 	Skeleton3DGizmoPlugin();
 };
 
+class RootMotionGizmo : public EditorNode3DGizmo {
+	GDCLASS(RootMotionGizmo, EditorNode3DGizmo);
+
+	Skeleton3D *skeleton = nullptr;
+
+	Ref<Material> immediate_material;
+	const real_t cell_size = 1.0;
+	const real_t radius = 5.0;
+	const Color color = Color(0.5, 0.5, 1.0);
+
+	Transform3D accumulated = Transform3D();
+
+	Vector3 root_motion_position = Vector3();
+	Quaternion root_motion_rotation = Quaternion();
+
+	void _redraw(const Vector3 &p_root_motion_position, const Quaternion &p_root_motion_rotation);
+
+public:
+	virtual void redraw() override;
+	RootMotionGizmo(Skeleton3D *skeleton = nullptr);
+};
+
+class RootMotionGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(RootMotionGizmoPlugin, EditorNode3DGizmoPlugin);
+
+protected:
+	Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial) override;
+
+public:
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+
+	RootMotionGizmoPlugin();
+};
+
 #endif // SKELETON_3D_EDITOR_PLUGIN_H

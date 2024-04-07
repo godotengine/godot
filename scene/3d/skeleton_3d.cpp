@@ -397,6 +397,18 @@ void Skeleton3D::_notification(int p_what) {
 				}
 			}
 
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				if (!root_motion_target.is_empty()) {
+					Node3D *node = cast_to<Node3D>(get_node_or_null(root_motion_target));
+					node->set_position(node->get_position() + root_motion_position);
+					node->set_quaternion(node->get_quaternion() * root_motion_rotation);
+				}
+			}
+			emit_signal(SceneStringNames::get_singleton()->root_motion_processed, root_motion_position, root_motion_rotation);
+
+			root_motion_position = Vector3();
+			root_motion_rotation = Quaternion();
+
 			updating = false;
 			is_update_needed = false;
 		} break;
@@ -467,6 +479,34 @@ void Skeleton3D::set_motion_scale(float p_motion_scale) {
 float Skeleton3D::get_motion_scale() const {
 	ERR_FAIL_COND_V(motion_scale <= 0, 1);
 	return motion_scale;
+}
+
+void Skeleton3D::set_root_motion_target(const NodePath &p_root_motion_target) {
+	root_motion_target = p_root_motion_target;
+}
+
+NodePath Skeleton3D::get_root_motion_target() const {
+	return root_motion_target;
+}
+
+// Root motion api
+
+void Skeleton3D::set_root_motion_position(const Vector3 &p_position) {
+	root_motion_position = p_position;
+	_update_deferred();
+}
+
+void Skeleton3D::set_root_motion_rotation(const Quaternion &p_rotation) {
+	root_motion_rotation = p_rotation;
+	_update_deferred();
+}
+
+Vector3 Skeleton3D::get_root_motion_position() const {
+	return root_motion_position;
+}
+
+Quaternion Skeleton3D::get_root_motion_rotation() const {
+	return root_motion_rotation;
 }
 
 // Skeleton creation api
@@ -952,11 +992,16 @@ void Skeleton3D::_process_modifiers() {
 		}
 		real_t influence = mod->get_influence();
 		if (influence < 1.0) {
+			// Store old state of pose/motion.
+			Vector3 old_root_motion_position = root_motion_position;
+			Quaternion old_root_motion_rotation = root_motion_rotation;
 			LocalVector<Transform3D> old_poses;
 			for (int i = 0; i < get_bone_count(); i++) {
 				old_poses.push_back(get_bone_pose(i));
 			}
+			// Process.
 			mod->process_modification();
+			// Interpolate to new state of pose/motion.
 			LocalVector<Transform3D> new_poses;
 			for (int i = 0; i < get_bone_count(); i++) {
 				new_poses.push_back(get_bone_pose(i));
@@ -967,6 +1012,8 @@ void Skeleton3D::_process_modifiers() {
 				}
 				set_bone_pose(i, old_poses[i].interpolate_with(new_poses[i], influence));
 			}
+			root_motion_position = old_root_motion_position.lerp(root_motion_position, influence);
+			root_motion_rotation = old_root_motion_rotation.slerp(root_motion_rotation, influence);
 		} else {
 			mod->process_modification();
 		}
@@ -1049,10 +1096,17 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_show_rest_only", "enabled"), &Skeleton3D::set_show_rest_only);
 	ClassDB::bind_method(D_METHOD("is_show_rest_only"), &Skeleton3D::is_show_rest_only);
 
+	ClassDB::bind_method(D_METHOD("set_root_motion_target", "root_motion_target"), &Skeleton3D::set_root_motion_target);
+	ClassDB::bind_method(D_METHOD("get_root_motion_target"), &Skeleton3D::get_root_motion_target);
+
 	ClassDB::bind_method(D_METHOD("set_modifier_callback_mode_process", "mode"), &Skeleton3D::set_modifier_callback_mode_process);
 	ClassDB::bind_method(D_METHOD("get_modifier_callback_mode_process"), &Skeleton3D::get_modifier_callback_mode_process);
 
+	ClassDB::bind_method(D_METHOD("get_root_motion_position"), &Skeleton3D::get_root_motion_position);
+	ClassDB::bind_method(D_METHOD("get_root_motion_rotation"), &Skeleton3D::get_root_motion_rotation);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_scale", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater"), "set_motion_scale", "get_motion_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_motion_target", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"), "set_root_motion_target", "get_root_motion_target");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_rest_only"), "set_show_rest_only", "is_show_rest_only");
 
 	ADD_GROUP("Modifier", "modifier_");
@@ -1063,6 +1117,7 @@ void Skeleton3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("bone_enabled_changed", PropertyInfo(Variant::INT, "bone_idx")));
 	ADD_SIGNAL(MethodInfo("bone_list_changed"));
 	ADD_SIGNAL(MethodInfo("show_rest_only_changed"));
+	ADD_SIGNAL(MethodInfo("root_motion_processed", PropertyInfo(Variant::VECTOR3, "root_motion_position"), PropertyInfo(Variant::QUATERNION, "root_motion_rotation")));
 
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 	BIND_ENUM_CONSTANT(MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS);

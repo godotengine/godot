@@ -69,6 +69,9 @@ public:
 	void set_show_when_tracked(bool p_show_when_tracked);
 	bool get_show_when_tracked() const;
 
+	void set_use_root_motion(bool p_use_root_motion);
+	bool is_using_root_motion() const;
+
 	void _notification(int p_what);
 
 protected:
@@ -87,6 +90,11 @@ private:
 	BitField<BodyUpdate> body_update = BODY_UPDATE_UPPER_BODY | BODY_UPDATE_LOWER_BODY | BODY_UPDATE_HANDS;
 	BoneUpdate bone_update = BONE_UPDATE_FULL;
 	bool show_when_tracked = true;
+
+	bool use_root_motion = false;
+	Vector3 prev_root_bone_position = Vector3();
+	Quaternion prev_root_bone_rotation = Quaternion();
+
 	JointData joints[XRBodyTracker::JOINT_MAX];
 
 	void _get_joint_data();

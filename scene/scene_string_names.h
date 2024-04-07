@@ -102,6 +102,7 @@ public:
 	StringName skeleton_updated;
 	StringName bone_enabled_changed;
 	StringName show_rest_only_changed;
+	StringName root_motion_processed;
 
 	StringName body_shape_entered;
 	StringName body_entered;

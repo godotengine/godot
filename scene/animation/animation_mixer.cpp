@@ -1695,6 +1695,18 @@ void AnimationMixer::_blend_apply() {
 					root_motion_position_accumulator = t->loc;
 					root_motion_rotation_accumulator = t->rot;
 					root_motion_scale_accumulator = t->scale;
+					if (t->skeleton_id.is_valid()) {
+						Skeleton3D *t_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(t->skeleton_id));
+						if (!t_skeleton) {
+							return;
+						}
+						Node3D *node = cast_to<Node3D>(t_skeleton->get_node_or_null(t_skeleton->get_root_motion_target()));
+						if (!node) {
+							return;
+						}
+						t_skeleton->set_root_motion_position((root_motion_rotation_accumulator.inverse() * node->get_quaternion() * root_motion_rotation).xform(root_motion_position));
+						t_skeleton->set_root_motion_rotation(root_motion_rotation);
+					}
 				} else if (t->skeleton_id.is_valid() && t->bone_idx >= 0) {
 					Skeleton3D *t_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(t->skeleton_id));
 					if (!t_skeleton) {

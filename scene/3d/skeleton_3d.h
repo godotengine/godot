@@ -144,9 +144,14 @@ private:
 	bool show_rest_only = false;
 	float motion_scale = 1.0;
 
+	NodePath root_motion_target;
+
 	uint64_t version = 1;
 
 	void _update_process_order();
+
+	Vector3 root_motion_position = Vector3();
+	Quaternion root_motion_rotation = Quaternion();
 
 	// To process modifiers.
 	ModifierCallbackModeProcess modifier_callback_mode_process = MODIFIER_CALLBACK_MODE_PROCESS_IDLE;
@@ -213,6 +218,9 @@ public:
 	void set_motion_scale(float p_motion_scale);
 	float get_motion_scale() const;
 
+	void set_root_motion_target(const NodePath &p_root_motion_target);
+	NodePath get_root_motion_target() const;
+
 	// Posing API
 	Transform3D get_bone_pose(int p_bone) const;
 	Vector3 get_bone_pose_position(int p_bone) const;
@@ -238,6 +246,13 @@ public:
 	void force_update_all_dirty_bones();
 	void force_update_all_bone_transforms();
 	void force_update_bone_children_transforms(int bone_idx);
+
+	// These root motion setters should be available only from AnimationMixer and SkeletonModifier3D.
+	void set_root_motion_position(const Vector3 &p_position);
+	void set_root_motion_rotation(const Quaternion &p_rotation);
+
+	Vector3 get_root_motion_position() const;
+	Quaternion get_root_motion_rotation() const;
 
 	void set_modifier_callback_mode_process(ModifierCallbackModeProcess p_mode);
 	ModifierCallbackModeProcess get_modifier_callback_mode_process() const;

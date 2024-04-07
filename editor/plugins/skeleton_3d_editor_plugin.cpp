@@ -1123,6 +1123,9 @@ Skeleton3DEditorPlugin::Skeleton3DEditorPlugin() {
 
 	Ref<Skeleton3DGizmoPlugin> gizmo_plugin = Ref<Skeleton3DGizmoPlugin>(memnew(Skeleton3DGizmoPlugin));
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
+
+	Ref<RootMotionGizmoPlugin> rm_gizmo_plugin = Ref<RootMotionGizmoPlugin>(memnew(RootMotionGizmoPlugin));
+	Node3DEditor::get_singleton()->add_gizmo_plugin(rm_gizmo_plugin);
 }
 
 EditorPlugin::AfterGUIInput Skeleton3DEditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
@@ -1529,4 +1532,90 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Ref<ArrayMesh> m = surface_tool->commit();
 	p_gizmo->add_mesh(m, Ref<Material>(), Transform3D(), skeleton->register_skin(skeleton->create_skin_from_rest_transforms()));
+}
+
+RootMotionGizmoPlugin::RootMotionGizmoPlugin() {
+}
+
+Ref<EditorNode3DGizmo> RootMotionGizmoPlugin::create_gizmo(Node3D *p_spatial) {
+	Ref<RootMotionGizmo> ref;
+
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_spatial);
+	if (skeleton) {
+		ref = Ref<RootMotionGizmo>(memnew(RootMotionGizmo(skeleton)));
+	}
+
+	return ref;
+}
+
+bool RootMotionGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<Skeleton3D>(p_spatial) != nullptr;
+}
+
+String RootMotionGizmoPlugin::get_gizmo_name() const {
+	return "RootMotion";
+}
+
+int RootMotionGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+RootMotionGizmo::RootMotionGizmo(Skeleton3D *p_skeleton) {
+	skeleton = p_skeleton;
+	skeleton->connect(SceneStringNames::get_singleton()->root_motion_processed, callable_mp(this, &RootMotionGizmo::_redraw));
+	immediate_material = StandardMaterial3D::get_material_for_2d(false, BaseMaterial3D::TRANSPARENCY_ALPHA, false);
+}
+
+void RootMotionGizmo::_redraw(const Vector3 &p_root_motion_position, const Quaternion &p_root_motion_rotation) {
+	root_motion_position = p_root_motion_position;
+	root_motion_rotation = p_root_motion_rotation;
+	redraw();
+	root_motion_position = Vector3();
+	root_motion_rotation = Quaternion();
+}
+
+void RootMotionGizmo::redraw() {
+	clear();
+
+	accumulated.origin += accumulated.basis.xform(root_motion_position);
+	accumulated.basis *= root_motion_rotation;
+
+	accumulated.origin.x = Math::fposmod(accumulated.origin.x, cell_size);
+	accumulated.origin.y = Math::fposmod(accumulated.origin.y, cell_size);
+	accumulated.origin.z = Math::fposmod(accumulated.origin.z, cell_size);
+
+	Ref<SurfaceTool> surface_tool(memnew(SurfaceTool));
+	surface_tool->begin(Mesh::PRIMITIVE_LINES);
+
+	int cells_in_radius = int((radius / cell_size) + 1.0);
+	for (int i = -cells_in_radius; i < cells_in_radius; i++) {
+		for (int j = -cells_in_radius; j < cells_in_radius; j++) {
+			Vector3 from(i * cell_size, 0, j * cell_size);
+			Vector3 from_i((i + 1) * cell_size, 0, j * cell_size);
+			Vector3 from_j(i * cell_size, 0, (j + 1) * cell_size);
+			from = accumulated.xform_inv(from);
+			from_i = accumulated.xform_inv(from_i);
+			from_j = accumulated.xform_inv(from_j);
+
+			Color c = color, c_i = color, c_j = color;
+			c.a *= MAX(0, 1.0 - from.length() / radius);
+			c_i.a *= MAX(0, 1.0 - from_i.length() / radius);
+			c_j.a *= MAX(0, 1.0 - from_j.length() / radius);
+
+			surface_tool->set_color(c);
+			surface_tool->add_vertex(from);
+
+			surface_tool->set_color(c_i);
+			surface_tool->add_vertex(from_i);
+
+			surface_tool->set_color(c);
+			surface_tool->add_vertex(from);
+
+			surface_tool->set_color(c_j);
+			surface_tool->add_vertex(from_j);
+		}
+	}
+
+	Ref<ArrayMesh> m = surface_tool->commit();
+	add_mesh(m, immediate_material);
 }

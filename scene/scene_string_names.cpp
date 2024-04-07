@@ -66,6 +66,7 @@ SceneStringNames::SceneStringNames() {
 	skeleton_updated = StaticCString::create("skeleton_updated");
 	bone_enabled_changed = StaticCString::create("bone_enabled_changed");
 	show_rest_only_changed = StaticCString::create("show_rest_only_changed");
+	root_motion_processed = StaticCString::create("root_motion_processed");
 
 	mouse_entered = StaticCString::create("mouse_entered");
 	mouse_exited = StaticCString::create("mouse_exited");
