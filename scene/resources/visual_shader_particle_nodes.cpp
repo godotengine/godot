@@ -1430,14 +1430,16 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 			// By convention (as established by the default ParticlesProcessMaterial shader code),
 			// `CUSTOM.y` holds the progress of the particle over the default lifetime configured
 			// for the particle system.
-			code += tab + "CUSTOM.y = 0.0;\n";
+			// However, to allow using CUSTOM fully for other purposes, we use `USERDATA2.x` instead.
+			code += tab + "USERDATA2.x = 0.0;\n";
 
 			// In ParticlesProcessMaterial's shader code, `CUSTOM.w` is set to the randomized lifetime
 			// ratio of the particle (a 0.0-1.0 value.)
+			// However, to allow using CUSTOM fully for other purposes, we use `USERDATA2.y` instead.
 			if (!p_input_vars[8].is_empty()) {
-				code += tab + "CUSTOM.w = " + p_input_vars[8] + ";\n";
+				code += tab + "USERDATA2.y = " + p_input_vars[8] + ";\n";
 			} else {
-				code += tab + "CUSTOM.w = 1.0;\n";
+				code += tab + "USERDATA2.y = 1.0;\n";
 			}
 
 			code += tab + "if (RESTART_POSITION) {\n";
@@ -1454,8 +1456,8 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 		}
 
 		if (shader_type == VisualShader::TYPE_PROCESS || shader_type == VisualShader::TYPE_COLLIDE) {
-			code += tab + "CUSTOM.y += DELTA / LIFETIME;\n\n";
-			code += tab + "if (CUSTOM.y > CUSTOM.w) ACTIVE = false;\n\n";
+			code += tab + "USERDATA2.x += DELTA / LIFETIME;\n\n";
+			code += tab + "if (USERDATA2.x > USERDATA2.y) ACTIVE = false;\n\n";
 		}
 
 		if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS || shader_type == VisualShader::TYPE_COLLIDE) {
