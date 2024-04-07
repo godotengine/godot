@@ -687,7 +687,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 							(*r_len) += used;
 						}
 
-						if (str == "script") {
+						if (str == "script" && value.get_type() != Variant::NIL) {
 							ERR_FAIL_COND_V_MSG(value.get_type() != Variant::STRING, ERR_INVALID_DATA, "Invalid value for \"script\" property, expected script path as String.");
 							String path = value;
 							ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://") || !ResourceLoader::exists(path, "Script"), ERR_INVALID_DATA, "Invalid script path: '" + path + "'.");
