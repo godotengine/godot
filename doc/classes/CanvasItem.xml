@@ -390,7 +390,7 @@
 			<param index="4" name="transpose" type="bool" default="false" />
 			<param index="5" name="clip_uv" type="bool" default="true" />
 			<description>
-				Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. When you don't specify [param clip_uv], the UV (texture coordinate) values passed in [param src_rect] will be clipped to ensure they do not extend beyond the texture's dimensions. This is useful to prevent texture bleeding or artifacts when rendering a part of a texture. Otherwise, the UV values specified in [param src_rect] are used as-is without modification, even if they extend beyond the texture's dimensions. This can be useful in situations where you want to manually control UV coordinates and are certain that they won't cause texture artifacts. See also [method draw_texture_rect].
+				Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. When [param clip_uv] is true, the UV (texture coordinate) values passed in [param src_rect] will be clipped to ensure you don't read outside of the [param src_rect] (e.g. due to precision issues). See also [method draw_texture_rect].
 			</description>
 		</method>
 		<method name="force_update_transform">
