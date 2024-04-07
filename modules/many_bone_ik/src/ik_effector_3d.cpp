@@ -78,11 +78,9 @@ void IKEffector3D::update_target_global_transform(Skeleton3D *p_skeleton, ManyBo
 	ERR_FAIL_NULL(p_skeleton);
 	ERR_FAIL_NULL(for_bone);
 	Node3D *current_target_node = cast_to<Node3D>(p_many_bone_ik->get_node_or_null(target_node_path));
-	if (!current_target_node || !current_target_node->is_visible_in_tree()) {
-		target_relative_to_skeleton_origin = p_skeleton->get_global_transform().affine_inverse() * for_bone->get_ik_transform()->get_global_transform();
-		return;
+	if (current_target_node && current_target_node->is_visible_in_tree()) {
+		target_relative_to_skeleton_origin = p_skeleton->get_global_transform().affine_inverse() * current_target_node->get_global_transform();
 	}
-	target_relative_to_skeleton_origin = p_skeleton->get_global_transform().affine_inverse() * current_target_node->get_global_transform();
 }
 
 Transform3D IKEffector3D::get_target_global_transform() const {
@@ -130,8 +128,7 @@ int32_t IKEffector3D::update_effector_tip_headings(PackedVector3Array *p_heading
 	p_headings->write[index] = tip_xform_relative_to_skeleton_origin.origin - bone_origin_relative_to_skeleton_origin;
 	index++;
 	double distance = target_relative_to_skeleton_origin.origin.distance_to(bone_origin_relative_to_skeleton_origin);
-	double scale_by = MAX(1.0, distance);
-
+	double scale_by = MIN(distance, 1.0f);
 	const Vector3 priority = get_direction_priorities();
 
 	for (int axis = Vector3::AXIS_X; axis <= Vector3::AXIS_Z; ++axis) {

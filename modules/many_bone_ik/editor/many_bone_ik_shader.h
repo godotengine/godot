@@ -176,9 +176,11 @@ vec4 color_allowed(in vec3 normal_dir,  in int cone_counts, in float boundary_wi
 		}
 	}
 	vec4 result = vert_model_color;
-	if (current_condition != 0 && current_condition != 2) {
-		float on_cone_boundary = current_condition == 1 ? -0.3 : 0.0;
-		result += vec4(0.0, on_cone_boundary, 0, 0.0);
+	bool is_disallowed_entirely = current_condition == -3;
+	bool is_disallowed_on_tangent_cone_boundary = current_condition == -2;
+	bool is_disallowed_on_control_cone_boundary = current_condition == -1;
+	if (is_disallowed_entirely || is_disallowed_on_tangent_cone_boundary || is_disallowed_on_control_cone_boundary) {
+		return result;
 	} else {
 		return vec4(0.0, 0.0, 0.0, 0.0);
 	}

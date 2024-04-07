@@ -51,6 +51,8 @@ class IKEffector3D : public Resource {
 	NodePath target_node_path;
 	ObjectID target_node_cache;
 	Node *target_node_reference = nullptr;
+	bool target_static = false;
+	Transform3D target_transform;
 
 	Transform3D target_relative_to_skeleton_origin;
 	int32_t num_headings = 7;

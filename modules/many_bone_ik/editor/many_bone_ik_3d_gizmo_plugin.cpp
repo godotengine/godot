@@ -330,7 +330,7 @@ Transform3D ManyBoneIK3DGizmoPlugin::get_subgizmo_transform(const EditorNode3DGi
 	ERR_FAIL_COND_V(!skeleton, Transform3D());
 
 	Transform3D constraint_relative_to_the_skeleton = many_bone_ik->get_relative_transform(many_bone_ik->get_owner()).affine_inverse() *
-													  skeleton->get_relative_transform(skeleton->get_owner()) * many_bone_ik->get_godot_skeleton_transform_inverse();
+			skeleton->get_relative_transform(skeleton->get_owner()) * many_bone_ik->get_godot_skeleton_transform_inverse();
 	return constraint_relative_to_the_skeleton * skeleton->get_bone_global_pose(p_id);
 }
 
@@ -352,7 +352,7 @@ void ManyBoneIK3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_
 	t.basis = to_local * p_transform.get_basis();
 
 	Transform3D constraint_relative_to_the_skeleton = many_bone_ik->get_relative_transform(many_bone_ik->get_owner()).affine_inverse() *
-													  skeleton->get_relative_transform(skeleton->get_owner()) * many_bone_ik->get_godot_skeleton_transform_inverse();
+			skeleton->get_relative_transform(skeleton->get_owner()) * many_bone_ik->get_godot_skeleton_transform_inverse();
 	p_transform = constraint_relative_to_the_skeleton.affine_inverse() * p_transform;
 	// Origin.
 	Vector3 orig = skeleton->get_bone_pose(p_id).origin;

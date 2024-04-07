@@ -73,18 +73,18 @@ void IKLimitCone3D::update_tangent_handles(Ref<IKLimitCone3D> p_next) {
 		// the axis of this cone, scaled to minimize its distance to the tangent contact points.
 		Vector3 scaledAxisA = A * Math::cos(boundaryPlusTangentRadiusA);
 		// a point on the plane running through the tangent contact points
-		Quaternion temp_var = Quaternion(arc_normal, boundaryPlusTangentRadiusA);
+		Quaternion temp_var = IKKusudama3D::get_quaternion_axis_angle(arc_normal, boundaryPlusTangentRadiusA);
 		Vector3 planeDir1A = temp_var.xform(A);
 		// another point on the same plane
-		Quaternion tempVar2 = Quaternion(A, Math_PI / 2);
+		Quaternion tempVar2 = IKKusudama3D::get_quaternion_axis_angle(A, Math_PI / 2);
 		Vector3 planeDir2A = tempVar2.xform(planeDir1A);
 
 		Vector3 scaledAxisB = B * cos(boundaryPlusTangentRadiusB);
 		// a point on the plane running through the tangent contact points
-		Quaternion tempVar3 = Quaternion(arc_normal, boundaryPlusTangentRadiusB);
+		Quaternion tempVar3 = IKKusudama3D::get_quaternion_axis_angle(arc_normal, boundaryPlusTangentRadiusB);
 		Vector3 planeDir1B = tempVar3.xform(B);
 		// another point on the same plane
-		Quaternion tempVar4 = Quaternion(B, Math_PI / 2);
+		Quaternion tempVar4 = IKKusudama3D::get_quaternion_axis_angle(B, Math_PI / 2);
 		Vector3 planeDir2B = tempVar4.xform(planeDir1B);
 
 		// ray from scaled center of next cone to half way point between the circumference of this cone and the next cone.
@@ -167,8 +167,12 @@ Vector3 IKLimitCone3D::get_control_point() const {
 }
 
 void IKLimitCone3D::set_control_point(Vector3 p_control_point) {
-	control_point = p_control_point;
-	control_point.normalize();
+	if (Math::is_zero_approx(p_control_point.length_squared())) {
+		control_point = Vector3(0, 1, 0);
+	} else {
+		control_point = p_control_point;
+		control_point.normalize();
+	}
 }
 
 double IKLimitCone3D::get_radius() const {
@@ -373,7 +377,7 @@ Vector3 IKLimitCone3D::closest_to_cone(Vector3 input, Vector<double> *in_bounds)
 	if (Math::is_zero_approx(axis.length_squared()) || !axis.is_finite()) {
 		axis = Vector3(0, 1, 0);
 	}
-	Quaternion rot_to = Quaternion(axis, get_radius());
+	Quaternion rot_to = IKKusudama3D::get_quaternion_axis_angle(axis, get_radius());
 	Vector3 axis_control_point = normalized_control_point;
 	if (Math::is_zero_approx(axis_control_point.length_squared())) {
 		axis_control_point = Vector3(0, 1, 0);

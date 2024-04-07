@@ -168,6 +168,7 @@ public:
     }
 
     Ref<JSON> parse_yaml(const String& text);
+    Ref<JSON> parse_yaml_file(const String& file_path);
 
     bool is_init = false;
     int version = 0;

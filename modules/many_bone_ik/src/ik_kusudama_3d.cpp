@@ -105,12 +105,12 @@ void IKKusudama3D::set_axial_limits(real_t min_angle, real_t in_range) {
 	range_angle = in_range;
 	Vector3 y_axis = Vector3(0.0f, 1.0f, 0.0f);
 	Vector3 z_axis = Vector3(0.0f, 0.0f, 1.0f);
-	twist_min_rot = Quaternion(y_axis, min_axial_angle);
+	twist_min_rot = IKKusudama3D::get_quaternion_axis_angle(y_axis, min_axial_angle);
 	twist_min_vec = twist_min_rot.xform(z_axis).normalized();
 	twist_center_vec = twist_min_rot.xform(twist_min_vec).normalized();
 	twist_center_rot = Quaternion(z_axis, twist_center_vec);
 	twist_half_range_half_cos = Math::cos(in_range / real_t(4.0)); // For the quadrance angle. We need half the range angle since starting from the center, and half of that since quadrance takes cos(angle/2).
-	twist_max_vec = Quaternion(y_axis, in_range).xform(twist_min_vec).normalized();
+	twist_max_vec = IKKusudama3D::get_quaternion_axis_angle(y_axis, in_range).xform(twist_min_vec).normalized();
 	twist_max_rot = Quaternion(z_axis, twist_max_vec);
 }
 
@@ -125,7 +125,7 @@ void IKKusudama3D::set_snap_to_twist_limit(Ref<IKNode3D> p_bone_direction, Ref<I
 	Basis align_rot = (global_twist_center.inverse() * global_transform_to_set.basis).orthonormalized();
 	Quaternion twist_rotation, swing_rotation; // Hold the ik transform's decomposed swing and twist away from global_twist_centers's global basis.
 	get_swing_twist(align_rot.get_rotation_quaternion(), Vector3(0, 1, 0), swing_rotation, twist_rotation);
-	twist_rotation = IKBoneSegment3D::clamp_to_quadrance_angle(twist_rotation, twist_half_range_half_cos);
+	twist_rotation = IKBoneSegment3D::clamp_to_cos_half_angle(twist_rotation, twist_half_range_half_cos);
 	Basis recomposition = (global_twist_center * (swing_rotation * twist_rotation)).orthonormalized();
 	Basis rotation = parent_global_inverse * recomposition;
 	p_to_set->set_transform(Transform3D(rotation, p_to_set->get_transform().origin));
@@ -273,46 +273,63 @@ Vector3 IKKusudama3D::local_point_on_path_sequence(Vector3 p_in_point, Ref<IKNod
  * @return the original point, if it's in limits, or the closest point which is in limits.
  */
 Vector3 IKKusudama3D::get_local_point_in_limits(Vector3 in_point, Vector<double> *in_bounds) {
+	// Normalize the input point
 	Vector3 point = in_point.normalized();
 	real_t closest_cos = -2.0;
 	in_bounds->write[0] = -1;
-	Vector3 closest_collision_point = Vector3(NAN, NAN, NAN);
-	// This is an exact check for being inside the bounds of each individual cone.
+
+	Vector3 closest_collision_point = in_point;
+
+	// Loop through each limit cone
 	for (int i = 0; i < limit_cones.size(); i++) {
 		Ref<IKLimitCone3D> cone = limit_cones[i];
 		Vector3 collision_point = cone->closest_to_cone(point, in_bounds);
+
+		// If the collision point is NaN, return the original point
 		if (Math::is_nan(collision_point.x) || Math::is_nan(collision_point.y) || Math::is_nan(collision_point.z)) {
 			in_bounds->write[0] = 1;
 			return point;
 		}
+
+		// Calculate the cosine of the angle between the collision point and the original point
 		real_t this_cos = collision_point.dot(point);
-		if (Math::is_nan(closest_collision_point.x) || Math::is_nan(closest_collision_point.y) || Math::is_nan(closest_collision_point.z) || this_cos > closest_cos) {
+
+		// If the closest collision point is not set or the cosine is greater than the current closest cosine, update the closest collision point and cosine
+		if (closest_collision_point.is_zero_approx() || this_cos > closest_cos) {
 			closest_collision_point = collision_point;
 			closest_cos = this_cos;
 		}
 	}
+
+	// If we're out of bounds of all cones, check if we're in the paths between the cones
 	if ((*in_bounds)[0] == -1) {
-		// Case where there are multiple cones and we're out of bounds of all cones.
-		// Are we in the paths between the cones.
 		for (int i = 0; i < limit_cones.size() - 1; i++) {
 			Ref<IKLimitCone3D> currCone = limit_cones[i];
 			Ref<IKLimitCone3D> nextCone = limit_cones[i + 1];
 			Vector3 collision_point = currCone->get_on_great_tangent_triangle(nextCone, point);
+
+			// If the collision point is NaN, skip to the next iteration
 			if (Math::is_nan(collision_point.x)) {
 				continue;
 			}
+
 			real_t this_cos = collision_point.dot(point);
+
+			// If the cosine is approximately 1, return the original point
 			if (Math::is_equal_approx(this_cos, real_t(1.0))) {
 				in_bounds->write[0] = 1;
 				return point;
 			}
+
+			// If the cosine is greater than the current closest cosine, update the closest collision point and cosine
 			if (this_cos > closest_cos) {
 				closest_collision_point = collision_point;
 				closest_cos = this_cos;
 			}
 		}
 	}
-	// Return the closest boundary point between cones.
+
+	// Return the closest boundary point between cones
 	return closest_collision_point;
 }
 
@@ -329,7 +346,7 @@ void IKKusudama3D::set_limit_cones(TypedArray<IKLimitCone3D> p_cones) {
 	}
 }
 
-void IKKusudama3D::set_axes_to_orientation_snap(Ref<IKNode3D> bone_direction, Ref<IKNode3D> to_set, Ref<IKNode3D> limiting_axes, real_t p_dampening, real_t p_cos_half_angle_dampen) {
+void IKKusudama3D::snap_to_orientation_limit(Ref<IKNode3D> bone_direction, Ref<IKNode3D> to_set, Ref<IKNode3D> limiting_axes, real_t p_dampening, real_t p_cos_half_angle_dampen) {
 	if (bone_direction.is_null()) {
 		return;
 	}
@@ -351,11 +368,11 @@ void IKKusudama3D::set_axes_to_orientation_snap(Ref<IKNode3D> bone_direction, Re
 	Vector3 bone_tip = limiting_axes->to_local(bone_ray->get_point_2());
 	Vector3 in_limits = get_local_point_in_limits(bone_tip, &in_bounds);
 
-	if (in_bounds[0] < 0 && !is_nan_vector(in_limits)) {
+	if (in_bounds[0] < 0) {
 		constrained_ray->set_point_1(bone_ray->get_point_1());
 		constrained_ray->set_point_2(limiting_axes->to_global(in_limits));
 
-		Quaternion rectified_rot = Quaternion(bone_ray->get_heading().normalized(), constrained_ray->get_heading().normalized()).normalized();
+		Quaternion rectified_rot = Quaternion(bone_ray->get_heading(), constrained_ray->get_heading());
 		to_set->rotate_local_with_global(rectified_rot);
 	}
 }
@@ -397,4 +414,16 @@ Quaternion IKKusudama3D::clamp_to_quadrance_angle(Quaternion p_rotation, double 
 
 void IKKusudama3D::clear_limit_cones() {
 	limit_cones.clear();
+}
+
+Quaternion IKKusudama3D::get_quaternion_axis_angle(const Vector3 &p_axis, real_t p_angle) {
+	real_t d = p_axis.length_squared();
+	if (d == 0) {
+		return Quaternion();
+	} else {
+		real_t sin_angle = Math::sin(p_angle * 0.5f);
+		real_t cos_angle = Math::cos(p_angle * 0.5f);
+		real_t s = sin_angle / d;
+		return Quaternion(p_axis.x * s, p_axis.y * s, p_axis.z * s, cos_angle);
+	}
 }

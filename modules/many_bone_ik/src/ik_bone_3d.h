@@ -118,4 +118,5 @@ public:
 	float calculate_total_radius_sum(const TypedArray<IKLimitCone3D> &p_cones) const;
 	Vector3 calculate_weighted_direction(const TypedArray<IKLimitCone3D> &p_cones, float p_total_radius_sum) const;
 };
+
 #endif // IK_BONE_3D_H

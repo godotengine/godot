@@ -66,7 +66,7 @@ class ManyBoneIK3D : public Node3D {
 	Ref<IKNode3D> ik_origin;
 	bool is_dirty = true;
 	NodePath skeleton_node_path = NodePath("..");
-	int32_t ui_selected_bone = -1, stabilize_passes = 1;
+	int32_t ui_selected_bone = -1, stabilize_passes = 0;
 
 	void _on_timer_timeout();
 	void _update_ik_bones_transform();
@@ -92,6 +92,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void set_pin_target_static(int32_t p_effector_index, bool p_force_ignore);
+	bool get_pin_target_static(int32_t p_effector_index);
 	void set_pin_bone_name(int32_t p_effector_index, StringName p_name) const;
 	void set_state(Ref<ManyBoneIK3DState> p_state);
 	Ref<ManyBoneIK3DState> get_state() const;

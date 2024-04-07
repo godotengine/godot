@@ -113,6 +113,8 @@ public:
 			Quaternion &r_swing,
 			Quaternion &r_twist);
 
+	static Quaternion get_quaternion_axis_angle(const Vector3 &p_axis, real_t p_angle);
+
 public:
 	/**
 	 * Presumes the input axes are the bone's localAxes, and rotates
@@ -120,7 +122,7 @@ public:
 	 *
 	 * @param to_set
 	 */
-	void set_axes_to_orientation_snap(Ref<IKNode3D> p_bone_direction, Ref<IKNode3D> p_to_set, Ref<IKNode3D> p_limiting_axes, real_t p_dampening, real_t p_cos_half_angle_dampen);
+	void snap_to_orientation_limit(Ref<IKNode3D> p_bone_direction, Ref<IKNode3D> p_to_set, Ref<IKNode3D> p_limiting_axes, real_t p_dampening, real_t p_cos_half_angle_dampen);
 
 	bool is_nan_vector(const Vector3 &vec);
 

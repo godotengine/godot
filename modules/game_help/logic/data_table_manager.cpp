@@ -642,26 +642,40 @@ void DataTableManager::init() {
     }
     is_init = true;
 }
-    Ref<JSON> DataTableManager::parse_yaml(const String& text)
-    { // NOLINT(performance-unnecessary-value-param)
-        auto parser = c4::yml::Parser();
-        Ref<JSON> parseResult = memnew(JSON);
-        std::string utf8 = text.utf8().get_data();
-        auto text_string = c4::substr(&utf8[0], utf8.size());
-        auto tree = parser.parse_in_place("", text_string);
-        
-         {
-            Variant variant;
-            tree.rootref() >> variant;
-            parseResult->set_data(variant);
-        }
-        return parseResult;
+Ref<JSON> DataTableManager::parse_yaml_file(const String& file_path)
+{
+    if(FileAccess::exists(file_path))
+    {
+	    Ref<FileAccess> f = FileAccess::open(file_path, FileAccess::READ);
+        return parse_yaml(f->get_as_text());
     }
+    return Ref<JSON>();
+}
+Ref<JSON> DataTableManager::parse_yaml(const String& text)
+{ // NOLINT(performance-unnecessary-value-param)
+    auto parser = c4::yml::Parser();
+    Ref<JSON> parseResult = memnew(JSON);
+    std::string utf8 = text.utf8().get_data();
+    auto text_string = c4::substr(&utf8[0], utf8.size());
+    auto tree = parser.parse_in_place("", text_string);
+    
+        {
+        Variant variant;
+        tree.rootref() >> variant;
+        parseResult->set_data(variant);
+    }
+    return parseResult;
+}
 
 void DataTableManager::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("set_data_table_path","path"),&DataTableManager::set_data_table_path);
     ClassDB::bind_method(D_METHOD("reload"),&DataTableManager::reload);
+    ClassDB::bind_method(D_METHOD("parse_yaml","text"),&DataTableManager::parse_yaml);
+    ClassDB::bind_method(D_METHOD("parse_yaml_file","file_path"),&DataTableManager::parse_yaml_file);
+
+
+
     ClassDB::bind_method(D_METHOD("get_data_table","name"),&DataTableManager::_get_data_table);
     ClassDB::bind_method(D_METHOD("get_data_item","name"),&DataTableManager::_get_data_item);
 

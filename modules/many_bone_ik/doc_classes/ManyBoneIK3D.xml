@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ManyBoneIK3D" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="ManyBoneIK3D" inherits="SkeletonModifier3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		A general inverse kinematics system with constraints.
 	</brief_description>
@@ -177,6 +177,7 @@
 			<return type="void" />
 			<param index="0" name="count" type="int" />
 			<description>
+				Sets the total number of constraints.
 			</description>
 		</method>
 		<method name="set_constraint_name">
@@ -184,6 +185,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="name" type="String" />
 			<description>
+				Sets the name of the constraint at the specified index.
 			</description>
 		</method>
 		<method name="set_constraint_orientation_transform">
@@ -247,12 +249,14 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="name" type="StringName" />
 			<description>
+				Sets the name of the bone at the specified pin index.
 			</description>
 		</method>
 		<method name="set_pin_count">
 			<return type="void" />
 			<param index="0" name="count" type="int" />
 			<description>
+				Sets the number of pins in the system.
 			</description>
 		</method>
 		<method name="set_pin_direction_priorities">
@@ -295,7 +299,8 @@
 		<member name="default_damp" type="float" setter="set_default_damp" getter="get_default_damp" default="0.0872665">
 			The default maximum number of radians a bone is allowed to rotate per solver iteration. The lower this value, the more natural the pose results. However, this will increase the number of iterations_per_frame the solver requires to converge.
 		</member>
-		<member name="skeleton_node_path" type="NodePath" setter="set_skeleton_node_path" getter="get_skeleton_node_path" default="NodePath(&quot;..&quot;)">
+		<member name="iterations_per_frame" type="float" setter="set_iterations_per_frame" getter="get_iterations_per_frame" default="15.0">
+			The number of iterations performed by the solver per frame.
 		</member>
 		<member name="stabilization_passes" type="int" setter="set_stabilization_passes" getter="get_stabilization_passes" default="4">
 			The number of stabilization passes performed by the solver. This can help to improve the stability of the IK solution.
