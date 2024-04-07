@@ -722,6 +722,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 		new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
 		Node *old_root = edited_scene[p_idx].root;
+		edited_scene.write[p_idx].root = new_scene;
 		old_root->replace_by(new_scene, false, false);
 		memdelete(old_root);
 		edited_scene.write[p_idx].selection = new_selection;
