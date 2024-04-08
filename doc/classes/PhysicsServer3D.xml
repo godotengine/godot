@@ -1628,7 +1628,7 @@
 			Constant to set/get the priority (order of processing) of an area.
 		</constant>
 		<constant name="AREA_PARAM_WIND_FORCE_MAGNITUDE" value="10" enum="AreaParameter">
-			Constant to set/get the magnitude of area-specific wind force.
+			Constant to set/get the magnitude of area-specific wind force. This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
 		</constant>
 		<constant name="AREA_PARAM_WIND_SOURCE" value="11" enum="AreaParameter">
 			Constant to set/get the 3D vector that specifies the origin from which an area-specific wind blows.
