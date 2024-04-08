@@ -45,6 +45,7 @@ class FileAccessHandler(val context: Context) {
 	companion object {
 		private val TAG = FileAccessHandler::class.java.simpleName
 
+		private const val FAILED_ERROR_ID = -1;
 		private const val FILE_NOT_FOUND_ERROR_ID = -1
 		internal const val INVALID_FILE_ID = 0
 		private const val STARTING_FILE_ID = 1
@@ -188,6 +189,14 @@ class FileAccessHandler(val context: Context) {
 		} catch (e: SecurityException) {
 			0L
 		}
+	}
+
+	fun fileResize(fileId: Int, length: Long): Int {
+		if (!hasFileId(fileId)) {
+			return FAILED_ERROR_ID
+		}
+
+		return files[fileId].resize(length)
 	}
 
 	fun fileGetPosition(fileId: Int): Long {
