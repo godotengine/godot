@@ -46,6 +46,18 @@
 				Returns a [PackedStringArray] of positional tracker names that are used within the extension wrapper.
 			</description>
 		</method>
+		<method name="_get_viewport_composition_layer_extension_properties" qualifiers="virtual">
+			<return type="Dictionary[]" />
+			<description>
+				Gets an array of [Dictionary]s that represent properties, just like [method Object._get_property_list], that will be added to [OpenXRCompositionLayer] nodes.
+			</description>
+		</method>
+		<method name="_get_viewport_composition_layer_extension_property_defaults" qualifiers="virtual">
+			<return type="Dictionary" />
+			<description>
+				Gets a [Dictionary] containing the default values for the properties returned by [method _get_viewport_composition_layer_extension_properties].
+			</description>
+		</method>
 		<method name="_on_before_instance_created" qualifiers="virtual">
 			<return type="void" />
 			<description>
@@ -152,6 +164,14 @@
 				Called when the OpenXR session state is changed to visible. This means OpenXR is now ready to receive frames.
 			</description>
 		</method>
+		<method name="_on_viewport_composition_layer_destroyed" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="layer" type="const void*" />
+			<description>
+				Called when a composition layer created via [OpenXRCompositionLayer] is destroyed.
+				[param layer] is a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct.
+			</description>
+		</method>
 		<method name="_set_hand_joint_locations_and_get_next_pointer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="hand_index" type="int" />
@@ -186,6 +206,17 @@
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
 				Adds additional data structures when interogating OpenXR system abilities.
+			</description>
+		</method>
+		<method name="_set_viewport_composition_layer_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="layer" type="const void*" />
+			<param index="1" name="property_values" type="Dictionary" />
+			<param index="2" name="next_pointer" type="void*" />
+			<description>
+				Adds additional data structures to composition layers created by [OpenXRCompositionLayer].
+				[param property_values] contains the values of the properties returned by [method _get_viewport_composition_layer_extension_properties].
+				[param layer] is a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct.
 			</description>
 		</method>
 		<method name="get_openxr_api">

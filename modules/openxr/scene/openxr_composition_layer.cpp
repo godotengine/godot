@@ -236,6 +236,14 @@ void OpenXRCompositionLayer::_reset_fallback_material() {
 
 void OpenXRCompositionLayer::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			if (openxr_layer_provider) {
+				for (OpenXRExtensionWrapper *extension : OpenXRAPI::get_registered_extension_wrappers()) {
+					extension_property_values.merge(extension->get_viewport_composition_layer_extension_property_defaults());
+				}
+				openxr_layer_provider->set_extension_property_values(extension_property_values);
+			}
+		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (fallback) {
 				if (should_update_fallback_mesh) {
@@ -260,7 +268,7 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			if (composition_layer_extension) {
-				composition_layer_extension->register_composition_layer_provider(openxr_layer_provider);
+				composition_layer_extension->register_viewport_composition_layer_provider(openxr_layer_provider);
 			}
 
 			if (!fallback && layer_viewport && openxr_api && openxr_api->is_running() && is_visible()) {
@@ -269,7 +277,7 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (composition_layer_extension) {
-				composition_layer_extension->unregister_composition_layer_provider(openxr_layer_provider);
+				composition_layer_extension->unregister_viewport_composition_layer_provider(openxr_layer_provider);
 			}
 
 			// When a node is removed in the editor, we need to clear the layer viewport, because otherwise
@@ -283,6 +291,40 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void OpenXRCompositionLayer::_get_property_list(List<PropertyInfo> *p_property_list) const {
+	List<PropertyInfo> extension_properties;
+	for (OpenXRExtensionWrapper *extension : OpenXRAPI::get_registered_extension_wrappers()) {
+		extension->get_viewport_composition_layer_extension_properties(&extension_properties);
+	}
+
+	for (const PropertyInfo &pinfo : extension_properties) {
+		StringName prop_name = pinfo.name;
+		if (!String(prop_name).contains("/")) {
+			WARN_PRINT_ONCE(vformat("Discarding OpenXRCompositionLayer property name '%s' from extension because it doesn't contain a '/'."));
+			continue;
+		}
+		p_property_list->push_back(pinfo);
+	}
+}
+
+bool OpenXRCompositionLayer::_get(const StringName &p_property, Variant &r_value) const {
+	if (extension_property_values.has(p_property)) {
+		r_value = extension_property_values[p_property];
+	}
+
+	return true;
+}
+
+bool OpenXRCompositionLayer::_set(const StringName &p_property, const Variant &p_value) {
+	extension_property_values[p_property] = p_value;
+
+	if (openxr_layer_provider) {
+		openxr_layer_provider->set_extension_property_values(extension_property_values);
+	}
+
+	return true;
 }
 
 PackedStringArray OpenXRCompositionLayer::get_configuration_warnings() const {
