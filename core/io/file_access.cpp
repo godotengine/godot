@@ -867,6 +867,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_bytes", "path"), &FileAccess::_get_file_as_bytes);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_string", "path"), &FileAccess::_get_file_as_string);
 
+	ClassDB::bind_method(D_METHOD("resize", "length"), &FileAccess::resize);
 	ClassDB::bind_method(D_METHOD("flush"), &FileAccess::flush);
 	ClassDB::bind_method(D_METHOD("get_path"), &FileAccess::get_path);
 	ClassDB::bind_method(D_METHOD("get_path_absolute"), &FileAccess::get_path_absolute);

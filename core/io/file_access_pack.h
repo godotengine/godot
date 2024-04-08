@@ -177,6 +177,7 @@ public:
 
 	virtual Error get_error() const override;
 
+	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
 	virtual void store_8(uint8_t p_dest) override;
 

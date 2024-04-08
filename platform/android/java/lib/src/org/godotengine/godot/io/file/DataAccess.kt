@@ -36,7 +36,9 @@ import android.util.Log
 import org.godotengine.godot.io.StorageScope
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.nio.channels.ClosedChannelException
 import java.nio.channels.FileChannel
+import java.nio.channels.NonWritableChannelException
 import kotlin.math.max
 
 /**
@@ -49,6 +51,11 @@ internal abstract class DataAccess(private val filePath: String) {
 
 	companion object {
 		private val TAG = DataAccess::class.java.simpleName
+
+		private const val OK_ERROR_ID = 0;
+		private const val FAILED_ERROR_ID = -1;
+		private const val FILE_CANT_OPEN_ERROR_ID = -2;
+		private const val INVALID_PARAMETER_ERROR_ID = -3;
 
 		fun generateDataAccess(
 			storageScope: StorageScope,
@@ -133,6 +140,21 @@ internal abstract class DataAccess(private val filePath: String) {
 	fun seekFromEnd(positionFromEnd: Long) {
 		val positionFromBeginning = max(0, size() - positionFromEnd)
 		seek(positionFromBeginning)
+	}
+
+	fun resize(length: Long): Int {
+		return try {
+			fileChannel.truncate(length)
+			OK_ERROR_ID
+		} catch (e: NonWritableChannelException) {
+			FILE_CANT_OPEN_ERROR_ID
+		} catch (e: ClosedChannelException) {
+			FILE_CANT_OPEN_ERROR_ID
+		} catch (e: IllegalArgumentException) {
+			INVALID_PARAMETER_ERROR_ID
+		} catch (e: IOException) {
+			FAILED_ERROR_ID
+		}
 	}
 
 	fun position(): Long {

@@ -52,6 +52,7 @@ class FileAccessFilesystemJAndroid : public FileAccess {
 	static jmethodID _file_close;
 	static jmethodID _file_exists;
 	static jmethodID _file_last_modified;
+	static jmethodID _file_resize;
 
 	int id;
 	String absolute_path;
@@ -76,6 +77,7 @@ public:
 
 	virtual bool eof_reached() const override; ///< reading passed EOF
 
+	virtual Error resize(int64_t p_length) override;
 	virtual uint8_t get_8() const override; ///< get a byte
 	virtual uint16_t get_16() const override;
 	virtual uint32_t get_32() const override;

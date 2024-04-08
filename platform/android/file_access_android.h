@@ -65,6 +65,7 @@ public:
 
 	virtual bool eof_reached() const override; // reading passed EOF
 
+	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual uint8_t get_8() const override; // get a byte
 	virtual uint16_t get_16() const override;
 	virtual uint32_t get_32() const override;
