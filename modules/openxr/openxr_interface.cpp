@@ -43,6 +43,7 @@ void OpenXRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("session_focussed"));
 	ADD_SIGNAL(MethodInfo("session_visible"));
 	ADD_SIGNAL(MethodInfo("pose_recentered"));
+	ADD_SIGNAL(MethodInfo("refresh_rate_changed", PropertyInfo(Variant::FLOAT, "refresh_rate")));
 
 	// Display refresh rate
 	ClassDB::bind_method(D_METHOD("get_display_refresh_rate"), &OpenXRInterface::get_display_refresh_rate);
@@ -1256,6 +1257,10 @@ void OpenXRInterface::on_state_stopping() {
 
 void OpenXRInterface::on_pose_recentered() {
 	emit_signal(SNAME("pose_recentered"));
+}
+
+void OpenXRInterface::on_refresh_rate_changes(float p_new_rate) {
+	emit_signal(SNAME("refresh_rate_changed"), p_new_rate);
 }
 
 /** Hand tracking. */
