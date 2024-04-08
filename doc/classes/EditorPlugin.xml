@@ -437,6 +437,22 @@
 				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will toggle the dock's visibility once it's moved to the bottom panel (this shortcut does not affect the dock otherwise). See the default editor bottom panel shortcuts in the Editor Settings for inspiration. Per convention, they all use [kbd]Alt[/kbd] modifier.
 			</description>
 		</method>
+		<method name="add_custom_translation">
+			<return type="void" />
+			<param index="0" name="translation" type="Translation" />
+			<description>
+				Adds a translation for editor strings. Use when you want to localize your addon. You can support multiple languages by adding multiple translations with different [member Translation.locale].
+				[codeblock]
+				func _enter_tree():
+				    add_custom_translation(preload("res://addons/my_addon/language1.po"))
+				    add_custom_translation(preload("res://addons/my_addon/language2.po"))
+
+				func _exit_tree():
+				    remove_custom_translation(preload("res://addons/my_addon/language1.po"))
+				    remove_custom_translation(preload("res://addons/my_addon/language2.po"))
+				[/codeblock]
+			</description>
+		</method>
 		<method name="add_custom_type">
 			<return type="void" />
 			<param index="0" name="type" type="String" />
@@ -641,6 +657,13 @@
 			<param index="0" name="control" type="Control" />
 			<description>
 				Removes the control from the dock. You have to manually [method Node.queue_free] the control.
+			</description>
+		</method>
+		<method name="remove_custom_translation">
+			<return type="void" />
+			<param index="0" name="translation" type="Translation" />
+			<description>
+				Removes the [param translation] added by [method add_custom_translation]. Does nothing if that translation wasn't added.
 			</description>
 		</method>
 		<method name="remove_custom_type">

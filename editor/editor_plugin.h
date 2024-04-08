@@ -52,6 +52,7 @@ class EditorToolAddons;
 class EditorTranslationParserPlugin;
 class EditorUndoRedoManager;
 class ScriptCreateDialog;
+class Translation;
 
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
@@ -242,6 +243,9 @@ public:
 
 	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
+
+	void add_custom_translation(const Ref<Translation> &p_translation);
+	void remove_custom_translation(const Ref<Translation> &p_translation);
 
 	void enable_plugin();
 	void disable_plugin();

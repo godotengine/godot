@@ -706,51 +706,59 @@ void TranslationServer::setup() {
 #endif
 }
 
-void TranslationServer::set_tool_translation(const Ref<Translation> &p_translation) {
-	tool_translation = p_translation;
+void TranslationServer::add_tool_translation(const Ref<Translation> &p_translation) {
+	if (default_tool_translation.is_null()) {
+		default_tool_translation = p_translation;
+	}
+	tool_translations.insert(p_translation);
 }
 
-Ref<Translation> TranslationServer::get_tool_translation() const {
-	return tool_translation;
+void TranslationServer::remove_tool_translation(const Ref<Translation> &p_translation) {
+	tool_translations.erase(p_translation);
+}
+
+void TranslationServer::set_default_tool_translation(const Ref<Translation> &p_translation) {
+	default_tool_translation = p_translation;
+}
+
+HashSet<Ref<Translation>> TranslationServer::get_tool_translations() const {
+	return tool_translations;
 }
 
 String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		if (TranslationServer::get_singleton()->get_tool_translation().is_valid()) {
-			return tool_translation->get_locale();
+		if (default_tool_translation.is_valid()) {
+			return default_tool_translation->get_locale();
 		} else {
 			return "en";
 		}
-	} else {
-#else
-	{
+	}
 #endif
-		// Look for best matching loaded translation.
-		String best_locale = "en";
-		int best_score = 0;
+	// Look for best matching loaded translation.
+	String best_locale = "en";
+	int best_score = 0;
 
-		for (const Ref<Translation> &E : translations) {
-			const Ref<Translation> &t = E;
-			ERR_FAIL_COND_V(t.is_null(), best_locale);
-			String l = t->get_locale();
+	for (const Ref<Translation> &E : translations) {
+		const Ref<Translation> &t = E;
+		ERR_FAIL_COND_V(t.is_null(), best_locale);
+		String l = t->get_locale();
 
-			int score = compare_locales(locale, l);
-			if (score > 0 && score >= best_score) {
-				best_locale = l;
-				best_score = score;
-				if (score == 10) {
-					break; // Exact match, skip the rest.
-				}
+		int score = compare_locales(locale, l);
+		if (score > 0 && score >= best_score) {
+			best_locale = l;
+			best_score = score;
+			if (score == 10) {
+				break; // Exact match, skip the rest.
 			}
 		}
-		return best_locale;
 	}
+	return best_locale;
 }
 
 StringName TranslationServer::tool_translate(const StringName &p_message, const StringName &p_context) const {
-	if (tool_translation.is_valid()) {
-		StringName r = tool_translation->get_message(p_message, p_context);
+	for (const Ref<Translation> &translation : tool_translations) {
+		const StringName r = translation->get_message(p_message, p_context);
 		if (r) {
 			return editor_pseudolocalization ? tool_pseudolocalize(r) : r;
 		}
@@ -759,8 +767,8 @@ StringName TranslationServer::tool_translate(const StringName &p_message, const 
 }
 
 StringName TranslationServer::tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	if (tool_translation.is_valid()) {
-		StringName r = tool_translation->get_plural_message(p_message, p_message_plural, p_n, p_context);
+	for (const Ref<Translation> &translation : tool_translations) {
+		const StringName r = translation->get_plural_message(p_message, p_message_plural, p_n, p_context);
 		if (r) {
 			return r;
 		}

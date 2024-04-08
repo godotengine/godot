@@ -81,7 +81,8 @@ class TranslationServer : public Object {
 	String fallback;
 
 	HashSet<Ref<Translation>> translations;
-	Ref<Translation> tool_translation;
+	Ref<Translation> default_tool_translation;
+	HashSet<Ref<Translation>> tool_translations;
 	Ref<Translation> property_translation;
 	Ref<Translation> doc_translation;
 	Ref<Translation> extractable_translation;
@@ -178,8 +179,10 @@ public:
 	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
 
 	String get_tool_locale();
-	void set_tool_translation(const Ref<Translation> &p_translation);
-	Ref<Translation> get_tool_translation() const;
+	void add_tool_translation(const Ref<Translation> &p_translation);
+	void remove_tool_translation(const Ref<Translation> &p_translation);
+	void set_default_tool_translation(const Ref<Translation> &p_translation);
+	HashSet<Ref<Translation>> get_tool_translations() const;
 	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
 	StringName tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 	void set_property_translation(const Ref<Translation> &p_translation);

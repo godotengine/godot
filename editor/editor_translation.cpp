@@ -69,12 +69,20 @@ void load_editor_translations(const String &p_locale) {
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
-				TranslationServer::get_singleton()->set_tool_translation(tr);
+				TranslationServer::get_singleton()->add_tool_translation(tr);
 				break;
 			}
 		}
 
 		etl++;
+	}
+
+	if (TranslationServer::get_singleton()->get_tool_translations().is_empty()) {
+		// If no translation was added, default to a dummy English one.
+		Ref<Translation> en;
+		en.instantiate();
+		en->set_locale("en");
+		TranslationServer::get_singleton()->set_default_tool_translation(en);
 	}
 }
 

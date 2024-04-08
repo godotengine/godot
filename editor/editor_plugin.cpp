@@ -544,6 +544,16 @@ void EditorPlugin::_editor_project_settings_changed() {
 }
 #endif
 
+void EditorPlugin::add_custom_translation(const Ref<Translation> &p_translation) {
+	ERR_FAIL_COND(p_translation.is_null());
+	TranslationServer::get_singleton()->add_tool_translation(p_translation);
+}
+
+void EditorPlugin::remove_custom_translation(const Ref<Translation> &p_translation) {
+	ERR_FAIL_COND(p_translation.is_null());
+	TranslationServer::get_singleton()->remove_tool_translation(p_translation);
+}
+
 void EditorPlugin::_notification(int p_what) {
 #ifndef DISABLE_DEPRECATED
 	switch (p_what) {
@@ -600,6 +610,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_inspector_plugin", "plugin"), &EditorPlugin::remove_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("add_resource_conversion_plugin", "plugin"), &EditorPlugin::add_resource_conversion_plugin);
 	ClassDB::bind_method(D_METHOD("remove_resource_conversion_plugin", "plugin"), &EditorPlugin::remove_resource_conversion_plugin);
+	ClassDB::bind_method(D_METHOD("add_custom_translation", "translation"), &EditorPlugin::add_custom_translation);
+	ClassDB::bind_method(D_METHOD("remove_custom_translation", "translation"), &EditorPlugin::remove_custom_translation);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
 	ClassDB::bind_method(D_METHOD("set_force_draw_over_forwarding_enabled"), &EditorPlugin::set_force_draw_over_forwarding_enabled);
 
