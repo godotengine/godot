@@ -128,7 +128,7 @@ public:
 
 #define DEFINE_ID(m_name)                                                                             \
 	struct m_name##ID : public ID {                                                                   \
-		_ALWAYS_INLINE_ operator bool() const { return id != 0; }                                     \
+		_ALWAYS_INLINE_ explicit operator bool() const { return id != 0; }                            \
 		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) {                                   \
 			id = p_other.id;                                                                          \
 			return *this;                                                                             \
