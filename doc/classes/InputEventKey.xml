@@ -66,7 +66,7 @@
 			Represents the localized label printed on the key in the current keyboard layout, which corresponds to one of the [enum Key] constants or any valid Unicode character.
 			For keyboard layouts with a single label on the key, it is equivalent to [member keycode].
 			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.key_label)[/code] where [code]event[/code] is the [InputEventKey].
-			[codeblock]
+			[codeblock lang=text]
 			    +-----+ +-----+
 			    | Q   | | Q   | - "Q" - keycode
 			    |   Й | |  ض | - "Й" and "ض" - key_label
@@ -76,7 +76,7 @@
 		<member name="keycode" type="int" setter="set_keycode" getter="get_keycode" enum="Key" default="0">
 			Latin label printed on the key in the current keyboard layout, which corresponds to one of the [enum Key] constants.
 			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.keycode)[/code] where [code]event[/code] is the [InputEventKey].
-			[codeblock]
+			[codeblock lang=text]
 			    +-----+ +-----+
 			    | Q   | | Q   | - "Q" - keycode
 			    |   Й | |  ض | - "Й" and "ض" - key_label
