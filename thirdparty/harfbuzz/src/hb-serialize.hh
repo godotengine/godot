@@ -91,7 +91,27 @@ struct hb_serialize_context_t
     }
 #endif
 
-    friend void swap (object_t& a, object_t& b)
+    bool add_virtual_link (objidx_t objidx)
+    {
+      if (!objidx)
+        return false;
+
+      auto& link = *virtual_links.push ();
+      if (virtual_links.in_error ())
+        return false;
+
+      link.objidx = objidx;
+      // Remaining fields were previously zero'd by push():
+      // link.width = 0;
+      // link.is_signed = 0;
+      // link.whence = 0;
+      // link.position = 0;
+      // link.bias = 0;
+
+      return true;
+    }
+
+    friend void swap (object_t& a, object_t& b) noexcept
     {
       hb_swap (a.head, b.head);
       hb_swap (a.tail, b.tail);
@@ -156,9 +176,9 @@ struct hb_serialize_context_t
     object_t *next;
 
     auto all_links () const HB_AUTO_RETURN
-        (( hb_concat (this->real_links, this->virtual_links) ));
+        (( hb_concat (real_links, virtual_links) ));
     auto all_links_writer () HB_AUTO_RETURN
-        (( hb_concat (this->real_links.writer (), this->virtual_links.writer ()) ));
+        (( hb_concat (real_links.writer (), virtual_links.writer ()) ));           
   };
 
   struct snapshot_t
@@ -469,16 +489,40 @@ struct hb_serialize_context_t
 
     assert (current);
 
-    auto& link = *current->virtual_links.push ();
-    if (current->virtual_links.in_error ())
+    if (!current->add_virtual_link(objidx))
       err (HB_SERIALIZE_ERROR_OTHER);
+  }
 
-    link.width = 0;
-    link.objidx = objidx;
-    link.is_signed = 0;
-    link.whence = 0;
-    link.position = 0;
-    link.bias = 0;
+  objidx_t last_added_child_index() const {
+    if (unlikely (in_error ())) return (objidx_t) -1;
+
+    assert (current);
+    if (!bool(current->real_links)) {
+      return (objidx_t) -1;
+    }
+
+    return current->real_links[current->real_links.length - 1].objidx;
+  }
+
+  // For the current object ensure that the sub-table bytes for child objidx are always placed
+  // after the subtable bytes for any other existing children. This only ensures that the
+  // repacker will not move the target subtable before the other children
+  // (by adding virtual links). It is up to the caller to ensure the initial serialization
+  // order is correct.
+  void repack_last(objidx_t objidx) {
+    if (unlikely (in_error ())) return;
+
+    if (!objidx)
+      return;
+
+    assert (current);
+    for (auto& l : current->real_links) {
+      if (l.objidx == objidx) {
+        continue;
+      }
+
+      packed[l.objidx]->add_virtual_link(objidx);
+    }
   }
 
   template <typename T>
