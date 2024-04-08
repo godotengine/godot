@@ -57,6 +57,21 @@
 			<return type="int" />
 			<description>
 				Returns the shape ID of the first object that the ray intersects, or [code]0[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
+				To get the intersected shape node, for a [CollisionObject3D] target, use:
+				[codeblocks]
+				[gdscript]
+				var target = get_collider() # A CollisionObject3D.
+				var shape_id = get_collider_shape() # The shape index in the collider.
+				var owner_id = target.shape_find_owner(shape_id) # The owner ID in the collider.
+				var shape = target.shape_owner_get_owner(owner_id)
+				[/gdscript]
+				[csharp]
+				var target = (CollisionObject3D)GetCollider(); // A CollisionObject3D.
+				var shapeId = GetColliderShape(); // The shape index in the collider.
+				var ownerId = target.ShapeFindOwner(shapeId); // The owner ID in the collider.
+				var shape = target.ShapeOwnerGetOwner(ownerId);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_collision_face_index" qualifiers="const">
