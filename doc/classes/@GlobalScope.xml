@@ -901,6 +901,7 @@
 		<method name="printraw" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to strings in the best way possible to the OS terminal. Unlike [method print], no newline is automatically added at the end.
+				[b]Note:[/b] The OS terminal is [i]not[/i] the same as the editor's Output dock. The output sent to the OS terminal can be seen when running Godot from a terminal. On Windows, this requires using the [code]console.exe[/code] executable.
 				[codeblocks]
 				[gdscript]
 				printraw("A")
