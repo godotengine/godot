@@ -57,7 +57,30 @@
 			<param index="2" name="class_name" type="StringName" />
 			<param index="3" name="script" type="Variant" />
 			<description>
-				Creates a typed array from the [param base] array.
+				Creates a typed array from the [param base] array. All arguments are required.
+				- [param type] is the built-in type as a [enum Variant.Type] constant, for example [constant TYPE_INT].
+				- [param class_name] is the [b]native[/b] class name, for example [Node]. If [param type] is not [constant TYPE_OBJECT], must be an empty string.
+				- [param script] is the associated script. Must be a [Script] instance or [code]null[/code].
+				Examples:
+				[codeblock]
+				class_name MyNode
+				extends Node
+
+				class MyClass:
+				    pass
+
+				func _ready():
+				    var a = Array([], TYPE_INT, &amp;"", null) # Array[int]
+				    var b = Array([], TYPE_OBJECT, &amp;"Node", null) # Array[Node]
+				    var c = Array([], TYPE_OBJECT, &amp;"Node", MyNode) # Array[MyNode]
+				    var d = Array([], TYPE_OBJECT, &amp;"RefCounted", MyClass) # Array[MyClass]
+				[/codeblock]
+				[b]Note:[/b] This constructor can be useful if you want to create a typed array on the fly, but you are not required to use it. In GDScript you can use a temporary variable with the static type you need and then pass it:
+				[codeblock]
+				func _ready():
+				    var a: Array[int] = []
+				    some_func(a)
+				[/codeblock]
 			</description>
 		</constructor>
 		<constructor name="Array">
@@ -323,19 +346,19 @@
 		<method name="get_typed_builtin" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the [enum Variant.Type] constant for a typed array. If the [Array] is not typed, returns [constant TYPE_NIL].
+				Returns the built-in type of the typed array as a [enum Variant.Type] constant. If the array is not typed, returns [constant TYPE_NIL].
 			</description>
 		</method>
 		<method name="get_typed_class_name" qualifiers="const">
 			<return type="StringName" />
 			<description>
-				Returns a class name of a typed [Array] of type [constant TYPE_OBJECT].
+				Returns the [b]native[/b] class name of the typed array if the built-in type is [constant TYPE_OBJECT]. Otherwise, this method returns an empty string.
 			</description>
 		</method>
 		<method name="get_typed_script" qualifiers="const">
 			<return type="Variant" />
 			<description>
-				Returns the script associated with a typed array tied to a class name.
+				Returns the script associated with the typed array. This method returns a [Script] instance or [code]null[/code].
 			</description>
 		</method>
 		<method name="has" qualifiers="const">

@@ -1442,7 +1442,11 @@ GDExtensionBool CSharpLanguage::_instance_binding_reference_callback(void *p_tok
 }
 
 void *CSharpLanguage::get_instance_binding(Object *p_object) {
-	void *binding = p_object->get_instance_binding(get_singleton(), &_instance_binding_callbacks);
+	return p_object->get_instance_binding(get_singleton(), &_instance_binding_callbacks);
+}
+
+void *CSharpLanguage::get_instance_binding_with_setup(Object *p_object) {
+	void *binding = get_instance_binding(p_object);
 
 	// Initially this was in `_instance_binding_create_callback`. However, after the new instance
 	// binding re-write it was resulting in a deadlock in `_instance_binding_reference`, as
@@ -1467,11 +1471,7 @@ void *CSharpLanguage::get_existing_instance_binding(Object *p_object) {
 #ifdef DEBUG_ENABLED
 	CRASH_COND(p_object->has_instance_binding(p_object));
 #endif
-	return p_object->get_instance_binding(get_singleton(), &_instance_binding_callbacks);
-}
-
-void CSharpLanguage::set_instance_binding(Object *p_object, void *p_binding) {
-	p_object->set_instance_binding(get_singleton(), p_binding, &_instance_binding_callbacks);
+	return get_instance_binding(p_object);
 }
 
 bool CSharpLanguage::has_instance_binding(Object *p_object) {
@@ -1498,13 +1498,6 @@ void CSharpLanguage::tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_i
 	// Another reason for doing this is that this instance could outlive CSharpLanguage, which would
 	// be problematic when using a script. See: https://github.com/godotengine/godot/issues/25621
 
-	CSharpScriptBinding script_binding;
-
-	script_binding.inited = true;
-	script_binding.type_name = *p_native_name;
-	script_binding.gchandle = gchandle;
-	script_binding.owner = p_unmanaged;
-
 	if (p_ref_counted) {
 		// Unsafe refcount increment. The managed instance also counts as a reference.
 		// This way if the unmanaged world has no references to our owner
@@ -1520,14 +1513,13 @@ void CSharpLanguage::tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_i
 	// The object was just created, no script instance binding should have been attached
 	CRASH_COND(CSharpLanguage::has_instance_binding(p_unmanaged));
 
-	void *data;
-	{
-		MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
-		data = (void *)CSharpLanguage::get_singleton()->insert_script_binding(p_unmanaged, script_binding);
-	}
+	void *binding = CSharpLanguage::get_singleton()->get_instance_binding(p_unmanaged);
 
-	// Should be thread safe because the object was just created and nothing else should be referencing it
-	CSharpLanguage::set_instance_binding(p_unmanaged, data);
+	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)binding)->value();
+	script_binding.inited = true;
+	script_binding.type_name = *p_native_name;
+	script_binding.gchandle = gchandle;
+	script_binding.owner = p_unmanaged;
 }
 
 void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, Ref<CSharpScript> *p_script, bool p_ref_counted) {
@@ -2097,7 +2089,7 @@ CSharpInstance::~CSharpInstance() {
 		bool die = _unreference_owner_unsafe();
 		CRASH_COND(die); // `owner_keep_alive` holds a reference, so it can't die
 
-		void *data = CSharpLanguage::get_instance_binding(owner);
+		void *data = CSharpLanguage::get_instance_binding_with_setup(owner);
 		CRASH_COND(data == nullptr);
 		CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 		CRASH_COND(!script_binding.inited);

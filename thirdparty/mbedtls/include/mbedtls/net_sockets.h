@@ -140,7 +140,7 @@ int mbedtls_net_bind(mbedtls_net_context *ctx, const char *bind_ip, const char *
  * \param client_ctx Will contain the connected client socket
  * \param client_ip Will contain the client IP address, can be NULL
  * \param buf_size  Size of the client_ip buffer
- * \param ip_len    Will receive the size of the client IP written,
+ * \param cip_len   Will receive the size of the client IP written,
  *                  can be NULL if client_ip is null
  *
  * \return          0 if successful, or
@@ -153,7 +153,7 @@ int mbedtls_net_bind(mbedtls_net_context *ctx, const char *bind_ip, const char *
  */
 int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
                        mbedtls_net_context *client_ctx,
-                       void *client_ip, size_t buf_size, size_t *ip_len);
+                       void *client_ip, size_t buf_size, size_t *cip_len);
 
 /**
  * \brief          Check and wait for the context to be ready for read/write

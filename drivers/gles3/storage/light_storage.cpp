@@ -951,7 +951,11 @@ bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_i
 
 		for (int j = 0; j < sc; j++) {
 			LightInstance *sli = light_instance_owner.get_or_null(sarr[j].owner);
-			ERR_CONTINUE(!sli);
+			if (!sli) {
+				// Found a released light instance.
+				found_used_idx = j;
+				break;
+			}
 
 			if (sli->last_scene_pass != RasterizerSceneGLES3::get_singleton()->get_scene_pass()) {
 				// Was just allocated, don't kill it so soon, wait a bit.

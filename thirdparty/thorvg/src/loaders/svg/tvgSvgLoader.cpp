@@ -743,10 +743,10 @@ static Matrix* _parseTransformationMatrix(const char* value)
             } else goto error;
         } else if (state == MatrixState::Rotate) {
             //Transform to signed.
-            points[0] = fmod(points[0], 360);
-            if (points[0] < 0) points[0] += 360;
-            auto c = cosf(points[0] * (M_PI / 180.0));
-            auto s = sinf(points[0] * (M_PI / 180.0));
+            points[0] = fmodf(points[0], 360.0f);
+            if (points[0] < 0) points[0] += 360.0f;
+            auto c = cosf(points[0] * (MATH_PI / 180.0f));
+            auto s = sinf(points[0] * (MATH_PI / 180.0f));
             if (ptCount == 1) {
                 Matrix tmp = { c, -s, 0, s, c, 0, 0, 0, 1 };
                 *matrix = mathMultiply(matrix, &tmp);
@@ -769,12 +769,12 @@ static Matrix* _parseTransformationMatrix(const char* value)
             *matrix = mathMultiply(matrix, &tmp);
         } else if (state == MatrixState::SkewX) {
             if (ptCount != 1) goto error;
-            auto deg = tanf(points[0] * (M_PI / 180.0));
+            auto deg = tanf(points[0] * (MATH_PI / 180.0f));
             Matrix tmp = { 1, deg, 0, 0, 1, 0, 0, 0, 1 };
             *matrix = mathMultiply(matrix, &tmp);
         } else if (state == MatrixState::SkewY) {
             if (ptCount != 1) goto error;
-            auto deg = tanf(points[0] * (M_PI / 180.0));
+            auto deg = tanf(points[0] * (MATH_PI / 180.0f));
             Matrix tmp = { 1, 0, 0, deg, 1, 0, 0, 0, 1 };
             *matrix = mathMultiply(matrix, &tmp);
         }
@@ -1919,6 +1919,19 @@ static SvgNode* _findNodeById(SvgNode *node, const char* id)
 }
 
 
+static SvgNode* _findParentById(SvgNode* node, char* id, SvgNode* doc)
+{
+    SvgNode *parent = node->parent;
+    while (parent != nullptr && parent != doc) {
+        if (parent->id && !strcmp(parent->id, id)) {
+            return parent;
+        }
+        parent = parent->parent;
+    }
+    return nullptr;
+}
+
+
 static constexpr struct
 {
     const char* tag;
@@ -1959,8 +1972,12 @@ static bool _attrParseUseNode(void* data, const char* key, const char* value)
         defs = _getDefsNode(node);
         nodeFrom = _findNodeById(defs, id);
         if (nodeFrom) {
-            _cloneNode(nodeFrom, node, 0);
-            if (nodeFrom->type == SvgNodeType::Symbol) use->symbol = nodeFrom;
+            if (!_findParentById(node, id, loader->doc)) {
+                _cloneNode(nodeFrom, node, 0);
+                if (nodeFrom->type == SvgNodeType::Symbol) use->symbol = nodeFrom;
+            } else {
+                TVGLOG("SVG", "%s is ancestor element. This reference is invalid.", id);
+            }
             free(id);
         } else {
             //some svg export software include <defs> element at the end of the file
@@ -2669,7 +2686,7 @@ static void _inheritGradient(SvgLoaderData* loader, SvgStyleGradient* to, SvgSty
         if (to->transform) memcpy(to->transform, from->transform, sizeof(Matrix));
     }
 
-    if (to->type == SvgGradientType::Linear && from->type == SvgGradientType::Linear) {
+    if (to->type == SvgGradientType::Linear) {
         for (unsigned int i = 0; i < sizeof(linear_tags) / sizeof(linear_tags[0]); i++) {
             bool coordSet = to->flags & linear_tags[i].flag;
             if (!(to->flags & linear_tags[i].flag) && (from->flags & linear_tags[i].flag)) {
@@ -2686,7 +2703,7 @@ static void _inheritGradient(SvgLoaderData* loader, SvgStyleGradient* to, SvgSty
                 linear_tags[i].tagInheritedRecalc(loader, to->linear, to->userSpace);
             }
         }
-    } else if (to->type == SvgGradientType::Radial && from->type == SvgGradientType::Radial) {
+    } else if (to->type == SvgGradientType::Radial) {
         for (unsigned int i = 0; i < sizeof(radialTags) / sizeof(radialTags[0]); i++) {
             bool coordSet = (to->flags & radialTags[i].flag);
             if (!(to->flags & radialTags[i].flag) && (from->flags & radialTags[i].flag)) {
@@ -2696,10 +2713,16 @@ static void _inheritGradient(SvgLoaderData* loader, SvgStyleGradient* to, SvgSty
             //GradUnits not set directly, coord set
             if (!gradUnitSet && coordSet) {
                 radialTags[i].tagRecalc(loader, to->radial, to->userSpace);
+                //If fx and fy are not set, set cx and cy.
+                if (!strcmp(radialTags[i].tag, "cx") && !(to->flags & SvgGradientFlags::Fx)) to->radial->fx = to->radial->cx;
+                if (!strcmp(radialTags[i].tag, "cy") && !(to->flags & SvgGradientFlags::Fy)) to->radial->fy = to->radial->cy;
             }
             //GradUnits set, coord not set directly
             if (to->userSpace == from->userSpace) continue;
             if (gradUnitSet && !coordSet) {
+                //If fx and fx are not set, do not call recalc.
+                if (!strcmp(radialTags[i].tag, "fx") && !(to->flags & SvgGradientFlags::Fx)) continue;
+                if (!strcmp(radialTags[i].tag, "fy") && !(to->flags & SvgGradientFlags::Fy)) continue;
                 radialTags[i].tagInheritedRecalc(loader, to->radial, to->userSpace);
             }
         }
@@ -3018,9 +3041,13 @@ static void _clonePostponedNodes(Array<SvgNodeIdPair>* cloneNodes, SvgNode* doc)
         auto defs = _getDefsNode(nodeIdPair.node);
         auto nodeFrom = _findNodeById(defs, nodeIdPair.id);
         if (!nodeFrom) nodeFrom = _findNodeById(doc, nodeIdPair.id);
-        _cloneNode(nodeFrom, nodeIdPair.node, 0);
-        if (nodeFrom && nodeFrom->type == SvgNodeType::Symbol && nodeIdPair.node->type == SvgNodeType::Use) {
-            nodeIdPair.node->node.use.symbol = nodeFrom;
+        if (!_findParentById(nodeIdPair.node, nodeIdPair.id, doc)) {
+            _cloneNode(nodeFrom, nodeIdPair.node, 0);
+            if (nodeFrom && nodeFrom->type == SvgNodeType::Symbol && nodeIdPair.node->type == SvgNodeType::Use) {
+                nodeIdPair.node->node.use.symbol = nodeFrom;
+            }
+        } else {
+            TVGLOG("SVG", "%s is ancestor element. This reference is invalid.", nodeIdPair.id);
         }
         free(nodeIdPair.id);
     }

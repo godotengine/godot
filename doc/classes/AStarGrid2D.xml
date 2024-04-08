@@ -85,7 +85,7 @@
 			<param index="1" name="to_id" type="Vector2i" />
 			<description>
 				Returns an array with the points that are in the path found by [AStarGrid2D] between the given points. The array is ordered from the starting point to the ending point of the path.
-				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
+				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector2Array] and will print an error message.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">

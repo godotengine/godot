@@ -164,7 +164,7 @@ Result Shape::appendArc(float cx, float cy, float radius, float startAngle, floa
     }
 
     for (int i = 0; i < nCurves; ++i) {
-        auto endAngle = startAngle + ((i != nCurves - 1) ? float(M_PI_2) * sweepSign : fract);
+        auto endAngle = startAngle + ((i != nCurves - 1) ? MATH_PI2 * sweepSign : fract);
         Point end = {radius * cosf(endAngle), radius * sinf(endAngle)};
 
         //variables needed to calculate bezier control points

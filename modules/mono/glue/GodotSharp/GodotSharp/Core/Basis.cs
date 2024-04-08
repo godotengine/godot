@@ -209,7 +209,7 @@ namespace Godot
 
         private void Rotate(Quaternion quaternion)
         {
-            this *= new Basis(quaternion);
+            this = new Basis(quaternion) * this;
         }
 
         private void SetDiagonal(Vector3 diagonal)

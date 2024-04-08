@@ -321,7 +321,7 @@ static int net_would_block(const mbedtls_net_context *ctx)
  */
 int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
                        mbedtls_net_context *client_ctx,
-                       void *client_ip, size_t buf_size, size_t *ip_len)
+                       void *client_ip, size_t buf_size, size_t *cip_len)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     int type;
@@ -404,22 +404,22 @@ int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
     if (client_ip != NULL) {
         if (client_addr.ss_family == AF_INET) {
             struct sockaddr_in *addr4 = (struct sockaddr_in *) &client_addr;
-            *ip_len = sizeof(addr4->sin_addr.s_addr);
+            *cip_len = sizeof(addr4->sin_addr.s_addr);
 
-            if (buf_size < *ip_len) {
+            if (buf_size < *cip_len) {
                 return MBEDTLS_ERR_NET_BUFFER_TOO_SMALL;
             }
 
-            memcpy(client_ip, &addr4->sin_addr.s_addr, *ip_len);
+            memcpy(client_ip, &addr4->sin_addr.s_addr, *cip_len);
         } else {
             struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) &client_addr;
-            *ip_len = sizeof(addr6->sin6_addr.s6_addr);
+            *cip_len = sizeof(addr6->sin6_addr.s6_addr);
 
-            if (buf_size < *ip_len) {
+            if (buf_size < *cip_len) {
                 return MBEDTLS_ERR_NET_BUFFER_TOO_SMALL;
             }
 
-            memcpy(client_ip, &addr6->sin6_addr.s6_addr, *ip_len);
+            memcpy(client_ip, &addr6->sin6_addr.s6_addr, *cip_len);
         }
     }
 

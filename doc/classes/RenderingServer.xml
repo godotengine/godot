@@ -1791,7 +1791,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="transform" type="Transform3D" />
 			<description>
-				Sets the world space transform of the instance. Equivalent to [member Node3D.transform].
+				Sets the world space transform of the instance. Equivalent to [member Node3D.global_transform].
 			</description>
 		</method>
 		<method name="instance_set_visibility_parent">

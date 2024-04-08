@@ -58,6 +58,10 @@
 #include <mntent.h>
 #endif
 
+#if defined(__FreeBSD__)
+#include <sys/sysctl.h>
+#endif
+
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
 
@@ -141,17 +145,36 @@ void OS_LinuxBSD::initialize_joypads() {
 String OS_LinuxBSD::get_unique_id() const {
 	static String machine_id;
 	if (machine_id.is_empty()) {
+#if defined(__FreeBSD__)
+		const int mib[2] = { CTL_KERN, KERN_HOSTUUID };
+		char buf[4096];
+		memset(buf, 0, sizeof(buf));
+		size_t len = sizeof(buf) - 1;
+		if (sysctl(mib, 2, buf, &len, 0x0, 0) != -1) {
+			machine_id = String::utf8(buf).replace("-", "");
+		}
+#else
 		Ref<FileAccess> f = FileAccess::open("/etc/machine-id", FileAccess::READ);
 		if (f.is_valid()) {
 			while (machine_id.is_empty() && !f->eof_reached()) {
 				machine_id = f->get_line().strip_edges();
 			}
 		}
+#endif
 	}
 	return machine_id;
 }
 
 String OS_LinuxBSD::get_processor_name() const {
+#if defined(__FreeBSD__)
+	const int mib[2] = { CTL_HW, HW_MODEL };
+	char buf[4096];
+	memset(buf, 0, sizeof(buf));
+	size_t len = sizeof(buf) - 1;
+	if (sysctl(mib, 2, buf, &len, 0x0, 0) != -1) {
+		return String::utf8(buf);
+	}
+#else
 	Ref<FileAccess> f = FileAccess::open("/proc/cpuinfo", FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), "", String("Couldn't open `/proc/cpuinfo` to get the CPU model name. Returning an empty string."));
 
@@ -161,8 +184,9 @@ String OS_LinuxBSD::get_processor_name() const {
 			return line.split(":")[1].strip_edges();
 		}
 	}
+#endif
 
-	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name from `/proc/cpuinfo`. Returning an empty string."));
+	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model. Returning an empty string."));
 }
 
 bool OS_LinuxBSD::is_sandboxed() const {

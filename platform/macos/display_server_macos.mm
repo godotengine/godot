@@ -3094,7 +3094,7 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
+	if (wd.fullscreen) {
 		return;
 	}
 
@@ -3183,12 +3183,21 @@ Size2i DisplayServerMacOS::window_get_max_size(WindowID p_window) const {
 }
 
 void DisplayServerMacOS::update_presentation_mode() {
+	bool has_fs_windows = false;
 	for (const KeyValue<WindowID, WindowData> &wd : windows) {
-		if (wd.value.fullscreen && wd.value.exclusive_fullscreen) {
-			return;
+		if (wd.value.fullscreen) {
+			if (wd.value.exclusive_fullscreen) {
+				return;
+			} else {
+				has_fs_windows = true;
+			}
 		}
 	}
-	[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+	if (has_fs_windows) {
+		[NSApp setPresentationOptions:NSApplicationPresentationAutoHideMenuBar | NSApplicationPresentationAutoHideDock | NSApplicationPresentationFullScreen];
+	} else {
+		[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+	}
 }
 
 void DisplayServerMacOS::window_set_min_size(const Size2i p_size, WindowID p_window) {
