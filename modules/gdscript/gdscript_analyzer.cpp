@@ -3030,6 +3030,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				case Variant::PACKED_VECTOR2_ARRAY:
 				case Variant::PACKED_VECTOR3_ARRAY:
 				case Variant::PACKED_COLOR_ARRAY:
+				case Variant::PACKED_VECTOR4_ARRAY:
 					safe_to_fold = false;
 					break;
 				default:
@@ -4425,7 +4426,6 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 						switch (base_type.builtin_type) {
 							// Expect int or real as index.
 							case Variant::PACKED_BYTE_ARRAY:
-							case Variant::PACKED_COLOR_ARRAY:
 							case Variant::PACKED_FLOAT32_ARRAY:
 							case Variant::PACKED_FLOAT64_ARRAY:
 							case Variant::PACKED_INT32_ARRAY:
@@ -4433,6 +4433,8 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::PACKED_STRING_ARRAY:
 							case Variant::PACKED_VECTOR2_ARRAY:
 							case Variant::PACKED_VECTOR3_ARRAY:
+							case Variant::PACKED_COLOR_ARRAY:
+							case Variant::PACKED_VECTOR4_ARRAY:
 							case Variant::ARRAY:
 							case Variant::STRING:
 								error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::FLOAT;
@@ -4531,10 +4533,6 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::QUATERNION:
 						result_type.builtin_type = Variant::FLOAT;
 						break;
-					// Return Color.
-					case Variant::PACKED_COLOR_ARRAY:
-						result_type.builtin_type = Variant::COLOR;
-						break;
 					// Return String.
 					case Variant::PACKED_STRING_ARRAY:
 					case Variant::STRING:
@@ -4555,6 +4553,14 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::AABB:
 					case Variant::BASIS:
 						result_type.builtin_type = Variant::VECTOR3;
+						break;
+					// Return Color.
+					case Variant::PACKED_COLOR_ARRAY:
+						result_type.builtin_type = Variant::COLOR;
+						break;
+					// Return Vector4.
+					case Variant::PACKED_VECTOR4_ARRAY:
+						result_type.builtin_type = Variant::VECTOR4;
 						break;
 					// Depends on the index.
 					case Variant::TRANSFORM3D:

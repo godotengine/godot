@@ -119,6 +119,7 @@ DOCTEST_STRINGIFY_VARIANT(PackedStringArray);
 DOCTEST_STRINGIFY_VARIANT(PackedVector2Array);
 DOCTEST_STRINGIFY_VARIANT(PackedVector3Array);
 DOCTEST_STRINGIFY_VARIANT(PackedColorArray);
+DOCTEST_STRINGIFY_VARIANT(PackedVector4Array);
 
 // Register test commands to be launched from the command-line.
 // For instance: REGISTER_TEST_COMMAND("gdscript-parser" &test_parser_func).

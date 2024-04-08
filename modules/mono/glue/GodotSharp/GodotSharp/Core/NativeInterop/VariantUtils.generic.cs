@@ -155,6 +155,9 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Vector3[]))
             return CreateFromPackedVector3Array(UnsafeAs<Vector3[]>(from));
 
+        if (typeof(T) == typeof(Vector4[]))
+            return CreateFromPackedVector4Array(UnsafeAs<Vector4[]>(from));
+
         if (typeof(T) == typeof(Color[]))
             return CreateFromPackedColorArray(UnsafeAs<Color[]>(from));
 
@@ -342,6 +345,9 @@ public partial class VariantUtils
 
         if (typeof(T) == typeof(Vector3[]))
             return UnsafeAsT(ConvertAsPackedVector3ArrayToSystemArray(variant));
+
+        if (typeof(T) == typeof(Vector4[]))
+            return UnsafeAsT(ConvertAsPackedVector4ArrayToSystemArray(variant));
 
         if (typeof(T) == typeof(Color[]))
             return UnsafeAsT(ConvertAsPackedColorArrayToSystemArray(variant));

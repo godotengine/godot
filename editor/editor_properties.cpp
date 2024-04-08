@@ -3934,6 +3934,11 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			editor->setup(Variant::PACKED_COLOR_ARRAY, p_hint_text);
 			return editor;
 		} break;
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			editor->setup(Variant::PACKED_VECTOR4_ARRAY, p_hint_text);
+			return editor;
+		} break;
 		default: {
 		}
 	}

@@ -162,7 +162,8 @@ void PropertySelector::_update_search() {
 			search_options->get_editor_theme_icon(SNAME("PackedStringArray")),
 			search_options->get_editor_theme_icon(SNAME("PackedVector2Array")),
 			search_options->get_editor_theme_icon(SNAME("PackedVector3Array")),
-			search_options->get_editor_theme_icon(SNAME("PackedColorArray"))
+			search_options->get_editor_theme_icon(SNAME("PackedColorArray")),
+			search_options->get_editor_theme_icon(SNAME("PackedVector4Array")),
 		};
 		static_assert((sizeof(type_icons) / sizeof(type_icons[0])) == Variant::VARIANT_MAX, "Number of type icons doesn't match the number of Variant types.");
 
