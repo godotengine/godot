@@ -290,6 +290,10 @@ void DisplayServerMacOS::_update_displays_arrangement() {
 	displays_arrangement_dirty = false;
 }
 
+void DisplayServerMacOS::set_menu_delegate(NSMenu *p_menu) {
+	[p_menu setDelegate:menu_delegate];
+}
+
 Point2i DisplayServerMacOS::_get_screens_origin() const {
 	// Returns the native top-left screen coordinate of the smallest rectangle
 	// that encompasses all screens. Needed in get_screen_position(),
@@ -755,6 +759,8 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_NATIVE_DIALOG:
+		case FEATURE_NATIVE_DIALOG_INPUT:
+		case FEATURE_NATIVE_DIALOG_FILE:
 		case FEATURE_IME:
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_HIDPI:
@@ -1989,7 +1995,7 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
+	if (wd.fullscreen) {
 		return;
 	}
 
@@ -2078,12 +2084,21 @@ Size2i DisplayServerMacOS::window_get_max_size(WindowID p_window) const {
 }
 
 void DisplayServerMacOS::update_presentation_mode() {
+	bool has_fs_windows = false;
 	for (const KeyValue<WindowID, WindowData> &wd : windows) {
-		if (wd.value.fullscreen && wd.value.exclusive_fullscreen) {
-			return;
+		if (wd.value.fullscreen) {
+			if (wd.value.exclusive_fullscreen) {
+				return;
+			} else {
+				has_fs_windows = true;
+			}
 		}
 	}
-	[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+	if (has_fs_windows) {
+		[NSApp setPresentationOptions:NSApplicationPresentationAutoHideMenuBar | NSApplicationPresentationAutoHideDock | NSApplicationPresentationFullScreen];
+	} else {
+		[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+	}
 }
 
 void DisplayServerMacOS::window_set_min_size(const Size2i p_size, WindowID p_window) {

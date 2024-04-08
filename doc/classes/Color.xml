@@ -10,9 +10,9 @@
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/color_constants.png]Color constants cheatsheet[/url]
 	</description>
 	<tutorials>
-		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/517</link>
-		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
-		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/133</link>
+		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/2768</link>
+		<link title="Tween Interpolation Demo">https://godotengine.org/asset-library/asset/2733</link>
+		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/2767</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Color">

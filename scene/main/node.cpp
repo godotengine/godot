@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "node.h"
+#include "node.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
@@ -2804,9 +2805,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 				}
 
 			} else {
-				if (value.get_type() != Variant::OBJECT && (value.get_type() != Variant::ARRAY || static_cast<Array>(value).get_typed_builtin() != Variant::OBJECT)) {
-					current_node->set(name, value);
-				}
+				current_node->set(name, value);
 			}
 		}
 	}
@@ -3007,7 +3006,7 @@ static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
 	}
 }
 
-void Node::replace_by(Node *p_node, bool p_keep_groups) {
+void Node::replace_by(Node *p_node, bool p_keep_groups, bool p_keep_children) {
 	ERR_THREAD_GUARD
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_COND(p_node->data.parent);
@@ -3028,13 +3027,13 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	_replace_connections_target(p_node);
 
 	if (data.owner) {
-		for (int i = 0; i < get_child_count(); i++) {
-			find_owned_by(data.owner, get_child(i), &owned_by_owner);
+		if (p_keep_children) {
+			for (int i = 0; i < get_child_count(); i++) {
+				find_owned_by(data.owner, get_child(i), &owned_by_owner);
+			}
 		}
-
 		_clean_up_owner();
 	}
-
 	Node *parent = data.parent;
 	int index_in_parent = get_index(false);
 
@@ -3046,31 +3045,33 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 
 	emit_signal(SNAME("replacing_by"), p_node);
 
-	while (get_child_count()) {
-		Node *child = get_child(0);
-		remove_child(child);
-		if (!child->is_owned_by_parent()) {
-			// add the custom children to the p_node
-			Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
-			child->set_owner(nullptr);
-			p_node->add_child(child);
-			child->set_owner(child_owner);
+	if (p_keep_children) {
+		while (get_child_count()) {
+			Node *child = get_child(0);
+			remove_child(child);
+			if (!child->is_owned_by_parent()) {
+				// add the custom children to the p_node
+				Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
+				child->set_owner(nullptr);
+				p_node->add_child(child);
+				child->set_owner(child_owner);
+			}
+		}
+
+		for (Node *E : owned) {
+			if (E->data.owner != p_node) {
+				E->set_owner(p_node);
+			}
+		}
+
+		for (Node *E : owned_by_owner) {
+			if (E->data.owner != owner) {
+				E->set_owner(owner);
+			}
 		}
 	}
 
 	p_node->set_owner(owner);
-	for (Node *E : owned) {
-		if (E->data.owner != p_node) {
-			E->set_owner(p_node);
-		}
-	}
-
-	for (Node *E : owned_by_owner) {
-		if (E->data.owner != owner) {
-			E->set_owner(owner);
-		}
-	}
-
 	p_node->set_scene_file_path(get_scene_file_path());
 }
 
@@ -3597,7 +3598,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANTIATION | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
-	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups", "keep_children"), &Node::replace_by, DEFVAL(false), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("get_scene_instance_load_placeholder"), &Node::get_scene_instance_load_placeholder);
@@ -3779,7 +3780,7 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_messages", PROPERTY_HINT_FLAGS, "Process,Physics Process"), "set_process_thread_messages", "get_process_thread_messages");
 
 	ADD_GROUP("Physics Interpolation", "physics_interpolation_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_mode", PROPERTY_HINT_ENUM, "Inherit,Off,On"), "set_physics_interpolation_mode", "get_physics_interpolation_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_mode", PROPERTY_HINT_ENUM, "Inherit,On,Off"), "set_physics_interpolation_mode", "get_physics_interpolation_mode");
 
 	ADD_GROUP("Auto Translate", "auto_translate_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
@@ -3832,7 +3833,7 @@ Node::Node() {
 	data.unhandled_input = false;
 	data.unhandled_key_input = false;
 
-	data.physics_interpolated = false;
+	data.physics_interpolated = true;
 
 	data.parent_owned = false;
 	data.in_constructor = true;

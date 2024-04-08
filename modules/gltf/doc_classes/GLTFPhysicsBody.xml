@@ -22,7 +22,7 @@
 			<return type="GLTFPhysicsBody" />
 			<param index="0" name="body_node" type="CollisionObject3D" />
 			<description>
-				Create a new GLTFPhysicsBody instance from the given Godot [CollisionObject3D] node.
+				Creates a new GLTFPhysicsBody instance from the given Godot [CollisionObject3D] node.
 			</description>
 		</method>
 		<method name="to_dictionary" qualifiers="const">

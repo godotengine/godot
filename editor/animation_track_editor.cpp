@@ -5006,12 +5006,17 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 }
 
 void AnimationTrackEditor::_add_track(int p_type) {
-	if (!root) {
+	AnimationPlayer *ap = AnimationPlayerEditor::get_singleton()->get_player();
+	if (!ap) {
+		ERR_FAIL_EDMSG("No AnimationPlayer is currently being edited.");
+	}
+	Node *root_node = ap->get_node_or_null(ap->get_root_node());
+	if (!root_node) {
 		EditorNode::get_singleton()->show_warning(TTR("Not possible to add a new track without a root"));
 		return;
 	}
 	adding_track_type = p_type;
-	pick_track->popup_scenetree_dialog();
+	pick_track->popup_scenetree_dialog(nullptr, root_node);
 	pick_track->get_filter_line_edit()->clear();
 	pick_track->get_filter_line_edit()->grab_focus();
 }

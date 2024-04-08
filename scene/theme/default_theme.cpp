@@ -639,7 +639,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Dialogs
 
 	// AcceptDialog is currently the base dialog, so this defines styles for all extending nodes.
-	theme->set_stylebox("panel", "AcceptDialog", make_flat_stylebox(style_popup_color, Math::round(8 * scale), Math::round(8 * scale), Math::round(8 * scale), Math::round(8 * scale)));
+	theme->set_stylebox("panel", "AcceptDialog", make_flat_stylebox(style_popup_color, Math::round(8 * scale), Math::round(8 * scale), Math::round(8 * scale), Math::round(8 * scale), 0));
 	theme->set_constant("buttons_separation", "AcceptDialog", Math::round(10 * scale));
 
 	// File Dialog
@@ -756,6 +756,36 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("outline_size", "GraphNodeTitleLabel", 0);
 	theme->set_constant("shadow_outline_size", "GraphNodeTitleLabel", Math::round(1 * scale));
 	theme->set_constant("line_spacing", "GraphNodeTitleLabel", Math::round(3 * scale));
+
+	// GraphFrame
+
+	Ref<StyleBoxFlat> graphframe_sb = make_flat_stylebox(style_pressed_color, 18, 12, 18, 12, 3, true, 2);
+	graphframe_sb->set_expand_margin(SIDE_TOP, 38 * scale);
+	graphframe_sb->set_border_color(style_pressed_color);
+	Ref<StyleBoxFlat> graphframe_sb_selected = graphframe_sb->duplicate();
+	graphframe_sb_selected->set_border_color(style_hover_color);
+
+	theme->set_stylebox("panel", "GraphFrame", graphframe_sb);
+	theme->set_stylebox("panel_selected", "GraphFrame", graphframe_sb_selected);
+	theme->set_stylebox("titlebar", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
+	theme->set_stylebox("titlebar_selected", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
+	theme->set_icon("resizer", "GraphFrame", icons["resizer_se"]);
+	theme->set_color("resizer_color", "GraphFrame", control_font_color);
+
+	// GraphFrame's title Label
+
+	theme->set_type_variation("GraphFrameTitleLabel", "Label");
+
+	theme->set_stylebox("normal", "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
+	theme->set_font_size("font_size", "GraphFrameTitleLabel", 22);
+	theme->set_color("font_color", "GraphFrameTitleLabel", Color(1, 1, 1));
+	theme->set_color("font_shadow_color", "GraphFrameTitleLabel", Color(0, 0, 0, 0));
+	theme->set_color("font_outline_color", "GraphFrameTitleLabel", Color(1, 1, 1));
+	theme->set_constant("shadow_offset_x", "GraphFrameTitleLabel", 1 * scale);
+	theme->set_constant("shadow_offset_y", "GraphFrameTitleLabel", 1 * scale);
+	theme->set_constant("outline_size", "GraphFrameTitleLabel", 0);
+	theme->set_constant("shadow_outline_size", "GraphFrameTitleLabel", 1 * scale);
+	theme->set_constant("line_spacing", "GraphFrameTitleLabel", 3 * scale);
 
 	// Tree
 
@@ -936,8 +966,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("separator", "VSeparator", separator_vertical);
 
 	theme->set_icon("close", "Icons", icons["close"]);
-	theme->set_font("normal", "Fonts", Ref<Font>());
-	theme->set_font("large", "Fonts", Ref<Font>());
 
 	theme->set_constant("separation", "HSeparator", Math::round(4 * scale));
 	theme->set_constant("separation", "VSeparator", Math::round(4 * scale));

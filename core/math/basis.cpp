@@ -278,7 +278,7 @@ Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
 	return m;
 }
 
-float Basis::get_uniform_scale() const {
+real_t Basis::get_uniform_scale() const {
 	return (rows[0].length() + rows[1].length() + rows[2].length()) / 3.0f;
 }
 

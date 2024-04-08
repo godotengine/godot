@@ -10,8 +10,8 @@
 	<tutorials>
 		<link title="Kinematic character (2D)">$DOCS_URL/tutorials/physics/kinematic_character_2d.html</link>
 		<link title="Using CharacterBody2D">$DOCS_URL/tutorials/physics/using_character_body_2d.html</link>
-		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
-		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
 	</tutorials>
 	<methods>
 		<method name="apply_floor_snap">

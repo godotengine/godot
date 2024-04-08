@@ -985,6 +985,13 @@ struct SortedArrayOf : ArrayOf<Type, LenType>
     return_trace (ret);
   }
 
+  SortedArrayOf* copy (hb_serialize_context_t *c) const
+  {
+    TRACE_SERIALIZE (this);
+    SortedArrayOf* out = reinterpret_cast<SortedArrayOf *> (ArrayOf<Type, LenType>::copy (c));
+    return_trace (out);
+  }
+
   template <typename T>
   Type &bsearch (const T &x, Type &not_found = Crap (Type))
   { return *as_array ().bsearch (x, &not_found); }

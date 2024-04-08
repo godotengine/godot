@@ -17,13 +17,25 @@ namespace embree
     __forceinline HitK() {}
 
     /* Constructs a hit */
-    __forceinline HitK(const RTCIntersectContext* context, const vuint<K>& geomID, const vuint<K>& primID, const vfloat<K>& u, const vfloat<K>& v, const Vec3vf<K>& Ng)
+    __forceinline HitK(const RTCRayQueryContext* context, const vuint<K>& geomID, const vuint<K>& primID, const vfloat<K>& u, const vfloat<K>& v, const Vec3vf<K>& Ng)
       : Ng(Ng), u(u), v(v), primID(primID), geomID(geomID) 
     {
-      for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l)
+      for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l) {
         instID[l] = RTC_INVALID_GEOMETRY_ID;
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+        instPrimID[l] = RTC_INVALID_GEOMETRY_ID;
+#endif
+      }
+      
       instance_id_stack::copy_UV<K>(context->instID, instID);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+      instance_id_stack::copy_UV<K>(context->instPrimID, instPrimID);
+#endif
     }
+
+    /* Constructs a hit */
+    __forceinline HitK(const RTCRayQueryContext* context, const vuint<K>& geomID, const vuint<K>& primID, const Vec2vf<K>& uv, const Vec3vf<K>& Ng)
+      : HitK(context,geomID,primID,uv.x,uv.y,Ng) {}
 
     /* Returns the size of the hit */
     static __forceinline size_t size() { return K; }
@@ -35,6 +47,9 @@ namespace embree
     vuint<K> primID;      // primitive ID
     vuint<K> geomID;      // geometry ID
     vuint<K> instID[RTC_MAX_INSTANCE_LEVEL_COUNT];      // instance ID
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    vuint<K> instPrimID[RTC_MAX_INSTANCE_LEVEL_COUNT];      // instance primitive ID
+#endif
   };
 
   /* Specialization for a single hit */
@@ -45,11 +60,18 @@ namespace embree
     __forceinline HitK() {}
 
     /* Constructs a hit */
-    __forceinline HitK(const RTCIntersectContext* context, unsigned int geomID, unsigned int primID, float u, float v, const Vec3fa& Ng)
+    __forceinline HitK(const RTCRayQueryContext* context, unsigned int geomID, unsigned int primID, float u, float v, const Vec3fa& Ng)
       : Ng(Ng.x,Ng.y,Ng.z), u(u), v(v), primID(primID), geomID(geomID)
     {
-      instance_id_stack::copy_UU(context->instID, instID);
+      instance_id_stack::copy_UU(context, context->instID, instID);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+      instance_id_stack::copy_UU(context, context->instPrimID, instPrimID);
+#endif
     }
+
+    /* Constructs a hit */
+    __forceinline HitK(const RTCRayQueryContext* context, unsigned int geomID, unsigned int primID, const Vec2f& uv, const Vec3fa& Ng)
+      : HitK<1>(context,geomID,primID,uv.x,uv.y,Ng) {}
 
     /* Returns the size of the hit */
     static __forceinline size_t size() { return 1; }
@@ -61,6 +83,9 @@ namespace embree
     unsigned int primID;      // primitive ID
     unsigned int geomID;      // geometry ID
     unsigned int instID[RTC_MAX_INSTANCE_LEVEL_COUNT];      // instance ID
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    unsigned int instPrimID[RTC_MAX_INSTANCE_LEVEL_COUNT];      // instance primitive ID
+#endif
   };
 
   /* Shortcuts */
@@ -68,6 +93,7 @@ namespace embree
   typedef HitK<4>  Hit4;
   typedef HitK<8>  Hit8;
   typedef HitK<16> Hit16;
+  typedef HitK<VSIZEX> Hitx;
 
   /* Outputs hit to stream */
   template<int K>
@@ -84,6 +110,13 @@ namespace embree
     {
       cout << " " << ray.instID[l];
     }
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    cout << "  instPrimID =";
+    for (unsigned l = 0; l < RTC_MAX_INSTANCE_LEVEL_COUNT; ++l)
+    {
+      cout << " " << ray.instPrimID[l];
+    }
+#endif
     cout << embree_endl;
     return cout << "}";
   }
@@ -97,10 +130,13 @@ namespace embree
     ray.primID = hit.primID;
     ray.geomID = hit.geomID;
     instance_id_stack::copy_UU(hit.instID, ray.instID);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    instance_id_stack::copy_UU(hit.instPrimID, ray.instPrimID);
+#endif
   }
 
   template<int K>
-    __forceinline void copyHitToRay(const vbool<K> &mask, RayHitK<K> &ray, const HitK<K> &hit)
+    __forceinline void copyHitToRay(const vbool<K>& mask, RayHitK<K>& ray, const HitK<K>& hit)
   {
     vfloat<K>::storeu(mask,&ray.Ng.x, hit.Ng.x);
     vfloat<K>::storeu(mask,&ray.Ng.y, hit.Ng.y);
@@ -110,5 +146,8 @@ namespace embree
     vuint<K>::storeu(mask,&ray.primID, hit.primID);
     vuint<K>::storeu(mask,&ray.geomID, hit.geomID);
     instance_id_stack::copy_VV<K>(hit.instID, ray.instID, mask);
+#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
+    instance_id_stack::copy_VV<K>(hit.instPrimID, ray.instPrimID, mask);
+#endif
   }
 }

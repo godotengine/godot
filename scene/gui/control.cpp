@@ -241,10 +241,6 @@ PackedStringArray Control::get_configuration_warnings() const {
 		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
 	}
 
-	if (get_z_index() != 0) {
-		warnings.push_back(RTR("Changing the Z index of a control only affects the drawing order, not the input event handling order."));
-	}
-
 	return warnings;
 }
 

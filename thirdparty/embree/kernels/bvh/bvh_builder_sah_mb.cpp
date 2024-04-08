@@ -17,6 +17,7 @@
 #include "../geometry/quadi.h"
 #include "../geometry/object.h"
 #include "../geometry/instance.h"
+#include "../geometry/instance_array.h"
 #include "../geometry/subgrid.h"
 
 #include "../common/state.h"
@@ -692,6 +693,13 @@ namespace embree
     Builder* BVH4InstanceMBSceneBuilderSAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype) { return new BVHNBuilderMBlurSAH<4,Instance,InstancePrimitive>((BVH4*)bvh,scene,4,1.0f,1,1,gtype); }
 #if defined(__AVX__)
     Builder* BVH8InstanceMBSceneBuilderSAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype) { return new BVHNBuilderMBlurSAH<8,Instance,InstancePrimitive>((BVH8*)bvh,scene,8,1.0f,1,1,gtype); }
+#endif
+#endif
+
+#if defined(EMBREE_GEOMETRY_INSTANCE_ARRAY)
+    Builder* BVH4InstanceArrayMBSceneBuilderSAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype) { return new BVHNBuilderMBlurSAH<4,InstanceArray,InstanceArrayPrimitive>((BVH4*)bvh,scene,4,1.0f,1,1,gtype); }
+#if defined(__AVX__)
+    Builder* BVH8InstanceArrayMBSceneBuilderSAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype) { return new BVHNBuilderMBlurSAH<8,InstanceArray,InstanceArrayPrimitive>((BVH8*)bvh,scene,8,1.0f,1,1,gtype); }
 #endif
 #endif
 

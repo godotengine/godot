@@ -222,9 +222,14 @@ protected:
 		Variant init_value;
 		Variant value;
 		Vector<StringName> subpath;
+
+		// TODO: There are many boolean, can be packed into one integer.
+		bool init_use_continuous = false;
+		bool use_continuous = false;
 		bool use_discrete = false;
 		bool is_using_angle = false;
 		bool is_variant_interpolatable = true;
+
 		Variant element_size;
 
 		TrackCacheValue(const TrackCacheValue &p_other) :
@@ -232,6 +237,8 @@ protected:
 				init_value(p_other.init_value),
 				value(p_other.value),
 				subpath(p_other.subpath),
+				init_use_continuous(p_other.init_use_continuous),
+				use_continuous(p_other.use_continuous),
 				use_discrete(p_other.use_discrete),
 				is_using_angle(p_other.is_using_angle),
 				is_variant_interpolatable(p_other.is_variant_interpolatable),
@@ -341,6 +348,8 @@ protected:
 
 	/* ---- Blending processor ---- */
 	virtual void _process_animation(double p_delta, bool p_update_only = false);
+
+	// For post process with retrieved key value during blending.
 	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
 	Variant post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
 	GDVIRTUAL5RC(Variant, _post_process_key_value, Ref<Animation>, int, Variant, ObjectID, int);
@@ -377,7 +386,6 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	virtual Variant _post_process_key_value_bind_compat_86687(const Ref<Animation> &p_anim, int p_track, Variant p_value, Object *p_object, int p_object_idx = -1);
-
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -436,7 +444,7 @@ public:
 	void make_animation_instance(const StringName &p_name, const PlaybackInfo p_playback_info);
 	void clear_animation_instances();
 	virtual void advance(double p_time);
-	virtual void clear_caches(); ///< must be called by hand if an animation was modified after added
+	virtual void clear_caches(); // Must be called by hand if an animation was modified after added.
 
 	/* ---- Capture feature ---- */
 	void capture(const StringName &p_name, double p_duration, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);

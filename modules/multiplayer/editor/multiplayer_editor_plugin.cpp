@@ -149,7 +149,7 @@ void MultiplayerEditorPlugin::_node_removed(Node *p_node) {
 }
 
 void MultiplayerEditorPlugin::_pinned() {
-	if (!repl_editor->get_pin()->is_pressed()) {
+	if (!repl_editor->get_pin()->is_pressed() && repl_editor->get_current() == nullptr) {
 		if (repl_editor->is_visible_in_tree()) {
 			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}

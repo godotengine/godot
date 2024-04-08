@@ -90,6 +90,13 @@ namespace GodotTools.Export
                     $"Resource of type {Internal.CSharpLanguageType} has an invalid file extension: {path}",
                     nameof(path));
 
+            if (!ProjectContainsDotNet())
+            {
+                _maybeLastExportError = $"This project contains C# files but no solution file was found at the following path: {GodotSharpDirs.ProjectSlnPath}\n" +
+                    "A solution file is required for projects with C# files. Please ensure that the solution file exists in the specified location and try again.";
+                throw new InvalidOperationException($"{path} is a C# file but no solution file exists.");
+            }
+
             // TODO: What if the source file is not part of the game's C# project?
 
             bool includeScriptsContent = (bool)GetOption("dotnet/include_scripts_content");

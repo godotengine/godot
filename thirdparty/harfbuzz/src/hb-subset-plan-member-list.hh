@@ -140,6 +140,15 @@ HB_SUBSET_PLAN_MEMBER (mutable hb_vector_t<unsigned>, bounds_height_vec)
 //map: new_gid -> contour points vector
 HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<hb_codepoint_t, contour_point_vector_t>), new_gid_contour_points_map)
 
+//new gids set for composite glyphs
+HB_SUBSET_PLAN_MEMBER (hb_set_t, composite_new_gids)
+
+//Old BASE item variation index -> (New varidx, 0) mapping
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb_pair_t E(<unsigned, int>)>), base_variation_idx_map)
+
+//BASE table varstore retained varidx mapping
+HB_SUBSET_PLAN_MEMBER (hb_vector_t<hb_inc_bimap_t>, base_varstore_inner_maps)
+
 #ifdef HB_EXPERIMENTAL_API
 // name table overrides map: hb_ot_name_record_ids_t-> name string new value or
 // None to indicate should remove

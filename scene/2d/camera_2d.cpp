@@ -627,7 +627,7 @@ void Camera2D::align() {
 }
 
 void Camera2D::set_position_smoothing_speed(real_t p_speed) {
-	position_smoothing_speed = p_speed;
+	position_smoothing_speed = MAX(0, p_speed);
 	_update_process_internal_for_smoothing();
 }
 
@@ -636,7 +636,7 @@ real_t Camera2D::get_position_smoothing_speed() const {
 }
 
 void Camera2D::set_rotation_smoothing_speed(real_t p_speed) {
-	rotation_smoothing_speed = p_speed;
+	rotation_smoothing_speed = MAX(0, p_speed);
 	_update_process_internal_for_smoothing();
 }
 

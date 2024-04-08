@@ -230,18 +230,20 @@ public:
 };
 
 #define register_string_op(m_op_type, m_op_code)                                                               \
-	do {                                                                                                       \
+	if constexpr (true) {                                                                                      \
 		register_op<m_op_type<String, String>>(m_op_code, Variant::STRING, Variant::STRING);                   \
 		register_op<m_op_type<String, StringName>>(m_op_code, Variant::STRING, Variant::STRING_NAME);          \
 		register_op<m_op_type<StringName, String>>(m_op_code, Variant::STRING_NAME, Variant::STRING);          \
 		register_op<m_op_type<StringName, StringName>>(m_op_code, Variant::STRING_NAME, Variant::STRING_NAME); \
-	} while (false)
+	} else                                                                                                     \
+		((void)0)
 
 #define register_string_modulo_op(m_class, m_type)                                                                         \
-	do {                                                                                                                   \
+	if constexpr (true) {                                                                                                  \
 		register_op<OperatorEvaluatorStringFormat<String, m_class>>(Variant::OP_MODULE, Variant::STRING, m_type);          \
 		register_op<OperatorEvaluatorStringFormat<StringName, m_class>>(Variant::OP_MODULE, Variant::STRING_NAME, m_type); \
-	} while (false)
+	} else                                                                                                                 \
+		((void)0)
 
 void Variant::_register_variant_operators() {
 	memset(operator_return_type_table, 0, sizeof(operator_return_type_table));

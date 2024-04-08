@@ -233,7 +233,7 @@ public:
 				points[i] = (points[i] - rect.position) / rect.size;
 			}
 
-			float delta_max = Math::sqrt(2.0) * 20.0;
+			const real_t delta_max = Math::sqrt(2.0) * 20.0;
 			Vector3 center = Vector3(0.5, 0.5, 0.5);
 
 			// any simplex that contains everything is good
@@ -332,8 +332,7 @@ public:
 					center.y = double(new_simplex->circum_center_y);
 					center.z = double(new_simplex->circum_center_z);
 
-					float radius2 = Math::sqrt(double(new_simplex->circum_r2));
-					radius2 += 0.0001; //
+					const real_t radius2 = Math::sqrt(double(new_simplex->circum_r2)) + 0.0001;
 					Vector3 extents = Vector3(radius2, radius2, radius2);
 					Vector3i from = Vector3i((center - extents) * ACCEL_GRID_SIZE);
 					Vector3i to = Vector3i((center + extents) * ACCEL_GRID_SIZE);

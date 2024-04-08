@@ -724,6 +724,9 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			if (!is_inside_tree()) {
 				return;
 			}
+			// Ensure keeping the order of input events and window events when input events are buffered or accumulated.
+			Input::get_singleton()->flush_buffered_events();
+
 			Window *root = get_tree()->get_root();
 			if (!root->gui.windowmanager_window_over) {
 #ifdef DEV_ENABLED
@@ -2717,9 +2720,6 @@ void Window::_update_mouse_over(Vector2 p_pos) {
 		if (is_embedded()) {
 			mouse_in_window = true;
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
-		} else {
-			// Prevent update based on delayed InputEvents from DisplayServer.
-			return;
 		}
 	}
 

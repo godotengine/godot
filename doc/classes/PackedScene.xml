@@ -73,7 +73,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
 	</tutorials>
 	<methods>
 		<method name="can_instantiate" qualifiers="const">

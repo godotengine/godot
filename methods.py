@@ -228,14 +228,47 @@ def get_version_info(module_version_string="", silent=False):
     return version_info
 
 
+_cleanup_env = None
+_cleanup_bool = False
+
+
+def write_file_if_needed(path, string):
+    """Generates a file only if it doesn't already exist or the content has changed.
+
+    Utilizes a dedicated SCons environment to ensure the files are properly removed
+    during cleanup; will not attempt to create files during cleanup.
+
+    - `path` - Path to the file in question; used to create cleanup logic.
+    - `string` - Content to compare against an existing file.
+    """
+    global _cleanup_env
+    global _cleanup_bool
+
+    if _cleanup_env is None:
+        from SCons.Environment import Environment
+
+        _cleanup_env = Environment()
+        _cleanup_bool = _cleanup_env.GetOption("clean")
+
+    _cleanup_env.Clean("#", path)
+    if _cleanup_bool:
+        return
+
+    try:
+        with open(path, "r", encoding="utf-8", newline="\n") as f:
+            if f.read() == string:
+                return
+    except FileNotFoundError:
+        pass
+
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(string)
+
+
 def generate_version_header(module_version_string=""):
     version_info = get_version_info(module_version_string)
 
-    # NOTE: It is safe to generate these files here, since this is still executed serially.
-
-    with open("core/version_generated.gen.h", "w", encoding="utf-8", newline="\n") as f:
-        f.write(
-            """\
+    version_info_header = """\
 /* THIS FILE IS GENERATED DO NOT EDIT */
 #ifndef VERSION_GENERATED_GEN_H
 #define VERSION_GENERATED_GEN_H
@@ -252,21 +285,20 @@ def generate_version_header(module_version_string=""):
 #define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
 #endif // VERSION_GENERATED_GEN_H
 """.format(
-                **version_info
-            )
-        )
+        **version_info
+    )
 
-    with open("core/version_hash.gen.cpp", "w", encoding="utf-8", newline="\n") as fhash:
-        fhash.write(
-            """\
+    version_hash_data = """\
 /* THIS FILE IS GENERATED DO NOT EDIT */
 #include "core/version.h"
 const char *const VERSION_HASH = "{git_hash}";
 const uint64_t VERSION_TIMESTAMP = {git_timestamp};
 """.format(
-                **version_info
-            )
-        )
+        **version_info
+    )
+
+    write_file_if_needed("core/version_generated.gen.h", version_info_header)
+    write_file_if_needed("core/version_hash.gen.cpp", version_hash_data)
 
 
 def parse_cg_file(fname, uniforms, sizes, conditionals):
@@ -385,15 +417,18 @@ def is_module(path):
 
 
 def write_disabled_classes(class_list):
-    with open("core/disabled_classes.gen.h", "w", encoding="utf-8", newline="\n") as f:
-        f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-        f.write("#ifndef DISABLED_CLASSES_GEN_H\n")
-        f.write("#define DISABLED_CLASSES_GEN_H\n\n")
-        for c in class_list:
-            cs = c.strip()
-            if cs != "":
-                f.write("#define ClassDB_Disable_" + cs + " 1\n")
-        f.write("\n#endif\n")
+    file_contents = ""
+
+    file_contents += "/* THIS FILE IS GENERATED DO NOT EDIT */\n"
+    file_contents += "#ifndef DISABLED_CLASSES_GEN_H\n"
+    file_contents += "#define DISABLED_CLASSES_GEN_H\n\n"
+    for c in class_list:
+        cs = c.strip()
+        if cs != "":
+            file_contents += "#define ClassDB_Disable_" + cs + " 1\n"
+    file_contents += "\n#endif\n"
+
+    write_file_if_needed("core/disabled_classes.gen.h", file_contents)
 
 
 def write_modules(modules):
@@ -435,9 +470,7 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {
         uninitialize_cpp,
     )
 
-    # NOTE: It is safe to generate this file here, since this is still executed serially
-    with open("modules/register_module_types.gen.cpp", "w", encoding="utf-8", newline="\n") as f:
-        f.write(modules_cpp)
+    write_file_if_needed("modules/register_module_types.gen.cpp", modules_cpp)
 
 
 def convert_custom_modules_path(path):
@@ -1419,14 +1452,18 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         props_template = props_template.replace("%%OUTPUT%%", output)
 
-        props_template = props_template.replace(
-            "%%DEFINES%%", ";".join([format_key_value(v) for v in list(env["CPPDEFINES"])])
-        )
-        props_template = props_template.replace("%%INCLUDES%%", ";".join([str(j) for j in env["CPPPATH"]]))
-        props_template = props_template.replace(
-            "%%OPTIONS%%",
-            " ".join(env["CCFLAGS"]) + " " + " ".join([x for x in env["CXXFLAGS"] if not x.startswith("$")]),
-        )
+        proplist = [format_key_value(v) for v in list(env["CPPDEFINES"])]
+        proplist += [format_key_value(j) for j in env.get("VSHINT_DEFINES", [])]
+        props_template = props_template.replace("%%DEFINES%%", ";".join(proplist))
+
+        proplist = [str(j) for j in env["CPPPATH"]]
+        proplist += [str(j) for j in env.get("VSHINT_INCLUDES", [])]
+        props_template = props_template.replace("%%INCLUDES%%", ";".join(proplist))
+
+        proplist = env["CCFLAGS"]
+        proplist += [x for x in env["CXXFLAGS"] if not x.startswith("$")]
+        proplist += [str(j) for j in env.get("VSHINT_OPTIONS", [])]
+        props_template = props_template.replace("%%OPTIONS%%", " ".join(proplist))
 
         # Windows allows us to have spaces in paths, so we need
         # to double quote off the directory. However, the path ends

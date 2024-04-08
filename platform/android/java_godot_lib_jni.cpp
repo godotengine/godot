@@ -250,7 +250,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 	}
 
 	if (step.get() == 1) {
-		if (!Main::start()) {
+		if (Main::start() != EXIT_SUCCESS) {
 			return true; // should exit instead and print the error
 		}
 

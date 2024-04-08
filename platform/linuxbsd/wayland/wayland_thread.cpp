@@ -1563,7 +1563,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 	}
 
 	if (old_pd.pressed_button_mask != pd.pressed_button_mask) {
-		BitField<MouseButtonMask> pressed_mask_delta = BitField<MouseButtonMask>((uint32_t)old_pd.pressed_button_mask ^ (uint32_t)pd.pressed_button_mask);
+		BitField<MouseButtonMask> pressed_mask_delta = old_pd.pressed_button_mask ^ pd.pressed_button_mask;
 
 		const MouseButton buttons_to_test[] = {
 			MouseButton::LEFT,

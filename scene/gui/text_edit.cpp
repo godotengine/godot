@@ -539,7 +539,6 @@ void TextEdit::_notification(int p_what) {
 			_update_scrollbars();
 
 			RID ci = get_canvas_item();
-			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
 			int xmargin_beg = theme_cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding;
 
 			int xmargin_end = size.width - theme_cache.style_normal->get_margin(SIDE_RIGHT);
@@ -1113,7 +1112,7 @@ void TextEdit::_notification(int p_what) {
 							Vector<Vector2> sel = TS->shaped_text_get_selection(rid, sel_from, sel_to);
 
 							// Show selection at the end of line.
-							if (line < get_selection_to_line(c)) {
+							if (line_wrap_index == line_wrap_amount && line < get_selection_to_line(c)) {
 								if (rtl) {
 									sel.push_back(Vector2(-char_w, 0));
 								} else {
@@ -1123,7 +1122,7 @@ void TextEdit::_notification(int p_what) {
 							}
 
 							for (int j = 0; j < sel.size(); j++) {
-								Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y, Math::ceil(sel[j].y - sel[j].x), row_height);
+								Rect2 rect = Rect2(sel[j].x + char_margin + ofs_x, ofs_y, Math::ceil(sel[j].y) - sel[j].x, row_height);
 								if (rect.position.x + rect.size.x <= xmargin_beg || rect.position.x > xmargin_end) {
 									continue;
 								}
@@ -8022,5 +8021,6 @@ TextEdit::TextEdit(const String &p_placeholder) {
 
 	set_placeholder(p_placeholder);
 
+	set_clip_contents(true);
 	set_editable(true);
 }

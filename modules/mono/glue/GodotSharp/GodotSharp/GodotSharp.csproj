@@ -77,6 +77,7 @@
     <Compile Include="Core\Color.cs" />
     <Compile Include="Core\Colors.cs" />
     <Compile Include="Core\DebuggingUtils.cs" />
+    <Compile Include="Core\DebugView.cs" />
     <Compile Include="Core\DelegateUtils.cs" />
     <Compile Include="Core\Dictionary.cs" />
     <Compile Include="Core\Dispatcher.cs" />

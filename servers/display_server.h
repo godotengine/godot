@@ -36,7 +36,7 @@
 #include "core/os/os.h"
 #include "core/variant/callable.h"
 
-#include "native_menu.h"
+#include "display/native_menu.h"
 
 class Texture2D;
 class Image;
@@ -140,6 +140,8 @@ public:
 		FEATURE_SCREEN_CAPTURE,
 		FEATURE_STATUS_INDICATOR,
 		FEATURE_NATIVE_HELP,
+		FEATURE_NATIVE_DIALOG_INPUT,
+		FEATURE_NATIVE_DIALOG_FILE,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
