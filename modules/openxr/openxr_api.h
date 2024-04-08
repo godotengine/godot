@@ -336,6 +336,7 @@ public:
 	String get_error_string(XrResult result) const;
 	String get_swapchain_format_name(int64_t p_swapchain_format) const;
 
+	OpenXRInterface *get_xr_interface() const { return xr_interface; }
 	void set_xr_interface(OpenXRInterface *p_xr_interface);
 	static void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
 	static void unregister_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
