@@ -36,7 +36,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/callable_method_pointer.h"
-#include "scene/resources/atlas_texture.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef GLES3_ENABLED
@@ -187,6 +186,7 @@ void DisplayServerWeb::_key_callback(const String &p_key_event_code, const Strin
 
 	Key keycode = dom_code2godot_scancode(p_key_event_code.utf8().get_data(), p_key_event_key.utf8().get_data(), false);
 	Key scancode = dom_code2godot_scancode(p_key_event_code.utf8().get_data(), p_key_event_key.utf8().get_data(), true);
+	KeyLocation location = dom_code2godot_key_location(p_key_event_code.utf8().get_data());
 
 	DisplayServerWeb::KeyEvent ke;
 
@@ -197,6 +197,7 @@ void DisplayServerWeb::_key_callback(const String &p_key_event_code, const Strin
 	ke.physical_keycode = scancode;
 	ke.key_label = fix_key_label(c, keycode);
 	ke.unicode = fix_unicode(c);
+	ke.location = location;
 	ke.mod = p_modifiers;
 
 	if (ds->key_event_pos >= ds->key_event_buffer.size()) {
@@ -326,7 +327,9 @@ void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel
 	ev->set_global_position(pos);
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
+	ev->set_relative_screen_position(ev->get_relative());
 	ev->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+	ev->set_screen_velocity(ev->get_velocity());
 
 	Input::get_singleton()->parse_input_event(ev);
 }
@@ -507,43 +510,12 @@ DisplayServer::CursorShape DisplayServerWeb::cursor_get_shape() const {
 void DisplayServerWeb::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 	if (p_cursor.is_valid()) {
-		Ref<Texture2D> texture = p_cursor;
-		ERR_FAIL_COND(!texture.is_valid());
-		Ref<AtlasTexture> atlas_texture = p_cursor;
-		Size2 texture_size;
 		Rect2 atlas_rect;
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot, atlas_rect);
+		ERR_FAIL_COND(image.is_null());
+		Vector2i texture_size = image->get_size();
 
-		if (atlas_texture.is_valid()) {
-			texture = atlas_texture->get_atlas();
-
-			atlas_rect.size.width = texture->get_width();
-			atlas_rect.size.height = texture->get_height();
-			atlas_rect.position.x = atlas_texture->get_region().position.x;
-			atlas_rect.position.y = atlas_texture->get_region().position.y;
-
-			texture_size.width = atlas_texture->get_region().size.x;
-			texture_size.height = atlas_texture->get_region().size.y;
-		} else {
-			texture_size.width = texture->get_width();
-			texture_size.height = texture->get_height();
-		}
-
-		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
-		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
-		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
-
-		Ref<Image> image = texture->get_image();
-
-		ERR_FAIL_COND(!image.is_valid());
-
-		image = image->duplicate(true);
-
-		if (image->is_compressed()) {
-			Error err = image->decompress();
-			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
-		}
-
-		if (atlas_texture.is_valid()) {
+		if (atlas_rect.has_area()) {
 			image->crop_from_point(
 					atlas_rect.position.x,
 					atlas_rect.position.y,
@@ -705,6 +677,7 @@ void DisplayServerWeb::_touch_callback(int p_type, int p_count) {
 
 			Point2 &prev = ds->touches[i];
 			ev->set_relative(ev->get_position() - prev);
+			ev->set_relative_screen_position(ev->get_relative());
 			prev = ev->get_position();
 
 			Input::get_singleton()->parse_input_event(ev);
@@ -1057,6 +1030,7 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 	r_error = OK; // Always succeeds for now.
 
 	tts = GLOBAL_GET("audio/general/text_to_speech");
+	native_menu = memnew(NativeMenu); // Dummy native menu.
 
 	// Ensure the canvas ID.
 	godot_js_config_canvas_id_get(canvas_id, 256);
@@ -1125,6 +1099,10 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 }
 
 DisplayServerWeb::~DisplayServerWeb() {
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
 #ifdef GLES3_ENABLED
 	if (webgl_ctx) {
 		emscripten_webgl_commit_frame();
@@ -1135,7 +1113,11 @@ DisplayServerWeb::~DisplayServerWeb() {
 
 bool DisplayServerWeb::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		//case FEATURE_GLOBAL_MENU:
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		//case FEATURE_HIDPI:
 		case FEATURE_ICON:
 		case FEATURE_CLIPBOARD:
@@ -1146,6 +1128,8 @@ bool DisplayServerWeb::has_feature(Feature p_feature) const {
 			return true;
 		//case FEATURE_MOUSE_WARP:
 		//case FEATURE_NATIVE_DIALOG:
+		//case FEATURE_NATIVE_DIALOG_INPUT:
+		//case FEATURE_NATIVE_DIALOG_FILE:
 		//case FEATURE_NATIVE_ICON:
 		//case FEATURE_WINDOW_TRANSPARENCY:
 		//case FEATURE_KEEP_SCREEN_ON:
@@ -1383,6 +1367,7 @@ void DisplayServerWeb::process_events() {
 			ev->set_physical_keycode(ke.physical_keycode);
 			ev->set_key_label(ke.key_label);
 			ev->set_unicode(ke.unicode);
+			ev->set_location(ke.location);
 			if (ke.raw) {
 				dom2godot_mod(ev, ke.mod, ke.keycode);
 			}

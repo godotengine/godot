@@ -528,8 +528,8 @@ static void _rasterPolygonImageSegment(SwSurface* surface, const SwImage* image,
                     vv = (int) v;
                     if (vv >= sh) continue;
 
-                    ar = (int)(255 * (1 - modff(u, &iptr)));
-                    ab = (int)(255 * (1 - modff(v, &iptr)));
+                    ar = (int)(255.0f * (1.0f - modff(u, &iptr)));
+                    ab = (int)(255.0f * (1.0f - modff(v, &iptr)));
                     iru = uu + 1;
                     irv = vv + 1;
 
@@ -576,8 +576,8 @@ static void _rasterPolygonImageSegment(SwSurface* surface, const SwImage* image,
                     uu = (int) u;
                     vv = (int) v;
 
-                    ar = (int)(255 * (1 - modff(u, &iptr)));
-                    ab = (int)(255 * (1 - modff(v, &iptr)));
+                    ar = (int)(255.0f * (1.0f - modff(u, &iptr)));
+                    ab = (int)(255.0f * (1.0f - modff(v, &iptr)));
                     iru = uu + 1;
                     irv = vv + 1;
 

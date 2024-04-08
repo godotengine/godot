@@ -148,7 +148,7 @@ void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo,
 		Ref<FileAccess> wav_file = FileAccess::open(save_path, FileAccess::READ, &error);
 		REQUIRE(error == OK);
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 		// The WAV importer can be used if enabled to check that the saved file is valid.
 		Ref<ResourceImporterWAV> wav_importer = memnew(ResourceImporterWAV);
 

@@ -5,19 +5,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 /*
  * This set of compile-time defines and run-time variables can be used to
@@ -38,16 +26,16 @@
  */
 #define MBEDTLS_VERSION_MAJOR  2
 #define MBEDTLS_VERSION_MINOR  28
-#define MBEDTLS_VERSION_PATCH  5
+#define MBEDTLS_VERSION_PATCH  7
 
 /**
  * The single version number has the following structure:
  *    MMNNPP00
  *    Major version | Minor version | Patch version
  */
-#define MBEDTLS_VERSION_NUMBER         0x021C0500
-#define MBEDTLS_VERSION_STRING         "2.28.5"
-#define MBEDTLS_VERSION_STRING_FULL    "Mbed TLS 2.28.5"
+#define MBEDTLS_VERSION_NUMBER         0x021C0700
+#define MBEDTLS_VERSION_STRING         "2.28.7"
+#define MBEDTLS_VERSION_STRING_FULL    "Mbed TLS 2.28.7"
 
 #if defined(MBEDTLS_VERSION_C)
 

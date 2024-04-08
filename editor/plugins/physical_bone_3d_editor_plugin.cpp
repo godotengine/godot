@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/physics/physical_bone_3d.h"
 #include "scene/gui/separator.h"
 
 void PhysicalBone3DEditor::_bind_methods() {

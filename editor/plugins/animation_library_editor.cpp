@@ -30,11 +30,11 @@
 
 #include "animation_library_editor.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_mixer.h"
 
 void AnimationLibraryEditor::set_animation_mixer(Object *p_mixer) {
@@ -300,7 +300,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 	}
 }
 
-void AnimationLibraryEditor::_load_file(String p_path) {
+void AnimationLibraryEditor::_load_file(const String &p_path) {
 	switch (file_dialog_action) {
 		case FILE_DIALOG_ACTION_SAVE_LIBRARY: {
 			Ref<AnimationLibrary> al = mixer->get_animation_library(file_dialog_library);
@@ -821,6 +821,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	tree = memnew(Tree);
 	vb->add_child(tree);
 
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0, TTR("Resource"));

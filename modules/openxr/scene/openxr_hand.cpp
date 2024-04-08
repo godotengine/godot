@@ -40,19 +40,19 @@ void OpenXRHand::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hand", "hand"), &OpenXRHand::set_hand);
 	ClassDB::bind_method(D_METHOD("get_hand"), &OpenXRHand::get_hand);
 
-	ClassDB::bind_method(D_METHOD("set_hand_skeleton", "hand_skeleton"), &OpenXRHand::set_hand_skeleton);
-	ClassDB::bind_method(D_METHOD("get_hand_skeleton"), &OpenXRHand::get_hand_skeleton);
-
 	ClassDB::bind_method(D_METHOD("set_motion_range", "motion_range"), &OpenXRHand::set_motion_range);
 	ClassDB::bind_method(D_METHOD("get_motion_range"), &OpenXRHand::get_motion_range);
 
 	ClassDB::bind_method(D_METHOD("set_skeleton_rig", "skeleton_rig"), &OpenXRHand::set_skeleton_rig);
 	ClassDB::bind_method(D_METHOD("get_skeleton_rig"), &OpenXRHand::get_skeleton_rig);
 
+	ClassDB::bind_method(D_METHOD("set_bone_update", "bone_update"), &OpenXRHand::set_bone_update);
+	ClassDB::bind_method(D_METHOD("get_bone_update"), &OpenXRHand::get_bone_update);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hand", PROPERTY_HINT_ENUM, "Left,Right"), "set_hand", "get_hand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "motion_range", PROPERTY_HINT_ENUM, "Unobstructed,Conform to controller"), "set_motion_range", "get_motion_range");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "hand_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_hand_skeleton", "get_hand_skeleton");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skeleton_rig", PROPERTY_HINT_ENUM, "OpenXR,Humanoid"), "set_skeleton_rig", "get_skeleton_rig");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_update", PROPERTY_HINT_ENUM, "Full,Rotation Only"), "set_bone_update", "get_bone_update");
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);
@@ -65,6 +65,10 @@ void OpenXRHand::_bind_methods() {
 	BIND_ENUM_CONSTANT(SKELETON_RIG_OPENXR);
 	BIND_ENUM_CONSTANT(SKELETON_RIG_HUMANOID);
 	BIND_ENUM_CONSTANT(SKELETON_RIG_MAX);
+
+	BIND_ENUM_CONSTANT(BONE_UPDATE_FULL);
+	BIND_ENUM_CONSTANT(BONE_UPDATE_ROTATION_ONLY);
+	BIND_ENUM_CONSTANT(BONE_UPDATE_MAX);
 }
 
 OpenXRHand::OpenXRHand() {
@@ -82,12 +86,6 @@ OpenXRHand::Hands OpenXRHand::get_hand() const {
 	return hand;
 }
 
-void OpenXRHand::set_hand_skeleton(const NodePath &p_hand_skeleton) {
-	hand_skeleton = p_hand_skeleton;
-
-	// TODO if inside tree call _get_bones()
-}
-
 void OpenXRHand::set_motion_range(MotionRange p_motion_range) {
 	ERR_FAIL_INDEX(p_motion_range, MOTION_RANGE_MAX);
 	motion_range = p_motion_range;
@@ -97,10 +95,6 @@ void OpenXRHand::set_motion_range(MotionRange p_motion_range) {
 
 OpenXRHand::MotionRange OpenXRHand::get_motion_range() const {
 	return motion_range;
-}
-
-NodePath OpenXRHand::get_hand_skeleton() const {
-	return hand_skeleton;
 }
 
 void OpenXRHand::_set_motion_range() {
@@ -134,18 +128,14 @@ OpenXRHand::SkeletonRig OpenXRHand::get_skeleton_rig() const {
 	return skeleton_rig;
 }
 
-Skeleton3D *OpenXRHand::get_skeleton() {
-	if (!has_node(hand_skeleton)) {
-		return nullptr;
-	}
+void OpenXRHand::set_bone_update(BoneUpdate p_bone_update) {
+	ERR_FAIL_INDEX(p_bone_update, BONE_UPDATE_MAX);
 
-	Node *node = get_node(hand_skeleton);
-	if (!node) {
-		return nullptr;
-	}
+	bone_update = p_bone_update;
+}
 
-	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
-	return skeleton;
+OpenXRHand::BoneUpdate OpenXRHand::get_bone_update() const {
+	return bone_update;
 }
 
 void OpenXRHand::_get_joint_data() {
@@ -272,7 +262,7 @@ void OpenXRHand::_get_joint_data() {
 	}
 }
 
-void OpenXRHand::_update_skeleton() {
+void OpenXRHand::_process_modification() {
 	if (openxr_api == nullptr || !openxr_api->is_initialized()) {
 		return;
 	} else if (hand_tracking_ext == nullptr || !hand_tracking_ext->get_active()) {
@@ -346,8 +336,12 @@ void OpenXRHand::_update_skeleton() {
 				const Quaternion q = inv_quaternions[parent_joint] * quaternions[joint];
 				const Vector3 p = inv_quaternions[parent_joint].xform(positions[joint] - positions[parent_joint]);
 
-				// and set our pose
-				skeleton->set_bone_pose_position(joints[joint].bone, p);
+				// Update the bone position if enabled by update mode.
+				if (bone_update == BONE_UPDATE_FULL) {
+					skeleton->set_bone_pose_position(joints[joint].bone, p);
+				}
+
+				// Always update the bone rotation.
 				skeleton->set_bone_pose_rotation(joints[joint].bone, q);
 			}
 
@@ -373,20 +367,13 @@ void OpenXRHand::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_get_joint_data();
-
-			set_process_internal(true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			set_process_internal(false);
-
 			// reset
 			for (int i = 0; i < XR_HAND_JOINT_COUNT_EXT; i++) {
 				joints[i].bone = -1;
 				joints[i].parent_joint = -1;
 			}
-		} break;
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			_update_skeleton();
 		} break;
 		default: {
 		} break;

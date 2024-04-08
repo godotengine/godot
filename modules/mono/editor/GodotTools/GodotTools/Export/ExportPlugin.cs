@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -11,6 +12,7 @@ using Directory = GodotTools.Utils.Directory;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
 using Path = System.IO.Path;
+using System.Globalization;
 
 namespace GodotTools.Export
 {
@@ -73,7 +75,7 @@ namespace GodotTools.Export
             };
         }
 
-        private string _maybeLastExportError;
+        private string? _maybeLastExportError;
 
         // With this method we can override how a file is exported in the PCK
         public override void _ExportFile(string path, string type, string[] features)
@@ -135,7 +137,7 @@ namespace GodotTools.Export
             if (!ProjectContainsDotNet())
                 return;
 
-            if (!DeterminePlatformFromFeatures(features, out string platform))
+            if (!DeterminePlatformFromFeatures(features, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
             if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
@@ -276,7 +278,7 @@ namespace GodotTools.Export
                             if (platform == OS.Platforms.iOS)
                             {
                                 // Exclude dsym folders.
-                                return !dir.EndsWith(".dsym", StringComparison.InvariantCultureIgnoreCase);
+                                return !dir.EndsWith(".dsym", StringComparison.OrdinalIgnoreCase);
                             }
 
                             return true;
@@ -296,7 +298,7 @@ namespace GodotTools.Export
                             if (platform == OS.Platforms.iOS)
                             {
                                 // Don't recurse into dsym folders.
-                                return !dir.EndsWith(".dsym", StringComparison.InvariantCultureIgnoreCase);
+                                return !dir.EndsWith(".dsym", StringComparison.OrdinalIgnoreCase);
                             }
 
                             return true;
@@ -312,13 +314,13 @@ namespace GodotTools.Export
                                     byte[] fileData = File.ReadAllBytes(path);
                                     string hash = Convert.ToBase64String(SHA512.HashData(fileData));
 
-                                    manifest.Append($"{filePath}\t{hash}\n");
+                                    manifest.Append(CultureInfo.InvariantCulture, $"{filePath}\t{hash}\n");
 
                                     AddFile($"res://.godot/mono/publish/{arch}/{filePath}", fileData, false);
                                 }
                                 else
                                 {
-                                    if (platform == OS.Platforms.iOS && path.EndsWith(".dat"))
+                                    if (platform == OS.Platforms.iOS && path.EndsWith(".dat", StringComparison.OrdinalIgnoreCase))
                                     {
                                         AddIosBundleFile(path);
                                     }
@@ -327,7 +329,7 @@ namespace GodotTools.Export
                                         AddSharedObject(path, tags: null,
                                             Path.Join(projectDataDirName,
                                                 Path.GetRelativePath(publishOutputDir,
-                                                    Path.GetDirectoryName(path))));
+                                                    Path.GetDirectoryName(path)!)));
                                     }
                                 }
                             }
@@ -389,10 +391,10 @@ namespace GodotTools.Export
                 if (filterDir(dir))
                 {
                     addEntry(dir, false);
-                }
-                else if (recurseDir(dir))
-                {
-                    RecursePublishContents(dir, filterDir, filterFile, recurseDir, addEntry);
+                    if (recurseDir(dir))
+                    {
+                        RecursePublishContents(dir, filterDir, filterFile, recurseDir, addEntry);
+                    }
                 }
             }
         }
@@ -450,7 +452,7 @@ namespace GodotTools.Export
             }
         }
 
-        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
+        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, [NotNullWhen(true)] out string? platform)
         {
             foreach (var feature in features)
             {

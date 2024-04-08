@@ -32,7 +32,7 @@
 #define GPU_PARTICLES_3D_H
 
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/skin.h"
+#include "scene/resources/3d/skin.h"
 
 class GPUParticles3D : public GeometryInstance3D {
 private:

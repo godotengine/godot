@@ -44,6 +44,8 @@
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 
+#include "modules/modules_enabled.gen.h" // For gdscript, mono.
+
 class FindBar : public HBoxContainer {
 	GDCLASS(FindBar, HBoxContainer);
 
@@ -113,6 +115,7 @@ class EditorHelp : public VBoxContainer {
 	RichTextLabel *class_desc = nullptr;
 	HSplitContainer *h_split = nullptr;
 	static DocTools *doc;
+	static DocTools *ext_doc;
 
 	ConfirmationDialog *search_dialog = nullptr;
 	LineEdit *search = nullptr;
@@ -133,6 +136,7 @@ class EditorHelp : public VBoxContainer {
 		Color value_color;
 		Color qualifier_color;
 		Color type_color;
+		Color override_color;
 
 		Ref<Font> doc_font;
 		Ref<Font> doc_bold_font;
@@ -177,8 +181,8 @@ class EditorHelp : public VBoxContainer {
 
 	Error _goto_desc(const String &p_class);
 	//void _update_history_buttons();
-	void _update_method_list(const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type);
-	void _update_method_descriptions(const DocData::ClassDoc p_classdoc, const Vector<DocData::MethodDoc> p_methods, MethodType p_method_type);
+	void _update_method_list(MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
+	void _update_method_descriptions(const DocData::ClassDoc &p_classdoc, MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
 	void _update_doc();
 
 	void _request_help(const String &p_string);
@@ -197,6 +201,16 @@ class EditorHelp : public VBoxContainer {
 	static void _gen_extensions_docs();
 	static void _compute_doc_version_hash();
 
+	struct PropertyCompare {
+		_FORCE_INLINE_ bool operator()(const DocData::PropertyDoc &p_l, const DocData::PropertyDoc &p_r) const {
+			// Sort overridden properties above all else.
+			if (p_l.overridden == p_r.overridden) {
+				return p_l.name.naturalcasecmp_to(p_r.name) < 0;
+			}
+			return p_l.overridden;
+		}
+	};
+
 protected:
 	virtual void _update_theme_item_cache() override;
 
@@ -208,6 +222,9 @@ public:
 	static DocTools *get_doc_data();
 	static void cleanup_doc();
 	static String get_cache_full_path();
+
+	static void load_xml_buffer(const uint8_t *p_buffer, int p_size);
+	static void remove_class(const String &p_class);
 
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class);
@@ -228,6 +245,8 @@ public:
 
 	void update_toggle_scripts_button();
 
+	static void init_gdext_pointers();
+
 	EditorHelp();
 	~EditorHelp();
 };
@@ -242,12 +261,15 @@ class EditorHelpBit : public MarginContainer {
 	inline static HashMap<StringName, HashMap<StringName, String>> doc_theme_item_cache;
 
 	RichTextLabel *rich_text = nullptr;
-	void _go_to_help(String p_what);
-	void _meta_clicked(String p_select);
+	void _go_to_help(const String &p_what);
+	void _meta_clicked(const String &p_select);
 
 	String text;
 
 protected:
+	String doc_class_name;
+	String custom_description;
+
 	static void _bind_methods();
 	void _notification(int p_what);
 
@@ -275,7 +297,44 @@ protected:
 public:
 	void parse_tooltip(const String &p_text);
 
-	EditorHelpTooltip(const String &p_text = String());
+	EditorHelpTooltip(const String &p_text = String(), const String &p_custom_description = String());
 };
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+class EditorSyntaxHighlighter;
+
+class EditorHelpHighlighter {
+public:
+	enum Language {
+		LANGUAGE_GDSCRIPT,
+		LANGUAGE_CSHARP,
+		LANGUAGE_MAX,
+	};
+
+private:
+	using HighlightData = Vector<Pair<int, Color>>;
+
+	static EditorHelpHighlighter *singleton;
+
+	HashMap<String, HighlightData> highlight_data_caches[LANGUAGE_MAX];
+
+	TextEdit *text_edits[LANGUAGE_MAX];
+	Ref<Script> scripts[LANGUAGE_MAX];
+	Ref<EditorSyntaxHighlighter> highlighters[LANGUAGE_MAX];
+
+	HighlightData _get_highlight_data(Language p_language, const String &p_source, bool p_use_cache);
+
+public:
+	static void create_singleton();
+	static void free_singleton();
+	static EditorHelpHighlighter *get_singleton();
+
+	void highlight(RichTextLabel *p_rich_text_label, Language p_language, const String &p_source, bool p_use_cache);
+	void reset_cache();
+
+	EditorHelpHighlighter();
+	virtual ~EditorHelpHighlighter();
+};
+#endif // defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 
 #endif // EDITOR_HELP_H

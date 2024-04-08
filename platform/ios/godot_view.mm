@@ -167,6 +167,23 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
+- (void)system_theme_changed {
+	DisplayServerIOS *ds = (DisplayServerIOS *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->emit_system_theme_changed();
+	}
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+	if (@available(iOS 13.0, *)) {
+		[super traitCollectionDidChange:previousTraitCollection];
+
+		if ([UITraitCollection currentTraitCollection].userInterfaceStyle != previousTraitCollection.userInterfaceStyle) {
+			[self system_theme_changed];
+		}
+	}
+}
+
 - (void)stopRendering {
 	if (!self.isActive) {
 		return;

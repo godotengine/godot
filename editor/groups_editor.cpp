@@ -31,12 +31,12 @@
 #include "groups_editor.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/project_settings_editor.h"
 #include "editor/scene_tree_dock.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/grid_container.h"
@@ -196,7 +196,7 @@ void GroupsEditor::_update_tree() {
 	TreeItem *root = tree->create_item();
 
 	TreeItem *local_root = tree->create_item(root);
-	local_root->set_text(0, "Scene Groups");
+	local_root->set_text(0, TTR("Scene Groups"));
 	local_root->set_icon(0, get_editor_theme_icon(SNAME("PackedScene")));
 	local_root->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 	local_root->set_selectable(0, false);
@@ -233,7 +233,7 @@ void GroupsEditor::_update_tree() {
 	keys.sort_custom<NoCaseComparator>();
 
 	TreeItem *global_root = tree->create_item(root);
-	global_root->set_text(0, "Global Groups");
+	global_root->set_text(0, TTR("Global Groups"));
 	global_root->set_icon(0, get_editor_theme_icon(SNAME("Environment")));
 	global_root->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 	global_root->set_selectable(0, false);
@@ -783,6 +783,9 @@ void GroupsEditor::_groups_gui_input(Ref<InputEvent> p_event) {
 			_menu_id_pressed(DELETE_GROUP);
 		} else if (ED_IS_SHORTCUT("groups_editor/rename", p_event)) {
 			_menu_id_pressed(RENAME_GROUP);
+		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
+			filter->grab_focus();
+			filter->select_all();
 		} else {
 			return;
 		}
@@ -839,6 +842,7 @@ GroupsEditor::GroupsEditor() {
 	hbc->add_child(filter);
 
 	tree = memnew(Tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);

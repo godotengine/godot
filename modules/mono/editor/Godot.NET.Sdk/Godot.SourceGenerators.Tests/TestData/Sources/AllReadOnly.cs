@@ -2,8 +2,8 @@ using Godot;
 
 public partial class AllReadOnly : GodotObject
 {
-    public readonly string readonly_field = "foo";
-    public string readonly_auto_property { get; } = "foo";
-    public string readonly_property { get => "foo"; }
-    public string initonly_auto_property { get; init; }
+    public readonly string ReadOnlyField = "foo";
+    public string ReadOnlyAutoProperty { get; } = "foo";
+    public string ReadOnlyProperty { get => "foo"; }
+    public string InitOnlyAutoProperty { get; init; }
 }

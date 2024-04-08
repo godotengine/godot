@@ -112,8 +112,9 @@ public:
 		int32_t buffer_barrier_count = 0;
 #endif
 		int32_t label_index = -1;
-		BitField<RDD::PipelineStageBits> src_stages;
-		BitField<RDD::PipelineStageBits> dst_stages;
+		BitField<RDD::PipelineStageBits> previous_stages;
+		BitField<RDD::PipelineStageBits> next_stages;
+		BitField<RDD::PipelineStageBits> self_stages;
 	};
 
 	struct RecordedBufferCopy {
@@ -141,19 +142,20 @@ public:
 		RESOURCE_USAGE_TEXTURE_SAMPLE,
 		RESOURCE_USAGE_STORAGE_IMAGE_READ,
 		RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE,
-		RESOURCE_USAGE_ATTACHMENT_COLOR_READ,
 		RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE,
-		RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ,
 		RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE
 	};
 
 	struct ResourceTracker {
 		uint32_t reference_count = 0;
 		int64_t command_frame = -1;
-		int32_t read_command_list_index = -1;
+		int32_t read_full_command_list_index = -1;
+		int32_t read_slice_command_list_index = -1;
 		int32_t write_command_or_list_index = -1;
 		int32_t draw_list_index = -1;
+		ResourceUsage draw_list_usage = RESOURCE_USAGE_NONE;
 		int32_t compute_list_index = -1;
+		ResourceUsage compute_list_usage = RESOURCE_USAGE_NONE;
 		ResourceUsage usage = RESOURCE_USAGE_NONE;
 		BitField<RDD::BarrierAccessBits> usage_access;
 		RDD::BufferID buffer_driver_id;
@@ -171,7 +173,8 @@ public:
 			if (new_command_frame != command_frame) {
 				usage_access.clear();
 				command_frame = new_command_frame;
-				read_command_list_index = -1;
+				read_full_command_list_index = -1;
+				read_slice_command_list_index = -1;
 				write_command_or_list_index = -1;
 				draw_list_index = -1;
 				compute_list_index = -1;
@@ -237,7 +240,7 @@ private:
 		int32_t next_list_index = -1;
 	};
 
-	struct RecordedWriteListNode {
+	struct RecordedSliceListNode {
 		int32_t command_index = -1;
 		int32_t next_list_index = -1;
 		Rect2i subresources;
@@ -572,7 +575,8 @@ private:
 	uint32_t command_count = 0;
 	uint32_t command_label_count = 0;
 	LocalVector<RecordedCommandListNode> command_list_nodes;
-	LocalVector<RecordedWriteListNode> write_list_nodes;
+	LocalVector<RecordedSliceListNode> read_slice_list_nodes;
+	LocalVector<RecordedSliceListNode> write_slice_list_nodes;
 	int32_t command_timestamp_index = -1;
 	int32_t command_synchronization_index = -1;
 	bool command_synchronization_pending = false;
@@ -590,7 +594,8 @@ private:
 	static RDD::BarrierAccessBits _usage_to_access_bits(ResourceUsage p_usage);
 	int32_t _add_to_command_list(int32_t p_command_index, int32_t p_list_index);
 	void _add_adjacent_command(int32_t p_previous_command_index, int32_t p_command_index, RecordedCommand *r_command);
-	int32_t _add_to_write_list(int32_t p_command_index, Rect2i suberesources, int32_t p_list_index);
+	int32_t _add_to_slice_read_list(int32_t p_command_index, Rect2i p_subresources, int32_t p_list_index);
+	int32_t _add_to_write_list(int32_t p_command_index, Rect2i p_subresources, int32_t p_list_index);
 	RecordedCommand *_allocate_command(uint32_t p_command_size, int32_t &r_command_index);
 	DrawListInstruction *_allocate_draw_list_instruction(uint32_t p_instruction_size);
 	ComputeListInstruction *_allocate_compute_list_instruction(uint32_t p_instruction_size);
@@ -614,7 +619,8 @@ private:
 public:
 	RenderingDeviceGraph();
 	~RenderingDeviceGraph();
-	void initialize(RDD *p_driver, uint32_t p_frame_count, uint32_t p_secondary_command_buffers_per_frame);
+	void initialize(RDD *p_driver, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame);
+	void finalize();
 	void begin();
 	void add_buffer_clear(RDD::BufferID p_dst, ResourceTracker *p_dst_tracker, uint32_t p_offset, uint32_t p_size);
 	void add_buffer_copy(RDD::BufferID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, ResourceTracker *p_dst_tracker, RDD::BufferCopyRegion p_region);

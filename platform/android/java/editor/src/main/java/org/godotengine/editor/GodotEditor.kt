@@ -127,7 +127,7 @@ open class GodotEditor : GodotActivity() {
 	 */
 	protected open fun checkForProjectPermissionsToEnable() {
 		// Check for RECORD_AUDIO permission
-		val audioInputEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("audio/driver/enable_input"));
+		val audioInputEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("audio/driver/enable_input"))
 		if (audioInputEnabled) {
 			PermissionsUtil.requestPermission(Manifest.permission.RECORD_AUDIO, this)
 		}

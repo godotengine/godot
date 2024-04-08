@@ -34,10 +34,13 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "editor/debugger/editor_file_server.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/run_instances_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/menu_button.h"
 
 DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
@@ -53,7 +56,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	file_server = memnew(EditorFileServer);
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
-	Button *db = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Debugger"), debugger);
+	Button *db = EditorNode::get_bottom_panel()->add_item(TTR("Debugger"), debugger, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTR("Toggle Debugger Bottom Panel"), KeyModifierMask::ALT | Key::D));
 	debugger->set_tool_button(db);
 
 	// Main editor debug menu.
@@ -74,10 +77,10 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 			TTR("When this option is enabled, curve resources used by path nodes will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, navigation meshes and polygons will be visible in the running project."));
+			TTR("When this option is enabled, navigation meshes, and polygons will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_avoidance", TTR("Visible Avoidance")), RUN_DEBUG_AVOIDANCE);
 	debug_menu->set_item_tooltip(-1,
-			TTR("When this option is enabled, avoidance objects shapes, radius and velocities will be visible in the running project."));
+			TTR("When this option is enabled, avoidance object shapes, radiuses, and velocities will be visible in the running project."));
 	debug_menu->add_separator();
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_canvas_redraw", TTR("Debug CanvasItem Redraws")), RUN_DEBUG_CANVAS_REDRAW);
 	debug_menu->set_item_tooltip(-1,
@@ -93,35 +96,18 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, the editor debug server will stay open and listen for new sessions started outside of the editor itself."));
 
-	// Multi-instance, start/stop
-	instances_menu = memnew(PopupMenu);
-	instances_menu->set_name("RunInstances");
-	instances_menu->set_hide_on_checkable_item_selection(false);
-
-	debug_menu->add_child(instances_menu);
+	// Multi-instance, start/stop.
 	debug_menu->add_separator();
-	debug_menu->add_submenu_item(TTR("Run Multiple Instances"), "RunInstances");
-
-	for (int i = 1; i <= 4; i++) {
-		instances_menu->add_radio_check_item(vformat(TTRN("Run %d Instance", "Run %d Instances", i), i));
-		instances_menu->set_item_metadata(i - 1, i);
-	}
-	instances_menu->set_item_checked(0, true);
-	instances_menu->connect("index_pressed", callable_mp(this, &DebuggerEditorPlugin::_select_run_count));
+	debug_menu->add_item(TTR("Customize Run Instances..."), RUN_MULTIPLE_INSTANCES);
 	debug_menu->connect("id_pressed", callable_mp(this, &DebuggerEditorPlugin::_menu_option));
+
+	run_instances_dialog = memnew(RunInstancesDialog);
+	EditorNode::get_singleton()->get_gui_base()->add_child(run_instances_dialog);
 }
 
 DebuggerEditorPlugin::~DebuggerEditorPlugin() {
 	EditorDebuggerServer::deinitialize();
 	memdelete(file_server);
-}
-
-void DebuggerEditorPlugin::_select_run_count(int p_index) {
-	int len = instances_menu->get_item_count();
-	for (int idx = 0; idx < len; idx++) {
-		instances_menu->set_item_checked(idx, idx == p_index);
-	}
-	EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_instances", instances_menu->get_item_metadata(p_index));
 }
 
 void DebuggerEditorPlugin::_menu_option(int p_option) {
@@ -201,6 +187,10 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "server_keep_open", !ischecked);
 
 		} break;
+		case RUN_MULTIPLE_INSTANCES: {
+			run_instances_dialog->popup_dialog();
+
+		} break;
 	}
 }
 
@@ -227,7 +217,6 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
 	bool check_server_keep_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "server_keep_open", false);
-	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 
 	if (check_deploy_remote) {
 		_menu_option(RUN_DEPLOY_REMOTE_DEBUG);
@@ -258,11 +247,5 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	}
 	if (check_server_keep_open) {
 		_menu_option(SERVER_KEEP_OPEN);
-	}
-
-	int len = instances_menu->get_item_count();
-	for (int idx = 0; idx < len; idx++) {
-		bool checked = (int)instances_menu->get_item_metadata(idx) == instances;
-		instances_menu->set_item_checked(idx, checked);
 	}
 }

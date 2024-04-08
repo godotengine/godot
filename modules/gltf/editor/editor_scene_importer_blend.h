@@ -95,12 +95,14 @@ class EditorFileSystemImportFormatSupportQueryBlend : public EditorFileSystemImp
 	String auto_detected_path;
 	void _validate_path(String p_path);
 
-	bool _autodetect_path(String p_path);
+	bool _autodetect_path();
 
 	void _path_confirmed();
 
 	void _select_install(String p_path);
 	void _browse_install();
+
+	void _update_icons();
 
 public:
 	virtual bool is_active() const override;

@@ -32,22 +32,20 @@
 
 #include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/transform_interpolator.h"
 #include "renderer_viewport.h"
 #include "rendering_server_default.h"
 #include "rendering_server_globals.h"
 #include "servers/rendering/storage/texture_storage.h"
 
-void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, uint32_t p_canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info) {
+void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, uint32_t p_canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info) {
 	RENDER_TIMESTAMP("Cull CanvasItem Tree");
 
 	memset(z_list, 0, z_range * sizeof(RendererCanvasRender::Item *));
 	memset(z_last_list, 0, z_range * sizeof(RendererCanvasRender::Item *));
 
 	for (int i = 0; i < p_child_item_count; i++) {
-		_cull_canvas_item(p_child_items[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr, true, p_canvas_cull_mask);
-	}
-	if (p_canvas_item) {
-		_cull_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr, true, p_canvas_cull_mask);
+		_cull_canvas_item(p_child_items[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, nullptr, nullptr, true, p_canvas_cull_mask, p_child_items[i].mirror, 1);
 	}
 
 	RendererCanvasRender::Item *list = nullptr;
@@ -84,7 +82,7 @@ void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2
 			if (r_items) {
 				r_items[r_index] = child_items[i];
 				child_items[i]->ysort_xform = p_transform;
-				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.columns[2]);
+				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform_curr.columns[2]);
 				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : nullptr;
 				child_items[i]->ysort_modulate = p_modulate;
 				child_items[i]->ysort_index = r_index;
@@ -101,7 +99,7 @@ void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2
 			r_index++;
 
 			if (child_items[i]->sort_y) {
-				_collect_ysort_children(child_items[i], p_transform * child_items[i]->xform, child_items[i]->use_parent_material ? p_material_owner : child_items[i], p_modulate * child_items[i]->modulate, r_items, r_index, abs_z);
+				_collect_ysort_children(child_items[i], p_transform * child_items[i]->xform_curr, child_items[i]->use_parent_material ? p_material_owner : child_items[i], p_modulate * child_items[i]->modulate, r_items, r_index, abs_z);
 			}
 		}
 	}
@@ -223,7 +221,7 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 	}
 }
 
-void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_allow_y_sort, uint32_t p_canvas_cull_mask) {
+void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_parent_xform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RendererCanvasRender::Item **r_z_list, RendererCanvasRender::Item **r_z_last_list, Item *p_canvas_clip, Item *p_material_owner, bool p_allow_y_sort, uint32_t p_canvas_cull_mask, const Point2 &p_repeat_size, int p_repeat_times) {
 	Item *ci = p_canvas_item;
 
 	if (!ci->visible) {
@@ -247,13 +245,40 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		}
 	}
 
-	Transform2D xform = ci->xform;
-	if (snapping_2d_transforms_to_pixel) {
-		xform.columns[2] = xform.columns[2].floor();
+	Transform2D final_xform;
+	if (!_interpolation_data.interpolation_enabled || !ci->interpolated) {
+		final_xform = ci->xform_curr;
+	} else {
+		real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+		TransformInterpolator::interpolate_transform_2d(ci->xform_prev, ci->xform_curr, final_xform, f);
 	}
-	xform = p_transform * xform;
 
-	Rect2 global_rect = xform.xform(rect);
+	Transform2D parent_xform = p_parent_xform;
+
+	Point2 repeat_size = p_repeat_size;
+	int repeat_times = p_repeat_times;
+
+	if (ci->repeat_source) {
+		repeat_size = ci->repeat_size;
+		repeat_times = ci->repeat_times;
+	} else {
+		ci->repeat_size = repeat_size;
+		ci->repeat_times = repeat_times;
+
+		if (repeat_size.x || repeat_size.y) {
+			rect.size += repeat_size * repeat_times / final_xform.get_scale();
+			rect.position -= repeat_size * (repeat_times / 2);
+		}
+	}
+
+	if (snapping_2d_transforms_to_pixel) {
+		final_xform.columns[2] = final_xform.columns[2].round();
+		parent_xform.columns[2] = parent_xform.columns[2].round();
+	}
+
+	final_xform = parent_xform * final_xform;
+
+	Rect2 global_rect = final_xform.xform(rect);
 	global_rect.position += p_clip_rect.position;
 
 	if (ci->use_parent_material && p_material_owner) {
@@ -307,18 +332,20 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			child_item_count = ci->ysort_children_count + 1;
 			child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
+			ci->ysort_xform = final_xform.affine_inverse();
+			ci->ysort_pos = Vector2();
+			ci->ysort_modulate = Color(1, 1, 1, 1);
+			ci->ysort_index = 0;
 			ci->ysort_parent_abs_z_index = parent_z;
 			child_items[0] = ci;
 			int i = 1;
 			_collect_ysort_children(ci, Transform2D(), p_material_owner, Color(1, 1, 1, 1), child_items, i, p_z);
-			ci->ysort_xform = ci->xform.affine_inverse();
-			ci->ysort_modulate = Color(1, 1, 1, 1);
 
 			SortArray<Item *, ItemPtrSort> sorter;
 			sorter.sort(child_items, child_item_count);
 
 			for (i = 0; i < child_item_count; i++) {
-				_cull_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, child_items[i]->ysort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, false, p_canvas_cull_mask);
+				_cull_canvas_item(child_items[i], final_xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, child_items[i]->ysort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, false, p_canvas_cull_mask, repeat_size, repeat_times);
 			}
 		} else {
 			RendererCanvasRender::Item *canvas_group_from = nullptr;
@@ -328,7 +355,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 				canvas_group_from = r_z_last_list[zidx];
 			}
 
-			_attach_canvas_item_for_draw(ci, p_canvas_clip, r_z_list, r_z_last_list, xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from);
+			_attach_canvas_item_for_draw(ci, p_canvas_clip, r_z_list, r_z_last_list, final_xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from);
 		}
 	} else {
 		RendererCanvasRender::Item *canvas_group_from = nullptr;
@@ -342,14 +369,14 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			if (!child_items[i]->behind && !use_canvas_group) {
 				continue;
 			}
-			_cull_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, p_material_owner, true, p_canvas_cull_mask);
+			_cull_canvas_item(child_items[i], final_xform, p_clip_rect, modulate, p_z, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, p_material_owner, true, p_canvas_cull_mask, repeat_size, repeat_times);
 		}
-		_attach_canvas_item_for_draw(ci, p_canvas_clip, r_z_list, r_z_last_list, xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from);
+		_attach_canvas_item_for_draw(ci, p_canvas_clip, r_z_list, r_z_last_list, final_xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from);
 		for (int i = 0; i < child_item_count; i++) {
 			if (child_items[i]->behind || use_canvas_group) {
 				continue;
 			}
-			_cull_canvas_item(child_items[i], xform, p_clip_rect, modulate, p_z, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, p_material_owner, true, p_canvas_cull_mask);
+			_cull_canvas_item(child_items[i], final_xform, p_clip_rect, modulate, p_z, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, p_material_owner, true, p_canvas_cull_mask, repeat_size, repeat_times);
 		}
 	}
 }
@@ -368,38 +395,7 @@ void RendererCanvasCull::render_canvas(RID p_render_target, Canvas *p_canvas, co
 	int l = p_canvas->child_items.size();
 	Canvas::ChildItem *ci = p_canvas->child_items.ptrw();
 
-	bool has_mirror = false;
-	for (int i = 0; i < l; i++) {
-		if (ci[i].mirror.x || ci[i].mirror.y) {
-			has_mirror = true;
-			break;
-		}
-	}
-
-	if (!has_mirror) {
-		_render_canvas_item_tree(p_render_target, ci, l, nullptr, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
-
-	} else {
-		//used for parallaxlayer mirroring
-		for (int i = 0; i < l; i++) {
-			const Canvas::ChildItem &ci2 = p_canvas->child_items[i];
-			_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
-
-			//mirroring (useful for scrolling backgrounds)
-			if (ci2.mirror.x != 0) {
-				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci2.mirror.x, 0));
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
-			}
-			if (ci2.mirror.y != 0) {
-				Transform2D xform2 = p_transform * Transform2D(0, Vector2(0, ci2.mirror.y));
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
-			}
-			if (ci2.mirror.y != 0 && ci2.mirror.x != 0) {
-				Transform2D xform2 = p_transform * Transform2D(0, ci2.mirror);
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
-			}
-		}
-	}
+	_render_canvas_item_tree(p_render_target, ci, l, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel, canvas_cull_mask, r_render_info);
 
 	RENDER_TIMESTAMP("< Render Canvas");
 }
@@ -424,6 +420,15 @@ void RendererCanvasCull::canvas_set_item_mirroring(RID p_canvas, RID p_item, con
 	int idx = canvas->find_item(canvas_item);
 	ERR_FAIL_COND(idx == -1);
 	canvas->child_items.write[idx].mirror = p_mirroring;
+}
+
+void RendererCanvasCull::canvas_set_item_repeat(RID p_item, const Point2 &p_repeat_size, int p_repeat_times) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->repeat_source = true;
+	canvas_item->repeat_size = p_repeat_size;
+	canvas_item->repeat_times = p_repeat_times;
 }
 
 void RendererCanvasCull::canvas_set_modulate(RID p_canvas, const Color &p_color) {
@@ -515,7 +520,16 @@ void RendererCanvasCull::canvas_item_set_transform(RID p_item, const Transform2D
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
-	canvas_item->xform = p_transform;
+	if (_interpolation_data.interpolation_enabled && canvas_item->interpolated) {
+		if (!canvas_item->on_interpolate_transform_list) {
+			_interpolation_data.canvas_item_transform_update_list_curr->push_back(p_item);
+			canvas_item->on_interpolate_transform_list = true;
+		} else {
+			DEV_ASSERT(_interpolation_data.canvas_item_transform_update_list_curr->size() > 0);
+		}
+	}
+
+	canvas_item->xform_curr = p_transform;
 }
 
 void RendererCanvasCull::canvas_item_set_visibility_layer(RID p_item, uint32_t p_visibility_layer) {
@@ -1625,6 +1639,26 @@ bool RendererCanvasCull::canvas_item_get_debug_redraw() const {
 	return debug_redraw;
 }
 
+void RendererCanvasCull::canvas_item_set_interpolated(RID p_item, bool p_interpolated) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+	canvas_item->interpolated = p_interpolated;
+}
+
+void RendererCanvasCull::canvas_item_reset_physics_interpolation(RID p_item) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+	canvas_item->xform_prev = canvas_item->xform_curr;
+}
+
+// Useful especially for origin shifting.
+void RendererCanvasCull::canvas_item_transform_physics_interpolation(RID p_item, const Transform2D &p_transform) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+	canvas_item->xform_prev = p_transform * canvas_item->xform_prev;
+	canvas_item->xform_curr = p_transform * canvas_item->xform_curr;
+}
+
 void RendererCanvasCull::canvas_item_set_canvas_group_mode(RID p_item, RS::CanvasGroupMode p_mode, float p_clear_margin, bool p_fit_empty, float p_fit_margin, bool p_blur_mipmaps) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
@@ -1723,7 +1757,16 @@ void RendererCanvasCull::canvas_light_set_transform(RID p_light, const Transform
 	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(clight);
 
-	clight->xform = p_transform;
+	if (_interpolation_data.interpolation_enabled && clight->interpolated) {
+		if (!clight->on_interpolate_transform_list) {
+			_interpolation_data.canvas_light_transform_update_list_curr->push_back(p_light);
+			clight->on_interpolate_transform_list = true;
+		} else {
+			DEV_ASSERT(_interpolation_data.canvas_light_transform_update_list_curr->size() > 0);
+		}
+	}
+
+	clight->xform_curr = p_transform;
 }
 
 void RendererCanvasCull::canvas_light_set_texture(RID p_light, RID p_texture) {
@@ -1842,6 +1885,25 @@ void RendererCanvasCull::canvas_light_set_shadow_smooth(RID p_light, float p_smo
 	clight->shadow_smooth = p_smooth;
 }
 
+void RendererCanvasCull::canvas_light_set_interpolated(RID p_light, bool p_interpolated) {
+	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(clight);
+	clight->interpolated = p_interpolated;
+}
+
+void RendererCanvasCull::canvas_light_reset_physics_interpolation(RID p_light) {
+	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(clight);
+	clight->xform_prev = clight->xform_curr;
+}
+
+void RendererCanvasCull::canvas_light_transform_physics_interpolation(RID p_light, const Transform2D &p_transform) {
+	RendererCanvasRender::Light *clight = canvas_light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(clight);
+	clight->xform_prev = p_transform * clight->xform_prev;
+	clight->xform_curr = p_transform * clight->xform_curr;
+}
+
 RID RendererCanvasCull::canvas_light_occluder_allocate() {
 	return canvas_light_occluder_owner.allocate_rid();
 }
@@ -1914,7 +1976,16 @@ void RendererCanvasCull::canvas_light_occluder_set_transform(RID p_occluder, con
 	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
 	ERR_FAIL_NULL(occluder);
 
-	occluder->xform = p_xform;
+	if (_interpolation_data.interpolation_enabled && occluder->interpolated) {
+		if (!occluder->on_interpolate_transform_list) {
+			_interpolation_data.canvas_light_occluder_transform_update_list_curr->push_back(p_occluder);
+			occluder->on_interpolate_transform_list = true;
+		} else {
+			DEV_ASSERT(_interpolation_data.canvas_light_occluder_transform_update_list_curr->size() > 0);
+		}
+	}
+
+	occluder->xform_curr = p_xform;
 }
 
 void RendererCanvasCull::canvas_light_occluder_set_light_mask(RID p_occluder, int p_mask) {
@@ -1922,6 +1993,25 @@ void RendererCanvasCull::canvas_light_occluder_set_light_mask(RID p_occluder, in
 	ERR_FAIL_NULL(occluder);
 
 	occluder->light_mask = p_mask;
+}
+
+void RendererCanvasCull::canvas_light_occluder_set_interpolated(RID p_occluder, bool p_interpolated) {
+	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
+	ERR_FAIL_NULL(occluder);
+	occluder->interpolated = p_interpolated;
+}
+
+void RendererCanvasCull::canvas_light_occluder_reset_physics_interpolation(RID p_occluder) {
+	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
+	ERR_FAIL_NULL(occluder);
+	occluder->xform_prev = occluder->xform_curr;
+}
+
+void RendererCanvasCull::canvas_light_occluder_transform_physics_interpolation(RID p_occluder, const Transform2D &p_transform) {
+	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
+	ERR_FAIL_NULL(occluder);
+	occluder->xform_prev = p_transform * occluder->xform_prev;
+	occluder->xform_curr = p_transform * occluder->xform_curr;
 }
 
 RID RendererCanvasCull::canvas_occluder_polygon_allocate() {
@@ -2078,6 +2168,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 	} else if (canvas_item_owner.owns(p_rid)) {
 		Item *canvas_item = canvas_item_owner.get_or_null(p_rid);
 		ERR_FAIL_NULL_V(canvas_item, true);
+		_interpolation_data.notify_free_canvas_item(p_rid, *canvas_item);
 
 		if (canvas_item->parent.is_valid()) {
 			if (canvas_owner.owns(canvas_item->parent)) {
@@ -2117,6 +2208,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 	} else if (canvas_light_owner.owns(p_rid)) {
 		RendererCanvasRender::Light *canvas_light = canvas_light_owner.get_or_null(p_rid);
 		ERR_FAIL_NULL_V(canvas_light, true);
+		_interpolation_data.notify_free_canvas_light(p_rid, *canvas_light);
 
 		if (canvas_light->canvas.is_valid()) {
 			Canvas *canvas = canvas_owner.get_or_null(canvas_light->canvas);
@@ -2132,6 +2224,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 	} else if (canvas_light_occluder_owner.owns(p_rid)) {
 		RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_rid);
 		ERR_FAIL_NULL_V(occluder, true);
+		_interpolation_data.notify_free_canvas_light_occluder(p_rid, *occluder);
 
 		if (occluder->polygon.is_valid()) {
 			LightOccluderPolygon *occluder_poly = canvas_light_occluder_polygon_owner.get_or_null(occluder->polygon);
@@ -2165,7 +2258,7 @@ bool RendererCanvasCull::free(RID p_rid) {
 	return true;
 }
 
-template <class T>
+template <typename T>
 void RendererCanvasCull::_free_rids(T &p_owner, const char *p_type) {
 	List<RID> owned;
 	p_owner.get_owned_list(&owned);
@@ -2187,6 +2280,81 @@ void RendererCanvasCull::finalize() {
 	_free_rids(canvas_light_owner, "CanvasLight");
 	_free_rids(canvas_light_occluder_owner, "CanvasLightOccluder");
 	_free_rids(canvas_light_occluder_polygon_owner, "CanvasLightOccluderPolygon");
+}
+
+void RendererCanvasCull::tick() {
+	if (_interpolation_data.interpolation_enabled) {
+		update_interpolation_tick(true);
+	}
+}
+
+void RendererCanvasCull::update_interpolation_tick(bool p_process) {
+#define GODOT_UPDATE_INTERPOLATION_TICK(m_list_prev, m_list_curr, m_type, m_owner_list)      \
+	/* Detect any that were on the previous transform list that are no longer active. */     \
+	for (unsigned int n = 0; n < _interpolation_data.m_list_prev->size(); n++) {             \
+		const RID &rid = (*_interpolation_data.m_list_prev)[n];                              \
+		m_type *item = m_owner_list.get_or_null(rid);                                        \
+		/* no longer active? (either the instance deleted or no longer being transformed) */ \
+		if (item && !item->on_interpolate_transform_list) {                                  \
+			item->xform_prev = item->xform_curr;                                             \
+		}                                                                                    \
+	}                                                                                        \
+	/* and now for any in the transform list (being actively interpolated), */               \
+	/* keep the previous transform value up to date and ready for next tick */               \
+	if (p_process) {                                                                         \
+		for (unsigned int n = 0; n < _interpolation_data.m_list_curr->size(); n++) {         \
+			const RID &rid = (*_interpolation_data.m_list_curr)[n];                          \
+			m_type *item = m_owner_list.get_or_null(rid);                                    \
+			if (item) {                                                                      \
+				item->xform_prev = item->xform_curr;                                         \
+				item->on_interpolate_transform_list = false;                                 \
+			}                                                                                \
+		}                                                                                    \
+	}                                                                                        \
+	SWAP(_interpolation_data.m_list_curr, _interpolation_data.m_list_prev);                  \
+	_interpolation_data.m_list_curr->clear();
+
+	GODOT_UPDATE_INTERPOLATION_TICK(canvas_item_transform_update_list_prev, canvas_item_transform_update_list_curr, Item, canvas_item_owner);
+	GODOT_UPDATE_INTERPOLATION_TICK(canvas_light_transform_update_list_prev, canvas_light_transform_update_list_curr, RendererCanvasRender::Light, canvas_light_owner);
+	GODOT_UPDATE_INTERPOLATION_TICK(canvas_light_occluder_transform_update_list_prev, canvas_light_occluder_transform_update_list_curr, RendererCanvasRender::LightOccluderInstance, canvas_light_occluder_owner);
+
+#undef GODOT_UPDATE_INTERPOLATION_TICK
+}
+
+void RendererCanvasCull::InterpolationData::notify_free_canvas_item(RID p_rid, RendererCanvasCull::Item &r_canvas_item) {
+	r_canvas_item.on_interpolate_transform_list = false;
+
+	if (!interpolation_enabled) {
+		return;
+	}
+
+	// If the instance was on any of the lists, remove.
+	canvas_item_transform_update_list_curr->erase_multiple_unordered(p_rid);
+	canvas_item_transform_update_list_prev->erase_multiple_unordered(p_rid);
+}
+
+void RendererCanvasCull::InterpolationData::notify_free_canvas_light(RID p_rid, RendererCanvasRender::Light &r_canvas_light) {
+	r_canvas_light.on_interpolate_transform_list = false;
+
+	if (!interpolation_enabled) {
+		return;
+	}
+
+	// If the instance was on any of the lists, remove.
+	canvas_light_transform_update_list_curr->erase_multiple_unordered(p_rid);
+	canvas_light_transform_update_list_prev->erase_multiple_unordered(p_rid);
+}
+
+void RendererCanvasCull::InterpolationData::notify_free_canvas_light_occluder(RID p_rid, RendererCanvasRender::LightOccluderInstance &r_canvas_light_occluder) {
+	r_canvas_light_occluder.on_interpolate_transform_list = false;
+
+	if (!interpolation_enabled) {
+		return;
+	}
+
+	// If the instance was on any of the lists, remove.
+	canvas_light_occluder_transform_update_list_curr->erase_multiple_unordered(p_rid);
+	canvas_light_occluder_transform_update_list_prev->erase_multiple_unordered(p_rid);
 }
 
 RendererCanvasCull::RendererCanvasCull() {

@@ -34,6 +34,7 @@
 #include "../gdscript_analyzer.h"
 #include "../gdscript_compiler.h"
 #include "../gdscript_parser.h"
+#include "../gdscript_tokenizer_buffer.h"
 
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
@@ -131,10 +132,11 @@ void finish_language() {
 
 StringName GDScriptTestRunner::test_function_name;
 
-GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_language, bool p_print_filenames) {
+GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_language, bool p_print_filenames, bool p_use_binary_tokens) {
 	test_function_name = StaticCString::create("test");
 	do_init_languages = p_init_language;
 	print_filenames = p_print_filenames;
+	binary_tokens = p_use_binary_tokens;
 
 	source_dir = p_source_dir;
 	if (!source_dir.ends_with("/")) {
@@ -277,6 +279,9 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 			if (next.ends_with(".notest.gd")) {
 				next = dir->get_next();
 				continue;
+			} else if (binary_tokens && next.ends_with(".textonly.gd")) {
+				next = dir->get_next();
+				continue;
 			} else if (next.get_extension().to_lower() == "gd") {
 #ifndef DEBUG_ENABLED
 				// On release builds, skip tests marked as debug only.
@@ -299,6 +304,9 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 					ERR_FAIL_V_MSG(false, "Could not find output file for " + next);
 				}
 				GDScriptTest test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
+				if (binary_tokens) {
+					test.set_tokenizer_mode(GDScriptTest::TOKENIZER_BUFFER);
+				}
 				tests.push_back(test);
 			}
 		}
@@ -321,22 +329,63 @@ bool GDScriptTestRunner::make_tests() {
 	return make_tests_for_dir(dir->get_current_dir());
 }
 
-bool GDScriptTestRunner::generate_class_index() {
-	StringName gdscript_name = GDScriptLanguage::get_singleton()->get_name();
-	for (int i = 0; i < tests.size(); i++) {
-		GDScriptTest test = tests[i];
-		String base_type;
+static bool generate_class_index_recursive(const String &p_dir) {
+	Error err = OK;
+	Ref<DirAccess> dir(DirAccess::open(p_dir, &err));
 
-		String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(test.get_source_file(), &base_type);
-		if (class_name.is_empty()) {
-			continue;
-		}
-		ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,
-				"Class name '" + class_name + "' from " + test.get_source_file() + " is already used in " + ScriptServer::get_global_class_path(class_name));
-
-		ScriptServer::add_global_class(class_name, base_type, gdscript_name, test.get_source_file());
+	if (err != OK) {
+		return false;
 	}
+
+	String current_dir = dir->get_current_dir();
+
+	dir->list_dir_begin();
+	String next = dir->get_next();
+
+	StringName gdscript_name = GDScriptLanguage::get_singleton()->get_name();
+	while (!next.is_empty()) {
+		if (dir->current_is_dir()) {
+			if (next == "." || next == ".." || next == "completion" || next == "lsp") {
+				next = dir->get_next();
+				continue;
+			}
+			if (!generate_class_index_recursive(current_dir.path_join(next))) {
+				return false;
+			}
+		} else {
+			if (!next.ends_with(".gd")) {
+				next = dir->get_next();
+				continue;
+			}
+			String base_type;
+			String source_file = current_dir.path_join(next);
+			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(source_file, &base_type);
+			if (class_name.is_empty()) {
+				next = dir->get_next();
+				continue;
+			}
+			ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,
+					"Class name '" + class_name + "' from " + source_file + " is already used in " + ScriptServer::get_global_class_path(class_name));
+
+			ScriptServer::add_global_class(class_name, base_type, gdscript_name, source_file);
+		}
+
+		next = dir->get_next();
+	}
+
+	dir->list_dir_end();
+
 	return true;
+}
+
+bool GDScriptTestRunner::generate_class_index() {
+	Error err = OK;
+	Ref<DirAccess> dir(DirAccess::open(source_dir, &err));
+
+	ERR_FAIL_COND_V_MSG(err != OK, false, "Could not open specified test directory.");
+
+	source_dir = dir->get_current_dir() + "/"; // Make it absolute path.
+	return generate_class_index_recursive(dir->get_current_dir());
 }
 
 GDScriptTest::GDScriptTest(const String &p_source_path, const String &p_output_path, const String &p_base_dir) {
@@ -484,7 +533,15 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	Ref<GDScript> script;
 	script.instantiate();
 	script->set_path(source_file);
-	err = script->load_source_code(source_file);
+	if (tokenizer_mode == TOKENIZER_TEXT) {
+		err = script->load_source_code(source_file);
+	} else {
+		String code = FileAccess::get_file_as_string(source_file, &err);
+		if (!err) {
+			Vector<uint8_t> buffer = GDScriptTokenizerBuffer::parse_code_string(code, GDScriptTokenizerBuffer::COMPRESS_ZSTD);
+			script->set_binary_tokens_source(buffer);
+		}
+	}
 	if (err != OK) {
 		enable_stdout();
 		result.status = GDTEST_LOAD_ERROR;
@@ -494,7 +551,11 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 
 	// Test parsing.
 	GDScriptParser parser;
-	err = parser.parse(script->get_source_code(), source_file, false);
+	if (tokenizer_mode == TOKENIZER_TEXT) {
+		err = parser.parse(script->get_source_code(), source_file, false);
+	} else {
+		err = parser.parse_binary(script->get_binary_tokens_source(), source_file);
+	}
 	if (err != OK) {
 		enable_stdout();
 		result.status = GDTEST_PARSER_ERROR;
@@ -583,7 +644,14 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	add_print_handler(&_print_handler);
 	add_error_handler(&_error_handler);
 
-	script->reload();
+	err = script->reload();
+	if (err) {
+		enable_stdout();
+		result.status = GDTEST_LOAD_ERROR;
+		result.output = "";
+		result.passed = false;
+		ERR_FAIL_V_MSG(result, "\nCould not reload script: '" + source_file + "'");
+	}
 
 	// Create object instance for test.
 	Object *obj = ClassDB::instantiate(script->get_native()->get_name());

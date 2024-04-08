@@ -51,8 +51,8 @@
 #define _USE_MATH_DEFINES       //Math Constants are not defined in Standard C/C++.
 
 #include <cstring>
-#include <math.h>
 #include <ctype.h>
+#include "tvgMath.h"
 #include "tvgShape.h"
 #include "tvgSvgLoaderCommon.h"
 #include "tvgSvgPath.h"
@@ -121,9 +121,6 @@ void _pathAppendArcTo(Array<PathCommand>* cmds, Array<Point>* pts, Point* cur, P
     //http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
     sx = cur->x;
     sy = cur->y;
-
-    //If start and end points are identical, then no arc is drawn
-    if ((fabsf(x - sx) < (1.0f / 256.0f)) && (fabsf(y - sy) < (1.0f / 256.0f))) return;
 
     //Correction of out-of-range radii, see F6.6.1 (step 2)
     rx = fabsf(rx);
@@ -471,9 +468,16 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
         }
         case 'a':
         case 'A': {
-            _pathAppendArcTo(cmds, pts, cur, curCtl, arr[5], arr[6], arr[0], arr[1], arr[2], arr[3], arr[4]);
-            *cur = *curCtl = {arr[5], arr[6]};
-            *isQuadratic = false;
+            if (mathZero(arr[0]) || mathZero(arr[1])) {
+                Point p = {arr[5], arr[6]};
+                cmds->push(PathCommand::LineTo);
+                pts->push(p);
+                *cur = {arr[5], arr[6]};
+            } else if (!mathEqual(cur->x, arr[5]) || !mathEqual(cur->y, arr[6])) {
+                _pathAppendArcTo(cmds, pts, cur, curCtl, arr[5], arr[6], fabsf(arr[0]), fabsf(arr[1]), arr[2], arr[3], arr[4]);
+                *cur = *curCtl = {arr[5], arr[6]};
+                *isQuadratic = false;
+            }
             break;
         }
         default: {

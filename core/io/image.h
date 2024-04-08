@@ -426,12 +426,16 @@ public:
 	void set_pixelv(const Point2i &p_point, const Color &p_color);
 	void set_pixel(int p_x, int p_y, const Color &p_color);
 
+	const uint8_t *ptr() const;
+	uint8_t *ptrw();
+	int64_t data_size() const;
+
 	void adjust_bcs(float p_brightness, float p_contrast, float p_saturation);
 
 	void set_as_black();
 
 	void copy_internals_from(const Ref<Image> &p_image) {
-		ERR_FAIL_COND_MSG(p_image.is_null(), "It's not a reference to a valid Image object.");
+		ERR_FAIL_COND_MSG(p_image.is_null(), "Cannot copy image internals: invalid Image object.");
 		format = p_image->format;
 		width = p_image->width;
 		height = p_image->height;

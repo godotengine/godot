@@ -439,6 +439,12 @@ struct cff2_subset_plan
     desubroutinize = plan->flags & HB_SUBSET_FLAGS_DESUBROUTINIZE ||
 		     pinned; // For instancing we need this path
 
+ #ifdef HB_EXPERIMENTAL_API
+    min_charstrings_off_size = (plan->flags & HB_SUBSET_FLAGS_IFTB_REQUIREMENTS) ? 4 : 0;
+ #else
+    min_charstrings_off_size = 0;
+ #endif
+
     if (desubroutinize)
     {
       /* Flatten global & local subrs */
@@ -510,14 +516,45 @@ struct cff2_subset_plan
 
   bool	    drop_hints = false;
   bool	    desubroutinize = false;
+
+  unsigned  min_charstrings_off_size = 0;
 };
 } // namespace OT
+
+static bool _serialize_cff2_charstrings (hb_serialize_context_t *c,
+			     cff2_subset_plan &plan,
+			     const OT::cff2::accelerator_subset_t  &acc)
+{
+  c->push ();
+
+  unsigned data_size = 0;
+  unsigned total_size = CFF2CharStrings::total_size (plan.subset_charstrings, &data_size, plan.min_charstrings_off_size);
+  if (unlikely (!c->start_zerocopy (total_size)))
+    return false;
+
+  auto *cs = c->start_embed<CFF2CharStrings> ();
+  if (unlikely (!cs->serialize (c, plan.subset_charstrings, &data_size, plan.min_charstrings_off_size)))
+  {
+    c->pop_discard ();
+    return false;
+  }
+
+  plan.info.char_strings_link = c->pop_pack (false);
+  return true;
+}
 
 bool
 OT::cff2::accelerator_subset_t::serialize (hb_serialize_context_t *c,
 					   struct cff2_subset_plan &plan,
 					   hb_array_t<int> normalized_coords) const
 {
+  /* push charstrings onto the object stack first which will ensure it packs as the last
+     object in the table. Keeping the chastrings last satisfies the requirements for patching
+     via IFTB. If this ordering needs to be changed in the future, charstrings should be left
+     at the end whenever HB_SUBSET_FLAGS_ITFB_REQUIREMENTS is enabled. */
+  if (!_serialize_cff2_charstrings(c, plan, *this))
+    return false;
+
   /* private dicts & local subrs */
   hb_vector_t<table_info_t>  private_dict_infos;
   if (unlikely (!private_dict_infos.resize (plan.subset_fdcount))) return false;
@@ -553,25 +590,6 @@ OT::cff2::accelerator_subset_t::serialize (hb_serialize_context_t *c,
 	c->pop_discard ();
 	return false;
       }
-    }
-  }
-
-  /* CharStrings */
-  {
-    c->push ();
-
-    unsigned data_size = 0;
-    unsigned total_size = CFF2CharStrings::total_size (plan.subset_charstrings, &data_size);
-    if (unlikely (!c->start_zerocopy (total_size)))
-       return false;
-
-    auto *cs = c->start_embed<CFF2CharStrings> ();
-    if (likely (cs->serialize (c, plan.subset_charstrings, &data_size)))
-      plan.info.char_strings_link = c->pop_pack (false);
-    else
-    {
-      c->pop_discard ();
-      return false;
     }
   }
 

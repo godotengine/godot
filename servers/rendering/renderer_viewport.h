@@ -37,8 +37,11 @@
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering_server.h"
-#include "servers/xr/xr_interface.h"
 #include "storage/render_scene_buffers.h"
+
+#ifndef _3D_DISABLED
+#include "servers/xr/xr_interface.h"
+#endif // _3D_DISABLED
 
 class RendererViewport {
 public:
@@ -233,6 +236,7 @@ public:
 	void viewport_set_texture_mipmap_bias(RID p_viewport, float p_mipmap_bias);
 
 	void viewport_set_update_mode(RID p_viewport, RS::ViewportUpdateMode p_mode);
+	RS::ViewportUpdateMode viewport_get_update_mode(RID p_viewport) const;
 	void viewport_set_vflip(RID p_viewport, bool p_enable);
 
 	void viewport_set_clear_mode(RID p_viewport, RS::ViewportClearMode p_clear_mode);

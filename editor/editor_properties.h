@@ -116,11 +116,11 @@ class EditorPropertyTextEnum : public EditorProperty {
 	bool string_name = false;
 	bool loose_mode = false;
 
-	void _emit_changed_value(String p_string);
+	void _emit_changed_value(const String &p_string);
 	void _option_selected(int p_which);
 
 	void _edit_custom_value();
-	void _custom_value_submitted(String p_value);
+	void _custom_value_submitted(const String &p_value);
 	void _custom_value_accepted();
 	void _custom_value_canceled();
 
@@ -621,10 +621,10 @@ class EditorPropertyColor : public EditorProperty {
 	ColorPickerButton *picker = nullptr;
 	void _color_changed(const Color &p_color);
 	void _popup_closed();
-	void _picker_created();
 	void _picker_opening();
 
 	Color last_color;
+	bool live_changes_enabled = true;
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -633,6 +633,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(bool p_show_alpha);
+	void set_live_changes_enabled(bool p_enabled);
 	EditorPropertyColor();
 };
 
@@ -677,7 +678,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root = true, bool p_editing_node = false);
+	void setup(const NodePath &p_base_hint, const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root = true, bool p_editing_node = false);
 	EditorPropertyNodePath();
 };
 

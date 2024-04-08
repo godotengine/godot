@@ -60,6 +60,9 @@ public:
 	void set_texture_rd_rid(RID p_texture_rd_rid);
 	RID get_texture_rd_rid() const;
 
+	// Internal function that should only be called from the rendering thread.
+	void _set_texture_rd_rid(RID p_texture_rd_rid);
+
 	Texture2DRD();
 	~Texture2DRD();
 };
@@ -93,6 +96,9 @@ public:
 
 	void set_texture_rd_rid(RID p_texture_rd_rid);
 	RID get_texture_rd_rid() const;
+
+	// Internal function that should only be called from the rendering thread.
+	void _set_texture_rd_rid(RID p_texture_rd_rid);
 
 	TextureLayeredRD(LayeredType p_layer_type);
 	~TextureLayeredRD();
@@ -145,6 +151,9 @@ public:
 
 	void set_texture_rd_rid(RID p_texture_rd_rid);
 	RID get_texture_rd_rid() const;
+
+	// Internal function that should only be called from the rendering thread.
+	void _set_texture_rd_rid(RID p_texture_rd_rid);
 
 	Texture3DRD();
 	~Texture3DRD();

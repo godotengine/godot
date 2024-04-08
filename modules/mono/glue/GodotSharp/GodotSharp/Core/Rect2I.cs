@@ -113,8 +113,8 @@ namespace Godot
         public readonly bool Encloses(Rect2I b)
         {
             return b._position.X >= _position.X && b._position.Y >= _position.Y &&
-               b._position.X + b._size.X < _position.X + _size.X &&
-               b._position.Y + b._size.Y < _position.Y + _size.Y;
+               b._position.X + b._size.X <= _position.X + _size.X &&
+               b._position.Y + b._size.Y <= _position.Y + _size.Y;
         }
 
         /// <summary>
@@ -429,10 +429,7 @@ namespace Godot
         /// Converts this <see cref="Rect2I"/> to a string.
         /// </summary>
         /// <returns>A string representation of this rect.</returns>
-        public override readonly string ToString()
-        {
-            return $"{_position}, {_size}";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Rect2I"/> to a string with the given <paramref name="format"/>.

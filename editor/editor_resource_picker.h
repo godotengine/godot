@@ -99,7 +99,7 @@ class EditorResourcePicker : public HBoxContainer {
 	String _get_resource_type(const Ref<Resource> &p_resource) const;
 	void _get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const;
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
-	bool _is_type_valid(const String p_type_name, const HashSet<StringName> &p_allowed_types) const;
+	bool _is_type_valid(const String &p_type_name, const HashSet<StringName> &p_allowed_types) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

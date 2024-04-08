@@ -6,7 +6,7 @@ import subprocess
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from SCons import Environment
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -28,6 +28,7 @@ def get_opts():
             "android-" + str(get_min_target_api()),
         ),
         BoolVariable("store_release", "Editor build for Google Play Store (for official builds only)", False),
+        BoolVariable("generate_apk", "Generate an APK/AAB after building Android library by calling Gradle", False),
     ]
 
 
@@ -50,7 +51,7 @@ def get_min_sdk_version(platform):
     return int(platform.split("-")[1])
 
 
-def get_android_ndk_root(env):
+def get_android_ndk_root(env: "SConsEnvironment"):
     return env["ANDROID_HOME"] + "/ndk/" + get_ndk_version()
 
 
@@ -68,12 +69,13 @@ def get_flags():
     return [
         ("arch", "arm64"),  # Default for convenience.
         ("target", "template_debug"),
+        ("supported", ["mono"]),
     ]
 
 
 # Check if Android NDK version is installed
 # If not, install it.
-def install_ndk_if_needed(env):
+def install_ndk_if_needed(env: "SConsEnvironment"):
     print("Checking for Android NDK...")
     sdk_root = env["ANDROID_HOME"]
     if not os.path.exists(get_android_ndk_root(env)):
@@ -95,7 +97,7 @@ def install_ndk_if_needed(env):
     env["ANDROID_NDK_ROOT"] = get_android_ndk_root(env)
 
 
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:

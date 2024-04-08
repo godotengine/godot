@@ -23,9 +23,9 @@
 #ifndef _TVG_RENDER_H_
 #define _TVG_RENDER_H_
 
-#include <mutex>
 #include "tvgCommon.h"
 #include "tvgArray.h"
+#include "tvgLock.h"
 
 namespace tvg
 {
@@ -54,12 +54,12 @@ struct Surface
         uint32_t* buf32;            //for explicit 32bits channels
         uint8_t*  buf8;             //for explicit 8bits grayscale
     };
-    mutex mtx;                      //used for thread safety
+    Key key;                        //a reserved lock for the thread safety
     uint32_t stride = 0;
     uint32_t w = 0, h = 0;
     ColorSpace cs = ColorSpace::Unsupported;
     uint8_t channelSize = 0;
-    bool premultiplied = 0;         //Alpha-premultiplied
+    bool premultiplied = false;         //Alpha-premultiplied
 
     Surface()
     {
@@ -261,7 +261,23 @@ struct RenderShape
 
 class RenderMethod
 {
+private:
+    uint32_t refCnt = 0;        //reference count
+    Key key;
+
 public:
+    uint32_t ref()
+    {
+        ScopedLock lock(key);
+        return (++refCnt);
+    }
+
+    uint32_t unref()
+    {
+        ScopedLock lock(key);
+        return (--refCnt);
+    }
+
     virtual ~RenderMethod() {}
     virtual RenderData prepare(const RenderShape& rshape, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
     virtual RenderData prepare(const Array<RenderData>& scene, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags) = 0;
@@ -270,7 +286,7 @@ public:
     virtual bool renderShape(RenderData data) = 0;
     virtual bool renderImage(RenderData data) = 0;
     virtual bool postRender() = 0;
-    virtual bool dispose(RenderData data) = 0;
+    virtual void dispose(RenderData data) = 0;
     virtual RenderRegion region(RenderData data) = 0;
     virtual RenderRegion viewport() = 0;
     virtual bool viewport(const RenderRegion& vp) = 0;
@@ -322,7 +338,7 @@ static inline uint8_t CHANNEL_SIZE(ColorSpace cs)
     }
 }
 
-static inline ColorSpace COMPOSITE_TO_COLORSPACE(RenderMethod& renderer, CompositeMethod method)
+static inline ColorSpace COMPOSITE_TO_COLORSPACE(RenderMethod* renderer, CompositeMethod method)
 {
     switch(method) {
         case CompositeMethod::AlphaMask:
@@ -335,7 +351,7 @@ static inline ColorSpace COMPOSITE_TO_COLORSPACE(RenderMethod& renderer, Composi
         //TODO: Optimize Luma/InvLuma colorspace to Grayscale8
         case CompositeMethod::LumaMask:
         case CompositeMethod::InvLumaMask:
-            return renderer.colorSpace();
+            return renderer->colorSpace();
         default:
             TVGERR("RENDERER", "Unsupported Composite Size! = %d", (int)method);
             return ColorSpace::Unsupported;

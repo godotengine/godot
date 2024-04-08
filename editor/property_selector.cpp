@@ -34,7 +34,7 @@
 #include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tree.h"
@@ -557,6 +557,7 @@ PropertySelector::PropertySelector() {
 	search_box->connect("text_changed", callable_mp(this, &PropertySelector::_text_changed));
 	search_box->connect("gui_input", callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
+	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	set_ok_button_text(TTR("Open"));
 	get_ok_button()->set_disabled(true);

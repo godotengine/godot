@@ -99,7 +99,7 @@ void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_c
 	}
 
 	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-		dest_offset = dest_offset.floor();
+		dest_offset = dest_offset.round();
 	}
 
 	r_dst_rect = Rect2(dest_offset, frame_size);
@@ -374,8 +374,7 @@ bool Sprite2D::is_pixel_opaque(const Point2 &p_point) const {
 			q.y = texture->get_size().height - q.y - 1;
 		}
 	} else {
-		q.x = MIN(q.x, texture->get_size().width - 1);
-		q.y = MIN(q.y, texture->get_size().height - 1);
+		q = q.min(texture->get_size() - Vector2(1, 1));
 	}
 
 	return texture->is_pixel_opaque((int)q.x, (int)q.y);
@@ -402,7 +401,7 @@ Rect2 Sprite2D::get_rect() const {
 	}
 
 	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-		ofs = ofs.floor();
+		ofs = ofs.round();
 	}
 
 	if (s == Size2(0, 0)) {

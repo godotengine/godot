@@ -34,13 +34,13 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
-#include "scene/resources/importer_mesh.h"
+#include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
 
 class SceneImportSettingsData : public Object {
@@ -50,6 +50,8 @@ class SceneImportSettingsData : public Object {
 	HashMap<StringName, Variant> current;
 	HashMap<StringName, Variant> defaults;
 	List<ResourceImporter::ImportOption> options;
+	Vector<String> animation_list;
+
 	bool hide_options = false;
 	String path;
 
@@ -96,6 +98,7 @@ class SceneImportSettingsData : public Object {
 		}
 		return false;
 	}
+
 	bool _get(const StringName &p_name, Variant &r_ret) const {
 		if (settings) {
 			if (settings->has(p_name)) {
@@ -109,29 +112,81 @@ class SceneImportSettingsData : public Object {
 		}
 		return false;
 	}
-	void _get_property_list(List<PropertyInfo> *p_list) const {
+
+	void handle_special_properties(PropertyInfo &r_option) const {
+		ERR_FAIL_NULL(settings);
+		if (r_option.name == "rest_pose/load_pose") {
+			if (!settings->has("rest_pose/load_pose") || int((*settings)["rest_pose/load_pose"]) != 2) {
+				(*settings)["rest_pose/external_animation_library"] = Variant();
+			}
+		}
+		if (r_option.name == "rest_pose/selected_animation") {
+			if (!settings->has("rest_pose/load_pose")) {
+				return;
+			}
+			String hint_string;
+
+			switch (int((*settings)["rest_pose/load_pose"])) {
+				case 1: {
+					hint_string = String(",").join(animation_list);
+					if (animation_list.size() == 1) {
+						(*settings)["rest_pose/selected_animation"] = animation_list[0];
+					}
+				} break;
+				case 2: {
+					Object *res = (*settings)["rest_pose/external_animation_library"];
+					Ref<Animation> anim(res);
+					Ref<AnimationLibrary> library(res);
+					if (anim.is_valid()) {
+						hint_string = anim->get_name();
+					}
+					if (library.is_valid()) {
+						List<StringName> anim_names;
+						library->get_animation_list(&anim_names);
+						if (anim_names.size() == 1) {
+							(*settings)["rest_pose/selected_animation"] = String(anim_names[0]);
+						}
+						for (StringName anim_name : anim_names) {
+							hint_string += "," + anim_name; // Include preceding, as a catch-all.
+						}
+					}
+				} break;
+				default:
+					break;
+			}
+			r_option.hint = PROPERTY_HINT_ENUM;
+			r_option.hint_string = hint_string;
+		}
+	}
+
+	void _get_property_list(List<PropertyInfo> *r_list) const {
 		if (hide_options) {
 			return;
 		}
 		for (const ResourceImporter::ImportOption &E : options) {
+			PropertyInfo option = E.option;
 			if (SceneImportSettingsDialog::get_singleton()->is_editing_animation()) {
 				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
 					if (ResourceImporterScene::get_animation_singleton()->get_option_visibility(path, E.option.name, current)) {
-						p_list->push_back(E.option);
+						handle_special_properties(option);
+						r_list->push_back(option);
 					}
 				} else {
 					if (ResourceImporterScene::get_animation_singleton()->get_internal_option_visibility(category, E.option.name, current)) {
-						p_list->push_back(E.option);
+						handle_special_properties(option);
+						r_list->push_back(option);
 					}
 				}
 			} else {
 				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
 					if (ResourceImporterScene::get_scene_singleton()->get_option_visibility(path, E.option.name, current)) {
-						p_list->push_back(E.option);
+						handle_special_properties(option);
+						r_list->push_back(option);
 					}
 				} else {
 					if (ResourceImporterScene::get_scene_singleton()->get_internal_option_visibility(category, E.option.name, current)) {
-						p_list->push_back(E.option);
+						handle_special_properties(option);
+						r_list->push_back(option);
 					}
 				}
 			}
@@ -311,7 +366,10 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 			Ref<ImporterMesh> editor_mesh = src_mesh_node->get_mesh();
 			mesh_node->set_mesh(editor_mesh->get_mesh());
 		}
-
+		// Replace the original mesh node in the scene tree with the new one.
+		if (unlikely(p_node == scene)) {
+			scene = mesh_node;
+		}
 		p_node->replace_by(mesh_node);
 		memdelete(p_node);
 		p_node = mesh_node;
@@ -373,10 +431,15 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 
 	AnimationPlayer *anim_node = Object::cast_to<AnimationPlayer>(p_node);
 	if (anim_node) {
+		Vector<String> animation_list;
 		List<StringName> animations;
 		anim_node->get_animation_list(&animations);
 		for (const StringName &E : animations) {
 			_fill_animation(scene_tree, anim_node->get_animation(E), E, item);
+			animation_list.append(E);
+		}
+		if (scene_import_settings_data != nullptr) {
+			scene_import_settings_data->animation_list = animation_list;
 		}
 	}
 
@@ -429,25 +492,45 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 	if (!is_visible()) {
 		return;
 	}
+	const HashMap<StringName, Variant> &main_settings = scene_import_settings_data->current;
+	bool reshow_settings = false;
+	if (main_settings.has("nodes/import_as_skeleton_bones")) {
+		bool new_import_as_skeleton = main_settings["nodes/import_as_skeleton_bones"];
+		reshow_settings = reshow_settings || (new_import_as_skeleton != previous_import_as_skeleton);
+		previous_import_as_skeleton = new_import_as_skeleton;
+	}
+	if (main_settings.has("animation/import_rest_as_RESET")) {
+		bool new_rest_as_reset = main_settings["animation/import_rest_as_RESET"];
+		reshow_settings = reshow_settings || (new_rest_as_reset != previous_rest_as_reset);
+		previous_rest_as_reset = new_rest_as_reset;
+	}
+	if (reshow_settings) {
+		_re_import();
+		open_settings(base_path);
+		return;
+	}
 	for (const KeyValue<String, NodeData> &e : node_map) {
+		// Skip import nodes that aren't MeshInstance3D.
+		const MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
+		if (mesh_node == nullptr || mesh_node->get_mesh().is_null()) {
+			continue;
+		}
+
+		// Determine if the mesh collider should be visible.
 		bool show_collider_view = false;
 		if (e.value.settings.has(SNAME("generate/physics"))) {
 			show_collider_view = e.value.settings[SNAME("generate/physics")];
 		}
 
-		MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
-		if (mesh_node == nullptr || mesh_node->get_mesh().is_null()) {
-			// Nothing to do.
-			continue;
-		}
-
+		// Get the collider_view MeshInstance3D.
 		TypedArray<Node> descendants = mesh_node->find_children("collider_view", "MeshInstance3D");
-
 		CRASH_COND_MSG(descendants.is_empty(), "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
+		MeshInstance3D *collider_view = Object::cast_to<MeshInstance3D>(descendants[0].operator Object *());
 
-		MeshInstance3D *collider_view = static_cast<MeshInstance3D *>(descendants[0].operator Object *());
-		collider_view->set_visible(show_collider_view);
-		if (generate_collider) {
+		// Regenerate the physics collider for this MeshInstance3D if either:
+		// - A regeneration is requested for the selected import node.
+		// - The collider is being made visible.
+		if ((generate_collider && e.key == selected_id) || (show_collider_view && !collider_view->is_visible())) {
 			// This collider_view doesn't have a mesh so we need to generate a new one.
 			Ref<ImporterMesh> mesh;
 			mesh.instantiate();
@@ -511,6 +594,9 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 			collider_view->set_mesh(collider_view_mesh);
 			collider_view->set_transform(transform);
 		}
+
+		// Set the collider visibility.
+		collider_view->set_visible(show_collider_view);
 	}
 
 	generate_collider = false;
@@ -588,6 +674,7 @@ void SceneImportSettingsDialog::update_view() {
 
 void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_animation) {
 	if (scene) {
+		_cleanup();
 		memdelete(scene);
 		scene = nullptr;
 	}
@@ -664,6 +751,13 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_a
 		first_aabb = false;
 	}
 
+	const HashMap<StringName, Variant> &main_settings = scene_import_settings_data->current;
+	if (main_settings.has("nodes/import_as_skeleton_bones")) {
+		previous_import_as_skeleton = main_settings["nodes/import_as_skeleton_bones"];
+	}
+	if (main_settings.has("animation/import_rest_as_RESET")) {
+		previous_rest_as_reset = main_settings["animation/import_rest_as_RESET"];
+	}
 	popup_centered_ratio();
 	_update_view_gizmos();
 	_update_camera();
@@ -691,7 +785,7 @@ Node *SceneImportSettingsDialog::get_selected_node() {
 	return node_map[selected_id].node;
 }
 
-void SceneImportSettingsDialog::_select(Tree *p_from, String p_type, String p_id) {
+void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, const String &p_id) {
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
 
@@ -1134,6 +1228,7 @@ void SceneImportSettingsDialog::_re_import() {
 		main_settings["_subresources"] = subresources;
 	}
 
+	_cleanup(); // Prevent skeletons and other pointers from pointing to dangling references.
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
 }
 
@@ -1248,6 +1343,7 @@ void SceneImportSettingsDialog::_save_dir_callback(const String &p_path) {
 						item->set_metadata(0, E.key);
 						item->set_editable(0, true);
 						item->set_checked(0, true);
+						name = name.validate_filename();
 						String path = p_path.path_join(name);
 						if (external_extension_type->get_selected() == 0) {
 							path += ".tres";
@@ -1301,6 +1397,7 @@ void SceneImportSettingsDialog::_save_dir_callback(const String &p_path) {
 						item->set_metadata(0, E.key);
 						item->set_editable(0, true);
 						item->set_checked(0, true);
+						name = name.validate_filename();
 						String path = p_path.path_join(name);
 						if (external_extension_type->get_selected() == 0) {
 							path += ".tres";
@@ -1353,6 +1450,7 @@ void SceneImportSettingsDialog::_save_dir_callback(const String &p_path) {
 					item->set_metadata(0, E.key);
 					item->set_editable(0, true);
 					item->set_checked(0, true);
+					name = name.validate_filename();
 					String path = p_path.path_join(name);
 					if (external_extension_type->get_selected() == 0) {
 						path += ".tres";
@@ -1478,17 +1576,20 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 	scene_tree = memnew(Tree);
 	scene_tree->set_name(TTR("Scene"));
+	scene_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(scene_tree);
 	scene_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_scene_tree_selected));
 
 	mesh_tree = memnew(Tree);
 	mesh_tree->set_name(TTR("Meshes"));
+	mesh_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(mesh_tree);
 	mesh_tree->set_hide_root(true);
 	mesh_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_mesh_tree_selected));
 
 	material_tree = memnew(Tree);
 	material_tree->set_name(TTR("Materials"));
+	material_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(material_tree);
 	material_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_material_tree_selected));
 
@@ -1624,6 +1725,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	external_paths->add_child(external_path_tree);
 	external_path_tree->connect("button_clicked", callable_mp(this, &SceneImportSettingsDialog::_browse_save_callback));
 	external_paths->connect("confirmed", callable_mp(this, &SceneImportSettingsDialog::_save_dir_confirm));
+	external_path_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	external_path_tree->set_columns(3);
 	external_path_tree->set_column_titles_visible(true);
 	external_path_tree->set_column_expand(0, true);

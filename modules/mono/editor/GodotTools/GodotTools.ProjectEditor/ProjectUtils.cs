@@ -34,7 +34,7 @@ namespace GodotTools.ProjectEditor
         public static void MSBuildLocatorRegisterMSBuildPath(string msbuildPath)
             => MSBuildLocator.RegisterMSBuildPath(msbuildPath);
 
-        public static MSBuildProject Open(string path)
+        public static MSBuildProject? Open(string path)
         {
             var root = ProjectRootElement.Open(path);
             return root != null ? new MSBuildProject(root) : null;
