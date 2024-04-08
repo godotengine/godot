@@ -3022,6 +3022,10 @@ bool Node::is_displayed_folded() const {
 	return data.display_folded;
 }
 
+bool Node::is_node_ready() const {
+	return !data.ready_first;
+}
+
 void Node::request_ready() {
 	data.ready_first = true;
 }
@@ -3122,6 +3126,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_delete);
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
+	ClassDB::bind_method(D_METHOD("is_node_ready"), &Node::is_node_ready);
 
 	ClassDB::bind_method(D_METHOD("set_network_master", "id", "recursive"), &Node::set_network_master, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_network_master"), &Node::get_network_master);

@@ -455,6 +455,7 @@ public:
 	_FORCE_INLINE_ bool is_physics_interpolated_and_enabled() const { return is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && is_physics_interpolated(); }
 	void reset_physics_interpolation();
 
+	bool is_node_ready() const;
 	void request_ready();
 
 	static void print_stray_nodes();
