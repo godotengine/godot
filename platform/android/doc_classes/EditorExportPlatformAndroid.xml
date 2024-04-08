@@ -371,6 +371,9 @@
 			Allow an application to make its activities persistent.
 			Deprecated in API level 15.
 		</member>
+		<member name="permissions/post_notifications" type="bool" setter="" getter="">
+			Allow an application to post notifications. Added in API level 33. See [url=https://developer.android.com/develop/ui/views/notifications/notification-permission]Notification runtime permission[/url].
+		</member>
 		<member name="permissions/process_outgoing_calls" type="bool" setter="" getter="">
 			Allows an application to see the number being dialed during an outgoing call with the option to redirect the call to a different number or abort the call altogether. See [url=https://developer.android.com/reference/android/Manifest.permission#PROCESS_OUTGOING_CALLS]PROCESS_OUTGOING_CALLS[/url].
 			Deprecated in API level 29.
