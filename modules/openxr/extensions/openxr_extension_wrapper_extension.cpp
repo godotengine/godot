@@ -61,8 +61,8 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_on_state_exiting);
 	GDVIRTUAL_BIND(_on_event_polled, "event");
 	GDVIRTUAL_BIND(_set_viewport_composition_layer_and_get_next_pointer, "layer", "property_values", "next_pointer");
-	GDVIRTUAL_BIND(_get_viewport_composition_layer_extension_properties, "layer");
-	GDVIRTUAL_BIND(_get_viewport_composition_layer_extension_property_defaults, "layer");
+	GDVIRTUAL_BIND(_get_viewport_composition_layer_extension_properties);
+	GDVIRTUAL_BIND(_get_viewport_composition_layer_extension_property_defaults);
 	GDVIRTUAL_BIND(_on_viewport_composition_layer_destroyed, "layer");
 
 	ClassDB::bind_method(D_METHOD("get_openxr_api"), &OpenXRExtensionWrapperExtension::get_openxr_api);
