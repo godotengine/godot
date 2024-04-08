@@ -2577,16 +2577,26 @@
 				Set the entire data to use for drawing the [param multimesh] at once to [param buffer] (such as instance transforms and colors). [param buffer]'s size must match the number of instances multiplied by the per-instance data size (which depends on the enabled MultiMesh fields). Otherwise, an error message is printed and nothing is rendered. See also [method multimesh_get_buffer].
 				The per-instance data size and expected data order is:
 				[codeblock]
+				    // row_x = Vector3(xf2d.x.x, xf2d.y.x, 0), z is not used.
+    				    // row_y = Vector3(xf2d.x.y, xf2d.y.y, 0)
+				    Vector3 row_x; float origin_x;
+				    Vector3 row_y; float origin_y;
+				};
+				struct InstanceTransform3D {
+				    Vector3 basis_x; float origin_x;
+				    Vector3 basis_y; float origin_y;
+				    Vector3 basis_z; float origin_z;
+				};
 				2D:
-				  - Position: 8 floats (8 floats for Transform2D)
-				  - Position + Vertex color: 12 floats (8 floats for Transform2D, 4 floats for Color)
-				  - Position + Custom data: 12 floats (8 floats for Transform2D, 4 floats of custom data)
-				  - Position + Vertex color + Custom data: 16 floats (8 floats for Transform2D, 4 floats for Color, 4 floats of custom data)
+				  - Position: 8 floats (8 floats for InstanceTransform2D)
+				  - Position + Vertex color: 12 floats (8 floats for InstanceTransform2D, 4 floats for Color)
+				  - Position + Custom data: 12 floats (8 floats for InstanceTransform2D, 4 floats of custom data)
+				  - Position + Vertex color + Custom data: 16 floats (8 floats for InstanceTransform2D, 4 floats for Color, 4 floats of custom data)
 				3D:
-				  - Position: 12 floats (12 floats for Transform3D)
-				  - Position + Vertex color: 16 floats (12 floats for Transform3D, 4 floats for Color)
-				  - Position + Custom data: 16 floats (12 floats for Transform3D, 4 floats of custom data)
-				  - Position + Vertex color + Custom data: 20 floats (12 floats for Transform3D, 4 floats for Color, 4 floats of custom data)
+				  - Position: 12 floats (12 floats for InstanceTransform3D)
+				  - Position + Vertex color: 16 floats (12 floats for InstanceTransform3D, 4 floats for Color)
+				  - Position + Custom data: 16 floats (12 floats for InstanceTransform3D, 4 floats of custom data)
+				  - Position + Vertex color + Custom data: 20 floats (12 floats for InstanceTransform3D, 4 floats for Color, 4 floats of custom data)
 				[/codeblock]
 			</description>
 		</method>
