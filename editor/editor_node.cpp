@@ -3674,7 +3674,9 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 		if (old_edited_scene_root->get_parent() == scene_root) {
 			scene_root->remove_child(old_edited_scene_root);
 		}
-		old_edited_scene_root->disconnect(SNAME("replacing_by"), callable_mp(this, &EditorNode::set_edited_scene));
+		if (old_edited_scene_root->is_connected("replacing_by", callable_mp(this, &EditorNode::set_edited_scene))) {
+			old_edited_scene_root->disconnect(SNAME("replacing_by"), callable_mp(this, &EditorNode::set_edited_scene));
+		}
 	}
 	get_editor_data().set_edited_scene_root(p_scene);
 
