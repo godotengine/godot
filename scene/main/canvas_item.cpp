@@ -136,9 +136,11 @@ void CanvasItem::_redraw_callback() {
 		return;
 	}
 
-	RID ci = get_canvas_item();
-	RenderingServer::get_singleton()->canvas_item_clear(ci);
-	//todo updating = true - only allow drawing here
+	if (draw_commands_dirty) {
+		RenderingServer::get_singleton()->canvas_item_clear(get_canvas_item());
+		draw_commands_dirty = false;
+	}
+
 	if (is_visible_in_tree()) {
 		drawing = true;
 		Ref<TextServer> ts = TextServerManager::get_singleton()->get_primary_interface();
@@ -154,9 +156,9 @@ void CanvasItem::_redraw_callback() {
 			ts->set_current_drawn_item_oversampling(0.0);
 		}
 		drawing = false;
+		draw_commands_dirty = true;
 	}
-	//todo updating = false
-	pending_update = false; // don't change to false until finished drawing (avoid recursive update)
+	pending_update = false; // Don't change to false until finished drawing (avoid recursive update).
 }
 
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
