@@ -404,6 +404,7 @@ public:
 
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true);
 	Node *get_parent() const;
+	String get_fucked() const;
 	Node *find_parent(const String &p_pattern) const;
 
 	Window *get_window() const;

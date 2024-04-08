@@ -571,7 +571,7 @@ if selected_platform in platform_list:
     # are actually handled to change compile options, etc.
     detect.configure(env)
 
-    print(f'Building for platform "{selected_platform}", architecture "{env["arch"]}", target "{env["target"]}".')
+    #print(f'Building for platform "{selected_platform}", architecture, target "{env["target"]}".')
     if env.dev_build:
         print("NOTE: Developer build, with debug optimization level and debug symbols (unless overridden).")
 
