@@ -4410,6 +4410,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag.begins_with("char=")) {
+			int32_t char_code = tag.substr(5, tag.length()).hex_to_int();
+			add_text(String::chr(char_code));
+			pos = brk_end + 1;
 		} else if (tag == "lb") {
 			add_text("[");
 			pos = brk_end + 1;
