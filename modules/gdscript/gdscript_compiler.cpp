@@ -181,6 +181,12 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 				result.native_type = p_datatype.native_type;
 			}
 		} break;
+		case GDScriptParser::DataType::STRUCT: {
+			result.kind = GDScriptDataType::BUILTIN;
+			result.builtin_type = Variant::ARRAY;
+			result.native_type = p_datatype.native_type;
+			result.script_type = p_owner;
+		} break;
 		case GDScriptParser::DataType::ENUM:
 			if (p_handle_metatype && p_datatype.is_meta_type) {
 				result.kind = GDScriptDataType::BUILTIN;
@@ -249,6 +255,39 @@ static bool _can_use_validate_call(const MethodBind *p_method, const Vector<GDSc
 		}
 	}
 	return true;
+}
+
+void GDScriptCompiler::_parse_instance_method(GDScriptCodeGenerator *p_gen, GDScriptCodeGenerator::Address &r_result, const GDScriptCodeGenerator::Address &p_base, const StringName &p_function_name, const Vector<GDScriptCodeGenerator::Address> &p_arguments, const bool p_is_awaited) {
+	if (p_is_awaited) {
+		p_gen->write_call_async(r_result, p_base, p_function_name, p_arguments);
+	} else if (p_base.type.has_type && p_base.type.kind != GDScriptDataType::BUILTIN) {
+		// Native method, use faster path.
+		StringName class_name;
+		if (p_base.type.kind == GDScriptDataType::NATIVE) {
+			class_name = p_base.type.native_type;
+		} else {
+			class_name = p_base.type.native_type == StringName() ? p_base.type.script_type->get_instance_base_type() : p_base.type.native_type;
+		}
+		if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, p_function_name)) {
+			MethodBind *method = ClassDB::get_method(class_name, p_function_name);
+			if (_can_use_validate_call(method, p_arguments)) {
+				// Exact arguments, use validated call.
+				p_gen->write_call_method_bind_validated(r_result, p_base, method, p_arguments);
+			} else {
+				// Not exact arguments, but still can use method bind call.
+				p_gen->write_call_method_bind(r_result, p_base, method, p_arguments);
+			}
+		} else {
+			p_gen->write_call(r_result, p_base, p_function_name, p_arguments);
+		}
+	} else if (p_base.type.has_type && p_base.type.kind == GDScriptDataType::BUILTIN) {
+		p_gen->write_call_builtin_type(r_result, p_base, p_base.type.builtin_type, p_function_name, p_arguments);
+	} else {
+		p_gen->write_call(r_result, p_base, p_function_name, p_arguments);
+	}
+	if (p_base.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+		p_gen->pop_temporary();
+	}
 }
 
 GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root, bool p_initializer) {
@@ -387,6 +426,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						owner = owner->_owner;
 					}
 				} break;
+				case GDScriptParser::IdentifierNode::MEMBER_STRUCT: {
+					// TODO: not sure what goes here
+				} break;
 				case GDScriptParser::IdentifierNode::STATIC_VARIABLE: {
 					// Try static variables.
 					GDScript *scr = codegen.script;
@@ -512,8 +554,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 				values.push_back(val);
 			}
-
-			if (array_type.has_container_element_type(0)) {
+			if (array_type.get_struct_info()) { // TODO: is this code reachable?
+				gen->write_construct_struct(result, array_type, values);
+			} else if (array_type.has_container_element_type(0)) {
 				gen->write_construct_typed_array(result, array_type.get_container_element_type(0), values);
 			} else {
 				gen->write_construct_array(result, values);
@@ -650,6 +693,17 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								// Not exact arguments, but still can use method bind call.
 								gen->write_call_method_bind(result, self, method, arguments);
 							}
+						} else if (const StructInfo *struct_info = ClassDB::get_struct_info(codegen.script->native->get_name(), call->function_name)) {
+							GDScriptDataType native_struct_type;
+							native_struct_type.has_type = true;
+							native_struct_type.kind = GDScriptDataType::BUILTIN;
+							native_struct_type.builtin_type = Variant::ARRAY;
+							native_struct_type.native_type = struct_info->name;
+							native_struct_type.script_type = codegen.script;
+							gen->write_construct_struct(result, native_struct_type, arguments);
+						} else if (call->get_datatype().struct_type) {
+							const GDScriptDataType struct_type = _gdtype_from_datatype(call->get_datatype(), codegen.script);
+							gen->write_construct_struct(result, struct_type, arguments);
 						} else if (call->is_static || codegen.is_static || (codegen.function_node && codegen.function_node->is_static) || call->function_name == "new") {
 							GDScriptCodeGenerator::Address self;
 							self.mode = GDScriptCodeGenerator::Address::CLASS;
@@ -668,63 +722,52 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					} else if (callee->type == GDScriptParser::Node::SUBSCRIPT) {
 						const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(call->callee);
 
-						if (subscript->is_attribute) {
-							// May be static built-in method call.
-							if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) < Variant::VARIANT_MAX) {
-								gen->write_call_builtin_type_static(result, GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name), subscript->attribute->name, arguments);
-							} else if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && call->function_name != SNAME("new") &&
-									ClassDB::class_exists(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) && !Engine::get_singleton()->has_singleton(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name)) {
-								// It's a static native method call.
-								StringName class_name = static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name;
-								MethodBind *method = ClassDB::get_method(class_name, subscript->attribute->name);
+						if (!subscript->is_attribute) {
+							_set_error("Cannot call something that isn't a function.", call->callee);
+							r_error = ERR_COMPILATION_FAILED;
+							return GDScriptCodeGenerator::Address();
+						}
+
+						// May be static built-in method call.
+						if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
+							StringName base_name = static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name;
+							if (GDScriptParser::get_builtin_type(base_name) < Variant::VARIANT_MAX) {
+								gen->write_call_builtin_type_static(result, GDScriptParser::get_builtin_type(base_name), subscript->attribute->name, arguments);
+							} else if (const StructInfo *struct_info = ClassDB::get_struct_info(base_name, subscript->attribute->name)) {
+								GDScriptDataType native_struct_type;
+								native_struct_type.has_type = true;
+								native_struct_type.kind = GDScriptDataType::BUILTIN;
+								native_struct_type.builtin_type = Variant::ARRAY;
+								native_struct_type.native_type = struct_info->name;
+								native_struct_type.script_type = codegen.script;
+								gen->write_construct_struct(result, native_struct_type, arguments);
+							} else if (call->get_datatype().struct_type) {
+								const GDScriptDataType struct_type = _gdtype_from_datatype(call->get_datatype(), codegen.script);
+								gen->write_construct_struct(result, struct_type, arguments);
+							} else if (call->function_name != SNAME("new") && ClassDB::class_exists(base_name) && !Engine::get_singleton()->has_singleton(base_name)) {
+								MethodBind *method = ClassDB::get_method(base_name, subscript->attribute->name);
 								if (_can_use_validate_call(method, arguments)) {
 									// Exact arguments, use validated call.
 									gen->write_call_native_static_validated(result, method, arguments);
 								} else {
 									// Not exact arguments, use regular static call
-									gen->write_call_native_static(result, class_name, subscript->attribute->name, arguments);
+									gen->write_call_native_static(result, base_name, subscript->attribute->name, arguments);
 								}
 							} else {
 								GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
 								if (r_error) {
 									return GDScriptCodeGenerator::Address();
 								}
-								if (is_awaited) {
-									gen->write_call_async(result, base, call->function_name, arguments);
-								} else if (base.type.has_type && base.type.kind != GDScriptDataType::BUILTIN) {
-									// Native method, use faster path.
-									StringName class_name;
-									if (base.type.kind == GDScriptDataType::NATIVE) {
-										class_name = base.type.native_type;
-									} else {
-										class_name = base.type.native_type == StringName() ? base.type.script_type->get_instance_base_type() : base.type.native_type;
-									}
-									if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
-										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
-										if (_can_use_validate_call(method, arguments)) {
-											// Exact arguments, use validated call.
-											gen->write_call_method_bind_validated(result, base, method, arguments);
-										} else {
-											// Not exact arguments, but still can use method bind call.
-											gen->write_call_method_bind(result, base, method, arguments);
-										}
-									} else {
-										gen->write_call(result, base, call->function_name, arguments);
-									}
-								} else if (base.type.has_type && base.type.kind == GDScriptDataType::BUILTIN) {
-									gen->write_call_builtin_type(result, base, base.type.builtin_type, call->function_name, arguments);
-								} else {
-									gen->write_call(result, base, call->function_name, arguments);
-								}
-								if (base.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-									gen->pop_temporary();
-								}
+								_parse_instance_method(gen, result, base, call->function_name, arguments, is_awaited);
 							}
 						} else {
-							_set_error("Cannot call something that isn't a function.", call->callee);
-							r_error = ERR_COMPILATION_FAILED;
-							return GDScriptCodeGenerator::Address();
+							GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
+							if (r_error) {
+								return GDScriptCodeGenerator::Address();
+							}
+							_parse_instance_method(gen, result, base, call->function_name, arguments, is_awaited);
 						}
+
 					} else {
 						r_error = ERR_COMPILATION_FAILED;
 						return GDScriptCodeGenerator::Address();
@@ -2326,7 +2369,9 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 				GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
 
-				if (field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type(0)) {
+				if (field_type.get_struct_info()) {
+					codegen.generator->write_construct_struct(dst_address, field_type, Vector<GDScriptCodeGenerator::Address>());
+				} else if (field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type(0)) {
 					codegen.generator->write_construct_typed_array(dst_address, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
 				} else if (field_type.builtin_type == Variant::DICTIONARY && field_type.has_container_element_types()) {
 					codegen.generator->write_construct_typed_dictionary(dst_address, field_type.get_container_element_type_or_variant(0),
@@ -2519,23 +2564,19 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 		if (field_type.has_type) {
 			codegen.generator->write_newline(field->start_line);
 
-			if (field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type(0)) {
-				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
+			GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
+			if (field_type.get_struct_info()) {
+				codegen.generator->write_construct_struct(temp, field_type, Vector<GDScriptCodeGenerator::Address>());
+			} else if (field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type(0)) {
 				codegen.generator->write_construct_typed_array(temp, field_type.get_container_element_type(0), Vector<GDScriptCodeGenerator::Address>());
-				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
-				codegen.generator->pop_temporary();
 			} else if (field_type.builtin_type == Variant::DICTIONARY && field_type.has_container_element_types()) {
-				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
 				codegen.generator->write_construct_typed_dictionary(temp, field_type.get_container_element_type_or_variant(0),
 						field_type.get_container_element_type_or_variant(1), Vector<GDScriptCodeGenerator::Address>());
-				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
-				codegen.generator->pop_temporary();
 			} else if (field_type.kind == GDScriptDataType::BUILTIN) {
-				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
 				codegen.generator->write_construct(temp, field_type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
-				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
-				codegen.generator->pop_temporary();
 			}
+			codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
+			codegen.generator->pop_temporary();
 			// The `else` branch is for objects, in such case we leave it as `null`.
 		}
 	}
@@ -2652,6 +2693,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	p_script->base = Ref<GDScript>();
 	p_script->_base = nullptr;
 	p_script->members.clear();
+	p_script->structs.clear();
 
 	// This makes possible to clear script constants and member_functions without heap-use-after-free errors.
 	HashMap<StringName, Variant> constants;
@@ -2844,6 +2886,15 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				StringName name = enum_value.identifier->name;
 
 				p_script->constants.insert(name, enum_value.value);
+			} break;
+
+			case GDScriptParser::ClassNode::Member::STRUCT: {
+				if (!member.m_struct) { // member is a native struct
+					break;
+				}
+				const GDScriptParser::StructNode &struct_node = *member.m_struct;
+				StructInfo struct_info = struct_node.make_struct_info();
+				p_script->structs.insert(struct_info.name, struct_info);
 			} break;
 
 			case GDScriptParser::ClassNode::Member::SIGNAL: {
@@ -3057,7 +3108,8 @@ void GDScriptCompiler::convert_to_initializer_type(Variant &p_variant, const GDS
 	GDScriptParser::DataType member_t = p_node->datatype;
 	GDScriptParser::DataType init_t = p_node->initializer->datatype;
 	if (member_t.is_hard_type() && init_t.is_hard_type() &&
-			member_t.kind == GDScriptParser::DataType::BUILTIN && init_t.kind == GDScriptParser::DataType::BUILTIN) {
+			(member_t.kind == GDScriptParser::DataType::BUILTIN || member_t.kind == GDScriptParser::DataType::STRUCT) &&
+			(init_t.kind == GDScriptParser::DataType::BUILTIN || init_t.kind == GDScriptParser::DataType::STRUCT)) {
 		if (Variant::can_convert_strict(init_t.builtin_type, member_t.builtin_type)) {
 			Variant *v = &p_node->initializer->reduced_value;
 			Callable::CallError ce;

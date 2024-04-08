@@ -146,6 +146,18 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 				}
 			}
 			return;
+		case GDType::STRUCT:
+			r_type = "Array";
+			// TODO: just copied from enum for now, probably needs Struct specific logic
+			r_enum = String(p_gdtype.native_type).replace("::", ".");
+			if (r_enum.begins_with("res://")) {
+				r_enum = r_enum.trim_prefix("res://");
+				int dot_pos = r_enum.rfind(".");
+				if (dot_pos >= 0) {
+					r_enum = r_enum.left(dot_pos).quote() + r_enum.substr(dot_pos);
+				}
+			}
+			return;
 		case GDType::VARIANT:
 		case GDType::RESOLVING:
 		case GDType::UNRESOLVED:
