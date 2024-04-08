@@ -154,6 +154,13 @@
 				Constructs an array from a [PackedVector3Array].
 			</description>
 		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedVector4Array" />
+			<description>
+				Constructs an array from a [PackedVector4Array].
+			</description>
+		</constructor>
 	</constructors>
 	<methods>
 		<method name="all" qualifiers="const">

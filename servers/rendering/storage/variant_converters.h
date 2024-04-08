@@ -239,7 +239,8 @@ inline bool is_convertible_array(Variant::Type type) {
 	return type == Variant::ARRAY ||
 			type == Variant::PACKED_VECTOR2_ARRAY ||
 			type == Variant::PACKED_VECTOR3_ARRAY ||
-			type == Variant::PACKED_COLOR_ARRAY;
+			type == Variant::PACKED_COLOR_ARRAY ||
+			type == Variant::PACKED_VECTOR4_ARRAY;
 }
 
 template <typename, typename = void>
