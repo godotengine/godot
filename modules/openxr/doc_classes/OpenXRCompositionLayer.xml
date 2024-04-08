@@ -10,6 +10,15 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="intersects_ray" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="origin" type="Vector3" />
+			<param index="1" name="direction" type="Vector3" />
+			<description>
+				Returns UV coordinates where the given ray intersects with the composition layer. [param origin] and [param direction] must be in global space.
+				Returns [code]Vector2(-1.0, -1.0)[/code] if the ray doesn't intersect.
+			</description>
+		</method>
 		<method name="is_natively_supported" qualifiers="const">
 			<return type="bool" />
 			<description>
