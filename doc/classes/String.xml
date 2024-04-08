@@ -239,6 +239,13 @@
 				print("User {id} is {name}.".format([["id", 42], ["name", "Godot"]]))
 				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
+				[b]Note:[/b] The replacement of placeholders is not done all at once, instead each placeholder is replaced in the order they are passed, this means that if one of the replacement strings contains a key it will also be replaced. This can be very powerful, but can also cause unexpected results if you are not careful. If you do not need to perform replacement in the replacement strings, make sure your replacements do not contain placeholders to ensure reliable results.
+				[codeblock]
+				print("{0} {1}".format(["{1}", "x"]))                       # Prints "x x".
+				print("{0} {1}".format(["x", "{0}"]))                       # Prints "x {0}".
+				print("{foo} {bar}".format({"foo": "{bar}", "bar": "baz"})) # Prints "baz baz".
+				print("{foo} {bar}".format({"bar": "baz", "foo": "{bar}"})) # Prints "{bar} baz".
+				[/codeblock]
 				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
 		</method>

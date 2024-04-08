@@ -1571,6 +1571,26 @@
 //#define MBEDTLS_PSA_INJECT_ENTROPY
 
 /**
+ * \def MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+ *
+ * Assume all buffers passed to PSA functions are owned exclusively by the
+ * PSA function and are not stored in shared memory.
+ *
+ * This option may be enabled if all buffers passed to any PSA function reside
+ * in memory that is accessible only to the PSA function during its execution.
+ *
+ * This option MUST be disabled whenever buffer arguments are in memory shared
+ * with an untrusted party, for example where arguments to PSA calls are passed
+ * across a trust boundary.
+ *
+ * \note Enabling this option reduces memory usage and code size.
+ *
+ * \note Enabling this option causes overlap of input and output buffers
+ *       not to be supported by PSA functions.
+ */
+//#define MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+
+/**
  * \def MBEDTLS_RSA_NO_CRT
  *
  * Do not use the Chinese Remainder Theorem

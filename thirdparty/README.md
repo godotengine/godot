@@ -60,7 +60,7 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (3aaca635bad074a0ce5c15fa8aa0dff47f5c639a, 2023)
+- Version: git (c5a419971b1bec220368c619aaafd0b818aa119f, 2024)
 - License: MPL 2.0
 
 
@@ -370,7 +370,7 @@ Patch `godot-node-debug-fix.patch` workarounds shadowing of godot's Node class i
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.28.7 (555f84735aecdbd76a566cf087ec8425dfb0c8ab, 2024)
+- Version: 2.28.8 (5a764e5555c64337ed17444410269ff21cb617b1, 2024)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:

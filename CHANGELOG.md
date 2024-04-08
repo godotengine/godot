@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-#### C#
+#### C#/.NET
 
 - Implemented `{project}` placeholder for external dotnet editor ([GH-81847](https://github.com/godotengine/godot/pull/81847)).
 
@@ -34,6 +34,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### Import
 
 - Support unspecified linear size in DDS files ([GH-86336](https://github.com/godotengine/godot/pull/86336)).
+
+#### Porting
+
+- Linux: Handle export preset forward compat with 4.3+ platform name ([GH-89047](https://github.com/godotengine/godot/pull/89047)).
+- Android: Add `POST_NOTIFICATIONS` permission to the list of permissions available in the Export dialog ([GH-90377](https://github.com/godotengine/godot/pull/90377)).
 
 #### XR
 
@@ -108,6 +113,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Thirdparty
 
+- Sync controller mappings DB with SDL2 community repo.
+- CA root certificates updated to 2024-03-11 bundle from Mozilla.
+- mbedTLS updated to version 2.28.8.
 - r128: Update to include latest fix for intrinsics being incorrect included ([GH-84537](https://github.com/godotengine/godot/pull/84537)).
 - zlib/minizip updated to version 1.3.1.
 
@@ -126,6 +134,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 #### 3D
 
 - Fix PlaneMesh tangents for 'Face X' orientation ([GH-84097](https://github.com/godotengine/godot/pull/84097)).
+- Fix CSGShape `debug_collision_shape` crash ([GH-84338](https://github.com/godotengine/godot/pull/84338)).
 
 #### Animation
 
@@ -133,6 +142,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix crash when clicking on "Interpolation Mode" with nonexistent node path ([GH-81779](https://github.com/godotengine/godot/pull/81779)).
 - Fix invalid return from some more `_get/_set` ([GH-84060](https://github.com/godotengine/godot/pull/84060)).
 - Fix invalid 3-to-4 renames of `add_animation` to `add_animation_library` ([GH-86647](https://github.com/godotengine/godot/pull/86647)).
+- Fix spurious infinite loop warnings in AnimationStateMachine ([GH-89575](https://github.com/godotengine/godot/pull/89575)).
 
 #### Audio
 
@@ -142,6 +152,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fix invalid Python escape sequences ([GH-85818](https://github.com/godotengine/godot/pull/85818)).
 - macOS: Fix MoltenVK SDK detection after file location changes in 1.3.275.0 ([GH-87305](https://github.com/godotengine/godot/pull/87305)).
+
+#### C#/.NET
+
+- Fix `Transform3D.InterpolateWith` applying rotation before scale ([GH-89843](https://github.com/godotengine/godot/pull/89843)).
 
 #### Core
 
@@ -187,6 +201,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Prevent overriding file info of another file when reimport creates extra files ([GH-85922](https://github.com/godotengine/godot/pull/85922)).
 - Fix `BasisUniversal` ETC RA as RG transcoding ([GH-86916](https://github.com/godotengine/godot/pull/86916)).
 - GLTF: Fix three bugs which prevented extracted textures from being refreshed ([GH-86504](https://github.com/godotengine/godot/pull/86504)).
+- Fix crash when previewing a scene with a mesh as the root node ([GH-87781](https://github.com/godotengine/godot/pull/87781)).
+- Fix setting animation save paths on import breaking on Windows ([GH-90003](https://github.com/godotengine/godot/pull/90003)).
 
 #### Input
 

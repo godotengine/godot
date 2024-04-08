@@ -310,7 +310,10 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 			Ref<ImporterMesh> editor_mesh = src_mesh_node->get_mesh();
 			mesh_node->set_mesh(editor_mesh->get_mesh());
 		}
-
+		// Replace the original mesh node in the scene tree with the new one.
+		if (unlikely(p_node == scene)) {
+			scene = mesh_node;
+		}
 		p_node->replace_by(mesh_node);
 		memdelete(p_node);
 		p_node = mesh_node;
@@ -1085,6 +1088,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 						item->set_metadata(0, E.key);
 						item->set_editable(0, true);
 						item->set_checked(0, true);
+						name = name.validate_filename();
 						String path = p_path.path_join(name);
 						if (external_extension_type->get_selected() == 0) {
 							path += ".tres";
@@ -1138,6 +1142,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 						item->set_metadata(0, E.key);
 						item->set_editable(0, true);
 						item->set_checked(0, true);
+						name = name.validate_filename();
 						String path = p_path.path_join(name);
 						if (external_extension_type->get_selected() == 0) {
 							path += ".tres";
@@ -1190,6 +1195,7 @@ void SceneImportSettings::_save_dir_callback(const String &p_path) {
 					item->set_metadata(0, E.key);
 					item->set_editable(0, true);
 					item->set_checked(0, true);
+					name = name.validate_filename();
 					String path = p_path.path_join(name);
 					if (external_extension_type->get_selected() == 0) {
 						path += ".tres";
