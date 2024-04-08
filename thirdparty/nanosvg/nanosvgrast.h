@@ -114,7 +114,7 @@ typedef struct NSVGmemPage {
 } NSVGmemPage;
 
 typedef struct NSVGcachedPaint {
-	char type;
+	signed char type;
 	char spread;
 	float xform[6];
 	unsigned int colors[256];
@@ -331,6 +331,7 @@ static float nsvg__normalize(float *x, float* y)
 }
 
 static float nsvg__absf(float x) { return x < 0 ? -x : x; }
+static float nsvg__roundf(float x) { return (x >= 0) ? floorf(x + 0.5) : ceilf(x - 0.5); }
 
 static void nsvg__flattenCubicBez(NSVGrasterizer* r,
 								  float x1, float y1, float x2, float y2,
@@ -353,8 +354,8 @@ static void nsvg__flattenCubicBez(NSVGrasterizer* r,
 
 	dx = x4 - x1;
 	dy = y4 - y1;
-	d2 = nsvg__absf(((x2 - x4) * dy - (y2 - y4) * dx));
-	d3 = nsvg__absf(((x3 - x4) * dy - (y3 - y4) * dx));
+	d2 = nsvg__absf((x2 - x4) * dy - (y2 - y4) * dx);
+	d3 = nsvg__absf((x3 - x4) * dy - (y3 - y4) * dx);
 
 	if ((d2 + d3)*(d2 + d3) < r->tessTol * (dx*dx + dy*dy)) {
 		nsvg__addPathPoint(r, x4, y4, type);
@@ -872,10 +873,10 @@ static NSVGactiveEdge* nsvg__addActive(NSVGrasterizer* r, NSVGedge* e, float sta
 //	STBTT_assert(e->y0 <= start_point);
 	// round dx down to avoid going too far
 	if (dxdy < 0)
-		z->dx = (int)(-floorf(NSVG__FIX * -dxdy));
+		z->dx = (int)(-nsvg__roundf(NSVG__FIX * -dxdy));
 	else
-		z->dx = (int)floorf(NSVG__FIX * dxdy);
-	z->x = (int)floorf(NSVG__FIX * (e->x0 + dxdy * (startPoint - e->y0)));
+		z->dx = (int)nsvg__roundf(NSVG__FIX * dxdy);
+	z->x = (int)nsvg__roundf(NSVG__FIX * (e->x0 + dxdy * (startPoint - e->y0)));
 //	z->x -= off_x * FIX;
 	z->ey = e->y1;
 	z->next = 0;
@@ -1282,9 +1283,10 @@ static void nsvg__initPaint(NSVGcachedPaint* cache, NSVGpaint* paint, float opac
 	if (grad->nstops == 0) {
 		for (i = 0; i < 256; i++)
 			cache->colors[i] = 0;
-	} if (grad->nstops == 1) {
+	} else if (grad->nstops == 1) {
+		unsigned int color = nsvg__applyOpacity(grad->stops[0].color, opacity);
 		for (i = 0; i < 256; i++)
-			cache->colors[i] = nsvg__applyOpacity(grad->stops[i].color, opacity);
+			cache->colors[i] = color;
 	} else {
 		unsigned int ca, cb = 0;
 		float ua, ub, du, u;
