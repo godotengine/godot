@@ -16,7 +16,7 @@ index ca68545e4a..d7ecb7a0fd 100644
  #undef DECLARE_PRIVATE
  #undef DECLARE_PROTECTED
 diff --git a/thirdparty/libktx/lib/dfdutils/vk2dfd.inl b/thirdparty/libktx/lib/dfdutils/vk2dfd.inl
-index 85d53202a5..25c7a2c238 100644
+index 5104c8fcb4..3398441e8c 100644
 --- a/thirdparty/libktx/lib/dfdutils/vk2dfd.inl
 +++ b/thirdparty/libktx/lib/dfdutils/vk2dfd.inl
 @@ -370,6 +370,7 @@ case VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG: return createDFDCompressed(c_PVRTC, 8
@@ -32,9 +32,9 @@ index 85d53202a5..25c7a2c238 100644
  case VK_FORMAT_ASTC_6x6x6_SRGB_BLOCK_EXT: return createDFDCompressed(c_ASTC, 6, 6, 6, s_SRGB);
  case VK_FORMAT_ASTC_6x6x6_SFLOAT_BLOCK_EXT: return createDFDCompressed(c_ASTC, 6, 6, 6, s_SFLOAT);
 +#endif
+ case VK_FORMAT_R16G16_S10_5_NV: return createDFDUnpacked(0, 2, 2, 0, s_S10_5);
  case VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR: {
      int channels[] = {0,1,2,3}; int bits[] = {5,5,5,1};
-     return createDFDPacked(0, 4, bits, channels, s_UNORM);
 diff --git a/thirdparty/libktx/lib/miniz_wrapper.cpp b/thirdparty/libktx/lib/miniz_wrapper.cpp
 index 07920c4809..cbd7da540a 100644
 --- a/thirdparty/libktx/lib/miniz_wrapper.cpp
