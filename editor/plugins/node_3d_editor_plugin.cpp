@@ -4519,7 +4519,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 						Ref<BaseMaterial3D> base_mat = res;
 						Ref<ShaderMaterial> shader_mat = res;
 
-						if (base_mat.is_null() && !shader_mat.is_null()) {
+						if (base_mat.is_null() && shader_mat.is_null()) {
 							continue;
 						}
 
