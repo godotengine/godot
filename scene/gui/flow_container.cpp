@@ -289,6 +289,9 @@ void FlowContainer::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			queue_sort();
 		} break;
+		case NOTIFICATION_DRAW: {
+			theme_cache.panel_style->draw(get_canvas_item(), Rect2(Point2(), get_size()));
+		} break;
 	}
 }
 
@@ -361,4 +364,5 @@ void FlowContainer::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FlowContainer, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FlowContainer, v_separation);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, FlowContainer, panel_style, "panel");
 }

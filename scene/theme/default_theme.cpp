@@ -1169,6 +1169,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("v_separation", "HFlowContainer", Math::round(4 * scale));
 	theme->set_constant("h_separation", "VFlowContainer", Math::round(4 * scale));
 	theme->set_constant("v_separation", "VFlowContainer", Math::round(4 * scale));
+	theme->set_stylebox("panel", "FlowContainer", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox("panel", "HFlowContainer", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox("panel", "VFlowContainer", make_empty_stylebox(0, 0, 0, 0));
 
 	theme->set_stylebox("panel", "PanelContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 

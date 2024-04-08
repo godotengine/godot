@@ -1226,11 +1226,14 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_constant("h_separation", "GridContainer", p_config.separation_margin);
 		p_theme->set_constant("v_separation", "GridContainer", p_config.separation_margin);
 		p_theme->set_constant("h_separation", "FlowContainer", p_config.separation_margin);
+		p_theme->set_stylebox("panel", "FlowContainer", p_config.base_empty_style);
 		p_theme->set_constant("v_separation", "FlowContainer", p_config.separation_margin);
 		p_theme->set_constant("h_separation", "HFlowContainer", p_config.separation_margin);
 		p_theme->set_constant("v_separation", "HFlowContainer", p_config.separation_margin);
 		p_theme->set_constant("h_separation", "VFlowContainer", p_config.separation_margin);
 		p_theme->set_constant("v_separation", "VFlowContainer", p_config.separation_margin);
+		p_theme->set_stylebox("panel", "HFlowContainer", p_config.base_empty_style);
+		p_theme->set_stylebox("panel", "VFlowContainer", p_config.base_empty_style);
 
 		// SplitContainer.
 

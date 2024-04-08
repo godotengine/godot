@@ -54,6 +54,7 @@ private:
 	struct ThemeCache {
 		int h_separation = 0;
 		int v_separation = 0;
+		Ref<StyleBox> panel_style;
 	} theme_cache;
 
 	void _resort();
