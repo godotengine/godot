@@ -578,7 +578,10 @@ public:
 	void update_custom_type(const Ref<Resource> &p_resource);
 
 	virtual Size2 get_minimum_size() const override;
+
 	void edit(VisualShader *p_visual_shader);
+	Ref<VisualShader> get_visual_shader() const { return visual_shader; }
+
 	VisualShaderEditor();
 };
 
