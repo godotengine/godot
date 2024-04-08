@@ -40,6 +40,7 @@ class EditorFileDialog;
 class EditorFileSystemDirectory;
 class EditorInspector;
 class EditorPropertyPath;
+class EditorVerifyDialog;
 class ItemList;
 class LinkButton;
 class MenuButton;
@@ -103,6 +104,8 @@ class ProjectExportDialog : public ConfirmationDialog {
 	Button *export_button = nullptr;
 	Button *export_all_button = nullptr;
 	AcceptDialog *export_all_dialog = nullptr;
+
+	EditorVerifyDialog *verify_dialog = nullptr;
 
 	RBSet<String> feature_set;
 	LineEdit *custom_features = nullptr;
@@ -174,6 +177,8 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _export_all_dialog_action(const String &p_str);
 	void _export_all(bool p_debug);
 
+	void _verify_export(int p_export_type);
+
 	void _update_feature_list();
 	void _custom_features_changed(const String &p_text);
 
@@ -196,6 +201,12 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum {
+		EXPORT_ALL,
+		EXPORT,
+		EXPORT_PCK_ZIP
+	};
+
 	void popup_export();
 
 	void set_export_path(const String &p_value);
