@@ -4,13 +4,13 @@
     <NMakeBuildCommandLine>%%BUILD%%</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>%%REBUILD%%</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>%%CLEAN%%</NMakeCleanCommandLine>
-    <NMakeOutput>%%OUTPUT%%</NMakeOutput>
-    <NMakePreprocessorDefinitions>%%DEFINES%%</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>%%INCLUDES%%</NMakeIncludeSearchPath>
+    <NMakeOutput Condition="'$(NMakeOutput)' == ''">%%OUTPUT%%</NMakeOutput>
+    <NMakePreprocessorDefinitions>%%DEFINES%%;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>%%INCLUDES%%;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <NMakeForcedIncludes>$(NMakeForcedIncludes)</NMakeForcedIncludes>
     <NMakeAssemblySearchPath>$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
     <NMakeForcedUsingAssemblies>$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
-    <AdditionalOptions>%%OPTIONS%%</AdditionalOptions>
+    <AdditionalOptions>%%OPTIONS%% $(AdditionalOptions)</AdditionalOptions>
   </PropertyGroup>
   <PropertyGroup Condition="%%CONDITION%%">
     %%PROPERTIES%%
