@@ -41,6 +41,7 @@
 #include <windows.h>
 
 #include <errno.h>
+#include <io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
@@ -367,6 +368,24 @@ uint64_t FileAccessWindows::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 
 Error FileAccessWindows::get_error() const {
 	return last_error;
+}
+
+Error FileAccessWindows::resize(int64_t p_length) {
+	ERR_FAIL_NULL_V_MSG(f, FAILED, "File must be opened before use.");
+	errno_t res = _chsize_s(_fileno(f), p_length);
+	switch (res) {
+		case 0:
+			return OK;
+		case EACCES:
+		case EBADF:
+			return ERR_FILE_CANT_OPEN;
+		case ENOSPC:
+			return ERR_OUT_OF_MEMORY;
+		case EINVAL:
+			return ERR_INVALID_PARAMETER;
+		default:
+			return FAILED;
+	}
 }
 
 void FileAccessWindows::flush() {
