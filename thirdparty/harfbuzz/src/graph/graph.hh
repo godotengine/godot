@@ -195,6 +195,15 @@ struct graph_t
       return incoming_edges_;
     }
 
+    unsigned incoming_edges_from_parent (unsigned parent_index) const {
+      if (single_parent != (unsigned) -1) {
+        return single_parent == parent_index ? 1 : 0;
+      }
+
+      unsigned* count;
+      return  parents.has(parent_index, &count) ? *count : 0;
+    }
+
     void reset_parents ()
     {
       incoming_edges_ = 0;
@@ -332,6 +341,16 @@ struct graph_t
       if (has_max_priority ()) return false;
       priority++;
       return true;
+    }
+
+    bool give_max_priority ()
+    {
+      bool result = false;
+      while (!has_max_priority()) {
+        result = true;
+        priority++;
+      }
+      return result;
     }
 
     bool has_max_priority () const {
@@ -1023,6 +1042,11 @@ struct graph_t
    * Creates a copy of child and re-assigns the link from
    * parent to the clone. The copy is a shallow copy, objects
    * linked from child are not duplicated.
+   *
+   * Returns the index of the newly created duplicate.
+   *
+   * If the child_idx only has incoming edges from parent_idx, this
+   * will do nothing and return the original child_idx.
    */
   unsigned duplicate_if_shared (unsigned parent_idx, unsigned child_idx)
   {
@@ -1036,18 +1060,20 @@ struct graph_t
    * Creates a copy of child and re-assigns the link from
    * parent to the clone. The copy is a shallow copy, objects
    * linked from child are not duplicated.
+   *
+   * Returns the index of the newly created duplicate.
+   *
+   * If the child_idx only has incoming edges from parent_idx,
+   * duplication isn't possible and this will return -1.
    */
   unsigned duplicate (unsigned parent_idx, unsigned child_idx)
   {
     update_parents ();
 
-    unsigned links_to_child = 0;
-    for (const auto& l : vertices_[parent_idx].obj.all_links ())
-    {
-      if (l.objidx == child_idx) links_to_child++;
-    }
+    const auto& child = vertices_[child_idx];
+    unsigned links_to_child = child.incoming_edges_from_parent(parent_idx);
 
-    if (vertices_[child_idx].incoming_edges () <= links_to_child)
+    if (child.incoming_edges () <= links_to_child)
     {
       // Can't duplicate this node, doing so would orphan the original one as all remaining links
       // to child are from parent.
@@ -1060,7 +1086,7 @@ struct graph_t
                parent_idx, child_idx);
 
     unsigned clone_idx = duplicate (child_idx);
-    if (clone_idx == (unsigned) -1) return false;
+    if (clone_idx == (unsigned) -1) return -1;
     // duplicate shifts the root node idx, so if parent_idx was root update it.
     if (parent_idx == clone_idx) parent_idx++;
 
@@ -1071,6 +1097,62 @@ struct graph_t
         continue;
 
       reassign_link (l, parent_idx, clone_idx);
+    }
+
+    return clone_idx;
+  }
+
+  /*
+   * Creates a copy of child and re-assigns the links from
+   * parents to the clone. The copy is a shallow copy, objects
+   * linked from child are not duplicated.
+   *
+   * Returns the index of the newly created duplicate.
+   *
+   * If the child_idx only has incoming edges from parents,
+   * duplication isn't possible or duplication fails and this will
+   * return -1.
+   */
+  unsigned duplicate (const hb_set_t* parents, unsigned child_idx)
+  {
+    if (parents->is_empty()) {
+      return -1;
+    }
+
+    update_parents ();
+
+    const auto& child = vertices_[child_idx];
+    unsigned links_to_child = 0;
+    unsigned last_parent = parents->get_max();
+    unsigned first_parent = parents->get_min();
+    for (unsigned parent_idx : *parents) {
+      links_to_child += child.incoming_edges_from_parent(parent_idx);
+    }
+
+    if (child.incoming_edges () <= links_to_child)
+    {
+      // Can't duplicate this node, doing so would orphan the original one as all remaining links
+      // to child are from parent.
+      DEBUG_MSG (SUBSET_REPACK, nullptr, "  Not duplicating %u, ..., %u => %u", first_parent, last_parent, child_idx);
+      return -1;
+    }
+
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "  Duplicating %u, ..., %u => %u", first_parent, last_parent, child_idx);
+
+    unsigned clone_idx = duplicate (child_idx);
+    if (clone_idx == (unsigned) -1) return false;
+    
+    for (unsigned parent_idx : *parents) {
+      // duplicate shifts the root node idx, so if parent_idx was root update it.
+      if (parent_idx == clone_idx) parent_idx++;
+      auto& parent = vertices_[parent_idx];
+      for (auto& l : parent.obj.all_links_writer ())
+      {
+        if (l.objidx != child_idx)
+          continue;
+
+        reassign_link (l, parent_idx, clone_idx);
+      }
     }
 
     return clone_idx;

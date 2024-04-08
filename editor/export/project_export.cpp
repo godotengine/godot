@@ -1035,10 +1035,13 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 	Ref<EditorExportPlatform> platform = current->get_platform();
 	ERR_FAIL_COND(platform.is_null());
 
+	const Dictionary &fd_option = export_pck_zip->get_selected_options();
+	bool export_debug = fd_option.get(TTR("Export With Debug"), true);
+
 	if (p_path.ends_with(".zip")) {
-		platform->export_zip(current, export_pck_zip_debug->is_pressed(), p_path);
+		platform->export_zip(current, export_debug, p_path);
 	} else if (p_path.ends_with(".pck")) {
-		platform->export_pack(current, export_pck_zip_debug->is_pressed(), p_path);
+		platform->export_pack(current, export_debug, p_path);
 	} else {
 		ERR_FAIL_MSG("Path must end with .pck or .zip");
 	}
@@ -1123,7 +1126,10 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 
 	platform->clear_messages();
 	current->update_value_overrides();
-	Error err = platform->export_project(current, export_debug->is_pressed(), current->get_export_path(), 0);
+	Dictionary fd_option = export_project->get_selected_options();
+	bool export_debug = fd_option.get(TTR("Export With Debug"), true);
+
+	Error err = platform->export_project(current, export_debug, current->get_export_path(), 0);
 	result_dialog_log->clear();
 	if (err != ERR_SKIP) {
 		if (platform->fill_log_messages(result_dialog_log, err)) {
@@ -1552,17 +1558,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_project->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_project_to_path));
 	export_project->get_line_edit()->connect("text_changed", callable_mp(this, &ProjectExportDialog::_validate_export_path));
 
-	export_debug = memnew(CheckBox);
-	export_debug->set_text(TTR("Export With Debug"));
-	export_debug->set_pressed(true);
-	export_debug->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	export_project->get_vbox()->add_child(export_debug);
-
-	export_pck_zip_debug = memnew(CheckBox);
-	export_pck_zip_debug->set_text(TTR("Export With Debug"));
-	export_pck_zip_debug->set_pressed(true);
-	export_pck_zip_debug->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	export_pck_zip->get_vbox()->add_child(export_pck_zip_debug);
+	export_project->add_option(TTR("Export With Debug"), Vector<String>(), true);
+	export_pck_zip->add_option(TTR("Export With Debug"), Vector<String>(), true);
 
 	set_hide_on_ok(false);
 

@@ -223,7 +223,7 @@ struct OS2
       }
     }
 
-    return num ? (unsigned) roundf (total_width / num) : 0;
+    return num ? (unsigned) roundf ((double) total_width / (double) num) : 0;
   }
 
   bool subset (hb_subset_context_t *c) const
@@ -284,11 +284,11 @@ struct OS2
         os2_prime->usWidthClass = width_class;
     }
 
-    if (c->plan->flags & HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES)
-      return_trace (true);
-
     os2_prime->usFirstCharIndex = hb_min (0xFFFFu, c->plan->unicodes.get_min ());
     os2_prime->usLastCharIndex  = hb_min (0xFFFFu, c->plan->unicodes.get_max ());
+
+    if (c->plan->flags & HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES)
+      return_trace (true);
 
     _update_unicode_ranges (&c->plan->unicodes, os2_prime->ulUnicodeRange);
 

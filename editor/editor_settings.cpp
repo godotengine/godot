@@ -417,6 +417,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set_restart_if_changed("interface/editor/debug/enable_pseudolocalization", true);
 	// Use pseudolocalization in editor.
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_native_file_dialogs", false, "", PROPERTY_USAGE_DEFAULT)
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/expand_to_title", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/main_font_size", 14, "8,48,1")
@@ -755,6 +756,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Tiles editor
 	_initial_set("editors/tiles_editor/display_grid", true);
+	_initial_set("editors/tiles_editor/highlight_selected_layer", true);
 	_initial_set("editors/tiles_editor/grid_color", Color(1.0, 0.5, 0.2, 0.5));
 
 	// Polygon editor

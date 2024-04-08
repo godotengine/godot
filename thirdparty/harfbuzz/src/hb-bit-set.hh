@@ -38,10 +38,10 @@ struct hb_bit_set_t
   ~hb_bit_set_t () = default;
 
   hb_bit_set_t (const hb_bit_set_t& other) : hb_bit_set_t () { set (other, true); }
-  hb_bit_set_t ( hb_bit_set_t&& other) : hb_bit_set_t () { hb_swap (*this, other); }
+  hb_bit_set_t ( hb_bit_set_t&& other)  noexcept : hb_bit_set_t () { hb_swap (*this, other); }
   hb_bit_set_t& operator= (const hb_bit_set_t& other) { set (other); return *this; }
-  hb_bit_set_t& operator= (hb_bit_set_t&& other) { hb_swap (*this, other); return *this; }
-  friend void swap (hb_bit_set_t &a, hb_bit_set_t &b)
+  hb_bit_set_t& operator= (hb_bit_set_t&& other)  noexcept { hb_swap (*this, other); return *this; }
+  friend void swap (hb_bit_set_t &a, hb_bit_set_t &b) noexcept
   {
     if (likely (!a.successful || !b.successful))
       return;

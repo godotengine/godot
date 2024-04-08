@@ -55,7 +55,9 @@ static inline void setup_http_request(HTTPRequest *request) {
 }
 
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
-	title->set_text(p_title);
+	title_text = p_title;
+	title->set_text(title_text);
+	title->set_tooltip_text(title_text);
 	asset_id = p_asset_id;
 	category->set_text(p_category);
 	category_id = p_category_id;
@@ -66,16 +68,15 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 
 // TODO: Refactor this method to use the TextServer.
 void EditorAssetLibraryItem::clamp_width(int p_max_width) {
-	int text_pixel_width = title->get_button_font().ptr()->get_string_size(title->get_text()).x * EDSCALE;
-
-	String full_text = title->get_text();
-	title->set_tooltip_text(full_text);
+	int text_pixel_width = title->get_button_font()->get_string_size(title_text).x * EDSCALE;
 
 	if (text_pixel_width > p_max_width) {
 		// Truncate title text to within the current column width.
-		int max_length = p_max_width / (text_pixel_width / full_text.length());
-		String truncated_text = full_text.left(max_length - 3) + "...";
+		int max_length = p_max_width / (text_pixel_width / title_text.length());
+		String truncated_text = title_text.left(max_length - 3) + "...";
 		title->set_text(truncated_text);
+	} else {
+		title->set_text(title_text);
 	}
 }
 
@@ -143,6 +144,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	title = memnew(LinkButton);
+	title->set_auto_translate_mode(AutoTranslateMode::AUTO_TRANSLATE_MODE_DISABLED);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(title);
 
@@ -764,13 +766,13 @@ const char *EditorAssetLibrary::sort_text[SORT_MAX] = {
 };
 
 const char *EditorAssetLibrary::support_key[SUPPORT_MAX] = {
-	"official",
+	"official", // Former name for the Featured support level (still used on the API backend).
 	"community",
 	"testing",
 };
 
 const char *EditorAssetLibrary::support_text[SUPPORT_MAX] = {
-	TTRC("Official"),
+	TTRC("Featured"),
 	TTRC("Community"),
 	TTRC("Testing"),
 };
@@ -1525,7 +1527,15 @@ void EditorAssetLibrary::_update_asset_items_columns() {
 		asset_items->set_columns(new_columns);
 	}
 
-	asset_items_column_width = (get_size().x / new_columns) - (100 * EDSCALE);
+	asset_items_column_width = (get_size().x / new_columns) - (120 * EDSCALE);
+
+	for (int i = 0; i < asset_items->get_child_count(); i++) {
+		EditorAssetLibraryItem *item = Object::cast_to<EditorAssetLibraryItem>(asset_items->get_child(i));
+		if (!item || !item->is_visible()) {
+			continue;
+		}
+		item->clamp_width(asset_items_column_width);
+	}
 }
 
 void EditorAssetLibrary::_set_library_message(const String &p_message) {
@@ -1664,10 +1674,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(support);
 	support->set_text(TTR("Support"));
 	support->get_popup()->set_hide_on_checkable_item_selection(false);
-	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_OFFICIAL]), SUPPORT_OFFICIAL);
+	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_FEATURED]), SUPPORT_FEATURED);
 	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_COMMUNITY]), SUPPORT_COMMUNITY);
 	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_TESTING]), SUPPORT_TESTING);
-	support->get_popup()->set_item_checked(SUPPORT_OFFICIAL, true);
+	support->get_popup()->set_item_checked(SUPPORT_FEATURED, true);
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, true);
 	support->get_popup()->connect("id_pressed", callable_mp(this, &EditorAssetLibrary::_support_toggled));
 

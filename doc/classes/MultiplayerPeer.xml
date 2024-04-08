@@ -10,7 +10,6 @@
 	</description>
 	<tutorials>
 		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
-		<link title="WebRTC Signaling Demo">https://godotengine.org/asset-library/asset/537</link>
 	</tutorials>
 	<methods>
 		<method name="close">

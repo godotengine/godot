@@ -8,7 +8,7 @@
 	</description>
 	<tutorials>
 		<link title="2D Sprite animation">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
 	</tutorials>
 	<methods>
 		<method name="get_playing_speed" qualifiers="const">

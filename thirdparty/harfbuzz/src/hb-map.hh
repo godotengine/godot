@@ -70,9 +70,9 @@ struct hb_hashmap_t
 
     alloc (o.population); hb_copy (o, *this);
   }
-  hb_hashmap_t (hb_hashmap_t&& o) : hb_hashmap_t () { hb_swap (*this, o); }
+  hb_hashmap_t (hb_hashmap_t&& o)  noexcept : hb_hashmap_t () { hb_swap (*this, o); }
   hb_hashmap_t& operator= (const hb_hashmap_t& o)  { reset (); alloc (o.population); hb_copy (o, *this); return *this; }
-  hb_hashmap_t& operator= (hb_hashmap_t&& o)  { hb_swap (*this, o); return *this; }
+  hb_hashmap_t& operator= (hb_hashmap_t&& o)   noexcept { hb_swap (*this, o); return *this; }
 
   hb_hashmap_t (std::initializer_list<hb_pair_t<K, V>> lst) : hb_hashmap_t ()
   {
@@ -137,26 +137,23 @@ struct hb_hashmap_t
   };
 
   hb_object_header_t header;
-  unsigned int successful : 1; /* Allocations successful */
-  unsigned int population : 31; /* Not including tombstones. */
+  bool successful; /* Allocations successful */
+  unsigned short max_chain_length;
+  unsigned int population; /* Not including tombstones. */
   unsigned int occupancy; /* Including tombstones. */
   unsigned int mask;
   unsigned int prime;
-  unsigned int max_chain_length;
   item_t *items;
 
-  friend void swap (hb_hashmap_t& a, hb_hashmap_t& b)
+  friend void swap (hb_hashmap_t& a, hb_hashmap_t& b) noexcept
   {
     if (unlikely (!a.successful || !b.successful))
       return;
-    unsigned tmp = a.population;
-    a.population = b.population;
-    b.population = tmp;
-    //hb_swap (a.population, b.population);
+    hb_swap (a.max_chain_length, b.max_chain_length);
+    hb_swap (a.population, b.population);
     hb_swap (a.occupancy, b.occupancy);
     hb_swap (a.mask, b.mask);
     hb_swap (a.prime, b.prime);
-    hb_swap (a.max_chain_length, b.max_chain_length);
     hb_swap (a.items, b.items);
   }
   void init ()
@@ -164,10 +161,10 @@ struct hb_hashmap_t
     hb_object_init (this);
 
     successful = true;
+    max_chain_length = 0;
     population = occupancy = 0;
     mask = 0;
     prime = 0;
-    max_chain_length = 0;
     items = nullptr;
   }
   void fini ()
@@ -558,7 +555,7 @@ struct hb_map_t : hb_hashmap_t<hb_codepoint_t,
   ~hb_map_t () = default;
   hb_map_t () : hashmap () {}
   hb_map_t (const hb_map_t &o) : hashmap ((hashmap &) o) {}
-  hb_map_t (hb_map_t &&o) : hashmap (std::move ((hashmap &) o)) {}
+  hb_map_t (hb_map_t &&o)  noexcept : hashmap (std::move ((hashmap &) o)) {}
   hb_map_t& operator= (const hb_map_t&) = default;
   hb_map_t& operator= (hb_map_t&&) = default;
   hb_map_t (std::initializer_list<hb_codepoint_pair_t> lst) : hashmap (lst) {}

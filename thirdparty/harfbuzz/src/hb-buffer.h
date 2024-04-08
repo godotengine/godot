@@ -487,6 +487,12 @@ hb_buffer_set_not_found_glyph (hb_buffer_t    *buffer,
 HB_EXTERN hb_codepoint_t
 hb_buffer_get_not_found_glyph (const hb_buffer_t *buffer);
 
+HB_EXTERN void
+hb_buffer_set_random_state (hb_buffer_t    *buffer,
+			    unsigned        state);
+
+HB_EXTERN unsigned
+hb_buffer_get_random_state (const hb_buffer_t *buffer);
 
 /*
  * Content API.

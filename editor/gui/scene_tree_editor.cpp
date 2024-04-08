@@ -45,7 +45,6 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
-#include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
@@ -898,6 +897,14 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 	}
 }
 
+void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {
+	ERR_FAIL_NULL(tree);
+	TreeItem *item = Object::cast_to<TreeItem>(ObjectDB::get_instance(p_item_id));
+	if (item) {
+		tree->scroll_to_item(item, true);
+	}
+}
+
 void SceneTreeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -925,6 +932,28 @@ void SceneTreeEditor::_notification(int p_what) {
 			tree->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 
 			_update_tree();
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				TreeItem *item = nullptr;
+				if (selected) {
+					// Scroll to selected node.
+					item = _find(tree->get_root(), selected->get_path());
+				} else if (marked.size() == 1) {
+					// Scroll to a single marked node.
+					Node *marked_node = *marked.begin();
+					if (marked_node) {
+						item = _find(tree->get_root(), marked_node->get_path());
+					}
+				}
+
+				if (item) {
+					// Must wait until tree is properly sized before scrolling.
+					ObjectID item_id = item->get_instance_id();
+					callable_mp(this, &SceneTreeEditor::_tree_scroll_to_item).call_deferred(item_id);
+				}
+			}
 		} break;
 	}
 }
@@ -1513,6 +1542,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	}
 
 	tree = memnew(Tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_anchor(SIDE_RIGHT, ANCHOR_END);
 	tree->set_anchor(SIDE_BOTTOM, ANCHOR_END);
 	tree->set_begin(Point2(0, p_label ? 18 : 0));
@@ -1567,7 +1597,9 @@ SceneTreeEditor::~SceneTreeEditor() {
 
 /******** DIALOG *********/
 
-void SceneTreeDialog::popup_scenetree_dialog() {
+void SceneTreeDialog::popup_scenetree_dialog(Node *p_selected_node, Node *p_marked_node, bool p_marked_node_selectable, bool p_marked_node_children_selectable) {
+	get_scene_tree()->set_marked(p_marked_node, p_marked_node_selectable, p_marked_node_children_selectable);
+	get_scene_tree()->set_selected(p_selected_node);
 	popup_centered_clamped(Size2(350, 700) * EDSCALE);
 }
 

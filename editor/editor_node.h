@@ -399,8 +399,6 @@ private:
 	EditorFileDialog *file_export_lib = nullptr;
 	EditorFileDialog *file_script = nullptr;
 	EditorFileDialog *file_android_build_source = nullptr;
-	CheckBox *file_export_lib_merge = nullptr;
-	CheckBox *file_export_lib_apply_xforms = nullptr;
 	String current_path;
 	MenuButton *update_spinner = nullptr;
 
@@ -572,6 +570,7 @@ private:
 	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
 	void _discard_changes(const String &p_str = String());
 	void _scene_tab_closed(int p_tab);
+	void _cancel_close_scene_tab();
 
 	void _inherit_request(String p_file);
 	void _instantiate_request(const Vector<String> &p_files);
@@ -871,8 +870,8 @@ public:
 
 	bool is_exiting() const { return exiting; }
 
-	Variant drag_resource(const Ref<Resource> &p_res, Control *p_from);
-	Variant drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from);
+	Dictionary drag_resource(const Ref<Resource> &p_res, Control *p_from);
+	Dictionary drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from);
 
 	void add_tool_menu_item(const String &p_name, const Callable &p_callback);
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);

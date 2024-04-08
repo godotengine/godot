@@ -576,9 +576,9 @@ void FileSystemDock::_notification(int p_what) {
 					if ((String(dd["favorite"]) == "all")) {
 						tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
 					}
-				} else if ((String(dd["type"]) == "files") || (String(dd["type"]) == "files_and_dirs") || (String(dd["type"]) == "resource")) {
+				} else if ((String(dd["type"]) == "files") || (String(dd["type"]) == "files_and_dirs")) {
 					tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM | Tree::DROP_MODE_INBETWEEN);
-				} else if ((String(dd["type"]) == "nodes")) {
+				} else if ((String(dd["type"]) == "nodes") || (String(dd["type"]) == "resource")) {
 					holding_branch = true;
 					TreeItem *item = tree->get_next_selected(tree->get_root());
 					while (item) {
@@ -1561,10 +1561,42 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 }
 
 void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const {
-	// Update the paths in ResourceUID, so that UIDs remain valid.
-	for (const KeyValue<String, ResourceUID::ID> &pair : p_uids) {
-		if (p_renames.has(pair.key)) {
-			ResourceUID::get_singleton()->set_id(pair.value, p_renames[pair.key]);
+	for (const KeyValue<String, String> &pair : p_renames) {
+		// Update UID path.
+		const String &old_path = pair.key;
+		const String &new_path = pair.value;
+
+		const HashMap<String, ResourceUID::ID>::ConstIterator I = p_uids.find(old_path);
+		if (I) {
+			ResourceUID::get_singleton()->set_id(I->value, new_path);
+		}
+
+		ScriptServer::remove_global_class_by_path(old_path);
+
+		int index = -1;
+		EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->find_file(old_path, &index);
+
+		if (!efd || index < 0) {
+			// The file was removed.
+			continue;
+		}
+
+		// Update paths for global classes.
+		if (!efd->get_file_script_class_name(index).is_empty()) {
+			String lang;
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				if (ScriptServer::get_language(i)->handles_global_class_type(efd->get_file_type(index))) {
+					lang = ScriptServer::get_language(i)->get_name();
+					break;
+				}
+			}
+			if (lang.is_empty()) {
+				continue; // No language found that can handle this global class.
+			}
+
+			ScriptServer::add_global_class(efd->get_file_script_class_name(index), efd->get_file_script_class_extends(index), lang, new_path);
+			EditorNode::get_editor_data().script_class_set_icon_path(efd->get_file_script_class_name(index), efd->get_file_script_class_icon_path(index));
+			EditorNode::get_editor_data().script_class_set_name(new_path, efd->get_file_script_class_name(index));
 		}
 	}
 
@@ -1583,10 +1615,13 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 
 		if (p_renames.has(base_path)) {
 			base_path = p_renames[base_path];
+			r->set_path(base_path + extra_path);
 		}
-
-		r->set_path(base_path + extra_path);
 	}
+
+	ScriptServer::save_global_classes();
+	EditorNode::get_editor_data().script_class_save_icon_paths();
+	EditorFileSystem::get_singleton()->emit_signal(SNAME("script_classes_updated"));
 }
 
 void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const {
@@ -1710,6 +1745,13 @@ void FileSystemDock::_make_scene_confirm() {
 }
 
 void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
+	const Ref<Script> &scr = p_resource;
+	if (scr.is_valid()) {
+		ScriptServer::remove_global_class_by_path(scr->get_path());
+		ScriptServer::save_global_classes();
+		EditorNode::get_editor_data().script_class_save_icon_paths();
+		EditorFileSystem::get_singleton()->emit_signal(SNAME("script_classes_updated"));
+	}
 	emit_signal(SNAME("resource_removed"), p_resource);
 }
 
@@ -2757,7 +2799,7 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		String to_dir;
 		bool favorite;
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
-		return !to_dir.is_empty();
+		return !favorite;
 	}
 
 	if (drag_data.has("type") && (String(drag_data["type"]) == "files" || String(drag_data["type"]) == "files_and_dirs")) {
@@ -2872,7 +2914,12 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		Ref<Resource> res = drag_data["resource"];
 		String to_dir;
 		bool favorite;
+		tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+		if (to_dir.is_empty()) {
+			to_dir = get_current_directory();
+		}
+
 		if (res.is_valid() && !to_dir.is_empty()) {
 			EditorNode::get_singleton()->push_item(res.ptr());
 			EditorNode::get_singleton()->save_resource_as(res, to_dir);
@@ -2918,9 +2965,10 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	if (drag_data.has("type") && String(drag_data["type"]) == "nodes") {
 		String to_dir;
 		bool favorite;
+		tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
 		if (to_dir.is_empty()) {
-			to_dir = "res://";
+			to_dir = get_current_directory();
 		}
 		SceneTreeDock::get_singleton()->save_branch_to_file(to_dir);
 	}
@@ -2934,6 +2982,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 	if (p_from == files) {
 		int pos = files->get_item_at_position(p_point, true);
 		if (pos == -1) {
+			target = get_current_directory();
 			return;
 		}
 
@@ -3457,37 +3506,41 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && holding_branch) {
-		const int item_idx = files->get_item_at_position(mm->get_position());
+		const int item_idx = files->get_item_at_position(mm->get_position(), true);
+		files->deselect_all();
+		String fpath;
 		if (item_idx != -1) {
-			files->deselect_all();
-			String fpath = files->get_item_metadata(item_idx);
+			fpath = files->get_item_metadata(item_idx);
 			if (fpath.ends_with("/") || fpath == "res://") {
 				files->select(item_idx);
 			}
+		} else {
+			fpath = get_current_directory();
+		}
 
-			TreeItem *deselect_item = tree->get_next_selected(tree->get_root());
-			while (deselect_item) {
-				deselect_item->deselect(0);
-				deselect_item = tree->get_next_selected(deselect_item);
+		TreeItem *deselect_item = tree->get_next_selected(tree->get_root());
+		while (deselect_item) {
+			deselect_item->deselect(0);
+			deselect_item = tree->get_next_selected(deselect_item);
+		}
+
+		// Try to select the corresponding tree item.
+		TreeItem *tree_item = (item_idx != -1) ? tree->get_item_with_text(files->get_item_text(item_idx)) : nullptr;
+
+		if (tree_item) {
+			tree_item->select(0);
+		} else {
+			// Find parent folder.
+			fpath = fpath.substr(0, fpath.rfind("/") + 1);
+			if (fpath.size() > String("res://").size()) {
+				fpath = fpath.left(fpath.size() - 2); // Remove last '/'.
+				const int slash_idx = fpath.rfind("/");
+				fpath = fpath.substr(slash_idx + 1, fpath.size() - slash_idx - 1);
 			}
 
-			// Try to select the corresponding tree item.
-			TreeItem *tree_item = tree->get_item_with_text(files->get_item_text(item_idx));
+			tree_item = tree->get_item_with_text(fpath);
 			if (tree_item) {
 				tree_item->select(0);
-			} else {
-				// Find parent folder.
-				fpath = fpath.substr(0, fpath.rfind("/") + 1);
-				if (fpath.size() > String("res://").size()) {
-					fpath = fpath.left(fpath.size() - 2); // Remove last '/'.
-					const int slash_idx = fpath.rfind("/");
-					fpath = fpath.substr(slash_idx + 1, fpath.size() - slash_idx - 1);
-				}
-
-				tree_item = tree->get_item_with_text(fpath);
-				if (tree_item) {
-					tree_item->select(0);
-				}
 			}
 		}
 	}

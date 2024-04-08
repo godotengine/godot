@@ -152,6 +152,13 @@
 				Informs the user queued a recenter of the player position.
 			</description>
 		</signal>
+		<signal name="refresh_rate_changed">
+			<param index="0" name="refresh_rate" type="float" />
+			<description>
+				Informs the user the HMD refresh rate has changed.
+				[b]Node:[/b] Only emitted if XR runtime supports the refresh rate extension.
+			</description>
+		</signal>
 		<signal name="session_begun">
 			<description>
 				Informs our OpenXR session has been started.

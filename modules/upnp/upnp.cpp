@@ -121,33 +121,20 @@ void UPNP::parse_igd(Ref<UPNPDevice> dev, UPNPDev *devlist) {
 		return;
 	}
 
-	struct UPNPUrls *urls = (UPNPUrls *)malloc(sizeof(struct UPNPUrls));
-
-	if (!urls) {
-		dev->set_igd_status(UPNPDevice::IGD_STATUS_MALLOC_ERROR);
-		return;
-	}
-
+	struct UPNPUrls urls = {};
 	struct IGDdatas data;
-
-	memset(urls, 0, sizeof(struct UPNPUrls));
 
 	parserootdesc(xml, size, &data);
 	free(xml);
 	xml = nullptr;
 
-	GetUPNPUrls(urls, &data, dev->get_description_url().utf8().get_data(), 0);
-
-	if (!urls) {
-		dev->set_igd_status(UPNPDevice::IGD_STATUS_NO_URLS);
-		return;
-	}
+	GetUPNPUrls(&urls, &data, dev->get_description_url().utf8().get_data(), 0);
 
 	char addr[16];
-	int i = UPNP_GetValidIGD(devlist, urls, &data, (char *)&addr, 16);
+	int i = UPNP_GetValidIGD(devlist, &urls, &data, (char *)&addr, 16);
 
 	if (i != 1) {
-		FreeUPNPUrls(urls);
+		FreeUPNPUrls(&urls);
 
 		switch (i) {
 			case 0:
@@ -165,18 +152,18 @@ void UPNP::parse_igd(Ref<UPNPDevice> dev, UPNPDev *devlist) {
 		}
 	}
 
-	if (urls->controlURL[0] == '\0') {
-		FreeUPNPUrls(urls);
+	if (urls.controlURL[0] == '\0') {
+		FreeUPNPUrls(&urls);
 		dev->set_igd_status(UPNPDevice::IGD_STATUS_INVALID_CONTROL);
 		return;
 	}
 
-	dev->set_igd_control_url(urls->controlURL);
+	dev->set_igd_control_url(urls.controlURL);
 	dev->set_igd_service_type(data.first.servicetype);
 	dev->set_igd_our_addr(addr);
 	dev->set_igd_status(UPNPDevice::IGD_STATUS_OK);
 
-	FreeUPNPUrls(urls);
+	FreeUPNPUrls(&urls);
 }
 
 int UPNP::upnp_result(int in) {

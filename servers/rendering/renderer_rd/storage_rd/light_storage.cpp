@@ -668,7 +668,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 					light_data.blend_splits = (smode != RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL) && light->directional_blend_splits;
 					for (int j = 0; j < 4; j++) {
 						Rect2 atlas_rect = light_instance->shadow_transform[j].atlas_rect;
-						Projection matrix = light_instance->shadow_transform[j].camera;
+						Projection correction;
+						correction.set_depth_correction(false, true, false);
+						Projection matrix = correction * light_instance->shadow_transform[j].camera;
 						float split = light_instance->shadow_transform[MIN(limit, j)].split;
 
 						Projection bias;
@@ -967,7 +969,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				Projection bias;
 				bias.set_light_bias();
 
-				Projection cm = light_instance->shadow_transform[0].camera;
+				Projection correction;
+				correction.set_depth_correction(false, true, false);
+				Projection cm = correction * light_instance->shadow_transform[0].camera;
 				Projection shadow_mtx = bias * cm * modelview;
 				RendererRD::MaterialStorage::store_camera(shadow_mtx, light_data.shadow_matrix);
 

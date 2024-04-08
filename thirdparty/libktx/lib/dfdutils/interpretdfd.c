@@ -29,18 +29,37 @@ static uint32_t bit_ceil(uint32_t x) {
  * @~English
  * @brief Interpret a Data Format Descriptor for a simple format.
  *
- * @param DFD Pointer to a Data Format Descriptor to interpret,
-              described as 32-bit words in native endianness.
-              Note that this is the whole descriptor, not just
-              the basic descriptor block.
- * @param R Information about the decoded red channel or the depth channel, if any.
- * @param G Information about the decoded green channel or the stencil channel, if any.
- * @param B Information about the decoded blue channel, if any.
- * @param A Information about the decoded alpha channel, if any.
- * @param wordBytes Byte size of the channels (unpacked) or total size (packed).
+ * Handles "simple" cases that can be translated to things a GPU can access.
+ * For simplicity, it ignores the compressed formats, which are generally a
+ * single sample (and I believe are all defined to be little-endian in their
+ * in-memory layout, even if some documentation confuses this).  Focuses on
+ * the layout and ignores sRGB except for reporting if that is the transfer
+ * function by way of a bit in the returned value.
+ *
+ * @param[in] DFD Pointer to a Data Format Descriptor to interpret,
+ *            described as 32-bit words in native endianness.
+ *            Note that this is the whole descriptor, not just
+ *            the basic descriptor block.
+ * @param R[in,out] Pointer to struct to receive information about the decoded
+ *                  red channel, the Y channel, if YUV, or the depth channel,
+ *                  if any.
+ * @param G[in,out] Pointer to struct to receive information about the decoded
+ *                  green channel, the U (Cb) channel, if YUV, or the stencil
+ *                  channel, if any.
+ * @param B[in,out] Pointer to struct to receive information about the decoded
+ *                  blue channel, if any or the V (Cr) channel, if YUV.
+ * @param A[in,out] Pointer to struct to receive information about the decoded
+ *                  alpha channel, if any or the second Y channel, if YUV and
+ *                  any.
+ * @param wordBytes[in,out] Pointer to a uint32_t to receive the byte size of
+ *                          the channels (unpacked) or total size (packed).
  *
  * @return An enumerant describing the decoded value,
  *         or an error code in case of failure.
+ *
+ * The mapping of YUV channels to the parameter names used here is based on
+ * the channel ids in @c khr_df.h and is different from the convention used
+ * in format names in the Vulkan specification where G == Y, R = Cr and B = Cb.
  **/
 enum InterpretDFDResult interpretDFD(const uint32_t *DFD,
                                      InterpretedDFDChannel *R,
@@ -49,14 +68,6 @@ enum InterpretDFDResult interpretDFD(const uint32_t *DFD,
                                      InterpretedDFDChannel *A,
                                      uint32_t *wordBytes)
 {
-    /* We specifically handle "simple" cases that can be translated */
-    /* to things a GPU can access. For simplicity, we also ignore */
-    /* the compressed formats, which are generally a single sample */
-    /* (and I believe are all defined to be little-endian in their */
-    /* in-memory layout, even if some documentation confuses this). */
-    /* We also just worry about layout and ignore sRGB, since that's */
-    /* trivial to extract anyway. */
-
     /* DFD points to the whole descriptor, not the basic descriptor block. */
     /* Make everything else relative to the basic descriptor block. */
     const uint32_t *BDFDB = DFD+1;
@@ -78,7 +89,7 @@ enum InterpretDFDResult interpretDFD(const uint32_t *DFD,
 
     /* First rule out the multiple planes case (trivially) */
     /* - that is, we check that only bytesPlane0 is non-zero. */
-    /* This means we don't handle YUV even if the API could. */
+    /* This means we don't handle multi-plane YUV, even if the API could. */
     /* (We rely on KHR_DF_WORD_BYTESPLANE0..3 being the same and */
     /* KHR_DF_WORD_BYTESPLANE4..7 being the same as a short cut.) */
     if ((BDFDB[KHR_DF_WORD_BYTESPLANE0] & ~KHR_DF_MASK_BYTESPLANE0)
@@ -104,6 +115,8 @@ enum InterpretDFDResult interpretDFD(const uint32_t *DFD,
     bool hasSigned = false;
     bool hasFloat = false;
     bool hasNormalized = false;
+    bool hasFixed = false;
+    khr_df_model_e model = KHR_DFDVAL(BDFDB, MODEL);
 
     // Note: We're ignoring 9995, which is weird and worth special-casing
     // rather than trying to generalise to all float formats.
@@ -116,13 +129,23 @@ enum InterpretDFDResult interpretDFD(const uint32_t *DFD,
         // (i.e. set to the maximum bit value, and check min value) on
         // the assumption that we're looking at a format which *came* from
         // an API we can support.
-        const bool isNormalized = isFloat ?
-                *(float*) (void*) &BDFDB[KHR_DF_WORD_SAMPLESTART +
+        bool isFixed;
+        bool isNormalized;
+        if (isFloat) {
+            isNormalized = *(float*) (void*) &BDFDB[KHR_DF_WORD_SAMPLESTART +
                     KHR_DF_WORD_SAMPLEWORDS * i +
-                    KHR_DF_SAMPLEWORD_SAMPLEUPPER] != 1.0f :
-                KHR_DFDSVAL(BDFDB, i, SAMPLEUPPER) != 1U;
-
+                    KHR_DF_SAMPLEWORD_SAMPLEUPPER] != 1.0f;
+            isFixed = false;
+        } else {
+            uint32_t sampleUpper = KHR_DFDSVAL(BDFDB, i, SAMPLEUPPER);
+            uint32_t maxVal = 1U << KHR_DFDSVAL(BDFDB, i, BITLENGTH);
+            if (!isSigned) maxVal <<= 1;
+            maxVal--;
+            isFixed = 1U < sampleUpper && sampleUpper < maxVal;
+            isNormalized = !isFixed && sampleUpper != 1U;
+        }
         hasSigned |= isSigned;
+        hasFixed |= isFixed;
         hasFloat |= isFloat;
         // By our definition the normalizedness of a single bit channel (like in RGBA 5:5:5:1)
         // is ambiguous. Ignore these during normalized checks.
@@ -132,9 +155,10 @@ enum InterpretDFDResult interpretDFD(const uint32_t *DFD,
     result |= hasSigned ? i_SIGNED_FORMAT_BIT : 0;
     result |= hasFloat ? i_FLOAT_FORMAT_BIT : 0;
     result |= hasNormalized ? i_NORMALIZED_FORMAT_BIT : 0;
+    result |= hasFixed ? i_FIXED_FORMAT_BIT : 0;
 
     // Checks based on color model
-    if (KHR_DFDVAL(BDFDB, MODEL) == KHR_DF_MODEL_YUVSDA) {
+    if (model == KHR_DF_MODEL_YUVSDA) {
         result |= i_NORMALIZED_FORMAT_BIT;
         result |= i_COMPRESSED_FORMAT_BIT;
         result |= i_YUVSDA_FORMAT_BIT;
@@ -165,7 +189,7 @@ enum InterpretDFDResult interpretDFD(const uint32_t *DFD,
         *wordBytes = ((result & i_PACKED_FORMAT_BIT) ? 4 : 1) * bit_ceil(largestSampleSize) / 8;
 
     } else if (KHR_DFDVAL(BDFDB, MODEL) == KHR_DF_MODEL_RGBSDA) {
-        /* We only pay attention to sRGB. */
+        /* Check if transfer is sRGB. */
         if (KHR_DFDVAL(BDFDB, TRANSFER) == KHR_DF_TRANSFER_SRGB) result |= i_SRGB_FORMAT_BIT;
 
         /* We only support samples at coordinate 0,0,0,0. */
@@ -175,7 +199,11 @@ enum InterpretDFDResult interpretDFD(const uint32_t *DFD,
             if (KHR_DFDSVAL(BDFDB, sampleCounter, SAMPLEPOSITION_ALL))
                 return i_UNSUPPORTED_MULTIPLE_SAMPLE_LOCATIONS;
         }
+    }
 
+    if (model == KHR_DF_MODEL_RGBSDA || model == KHR_DF_MODEL_YUVSDA) {
+        /* The values of the DEPTH and STENCIL tokens are the same for */
+        /* RGBSDA and YUVSDA. */
         /* For Depth/Stencil formats mixed channels are allowed */
         for (uint32_t sampleCounter = 0; sampleCounter < numSamples; ++sampleCounter) {
             switch (KHR_DFDSVAL(BDFDB, sampleCounter, CHANNELID)) {
@@ -205,6 +233,9 @@ enum InterpretDFDResult interpretDFD(const uint32_t *DFD,
                 // This heuristic should handle 64-bit integers, too.
             }
         }
+
+        /* This all relies on the channel id values for RGB being equal to */
+        /* those for YUV. */
 
         /* Remember: the canonical ordering of samples is to start with */
         /* the lowest bit of the channel/location which touches bit 0 of */
@@ -288,8 +319,20 @@ enum InterpretDFDResult interpretDFD(const uint32_t *DFD,
                     currentByteOffset = sampleByteOffset;
                     currentBitLength = sampleBitLength;
                     if (sampleChannelPtr->size) {
-                        /* Uh-oh, we've seen this channel before. */
-                        return i_UNSUPPORTED_NONTRIVIAL_ENDIANNESS;
+                        if (model == KHR_DF_MODEL_YUVSDA && sampleChannel == KHR_DF_CHANNEL_YUVSDA_Y) {
+                            if (sampleChannelPtr == R) {
+                                /* We've got another Y channel. Record details in A. */
+                                if (A->size == 0) {
+                                    sampleChannelPtr = A;
+                                } else {
+                                    /* Uh-oh, we've already got a second Y or an alpha channel. */
+                                    return i_UNSUPPORTED_CHANNEL_TYPES;
+                                }
+                            }
+                        } else {
+                          /* Uh-oh, we've seen this channel before. */
+                          return i_UNSUPPORTED_NONTRIVIAL_ENDIANNESS;
+                        }
                     }
                     /* For now, record the bit offset in little-endian terms, */
                     /* because we may not know to reverse it yet. */
@@ -378,8 +421,20 @@ enum InterpretDFDResult interpretDFD(const uint32_t *DFD,
                     currentByteOffset = sampleByteOffset;
                     currentByteLength = sampleByteLength;
                     if (sampleChannelPtr->size) {
-                        /* Uh-oh, we've seen this channel before. */
-                        return i_UNSUPPORTED_NONTRIVIAL_ENDIANNESS;
+                        if (model == KHR_DF_MODEL_YUVSDA && sampleChannel == KHR_DF_CHANNEL_YUVSDA_Y) {
+                            if (sampleChannelPtr == R) {
+                                /* We've got another Y channel. Record details in A. */
+                                if (A->size == 0) {
+                                    sampleChannelPtr = A;
+                                } else {
+                                    /* Uh-oh, we've already got a second Y or an alpha channel. */
+                                    return i_UNSUPPORTED_CHANNEL_TYPES;
+                                }
+                            }
+                        } else {
+                          /* Uh-oh, we've seen this channel before. */
+                          return i_UNSUPPORTED_NONTRIVIAL_ENDIANNESS;
+                        }
                     }
                     /* For now, record the byte offset in little-endian terms, */
                     /* because we may not know to reverse it yet. */

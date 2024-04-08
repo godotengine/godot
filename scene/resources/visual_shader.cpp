@@ -348,12 +348,20 @@ void VisualShaderNode::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
 }
 
-bool VisualShaderNode::is_closable() const {
+bool VisualShaderNode::is_deletable() const {
 	return closable;
 }
 
-void VisualShaderNode::set_closable(bool p_closable) {
+void VisualShaderNode::set_deletable(bool p_closable) {
 	closable = p_closable;
+}
+
+void VisualShaderNode::set_frame(int p_node) {
+	linked_parent_graph_frame = p_node;
+}
+
+int VisualShaderNode::get_frame() const {
+	return linked_parent_graph_frame;
 }
 
 Vector<VisualShader::DefaultTextureParam> VisualShaderNode::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
@@ -433,9 +441,13 @@ void VisualShaderNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_input_values", "values"), &VisualShaderNode::set_default_input_values);
 	ClassDB::bind_method(D_METHOD("get_default_input_values"), &VisualShaderNode::get_default_input_values);
 
+	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &VisualShaderNode::set_frame);
+	ClassDB::bind_method(D_METHOD("get_frame"), &VisualShaderNode::get_frame);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_port_for_preview"), "set_output_port_for_preview", "get_output_port_for_preview");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_default_input_values", "get_default_input_values");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "expanded_output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_output_ports_expanded", "_get_output_ports_expanded");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "linked_parent_graph_frame", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_frame", "get_frame");
 
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR);
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR_INT);
@@ -937,6 +949,9 @@ Vector2 VisualShader::get_node_position(Type p_type, int p_id) const {
 Ref<VisualShaderNode> VisualShader::get_node(Type p_type, int p_id) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Ref<VisualShaderNode>());
 	const Graph *g = &graph[p_type];
+	if (!g->nodes.has(p_id)) {
+		return Ref<VisualShaderNode>();
+	}
 	ERR_FAIL_COND_V(!g->nodes.has(p_id), Ref<VisualShaderNode>());
 	return g->nodes[p_id].node;
 }
@@ -1132,6 +1147,36 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 
 bool VisualShader::is_port_types_compatible(int p_a, int p_b) const {
 	return MAX(0, p_a - (int)VisualShaderNode::PORT_TYPE_BOOLEAN) == (MAX(0, p_b - (int)VisualShaderNode::PORT_TYPE_BOOLEAN));
+}
+
+void VisualShader::attach_node_to_frame(Type p_type, int p_node, int p_frame) {
+	ERR_FAIL_INDEX(p_type, TYPE_MAX);
+	ERR_FAIL_COND(p_frame < 0);
+	Graph *g = &graph[p_type];
+
+	ERR_FAIL_COND(!g->nodes.has(p_node));
+
+	g->nodes[p_node].node->set_frame(p_frame);
+
+	Ref<VisualShaderNodeFrame> vsnode_frame = g->nodes[p_frame].node;
+	if (vsnode_frame.is_valid()) {
+		vsnode_frame->add_attached_node(p_node);
+	}
+}
+
+void VisualShader::detach_node_from_frame(Type p_type, int p_node) {
+	ERR_FAIL_INDEX(p_type, TYPE_MAX);
+	Graph *g = &graph[p_type];
+
+	ERR_FAIL_COND(!g->nodes.has(p_node));
+
+	int parent_frame_id = g->nodes[p_node].node->get_frame();
+	Ref<VisualShaderNodeFrame> vsnode_frame = g->nodes[parent_frame_id].node;
+	if (vsnode_frame.is_valid()) {
+		vsnode_frame->remove_attached_node(p_node);
+	}
+
+	g->nodes[p_node].node->set_frame(-1);
 }
 
 void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
@@ -2797,6 +2842,9 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &VisualShader::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &VisualShader::get_graph_offset);
 
+	ClassDB::bind_method(D_METHOD("attach_node_to_frame", "type", "id", "frame"), &VisualShader::attach_node_to_frame);
+	ClassDB::bind_method(D_METHOD("detach_node_from_frame", "type", "id"), &VisualShader::detach_node_from_frame);
+
 	ClassDB::bind_method(D_METHOD("add_varying", "name", "mode", "type"), &VisualShader::add_varying);
 	ClassDB::bind_method(D_METHOD("remove_varying", "name"), &VisualShader::remove_varying);
 	ClassDB::bind_method(D_METHOD("has_varying", "name"), &VisualShader::has_varying);
@@ -4160,66 +4208,119 @@ VisualShaderNodeResizableBase::VisualShaderNodeResizableBase() {
 
 ////////////// Comment
 
-String VisualShaderNodeComment::get_caption() const {
+String VisualShaderNodeFrame::get_caption() const {
 	return title;
 }
 
-int VisualShaderNodeComment::get_input_port_count() const {
+int VisualShaderNodeFrame::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeComment::PortType VisualShaderNodeComment::get_input_port_type(int p_port) const {
+VisualShaderNodeFrame::PortType VisualShaderNodeFrame::get_input_port_type(int p_port) const {
 	return PortType::PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeComment::get_input_port_name(int p_port) const {
+String VisualShaderNodeFrame::get_input_port_name(int p_port) const {
 	return String();
 }
 
-int VisualShaderNodeComment::get_output_port_count() const {
+int VisualShaderNodeFrame::get_output_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeComment::PortType VisualShaderNodeComment::get_output_port_type(int p_port) const {
+VisualShaderNodeFrame::PortType VisualShaderNodeFrame::get_output_port_type(int p_port) const {
 	return PortType::PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeComment::get_output_port_name(int p_port) const {
+String VisualShaderNodeFrame::get_output_port_name(int p_port) const {
 	return String();
 }
 
-void VisualShaderNodeComment::set_title(const String &p_title) {
+void VisualShaderNodeFrame::set_title(const String &p_title) {
 	title = p_title;
 }
 
-String VisualShaderNodeComment::get_title() const {
+String VisualShaderNodeFrame::get_title() const {
 	return title;
 }
 
-void VisualShaderNodeComment::set_description(const String &p_description) {
-	description = p_description;
+void VisualShaderNodeFrame::set_tint_color_enabled(bool p_enabled) {
+	tint_color_enabled = p_enabled;
 }
 
-String VisualShaderNodeComment::get_description() const {
-	return description;
+bool VisualShaderNodeFrame::is_tint_color_enabled() const {
+	return tint_color_enabled;
 }
 
-String VisualShaderNodeComment::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+void VisualShaderNodeFrame::set_tint_color(const Color &p_color) {
+	tint_color = p_color;
+}
+
+Color VisualShaderNodeFrame::get_tint_color() const {
+	return tint_color;
+}
+
+void VisualShaderNodeFrame::set_autoshrink_enabled(bool p_enable) {
+	autoshrink = p_enable;
+}
+
+bool VisualShaderNodeFrame::is_autoshrink_enabled() const {
+	return autoshrink;
+}
+
+String VisualShaderNodeFrame::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return String();
 }
 
-void VisualShaderNodeComment::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_title", "title"), &VisualShaderNodeComment::set_title);
-	ClassDB::bind_method(D_METHOD("get_title"), &VisualShaderNodeComment::get_title);
-
-	ClassDB::bind_method(D_METHOD("set_description", "description"), &VisualShaderNodeComment::set_description);
-	ClassDB::bind_method(D_METHOD("get_description"), &VisualShaderNodeComment::get_description);
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_description", "get_description");
+void VisualShaderNodeFrame::add_attached_node(int p_node) {
+	attached_nodes.insert(p_node);
 }
 
-VisualShaderNodeComment::VisualShaderNodeComment() {
+void VisualShaderNodeFrame::remove_attached_node(int p_node) {
+	attached_nodes.erase(p_node);
+}
+
+void VisualShaderNodeFrame::set_attached_nodes(const PackedInt32Array &p_attached_nodes) {
+	attached_nodes.clear();
+	for (const int &node_id : p_attached_nodes) {
+		attached_nodes.insert(node_id);
+	}
+}
+
+PackedInt32Array VisualShaderNodeFrame::get_attached_nodes() const {
+	PackedInt32Array attached_nodes_arr;
+	for (const int &node_id : attached_nodes) {
+		attached_nodes_arr.push_back(node_id);
+	}
+	return attached_nodes_arr;
+}
+
+void VisualShaderNodeFrame::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_title", "title"), &VisualShaderNodeFrame::set_title);
+	ClassDB::bind_method(D_METHOD("get_title"), &VisualShaderNodeFrame::get_title);
+
+	ClassDB::bind_method(D_METHOD("set_tint_color_enabled", "enable"), &VisualShaderNodeFrame::set_tint_color_enabled);
+	ClassDB::bind_method(D_METHOD("is_tint_color_enabled"), &VisualShaderNodeFrame::is_tint_color_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_tint_color", "color"), &VisualShaderNodeFrame::set_tint_color);
+	ClassDB::bind_method(D_METHOD("get_tint_color"), &VisualShaderNodeFrame::get_tint_color);
+
+	ClassDB::bind_method(D_METHOD("set_autoshrink_enabled", "enable"), &VisualShaderNodeFrame::set_autoshrink_enabled);
+	ClassDB::bind_method(D_METHOD("is_autoshrink_enabled"), &VisualShaderNodeFrame::is_autoshrink_enabled);
+
+	ClassDB::bind_method(D_METHOD("add_attached_node", "node"), &VisualShaderNodeFrame::add_attached_node);
+	ClassDB::bind_method(D_METHOD("remove_attached_node", "node"), &VisualShaderNodeFrame::remove_attached_node);
+	ClassDB::bind_method(D_METHOD("set_attached_nodes", "attached_nodes"), &VisualShaderNodeFrame::set_attached_nodes);
+	ClassDB::bind_method(D_METHOD("get_attached_nodes"), &VisualShaderNodeFrame::get_attached_nodes);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tint_color_enabled"), "set_tint_color_enabled", "is_tint_color_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_color"), "set_tint_color", "get_tint_color");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoshrink"), "set_autoshrink_enabled", "is_autoshrink_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "attached_nodes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_attached_nodes", "get_attached_nodes");
+}
+
+VisualShaderNodeFrame::VisualShaderNodeFrame() {
 }
 
 ////////////// GroupBase

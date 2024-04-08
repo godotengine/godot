@@ -140,7 +140,6 @@ def configure(env: "SConsEnvironment"):
             )
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
-        env.Append(CPPDEFINES=["NEED_LONG_INT"])
 
     # Temp fix for ABS/MAX/MIN macros in iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])

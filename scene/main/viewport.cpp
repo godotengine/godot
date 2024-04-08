@@ -1705,9 +1705,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		Point2 mpos = mb->get_position();
 		if (mb->is_pressed()) {
-			if (!gui.mouse_focus_mask.is_empty()) {
-				// Do not steal mouse focus and stuff while a focus mask exists.
-				gui.mouse_focus_mask.set_flag(mouse_button_to_mask(mb->get_button_index()));
+			MouseButtonMask button_mask = mouse_button_to_mask(mb->get_button_index());
+			if (!gui.mouse_focus_mask.is_empty() && !gui.mouse_focus_mask.has_flag(button_mask)) {
+				// Do not steal mouse focus and stuff while a focus mask without the current mouse button exists.
+				gui.mouse_focus_mask.set_flag(button_mask);
 			} else {
 				gui.mouse_focus = gui_find_control(mpos);
 				gui.last_mouse_focus = gui.mouse_focus;
@@ -4486,6 +4487,10 @@ void Viewport::set_use_xr(bool p_use_xr) {
 			} else {
 				RS::get_singleton()->viewport_set_size(viewport, 0, 0);
 			}
+
+			// Reset render target override textures.
+			RID rt = RS::get_singleton()->viewport_get_render_target(viewport);
+			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID());
 		}
 	}
 }

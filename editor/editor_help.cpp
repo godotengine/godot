@@ -96,6 +96,18 @@ const Vector<String> classes_with_csharp_differences = {
 };
 #endif
 
+const Vector<String> packed_array_types = {
+	"PackedByteArray",
+	"PackedColorArray",
+	"PackedFloat32Array",
+	"PackedFloat64Array",
+	"PackedInt32Array",
+	"PackedInt64Array",
+	"PackedStringArray",
+	"PackedVector2Array",
+	"PackedVector3Array",
+};
+
 // TODO: this is sometimes used directly as doc->something, other times as EditorHelp::get_doc_data(), which is thread-safe.
 // Might this be a problem?
 DocTools *EditorHelp::doc = nullptr;
@@ -2193,6 +2205,12 @@ void EditorHelp::_update_doc() {
 				}
 				has_prev_text = true;
 				_add_text(descr);
+				// Add copy note to built-in properties returning Packed*Array.
+				if (!cd.is_script_doc && packed_array_types.has(prop.type)) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+					_add_text(vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), prop.type));
+				}
 			} else if (!has_prev_text) {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
@@ -3471,7 +3489,9 @@ EditorHelpHighlighter::HighlightData EditorHelpHighlighter::_get_highlight_data(
 	}
 
 	text_edits[p_language]->set_text(p_source);
-	scripts[p_language]->set_source_code(p_source);
+	if (scripts[p_language].is_valid()) { // See GH-89610.
+		scripts[p_language]->set_source_code(p_source);
+	}
 	highlighters[p_language]->_update_cache();
 
 	HighlightData result;
@@ -3561,16 +3581,18 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 #ifdef MODULE_MONO_ENABLED
 	TextEdit *csharp_text_edit = memnew(TextEdit);
 
-	Ref<CSharpScript> csharp;
-	csharp.instantiate();
+	// See GH-89610.
+	//Ref<CSharpScript> csharp;
+	//csharp.instantiate();
 
 	Ref<EditorStandardSyntaxHighlighter> csharp_highlighter;
 	csharp_highlighter.instantiate();
 	csharp_highlighter->set_text_edit(csharp_text_edit);
-	csharp_highlighter->_set_edited_resource(csharp);
+	//csharp_highlighter->_set_edited_resource(csharp);
+	csharp_highlighter->_set_script_language(CSharpLanguage::get_singleton());
 
 	text_edits[LANGUAGE_CSHARP] = csharp_text_edit;
-	scripts[LANGUAGE_CSHARP] = csharp;
+	//scripts[LANGUAGE_CSHARP] = csharp;
 	highlighters[LANGUAGE_CSHARP] = csharp_highlighter;
 #endif
 }
@@ -3578,14 +3600,10 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 EditorHelpHighlighter::~EditorHelpHighlighter() {
 #ifdef MODULE_GDSCRIPT_ENABLED
 	memdelete(text_edits[LANGUAGE_GDSCRIPT]);
-	scripts[LANGUAGE_GDSCRIPT].unref();
-	highlighters[LANGUAGE_GDSCRIPT].unref();
 #endif
 
 #ifdef MODULE_MONO_ENABLED
 	memdelete(text_edits[LANGUAGE_CSHARP]);
-	scripts[LANGUAGE_CSHARP].unref();
-	highlighters[LANGUAGE_CSHARP].unref();
 #endif
 }
 
