@@ -10,10 +10,10 @@
 		[b]Note:[/b] Instantiating scenes containing a high-resolution [ViewportTexture] may cause noticeable stutter.
 	</description>
 	<tutorials>
-		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
-		<link title="3D in 2D Demo">https://godotengine.org/asset-library/asset/128</link>
-		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
-		<link title="3D Viewport Scaling Demo">https://godotengine.org/asset-library/asset/586</link>
+		<link title="GUI in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2807</link>
+		<link title="3D in 2D Viewport Demo">https://godotengine.org/asset-library/asset/2804</link>
+		<link title="2D in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2803</link>
+		<link title="3D Resolution Scaling Demo">https://godotengine.org/asset-library/asset/2805</link>
 	</tutorials>
 	<members>
 		<member name="viewport_path" type="NodePath" setter="set_viewport_path_in_scene" getter="get_viewport_path_in_scene" default="NodePath(&quot;&quot;)">

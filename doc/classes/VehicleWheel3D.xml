@@ -8,7 +8,7 @@
 		[b]Note:[/b] This class has known issues and isn't designed to provide realistic 3D vehicle physics. If you want advanced vehicle physics, you may need to write your own physics integration using another [PhysicsBody3D] class.
 	</description>
 	<tutorials>
-		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
+		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/2752</link>
 	</tutorials>
 	<methods>
 		<method name="get_contact_body" qualifiers="const">
