@@ -392,7 +392,6 @@ class DisplayServerWindows : public DisplayServer {
 		bool was_maximized = false;
 		bool always_on_top = false;
 		bool no_focus = false;
-		bool window_has_focus = false;
 		bool exclusive = false;
 		bool context_created = false;
 		bool mpass = false;
