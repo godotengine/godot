@@ -60,11 +60,13 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
 		// Therefore, we do it late at the first opportunity, so in case the task
 		// about to be run uses scripting, guarantees are held.
+		task_mutex.lock();
 		if (!curr_thread.ready_for_scripting && ScriptServer::are_languages_initialized()) {
+			task_mutex.unlock();
 			ScriptServer::thread_enter();
+			task_mutex.lock();
 			curr_thread.ready_for_scripting = true;
 		}
-		task_mutex.lock();
 		p_task->pool_thread_index = pool_thread_index;
 		prev_task = curr_thread.current_task;
 		curr_thread.current_task = p_task;
