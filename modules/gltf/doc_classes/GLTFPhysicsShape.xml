@@ -23,7 +23,14 @@
 			<return type="GLTFPhysicsShape" />
 			<param index="0" name="shape_node" type="CollisionShape3D" />
 			<description>
-				Create a new GLTFPhysicsShape instance from the given Godot [CollisionShape3D] node.
+				Creates a new GLTFPhysicsShape instance from the given Godot [CollisionShape3D] node.
+			</description>
+		</method>
+		<method name="from_resource" qualifiers="static">
+			<return type="GLTFPhysicsShape" />
+			<param index="0" name="shape_resource" type="Shape3D" />
+			<description>
+				Creates a new GLTFPhysicsShape instance from the given Godot [Shape3D] resource.
 			</description>
 		</method>
 		<method name="to_dictionary" qualifiers="const">
@@ -37,6 +44,13 @@
 			<param index="0" name="cache_shapes" type="bool" default="false" />
 			<description>
 				Converts this GLTFPhysicsShape instance into a Godot [CollisionShape3D] node.
+			</description>
+		</method>
+		<method name="to_resource">
+			<return type="Shape3D" />
+			<param index="0" name="cache_shapes" type="bool" default="false" />
+			<description>
+				Converts this GLTFPhysicsShape instance into a Godot [Shape3D] resource.
 			</description>
 		</method>
 	</methods>
