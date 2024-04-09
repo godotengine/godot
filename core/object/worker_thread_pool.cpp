@@ -195,7 +195,7 @@ void WorkerThreadPool::_thread_function(void *p_user) {
 	}
 }
 
-void WorkerThreadPool::_post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, bool p_high_priority) {
+void WorkerThreadPool::_post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, BitField<TaskFlags> p_flags) {
 	// Fall back to processing on the calling thread if there are no worker threads.
 	// Separated into its own variable to make it easier to extend this logic
 	// in custom builds.
@@ -214,10 +214,12 @@ void WorkerThreadPool::_post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, 
 	ThreadData *caller_pool_thread = thread_ids.has(Thread::get_caller_id()) ? &threads[thread_ids[Thread::get_caller_id()]] : nullptr;
 
 	for (uint32_t i = 0; i < p_count; i++) {
-		p_tasks[i]->low_priority = !p_high_priority;
-		if (p_high_priority || low_priority_threads_used < max_low_priority_threads) {
+		bool high_prio = p_flags.has_flag(TASK_FLAG_HIGH_PRIORITY);
+		p_tasks[i]->low_priority = !high_prio;
+		p_tasks[i]->daemon = p_flags.has_flag(TASK_FLAG_DAEMON);
+		if (high_prio || low_priority_threads_used < max_low_priority_threads) {
 			task_queue.add_last(&p_tasks[i]->task_elem);
-			if (!p_high_priority) {
+			if (!high_prio) {
 				low_priority_threads_used++;
 			}
 			to_process++;
@@ -310,10 +312,10 @@ bool WorkerThreadPool::_try_promote_low_priority_task() {
 }
 
 WorkerThreadPool::TaskID WorkerThreadPool::add_native_task(void (*p_func)(void *), void *p_userdata, bool p_high_priority, const String &p_description) {
-	return _add_task(Callable(), p_func, p_userdata, nullptr, p_high_priority, p_description);
+	return _add_task(Callable(), p_func, p_userdata, nullptr, p_high_priority ? TASK_FLAG_HIGH_PRIORITY : TASK_FLAGS_NONE, p_description);
 }
 
-WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description) {
+WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, BitField<TaskFlags> p_flags, const String &p_description) {
 	task_mutex.lock();
 	// Get a free task
 	Task *task = task_allocator.alloc();
@@ -326,13 +328,17 @@ WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable,
 	task->template_userdata = p_template_userdata;
 	tasks.insert(id, task);
 
-	_post_tasks_and_unlock(&task, 1, p_high_priority);
+	_post_tasks_and_unlock(&task, 1, p_flags);
 
 	return id;
 }
 
 WorkerThreadPool::TaskID WorkerThreadPool::add_task(const Callable &p_action, bool p_high_priority, const String &p_description) {
-	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority, p_description);
+	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority ? TASK_FLAG_HIGH_PRIORITY : TASK_FLAGS_NONE, p_description);
+}
+
+WorkerThreadPool::TaskID WorkerThreadPool::add_task_with_flags(const Callable &p_action, BitField<TaskFlags> p_flags, const String &p_description) {
+	return _add_task(p_action, nullptr, nullptr, nullptr, p_flags, p_description);
 }
 
 bool WorkerThreadPool::is_task_completed(TaskID p_task_id) const {
@@ -547,7 +553,7 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 
 	groups[id] = group;
 
-	_post_tasks_and_unlock(tasks_posted, p_tasks, p_high_priority);
+	_post_tasks_and_unlock(tasks_posted, p_tasks, p_high_priority ? TASK_FLAG_HIGH_PRIORITY : TASK_FLAGS_NONE);
 
 	return id;
 }
@@ -689,13 +695,19 @@ void WorkerThreadPool::finish() {
 
 void WorkerThreadPool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_task", "action", "high_priority", "description"), &WorkerThreadPool::add_task, DEFVAL(false), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("add_task_with_flags", "action", "flags", "description"), &WorkerThreadPool::add_task_with_flags, DEFVAL(TASK_FLAGS_NONE), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_task_completed", "task_id"), &WorkerThreadPool::is_task_completed);
 	ClassDB::bind_method(D_METHOD("wait_for_task_completion", "task_id"), &WorkerThreadPool::wait_for_task_completion);
+	ClassDB::bind_method(D_METHOD("yield"), &WorkerThreadPool::yield);
+	ClassDB::bind_method(D_METHOD("notify_yield_over", "task_id"), &WorkerThreadPool::notify_yield_over);
 
 	ClassDB::bind_method(D_METHOD("add_group_task", "action", "elements", "tasks_needed", "high_priority", "description"), &WorkerThreadPool::add_group_task, DEFVAL(-1), DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_group_task_completed", "group_id"), &WorkerThreadPool::is_group_task_completed);
 	ClassDB::bind_method(D_METHOD("get_group_processed_element_count", "group_id"), &WorkerThreadPool::get_group_processed_element_count);
 	ClassDB::bind_method(D_METHOD("wait_for_group_task_completion", "group_id"), &WorkerThreadPool::wait_for_group_task_completion);
+
+	BIND_BITFIELD_FLAG(TASK_FLAG_HIGH_PRIORITY);
+	BIND_BITFIELD_FLAG(TASK_FLAG_DAEMON);
 }
 
 WorkerThreadPool::WorkerThreadPool() {
