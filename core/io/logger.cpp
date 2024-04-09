@@ -363,7 +363,7 @@ void UserLogManagerLogger::log_error(const char *p_function, const char *p_file,
 
 void UserLogManagerLogger::register_log_capture_non_thread_safe(const Callable &p_callable) {
 	// It gets *extremely* hard to guarantee the proper semantics if you're allowed to call this from other threads.
-	ERR_FAIL_COND_MSG(!::Thread::is_main_thread(), "This call is forbidden outside the main thread.");
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "This call is forbidden outside the main thread.");
 
 	if (pre_buffering.is_set()) {
 		// Time to dispatch our messages! This catches this particular hook up to "realtime", replaying all buffered messages in fast-forward.
@@ -420,7 +420,7 @@ void UserLogManagerLogger::register_log_capture_non_thread_safe(const Callable &
 
 void UserLogManagerLogger::unregister_log_capture_non_thread_safe(const Callable &p_callable) {
 	// It gets *extremely* hard to guarantee the proper semantics if you're allowed to call this from other threads.
-	ERR_FAIL_COND_MSG(!::Thread::is_main_thread(), "This call is forbidden outside the main thread.");
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "This call is forbidden outside the main thread.");
 
 	MutexLock lock(mutex);
 	unregister_callable(captures_non_thread_safe, p_callable);
@@ -429,7 +429,7 @@ void UserLogManagerLogger::unregister_log_capture_non_thread_safe(const Callable
 
 void UserLogManagerLogger::register_log_capture_buffered(const Callable &p_callable) {
 	// It gets *extremely* hard to guarantee the proper semantics if you're allowed to call this from other threads.
-	ERR_FAIL_COND_MSG(!::Thread::is_main_thread(), "This call is forbidden outside the main thread.");
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "This call is forbidden outside the main thread.");
 
 	MutexLock lock(mutex);
 	register_callable(captures_buffered, p_callable);
@@ -438,7 +438,7 @@ void UserLogManagerLogger::register_log_capture_buffered(const Callable &p_calla
 
 void UserLogManagerLogger::unregister_log_capture_buffered(const Callable &p_callable) {
 	// It gets *extremely* hard to guarantee the proper semantics if you're allowed to call this from other threads.
-	ERR_FAIL_COND_MSG(!::Thread::is_main_thread(), "This call is forbidden outside the main thread.");
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "This call is forbidden outside the main thread.");
 
 	MutexLock lock(mutex);
 	unregister_callable(captures_buffered, p_callable);
@@ -448,7 +448,7 @@ void UserLogManagerLogger::unregister_log_capture_buffered(const Callable &p_cal
 void UserLogManagerLogger::flush() {
 	// if you're not sure why this is important, go read the giant comment near the end of recalculate_state
 	// it avoids a nearly-impossible race condition
-	ERR_FAIL_COND_MSG(!::Thread::is_main_thread(), "This call is forbidden outside the main thread.");
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "This call is forbidden outside the main thread.");
 
 	// This flushes our buffer and recycles it for the next frame.
 	// If we don't have a buffer, we have nothing to do.
