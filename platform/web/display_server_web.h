@@ -95,6 +95,7 @@ private:
 		Key physical_keycode = Key::NONE;
 		Key key_label = Key::NONE;
 		uint32_t unicode = 0;
+		KeyLocation location = KeyLocation::UNSPECIFIED;
 		int mod = 0;
 	};
 
@@ -103,6 +104,7 @@ private:
 
 	bool swap_cancel_ok = false;
 	bool tts = false;
+	NativeMenu *native_menu = nullptr;
 
 	// utilities
 	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod, Key p_keycode);

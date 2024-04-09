@@ -59,6 +59,9 @@ static int __bsr_clz32(uint32_t x) {
 #define LDEXPF(s, e) ldexp(s, e)
 #endif
 
+template <typename T>
+class Vector;
+
 class RandomPCG {
 	pcg32_random_t pcg;
 	uint64_t current_seed = 0; // The seed the current generator state started from.
@@ -90,6 +93,8 @@ public:
 	_FORCE_INLINE_ bool rand_bool(double p_true_chance) {
 		return randf() < p_true_chance;
 	}
+
+	int64_t rand_weighted(const Vector<float> &p_weights);
 
 	// Obtaining floating point numbers in [0, 1] range with "good enough" uniformity.
 	// These functions sample the output of rand() as the fraction part of an infinite binary number,

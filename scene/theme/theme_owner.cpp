@@ -249,8 +249,8 @@ void ThemeOwner::get_theme_type_dependencies(const Node *p_for_node, const Strin
 	ThemeDB::get_singleton()->get_native_type_dependencies(p_theme_type, r_list);
 }
 
-Variant ThemeOwner::get_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types) {
-	ERR_FAIL_COND_V_MSG(p_theme_types.size() == 0, Variant(), "At least one theme type must be specified.");
+Variant ThemeOwner::get_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const List<StringName> &p_theme_types) {
+	ERR_FAIL_COND_V_MSG(p_theme_types.is_empty(), Variant(), "At least one theme type must be specified.");
 
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.
@@ -285,8 +285,8 @@ Variant ThemeOwner::get_theme_item_in_types(Theme::DataType p_data_type, const S
 	return global_context->get_fallback_theme()->get_theme_item(p_data_type, p_name, StringName());
 }
 
-bool ThemeOwner::has_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types) {
-	ERR_FAIL_COND_V_MSG(p_theme_types.size() == 0, false, "At least one theme type must be specified.");
+bool ThemeOwner::has_theme_item_in_types(Theme::DataType p_data_type, const StringName &p_name, const List<StringName> &p_theme_types) {
+	ERR_FAIL_COND_V_MSG(p_theme_types.is_empty(), false, "At least one theme type must be specified.");
 
 	// First, look through each control or window node in the branch, until no valid parent can be found.
 	// Only nodes with a theme resource attached are considered.

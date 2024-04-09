@@ -109,6 +109,7 @@ public:
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) override {}
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) override {}
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) override {}
+	virtual void reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) override {}
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) override {}
 	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override {}
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override { return 0.0; }
@@ -116,6 +117,7 @@ public:
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const override { return AABB(); }
 	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override { return RenderingServer::REFLECTION_PROBE_UPDATE_ONCE; }
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const override { return 0; }
+	virtual uint32_t reflection_probe_get_reflection_mask(RID p_probe) const override { return 0; }
 	virtual Vector3 reflection_probe_get_size(RID p_probe) const override { return Vector3(); }
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const override { return Vector3(); }
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override { return 0.0; }
@@ -133,6 +135,7 @@ public:
 	virtual RID reflection_probe_instance_create(RID p_probe) override { return RID(); }
 	virtual void reflection_probe_instance_free(RID p_instance) override {}
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override {}
+	virtual bool reflection_probe_has_atlas_index(RID p_instance) override { return false; }
 	virtual void reflection_probe_release_atlas_index(RID p_instance) override {}
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override { return false; }
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override { return false; }

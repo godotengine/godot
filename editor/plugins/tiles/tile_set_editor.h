@@ -33,7 +33,7 @@
 
 #include "atlas_merging_dialog.h"
 #include "scene/gui/tab_bar.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 #include "tile_proxies_manager_dialog.h"
 #include "tile_set_atlas_source_editor.h"
 #include "tile_set_scenes_collection_source_editor.h"
@@ -108,8 +108,8 @@ private:
 	void _tile_set_changed();
 	void _tab_changed(int p_tab_changed);
 
-	void _move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos);
-	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value);
+	void _move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos);
+	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value);
 
 protected:
 	void _notification(int p_what);

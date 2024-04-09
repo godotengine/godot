@@ -2,19 +2,7 @@
  *  TCP/IP or UDP/IP networking functions
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 /* Enable definition of getaddrinfo() even when compiling with -std=c99. Must
@@ -333,7 +321,7 @@ static int net_would_block(const mbedtls_net_context *ctx)
  */
 int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
                        mbedtls_net_context *client_ctx,
-                       void *client_ip, size_t buf_size, size_t *ip_len)
+                       void *client_ip, size_t buf_size, size_t *cip_len)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     int type;
@@ -416,22 +404,22 @@ int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
     if (client_ip != NULL) {
         if (client_addr.ss_family == AF_INET) {
             struct sockaddr_in *addr4 = (struct sockaddr_in *) &client_addr;
-            *ip_len = sizeof(addr4->sin_addr.s_addr);
+            *cip_len = sizeof(addr4->sin_addr.s_addr);
 
-            if (buf_size < *ip_len) {
+            if (buf_size < *cip_len) {
                 return MBEDTLS_ERR_NET_BUFFER_TOO_SMALL;
             }
 
-            memcpy(client_ip, &addr4->sin_addr.s_addr, *ip_len);
+            memcpy(client_ip, &addr4->sin_addr.s_addr, *cip_len);
         } else {
             struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) &client_addr;
-            *ip_len = sizeof(addr6->sin6_addr.s6_addr);
+            *cip_len = sizeof(addr6->sin6_addr.s6_addr);
 
-            if (buf_size < *ip_len) {
+            if (buf_size < *cip_len) {
                 return MBEDTLS_ERR_NET_BUFFER_TOO_SMALL;
             }
 
-            memcpy(client_ip, &addr6->sin6_addr.s6_addr, *ip_len);
+            memcpy(client_ip, &addr6->sin6_addr.s6_addr, *cip_len);
         }
     }
 

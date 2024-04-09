@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,10 @@
 namespace tvg
 {
 
-class FrameModule: public LoadModule
+class FrameModule: public ImageLoader
 {
 public:
+    FrameModule(FileType type) : ImageLoader(type) {}
     virtual ~FrameModule() {}
 
     virtual bool frame(float no) = 0;       //set the current frame number

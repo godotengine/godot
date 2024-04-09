@@ -47,7 +47,10 @@ class BindingsGenerator {
 		String name;
 		String proxy_name;
 		int64_t value = 0;
-		const DocData::ConstantDoc *const_doc;
+		const DocData::ConstantDoc *const_doc = nullptr;
+
+		bool is_deprecated = false;
+		String deprecation_message;
 
 		ConstantInterface() {}
 
@@ -86,6 +89,9 @@ class BindingsGenerator {
 		StringName getter;
 
 		const DocData::PropertyDoc *prop_doc;
+
+		bool is_deprecated = false;
+		String deprecation_message;
 	};
 
 	struct TypeReference {
@@ -427,6 +433,9 @@ class BindingsGenerator {
 
 		const DocData::ClassDoc *class_doc = nullptr;
 
+		bool is_deprecated = false;
+		String deprecation_message;
+
 		List<ConstantInterface> constants;
 		List<EnumInterface> enums;
 		List<PropertyInterface> properties;
@@ -765,7 +774,17 @@ class BindingsGenerator {
 		return p_type->name;
 	}
 
+	String bbcode_to_text(const String &p_bbcode, const TypeInterface *p_itype);
 	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal = false);
+
+	void _append_text_method(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_member(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_signal(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_enum(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_constant(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_constant_in_global_scope(StringBuilder &p_output, const String &p_target_cname, const String &p_link_target);
+	void _append_text_param(StringBuilder &p_output, const String &p_link_target);
+	void _append_text_undeclared(StringBuilder &p_output, const String &p_link_target);
 
 	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);

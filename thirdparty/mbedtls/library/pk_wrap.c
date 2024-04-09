@@ -2,19 +2,7 @@
  *  Public Key abstraction layer: wrapper functions
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #include "common.h"
@@ -65,7 +53,23 @@ static int rsa_can_do(mbedtls_pk_type_t type)
 static size_t rsa_get_bitlen(const void *ctx)
 {
     const mbedtls_rsa_context *rsa = (const mbedtls_rsa_context *) ctx;
-    return 8 * mbedtls_rsa_get_len(rsa);
+    /* Unfortunately, the rsa.h interface does not have a direct way
+     * to access the bit-length that works with MBEDTLS_RSA_ALT.
+     * So we have to do a little work here.
+     */
+    mbedtls_mpi N;
+    mbedtls_mpi_init(&N);
+    int ret = mbedtls_rsa_export(rsa, &N, NULL, NULL, NULL, NULL);
+    /* If the export fails for some reason (e.g. the RSA_ALT implementation
+     * does not support export, or there is not enough memory),
+     * we have no way of returning an error from this function.
+     * As a fallback, return the byte-length converted in bits, which is
+     * the correct  value if the modulus size is a multiple of 8 bits, which
+     * is very often the case in practice. */
+    size_t bitlen = (ret == 0 ? mbedtls_mpi_bitlen(&N) :
+                     8 * mbedtls_rsa_get_len(rsa));
+    mbedtls_mpi_free(&N);
+    return bitlen;
 }
 
 static int rsa_verify_wrap(void *ctx, mbedtls_md_type_t md_alg,

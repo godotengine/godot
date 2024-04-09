@@ -2,19 +2,7 @@
  *  FIPS-197 compliant AES implementation
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 /*
  *  The AES block cipher was designed by Vincent Rijmen and Joan Daemen.
@@ -334,7 +322,7 @@ static const uint32_t RT3[256] = { RT };
 /*
  * Round constants
  */
-static const uint32_t RCON[10] =
+static const uint32_t round_constants[10] =
 {
     0x00000001, 0x00000002, 0x00000004, 0x00000008,
     0x00000010, 0x00000020, 0x00000040, 0x00000080,
@@ -381,7 +369,7 @@ static uint32_t RT3[256];
 /*
  * Round constants
  */
-static uint32_t RCON[10];
+static uint32_t round_constants[10];
 
 /*
  * Tables generation code
@@ -411,7 +399,7 @@ static void aes_gen_tables(void)
      * calculate the round constants
      */
     for (i = 0, x = 1; i < 10; i++) {
-        RCON[i] = (uint32_t) x;
+        round_constants[i] = (uint32_t) x;
         x = MBEDTLS_BYTE_0(XTIME(x));
     }
 
@@ -637,7 +625,7 @@ int mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx, const unsigned char *key,
         case 10:
 
             for (i = 0; i < 10; i++, RK += 4) {
-                RK[4]  = RK[0] ^ RCON[i] ^
+                RK[4]  = RK[0] ^ round_constants[i] ^
                          ((uint32_t) FSb[MBEDTLS_BYTE_1(RK[3])]) ^
                          ((uint32_t) FSb[MBEDTLS_BYTE_2(RK[3])] <<  8) ^
                          ((uint32_t) FSb[MBEDTLS_BYTE_3(RK[3])] << 16) ^
@@ -652,7 +640,7 @@ int mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx, const unsigned char *key,
         case 12:
 
             for (i = 0; i < 8; i++, RK += 6) {
-                RK[6]  = RK[0] ^ RCON[i] ^
+                RK[6]  = RK[0] ^ round_constants[i] ^
                          ((uint32_t) FSb[MBEDTLS_BYTE_1(RK[5])]) ^
                          ((uint32_t) FSb[MBEDTLS_BYTE_2(RK[5])] <<  8) ^
                          ((uint32_t) FSb[MBEDTLS_BYTE_3(RK[5])] << 16) ^
@@ -669,7 +657,7 @@ int mbedtls_aes_setkey_enc(mbedtls_aes_context *ctx, const unsigned char *key,
         case 14:
 
             for (i = 0; i < 7; i++, RK += 8) {
-                RK[8]  = RK[0] ^ RCON[i] ^
+                RK[8]  = RK[0] ^ round_constants[i] ^
                          ((uint32_t) FSb[MBEDTLS_BYTE_1(RK[7])]) ^
                          ((uint32_t) FSb[MBEDTLS_BYTE_2(RK[7])] <<  8) ^
                          ((uint32_t) FSb[MBEDTLS_BYTE_3(RK[7])] << 16) ^

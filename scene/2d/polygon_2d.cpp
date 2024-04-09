@@ -375,14 +375,14 @@ void Polygon2D::_notification(int p_what) {
 					// Compute transform between mesh and skeleton for runtime AABB compute.
 					const Transform2D mesh_transform = get_global_transform();
 					const Transform2D skeleton_transform = skeleton_node->get_global_transform();
-					const Transform2D mesh_to_sk2d = mesh_transform * skeleton_transform.affine_inverse();
+					const Transform2D mesh_to_sk2d = skeleton_transform.affine_inverse() * mesh_transform;
 
 					// Convert 2d transform to 3d.
 					sd.mesh_to_skeleton_xform.basis.rows[0][0] = mesh_to_sk2d.columns[0][0];
-					sd.mesh_to_skeleton_xform.basis.rows[0][1] = mesh_to_sk2d.columns[0][1];
+					sd.mesh_to_skeleton_xform.basis.rows[1][0] = mesh_to_sk2d.columns[0][1];
 					sd.mesh_to_skeleton_xform.origin.x = mesh_to_sk2d.get_origin().x;
 
-					sd.mesh_to_skeleton_xform.basis.rows[1][0] = mesh_to_sk2d.columns[1][0];
+					sd.mesh_to_skeleton_xform.basis.rows[0][1] = mesh_to_sk2d.columns[1][0];
 					sd.mesh_to_skeleton_xform.basis.rows[1][1] = mesh_to_sk2d.columns[1][1];
 					sd.mesh_to_skeleton_xform.origin.y = mesh_to_sk2d.get_origin().y;
 				}

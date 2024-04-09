@@ -48,13 +48,6 @@
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
-
-#if defined(VULKAN_ENABLED)
-#include "vulkan_context_win.h"
-#endif
-#if defined(D3D12_ENABLED)
-#include "drivers/d3d12/d3d12_context.h"
-#endif
 #endif
 
 #include <io.h>
@@ -76,7 +69,7 @@
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif
 
-template <class T>
+template <typename T>
 class ComAutoreleaseRef {
 public:
 	T *reference = nullptr;
@@ -162,9 +155,9 @@ public:
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
-	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
 	virtual MainLoop *get_main_loop() const override;
 
@@ -188,6 +181,7 @@ public:
 	virtual Dictionary get_memory_info() const override;
 
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
+	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments) override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error kill(const ProcessID &p_pid) override;
 	virtual int get_process_id() const override;
@@ -220,7 +214,7 @@ public:
 
 	virtual String get_unique_id() const override;
 
-	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_open(const String &p_uri) override;
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;
 
 	void run();

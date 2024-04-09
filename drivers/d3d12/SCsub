@@ -25,7 +25,7 @@ env_d3d12_rdd.Append(CPPPATH=["#thirdparty/d3d12ma"])
 
 # Agility SDK.
 
-if env["agility_sdk_path"] != "":
+if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
     env_d3d12_rdd.Append(CPPDEFINES=["AGILITY_SDK_ENABLED"])
     if env["agility_sdk_multiarch"]:
         env_d3d12_rdd.Append(CPPDEFINES=["AGILITY_SDK_MULTIARCH_ENABLED"])
@@ -33,7 +33,7 @@ if env["agility_sdk_path"] != "":
 
 # PIX.
 
-if env["pix_path"] != "":
+if env["use_pix"]:
     env_d3d12_rdd.Append(CPPDEFINES=["PIX_ENABLED"])
     env_d3d12_rdd.Append(CPPPATH=[env["pix_path"] + "/Include"])
 

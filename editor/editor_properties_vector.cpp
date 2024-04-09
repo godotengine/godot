@@ -105,8 +105,6 @@ void EditorPropertyVectorN::_update_ratio() {
 
 		if (spin_sliders[base_slider_idx]->get_value() != 0) {
 			ratio_write[i] = spin_sliders[secondary_slider_idx]->get_value() / spin_sliders[base_slider_idx]->get_value();
-		} else {
-			ratio_write[i] = 0;
 		}
 	}
 }

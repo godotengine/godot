@@ -43,10 +43,13 @@
 #include "structures/gltf_texture.h"
 #include "structures/gltf_texture_sampler.h"
 
+#include "scene/3d/importer_mesh_instance_3d.h"
+
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
 
+protected:
 	String base_path;
 	String filename;
 	Dictionary json;
@@ -61,6 +64,7 @@ class GLTFState : public Resource {
 	bool force_generate_tangents = false;
 	bool create_animations = true;
 	bool force_disable_compression = false;
+	bool import_as_skeleton_bones = false;
 
 	int handle_binary_image = HANDLE_BINARY_EXTRACT_TEXTURES;
 
@@ -69,7 +73,7 @@ class GLTFState : public Resource {
 	Vector<Ref<GLTFBufferView>> buffer_views;
 	Vector<Ref<GLTFAccessor>> accessors;
 
-	Vector<Ref<GLTFMesh>> meshes; // meshes are loaded directly, no reason not to.
+	Vector<Ref<GLTFMesh>> meshes; // Meshes are loaded directly, no reason not to.
 
 	Vector<AnimationPlayer *> animation_players;
 	HashMap<Ref<Material>, GLTFMaterialIndex> material_cache;
@@ -105,12 +109,13 @@ protected:
 
 public:
 	void add_used_extension(const String &p_extension, bool p_required = false);
+	GLTFBufferViewIndex append_data_to_buffers(const Vector<uint8_t> &p_data, const bool p_deduplication);
 
 	enum GLTFHandleBinary {
 		HANDLE_BINARY_DISCARD_TEXTURES = 0,
 		HANDLE_BINARY_EXTRACT_TEXTURES,
 		HANDLE_BINARY_EMBED_AS_BASISU,
-		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // if this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
+		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // If this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
 	};
 	int32_t get_handle_binary_image() {
 		return handle_binary_image;
@@ -208,6 +213,9 @@ public:
 
 	bool get_create_animations();
 	void set_create_animations(bool p_create_animations);
+
+	bool get_import_as_skeleton_bones();
+	void set_import_as_skeleton_bones(bool p_import_as_skeleton_bones);
 
 	TypedArray<GLTFAnimation> get_animations();
 	void set_animations(TypedArray<GLTFAnimation> p_animations);

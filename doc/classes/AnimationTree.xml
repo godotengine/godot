@@ -9,20 +9,20 @@
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
-		<method name="get_process_callback" qualifiers="const" is_deprecated="true">
+		<method name="get_process_callback" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
 			<return type="int" enum="AnimationTree.AnimationProcessCallback" />
 			<description>
-				For backward compatibility. See [enum AnimationMixer.AnimationCallbackModeProcess].
+				Returns the process notification in which to update animations.
 			</description>
 		</method>
-		<method name="set_process_callback" is_deprecated="true">
+		<method name="set_process_callback" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="AnimationTree.AnimationProcessCallback" />
 			<description>
-				For backward compatibility. See [enum AnimationMixer.AnimationCallbackModeProcess].
+				Sets the process notification in which to update animations.
 			</description>
 		</method>
 	</methods>
@@ -33,6 +33,7 @@
 		<member name="anim_player" type="NodePath" setter="set_animation_player" getter="get_animation_player" default="NodePath(&quot;&quot;)">
 			The path to the [AnimationPlayer] used for animating.
 		</member>
+		<member name="callback_mode_discrete" type="int" setter="set_callback_mode_discrete" getter="get_callback_mode_discrete" overrides="AnimationMixer" enum="AnimationMixer.AnimationCallbackModeDiscrete" default="2" />
 		<member name="deterministic" type="bool" setter="set_deterministic" getter="is_deterministic" overrides="AnimationMixer" default="true" />
 		<member name="tree_root" type="AnimationRootNode" setter="set_tree_root" getter="get_tree_root">
 			The root animation node of this [AnimationTree]. See [AnimationRootNode].
@@ -46,14 +47,11 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].
+		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
 		</constant>
-		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].
+		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].">
 		</constant>
-		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback" is_deprecated="true">
-			For backward compatibility. See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL].
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL].">
 		</constant>
 	</constants>
 </class>

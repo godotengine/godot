@@ -223,7 +223,7 @@ public:
 		}
 
 		bool operator!=(const DataType &p_other) const {
-			return !(this->operator==(p_other));
+			return !(*this == p_other);
 		}
 
 		void operator=(const DataType &p_other) {
@@ -274,13 +274,17 @@ public:
 		String description;
 		Vector<Pair<String, String>> tutorials;
 		bool is_deprecated = false;
+		String deprecated_message;
 		bool is_experimental = false;
+		String experimental_message;
 	};
 
 	struct MemberDocData {
 		String description;
 		bool is_deprecated = false;
+		String deprecated_message;
 		bool is_experimental = false;
+		String experimental_message;
 	};
 #endif // TOOLS_ENABLED
 
@@ -334,9 +338,6 @@ public:
 		int leftmost_column = 0, rightmost_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
-#ifdef DEBUG_ENABLED
-		Vector<GDScriptWarning::Code> ignored_warnings;
-#endif
 
 		DataType datatype;
 
@@ -497,6 +498,7 @@ public:
 		Vector<ExpressionNode *> arguments;
 		StringName function_name;
 		bool is_super = false;
+		bool is_static = false;
 
 		CallNode() {
 			type = CALL;
@@ -773,7 +775,7 @@ public:
 		bool has_function(const StringName &p_name) const {
 			return has_member(p_name) && members[members_indices[p_name]].type == Member::FUNCTION;
 		}
-		template <class T>
+		template <typename T>
 		void add_member(T *p_member_node) {
 			members_indices[p_member_node->identifier->name] = members.size();
 			members.push_back(Member(p_member_node));
@@ -896,9 +898,10 @@ public:
 
 		union {
 			ParameterNode *parameter_source = nullptr;
-			ConstantNode *constant_source;
-			VariableNode *variable_source;
 			IdentifierNode *bind_source;
+			VariableNode *variable_source;
+			ConstantNode *constant_source;
+			SignalNode *signal_source;
 		};
 		FunctionNode *source_function = nullptr;
 
@@ -1047,6 +1050,8 @@ public:
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
+		int usages = 0;
+
 		SignalNode() {
 			type = SIGNAL;
 		}
@@ -1163,7 +1168,7 @@ public:
 
 		bool has_local(const StringName &p_name) const;
 		const Local &get_local(const StringName &p_name) const;
-		template <class T>
+		template <typename T>
 		void add_local(T *p_local, FunctionNode *p_source_function) {
 			locals_indices[p_local->identifier->name] = locals.size();
 			locals.push_back(Local(p_local, p_source_function));
@@ -1330,13 +1335,21 @@ private:
 	List<ParserError> errors;
 
 #ifdef DEBUG_ENABLED
+	struct PendingWarning {
+		const Node *source = nullptr;
+		GDScriptWarning::Code code = GDScriptWarning::WARNING_MAX;
+		bool treated_as_error = false;
+		Vector<String> symbols;
+	};
+
 	bool is_ignoring_warnings = false;
 	List<GDScriptWarning> warnings;
-	HashSet<GDScriptWarning::Code> ignored_warnings;
+	List<PendingWarning> pending_warnings;
+	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
 #endif
 
-	GDScriptTokenizer tokenizer;
+	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
 	GDScriptTokenizer::Token current;
 
@@ -1364,7 +1377,7 @@ private:
 			FUNCTION = 1 << 5,
 			STATEMENT = 1 << 6,
 			STANDALONE = 1 << 7,
-			CLASS_LEVEL = CLASS | VARIABLE | FUNCTION,
+			CLASS_LEVEL = CLASS | VARIABLE | CONSTANT | SIGNAL | FUNCTION,
 		};
 		uint32_t target_kind = 0; // Flags.
 		AnnotationAction apply = nullptr;
@@ -1414,7 +1427,7 @@ private:
 	void reset_extents(Node *p_node, GDScriptTokenizer::Token p_token);
 	void reset_extents(Node *p_node, Node *p_from);
 
-	template <class T>
+	template <typename T>
 	T *alloc_node() {
 		T *node = memnew(T);
 
@@ -1434,6 +1447,7 @@ private:
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
 		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
 	}
+	void apply_pending_warnings();
 #endif
 
 	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = false);
@@ -1460,7 +1474,7 @@ private:
 	void parse_class_name();
 	void parse_extends();
 	void parse_class_body(bool p_is_multiline);
-	template <class T>
+	template <typename T>
 	void parse_class_member(T *(GDScriptParser::*p_parse_function)(bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_static = false);
 	SignalNode *parse_signal(bool p_is_static);
 	EnumNode *parse_enum(bool p_is_static);
@@ -1478,6 +1492,7 @@ private:
 	bool onready_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool export_custom_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyUsageFlags t_usage>
 	bool export_group_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool warning_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
@@ -1540,6 +1555,7 @@ private:
 
 public:
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion);
+	Error parse_binary(const Vector<uint8_t> &p_binary, const String &p_script_path);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
 	ClassNode *find_class(const String &p_qualified_name) const;

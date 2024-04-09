@@ -80,6 +80,7 @@ public:
 	bool main_loop_iterate();
 
 	Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
+	Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments) override;
 	Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	Error kill(const ProcessID &p_pid) override;
 	int get_process_id() const override;
@@ -89,7 +90,7 @@ public:
 	int get_default_thread_pool_size() const override { return 1; }
 
 	String get_executable_path() const override;
-	Error shell_open(String p_uri) override;
+	Error shell_open(const String &p_uri) override;
 	String get_name() const override;
 
 	// Override default OS implementation which would block the main thread with delay_usec.
@@ -107,7 +108,7 @@ public:
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
-	Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 
 	void resume_audio();
 

@@ -10,8 +10,8 @@
 	</description>
 	<tutorials>
 		<link title="Particle systems (2D)">$DOCS_URL/tutorials/2d/particle_systems_2d.html</link>
-		<link title="2D Particles Demo">https://godotengine.org/asset-library/asset/118</link>
-		<link title="2D Dodge The Creeps Demo (uses GPUParticles2D for the trail behind the player)">https://godotengine.org/asset-library/asset/515</link>
+		<link title="2D Particles Demo">https://godotengine.org/asset-library/asset/2724</link>
+		<link title="2D Dodge The Creeps Demo (uses GPUParticles2D for the trail behind the player)">https://godotengine.org/asset-library/asset/2712</link>
 	</tutorials>
 	<methods>
 		<method name="capture_rect" qualifiers="const">
@@ -43,7 +43,8 @@
 		<method name="restart">
 			<return type="void" />
 			<description>
-				Restarts all the existing particles.
+				Restarts the particle emission cycle, clearing existing particles. To avoid particles vanishing from the viewport, wait for the [signal finished] signal before calling.			
+				[b]Note:[/b] The [signal finished] signal is only emitted by [member one_shot] emitters.
 			</description>
 		</method>
 	</methods>
@@ -64,7 +65,9 @@
 			Particle draw order. Uses [enum DrawOrder] values.
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
-			If [code]true[/code], particles are being emitted. [member emitting] can be used to start and stop particles from emitting. However, if [member one_shot] is [code]true[/code] setting [member emitting] to [code]true[/code] will not restart the emission cycle until after all active particles finish processing. You can use the [signal finished] signal to be notified once all active particles finish processing.
+			If [code]true[/code], particles are being emitted. [member emitting] can be used to start and stop particles from emitting. However, if [member one_shot] is [code]true[/code] setting [member emitting] to [code]true[/code] will not restart the emission cycle unless all active particles have finished processing. Use the [signal finished] signal to be notified once all active particles finish processing.
+			[b]Note:[/b] For [member one_shot] emitters, due to the particles being computed on the GPU, there may be a short period after receiving the [signal finished] signal during which setting this to [code]true[/code] will not restart the emission cycle.
+			[b]Tip:[/b] If your [member one_shot] emitter needs to immediately restart emitting particles once [signal finished] signal is received, consider calling [method restart] instead of setting [member emitting].
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">
 			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins.
@@ -132,8 +135,9 @@
 	<signals>
 		<signal name="finished">
 			<description>
-				Emitted when all active particles have finished processing. When [member one_shot] is disabled, particles will process continuously, so this is never emitted.
-				[b]Note:[/b] Due to the particles being computed on the GPU there might be a delay before the signal gets emitted.
+				Emitted when all active particles have finished processing. To immediately restart the emission cycle, call [method restart].
+				Never emitted when [member one_shot] is disabled, as particles will be emitted and processed continuously.
+				[b]Note:[/b] For [member one_shot] emitters, due to the particles being computed on the GPU, there may be a short period after receiving the signal during which setting [member emitting] to [code]true[/code] will not restart the emission cycle. This delay is avoided by instead calling [method restart].
 			</description>
 		</signal>
 	</signals>

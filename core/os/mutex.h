@@ -43,10 +43,12 @@
 #define THREADING_NAMESPACE std
 #endif
 
-template <class MutexT>
+#ifdef THREADS_ENABLED
+
+template <typename MutexT>
 class MutexLock;
 
-template <class StdMutexT>
+template <typename StdMutexT>
 class MutexImpl {
 	friend class MutexLock<MutexImpl<StdMutexT>>;
 
@@ -68,83 +70,15 @@ public:
 	}
 };
 
-// A very special kind of mutex, used in scenarios where these
-// requirements hold at the same time:
-// - Must be used with a condition variable (only binary mutexes are suitable).
-// - Must have recursive semnantics (or simulate, as this one does).
-// The implementation keeps the lock count in TS. Therefore, only
-// one object of each version of the template can exists; hence the Tag argument.
-// Tags must be unique across the Godot codebase.
-// Also, don't forget to declare the thread_local variable on each use.
-template <int Tag>
-class SafeBinaryMutex {
-	friend class MutexLock<SafeBinaryMutex>;
-
-	using StdMutexType = THREADING_NAMESPACE::mutex;
-
-	mutable THREADING_NAMESPACE::mutex mutex;
-	static thread_local uint32_t count;
-
-public:
-	_ALWAYS_INLINE_ void lock() const {
-		if (++count == 1) {
-			mutex.lock();
-		}
-	}
-
-	_ALWAYS_INLINE_ void unlock() const {
-		DEV_ASSERT(count);
-		if (--count == 0) {
-			mutex.unlock();
-		}
-	}
-
-	_ALWAYS_INLINE_ bool try_lock() const {
-		if (count) {
-			count++;
-			return true;
-		} else {
-			if (mutex.try_lock()) {
-				count++;
-				return true;
-			} else {
-				return false;
-			}
-		}
-	}
-
-	~SafeBinaryMutex() {
-		DEV_ASSERT(!count);
-	}
-};
-
-template <class MutexT>
+template <typename MutexT>
 class MutexLock {
 	friend class ConditionVariable;
 
 	THREADING_NAMESPACE::unique_lock<typename MutexT::StdMutexType> lock;
 
 public:
-	_ALWAYS_INLINE_ explicit MutexLock(const MutexT &p_mutex) :
-			lock(p_mutex.mutex){};
-};
-
-// This specialization is needed so manual locking and MutexLock can be used
-// at the same time on a SafeBinaryMutex.
-template <int Tag>
-class MutexLock<SafeBinaryMutex<Tag>> {
-	friend class ConditionVariable;
-
-	THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> lock;
-
-public:
-	_ALWAYS_INLINE_ explicit MutexLock(const SafeBinaryMutex<Tag> &p_mutex) :
-			lock(p_mutex.mutex) {
-		SafeBinaryMutex<Tag>::count++;
-	};
-	_ALWAYS_INLINE_ ~MutexLock() {
-		SafeBinaryMutex<Tag>::count--;
-	};
+	explicit MutexLock(const MutexT &p_mutex) :
+			lock(p_mutex.mutex) {}
 };
 
 using Mutex = MutexImpl<THREADING_NAMESPACE::recursive_mutex>; // Recursive, for general use
@@ -154,5 +88,27 @@ extern template class MutexImpl<THREADING_NAMESPACE::recursive_mutex>;
 extern template class MutexImpl<THREADING_NAMESPACE::mutex>;
 extern template class MutexLock<MutexImpl<THREADING_NAMESPACE::recursive_mutex>>;
 extern template class MutexLock<MutexImpl<THREADING_NAMESPACE::mutex>>;
+
+#else // No threads.
+
+class MutexImpl {
+	mutable THREADING_NAMESPACE::mutex mutex;
+
+public:
+	void lock() const {}
+	void unlock() const {}
+	bool try_lock() const { return true; }
+};
+
+template <typename MutexT>
+class MutexLock {
+public:
+	MutexLock(const MutexT &p_mutex) {}
+};
+
+using Mutex = MutexImpl;
+using BinaryMutex = MutexImpl;
+
+#endif // THREADS_ENABLED
 
 #endif // MUTEX_H

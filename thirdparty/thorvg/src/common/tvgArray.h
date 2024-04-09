@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,11 @@ struct Array
     uint32_t reserved = 0;
 
     Array(){}
+
+    Array(int32_t size)
+    {
+        reserve(size);
+    }
 
     Array(const Array& rhs)
     {
@@ -83,6 +88,16 @@ struct Array
     T& operator[](size_t idx)
     {
         return data[idx];
+    }
+
+    const T* begin() const
+    {
+        return data;
+    }
+
+    T* begin()
+    {
+        return data;
     }
 
     T* end()

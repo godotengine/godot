@@ -123,7 +123,7 @@ void Popup::_close_pressed() {
 
 	_deinitialize_visible_parents();
 
-	call_deferred(SNAME("hide"));
+	callable_mp((Window *)this, &Window::hide).call_deferred();
 }
 
 void Popup::_post_popup() {
@@ -224,8 +224,7 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 		}
 
 		Size2 cms = c->get_combined_minimum_size();
-		ms.x = MAX(cms.x, ms.x);
-		ms.y = MAX(cms.y, ms.y);
+		ms = cms.max(ms);
 	}
 
 	return ms + theme_cache.panel_style->get_minimum_size();

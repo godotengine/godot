@@ -2,19 +2,7 @@
  *  PKCS#12 Personal Information Exchange Syntax
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 /*
  *  The PKCS #12 Personal Information Exchange Syntax Standard v1.1
@@ -256,21 +244,22 @@ int mbedtls_pkcs12_pbe_ext(mbedtls_asn1_buf *pbe_params, int mode,
     }
 
 #if defined(MBEDTLS_CIPHER_MODE_WITH_PADDING)
-    /* PKCS12 uses CBC with PKCS7 padding */
-
-    mbedtls_cipher_padding_t padding = MBEDTLS_PADDING_PKCS7;
+    {
+        /* PKCS12 uses CBC with PKCS7 padding */
+        mbedtls_cipher_padding_t padding = MBEDTLS_PADDING_PKCS7;
 #if !defined(MBEDTLS_CIPHER_PADDING_PKCS7)
-    /* For historical reasons, when decrypting, this function works when
-     * decrypting even when support for PKCS7 padding is disabled. In this
-     * case, it ignores the padding, and so will never report a
-     * password mismatch.
-     */
-    if (mode == MBEDTLS_PKCS12_PBE_DECRYPT) {
-        padding = MBEDTLS_PADDING_NONE;
-    }
+        /* For historical reasons, when decrypting, this function works when
+         * decrypting even when support for PKCS7 padding is disabled. In this
+         * case, it ignores the padding, and so will never report a
+         * password mismatch.
+         */
+        if (mode == MBEDTLS_PKCS12_PBE_DECRYPT) {
+            padding = MBEDTLS_PADDING_NONE;
+        }
 #endif
-    if ((ret = mbedtls_cipher_set_padding_mode(&cipher_ctx, padding)) != 0) {
-        goto exit;
+        if ((ret = mbedtls_cipher_set_padding_mode(&cipher_ctx, padding)) != 0) {
+            goto exit;
+        }
     }
 #endif /* MBEDTLS_CIPHER_MODE_WITH_PADDING */
 

@@ -7,7 +7,7 @@ from platform_methods import detect_arch
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from SCons import Environment
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -47,8 +47,10 @@ def get_opts():
         BoolVariable("fontconfig", "Use fontconfig for system fonts support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
+        BoolVariable("wayland", "Enable Wayland display", True),
+        BoolVariable("libdecor", "Enable libdecor support", True),
         BoolVariable("touch", "Enable touch events", True),
-        BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
+        BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", None),
     ]
 
 
@@ -65,10 +67,11 @@ def get_doc_path():
 def get_flags():
     return [
         ("arch", detect_arch()),
+        ("supported", ["mono"]),
     ]
 
 
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64"]
     if env["arch"] not in supported_arches:
@@ -203,6 +206,11 @@ def configure(env: "Environment"):
 
     if env["use_sowrap"]:
         env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
+
+    if env["wayland"]:
+        if os.system("wayland-scanner -v 2>/dev/null") != 0:
+            print("wayland-scanner not found. Disabling Wayland support.")
+            env["wayland"] = False
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
@@ -364,9 +372,13 @@ def configure(env: "Environment"):
             env.ParseConfig("pkg-config xkbcommon --cflags --libs")
             env.Append(CPPDEFINES=["XKB_ENABLED"])
         else:
-            print(
-                "Warning: libxkbcommon development libraries not found. Disabling dead key composition and key label support."
-            )
+            if env["wayland"]:
+                print("Error: libxkbcommon development libraries required by Wayland not found. Aborting.")
+                sys.exit(255)
+            else:
+                print(
+                    "Warning: libxkbcommon development libraries not found. Disabling dead key composition and key label support."
+                )
     else:
         env.Append(CPPDEFINES=["XKB_ENABLED"])
 
@@ -433,6 +445,33 @@ def configure(env: "Environment"):
             env.ParseConfig("pkg-config xi --cflags --libs")
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
+    if env["wayland"]:
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists libdecor-0"):
+                print("Warning: libdecor development libraries not found. Disabling client-side decorations.")
+                env["libdecor"] = False
+            else:
+                env.ParseConfig("pkg-config libdecor-0 --cflags --libs")
+            if os.system("pkg-config --exists wayland-client"):
+                print("Error: Wayland client library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config wayland-client --cflags --libs")
+            if os.system("pkg-config --exists wayland-cursor"):
+                print("Error: Wayland cursor library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config wayland-cursor --cflags --libs")
+            if os.system("pkg-config --exists wayland-egl"):
+                print("Error: Wayland EGL library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config wayland-egl --cflags --libs")
+
+        if env["libdecor"]:
+            env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
+
+        env.Prepend(CPPPATH=["#platform/linuxbsd", "#thirdparty/linuxbsd_headers/wayland/"])
+        env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
+        env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
+
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         if not env["use_volk"]:
@@ -449,32 +488,20 @@ def configure(env: "Environment"):
     if platform.system() == "Linux":
         env.Append(LIBS=["dl"])
 
-    if not env["execinfo"] and platform.libc_ver()[0] != "glibc":
+    if platform.libc_ver()[0] != "glibc":
         # The default crash handler depends on glibc, so if the host uses
         # a different libc (BSD libc, musl), fall back to libexecinfo.
-        print("Note: Using `execinfo=yes` for the crash handler as required on platforms where glibc is missing.")
-        env["execinfo"] = True
+        if not "execinfo" in env:
+            print("Note: Using `execinfo=yes` for the crash handler as required on platforms where glibc is missing.")
+            env["execinfo"] = True
 
-    if env["execinfo"]:
-        env.Append(LIBS=["execinfo"])
-
-    if not env.editor_build:
-        import subprocess
-        import re
-
-        linker_version_str = subprocess.check_output(
-            [env.subst(env["LINK"]), "-Wl,--version"] + env.subst(env["LINKFLAGS"])
-        ).decode("utf-8")
-        gnu_ld_version = re.search(r"^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
-        if not gnu_ld_version:
-            print(
-                "Warning: Creating export template binaries enabled for PCK embedding is currently only supported with GNU ld, not gold, LLD or mold."
-            )
+        if env["execinfo"]:
+            env.Append(LIBS=["execinfo"])
+            env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])
         else:
-            if float(gnu_ld_version.group(1)) >= 2.30:
-                env.Append(LINKFLAGS=["-T", "platform/linuxbsd/pck_embed.ld"])
-            else:
-                env.Append(LINKFLAGS=["-T", "platform/linuxbsd/pck_embed.legacy.ld"])
+            print("Note: Using `execinfo=no` disables the crash handler on platforms where glibc is missing.")
+    else:
+        env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])
 
     if platform.system() == "FreeBSD":
         env.Append(LINKFLAGS=["-lkvm"])

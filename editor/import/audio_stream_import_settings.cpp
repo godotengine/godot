@@ -31,8 +31,8 @@
 #include "audio_stream_import_settings.h"
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_file_system.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 
 AudioStreamImportSettingsDialog *AudioStreamImportSettingsDialog::singleton = nullptr;
@@ -277,6 +277,8 @@ void AudioStreamImportSettingsDialog::_draw_indicator() {
 		rect.size.height -= y_ofs;
 	}
 
+	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
+
 	float ofs_x = (_current - zoom_bar->get_value()) * rect.size.width / zoom_bar->get_page();
 	if (ofs_x < 0 || ofs_x >= rect.size.width) {
 		return;
@@ -310,8 +312,6 @@ void AudioStreamImportSettingsDialog::_draw_indicator() {
 			}
 		}
 	}
-
-	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
 }
 
 void AudioStreamImportSettingsDialog::_on_indicator_mouse_exited() {

@@ -176,7 +176,7 @@ private:
 	struct PackedArrayRefBase {
 		SafeRefCount refcount;
 		_FORCE_INLINE_ PackedArrayRefBase *reference() {
-			if (this->refcount.ref()) {
+			if (refcount.ref()) {
 				return this;
 			} else {
 				return nullptr;
@@ -204,7 +204,7 @@ private:
 		_FORCE_INLINE_ virtual ~PackedArrayRefBase() {} //needs virtual destructor, but make inline
 	};
 
-	template <class T>
+	template <typename T>
 	struct PackedArrayRef : public PackedArrayRefBase {
 		Vector<T> array;
 		static _FORCE_INLINE_ PackedArrayRef<T> *create() {
@@ -355,19 +355,14 @@ public:
 	const Variant &operator[](const Variant &p_key) const = delete;
 
 	operator bool() const;
-	operator signed int() const;
-	operator unsigned int() const; // this is the real one
-	operator signed short() const;
-	operator unsigned short() const;
-	operator signed char() const;
-	operator unsigned char() const;
-	//operator long unsigned int() const;
 	operator int64_t() const;
+	operator int32_t() const;
+	operator int16_t() const;
+	operator int8_t() const;
 	operator uint64_t() const;
-#ifdef NEED_LONG_INT
-	operator signed long() const;
-	operator unsigned long() const;
-#endif
+	operator uint32_t() const;
+	operator uint16_t() const;
+	operator uint8_t() const;
 
 	operator ObjectID() const;
 
@@ -404,21 +399,21 @@ public:
 	operator Dictionary() const;
 	operator Array() const;
 
-	operator Vector<uint8_t>() const;
-	operator Vector<int32_t>() const;
-	operator Vector<int64_t>() const;
-	operator Vector<float>() const;
-	operator Vector<double>() const;
-	operator Vector<String>() const;
-	operator Vector<Vector3>() const;
-	operator Vector<Color>() const;
+	operator PackedByteArray() const;
+	operator PackedInt32Array() const;
+	operator PackedInt64Array() const;
+	operator PackedFloat32Array() const;
+	operator PackedFloat64Array() const;
+	operator PackedStringArray() const;
+	operator PackedVector3Array() const;
+	operator PackedVector2Array() const;
+	operator PackedColorArray() const;
+
+	operator Vector<::RID>() const;
 	operator Vector<Plane>() const;
 	operator Vector<Face3>() const;
-
 	operator Vector<Variant>() const;
 	operator Vector<StringName>() const;
-	operator Vector<::RID>() const;
-	operator Vector<Vector2>() const;
 
 	// some core type enums to convert to
 	operator Side() const;
@@ -430,18 +425,14 @@ public:
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
 
 	Variant(bool p_bool);
-	Variant(signed int p_int); // real one
-	Variant(unsigned int p_int);
-#ifdef NEED_LONG_INT
-	Variant(signed long p_long); // real one
-	Variant(unsigned long p_long);
-#endif
-	Variant(signed short p_short); // real one
-	Variant(unsigned short p_short);
-	Variant(signed char p_char); // real one
-	Variant(unsigned char p_char);
-	Variant(int64_t p_int); // real one
-	Variant(uint64_t p_int);
+	Variant(int64_t p_int64);
+	Variant(int32_t p_int32);
+	Variant(int16_t p_int16);
+	Variant(int8_t p_int8);
+	Variant(uint64_t p_uint64);
+	Variant(uint32_t p_uint32);
+	Variant(uint16_t p_uint16);
+	Variant(uint8_t p_uint8);
 	Variant(float p_float);
 	Variant(double p_double);
 	Variant(const ObjectID &p_id);
@@ -473,21 +464,21 @@ public:
 	Variant(const Dictionary &p_dictionary);
 
 	Variant(const Array &p_array);
-	Variant(const Vector<Plane> &p_array); // helper
-	Variant(const Vector<uint8_t> &p_byte_array);
-	Variant(const Vector<int32_t> &p_int32_array);
-	Variant(const Vector<int64_t> &p_int64_array);
-	Variant(const Vector<float> &p_float32_array);
-	Variant(const Vector<double> &p_float64_array);
-	Variant(const Vector<String> &p_string_array);
-	Variant(const Vector<Vector3> &p_vector3_array);
-	Variant(const Vector<Color> &p_color_array);
-	Variant(const Vector<Face3> &p_face_array);
+	Variant(const PackedByteArray &p_byte_array);
+	Variant(const PackedInt32Array &p_int32_array);
+	Variant(const PackedInt64Array &p_int64_array);
+	Variant(const PackedFloat32Array &p_float32_array);
+	Variant(const PackedFloat64Array &p_float64_array);
+	Variant(const PackedStringArray &p_string_array);
+	Variant(const PackedVector2Array &p_vector2_array);
+	Variant(const PackedVector3Array &p_vector3_array);
+	Variant(const PackedColorArray &p_color_array);
 
+	Variant(const Vector<::RID> &p_array); // helper
+	Variant(const Vector<Plane> &p_array); // helper
+	Variant(const Vector<Face3> &p_face_array);
 	Variant(const Vector<Variant> &p_array);
 	Variant(const Vector<StringName> &p_array);
-	Variant(const Vector<::RID> &p_array); // helper
-	Variant(const Vector<Vector2> &p_array); // helper
 
 	Variant(const IPAddress &p_address);
 
@@ -502,6 +493,7 @@ public:
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(KeyLocation)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(MIDIMessage)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(MouseButton)
 
@@ -781,8 +773,8 @@ public:
 	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
 
 	static void get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums);
-	static void get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations);
-	static int get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid = nullptr);
+	static void get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations);
+	static int get_enum_value(Variant::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid = nullptr);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);
@@ -864,7 +856,7 @@ Variant Callable::call(VarArgs... p_args) const {
 }
 
 template <typename... VarArgs>
-Callable Callable::bind(VarArgs... p_args) {
+Callable Callable::bind(VarArgs... p_args) const {
 	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 	const Variant *argptrs[sizeof...(p_args) + 1];
 	for (uint32_t i = 0; i < sizeof...(p_args); i++) {

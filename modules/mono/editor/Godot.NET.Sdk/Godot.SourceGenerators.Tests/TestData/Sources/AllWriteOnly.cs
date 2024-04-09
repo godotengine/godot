@@ -2,6 +2,6 @@ using Godot;
 
 public partial class AllWriteOnly : GodotObject
 {
-    bool writeonly_backing_field = false;
-    public bool writeonly_property { set => writeonly_backing_field = value; }
+    private bool _writeOnlyBackingField = false;
+    public bool WriteOnlyProperty { set => _writeOnlyBackingField = value; }
 }

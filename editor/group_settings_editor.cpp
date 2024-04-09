@@ -31,19 +31,21 @@
 #include "group_settings_editor.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_scale.h"
+#include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/scene_tree_dock.h"
-#include "editor_file_system.h"
-#include "editor_node.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/packed_scene.h"
 
 void GroupSettingsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			update_groups();
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 	}
 }
@@ -480,6 +482,10 @@ void GroupSettingsEditor::_show_rename_dialog() {
 	rename_group->grab_focus();
 }
 
+LineEdit *GroupSettingsEditor::get_name_box() const {
+	return group_name;
+}
+
 GroupSettingsEditor::GroupSettingsEditor() {
 	ProjectSettings::get_singleton()->add_hidden_prefix("global_group/");
 
@@ -514,6 +520,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	hbc->add_child(add_button);
 
 	tree = memnew(Tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_SINGLE);
 	tree->set_allow_reselect(true);

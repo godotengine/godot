@@ -166,6 +166,11 @@ Config::Config() {
 	max_renderable_elements = GLOBAL_GET("rendering/limits/opengl/max_renderable_elements");
 	max_renderable_lights = GLOBAL_GET("rendering/limits/opengl/max_renderable_lights");
 	max_lights_per_object = GLOBAL_GET("rendering/limits/opengl/max_lights_per_object");
+
+	//Adreno 3xx Compatibility
+	const String rendering_device_name = String::utf8((const char *)glGetString(GL_RENDERER));
+	//TODO: Check the number between 300 and 399(?)
+	adreno_3xx_compatibility = (rendering_device_name.left(13) == "Adreno (TM) 3");
 }
 
 Config::~Config() {

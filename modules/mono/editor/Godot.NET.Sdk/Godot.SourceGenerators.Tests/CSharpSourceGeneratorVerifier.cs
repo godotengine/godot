@@ -61,15 +61,15 @@ where TSourceGenerator : ISourceGenerator, new()
         build_property.GodotProjectDir = {Constants.ExecutingAssemblyPath}
         """));
 
-        verifier.TestState.Sources.AddRange(sources.Select(source =>
-        {
-            return (source, SourceText.From(File.ReadAllText(Path.Combine(Constants.SourceFolderPath, source))));
-        }));
+        verifier.TestState.Sources.AddRange(sources.Select(source => (
+            source,
+            SourceText.From(File.ReadAllText(Path.Combine(Constants.SourceFolderPath, source)))
+        )));
 
-        verifier.TestState.GeneratedSources.AddRange(generatedSources.Select(generatedSource =>
-        {
-            return (FullGeneratedSourceName(generatedSource), SourceText.From(File.ReadAllText(Path.Combine(Constants.GeneratedSourceFolderPath, generatedSource)), Encoding.UTF8));
-        }));
+        verifier.TestState.GeneratedSources.AddRange(generatedSources.Select(generatedSource => (
+                FullGeneratedSourceName(generatedSource),
+                SourceText.From(File.ReadAllText(Path.Combine(Constants.GeneratedSourceFolderPath, generatedSource)), Encoding.UTF8)
+        )));
 
         return verifier;
     }

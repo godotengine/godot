@@ -176,6 +176,7 @@ private:
 	bool clearing = false;
 	//exported members
 	String source;
+	Vector<uint8_t> binary_tokens;
 	String path;
 	bool path_valid = false; // False if using default path.
 	StringName local_name; // Inner class identifier or `class_name`.
@@ -212,7 +213,8 @@ private:
 	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
 
 	GDScript *_get_gdscript_from_variant(const Variant &p_variant);
-	void _get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
+	void _collect_function_dependencies(GDScriptFunction *p_func, RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
+	void _collect_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
 
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -227,6 +229,11 @@ public:
 #ifdef DEBUG_ENABLED
 	static String debug_get_script_name(const Ref<Script> &p_script);
 #endif
+
+	static String canonicalize_path(const String &p_path);
+	_FORCE_INLINE_ static bool is_canonically_equal_paths(const String &p_path_a, const String &p_path_b) {
+		return canonicalize_path(p_path_a) == canonicalize_path(p_path_b);
+	}
 
 	_FORCE_INLINE_ StringName get_local_name() const { return local_name; }
 
@@ -296,11 +303,18 @@ public:
 	String get_script_path() const;
 	Error load_source_code(const String &p_path);
 
+	void set_binary_tokens_source(const Vector<uint8_t> &p_binary_tokens);
+	const Vector<uint8_t> &get_binary_tokens_source() const;
+	Vector<uint8_t> get_as_binary_tokens() const;
+
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
 
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
 	virtual bool has_static_method(const StringName &p_method) const override;
+
+	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
+
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
@@ -365,6 +379,9 @@ public:
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName &p_method) const;
+
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
+
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
@@ -534,13 +551,13 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	virtual void get_reserved_words(List<String> *p_words) const override;
-	virtual bool is_control_flow_keyword(String p_keywords) const override;
+	virtual bool is_control_flow_keyword(const String &p_keywords) const override;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const override;
 	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
-	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override;
+	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
 #ifndef DISABLE_DEPRECATED
@@ -575,6 +592,7 @@ public:
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) override;
 
 	virtual void reload_all_scripts() override;
+	virtual void reload_scripts(const Array &p_scripts, bool p_soft_reload) override;
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;
 
 	virtual void frame() override;
@@ -611,18 +629,18 @@ public:
 
 class ResourceFormatLoaderGDScript : public ResourceFormatLoader {
 public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
-	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual bool handles_type(const String &p_type) const override;
+	virtual String get_resource_type(const String &p_path) const override;
+	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
 };
 
 class ResourceFormatSaverGDScript : public ResourceFormatSaver {
 public:
-	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
-	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
-	virtual bool recognize(const Ref<Resource> &p_resource) const;
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 };
 
 #endif // GDSCRIPT_H

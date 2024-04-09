@@ -253,8 +253,9 @@ void CodeEdit::_notification(int p_what) {
 void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseButton> mb = p_gui_input;
 	if (mb.is_valid()) {
-		/* Ignore mouse clicks in IME input mode. */
+		// Ignore mouse clicks in IME input mode, let TextEdit handle it.
 		if (has_ime_text()) {
+			TextEdit::gui_input(p_gui_input);
 			return;
 		}
 
@@ -732,14 +733,15 @@ void CodeEdit::_backspace_internal(int p_caret) {
 				prev_column = cc - auto_brace_completion_pairs[idx].open_key.length();
 
 				if (_get_auto_brace_pair_close_at_pos(cl, cc) == idx) {
-					remove_text(prev_line, prev_column, cl, cc + auto_brace_completion_pairs[idx].close_key.length());
-				} else {
-					remove_text(prev_line, prev_column, cl, cc);
+					cc += auto_brace_completion_pairs[idx].close_key.length();
 				}
+
+				remove_text(prev_line, prev_column, cl, cc);
+
 				set_caret_line(prev_line, false, true, 0, i);
 				set_caret_column(prev_column, i == 0, i);
 
-				adjust_carets_after_edit(i, prev_line, prev_column, cl, cc + auto_brace_completion_pairs[idx].close_key.length());
+				adjust_carets_after_edit(i, prev_line, prev_column, cl, cc);
 				continue;
 			}
 		}
@@ -1823,14 +1825,14 @@ void CodeEdit::create_code_region() {
 		}
 		int to_line = get_selection_to_line(caret_idx);
 		set_line(to_line, get_line(to_line) + "\n" + code_region_end_string);
-		insert_line_at(from_line, code_region_start_string + " " + RTR("New Code Region"));
+		insert_line_at(from_line, code_region_start_string + " " + atr(ETR("New Code Region")));
 		fold_line(from_line);
 	}
 
 	// Select name of the first region to allow quick edit.
 	remove_secondary_carets();
 	set_caret_line(first_region_start);
-	int tag_length = code_region_start_string.length() + RTR("New Code Region").length() + 1;
+	int tag_length = code_region_start_string.length() + atr(ETR("New Code Region")).length() + 1;
 	set_caret_column(tag_length);
 	select(first_region_start, code_region_start_string.length() + 1, first_region_start, tag_length);
 
@@ -1860,12 +1862,18 @@ bool CodeEdit::is_line_code_region_start(int p_line) const {
 	if (code_region_start_string.is_empty()) {
 		return false;
 	}
+	if (is_in_string(p_line) != -1) {
+		return false;
+	}
 	return get_line(p_line).strip_edges().begins_with(code_region_start_string);
 }
 
 bool CodeEdit::is_line_code_region_end(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), false);
 	if (code_region_start_string.is_empty()) {
+		return false;
+	}
+	if (is_in_string(p_line) != -1) {
 		return false;
 	}
 	return get_line(p_line).strip_edges().begins_with(code_region_end_string);
@@ -2635,7 +2643,7 @@ void CodeEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_text_for_code_completion"), &CodeEdit::get_text_for_code_completion);
 	ClassDB::bind_method(D_METHOD("request_code_completion", "force"), &CodeEdit::request_code_completion, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value", "location"), &CodeEdit::add_code_completion_option, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant::NIL), DEFVAL(LOCATION_OTHER));
+	ClassDB::bind_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value", "location"), &CodeEdit::add_code_completion_option, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant()), DEFVAL(LOCATION_OTHER));
 	ClassDB::bind_method(D_METHOD("update_code_completion_options", "force"), &CodeEdit::update_code_completion_options);
 	ClassDB::bind_method(D_METHOD("get_code_completion_options"), &CodeEdit::get_code_completion_options);
 	ClassDB::bind_method(D_METHOD("get_code_completion_option", "index"), &CodeEdit::get_code_completion_option);
@@ -3390,9 +3398,16 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		int offset = option.default_value.get_type() == Variant::COLOR ? line_height : 0;
 
 		if (in_string != -1) {
+			// The completion string may have a literal behind it, which should be removed before re-quoting.
+			String literal;
+			if (option.insert_text.substr(1).is_quoted()) {
+				literal = option.display.left(1);
+				option.display = option.display.substr(1);
+				option.insert_text = option.insert_text.substr(1);
+			}
 			String quote = single_quote ? "'" : "\"";
-			option.display = option.display.unquote().quote(quote);
-			option.insert_text = option.insert_text.unquote().quote(quote);
+			option.display = literal + (option.display.unquote().quote(quote));
+			option.insert_text = literal + (option.insert_text.unquote().quote(quote));
 		}
 
 		if (option.display.length() == 0) {

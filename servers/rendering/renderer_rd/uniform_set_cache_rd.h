@@ -34,6 +34,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device_binds.h"
 
 class UniformSetCacheRD : public Object {
 	GDCLASS(UniformSetCacheRD, Object)
@@ -151,6 +152,9 @@ class UniformSetCacheRD : public Object {
 		return rid;
 	}
 
+private:
+	static void _bind_methods();
+
 public:
 	template <typename... Args>
 	RID get_cache(RID p_shader, uint32_t p_set, Args... args) {
@@ -213,6 +217,8 @@ public:
 		// Not in cache, create:
 		return _allocate_from_uniforms(p_shader, p_set, h, table_idx, p_uniforms);
 	}
+
+	static RID get_cache_array(RID p_shader, uint32_t p_set, const TypedArray<RDUniform> &p_uniforms);
 
 	static UniformSetCacheRD *get_singleton() { return singleton; }
 

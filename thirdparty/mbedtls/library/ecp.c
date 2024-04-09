@@ -2,19 +2,7 @@
  *  Elliptic curves over GF(p): generic functions
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 /*
@@ -939,7 +927,7 @@ int mbedtls_ecp_point_read_binary(const mbedtls_ecp_group *grp,
     size_t plen;
     ECP_VALIDATE_RET(grp != NULL);
     ECP_VALIDATE_RET(pt  != NULL);
-    ECP_VALIDATE_RET(buf != NULL);
+    ECP_VALIDATE_RET(ilen == 0 || buf != NULL);
 
     if (ilen < 1) {
         return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
@@ -1008,7 +996,7 @@ int mbedtls_ecp_tls_read_point(const mbedtls_ecp_group *grp,
     ECP_VALIDATE_RET(grp != NULL);
     ECP_VALIDATE_RET(pt  != NULL);
     ECP_VALIDATE_RET(buf != NULL);
-    ECP_VALIDATE_RET(*buf != NULL);
+    ECP_VALIDATE_RET(buf_len == 0 || *buf != NULL);
 
     /*
      * We must have at least two bytes (1 for length, at least one for data)
@@ -1080,7 +1068,7 @@ int mbedtls_ecp_tls_read_group(mbedtls_ecp_group *grp,
     mbedtls_ecp_group_id grp_id;
     ECP_VALIDATE_RET(grp  != NULL);
     ECP_VALIDATE_RET(buf  != NULL);
-    ECP_VALIDATE_RET(*buf != NULL);
+    ECP_VALIDATE_RET(len == 0 || *buf != NULL);
 
     if ((ret = mbedtls_ecp_tls_read_group_id(&grp_id, buf, len)) != 0) {
         return ret;
@@ -1100,7 +1088,7 @@ int mbedtls_ecp_tls_read_group_id(mbedtls_ecp_group_id *grp,
     const mbedtls_ecp_curve_info *curve_info;
     ECP_VALIDATE_RET(grp  != NULL);
     ECP_VALIDATE_RET(buf  != NULL);
-    ECP_VALIDATE_RET(*buf != NULL);
+    ECP_VALIDATE_RET(len == 0 || *buf != NULL);
 
     /*
      * We expect at least three bytes (see below)
@@ -2626,8 +2614,8 @@ static int ecp_mul_mxz(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
     /* RP.X might be slightly larger than P, so reduce it */
     MOD_ADD(RP.X);
 
+    /* Randomize coordinates of the starting point */
 #if defined(MBEDTLS_ECP_NO_INTERNAL_RNG)
-    /* Derandomize coordinates of the starting point */
     if (f_rng == NULL) {
         have_rng = 0;
     }
@@ -3370,10 +3358,10 @@ cleanup:
 int mbedtls_ecp_write_key(mbedtls_ecp_keypair *key,
                           unsigned char *buf, size_t buflen)
 {
-    int ret = MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     ECP_VALIDATE_RET(key != NULL);
-    ECP_VALIDATE_RET(buf != NULL);
+    ECP_VALIDATE_RET(buflen == 0 || buf != NULL);
 
 #if defined(MBEDTLS_ECP_MONTGOMERY_ENABLED)
     if (mbedtls_ecp_get_type(&key->grp) == MBEDTLS_ECP_TYPE_MONTGOMERY) {

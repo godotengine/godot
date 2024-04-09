@@ -37,7 +37,6 @@
 #include "editor/editor_properties_array_dict.h"
 #include "editor/editor_properties_vector.h"
 #include "editor/editor_resource_picker.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -48,6 +47,7 @@
 #include "editor/project_settings_editor.h"
 #include "editor/property_selector.h"
 #include "editor/scene_tree_dock.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
@@ -254,7 +254,7 @@ void EditorPropertyTextEnum::_set_read_only(bool p_read_only) {
 	edit_button->set_disabled(p_read_only);
 }
 
-void EditorPropertyTextEnum::_emit_changed_value(String p_string) {
+void EditorPropertyTextEnum::_emit_changed_value(const String &p_string) {
 	if (string_name) {
 		emit_changed(get_edited_property(), StringName(p_string));
 	} else {
@@ -272,7 +272,7 @@ void EditorPropertyTextEnum::_edit_custom_value() {
 	custom_value_edit->grab_focus();
 }
 
-void EditorPropertyTextEnum::_custom_value_submitted(String p_value) {
+void EditorPropertyTextEnum::_custom_value_submitted(const String &p_value) {
 	edit_custom_layout->hide();
 	default_layout->show();
 
@@ -374,7 +374,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	option_button->set_clip_text(true);
 	option_button->set_flat(true);
-	option_button->set_auto_translate(false);
+	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	default_layout->add_child(option_button);
 	option_button->connect("item_selected", callable_mp(this, &EditorPropertyTextEnum::_option_selected));
 
@@ -534,7 +534,11 @@ void EditorPropertyPath::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			path_edit->set_icon(get_editor_theme_icon(SNAME("Folder")));
+			if (folder) {
+				path_edit->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
+			} else {
+				path_edit->set_icon(get_editor_theme_icon(SNAME("FileBrowse")));
+			}
 		} break;
 	}
 }
@@ -728,7 +732,7 @@ EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
 	options->set_flat(true);
-	options->set_auto_translate(false);
+	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(options);
 	add_focusable(options);
 	options->connect("item_selected", callable_mp(this, &EditorPropertyEnum::_option_selected));
@@ -992,12 +996,12 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 			const int bsize = (grid_size.height * 80 / 100) / 2;
 			const int h = bsize * 2 + 1;
 
-			Color color = get_theme_color(read_only ? SNAME("disabled_highlight_color") : SNAME("highlight_color"), EditorStringName(Editor));
+			Color color = get_theme_color(read_only ? SNAME("highlight_disabled_color") : SNAME("highlight_color"), EditorStringName(Editor));
 
-			Color text_color = get_theme_color(read_only ? SNAME("disabled_font_color") : SNAME("font_color"), EditorStringName(Editor));
+			Color text_color = get_theme_color(read_only ? SNAME("font_disabled_color") : SNAME("font_color"), EditorStringName(Editor));
 			text_color.a *= 0.5;
 
-			Color text_color_on = get_theme_color(read_only ? SNAME("disabled_font_color") : SNAME("font_hover_color"), EditorStringName(Editor));
+			Color text_color_on = get_theme_color(read_only ? SNAME("font_disabled_color") : SNAME("font_hover_color"), EditorStringName(Editor));
 			text_color_on.a *= 0.7;
 
 			const int vofs = (grid_size.height - h) / 2;
@@ -2073,7 +2077,7 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 				euler[i]->add_theme_color_override("label_color", colors[i]);
 			}
 			edit_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
-			euler_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("property_color"), EditorStringName(Editor)));
+			euler_label->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("property_color"), SNAME("EditorProperty")));
 			warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			warning->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
@@ -2155,7 +2159,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	warning_dialog->set_text(TTR("Temporary Euler will not be stored in the object with the original value. Instead, it will be stored as Quaternion with irreversible conversion.\nThis is due to the fact that the result of Euler->Quaternion can be determined uniquely, but the result of Quaternion->Euler can be multi-existent."));
 
 	euler_label = memnew(Label);
-	euler_label->set_text("Temporary Euler");
+	euler_label->set_text(TTR("Temporary Euler"));
 
 	edit_custom_bc->add_child(warning);
 	edit_custom_bc->add_child(edit_custom_layout);
@@ -2626,16 +2630,22 @@ void EditorPropertyColor::_set_read_only(bool p_read_only) {
 }
 
 void EditorPropertyColor::_color_changed(const Color &p_color) {
-	// Cancel the color change if the current color is identical to the new one.
-	if (get_edited_property_value() == p_color) {
+	if (!live_changes_enabled) {
 		return;
 	}
 
-	emit_changed(get_edited_property(), p_color, "", true);
+	// Cancel the color change if the current color is identical to the new one.
+	if (((Color)get_edited_property_value()).is_equal_approx(p_color)) {
+		return;
+	}
+
+	// Preview color change, bypassing undo/redo.
+	get_edited_object()->set(get_edited_property(), p_color);
 }
 
 void EditorPropertyColor::_popup_closed() {
-	if (picker->get_pick_color() != last_color) {
+	get_edited_object()->set(get_edited_property(), last_color);
+	if (!picker->get_pick_color().is_equal_approx(last_color)) {
 		emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
 	}
 }
@@ -2676,6 +2686,10 @@ void EditorPropertyColor::update_property() {
 
 void EditorPropertyColor::setup(bool p_show_alpha) {
 	picker->set_edit_alpha(p_show_alpha);
+}
+
+void EditorPropertyColor::set_live_changes_enabled(bool p_enabled) {
+	live_changes_enabled = p_enabled;
 }
 
 EditorPropertyColor::EditorPropertyColor() {
@@ -2737,7 +2751,15 @@ void EditorPropertyNodePath::_node_assign() {
 		add_child(scene_tree);
 		scene_tree->connect("selected", callable_mp(this, &EditorPropertyNodePath::_node_selected));
 	}
-	scene_tree->popup_scenetree_dialog();
+
+	Variant val = get_edited_property_value();
+	Node *n = nullptr;
+	if (val.get_type() == Variant::Type::NODE_PATH) {
+		n = get_base_node()->get_node_or_null(val);
+	} else {
+		n = Object::cast_to<Node>(val);
+	}
+	scene_tree->popup_scenetree_dialog(n, get_base_node());
 }
 
 void EditorPropertyNodePath::_update_menu() {
@@ -2897,7 +2919,7 @@ void EditorPropertyNodePath::update_property() {
 	assign->set_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
 }
 
-void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
+void EditorPropertyNodePath::setup(const NodePath &p_base_hint, const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
 	base_hint = p_base_hint;
 	valid_types = p_valid_types;
 	editing_node = p_editing_node;
@@ -2955,7 +2977,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
-	assign->set_auto_translate(false);
+	assign->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	assign->set_expand_icon(true);
 	assign->connect("pressed", callable_mp(this, &EditorPropertyNodePath::_node_assign));
 	SET_DRAG_FORWARDING_CD(assign, EditorPropertyNodePath);
@@ -3013,7 +3035,7 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 			if (extensions.find(parent.get_extension()) && (!EditorNode::get_singleton()->get_edited_scene() || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() != parent)) {
 				// If the resource belongs to another (non-imported) scene, edit it in that scene instead.
 				if (!FileAccess::exists(parent + ".import")) {
-					EditorNode::get_singleton()->call_deferred("edit_foreign_resource", p_resource);
+					callable_mp(EditorNode::get_singleton(), &EditorNode::edit_foreign_resource).call_deferred(p_resource);
 					return;
 				}
 			}
@@ -3170,7 +3192,6 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 			add_child(scene_tree);
 			scene_tree->connect("selected", callable_mp(this, &EditorPropertyResource::_viewport_selected));
 		}
-
 		scene_tree->popup_scenetree_dialog();
 	}
 }
@@ -3341,6 +3362,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_use_folding(is_using_folding());
 
 				sub_inspector_vbox = memnew(VBoxContainer);
+				sub_inspector_vbox->set_mouse_filter(MOUSE_FILTER_STOP);
 				add_child(sub_inspector_vbox);
 				set_bottom_editor(sub_inspector_vbox);
 
@@ -3868,27 +3890,27 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_BYTE_ARRAY);
+			editor->setup(Variant::PACKED_BYTE_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_INT32_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_INT32_ARRAY);
+			editor->setup(Variant::PACKED_INT32_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_INT64_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_INT64_ARRAY);
+			editor->setup(Variant::PACKED_INT64_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_FLOAT32_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_FLOAT32_ARRAY);
+			editor->setup(Variant::PACKED_FLOAT32_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_FLOAT64_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_FLOAT64_ARRAY);
+			editor->setup(Variant::PACKED_FLOAT64_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
@@ -3898,17 +3920,17 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::PACKED_VECTOR2_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_VECTOR2_ARRAY);
+			editor->setup(Variant::PACKED_VECTOR2_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_VECTOR3_ARRAY);
+			editor->setup(Variant::PACKED_VECTOR3_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		case Variant::PACKED_COLOR_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
-			editor->setup(Variant::PACKED_COLOR_ARRAY);
+			editor->setup(Variant::PACKED_COLOR_ARRAY, p_hint_text);
 			return editor;
 		} break;
 		default: {

@@ -488,11 +488,13 @@ void RaycastOcclusionCull::Scenario::update() {
 }
 
 void RaycastOcclusionCull::Scenario::_raycast(uint32_t p_idx, const RaycastThreadData *p_raycast_data) const {
-	RTCIntersectContext ctx;
-	rtcInitIntersectContext(&ctx);
-	ctx.flags = RTC_INTERSECT_CONTEXT_FLAG_COHERENT;
-
-	rtcIntersect16((const int *)&p_raycast_data->masks[p_idx * TILE_RAYS], ebr_scene[current_scene_idx], &ctx, &p_raycast_data->rays[p_idx]);
+	RTCRayQueryContext context;
+	rtcInitRayQueryContext(&context);
+	RTCIntersectArguments args;
+	rtcInitIntersectArguments(&args);
+	args.flags = RTC_RAY_QUERY_FLAG_COHERENT;
+	args.context = &context;
+	rtcIntersect16((const int *)&p_raycast_data->masks[p_idx * TILE_RAYS], ebr_scene[current_scene_idx], &p_raycast_data->rays[p_idx], &args);
 }
 
 void RaycastOcclusionCull::Scenario::raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count) const {
@@ -536,6 +538,64 @@ void RaycastOcclusionCull::buffer_set_size(RID p_buffer, const Vector2i &p_size)
 	buffers[p_buffer].resize(p_size);
 }
 
+Projection RaycastOcclusionCull::_jitter_projection(const Projection &p_cam_projection, const Size2i &p_viewport_size) {
+	if (!_jitter_enabled) {
+		return p_cam_projection;
+	}
+
+	// Prevent divide by zero when using NULL viewport.
+	if ((p_viewport_size.x <= 0) || (p_viewport_size.y <= 0)) {
+		return p_cam_projection;
+	}
+
+	Projection p = p_cam_projection;
+
+	int32_t frame = Engine::get_singleton()->get_frames_drawn();
+	frame %= 9;
+
+	Vector2 jitter;
+
+	switch (frame) {
+		default:
+			break;
+		case 1: {
+			jitter = Vector2(-1, -1);
+		} break;
+		case 2: {
+			jitter = Vector2(1, -1);
+		} break;
+		case 3: {
+			jitter = Vector2(-1, 1);
+		} break;
+		case 4: {
+			jitter = Vector2(1, 1);
+		} break;
+		case 5: {
+			jitter = Vector2(-0.5f, -0.5f);
+		} break;
+		case 6: {
+			jitter = Vector2(0.5f, -0.5f);
+		} break;
+		case 7: {
+			jitter = Vector2(-0.5f, 0.5f);
+		} break;
+		case 8: {
+			jitter = Vector2(0.5f, 0.5f);
+		} break;
+	}
+
+	// The multiplier here determines the divergence from center,
+	// and is to some extent a balancing act.
+	// Higher divergence gives fewer false hidden, but more false shown.
+	// False hidden is obvious to viewer, false shown is not.
+	// False shown can lower percentage that are occluded, and therefore performance.
+	jitter *= Vector2(1 / (float)p_viewport_size.x, 1 / (float)p_viewport_size.y) * 0.05f;
+
+	p.add_jitter_offset(jitter);
+
+	return p;
+}
+
 void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {
 	if (!buffers.has(p_buffer)) {
 		return;
@@ -550,7 +610,9 @@ void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_
 	Scenario &scenario = scenarios[buffer.scenario_rid];
 	scenario.update();
 
-	buffer.update_camera_rays(p_cam_transform, p_cam_projection, p_cam_orthogonal);
+	Projection jittered_proj = _jitter_projection(p_cam_projection, buffer.get_occlusion_buffer_size());
+
+	buffer.update_camera_rays(p_cam_transform, jittered_proj, p_cam_orthogonal);
 
 	scenario.raycast(buffer.camera_rays, buffer.camera_ray_masks.ptr(), buffer.camera_rays_tile_count);
 	buffer.sort_rays(-p_cam_transform.basis.get_column(2), p_cam_orthogonal);
@@ -596,6 +658,7 @@ void RaycastOcclusionCull::_init_embree() {
 RaycastOcclusionCull::RaycastOcclusionCull() {
 	raycast_singleton = this;
 	int default_quality = GLOBAL_GET("rendering/occlusion_culling/bvh_build_quality");
+	_jitter_enabled = GLOBAL_GET("rendering/occlusion_culling/jitter_projection");
 	build_quality = RS::ViewportOcclusionCullingBuildQuality(default_quality);
 }
 
