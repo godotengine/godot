@@ -91,6 +91,7 @@ branches, and linked at the [end of this file](#Past-releases).
 - Add `WASM_BIGINT` linker flag to the web build ([GH-88594](https://github.com/godotengine/godot/pull/88594)).
 - CI: Update actions to latest versions, use default runner .NET version ([GH-88671](https://github.com/godotengine/godot/pull/88671)).
 - Fix running tests in template builds ([GH-88759](https://github.com/godotengine/godot/pull/88759)).
+- SCons: Disable verbose output for SCU build ([GH-89483](https://github.com/godotengine/godot/pull/89483)).
 - CI: Improve fetching of changed files ([GH-89980](https://github.com/godotengine/godot/pull/89980)).
 
 #### C#
@@ -98,6 +99,7 @@ branches, and linked at the [end of this file](#Past-releases).
 - Use `get_instance_binding` instead of set ([GH-84947](https://github.com/godotengine/godot/pull/84947)).
 - Bump the `JetBrains.Rider.PathLocator` PackageReference to 1.0.8 ([GH-85460](https://github.com/godotengine/godot/pull/85460)).
 - Fix typo in GD0103 error link ([GH-86592](https://github.com/godotengine/godot/pull/86592)).
+- Fix return type hint for methods ([GH-86972](https://github.com/godotengine/godot/pull/86972)).
 - [C#] Fix `Encloses` failing on shared upper bound for `AABB` and `Rect2(I)` ([GH-87264](https://github.com/godotengine/godot/pull/87264)).
 - Fix not assigning `runtime_initialized` when initializing with AOT ([GH-87597](https://github.com/godotengine/godot/pull/87597)).
 - Fix possible deadlock when creating scripts during a background garbage collection ([GH-87669](https://github.com/godotengine/godot/pull/87669)).
@@ -135,7 +137,6 @@ branches, and linked at the [end of this file](#Past-releases).
 - Explicitly initialize all of `FileAccess::create_func[ACCESS_MAX]` ([GH-87389](https://github.com/godotengine/godot/pull/87389)).
 - Add check for negative `buffer_size` inside `StreamPeerGZIP::start_(de)compression` ([GH-87448](https://github.com/godotengine/godot/pull/87448)).
 - Fix `FileAccessMemory` off by one error in `eof_reached` ([GH-87571](https://github.com/godotengine/godot/pull/87571)).
-- Fix `ResourceLoader.load_threaded_get_status` returning `[0]` constantly in exported projects ([GH-87711](https://github.com/godotengine/godot/pull/87711)).
 - Update visuals immediately after resizing `Placeholder*` textures ([GH-87854](https://github.com/godotengine/godot/pull/87854)).
 - Fix owner when importing meshes ([GH-88497](https://github.com/godotengine/godot/pull/88497)).
 - Fix inefficient list iteration in Node ([GH-88785](https://github.com/godotengine/godot/pull/88785)).
@@ -219,6 +220,7 @@ branches, and linked at the [end of this file](#Past-releases).
 - Address a few issues in Transform3D documentation ([GH-89147](https://github.com/godotengine/godot/pull/89147)).
 - Docs: C#] Use `PropertyName` constants in more places ([GH-89246](https://github.com/godotengine/godot/pull/89246)).
 - Doc: Clarify `bsearch(_custom)` behavior ([GH-89280](https://github.com/godotengine/godot/pull/89280)).
+- Doc: Clarify description for `get_unix_time_from_system` on UTC ([GH-89454](https://github.com/godotengine/godot/pull/89454)).
 - Doc: Clarify behavior of `String.format` with keys in replacements ([GH-89608](https://github.com/godotengine/godot/pull/89608)).
 - Fix documentation for receiving light from light probes ([GH-89699](https://github.com/godotengine/godot/pull/89699)).
 - Doc: Fix casing of some C# names ([GH-89710](https://github.com/godotengine/godot/pull/89710)).
