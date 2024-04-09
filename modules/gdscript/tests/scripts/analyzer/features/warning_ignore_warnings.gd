@@ -31,8 +31,8 @@ func int_func() -> int:
 func test_warnings(unused_private_class_variable):
 	var t = 1
 
-	@warning_ignore("unassigned_variable")
 	var unassigned_variable
+	@warning_ignore("unassigned_variable")
 	print(unassigned_variable)
 
 	var _unassigned_variable_op_assign
