@@ -101,6 +101,7 @@ private:
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
 	void _repaint();
+	void _refresh_tab_indices();
 	void _refresh_tab_names();
 	void _update_margins();
 	void _on_mouse_exited();
