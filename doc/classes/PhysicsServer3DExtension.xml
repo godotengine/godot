@@ -760,6 +760,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_is_active" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="_is_flushing_queries" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
