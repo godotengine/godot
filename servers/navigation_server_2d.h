@@ -306,6 +306,8 @@ public:
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationPolygon> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData2D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 	virtual bool is_baking_navigation_polygon(Ref<NavigationPolygon> p_navigation_polygon) const = 0;
 
+	virtual Vector<Vector2> simplify_path(const Vector<Vector2> &p_path, real_t p_epsilon) = 0;
+
 	NavigationServer2D();
 	~NavigationServer2D() override;
 
