@@ -229,6 +229,10 @@ bool GodotNavigationServer2D::is_baking_navigation_polygon(Ref<NavigationPolygon
 #endif
 }
 
+Vector<Vector2> GodotNavigationServer2D::simplify_path(const Vector<Vector2> &p_path, real_t p_epsilon) {
+	return vector_v3_to_v2(NavigationServer3D::get_singleton()->simplify_path(vector_v2_to_v3(p_path), p_epsilon));
+}
+
 GodotNavigationServer2D::GodotNavigationServer2D() {}
 
 GodotNavigationServer2D::~GodotNavigationServer2D() {}
