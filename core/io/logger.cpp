@@ -31,10 +31,10 @@
 #include "logger.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_bind.h"
 #include "core/core_globals.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
+#include "core/os/thread.h"
 #include "core/os/time.h"
 #include "core/string/print_string.h"
 
