@@ -105,6 +105,26 @@ bool MachO::is_macho(const String &p_path) {
 	return (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf);
 }
 
+uint32_t MachO::get_filetype(const String &p_path) {
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("MachO: Can't open file: \"%s\".", p_path));
+	uint32_t magic = fa->get_32();
+	MachHeader mach_header;
+
+	// Read MachO header.
+	if (magic == 0xcefaedfe || magic == 0xfeedface) {
+		// Thin 32-bit binary.
+		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
+	} else if (magic == 0xcffaedfe || magic == 0xfeedfacf) {
+		// Thin 64-bit binary.
+		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
+		fa->get_32(); // Skip extra reserved field.
+	} else {
+		ERR_FAIL_V_MSG(0, vformat("MachO: File is not a valid MachO binary: \"%s\".", p_path));
+	}
+	return mach_header.filetype;
+}
+
 bool MachO::open_file(const String &p_path) {
 	fa = FileAccess::open(p_path, FileAccess::READ_WRITE);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("MachO: Can't open file: \"%s\".", p_path));
