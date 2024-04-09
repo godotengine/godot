@@ -304,6 +304,7 @@ public:
 	EditorFileSystemDirectory *get_filesystem();
 	bool is_scanning() const;
 	bool is_importing() const { return importing; }
+	bool doing_first_scan() const { return first_scan; }
 	float get_scanning_progress() const;
 	void scan();
 	void scan_changes();
