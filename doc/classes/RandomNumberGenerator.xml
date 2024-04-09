@@ -17,16 +17,11 @@
 		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
-		<method name="randb">
+		<method name="rand_bool">
 			<return type="bool" />
-			<param index="0" name="chance" type="float" default="0.5" />
+			<param index="0" name="true_chance" type="float" default="0.5" />
 			<description>
-				Returns a random boolean with a bias of [param chance] to be [code]true[/code] and [code]false[/code] otherwise.
-				[codeblocks]
-				[gdscript]
-				randb(0.5) # Returns true at the param chance of 0.5.
-				[/gdscript]
-				[/codeblocks]
+				Returns either [code]true[/code] or [code]false[/code] at random. [param true_chance] should be a number between [code]0.0[/code] and [code]1.0[/code] (inclusive). The greater [param true_chance] is, the more likely this function returns [code]true[/code].
 			</description>
 		</method>
 		<method name="randf">

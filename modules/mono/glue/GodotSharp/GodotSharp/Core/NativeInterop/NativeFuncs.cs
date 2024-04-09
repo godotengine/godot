@@ -522,7 +522,7 @@ namespace Godot.NativeInterop
 
         internal static partial uint godotsharp_randi();
 
-        internal static partial bool godotsharp_randb(double p_chance);
+        internal static partial bool godotsharp_rand_bool(double p_true_chance);
 
         internal static partial void godotsharp_randomize();
 

@@ -456,12 +456,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a random boolean with a bias of <paramref name="chance"/> to be <see langword="true"/> and <see langword="false"/> otherwise.
+        /// Returns a random boolean with a bias of <paramref name="true_chance"/> to be <see langword="true"/> and <see langword="false"/> otherwise.
         /// </summary>
         /// <returns>A random <see langword="bool"/>.</returns>
-        public static bool Randb(double chance = 0.5)
+        public static bool RandBool(double true_chance = 0.5)
         {
-            return NativeFuncs.godotsharp_randb(chance);
+            return NativeFuncs.godotsharp_rand_bool(true_chance);
         }
 
         /// <summary>

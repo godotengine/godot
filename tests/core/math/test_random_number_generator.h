@@ -86,7 +86,7 @@ TEST_CASE_MAY_FAIL("[RandomNumberGenerator] Boolean") {
 	bool has_seen_false = false;
 	int i;
 	for (i = 0; i < 100; i++) {
-		if (rng->randb(0.5)) {
+		if (rng->rand_bool(0.5)) {
 			has_seen_true = true;
 		} else {
 			has_seen_false = true;
