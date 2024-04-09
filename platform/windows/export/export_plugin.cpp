@@ -367,10 +367,16 @@ String EditorExportPlatformWindows::get_export_option_warning(const EditorExport
 }
 
 bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	if (p_preset == nullptr) {
+		return true;
+	}
+
 	// This option is not supported by "osslsigncode", used on non-Windows host.
 	if (!OS::get_singleton()->has_feature("windows") && p_option == "codesign/identity_type") {
 		return false;
 	}
+
+	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
 
 	// Hide codesign.
 	bool codesign = p_preset->get("codesign/enable");
@@ -390,6 +396,9 @@ bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExpor
 		return false;
 	}
 
+	if (p_option == "dotnet/embed_build_outputs") {
+		return advanced_options_enabled;
+	}
 	return true;
 }
 

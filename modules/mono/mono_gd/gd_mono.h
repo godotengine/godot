@@ -77,7 +77,9 @@ class GDMono {
 	void _try_load_project_assembly();
 #endif
 
+#ifdef DEBUG_METHODS_ENABLED
 	uint64_t api_core_hash = 0;
+#endif
 #ifdef TOOLS_ENABLED
 	uint64_t api_editor_hash = 0;
 #endif
