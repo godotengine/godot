@@ -366,13 +366,7 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 	}
 #endif
 	if (ti->gdextension && ti->gdextension->create_instance) {
-		Object *obj = (Object *)ti->gdextension->create_instance(ti->gdextension->class_userdata);
-#ifdef TOOLS_ENABLED
-		if (ti->gdextension->track_instance) {
-			ti->gdextension->track_instance(ti->gdextension->tracking_userdata, obj);
-		}
-#endif
-		return obj;
+		return (Object *)ti->gdextension->create_instance(ti->gdextension->class_userdata);
 	} else {
 		return ti->creation_func();
 	}
@@ -396,6 +390,12 @@ void ClassDB::set_object_extension_instance(Object *p_object, const StringName &
 
 	p_object->_extension = ti->gdextension;
 	p_object->_extension_instance = p_instance;
+
+#ifdef TOOLS_ENABLED
+	if (p_object->_extension->track_instance) {
+		p_object->_extension->track_instance(p_object->_extension->tracking_userdata, p_object);
+	}
+#endif
 }
 
 bool ClassDB::can_instantiate(const StringName &p_class) {
