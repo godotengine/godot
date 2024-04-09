@@ -861,7 +861,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	class_list->connect("item_edited", callable_mp(this, &EditorBuildProfileManager::_class_list_item_edited), CONNECT_DEFERRED);
 	class_list->connect("item_collapsed", callable_mp(this, &EditorBuildProfileManager::_class_list_item_collapsed));
 	// It will be displayed once the user creates or chooses a profile.
-	main_vbc->add_margin_child(TTR("Configure Engine Build Profile:"), class_list, true);
+	main_vbc->add_margin_child(TTR("Configure Engine Compilation Profile:"), class_list, true);
 
 	description_bit = memnew(EditorHelpBit);
 	description_bit->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
@@ -875,7 +875,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	import_profile = memnew(EditorFileDialog);
 	add_child(import_profile);
 	import_profile->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	import_profile->add_filter("*.build", TTR("Engine Build Profile"));
+	import_profile->add_filter("*.build", TTR("Engine Compilation Profile"));
 	import_profile->connect("files_selected", callable_mp(this, &EditorBuildProfileManager::_import_profile));
 	import_profile->set_title(TTR("Load Profile"));
 	import_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -883,7 +883,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_profile->add_filter("*.build", TTR("Engine Build Profile"));
+	export_profile->add_filter("*.build", TTR("Engine Compilation Profile"));
 	export_profile->connect("file_selected", callable_mp(this, &EditorBuildProfileManager::_export_profile));
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -892,7 +892,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	main_vbc->add_margin_child(TTR("Forced Classes on Detect:"), force_detect_classes);
 	force_detect_classes->connect("text_changed", callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
 
-	set_title(TTR("Edit Build Configuration Profile"));
+	set_title(TTR("Edit Compilation Configuration Profile"));
 
 	singleton = this;
 }
