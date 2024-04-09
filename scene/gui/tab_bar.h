@@ -55,6 +55,7 @@ public:
 private:
 	struct Tab {
 		String text;
+		String tooltip_text;
 
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
@@ -190,6 +191,9 @@ public:
 	void set_tab_language(int p_tab, const String &p_language);
 	String get_tab_language(int p_tab) const;
 
+	void set_tab_tooltip_text(int p_tab, const String &p_tooltip_text);
+	String get_tab_tooltip_text(int p_tab) const;
+
 	void set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_icon(int p_tab) const;
 
@@ -265,6 +269,8 @@ public:
 
 	Rect2 get_tab_rect(int p_tab) const;
 	Size2 get_minimum_size() const override;
+
+	String get_tooltip(const Point2 &p_pos) const override;
 
 	TabBar();
 };

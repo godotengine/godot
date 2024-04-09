@@ -154,6 +154,9 @@ public:
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
 
+	void set_tab_tooltip_text(int p_tab, const String &p_tooltip_text);
+	String get_tab_tooltip_text(int p_tab) const;
+
 	void set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_icon(int p_tab) const;
 

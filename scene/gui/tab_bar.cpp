@@ -108,6 +108,21 @@ Size2 TabBar::get_minimum_size() const {
 	return ms;
 }
 
+String TabBar::get_tooltip(const Point2 &p_pos) const {
+	for (int i = offset; i <= max_drawn_tab; i++) {
+		if (tabs[i].hidden) {
+			continue;
+		}
+
+		Rect2 rect = get_tab_rect(i);
+		if (rect.has_point(p_pos)) {
+			return tabs[i].tooltip_text;
+		}
+	}
+
+	return Control::get_tooltip(p_pos);
+}
+
 void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -792,6 +807,16 @@ void TabBar::set_tab_language(int p_tab, const String &p_language) {
 String TabBar::get_tab_language(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), "");
 	return tabs[p_tab].language;
+}
+
+void TabBar::set_tab_tooltip_text(int p_tab, const String &p_tooltip_text) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+	tabs.write[p_tab].tooltip_text = p_tooltip_text;
+}
+
+String TabBar::get_tab_tooltip_text(int p_tab) const {
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), String());
+	return tabs[p_tab].tooltip_text;
 }
 
 void TabBar::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
@@ -1786,6 +1811,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_text_direction", "tab_idx"), &TabBar::get_tab_text_direction);
 	ClassDB::bind_method(D_METHOD("set_tab_language", "tab_idx", "language"), &TabBar::set_tab_language);
 	ClassDB::bind_method(D_METHOD("get_tab_language", "tab_idx"), &TabBar::get_tab_language);
+	ClassDB::bind_method(D_METHOD("set_tab_tooltip_text", "tab_idx", "tooltip_text"), &TabBar::set_tab_tooltip_text);
+	ClassDB::bind_method(D_METHOD("get_tab_tooltip_text", "tab_idx"), &TabBar::get_tab_tooltip_text);
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &TabBar::set_tab_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_icon", "tab_idx"), &TabBar::get_tab_icon);
 	ClassDB::bind_method(D_METHOD("set_tab_icon_max_width", "tab_idx", "width"), &TabBar::set_tab_icon_max_width);
