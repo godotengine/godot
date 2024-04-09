@@ -94,6 +94,9 @@ String GDScriptWarning::get_message() const {
 		case UNSAFE_METHOD_ACCESS:
 			CHECK_SYMBOLS(2);
 			return vformat(R"*(The method "%s()" is not present on the inferred type "%s" (but may be present on a subtype).)*", symbols[0], symbols[1]);
+		case UNSAFE_ASSIGNMENT:
+			CHECK_SYMBOLS(1);
+			return vformat(R"*(The variable of type "%s" is implicitly cast from a value of unknown type.)*", symbols[0]);
 		case UNSAFE_CAST:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The value is cast to "%s" but has an unknown type.)", symbols[0]);
@@ -208,6 +211,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"INFERRED_DECLARATION",
 		"UNSAFE_PROPERTY_ACCESS",
 		"UNSAFE_METHOD_ACCESS",
+		"UNSAFE_ASSIGNMENT",
 		"UNSAFE_CAST",
 		"UNSAFE_CALL_ARGUMENT",
 		"UNSAFE_VOID_RETURN",
