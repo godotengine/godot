@@ -500,6 +500,13 @@ void TabContainer::_on_tab_visibility_changed(Control *p_child) {
 	updating_visibility = false;
 }
 
+void TabContainer::_refresh_tab_indices() {
+	Vector<Control *> controls = _get_tab_controls();
+	for (int i = 0; i < controls.size(); i++) {
+		controls[i]->set_meta("_tab_index", i);
+	}
+}
+
 void TabContainer::_refresh_tab_names() {
 	Vector<Control *> controls = _get_tab_controls();
 	for (int i = 0; i < controls.size(); i++) {
@@ -523,6 +530,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 	c->hide();
 
 	tab_bar->add_tab(p_child->get_name());
+	c->set_meta("_tab_index", tab_bar->get_tab_count() - 1);
 
 	_update_margins();
 	if (get_tab_count() == 1) {
@@ -547,19 +555,10 @@ void TabContainer::move_child_notify(Node *p_child) {
 
 	Control *c = Object::cast_to<Control>(p_child);
 	if (c && !c->is_set_as_top_level()) {
-		int old_idx = -1;
-		String tab_name = String(c->get_meta("_tab_name", c->get_name()));
-
-		// Find the previous tab index of the control.
-		for (int i = 0; i < get_tab_count(); i++) {
-			if (get_tab_title(i) == tab_name) {
-				old_idx = i;
-				break;
-			}
-		}
-
-		tab_bar->move_tab(old_idx, get_tab_idx_from_control(c));
+		tab_bar->move_tab(c->get_meta("_tab_index"), get_tab_idx_from_control(c));
 	}
+
+	_refresh_tab_indices();
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
@@ -578,7 +577,10 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	// As the child hasn't been removed yet, keep track of it so when the "tab_changed" signal is fired it can be ignored.
 	children_removing.push_back(c);
+
 	tab_bar->remove_tab(idx);
+	_refresh_tab_indices();
+
 	children_removing.erase(c);
 
 	_update_margins();
@@ -586,6 +588,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 		queue_redraw();
 	}
 
+	p_child->remove_meta("_tab_index");
 	p_child->remove_meta("_tab_name");
 	p_child->disconnect("renamed", callable_mp(this, &TabContainer::_refresh_tab_names));
 	p_child->disconnect(SNAME("visibility_changed"), callable_mp(this, &TabContainer::_on_tab_visibility_changed));
