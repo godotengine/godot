@@ -1127,14 +1127,15 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 						}
 						expecting = DICT_EXPECT_COMMA;
 
-						if (key->type == GDScriptParser::Node::TYPE_CONSTANT) {
-							Variant const &keyName = static_cast<const GDScriptParser::ConstantNode *>(key)->value;
-
-							if (keys.has(keyName)) {
-								_set_error("Duplicate key found in Dictionary literal");
+						const Variant *key_value = _try_to_find_constant_value_for_expression(key);
+						if (key_value) {
+							if (keys.has(*key_value)) {
+								_set_error("Duplicate key \"" + String(*key_value) + "\" found in Dictionary literal",
+										key->line,
+										key->column);
 								return nullptr;
 							}
-							keys.insert(keyName);
+							keys.insert(*key_value);
 						}
 
 						DictionaryNode::Pair pair;
@@ -2178,6 +2179,49 @@ bool GDScriptParser::_reduce_export_var_type(Variant &p_value, int p_line) {
 	}
 	_set_error("Invalid export type. Only built-in and native resource types can be exported.", p_line);
 	return false;
+}
+
+const Variant *GDScriptParser::_try_to_find_constant_value_for_expression(const Node *p_expr) const {
+	if (p_expr->type == Node::TYPE_CONSTANT) {
+		return &(static_cast<const ConstantNode *>(p_expr)->value);
+	} else if (p_expr->type == Node::TYPE_IDENTIFIER) {
+		const StringName &name = static_cast<const IdentifierNode *>(p_expr)->name;
+		const Map<StringName, ClassNode::Constant>::Element *element =
+				current_class->constant_expressions.find(name);
+		if (element) {
+			Node *cn_exp = element->value().expression;
+			if (cn_exp->type == Node::TYPE_CONSTANT) {
+				return &(static_cast<ConstantNode *>(cn_exp)->value);
+			}
+		}
+	} else if (p_expr->type == Node::TYPE_OPERATOR) {
+		// Check if expression `p_expr` is a named enum (e.g. `State.IDLE`).
+		const OperatorNode *op_node = static_cast<const OperatorNode *>(p_expr);
+		if (op_node->op == GDScriptParser::OperatorNode::OP_INDEX_NAMED) {
+			const Vector<Node *> &op_args = op_node->arguments;
+			if (op_args.size() < 2) {
+				return nullptr; // Invalid expression.
+			}
+
+			if (op_args[0]->type != Node::TYPE_IDENTIFIER || op_args[1]->type != Node::TYPE_IDENTIFIER) {
+				return nullptr; // Not an enum expression.
+			}
+
+			const StringName &enum_name = static_cast<const IdentifierNode *>(op_args[0])->name;
+			const StringName &const_name = static_cast<const IdentifierNode *>(op_args[1])->name;
+			Map<StringName, ClassNode::Constant>::Element *element =
+					current_class->constant_expressions.find(enum_name);
+			if (element) {
+				Node *cn_exp = element->value().expression;
+				if (cn_exp->type == Node::TYPE_CONSTANT) {
+					const Dictionary &enum_dict = static_cast<ConstantNode *>(cn_exp)->value;
+					return enum_dict.getptr(const_name);
+				}
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 bool GDScriptParser::_recover_from_completion() {
