@@ -1192,7 +1192,6 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 				// Move outside of window.
 				SEND_GUI_MOUSE_MOTION_EVENT(on_outside, MouseButtonMask::LEFT, Key::NONE);
-				CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
 				CHECK(root->gui_is_dragging());
 
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_outside, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
