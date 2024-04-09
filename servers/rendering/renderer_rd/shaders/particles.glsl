@@ -184,6 +184,8 @@ layout(push_constant, std430) uniform Params {
 	bool sub_emitter_mode;
 	bool can_emit;
 	bool trail_pass;
+	uvec3 pad;
+	uint instance_uniforms_ofs;
 }
 params;
 
