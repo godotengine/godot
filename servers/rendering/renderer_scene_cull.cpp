@@ -1029,7 +1029,6 @@ inline bool is_geometry_instance(RenderingServer::InstanceType p_type) {
 void RendererSceneCull::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(instance);
-	ERR_FAIL_COND(!is_geometry_instance(instance->base_type));
 
 	if (p_aabb != AABB()) {
 		// Set custom AABB
