@@ -795,9 +795,8 @@
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
 			<param index="1" name="keep_groups" type="bool" default="false" />
-			<param index="2" name="keep_children" type="bool" default="true" />
 			<description>
-				Replaces this node by the given [param node]. If [param keep_children] is [code]true[/code] all children of this node are moved to [param node].
+				Replaces this node by the given [param node]. All children of this node are moved to [param node].
 				If [param keep_groups] is [code]true[/code], the [param node] is added to the same groups that the replaced node is in (see [method add_to_group]).
 				[b]Warning:[/b] The replaced node is removed from the tree, but it is [b]not[/b] deleted. To prevent memory leaks, store a reference to the node in a variable, or use [method Object.free].
 			</description>

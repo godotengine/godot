@@ -241,13 +241,6 @@ Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/remove_butto
 Changed argument type to the more specific one actually expected by the method. Compatibility method registered.
 
 
-GH-89992
---------
-Validate extension JSON: Error: Field 'classes/Node/methods/replace_by/arguments': size changed value in new API, from 2 to 3.
-
-Added optional argument to prevent children to be reparented during replace_by. Compatibility method registered.
-
-
 GH-88047
 --------
 Validate extension JSON: Error: Field 'classes/AStar2D/methods/get_id_path/arguments': size changed value in new API, from 2 to 3.
