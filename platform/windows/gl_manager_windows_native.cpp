@@ -427,10 +427,6 @@ Error GLManagerNative_Windows::window_create(DisplayServer::WindowID p_window_id
 	return OK;
 }
 
-void GLManagerNative_Windows::_internal_set_current_window(GLWindow *p_win) {
-	_current_window = p_win;
-}
-
 void GLManagerNative_Windows::window_destroy(DisplayServer::WindowID p_window_id) {
 	GLWindow &win = get_window(p_window_id);
 	if (_current_window == &win) {
@@ -447,6 +443,8 @@ void GLManagerNative_Windows::release_current() {
 	if (!gd_wglMakeCurrent(_current_window->hDC, nullptr)) {
 		ERR_PRINT("Could not detach OpenGL context from window marked current: " + format_error_message(GetLastError()));
 	}
+
+	_current_window = nullptr;
 }
 
 void GLManagerNative_Windows::window_make_current(DisplayServer::WindowID p_window_id) {
@@ -467,17 +465,7 @@ void GLManagerNative_Windows::window_make_current(DisplayServer::WindowID p_wind
 		ERR_PRINT("Could not switch OpenGL context to other window: " + format_error_message(GetLastError()));
 	}
 
-	_internal_set_current_window(&win);
-}
-
-void GLManagerNative_Windows::make_current() {
-	if (!_current_window) {
-		return;
-	}
-	const GLDisplay &disp = get_current_display();
-	if (!gd_wglMakeCurrent(_current_window->hDC, disp.hRC)) {
-		ERR_PRINT("Could not switch OpenGL context to window marked current: " + format_error_message(GetLastError()));
-	}
+	_current_window = &win;
 }
 
 void GLManagerNative_Windows::swap_buffers() {
@@ -491,7 +479,6 @@ Error GLManagerNative_Windows::initialize() {
 
 void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use) {
 	GLWindow &win = get_window(p_window_id);
-	GLWindow *current = _current_window;
 
 	if (&win != _current_window) {
 		window_make_current(p_window_id);
@@ -505,11 +492,6 @@ void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id,
 		}
 	} else {
 		WARN_PRINT("Could not set V-Sync mode. V-Sync is not supported.");
-	}
-
-	if (current != _current_window) {
-		_current_window = current;
-		make_current();
 	}
 }
 
