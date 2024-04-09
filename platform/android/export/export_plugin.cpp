@@ -1939,6 +1939,12 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 		// The APK templates are ignored if Gradle build is enabled.
 		return advanced_options_enabled && !bool(p_preset->get("gradle_build/use_gradle_build"));
 	}
+
+	// Hide .NET embedding option (always enabled).
+	if (p_option == "dotnet/embed_build_outputs") {
+		return false;
+	}
+
 	return true;
 }
 
