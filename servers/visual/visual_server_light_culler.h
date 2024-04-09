@@ -146,6 +146,39 @@ private:
 	// Directional light gives parallel culling planes (as opposed to point lights).
 	bool add_light_camera_planes_directional(const LightSource &p_light_source);
 
+	// Avoid adding extra culling planes derived from near colinear triangles.
+	// The normals derived from these will be inaccurate, and can lead to false
+	// culling of objects that should be within the light volume.
+	bool _is_colinear_tri(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c) const {
+		// Lengths of sides a, b and c.
+		float la = (p_b - p_a).length();
+		float lb = (p_c - p_b).length();
+		float lc = (p_c - p_a).length();
+
+		// Get longest side into lc.
+		if (lb < la) {
+			SWAP(la, lb);
+		}
+		if (lc < lb) {
+			SWAP(lb, lc);
+		}
+
+		// Prevent divide by zero.
+		if (lc > 0.00001f) {
+			// If the summed length of the smaller two
+			// sides is close to the length of the longest side,
+			// the points are colinear, and the triangle is near degenerate.
+			float ld = ((la + lb) - lc) / lc;
+
+			// ld will be close to zero for colinear tris.
+			return ld < 0.00001f;
+		}
+
+		// Don't create planes from tiny triangles,
+		// they won't be accurate.
+		return true;
+	}
+
 	// Is the light culler active? maybe not in the editor...
 	bool is_caster_culling_active() const { return data.caster_culling_active; }
 	bool is_light_culling_active() const { return data.light_culling_active; }
