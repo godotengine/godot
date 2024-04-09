@@ -181,6 +181,7 @@ class MachO : public RefCounted {
 
 public:
 	static bool is_macho(const String &p_path);
+	static uint32_t get_filetype(const String &p_path);
 
 	bool open_file(const String &p_path);
 
