@@ -1204,10 +1204,12 @@ bool OpenXRAPI::create_main_swapchains(Size2i p_size) {
 			depth_views[i].subImage.imageRect.offset.y = 0;
 			depth_views[i].subImage.imageRect.extent.width = main_swapchain_size.width;
 			depth_views[i].subImage.imageRect.extent.height = main_swapchain_size.height;
+			// OpenXR spec says that: minDepth < maxDepth.
 			depth_views[i].minDepth = 0.0;
 			depth_views[i].maxDepth = 1.0;
-			depth_views[i].nearZ = 0.01; // Near and far Z will be set to the correct values in fill_projection_matrix
-			depth_views[i].farZ = 100.0;
+			// But we can reverse near and far for reverse-Z.
+			depth_views[i].nearZ = 100.0; // Near and far Z will be set to the correct values in fill_projection_matrix
+			depth_views[i].farZ = 0.01;
 		}
 	};
 
@@ -1802,8 +1804,9 @@ bool OpenXRAPI::get_view_projection(uint32_t p_view, double p_z_near, double p_z
 	// if we're using depth views, make sure we update our near and far there...
 	if (depth_views != nullptr) {
 		for (uint32_t i = 0; i < view_count; i++) {
-			depth_views[i].nearZ = p_z_near;
-			depth_views[i].farZ = p_z_far;
+			// As we are using reverse-Z these need to be flipped.
+			depth_views[i].nearZ = p_z_far;
+			depth_views[i].farZ = p_z_near;
 		}
 	}
 
