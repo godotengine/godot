@@ -92,6 +92,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -184,6 +185,7 @@ static OS::ProcessID editor_pid = 0;
 static bool found_project = false;
 static bool auto_build_solutions = false;
 static String debug_server_uri;
+static bool wait_for_import = false;
 #ifndef DISABLE_DEPRECATED
 static int converter_max_kb_file = 4 * 1024; // 4MB
 static int converter_max_line_length = 100000;
@@ -617,6 +619,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--main-loop <main_loop_name>", "Run a MainLoop specified by its global class name.\n");
 	print_help_option("--check-only", "Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
+	print_help_option("--import", "Starts the editor, waits for any resources to be imported, and then quits.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-release <preset> <path>", "Export the project in release mode using the given preset and output path. The preset name should match one defined in \"export_presets.cfg\".\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("", "<path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. \"builds/game.exe\").\n");
 	print_help_option("", "The target directory must exist.\n");
@@ -1420,12 +1423,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing file to load argument after --validate-extension-api, aborting.");
 				goto error;
 			}
-
+		} else if (I->get() == "--import") {
+			editor = true;
+			cmdline_tool = true;
+			wait_for_import = true;
+			quit_after = 1;
 		} else if (I->get() == "--export-release" || I->get() == "--export-debug" ||
 				I->get() == "--export-pack") { // Export project
 			// Actually handling is done in start().
 			editor = true;
 			cmdline_tool = true;
+			wait_for_import = true;
 			main_args.push_back(I->get());
 #ifndef DISABLE_DEPRECATED
 		} else if (I->get() == "--export") { // For users used to 3.x syntax.
@@ -4083,6 +4091,12 @@ bool Main::iteration() {
 	if ((quit_after > 0) && (Engine::get_singleton()->_process_frames >= quit_after)) {
 		exit = true;
 	}
+
+#ifdef TOOLS_ENABLED
+	if (wait_for_import && EditorFileSystem::get_singleton()->doing_first_scan()) {
+		exit = false;
+	}
+#endif
 
 	if (fixed_fps != -1) {
 		return exit;
