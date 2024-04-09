@@ -2691,6 +2691,14 @@ void EditorFileSystem::_update_extensions() {
 	}
 }
 
+void EditorFileSystem::_project_settings_changed() {
+	const String &new_presets_path = ProjectSettings::get_export_presets_path();
+	if (new_presets_path != export_presets_path) {
+		export_presets_path = new_presets_path;
+		scan_changes();
+	}
+}
+
 void EditorFileSystem::add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {
 	ERR_FAIL_COND(import_support_queries.find(p_query) != -1);
 	import_support_queries.push_back(p_query);
@@ -2719,6 +2727,9 @@ EditorFileSystem::EditorFileSystem() {
 	scan_total = 0;
 	callable_mp(ResourceUID::get_singleton(), &ResourceUID::clear).call_deferred(); // Will be updated on scan.
 	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);
+
+	export_presets_path = ProjectSettings::get_export_presets_path();
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorFileSystem::_project_settings_changed));
 }
 
 EditorFileSystem::~EditorFileSystem() {

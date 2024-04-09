@@ -109,6 +109,7 @@ protected:
 	bool is_global_class_list_loaded = false;
 
 	String project_data_dir_name;
+	String export_presets_path;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -195,6 +196,7 @@ public:
 	List<String> get_input_presets() const { return input_presets; }
 
 	Variant get_setting_with_override(const StringName &p_name) const;
+	static String get_export_presets_path();
 
 	bool is_using_datapack() const;
 	bool is_project_loaded() const;

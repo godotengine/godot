@@ -950,10 +950,10 @@ void EditorNode::_fs_changed() {
 
 		if (export_preset.is_null()) {
 			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-			if (da->file_exists("res://export_presets.cfg")) {
+			if (da->file_exists(ProjectSettings::get_export_presets_path())) {
 				err = FAILED;
 				export_error = vformat(
-						"Invalid export preset name: %s.\nThe following presets were detected in this project's `export_presets.cfg`:\n\n",
+						"Invalid export preset name: %s.\nThe following presets were detected in this project's export presets file:\n\n",
 						preset_name);
 				for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
 					// Write the preset name between double quotes since it needs to be written between quotes on the command line if it contains spaces.
@@ -961,7 +961,7 @@ void EditorNode::_fs_changed() {
 				}
 			} else {
 				err = FAILED;
-				export_error = "This project doesn't have an `export_presets.cfg` file at its root.\nCreate an export preset from the \"Project > Export\" dialog and try again.";
+				export_error = "This project doesn't have an export preset file at the path specified by `editor/export/export_presets_file` project setting.\nCreate an export preset from the \"Project > Export\" dialog and try again.";
 			}
 		} else {
 			Ref<EditorExportPlatform> platform = export_preset->get_platform();

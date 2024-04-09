@@ -323,6 +323,17 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
+
+		if (p_name == SNAME("editor/export/export_presets_file")) {
+			const String new_path = p_value;
+			if (new_path != export_presets_path) {
+				if (FileAccess::exists(export_presets_path)) {
+					DirAccess::rename_absolute(export_presets_path, new_path);
+				}
+				export_presets_path = p_value;
+			}
+		}
+
 		if (p_name.operator String().begins_with("autoload/")) {
 			String node_name = p_name.operator String().split("/")[1];
 			AutoloadInfo autoload;
@@ -377,6 +388,11 @@ Variant ProjectSettings::get_setting_with_override(const StringName &p_name) con
 		return Variant();
 	}
 	return props[name].variant;
+}
+
+String ProjectSettings::get_export_presets_path() {
+	ERR_FAIL_NULL_V(singleton, "");
+	return singleton->export_presets_path;
 }
 
 struct _VCSort {
@@ -1494,6 +1510,8 @@ ProjectSettings::ProjectSettings() {
 	extensions.push_back("gdshader");
 
 	GLOBAL_DEF(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions);
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "editor/export/export_presets_file", PROPERTY_HINT_SAVE_FILE, "*.cfg"), "res://export_presets.cfg");
+	export_presets_path = get_setting("editor/export/export_presets_file");
 
 	_add_builtin_input_map();
 

@@ -101,7 +101,7 @@ void EditorExport::_save() {
 		}
 	}
 
-	config->save("res://export_presets.cfg");
+	config->save(ProjectSettings::get_export_presets_path());
 	credentials->save("res://.godot/export_credentials.cfg");
 }
 
@@ -197,7 +197,7 @@ void EditorExport::_notification(int p_what) {
 void EditorExport::load_config() {
 	Ref<ConfigFile> config;
 	config.instantiate();
-	Error err = config->load("res://export_presets.cfg");
+	Error err = config->load(ProjectSettings::get_export_presets_path());
 	if (err != OK) {
 		return;
 	}
