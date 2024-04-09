@@ -3220,12 +3220,13 @@ void EditorInspector::update_tree() {
 			}
 
 			// Search for the doc path in the cache.
-			HashMap<StringName, HashMap<StringName, String>>::Iterator E = doc_path_cache.find(classname);
+			HashMap<StringName, HashMap<StringName, DocCacheInfo>>::Iterator E = doc_cache.find(classname);
 			if (E) {
-				HashMap<StringName, String>::Iterator F = E->value.find(propname);
+				HashMap<StringName, DocCacheInfo>::Iterator F = E->value.find(propname);
 				if (F) {
 					found = true;
-					doc_path = F->value;
+					doc_path = F->value.doc_path;
+					theme_item_name = F->value.theme_item_name;
 				}
 			}
 
@@ -3246,21 +3247,20 @@ void EditorInspector::update_tree() {
 								theme_item_name = F->value.theme_properties[i].name;
 							}
 						}
-
-						if (is_native_class) {
-							doc_path_cache[classname][propname] = doc_path;
-						}
 					} else {
 						for (int i = 0; i < F->value.properties.size(); i++) {
 							String doc_path_current = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
 							if (F->value.properties[i].name == propname.operator String()) {
 								doc_path = doc_path_current;
 							}
-
-							if (is_native_class) {
-								doc_path_cache[classname][propname] = doc_path;
-							}
 						}
+					}
+
+					if (is_native_class) {
+						DocCacheInfo cache_info;
+						cache_info.doc_path = doc_path;
+						cache_info.theme_item_name = theme_item_name;
+						doc_cache[classname][propname] = cache_info;
 					}
 
 					if (!doc_path.is_empty() || F->value.inherits.is_empty()) {
