@@ -23,8 +23,9 @@ def clear_out_stale_files(output_folder, extension, fresh_files):
         return
 
     for file in glob.glob(output_folder + "/*." + extension):
+        file = Path(file)
         if not file in fresh_files:
-            # print("removed stale file: " + file)
+            # print("removed stale file: " + str(file))
             os.remove(file)
 
 
@@ -97,7 +98,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
     elif _verbose:
         print("SCU: Generation not needed for: " + short_filename)
 
-    return output_filename
+    return output_path
 
 
 def write_exception_output_file(file_count, exception_string, output_folder, output_filename_prefix, extension):
@@ -124,7 +125,7 @@ def write_exception_output_file(file_count, exception_string, output_folder, out
     elif _verbose:
         print("SCU: Generation not needed for: " + short_filename)
 
-    return output_filename
+    return output_path
 
 
 def find_section_name(sub_folder):
