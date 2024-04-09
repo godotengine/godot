@@ -356,8 +356,7 @@ void RenderingServerDefault::_thread_callback(void *_instance) {
 void RenderingServerDefault::_thread_loop() {
 	server_thread = Thread::get_caller_id();
 
-	DisplayServer::get_singleton()->make_rendering_thread();
-
+	DisplayServer::get_singleton()->gl_window_make_current(DisplayServer::MAIN_WINDOW_ID); // Move GL to this thread.
 	_init();
 
 	draw_thread_up.set();

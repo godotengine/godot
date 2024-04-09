@@ -1174,14 +1174,6 @@ void DisplayServerWayland::release_rendering_thread() {
 #endif
 }
 
-void DisplayServerWayland::make_rendering_thread() {
-#ifdef GLES3_ENABLED
-	if (egl_manager) {
-		egl_manager->make_current();
-	}
-#endif
-}
-
 void DisplayServerWayland::swap_buffers() {
 #ifdef GLES3_ENABLED
 	if (egl_manager) {

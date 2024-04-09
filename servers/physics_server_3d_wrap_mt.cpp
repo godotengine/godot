@@ -96,7 +96,6 @@ void PhysicsServer3DWrapMT::end_sync() {
 
 void PhysicsServer3DWrapMT::init() {
 	if (create_thread) {
-		//OS::get_singleton()->release_rendering_thread();
 		thread.start(_thread_callback, this);
 		while (!step_thread_up) {
 			OS::get_singleton()->delay_usec(1000);

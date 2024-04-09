@@ -426,7 +426,6 @@ public:
 	virtual void force_process_and_drop_events() override;
 
 	virtual void release_rendering_thread() override;
-	virtual void make_rendering_thread() override;
 	virtual void swap_buffers() override;
 
 	virtual void set_native_icon(const String &p_filename) override;
