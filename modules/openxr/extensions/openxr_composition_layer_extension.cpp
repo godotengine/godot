@@ -196,20 +196,20 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 		return nullptr;
 	}
 
-	if (swapchain_info.swapchain == XR_NULL_HANDLE) {
+	if (swapchain_info.get_swapchain() == XR_NULL_HANDLE) {
 		// Don't have a swapchain to display? Ignore our layer.
 		return nullptr;
 	}
 
-	if (swapchain_info.image_acquired) {
-		openxr_api->release_image(swapchain_info);
+	if (swapchain_info.is_image_acquired()) {
+		swapchain_info.release();
 	}
 
 	// Update the layer struct for the swapchain.
 	switch (composition_layer->type) {
 		case XR_TYPE_COMPOSITION_LAYER_QUAD: {
 			XrCompositionLayerQuad *quad_layer = (XrCompositionLayerQuad *)composition_layer;
-			quad_layer->subImage.swapchain = swapchain_info.swapchain;
+			quad_layer->subImage.swapchain = swapchain_info.get_swapchain();
 			quad_layer->subImage.imageArrayIndex = 0;
 			quad_layer->subImage.imageRect.offset.x = 0;
 			quad_layer->subImage.imageRect.offset.y = 0;
@@ -219,7 +219,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 
 		case XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR: {
 			XrCompositionLayerCylinderKHR *cylinder_layer = (XrCompositionLayerCylinderKHR *)composition_layer;
-			cylinder_layer->subImage.swapchain = swapchain_info.swapchain;
+			cylinder_layer->subImage.swapchain = swapchain_info.get_swapchain();
 			cylinder_layer->subImage.imageArrayIndex = 0;
 			cylinder_layer->subImage.imageRect.offset.x = 0;
 			cylinder_layer->subImage.imageRect.offset.y = 0;
@@ -229,7 +229,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 
 		case XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR: {
 			XrCompositionLayerEquirect2KHR *equirect_layer = (XrCompositionLayerEquirect2KHR *)composition_layer;
-			equirect_layer->subImage.swapchain = swapchain_info.swapchain;
+			equirect_layer->subImage.swapchain = swapchain_info.get_swapchain();
 			equirect_layer->subImage.imageArrayIndex = 0;
 			equirect_layer->subImage.imageRect.offset.x = 0;
 			equirect_layer->subImage.imageRect.offset.y = 0;
@@ -269,14 +269,16 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 	}
 
 	// See if our current swapchain is outdated.
-	if (swapchain_info.swapchain != XR_NULL_HANDLE) {
+	if (swapchain_info.get_swapchain() != XR_NULL_HANDLE) {
 		// If this swap chain, or the previous one, were static, then we can't reuse it.
 		if (swapchain_size == viewport_size && !p_static_image && !static_image) {
 			// We're all good! Just acquire it.
-			return openxr_api->acquire_image(swapchain_info);
+			// We can ignore should_render here, return will be false.
+			XrBool32 should_render = true;
+			return swapchain_info.acquire(should_render);
 		}
 
-		openxr_api->free_swapchain(swapchain_info);
+		swapchain_info.queue_free();
 	}
 
 	// Create our new swap chain
@@ -287,13 +289,15 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 	if (p_static_image) {
 		create_flags |= XR_SWAPCHAIN_CREATE_STATIC_IMAGE_BIT;
 	}
-	if (!openxr_api->create_swapchain(create_flags, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, swapchain_format, viewport_size.width, viewport_size.height, sample_count, array_size, swapchain_info.swapchain, &swapchain_info.swapchain_graphics_data)) {
+	if (!swapchain_info.create(create_flags, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, swapchain_format, viewport_size.width, viewport_size.height, sample_count, array_size)) {
 		swapchain_size = Size2i();
 		return false;
 	}
 
-	// Acquire our image so we can start rendering into it
-	bool ret = openxr_api->acquire_image(swapchain_info);
+	// Acquire our image so we can start rendering into it,
+	// we can ignore should_render here, ret will be false.
+	XrBool32 should_render = true;
+	bool ret = swapchain_info.acquire(should_render);
 
 	swapchain_size = viewport_size;
 	static_image = p_static_image;
@@ -301,8 +305,8 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 }
 
 void OpenXRViewportCompositionLayerProvider::free_swapchain() {
-	if (swapchain_info.swapchain != XR_NULL_HANDLE) {
-		openxr_api->free_swapchain(swapchain_info);
+	if (swapchain_info.get_swapchain() != XR_NULL_HANDLE) {
+		swapchain_info.queue_free();
 	}
 
 	swapchain_size = Size2i();
@@ -314,5 +318,5 @@ RID OpenXRViewportCompositionLayerProvider::get_current_swapchain_texture() {
 		return RID();
 	}
 
-	return openxr_api->get_image(swapchain_info);
+	return swapchain_info.get_image();
 }
