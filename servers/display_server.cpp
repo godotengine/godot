@@ -697,10 +697,6 @@ void DisplayServer::release_rendering_thread() {
 	WARN_PRINT("Rendering thread not supported by this display server.");
 }
 
-void DisplayServer::make_rendering_thread() {
-	WARN_PRINT("Rendering thread not supported by this display server.");
-}
-
 void DisplayServer::swap_buffers() {
 	WARN_PRINT("Swap buffers not supported by this display server.");
 }
