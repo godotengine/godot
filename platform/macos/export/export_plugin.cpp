@@ -1774,7 +1774,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 		String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
 		Vector<SharedObject> shared_objects;
-		err = save_pack(true, p_preset, p_debug, pack_path, &shared_objects);
+		err = save_pack(p_preset, p_debug, pack_path, &shared_objects);
 
 		bool lib_validation = p_preset->get("codesign/entitlements/disable_library_validation");
 		if (!shared_objects.is_empty() && sign_enabled && ad_hoc && !lib_validation) {
