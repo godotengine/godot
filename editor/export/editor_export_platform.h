@@ -203,7 +203,8 @@ public:
 		return worst_type;
 	}
 
-	static Vector<String> get_forced_export_files();
+	static Vector<String> get_main_pack_forced_export_files();
+	static Vector<String> get_any_pack_forced_export_files();
 
 	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
 
@@ -216,10 +217,10 @@ public:
 	virtual String get_name() const = 0;
 	virtual Ref<Texture2D> get_logo() const = 0;
 
-	Error export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func = nullptr);
+	Error export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, bool p_main_pack, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func = nullptr);
 
-	Error save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, bool p_embed = false, int64_t *r_embedded_start = nullptr, int64_t *r_embedded_size = nullptr);
-	Error save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
+	Error save_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, bool p_main_pack, const String &p_path, Vector<SharedObject> *p_so_files = nullptr, bool p_embed = false, int64_t *r_embedded_start = nullptr, int64_t *r_embedded_size = nullptr);
+	Error save_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, bool p_main_pack, const String &p_path);
 
 	virtual bool poll_export() { return false; }
 	virtual int get_options_count() const { return 0; }
@@ -247,8 +248,8 @@ public:
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const = 0;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) = 0;
-	virtual Error export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
-	virtual Error export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual Error export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, bool p_main_pack, const String &p_path, int p_flags = 0);
+	virtual Error export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, bool p_main_pack, const String &p_path, int p_flags = 0);
 	virtual void get_platform_features(List<String> *r_features) const = 0;
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) = 0;
 	virtual String get_debug_protocol() const { return "tcp://"; }

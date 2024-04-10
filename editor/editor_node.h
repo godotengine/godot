@@ -251,6 +251,7 @@ private:
 		String preset;
 		String path;
 		bool debug = false;
+		bool main_pack = true;
 		bool pack_only = false;
 		bool android_build_template = false;
 	} export_defer;
@@ -843,7 +844,7 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_main_pack, bool p_pack_only, bool p_android_build_template);
 	bool is_project_exporting() const;
 
 	Control *get_gui_base() { return gui_base; }

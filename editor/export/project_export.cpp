@@ -1037,11 +1037,12 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 
 	const Dictionary &fd_option = export_pck_zip->get_selected_options();
 	bool export_debug = fd_option.get(TTR("Export With Debug"), true);
+	bool export_as_additional_pack = fd_option.get(TTR("Export As Additional Pack"), false);
 
 	if (p_path.ends_with(".zip")) {
-		platform->export_zip(current, export_debug, p_path);
+		platform->export_zip(current, export_debug, !export_as_additional_pack, p_path);
 	} else if (p_path.ends_with(".pck")) {
-		platform->export_pack(current, export_debug, p_path);
+		platform->export_pack(current, export_debug, !export_as_additional_pack, p_path);
 	} else {
 		ERR_FAIL_MSG("Path must end with .pck or .zip");
 	}
@@ -1560,6 +1561,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	export_project->add_option(TTR("Export With Debug"), Vector<String>(), true);
 	export_pck_zip->add_option(TTR("Export With Debug"), Vector<String>(), true);
+	export_pck_zip->add_option(TTR("Export As Additional Pack"), Vector<String>(), false);
 
 	set_hide_on_ok(false);
 

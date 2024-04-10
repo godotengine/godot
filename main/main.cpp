@@ -625,6 +625,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("", "The target directory must exist.\n");
 	print_help_option("--export-debug <preset> <path>", "Export the project in debug mode using the given preset and output path. See --export-release description for other considerations.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-pack <preset> <path>", "Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--export-additional-pack <preset> <path>", "Export the project data only using the given preset and output path, excluding any data that is only relevant for a main pack. The <path> extension determines whether it will be in PCK or ZIP format.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--install-android-build-template", "Install the Android build template. Used in conjunction with --export-release or --export-debug.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #ifndef DISABLE_DEPRECATED
 	// Commands are long; split the description to a second line.
@@ -1429,7 +1430,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			wait_for_import = true;
 			quit_after = 1;
 		} else if (I->get() == "--export-release" || I->get() == "--export-debug" ||
-				I->get() == "--export-pack") { // Export project
+				I->get() == "--export-pack" || I->get() == "--export-additional-pack") { // Export project
 			// Actually handling is done in start().
 			editor = true;
 			cmdline_tool = true;
@@ -1437,7 +1438,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			main_args.push_back(I->get());
 #ifndef DISABLE_DEPRECATED
 		} else if (I->get() == "--export") { // For users used to 3.x syntax.
-			OS::get_singleton()->print("The Godot 3 --export option was changed to more explicit --export-release / --export-debug / --export-pack options.\nSee the --help output for details.\n");
+			OS::get_singleton()->print("The Godot 3 --export option was changed to more explicit --export-release / --export-debug / --export-pack / --export-additional-pack options.\nSee the --help output for details.\n");
 			goto error;
 		} else if (I->get() == "--convert-3to4") {
 			// Actually handling is done in start().
@@ -3170,6 +3171,7 @@ int Main::start() {
 	String _export_preset;
 	bool export_debug = false;
 	bool export_pack_only = false;
+	bool export_pack_as_main = true;
 	bool install_android_build_template = false;
 #ifdef MODULE_GDSCRIPT_ENABLED
 	String gdscript_docs_path;
@@ -3253,6 +3255,12 @@ int Main::start() {
 				editor = true;
 				_export_preset = args[i + 1];
 				export_pack_only = true;
+				export_pack_as_main = true;
+			} else if (args[i] == "--export-additional-pack") {
+				editor = true;
+				_export_preset = args[i + 1];
+				export_pack_only = true;
+				export_pack_as_main = false;
 #endif
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
@@ -3643,7 +3651,7 @@ int Main::start() {
 			sml->get_root()->add_child(editor_node);
 
 			if (!_export_preset.is_empty()) {
-				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only, install_android_build_template);
+				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only, export_pack_as_main, install_android_build_template);
 				game_path = ""; // Do not load anything.
 			}
 
