@@ -722,13 +722,32 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			}
 		} else if (ProjectSettings::get_singleton()->has_autoload(first) && ProjectSettings::get_singleton()->get_autoload(first).is_singleton) {
 			const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(first);
-			Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(autoload.path);
+			String script_path;
+			if (ResourceLoader::get_resource_type(autoload.path) == "PackedScene") {
+				// Try to get script from scene if possible.
+				if (GDScriptLanguage::get_singleton()->has_any_global_constant(autoload.name)) {
+					Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(autoload.name);
+					Node *node = Object::cast_to<Node>(constant);
+					if (node != nullptr) {
+						Ref<GDScript> scr = node->get_script();
+						if (scr.is_valid()) {
+							script_path = scr->get_script_path();
+						}
+					}
+				}
+			} else if (ResourceLoader::get_resource_type(autoload.path) == "GDScript") {
+				script_path = autoload.path;
+			}
+			if (script_path.is_empty()) {
+				return bad_type;
+			}
+			Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(script_path);
 			if (ref.is_null()) {
-				push_error(vformat(R"(The referenced autoload "%s" (from "%s") could not be loaded.)", first, autoload.path), p_type);
+				push_error(vformat(R"(The referenced autoload "%s" (from "%s") could not be loaded.)", first, script_path), p_type);
 				return bad_type;
 			}
 			if (ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED) != OK) {
-				push_error(vformat(R"(Could not parse singleton "%s" from "%s".)", first, autoload.path), p_type);
+				push_error(vformat(R"(Could not parse singleton "%s" from "%s".)", first, script_path), p_type);
 				return bad_type;
 			}
 			result = ref->get_parser()->head->get_datatype();
