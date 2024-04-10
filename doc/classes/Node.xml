@@ -1067,7 +1067,7 @@
 			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when this node is being replaced by the [param node], see [method replace_by].
-				This signal is emitted [i]after[/i] [param node] has been added as a child of the original parent node, but [i]before[/i] all original child nodes have been reparented to [param node].
+				This signal is emitted [i]before[/i] [param node] is added as a child of the original parent node.
 			</description>
 		</signal>
 		<signal name="tree_entered">

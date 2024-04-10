@@ -3015,16 +3015,15 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		_clean_up_owner();
 	}
 
-	Node *parent = data.parent;
-	int index_in_parent = get_index(false);
+	emit_signal(SNAME("replacing_by"), p_node);
 
+	Node *parent = data.parent;
 	if (data.parent) {
+		int index_in_parent = get_index(false);
 		parent->remove_child(this);
 		parent->add_child(p_node);
 		parent->move_child(p_node, index_in_parent);
 	}
-
-	emit_signal(SNAME("replacing_by"), p_node);
 
 	while (get_child_count()) {
 		Node *child = get_child(0);
