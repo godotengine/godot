@@ -2892,9 +2892,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				}
 			}
 		} break;
-		case TOOLS_BUILD_PROFILE_MANAGER: {
-			build_profile_manager->popup_centered_clamped(Size2(700, 800) * EDSCALE, 0.8);
-		} break;
 		case RUN_USER_DATA_FOLDER: {
 			// Ensure_user_data_dir() to prevent the edge case: "Open User Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved.
 			OS::get_singleton()->ensure_user_data_dir();
@@ -3198,6 +3195,9 @@ void EditorNode::_tool_menu_option(int p_idx) {
 	switch (tool_menu->get_item_id(p_idx)) {
 		case TOOLS_ORPHAN_RESOURCES: {
 			orphan_resources->show();
+		} break;
+		case TOOLS_BUILD_PROFILE_MANAGER: {
+			build_profile_manager->popup_centered_clamped(Size2(700, 800) * EDSCALE, 0.8);
 		} break;
 		case TOOLS_SURFACE_UPGRADE: {
 			surface_upgrade_dialog->popup_on_demand();
@@ -6777,13 +6777,12 @@ EditorNode::EditorNode() {
 #endif
 
 	project_menu->add_separator();
-	project_menu->add_item(TTR("Customize Engine Build Configuration..."), TOOLS_BUILD_PROFILE_MANAGER);
-	project_menu->add_separator();
 
 	tool_menu = memnew(PopupMenu);
 	tool_menu->connect("index_pressed", callable_mp(this, &EditorNode::_tool_menu_option));
 	project_menu->add_submenu_node_item(TTR("Tools"), tool_menu);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/orphan_resource_explorer", TTR("Orphan Resource Explorer...")), TOOLS_ORPHAN_RESOURCES);
+	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/engine_compilation_configuration_editor", TTR("Engine Compilation Configuration Editor...")), TOOLS_BUILD_PROFILE_MANAGER);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_mesh_surfaces", TTR("Upgrade Mesh Surfaces...")), TOOLS_SURFACE_UPGRADE);
 
 	project_menu->add_separator();
