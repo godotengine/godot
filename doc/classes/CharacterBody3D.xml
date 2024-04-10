@@ -87,7 +87,8 @@
 		<method name="get_wall_normal" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the surface normal of the wall at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_wall] returns [code]true[/code].
+				Returns the collision normal of the wall at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_wall] returns [code]true[/code].
+				[b]Warning:[/b] The collision normal is not always the same as the surface normal.
 			</description>
 		</method>
 		<method name="is_on_ceiling" qualifiers="const">
