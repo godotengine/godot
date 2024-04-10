@@ -434,7 +434,7 @@ Ref<Material3D> FBXMaterial::import_material(ImportState &state) {
 					print_verbose("Emissive real value: " + rtos(real_value->Value()));
 					spatial_material->set_emission_energy(real_value->Value());
 					material_info.features.push_back(Material3D::Feature::FEATURE_EMISSION);
-				} else if (vector_value && !vector_value->Value().is_equal_approx(Vector3(0, 0, 0))) {
+				} else if (vector_value && !vector_value->Value().is_zero_approx()) {
 					const Vector3 &color = vector_value->Value();
 					Color c;
 					c[0] = color[0];
@@ -445,7 +445,7 @@ Ref<Material3D> FBXMaterial::import_material(ImportState &state) {
 				}
 			} break;
 			case PROPERTY_DESC_EMISSIVE_COLOR: {
-				if (vector_value && !vector_value->Value().is_equal_approx(Vector3(0, 0, 0))) {
+				if (vector_value && !vector_value->Value().is_zero_approx()) {
 					const Vector3 &color = vector_value->Value();
 					Color c;
 					c[0] = color[0];

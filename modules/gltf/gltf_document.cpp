@@ -440,7 +440,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> p_state) {
 			node["scale"] = _vec3_to_arr(gltf_node->scale);
 		}
 
-		if (!gltf_node->translation.is_equal_approx(Vector3())) {
+		if (!gltf_node->translation.is_zero_approx()) {
 			node["translation"] = _vec3_to_arr(gltf_node->translation);
 		}
 		if (gltf_node->children.size()) {

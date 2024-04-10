@@ -385,6 +385,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector2, normalized);
 	VCALL_LOCALMEM0R(Vector2, is_normalized);
 	VCALL_LOCALMEM1R(Vector2, is_equal_approx);
+	VCALL_LOCALMEM0R(Vector2, is_zero_approx);
 	VCALL_LOCALMEM1R(Vector2, posmod);
 	VCALL_LOCALMEM1R(Vector2, posmodv);
 	VCALL_LOCALMEM1R(Vector2, project);
@@ -437,6 +438,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector3, normalized);
 	VCALL_LOCALMEM0R(Vector3, is_normalized);
 	VCALL_LOCALMEM1R(Vector3, is_equal_approx);
+	VCALL_LOCALMEM0R(Vector3, is_zero_approx);
 	VCALL_LOCALMEM0R(Vector3, inverse);
 	VCALL_LOCALMEM1R(Vector3, snapped);
 	VCALL_LOCALMEM2R(Vector3, rotated);
@@ -1800,6 +1802,7 @@ void register_variant_methods() {
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, normalized, varray());
 	ADDFUNC0R(VECTOR2, BOOL, Vector2, is_normalized, varray());
 	ADDFUNC1R(VECTOR2, BOOL, Vector2, is_equal_approx, VECTOR2, "v", varray());
+	ADDFUNC0R(VECTOR2, BOOL, Vector2, is_zero_approx, varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, posmod, REAL, "mod", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, posmodv, VECTOR2, "modv", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, project, VECTOR2, "b", varray());
@@ -1851,6 +1854,7 @@ void register_variant_methods() {
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, normalized, varray());
 	ADDFUNC0R(VECTOR3, BOOL, Vector3, is_normalized, varray());
 	ADDFUNC1R(VECTOR3, BOOL, Vector3, is_equal_approx, VECTOR3, "v", varray());
+	ADDFUNC0R(VECTOR3, BOOL, Vector3, is_zero_approx, varray());
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, inverse, varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, snapped, VECTOR3, "by", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", REAL, "angle", varray());
