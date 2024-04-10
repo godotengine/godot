@@ -822,3 +822,10 @@ Array::Array() {
 Array::~Array() {
 	_unref();
 }
+
+Array Array::create_filled_array(uint32_t p_initial_size, const Variant &p_value) {
+	Array new_arr;
+	new_arr.resize(p_initial_size);
+	new_arr.fill(p_value);
+	return new_arr;
+}

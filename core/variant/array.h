@@ -133,6 +133,8 @@ public:
 	Array(const Array &p_from);
 	Array();
 	~Array();
+
+	static Array create_filled_array(uint32_t p_initial_size, const Variant &p_value);
 };
 
 #endif // ARRAY_H

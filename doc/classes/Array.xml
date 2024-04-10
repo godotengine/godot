@@ -274,6 +274,15 @@
 				Returns the number of times an element is in the array.
 			</description>
 		</method>
+		<method name="create_filled_array" qualifiers="static">
+			<return type="Array" />
+			<param index="0" name="initial_size" type="int" />
+			<param index="1" name="value" type="Variant" default="null" />
+			<description>
+				Creates a filled array. The result should be identical to constructing an empty array, calling [method resize] with [param initial_size], and calling [method fill] with [param value].
+				If [param value] is not specified, [code]null[/code] is used.
+			</description>
+		</method>
 		<method name="duplicate" qualifiers="const">
 			<return type="Array" />
 			<param index="0" name="deep" type="bool" default="false" />
