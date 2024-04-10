@@ -95,6 +95,6 @@ void GodotShareData::shareImage(const String &path, const String &title, const S
 }
 
 void GodotShareData::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("shareText"), &GodotShareData::shareText);
-	ClassDB::bind_method(D_METHOD("shareImage"), &GodotShareData::shareImage);
+	ClassDB::bind_method(D_METHOD("share_text", "title", "subject", "text"), &GodotShareData::share_text);
+	ClassDB::bind_method(D_METHOD("share_image", "path", "title", "subject", "text"), &GodotShareData::share_image);
 }
