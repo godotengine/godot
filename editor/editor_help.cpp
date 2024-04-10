@@ -3191,21 +3191,34 @@ String EditorHelpBit::get_property_description(const StringName &p_class_name, c
 		for (const DocData::PropertyDoc &property : E->value.properties) {
 			String description_current = is_native ? DTR(property.description) : property.description;
 
-			const Vector<String> class_enum = property.enumeration.split(".");
-			const String enum_name = class_enum.size() >= 2 ? class_enum[1] : "";
-			if (!enum_name.is_empty()) {
-				// Classes can use enums from other classes, so check from which it came.
-				const HashMap<String, DocData::ClassDoc>::ConstIterator enum_class = dd->class_list.find(class_enum[0]);
-				if (enum_class) {
-					for (DocData::ConstantDoc val : enum_class->value.constants) {
-						// Don't display `_MAX` enum value descriptions, as these are never exposed in the inspector.
-						if (val.enumeration == enum_name && !val.name.ends_with("_MAX")) {
-							const String enum_value = EditorPropertyNameProcessor::get_singleton()->process_name(val.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
-							const String enum_prefix = EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " ";
-							const String enum_description = is_native ? DTR(val.description) : val.description;
+			String enum_class_name;
+			String enum_name;
+			if (CoreConstants::is_global_enum(property.enumeration)) {
+				enum_class_name = "@GlobalScope";
+				enum_name = property.enumeration;
+			} else {
+				const int dot_pos = property.enumeration.rfind(".");
+				if (dot_pos >= 0) {
+					enum_class_name = property.enumeration.left(dot_pos);
+					enum_name = property.enumeration.substr(dot_pos + 1);
+				}
+			}
 
-							// Prettify the enum value display, so that "<ENUM NAME>_<VALUE>" becomes "Value".
-							description_current = description_current.trim_prefix("\n") + vformat("\n[b]%s:[/b] %s", enum_value.trim_prefix(enum_prefix), enum_description.is_empty() ? ("[i]" + DTR("No description available.") + "[/i]") : enum_description);
+			if (!enum_class_name.is_empty() && !enum_name.is_empty()) {
+				// Classes can use enums from other classes, so check from which it came.
+				const HashMap<String, DocData::ClassDoc>::ConstIterator enum_class = dd->class_list.find(enum_class_name);
+				if (enum_class) {
+					const String enum_prefix = EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " ";
+					for (DocData::ConstantDoc constant : enum_class->value.constants) {
+						// Don't display `_MAX` enum value descriptions, as these are never exposed in the inspector.
+						if (constant.enumeration == enum_name && !constant.name.ends_with("_MAX")) {
+							// Prettify the enum value display, so that "<ENUM_NAME>_<ITEM>" becomes "Item".
+							const String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(constant.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED).trim_prefix(enum_prefix);
+							String item_descr = (is_native ? DTR(constant.description) : constant.description).strip_edges();
+							if (item_descr.is_empty()) {
+								item_descr = ("[i]" + DTR("No description available.") + "[/i]");
+							}
+							description_current += vformat("\n[b]%s:[/b] %s", item_name, item_descr);
 						}
 					}
 				}
