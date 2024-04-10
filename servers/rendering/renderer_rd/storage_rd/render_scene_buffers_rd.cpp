@@ -127,9 +127,10 @@ void RenderSceneBuffersRD::cleanup() {
 	named_textures.clear();
 
 	// Clear weight_buffer / blur textures.
-	for (const WeightBuffers &weight_buffer : weight_buffers) {
+	for (WeightBuffers &weight_buffer : weight_buffers) {
 		if (weight_buffer.weight.is_valid()) {
 			RD::get_singleton()->free(weight_buffer.weight);
+			weight_buffer.weight = RID();
 		}
 	}
 }
