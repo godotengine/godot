@@ -100,11 +100,9 @@ TEST_CASE("[OAHashMap] Iteration") {
 	expected.push_back(Pair<int, int>(0, 12934));
 	expected.push_back(Pair<int, int>(123485, 1238888));
 
-	int idx = 0;
 	for (OAHashMap<int, int>::Iterator it = map.iter(); it.valid; it = map.next_iter(it)) {
 		int64_t result = expected.find(Pair<int, int>(*it.key, *it.value));
 		CHECK(result >= 0);
-		idx++;
 	}
 }
 

@@ -268,7 +268,7 @@
 			The quadrant size does not apply on a Y-sorted [TileMapLayer], as tiles are be grouped by Y position instead in that case.
 			[b]Note:[/b] As quadrants are created according to the map's coordinate system, the quadrant's "square shape" might not look like square in the [TileMapLayer]'s local coordinate system.
 		</member>
-		<member name="tile_map_data" type="PackedByteArray" setter="set_tile_map_data_from_array" getter="get_tile_map_data_as_array" default="PackedByteArray(0, 0)">
+		<member name="tile_map_data" type="PackedByteArray" setter="set_tile_map_data_from_array" getter="get_tile_map_data_as_array" default="PackedByteArray(&quot;AAA=&quot;)">
 			The raw tile map data as a byte array.
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tile_set" getter="get_tile_set">
