@@ -43,8 +43,8 @@ protected:
 	GodotShareData *instance;
 
 public:
-	void shareText(const String &title, const String &subject, const String &text);
-	void shareImage(const String &path, const String &title, const String &subject, const String &text);
+	void share_text(const String &p_title, const String &p_subject, const String &p_text);
+	void share_image(const String &p_path, const String &p_title, const String &p_subject, const String &p_text);
 
 	GodotShareData();
 	~GodotShareData();
