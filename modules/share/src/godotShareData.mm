@@ -47,7 +47,7 @@ void GodotShareData::shareText(const String &title, const String &subject, const
 	NSString *ns_text = [NSString stringWithCString:text.utf8().get_data() encoding:NSUTF8StringEncoding];
 	NSString *ns_subject = [NSString stringWithCString:subject.utf8().get_data() encoding:NSUTF8StringEncoding];
 
-	NSArray *shareItems = @[ns_text];
+	NSArray *shareItems = @[ ns_text ];
 
 	UIActivityViewController *avc = [[UIActivityViewController alloc] initWithActivityItems:shareItems applicationActivities:nil];
 	[avc setValue:ns_subject forKey:@"subject"];
@@ -75,7 +75,7 @@ void GodotShareData::shareImage(const String &path, const String &title, const S
 
 	UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
 
-	NSArray *shareItems = @[ns_text, image];
+	NSArray *shareItems = @[ ns_text, image ];
 
 	UIActivityViewController *avc = [[UIActivityViewController alloc] initWithActivityItems:shareItems applicationActivities:nil];
 	[avc setValue:ns_subject forKey:@"subject"];
