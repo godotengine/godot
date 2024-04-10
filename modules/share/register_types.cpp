@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "register_types.h"
+
 #include "core/config/engine.h"
 
 #include "godot_share_data.h"
