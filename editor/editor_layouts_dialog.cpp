@@ -31,8 +31,6 @@
 #include "editor_layouts_dialog.h"
 
 #include "core/io/config_file.h"
-#include "core/object/class_db.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
@@ -60,7 +58,7 @@ void EditorLayoutsDialog::_update_ok_disable_state() {
 	if (layout_names->is_anything_selected()) {
 		get_ok_button()->set_disabled(false);
 	} else {
-		get_ok_button()->set_disabled(!name->is_visible() || name->get_text().is_empty());
+		get_ok_button()->set_disabled(!name->is_visible() || name->get_text().strip_edges().is_empty());
 	}
 }
 
@@ -80,8 +78,8 @@ void EditorLayoutsDialog::ok_pressed() {
 		for (int i = 0; i < selected_items.size(); ++i) {
 			emit_signal(SNAME("name_confirmed"), layout_names->get_item_text(selected_items[i]));
 		}
-	} else if (name->is_visible() && !name->get_text().is_empty()) {
-		emit_signal(SNAME("name_confirmed"), name->get_text());
+	} else if (name->is_visible() && !name->get_text().strip_edges().is_empty()) {
+		emit_signal(SNAME("name_confirmed"), name->get_text().strip_edges());
 	}
 }
 
