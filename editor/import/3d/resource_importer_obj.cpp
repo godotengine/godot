@@ -407,10 +407,6 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 					surf_tool->generate_normals();
 				}
 
-				if (generate_tangents && uvs.size()) {
-					surf_tool->generate_tangents();
-				}
-
 				surf_tool->index();
 
 				print_verbose("OBJ: Current material library " + current_material_library + " has " + itos(material_map.has(current_material_library)));
@@ -430,20 +426,6 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 					mesh->set_surface_name(mesh->get_surface_count() - 1, current_group);
 				}
 				Array array = surf_tool->commit_to_arrays();
-
-				if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && generate_tangents) {
-					// Compression is enabled, so let's validate that the normals and tangents are correct.
-					Vector<Vector3> norms = array[Mesh::ARRAY_NORMAL];
-					Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
-					for (int vert = 0; vert < norms.size(); vert++) {
-						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-						if (abs(tan.dot(norms[vert])) > 0.0001) {
-							// Tangent is not perpendicular to the normal, so we can't use compression.
-							mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
-						}
-					}
-				}
-
 				mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, array, TypedArray<Array>(), Dictionary(), material, name, mesh_flags);
 				print_verbose("OBJ: Added surface :" + mesh->get_surface_name(mesh->get_surface_count() - 1));
 

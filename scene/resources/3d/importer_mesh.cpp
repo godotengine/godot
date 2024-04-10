@@ -157,8 +157,11 @@ Mesh::BlendShapeMode ImporterMesh::get_blend_shape_mode() const {
 }
 
 void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name, const uint64_t p_flags) {
-	ERR_FAIL_COND(p_blend_shapes.size() != blend_shapes.size());
 	ERR_FAIL_COND(p_arrays.size() != Mesh::ARRAY_MAX);
+	int32_t blend_array_count = p_blend_shapes.size();
+	int32_t blend_shape_count = blend_shapes.size();
+	ERR_FAIL_COND_MSG(blend_array_count != blend_shape_count,
+			vformat("%d blend array count does not match %d blend shape count. Please check your blend shapes data.", blend_array_count, blend_shape_count));
 	Surface s;
 	s.primitive = p_primitive;
 	s.arrays = p_arrays;
@@ -168,7 +171,6 @@ void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_a
 	Vector<Vector3> vertex_array = p_arrays[Mesh::ARRAY_VERTEX];
 	int vertex_count = vertex_array.size();
 	ERR_FAIL_COND(vertex_count == 0);
-
 	for (int i = 0; i < blend_shapes.size(); i++) {
 		Array bsdata = p_blend_shapes[i];
 		ERR_FAIL_COND(bsdata.size() != Mesh::ARRAY_MAX);
@@ -178,7 +180,6 @@ void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_a
 		bs.arrays = bsdata;
 		s.blend_shape_data.push_back(bs);
 	}
-
 	List<Variant> lods;
 	p_lods.get_key_list(&lods);
 	for (const Variant &E : lods) {
@@ -223,10 +224,12 @@ Array ImporterMesh::get_surface_blend_shape_arrays(int p_surface, int p_blend_sh
 	ERR_FAIL_INDEX_V(p_blend_shape, surfaces[p_surface].blend_shape_data.size(), Array());
 	return surfaces[p_surface].blend_shape_data[p_blend_shape].arrays;
 }
+
 int ImporterMesh::get_surface_lod_count(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), 0);
 	return surfaces[p_surface].lods.size();
 }
+
 Vector<int> ImporterMesh::get_surface_lod_indices(int p_surface, int p_lod) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Vector<int>());
 	ERR_FAIL_INDEX_V(p_lod, surfaces[p_surface].lods.size(), Vector<int>());
@@ -1344,7 +1347,6 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_blend_shape", "name"), &ImporterMesh::add_blend_shape);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &ImporterMesh::get_blend_shape_count);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_name", "blend_shape_idx"), &ImporterMesh::get_blend_shape_name);
-
 	ClassDB::bind_method(D_METHOD("set_blend_shape_mode", "mode"), &ImporterMesh::set_blend_shape_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &ImporterMesh::get_blend_shape_mode);
 

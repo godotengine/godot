@@ -757,17 +757,11 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 					break;
 				}
 
-				bool generate_tangents = (primitive == Mesh::PRIMITIVE_TRIANGLES && !array[Mesh::ARRAY_TANGENT] && array[Mesh::ARRAY_TEX_UV] && array[Mesh::ARRAY_NORMAL]);
-
 				Ref<SurfaceTool> mesh_surface_tool;
 				mesh_surface_tool.instantiate();
 				mesh_surface_tool->create_from_triangle_arrays(array);
 				mesh_surface_tool->set_skin_weight_count(num_skin_weights == 8 ? SurfaceTool::SKIN_8_WEIGHTS : SurfaceTool::SKIN_4_WEIGHTS);
 				mesh_surface_tool->index();
-				if (generate_tangents) {
-					//must generate mikktspace tangents.. ergh..
-					mesh_surface_tool->generate_tangents();
-				}
 				array = mesh_surface_tool->commit_to_arrays();
 
 				Array morphs;
@@ -834,10 +828,6 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 							blend_surface_tool.instantiate();
 							blend_surface_tool->create_from_triangle_arrays(array_copy);
 							blend_surface_tool->set_skin_weight_count(num_skin_weights == 8 ? SurfaceTool::SKIN_8_WEIGHTS : SurfaceTool::SKIN_4_WEIGHTS);
-							if (generate_tangents) {
-								//must generate mikktspace tangents.. ergh..
-								blend_surface_tool->generate_tangents();
-							}
 							array_copy = blend_surface_tool->commit_to_arrays();
 
 							// Enforce blend shape mask array format

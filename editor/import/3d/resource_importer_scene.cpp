@@ -2409,7 +2409,7 @@ Array ResourceImporterScene::_get_skinned_pose_transforms(ImporterMeshInstance3D
 	return skin_pose_transform_array;
 }
 
-Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches) {
+Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches, bool p_ensure_tangents) {
 	ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_node);
 	if (src_mesh_node) {
 		//is mesh
@@ -2523,6 +2523,83 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 						}
 					}
 				}
+				if (p_ensure_tangents && src_mesh_node->get_mesh().is_valid() && src_mesh_node->get_mesh()->get_surface_count()) {
+					Ref<ImporterMesh> importer_mesh = src_mesh_node->get_mesh();
+					Ref<ImporterMesh> new_importer_mesh;
+					new_importer_mesh.instantiate();
+
+					if (importer_mesh->get_blend_shape_count()) {
+						new_importer_mesh->set_blend_shape_mode(importer_mesh->get_blend_shape_mode());
+						for (int blend_i = 0; blend_i < importer_mesh->get_blend_shape_count(); blend_i++) {
+							String blend_shape_name = importer_mesh->get_blend_shape_name(blend_i);
+							new_importer_mesh->add_blend_shape(blend_shape_name);
+						}
+					}
+					for (int surface_i = 0; surface_i < importer_mesh->get_surface_count(); surface_i++) {
+						Ref<SurfaceTool> surface_tool;
+						surface_tool.instantiate();
+						Array surface_arrays = importer_mesh->get_surface_arrays(surface_i);
+						int bone_count = PackedInt32Array(surface_arrays[Mesh::ARRAY_BONES]).size();
+						int weight_count = PackedFloat32Array(surface_arrays[Mesh::ARRAY_WEIGHTS]).size();
+						SurfaceTool::SkinWeightCount influence_count;
+						if (bone_count == 8 && weight_count == 8) {
+							influence_count = SurfaceTool::SKIN_8_WEIGHTS;
+							surface_tool->set_skin_weight_count(influence_count);
+						} else {
+							influence_count = SurfaceTool::SKIN_4_WEIGHTS;
+							surface_tool->set_skin_weight_count(influence_count);
+						}
+						surface_tool->create_from_triangle_arrays(surface_arrays);
+						Ref<Material> material = importer_mesh->get_surface_material(surface_i);
+						PackedFloat32Array vertex_array = surface_arrays[Mesh::ARRAY_VERTEX];
+
+						bool has_uvs = PackedInt32Array(surface_arrays[Mesh::ARRAY_TEX_UV]).size();
+						if (has_uvs) {
+							surface_tool->generate_tangents();
+						}
+						Mesh::PrimitiveType primitive_type = importer_mesh->get_surface_primitive_type(surface_i);
+						Array arrays = surface_tool->commit_to_arrays();
+						int64_t format = importer_mesh->get_surface_format(surface_i);
+						if (format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+							// Compression is enabled, so let's validate that the normals and tangents are correct.
+							Vector<Vector3> normals = arrays[Mesh::ARRAY_NORMAL];
+							Vector<float> tangents = arrays[Mesh::ARRAY_TANGENT];
+							for (int vert = 0; vert < normals.size(); vert++) {
+								Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
+								if (abs(tan.dot(normals[vert])) > 0.0001) {
+									// Tangent is not perpendicular to the normal, so we can't use compression.
+									format &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+								}
+							}
+						}
+						TypedArray<Array> blend_shapes;
+						for (int blend_i = 0; blend_i < importer_mesh->get_blend_shape_count(); blend_i++) {
+							Array blend_shape = importer_mesh->get_surface_blend_shape_arrays(surface_i, blend_i);
+							Ref<SurfaceTool> blend_surface_tool;
+							blend_surface_tool.instantiate();
+							blend_surface_tool->begin(primitive_type);
+							blend_surface_tool->create_from_triangle_arrays(blend_shape);
+							blend_surface_tool->generate_tangents();
+							Array new_blend_shape_arrays = blend_surface_tool->commit_to_arrays();
+							if (format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
+								// Compression is enabled, so let's validate that the normals and tangents are correct.
+								Vector<Vector3> normals = arrays[Mesh::ARRAY_NORMAL];
+								Vector<float> tangents = arrays[Mesh::ARRAY_TANGENT];
+								for (int vert = 0; vert < normals.size(); vert++) {
+									Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
+									if (abs(tan.dot(normals[vert])) > 0.0001) {
+										// Tangent is not perpendicular to the normal, so we can't use compression.
+										format &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+									}
+								}
+							}
+							blend_shapes.append(new_blend_shape_arrays);
+						}
+						String surface_name = importer_mesh->get_surface_name(surface_i);
+						new_importer_mesh->add_surface(primitive_type, arrays, blend_shapes, Dictionary(), material, surface_name, format);
+					}
+					src_mesh_node->set_mesh(new_importer_mesh);
+				}
 
 				if (generate_lods) {
 					Array skin_pose_transform_array = _get_skinned_pose_transforms(src_mesh_node);
@@ -2588,7 +2665,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_generate_meshes(p_node->get_child(i), p_mesh_data, p_generate_lods, p_create_shadow_meshes, p_light_bake_mode, p_lightmap_texel_size, p_src_lightmap_cache, r_lightmap_caches);
+		_generate_meshes(p_node->get_child(i), p_mesh_data, p_generate_lods, p_create_shadow_meshes, p_light_bake_mode, p_lightmap_texel_size, p_src_lightmap_cache, r_lightmap_caches, p_ensure_tangents);
 	}
 
 	return p_node;
@@ -3005,7 +3082,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		}
 	}
 
-	scene = _generate_meshes(scene, mesh_data, gen_lods, create_shadow_meshes, LightBakeMode(light_bake_mode), lightmap_texel_size, src_lightmap_cache, mesh_lightmap_caches);
+	scene = _generate_meshes(scene, mesh_data, gen_lods, create_shadow_meshes, LightBakeMode(light_bake_mode), lightmap_texel_size, src_lightmap_cache, mesh_lightmap_caches, ensure_tangents);
 
 	if (mesh_lightmap_caches.size()) {
 		Ref<FileAccess> f = FileAccess::open(p_source_file + ".unwrap_cache", FileAccess::WRITE);

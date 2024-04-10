@@ -990,12 +990,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				surftool->generate_normals();
 			}
 
-			bool generate_tangents = (!binormal_src || !tangent_src) && uv_src && force_make_tangents;
-
-			if (generate_tangents) {
-				surftool->generate_tangents();
-			}
-
 			// Disable compression if all z equals 0 (the mesh is 2D).
 			bool is_mesh_2d = true;
 			for (int k = 0; k < vertex_array.size(); k++) {
@@ -1011,24 +1005,11 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 			}
 
 			////////////////////////////
-			// FINALLY CREATE SUFRACE //
+			// FINALLY CREATE SURFACE //
 			////////////////////////////
 
 			Array d = surftool->commit_to_arrays();
 			d.resize(RS::ARRAY_MAX);
-
-			if (mesh_flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES && (generate_dummy_tangents || generate_tangents)) {
-				// Compression is enabled, so let's validate that the normals and tangents are correct.
-				Vector<Vector3> normals = d[Mesh::ARRAY_NORMAL];
-				Vector<float> tangents = d[Mesh::ARRAY_TANGENT];
-				for (int vert = 0; vert < normals.size(); vert++) {
-					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-					if (abs(tan.dot(normals[vert])) > 0.0001) {
-						// Tangent is not perpendicular to the normal, so we can't use compression.
-						mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
-					}
-				}
-			}
 
 			Array mr;
 
@@ -1234,7 +1215,6 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 									mesh->set_name(meshdata.name);
 									Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, nullptr, Vector<Ref<ImporterMesh>>(), false);
 									ERR_FAIL_COND_V(err, err);
-
 									morphs.push_back(mesh);
 								} else {
 									valid = false;

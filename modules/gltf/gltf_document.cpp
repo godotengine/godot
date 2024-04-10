@@ -3099,24 +3099,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				mesh_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
 			}
 			mesh_surface_tool->index();
-			if (generate_tangents && a.has("TEXCOORD_0")) {
-				//must generate mikktspace tangents.. ergh..
-				mesh_surface_tool->generate_tangents();
-			}
 			array = mesh_surface_tool->commit_to_arrays();
-
-			if ((flags & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && a.has("NORMAL") && (a.has("TANGENT") || generate_tangents)) {
-				// Compression is enabled, so let's validate that the normals and tangents are correct.
-				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
-				Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
-				for (int vert = 0; vert < normals.size(); vert++) {
-					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-					if (abs(tan.dot(normals[vert])) > 0.0001) {
-						// Tangent is not perpendicular to the normal, so we can't use compression.
-						flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
-					}
-				}
-			}
 
 			Array morphs;
 			// Blend shapes
@@ -3234,9 +3217,6 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 						blend_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
 					}
 					blend_surface_tool->index();
-					if (generate_tangents) {
-						blend_surface_tool->generate_tangents();
-					}
 					array_copy = blend_surface_tool->commit_to_arrays();
 
 					// Enforce blend shape mask array format
