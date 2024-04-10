@@ -42,8 +42,7 @@ protected:
 	static GodotShareData *singleton;
 
 public:
-	void share_text(const String &p_title, const String &p_subject, const String &p_text);
-	void share_image(const String &p_path, const String &p_title, const String &p_subject, const String &p_text);
+	void share(const String &p_text, const String &p_subject, const String &p_title, const String &p_path);
 
 	GodotShareData();
 	~GodotShareData();

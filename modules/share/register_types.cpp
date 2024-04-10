@@ -35,6 +35,9 @@
 #include "godot_share_data.h"
 
 void initialize_share_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GodotShareData", memnew(GodotShareData)));
 }
 

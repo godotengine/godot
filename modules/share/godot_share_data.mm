@@ -32,6 +32,8 @@
 
 #import "app_delegate.h"
 
+GodotShareData *GodotShareData::singleton = nullptr;
+
 GodotShareData::GodotShareData() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
@@ -41,60 +43,33 @@ GodotShareData::~GodotShareData() {
 	singleton = nullptr;
 }
 
-void GodotShareData::share_text(const String &p_title, const String &p_subject, const String &p_text) {
+void GodotShareData::share(const String &p_text, const String &p_subject, const String &p_title, const String &p_path) {
 	UIViewController *root_controller = [[UIApplication sharedApplication] delegate].window.rootViewController;
 
 	NSString *ns_text = [NSString stringWithCString:p_text.utf8().get_data() encoding:NSUTF8StringEncoding];
-	NSString *ns_subject = [NSString stringWithCString:p_subject.utf8().get_data() encoding:NSUTF8StringEncoding];
+	NSMutableArray *share_items = [@[ ns_text ] mutableCopy];
+	if (p_path.is_empty() == false) {
+		NSString *image_path = [NSString stringWithCString:p_path.utf8().get_data() encoding:NSUTF8StringEncoding];
+		UIImage *ui_image = [UIImage imageWithContentsOfFile:image_path];
+		[share_items addObject:ui_image];
+	}
 
-	NSArray *shareItems = @[ ns_text ];
-
-	UIActivityViewController *avc = [[UIActivityViewController alloc] initWithActivityItems:shareItems applicationActivities:nil];
-	[avc setValue:ns_subject forKey:@"subject"];
-	//if iPhone
-	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-		[root_controller presentViewController:avc animated:YES completion:nil];
+	UIActivityViewController *avc = [[UIActivityViewController alloc] initWithActivityItems:share_items applicationActivities:nil];
+	if (p_subject.is_empty() == false) {
+		NSString *ns_subject = [NSString stringWithCString:p_subject.utf8().get_data() encoding:NSUTF8StringEncoding];
+		[avc setValue:ns_subject forKey:@"subject"];
 	}
 	//if iPad
-	else {
+	if (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPhone) {
 		// Change Rect to position Popover
 		avc.modalPresentationStyle = UIModalPresentationPopover;
 		avc.popoverPresentationController.sourceView = root_controller.view;
 		avc.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(root_controller.view.bounds), CGRectGetMidY(root_controller.view.bounds), 0, 0);
 		avc.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirection(0);
-		[root_controller presentViewController:avc animated:YES completion:nil];
 	}
-}
-
-void GodotShareData::share_image(const String &p_path, const String &p_title, const String &p_subject, const String &p_text) {
-	UIViewController *root_controller = [[UIApplication sharedApplication] delegate].window.rootViewController;
-
-	NSString *ns_text = [NSString stringWithCString:p_text.utf8().get_data() encoding:NSUTF8StringEncoding];
-	NSString *ns_subject = [NSString stringWithCString:p_subject.utf8().get_data() encoding:NSUTF8StringEncoding];
-	NSString *imagePath = [NSString stringWithCString:p_path.utf8().get_data() encoding:NSUTF8StringEncoding];
-
-	UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
-
-	NSArray *shareItems = @[ ns_text, image ];
-
-	UIActivityViewController *avc = [[UIActivityViewController alloc] initWithActivityItems:shareItems applicationActivities:nil];
-	[avc setValue:ns_subject forKey:@"subject"];
-	//if iPhone
-	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-		[root_controller presentViewController:avc animated:YES completion:nil];
-	}
-	//if iPad
-	else {
-		// Change Rect to position Popover
-		avc.modalPresentationStyle = UIModalPresentationPopover;
-		avc.popoverPresentationController.sourceView = root_controller.view;
-		avc.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(root_controller.view.bounds), CGRectGetMidY(root_controller.view.bounds), 0, 0);
-		avc.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirection(0);
-		[root_controller presentViewController:avc animated:YES completion:nil];
-	}
+	[root_controller presentViewController:avc animated:YES completion:nil];
 }
 
 void GodotShareData::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("share_text", "title", "subject", "text"), &GodotShareData::share_text);
-	ClassDB::bind_method(D_METHOD("share_image", "path", "title", "subject", "text"), &GodotShareData::share_image);
+	ClassDB::bind_method(D_METHOD("share", "text", "subject", "title", "path"), &GodotShareData::share);
 }
