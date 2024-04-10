@@ -842,21 +842,26 @@ void Main::test_cleanup() {
 #endif
 
 int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
-#ifdef TESTS_ENABLED
 	for (int x = 0; x < argc; x++) {
 		if ((strncmp(argv[x], "--test", 6) == 0) && (strlen(argv[x]) == 6)) {
 			tests_need_run = true;
+#ifdef TESTS_ENABLED
 			// TODO: need to come up with different test contexts.
 			// Not every test requires high-level functionality like `ClassDB`.
 			test_setup();
 			int status = test_main(argc, argv);
 			test_cleanup();
 			return status;
+#else
+			ERR_PRINT(
+					"`--test` was specified on the command line, but this Godot binary was compiled without support for unit tests. Aborting.\n"
+					"To be able to run unit tests, use the `tests=yes` SCons option when compiling Godot.\n");
+			return EXIT_FAILURE;
+#endif
 		}
 	}
-#endif
 	tests_need_run = false;
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 /* Engine initialization
