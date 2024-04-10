@@ -98,6 +98,7 @@ public:
 	virtual bool light_instances_can_render_shadow_cube() const {
 		return true;
 	}
+	virtual bool light_instance_is_shadow_visible_at_position(RID p_light, const Vector3 &p_position) const = 0;
 
 	/* PROBE API */
 
