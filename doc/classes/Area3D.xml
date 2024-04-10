@@ -124,12 +124,15 @@
 		</member>
 		<member name="wind_attenuation_factor" type="float" setter="set_wind_attenuation_factor" getter="get_wind_attenuation_factor" default="0.0">
 			The exponential rate at which wind force decreases with distance from its origin.
+			[b]Note:[/b] This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
 		</member>
 		<member name="wind_force_magnitude" type="float" setter="set_wind_force_magnitude" getter="get_wind_force_magnitude" default="0.0">
 			The magnitude of area-specific wind force.
+			[b]Note:[/b] This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
 		</member>
 		<member name="wind_source_path" type="NodePath" setter="set_wind_source_path" getter="get_wind_source_path" default="NodePath(&quot;&quot;)">
 			The [Node3D] which is used to specify the direction and origin of an area-specific wind force. The direction is opposite to the z-axis of the [Node3D]'s local transform, and its origin is the origin of the [Node3D]'s local transform.
+			[b]Note:[/b] This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
 		</member>
 	</members>
 	<signals>
