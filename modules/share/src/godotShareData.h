@@ -40,7 +40,7 @@ class GodotShareData : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GodotShareData *instance;
+	GodotShareData *singleton;
 
 public:
 	void share_text(const String &p_title, const String &p_subject, const String &p_text);
