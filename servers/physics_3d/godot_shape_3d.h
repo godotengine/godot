@@ -120,7 +120,7 @@ class GodotWorldBoundaryShape3D : public GodotShape3D {
 public:
 	Plane get_plane() const;
 
-	virtual real_t get_volume() const override { return INFINITY; }
+	virtual real_t get_volume() const override { return Math_INF; }
 	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_WORLD_BOUNDARY; }
 	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override;
 	virtual Vector3 get_support(const Vector3 &p_normal) const override;

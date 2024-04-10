@@ -96,8 +96,8 @@ public:
 	static _ALWAYS_INLINE_ float acosh(float p_x) { return p_x < 1 ? 0 : ::acoshf(p_x); }
 
 	// Always does clamping so always safe to use.
-	static _ALWAYS_INLINE_ double atanh(double p_x) { return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanh(p_x)); }
-	static _ALWAYS_INLINE_ float atanh(float p_x) { return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanhf(p_x)); }
+	static _ALWAYS_INLINE_ double atanh(double p_x) { return p_x <= -1 ? -Math_INF : (p_x >= 1 ? Math_INF : ::atanh(p_x)); }
+	static _ALWAYS_INLINE_ float atanh(float p_x) { return p_x <= -1 ? -Math_INF : (p_x >= 1 ? Math_INF : ::atanhf(p_x)); }
 
 	static _ALWAYS_INLINE_ double sqrt(double p_x) { return ::sqrt(p_x); }
 	static _ALWAYS_INLINE_ float sqrt(float p_x) { return ::sqrtf(p_x); }

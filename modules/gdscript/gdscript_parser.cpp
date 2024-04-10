@@ -2573,10 +2573,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_builtin_constant(Expressio
 			constant->value = Math_TAU;
 			break;
 		case GDScriptTokenizer::Token::CONST_INF:
-			constant->value = INFINITY;
+			constant->value = Math_INF;
 			break;
 		case GDScriptTokenizer::Token::CONST_NAN:
-			constant->value = NAN;
+			constant->value = Math_NAN;
 			break;
 		default:
 			return nullptr; // Unreachable.

@@ -48,7 +48,7 @@ private:
 	Color color = Color(1.0f, 1.0f, 1.0f);
 	float intensity = 1.0f;
 	String light_type;
-	float range = INFINITY;
+	float range = Math_INF;
 	float inner_cone_angle = 0.0f;
 	float outer_cone_angle = Math_TAU / 8.0f;
 	Dictionary additional_data;

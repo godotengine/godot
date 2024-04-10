@@ -5920,7 +5920,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 		animation->set_loop_mode(Animation::LOOP_LINEAR);
 	}
 
-	double anim_start = p_trimming ? INFINITY : 0.0;
+	double anim_start = p_trimming ? Math_INF : 0.0;
 	double anim_end = 0.0;
 
 	for (const KeyValue<int, GLTFAnimation::Track> &track_i : anim->get_tracks()) {

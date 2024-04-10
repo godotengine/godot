@@ -170,9 +170,9 @@ TEST_CASE("[Plane] Intersection") {
 
 TEST_CASE("[Plane] Finite number checks") {
 	const Vector3 x(0, 1, 2);
-	const Vector3 infinite_vec(NAN, NAN, NAN);
+	const Vector3 infinite_vec(Math_NAN, Math_NAN, Math_NAN);
 	const real_t y = 0;
-	const real_t infinite_y = NAN;
+	const real_t infinite_y = Math_NAN;
 
 	CHECK_MESSAGE(
 			Plane(x, y).is_finite(),

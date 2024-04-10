@@ -464,10 +464,10 @@ Error Expression::_get_token(Token &r_token) {
 						r_token.value = Math_TAU;
 					} else if (id == "INF") {
 						r_token.type = TK_CONSTANT;
-						r_token.value = INFINITY;
+						r_token.value = Math_INF;
 					} else if (id == "NAN") {
 						r_token.type = TK_CONSTANT;
-						r_token.value = NAN;
+						r_token.value = Math_NAN;
 					} else if (id == "not") {
 						r_token.type = TK_OP_NOT;
 					} else if (id == "or") {

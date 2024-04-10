@@ -471,7 +471,7 @@ TEST_CASE("[Vector2] Linear algebra methods") {
 }
 
 TEST_CASE("[Vector2] Finite number checks") {
-	const double infinite[] = { NAN, INFINITY, -INFINITY };
+	const double infinite[] = { Math_NAN, Math_INF, -Math_INF };
 
 	CHECK_MESSAGE(
 			Vector2(0, 1).is_finite(),

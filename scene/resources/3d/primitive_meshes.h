@@ -577,8 +577,8 @@ private:
 		Vector<Vector2> triangles;
 		Vector<Vector<ContourPoint>> contours;
 		Vector<ContourInfo> contours_info;
-		Vector2 min_p = Vector2(INFINITY, INFINITY);
-		Vector2 max_p = Vector2(-INFINITY, -INFINITY);
+		Vector2 min_p = Vector2(Math_INF, Math_INF);
+		Vector2 max_p = Vector2(-Math_INF, -Math_INF);
 	};
 	mutable HashMap<GlyphMeshKey, GlyphMeshData, GlyphMeshKeyHasher> cache;
 

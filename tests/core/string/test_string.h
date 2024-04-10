@@ -572,16 +572,16 @@ TEST_CASE("[String] String to float") {
 	CHECK(String("1e308").to_float() == 1e308);
 	CHECK(String("-1e308").to_float() == -1e308);
 
-	// Exponent is so high that value is INFINITY/-INFINITY.
-	CHECK(String("1e309").to_float() == INFINITY);
-	CHECK(String("1e511").to_float() == INFINITY);
-	CHECK(String("-1e309").to_float() == -INFINITY);
-	CHECK(String("-1e511").to_float() == -INFINITY);
+	// Exponent is so high that value is Math_INF/-Math_INF.
+	CHECK(String("1e309").to_float() == Math_INF);
+	CHECK(String("1e511").to_float() == Math_INF);
+	CHECK(String("-1e309").to_float() == -Math_INF);
+	CHECK(String("-1e511").to_float() == -Math_INF);
 
-	// Exponent is so high that a warning message is printed. Value is INFINITY/-INFINITY.
+	// Exponent is so high that a warning message is printed. Value is Math_INF/-Math_INF.
 	ERR_PRINT_OFF
-	CHECK(String("1e512").to_float() == INFINITY);
-	CHECK(String("-1e512").to_float() == -INFINITY);
+	CHECK(String("1e512").to_float() == Math_INF);
+	CHECK(String("-1e512").to_float() == -Math_INF);
 	ERR_PRINT_ON
 }
 
@@ -852,7 +852,7 @@ TEST_CASE("[String] sprintf") {
 	// Real (infinity) left-padded
 	format = "fish %11f frog";
 	args.clear();
-	args.push_back(INFINITY);
+	args.push_back(Math_INF);
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish         inf frog"));
@@ -976,7 +976,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector left-padded with inf/nan
 	format = "fish %11v frog";
 	args.clear();
-	args.push_back(Variant(Vector2(INFINITY, NAN)));
+	args.push_back(Variant(Vector2(Math_INF, Math_NAN)));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (        inf,         nan) frog"));

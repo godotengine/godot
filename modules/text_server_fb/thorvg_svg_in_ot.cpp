@@ -142,7 +142,7 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to load SVG document (bounds detection).");
 		}
 
-		float min_x = INFINITY, min_y = INFINITY, max_x = -INFINITY, max_y = -INFINITY;
+		float min_x = Math_INF, min_y = Math_INF, max_x = -Math_INF, max_y = -Math_INF;
 		tvg_get_bounds(picture.get(), min_x, min_y, max_x, max_y);
 
 		float new_h = (max_y - min_y);

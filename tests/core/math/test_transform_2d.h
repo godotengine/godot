@@ -99,7 +99,7 @@ TEST_CASE("[Transform2D] Interpolation") {
 
 TEST_CASE("[Transform2D] Finite number checks") {
 	const Vector2 x(0, 1);
-	const Vector2 infinite(NAN, NAN);
+	const Vector2 infinite(Math_NAN, Math_NAN);
 
 	CHECK_MESSAGE(
 			Transform2D(x, x, x).is_finite(),

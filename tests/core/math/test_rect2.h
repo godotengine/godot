@@ -303,7 +303,7 @@ TEST_CASE("[Rect2] Merging") {
 
 TEST_CASE("[Rect2] Finite number checks") {
 	const Vector2 x(0, 1);
-	const Vector2 infinite(NAN, NAN);
+	const Vector2 infinite(Math_NAN, Math_NAN);
 
 	CHECK_MESSAGE(
 			Rect2(x, x).is_finite(),
