@@ -32,6 +32,7 @@
 #define SHARE_REGISTER_TYPES_H
 
 #include "modules/register_module_types.h"
+
 void initialize_share_module(ModuleInitializationLevel p_level);
 void uninitialize_share_module(ModuleInitializationLevel p_level);
 
