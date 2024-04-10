@@ -120,6 +120,8 @@ void NavigationMeshSourceGeometryData2D::add_obstruction_outline(const PackedVec
 }
 
 void NavigationMeshSourceGeometryData2D::merge(const Ref<NavigationMeshSourceGeometryData2D> &p_other_geometry) {
+	ERR_FAIL_NULL(p_other_geometry);
+
 	// No need to worry about `root_node_transform` here as the data is already xformed.
 	traversable_outlines.append_array(p_other_geometry->traversable_outlines);
 	obstruction_outlines.append_array(p_other_geometry->obstruction_outlines);

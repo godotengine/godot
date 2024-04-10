@@ -172,6 +172,8 @@ void NavigationMeshSourceGeometryData3D::add_faces(const PackedVector3Array &p_f
 }
 
 void NavigationMeshSourceGeometryData3D::merge(const Ref<NavigationMeshSourceGeometryData3D> &p_other_geometry) {
+	ERR_FAIL_NULL(p_other_geometry);
+
 	// No need to worry about `root_node_transform` here as the vertices are already xformed.
 	const int64_t number_of_vertices_before_merge = vertices.size();
 	const int64_t number_of_indices_before_merge = indices.size();
