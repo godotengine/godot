@@ -364,6 +364,12 @@ class CommandQueueMT {
 	void _flush() {
 		lock();
 
+		if (unlikely(flush_read_ptr)) {
+			// Re-entrant call.
+			unlock();
+			return;
+		}
+
 		WorkerThreadPool::thread_enter_command_queue_mt_flush(this);
 		while (flush_read_ptr < command_mem.size()) {
 			uint64_t size = *(uint64_t *)&command_mem[flush_read_ptr];
@@ -374,13 +380,6 @@ class CommandQueueMT {
 			cmd->call();
 			if (sync_sem) {
 				sync_sem->sem.post(); // Release in case it needs sync/ret.
-			}
-
-			if (unlikely(flush_read_ptr == 0)) {
-				// A reentrant call flushed.
-				DEV_ASSERT(command_mem.is_empty());
-				unlock();
-				return;
 			}
 
 			flush_read_ptr += size;
