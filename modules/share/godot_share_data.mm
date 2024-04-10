@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godotShareData.mm                                                     */
+/*  godot_share_data.mm                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godotShareData.h"
+#include "godot_share_data.h"
 
 #import "app_delegate.h"
 
 GodotShareData::GodotShareData() {
-	ERR_FAIL_COND(instance != nullptr);
-	instance = this;
+	ERR_FAIL_COND(singleton != nullptr);
+	singleton = this;
 }
 
 GodotShareData::~GodotShareData() {
-	instance = nullptr;
+	singleton = nullptr;
 }
 
-void GodotShareData::shareText(const String &title, const String &subject, const String &text) {
+void GodotShareData::share_text(const String &p_title, const String &p_subject, const String &p_text) {
 	UIViewController *root_controller = [[UIApplication sharedApplication] delegate].window.rootViewController;
 
-	NSString *ns_text = [NSString stringWithCString:text.utf8().get_data() encoding:NSUTF8StringEncoding];
-	NSString *ns_subject = [NSString stringWithCString:subject.utf8().get_data() encoding:NSUTF8StringEncoding];
+	NSString *ns_text = [NSString stringWithCString:p_text.utf8().get_data() encoding:NSUTF8StringEncoding];
+	NSString *ns_subject = [NSString stringWithCString:p_subject.utf8().get_data() encoding:NSUTF8StringEncoding];
 
 	NSArray *shareItems = @[ ns_text ];
 
@@ -66,12 +66,12 @@ void GodotShareData::shareText(const String &title, const String &subject, const
 	}
 }
 
-void GodotShareData::shareImage(const String &path, const String &title, const String &subject, const String &text) {
+void GodotShareData::share_image(const String &p_path, const String &p_title, const String &p_subject, const String &p_text) {
 	UIViewController *root_controller = [[UIApplication sharedApplication] delegate].window.rootViewController;
 
-	NSString *ns_text = [NSString stringWithCString:text.utf8().get_data() encoding:NSUTF8StringEncoding];
-	NSString *ns_subject = [NSString stringWithCString:subject.utf8().get_data() encoding:NSUTF8StringEncoding];
-	NSString *imagePath = [NSString stringWithCString:path.utf8().get_data() encoding:NSUTF8StringEncoding];
+	NSString *ns_text = [NSString stringWithCString:p_text.utf8().get_data() encoding:NSUTF8StringEncoding];
+	NSString *ns_subject = [NSString stringWithCString:p_subject.utf8().get_data() encoding:NSUTF8StringEncoding];
+	NSString *imagePath = [NSString stringWithCString:p_path.utf8().get_data() encoding:NSUTF8StringEncoding];
 
 	UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
 

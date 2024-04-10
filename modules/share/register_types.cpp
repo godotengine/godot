@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <version_generated.gen.h>
-
-#include "core/config/engine.h"
 #include "register_types.h"
+#include "core/config/engine.h"
 
-#include "src/godotShareData.h"
+#include "godot_share_data.h"
 
 void initialize_share_module(ModuleInitializationLevel p_level) {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GodotShareData", memnew(GodotShareData)));

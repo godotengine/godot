@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godotShareData.h                                                      */
+/*  godot_share_data.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOTSHAREDATA_H
-#define GODOTSHAREDATA_H
+#ifndef GODOT_SHARE_DATA_H
+#define GODOT_SHARE_DATA_H
 
 #include "core/object/ref_counted.h"
-#include <version_generated.gen.h>
 
 class GodotShareData : public RefCounted {
 	GDCLASS(GodotShareData, RefCounted);
@@ -40,7 +39,7 @@ class GodotShareData : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GodotShareData *singleton;
+	static GodotShareData *singleton;
 
 public:
 	void share_text(const String &p_title, const String &p_subject, const String &p_text);
@@ -50,4 +49,4 @@ public:
 	~GodotShareData();
 };
 
-#endif // GODOTSHAREDATA_H
+#endif // GODOT_SHARE_DATA_H
