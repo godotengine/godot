@@ -3,5 +3,5 @@ def can_build(env, platform):
 
 def configure(env):
     if env["platform"] in ["ios"]:
-        env.Append(LINKFLAGS=['-ObjC'])
-        env.Append(CPPPATH=['#core'])
+        env.Append(LINKFLAGS=["-ObjC"])
+        env.Append(CPPPATH=["#core"])

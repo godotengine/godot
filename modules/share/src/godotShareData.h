@@ -40,8 +40,8 @@ class GodotShareData : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GodotShareData* instance;
-    
+	GodotShareData *instance;
+
 public:
 	void shareText(const String &title, const String &subject, const String &text);
 	void shareImage(const String &path, const String &title, const String &subject, const String &text);
