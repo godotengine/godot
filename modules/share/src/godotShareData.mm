@@ -33,7 +33,7 @@
 #import "app_delegate.h"
 
 GodotShareData::GodotShareData() {
-	ERR_FAIL_COND(instance != NULL);
+	ERR_FAIL_COND(instance != nullptr);
 	instance = this;
 }
 
