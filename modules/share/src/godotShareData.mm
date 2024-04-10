@@ -38,7 +38,7 @@ GodotShareData::GodotShareData() {
 }
 
 GodotShareData::~GodotShareData() {
-	instance = NULL;
+	instance = nullptr;
 }
 
 void GodotShareData::shareText(const String &title, const String &subject, const String &text) {
