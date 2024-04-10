@@ -40,7 +40,7 @@ String GDScriptWarning::get_message() const {
 	switch (code) {
 		case UNASSIGNED_VARIABLE:
 			CHECK_SYMBOLS(1);
-			return vformat(R"(The variable "%s" was used but never assigned a value.)", symbols[0]);
+			return vformat(R"(The variable "%s" was used before being assigned a value.)", symbols[0]);
 		case UNASSIGNED_VARIABLE_OP_ASSIGN:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(Using assignment with operation but the variable "%s" was not previously assigned a value.)", symbols[0]);
