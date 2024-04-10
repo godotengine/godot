@@ -35,9 +35,9 @@
 
 #include "src/godotShareData.h"
 
-void initialize_ios_module(ModuleInitializationLevel p_level) {
+void initialize_share_module(ModuleInitializationLevel p_level) {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GodotShareData", memnew(GodotShareData)));
 }
 
-void uninitialize_ios_module(ModuleInitializationLevel p_level) {
+void uninitialize_share_module(ModuleInitializationLevel p_level) {
 }

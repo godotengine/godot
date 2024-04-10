@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_SHARE_DATA_H
-#define GODOT_SHARE_DATA_H
+#ifndef GODOTSHAREDATA_H
+#define GODOTSHAREDATA_H
 
 #include "core/object/ref_counted.h"
 #include <version_generated.gen.h>
@@ -50,4 +50,4 @@ public:
 	~GodotShareData();
 };
 
-#endif
+#endif // GODOTSHAREDATA_H

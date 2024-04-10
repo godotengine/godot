@@ -28,9 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHARE_IOS_REGISTER_TYPES_H
-#define SHARE_IOS_REGISTER_TYPES_H
+#ifndef SHARE_REGISTER_TYPES_H
+#define SHARE_REGISTER_TYPES_H
+
 #include "modules/register_module_types.h"
-void initialize_ios_module(ModuleInitializationLevel p_level);
-void uninitialize_ios_module(ModuleInitializationLevel p_level);
-#endif
+void initialize_share_module(ModuleInitializationLevel p_level);
+void uninitialize_share_module(ModuleInitializationLevel p_level);
+
+#endif // SHARE_REGISTER_TYPES_H
