@@ -76,6 +76,43 @@ void SceneTreeDock::_quick_open() {
 	instantiate_scenes(quick_open->get_selected_files(), scene_tree->get_selected());
 }
 
+void SceneTreeDock::_inspect_hovered_node() {
+	scene_tree->set_selected(node_hovered_now);
+	scene_tree->set_marked(node_hovered_now);
+	Tree *tree = scene_tree->get_scene_tree();
+	TreeItem *item = tree->get_item_at_position(tree->get_local_mouse_position());
+	if (item) {
+		item->set_as_cursor(0);
+	}
+	InspectorDock::get_inspector_singleton()->edit(node_hovered_now);
+	InspectorDock::get_inspector_singleton()->propagate_notification(NOTIFICATION_DRAG_BEGIN); // Enable inspector drag preview after it updated.
+	InspectorDock::get_singleton()->update(node_hovered_now);
+	EditorNode::get_singleton()->hide_unused_editors();
+}
+
+void SceneTreeDock::_handle_hover_to_inspect() {
+	Tree *tree = scene_tree->get_scene_tree();
+	TreeItem *item = tree->get_item_at_position(tree->get_local_mouse_position());
+
+	if (item) {
+		const NodePath &np = item->get_metadata(0);
+		node_hovered_now = get_node_or_null(np);
+		if (node_hovered_previously != node_hovered_now) {
+			inspect_hovered_node_delay->start();
+		}
+		node_hovered_previously = node_hovered_now;
+	} else {
+		_reset_hovering_timer();
+	}
+}
+
+void SceneTreeDock::_reset_hovering_timer() {
+	if (!inspect_hovered_node_delay->is_stopped()) {
+		inspect_hovered_node_delay->stop();
+	}
+	node_hovered_previously = nullptr;
+}
+
 void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -92,6 +129,17 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 			_push_item(pending_click_select);
 			pending_click_select = nullptr;
 		}
+
+		if (mb->is_released()) {
+			if (scene_tree->has_marked()) {
+				scene_tree->set_marked(nullptr);
+			}
+			_reset_hovering_timer();
+		}
+	}
+
+	if (tree_clicked && get_viewport()->gui_is_dragging()) {
+		_handle_hover_to_inspect();
 	}
 }
 
@@ -1538,6 +1586,10 @@ void SceneTreeDock::_notification(int p_what) {
 					scene_tree->show();
 				}
 			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			_reset_hovering_timer();
 		} break;
 	}
 }
@@ -4300,6 +4352,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->connect("files_dropped", callable_mp(this, &SceneTreeDock::_files_dropped));
 	scene_tree->connect("script_dropped", callable_mp(this, &SceneTreeDock::_script_dropped));
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
+	scene_tree->connect("mouse_exited", callable_mp(this, &SceneTreeDock::_reset_hovering_timer));
 
 	scene_tree->get_scene_tree()->connect("gui_input", callable_mp(this, &SceneTreeDock::_scene_tree_gui_input));
 	scene_tree->get_scene_tree()->connect("item_icon_double_clicked", callable_mp(this, &SceneTreeDock::_focus_node));
@@ -4308,6 +4361,11 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	scene_tree->set_as_scene_tree_dock();
 	scene_tree->set_editor_selection(editor_selection);
+
+	inspect_hovered_node_delay = memnew(Timer);
+	inspect_hovered_node_delay->connect("timeout", callable_mp(this, &SceneTreeDock::_inspect_hovered_node));
+	inspect_hovered_node_delay->set_one_shot(true);
+	add_child(inspect_hovered_node_delay);
 
 	create_dialog = memnew(CreateDialog);
 	create_dialog->set_base_type("Node");
