@@ -451,6 +451,7 @@ public:
 
 	/* ---- Blending processor ---- */
 	void make_animation_instance(const StringName &p_name, const PlaybackInfo p_playback_info);
+	void make_animation_instance_anim(const Ref<Animation> &p_anim, const PlaybackInfo p_playback_info);
 	void clear_animation_instances();
 	virtual void advance(double p_time);
 	virtual void clear_caches(); // Must be called by hand if an animation was modified after added.

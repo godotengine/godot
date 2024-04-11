@@ -14,7 +14,7 @@ void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,
                 p_playback_info_ptr[i].time = p_playback_info->time;
                 p_playback_info_ptr[i].delta = p_playback_info->delta;
                 p_playback_info_ptr[i].disable_path = p_playback_info->disable_path;
-                p_layer->make_animation_instance(m_ChildAnimationArray[i].m_Name, p_playback_info_ptr[i]);
+                p_layer->make_animation_instance_anim(m_ChildAnimationArray[i].m_Animation, p_playback_info_ptr[i]);
             }
             else if(m_ChildAnimationArray[i].m_animation_node.is_valid())
             {

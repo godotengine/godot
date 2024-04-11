@@ -50,6 +50,7 @@ public:
     struct AnimationItem
     {
         StringName m_Name;
+        Ref<Animation> m_Animation;
         Ref<CharacterAnimatorNodeBase> m_animation_node;
         float m_Speed = 1.0f;
         bool isClip = true;
