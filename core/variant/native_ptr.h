@@ -32,6 +32,7 @@
 #define NATIVE_PTR_H
 
 #include "core/math/audio_frame.h"
+#include "core/variant/binder_common.h"
 #include "core/variant/method_ptrcall.h"
 #include "core/variant/type_info.h"
 

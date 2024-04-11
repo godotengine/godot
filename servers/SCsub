@@ -7,6 +7,7 @@ env.servers_sources = []
 env.add_source_files(env.servers_sources, "audio_server.cpp")
 env.add_source_files(env.servers_sources, "camera_server.cpp")
 env.add_source_files(env.servers_sources, "display_server.cpp")
+env.add_source_files(env.servers_sources, "display_server_embedded.cpp")
 env.add_source_files(env.servers_sources, "navigation_server_2d.cpp")
 env.add_source_files(env.servers_sources, "navigation_server_3d.cpp")
 env.add_source_files(env.servers_sources, "physics_server_2d.cpp")

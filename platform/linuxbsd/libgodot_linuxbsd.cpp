@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_context_driver_vulkan_macos.h                               */
+/*  libgodot_linuxbsd.cpp                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_CONTEXT_DRIVER_VULKAN_MACOS_H
-#define RENDERING_CONTEXT_DRIVER_VULKAN_MACOS_H
+#include "core/extension/libgodot.h"
 
-#ifdef VULKAN_ENABLED
+#include "core/extension/godot_instance.h"
+#include "main/main.h"
 
-#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#include "os_linuxbsd.h"
 
-#import <QuartzCore/CAMetalLayer.h>
+static OS_LinuxBSD *os = nullptr;
 
-class RenderingContextDriverVulkanMacOS : public RenderingContextDriverVulkan {
-private:
-	virtual const char *_get_platform_surface_extension() const override final;
+static GodotInstance *instance = nullptr;
 
-protected:
-	SurfaceID surface_create(const void *p_platform_data) override final;
+GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func) {
+	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created.");
 
-public:
-	struct WindowPlatformData {
-		CAMetalLayer *const *layer_ptr;
-	};
+	os = new OS_LinuxBSD();
 
-	RenderingContextDriverVulkanMacOS();
-	~RenderingContextDriverVulkanMacOS();
-};
+	Error err = Main::setup(p_argv[0], p_argc - 1, &p_argv[1], false);
+	if (err != OK) {
+		return nullptr;
+	}
 
-#endif // VULKAN_ENABLED
+	instance = memnew(GodotInstance);
+	if (!instance->initialize(p_init_func)) {
+		memdelete(instance);
+		instance = nullptr;
+		return nullptr;
+	}
 
-#endif // RENDERING_CONTEXT_DRIVER_VULKAN_MACOS_H
+	return (GDExtensionObjectPtr)instance;
+}
+
+void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
+	GodotInstance *godot_instance = (GodotInstance *)p_godot_instance;
+	if (instance == godot_instance) {
+		godot_instance->stop();
+		memdelete(godot_instance);
+		instance = nullptr;
+		Main::cleanup();
+	}
+}

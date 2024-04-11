@@ -32,11 +32,14 @@
 
 #ifdef IOS_ENABLED
 
+#import "ios_terminal_logger.h"
+
+#ifndef IOS_SHARED_LIBRARY_ENABLED
 #import "app_delegate.h"
 #import "display_server_ios.h"
 #import "godot_view.h"
-#import "ios_terminal_logger.h"
 #import "view_controller.h"
+#endif
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -44,6 +47,7 @@
 #include "core/io/file_access_pack.h"
 #include "drivers/unix/syslog_logger.h"
 #include "main/main.h"
+#include "servers/display_server_embedded.h"
 
 #import <AudioToolbox/AudioServices.h>
 #import <CoreText/CoreText.h>
@@ -111,7 +115,10 @@ OS_IOS::OS_IOS() {
 
 	AudioDriverManager::add_driver(&audio_driver);
 
+#ifndef IOS_SHARED_LIBRARY_ENABLED
 	DisplayServerIOS::register_ios_driver();
+#endif
+	DisplayServerEmbedded::register_embedded_driver();
 }
 
 OS_IOS::~OS_IOS() {}
@@ -599,15 +606,19 @@ void OS_IOS::on_focus_out() {
 	if (is_focused) {
 		is_focused = false;
 
+#ifndef IOS_SHARED_LIBRARY_ENABLED
 		if (DisplayServerIOS::get_singleton()) {
 			DisplayServerIOS::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 		}
+#endif
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 		}
 
+#ifndef IOS_SHARED_LIBRARY_ENABLED
 		[AppDelegate.viewController.godotView stopRendering];
+#endif
 
 		audio_driver.stop();
 	}
@@ -617,15 +628,19 @@ void OS_IOS::on_focus_in() {
 	if (!is_focused) {
 		is_focused = true;
 
+#ifndef IOS_SHARED_LIBRARY_ENABLED
 		if (DisplayServerIOS::get_singleton()) {
 			DisplayServerIOS::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
 		}
+#endif
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 		}
 
+#ifndef IOS_SHARED_LIBRARY_ENABLED
 		[AppDelegate.viewController.godotView startRendering];
+#endif
 
 		audio_driver.start();
 	}

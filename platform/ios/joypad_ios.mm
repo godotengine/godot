@@ -30,7 +30,6 @@
 
 #import "joypad_ios.h"
 
-#import "godot_view.h"
 #import "os_ios.h"
 
 #include "core/config/project_settings.h"

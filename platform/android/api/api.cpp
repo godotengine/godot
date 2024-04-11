@@ -34,10 +34,20 @@
 #include "jni_singleton.h"
 
 #include "core/config/engine.h"
+#include "platform/android/rendering_native_surface_android.h"
 
 #if !defined(ANDROID_ENABLED)
 static JavaClassWrapper *java_class_wrapper = nullptr;
 #endif
+
+void register_core_android_api() {
+#if defined(ANDROID_ENABLED)
+	GDREGISTER_ABSTRACT_CLASS(RenderingNativeSurfaceAndroid);
+#endif
+}
+
+void unregister_core_android_api() {
+}
 
 void register_android_api() {
 #if !defined(ANDROID_ENABLED)

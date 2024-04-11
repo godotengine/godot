@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_context_driver_vulkan_ios.mm                                */
+/*  rendering_native_surface_x11.h                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,42 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "rendering_context_driver_vulkan_ios.h"
+#ifndef RENDERING_NATIVE_SURFACE_X11_H
+#define RENDERING_NATIVE_SURFACE_X11_H
 
-#ifdef VULKAN_ENABLED
+#include "core/variant/native_ptr.h"
+#include "servers/rendering/rendering_native_surface.h"
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan_metal.h>
-#endif
+#include <X11/Xlib.h>
 
-const char *RenderingContextDriverVulkanIOS::_get_platform_surface_extension() const {
-	return VK_EXT_METAL_SURFACE_EXTENSION_NAME;
-}
+class RenderingNativeSurfaceX11 : public RenderingNativeSurface {
+	GDCLASS(RenderingNativeSurfaceX11, RenderingNativeSurface);
 
-RenderingContextDriver::SurfaceID RenderingContextDriverVulkanIOS::surface_create(const void *p_platform_data) {
-	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
+	static void _bind_methods();
 
-	VkMetalSurfaceCreateInfoEXT create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
-	create_info.pLayer = *wpd->layer_ptr;
+	::Window window;
+	Display *display;
 
-	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
-	VkResult err = vkCreateMetalSurfaceEXT(instance_get(), &create_info, nullptr, &vk_surface);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
+public:
+	static Ref<RenderingNativeSurfaceX11> create_api(GDExtensionConstPtr<const void> p_window, GDExtensionConstPtr<const void> p_display);
 
-	Surface *surface = memnew(Surface);
-	surface->vk_surface = vk_surface;
-	return SurfaceID(surface);
-}
+	static Ref<RenderingNativeSurfaceX11> create(::Window p_window, Display *p_display);
 
-RenderingContextDriverVulkanIOS::RenderingContextDriverVulkanIOS() {
-	// Does nothing.
-}
+	::Window get_window() const {
+		return window;
+	};
 
-RenderingContextDriverVulkanIOS::~RenderingContextDriverVulkanIOS() {
-	// Does nothing.
-}
+	Display *get_display() const {
+		return display;
+	};
 
-#endif // VULKAN_ENABLED
+	RenderingContextDriver *create_rendering_context() override;
+
+	RenderingNativeSurfaceX11();
+	~RenderingNativeSurfaceX11();
+};
+
+#endif // RENDERING_NATIVE_SURFACE_X11_H

@@ -154,6 +154,9 @@ def configure(env: "SConsEnvironment"):
     env.Prepend(CPPPATH=["#platform/ios"])
     env.Append(CPPDEFINES=["IOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
+    if env["library_type"] == "shared_library":
+        env.Append(CPPDEFINES=["IOS_SHARED_LIBRARY_ENABLED"])
+
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
 

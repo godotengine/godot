@@ -5,6 +5,7 @@ Import("env")
 source_files = [
     "display_server_x11.cpp",
     "key_mapping_x11.cpp",
+    "rendering_native_surface_x11.cpp",
 ]
 
 if env["use_sowrap"]:

@@ -743,6 +743,7 @@ Error Main::test_setup() {
 
 	ClassDB::set_current_api(ClassDB::API_CORE);
 #endif
+	register_core_platform_apis();
 	register_platform_apis();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
@@ -804,6 +805,7 @@ void Main::test_cleanup() {
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
 
 	unregister_platform_apis();
+	unregister_core_platform_apis();
 	unregister_driver_types();
 	unregister_scene_types();
 
@@ -814,6 +816,7 @@ void Main::test_cleanup() {
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	unregister_server_types();
+	unregister_core_server_types();
 
 	EngineDebugger::deinitialize();
 	OS::get_singleton()->finalize();
@@ -919,6 +922,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	register_core_types();
 	register_core_driver_types();
+
+	register_core_platform_apis();
 
 	MAIN_PRINT("Main: Initialize Globals");
 
@@ -2450,6 +2455,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
+	// Register Core Server Types
+	register_core_server_types();
+
 	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
 	set_current_thread_safe_for_nodes(false);
 
@@ -2502,6 +2510,7 @@ error:
 		memdelete(packed_data);
 	}
 
+	unregister_core_platform_apis();
 	unregister_core_driver_types();
 	unregister_core_extensions();
 
@@ -4296,6 +4305,7 @@ void Main::cleanup(bool p_force) {
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	unregister_server_types();
+	unregister_core_server_types();
 
 	EngineDebugger::deinitialize();
 

@@ -45,7 +45,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#include "rendering_context_driver_vulkan_macos.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan_moltenvk.h"
 #endif // VULKAN_ENABLED
 #endif // RD_ENABLED
 
