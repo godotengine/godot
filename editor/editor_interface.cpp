@@ -387,6 +387,11 @@ void EditorInterface::add_root_node(Node *p_node) {
 	EditorSceneTabs::get_singleton()->update_scene_tabs();
 }
 
+void EditorInterface::remove_root_node() {
+	EditorNode::get_singleton()->set_edited_scene(nullptr);
+	EditorSceneTabs::get_singleton()->update_scene_tabs();
+}
+
 void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
 	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled, true);
 }
@@ -913,6 +918,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
 
 	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorInterface::add_root_node);
+	ClassDB::bind_method(D_METHOD("remove_root_node"), &EditorInterface::remove_root_node);
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
