@@ -397,7 +397,10 @@ int LightmapGI::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const Loc
 	const BSPSimplex &s = p_simplices[p_simplex];
 	for (int i = 0; i < 4; i++) {
 		const Vector3 v = p_points[s.vertices[i]];
-		if (p_plane.has_point(v)) {
+		// The tolerance used here comes from experiments on scenes up to
+		// 1000x1000x100 meters. If it's any smaller, some simplices will
+		// appear to self-intersect due to a lack of precision in Plane.
+		if (p_plane.has_point(v, 1.0 / (1 << 13))) {
 			// Coplanar.
 		} else if (p_plane.is_point_over(v)) {
 			over++;
@@ -419,7 +422,8 @@ int LightmapGI::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const Loc
 //#define DEBUG_BSP
 
 int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes) {
-	//if we reach here, it means there is more than one simplex
+	ERR_FAIL_COND_V(p_simplex_indices.size() < 2, -1);
+
 	int32_t node_index = (int32_t)bsp_nodes.size();
 	bsp_nodes.push_back(BSPNode());
 
@@ -477,16 +481,55 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 
 			float score = 0; //by default, score is 0 (worst)
 			if (over_count > 0) {
-				//give score mainly based on ratio (under / over), this means that this plane is splitting simplices a lot, but its balanced
-				score = float(under_count) / over_count;
+				// Simplices that are intersected by the plane are moved into both the over
+				// and under subtrees which makes the entire tree deeper, so the best plane
+				// will have the least intersections while separating the simplices evenly.
+				float balance = float(under_count) / over_count;
+				float separation = float(over_count + under_count) / p_simplex_indices.size();
+				score = balance * separation * separation;
 			}
-
-			//adjusting priority over least splits, probably not a great idea
-			//score *= Math::sqrt(float(over_count + under_count) / p_simplex_indices.size()); //also multiply score
 
 			if (score > best_plane_score) {
 				best_plane = plane;
 				best_plane_score = score;
+			}
+		}
+	}
+
+	// We often end up with two (or on rare occasions, three) simplices that are
+	// either disjoint or share one vertex and don't have a separating plane
+	// among their faces. The fallback is to loop through new planes created
+	// with one vertex of the first simplex and two vertices of the second until
+	// we find a winner.
+	if (best_plane_score == 0) {
+		const BSPSimplex &simplex0 = p_simplices[p_simplex_indices[0]];
+		const BSPSimplex &simplex1 = p_simplices[p_simplex_indices[1]];
+
+		for (uint32_t i = 0; i < 4 && !best_plane_score; i++) {
+			Vector3 v0 = p_points[simplex0.vertices[i]];
+			for (uint32_t j = 0; j < 3 && !best_plane_score; j++) {
+				if (simplex0.vertices[i] == simplex1.vertices[j]) {
+					break;
+				}
+				Vector3 v1 = p_points[simplex1.vertices[j]];
+				for (uint32_t k = j + 1; k < 4; k++) {
+					if (simplex0.vertices[i] == simplex1.vertices[k]) {
+						break;
+					}
+					Vector3 v2 = p_points[simplex1.vertices[k]];
+
+					Plane plane = Plane(v0, v1, v2);
+					if (plane == Plane()) { // When v0, v1, and v2 are collinear, they can't form a plane.
+						continue;
+					}
+					int32_t side0 = _bsp_get_simplex_side(p_points, p_simplices, plane, p_simplex_indices[0]);
+					int32_t side1 = _bsp_get_simplex_side(p_points, p_simplices, plane, p_simplex_indices[1]);
+					if ((side0 == 1 && side1 == -1) || (side0 == -1 && side1 == 1)) {
+						best_plane = plane;
+						best_plane_score = 1.0;
+						break;
+					}
+				}
 			}
 		}
 	}
@@ -515,8 +558,6 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 #endif
 
 	if (best_plane_score < 0.0 || indices_over.size() == p_simplex_indices.size() || indices_under.size() == p_simplex_indices.size()) {
-		ERR_FAIL_COND_V(p_simplex_indices.size() <= 1, 0); //should not happen, this is a bug
-
 		// Failed to separate the tetrahedrons using planes
 		// this means Delaunay broke at some point.
 		// Luckily, because we are using tetrahedrons, we can resort to
