@@ -850,19 +850,19 @@ DBusHandlerResult FreeDesktopPortalDesktop::_status_notifier_item_handle_message
 	}
 
 	if (dbus_message_get_type(message) == DBUS_MESSAGE_TYPE_METHOD_CALL && interface == BUS_INTERFACE_PROPERTIES && member == "Get") {
-		const char *object_name;
+		const char *interface_name;
 		const char *property;
 
 		DBusError error;
 		dbus_error_init(&error);
-		dbus_message_get_args(message, &error, DBUS_TYPE_STRING, &object_name, DBUS_TYPE_STRING, &property, DBUS_TYPE_INVALID);
+		dbus_message_get_args(message, &error, DBUS_TYPE_STRING, &interface_name, DBUS_TYPE_STRING, &property, DBUS_TYPE_INVALID);
 		if (dbus_error_is_set(&error)) {
 			_dbus_connection_reply_error(connection, message, vformat("Invalid arguments for %s.%s at %s", interface, member, destination));
 			dbus_error_free(&error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
-		if (strcmp(object_name, BUS_STATUS_NOTIFIER_ITEM_NAME) == 0) {
+		if (strcmp(interface_name, BUS_STATUS_NOTIFIER_ITEM_NAME) == 0) {
 			DBusMessage *reply = dbus_message_new_method_return(message);
 
 			if (!reply) {
