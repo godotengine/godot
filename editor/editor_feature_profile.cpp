@@ -493,6 +493,10 @@ void EditorFeatureProfileManager::_profile_selected(int p_what) {
 	_update_selected_profile();
 }
 
+void EditorFeatureProfileManager::_hide_requested() {
+	_cancel_pressed(); // From AcceptDialog.
+}
+
 void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected) {
 	TreeItem *class_item = class_list->create_item(p_parent);
 	class_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
@@ -555,22 +559,10 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 
 	Variant md = item->get_metadata(0);
 	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
-		String text = description_bit->get_class_description(md);
-		if (!text.is_empty()) {
-			// Display both class name and description, since the help bit may be displayed
-			// far away from the location (especially if the dialog was resized to be taller).
-			description_bit->set_text(vformat("[b]%s[/b]: %s", md, text));
-			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
-		} else {
-			// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
-			description_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", md)));
-			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
-		}
+		description_bit->parse_symbol("class|" + md.operator String() + "|");
 	} else if (md.get_type() == Variant::INT) {
 		String feature_description = EditorFeatureProfile::get_feature_description(EditorFeatureProfile::Feature((int)md));
-		description_bit->set_text(vformat("[b]%s[/b]: %s", TTR(item->get_text(0)), TTRGET(feature_description)));
-		description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
-
+		description_bit->set_custom_text(TTR(item->get_text(0)), String(), TTRGET(feature_description));
 		return;
 	} else {
 		return;
@@ -991,8 +983,9 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	property_list_vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	description_bit = memnew(EditorHelpBit);
+	description_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
+	description_bit->connect("request_hide", callable_mp(this, &EditorFeatureProfileManager::_hide_requested));
 	property_list_vbc->add_margin_child(TTR("Description:"), description_bit, false);
-	description_bit->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
 
 	property_list = memnew(Tree);
 	property_list_vbc->add_margin_child(TTR("Extra Options:"), property_list, true);

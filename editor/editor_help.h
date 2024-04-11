@@ -35,9 +35,9 @@
 #include "editor/code_editor.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_plugin.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
@@ -251,53 +251,91 @@ public:
 	~EditorHelp();
 };
 
-class EditorHelpBit : public MarginContainer {
-	GDCLASS(EditorHelpBit, MarginContainer);
+class EditorHelpBit : public VBoxContainer {
+	GDCLASS(EditorHelpBit, VBoxContainer);
 
-	inline static HashMap<StringName, String> doc_class_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_property_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_method_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_signal_cache;
-	inline static HashMap<StringName, HashMap<StringName, String>> doc_theme_item_cache;
+	struct DocType {
+		String type;
+		String enumeration;
+		bool is_bitfield = false;
+	};
 
-	RichTextLabel *rich_text = nullptr;
+	struct ArgumentData {
+		String name;
+		DocType doc_type;
+		String default_value;
+	};
+
+	struct HelpData {
+		String description;
+		String deprecated_message;
+		String experimental_message;
+		DocType doc_type; // For method return type.
+		Vector<ArgumentData> arguments; // For methods and signals.
+	};
+
+	inline static HashMap<StringName, HelpData> doc_class_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_property_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_method_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_signal_cache;
+	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_theme_item_cache;
+
+	RichTextLabel *title = nullptr;
+	RichTextLabel *content = nullptr;
+
+	String symbol_class_name;
+	String symbol_type;
+	String symbol_visible_type;
+	String symbol_name;
+
+	HelpData help_data;
+
+	float content_min_height = 0.0;
+	float content_max_height = 0.0;
+
+	static HelpData _get_class_help_data(const StringName &p_class_name);
+	static HelpData _get_property_help_data(const StringName &p_class_name, const StringName &p_property_name);
+	static HelpData _get_method_help_data(const StringName &p_class_name, const StringName &p_method_name);
+	static HelpData _get_signal_help_data(const StringName &p_class_name, const StringName &p_signal_name);
+	static HelpData _get_theme_item_help_data(const StringName &p_class_name, const StringName &p_theme_item_name);
+
+	void _add_type_to_title(const DocType &p_doc_type);
+	void _update_labels();
 	void _go_to_help(const String &p_what);
 	void _meta_clicked(const String &p_select);
 
-	String text;
-
 protected:
-	String doc_class_name;
-	String custom_description;
-
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	String get_class_description(const StringName &p_class_name) const;
-	String get_property_description(const StringName &p_class_name, const StringName &p_property_name) const;
-	String get_method_description(const StringName &p_class_name, const StringName &p_method_name) const;
-	String get_signal_description(const StringName &p_class_name, const StringName &p_signal_name) const;
-	String get_theme_item_description(const StringName &p_class_name, const StringName &p_theme_item_name) const;
+	void parse_symbol(const String &p_symbol);
+	void set_custom_text(const String &p_type, const String &p_name, const String &p_description);
+	void prepend_description(const String &p_text);
 
-	RichTextLabel *get_rich_text() { return rich_text; }
-	void set_text(const String &p_text);
+	void set_content_height_limits(float p_min, float p_max);
+	void update_content_height();
 
-	EditorHelpBit();
+	EditorHelpBit(const String &p_symbol = String());
 };
 
-class EditorHelpTooltip : public EditorHelpBit {
-	GDCLASS(EditorHelpTooltip, EditorHelpBit);
+// Standard tooltips do not allow you to hover over them.
+// This class is intended as a temporary workaround.
+class EditorHelpBitTooltip : public PopupPanel {
+	GDCLASS(EditorHelpBitTooltip, PopupPanel);
 
-	String tooltip_text;
+	Timer *timer = nullptr;
 
 protected:
 	void _notification(int p_what);
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
 public:
-	void parse_tooltip(const String &p_text);
+	static void show_tooltip(EditorHelpBit *p_help_bit, Control *p_target);
 
-	EditorHelpTooltip(const String &p_text = String(), const String &p_custom_description = String());
+	void popup_under_cursor();
+
+	EditorHelpBitTooltip(Control *p_target);
 };
 
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)

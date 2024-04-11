@@ -321,7 +321,7 @@ public:
 	ThemeTypeDialog();
 };
 
-// Custom `Label` needed to use `EditorHelpTooltip` to display theme item documentation.
+// Custom `Label` needed to use `EditorHelpBit` to display theme item documentation.
 class ThemeItemLabel : public Label {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };

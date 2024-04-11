@@ -87,7 +87,7 @@ void PropertySelector::_update_search() {
 	}
 
 	search_options->clear();
-	help_bit->set_text("");
+	help_bit->set_custom_text(String(), String(), String());
 
 	TreeItem *root = search_options->create_item();
 
@@ -353,7 +353,7 @@ void PropertySelector::_confirmed() {
 }
 
 void PropertySelector::_item_selected() {
-	help_bit->set_text("");
+	help_bit->set_custom_text(String(), String(), String());
 
 	TreeItem *item = search_options->get_selected();
 	if (!item) {
@@ -372,24 +372,20 @@ void PropertySelector::_item_selected() {
 
 	String text;
 	while (!class_type.is_empty()) {
-		text = properties ? help_bit->get_property_description(class_type, name) : help_bit->get_method_description(class_type, name);
-		if (!text.is_empty()) {
-			break;
+		if (properties) {
+			if (ClassDB::has_property(class_type, name, true)) {
+				help_bit->parse_symbol("property|" + class_type + "|" + name);
+				break;
+			}
+		} else {
+			if (ClassDB::has_method(class_type, name, true)) {
+				help_bit->parse_symbol("method|" + class_type + "|" + name);
+				break;
+			}
 		}
 
 		// It may be from a parent class, keep looking.
 		class_type = ClassDB::get_parent_class(class_type);
-	}
-
-	if (!text.is_empty()) {
-		// Display both property name and description, since the help bit may be displayed
-		// far away from the location (especially if the dialog was resized to be taller).
-		help_bit->set_text(vformat("[b]%s[/b]: %s", name, text));
-		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
-	} else {
-		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
-		help_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", name)));
-		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
 	}
 }
 
@@ -569,8 +565,7 @@ PropertySelector::PropertySelector() {
 	search_options->set_hide_folding(true);
 
 	help_bit = memnew(EditorHelpBit);
-	vbc->add_margin_child(TTR("Description:"), help_bit);
-	help_bit->get_rich_text()->set_fit_content(false);
-	help_bit->get_rich_text()->set_custom_minimum_size(Size2(help_bit->get_rich_text()->get_minimum_size().x, 135 * EDSCALE));
+	help_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
 	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
+	vbc->add_margin_child(TTR("Description:"), help_bit);
 }

@@ -2267,7 +2267,9 @@ ThemeTypeDialog::ThemeTypeDialog() {
 ///////////////////////
 
 Control *ThemeItemLabel::make_custom_tooltip(const String &p_text) const {
-	return memnew(EditorHelpTooltip(p_text));
+	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_text));
+	EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<ThemeItemLabel *>(this));
+	return memnew(Control); // Make the standard tooltip invisible.
 }
 
 VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
@@ -2436,8 +2438,8 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 	item_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	item_name->set_clip_text(true);
 	item_name->set_text(p_item_name);
-	// `|` separators used in `EditorHelpTooltip` for formatting.
-	item_name->set_tooltip_text("theme_item|" + edited_type + "|" + p_item_name + "|");
+	// `|` separators used in `EditorHelpBit`.
+	item_name->set_tooltip_text("theme_item|" + edited_type + "|" + p_item_name);
 	item_name->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	item_name_container->add_child(item_name);
 

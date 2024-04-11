@@ -41,6 +41,7 @@ class ConfirmationDialog;
 class EditorInspector;
 class EditorValidationPanel;
 class LineEdit;
+class MarginContainer;
 class OptionButton;
 class PanelContainer;
 class PopupMenu;
