@@ -532,6 +532,8 @@ File extracted from upstream release tarball:
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
 - Applied the patch `no-flexible-arrays.diff` to fix Windows build (see
   upstream GH-9020)
+- Applied the patch `msvc-redeclaration-bug.diff` to fix a compilation error
+  with some MSVC versions
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core
 - Added the file `godot_module_mbedtls_config.h` to customize the build
