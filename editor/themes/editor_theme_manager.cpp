@@ -2166,6 +2166,28 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_constant("text_highlight_v_padding", "EditorHelp", 2 * EDSCALE);
 	}
 
+	// EditorHelpBitTitle.
+	{
+		Ref<StyleBoxFlat> style = p_config.tree_panel_style->duplicate();
+		style->set_bg_color(p_config.dark_theme ? style->get_bg_color().lightened(0.04) : style->get_bg_color().darkened(0.04));
+		style->set_border_color(p_config.dark_theme ? style->get_border_color().lightened(0.04) : style->get_border_color().darkened(0.04));
+		style->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		style->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+
+		p_theme->set_type_variation("EditorHelpBitTitle", "RichTextLabel");
+		p_theme->set_stylebox("normal", "EditorHelpBitTitle", style);
+	}
+
+	// EditorHelpBitContent.
+	{
+		Ref<StyleBoxFlat> style = p_config.tree_panel_style->duplicate();
+		style->set_corner_radius(CORNER_TOP_LEFT, 0);
+		style->set_corner_radius(CORNER_TOP_RIGHT, 0);
+
+		p_theme->set_type_variation("EditorHelpBitContent", "RichTextLabel");
+		p_theme->set_stylebox("normal", "EditorHelpBitContent", style);
+	}
+
 	// Asset Library.
 	p_theme->set_stylebox("bg", "AssetLib", p_config.base_empty_style);
 	p_theme->set_stylebox("panel", "AssetLib", p_config.content_panel_style);
