@@ -19,28 +19,15 @@
 
 #ifndef MBEDTLS_POLY1305_H
 #define MBEDTLS_POLY1305_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include <stdint.h>
 #include <stddef.h>
 
 /** Invalid input parameter(s). */
 #define MBEDTLS_ERR_POLY1305_BAD_INPUT_DATA         -0x0057
-
-/* MBEDTLS_ERR_POLY1305_FEATURE_UNAVAILABLE is deprecated and should not be
- * used. */
-/** Feature not available. For example, s part of the API is not implemented. */
-#define MBEDTLS_ERR_POLY1305_FEATURE_UNAVAILABLE    -0x0059
-
-/* MBEDTLS_ERR_POLY1305_HW_ACCEL_FAILED is deprecated and should not be used.
- */
-/** Poly1305 hardware accelerator failed. */
-#define MBEDTLS_ERR_POLY1305_HW_ACCEL_FAILED        -0x005B
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,11 +36,11 @@ extern "C" {
 #if !defined(MBEDTLS_POLY1305_ALT)
 
 typedef struct mbedtls_poly1305_context {
-    uint32_t r[4];      /** The value for 'r' (low 128 bits of the key). */
-    uint32_t s[4];      /** The value for 's' (high 128 bits of the key). */
-    uint32_t acc[5];    /** The accumulator number. */
-    uint8_t queue[16];  /** The current partial block of data. */
-    size_t queue_len;   /** The number of bytes stored in 'queue'. */
+    uint32_t MBEDTLS_PRIVATE(r)[4];      /** The value for 'r' (low 128 bits of the key). */
+    uint32_t MBEDTLS_PRIVATE(s)[4];      /** The value for 's' (high 128 bits of the key). */
+    uint32_t MBEDTLS_PRIVATE(acc)[5];    /** The accumulator number. */
+    uint8_t MBEDTLS_PRIVATE(queue)[16];  /** The current partial block of data. */
+    size_t MBEDTLS_PRIVATE(queue_len);   /** The number of bytes stored in 'queue'. */
 }
 mbedtls_poly1305_context;
 

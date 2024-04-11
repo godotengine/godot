@@ -14,15 +14,9 @@
 
 #if defined(MBEDTLS_AESNI_C)
 
-#include "mbedtls/aesni.h"
+#include "aesni.h"
 
 #include <string.h>
-
-/* *INDENT-OFF* */
-#ifndef asm
-#define asm __asm
-#endif
-/* *INDENT-ON* */
 
 #if defined(MBEDTLS_AESNI_HAVE_CODE)
 
@@ -37,6 +31,18 @@
 #include <immintrin.h>
 #endif
 
+#if defined(MBEDTLS_ARCH_IS_X86)
+#if defined(MBEDTLS_COMPILER_IS_GCC)
+#pragma GCC push_options
+#pragma GCC target ("pclmul,sse2,aes")
+#define MBEDTLS_POP_TARGET_PRAGMA
+#elif defined(__clang__) && (__clang_major__ >= 5)
+#pragma clang attribute push (__attribute__((target("pclmul,sse2,aes"))), apply_to=function)
+#define MBEDTLS_POP_TARGET_PRAGMA
+#endif
+#endif
+
+#if !defined(MBEDTLS_AES_USE_HARDWARE_ONLY)
 /*
  * AES-NI support detection routine
  */
@@ -66,6 +72,7 @@ int mbedtls_aesni_has_support(unsigned int what)
 
     return (c & what) != 0;
 }
+#endif /* !MBEDTLS_AES_USE_HARDWARE_ONLY */
 
 #if MBEDTLS_AESNI_HAVE_CODE == 2
 
@@ -77,7 +84,7 @@ int mbedtls_aesni_crypt_ecb(mbedtls_aes_context *ctx,
                             const unsigned char input[16],
                             unsigned char output[16])
 {
-    const __m128i *rk = (const __m128i *) (ctx->rk);
+    const __m128i *rk = (const __m128i *) (ctx->buf + ctx->rk_offset);
     unsigned nr = ctx->nr; // Number of remaining rounds
 
     // Load round key 0
@@ -87,14 +94,19 @@ int mbedtls_aesni_crypt_ecb(mbedtls_aes_context *ctx,
     ++rk;
     --nr;
 
-    if (mode == 0) {
+#if !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
+    if (mode == MBEDTLS_AES_DECRYPT) {
         while (nr != 0) {
             state = _mm_aesdec_si128(state, *rk);
             ++rk;
             --nr;
         }
         state = _mm_aesdeclast_si128(state, *rk);
-    } else {
+    } else
+#else
+    (void) mode;
+#endif
+    {
         while (nr != 0) {
             state = _mm_aesenc_si128(state, *rk);
             ++rk;
@@ -211,6 +223,7 @@ void mbedtls_aesni_gcm_mult(unsigned char c[16],
 /*
  * Compute decryption round keys from encryption round keys
  */
+#if !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
 void mbedtls_aesni_inverse_key(unsigned char *invkey,
                                const unsigned char *fwdkey, int nr)
 {
@@ -223,6 +236,7 @@ void mbedtls_aesni_inverse_key(unsigned char *invkey,
     }
     *ik = *fk;
 }
+#endif
 
 /*
  * Key expansion, 128-bit case
@@ -271,6 +285,7 @@ static void aesni_setkey_enc_128(unsigned char *rk_bytes,
 /*
  * Key expansion, 192-bit case
  */
+#if !defined(MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH)
 static void aesni_set_rk_192(__m128i *state0, __m128i *state1, __m128i xword,
                              unsigned char *rk)
 {
@@ -325,10 +340,12 @@ static void aesni_setkey_enc_192(unsigned char *rk,
     aesni_set_rk_192(&state0, &state1, _mm_aeskeygenassist_si128(state1, 0x40), rk + 24 * 7);
     aesni_set_rk_192(&state0, &state1, _mm_aeskeygenassist_si128(state1, 0x80), rk + 24 * 8);
 }
+#endif /* !MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
 
 /*
  * Key expansion, 256-bit case
  */
+#if !defined(MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH)
 static void aesni_set_rk_256(__m128i state0, __m128i state1, __m128i xword,
                              __m128i *rk0, __m128i *rk1)
 {
@@ -385,6 +402,16 @@ static void aesni_setkey_enc_256(unsigned char *rk_bytes,
     aesni_set_rk_256(rk[10], rk[11], _mm_aeskeygenassist_si128(rk[11], 0x20), &rk[12], &rk[13]);
     aesni_set_rk_256(rk[12], rk[13], _mm_aeskeygenassist_si128(rk[13], 0x40), &rk[14], &rk[15]);
 }
+#endif /* !MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
+
+#if defined(MBEDTLS_POP_TARGET_PRAGMA)
+#if defined(__clang__)
+#pragma clang attribute pop
+#elif defined(__GNUC__)
+#pragma GCC pop_options
+#endif
+#undef MBEDTLS_POP_TARGET_PRAGMA
+#endif
 
 #else /* MBEDTLS_AESNI_HAVE_CODE == 1 */
 
@@ -445,6 +472,7 @@ int mbedtls_aesni_crypt_ecb(mbedtls_aes_context *ctx,
          "jnz       1b              \n\t"
          "movdqu    (%1), %%xmm1    \n\t" // load round key
          AESENCLAST(xmm1_xmm0)            // last round
+#if !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
          "jmp       3f              \n\t"
 
          "2:                        \n\t" // decryption loop
@@ -455,11 +483,12 @@ int mbedtls_aesni_crypt_ecb(mbedtls_aes_context *ctx,
          "jnz       2b              \n\t"
          "movdqu    (%1), %%xmm1    \n\t" // load round key
          AESDECLAST(xmm1_xmm0)            // last round
+#endif
 
          "3:                        \n\t"
          "movdqu    %%xmm0, (%4)    \n\t" // export output
          :
-         : "r" (ctx->nr), "r" (ctx->rk), "r" (mode), "r" (input), "r" (output)
+         : "r" (ctx->nr), "r" (ctx->buf + ctx->rk_offset), "r" (mode), "r" (input), "r" (output)
          : "memory", "cc", "xmm0", "xmm1");
 
 
@@ -581,6 +610,7 @@ void mbedtls_aesni_gcm_mult(unsigned char c[16],
 /*
  * Compute decryption round keys from encryption round keys
  */
+#if !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
 void mbedtls_aesni_inverse_key(unsigned char *invkey,
                                const unsigned char *fwdkey, int nr)
 {
@@ -600,6 +630,7 @@ void mbedtls_aesni_inverse_key(unsigned char *invkey,
 
     memcpy(ik, fk, 16);
 }
+#endif
 
 /*
  * Key expansion, 128-bit case
@@ -654,6 +685,7 @@ static void aesni_setkey_enc_128(unsigned char *rk,
 /*
  * Key expansion, 192-bit case
  */
+#if !defined(MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH)
 static void aesni_setkey_enc_192(unsigned char *rk,
                                  const unsigned char *key)
 {
@@ -707,10 +739,12 @@ static void aesni_setkey_enc_192(unsigned char *rk,
          : "r" (rk), "r" (key)
          : "memory", "cc", "0");
 }
+#endif /* !MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
 
 /*
  * Key expansion, 256-bit case
  */
+#if !defined(MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH)
 static void aesni_setkey_enc_256(unsigned char *rk,
                                  const unsigned char *key)
 {
@@ -773,6 +807,7 @@ static void aesni_setkey_enc_256(unsigned char *rk,
          : "r" (rk), "r" (key)
          : "memory", "cc", "0");
 }
+#endif /* !MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
 
 #endif  /* MBEDTLS_AESNI_HAVE_CODE */
 
@@ -785,8 +820,10 @@ int mbedtls_aesni_setkey_enc(unsigned char *rk,
 {
     switch (bits) {
         case 128: aesni_setkey_enc_128(rk, key); break;
+#if !defined(MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH)
         case 192: aesni_setkey_enc_192(rk, key); break;
         case 256: aesni_setkey_enc_256(rk, key); break;
+#endif /* !MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
         default: return MBEDTLS_ERR_AES_INVALID_KEY_LENGTH;
     }
 
