@@ -830,7 +830,7 @@
 		<member name="interface/theme/icon_and_font_color" type="int" setter="" getter="">
 			The icon and font color scheme to use in the editor.
 			- [b]Auto[/b] determines the color scheme to use automatically based on [member interface/theme/base_color].
-			- [b]Dark[/b] makes fonts and icons dark (suitable for light themes). Icon colors are automatically converted by the editor following the set of rules defined in [url=https://github.com/godotengine/godot/blob/master/editor/editor_themes.cpp]this file[/url].
+			- [b]Dark[/b] makes fonts and icons dark (suitable for light themes). Icon colors are automatically converted by the editor following the set of rules defined in [url=https://github.com/godotengine/godot/blob/master/editor/themes/editor_theme_manager.cpp]this file[/url].
 			- [b]Light[/b] makes fonts and icons light (suitable for dark themes).
 		</member>
 		<member name="interface/theme/icon_saturation" type="float" setter="" getter="">

@@ -32,6 +32,7 @@
 
 #include "hb-ot-cmap-table.hh"
 #include "hb-ot-glyf-table.hh"
+#include "hb-ot-layout-base-table.hh"
 #include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
@@ -431,6 +432,52 @@ _collect_layout_variation_indices (hb_subset_plan_t* plan)
   gdef.destroy ();
   gpos.destroy ();
 }
+
+#ifndef HB_NO_BASE
+/* used by BASE table only, delta is always set to 0 in the output map */
+static inline void
+_remap_variation_indices (const hb_set_t& indices,
+                          unsigned subtable_count,
+                          hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>>& variation_idx_delta_map /* OUT */)
+{
+  unsigned new_major = 0, new_minor = 0;
+  unsigned last_major = (indices.get_min ()) >> 16;
+  for (unsigned idx : indices)
+  {
+    uint16_t major = idx >> 16;
+    if (major >= subtable_count) break;
+    if (major != last_major)
+    {
+      new_minor = 0;
+      ++new_major;
+    }
+
+    unsigned new_idx = (new_major << 16) + new_minor;
+    variation_idx_delta_map.set (idx, hb_pair_t<unsigned, int> (new_idx, 0));
+    ++new_minor;
+    last_major = major;
+  }
+}
+
+static inline void
+_collect_base_variation_indices (hb_subset_plan_t* plan)
+{
+  hb_blob_ptr_t<OT::BASE> base = plan->source_table<OT::BASE> ();
+  if (!base->has_var_store ())
+  {
+    base.destroy ();
+    return;
+  }
+
+  hb_set_t varidx_set;
+  base->collect_variation_indices (plan, varidx_set);
+  unsigned subtable_count = base->get_var_store ().get_sub_table_count ();
+  base.destroy ();
+
+  _remap_variation_indices (varidx_set, subtable_count, plan->base_variation_idx_map);
+  _generate_varstore_inner_maps (varidx_set, subtable_count, plan->base_varstore_inner_maps);
+}
+#endif
 #endif
 
 static inline void
@@ -994,8 +1041,8 @@ _update_instance_metrics_map_from_cff2 (hb_subset_plan_t *plan)
   OT::cff2::accelerator_t cff2 (plan->source);
   if (!cff2.is_valid ()) return;
 
-  hb_font_t *font = nullptr;
-  if (unlikely (!plan->check_success (font = _get_hb_font_with_variations (plan))))
+  hb_font_t *font = _get_hb_font_with_variations (plan);
+  if (unlikely (!plan->check_success (font != nullptr)))
   {
     hb_font_destroy (font);
     return;
@@ -1073,8 +1120,8 @@ _update_instance_metrics_map_from_cff2 (hb_subset_plan_t *plan)
 static bool
 _get_instance_glyphs_contour_points (hb_subset_plan_t *plan)
 {
-  /* contour_points vector only needed for updating gvar table (infer delta)
-   * during partial instancing */
+  /* contour_points vector only needed for updating gvar table (infer delta and
+   * iup delta optimization) during partial instancing */
   if (plan->user_axes_location.is_empty () || plan->all_axes_pinned)
     return true;
 
@@ -1092,10 +1139,17 @@ _get_instance_glyphs_contour_points (hb_subset_plan_t *plan)
     }
 
     hb_codepoint_t old_gid = _.second;
-    if (unlikely (!glyf.glyph_for_gid (old_gid).get_all_points_without_var (plan->source, all_points)))
+    auto glyph = glyf.glyph_for_gid (old_gid);
+    if (unlikely (!glyph.get_all_points_without_var (plan->source, all_points)))
       return false;
     if (unlikely (!plan->new_gid_contour_points_map.set (new_gid, all_points)))
       return false;
+
+#ifdef HB_EXPERIMENTAL_API
+    /* composite new gids are only needed by iup delta optimization */
+    if ((plan->flags & HB_SUBSET_FLAGS_OPTIMIZE_IUP_DELTAS) && glyph.is_composite ())
+      plan->composite_new_gids.add (new_gid);
+#endif
   }
   return true;
 }
@@ -1204,6 +1258,13 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
 
   if (!drop_tables.has (HB_OT_TAG_GDEF))
     _remap_used_mark_sets (this, used_mark_sets_map);
+
+#ifndef HB_NO_VAR
+#ifndef HB_NO_BASE
+  if (!drop_tables.has (HB_OT_TAG_BASE))
+    _collect_base_variation_indices (this);
+#endif
+#endif
 
   if (unlikely (in_error ()))
     return;

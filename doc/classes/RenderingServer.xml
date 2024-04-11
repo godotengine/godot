@@ -1932,7 +1932,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="transform" type="Transform3D" />
 			<description>
-				Sets the world space transform of the instance. Equivalent to [member Node3D.transform].
+				Sets the world space transform of the instance. Equivalent to [member Node3D.global_transform].
 			</description>
 		</method>
 		<method name="instance_set_visibility_parent">
@@ -2576,7 +2576,7 @@
 			<description>
 				Set the entire data to use for drawing the [param multimesh] at once to [param buffer] (such as instance transforms and colors). [param buffer]'s size must match the number of instances multiplied by the per-instance data size (which depends on the enabled MultiMesh fields). Otherwise, an error message is printed and nothing is rendered. See also [method multimesh_get_buffer].
 				The per-instance data size and expected data order is:
-				[codeblock]
+				[codeblock lang=text]
 				2D:
 				  - Position: 8 floats (8 floats for Transform2D)
 				  - Position + Vertex color: 12 floats (8 floats for Transform2D, 4 floats for Color)

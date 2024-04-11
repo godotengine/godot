@@ -141,6 +141,7 @@ static const char *android_perms[] = {
 	"MOUNT_UNMOUNT_FILESYSTEMS",
 	"NFC",
 	"PERSISTENT_ACTIVITY",
+	"POST_NOTIFICATIONS",
 	"PROCESS_OUTGOING_CALLS",
 	"READ_CALENDAR",
 	"READ_CALL_LOG",
@@ -1938,6 +1939,12 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 		// The APK templates are ignored if Gradle build is enabled.
 		return advanced_options_enabled && !bool(p_preset->get("gradle_build/use_gradle_build"));
 	}
+
+	// Hide .NET embedding option (always enabled).
+	if (p_option == "dotnet/embed_build_outputs") {
+		return false;
+	}
+
 	return true;
 }
 
@@ -2651,7 +2658,7 @@ String EditorExportPlatformAndroid::get_apk_expansion_fullpath(const Ref<EditorE
 
 Error EditorExportPlatformAndroid::save_apk_expansion_file(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
 	String fullpath = get_apk_expansion_fullpath(p_preset, p_path);
-	Error err = save_pack(false, p_preset, p_debug, fullpath);
+	Error err = save_pack(p_preset, p_debug, fullpath);
 	return err;
 }
 
@@ -3095,9 +3102,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			user_data.libs_directory = gradle_build_directory.path_join("libs");
 			user_data.debug = p_debug;
 			if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
-				err = export_project_files(true, p_preset, p_debug, ignore_apk_file, &user_data, copy_gradle_so);
+				err = export_project_files(p_preset, p_debug, ignore_apk_file, &user_data, copy_gradle_so);
 			} else {
-				err = export_project_files(true, p_preset, p_debug, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
+				err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
 			}
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not export project files to gradle project."));
@@ -3482,7 +3489,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		APKExportData ed;
 		ed.ep = &ep;
 		ed.apk = unaligned_apk;
-		err = export_project_files(true, p_preset, p_debug, ignore_apk_file, &ed, save_apk_so);
+		err = export_project_files(p_preset, p_debug, ignore_apk_file, &ed, save_apk_so);
 	} else {
 		if (apk_expansion) {
 			err = save_apk_expansion_file(p_preset, p_debug, p_path);
@@ -3494,7 +3501,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			APKExportData ed;
 			ed.ep = &ep;
 			ed.apk = unaligned_apk;
-			err = export_project_files(true, p_preset, p_debug, save_apk_file, &ed, save_apk_so);
+			err = export_project_files(p_preset, p_debug, save_apk_file, &ed, save_apk_so);
 		}
 	}
 

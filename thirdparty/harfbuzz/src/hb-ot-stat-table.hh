@@ -349,7 +349,7 @@ struct AxisValueFormat4
 
 struct AxisValue
 {
-  bool get_value (unsigned int axis_index) const
+  float get_value (unsigned int axis_index) const
   {
     switch (u.format)
     {
@@ -357,7 +357,7 @@ struct AxisValue
     case 2: return u.format2.get_value ();
     case 3: return u.format3.get_value ();
     case 4: return u.format4.get_axis_record (axis_index).get_value ();
-    default:return 0;
+    default:return 0.f;
     }
   }
 
@@ -485,7 +485,7 @@ struct STAT
     hb_array_t<const Offset16To<AxisValue>> axis_values = get_axis_value_offsets ();
     for (unsigned int i = 0; i < axis_values.length; i++)
     {
-      const AxisValue& axis_value = this+axis_values[i];
+      const AxisValue& axis_value = this+offsetToAxisValueOffsets+axis_values[i];
       if (axis_value.get_axis_index () == axis_index)
       {
 	if (value)

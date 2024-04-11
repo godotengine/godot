@@ -41,20 +41,26 @@
     }
 
 
-static bool _compFastTrack(Paint* cmpTarget, const RenderTransform* pTransform, RenderTransform* rTransform, RenderRegion& viewport)
+
+static Result _compFastTrack(Paint* cmpTarget, const RenderTransform* pTransform, RenderTransform* rTransform, RenderRegion& viewport)
 {
     /* Access Shape class by Paint is bad... but it's ok still it's an internal usage. */
     auto shape = static_cast<Shape*>(cmpTarget);
 
     //Rectangle Candidates?
     const Point* pts;
-     if (shape->pathCoords(&pts) != 4) return false;
+    auto ptsCnt = shape->pathCoords(&pts);
+
+    //nothing to clip
+    if (ptsCnt == 0) return Result::InvalidArguments;
+
+    if (ptsCnt != 4) return Result::InsufficientCondition;
 
     if (rTransform) rTransform->update();
 
     //No rotation and no skewing
-    if (pTransform && (!mathRightAngle(&pTransform->m) || mathSkewed(&pTransform->m))) return false;
-    if (rTransform && (!mathRightAngle(&rTransform->m) || mathSkewed(&rTransform->m))) return false;
+    if (pTransform && (!mathRightAngle(&pTransform->m) || mathSkewed(&pTransform->m))) return Result::InsufficientCondition;
+    if (rTransform && (!mathRightAngle(&rTransform->m) || mathSkewed(&rTransform->m))) return Result::InsufficientCondition;
 
     //Perpendicular Rectangle?
     auto pt1 = pts + 0;
@@ -99,10 +105,9 @@ static bool _compFastTrack(Paint* cmpTarget, const RenderTransform* pTransform, 
         if (viewport.w < 0) viewport.w = 0;
         if (viewport.h < 0) viewport.h = 0;
 
-        return true;
+        return Result::Success;
     }
-
-    return false;
+    return Result::InsufficientCondition;
 }
 
 
@@ -235,7 +240,7 @@ RenderData Paint::Impl::update(RenderMethod* renderer, const RenderTransform* pT
     /* 1. Composition Pre Processing */
     RenderData trd = nullptr;                 //composite target render data
     RenderRegion viewport;
-    bool compFastTrack = false;
+    Result compFastTrack = Result::InsufficientCondition;
     bool childClipper = false;
 
     if (compData) {
@@ -260,7 +265,7 @@ RenderData Paint::Impl::update(RenderMethod* renderer, const RenderTransform* pT
             }
             if (tryFastTrack) {
                 RenderRegion viewport2;
-                if ((compFastTrack = _compFastTrack(target, pTransform, target->pImpl->rTransform, viewport2))) {
+                if ((compFastTrack = _compFastTrack(target, pTransform, target->pImpl->rTransform, viewport2)) == Result::Success) {
                     viewport = renderer->viewport();
                     viewport2.intersect(viewport);
                     renderer->viewport(viewport2);
@@ -268,7 +273,7 @@ RenderData Paint::Impl::update(RenderMethod* renderer, const RenderTransform* pT
                 }
             }
         }
-        if (!compFastTrack) {
+        if (compFastTrack == Result::InsufficientCondition) {
             childClipper = compData->method == CompositeMethod::ClipPath ? true : false;
             trd = target->pImpl->update(renderer, pTransform, clips, 255, pFlag, childClipper);
             if (childClipper) clips.push(trd);
@@ -285,7 +290,7 @@ RenderData Paint::Impl::update(RenderMethod* renderer, const RenderTransform* pT
     PAINT_METHOD(rd, update(renderer, &outTransform, clips, opacity, newFlag, clipper));
 
     /* 3. Composition Post Processing */
-    if (compFastTrack) renderer->viewport(viewport);
+    if (compFastTrack == Result::Success) renderer->viewport(viewport);
     else if (childClipper) clips.pop();
 
     return rd;

@@ -4519,7 +4519,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 						Ref<BaseMaterial3D> base_mat = res;
 						Ref<ShaderMaterial> shader_mat = res;
 
-						if (base_mat.is_null() && !shader_mat.is_null()) {
+						if (base_mat.is_null() && shader_mat.is_null()) {
 							continue;
 						}
 
@@ -6639,8 +6639,13 @@ void fragment() {
 
 			for (int j = 0; j < 4; j++) {
 				Transform3D t = Transform3D();
-				t = t.scaled(axis * distances[j + 1]);
-				t = t.translated(axis * distances[j]);
+				if (distances[j] > 0.0) {
+					t = t.scaled(axis * distances[j + 1]);
+					t = t.translated(axis * distances[j]);
+				} else {
+					t = t.scaled(axis * distances[j]);
+					t = t.translated(axis * distances[j + 1]);
+				}
 				RenderingServer::get_singleton()->multimesh_instance_set_transform(origin_multimesh, i * 4 + j, t);
 				RenderingServer::get_singleton()->multimesh_instance_set_color(origin_multimesh, i * 4 + j, origin_color);
 			}

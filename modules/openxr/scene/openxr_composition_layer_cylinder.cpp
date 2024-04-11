@@ -188,3 +188,48 @@ void OpenXRCompositionLayerCylinder::set_fallback_segments(uint32_t p_fallback_s
 uint32_t OpenXRCompositionLayerCylinder::get_fallback_segments() const {
 	return fallback_segments;
 }
+
+Vector2 OpenXRCompositionLayerCylinder::intersects_ray(const Vector3 &p_origin, const Vector3 &p_direction) const {
+	Transform3D cylinder_transform = get_global_transform();
+	Vector3 cylinder_axis = cylinder_transform.basis.get_column(1);
+
+	Vector3 offset = p_origin - cylinder_transform.origin;
+	float a = p_direction.dot(p_direction - cylinder_axis * p_direction.dot(cylinder_axis));
+	float b = 2.0 * (p_direction.dot(offset - cylinder_axis * offset.dot(cylinder_axis)));
+	float c = offset.dot(offset - cylinder_axis * offset.dot(cylinder_axis)) - (radius * radius);
+
+	float discriminant = b * b - 4.0 * a * c;
+	if (discriminant < 0.0) {
+		return Vector2(-1.0, -1.0);
+	}
+
+	float t0 = (-b - Math::sqrt(discriminant)) / (2.0 * a);
+	float t1 = (-b + Math::sqrt(discriminant)) / (2.0 * a);
+	float t = MAX(t0, t1);
+
+	if (t < 0.0) {
+		return Vector2(-1.0, -1.0);
+	}
+	Vector3 intersection = p_origin + p_direction * t;
+
+	Basis correction = cylinder_transform.basis.inverse();
+	correction.rotate(Vector3(0.0, 1.0, 0.0), -Math_PI / 2.0);
+	Vector3 relative_point = correction.xform(intersection - cylinder_transform.origin);
+
+	Vector2 projected_point = Vector2(relative_point.x, relative_point.z);
+	float intersection_angle = Math::atan2(projected_point.y, projected_point.x);
+	if (Math::abs(intersection_angle) > central_angle / 2.0) {
+		return Vector2(-1.0, -1.0);
+	}
+
+	float arc_length = radius * central_angle;
+	float height = aspect_ratio * arc_length;
+	if (Math::abs(relative_point.y) > height / 2.0) {
+		return Vector2(-1.0, -1.0);
+	}
+
+	float u = 0.5 + (intersection_angle / central_angle);
+	float v = 1.0 - (0.5 + (relative_point.y / height));
+
+	return Vector2(u, v);
+}

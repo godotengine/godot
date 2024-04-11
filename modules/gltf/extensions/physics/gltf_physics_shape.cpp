@@ -46,6 +46,9 @@ void GLTFPhysicsShape::_bind_methods() {
 	ClassDB::bind_static_method("GLTFPhysicsShape", D_METHOD("from_node", "shape_node"), &GLTFPhysicsShape::from_node);
 	ClassDB::bind_method(D_METHOD("to_node", "cache_shapes"), &GLTFPhysicsShape::to_node, DEFVAL(false));
 
+	ClassDB::bind_static_method("GLTFPhysicsShape", D_METHOD("from_resource", "shape_resource"), &GLTFPhysicsShape::from_resource);
+	ClassDB::bind_method(D_METHOD("to_resource", "cache_shapes"), &GLTFPhysicsShape::to_resource, DEFVAL(false));
+
 	ClassDB::bind_static_method("GLTFPhysicsShape", D_METHOD("from_dictionary", "dictionary"), &GLTFPhysicsShape::from_dictionary);
 	ClassDB::bind_method(D_METHOD("to_dictionary"), &GLTFPhysicsShape::to_dictionary);
 
@@ -159,44 +162,57 @@ Ref<ImporterMesh> _convert_hull_points_to_mesh(const Vector<Vector3> &p_hull_poi
 
 Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_node(const CollisionShape3D *p_godot_shape_node) {
 	Ref<GLTFPhysicsShape> gltf_shape;
-	gltf_shape.instantiate();
 	ERR_FAIL_NULL_V_MSG(p_godot_shape_node, gltf_shape, "Tried to create a GLTFPhysicsShape from a CollisionShape3D node, but the given node was null.");
+	Ref<Shape3D> shape_resource = p_godot_shape_node->get_shape();
+	ERR_FAIL_COND_V_MSG(shape_resource.is_null(), gltf_shape, "Tried to create a GLTFPhysicsShape from a CollisionShape3D node, but the given node had a null shape.");
+	gltf_shape = from_resource(shape_resource);
+	// Check if the shape is part of a trigger.
 	Node *parent = p_godot_shape_node->get_parent();
 	if (cast_to<const Area3D>(parent)) {
 		gltf_shape->set_is_trigger(true);
 	}
-	// All the code for working with the shape is below this comment.
-	Ref<Shape3D> shape_resource = p_godot_shape_node->get_shape();
-	ERR_FAIL_COND_V_MSG(shape_resource.is_null(), gltf_shape, "Tried to create a GLTFPhysicsShape from a CollisionShape3D node, but the given node had a null shape.");
-	gltf_shape->_shape_cache = shape_resource;
-	if (cast_to<BoxShape3D>(shape_resource.ptr())) {
+	return gltf_shape;
+}
+
+CollisionShape3D *GLTFPhysicsShape::to_node(bool p_cache_shapes) {
+	CollisionShape3D *godot_shape_node = memnew(CollisionShape3D);
+	to_resource(p_cache_shapes); // Sets `_shape_cache`.
+	godot_shape_node->set_shape(_shape_cache);
+	return godot_shape_node;
+}
+
+Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_resource(const Ref<Shape3D> &p_shape_resource) {
+	Ref<GLTFPhysicsShape> gltf_shape;
+	gltf_shape.instantiate();
+	ERR_FAIL_COND_V_MSG(p_shape_resource.is_null(), gltf_shape, "Tried to create a GLTFPhysicsShape from a Shape3D resource, but the given resource was null.");
+	if (cast_to<BoxShape3D>(p_shape_resource.ptr())) {
 		gltf_shape->shape_type = "box";
-		Ref<BoxShape3D> box = shape_resource;
+		Ref<BoxShape3D> box = p_shape_resource;
 		gltf_shape->set_size(box->get_size());
-	} else if (cast_to<const CapsuleShape3D>(shape_resource.ptr())) {
+	} else if (cast_to<const CapsuleShape3D>(p_shape_resource.ptr())) {
 		gltf_shape->shape_type = "capsule";
-		Ref<CapsuleShape3D> capsule = shape_resource;
+		Ref<CapsuleShape3D> capsule = p_shape_resource;
 		gltf_shape->set_radius(capsule->get_radius());
 		gltf_shape->set_height(capsule->get_height());
-	} else if (cast_to<const CylinderShape3D>(shape_resource.ptr())) {
+	} else if (cast_to<const CylinderShape3D>(p_shape_resource.ptr())) {
 		gltf_shape->shape_type = "cylinder";
-		Ref<CylinderShape3D> cylinder = shape_resource;
+		Ref<CylinderShape3D> cylinder = p_shape_resource;
 		gltf_shape->set_radius(cylinder->get_radius());
 		gltf_shape->set_height(cylinder->get_height());
-	} else if (cast_to<const SphereShape3D>(shape_resource.ptr())) {
+	} else if (cast_to<const SphereShape3D>(p_shape_resource.ptr())) {
 		gltf_shape->shape_type = "sphere";
-		Ref<SphereShape3D> sphere = shape_resource;
+		Ref<SphereShape3D> sphere = p_shape_resource;
 		gltf_shape->set_radius(sphere->get_radius());
-	} else if (cast_to<const ConvexPolygonShape3D>(shape_resource.ptr())) {
+	} else if (cast_to<const ConvexPolygonShape3D>(p_shape_resource.ptr())) {
 		gltf_shape->shape_type = "convex";
-		Ref<ConvexPolygonShape3D> convex = shape_resource;
+		Ref<ConvexPolygonShape3D> convex = p_shape_resource;
 		Vector<Vector3> hull_points = convex->get_points();
 		Ref<ImporterMesh> importer_mesh = _convert_hull_points_to_mesh(hull_points);
 		ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), gltf_shape, "GLTFPhysicsShape: Failed to convert convex hull points to a mesh.");
 		gltf_shape->set_importer_mesh(importer_mesh);
-	} else if (cast_to<const ConcavePolygonShape3D>(shape_resource.ptr())) {
+	} else if (cast_to<const ConcavePolygonShape3D>(p_shape_resource.ptr())) {
 		gltf_shape->shape_type = "trimesh";
-		Ref<ConcavePolygonShape3D> concave = shape_resource;
+		Ref<ConcavePolygonShape3D> concave = p_shape_resource;
 		Ref<ImporterMesh> importer_mesh;
 		importer_mesh.instantiate();
 		Array surface_array;
@@ -205,14 +221,14 @@ Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_node(const CollisionShape3D *p_godo
 		importer_mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES, surface_array);
 		gltf_shape->set_importer_mesh(importer_mesh);
 	} else {
-		ERR_PRINT("Tried to create a GLTFPhysicsShape from a CollisionShape3D node, but the given node's shape '" + String(Variant(shape_resource)) +
+		ERR_PRINT("Tried to create a GLTFPhysicsShape from a Shape3D, but the given shape '" + String(Variant(p_shape_resource)) +
 				"' had an unsupported shape type. Only BoxShape3D, CapsuleShape3D, CylinderShape3D, SphereShape3D, ConcavePolygonShape3D, and ConvexPolygonShape3D are supported.");
 	}
+	gltf_shape->_shape_cache = p_shape_resource;
 	return gltf_shape;
 }
 
-CollisionShape3D *GLTFPhysicsShape::to_node(bool p_cache_shapes) {
-	CollisionShape3D *godot_shape_node = memnew(CollisionShape3D);
+Ref<Shape3D> GLTFPhysicsShape::to_resource(bool p_cache_shapes) {
 	if (!p_cache_shapes || _shape_cache == nullptr) {
 		if (shape_type == "box") {
 			Ref<BoxShape3D> box;
@@ -237,19 +253,18 @@ CollisionShape3D *GLTFPhysicsShape::to_node(bool p_cache_shapes) {
 			sphere->set_radius(radius);
 			_shape_cache = sphere;
 		} else if (shape_type == "convex") {
-			ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), godot_shape_node, "GLTFPhysicsShape: Error converting convex hull shape to a node: The mesh resource is null.");
+			ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), _shape_cache, "GLTFPhysicsShape: Error converting convex hull shape to a shape resource: The mesh resource is null.");
 			Ref<ConvexPolygonShape3D> convex = importer_mesh->get_mesh()->create_convex_shape();
 			_shape_cache = convex;
 		} else if (shape_type == "trimesh") {
-			ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), godot_shape_node, "GLTFPhysicsShape: Error converting concave mesh shape to a node: The mesh resource is null.");
+			ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), _shape_cache, "GLTFPhysicsShape: Error converting concave mesh shape to a shape resource: The mesh resource is null.");
 			Ref<ConcavePolygonShape3D> concave = importer_mesh->create_trimesh_shape();
 			_shape_cache = concave;
 		} else {
-			ERR_PRINT("GLTFPhysicsShape: Error converting to a node: Shape type '" + shape_type + "' is unknown.");
+			ERR_PRINT("GLTFPhysicsShape: Error converting to a shape resource: Shape type '" + shape_type + "' is unknown.");
 		}
 	}
-	godot_shape_node->set_shape(_shape_cache);
-	return godot_shape_node;
+	return _shape_cache;
 }
 
 Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary p_dictionary) {

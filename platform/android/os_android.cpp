@@ -162,7 +162,7 @@ Vector<String> OS_Android::get_granted_permissions() const {
 	return godot_java->get_granted_permissions();
 }
 
-Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path, bool p_generate_temp_files) {
 	String path = p_path;
 	bool so_file_exists = true;
 	if (!FileAccess::exists(path)) {

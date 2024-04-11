@@ -1330,8 +1330,8 @@ void ProjectSettings::load_scene_groups_cache() {
 		for (const String &E : scene_paths) {
 			Array scene_groups = cf->get_value(E, "groups", Array());
 			HashSet<StringName> cache;
-			for (int i = 0; i < scene_groups.size(); ++i) {
-				cache.insert(scene_groups[i]);
+			for (const Variant &scene_group : scene_groups) {
+				cache.insert(scene_group);
 			}
 			add_scene_groups_cache(E, cache);
 		}
@@ -1438,6 +1438,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
 	GLOBAL_DEF("application/run/print_header", true);
+	GLOBAL_DEF("application/run/enable_alt_space_menu", false);
 	GLOBAL_DEF_RST("application/config/use_hidden_project_data_directory", true);
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");

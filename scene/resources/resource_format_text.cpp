@@ -39,7 +39,8 @@
 
 // Version 2: changed names for Basis, AABB, Vectors, etc.
 // Version 3: new string ID for ext/subresources, breaks forward compat.
-#define FORMAT_VERSION 3
+// Version 4: PackedByteArray is now stored as base64 encoded.
+#define FORMAT_VERSION 4
 
 #define BINARY_FORMAT_VERSION 4
 
@@ -273,8 +274,8 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("groups")) {
 				Array groups = next_tag.fields["groups"];
-				for (int i = 0; i < groups.size(); i++) {
-					packed_scene->get_state()->add_node_group(node_id, packed_scene->get_state()->add_name(groups[i]));
+				for (const Variant &group : groups) {
+					packed_scene->get_state()->add_node_group(node_id, packed_scene->get_state()->add_name(group));
 				}
 			}
 
@@ -352,8 +353,8 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			}
 
 			Vector<int> bind_ints;
-			for (int i = 0; i < binds.size(); i++) {
-				bind_ints.push_back(packed_scene->get_state()->add_value(binds[i]));
+			for (const Variant &bind : binds) {
+				bind_ints.push_back(packed_scene->get_state()->add_value(bind));
 			}
 
 			packed_scene->get_state()->add_connection(
@@ -1951,10 +1952,9 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 		} break;
 		case Variant::ARRAY: {
 			Array varray = p_variant;
-			int len = varray.size();
-			for (int i = 0; i < len; i++) {
-				const Variant &v = varray.get(i);
-				_find_resources(v);
+			_find_resources(varray.get_typed_script());
+			for (const Variant &var : varray) {
+				_find_resources(var);
 			}
 
 		} break;

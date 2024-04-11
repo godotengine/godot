@@ -57,8 +57,8 @@ public:
 	virtual XrCompositionLayerBaseHeader *get_composition_layer(int p_index) override;
 	virtual int get_composition_layer_order(int p_index) override;
 
-	void register_composition_layer_provider(OpenXRViewportCompositionLayerProvider *p_composition_layer);
-	void unregister_composition_layer_provider(OpenXRViewportCompositionLayerProvider *p_composition_layer);
+	void register_viewport_composition_layer_provider(OpenXRViewportCompositionLayerProvider *p_composition_layer);
+	void unregister_viewport_composition_layer_provider(OpenXRViewportCompositionLayerProvider *p_composition_layer);
 
 	bool is_available(XrStructureType p_which);
 
@@ -75,6 +75,8 @@ class OpenXRViewportCompositionLayerProvider {
 	XrCompositionLayerBaseHeader *composition_layer = nullptr;
 	int sort_order = 1;
 	bool alpha_blend = false;
+	Dictionary extension_property_values;
+	bool extension_property_values_changed = true;
 
 	RID viewport;
 	Size2i viewport_size;
@@ -101,6 +103,8 @@ public:
 
 	void set_viewport(RID p_viewport, Size2i p_size);
 	RID get_viewport() const { return viewport; }
+
+	void set_extension_property_values(const Dictionary &p_property_values);
 
 	void on_pre_render();
 	XrCompositionLayerBaseHeader *get_composition_layer();

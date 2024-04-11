@@ -135,6 +135,11 @@ void EditorExportPlatformIOS::_notification(int p_what) {
 }
 
 bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	// Hide unsupported .NET embedding option.
+	if (p_option == "dotnet/embed_build_outputs") {
+		return false;
+	}
+
 	return true;
 }
 
@@ -1316,7 +1321,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const Ref<EditorExportP
 		if (asset.begins_with("res://")) {
 			Error err = _copy_asset(p_preset, p_out_dir, asset, nullptr, p_is_framework, p_should_embed, r_exported_assets);
 			ERR_FAIL_COND_V(err != OK, err);
-		} else if (ProjectSettings::get_singleton()->localize_path(asset).begins_with("res://")) {
+		} else if (asset.is_absolute_path() && ProjectSettings::get_singleton()->localize_path(asset).begins_with("res://")) {
 			Error err = _copy_asset(p_preset, p_out_dir, ProjectSettings::get_singleton()->localize_path(asset), nullptr, p_is_framework, p_should_embed, r_exported_assets);
 			ERR_FAIL_COND_V(err != OK, err);
 		} else {
@@ -1657,7 +1662,7 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	}
 	String pack_path = binary_dir + ".pck";
 	Vector<SharedObject> libraries;
-	Error err = save_pack(true, p_preset, p_debug, pack_path, &libraries);
+	Error err = save_pack(p_preset, p_debug, pack_path, &libraries);
 	if (err) {
 		// Message is supplied by the subroutine method.
 		return err;

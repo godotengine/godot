@@ -49,6 +49,8 @@ class OpenXRCompositionLayer : public Node3D {
 	MeshInstance3D *fallback = nullptr;
 	bool should_update_fallback_mesh = false;
 
+	Dictionary extension_property_values;
+
 	void _create_fallback_node();
 	void _reset_fallback_material();
 
@@ -60,6 +62,9 @@ protected:
 	static void _bind_methods();
 
 	void _notification(int p_what);
+	void _get_property_list(List<PropertyInfo> *p_property_list) const;
+	bool _get(const StringName &p_property, Variant &r_value) const;
+	bool _set(const StringName &p_property, const Variant &p_value);
 
 	virtual void _on_openxr_session_begun();
 	virtual void _on_openxr_session_stopping();
@@ -83,6 +88,8 @@ public:
 	bool is_natively_supported() const;
 
 	virtual PackedStringArray get_configuration_warnings() const override;
+
+	virtual Vector2 intersects_ray(const Vector3 &p_origin, const Vector3 &p_direction) const;
 
 	OpenXRCompositionLayer();
 	~OpenXRCompositionLayer();

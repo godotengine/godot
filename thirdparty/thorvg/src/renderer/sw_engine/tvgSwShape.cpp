@@ -28,6 +28,7 @@
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
+
 struct Line
 {
     Point pt1;
@@ -55,23 +56,24 @@ static void _lineSplitAt(const Line& cur, float at, Line& left, Line& right)
 }
 
 
-static void _outlineEnd(SwOutline& outline)
+static bool _outlineEnd(SwOutline& outline)
 {
-    if (outline.pts.empty()) return;
+    //Make a contour if lineTo/curveTo without calling close/moveTo beforehand.
+    if (outline.pts.empty()) return false;
     outline.cntrs.push(outline.pts.count - 1);
     outline.closed.push(false);
+    return false;
 }
 
 
-static void _outlineMoveTo(SwOutline& outline, const Point* to, const Matrix* transform)
+static bool _outlineMoveTo(SwOutline& outline, const Point* to, const Matrix* transform, bool closed = false)
 {
-    if (outline.pts.count > 0) {
-        outline.cntrs.push(outline.pts.count - 1);
-        outline.closed.push(false);
-    }
+    //make it a contour, if the last contour is not closed yet.
+    if (!closed) _outlineEnd(outline);
 
     outline.pts.push(mathTransform(to, transform));
     outline.types.push(SW_CURVE_TYPE_POINT);
+    return false;
 }
 
 
@@ -95,20 +97,22 @@ static void _outlineCubicTo(SwOutline& outline, const Point* ctrl1, const Point*
 }
 
 
-static void _outlineClose(SwOutline& outline)
+static bool _outlineClose(SwOutline& outline)
 {
-    uint32_t i = 0;
-
+    uint32_t i;
     if (outline.cntrs.count > 0) i = outline.cntrs.last() + 1;
-    else i = 0;   //First Path
+    else i = 0;
 
     //Make sure there is at least one point in the current path
-    if (outline.pts.count == i) return;
+    if (outline.pts.count == i) return false;
 
     //Close the path
     outline.pts.push(outline.pts[i]);
+    outline.cntrs.push(outline.pts.count - 1);
     outline.types.push(SW_CURVE_TYPE_POINT);
     outline.closed.push(true);
+
+    return true;
 }
 
 
@@ -306,7 +310,7 @@ static SwOutline* _genDashOutline(const RenderShape* rshape, const Matrix* trans
         bool isOdd = dash.cnt % 2;
         if (isOdd) patternLength *= 2;
 
-        offset = fmod(offset, patternLength);
+        offset = fmodf(offset, patternLength);
         if (offset < 0) offset += patternLength;
 
         for (size_t i = 0; i < dash.cnt * (1 + (size_t)isOdd); ++i, ++offIdx) {
@@ -425,25 +429,28 @@ static bool _genOutline(SwShape* shape, const RenderShape* rshape, const Matrix*
 
     shape->outline = mpoolReqOutline(mpool, tid);
     auto outline = shape->outline;
+    bool closed = false;
 
     //Generate Outlines
     while (cmdCnt-- > 0) {
         switch (*cmds) {
             case PathCommand::Close: {
-                _outlineClose(*outline);
+                if (!closed) closed = _outlineClose(*outline);
                 break;
             }
             case PathCommand::MoveTo: {
-                _outlineMoveTo(*outline, pts, transform);
+                closed = _outlineMoveTo(*outline, pts, transform, closed);
                 ++pts;
                 break;
             }
             case PathCommand::LineTo: {
+                if (closed) closed = _outlineEnd(*outline);
                 _outlineLineTo(*outline, pts, transform);
                 ++pts;
                 break;
             }
             case PathCommand::CubicTo: {
+                if (closed) closed = _outlineEnd(*outline);
                 _outlineCubicTo(*outline, pts, pts + 1, pts + 2, transform);
                 pts += 3;
                 break;
@@ -452,7 +459,7 @@ static bool _genOutline(SwShape* shape, const RenderShape* rshape, const Matrix*
         ++cmds;
     }
 
-    _outlineEnd(*outline);
+    if (!closed) _outlineEnd(*outline);
 
     outline->fillRule = rshape->rule;
     shape->outline = outline;

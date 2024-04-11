@@ -46,6 +46,12 @@ struct BaseCoordFormat1
     return HB_DIRECTION_IS_HORIZONTAL (direction) ? font->em_scale_y (coordinate) : font->em_scale_x (coordinate);
   }
 
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    return_trace ((bool) c->serializer->embed (*this));
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -67,6 +73,17 @@ struct BaseCoordFormat2
     return HB_DIRECTION_IS_HORIZONTAL (direction) ? font->em_scale_y (coordinate) : font->em_scale_x (coordinate);
   }
 
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (*this);
+    if (unlikely (!out)) return_trace (false);
+
+    return_trace (c->serializer->check_assign (out->referenceGlyph,
+                                               c->plan->glyph_map->get (referenceGlyph),
+                                               HB_SERIALIZE_ERROR_INT_OVERFLOW));
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -86,7 +103,7 @@ struct BaseCoordFormat2
 struct BaseCoordFormat3
 {
   hb_position_t get_coord (hb_font_t *font,
-			   const VariationStore &var_store,
+			   const ItemVariationStore &var_store,
 			   hb_direction_t direction) const
   {
     const Device &device = this+deviceTable;
@@ -96,6 +113,23 @@ struct BaseCoordFormat3
 	 : font->em_scale_x (coordinate) + device.get_x_delta (font, var_store);
   }
 
+  void collect_variation_indices (hb_set_t& varidx_set /* OUT */) const
+  {
+    unsigned varidx = (this+deviceTable).get_variation_index ();
+    varidx_set.add (varidx);
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (*this);
+    if (unlikely (!out)) return_trace (false);
+
+    return_trace (out->deviceTable.serialize_copy (c->serializer, deviceTable,
+                                                   this, 0,
+                                                   hb_serialize_context_t::Head,
+                                                   &c->plan->base_variation_idx_map));
+  }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -120,7 +154,7 @@ struct BaseCoord
   bool has_data () const { return u.format; }
 
   hb_position_t get_coord (hb_font_t            *font,
-			   const VariationStore &var_store,
+			   const ItemVariationStore &var_store,
 			   hb_direction_t        direction) const
   {
     switch (u.format) {
@@ -128,6 +162,27 @@ struct BaseCoord
     case 2: return u.format2.get_coord (font, direction);
     case 3: return u.format3.get_coord (font, var_store, direction);
     default:return 0;
+    }
+  }
+
+  void collect_variation_indices (hb_set_t& varidx_set /* OUT */) const
+  {
+    switch (u.format) {
+    case 3: u.format3.collect_variation_indices (varidx_set);
+    default:return;
+    }
+  }
+
+  template <typename context_t, typename ...Ts>
+  typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
+  {
+    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
+    TRACE_DISPATCH (this, u.format);
+    switch (u.format) {
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 3: return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
+    default:return_trace (c->default_return_value ());
     }
   }
 
@@ -161,10 +216,35 @@ struct FeatMinMaxRecord
 
   bool has_data () const { return tag; }
 
+  hb_tag_t get_feature_tag () const { return tag; }
+
   void get_min_max (const BaseCoord **min, const BaseCoord **max) const
   {
     if (likely (min)) *min = &(this+minCoord);
     if (likely (max)) *max = &(this+maxCoord);
+  }
+
+  void collect_variation_indices (const hb_subset_plan_t* plan,
+                                  const void *base,
+                                  hb_set_t& varidx_set /* OUT */) const
+  {
+    if (!plan->layout_features.has (tag))
+      return;
+
+    (base+minCoord).collect_variation_indices (varidx_set);
+    (base+maxCoord).collect_variation_indices (varidx_set);
+  }
+
+  bool subset (hb_subset_context_t *c,
+               const void *base) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (*this);
+    if (unlikely (!out)) return_trace (false);
+    if (!(out->minCoord.serialize_subset (c, minCoord, base)))
+      return_trace (false);
+
+    return_trace (out->maxCoord.serialize_subset (c, maxCoord, base));
   }
 
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
@@ -206,6 +286,39 @@ struct MinMax
     }
   }
 
+  void collect_variation_indices (const hb_subset_plan_t* plan,
+                                  hb_set_t& varidx_set /* OUT */) const
+  {
+    (this+minCoord).collect_variation_indices (varidx_set);
+    (this+maxCoord).collect_variation_indices (varidx_set);
+    for (const FeatMinMaxRecord& record : featMinMaxRecords)
+      record.collect_variation_indices (plan, this, varidx_set);
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+
+    if (!(out->minCoord.serialize_subset (c, minCoord, this)) ||
+        !(out->maxCoord.serialize_subset (c, maxCoord, this)))
+      return_trace (false);
+
+    unsigned len = 0;
+    for (const FeatMinMaxRecord& _ : featMinMaxRecords)
+    {
+      hb_tag_t feature_tag = _.get_feature_tag ();
+      if (!c->plan->layout_features.has (feature_tag))
+        continue;
+
+      if (!_.subset (c, this)) return false;
+      len++;
+    }
+    return_trace (c->serializer->check_assign (out->featMinMaxRecords.len, len,
+                                               HB_SERIALIZE_ERROR_INT_OVERFLOW));
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -240,6 +353,26 @@ struct BaseValues
     return this+baseCoords[baseline_tag_index];
   }
 
+  void collect_variation_indices (hb_set_t& varidx_set /* OUT */) const
+  {
+    for (const auto& _ : baseCoords)
+      (this+_).collect_variation_indices (varidx_set);
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+    out->defaultIndex = defaultIndex;
+
+    for (const auto& _ : baseCoords)
+      if (!subset_offset_array (c, out->baseCoords, this) (_))
+        return_trace (false);
+
+    return_trace (bool (out->baseCoords));
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -270,6 +403,20 @@ struct BaseLangSysRecord
 
   const MinMax &get_min_max () const { return this+minMax; }
 
+  void collect_variation_indices (const hb_subset_plan_t* plan,
+                                  hb_set_t& varidx_set /* OUT */) const
+  { (this+minMax).collect_variation_indices (plan, varidx_set); }
+
+  bool subset (hb_subset_context_t *c,
+               const void *base) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (*this);
+    if (unlikely (!out)) return_trace (false);
+
+    return_trace (out->minMax.serialize_subset (c, minMax, base));
+  }
+
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
   {
     TRACE_SANITIZE (this);
@@ -299,6 +446,35 @@ struct BaseScript
 
   bool has_values () const { return baseValues; }
   bool has_min_max () const { return defaultMinMax; /* TODO What if only per-language is present? */ }
+
+  void collect_variation_indices (const hb_subset_plan_t* plan,
+                                  hb_set_t& varidx_set /* OUT */) const
+  {
+    (this+baseValues).collect_variation_indices (varidx_set);
+    (this+defaultMinMax).collect_variation_indices (plan, varidx_set);
+    
+    for (const BaseLangSysRecord& _ : baseLangSysRecords)
+      _.collect_variation_indices (plan, varidx_set);
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+
+    if (baseValues && !out->baseValues.serialize_subset (c, baseValues, this))
+      return_trace (false);
+
+    if (defaultMinMax && !out->defaultMinMax.serialize_subset (c, defaultMinMax, this))
+      return_trace (false);
+
+    for (const auto& _ : baseLangSysRecords)
+      if (!_.subset (c, this)) return_trace (false);
+
+    return_trace (c->serializer->check_assign (out->baseLangSysRecords.len, baseLangSysRecords.len,
+                                               HB_SERIALIZE_ERROR_INT_OVERFLOW));
+  }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -332,8 +508,30 @@ struct BaseScriptRecord
 
   bool has_data () const { return baseScriptTag; }
 
+  hb_tag_t get_script_tag () const { return baseScriptTag; }
+
   const BaseScript &get_base_script (const BaseScriptList *list) const
   { return list+baseScript; }
+
+  void collect_variation_indices (const hb_subset_plan_t* plan,
+                                  const void* list,
+                                  hb_set_t& varidx_set /* OUT */) const
+  {
+    if (!plan->layout_scripts.has (baseScriptTag))
+      return;
+
+    (list+baseScript).collect_variation_indices (plan, varidx_set);
+  }
+
+  bool subset (hb_subset_context_t *c,
+               const void *base) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (*this);
+    if (unlikely (!out)) return_trace (false);
+
+    return_trace (out->baseScript.serialize_subset (c, baseScript, base));
+  }
 
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
   {
@@ -359,6 +557,33 @@ struct BaseScriptList
     const BaseScriptRecord *record = &baseScriptRecords.bsearch (script);
     if (!record->has_data ()) record = &baseScriptRecords.bsearch (HB_TAG ('D','F','L','T'));
     return record->has_data () ? record->get_base_script (this) : Null (BaseScript);
+  }
+
+  void collect_variation_indices (const hb_subset_plan_t* plan,
+                                  hb_set_t& varidx_set /* OUT */) const
+  {
+    for (const BaseScriptRecord& _ : baseScriptRecords)
+      _.collect_variation_indices (plan, this, varidx_set);
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+
+    unsigned len = 0;
+    for (const BaseScriptRecord& _ : baseScriptRecords)
+    {
+      hb_tag_t script_tag = _.get_script_tag ();
+      if (!c->plan->layout_scripts.has (script_tag))
+        continue;
+
+      if (!_.subset (c, this)) return false;
+      len++;
+    }
+    return_trace (c->serializer->check_assign (out->baseScriptRecords.len, len,
+                                               HB_SERIALIZE_ERROR_INT_OVERFLOW));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -422,6 +647,20 @@ struct Axis
     return true;
   }
 
+  void collect_variation_indices (const hb_subset_plan_t* plan,
+                                  hb_set_t& varidx_set /* OUT */) const
+  { (this+baseScriptList).collect_variation_indices (plan, varidx_set); }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (*this);
+    if (unlikely (!out)) return_trace (false);
+
+    out->baseTagList.serialize_copy (c->serializer, baseTagList, this);
+    return_trace (out->baseScriptList.serialize_subset (c, baseScriptList, this));
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -453,8 +692,41 @@ struct BASE
   const Axis &get_axis (hb_direction_t direction) const
   { return HB_DIRECTION_IS_VERTICAL (direction) ? this+vAxis : this+hAxis; }
 
-  const VariationStore &get_var_store () const
-  { return version.to_int () < 0x00010001u ? Null (VariationStore) : this+varStore; }
+  bool has_var_store () const
+  { return version.to_int () >= 0x00010001u && varStore != 0; }
+
+  const ItemVariationStore &get_var_store () const
+  { return version.to_int () < 0x00010001u ? Null (ItemVariationStore) : this+varStore; }
+
+  void collect_variation_indices (const hb_subset_plan_t* plan,
+                                  hb_set_t& varidx_set /* OUT */) const
+  {
+    (this+hAxis).collect_variation_indices (plan, varidx_set);
+    (this+vAxis).collect_variation_indices (plan, varidx_set);
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+
+    out->version = version;
+    if (hAxis && !out->hAxis.serialize_subset (c, hAxis, this))
+      return_trace (false);
+
+    if (vAxis && !out->vAxis.serialize_subset (c, vAxis, this))
+      return_trace (false);
+
+    if (has_var_store ())
+    {
+      if (!c->serializer->allocate_size<Offset32To<ItemVariationStore>> (Offset32To<ItemVariationStore>::static_size))
+        return_trace (false);
+      return_trace (out->varStore.serialize_subset (c, varStore, this, c->plan->base_varstore_inner_maps.as_array ()));
+    }
+
+    return_trace (true);
+  }
 
   bool get_baseline (hb_font_t      *font,
 		     hb_tag_t        baseline_tag,
@@ -487,7 +759,7 @@ struct BASE
 					   &min_coord, &max_coord))
       return false;
 
-    const VariationStore &var_store = get_var_store ();
+    const ItemVariationStore &var_store = get_var_store ();
     if (likely (min && min_coord)) *min = min_coord->get_coord (font, var_store, direction);
     if (likely (max && max_coord)) *max = max_coord->get_coord (font, var_store, direction);
     return true;
@@ -510,7 +782,7 @@ struct BASE
 				 * of BASE table (may be NULL) */
   Offset16To<Axis>vAxis;		/* Offset to vertical Axis table, from beginning
 				 * of BASE table (may be NULL) */
-  Offset32To<VariationStore>
+  Offset32To<ItemVariationStore>
 		varStore;	/* Offset to the table of Item Variation
 				 * Store--from beginning of BASE
 				 * header (may be NULL).  Introduced

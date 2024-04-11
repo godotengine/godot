@@ -10,12 +10,12 @@
 	</description>
 	<tutorials>
 		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
-		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
-		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
-		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
-		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
-		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
-		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
+		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/2718</link>
+		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/2717</link>
+		<link title="2D Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
 	</tutorials>
 	<methods>
 		<method name="_tile_data_runtime_update" qualifiers="virtual">
