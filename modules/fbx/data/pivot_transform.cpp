@@ -225,7 +225,7 @@ void PivotTransform::ComputePivotTransform() {
 	Sp.set_origin(scaling_pivot);
 
 	// Scaling node
-	if (!scaling.is_equal_approx(Vector3())) {
+	if (!scaling.is_zero_approx()) {
 		S.scale(scaling);
 	} else {
 		S.scale(Vector3(1, 1, 1));

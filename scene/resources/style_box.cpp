@@ -684,7 +684,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	const bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
 	// Only enable antialiasing if it is actually needed. This improve performances
 	// and maximizes sharpness for non-skewed StyleBoxes with sharp corners.
-	const bool aa_on = (rounded_corners || !skew.is_equal_approx(Vector2())) && anti_aliased;
+	const bool aa_on = (rounded_corners || !skew.is_zero_approx()) && anti_aliased;
 
 	const bool blend_on = blend_border && draw_border;
 

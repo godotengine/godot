@@ -133,6 +133,7 @@ struct _NO_DISCARD_CLASS_ Vector3 {
 
 	bool is_equal_approx(const Vector3 &p_v) const;
 	inline bool is_equal_approx(const Vector3 &p_v, real_t p_tolerance) const;
+	bool is_zero_approx() const;
 
 	/* Operators */
 

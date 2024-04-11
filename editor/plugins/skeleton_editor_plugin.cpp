@@ -113,7 +113,7 @@ PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_i
 	bone_shape->set_transform(capsule_transform);
 
 	Vector3 up = Vector3(0, 1, 0);
-	if (up.cross(child_rest.origin).is_equal_approx(Vector3())) {
+	if (up.cross(child_rest.origin).is_zero_approx()) {
 		up = Vector3(0, 0, 1);
 	}
 
