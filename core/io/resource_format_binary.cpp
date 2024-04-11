@@ -1844,8 +1844,8 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(VARIANT_ARRAY);
 			Array a = p_property;
 			f->store_32(uint32_t(a.size()));
-			for (int i = 0; i < a.size(); i++) {
-				write_variant(f, a[i], resource_map, external_resources, string_map);
+			for (const Variant &var : a) {
+				write_variant(f, var, resource_map, external_resources, string_map);
 			}
 
 		} break;
@@ -2016,9 +2016,8 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 		case Variant::ARRAY: {
 			Array varray = p_variant;
-			int len = varray.size();
-			for (int i = 0; i < len; i++) {
-				const Variant &v = varray.get(i);
+			_find_resources(varray.get_typed_script());
+			for (const Variant &v : varray) {
 				_find_resources(v);
 			}
 

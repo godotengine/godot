@@ -29,7 +29,7 @@
 	</description>
 	<tutorials>
 		<link title="Using the SurfaceTool">$DOCS_URL/tutorials/3d/procedural_geometry/surfacetool.html</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<methods>
 		<method name="add_index">

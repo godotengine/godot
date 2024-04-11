@@ -328,6 +328,7 @@ void EditorPropertyArray::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
+			slots.clear();
 		}
 		return;
 	}
@@ -483,9 +484,10 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 	}
 
 	Dictionary drag_data = p_drag_data;
+	const String drop_type = drag_data.get("type", "");
 
-	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
-		Vector<String> files = drag_data["files"];
+	if (drop_type == "files") {
+		PackedStringArray files = drag_data["files"];
 
 		for (int i = 0; i < files.size(); i++) {
 			const String &file = files[i];
@@ -504,6 +506,56 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 		return true;
 	}
 
+	if (drop_type == "nodes") {
+		Array node_paths = drag_data["nodes"];
+
+		PackedStringArray allowed_subtype_array;
+		if (allowed_type == "NodePath") {
+			if (subtype_hint_string == "NodePath") {
+				return true;
+			} else {
+				for (int j = 0; j < subtype_hint_string.get_slice_count(","); j++) {
+					String ast = subtype_hint_string.get_slice(",", j).strip_edges();
+					allowed_subtype_array.append(ast);
+				}
+			}
+		}
+
+		bool is_drop_allowed = true;
+
+		for (int i = 0; i < node_paths.size(); i++) {
+			const Node *dropped_node = get_node_or_null(node_paths[i]);
+			ERR_FAIL_NULL_V_MSG(dropped_node, false, "Could not get the dropped node by its path.");
+
+			if (allowed_type != "NodePath") {
+				if (!ClassDB::is_parent_class(dropped_node->get_class_name(), allowed_type)) {
+					// Fail if one of the nodes is not of allowed type.
+					return false;
+				}
+			}
+
+			// The array of NodePaths is restricted to specific types using @export_node_path().
+			if (allowed_type == "NodePath" && subtype_hint_string != "NodePath") {
+				if (!allowed_subtype_array.has(dropped_node->get_class_name())) {
+					// The dropped node type was not found in the allowed subtype array, we must check if it inherits one of them.
+					for (const String &ast : allowed_subtype_array) {
+						if (ClassDB::is_parent_class(dropped_node->get_class_name(), ast)) {
+							is_drop_allowed = true;
+							break;
+						} else {
+							is_drop_allowed = false;
+						}
+					}
+					if (!is_drop_allowed) {
+						break;
+					}
+				}
+			}
+		}
+
+		return is_drop_allowed;
+	}
+
 	return false;
 }
 
@@ -515,18 +567,18 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 	ERR_FAIL_COND(!_is_drop_valid(p_data));
 
 	Dictionary drag_data = p_data;
+	const String drop_type = drag_data.get("type", "");
+	Variant array = object->get_array();
 
-	if (drag_data.has("type") && String(drag_data["type"]) == "files") {
-		Vector<String> files = drag_data["files"];
+	// Handle the case where array is not initialized yet.
+	if (!array.is_array()) {
+		initialize_array(array);
+	} else {
+		array = array.duplicate();
+	}
 
-		Variant array = object->get_array();
-
-		// Handle the case where array is not initialized yet.
-		if (!array.is_array()) {
-			initialize_array(array);
-		} else {
-			array = array.duplicate();
-		}
+	if (drop_type == "files") {
+		PackedStringArray files = drag_data["files"];
 
 		// Loop the file array and add to existing array.
 		for (int i = 0; i < files.size(); i++) {
@@ -540,6 +592,33 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		emit_changed(get_edited_property(), array);
 	}
+
+	if (drop_type == "nodes") {
+		Array node_paths = drag_data["nodes"];
+		Node *base_node = get_base_node();
+
+		for (int i = 0; i < node_paths.size(); i++) {
+			const NodePath &path = node_paths[i];
+
+			if (subtype == Variant::OBJECT) {
+				array.call("push_back", get_node(path));
+			} else if (subtype == Variant::NODE_PATH) {
+				array.call("push_back", base_node->get_path().rel_path_to(path));
+			}
+		}
+
+		emit_changed(get_edited_property(), array);
+	}
+}
+
+Node *EditorPropertyArray::get_base_node() {
+	Node *base_node = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+
+	if (!base_node) {
+		base_node = get_tree()->get_edited_scene_root();
+	}
+
+	return base_node;
 }
 
 void EditorPropertyArray::_notification(int p_what) {
@@ -586,7 +665,7 @@ void EditorPropertyArray::_edit_pressed() {
 	Variant array = get_edited_property_value();
 	if (!array.is_array() && edit->is_pressed()) {
 		initialize_array(array);
-		get_edited_object()->set(get_edited_property(), array);
+		emit_changed(get_edited_property(), array);
 	}
 
 	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
@@ -867,7 +946,7 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint) {
 void EditorPropertyDictionary::update_property() {
 	Variant updated_val = get_edited_property_value();
 
-	if (updated_val.get_type() == Variant::NIL) {
+	if (updated_val.get_type() != Variant::DICTIONARY) {
 		edit->set_text(TTR("Dictionary (Nil)")); // This provides symmetry with the array property.
 		edit->set_pressed(false);
 		if (container) {
@@ -875,6 +954,7 @@ void EditorPropertyDictionary::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
+			slots.clear();
 		}
 		return;
 	}
@@ -1021,7 +1101,7 @@ void EditorPropertyDictionary::_edit_pressed() {
 	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
 		VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
-		get_edited_object()->set(get_edited_property(), prop_val);
+		emit_changed(get_edited_property(), prop_val);
 	}
 
 	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());

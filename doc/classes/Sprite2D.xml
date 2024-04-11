@@ -7,7 +7,7 @@
 		A node that displays a 2D texture. The texture displayed can be a region from a larger atlas texture, or a frame from a sprite sheet animation.
 	</description>
 	<tutorials>
-		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/148</link>
+		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/2716</link>
 	</tutorials>
 	<methods>
 		<method name="get_rect" qualifiers="const">

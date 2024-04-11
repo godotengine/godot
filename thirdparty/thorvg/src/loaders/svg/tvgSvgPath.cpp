@@ -126,7 +126,7 @@ void _pathAppendArcTo(Array<PathCommand>* cmds, Array<Point>* pts, Point* cur, P
     rx = fabsf(rx);
     ry = fabsf(ry);
 
-    angle = angle * M_PI / 180.0f;
+    angle = angle * MATH_PI / 180.0f;
     cosPhi = cosf(angle);
     sinPhi = sinf(angle);
     dx2 = (sx - x) / 2.0f;
@@ -195,24 +195,24 @@ void _pathAppendArcTo(Array<PathCommand>* cmds, Array<Point>* pts, Point* cur, P
     //http://www.euclideanspace.com/maths/algebra/vectors/angleBetween/index.htm
     //Note: atan2 (0.0, 1.0) == 0.0
     at = atan2(((y1p - cyp) / ry), ((x1p - cxp) / rx));
-    theta1 = (at < 0.0f) ? 2.0f * M_PI + at : at;
+    theta1 = (at < 0.0f) ? 2.0f * MATH_PI + at : at;
 
     nat = atan2(((-y1p - cyp) / ry), ((-x1p - cxp) / rx));
-    deltaTheta = (nat < at) ? 2.0f * M_PI - at + nat : nat - at;
+    deltaTheta = (nat < at) ? 2.0f * MATH_PI - at + nat : nat - at;
 
     if (sweep) {
         //Ensure delta theta < 0 or else add 360 degrees
-        if (deltaTheta < 0.0f) deltaTheta += (float)(2.0f * M_PI);
+        if (deltaTheta < 0.0f) deltaTheta += 2.0f * MATH_PI;
     } else {
         //Ensure delta theta > 0 or else substract 360 degrees
-        if (deltaTheta > 0.0f) deltaTheta -= (float)(2.0f * M_PI);
+        if (deltaTheta > 0.0f) deltaTheta -= 2.0f * MATH_PI;
     }
 
     //Add several cubic bezier to approximate the arc
     //(smaller than 90 degrees)
     //We add one extra segment because we want something
     //Smaller than 90deg (i.e. not 90 itself)
-    segments = static_cast<int>(fabsf(deltaTheta / float(M_PI_2)) + 1.0f);
+    segments = static_cast<int>(fabsf(deltaTheta / MATH_PI2) + 1.0f);
     delta = deltaTheta / segments;
 
     //http://www.stillhq.com/ctpfaq/2001/comp.text.pdf-faq-2001-04.txt (section 2.13)

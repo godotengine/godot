@@ -167,8 +167,8 @@ namespace GodotTools
 
         public void ShowConfirmCreateSlnDialog()
         {
-            _confirmCreateSlnDialog.Title = "C# solution already exists. This will override the existing C# project file, any manual changes will be lost.".TTR();
-            _confirmCreateSlnDialog.DialogText = "Create C# solution".TTR();
+            _confirmCreateSlnDialog.Title = "Create C# solution".TTR();
+            _confirmCreateSlnDialog.DialogText = "C# solution already exists. This will override the existing C# project file, any manual changes will be lost.".TTR();
             EditorInterface.Singleton.PopupDialogCentered(_confirmCreateSlnDialog);
         }
 

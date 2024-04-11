@@ -482,7 +482,7 @@
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Returns [code]true[/code] if the body is omitting the standard force integration. See [method body_set_omit_force_integration].
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
@@ -582,9 +582,12 @@
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="userdata" type="Variant" default="null" />
 			<description>
-				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]). The force integration function takes 2 arguments:
-				- [code]state[/code] — [PhysicsDirectBodyState3D] used to retrieve and modify the body's state.
-				- [code skip-lint]userdata[/code] — optional user data passed to [method body_set_force_integration_callback].
+				Sets the body's custom force integration callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback.
+				The function [param callable] will be called every physics tick, before the standard force integration (see [method body_set_omit_force_integration]). It can be used for example to update the body's linear and angular velocity based on contact with other bodies.
+				If [param userdata] is not [code]null[/code], the function [param callable] must take the following two parameters:
+				1. [code]state[/code]: a [PhysicsDirectBodyState3D], used to retrieve and modify the body's state,
+				2. [code skip-lint]userdata[/code]: a [Variant]; its value will be the [param userdata] passed into this method.
+				If [param userdata] is [code]null[/code], then [param callable] must take only the [code]state[/code] parameter.
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -608,7 +611,8 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Sets whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Sets whether the body omits the standard force integration. If [param enable] is [code]true[/code], the body will not automatically use applied forces, torques, and damping to update the body's linear and angular velocity. In this case, [method body_set_force_integration_callback] can be used to manually update the linear and angular velocity instead.
+				This method is called when the property [member RigidBody3D.custom_integrator] is set.
 			</description>
 		</method>
 		<method name="body_set_param">
@@ -1624,7 +1628,7 @@
 			Constant to set/get the priority (order of processing) of an area.
 		</constant>
 		<constant name="AREA_PARAM_WIND_FORCE_MAGNITUDE" value="10" enum="AreaParameter">
-			Constant to set/get the magnitude of area-specific wind force.
+			Constant to set/get the magnitude of area-specific wind force. This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
 		</constant>
 		<constant name="AREA_PARAM_WIND_SOURCE" value="11" enum="AreaParameter">
 			Constant to set/get the 3D vector that specifies the origin from which an area-specific wind blows.

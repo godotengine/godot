@@ -41,7 +41,6 @@
 EditorDebuggerTree::EditorDebuggerTree() {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 	set_allow_rmb_select(true);
-	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	// Popup
 	item_menu = memnew(PopupMenu);
@@ -57,6 +56,8 @@ EditorDebuggerTree::EditorDebuggerTree() {
 void EditorDebuggerTree::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
+			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 			connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
 			connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
 			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));

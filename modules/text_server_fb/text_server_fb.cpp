@@ -71,8 +71,10 @@ using namespace godot;
 #endif
 #endif
 
-#ifdef MODULE_SVG_ENABLED
 #ifdef MODULE_FREETYPE_ENABLED
+#include FT_SFNT_NAMES_H
+#include FT_TRUETYPE_IDS_H
+#ifdef MODULE_SVG_ENABLED
 #include "thorvg_svg_in_ot.h"
 #endif
 #endif
@@ -392,7 +394,7 @@ void TextServerFallback::_generateMTSDF_threaded(void *p_td, uint32_t p_y) {
 	}
 }
 
-_FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(FontFallback *p_font_data, FontForSizeFallback *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const {
+_FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(FontFallback *p_font_data, FontForSizeFallback *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *p_outline, const Vector2 &p_advance) const {
 	msdfgen::Shape shape;
 
 	shape.contours.clear();
@@ -408,13 +410,13 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 	ft_functions.shift = 0;
 	ft_functions.delta = 0;
 
-	int error = FT_Outline_Decompose(outline, &ft_functions, &context);
+	int error = FT_Outline_Decompose(p_outline, &ft_functions, &context);
 	ERR_FAIL_COND_V_MSG(error, FontGlyph(), "FreeType: Outline decomposition error: '" + String(FT_Error_String(error)) + "'.");
 	if (!shape.contours.empty() && shape.contours.back().edges.empty()) {
 		shape.contours.pop_back();
 	}
 
-	if (FT_Outline_Get_Orientation(outline) == 1) {
+	if (FT_Outline_Get_Orientation(p_outline) == 1) {
 		for (int i = 0; i < (int)shape.contours.size(); ++i) {
 			shape.contours[i].reverse();
 		}
@@ -427,12 +429,18 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 
 	FontGlyph chr;
 	chr.found = true;
-	chr.advance = advance;
+	chr.advance = p_advance;
 
 	if (shape.validate() && shape.contours.size() > 0) {
 		int w = (bounds.r - bounds.l);
 		int h = (bounds.t - bounds.b);
 
+		if (w == 0 || h == 0) {
+			chr.texture_idx = -1;
+			chr.uv_rect = Rect2();
+			chr.rect = Rect2();
+			return chr;
+		}
 		int mw = w + p_rect_margin * 4;
 		int mh = h + p_rect_margin * 4;
 
@@ -489,12 +497,24 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 #endif
 
 #ifdef MODULE_FREETYPE_ENABLED
-_FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitmap(FontForSizeFallback *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance, bool p_bgra) const {
-	int w = bitmap.width;
-	int h = bitmap.rows;
+_FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitmap(FontForSizeFallback *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const {
+	FontGlyph chr;
+	chr.advance = p_advance * p_data->scale / p_data->oversampling;
+	chr.found = true;
+
+	int w = p_bitmap.width;
+	int h = p_bitmap.rows;
+
+	if (w == 0 || h == 0) {
+		chr.texture_idx = -1;
+		chr.uv_rect = Rect2();
+		chr.rect = Rect2();
+		return chr;
+	}
+
 	int color_size = 2;
 
-	switch (bitmap.pixel_mode) {
+	switch (p_bitmap.pixel_mode) {
 		case FT_PIXEL_MODE_MONO:
 		case FT_PIXEL_MODE_GRAY: {
 			color_size = 2;
@@ -533,54 +553,54 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 			for (int j = 0; j < w; j++) {
 				int ofs = ((i + tex_pos.y + p_rect_margin * 2) * tex.texture_w + j + tex_pos.x + p_rect_margin * 2) * color_size;
 				ERR_FAIL_COND_V(ofs >= tex.image->data_size(), FontGlyph());
-				switch (bitmap.pixel_mode) {
+				switch (p_bitmap.pixel_mode) {
 					case FT_PIXEL_MODE_MONO: {
-						int byte = i * bitmap.pitch + (j >> 3);
+						int byte = i * p_bitmap.pitch + (j >> 3);
 						int bit = 1 << (7 - (j % 8));
 						wr[ofs + 0] = 255; // grayscale as 1
-						wr[ofs + 1] = (bitmap.buffer[byte] & bit) ? 255 : 0;
+						wr[ofs + 1] = (p_bitmap.buffer[byte] & bit) ? 255 : 0;
 					} break;
 					case FT_PIXEL_MODE_GRAY:
 						wr[ofs + 0] = 255; // grayscale as 1
-						wr[ofs + 1] = bitmap.buffer[i * bitmap.pitch + j];
+						wr[ofs + 1] = p_bitmap.buffer[i * p_bitmap.pitch + j];
 						break;
 					case FT_PIXEL_MODE_BGRA: {
-						int ofs_color = i * bitmap.pitch + (j << 2);
-						wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
-						wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
-						wr[ofs + 0] = bitmap.buffer[ofs_color + 2];
-						wr[ofs + 3] = bitmap.buffer[ofs_color + 3];
+						int ofs_color = i * p_bitmap.pitch + (j << 2);
+						wr[ofs + 2] = p_bitmap.buffer[ofs_color + 0];
+						wr[ofs + 1] = p_bitmap.buffer[ofs_color + 1];
+						wr[ofs + 0] = p_bitmap.buffer[ofs_color + 2];
+						wr[ofs + 3] = p_bitmap.buffer[ofs_color + 3];
 					} break;
 					case FT_PIXEL_MODE_LCD: {
-						int ofs_color = i * bitmap.pitch + (j * 3);
+						int ofs_color = i * p_bitmap.pitch + (j * 3);
 						if (p_bgra) {
-							wr[ofs + 0] = bitmap.buffer[ofs_color + 2];
-							wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
-							wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
+							wr[ofs + 0] = p_bitmap.buffer[ofs_color + 2];
+							wr[ofs + 1] = p_bitmap.buffer[ofs_color + 1];
+							wr[ofs + 2] = p_bitmap.buffer[ofs_color + 0];
 							wr[ofs + 3] = 255;
 						} else {
-							wr[ofs + 0] = bitmap.buffer[ofs_color + 0];
-							wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
-							wr[ofs + 2] = bitmap.buffer[ofs_color + 2];
+							wr[ofs + 0] = p_bitmap.buffer[ofs_color + 0];
+							wr[ofs + 1] = p_bitmap.buffer[ofs_color + 1];
+							wr[ofs + 2] = p_bitmap.buffer[ofs_color + 2];
 							wr[ofs + 3] = 255;
 						}
 					} break;
 					case FT_PIXEL_MODE_LCD_V: {
-						int ofs_color = i * bitmap.pitch * 3 + j;
+						int ofs_color = i * p_bitmap.pitch * 3 + j;
 						if (p_bgra) {
-							wr[ofs + 0] = bitmap.buffer[ofs_color + bitmap.pitch * 2];
-							wr[ofs + 1] = bitmap.buffer[ofs_color + bitmap.pitch];
-							wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
+							wr[ofs + 0] = p_bitmap.buffer[ofs_color + p_bitmap.pitch * 2];
+							wr[ofs + 1] = p_bitmap.buffer[ofs_color + p_bitmap.pitch];
+							wr[ofs + 2] = p_bitmap.buffer[ofs_color + 0];
 							wr[ofs + 3] = 255;
 						} else {
-							wr[ofs + 0] = bitmap.buffer[ofs_color + 0];
-							wr[ofs + 1] = bitmap.buffer[ofs_color + bitmap.pitch];
-							wr[ofs + 2] = bitmap.buffer[ofs_color + bitmap.pitch * 2];
+							wr[ofs + 0] = p_bitmap.buffer[ofs_color + 0];
+							wr[ofs + 1] = p_bitmap.buffer[ofs_color + p_bitmap.pitch];
+							wr[ofs + 2] = p_bitmap.buffer[ofs_color + p_bitmap.pitch * 2];
 							wr[ofs + 3] = 255;
 						}
 					} break;
 					default:
-						ERR_FAIL_V_MSG(FontGlyph(), "Font uses unsupported pixel format: " + String::num_int64(bitmap.pixel_mode) + ".");
+						ERR_FAIL_V_MSG(FontGlyph(), "Font uses unsupported pixel format: " + String::num_int64(p_bitmap.pixel_mode) + ".");
 						break;
 				}
 			}
@@ -589,13 +609,10 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 
 	tex.dirty = true;
 
-	FontGlyph chr;
-	chr.advance = advance * p_data->scale / p_data->oversampling;
 	chr.texture_idx = tex_pos.index;
-	chr.found = true;
 
 	chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w + p_rect_margin * 2, h + p_rect_margin * 2);
-	chr.rect.position = Vector2(xofs - p_rect_margin, -yofs - p_rect_margin) * p_data->scale / p_data->oversampling;
+	chr.rect.position = Vector2(p_xofs - p_rect_margin, -p_yofs - p_rect_margin) * p_data->scale / p_data->oversampling;
 	chr.rect.size = chr.uv_rect.size * p_data->scale / p_data->oversampling;
 	return chr;
 }
@@ -857,8 +874,37 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 
 		if (!p_font_data->face_init) {
-			// Get style flags and name.
-			if (fd->face->family_name != nullptr) {
+			// When a font does not provide a `family_name`, FreeType tries to synthesize one based on other names.
+			// FreeType automatically converts non-ASCII characters to "?" in the synthesized name.
+			// To avoid that behavior, use the format-specific name directly if available.
+			if (FT_IS_SFNT(fd->face)) {
+				int name_count = FT_Get_Sfnt_Name_Count(fd->face);
+				for (int i = 0; i < name_count; i++) {
+					FT_SfntName sfnt_name;
+					if (FT_Get_Sfnt_Name(fd->face, i, &sfnt_name) != 0) {
+						continue;
+					}
+					if (sfnt_name.name_id != TT_NAME_ID_FONT_FAMILY && sfnt_name.name_id != TT_NAME_ID_TYPOGRAPHIC_FAMILY) {
+						continue;
+					}
+					if (!p_font_data->font_name.is_empty() && sfnt_name.language_id != TT_MS_LANGID_ENGLISH_UNITED_STATES) {
+						continue;
+					}
+
+					switch (sfnt_name.platform_id) {
+						case TT_PLATFORM_APPLE_UNICODE: {
+							p_font_data->font_name.parse_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
+						} break;
+
+						case TT_PLATFORM_MICROSOFT: {
+							if (sfnt_name.encoding_id == TT_MS_ID_UNICODE_CS || sfnt_name.encoding_id == TT_MS_ID_UCS_4) {
+								p_font_data->font_name.parse_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
+							}
+						} break;
+					}
+				}
+			}
+			if (p_font_data->font_name.is_empty() && fd->face->family_name != nullptr) {
 				p_font_data->font_name = String::utf8((const char *)fd->face->family_name);
 			}
 			if (fd->face->style_name != nullptr) {
@@ -2536,9 +2582,6 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[index];
 	if (gl.found) {
-		if (gl.uv_rect.size.x <= 2 || gl.uv_rect.size.y <= 2) {
-			return; // Nothing to draw.
-		}
 		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->textures.size());
 
 		if (gl.texture_idx != -1) {
@@ -2647,9 +2690,6 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 
 	const FontGlyph &gl = fd->cache[size]->glyph_map[index];
 	if (gl.found) {
-		if (gl.uv_rect.size.x <= 2 || gl.uv_rect.size.y <= 2) {
-			return; // Nothing to draw.
-		}
 		ERR_FAIL_COND(gl.texture_idx < -1 || gl.texture_idx >= fd->cache[size]->textures.size());
 
 		if (gl.texture_idx != -1) {
@@ -4437,6 +4477,10 @@ String TextServerFallback::_string_to_upper(const String &p_string, const String
 
 String TextServerFallback::_string_to_lower(const String &p_string, const String &p_language) const {
 	return p_string.to_lower();
+}
+
+String TextServerFallback::_string_to_title(const String &p_string, const String &p_language) const {
+	return p_string.capitalize();
 }
 
 PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_string, const String &p_language, int64_t p_chars_per_line) const {

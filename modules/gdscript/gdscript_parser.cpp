@@ -2772,10 +2772,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 		return parse_expression(false); // Return the following expression.
 	}
 
-#ifdef DEBUG_ENABLED
-	VariableNode *source_variable = nullptr;
-#endif
-
 	switch (p_previous_operand->type) {
 		case Node::IDENTIFIER: {
 #ifdef DEBUG_ENABLED
@@ -2784,8 +2780,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 			IdentifierNode *id = static_cast<IdentifierNode *>(p_previous_operand);
 			switch (id->source) {
 				case IdentifierNode::LOCAL_VARIABLE:
-
-					source_variable = id->variable_source;
 					id->variable_source->usages--;
 					break;
 				case IdentifierNode::LOCAL_CONSTANT:
@@ -2816,16 +2810,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	update_extents(assignment);
 
 	make_completion_context(COMPLETION_ASSIGN, assignment);
-#ifdef DEBUG_ENABLED
-	bool has_operator = true;
-#endif
 	switch (previous.type) {
 		case GDScriptTokenizer::Token::EQUAL:
 			assignment->operation = AssignmentNode::OP_NONE;
 			assignment->variant_op = Variant::OP_MAX;
-#ifdef DEBUG_ENABLED
-			has_operator = false;
-#endif
 			break;
 		case GDScriptTokenizer::Token::PLUS_EQUAL:
 			assignment->operation = AssignmentNode::OP_ADDITION;
@@ -2880,16 +2868,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 		push_error(R"(Expected an expression after "=".)");
 	}
 	complete_extents(assignment);
-
-#ifdef DEBUG_ENABLED
-	if (source_variable != nullptr) {
-		if (has_operator && source_variable->assignments == 0) {
-			push_warning(assignment, GDScriptWarning::UNASSIGNED_VARIABLE_OP_ASSIGN, source_variable->identifier->name);
-		}
-
-		source_variable->assignments += 1;
-	}
-#endif
 
 	return assignment;
 }

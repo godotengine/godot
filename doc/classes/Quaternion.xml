@@ -14,7 +14,7 @@
 		<link title="3Blue1Brown&apos;s video on Quaternions">https://www.youtube.com/watch?v=d4EgbgTm0Bg</link>
 		<link title="Online Quaternion Visualization">https://quaternions.online/</link>
 		<link title="Using 3D transforms">$DOCS_URL/tutorials/3d/using_transforms.html#interpolating-with-quaternions</link>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 		<link title="Advanced Quaternion Visualization">https://iwatake2222.github.io/rotation_master/rotation_master.html</link>
 	</tutorials>
 	<constructors>

@@ -304,11 +304,6 @@ else:
         selected_platform = "macos"
     elif sys.platform == "win32":
         selected_platform = "windows"
-    else:
-        print("Could not detect platform automatically. Supported platforms:")
-        for x in platform_list:
-            print("\t" + x)
-        print("\nPlease run SCons again and select a valid platform: platform=<string>")
 
     if selected_platform != "":
         print("Automatically detected platform: " + selected_platform)
@@ -334,6 +329,16 @@ if selected_platform == "javascript":
     # Deprecated alias kept for compatibility.
     print('Platform "javascript" has been renamed to "web" in Godot 4. Building for platform "web".')
     selected_platform = "web"
+
+if selected_platform not in platform_list:
+    if selected_platform == "":
+        print("Could not detect platform automatically.")
+    elif selected_platform != "list":
+        print(f'Invalid target platform "{selected_platform}".')
+
+    print("The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list)))
+    print("Please run SCons again and select a valid platform: platform=<string>.")
+    Exit(0 if selected_platform == "list" else 255)
 
 # Make sure to update this to the found, valid platform as it's used through the buildsystem as the reference.
 # It should always be re-set after calling `opts.Update()` otherwise it uses the original input value.
@@ -481,571 +486,551 @@ if not env_base["deprecated"]:
 if env_base["precision"] == "double":
     env_base.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
 
-if selected_platform in platform_list:
-    tmppath = "./platform/" + selected_platform
-    sys.path.insert(0, tmppath)
-    import detect
+tmppath = "./platform/" + selected_platform
+sys.path.insert(0, tmppath)
+import detect
 
-    env = env_base.Clone()
+env = env_base.Clone()
 
-    # Default num_jobs to local cpu count if not user specified.
-    # SCons has a peculiarity where user-specified options won't be overridden
-    # by SetOption, so we can rely on this to know if we should use our default.
-    initial_num_jobs = env.GetOption("num_jobs")
-    altered_num_jobs = initial_num_jobs + 1
-    env.SetOption("num_jobs", altered_num_jobs)
-    if env.GetOption("num_jobs") == altered_num_jobs:
-        cpu_count = os.cpu_count()
-        if cpu_count is None:
-            print("Couldn't auto-detect CPU count to configure build parallelism. Specify it with the -j argument.")
-        else:
-            safer_cpu_count = cpu_count if cpu_count <= 4 else cpu_count - 1
-            print(
-                "Auto-detected %d CPU cores available for build parallelism. Using %d cores by default. You can override it with the -j argument."
-                % (cpu_count, safer_cpu_count)
-            )
-            env.SetOption("num_jobs", safer_cpu_count)
-
-    env.extra_suffix = ""
-
-    if env["extra_suffix"] != "":
-        env.extra_suffix += "." + env["extra_suffix"]
-
-    # Environment flags
-    env.Append(CPPDEFINES=env.get("cppdefines", "").split())
-    env.Append(CCFLAGS=env.get("ccflags", "").split())
-    env.Append(CXXFLAGS=env.get("cxxflags", "").split())
-    env.Append(CFLAGS=env.get("cflags", "").split())
-    env.Append(LINKFLAGS=env.get("linkflags", "").split())
-
-    # Feature build profile
-    disabled_classes = []
-    if env["build_profile"] != "":
-        print("Using feature build profile: " + env["build_profile"])
-        import json
-
-        try:
-            ft = json.load(open(env["build_profile"]))
-            if "disabled_classes" in ft:
-                disabled_classes = ft["disabled_classes"]
-            if "disabled_build_options" in ft:
-                dbo = ft["disabled_build_options"]
-                for c in dbo:
-                    env[c] = dbo[c]
-        except:
-            print("Error opening feature build profile: " + env["build_profile"])
-            Exit(255)
-    methods.write_disabled_classes(disabled_classes)
-
-    # Platform specific flags.
-    # These can sometimes override default options.
-    flag_list = platform_flags[selected_platform]
-    for f in flag_list:
-        if not (f[0] in ARGUMENTS) or ARGUMENTS[f[0]] == "auto":  # Allow command line to override platform flags
-            env[f[0]] = f[1]
-
-    # 'dev_mode' and 'production' are aliases to set default options if they haven't been
-    # set manually by the user.
-    # These need to be checked *after* platform specific flags so that different
-    # default values can be set (e.g. to keep LTO off for `production` on some platforms).
-    if env["dev_mode"]:
-        env["verbose"] = methods.get_cmdline_bool("verbose", True)
-        env["warnings"] = ARGUMENTS.get("warnings", "extra")
-        env["werror"] = methods.get_cmdline_bool("werror", True)
-        env["tests"] = methods.get_cmdline_bool("tests", True)
-    if env["production"]:
-        env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
-        env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
-        # LTO "auto" means we handle the preferred option in each platform detect.py.
-        env["lto"] = ARGUMENTS.get("lto", "auto")
-
-    # Run SCU file generation script if in a SCU build.
-    if env["scu_build"]:
-        max_includes_per_scu = 8
-        if env_base.dev_build == True:
-            max_includes_per_scu = 1024
-
-        read_scu_limit = int(env["scu_limit"])
-        read_scu_limit = max(0, min(read_scu_limit, 1024))
-        if read_scu_limit != 0:
-            max_includes_per_scu = read_scu_limit
-
-        methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
-
-    # Must happen after the flags' definition, as configure is when most flags
-    # are actually handled to change compile options, etc.
-    detect.configure(env)
-
-    print(f'Building for platform "{selected_platform}", architecture "{env["arch"]}", target "{env["target"]}".')
-    if env.dev_build:
-        print("NOTE: Developer build, with debug optimization level and debug symbols (unless overridden).")
-
-    # Set optimize and debug_symbols flags.
-    # "custom" means do nothing and let users set their own optimization flags.
-    # Needs to happen after configure to have `env.msvc` defined.
-    if env.msvc:
-        if env["debug_symbols"]:
-            env.Append(CCFLAGS=["/Zi", "/FS"])
-            env.Append(LINKFLAGS=["/DEBUG:FULL"])
-        else:
-            env.Append(LINKFLAGS=["/DEBUG:NONE"])
-
-        if env["optimize"] == "speed":
-            env.Append(CCFLAGS=["/O2"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
-        elif env["optimize"] == "speed_trace":
-            env.Append(CCFLAGS=["/O2"])
-            env.Append(LINKFLAGS=["/OPT:REF", "/OPT:NOICF"])
-        elif env["optimize"] == "size":
-            env.Append(CCFLAGS=["/O1"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
-        elif env["optimize"] == "debug" or env["optimize"] == "none":
-            env.Append(CCFLAGS=["/Od"])
+# Default num_jobs to local cpu count if not user specified.
+# SCons has a peculiarity where user-specified options won't be overridden
+# by SetOption, so we can rely on this to know if we should use our default.
+initial_num_jobs = env.GetOption("num_jobs")
+altered_num_jobs = initial_num_jobs + 1
+env.SetOption("num_jobs", altered_num_jobs)
+if env.GetOption("num_jobs") == altered_num_jobs:
+    cpu_count = os.cpu_count()
+    if cpu_count is None:
+        print("Couldn't auto-detect CPU count to configure build parallelism. Specify it with the -j argument.")
     else:
-        if env["debug_symbols"]:
-            # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
-            # otherwise addr2line doesn't understand them
-            env.Append(CCFLAGS=["-gdwarf-4"])
-            if env.dev_build:
-                env.Append(CCFLAGS=["-g3"])
-            else:
-                env.Append(CCFLAGS=["-g2"])
-        else:
-            if methods.using_clang(env) and not methods.is_vanilla_clang(env):
-                # Apple Clang, its linker doesn't like -s.
-                env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
-            else:
-                env.Append(LINKFLAGS=["-s"])
+        safer_cpu_count = cpu_count if cpu_count <= 4 else cpu_count - 1
+        print(
+            "Auto-detected %d CPU cores available for build parallelism. Using %d cores by default. You can override it with the -j argument."
+            % (cpu_count, safer_cpu_count)
+        )
+        env.SetOption("num_jobs", safer_cpu_count)
 
-        if env["optimize"] == "speed":
-            env.Append(CCFLAGS=["-O3"])
-        # `-O2` is friendlier to debuggers than `-O3`, leading to better crash backtraces.
-        elif env["optimize"] == "speed_trace":
-            env.Append(CCFLAGS=["-O2"])
-        elif env["optimize"] == "size":
-            env.Append(CCFLAGS=["-Os"])
-        elif env["optimize"] == "debug":
-            env.Append(CCFLAGS=["-Og"])
-        elif env["optimize"] == "none":
-            env.Append(CCFLAGS=["-O0"])
+env.extra_suffix = ""
 
-    # Needs to happen after configure to handle "auto".
-    if env["lto"] != "none":
-        print("Using LTO: " + env["lto"])
+if env["extra_suffix"] != "":
+    env.extra_suffix += "." + env["extra_suffix"]
 
-    # Set our C and C++ standard requirements.
-    # C++17 is required as we need guaranteed copy elision as per GH-36436.
-    # Prepending to make it possible to override.
-    # This needs to come after `configure`, otherwise we don't have env.msvc.
-    if not env.msvc:
-        # Specifying GNU extensions support explicitly, which are supported by
-        # both GCC and Clang. Both currently default to gnu11 and gnu++14.
-        env.Prepend(CFLAGS=["-std=gnu11"])
-        env.Prepend(CXXFLAGS=["-std=gnu++17"])
+# Environment flags
+env.Append(CPPDEFINES=env.get("cppdefines", "").split())
+env.Append(CCFLAGS=env.get("ccflags", "").split())
+env.Append(CXXFLAGS=env.get("cxxflags", "").split())
+env.Append(CFLAGS=env.get("cflags", "").split())
+env.Append(LINKFLAGS=env.get("linkflags", "").split())
+
+# Feature build profile
+disabled_classes = []
+if env["build_profile"] != "":
+    print("Using feature build profile: " + env["build_profile"])
+    import json
+
+    try:
+        ft = json.load(open(env["build_profile"]))
+        if "disabled_classes" in ft:
+            disabled_classes = ft["disabled_classes"]
+        if "disabled_build_options" in ft:
+            dbo = ft["disabled_build_options"]
+            for c in dbo:
+                env[c] = dbo[c]
+    except:
+        print("Error opening feature build profile: " + env["build_profile"])
+        Exit(255)
+methods.write_disabled_classes(disabled_classes)
+
+# Platform specific flags.
+# These can sometimes override default options.
+flag_list = platform_flags[selected_platform]
+for f in flag_list:
+    if not (f[0] in ARGUMENTS) or ARGUMENTS[f[0]] == "auto":  # Allow command line to override platform flags
+        env[f[0]] = f[1]
+
+# 'dev_mode' and 'production' are aliases to set default options if they haven't been
+# set manually by the user.
+# These need to be checked *after* platform specific flags so that different
+# default values can be set (e.g. to keep LTO off for `production` on some platforms).
+if env["dev_mode"]:
+    env["verbose"] = methods.get_cmdline_bool("verbose", True)
+    env["warnings"] = ARGUMENTS.get("warnings", "extra")
+    env["werror"] = methods.get_cmdline_bool("werror", True)
+    env["tests"] = methods.get_cmdline_bool("tests", True)
+if env["production"]:
+    env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
+    env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
+    # LTO "auto" means we handle the preferred option in each platform detect.py.
+    env["lto"] = ARGUMENTS.get("lto", "auto")
+
+# Run SCU file generation script if in a SCU build.
+if env["scu_build"]:
+    max_includes_per_scu = 8
+    if env_base.dev_build == True:
+        max_includes_per_scu = 1024
+
+    read_scu_limit = int(env["scu_limit"])
+    read_scu_limit = max(0, min(read_scu_limit, 1024))
+    if read_scu_limit != 0:
+        max_includes_per_scu = read_scu_limit
+
+    methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
+
+# Must happen after the flags' definition, as configure is when most flags
+# are actually handled to change compile options, etc.
+detect.configure(env)
+
+print(f'Building for platform "{selected_platform}", architecture "{env["arch"]}", target "{env["target"]}".')
+if env.dev_build:
+    print("NOTE: Developer build, with debug optimization level and debug symbols (unless overridden).")
+
+# Set optimize and debug_symbols flags.
+# "custom" means do nothing and let users set their own optimization flags.
+# Needs to happen after configure to have `env.msvc` defined.
+if env.msvc:
+    if env["debug_symbols"]:
+        env.Append(CCFLAGS=["/Zi", "/FS"])
+        env.Append(LINKFLAGS=["/DEBUG:FULL"])
     else:
-        # MSVC doesn't have clear C standard support, /std only covers C++.
-        # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
-        env.Prepend(CCFLAGS=["/std:c++17"])
+        env.Append(LINKFLAGS=["/DEBUG:NONE"])
 
-    # Enforce our minimal compiler version requirements
-    cc_version = methods.get_compiler_version(env) or {
-        "major": None,
-        "minor": None,
-        "patch": None,
-        "metadata1": None,
-        "metadata2": None,
-        "date": None,
-    }
-    cc_version_major = int(cc_version["major"] or -1)
-    cc_version_minor = int(cc_version["minor"] or -1)
-    cc_version_metadata1 = cc_version["metadata1"] or ""
+    if env["optimize"] == "speed":
+        env.Append(CCFLAGS=["/O2"])
+        env.Append(LINKFLAGS=["/OPT:REF"])
+    elif env["optimize"] == "speed_trace":
+        env.Append(CCFLAGS=["/O2"])
+        env.Append(LINKFLAGS=["/OPT:REF", "/OPT:NOICF"])
+    elif env["optimize"] == "size":
+        env.Append(CCFLAGS=["/O1"])
+        env.Append(LINKFLAGS=["/OPT:REF"])
+    elif env["optimize"] == "debug" or env["optimize"] == "none":
+        env.Append(CCFLAGS=["/Od"])
+else:
+    if env["debug_symbols"]:
+        # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
+        # otherwise addr2line doesn't understand them
+        env.Append(CCFLAGS=["-gdwarf-4"])
+        if env.dev_build:
+            env.Append(CCFLAGS=["-g3"])
+        else:
+            env.Append(CCFLAGS=["-g2"])
+    else:
+        if methods.using_clang(env) and not methods.is_vanilla_clang(env):
+            # Apple Clang, its linker doesn't like -s.
+            env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
+        else:
+            env.Append(LINKFLAGS=["-s"])
 
-    if methods.using_gcc(env):
-        if cc_version_major == -1:
-            print(
-                "Couldn't detect compiler version, skipping version checks. "
-                "Build may fail if the compiler doesn't support C++17 fully."
-            )
-        # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
-        # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
-        elif cc_version_major == 8 and cc_version_minor < 4:
-            print(
-                "Detected GCC 8 version < 8.4, which is not supported due to a "
-                "regression in its C++17 guaranteed copy elision support. Use a "
-                'newer GCC version, or Clang 6 or later by passing "use_llvm=yes" '
-                "to the SCons command line."
-            )
-            Exit(255)
-        elif cc_version_major < 7:
-            print(
-                "Detected GCC version older than 7, which does not fully support "
-                "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
-                'version, or Clang 6 or later by passing "use_llvm=yes" to the '
-                "SCons command line."
-            )
-            Exit(255)
-        elif cc_version_metadata1 == "win32":
-            print(
-                "Detected mingw version is not using posix threads. Only posix "
-                "version of mingw is supported. "
-                'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
-                "to switch to posix threads."
-            )
-            Exit(255)
-    elif methods.using_clang(env):
-        if cc_version_major == -1:
-            print(
-                "Couldn't detect compiler version, skipping version checks. "
-                "Build may fail if the compiler doesn't support C++17 fully."
-            )
-        # Apple LLVM versions differ from upstream LLVM version \o/, compare
-        # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-        elif env["platform"] == "macos" or env["platform"] == "ios":
-            vanilla = methods.is_vanilla_clang(env)
-            if vanilla and cc_version_major < 6:
-                print(
-                    "Detected Clang version older than 6, which does not fully support "
-                    "C++17. Supported versions are Clang 6 and later."
-                )
-                Exit(255)
-            elif not vanilla and cc_version_major < 10:
-                print(
-                    "Detected Apple Clang version older than 10, which does not fully "
-                    "support C++17. Supported versions are Apple Clang 10 and later."
-                )
-                Exit(255)
-        elif cc_version_major < 6:
+    if env["optimize"] == "speed":
+        env.Append(CCFLAGS=["-O3"])
+    # `-O2` is friendlier to debuggers than `-O3`, leading to better crash backtraces.
+    elif env["optimize"] == "speed_trace":
+        env.Append(CCFLAGS=["-O2"])
+    elif env["optimize"] == "size":
+        env.Append(CCFLAGS=["-Os"])
+    elif env["optimize"] == "debug":
+        env.Append(CCFLAGS=["-Og"])
+    elif env["optimize"] == "none":
+        env.Append(CCFLAGS=["-O0"])
+
+# Needs to happen after configure to handle "auto".
+if env["lto"] != "none":
+    print("Using LTO: " + env["lto"])
+
+# Set our C and C++ standard requirements.
+# C++17 is required as we need guaranteed copy elision as per GH-36436.
+# Prepending to make it possible to override.
+# This needs to come after `configure`, otherwise we don't have env.msvc.
+if not env.msvc:
+    # Specifying GNU extensions support explicitly, which are supported by
+    # both GCC and Clang. Both currently default to gnu11 and gnu++14.
+    env.Prepend(CFLAGS=["-std=gnu11"])
+    env.Prepend(CXXFLAGS=["-std=gnu++17"])
+else:
+    # MSVC doesn't have clear C standard support, /std only covers C++.
+    # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
+    env.Prepend(CCFLAGS=["/std:c++17"])
+
+# Enforce our minimal compiler version requirements
+cc_version = methods.get_compiler_version(env) or {
+    "major": None,
+    "minor": None,
+    "patch": None,
+    "metadata1": None,
+    "metadata2": None,
+    "date": None,
+}
+cc_version_major = int(cc_version["major"] or -1)
+cc_version_minor = int(cc_version["minor"] or -1)
+cc_version_metadata1 = cc_version["metadata1"] or ""
+
+if methods.using_gcc(env):
+    if cc_version_major == -1:
+        print(
+            "Couldn't detect compiler version, skipping version checks. "
+            "Build may fail if the compiler doesn't support C++17 fully."
+        )
+    # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
+    # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
+    elif cc_version_major == 8 and cc_version_minor < 4:
+        print(
+            "Detected GCC 8 version < 8.4, which is not supported due to a "
+            "regression in its C++17 guaranteed copy elision support. Use a "
+            'newer GCC version, or Clang 6 or later by passing "use_llvm=yes" '
+            "to the SCons command line."
+        )
+        Exit(255)
+    elif cc_version_major < 7:
+        print(
+            "Detected GCC version older than 7, which does not fully support "
+            "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
+            'version, or Clang 6 or later by passing "use_llvm=yes" to the '
+            "SCons command line."
+        )
+        Exit(255)
+    elif cc_version_metadata1 == "win32":
+        print(
+            "Detected mingw version is not using posix threads. Only posix "
+            "version of mingw is supported. "
+            'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
+            "to switch to posix threads."
+        )
+        Exit(255)
+elif methods.using_clang(env):
+    if cc_version_major == -1:
+        print(
+            "Couldn't detect compiler version, skipping version checks. "
+            "Build may fail if the compiler doesn't support C++17 fully."
+        )
+    # Apple LLVM versions differ from upstream LLVM version \o/, compare
+    # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
+    elif env["platform"] == "macos" or env["platform"] == "ios":
+        vanilla = methods.is_vanilla_clang(env)
+        if vanilla and cc_version_major < 6:
             print(
                 "Detected Clang version older than 6, which does not fully support "
                 "C++17. Supported versions are Clang 6 and later."
             )
             Exit(255)
+        elif not vanilla and cc_version_major < 10:
+            print(
+                "Detected Apple Clang version older than 10, which does not fully "
+                "support C++17. Supported versions are Apple Clang 10 and later."
+            )
+            Exit(255)
+    elif cc_version_major < 6:
+        print(
+            "Detected Clang version older than 6, which does not fully support "
+            "C++17. Supported versions are Clang 6 and later."
+        )
+        Exit(255)
 
-    # Disable exception handling. Godot doesn't use exceptions anywhere, and this
-    # saves around 20% of binary size and very significant build time (GH-80513).
-    if env["disable_exceptions"]:
-        if env.msvc:
-            env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 0)])
-        else:
-            env.Append(CXXFLAGS=["-fno-exceptions"])
-    elif env.msvc:
-        env.Append(CXXFLAGS=["/EHsc"])
+# Disable exception handling. Godot doesn't use exceptions anywhere, and this
+# saves around 20% of binary size and very significant build time (GH-80513).
+if env["disable_exceptions"]:
+    if env.msvc:
+        env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 0)])
+    else:
+        env.Append(CXXFLAGS=["-fno-exceptions"])
+elif env.msvc:
+    env.Append(CXXFLAGS=["/EHsc"])
 
-    # Configure compiler warnings
-    if env.msvc:  # MSVC
-        if env["warnings"] == "no":
-            env.Append(CCFLAGS=["/w"])
-        else:
-            if env["warnings"] == "extra":
-                env.Append(CCFLAGS=["/W4"])
-            elif env["warnings"] == "all":
-                # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
-                env.Append(CCFLAGS=["/W3", "/w34458"])
-            elif env["warnings"] == "moderate":
-                env.Append(CCFLAGS=["/W2"])
-            # Disable warnings which we don't plan to fix.
+# Configure compiler warnings
+if env.msvc:  # MSVC
+    if env["warnings"] == "no":
+        env.Append(CCFLAGS=["/w"])
+    else:
+        if env["warnings"] == "extra":
+            env.Append(CCFLAGS=["/W4"])
+        elif env["warnings"] == "all":
+            # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
+            env.Append(CCFLAGS=["/W3", "/w34458"])
+        elif env["warnings"] == "moderate":
+            env.Append(CCFLAGS=["/W2"])
+        # Disable warnings which we don't plan to fix.
 
+        env.Append(
+            CCFLAGS=[
+                "/wd4100",  # C4100 (unreferenced formal parameter): Doesn't play nice with polymorphism.
+                "/wd4127",  # C4127 (conditional expression is constant)
+                "/wd4201",  # C4201 (non-standard nameless struct/union): Only relevant for C89.
+                "/wd4244",  # C4244 C4245 C4267 (narrowing conversions): Unavoidable at this scale.
+                "/wd4245",
+                "/wd4267",
+                "/wd4305",  # C4305 (truncation): double to float or real_t, too hard to avoid.
+                "/wd4514",  # C4514 (unreferenced inline function has been removed)
+                "/wd4714",  # C4714 (function marked as __forceinline not inlined)
+                "/wd4820",  # C4820 (padding added after construct)
+            ]
+        )
+
+    if env["werror"]:
+        env.Append(CCFLAGS=["/WX"])
+        env.Append(LINKFLAGS=["/WX"])
+else:  # GCC, Clang
+    common_warnings = []
+
+    if methods.using_gcc(env):
+        common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
+        if cc_version_major == 7:  # Bogus warning fixed in 8+.
+            common_warnings += ["-Wno-strict-overflow"]
+        if cc_version_major < 11:
+            # Regression in GCC 9/10, spams so much in our variadic templates
+            # that we need to outright disable it.
+            common_warnings += ["-Wno-type-limits"]
+        if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
+            common_warnings += ["-Wno-return-type"]
+    elif methods.using_clang(env) or methods.using_emcc(env):
+        common_warnings += ["-Wshadow-field-in-constructor", "-Wshadow-uncaptured-local"]
+        # We often implement `operator<` for structs of pointers as a requirement
+        # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
+        common_warnings += ["-Wno-ordered-compare-function-pointers"]
+
+    if env["warnings"] == "extra":
+        env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
+        env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
+        if methods.using_gcc(env):
             env.Append(
                 CCFLAGS=[
-                    "/wd4100",  # C4100 (unreferenced formal parameter): Doesn't play nice with polymorphism.
-                    "/wd4127",  # C4127 (conditional expression is constant)
-                    "/wd4201",  # C4201 (non-standard nameless struct/union): Only relevant for C89.
-                    "/wd4244",  # C4244 C4245 C4267 (narrowing conversions): Unavoidable at this scale.
-                    "/wd4245",
-                    "/wd4267",
-                    "/wd4305",  # C4305 (truncation): double to float or real_t, too hard to avoid.
-                    "/wd4514",  # C4514 (unreferenced inline function has been removed)
-                    "/wd4714",  # C4714 (function marked as __forceinline not inlined)
-                    "/wd4820",  # C4820 (padding added after construct)
+                    "-Walloc-zero",
+                    "-Wduplicated-branches",
+                    "-Wduplicated-cond",
+                    "-Wstringop-overflow=4",
                 ]
             )
-
-        if env["werror"]:
-            env.Append(CCFLAGS=["/WX"])
-            env.Append(LINKFLAGS=["/WX"])
-    else:  # GCC, Clang
-        common_warnings = []
-
-        if methods.using_gcc(env):
-            common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
-            if cc_version_major == 7:  # Bogus warning fixed in 8+.
-                common_warnings += ["-Wno-strict-overflow"]
-            if cc_version_major < 11:
-                # Regression in GCC 9/10, spams so much in our variadic templates
-                # that we need to outright disable it.
-                common_warnings += ["-Wno-type-limits"]
-            if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
-                common_warnings += ["-Wno-return-type"]
+            env.Append(CXXFLAGS=["-Wplacement-new=1"])
+            # Need to fix a warning with AudioServer lambdas before enabling.
+            # if cc_version_major != 9:  # GCC 9 had a regression (GH-36325).
+            #    env.Append(CXXFLAGS=["-Wnoexcept"])
+            if cc_version_major >= 9:
+                env.Append(CCFLAGS=["-Wattribute-alias=2"])
+            if cc_version_major >= 11:  # Broke on MethodBind templates before GCC 11.
+                env.Append(CCFLAGS=["-Wlogical-op"])
         elif methods.using_clang(env) or methods.using_emcc(env):
-            common_warnings += ["-Wshadow-field-in-constructor", "-Wshadow-uncaptured-local"]
-            # We often implement `operator<` for structs of pointers as a requirement
-            # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
-            common_warnings += ["-Wno-ordered-compare-function-pointers"]
+            env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
+    elif env["warnings"] == "all":
+        env.Append(CCFLAGS=["-Wall"] + common_warnings)
+    elif env["warnings"] == "moderate":
+        env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + common_warnings)
+    else:  # 'no'
+        env.Append(CCFLAGS=["-w"])
 
-        if env["warnings"] == "extra":
-            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
-            env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
-            if methods.using_gcc(env):
-                env.Append(
-                    CCFLAGS=[
-                        "-Walloc-zero",
-                        "-Wduplicated-branches",
-                        "-Wduplicated-cond",
-                        "-Wstringop-overflow=4",
-                    ]
-                )
-                env.Append(CXXFLAGS=["-Wplacement-new=1"])
-                # Need to fix a warning with AudioServer lambdas before enabling.
-                # if cc_version_major != 9:  # GCC 9 had a regression (GH-36325).
-                #    env.Append(CXXFLAGS=["-Wnoexcept"])
-                if cc_version_major >= 9:
-                    env.Append(CCFLAGS=["-Wattribute-alias=2"])
-                if cc_version_major >= 11:  # Broke on MethodBind templates before GCC 11.
-                    env.Append(CCFLAGS=["-Wlogical-op"])
-            elif methods.using_clang(env) or methods.using_emcc(env):
-                env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
-        elif env["warnings"] == "all":
-            env.Append(CCFLAGS=["-Wall"] + common_warnings)
-        elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + common_warnings)
-        else:  # 'no'
-            env.Append(CCFLAGS=["-w"])
+    if env["werror"]:
+        env.Append(CCFLAGS=["-Werror"])
 
-        if env["werror"]:
-            env.Append(CCFLAGS=["-Werror"])
+if hasattr(detect, "get_program_suffix"):
+    suffix = "." + detect.get_program_suffix()
+else:
+    suffix = "." + selected_platform
 
-    if hasattr(detect, "get_program_suffix"):
-        suffix = "." + detect.get_program_suffix()
-    else:
-        suffix = "." + selected_platform
+suffix += "." + env["target"]
+if env.dev_build:
+    suffix += ".dev"
 
-    suffix += "." + env["target"]
-    if env.dev_build:
-        suffix += ".dev"
+if env_base["precision"] == "double":
+    suffix += ".double"
 
-    if env_base["precision"] == "double":
-        suffix += ".double"
+suffix += "." + env["arch"]
 
-    suffix += "." + env["arch"]
+if not env["threads"]:
+    suffix += ".nothreads"
 
-    if not env["threads"]:
-        suffix += ".nothreads"
+suffix += env.extra_suffix
 
-    suffix += env.extra_suffix
+sys.path.remove(tmppath)
+sys.modules.pop("detect")
 
-    sys.path.remove(tmppath)
-    sys.modules.pop("detect")
+modules_enabled = OrderedDict()
+env.module_dependencies = {}
+env.module_icons_paths = []
+env.doc_class_path = platform_doc_class_path
 
-    modules_enabled = OrderedDict()
-    env.module_dependencies = {}
-    env.module_icons_paths = []
-    env.doc_class_path = platform_doc_class_path
+for name, path in modules_detected.items():
+    if not env["module_" + name + "_enabled"]:
+        continue
+    sys.path.insert(0, path)
+    env.current_module = name
+    import config
 
-    for name, path in modules_detected.items():
-        if not env["module_" + name + "_enabled"]:
+    if config.can_build(env, selected_platform):
+        # Disable it if a required dependency is missing.
+        if not env.module_check_dependencies(name):
             continue
-        sys.path.insert(0, path)
-        env.current_module = name
-        import config
 
-        if config.can_build(env, selected_platform):
-            # Disable it if a required dependency is missing.
-            if not env.module_check_dependencies(name):
-                continue
+        config.configure(env)
+        # Get doc classes paths (if present)
+        try:
+            doc_classes = config.get_doc_classes()
+            doc_path = config.get_doc_path()
+            for c in doc_classes:
+                env.doc_class_path[c] = path + "/" + doc_path
+        except Exception:
+            pass
+        # Get icon paths (if present)
+        try:
+            icons_path = config.get_icons_path()
+            env.module_icons_paths.append(path + "/" + icons_path)
+        except Exception:
+            # Default path for module icons
+            env.module_icons_paths.append(path + "/" + "icons")
+        modules_enabled[name] = path
 
-            config.configure(env)
-            # Get doc classes paths (if present)
-            try:
-                doc_classes = config.get_doc_classes()
-                doc_path = config.get_doc_path()
-                for c in doc_classes:
-                    env.doc_class_path[c] = path + "/" + doc_path
-            except Exception:
-                pass
-            # Get icon paths (if present)
-            try:
-                icons_path = config.get_icons_path()
-                env.module_icons_paths.append(path + "/" + icons_path)
-            except Exception:
-                # Default path for module icons
-                env.module_icons_paths.append(path + "/" + "icons")
-            modules_enabled[name] = path
+    sys.path.remove(path)
+    sys.modules.pop("config")
 
-        sys.path.remove(path)
-        sys.modules.pop("config")
+env.module_list = modules_enabled
+methods.sort_module_list(env)
 
-    env.module_list = modules_enabled
-    methods.sort_module_list(env)
+if env.editor_build:
+    # Add editor-specific dependencies to the dependency graph.
+    env.module_add_dependencies("editor", ["freetype", "svg"])
 
-    if env.editor_build:
-        # Add editor-specific dependencies to the dependency graph.
-        env.module_add_dependencies("editor", ["freetype", "svg"])
-
-        # And check if they are met.
-        if not env.module_check_dependencies("editor"):
-            print("Not all modules required by editor builds are enabled.")
-            Exit(255)
-
-    methods.generate_version_header(env.module_version_string)
-
-    env["PROGSUFFIX_WRAP"] = suffix + env.module_version_string + ".console" + env["PROGSUFFIX"]
-    env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
-    env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
-    # (SH)LIBSUFFIX will be used for our own built libraries
-    # LIBSUFFIXES contains LIBSUFFIX and SHLIBSUFFIX by default,
-    # so we need to append the default suffixes to keep the ability
-    # to link against thirdparty libraries (.a, .so, .lib, etc.).
-    if os.name == "nt":
-        # On Windows, only static libraries and import libraries can be
-        # statically linked - both using .lib extension
-        env["LIBSUFFIXES"] += [env["LIBSUFFIX"]]
-    else:
-        env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
-    env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
-    env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
-
-    env["OBJPREFIX"] = env["object_prefix"]
-    env["SHOBJPREFIX"] = env["object_prefix"]
-
-    if env["disable_3d"]:
-        if env.editor_build:
-            print("Build option 'disable_3d=yes' cannot be used for editor builds, only for export template builds.")
-            Exit(255)
-        else:
-            env.Append(CPPDEFINES=["_3D_DISABLED"])
-    if env["disable_advanced_gui"]:
-        if env.editor_build:
-            print(
-                "Build option 'disable_advanced_gui=yes' cannot be used for editor builds, "
-                "only for export template builds."
-            )
-            Exit(255)
-        else:
-            env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
-    if env["minizip"]:
-        env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
-    if env["brotli"]:
-        env.Append(CPPDEFINES=["BROTLI_ENABLED"])
-
-    if not env["verbose"]:
-        methods.no_verbose(sys, env)
-
-    GLSL_BUILDERS = {
-        "RD_GLSL": env.Builder(
-            action=env.Run(glsl_builders.build_rd_headers),
-            suffix="glsl.gen.h",
-            src_suffix=".glsl",
-        ),
-        "GLSL_HEADER": env.Builder(
-            action=env.Run(glsl_builders.build_raw_headers),
-            suffix="glsl.gen.h",
-            src_suffix=".glsl",
-        ),
-        "GLES3_GLSL": env.Builder(
-            action=env.Run(gles3_builders.build_gles3_headers),
-            suffix="glsl.gen.h",
-            src_suffix=".glsl",
-        ),
-    }
-    env.Append(BUILDERS=GLSL_BUILDERS)
-
-    scons_cache_path = os.environ.get("SCONS_CACHE")
-    if scons_cache_path != None:
-        CacheDir(scons_cache_path)
-        print("Scons cache enabled... (path: '" + scons_cache_path + "')")
-
-    if env["vsproj"]:
-        env.vs_incs = []
-        env.vs_srcs = []
-
-    # CompileDB and Ninja are only available with certain SCons versions which
-    # not everybody might have yet, so we have to check.
-    from SCons import __version__ as scons_raw_version
-
-    scons_ver = env._get_major_minor_revision(scons_raw_version)
-    if env["compiledb"] and scons_ver < (4, 0, 0):
-        # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-        print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
-        Exit(255)
-    if scons_ver >= (4, 0, 0):
-        env.Tool("compilation_db")
-        env.Alias("compiledb", env.CompilationDatabase())
-
-    if env["ninja"]:
-        if scons_ver < (4, 2, 0):
-            print("The `ninja=yes` option requires SCons 4.2 or later, but your version is %s." % scons_raw_version)
-            Exit(255)
-
-        SetOption("experimental", "ninja")
-
-        # By setting this we allow the user to run ninja by themselves with all
-        # the flags they need, as apparently automatically running from scons
-        # is way slower.
-        SetOption("disable_execute_ninja", True)
-
-        env.Tool("ninja")
-
-    # Threads
-    if env["threads"]:
-        env.Append(CPPDEFINES=["THREADS_ENABLED"])
-
-    # Build subdirs, the build order is dependent on link order.
-    Export("env")
-
-    SConscript("core/SCsub")
-    SConscript("servers/SCsub")
-    SConscript("scene/SCsub")
-    if env.editor_build:
-        SConscript("editor/SCsub")
-    SConscript("drivers/SCsub")
-
-    SConscript("platform/SCsub")
-    SConscript("modules/SCsub")
-    if env["tests"]:
-        SConscript("tests/SCsub")
-    SConscript("main/SCsub")
-
-    SConscript("platform/" + selected_platform + "/SCsub")  # Build selected platform.
-
-    # Microsoft Visual Studio Project Generation
-    if env["vsproj"]:
-        env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
-        methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
-        methods.generate_cpp_hint_file("cpp.hint")
-
-    # Check for the existence of headers
-    conf = Configure(env)
-    if "check_c_headers" in env:
-        headers = env["check_c_headers"]
-        for header in headers:
-            if conf.CheckCHeader(header):
-                env.AppendUnique(CPPDEFINES=[headers[header]])
-
-elif selected_platform != "":
-    if selected_platform == "list":
-        print("The following platforms are available:\n")
-    else:
-        print('Invalid target platform "' + selected_platform + '".')
-        print("The following platforms were detected:\n")
-
-    for x in platform_list:
-        print("\t" + x)
-
-    print("\nPlease run SCons again and select a valid platform: platform=<string>")
-
-    if selected_platform == "list":
-        # Exit early to suppress the rest of the built-in SCons messages
-        Exit()
-    else:
+    # And check if they are met.
+    if not env.module_check_dependencies("editor"):
+        print("Not all modules required by editor builds are enabled.")
         Exit(255)
 
-# The following only makes sense when the 'env' is defined, and assumes it is.
-if "env" in locals():
-    # FIXME: This method mixes both cosmetic progress stuff and cache handling...
-    methods.show_progress(env)
-    # TODO: replace this with `env.Dump(format="json")`
-    # once we start requiring SCons 4.0 as min version.
-    methods.dump(env)
+methods.generate_version_header(env.module_version_string)
+
+env["PROGSUFFIX_WRAP"] = suffix + env.module_version_string + ".console" + env["PROGSUFFIX"]
+env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
+env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
+# (SH)LIBSUFFIX will be used for our own built libraries
+# LIBSUFFIXES contains LIBSUFFIX and SHLIBSUFFIX by default,
+# so we need to append the default suffixes to keep the ability
+# to link against thirdparty libraries (.a, .so, .lib, etc.).
+if os.name == "nt":
+    # On Windows, only static libraries and import libraries can be
+    # statically linked - both using .lib extension
+    env["LIBSUFFIXES"] += [env["LIBSUFFIX"]]
+else:
+    env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
+env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
+env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
+
+env["OBJPREFIX"] = env["object_prefix"]
+env["SHOBJPREFIX"] = env["object_prefix"]
+
+if env["disable_3d"]:
+    if env.editor_build:
+        print("Build option 'disable_3d=yes' cannot be used for editor builds, only for export template builds.")
+        Exit(255)
+    else:
+        env.Append(CPPDEFINES=["_3D_DISABLED"])
+if env["disable_advanced_gui"]:
+    if env.editor_build:
+        print(
+            "Build option 'disable_advanced_gui=yes' cannot be used for editor builds, "
+            "only for export template builds."
+        )
+        Exit(255)
+    else:
+        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
+if env["minizip"]:
+    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
+if env["brotli"]:
+    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+
+if not env["verbose"]:
+    methods.no_verbose(sys, env)
+
+GLSL_BUILDERS = {
+    "RD_GLSL": env.Builder(
+        action=env.Run(glsl_builders.build_rd_headers),
+        suffix="glsl.gen.h",
+        src_suffix=".glsl",
+    ),
+    "GLSL_HEADER": env.Builder(
+        action=env.Run(glsl_builders.build_raw_headers),
+        suffix="glsl.gen.h",
+        src_suffix=".glsl",
+    ),
+    "GLES3_GLSL": env.Builder(
+        action=env.Run(gles3_builders.build_gles3_headers),
+        suffix="glsl.gen.h",
+        src_suffix=".glsl",
+    ),
+}
+env.Append(BUILDERS=GLSL_BUILDERS)
+
+scons_cache_path = os.environ.get("SCONS_CACHE")
+if scons_cache_path != None:
+    CacheDir(scons_cache_path)
+    print("Scons cache enabled... (path: '" + scons_cache_path + "')")
+
+if env["vsproj"]:
+    env.vs_incs = []
+    env.vs_srcs = []
+
+# CompileDB and Ninja are only available with certain SCons versions which
+# not everybody might have yet, so we have to check.
+from SCons import __version__ as scons_raw_version
+
+scons_ver = env._get_major_minor_revision(scons_raw_version)
+if env["compiledb"] and scons_ver < (4, 0, 0):
+    # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
+    print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
+    Exit(255)
+if scons_ver >= (4, 0, 0):
+    env.Tool("compilation_db")
+    env.Alias("compiledb", env.CompilationDatabase())
+
+if env["ninja"]:
+    if scons_ver < (4, 2, 0):
+        print("The `ninja=yes` option requires SCons 4.2 or later, but your version is %s." % scons_raw_version)
+        Exit(255)
+
+    SetOption("experimental", "ninja")
+
+    # By setting this we allow the user to run ninja by themselves with all
+    # the flags they need, as apparently automatically running from scons
+    # is way slower.
+    SetOption("disable_execute_ninja", True)
+
+    env.Tool("ninja")
+
+# Threads
+if env["threads"]:
+    env.Append(CPPDEFINES=["THREADS_ENABLED"])
+
+# Build subdirs, the build order is dependent on link order.
+Export("env")
+
+SConscript("core/SCsub")
+SConscript("servers/SCsub")
+SConscript("scene/SCsub")
+if env.editor_build:
+    SConscript("editor/SCsub")
+SConscript("drivers/SCsub")
+
+SConscript("platform/SCsub")
+SConscript("modules/SCsub")
+if env["tests"]:
+    SConscript("tests/SCsub")
+SConscript("main/SCsub")
+
+SConscript("platform/" + selected_platform + "/SCsub")  # Build selected platform.
+
+# Microsoft Visual Studio Project Generation
+if env["vsproj"]:
+    env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
+    methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
+    methods.generate_cpp_hint_file("cpp.hint")
+
+# Check for the existence of headers
+conf = Configure(env)
+if "check_c_headers" in env:
+    headers = env["check_c_headers"]
+    for header in headers:
+        if conf.CheckCHeader(header):
+            env.AppendUnique(CPPDEFINES=[headers[header]])
+
+
+# FIXME: This method mixes both cosmetic progress stuff and cache handling...
+methods.show_progress(env)
+# TODO: replace this with `env.Dump(format="json")`
+# once we start requiring SCons 4.0 as min version.
+methods.dump(env)
 
 
 def print_elapsed_time():

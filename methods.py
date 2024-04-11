@@ -228,7 +228,32 @@ def get_version_info(module_version_string="", silent=False):
     return version_info
 
 
+_cleanup_env = None
+_cleanup_bool = False
+
+
 def write_file_if_needed(path, string):
+    """Generates a file only if it doesn't already exist or the content has changed.
+
+    Utilizes a dedicated SCons environment to ensure the files are properly removed
+    during cleanup; will not attempt to create files during cleanup.
+
+    - `path` - Path to the file in question; used to create cleanup logic.
+    - `string` - Content to compare against an existing file.
+    """
+    global _cleanup_env
+    global _cleanup_bool
+
+    if _cleanup_env is None:
+        from SCons.Environment import Environment
+
+        _cleanup_env = Environment()
+        _cleanup_bool = _cleanup_env.GetOption("clean")
+
+    _cleanup_env.Clean("#", path)
+    if _cleanup_bool:
+        return
+
     try:
         with open(path, "r", encoding="utf-8", newline="\n") as f:
             if f.read() == string:
@@ -1301,7 +1326,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         filters_template = filters_template.replace("%%HASH%%", md5)
 
-        with open(f"{project_name}.vcxproj.filters", "w", encoding="utf-8", newline="\n") as f:
+        with open(f"{project_name}.vcxproj.filters", "w", encoding="utf-8", newline="\r\n") as f:
             f.write(filters_template)
 
     envsources = []
@@ -1427,14 +1452,18 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         props_template = props_template.replace("%%OUTPUT%%", output)
 
-        props_template = props_template.replace(
-            "%%DEFINES%%", ";".join([format_key_value(v) for v in list(env["CPPDEFINES"])])
-        )
-        props_template = props_template.replace("%%INCLUDES%%", ";".join([str(j) for j in env["CPPPATH"]]))
-        props_template = props_template.replace(
-            "%%OPTIONS%%",
-            " ".join(env["CCFLAGS"]) + " " + " ".join([x for x in env["CXXFLAGS"] if not x.startswith("$")]),
-        )
+        proplist = [format_key_value(v) for v in list(env["CPPDEFINES"])]
+        proplist += [format_key_value(j) for j in env.get("VSHINT_DEFINES", [])]
+        props_template = props_template.replace("%%DEFINES%%", ";".join(proplist))
+
+        proplist = [str(j) for j in env["CPPPATH"]]
+        proplist += [str(j) for j in env.get("VSHINT_INCLUDES", [])]
+        props_template = props_template.replace("%%INCLUDES%%", ";".join(proplist))
+
+        proplist = env["CCFLAGS"]
+        proplist += [x for x in env["CXXFLAGS"] if not x.startswith("$")]
+        proplist += [str(j) for j in env.get("VSHINT_OPTIONS", [])]
+        props_template = props_template.replace("%%OPTIONS%%", " ".join(proplist))
 
         # Windows allows us to have spaces in paths, so we need
         # to double quote off the directory. However, the path ends
@@ -1478,7 +1507,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         props_template = props_template.replace("%%CLEAN%%", cmd)
 
         with open(
-            f"{project_name}.{platform}.{target}.{arch}.generated.props", "w", encoding="utf-8", newline="\n"
+            f"{project_name}.{platform}.{target}.{arch}.generated.props", "w", encoding="utf-8", newline="\r\n"
         ) as f:
             f.write(props_template)
 
@@ -1595,7 +1624,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         sln_template = sln_template.replace("%%SECTION1%%", "\n    ".join(section1))
         sln_template = sln_template.replace("%%SECTION2%%", "\n    ".join(section2))
 
-        with open(f"{project_name}.sln", "w", encoding="utf-8", newline="\n") as f:
+        with open(f"{project_name}.sln", "w", encoding="utf-8", newline="\r\n") as f:
             f.write(sln_template)
 
     if get_bool(original_args, "vsproj_gen_only", True):

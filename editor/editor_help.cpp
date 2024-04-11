@@ -96,6 +96,18 @@ const Vector<String> classes_with_csharp_differences = {
 };
 #endif
 
+const Vector<String> packed_array_types = {
+	"PackedByteArray",
+	"PackedColorArray",
+	"PackedFloat32Array",
+	"PackedFloat64Array",
+	"PackedInt32Array",
+	"PackedInt64Array",
+	"PackedStringArray",
+	"PackedVector2Array",
+	"PackedVector3Array",
+};
+
 // TODO: this is sometimes used directly as doc->something, other times as EditorHelp::get_doc_data(), which is thread-safe.
 // Might this be a problem?
 DocTools *EditorHelp::doc = nullptr;
@@ -2193,6 +2205,12 @@ void EditorHelp::_update_doc() {
 				}
 				has_prev_text = true;
 				_add_text(descr);
+				// Add copy note to built-in properties returning Packed*Array.
+				if (!cd.is_script_doc && packed_array_types.has(prop.type)) {
+					class_desc->add_newline();
+					class_desc->add_newline();
+					_add_text(vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), prop.type));
+				}
 			} else if (!has_prev_text) {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
@@ -3173,21 +3191,34 @@ String EditorHelpBit::get_property_description(const StringName &p_class_name, c
 		for (const DocData::PropertyDoc &property : E->value.properties) {
 			String description_current = is_native ? DTR(property.description) : property.description;
 
-			const Vector<String> class_enum = property.enumeration.split(".");
-			const String enum_name = class_enum.size() >= 2 ? class_enum[1] : "";
-			if (!enum_name.is_empty()) {
-				// Classes can use enums from other classes, so check from which it came.
-				const HashMap<String, DocData::ClassDoc>::ConstIterator enum_class = dd->class_list.find(class_enum[0]);
-				if (enum_class) {
-					for (DocData::ConstantDoc val : enum_class->value.constants) {
-						// Don't display `_MAX` enum value descriptions, as these are never exposed in the inspector.
-						if (val.enumeration == enum_name && !val.name.ends_with("_MAX")) {
-							const String enum_value = EditorPropertyNameProcessor::get_singleton()->process_name(val.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
-							const String enum_prefix = EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " ";
-							const String enum_description = is_native ? DTR(val.description) : val.description;
+			String enum_class_name;
+			String enum_name;
+			if (CoreConstants::is_global_enum(property.enumeration)) {
+				enum_class_name = "@GlobalScope";
+				enum_name = property.enumeration;
+			} else {
+				const int dot_pos = property.enumeration.rfind(".");
+				if (dot_pos >= 0) {
+					enum_class_name = property.enumeration.left(dot_pos);
+					enum_name = property.enumeration.substr(dot_pos + 1);
+				}
+			}
 
-							// Prettify the enum value display, so that "<ENUM NAME>_<VALUE>" becomes "Value".
-							description_current = description_current.trim_prefix("\n") + vformat("\n[b]%s:[/b] %s", enum_value.trim_prefix(enum_prefix), enum_description.is_empty() ? ("[i]" + DTR("No description available.") + "[/i]") : enum_description);
+			if (!enum_class_name.is_empty() && !enum_name.is_empty()) {
+				// Classes can use enums from other classes, so check from which it came.
+				const HashMap<String, DocData::ClassDoc>::ConstIterator enum_class = dd->class_list.find(enum_class_name);
+				if (enum_class) {
+					const String enum_prefix = EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " ";
+					for (DocData::ConstantDoc constant : enum_class->value.constants) {
+						// Don't display `_MAX` enum value descriptions, as these are never exposed in the inspector.
+						if (constant.enumeration == enum_name && !constant.name.ends_with("_MAX")) {
+							// Prettify the enum value display, so that "<ENUM_NAME>_<ITEM>" becomes "Item".
+							const String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(constant.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED).trim_prefix(enum_prefix);
+							String item_descr = (is_native ? DTR(constant.description) : constant.description).strip_edges();
+							if (item_descr.is_empty()) {
+								item_descr = ("[i]" + DTR("No description available.") + "[/i]");
+							}
+							description_current += vformat("\n[b]%s:[/b] %s", item_name, item_descr);
 						}
 					}
 				}
@@ -3471,7 +3502,9 @@ EditorHelpHighlighter::HighlightData EditorHelpHighlighter::_get_highlight_data(
 	}
 
 	text_edits[p_language]->set_text(p_source);
-	scripts[p_language]->set_source_code(p_source);
+	if (scripts[p_language].is_valid()) { // See GH-89610.
+		scripts[p_language]->set_source_code(p_source);
+	}
 	highlighters[p_language]->_update_cache();
 
 	HighlightData result;
@@ -3542,8 +3575,11 @@ void EditorHelpHighlighter::reset_cache() {
 }
 
 EditorHelpHighlighter::EditorHelpHighlighter() {
+	const Color text_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
+
 #ifdef MODULE_GDSCRIPT_ENABLED
 	TextEdit *gdscript_text_edit = memnew(TextEdit);
+	gdscript_text_edit->add_theme_color_override("font_color", text_color);
 
 	Ref<GDScript> gdscript;
 	gdscript.instantiate();
@@ -3560,17 +3596,20 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 
 #ifdef MODULE_MONO_ENABLED
 	TextEdit *csharp_text_edit = memnew(TextEdit);
+	csharp_text_edit->add_theme_color_override("font_color", text_color);
 
-	Ref<CSharpScript> csharp;
-	csharp.instantiate();
+	// See GH-89610.
+	//Ref<CSharpScript> csharp;
+	//csharp.instantiate();
 
 	Ref<EditorStandardSyntaxHighlighter> csharp_highlighter;
 	csharp_highlighter.instantiate();
 	csharp_highlighter->set_text_edit(csharp_text_edit);
-	csharp_highlighter->_set_edited_resource(csharp);
+	//csharp_highlighter->_set_edited_resource(csharp);
+	csharp_highlighter->_set_script_language(CSharpLanguage::get_singleton());
 
 	text_edits[LANGUAGE_CSHARP] = csharp_text_edit;
-	scripts[LANGUAGE_CSHARP] = csharp;
+	//scripts[LANGUAGE_CSHARP] = csharp;
 	highlighters[LANGUAGE_CSHARP] = csharp_highlighter;
 #endif
 }
@@ -3578,14 +3617,10 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 EditorHelpHighlighter::~EditorHelpHighlighter() {
 #ifdef MODULE_GDSCRIPT_ENABLED
 	memdelete(text_edits[LANGUAGE_GDSCRIPT]);
-	scripts[LANGUAGE_GDSCRIPT].unref();
-	highlighters[LANGUAGE_GDSCRIPT].unref();
 #endif
 
 #ifdef MODULE_MONO_ENABLED
 	memdelete(text_edits[LANGUAGE_CSHARP]);
-	scripts[LANGUAGE_CSHARP].unref();
-	highlighters[LANGUAGE_CSHARP].unref();
 #endif
 }
 

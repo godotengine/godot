@@ -135,6 +135,8 @@ class EditorPropertyArray : public EditorProperty {
 	void _reorder_button_up();
 	void _create_new_property_slot();
 
+	Node *get_base_node();
+
 protected:
 	Ref<EditorPropertyArrayObject> object;
 

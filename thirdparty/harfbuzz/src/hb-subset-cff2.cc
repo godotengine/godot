@@ -248,7 +248,7 @@ struct cff2_subr_subsetter_t : subr_subsetter_t<cff2_subr_subsetter_t, CFF2Subrs
 struct cff2_private_blend_encoder_param_t
 {
   cff2_private_blend_encoder_param_t (hb_serialize_context_t *c,
-				      const CFF2VariationStore *varStore,
+				      const CFF2ItemVariationStore *varStore,
 				      hb_array_t<int> normalized_coords) :
     c (c), varStore (varStore), normalized_coords (normalized_coords) {}
 
@@ -284,7 +284,7 @@ struct cff2_private_blend_encoder_param_t
   unsigned ivs = 0;
   unsigned region_count = 0;
   hb_vector_t<float> scalars;
-  const	 CFF2VariationStore *varStore = nullptr;
+  const	 CFF2ItemVariationStore *varStore = nullptr;
   hb_array_t<int> normalized_coords;
 };
 
@@ -378,7 +378,7 @@ struct cff2_private_dict_blend_opset_t : dict_opset_t
 struct cff2_private_dict_op_serializer_t : op_serializer_t
 {
   cff2_private_dict_op_serializer_t (bool desubroutinize_, bool drop_hints_, bool pinned_,
-				     const CFF::CFF2VariationStore* varStore_,
+				     const CFF::CFF2ItemVariationStore* varStore_,
 				     hb_array_t<int> normalized_coords_)
     : desubroutinize (desubroutinize_), drop_hints (drop_hints_), pinned (pinned_),
       varStore (varStore_), normalized_coords (normalized_coords_) {}
@@ -416,7 +416,7 @@ struct cff2_private_dict_op_serializer_t : op_serializer_t
   const bool desubroutinize;
   const bool drop_hints;
   const bool pinned;
-  const CFF::CFF2VariationStore* varStore;
+  const CFF::CFF2ItemVariationStore* varStore;
   hb_array_t<int> normalized_coords;
 };
 
@@ -628,10 +628,10 @@ OT::cff2::accelerator_subset_t::serialize (hb_serialize_context_t *c,
   }
 
   /* variation store */
-  if (varStore != &Null (CFF2VariationStore) &&
+  if (varStore != &Null (CFF2ItemVariationStore) &&
       !plan.pinned)
   {
-    auto *dest = c->push<CFF2VariationStore> ();
+    auto *dest = c->push<CFF2ItemVariationStore> ();
     if (unlikely (!dest->serialize (c, varStore)))
     {
       c->pop_discard ();

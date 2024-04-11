@@ -188,7 +188,7 @@ struct hb_subset_layout_context_t :
   unsigned lookup_index_count;
 };
 
-struct VariationStore;
+struct ItemVariationStore;
 struct hb_collect_variation_indices_context_t :
        hb_dispatch_context_t<hb_collect_variation_indices_context_t>
 {
@@ -3036,7 +3036,7 @@ struct VarData
   DEFINE_SIZE_ARRAY (6, regionIndices);
 };
 
-struct VariationStore
+struct ItemVariationStore
 {
   friend struct item_variations_t;
   using cache_t = VarRegionList::cache_t;
@@ -3141,7 +3141,7 @@ struct VariationStore
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  const VariationStore *src,
+		  const ItemVariationStore *src,
 		  const hb_array_t <const hb_inc_bimap_t> &inner_maps)
   {
     TRACE_SERIALIZE (this);
@@ -3197,7 +3197,7 @@ struct VariationStore
     return_trace (true);
   }
 
-  VariationStore *copy (hb_serialize_context_t *c) const
+  ItemVariationStore *copy (hb_serialize_context_t *c) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->start_embed (this);
@@ -3227,7 +3227,7 @@ struct VariationStore
     return_trace (false);
 #endif
 
-    VariationStore *varstore_prime = c->serializer->start_embed<VariationStore> ();
+    ItemVariationStore *varstore_prime = c->serializer->start_embed<ItemVariationStore> ();
     if (unlikely (!varstore_prime)) return_trace (false);
 
     varstore_prime->serialize (c->serializer, this, inner_maps);
@@ -4030,13 +4030,13 @@ struct VariationDevice
   private:
 
   hb_position_t get_x_delta (hb_font_t *font,
-			     const VariationStore &store,
-			     VariationStore::cache_t *store_cache = nullptr) const
+			     const ItemVariationStore &store,
+			     ItemVariationStore::cache_t *store_cache = nullptr) const
   { return font->em_scalef_x (get_delta (font, store, store_cache)); }
 
   hb_position_t get_y_delta (hb_font_t *font,
-			     const VariationStore &store,
-			     VariationStore::cache_t *store_cache = nullptr) const
+			     const ItemVariationStore &store,
+			     ItemVariationStore::cache_t *store_cache = nullptr) const
   { return font->em_scalef_y (get_delta (font, store, store_cache)); }
 
   VariationDevice* copy (hb_serialize_context_t *c,
@@ -4070,10 +4070,10 @@ struct VariationDevice
   private:
 
   float get_delta (hb_font_t *font,
-		   const VariationStore &store,
-		   VariationStore::cache_t *store_cache = nullptr) const
+		   const ItemVariationStore &store,
+		   ItemVariationStore::cache_t *store_cache = nullptr) const
   {
-    return store.get_delta (varIdx, font->coords, font->num_coords, (VariationStore::cache_t *) store_cache);
+    return store.get_delta (varIdx, font->coords, font->num_coords, (ItemVariationStore::cache_t *) store_cache);
   }
 
   protected:
@@ -4097,8 +4097,8 @@ struct DeviceHeader
 struct Device
 {
   hb_position_t get_x_delta (hb_font_t *font,
-			     const VariationStore &store=Null (VariationStore),
-			     VariationStore::cache_t *store_cache = nullptr) const
+			     const ItemVariationStore &store=Null (ItemVariationStore),
+			     ItemVariationStore::cache_t *store_cache = nullptr) const
   {
     switch (u.b.format)
     {
@@ -4115,8 +4115,8 @@ struct Device
     }
   }
   hb_position_t get_y_delta (hb_font_t *font,
-			     const VariationStore &store=Null (VariationStore),
-			     VariationStore::cache_t *store_cache = nullptr) const
+			     const ItemVariationStore &store=Null (ItemVariationStore),
+			     ItemVariationStore::cache_t *store_cache = nullptr) const
   {
     switch (u.b.format)
     {

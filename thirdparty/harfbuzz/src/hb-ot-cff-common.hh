@@ -41,10 +41,21 @@ using namespace OT;
 using objidx_t = hb_serialize_context_t::objidx_t;
 using whence_t = hb_serialize_context_t::whence_t;
 
-/* utility macro */
-template<typename Type>
-static inline const Type& StructAtOffsetOrNull (const void *P, unsigned int offset)
-{ return offset ? StructAtOffset<Type> (P, offset) : Null (Type); }
+/* CFF offsets can technically be negative */
+template<typename Type, typename ...Ts>
+static inline const Type& StructAtOffsetOrNull (const void *P, int offset, hb_sanitize_context_t &sc, Ts&&... ds)
+{
+  if (!offset) return Null (Type);
+
+  const char *p = (const char *) P + offset;
+  if (!sc.check_point (p)) return Null (Type);
+
+  const Type &obj = *reinterpret_cast<const Type *> (p);
+  if (!obj.sanitize (&sc, std::forward<Ts> (ds)...)) return Null (Type);
+
+  return obj;
+}
+
 
 struct code_pair_t
 {
