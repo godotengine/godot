@@ -15,11 +15,11 @@
 			Array of random bytes that the licensing Policy uses to create an [url=https://developer.android.com/google/play/licensing/adding-licensing#impl-Obfuscator]Obfuscator[/url].
 		</member>
 		<member name="apk_expansion/enable" type="bool" setter="" getter="">
-			If [code]true[/code], project resources are stored in the separate APK expansion file, instead APK.
-			[b]Note:[/b] APK expansion should be enabled to use PCK encryption.
+			If [code]true[/code], project resources are stored in the separate APK expansion file, instead of the APK.
+			[b]Note:[/b] APK expansion should be enabled to use PCK encryption. See [url=https://developer.android.com/google/play/expansion-files]APK Expansion Files[/url]
 		</member>
 		<member name="apk_expansion/public_key" type="String" setter="" getter="">
-			Base64 encoded RSA public key for your publisher account, available from the profile page on the "Play Console".
+			Base64 encoded RSA public key for your publisher account, available from the profile page on the "Google Play Console".
 		</member>
 		<member name="architectures/arm64-v8a" type="bool" setter="" getter="">
 			If [code]true[/code], [code]arm64[/code] binaries are included into exported project.
@@ -34,7 +34,7 @@
 			If [code]true[/code], [code]x86_64[/code] binaries are included into exported project.
 		</member>
 		<member name="command_line/extra_args" type="String" setter="" getter="">
-			A list of additional command line arguments, exported project will receive when started.
+			A list of additional command line arguments, separated by space, which the exported project will receive when started.
 		</member>
 		<member name="custom_template/debug" type="String" setter="" getter="">
 			Path to an APK file to use as a custom export template for debug exports. If left empty, default template is used.
@@ -52,16 +52,16 @@
 			[b]Note:[/b] Although your binary may be smaller, your application may load slower because the native libraries are not loaded directly from the binary at runtime.
 		</member>
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
-			Export format for Gradle build.
+			Application export format (*.apk or *.aab).
 		</member>
 		<member name="gradle_build/gradle_build_directory" type="String" setter="" getter="">
 			Path to the Gradle build directory. If left empty, then [code]res://android[/code] will be used.
 		</member>
 		<member name="gradle_build/min_sdk" type="String" setter="" getter="">
-			Minimal Android SDK version for Gradle build.
+			Minimum Android API level required for the application to run (used during Gradle build). See [url=https://developer.android.com/guide/topics/manifest/uses-sdk-element#uses]android:minSdkVersion[/url].
 		</member>
 		<member name="gradle_build/target_sdk" type="String" setter="" getter="">
-			Target Android SDK version for Gradle build.
+			The Android API level on which the application is designed to run (used during Gradle build). See [url=https://developer.android.com/guide/topics/manifest/uses-sdk-element#uses]android:targetSdkVersion[/url].
 		</member>
 		<member name="gradle_build/use_gradle_build" type="bool" setter="" getter="">
 			If [code]true[/code], Gradle build is used instead of pre-built APK.
@@ -97,25 +97,25 @@
 			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_RELEASE_USER[/code].
 		</member>
 		<member name="launcher_icons/adaptive_background_432x432" type="String" setter="" getter="">
-			Background layer of the application adaptive icon file.
+			Background layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
 		</member>
 		<member name="launcher_icons/adaptive_foreground_432x432" type="String" setter="" getter="">
-			Foreground layer of the application adaptive icon file.
+			Foreground layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
 		</member>
 		<member name="launcher_icons/main_192x192" type="String" setter="" getter="">
 			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/icon].
 		</member>
 		<member name="package/app_category" type="int" setter="" getter="">
-			Application category for the Play Store.
+			Application category for the Google Play Store. Only define this if your application fits one of the categories well. See [url=https://developer.android.com/guide/topics/manifest/application-element#appCategory]android:appCategory[/url].
 		</member>
 		<member name="package/exclude_from_recents" type="bool" setter="" getter="">
-			If [code]true[/code], task initiated by main activity will be excluded from the list of recently used applications.
+			If [code]true[/code], task initiated by main activity will be excluded from the list of recently used applications. See [url=https://developer.android.com/guide/topics/manifest/activity-element#exclude]android:excludeFromRecents[/url].
 		</member>
 		<member name="package/name" type="String" setter="" getter="">
 			Name of the application.
 		</member>
 		<member name="package/retain_data_on_uninstall" type="bool" setter="" getter="">
-			If [code]true[/code], when the user uninstalls an app, a prompt to keep the app's data will be shown.
+			If [code]true[/code], when the user uninstalls an app, a prompt to keep the app's data will be shown. See [url=https://developer.android.com/guide/topics/manifest/application-element#fragileuserdata]android:hasFragileUserData[/url].
 		</member>
 		<member name="package/show_as_launcher_app" type="bool" setter="" getter="">
 			If [code]true[/code], the user will be able to set this app as the system launcher in Android preferences.
@@ -378,10 +378,10 @@
 			Allows applications to perform I/O operations over NFC. See [url=https://developer.android.com/reference/android/Manifest.permission#NFC]NFC[/url].
 		</member>
 		<member name="permissions/persistent_activity" type="bool" setter="" getter="" deprecated="Deprecated in API level 15.">
-			Allow an application to make its activities persistent.
+			Allows an application to make its activities persistent.
 		</member>
-		<member name="permissions/post_notifications" type="bool" setter="" getter="" deprecated="">
-			Allow an application to post notifications. Added in API level 33. See [url=https://developer.android.com/develop/ui/views/notifications/notification-permission]Notification runtime permission[/url].
+		<member name="permissions/post_notifications" type="bool" setter="" getter="">
+			Allows an application to post notifications. Added in API level 33. See [url=https://developer.android.com/develop/ui/views/notifications/notification-permission]Notification runtime permission[/url].
 		</member>
 		<member name="permissions/process_outgoing_calls" type="bool" setter="" getter="" deprecated="Deprecated in API level 29.">
 			Allows an application to see the number being dialed during an outgoing call with the option to redirect the call to a different number or abort the call altogether. See [url=https://developer.android.com/reference/android/Manifest.permission#PROCESS_OUTGOING_CALLS]PROCESS_OUTGOING_CALLS[/url].
