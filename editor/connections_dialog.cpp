@@ -1101,9 +1101,9 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	cd.signal = StringName(signal_name);
 	cd.target = dst_node;
 	cd.method = ConnectDialog::generate_method_callback_name(cd.source, signal_name, cd.target);
-	connect_dialog->popup_dialog(signal_name + "(" + String(", ").join(signal_args) + ")");
 	connect_dialog->init(cd, signal_args);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
+	connect_dialog->popup_dialog(signal_name + "(" + String(", ").join(signal_args) + ")");
 }
 
 /*
