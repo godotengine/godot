@@ -977,8 +977,6 @@ bool FreeDesktopPortalDesktop::indicator_create(DisplayServer::IndicatorID p_id,
 		return false;
 	}
 
-	item.name_assigned = true;
-
 	indicator_id_map[name] = p_id;
 
 	StatusNotifierItem &item = indicators[p_id];
@@ -1029,11 +1027,9 @@ Error FreeDesktopPortalDesktop::indicator_set_icon(DisplayServer::IndicatorID p_
 		item.icon_data.append(image_data[i + 2]); // B
 	}
 
-	if (item.name_assigned) {
-		DBusMessage *signal = dbus_message_new_signal(BUS_STATUS_NOTIFIER_ITEM_PATH, BUS_INTERFACE_STATUS_NOTIFIER_ITEM, "NewIcon");
-		dbus_connection_send(monitor_connection, signal, NULL);
-		dbus_message_unref(signal);
-	}
+	DBusMessage *signal = dbus_message_new_signal(BUS_STATUS_NOTIFIER_ITEM_PATH, BUS_INTERFACE_STATUS_NOTIFIER_ITEM, "NewIcon");
+	dbus_connection_send(monitor_connection, signal, NULL);
+	dbus_message_unref(signal);
 
 	return OK;
 }
@@ -1047,11 +1043,9 @@ void FreeDesktopPortalDesktop::indicator_set_tooltip(DisplayServer::IndicatorID 
 
 	item.tooltip = p_tooltip;
 
-	if (item.name_assigned) {
-		DBusMessage *signal = dbus_message_new_signal(BUS_STATUS_NOTIFIER_ITEM_PATH, BUS_INTERFACE_STATUS_NOTIFIER_ITEM, "NewToolTip");
-		dbus_connection_send(monitor_connection, signal, NULL);
-		dbus_message_unref(signal);
-	}
+	DBusMessage *signal = dbus_message_new_signal(BUS_STATUS_NOTIFIER_ITEM_PATH, BUS_INTERFACE_STATUS_NOTIFIER_ITEM, "NewToolTip");
+	dbus_connection_send(monitor_connection, signal, NULL);
+	dbus_message_unref(signal);
 }
 
 void FreeDesktopPortalDesktop::indicator_set_callback(DisplayServer::IndicatorID p_id, const Callable &p_callback) {

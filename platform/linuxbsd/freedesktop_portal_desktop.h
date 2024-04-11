@@ -95,7 +95,6 @@ private:
 		String name;
 		String tooltip;
 		Callable activate_callback;
-		bool name_assigned = false;
 		Size2i icon_size;
 		Vector<uint8_t> icon_data;
 	};
