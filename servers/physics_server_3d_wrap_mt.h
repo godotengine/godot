@@ -48,6 +48,8 @@
 #endif
 
 class PhysicsServer3DWrapMT : public PhysicsServer3D {
+	_THREAD_SAFE_CLASS_
+
 	mutable PhysicsServer3D *physics_server_3d = nullptr;
 
 	mutable CommandQueueMT command_queue;

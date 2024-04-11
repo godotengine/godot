@@ -49,6 +49,8 @@
 #endif
 
 class PhysicsServer2DWrapMT : public PhysicsServer2D {
+	_THREAD_SAFE_CLASS_
+
 	mutable PhysicsServer2D *physics_server_2d = nullptr;
 
 	mutable CommandQueueMT command_queue;
