@@ -3693,6 +3693,10 @@ void FileSystemDock::_feature_profile_changed() {
 	_update_display_mode(true);
 }
 
+void FileSystemDock::_project_settings_changed() {
+	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
+}
+
 void FileSystemDock::set_file_sort(FileSortOption p_file_sort) {
 	for (int i = 0; i != FILE_SORT_MAX; i++) {
 		tree_button_sort->get_popup()->set_item_checked(i, (i == (int)p_file_sort));
@@ -4122,6 +4126,7 @@ FileSystemDock::FileSystemDock() {
 	old_display_mode = DISPLAY_MODE_TREE_ONLY;
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FileSystemDock::_project_settings_changed));
 	add_resource_tooltip_plugin(memnew(EditorTextureTooltipPlugin));
 }
 
