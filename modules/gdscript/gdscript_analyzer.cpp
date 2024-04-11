@@ -3788,7 +3788,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				} break;
 
 				case GDScriptParser::ClassNode::Member::FUNCTION: {
-					if (is_base && (!base.is_meta_type || member.function->is_static)) {
+					if (is_base && (!base.is_meta_type || member.function->is_static || is_constructor)) {
 						p_identifier->set_datatype(make_callable_type(member.function->info));
 						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_FUNCTION;
 						return;
