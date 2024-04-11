@@ -410,6 +410,12 @@
 				Reloads the scene at the given path.
 			</description>
 		</method>
+		<method name="remove_root_node">
+			<return type="void" />
+			<description>
+				Removes the currently edited scene.
+			</description>
+		</method>
 		<method name="restart_editor">
 			<return type="void" />
 			<param index="0" name="save" type="bool" default="true" />
