@@ -144,7 +144,10 @@ namespace GodotTools.Export
             if (!ProjectContainsDotNet())
                 return;
 
-            if (!DeterminePlatformFromFeatures(features, out string? platform))
+            string osName = GetPlatformOsName();
+
+            // Check if the OS name corresponds to one of the supported platforms.
+            if (!TryDeterminePlatformFromOSName(osName, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
             if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
@@ -459,12 +462,20 @@ namespace GodotTools.Export
             }
         }
 
-        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, [NotNullWhen(true)] out string? platform)
+        /// <summary>
+        /// Tries to determine the platform from the export preset's platform OS name.
+        /// </summary>
+        /// <param name="osName">Name of the export operating system.</param>
+        /// <param name="platform">Platform name for the recognized supported platform.</param>
+        /// <returns>
+        /// <see langword="true"/> when the platform OS name is recognized as a supported platform,
+        /// <see langword="false"/> otherwise.
+        /// </returns>
+        private static bool TryDeterminePlatformFromOSName(string osName, [NotNullWhen(true)] out string? platform)
         {
-            foreach (var feature in features)
+            if (OS.PlatformFeatureMap.TryGetValue(osName, out platform))
             {
-                if (OS.PlatformFeatureMap.TryGetValue(feature, out platform))
-                    return true;
+                return true;
             }
 
             platform = null;
