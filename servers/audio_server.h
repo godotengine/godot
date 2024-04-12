@@ -299,6 +299,7 @@ private:
 	void _driver_process(int p_frames, int32_t *p_buffer);
 
 protected:
+	void _tag_collect_pass_custom(uint32_t p_pass, bool p_containers) const;
 	static void _bind_methods();
 
 public:

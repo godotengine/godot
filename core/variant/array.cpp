@@ -47,7 +47,27 @@ public:
 	Vector<Variant> array;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
+	uint32_t collect_pass = 0;
 };
+
+void Array::tag_collect_pass(uint32_t p_pass, bool p_collect_containers) const {
+	if (_p->collect_pass == p_pass) {
+		return;
+	}
+
+	_p->collect_pass = p_pass; // Mark beforehand due to recursion.
+
+	if (_p->typed.type != Variant::OBJECT && _p->typed.type != Variant::DICTIONARY && _p->typed.type != Variant::ARRAY && _p->typed.type != Variant::NIL) {
+		// None of these types will contain objects, so do not do anything here.
+		return;
+	}
+
+	int len = _p->array.size();
+	const Variant *arr = _p->array.ptr();
+	for (int i = 0; i < len; i++) {
+		arr[i].tag_collect_pass(p_pass, p_collect_containers);
+	}
+}
 
 void Array::_ref(const Array &p_from) const {
 	ArrayPrivate *_fp = p_from._p;

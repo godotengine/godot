@@ -230,6 +230,8 @@ public:
 	static String debug_get_script_name(const Ref<Script> &p_script);
 #endif
 
+	virtual String get_script_name() const override;
+
 	static String canonicalize_path(const String &p_path);
 	_FORCE_INLINE_ static bool is_canonically_equal_paths(const String &p_path_a, const String &p_path_b) {
 		return canonicalize_path(p_path_a) == canonicalize_path(p_path_b);
@@ -341,6 +343,8 @@ public:
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
 #endif
 
+	void _tag_collect_pass_custom(uint32_t p_pass, bool p_containers) const;
+
 	GDScript();
 	~GDScript();
 };
@@ -362,6 +366,8 @@ class GDScriptInstance : public ScriptInstance {
 #endif
 	Vector<Variant> members;
 	bool base_ref_counted;
+
+	uint32_t collect_pass = 0;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
@@ -398,6 +404,8 @@ public:
 	void reload_members();
 
 	virtual const Variant get_rpc_config() const;
+
+	virtual void tag_collect_pass(uint32_t p_pass, bool p_collect_containers = false);
 
 	GDScriptInstance();
 	~GDScriptInstance();

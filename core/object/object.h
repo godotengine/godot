@@ -528,6 +528,15 @@ protected:                                                                      
 			_validate_property(p_property);                                                                                                      \
 		}                                                                                                                                        \
 	}                                                                                                                                            \
+	_FORCE_INLINE_ void (Object::*_get_tag_collect_pass_custom() const)(uint32_t p_pass, bool p_containers) const {                              \
+		return (void(Object::*)(uint32_t, bool) const) & m_class::_tag_collect_pass_custom;                                                      \
+	}                                                                                                                                            \
+	virtual void _tag_collect_pass_customv(uint32_t p_pass, bool p_containers) const override {                                                  \
+		m_inherits::_tag_collect_pass_customv(p_pass, p_containers);                                                                             \
+		if (m_class::_get_tag_collect_pass_custom() != m_inherits::_get_tag_collect_pass_custom()) {                                             \
+			_tag_collect_pass_custom(p_pass, p_containers);                                                                                      \
+		}                                                                                                                                        \
+	}                                                                                                                                            \
 	_FORCE_INLINE_ bool (Object::*_get_property_can_revert() const)(const StringName &p_name) const {                                            \
 		return (bool(Object::*)(const StringName &) const) & m_class::_property_can_revert;                                                      \
 	}                                                                                                                                            \
@@ -639,6 +648,7 @@ private:
 	uint32_t _edited_version = 0;
 	HashSet<String> editor_section_folding;
 #endif
+	uint32_t collect_pass = 0;
 	ScriptInstance *script_instance = nullptr;
 	Variant script; // Reference does not exist yet, store it in a Variant.
 	HashMap<StringName, Variant> metadata;
@@ -700,6 +710,7 @@ protected:
 	virtual bool _getv(const StringName &p_name, Variant &r_property) const { return false; };
 	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const {};
 	virtual void _validate_propertyv(PropertyInfo &p_property) const {};
+	virtual void _tag_collect_pass_customv(uint32_t p_pass, bool p_containers) const {};
 	virtual bool _property_can_revertv(const StringName &p_name) const { return false; };
 	virtual bool _property_get_revertv(const StringName &p_name, Variant &r_property) const { return false; };
 	virtual void _notificationv(int p_notification, bool p_reversed) {}
@@ -714,6 +725,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_property) const { return false; };
 	void _get_property_list(List<PropertyInfo> *p_list) const {};
 	void _validate_property(PropertyInfo &p_property) const {};
+	void _tag_collect_pass_custom(uint32_t p_pass, bool p_containers) const {};
 	bool _property_can_revert(const StringName &p_name) const { return false; };
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return false; };
 	void _notification(int p_notification) {}
@@ -735,6 +747,9 @@ protected:
 	}
 	_FORCE_INLINE_ void (Object::*_get_validate_property() const)(PropertyInfo &p_property) const {
 		return &Object::_validate_property;
+	}
+	_FORCE_INLINE_ void (Object::*_get_tag_collect_pass_custom() const)(uint32_t p_pass, bool p_containers) const {
+		return &Object::_tag_collect_pass_custom;
 	}
 	_FORCE_INLINE_ bool (Object::*_get_property_can_revert() const)(const StringName &p_name) const {
 		return &Object::_property_can_revert;
@@ -998,6 +1013,10 @@ public:
 
 	void cancel_free();
 
+	void tag_collect_pass(uint32_t p_pass, bool p_collect_containers = false);
+	_FORCE_INLINE_ uint32_t get_collect_pass() const { return collect_pass; }
+	virtual void unlink_resources(bool p_collect_containers = false);
+
 	Object();
 	virtual ~Object();
 };
@@ -1060,6 +1079,9 @@ public:
 
 		return object;
 	}
+
+	static void fetch_unliked_objects(uint32_t p_collect_pass, List<ObjectID> &r_unlinked);
+
 	static void debug_objects(DebugFunc p_func);
 	static int get_object_count();
 };

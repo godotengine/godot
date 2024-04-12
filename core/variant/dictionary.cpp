@@ -43,7 +43,25 @@ struct DictionaryPrivate {
 	SafeRefCount refcount;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator> variant_map;
+	uint32_t collect_pass = 0;
 };
+
+void Dictionary::tag_collect_pass(uint32_t p_pass, bool p_collect_containers) const {
+	if (_p->collect_pass == p_pass) {
+		return;
+	}
+
+	/* Add typed dictionary check here eventually */
+
+	_p->collect_pass = p_pass; // Mark beforehand due to recursion.
+
+	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
+		for (int i = 0; i < 2; i++) {
+			const Variant &v = i == 0 ? E.key : E.value;
+			v.tag_collect_pass(p_pass, p_collect_containers);
+		}
+	}
+}
 
 void Dictionary::get_key_list(List<Variant> *p_keys) const {
 	if (_p->variant_map.is_empty()) {

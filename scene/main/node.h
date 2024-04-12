@@ -313,6 +313,7 @@ protected:
 	void _block() { data.blocked++; }
 	void _unblock() { data.blocked--; }
 
+	void _tag_collect_pass_custom(uint32_t p_pass, bool p_containers) const;
 	void _notification(int p_notification);
 
 	virtual void _physics_interpolated_changed();

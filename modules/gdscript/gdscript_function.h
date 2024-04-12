@@ -546,6 +546,12 @@ public:
 	void disassemble(const Vector<String> &p_code_lines) const;
 #endif
 
+	void tag_collect_pass(uint32_t p_pass, bool p_containers) {
+		for (int i = 0; i < constants.size(); i++) {
+			constants[i].tag_collect_pass(p_pass, p_containers);
+		}
+	}
+
 	GDScriptFunction();
 	~GDScriptFunction();
 };

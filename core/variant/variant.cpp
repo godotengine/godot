@@ -3605,6 +3605,13 @@ String Variant::get_callable_error_text(const Callable &p_callable, const Varian
 	}
 }
 
+void Variant::_tag_collect_pass_object(uint32_t p_pass, bool p_collect_containers) const {
+	Object *instance = ObjectDB::get_instance(_get_obj().id);
+	if (instance) {
+		instance->tag_collect_pass(p_pass, p_collect_containers);
+	}
+}
+
 void Variant::register_types() {
 	_register_variant_operators();
 	_register_variant_methods();

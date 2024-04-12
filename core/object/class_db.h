@@ -116,6 +116,12 @@ public:
 		HashMap<StringName, MethodInfo> signal_map;
 		List<PropertyInfo> property_list;
 		HashMap<StringName, PropertyInfo> property_map;
+
+		// For tagging
+		LocalVector<StringName> resource_properties;
+		LocalVector<StringName> array_properties;
+		LocalVector<StringName> dict_properties;
+
 #ifdef DEBUG_METHODS_ENABLED
 		List<StringName> constant_order;
 		List<StringName> method_order;
@@ -478,6 +484,9 @@ public:
 	static void get_native_struct_list(List<StringName> *r_names);
 	static String get_native_struct_code(const StringName &p_name);
 	static uint64_t get_native_struct_size(const StringName &p_name); // Used for asserting
+
+	static void tag_collect_pass(Object *object, uint32_t p_pass, bool p_containers);
+	static void unlink_resources(Object *p_object, bool p_containers);
 };
 
 #define BIND_ENUM_CONSTANT(m_constant) \

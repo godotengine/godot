@@ -1344,6 +1344,14 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 	OBJTYPE_WLOCK
 
 	type->property_list.push_back(p_pinfo);
+	if (p_pinfo.type == Variant::OBJECT) {
+		type->resource_properties.push_back(p_pinfo.name);
+	} else if (p_pinfo.type == Variant::ARRAY) {
+		type->array_properties.push_back(p_pinfo.name);
+	} else if (p_pinfo.type == Variant::DICTIONARY) {
+		type->dict_properties.push_back(p_pinfo.name);
+	}
+
 	type->property_map[p_pinfo.name] = p_pinfo;
 #ifdef DEBUG_METHODS_ENABLED
 	if (mb_get) {
@@ -2166,4 +2174,45 @@ void ClassDB::cleanup() {
 	native_structs.clear();
 }
 
-//
+void ClassDB::tag_collect_pass(Object *p_object, uint32_t p_pass, bool p_containers) {
+	ClassInfo *check = classes.getptr(p_object->get_class_name());
+	while (check) {
+		for (uint32_t i = 0; i < check->resource_properties.size(); i++) {
+			Ref<Resource> res = p_object->get(check->resource_properties[i]);
+			if (res.is_valid()) {
+				res->tag_collect_pass(p_pass, p_containers);
+			}
+		}
+		if (p_containers) {
+			for (uint32_t i = 0; i < check->dict_properties.size(); i++) {
+				Dictionary dict = p_object->get(check->dict_properties[i]);
+				dict.tag_collect_pass(p_pass, p_containers);
+			}
+
+			for (uint32_t i = 0; i < check->array_properties.size(); i++) {
+				Array arr = p_object->get(check->array_properties[i]);
+				arr.tag_collect_pass(p_pass, p_containers);
+			}
+		}
+		check = check->inherits_ptr;
+	}
+}
+
+void ClassDB::unlink_resources(Object *p_object, bool p_containers) {
+	ClassInfo *check = classes.getptr(p_object->get_class_name());
+	while (check) {
+		for (uint32_t i = 0; i < check->resource_properties.size(); i++) {
+			p_object->set(check->resource_properties[i], Ref<Resource>());
+		}
+		if (p_containers) {
+			for (uint32_t i = 0; i < check->dict_properties.size(); i++) {
+				p_object->set(check->dict_properties[i], Dictionary());
+			}
+
+			for (uint32_t i = 0; i < check->array_properties.size(); i++) {
+				p_object->set(check->array_properties[i], Array());
+			}
+		}
+		check = check->inherits_ptr;
+	}
+}

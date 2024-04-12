@@ -193,6 +193,8 @@ public:
 	void make_read_only();
 	bool is_read_only() const;
 
+	void tag_collect_pass(uint32_t p_pass, bool p_collect_containers = false) const;
+
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array();
