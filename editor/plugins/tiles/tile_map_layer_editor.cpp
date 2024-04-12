@@ -3672,10 +3672,16 @@ void TileMapLayerEditor::_node_change(Node *p_node) {
 
 void TileMapLayerEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_ENTER_TREE: {
 			get_tree()->connect("node_added", callable_mp(this, &TileMapLayerEditor::_node_change));
 			get_tree()->connect("node_removed", callable_mp(this, &TileMapLayerEditor::_node_change));
 		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_added", callable_mp(this, &TileMapLayerEditor::_node_change));
+			get_tree()->disconnect("node_removed", callable_mp(this, &TileMapLayerEditor::_node_change));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			missing_tile_texture = get_editor_theme_icon(SNAME("StatusWarning"));
 			warning_pattern_texture = get_editor_theme_icon(SNAME("WarningPattern"));
