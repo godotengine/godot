@@ -4507,7 +4507,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 							continue;
 						}
 						Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
-						if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
+						if (edited_scene && !edited_scene->get_scene_file_path().is_empty() && _cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
 							memdelete(instantiated_scene);
 							can_instantiate = false;
 							is_cyclical_dep = true;
