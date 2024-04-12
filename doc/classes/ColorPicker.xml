@@ -8,7 +8,7 @@
 		[b]Note:[/b] This control is the color picker widget itself. You can use a [ColorPickerButton] instead if you need a button that brings up a [ColorPicker] in a popup.
 	</description>
 	<tutorials>
-		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
+		<link title="Tween Interpolation Demo">https://godotengine.org/asset-library/asset/2733</link>
 	</tutorials>
 	<methods>
 		<method name="add_preset">
@@ -58,7 +58,7 @@
 		<member name="can_add_swatches" type="bool" setter="set_can_add_swatches" getter="are_swatches_enabled" default="true">
 			If [code]true[/code], it's possible to add presets under Swatches. If [code]false[/code], the button to add presets is disabled.
 		</member>
-		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			The currently selected color.
 		</member>
 		<member name="color_mode" type="int" setter="set_color_mode" getter="get_color_mode" enum="ColorPicker.ColorModeType" default="0">
@@ -185,6 +185,9 @@
 		</theme_item>
 		<theme_item name="sample_bg" data_type="icon" type="Texture2D">
 			Background panel for the color preview box (visible when the color is translucent).
+		</theme_item>
+		<theme_item name="sample_revert" data_type="icon" type="Texture2D">
+			The icon for the revert button (visible on the middle of the "old" color when it differs from the currently selected color). This icon is modulated with a dark color if the "old" color is bright enough, so the icon should be bright to ensure visibility in both scenarios.
 		</theme_item>
 		<theme_item name="screen_picker" data_type="icon" type="Texture2D">
 			The icon for the screen color picker button.

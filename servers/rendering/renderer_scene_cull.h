@@ -44,7 +44,12 @@
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/utilities.h"
+
+#ifndef _3D_DISABLED
 #include "servers/xr/xr_interface.h"
+#endif // _3D_DISABLED
+
+class RenderingLightCuller;
 
 class RendererSceneCull : public RenderingMethod {
 public:
@@ -78,6 +83,7 @@ public:
 		bool vaspect;
 		RID env;
 		RID attributes;
+		RID compositor;
 
 		Transform3D transform;
 
@@ -105,6 +111,7 @@ public:
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
 	virtual void camera_set_camera_attributes(RID p_camera, RID p_attributes);
+	virtual void camera_set_compositor(RID p_camera, RID p_compositor);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
 	virtual bool is_camera(RID p_camera) const;
 
@@ -279,6 +286,13 @@ public:
 		Instance *instance = nullptr;
 		int32_t parent_array_index = -1;
 		int32_t visibility_index = -1;
+
+		// Each time occlusion culling determines an instance is visible,
+		// set this to occlusion_frame plus some delay.
+		// Once the timeout is reached, allow the instance to be occlusion culled.
+		// This creates a delay for occlusion culling, which prevents flickering
+		// when jittering the raster occlusion projection.
+		uint64_t occlusion_timeout = 0;
 	};
 
 	struct InstanceVisibilityData {
@@ -322,6 +336,7 @@ public:
 		RID environment;
 		RID fallback_environment;
 		RID camera_attributes;
+		RID compositor;
 		RID reflection_probe_shadow_atlas;
 		RID reflection_atlas;
 		uint64_t used_viewport_visibility_bits;
@@ -357,6 +372,7 @@ public:
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
 	virtual void scenario_set_camera_attributes(RID p_scenario, RID p_attributes);
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
+	virtual void scenario_set_compositor(RID p_scenario, RID p_compositor);
 	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_reflection_size, int p_reflection_count);
 	virtual bool is_scenario(RID p_scenario) const;
 	virtual RID scenario_get_environment(RID p_scenario);
@@ -679,7 +695,6 @@ public:
 		uint64_t last_version;
 		List<Instance *>::Element *D; // directional light in scenario
 
-		bool shadow_dirty;
 		bool uses_projector = false;
 		bool uses_softshadow = false;
 
@@ -690,12 +705,59 @@ public:
 		RS::LightBakeMode bake_mode;
 		uint32_t max_sdfgi_cascade = 2;
 
+	private:
+		// Instead of a single dirty flag, we maintain a count
+		// so that we can detect lights that are being made dirty
+		// each frame, and switch on tighter caster culling.
+		int32_t shadow_dirty_count;
+
+		uint32_t light_update_frame_id;
+		bool light_intersects_multiple_cameras;
+		uint32_t light_intersects_multiple_cameras_timeout_frame_id;
+
+	public:
+		bool is_shadow_dirty() const { return shadow_dirty_count != 0; }
+		void make_shadow_dirty() { shadow_dirty_count = light_intersects_multiple_cameras ? 1 : 2; }
+		void detect_light_intersects_multiple_cameras(uint32_t p_frame_id) {
+			// We need to detect the case where shadow updates are occurring
+			// more than once per frame. In this case, we need to turn off
+			// tighter caster culling, so situation reverts to one full shadow update
+			// per frame (light_intersects_multiple_cameras is set).
+			if (p_frame_id == light_update_frame_id) {
+				light_intersects_multiple_cameras = true;
+				light_intersects_multiple_cameras_timeout_frame_id = p_frame_id + 60;
+			} else {
+				// When shadow_volume_intersects_multiple_cameras is set, we
+				// want to detect the situation this is no longer the case, via a timeout.
+				// The system can go back to tighter caster culling in this situation.
+				// Having a long-ish timeout prevents rapid cycling.
+				if (light_intersects_multiple_cameras && (p_frame_id >= light_intersects_multiple_cameras_timeout_frame_id)) {
+					light_intersects_multiple_cameras = false;
+					light_intersects_multiple_cameras_timeout_frame_id = UINT32_MAX;
+				}
+			}
+			light_update_frame_id = p_frame_id;
+		}
+
+		void decrement_shadow_dirty() {
+			shadow_dirty_count--;
+			DEV_ASSERT(shadow_dirty_count >= 0);
+		}
+
+		// Shadow updates can either full (everything in the shadow volume)
+		// or closely culled to the camera frustum.
+		bool is_shadow_update_full() const { return shadow_dirty_count == 0; }
+
 		InstanceLightData() {
 			bake_mode = RS::LIGHT_BAKE_DISABLED;
-			shadow_dirty = true;
 			D = nullptr;
 			last_version = 0;
 			baked_light = nullptr;
+
+			shadow_dirty_count = 1;
+			light_update_frame_id = UINT32_MAX;
+			light_intersects_multiple_cameras_timeout_frame_id = UINT32_MAX;
+			light_intersects_multiple_cameras = false;
 		}
 	};
 
@@ -955,6 +1017,7 @@ public:
 	uint32_t geometry_instance_pair_mask = 0; // used in traditional forward, unnecessary on clustered
 
 	LocalVector<Vector2> camera_jitter_array;
+	RenderingLightCuller *light_culler = nullptr;
 
 	virtual RID instance_allocate();
 	virtual void instance_initialize(RID p_rid);
@@ -1016,6 +1079,7 @@ public:
 	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
+	RID _render_get_compositor(RID p_camera, RID p_scenario);
 
 	struct Cull {
 		struct Shadow {
@@ -1085,7 +1149,7 @@ public:
 	_FORCE_INLINE_ bool _visibility_parent_check(const CullData &p_cull_data, const InstanceData &p_instance_data);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
+	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
 	void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderingMethod::RenderInfo *r_render_info = nullptr);
@@ -1117,6 +1181,28 @@ public:
 	PASS2(sky_set_mode, RID, RS::SkyMode)
 	PASS2(sky_set_material, RID, RID)
 	PASS4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
+
+	// Compositor effect
+
+	PASS0R(RID, compositor_effect_allocate)
+	PASS1(compositor_effect_initialize, RID)
+
+	PASS1RC(bool, is_compositor_effect, RID)
+
+	PASS2(compositor_effect_set_enabled, RID, bool)
+	PASS3(compositor_effect_set_callback, RID, RS::CompositorEffectCallbackType, const Callable &)
+	PASS3(compositor_effect_set_flag, RID, RS::CompositorEffectFlags, bool)
+
+	// Compositor
+
+	PASS0R(RID, compositor_allocate)
+	PASS1(compositor_initialize, RID)
+
+	PASS1RC(bool, is_compositor, RID)
+
+	PASS2(compositor_set_compositor_effects, RID, const TypedArray<RID> &)
+
+	// Environment
 
 	PASS0R(RID, environment_allocate)
 	PASS1(environment_initialize, RID)
@@ -1154,7 +1240,7 @@ public:
 	PASS1RC(float, environment_get_white, RID)
 
 	// Fog
-	PASS10(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float)
+	PASS11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, RS::EnvironmentFogMode)
 
 	PASS1RC(bool, environment_get_fog_enabled, RID)
 	PASS1RC(Color, environment_get_fog_light_color, RID)
@@ -1165,9 +1251,16 @@ public:
 	PASS1RC(float, environment_get_fog_height, RID)
 	PASS1RC(float, environment_get_fog_height_density, RID)
 	PASS1RC(float, environment_get_fog_aerial_perspective, RID)
+	PASS1RC(RS::EnvironmentFogMode, environment_get_fog_mode, RID)
 
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)
+
+	// Depth Fog
+	PASS4(environment_set_fog_depth, RID, float, float, float)
+	PASS1RC(float, environment_get_fog_depth_curve, RID)
+	PASS1RC(float, environment_get_fog_depth_begin, RID)
+	PASS1RC(float, environment_get_fog_depth_end, RID)
 
 	// Volumentric Fog
 	PASS14(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float, float)

@@ -48,7 +48,7 @@
 			<param index="2" name="insert_text" type="String" />
 			<param index="3" name="text_color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="icon" type="Resource" default="null" />
-			<param index="5" name="value" type="Variant" default="0" />
+			<param index="5" name="value" type="Variant" default="null" />
 			<param index="6" name="location" type="int" default="1024" />
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
@@ -62,9 +62,8 @@
 			<param index="1" name="end_key" type="String" />
 			<param index="2" name="line_only" type="bool" default="false" />
 			<description>
-				Adds a comment delimiter.
-				Both the start and end keys must be symbols. Only the start key has to be unique.
-				[param line_only] denotes if the region should continue until the end of the line or carry over on to the next line. If the end key is blank this is automatically set to [code]true[/code].
+				Adds a comment delimiter from [param start_key] to [param end_key]. Both keys should be symbols, and [param start_key] must not be shared with other delimiters.
+				If [param line_only] is [code]true[/code] or [param end_key] is an empty [String], the region does not carry over to the next line.
 			</description>
 		</method>
 		<method name="add_string_delimiter">
@@ -73,9 +72,8 @@
 			<param index="1" name="end_key" type="String" />
 			<param index="2" name="line_only" type="bool" default="false" />
 			<description>
-				Adds a string delimiter.
-				Both the start and end keys must be symbols. Only the start key has to be unique.
-				[param line_only] denotes if the region should continue until the end of the line or carry over on to the next line. If the end key is blank this is automatically set to [code]true[/code].
+				Defines a string delimiter from [param start_key] to [param end_key]. Both keys should be symbols, and [param start_key] must not be shared with other delimiters.
+				If [param line_only] is [code]true[/code] or [param end_key] is an empty [String], the region does not carry over to the next line.
 			</description>
 		</method>
 		<method name="can_fold_line" qualifiers="const">
@@ -623,7 +621,7 @@
 			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
 		</constant>
 		<constant name="LOCATION_PARENT_MASK" value="256" enum="CodeCompletionLocation">
-			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. 0 for the local class, 1 for the parent, 2 for the grandparent, etc) to store the depth of an option in the class or a parent class.
+			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.
 		</constant>
 		<constant name="LOCATION_OTHER_USER_CODE" value="512" enum="CodeCompletionLocation">
 			The option is from user code which is not local and not in a derived class (e.g. Autoload Singletons).

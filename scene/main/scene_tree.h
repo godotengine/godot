@@ -139,6 +139,8 @@ private:
 	HashMap<StringName, Group> group_map;
 	bool _quit = false;
 
+	bool _physics_interpolation_enabled = false;
+
 	StringName tree_changed_name = "tree_changed";
 	StringName node_added_name = "node_added";
 	StringName node_removed_name = "node_removed";
@@ -313,6 +315,8 @@ public:
 
 	virtual void initialize() override;
 
+	virtual void iteration_prepare() override;
+
 	virtual bool physics_process(double p_time) override;
 	virtual bool process(double p_time) override;
 
@@ -385,6 +389,7 @@ public:
 	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
 	Node *get_first_node_in_group(const StringName &p_group);
 	bool has_group(const StringName &p_identifier) const;
+	int get_node_count_in_group(const StringName &p_group) const;
 
 	//void change_scene(const String& p_path);
 	//Node *get_loaded_scene();
@@ -408,7 +413,9 @@ public:
 
 	static SceneTree *get_singleton() { return singleton; }
 
+#ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	//network API
 
@@ -421,6 +428,9 @@ public:
 
 	void set_disable_node_threading(bool p_disable);
 	//default texture settings
+
+	void set_physics_interpolation_enabled(bool p_enabled);
+	bool is_physics_interpolation_enabled() const;
 
 	SceneTree();
 	~SceneTree();

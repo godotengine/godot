@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiplayerPeerExtension" inherits="MultiplayerPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MultiplayerPeerExtension" inherits="MultiplayerPeer" keywords="network" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Class that can be inherited to implement custom multiplayer API networking layers via GDExtension.
 	</brief_description>
@@ -58,7 +58,7 @@
 		<method name="_get_packet_mode" qualifiers="virtual const">
 			<return type="int" enum="MultiplayerPeer.TransferMode" />
 			<description>
-				Called to get the [enum MultiplayerPeer.TransferMode] the remote peer used to send the next available packet. See [method MultiplayerPeer.get_packet_mode].
+				Called to get the transfer mode the remote peer used to send the next available packet. See [method MultiplayerPeer.get_packet_mode].
 			</description>
 		</method>
 		<method name="_get_packet_peer" qualifiers="virtual const">

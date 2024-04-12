@@ -67,8 +67,10 @@ public:
 
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) = 0;
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const = 0;
-
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) = 0;
+
+	virtual void mesh_set_path(RID p_mesh, const String &p_path) = 0;
+	virtual String mesh_get_path(RID p_mesh) const = 0;
 
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) = 0;
 
@@ -101,6 +103,9 @@ public:
 	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
 	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
 	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
+
+	virtual void multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) = 0;
+	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const = 0;
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
 

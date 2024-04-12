@@ -32,7 +32,7 @@
 			Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled.
 		</member>
 		<member name="exposure_shutter_speed" type="float" setter="set_shutter_speed" getter="get_shutter_speed" default="100.0">
-			Time for shutter to open and close, measured in seconds. A higher value will let in more light leading to a brighter image, while a lower amount will let in less light leading to a darker image.
+			Time for shutter to open and close, evaluated as [code]1 / shutter_speed[/code] seconds. A higher value will allow less light (leading to a darker image), while a lower value will allow more light (leading to a brighter image).
 			Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled.
 		</member>
 		<member name="frustum_far" type="float" setter="set_far" getter="get_far" default="4000.0">

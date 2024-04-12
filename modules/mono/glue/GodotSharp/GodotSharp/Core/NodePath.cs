@@ -1,5 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
+
+#nullable enable
 
 namespace Godot
 {
@@ -39,11 +42,11 @@ namespace Godot
     /// new NodePath("/root/MyAutoload"); // If you have an autoloaded node or scene.
     /// </code>
     /// </example>
-    public sealed class NodePath : IDisposable, IEquatable<NodePath>
+    public sealed class NodePath : IDisposable, IEquatable<NodePath?>
     {
         internal godot_node_path.movable NativeValue;
 
-        private WeakReference<IDisposable> _weakReferenceToSelf;
+        private WeakReference<IDisposable>? _weakReferenceToSelf;
 
         ~NodePath()
         {
@@ -135,7 +138,8 @@ namespace Godot
         /// Converts this <see cref="NodePath"/> to a string.
         /// </summary>
         /// <param name="from">The <see cref="NodePath"/> to convert.</param>
-        public static implicit operator string(NodePath from) => from?.ToString();
+        [return: NotNullIfNotNull("from")]
+        public static implicit operator string?(NodePath? from) => from?.ToString();
 
         /// <summary>
         /// Converts this <see cref="NodePath"/> to a string.
@@ -289,19 +293,19 @@ namespace Godot
         /// <returns>If the <see cref="NodePath"/> is empty.</returns>
         public bool IsEmpty => NativeValue.DangerousSelfRef.IsEmpty;
 
-        public static bool operator ==(NodePath left, NodePath right)
+        public static bool operator ==(NodePath? left, NodePath? right)
         {
             if (left is null)
                 return right is null;
             return left.Equals(right);
         }
 
-        public static bool operator !=(NodePath left, NodePath right)
+        public static bool operator !=(NodePath? left, NodePath? right)
         {
             return !(left == right);
         }
 
-        public bool Equals(NodePath other)
+        public bool Equals([NotNullWhen(true)] NodePath? other)
         {
             if (other is null)
                 return false;
@@ -310,7 +314,7 @@ namespace Godot
             return NativeFuncs.godotsharp_node_path_equals(self, otherNative).ToBool();
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals([NotNullWhen(true)] object? obj)
         {
             return ReferenceEquals(this, obj) || (obj is NodePath other && Equals(other));
         }

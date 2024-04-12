@@ -143,6 +143,20 @@ Dictionary AnimationLibrary::_get_data() const {
 	return ret;
 }
 
+#ifdef TOOLS_ENABLED
+void AnimationLibrary::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0 && (pf == "get_animation" || pf == "has_animation" || pf == "rename_animation" || pf == "remove_animation")) {
+		List<StringName> names;
+		get_animation_list(&names);
+		for (const StringName &E : names) {
+			r_options->push_back(E.operator String().quote());
+		}
+	}
+	Resource::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
+
 void AnimationLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "name", "animation"), &AnimationLibrary::add_animation);
 	ClassDB::bind_method(D_METHOD("remove_animation", "name"), &AnimationLibrary::remove_animation);

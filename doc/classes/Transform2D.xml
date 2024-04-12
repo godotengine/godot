@@ -5,13 +5,13 @@
 	</brief_description>
 	<description>
 		A 2×3 matrix (2 rows, 3 columns) used for 2D linear transformations. It can represent transformations such as translation, rotation, and scaling. It consists of three [Vector2] values: [member x], [member y], and the [member origin].
-		For more information, read the "Matrices and transforms" documentation article.
+		For a general introduction, see the [url=$DOCS_URL/tutorials/math/matrices_and_transforms.html]Matrices and transforms[/url] tutorial.
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
 		<link title="Matrices and transforms">$DOCS_URL/tutorials/math/matrices_and_transforms.html</link>
-		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
-		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
+		<link title="2.5D Game Demo">https://godotengine.org/asset-library/asset/2783</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Transform2D">
@@ -284,6 +284,20 @@
 			<param index="0" name="right" type="int" />
 			<description>
 				This operator multiplies all components of the [Transform2D], including the [member origin] vector, which scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Transform2D" />
+			<param index="0" name="right" type="float" />
+			<description>
+				This operator divides all components of the [Transform2D], including the [member origin] vector, which inversely scales it uniformly.
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Transform2D" />
+			<param index="0" name="right" type="int" />
+			<description>
+				This operator divides all components of the [Transform2D], including the [member origin] vector, which inversely scales it uniformly.
 			</description>
 		</operator>
 		<operator name="operator ==">

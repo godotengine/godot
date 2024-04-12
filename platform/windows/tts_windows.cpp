@@ -35,7 +35,7 @@ TTS_Windows *TTS_Windows::singleton = nullptr;
 void __stdcall TTS_Windows::speech_event_callback(WPARAM wParam, LPARAM lParam) {
 	TTS_Windows *tts = TTS_Windows::get_singleton();
 	SPEVENT event;
-	while (tts->synth->GetEvents(1, &event, NULL) == S_OK) {
+	while (tts->synth->GetEvents(1, &event, nullptr) == S_OK) {
 		uint32_t stream_num = (uint32_t)event.ulStreamNum;
 		if (tts->ids.has(stream_num)) {
 			if (event.eEventId == SPEI_START_INPUT_STREAM) {
@@ -82,7 +82,7 @@ void TTS_Windows::_update_tts() {
 				if (SUCCEEDED(hr)) {
 					hr = cpEnum->GetCount(&ulCount);
 					while (SUCCEEDED(hr) && ulCount--) {
-						wchar_t *w_id = 0L;
+						wchar_t *w_id = nullptr;
 						hr = cpEnum->Next(1, &cpVoiceToken, nullptr);
 						cpVoiceToken->GetId(&w_id);
 						if (String::utf16((const char16_t *)w_id) == message.voice) {

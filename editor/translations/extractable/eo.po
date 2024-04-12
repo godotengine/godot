@@ -1,0 +1,113 @@
+# Esperanto translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"PO-Revision-Date: 2024-02-26 06:02+0000\n"
+"Last-Translator: casuallyblue <sierra@casuallyblue.dev>\n"
+"Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
+"godot/eo/>\n"
+"Language: eo\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "Open"
+msgstr "Malfermi"
+
+msgid "Select Current Folder"
+msgstr "Elekti kurantan dosierujon"
+
+msgid "Select This Folder"
+msgstr "Elekti ĉi tiun dosierujon"
+
+msgid "All Recognized"
+msgstr "Ĉiaj rekonaj dosiertipoj"
+
+msgid "Open a File"
+msgstr "Malfermi dosieron"
+
+msgid "Open File(s)"
+msgstr "Malfermi dosiero(j)n"
+
+msgid "Open a Directory"
+msgstr "Malfermi dosierujon"
+
+msgid "Open a File or Directory"
+msgstr "Malfermi dosieron aŭ dosierujon"
+
+msgid "Save"
+msgstr "Konservi"
+
+msgid "Save a File"
+msgstr "Konservi dosieron"
+
+msgid "Go to previous folder."
+msgstr "Iri al antaŭa dosierujo."
+
+msgid "Go to next folder."
+msgstr "Iri al sekva dosierujo."
+
+msgid "Go to parent folder."
+msgstr "Iri al superdosierujo."
+
+msgid "Path:"
+msgstr "Vojo:"
+
+msgid "Refresh files."
+msgstr "Aktualigi dosieroj."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Baskuli videblo de kaŝitaj dosieroj."
+
+msgid "Directories & Files:"
+msgstr "Dosierujoj kaj dosieroj:"
+
+msgid "File:"
+msgstr "Dosiero:"
+
+msgid "Create Folder"
+msgstr "Krei dosierujon"
+
+msgid "Name:"
+msgstr "Nomo:"
+
+msgid "Could not create folder."
+msgstr "Ne povis krei dosierujon."
+
+msgid "Zoom Out"
+msgstr "Malzomi"
+
+msgid "Zoom Reset"
+msgstr "Rekomencigi zomon"
+
+msgid "Zoom In"
+msgstr "Zomi"
+
+msgid "Cut"
+msgstr "Eltondi"
+
+msgid "Copy"
+msgstr "Kopii"
+
+msgid "Paste"
+msgstr "Alglui"
+
+msgid "Select All"
+msgstr "Elekti tutan"
+
+msgid "Clear"
+msgstr "Vakigi"
+
+msgid "Undo"
+msgstr "Malfari"
+
+msgid "Redo"
+msgstr "Refari"
+
+msgid "(Other)"
+msgstr "(Alia)"

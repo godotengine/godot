@@ -154,7 +154,7 @@ void MultiMeshEditor::_populate() {
 		area_accum += area;
 	}
 
-	ERR_FAIL_COND_MSG(triangle_area_map.size() == 0, "Couldn't map area.");
+	ERR_FAIL_COND_MSG(triangle_area_map.is_empty(), "Couldn't map area.");
 	ERR_FAIL_COND_MSG(area_accum == 0, "Couldn't map area.");
 
 	Ref<MultiMesh> multimesh = memnew(MultiMesh);
@@ -255,13 +255,15 @@ void MultiMeshEditor::edit(MultiMeshInstance3D *p_multimesh) {
 
 void MultiMeshEditor::_browse(bool p_source) {
 	browsing_source = p_source;
-	std->get_scene_tree()->set_marked(node, false);
-	std->popup_scenetree_dialog();
+	Node *browsed_node = nullptr;
 	if (p_source) {
+		browsed_node = node->get_node_or_null(mesh_source->get_text());
 		std->set_title(TTR("Select a Source Mesh:"));
 	} else {
+		browsed_node = node->get_node_or_null(surface_source->get_text());
 		std->set_title(TTR("Select a Target Surface:"));
 	}
+	std->popup_scenetree_dialog(browsed_node);
 }
 
 void MultiMeshEditor::_bind_methods() {
@@ -354,6 +356,9 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	populate_dialog->get_ok_button()->connect("pressed", callable_mp(this, &MultiMeshEditor::_populate));
 	std = memnew(SceneTreeDialog);
+	Vector<StringName> valid_types;
+	valid_types.push_back("MeshInstance3D");
+	std->set_valid_types(valid_types);
 	populate_dialog->add_child(std);
 	std->connect("selected", callable_mp(this, &MultiMeshEditor::_browsed));
 

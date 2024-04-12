@@ -57,7 +57,7 @@ struct avarV2Tail
 
   protected:
   Offset32To<DeltaSetIndexMap>	varIdxMap;	/* Offset from the beginning of 'avar' table. */
-  Offset32To<VariationStore>	varStore;	/* Offset from the beginning of 'avar' table. */
+  Offset32To<ItemVariationStore>	varStore;	/* Offset from the beginning of 'avar' table. */
 
   public:
   DEFINE_SIZE_STATIC (8);
@@ -230,7 +230,7 @@ struct SegmentMaps : Array16Of<AxisValueMap>
        * duplicates here */
       if (mapping.must_include ())
         continue;
-      value_mappings.push (std::move (mapping));
+      value_mappings.push (mapping);
     }
 
     AxisValueMap m;
@@ -273,6 +273,7 @@ struct avar
   {
     TRACE_SANITIZE (this);
     if (!(version.sanitize (c) &&
+	  hb_barrier () &&
 	  (version.major == 1
 #ifndef HB_NO_AVAR2
 	   || version.major == 2
@@ -293,6 +294,7 @@ struct avar
 #ifndef HB_NO_AVAR2
     if (version.major < 2)
       return_trace (true);
+    hb_barrier ();
 
     const auto &v2 = * (const avarV2Tail *) map;
     if (unlikely (!v2.sanitize (c, this)))
@@ -316,6 +318,7 @@ struct avar
 #ifndef HB_NO_AVAR2
     if (version.major < 2)
       return;
+    hb_barrier ();
 
     for (; count < axisCount; count++)
       map = &StructAfter<SegmentMaps> (*map);
@@ -340,7 +343,7 @@ struct avar
     for (unsigned i = 0; i < coords_length; i++)
       coords[i] = out[i];
 
-    OT::VariationStore::destroy_cache (var_store_cache);
+    OT::ItemVariationStore::destroy_cache (var_store_cache);
 #endif
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +51,9 @@
 #define _USE_MATH_DEFINES       //Math Constants are not defined in Standard C/C++.
 
 #include <cstring>
-#include <math.h>
 #include <ctype.h>
+#include "tvgMath.h"
+#include "tvgShape.h"
 #include "tvgSvgLoaderCommon.h"
 #include "tvgSvgPath.h"
 #include "tvgStr.h"
@@ -121,14 +122,11 @@ void _pathAppendArcTo(Array<PathCommand>* cmds, Array<Point>* pts, Point* cur, P
     sx = cur->x;
     sy = cur->y;
 
-    //If start and end points are identical, then no arc is drawn
-    if ((fabsf(x - sx) < (1.0f / 256.0f)) && (fabsf(y - sy) < (1.0f / 256.0f))) return;
-
     //Correction of out-of-range radii, see F6.6.1 (step 2)
     rx = fabsf(rx);
     ry = fabsf(ry);
 
-    angle = angle * M_PI / 180.0f;
+    angle = angle * MATH_PI / 180.0f;
     cosPhi = cosf(angle);
     sinPhi = sinf(angle);
     dx2 = (sx - x) / 2.0f;
@@ -197,24 +195,24 @@ void _pathAppendArcTo(Array<PathCommand>* cmds, Array<Point>* pts, Point* cur, P
     //http://www.euclideanspace.com/maths/algebra/vectors/angleBetween/index.htm
     //Note: atan2 (0.0, 1.0) == 0.0
     at = atan2(((y1p - cyp) / ry), ((x1p - cxp) / rx));
-    theta1 = (at < 0.0f) ? 2.0f * M_PI + at : at;
+    theta1 = (at < 0.0f) ? 2.0f * MATH_PI + at : at;
 
     nat = atan2(((-y1p - cyp) / ry), ((-x1p - cxp) / rx));
-    deltaTheta = (nat < at) ? 2.0f * M_PI - at + nat : nat - at;
+    deltaTheta = (nat < at) ? 2.0f * MATH_PI - at + nat : nat - at;
 
     if (sweep) {
         //Ensure delta theta < 0 or else add 360 degrees
-        if (deltaTheta < 0.0f) deltaTheta += (float)(2.0f * M_PI);
+        if (deltaTheta < 0.0f) deltaTheta += 2.0f * MATH_PI;
     } else {
         //Ensure delta theta > 0 or else substract 360 degrees
-        if (deltaTheta > 0.0f) deltaTheta -= (float)(2.0f * M_PI);
+        if (deltaTheta > 0.0f) deltaTheta -= 2.0f * MATH_PI;
     }
 
     //Add several cubic bezier to approximate the arc
     //(smaller than 90 degrees)
     //We add one extra segment because we want something
     //Smaller than 90deg (i.e. not 90 itself)
-    segments = static_cast<int>(fabsf(deltaTheta / float(M_PI_2)) + 1.0f);
+    segments = static_cast<int>(fabsf(deltaTheta / MATH_PI2) + 1.0f);
     delta = deltaTheta / segments;
 
     //http://www.stillhq.com/ctpfaq/2001/comp.text.pdf-faq-2001-04.txt (section 2.13)
@@ -470,9 +468,16 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
         }
         case 'a':
         case 'A': {
-            _pathAppendArcTo(cmds, pts, cur, curCtl, arr[5], arr[6], arr[0], arr[1], arr[2], arr[3], arr[4]);
-            *cur = *curCtl = {arr[5], arr[6]};
-            *isQuadratic = false;
+            if (mathZero(arr[0]) || mathZero(arr[1])) {
+                Point p = {arr[5], arr[6]};
+                cmds->push(PathCommand::LineTo);
+                pts->push(p);
+                *cur = {arr[5], arr[6]};
+            } else if (!mathEqual(cur->x, arr[5]) || !mathEqual(cur->y, arr[6])) {
+                _pathAppendArcTo(cmds, pts, cur, curCtl, arr[5], arr[6], fabsf(arr[0]), fabsf(arr[1]), arr[2], arr[3], arr[4]);
+                *cur = *curCtl = {arr[5], arr[6]};
+                *isQuadratic = false;
+            }
             break;
         }
         default: {
@@ -534,7 +539,7 @@ static char* _nextCommand(char* path, char* cmd, float* arr, int* count)
 /************************************************************************/
 
 
-bool svgPathToTvgPath(const char* svgPath, Array<PathCommand>& cmds, Array<Point>& pts)
+bool svgPathToShape(const char* svgPath, Shape* shape)
 {
     float numberArray[7];
     int numberCount = 0;
@@ -545,11 +550,16 @@ bool svgPathToTvgPath(const char* svgPath, Array<PathCommand>& cmds, Array<Point
     bool isQuadratic = false;
     char* path = (char*)svgPath;
 
+    auto& pts = P(shape)->rs.path.pts;
+    auto& cmds = P(shape)->rs.path.cmds;
+    auto lastCmds = cmds.count;
+
     while ((path[0] != '\0')) {
         path = _nextCommand(path, &cmd, numberArray, &numberCount);
         if (!path) break;
         if (!_processCommand(&cmds, &pts, cmd, numberArray, numberCount, &cur, &curCtl, &startPoint, &isQuadratic)) break;
     }
 
+    if (cmds.count > lastCmds && cmds[lastCmds] != PathCommand::MoveTo) return false;
     return true;
 }

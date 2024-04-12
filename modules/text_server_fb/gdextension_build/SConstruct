@@ -69,6 +69,8 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/renderer/tvgShape.cpp",
         "src/renderer/tvgSwCanvas.cpp",
         "src/renderer/tvgTaskScheduler.cpp",
+        "src/renderer/tvgText.cpp",
+        # "src/renderer/tvgWgCanvas.cpp",
         # renderer sw_engine
         "src/renderer/sw_engine/tvgSwFill.cpp",
         "src/renderer/sw_engine/tvgSwImage.cpp",
@@ -142,8 +144,10 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     ]
     thirdparty_msdfgen_sources = [thirdparty_msdfgen_dir + file for file in thirdparty_msdfgen_sources]
 
+    env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env_msdfgen.Append(CPPPATH=["../../../thirdparty/freetype/include", "../../../thirdparty/msdfgen"])
     env.Append(CPPPATH=["../../../thirdparty/msdfgen"])
+    env.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(

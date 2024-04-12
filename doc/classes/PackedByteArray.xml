@@ -6,6 +6,7 @@
 	<description>
 		An array specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
 		[PackedByteArray] also provides methods to encode/decode various types to/from bytes. The way values are encoded is an implementation detail and shouldn't be relied upon when interacting with external apps.
+		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. The returned packed array of these are a copies, and changing it will [i]not[/i] affect the original value. To update a built-in property you need to modify the returned array, and then assign it to the property again.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -79,21 +80,21 @@
 			<return type="float" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
-				Decodes a 64-bit floating point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
+				Decodes a 64-bit floating-point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_float" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
-				Decodes a 32-bit floating point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
+				Decodes a 32-bit floating-point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_half" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="byte_offset" type="int" />
 			<description>
-				Decodes a 16-bit floating point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
+				Decodes a 16-bit floating-point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
 			</description>
 		</method>
 		<method name="decode_s8" qualifiers="const">
@@ -174,6 +175,7 @@
 			<param index="1" name="compression_mode" type="int" default="0" />
 			<description>
 				Returns a new [PackedByteArray] with the data decompressed. Set [param buffer_size] to the size of the uncompressed data. Set the compression mode using one of [enum FileAccess.CompressionMode]'s constants.
+				[b]Note:[/b] Decompression is not guaranteed to work with data not compressed by Godot, for example if data compressed with the deflate compression mode lacks a checksum or header.
 			</description>
 		</method>
 		<method name="decompress_dynamic" qualifiers="const">
@@ -184,6 +186,7 @@
 				Returns a new [PackedByteArray] with the data decompressed. Set the compression mode using one of [enum FileAccess.CompressionMode]'s constants. [b]This method only accepts brotli, gzip, and deflate compression modes.[/b]
 				This method is potentially slower than [method decompress], as it may have to re-allocate its output buffer multiple times while decompressing, whereas [method decompress] knows it's output buffer size from the beginning.
 				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [param max_output_size]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
+				[b]Note:[/b] Decompression is not guaranteed to work with data not compressed by Godot, for example if data compressed with the deflate compression mode lacks a checksum or header.
 			</description>
 		</method>
 		<method name="duplicate">
@@ -197,7 +200,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="float" />
 			<description>
-				Encodes a 64-bit floating point number as bytes at the index of [param byte_offset] bytes. The array must have at least 8 bytes of allocated space, starting at the offset.
+				Encodes a 64-bit floating-point number as bytes at the index of [param byte_offset] bytes. The array must have at least 8 bytes of allocated space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_float">
@@ -205,7 +208,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="float" />
 			<description>
-				Encodes a 32-bit floating point number as bytes at the index of [param byte_offset] bytes. The array must have at least 4 bytes of space, starting at the offset.
+				Encodes a 32-bit floating-point number as bytes at the index of [param byte_offset] bytes. The array must have at least 4 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_half">
@@ -213,7 +216,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="value" type="float" />
 			<description>
-				Encodes a 16-bit floating point number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
+				Encodes a 16-bit floating-point number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
 			</description>
 		</method>
 		<method name="encode_s8">
@@ -397,7 +400,7 @@
 			<return type="int" />
 			<param index="0" name="new_size" type="int" />
 			<description>
-				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size. Calling [method resize] once and assigning the new values is faster than adding new elements one by one.
 			</description>
 		</method>
 		<method name="reverse">

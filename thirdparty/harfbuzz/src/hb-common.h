@@ -47,14 +47,10 @@
 # endif /* !__cplusplus */
 #endif
 
-#if defined (_SVR4) || defined (SVR4) || defined (__OpenBSD__) || \
-    defined (_sgi) || defined (__sun) || defined (sun) || \
-    defined (__digital__) || defined (__HP_cc)
-#  include <inttypes.h>
-#elif defined (_AIX)
+#if defined (_AIX)
 #  include <sys/inttypes.h>
 #elif defined (_MSC_VER) && _MSC_VER < 1600
-/* VS 2010 (_MSC_VER 1600) has stdint.h */
+/* VS 2010 (_MSC_VER 1600) has stdint.h   */
 typedef __int8 int8_t;
 typedef unsigned __int8 uint8_t;
 typedef __int16 int16_t;
@@ -63,10 +59,11 @@ typedef __int32 int32_t;
 typedef unsigned __int32 uint32_t;
 typedef __int64 int64_t;
 typedef unsigned __int64 uint64_t;
-#elif defined (__KERNEL__)
-#  include <linux/types.h>
-#else
+#elif defined (_MSC_VER) && _MSC_VER < 1800
+/* VS 2013 (_MSC_VER 1800) has inttypes.h */
 #  include <stdint.h>
+#else
+#  include <inttypes.h>
 #endif
 
 #if defined(__GNUC__) && ((__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))

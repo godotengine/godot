@@ -95,6 +95,7 @@ class NavigationAgent3D : public Node {
 	bool target_position_submitted = false;
 	bool target_reached = false;
 	bool navigation_finished = true;
+	bool last_waypoint_reached = false;
 	// No initialized on purpose
 	uint32_t update_frame_id = 0;
 
@@ -250,9 +251,21 @@ public:
 	float get_debug_path_custom_point_size() const;
 
 private:
-	void update_navigation();
+	bool _is_target_reachable() const;
+	Vector3 _get_final_position() const;
+
+	void _update_navigation();
+	void _advance_waypoints(const Vector3 &p_origin);
 	void _request_repath();
-	void _check_distance_to_target();
+
+	bool _is_last_waypoint() const;
+	void _move_to_next_waypoint();
+	bool _is_within_waypoint_distance(const Vector3 &p_origin) const;
+	bool _is_within_target_distance(const Vector3 &p_origin) const;
+
+	void _trigger_waypoint_reached();
+	void _transition_to_navigation_finished();
+	void _transition_to_target_reached();
 
 #ifdef DEBUG_ENABLED
 	void _navigation_debug_changed();

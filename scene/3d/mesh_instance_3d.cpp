@@ -30,10 +30,11 @@
 
 #include "mesh_instance_3d.h"
 
-#include "collision_shape_3d.h"
-#include "physics_body_3d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/static_body_3d.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
@@ -201,6 +202,10 @@ void MeshInstance3D::set_skin(const Ref<Skin> &p_skin) {
 
 Ref<Skin> MeshInstance3D::get_skin() const {
 	return skin;
+}
+
+Ref<SkinReference> MeshInstance3D::get_skin_reference() const {
+	return skin_ref;
 }
 
 void MeshInstance3D::set_skeleton_path(const NodePath &p_skeleton) {
@@ -493,6 +498,23 @@ void MeshInstance3D::create_debug_tangents() {
 	}
 }
 
+bool MeshInstance3D::_property_can_revert(const StringName &p_name) const {
+	HashMap<StringName, int>::ConstIterator E = blend_shape_properties.find(p_name);
+	if (E) {
+		return true;
+	}
+	return false;
+}
+
+bool MeshInstance3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	HashMap<StringName, int>::ConstIterator E = blend_shape_properties.find(p_name);
+	if (E) {
+		r_property = 0.0f;
+		return true;
+	}
+	return false;
+}
+
 void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance3D::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance3D::get_mesh);
@@ -500,6 +522,7 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &MeshInstance3D::get_skeleton_path);
 	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &MeshInstance3D::set_skin);
 	ClassDB::bind_method(D_METHOD("get_skin"), &MeshInstance3D::get_skin);
+	ClassDB::bind_method(D_METHOD("get_skin_reference"), &MeshInstance3D::get_skin_reference);
 
 	ClassDB::bind_method(D_METHOD("get_surface_override_material_count"), &MeshInstance3D::get_surface_override_material_count);
 	ClassDB::bind_method(D_METHOD("set_surface_override_material", "surface", "material"), &MeshInstance3D::set_surface_override_material);

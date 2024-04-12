@@ -133,6 +133,18 @@ TEST_CASE("[RegEx] Substitution") {
 	RegEx re4("(a)(b){0}(c)");
 	REQUIRE(re4.is_valid());
 	CHECK(re4.sub(s4, "${1}.${3}.", true) == "a.c.a.c.a.c.");
+
+	const String s5 = "aaaa";
+
+	RegEx re5("a");
+	REQUIRE(re5.is_valid());
+	CHECK(re5.sub(s5, "b", true, 0, 2) == "bbaa");
+	CHECK(re5.sub(s5, "b", true, 1, 3) == "abba");
+	CHECK(re5.sub(s5, "b", true, 0, 0) == "aaaa");
+	CHECK(re5.sub(s5, "b", true, 1, 1) == "aaaa");
+	CHECK(re5.sub(s5, "cc", true, 0, 2) == "ccccaa");
+	CHECK(re5.sub(s5, "cc", true, 1, 3) == "acccca");
+	CHECK(re5.sub(s5, "", true, 0, 2) == "aa");
 }
 
 TEST_CASE("[RegEx] Substitution with empty input and/or replacement") {
@@ -164,12 +176,54 @@ TEST_CASE("[RegEx] Uninitialized use") {
 	ERR_PRINT_ON
 }
 
-TEST_CASE("[RegEx] Empty Pattern") {
+TEST_CASE("[RegEx] Empty pattern") {
 	const String s = "Godot";
 
 	RegEx re;
 	CHECK(re.compile("") == OK);
 	CHECK(re.is_valid());
+}
+
+TEST_CASE("[RegEx] Complex Grouping") {
+	const String test = "https://docs.godotengine.org/en/latest/contributing/";
+
+	// Ignored protocol in grouping.
+	RegEx re("^(?:https?://)([a-zA-Z]{2,4})\\.([a-zA-Z][a-zA-Z0-9_\\-]{2,64})\\.([a-zA-Z]{2,4})");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> expr = re.search(test);
+
+	CHECK(expr->get_group_count() == 3);
+
+	CHECK(expr->get_string(0) == "https://docs.godotengine.org");
+
+	CHECK(expr->get_string(1) == "docs");
+	CHECK(expr->get_string(2) == "godotengine");
+	CHECK(expr->get_string(3) == "org");
+}
+
+TEST_CASE("[RegEx] Number Expression") {
+	const String test = "(2.5e-3 + 35 + 46) / 2.8e0 = 28.9294642857";
+
+	// Not an exact regex for number but a good test.
+	RegEx re("([+-]?\\d+)(\\.\\d+([eE][+-]?\\d+)?)?");
+	REQUIRE(re.is_valid());
+	Array number_match = re.search_all(test);
+
+	CHECK(number_match.size() == 5);
+
+	Ref<RegExMatch> number = number_match[0];
+	CHECK(number->get_string(0) == "2.5e-3");
+	CHECK(number->get_string(1) == "2");
+	number = number_match[1];
+	CHECK(number->get_string(0) == "35");
+	number = number_match[2];
+	CHECK(number->get_string(0) == "46");
+	number = number_match[3];
+	CHECK(number->get_string(0) == "2.8e0");
+	number = number_match[4];
+	CHECK(number->get_string(0) == "28.9294642857");
+	CHECK(number->get_string(1) == "28");
+	CHECK(number->get_string(2) == ".9294642857");
 }
 
 TEST_CASE("[RegEx] Invalid end position") {
@@ -222,6 +276,143 @@ TEST_CASE("[RegEx] Match start and end positions") {
 	CHECK(match->get_start("vowel") == 2);
 	CHECK(match->get_end("vowel") == 3);
 }
+
+TEST_CASE("[RegEx] Asterisk search all") {
+	const String s = "Godot Engine";
+
+	RegEx re("o*");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> match;
+	const Array all_results = re.search_all(s);
+	CHECK(all_results.size() == 13);
+
+	match = all_results[0];
+	CHECK(match->get_string(0) == "");
+	match = all_results[1];
+	CHECK(match->get_string(0) == "o");
+	match = all_results[2];
+	CHECK(match->get_string(0) == "");
+	match = all_results[3];
+	CHECK(match->get_string(0) == "o");
+
+	for (int i = 4; i < 13; i++) {
+		match = all_results[i];
+		CHECK(match->get_string(0) == "");
+	}
+}
+
+TEST_CASE("[RegEx] Simple lookahead") {
+	const String s = "Godot Engine";
+
+	RegEx re("o(?=t)");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> match = re.search(s);
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 3);
+	CHECK(match->get_end(0) == 4);
+}
+
+TEST_CASE("[RegEx] Lookahead groups empty matches") {
+	const String s = "12";
+
+	RegEx re("(?=(\\d+))");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> match = re.search(s);
+	CHECK(match->get_string(0) == "");
+	CHECK(match->get_string(1) == "12");
+
+	const Array all_results = re.search_all(s);
+	CHECK(all_results.size() == 2);
+
+	match = all_results[0];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_string(0) == String(""));
+	CHECK(match->get_string(1) == String("12"));
+
+	match = all_results[1];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_string(0) == String(""));
+	CHECK(match->get_string(1) == String("2"));
+}
+
+TEST_CASE("[RegEx] Simple lookbehind") {
+	const String s = "Godot Engine";
+
+	RegEx re("(?<=d)o");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> match = re.search(s);
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 3);
+	CHECK(match->get_end(0) == 4);
+}
+
+TEST_CASE("[RegEx] Simple lookbehind search all") {
+	const String s = "ababbaabab";
+
+	RegEx re("(?<=a)b");
+	REQUIRE(re.is_valid());
+	const Array all_results = re.search_all(s);
+	CHECK(all_results.size() == 4);
+
+	Ref<RegExMatch> match = all_results[0];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 1);
+	CHECK(match->get_end(0) == 2);
+
+	match = all_results[1];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 3);
+	CHECK(match->get_end(0) == 4);
+
+	match = all_results[2];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 7);
+	CHECK(match->get_end(0) == 8);
+
+	match = all_results[3];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 9);
+	CHECK(match->get_end(0) == 10);
+}
+
+TEST_CASE("[RegEx] Lookbehind groups empty matches") {
+	const String s = "abaaabab";
+
+	RegEx re("(?<=(b))");
+	REQUIRE(re.is_valid());
+	Ref<RegExMatch> match;
+
+	const Array all_results = re.search_all(s);
+	CHECK(all_results.size() == 3);
+
+	match = all_results[0];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 2);
+	CHECK(match->get_end(0) == 2);
+	CHECK(match->get_start(1) == 1);
+	CHECK(match->get_end(1) == 2);
+	CHECK(match->get_string(0) == String(""));
+	CHECK(match->get_string(1) == String("b"));
+
+	match = all_results[1];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 6);
+	CHECK(match->get_end(0) == 6);
+	CHECK(match->get_start(1) == 5);
+	CHECK(match->get_end(1) == 6);
+	CHECK(match->get_string(0) == String(""));
+	CHECK(match->get_string(1) == String("b"));
+
+	match = all_results[2];
+	REQUIRE(match != nullptr);
+	CHECK(match->get_start(0) == 8);
+	CHECK(match->get_end(0) == 8);
+	CHECK(match->get_start(1) == 7);
+	CHECK(match->get_end(1) == 8);
+	CHECK(match->get_string(0) == String(""));
+	CHECK(match->get_string(1) == String("b"));
+}
+
 } // namespace TestRegEx
 
 #endif // TEST_REGEX_H

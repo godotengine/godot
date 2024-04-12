@@ -149,6 +149,7 @@ private:
 	};
 
 	static HashMap<MaterialKey, ShaderData, MaterialKey> shader_map;
+	static RBSet<String> min_max_properties;
 
 	MaterialKey current_key;
 
@@ -361,6 +362,8 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
+	static bool has_min_max_property(const String &p_name);
+
 	void set_direction(Vector3 p_direction);
 	Vector3 get_direction() const;
 
@@ -372,6 +375,9 @@ public:
 
 	void set_velocity_pivot(const Vector3 &p_pivot);
 	Vector3 get_velocity_pivot();
+
+	void set_param(Parameter p_param, const Vector2 &p_value);
+	Vector2 get_param(Parameter p_param) const;
 
 	void set_param_min(Parameter p_param, float p_value);
 	float get_param_min(Parameter p_param) const;

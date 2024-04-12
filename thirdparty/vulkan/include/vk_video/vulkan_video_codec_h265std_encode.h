@@ -2,7 +2,7 @@
 #define VULKAN_VIDEO_CODEC_H265STD_ENCODE_H_ 1
 
 /*
-** Copyright 2015-2023 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -22,10 +22,10 @@ extern "C" {
 // vulkan_video_codec_h265std_encode is a preprocessor guard. Do not pass it to API calls.
 #define vulkan_video_codec_h265std_encode 1
 #include "vulkan_video_codec_h265std.h"
-// Vulkan 0.9 provisional Vulkan video H.265 encode std specification version number
-#define VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_API_VERSION_0_9_11 VK_MAKE_VIDEO_STD_VERSION(0, 9, 11)
 
-#define VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_API_VERSION_0_9_11
+#define VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_API_VERSION_1_0_0 VK_MAKE_VIDEO_STD_VERSION(1, 0, 0)
+
+#define VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_API_VERSION_1_0_0
 #define VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_EXTENSION_NAME "VK_STD_vulkan_video_codec_h265_encode"
 typedef struct StdVideoEncodeH265WeightTableFlags {
     uint16_t    luma_weight_l0_flag;
@@ -77,7 +77,8 @@ typedef struct StdVideoEncodeH265SliceSegmentHeader {
     int8_t                                       slice_act_y_qp_offset;
     int8_t                                       slice_act_cb_qp_offset;
     int8_t                                       slice_act_cr_qp_offset;
-    uint8_t                                      reserved1[3];
+    int8_t                                       slice_qp_delta;
+    uint16_t                                     reserved1;
     const StdVideoEncodeH265WeightTable*         pWeightTable;
 } StdVideoEncodeH265SliceSegmentHeader;
 
@@ -110,7 +111,7 @@ typedef struct StdVideoEncodeH265PictureInfoFlags {
     uint32_t    reserved : 23;
 } StdVideoEncodeH265PictureInfoFlags;
 
-typedef struct StdVideoEncodeH265SliceSegmentLongTermRefPics {
+typedef struct StdVideoEncodeH265LongTermRefPics {
     uint8_t     num_long_term_sps;
     uint8_t     num_long_term_pics;
     uint8_t     lt_idx_sps[STD_VIDEO_H265_MAX_LONG_TERM_REF_PICS_SPS];
@@ -118,21 +119,21 @@ typedef struct StdVideoEncodeH265SliceSegmentLongTermRefPics {
     uint16_t    used_by_curr_pic_lt_flag;
     uint8_t     delta_poc_msb_present_flag[STD_VIDEO_H265_MAX_DELTA_POC];
     uint8_t     delta_poc_msb_cycle_lt[STD_VIDEO_H265_MAX_DELTA_POC];
-} StdVideoEncodeH265SliceSegmentLongTermRefPics;
+} StdVideoEncodeH265LongTermRefPics;
 
 typedef struct StdVideoEncodeH265PictureInfo {
-    StdVideoEncodeH265PictureInfoFlags                      flags;
-    StdVideoH265PictureType                                 pic_type;
-    uint8_t                                                 sps_video_parameter_set_id;
-    uint8_t                                                 pps_seq_parameter_set_id;
-    uint8_t                                                 pps_pic_parameter_set_id;
-    uint8_t                                                 short_term_ref_pic_set_idx;
-    int32_t                                                 PicOrderCntVal;
-    uint8_t                                                 TemporalId;
-    uint8_t                                                 reserved1[7];
-    const StdVideoEncodeH265ReferenceListsInfo*             pRefLists;
-    const StdVideoH265ShortTermRefPicSet*                   pShortTermRefPicSet;
-    const StdVideoEncodeH265SliceSegmentLongTermRefPics*    pLongTermRefPics;
+    StdVideoEncodeH265PictureInfoFlags             flags;
+    StdVideoH265PictureType                        pic_type;
+    uint8_t                                        sps_video_parameter_set_id;
+    uint8_t                                        pps_seq_parameter_set_id;
+    uint8_t                                        pps_pic_parameter_set_id;
+    uint8_t                                        short_term_ref_pic_set_idx;
+    int32_t                                        PicOrderCntVal;
+    uint8_t                                        TemporalId;
+    uint8_t                                        reserved1[7];
+    const StdVideoEncodeH265ReferenceListsInfo*    pRefLists;
+    const StdVideoH265ShortTermRefPicSet*          pShortTermRefPicSet;
+    const StdVideoEncodeH265LongTermRefPics*       pLongTermRefPics;
 } StdVideoEncodeH265PictureInfo;
 
 typedef struct StdVideoEncodeH265ReferenceInfoFlags {

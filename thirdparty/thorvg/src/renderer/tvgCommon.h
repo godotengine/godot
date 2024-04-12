@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,8 +61,9 @@ using namespace tvg;
 #define TVG_CLASS_ID_PICTURE   3
 #define TVG_CLASS_ID_LINEAR    4
 #define TVG_CLASS_ID_RADIAL    5
+#define TVG_CLASS_ID_TEXT      6
 
-enum class FileType { Tvg = 0, Svg, Lottie, Raw, Png, Jpg, Webp, Unknown };
+enum class FileType { Png = 0, Jpg, Webp, Tvg, Svg, Lottie, Ttf, Raw, Gif, Unknown };
 
 using Size = Point;
 

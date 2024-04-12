@@ -36,7 +36,7 @@
 
 #ifdef VULKAN_ENABLED
 #define XR_USE_GRAPHICS_API_VULKAN
-#include "drivers/vulkan/vulkan_context.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #endif // VULKAN_ENABLED
 
 #if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
