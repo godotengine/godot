@@ -122,7 +122,6 @@ private:
 
 	Window *root = nullptr;
 
-	uint64_t tree_version = 1;
 	double physics_process_time = 0.0;
 	double process_time = 0.0;
 	bool accept_quit = true;
@@ -134,7 +133,6 @@ private:
 	bool debug_navigation_hint = false;
 #endif
 	bool paused = false;
-	int root_lock = 0;
 
 	HashMap<StringName, Group> group_map;
 	bool _quit = false;
@@ -165,7 +163,6 @@ private:
 
 	// Safety for when a node is deleted while a group is being called.
 
-	bool processing = false;
 	int nodes_removed_on_group_call_lock = 0;
 	HashSet<Node *> nodes_removed_on_group_call; // Skip erased nodes.
 
