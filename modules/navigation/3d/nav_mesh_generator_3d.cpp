@@ -700,7 +700,7 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	cfg.detailSampleDist = MAX(p_navigation_mesh->get_cell_size() * p_navigation_mesh->get_detail_sample_distance(), 0.1f);
 	cfg.detailSampleMaxError = p_navigation_mesh->get_cell_height() * p_navigation_mesh->get_detail_sample_max_error();
 
-	if (p_navigation_mesh->get_border_size() > 0.0 && !Math::is_equal_approx(p_navigation_mesh->get_cell_size(), p_navigation_mesh->get_border_size())) {
+	if (p_navigation_mesh->get_border_size() > 0.0 && Math::fmod(p_navigation_mesh->get_border_size(), p_navigation_mesh->get_cell_size()) != 0.0) {
 		WARN_PRINT("Property border_size is ceiled to cell_size voxel units and loses precision.");
 	}
 	if (!Math::is_equal_approx((float)cfg.walkableHeight * cfg.ch, p_navigation_mesh->get_agent_height())) {
