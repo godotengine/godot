@@ -181,6 +181,7 @@ public:
 	String get_ios_cpp_code() const;
 	const Vector<String> &get_macos_plugin_files() const;
 	Variant get_option(const StringName &p_name) const;
+	String get_platform_os_name() const;
 
 	EditorExportPlugin();
 };

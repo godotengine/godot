@@ -310,6 +310,12 @@
 				Returns the current value of an export option supplied by [method _get_export_options].
 			</description>
 		</method>
+		<method name="get_platform_os_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the export operating system of the current export preset. See [method EditorExportPlatform.get_os_name].
+			</description>
+		</method>
 		<method name="skip">
 			<return type="void" />
 			<description>

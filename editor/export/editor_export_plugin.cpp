@@ -132,6 +132,10 @@ Variant EditorExportPlugin::get_option(const StringName &p_name) const {
 	return export_preset->get(p_name);
 }
 
+String EditorExportPlugin::get_platform_os_name() const {
+	return export_preset->get_platform()->get_os_name();
+}
+
 String EditorExportPlugin::_has_valid_export_configuration(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset) {
 	String warning;
 	if (!supports_platform(p_export_platform)) {
@@ -316,6 +320,7 @@ void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_macos_plugin_file", "path"), &EditorExportPlugin::add_macos_plugin_file);
 	ClassDB::bind_method(D_METHOD("skip"), &EditorExportPlugin::skip);
 	ClassDB::bind_method(D_METHOD("get_option", "name"), &EditorExportPlugin::get_option);
+	ClassDB::bind_method(D_METHOD("get_platform_os_name"), &EditorExportPlugin::get_platform_os_name);
 
 	GDVIRTUAL_BIND(_export_file, "path", "type", "features");
 	GDVIRTUAL_BIND(_export_begin, "features", "is_debug", "path", "flags");
