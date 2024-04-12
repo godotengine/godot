@@ -147,23 +147,17 @@ GDScriptParser::GDScriptParser() {
 }
 
 GDScriptParser::~GDScriptParser() {
-	clear();
-}
-
-void GDScriptParser::clear() {
 	while (list != nullptr) {
 		Node *element = list;
 		list = list->next;
 		memdelete(element);
 	}
+}
 
-	head = nullptr;
-	list = nullptr;
-	_is_tool = false;
-	for_completion = false;
-	errors.clear();
-	multiline_stack.clear();
-	nodes_in_progress.clear();
+void GDScriptParser::clear() {
+	GDScriptParser tmp;
+	tmp = *this;
+	*this = GDScriptParser();
 }
 
 void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
@@ -707,6 +701,25 @@ void GDScriptParser::parse_program() {
 	}
 
 	clear_unused_annotations();
+}
+
+Ref<GDScriptParserRef> GDScriptParser::get_depended_parser_for(const String &p_path) {
+	Ref<GDScriptParserRef> ref;
+	if (depended_parsers.has(p_path)) {
+		ref = depended_parsers[p_path];
+	} else {
+		Error err = OK;
+		ref = GDScriptCache::get_parser(p_path, GDScriptParserRef::EMPTY, err, script_path);
+		if (ref.is_valid()) {
+			depended_parsers[p_path] = ref;
+		}
+	}
+
+	return ref;
+}
+
+const HashMap<String, Ref<GDScriptParserRef>> &GDScriptParser::get_depended_parsers() {
+	return depended_parsers;
 }
 
 GDScriptParser::ClassNode *GDScriptParser::find_class(const String &p_qualified_name) const {
@@ -4071,6 +4084,7 @@ bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node
 
 	if (current_class && !ClassDB::is_parent_class(current_class->get_datatype().native_type, SNAME("Node"))) {
 		push_error(R"("@onready" can only be used in classes that inherit "Node".)", p_annotation);
+		return false;
 	}
 
 	VariableNode *variable = static_cast<VariableNode *>(p_target);
