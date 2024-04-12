@@ -71,12 +71,7 @@
 #endif
 #endif
 
-// No discard allows the compiler to flag warnings if we don't use the return value of functions / classes
-#ifndef _NO_DISCARD_
-#define _NO_DISCARD_ [[nodiscard]]
-#endif
-
-// In some cases _NO_DISCARD_ will get false positives,
+// In some cases [[nodiscard]] will get false positives,
 // we can prevent the warning in specific cases by preceding the call with a cast.
 #ifndef _ALLOW_DISCARD_
 #define _ALLOW_DISCARD_ (void)

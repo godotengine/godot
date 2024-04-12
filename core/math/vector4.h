@@ -36,7 +36,7 @@
 
 class String;
 
-struct _NO_DISCARD_ Vector4 {
+struct [[nodiscard]] Vector4 {
 	static const int AXIS_COUNT = 4;
 
 	enum Axis {

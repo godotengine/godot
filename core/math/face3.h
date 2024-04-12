@@ -36,7 +36,7 @@
 #include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
 
-struct _NO_DISCARD_ Face3 {
+struct [[nodiscard]] Face3 {
 	enum Side {
 		SIDE_OVER,
 		SIDE_UNDER,

@@ -34,7 +34,7 @@
 #include "core/math/quaternion.h"
 #include "core/math/vector3.h"
 
-struct _NO_DISCARD_ Basis {
+struct [[nodiscard]] Basis {
 	Vector3 rows[3] = {
 		Vector3(1, 0, 0),
 		Vector3(0, 1, 0),
