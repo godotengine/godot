@@ -252,7 +252,7 @@
 			<param index="1" name="pose" type="Transform3D" />
 			<description>
 				Sets the global pose transform, [param pose], for the bone at [param bone_idx].
-				[b]Note:[/b] If other bone poses have been changed, this method executes an update process and will cause performance to deteriorate. If you know that multiple global poses will be applied, consider using [method set_bone_pose] with precalculation.
+				[b]Note:[/b] If other bone poses have been changed, this method executes a dirty poses recalculation and will cause performance to deteriorate. If you know that multiple global poses will be applied, consider using [method set_bone_pose] with precalculation.
 			</description>
 		</method>
 		<method name="set_bone_global_pose_override" deprecated="">
@@ -355,15 +355,10 @@
 			<description>
 			</description>
 		</signal>
-		<signal name="bone_pose_changed">
-			<param index="0" name="bone_idx" type="int" />
-			<description>
-				Emitted when the bone at [param bone_idx] changes its transform/pose. This can be used to update other nodes that rely on bone positions.
-			</description>
-		</signal>
 		<signal name="pose_updated">
 			<description>
-				Emitted when the pose is updated, after [constant NOTIFICATION_UPDATE_SKELETON] is received.
+				Emitted when the pose is updated.
+				[b]Note:[/b] During the update process, this signal is not fired, so modification by [SkeletonModifier3D] is not detected.
 			</description>
 		</signal>
 		<signal name="show_rest_only_changed">
@@ -371,11 +366,16 @@
 				Emitted when the value of [member show_rest_only] changes.
 			</description>
 		</signal>
+		<signal name="skeleton_updated">
+			<description>
+				Emitted when the final pose has been calculated will be applied to the skin in the update process.
+				This means that all [SkeletonModifier3D] processing is complete. In order to detect the completion of the processing of each [SkeletonModifier3D], use [signal SkeletonModifier3D.modification_processed].
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
-			Notification received when this skeleton's pose needs to be updated.
-			This notification is received [i]before[/i] the related [signal pose_updated] signal.
+			Notification received when this skeleton's pose needs to be updated. In that case, this is called only once per frame in a deferred process.
 		</constant>
 		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS" value="0" enum="ModifierCallbackModeProcess">
 			Set a flag to process modification during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
