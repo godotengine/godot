@@ -85,7 +85,7 @@ NavMeshGenerator3D::NavMeshGenerator3D() {
 
 	// Using threads might cause problems on certain exports or with the Editor on certain devices.
 	// This is the main switch to turn threaded navmesh baking off should the need arise.
-	use_threads = baking_use_multiple_threads && !Engine::get_singleton()->is_editor_hint();
+	use_threads = baking_use_multiple_threads;
 }
 
 NavMeshGenerator3D::~NavMeshGenerator3D() {
