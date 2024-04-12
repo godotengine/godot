@@ -416,7 +416,7 @@ void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event
 			int pattern_index = selected[i];
 			undo_redo->add_do_method(*tile_set, "remove_pattern", pattern_index);
 			//Change this to "tileset_clipboard
-			undo_redo->add_undo_method(*tile_set, "add_pattern", tile_set->get_pattern(0, pattern_index), pattern_index);
+			undo_redo->add_undo_method(*tile_set, "add_pattern", tile_set->get_pattern(pattern_index), pattern_index);
 		}
 		undo_redo->commit_action();
 		patterns_item_list->accept_event();
