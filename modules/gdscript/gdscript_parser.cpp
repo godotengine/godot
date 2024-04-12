@@ -2270,28 +2270,31 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 			break;
 		case GDScriptTokenizer::Token::BRACKET_OPEN: {
 			// Array.
+			push_multiline(true);
 			advance();
 			pattern->pattern_type = PatternNode::PT_ARRAY;
-
-			if (!check(GDScriptTokenizer::Token::BRACKET_CLOSE)) {
-				do {
-					PatternNode *sub_pattern = parse_match_pattern(p_root_pattern != nullptr ? p_root_pattern : pattern);
-					if (sub_pattern == nullptr) {
-						continue;
-					}
-					if (pattern->rest_used) {
-						push_error(R"(The ".." pattern must be the last element in the pattern array.)");
-					} else if (sub_pattern->pattern_type == PatternNode::PT_REST) {
-						pattern->rest_used = true;
-					}
-					pattern->array.push_back(sub_pattern);
-				} while (match(GDScriptTokenizer::Token::COMMA));
-			}
+			do {
+				if (is_at_end() || check(GDScriptTokenizer::Token::BRACKET_CLOSE)) {
+					break;
+				}
+				PatternNode *sub_pattern = parse_match_pattern(p_root_pattern != nullptr ? p_root_pattern : pattern);
+				if (sub_pattern == nullptr) {
+					continue;
+				}
+				if (pattern->rest_used) {
+					push_error(R"(The ".." pattern must be the last element in the pattern array.)");
+				} else if (sub_pattern->pattern_type == PatternNode::PT_REST) {
+					pattern->rest_used = true;
+				}
+				pattern->array.push_back(sub_pattern);
+			} while (match(GDScriptTokenizer::Token::COMMA));
 			consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected "]" to close the array pattern.)");
+			pop_multiline();
 			break;
 		}
 		case GDScriptTokenizer::Token::BRACE_OPEN: {
 			// Dictionary.
+			push_multiline(true);
 			advance();
 			pattern->pattern_type = PatternNode::PT_DICTIONARY;
 			do {
@@ -2334,6 +2337,7 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 				}
 			} while (match(GDScriptTokenizer::Token::COMMA));
 			consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected "}" to close the dictionary pattern.)");
+			pop_multiline();
 			break;
 		}
 		default: {
