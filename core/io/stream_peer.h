@@ -151,4 +151,42 @@ public:
 	StreamPeerBuffer() {}
 };
 
+class StreamPeerConstBuffer : public StreamPeer {
+	GDCLASS(StreamPeerConstBuffer, StreamPeer);
+
+	uint8_t * data = nullptr;
+	int size = 0;	
+	int pointer = 0;
+
+protected:
+	static void _bind_methods();
+public:
+	bool is_end()
+	{
+		return pointer >= size;
+	}
+	uint8_t* get_u8_ptr()
+	{
+		return data + pointer;
+	}
+	void set_data_array(uint8_t *p_data, int p_size);
+	Error put_data(const uint8_t *p_data, int p_bytes) override;
+	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
+
+	Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
+
+	virtual int get_available_bytes() const override;
+
+	void seek(int p_pos);
+	int get_size() const;
+	int get_position() const;
+	void resize(int p_size);
+
+
+
+
+	StreamPeerConstBuffer() {}
+};
+
 #endif // STREAM_PEER_H

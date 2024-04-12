@@ -44,12 +44,41 @@ class UnityLinkServer : public Object {
 	}
 
 	private:
+	struct ClientPeer : RefCounted
+	{
+		Ref<StreamPeerTCP> connection;
 
+		bool poll(Callable& on_load_animation);
+		bool process_msg(Callable& on_load_animation);
+
+		void clear()
+		{
+			curr_read_count = 0;
+			is_msg_statred = false;
+			if(data)
+			{
+				memdelete_arr(data);
+				data = nullptr;
+			}
+			buffer_size = 0;
+		}
+		~ClientPeer()
+		{
+			clear();
+		}
+
+		int curr_read_count = 0;
+		uint8_t *data = nullptr;
+		int buffer_size = 0;
+		bool is_msg_statred = false;
+		
+	};
 	Ref<TCPServer> server;
 	String password;
 	Callable on_load_animation;
 	int port = 0;
 	bool active = false;
+	List<Ref<ClientPeer>> clients;
 
 
 	void set_animation_load_callback(const Callable &p_callback)

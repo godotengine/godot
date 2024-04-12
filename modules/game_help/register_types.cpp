@@ -104,8 +104,9 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	//ClassDB::register_class<BTPlaySkill>();
 
 	
-	ClassDB::register_class<CharacterAnimatorMask>();
 	ClassDB::register_class<CharacterAnimatorNodeBase>();
+	ClassDB::register_class<CharacterAnimatorMask>();
+	ClassDB::register_class<CharacterAnimationItem>();
 	ClassDB::register_class<CharacterAnimatorNode1D>();
 	ClassDB::register_class<CharacterAnimatorNode2D>();
 	ClassDB::register_class<CharacterAnimatorLayerConfig>();

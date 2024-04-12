@@ -40,45 +40,57 @@
 #define MAX_FILE_BUFFER_SIZE 100 * 1024 * 1024 // 100mb max file buffer size (description of files to update, compressed).
 
 
-static uint8_t*  _buffer_to_animationNode(uint8_t* buffer,Ref<CharacterAnimatorNodeBase> &rs,Error &err) ;
+static void  _buffer_to_animationNode(StreamPeerConstBuffer& buffer,Ref<CharacterAnimatorNodeBase> &rs,Error &err) ;
 // 解析动画节点
-static uint8_t* _buffer_to_animationItem(uint8_t* buffer,CharacterAnimatorNodeBase::AnimationItem &animation_item,Error &err) 
+static void _buffer_to_animationItem(StreamPeerConstBuffer& buffer,Ref<CharacterAnimationItem> &animation_item,Error &err) 
 {
-	
-	CharacterAnimatorNodeBase::AnimationItem item;
+	err = OK;
+	animation_item.instantiate();
 
-	bool is_clip = *(bool*)buffer;
-	buffer += 1;
+	bool is_clip = buffer.get_8();
 
 	if(is_clip){
-		int name_size = *(int*)buffer;
+		int name_size = buffer.get_32();
 		if(name_size < 0 || name_size > 10240){
 			err = ERR_OUT_OF_MEMORY;
-			return buffer;
+			return ;
 		}
-		buffer += 4;
-		item.m_Name = String::utf8((const char*)buffer,name_size);
-		buffer += name_size;
+		animation_item->animation_name = buffer.get_utf8_string(name_size);;
+
+		int path_size = buffer.get_32();
+		if(path_size < 0 || path_size > 10240){
+			err = ERR_OUT_OF_MEMORY;
+			return ;			
+		}
+
+		if(buffer.is_end()){
+			err = ERR_OUT_OF_MEMORY;
+			return ;
+		}
+		animation_item->animation_path = buffer.get_utf8_string(path_size);
+
+		animation_item->speed = buffer.get_float();
+
+
 	}else{
-		buffer = _buffer_to_animationNode(buffer,item.m_animation_node,err);
+		_buffer_to_animationNode(buffer,animation_item->child_node,err);
 	}
 
-	return buffer;
+	return ;
 }
-static uint8_t* _buffer_to_animationNode(uint8_t*  buffer,Ref<CharacterAnimatorNodeBase> &rs,Error &err) 
+static void _buffer_to_animationNode(StreamPeerConstBuffer&  buffer,Ref<CharacterAnimatorNodeBase> &rs,Error &err) 
 {
 	err = OK;
 	// 1 代表是动画节点文件
-	int type = *(int*)buffer;
+	int type = buffer.get_32();
 	if(type < 0 || type > 10240){
 		err = ERR_OUT_OF_MEMORY;
-		return buffer;
+		return ;
 	}
 	if(type < 0 || type > 10240){
 		err = ERR_OUT_OF_MEMORY;
-		return buffer;
+		return ;
 	}
-	buffer += 4;
 	Ref<CharacterAnimatorNode1D> node1d;
 	Ref<CharacterAnimatorNode2D> node2d;
 	if(type == 0){
@@ -89,93 +101,80 @@ static uint8_t* _buffer_to_animationNode(uint8_t*  buffer,Ref<CharacterAnimatorN
 		// 1 代表是CharacterAnimatorNode2D
 		node2d.instantiate();
 		rs = node2d;
-		node2d->m_BlendType = (CharacterAnimatorNode2D::BlendType)*buffer;
+		node2d->blend_type = (CharacterAnimatorNode2D::BlendType)buffer.get_32();
 	}
 
-	int name_length = *(int*)buffer;
+	int name_length = buffer.get_32();
 	if(name_length < 0 || name_length > 10240){
 		err = ERR_OUT_OF_MEMORY;
-		return buffer;
+		return ;
 	}
-	buffer += 4;
-
-	String name = String::utf8((const char*)buffer,name_length);
+	if(buffer.is_end()){
+		err = ERR_OUT_OF_MEMORY;
+		return ;
+	}
+	String name = buffer.get_utf8_string(name_length);
 	rs->set_name(name);
-	buffer += name_length;
 
-	int item_count = *(int*)buffer;
+	int item_count = buffer.get_32();
 	if(item_count < 0 || item_count > 10240){
 		err = ERR_OUT_OF_MEMORY;
-		return buffer;
+		return ;
 	}
-	buffer += 4;
+	if(buffer.is_end()){
+		err = ERR_OUT_OF_MEMORY;
+		return ;
+	}
 
 	// 读取绑定的属性名称
-	int pro_name_len = *(int*)buffer;
+	int pro_name_len = buffer.get_32();
 	if(pro_name_len < 0 || pro_name_len > 10240){
 		err = ERR_OUT_OF_MEMORY;
-		return buffer;
+		return ;
 	}
-	buffer += 4;
-	rs->m_PropertyName = String::utf8((const char*)buffer,pro_name_len);
-	buffer += pro_name_len;
+	rs->black_board_property = buffer.get_utf8_string(name_length);
 
 	if(type == 0){
 		// 0 代表是CharacterAnimatorNode1D
-		node1d->m_BlendData.m_ChildCount = item_count;
+		node1d->blend_data.position_count = item_count;
 	}else if(type > 1){
 		// 1 代表是CharacterAnimatorNode2D
-		node2d->m_BlendData.m_ChildCount = item_count;
+		node2d->blend_data.position_count = item_count;
 	}
 	for(int i=0;i<item_count;i++){
-		float x = *(float*)buffer;
-		buffer += 4;
-		float y = *(float*)buffer;
-		buffer += 4;
+		float x = buffer.get_float();
+		float y = buffer.get_float();
+		if(buffer.is_end()){
+			err = ERR_OUT_OF_MEMORY;
+			return ;
+		}
 		if(type == 0){
 			// 0 代表是CharacterAnimatorNode1D
-			node1d->m_BlendData.m_ChildThresholdArray.push_back(x);
+			node1d->blend_data.position_array.push_back(x);
 		}else if(type > 1){
 			// 1 代表是CharacterAnimatorNode2D
-			node2d->m_BlendData.m_ChildPositionArray.push_back(Vector2(x,y));
+			node2d->blend_data.position_array.push_back(Vector2(x,y));
 		}
-		CharacterAnimatorNodeBase::AnimationItem animation_item;
-		buffer = _buffer_to_animationItem(buffer,animation_item,err);
+		Ref<CharacterAnimationItem> animation_item;
+		_buffer_to_animationItem(buffer,animation_item,err);
 		if(err != OK){
-			return buffer;
+			return ;
 		}
-		rs->m_ChildAnimationArray.append(animation_item);
+		rs->animation_arrays.append(animation_item);
 
 	}
 
-	return buffer;
+	return ;
 }
-
-void UnityLinkServer::poll() {
-	if (!active) {
-		return;
+static bool poll_client(StreamPeerConstBuffer& tcp_peer,Callable& on_load_animation) {
+	int tag = tcp_peer.get_u32();
+	int size = tcp_peer.get_u32();
+	int type = tcp_peer.get_u32();
+	int path_size = tcp_peer.get_u32();
+	if(path_size < 0 || path_size > 10240){
+		return false;
 	}
-
-	if (!server->is_connection_available()) {
-		return;
-	}
-
-	Ref<StreamPeerTCP> tcp_peer = server->take_connection();
-	ERR_FAIL_COND(tcp_peer.is_null());
-	int size = tcp_peer->get_u32();
-	uint8_t* buffer = (uint8_t*)alloca(size);
-	if(!tcp_peer->get_data(buffer,size)){
-		return;
-	}
-	if(size == 0){
-		return;
-	}
-	int type = *(int*)buffer;
-	buffer += 4;
-	int path_size = *(int*)buffer;
-	buffer += 4;
-	String path = String::utf8((const char*)buffer,path_size);
-	buffer += path_size;
+	String path = tcp_peer.get_utf8_string(path_size);
 
 	if(!DirAccess::exists("res://" + path))
 	{
@@ -189,23 +188,22 @@ void UnityLinkServer::poll() {
 		// 1 代表是动画节点
 		Ref<CharacterAnimatorNodeBase> anima_node;
 		Error err;
-		buffer = _buffer_to_animationNode(buffer,anima_node,err);
+		_buffer_to_animationNode(tcp_peer,anima_node,err);
 		if(err != OK){
-			ERR_FAIL_MSG("UnityLinkServer: create animation node error " + itos(err) + " " + path);
-			return;
+			ERR_FAIL_V_MSG(false,"UnityLinkServer: create animation node error " + itos(err) + " " + path);
 		}
 		String save_path = "res://" + path + "/" + anima_node->get_name() + "_" + anima_node->get_class() + "anim_node.tres";
 		ResourceSaver::save(anima_node,save_path);
 	}
 	else if(type == 2){
 		if(on_load_animation.is_null()){
-			return;
+			return true;
 		}
 		// 解析动画文件
-		int file_size = size - 8 - path_size;
+		int file_size = size - 12 - path_size;
 		Vector<uint8_t> ba = Vector<uint8_t>();
 		ba.resize(file_size);
-		memcpy(ba.ptrw(),buffer,file_size);
+		memcpy(ba.ptrw(),tcp_peer.get_u8_ptr(),file_size);
 		Ref<Animation> anim;
 		anim.instantiate();
 		on_load_animation.call(ba,anim);
@@ -215,16 +213,120 @@ void UnityLinkServer::poll() {
 	else if(type == 3){
 		// 直接存儲的文件，fbx，png。。。。
 		
-		int file_size = size - 8 - path_size;
+		int file_size = size - 12 - path_size;
 
-		int name_size = *(int*)buffer;
-		buffer += 4;
-		String name = String::utf8((const char*)buffer,name_size);
-		buffer += name_size;
+		int name_size = tcp_peer.get_32();
+		if(name_size < 0 || name_size > 10240){
+			return false;
+		}
+		String name = tcp_peer.get_utf8_string(name_size);
 
-		file_size -= name_size + 4;
 		Ref<FileAccess> f = FileAccess::open("res://" + path + "/" + name,FileAccess::WRITE);
-		f->store_buffer(buffer,file_size);	
+		f->store_buffer(tcp_peer.get_u8_ptr(),file_size);	
+	}
+	return true;
+}
+
+bool UnityLinkServer::ClientPeer::poll(Callable& on_load_animation)
+{
+	
+	connection->poll();
+	if(connection->get_status() != StreamPeerTCP::STATUS_CONNECTED){
+		if(connection->get_status() == StreamPeerTCP::STATUS_ERROR || connection->get_status() == StreamPeerTCP::STATUS_NONE){
+			return false;
+		}
+		return true;
+	}
+	if(connection->get_available_bytes() == 0){
+		return true;
+	}
+	if(buffer_size == 0){
+		buffer_size = 102400;
+		data = memnew_arr(uint8_t, buffer_size);
+	}
+	while (true) {
+		int read = 0;
+		Error err = connection->get_partial_data(&data[curr_read_count], 1, read);
+		if (err != OK) {
+			return false;
+		} else if (read != 1) { // Busy, wait until next poll
+			return true;
+		}
+		++curr_read_count;
+		if(!is_msg_statred && curr_read_count == 8)
+		{
+			int msg_size = *(((int *)data)+1);
+			// 小於0 或者大於40兆代表無效數據
+			if(msg_size < 0 || msg_size > 40960000)
+			{
+				return false;
+			}
+			if(buffer_size < msg_size)
+			{
+				buffer_size = msg_size;
+				uint8_t* old = data;
+				data = memnew_arr(uint8_t, buffer_size);
+				
+				*(((int *)data)) = *(((int *)old));
+				*(((int *)data)+1) = msg_size;
+				memdelete_arr(old);
+			}
+			is_msg_statred = true;
+
+		}
+		if(curr_read_count == *(((int *)data)+1))
+		{
+			break;
+		}
+	}
+	curr_read_count = 0;
+	is_msg_statred = false;
+	if(!process_msg(on_load_animation)){
+		return false;
+	}
+	return true;
+}
+
+
+bool UnityLinkServer::ClientPeer::process_msg(Callable& on_load_animation)
+{
+	StreamPeerConstBuffer buffer;
+	buffer.set_data_array(data,*(((int*)data)) + 1);
+	return poll_client(buffer,on_load_animation);
+}
+void UnityLinkServer::poll() {
+	if (!active) {
+		return;
+	}
+
+	if (!server->is_connection_available()) {
+		return;
+	}
+	// 接收客户端
+	while(true)
+	{
+		Ref<StreamPeerTCP> tcp_peer = server->take_connection();
+		if(tcp_peer.is_null()){
+			break;
+		}
+		// Got a connection!
+		tcp_peer->set_no_delay(true);
+		Ref<ClientPeer> peer ;
+		peer.instantiate();
+		peer->connection = tcp_peer;
+		clients.push_back(peer);
+
+	}
+	// 遍历客户端
+	auto it = clients.begin();
+	while(it != clients.end())
+	{
+		Ref<ClientPeer>& peer = *it;
+		if(!peer->poll(on_load_animation)){
+			it = clients.erase(it);
+			continue;
+		}
+		++it;
 	}
 
 }

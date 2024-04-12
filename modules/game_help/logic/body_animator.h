@@ -20,9 +20,38 @@ class CharacterAnimatorMask : public Resource
 public:
 	Dictionary disable_path;
 };
+class CharacterAnimationItem : public RefCounted
+{
+    GDCLASS(CharacterAnimationItem, RefCounted);
+    static void bind_methods();
+
+public:
+    void set_animation_name(const String& p_animation_name) { animation_name = p_animation_name; }
+    String get_animation_name() { return animation_name; }
+
+    void set_animation_path(const String& p_animation_path) { animation_path = p_animation_path; }
+    String get_animation_path() { return animation_path; }
+
+    void set_speed(float p_speed) { speed = p_speed; }
+    float get_speed() { return speed; }
+
+    void set_is_clip(bool p_is_clip) { is_clip = p_is_clip; }
+    bool get_is_clip() { return is_clip; }
+
+
+
+
+    StringName animation_name;
+    String animation_path;
+    float speed = 1.0f;
+    bool is_clip = true;
+    Ref<Animation> animation;
+    Ref<class CharacterAnimatorNodeBase> child_node;
+};
 class CharacterAnimatorNodeBase : public Resource
 {
     GDCLASS(CharacterAnimatorNodeBase, Resource);
+    static void bind_methods();
 
 public:
     float fadeOutTime = 0.0f;
@@ -36,7 +65,23 @@ public:
 public:
     void _blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,struct CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array,Blackboard *p_blackboard);
 
+    void set_animation_arrays(TypedArray<CharacterAnimationItem> p_animation_arrays) { animation_arrays = p_animation_arrays; }
+    TypedArray<CharacterAnimationItem> get_animation_arrays() { return animation_arrays; }
+
     
+    TypedArray<CharacterAnimationItem>    animation_arrays;
+    StringName               black_board_property;
+
+    struct Blend1dDataConstant
+    {
+
+        Blend1dDataConstant() : position_count(0)
+        {
+        }
+
+        uint32_t            position_count;
+        Vector<float>       position_array;
+    };
     struct MotionNeighborList
     {
 
@@ -47,40 +92,6 @@ public:
         uint32_t m_Count;
         Vector<uint32_t> m_NeighborArray;
     };  
-    struct AnimationItem
-    {
-        StringName m_Name;
-        Ref<Animation> m_Animation;
-        Ref<CharacterAnimatorNodeBase> m_animation_node;
-        float m_Speed = 1.0f;
-        bool isClip = true;
-    };
-    Vector<AnimationItem>    m_ChildAnimationArray;
-    StringName               m_PropertyName;
-
- // Constant data for direct blend node types - parameters
-    struct BlendDirectDataConstant
-    {
-
-        BlendDirectDataConstant() : m_ChildCount(0), m_NormalizedBlendValues(0)
-        {
-        }
-
-        uint32_t            m_ChildCount;
-        Vector<uint32_t> m_ChildBlendEventIDArray;
-        bool                m_NormalizedBlendValues;
-    };
-    struct Blend1dDataConstant
-    {
-
-        Blend1dDataConstant() : m_ChildCount(0)
-        {
-        }
-
-        uint32_t            m_ChildCount;
-        Vector<float>    m_ChildThresholdArray;
-
-    };
     struct Blend2dDataConstant
     {
 
@@ -88,17 +99,17 @@ public:
         {
         }
 
-        uint32_t                m_ChildCount;
-        Vector<Vector2>     m_ChildPositionArray;
+        uint32_t                    position_count;
+        Vector<Vector2>             position_array;
 
-        uint32_t                m_ChildMagnitudeCount;
-        Vector<float>        m_ChildMagnitudeArray; // Used by type 2
-        uint32_t                m_ChildPairVectorCount;
-        Vector<Vector2>     m_ChildPairVectorArray; // Used by type 2, (3 TODO)
-        uint32_t                m_ChildPairAvgMagInvCount;
-        Vector<float>        m_ChildPairAvgMagInvArray; // Used by type 2
-        uint32_t                        m_ChildNeighborListCount;
-        Vector<MotionNeighborList>   m_ChildNeighborListArray; // Used by type 2, (3 TODO)
+        uint32_t                    m_ChildMagnitudeCount;
+        Vector<float>               m_ChildMagnitudeArray; // Used by type 2
+        uint32_t                    m_ChildPairVectorCount;
+        Vector<Vector2>             m_ChildPairVectorArray; // Used by type 2, (3 TODO)
+        uint32_t                    m_ChildPairAvgMagInvCount;
+        Vector<float>               m_ChildPairAvgMagInvArray; // Used by type 2
+        uint32_t                    m_ChildNeighborListCount;
+        Vector<MotionNeighborList>  m_ChildNeighborListArray; // Used by type 2, (3 TODO)
 
     };
      
@@ -124,7 +135,7 @@ class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
 public:
     virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard) override;
 public:
-    Blend1dDataConstant   m_BlendData;
+    Blend1dDataConstant   blend_data;
 };
 class CharacterAnimatorNode2D : public CharacterAnimatorNodeBase
 {
@@ -137,9 +148,16 @@ public:
         FreeformCartesian2D = 3,
     };
     virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard) override;
+
+    void set_blend_type(BlendType p_blend_type) { blend_type = (BlendType)p_blend_type; }
+    BlendType get_blend_type() { return blend_type; }
+
+    
+
+
 public:
-    BlendType m_BlendType;
-    Blend2dDataConstant m_BlendData;
+    BlendType blend_type;
+    Blend2dDataConstant blend_data;
 };
 struct CharacterAnimationInstance
 {    

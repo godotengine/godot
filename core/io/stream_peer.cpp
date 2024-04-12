@@ -564,3 +564,92 @@ Ref<StreamPeerBuffer> StreamPeerBuffer::duplicate() const {
 	spb->data = data;
 	return spb;
 }
+
+
+
+////////////////////////////////
+
+void StreamPeerConstBuffer::_bind_methods() {
+
+}
+
+void StreamPeerConstBuffer::set_data_array(uint8_t *p_data, int p_size)
+{
+	data = p_data;
+	pointer = 0;
+	size = p_size;
+}
+Error StreamPeerConstBuffer::put_data(const uint8_t *p_data, int p_bytes) {
+	if (p_bytes <= 0) {
+		return OK;
+	}
+
+	if (pointer + p_bytes > size) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	memcpy(&data[pointer], p_data, p_bytes);
+
+	pointer += p_bytes;
+	return OK;
+}
+
+Error StreamPeerConstBuffer::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
+	r_sent = p_bytes;
+	return put_data(p_data, p_bytes);
+}
+
+Error StreamPeerConstBuffer::get_data(uint8_t *p_buffer, int p_bytes) {
+	int recv;
+	get_partial_data(p_buffer, p_bytes, recv);
+	if (recv != p_bytes) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	return OK;
+}
+
+Error StreamPeerConstBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
+	if (pointer + p_bytes > size) {
+		r_received = size - pointer;
+		if (r_received <= 0) {
+			r_received = 0;
+			return OK; //you got 0
+		}
+	} else {
+		r_received = p_bytes;
+	}
+
+	memcpy(p_buffer, data + pointer, r_received);
+
+	pointer += r_received;
+	// FIXME: return what? OK or ERR_*
+	// return OK for now so we don't maybe return garbage
+	return OK;
+}
+
+int StreamPeerConstBuffer::get_available_bytes() const {
+	return size - pointer;
+}
+
+void StreamPeerConstBuffer::seek(int p_pos) {
+	ERR_FAIL_COND(p_pos < 0);
+	ERR_FAIL_COND(p_pos > size);
+	pointer = p_pos;
+}
+
+int StreamPeerConstBuffer::get_size() const {
+	return size;
+}
+
+int StreamPeerConstBuffer::get_position() const {
+	return pointer;
+}
+
+void StreamPeerConstBuffer::resize(int p_size) {
+}
+
+
+
+
+

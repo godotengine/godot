@@ -1,6 +1,37 @@
 #include "body_animator.h"
 #include "body_main.h"
 
+
+void CharacterAnimationItem::bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("set_animation_name", "animation_name"), &CharacterAnimationItem::set_animation_name);
+    ClassDB::bind_method(D_METHOD("get_animation_name"), &CharacterAnimationItem::get_animation_name);
+
+    ClassDB::bind_method(D_METHOD("set_animation_path", "animation_path"), &CharacterAnimationItem::set_animation_path);
+    ClassDB::bind_method(D_METHOD("get_animation_path"), &CharacterAnimationItem::get_animation_path);
+
+    ClassDB::bind_method(D_METHOD("set_speed", "speed"), &CharacterAnimationItem::set_speed);
+    ClassDB::bind_method(D_METHOD("get_speed"), &CharacterAnimationItem::get_speed);
+
+    ClassDB::bind_method(D_METHOD("set_is_clip", "is_clip"), &CharacterAnimationItem::set_is_clip);
+    ClassDB::bind_method(D_METHOD("get_is_clip"), &CharacterAnimationItem::get_is_clip);
+
+    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation_name"), "set_animation_name", "get_animation_name");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation_path"), "set_animation_path", "get_animation_path");
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed"), "set_speed", "get_speed");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_clip"), "set_is_clip", "get_is_clip");
+
+}
+
+
+void CharacterAnimatorNodeBase::bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("set_animation_arrays", "animation_arrays"), &CharacterAnimatorNodeBase::set_animation_arrays);
+    ClassDB::bind_method(D_METHOD("get_animation_arrays"), &CharacterAnimatorNodeBase::get_animation_arrays);
+
+    ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "animation_arrays"), "set_animation_arrays", "get_animation_arrays");
+}
+
 void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array,Blackboard *p_blackboard)
 {
     AnimationMixer::PlaybackInfo * p_playback_info_ptr = p_playback_info->m_ChildAnimationPlaybackArray.ptrw();
@@ -9,17 +40,25 @@ void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,
         float w = weight_array[i] * total_weight;
         if(w > 0.01f)
         {	  
-            if(m_ChildAnimationArray[i].isClip){
+            Ref<CharacterAnimationItem> item = animation_arrays[i];
+            if(item->is_clip){
                 p_playback_info_ptr[i].weight = w;
                 p_playback_info_ptr[i].time = p_playback_info->time;
                 p_playback_info_ptr[i].delta = p_playback_info->delta;
                 p_playback_info_ptr[i].disable_path = p_playback_info->disable_path;
-                p_layer->make_animation_instance_anim(m_ChildAnimationArray[i].m_Animation, p_playback_info_ptr[i]);
+                if(item->animation.is_valid())
+                {
+                    p_layer->make_animation_instance_anim(item->animation, p_playback_info_ptr[i]);
+                }
+                else
+                {
+                    p_layer->make_animation_instance(item->animation_name, p_playback_info_ptr[i]);                    
+                }
             }
-            else if(m_ChildAnimationArray[i].m_animation_node.is_valid())
+            else if(item->child_node.is_valid())
             {
                 // 动画节点递归处理
-                m_ChildAnimationArray[i].m_animation_node->process_animation(p_layer,p_playback_info,w,p_blackboard);
+                item->child_node->process_animation(p_layer,p_playback_info,w,p_blackboard);
             }
         }
     }
@@ -78,8 +117,8 @@ void CharacterAnimatorNodeBase::get_weights_simple_directional(const Blend2dData
     float blendValueX, float blendValueY, bool preCompute)
 {
     // Get constants
-    const Vector2* positionArray = blendConstant.m_ChildPositionArray.ptr();
-    uint32_t count = blendConstant.m_ChildCount;
+    const Vector2* positionArray = blendConstant.position_array.ptr();
+    uint32_t count = blendConstant.position_count;
 
     if (weightArray == NULL || positionArray == NULL)
         return;
@@ -208,14 +247,14 @@ void CharacterAnimatorNodeBase::get_weights_simple_directional(const Blend2dData
 
 float CharacterAnimatorNodeBase::get_weight_freeform_directional(const Blend2dDataConstant& blendConstant, Vector2* workspaceBlendVectors, int i, int j, Vector2 blendPosition)
 {
-    int pairIndex = i + j * blendConstant.m_ChildCount;
+    int pairIndex = i + j * blendConstant.position_count;
     Vector2 vecIJ = blendConstant.m_ChildPairVectorArray[pairIndex];
     Vector2 vecIO = workspaceBlendVectors[i];
     vecIO.y *= blendConstant.m_ChildPairAvgMagInvArray[pairIndex];
 
-    if (blendConstant.m_ChildPositionArray[i] == Vector2(0, 0))
+    if (blendConstant.position_array[i] == Vector2(0, 0))
         vecIJ.x = workspaceBlendVectors[j].x;
-    else if (blendConstant.m_ChildPositionArray[j] == Vector2(0, 0))
+    else if (blendConstant.position_array[j] == Vector2(0, 0))
         vecIJ.x = workspaceBlendVectors[i].x;
     else if (vecIJ.x == 0 || blendPosition == Vector2(0, 0))
         vecIO.x = vecIJ.x;
@@ -228,8 +267,8 @@ void CharacterAnimatorNodeBase::get_weights_freeform_directional(const Blend2dDa
     float blendValueX, float blendValueY, bool preCompute )
 {
     // Get constants
-    const Vector2* positionArray = blendConstant.m_ChildPositionArray.ptr();
-    uint32_t count = blendConstant.m_ChildCount;
+    const Vector2* positionArray = blendConstant.position_array.ptr();
+    uint32_t count = blendConstant.position_count;
     const float* constantMagnitudes = blendConstant.m_ChildMagnitudeArray.ptr();
     const MotionNeighborList* constantChildNeighborLists = blendConstant.m_ChildNeighborListArray.ptr();
 
@@ -331,8 +370,8 @@ void CharacterAnimatorNodeBase::get_weights_freeform_cartesian(const Blend2dData
     float blendValueX, float blendValueY, bool preCompute )
 {
     // Get constants
-    const Vector2* positionArray = blendConstant.m_ChildPositionArray.ptr();
-    uint32_t count = blendConstant.m_ChildCount;
+    const Vector2* positionArray = blendConstant.position_array.ptr();
+    uint32_t count = blendConstant.position_count;
     const MotionNeighborList* constantChildNeighborLists = blendConstant.m_ChildNeighborListArray.ptr();
 
     Vector2 blendPosition = Vector2(blendValueX, blendValueY);
@@ -351,7 +390,7 @@ void CharacterAnimatorNodeBase::get_weights_freeform_cartesian(const Blend2dData
                 if (i == j)
                     continue;
 
-                int pairIndex = i + j * blendConstant.m_ChildCount;
+                int pairIndex = i + j * blendConstant.position_count;
                 Vector2 vecIJ = blendConstant.m_ChildPairVectorArray[pairIndex];
                 float newValue = 1 - vecIJ.dot( vecIO) * blendConstant.m_ChildPairAvgMagInvArray[pairIndex];
                 if (newValue <= 0)
@@ -379,7 +418,7 @@ void CharacterAnimatorNodeBase::get_weights_freeform_cartesian(const Blend2dData
             if (i == j)
                 continue;
 
-            int pairIndex = i + j * blendConstant.m_ChildCount;
+            int pairIndex = i + j * blendConstant.position_count;
             Vector2 vecIJ = blendConstant.m_ChildPairVectorArray[pairIndex];
             float newValue = 1 - vecIJ.dot( vecIO) * blendConstant.m_ChildPairAvgMagInvArray[pairIndex];
             if (newValue < 0)
@@ -403,54 +442,54 @@ void CharacterAnimatorNodeBase::get_weights_freeform_cartesian(const Blend2dData
 
 void CharacterAnimatorNodeBase::get_weights1d(const Blend1dDataConstant& blendConstant, float* weightArray, float blendValue)
 {
-    blendValue = CLAMP(blendValue, blendConstant.m_ChildThresholdArray[0], blendConstant.m_ChildThresholdArray[blendConstant.m_ChildCount - 1]);
-    for (uint32_t j = 0; j < blendConstant.m_ChildCount; j++)
-        weightArray[j] = weight_for_index(blendConstant.m_ChildThresholdArray.ptr(), blendConstant.m_ChildCount, j, blendValue);
+    blendValue = CLAMP(blendValue, blendConstant.position_array[0], blendConstant.position_array[blendConstant.position_count - 1]);
+    for (uint32_t j = 0; j < blendConstant.position_count; j++)
+        weightArray[j] = weight_for_index(blendConstant.position_array.ptr(), blendConstant.position_count, j, blendValue);
 }
 
 void CharacterAnimatorNode1D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard)
 {
-    if(!p_blackboard->has_var(m_PropertyName))
+    if(!p_blackboard->has_var(black_board_property))
     {
         return;
     }
-    float v = p_blackboard->get_var(m_PropertyName,0);
-    if(p_playback_info->m_WeightArray.size() != m_BlendData.m_ChildCount)
+    float v = p_blackboard->get_var(black_board_property,0);
+    if(p_playback_info->m_WeightArray.size() != blend_data.position_count)
     {
-        p_playback_info->m_WeightArray.resize(m_BlendData.m_ChildCount);
-        p_playback_info->m_ChildAnimationPlaybackArray.resize(m_BlendData.m_ChildCount);
+        p_playback_info->m_WeightArray.resize(blend_data.position_count);
+        p_playback_info->m_ChildAnimationPlaybackArray.resize(blend_data.position_count);
     }
-    get_weights1d(m_BlendData, p_playback_info->m_WeightArray.ptrw(), v);
-    _blend_anmation(p_layer,m_BlendData.m_ChildCount, p_playback_info, total_weight,p_playback_info->m_WeightArray,p_blackboard);
+    get_weights1d(blend_data, p_playback_info->m_WeightArray.ptrw(), v);
+    _blend_anmation(p_layer,blend_data.position_count, p_playback_info, total_weight,p_playback_info->m_WeightArray,p_blackboard);
 
 }
 void CharacterAnimatorNode2D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard)
 {
-    if(!p_blackboard->has_var(m_PropertyName))
+    if(!p_blackboard->has_var(black_board_property))
     {
         return;
     }
-    Vector2 v = p_blackboard->get_var(m_PropertyName,0);
-    if(p_playback_info->m_WeightArray.size() != m_BlendData.m_ChildCount)
+    Vector2 v = p_blackboard->get_var(black_board_property,0);
+    if(p_playback_info->m_WeightArray.size() != blend_data.position_count)
     {
-        p_playback_info->m_WeightArray.resize(m_BlendData.m_ChildCount);
-        p_playback_info->m_ChildAnimationPlaybackArray.resize(m_BlendData.m_ChildCount);
+        p_playback_info->m_WeightArray.resize(blend_data.position_count);
+        p_playback_info->m_ChildAnimationPlaybackArray.resize(blend_data.position_count);
     }
-    if(p_layer->m_TempCropArray.size() < m_BlendData.m_ChildCount)
+    if(p_layer->m_TempCropArray.size() < blend_data.position_count)
     {
-        p_layer->m_TempCropArray.resize(m_BlendData.m_ChildCount);
-        p_layer->m_ChildInputVectorArray.resize(m_BlendData.m_ChildCount);
+        p_layer->m_TempCropArray.resize(blend_data.position_count);
+        p_layer->m_ChildInputVectorArray.resize(blend_data.position_count);
     }
-    if (m_BlendType == SimpleDirectionnal2D)
-        get_weights_simple_directional(m_BlendData, p_playback_info->m_WeightArray.ptrw(), p_layer->m_TempCropArray.ptrw(), p_layer->m_ChildInputVectorArray.ptrw(), v.x, v.y);
-    else if (m_BlendType == FreeformDirectionnal2D)
-        get_weights_freeform_directional(m_BlendData, p_playback_info->m_WeightArray.ptrw(), p_layer->m_TempCropArray.ptrw(), p_layer->m_ChildInputVectorArray.ptrw(), v.x, v.y);
-    else if (m_BlendType == FreeformCartesian2D)
-        get_weights_freeform_cartesian(m_BlendData, p_playback_info->m_WeightArray.ptrw(), p_layer->m_TempCropArray.ptrw(), p_layer->m_ChildInputVectorArray.ptrw(), v.x, v.y);
+    if (blend_type == SimpleDirectionnal2D)
+        get_weights_simple_directional(blend_data, p_playback_info->m_WeightArray.ptrw(), p_layer->m_TempCropArray.ptrw(), p_layer->m_ChildInputVectorArray.ptrw(), v.x, v.y);
+    else if (blend_type == FreeformDirectionnal2D)
+        get_weights_freeform_directional(blend_data, p_playback_info->m_WeightArray.ptrw(), p_layer->m_TempCropArray.ptrw(), p_layer->m_ChildInputVectorArray.ptrw(), v.x, v.y);
+    else if (blend_type == FreeformCartesian2D)
+        get_weights_freeform_cartesian(blend_data, p_playback_info->m_WeightArray.ptrw(), p_layer->m_TempCropArray.ptrw(), p_layer->m_ChildInputVectorArray.ptrw(), v.x, v.y);
     else 
         return;
 
-    _blend_anmation(p_layer, m_BlendData.m_ChildCount,p_playback_info, total_weight,p_playback_info->m_WeightArray,p_blackboard);
+    _blend_anmation(p_layer, blend_data.position_count,p_playback_info, total_weight,p_playback_info->m_WeightArray,p_blackboard);
 
 }
 // 处理动画
