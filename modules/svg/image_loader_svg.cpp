@@ -173,9 +173,17 @@ void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const
 }
 
 Error ImageLoaderSVG::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
-	String svg = p_fileaccess->get_as_utf8_string();
+	const uint64_t len = p_fileaccess->get_length() - p_fileaccess->get_position();
+	Vector<uint8_t> buffer;
+	buffer.resize(len);
+	p_fileaccess->get_buffer(buffer.ptrw(), buffer.size());
 
-	Error err;
+	String svg;
+	Error err = svg.parse_utf8((const char *)buffer.ptr(), buffer.size());
+	if (err != OK) {
+		return err;
+	}
+
 	if (p_flags & FLAG_CONVERT_COLORS) {
 		err = create_image_from_string(p_image, svg, p_scale, false, forced_color_map);
 	} else {
