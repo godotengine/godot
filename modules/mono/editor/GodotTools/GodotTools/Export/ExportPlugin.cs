@@ -75,7 +75,16 @@ namespace GodotTools.Export
             };
         }
 
-        private string? _maybeLastExportError;
+        private void AddExceptionMessage(Exception exception)
+        {
+            string? exceptionMessage = exception.Message;
+            if (string.IsNullOrEmpty(exceptionMessage))
+            {
+                exceptionMessage = $"Exception thrown: {exception.GetType().Name}";
+            }
+
+            AddMessage(EditorExportPlatform.ExportMessageType.Error, "Export .NET Project", exceptionMessage);
+        }
 
         // With this method we can override how a file is exported in the PCK
         public override void _ExportFile(string path, string type, string[] features)
@@ -92,8 +101,8 @@ namespace GodotTools.Export
 
             if (!ProjectContainsDotNet())
             {
-                _maybeLastExportError = $"This project contains C# files but no solution file was found at the following path: {GodotSharpDirs.ProjectSlnPath}\n" +
-                    "A solution file is required for projects with C# files. Please ensure that the solution file exists in the specified location and try again.";
+                AddMessage(EditorExportPlatform.ExportMessageType.Error, "Export .NET Project", $"This project contains C# files but no solution file was found at the following path: {GodotSharpDirs.ProjectSlnPath}\n" +
+                    "A solution file is required for projects with C# files. Please ensure that the solution file exists in the specified location and try again.");
                 throw new InvalidOperationException($"{path} is a C# file but no solution file exists.");
             }
 
@@ -124,16 +133,7 @@ namespace GodotTools.Export
             }
             catch (Exception e)
             {
-                _maybeLastExportError = e.Message;
-
-                // 'maybeLastExportError' cannot be null or empty if there was an error, so we
-                // must consider the possibility of exceptions being thrown without a message.
-                if (string.IsNullOrEmpty(_maybeLastExportError))
-                    _maybeLastExportError = $"Exception thrown: {e.GetType().Name}";
-
-                GD.PushError($"Failed to export project: {_maybeLastExportError}");
-                Console.Error.WriteLine(e);
-                // TODO: Do something on error once _ExportBegin supports failing.
+                AddExceptionMessage(e);
             }
         }
 
@@ -446,17 +446,6 @@ namespace GodotTools.Export
                 Directory.Delete(folder, recursive: true);
             }
             _tempFolders.Clear();
-
-            // TODO: The following is just a workaround until the export plugins can be made to abort with errors
-
-            // We check for empty as well, because it's set to empty after hot-reloading
-            if (!string.IsNullOrEmpty(_maybeLastExportError))
-            {
-                string lastExportError = _maybeLastExportError;
-                _maybeLastExportError = null;
-
-                GodotSharpEditor.Instance.ShowErrorDialog(lastExportError, "Failed to export C# project");
-            }
         }
 
         private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, [NotNullWhen(true)] out string? platform)
