@@ -250,6 +250,11 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 				String extends;
 				scr->get_language()->get_global_class_name(scr->get_path(), &extends);
 
+				// Not a valid script (has compile errors), we therefore ignore it as it can not be instantiated anyway (when selected).
+				if (extends.is_empty()) {
+					return;
+				}
+
 				inherits = extends;
 				inherited_type = TypeCategory::CPP_TYPE;
 			} else {
