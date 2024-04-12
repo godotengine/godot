@@ -1321,6 +1321,7 @@ public:
 
 private:
 	friend class GDScriptAnalyzer;
+	friend class GDScriptParserRef;
 
 	bool _is_tool = false;
 	String script_path;
@@ -1329,6 +1330,7 @@ private:
 	bool can_break = false;
 	bool can_continue = false;
 	List<bool> multiline_stack;
+	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
 
 	ClassNode *head = nullptr;
 	Node *list = nullptr;
@@ -1558,6 +1560,8 @@ public:
 	Error parse_binary(const Vector<uint8_t> &p_binary, const String &p_script_path);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
+	Ref<GDScriptParserRef> get_depended_parser_for(const String &p_path);
+	const HashMap<String, Ref<GDScriptParserRef>> &get_depended_parsers();
 	ClassNode *find_class(const String &p_qualified_name) const;
 	bool has_class(const GDScriptParser::ClassNode *p_class) const;
 	static Variant::Type get_builtin_type(const StringName &p_type); // Excluding `Variant::NIL` and `Variant::OBJECT`.
