@@ -937,8 +937,10 @@ bool FreeDesktopPortalDesktop::indicator_register(DisplayServer::IndicatorID p_i
 
 	StatusNotifierItem &item = indicators[p_id];
 
+	const char *item_name = item.name.utf8();
+
 	DBusMessage *message = dbus_message_new_method_call(BUS_STATUS_NOTIFIER_WATCHER_NAME, BUS_STATUS_NOTIFIER_WATCHER_PATH, BUS_INTERFACE_STATUS_NOTIFIER_WATCHER, "RegisterStatusNotifierItem");
-	dbus_message_append_args(message, DBUS_TYPE_STRING, &item.name.utf8().ptr(), DBUS_TYPE_INVALID);
+	dbus_message_append_args(message, DBUS_TYPE_STRING, &item_name, DBUS_TYPE_INVALID);
 
 	dbus_connection_send(monitor_connection, message, NULL);
 	dbus_message_unref(message);
