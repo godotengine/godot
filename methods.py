@@ -1621,8 +1621,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
         sln_template = sln_template.replace("%%NAME%%", project_name)
         sln_template = sln_template.replace("%%UUID%%", proj_uuid)
         sln_template = sln_template.replace("%%SLNUUID%%", sln_uuid)
-        sln_template = sln_template.replace("%%SECTION1%%", "\n    ".join(section1))
-        sln_template = sln_template.replace("%%SECTION2%%", "\n    ".join(section2))
+        sln_template = sln_template.replace("%%SECTION1%%", "\n\t\t".join(section1))
+        sln_template = sln_template.replace("%%SECTION2%%", "\n\t\t".join(section2))
 
         with open(f"{project_name}.sln", "w", encoding="utf-8", newline="\r\n") as f:
             f.write(sln_template)
