@@ -170,6 +170,8 @@ public:
 	void bake_from_source_geometry_data_async(const Ref<NavigationPolygon> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData2D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
 	bool is_baking_navigation_polygon(Ref<NavigationPolygon> p_navigation_polygon) const override { return false; }
 
+	Vector<Vector2> simplify_path(const Vector<Vector2> &p_path, real_t p_epsilon) override { return Vector<Vector2>(); }
+
 	void set_debug_enabled(bool p_enabled) {}
 	bool get_debug_enabled() const { return false; }
 };
