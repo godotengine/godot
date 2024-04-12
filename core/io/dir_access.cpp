@@ -84,7 +84,7 @@ static Error _erase_recursive(DirAccess *da) {
 	String n = da->get_next();
 	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
-			if (da->current_is_dir()) {
+			if (da->current_is_dir() && !da->is_link(n)) {
 				dirs.push_back(n);
 			} else {
 				files.push_back(n);
