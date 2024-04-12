@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  bone_attachment_3d.h                                                  */
+/*  bone_attachment_3d.compat.inc                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,78 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BONE_ATTACHMENT_3D_H
-#define BONE_ATTACHMENT_3D_H
-
-#include "scene/3d/skeleton_3d.h"
-#ifdef TOOLS_ENABLED
-#include "scene/resources/bone_map.h"
-#endif // TOOLS_ENABLED
-
-class BoneAttachment3D : public Node3D {
-	GDCLASS(BoneAttachment3D, Node3D);
-
-	bool bound = false;
-	String bone_name;
-	int bone_idx = -1;
-
-	bool override_pose = false;
-	bool _override_dirty = false;
-	bool overriding = false;
-
-	bool use_external_skeleton = false;
-	NodePath external_skeleton_node;
-	ObjectID external_skeleton_node_cache;
-
-	void _check_bind();
-	void _check_unbind();
-
-	bool updating = false;
-	void _transform_changed();
-	void _update_external_skeleton_cache();
-	Skeleton3D *_get_skeleton3d();
-
-protected:
-	void _validate_property(PropertyInfo &p_property) const;
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _notification(int p_what);
-
-	static void _bind_methods();
 #ifndef DISABLE_DEPRECATED
-	virtual void _on_bone_pose_update_bind_compat_90575(int p_bone_index);
-	static void _bind_compatibility_methods();
-#endif
 
-public:
-#ifdef TOOLS_ENABLED
-	virtual void notify_skeleton_bones_renamed(Node *p_base_scene, Skeleton3D *p_skeleton, Dictionary p_rename_map);
-#endif // TOOLS_ENABLED
+#include "bone_attachment_3d.h"
 
-	virtual PackedStringArray get_configuration_warnings() const override;
+void BoneAttachment3D::_on_bone_pose_update_bind_compat_90575(int p_bone_index) {
+	return on_skeleton_update();
+}
 
-	void set_bone_name(const String &p_name);
-	String get_bone_name() const;
+void BoneAttachment3D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("on_bone_pose_update", "bone_index"), &BoneAttachment3D::_on_bone_pose_update_bind_compat_90575);
+}
 
-	void set_bone_idx(const int &p_idx);
-	int get_bone_idx() const;
-
-	void set_override_pose(bool p_override);
-	bool get_override_pose() const;
-
-	void set_use_external_skeleton(bool p_external_skeleton);
-	bool get_use_external_skeleton() const;
-	void set_external_skeleton(NodePath p_skeleton);
-	NodePath get_external_skeleton() const;
-
-	virtual void on_skeleton_update();
-
-#ifdef TOOLS_ENABLED
-	virtual void notify_rebind_required();
-#endif
-
-	BoneAttachment3D();
-};
-
-#endif // BONE_ATTACHMENT_3D_H
+#endif // DISABLE_DEPRECATED
