@@ -44,6 +44,8 @@
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
 #include "main/main.h"
+#include <array>
+#include <iostream>
 
 template <typename T>
 class TypedArray;
@@ -405,7 +407,7 @@ private:                                                                        
 public:                                                                                                                                          \
 	typedef m_class self_type;                                                                                                                   \
 	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;                  \
-	virtual String get_class() const override {                                                                                                  \
+	virtual String get_class() const override { /**/                                                                                             \
 		if (_get_extension()) {                                                                                                                  \
 			return _get_extension()->class_name.operator String();                                                                               \
 		}                                                                                                                                        \
@@ -413,10 +415,19 @@ public:                                                                         
 	}                                                                                                                                            \
 	virtual const StringName *_get_class_namev() const override {                                                                                \
 		static StringName _class_name_static;                                                                                                    \
-		if (unlikely(!_class_name_static)) {                                                                                                     \
-			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                          \
+		static std::array<StringName, 10> _class_name_statics;                                                                                   \
+		/*static int versionYoloLocal = -1;                                                                                                      \
+		if (unlikely(!_class_name_static) || Main::versionYolo != versionYoloLocal) {*/                                                          \
+		if (unlikely(!_class_name_statics[Main::versionYolo])) {                                                                                 \
+			StringName::assign_static_unique_class_name(&_class_name_statics[Main::versionYolo], #m_class);                                      \
 		}                                                                                                                                        \
-		return &_class_name_static;                                                                                                              \
+		/*if (String(#m_class) == "NavigationServer3D") {                                                                                        \
+		_class_name_static = StringName();                                                                                                       \
+		StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                              \
+		}                                                                                                                                        \
+		versionYoloLocal = Main::versionYolo;                                                                                                    \
+	}                       */                                                                                                                   \
+		return &_class_name_statics[Main::versionYolo];                                                                                          \
 	}                                                                                                                                            \
 	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                                                         \
 		static int ptr;                                                                                                                          \
@@ -469,7 +480,8 @@ public:                                                                         
 		m_inherits::initialize_class();                                                                                                          \
 		::ClassDB::_add_class<m_class>();                                                                                                        \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                                   \
-			_bind_methods();                                                                                                                     \
+			_bind_methods(); /******************/                                                                                                \
+			std::cout << "_bind_methods AA => " << std::endl;                                                                                    \
 		}                                                                                                                                        \
 		if (m_class::_get_bind_compatibility_methods() != m_inherits::_get_bind_compatibility_methods()) {                                       \
 			_bind_compatibility_methods();                                                                                                       \
@@ -800,7 +812,7 @@ public:
 
 	static void *get_class_ptr_static() {
 		static int ptr;
-		return &ptr;
+		return &ptr; //
 	}
 
 	bool _is_gpl_reversed() const { return false; }
@@ -848,7 +860,7 @@ public:
 	}
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
-	_FORCE_INLINE_ const StringName &get_class_name() const {
+	_FORCE_INLINE_ const StringName &get_class_name(const bool d = false) const {
 		if (_extension) {
 			// Can't put inside the unlikely as constructor can run it
 			return _extension->class_name;

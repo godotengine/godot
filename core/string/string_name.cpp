@@ -169,11 +169,16 @@ bool StringName::operator!=(const StringName &p_name) const {
 }
 
 void StringName::operator=(const StringName &p_name) {
+	static int versionYoloLocal = 0;
 	if (this == &p_name) {
 		return;
 	}
 
-	unref();
+	if (Main::versionYolo != versionYoloLocal) {
+		versionYoloLocal = Main::versionYolo;
+	} else {
+		unref();
+	}
 
 	if (p_name._data && p_name._data->refcount.ref()) {
 		_data = p_name._data;

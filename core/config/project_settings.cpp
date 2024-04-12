@@ -44,6 +44,7 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
+#include <iostream>
 
 #ifdef TOOLS_ENABLED
 #include "modules/modules_enabled.gen.h" // For mono.
@@ -472,9 +473,11 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 	if (PackedData::get_singleton()->is_disabled()) {
 		return false;
 	}
+	std::cout << "ProjectSettings::_load_resource_pack" << std::endl;
 
 	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
 
+	std::cout << "ProjectSettings::_load_resource_pack 2 " << ok << std::endl;
 	if (!ok) {
 		return false;
 	}
@@ -536,6 +539,7 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *    If nothing was found, error out.
  */
 Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
+	std::cout << "ProjectSettings::_setup Staring..." << std::endl;
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
 		// If the OS would rather use a specific location, then it will not be empty.
@@ -544,6 +548,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
 		}
 	}
+	std::cout << "ProjectSettings::_setup 1111" << std::endl;
 
 	// Attempt with a user-defined main pack first
 
@@ -557,17 +562,23 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			// Optional, we don't mind if it fails
 			_load_settings_text(p_main_pack.get_base_dir().path_join("override.cfg"));
 		}
+		std::cout << "ProjectSettings::_setup !p_ignore_override" << std::endl;
 		return err;
 	}
 
 	String exec_path = OS::get_singleton()->get_executable_path();
 
+	std::cout << "ProjectSettings::_setup exec_path" << std::endl;
+	std::cout << "ProjectSettings::_setup exec_path path =>" << exec_path.utf8().get_data() << std::endl;
 	if (!exec_path.is_empty()) {
+		std::cout << "ProjectSettings::_setup exec_path 0" << std::endl;
+
 		// We do several tests sequentially until one succeeds to find a PCK,
 		// and if so, we attempt loading it at the end.
 
 		// Attempt with PCK bundled into executable.
 		bool found = _load_resource_pack(exec_path);
+		std::cout << "ProjectSettings::_setup exec_path 0.1" << std::endl;
 
 		// Attempt with exec_name.pck.
 		// (This is the usual case when distributing a Godot game.)
@@ -579,6 +590,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// or the exec path's basename + '.pck' (Windows).
 		// We need to test both possibilities as extensions for Linux binaries are optional
 		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
+		std::cout << "ProjectSettings::_setup exec_path 1" << std::endl;
 
 #ifdef MACOS_ENABLED
 		if (!found) {
@@ -592,12 +604,14 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			// As mentioned above, we have two potential names to attempt.
 			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".pck")) || _load_resource_pack(exec_dir.path_join(exec_filename + ".pck"));
 		}
+		std::cout << "ProjectSettings::_setup exec_path 2" << std::endl;
 
 		if (!found) {
 			// If we couldn't find them next to the executable, we attempt
 			// the current working directory. Same story, two tests.
 			found = _load_resource_pack(exec_basename + ".pck") || _load_resource_pack(exec_filename + ".pck");
 		}
+		std::cout << "ProjectSettings::_setup exec_path 3" << std::endl;
 
 		// If we opened our package, try and load our project.
 		if (found) {
@@ -608,9 +622,11 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 				_load_settings_text("res://override.cfg");
 				_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
 			}
+			std::cout << "ProjectSettings::_setup found" << std::endl;
 			return err;
 		}
 	}
+	std::cout << "ProjectSettings::_setup exec_path 4" << std::endl;
 
 	// Try to use the filesystem for files, according to OS.
 	// (Only Android -when reading from pck- and iOS use this.)
@@ -621,8 +637,10 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			// Optional, we don't mind if it fails.
 			_load_settings_text("res://override.cfg");
 		}
+		std::cout << "ProjectSettings::_setup !OS::get_singleton()->get_resource_dir().is_empty()" << std::endl;
 		return err;
 	}
+	std::cout << "ProjectSettings::_setup exec_path 5" << std::endl;
 
 	// Nothing was found, try to find a project file in provided path (`p_path`)
 	// or, if requested (`p_upwards`) in parent directories.
@@ -660,6 +678,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	}
 
 	if (!found) {
+		std::cout << "ProjectSettings::_setup !found" << std::endl;
 		return err;
 	}
 
@@ -671,6 +690,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 }
 
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
+	std::cout << "ProjectSettings::setup Staring..." << std::endl;
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
 	if (err == OK && !p_ignore_override) {
 		String custom_settings = GLOBAL_GET("application/config/project_settings_override");
@@ -678,6 +698,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 			_load_settings_text(custom_settings);
 		}
 	}
+	std::cout << "ProjectSettings::setup _setup" << std::endl;
 
 	// Updating the default value after the project settings have loaded.
 	bool use_hidden_directory = GLOBAL_GET("application/config/use_hidden_project_data_directory");
@@ -695,6 +716,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	load_scene_groups_cache();
 
 	project_loaded = err == OK;
+	std::cout << "ProjectSettings::setup project_loaded" << std::endl;
 	return err;
 }
 

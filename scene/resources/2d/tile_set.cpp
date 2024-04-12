@@ -38,6 +38,7 @@
 #include "scene/gui/control.h"
 #include "scene/resources/image_texture.h"
 #include "servers/navigation_server_2d.h"
+#include <iostream>
 
 /////////////////////////////// TileMapPattern //////////////////////////////////////
 
@@ -6983,4 +6984,6 @@ void TileData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "probability"), "set_probability", "get_probability");
 
 	ADD_SIGNAL(MethodInfo("changed"));
+
+	std::cout << "_bind_methods TILE_SET.CPP => " << std::endl;
 }

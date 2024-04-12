@@ -35,6 +35,7 @@
 #include "core/object/script_language.h"
 #include "core/os/mutex.h"
 #include "core/version.h"
+#include <iostream>
 
 #define OBJTYPE_RLOCK RWLockRead _rw_lockr_(lock);
 #define OBJTYPE_WLOCK RWLockWrite _rw_lockw_(lock);
@@ -743,6 +744,7 @@ bool ClassDB::is_virtual(const StringName &p_class) {
 
 void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherits) {
 	OBJTYPE_WLOCK;
+	std::cout << "_add_class2 => " << String(p_class).utf8().get_data() << std::endl;
 
 	const StringName &name = p_class;
 
@@ -1246,18 +1248,29 @@ bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_na
 void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) {
 	OBJTYPE_WLOCK;
 
+	if (String(p_class) == "NavigationServer3D") {
+		std::cout << "TOTO: "
+				  << "add_signal => " << p_signal.name.utf8().get_data()
+				  << " on " << String(p_class).utf8().get_data() << "(" << p_class << ")" << std::endl;
+	}
+
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL(type);
 
+	if (String(p_class) == "NavigationServer3D") {
+		std::cout << "TOTO: "
+				  << "class ptr => " << type << std::endl;
+	}
+
 	StringName sname = p_signal.name;
 
-#ifdef DEBUG_METHODS_ENABLED
+	// #ifdef DEBUG_METHODS_ENABLED
 	ClassInfo *check = type;
 	while (check) {
 		ERR_FAIL_COND_MSG(check->signal_map.has(sname), "Class '" + String(p_class) + "' already has signal '" + String(sname) + "'.");
 		check = check->inherits_ptr;
 	}
-#endif
+	// #endif
 
 	type->signal_map[sname] = p_signal;
 }
@@ -1287,15 +1300,24 @@ bool ClassDB::has_signal(const StringName &p_class, const StringName &p_signal, 
 	OBJTYPE_RLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
+	if (String(p_class) == "NavigationServer3D") {
+		std::cout << "TOTO => has_signal?" << std::endl;
+		std::cout << "TOTO"
+				  << " Pointer = " << type << std::endl;
+	}
 	while (check) {
+		std::cout << "connect => signal_is_valid = false WHILE..." << std::endl;
+
 		if (check->signal_map.has(p_signal)) {
 			return true;
 		}
 		if (p_no_inheritance) {
+			std::cout << "connect => signal_is_valid = false p_no_inheritance" << std::endl;
 			return false;
 		}
 		check = check->inherits_ptr;
 	}
+	std::cout << "connect => signal_is_valid = false WHILE ENDED" << std::endl;
 
 	return false;
 }

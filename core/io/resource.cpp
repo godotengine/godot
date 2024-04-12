@@ -530,7 +530,7 @@ String Resource::get_id_for_path(const String &p_path) const {
 }
 #endif
 
-void Resource::_bind_methods() {
+void Resource::_bind_methods() { ////
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);
 	ClassDB::bind_method(D_METHOD("take_over_path", "path"), &Resource::_take_over_path);
 	ClassDB::bind_method(D_METHOD("get_path"), &Resource::get_path);

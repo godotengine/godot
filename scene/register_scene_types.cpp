@@ -304,6 +304,11 @@
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/world_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
+#include "scene/resources/environment.h"
+#include "scene/resources/fog_material.h"
+#include "scene/resources/importer_mesh.h"
+#include "scene/resources/mesh_library.h"
+#include <iostream>
 #endif // _3D_DISABLED
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
@@ -354,6 +359,7 @@ void register_scene_types() {
 
 	resource_loader_shader_include.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_loader_shader_include, true);
+	std::cout << "register_scene_types => add_resource DONE" << std::endl;
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -380,6 +386,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CanvasModulate);
 	GDREGISTER_CLASS(ResourcePreloader);
 	GDREGISTER_CLASS(Window);
+	std::cout << "register_scene_types => REGISTER 0 DONE" << std::endl;
 
 	GDREGISTER_CLASS(StatusIndicator);
 
@@ -409,6 +416,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(LinkButton);
 	GDREGISTER_CLASS(Panel);
 	GDREGISTER_VIRTUAL_CLASS(Range);
+	std::cout << "register_scene_types => REGISTER UI DONE" << std::endl;
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -435,6 +443,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(HFlowContainer);
 	GDREGISTER_CLASS(VFlowContainer);
 	GDREGISTER_CLASS(MarginContainer);
+	std::cout << "register_scene_types => MarginContainer DONE" << std::endl;
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -445,6 +454,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VideoStreamPlayer);
 	GDREGISTER_VIRTUAL_CLASS(VideoStreamPlayback);
 	GDREGISTER_VIRTUAL_CLASS(VideoStream);
+	std::cout << "register_scene_types => VideoStream DONE" << std::endl;
 
 #ifndef ADVANCED_GUI_DISABLED
 	GDREGISTER_CLASS(FileDialog);
@@ -456,6 +466,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CodeEdit);
 	GDREGISTER_CLASS(SyntaxHighlighter);
 	GDREGISTER_CLASS(CodeHighlighter);
+	std::cout << "register_scene_types => CodeHighlighter DONE" << std::endl;
 
 	GDREGISTER_ABSTRACT_CLASS(TreeItem);
 	GDREGISTER_CLASS(OptionButton);
@@ -465,6 +476,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(RichTextLabel);
 	GDREGISTER_CLASS(RichTextEffect);
 	GDREGISTER_CLASS(CharFXTransform);
+	std::cout << "register_scene_types => CharFXTransform DONE" << std::endl;
 
 	GDREGISTER_CLASS(AcceptDialog);
 	GDREGISTER_CLASS(ConfirmationDialog);
@@ -473,11 +485,13 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SplitContainer);
 	GDREGISTER_CLASS(HSplitContainer);
 	GDREGISTER_CLASS(VSplitContainer);
+	std::cout << "register_scene_types => VSplitContainer DONE" << std::endl;
 
 	GDREGISTER_CLASS(GraphElement);
 	GDREGISTER_CLASS(GraphNode);
 	GDREGISTER_CLASS(GraphFrame);
 	GDREGISTER_CLASS(GraphEdit);
+	std::cout << "register_scene_types => GraphEdit DONE" << std::endl;
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -493,23 +507,31 @@ void register_scene_types() {
 	Window::set_root_layout_direction(root_dir);
 
 	/* REGISTER ANIMATION */
+	std::cout << "register_scene_types => ANIMATION START" << std::endl;
 	GDREGISTER_CLASS(Tween);
 	GDREGISTER_ABSTRACT_CLASS(Tweener);
 	GDREGISTER_CLASS(PropertyTweener);
 	GDREGISTER_CLASS(IntervalTweener);
 	GDREGISTER_CLASS(CallbackTweener);
 	GDREGISTER_CLASS(MethodTweener);
+	std::cout << "register_scene_types => MethodTweener DONE" << std::endl;
 
-	GDREGISTER_ABSTRACT_CLASS(AnimationMixer);
+	GDREGISTER_ABSTRACT_CLASS(AnimationMixer); //
+	std::cout << "register_scene_types => AnimationMixer DONE" << std::endl;
 	GDREGISTER_CLASS(AnimationPlayer);
+	std::cout << "register_scene_types => AnimationPlayer DONE" << std::endl;
 	GDREGISTER_CLASS(AnimationTree);
 	GDREGISTER_CLASS(AnimationNode);
+	std::cout << "register_scene_types => AnimationNode DONE" << std::endl;
 	GDREGISTER_CLASS(AnimationRootNode);
 	GDREGISTER_CLASS(AnimationNodeBlendTree);
+	std::cout << "register_scene_types => AnimationNodeBlendTree DONE" << std::endl;
 	GDREGISTER_CLASS(AnimationNodeBlendSpace1D);
 	GDREGISTER_CLASS(AnimationNodeBlendSpace2D);
+	std::cout << "register_scene_types => AnimationNodeBlendSpace2D DONE" << std::endl;
 	GDREGISTER_CLASS(AnimationNodeStateMachine);
 	GDREGISTER_CLASS(AnimationNodeStateMachinePlayback);
+	std::cout << "register_scene_types => AnimationNodeStateMachinePlayback DONE" << std::endl;
 
 	GDREGISTER_CLASS(AnimationNodeSync);
 	GDREGISTER_CLASS(AnimationNodeStateMachineTransition);
@@ -524,8 +546,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeTimeScale);
 	GDREGISTER_CLASS(AnimationNodeTimeSeek);
 	GDREGISTER_CLASS(AnimationNodeTransition);
+	std::cout << "register_scene_types => AnimationNodeTransition DONE" << std::endl;
 
 	GDREGISTER_CLASS(ShaderGlobalsOverride); // can be used in any shader
+	std::cout << "register_scene_types => REGISTER ANIMATION DONE" << std::endl;
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -638,6 +662,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationAgent3D);
 	GDREGISTER_CLASS(NavigationObstacle3D);
 	GDREGISTER_CLASS(NavigationLink3D);
+	std::cout << "register_scene_types => REGISTER 3D DONE" << std::endl;
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED
@@ -842,6 +867,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(PhysicalBone2D);
 	GDREGISTER_CLASS(SkeletonModification2DPhysicalBones);
+	std::cout << "register_scene_types => REGISTER 2D DONE" << std::endl;
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -1225,11 +1251,13 @@ void register_scene_types() {
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/avoidance"), i + 1), "");
 	}
 
+	std::cout << "register_scene_types => RenderingServer::get_singleton Start" << std::endl;
 	if (RenderingServer::get_singleton()) {
 		// RenderingServer needs to exist for this to succeed.
 		ColorPicker::init_shaders();
 		GraphEdit::init_shaders();
 	}
+	std::cout << "register_scene_types => RenderingServer::get_singleton DONE" << std::endl;
 
 	SceneDebugger::initialize();
 

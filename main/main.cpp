@@ -399,7 +399,7 @@ void finalize_theme_db() {
 	theme_db = nullptr;
 }
 
-//#define DEBUG_INIT
+#define DEBUG_INIT
 #ifdef DEBUG_INIT
 #define MAIN_PRINT(m_txt) print_line(m_txt)
 #else
@@ -917,9 +917,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	engine = memnew(Engine);
 
 	MAIN_PRINT("Main: Initialize CORE");
+	/////////////////////////////////////
+	OS::get_singleton()->benchmark_begin_measure("core");
+	MAIN_PRINT("MainDEBUG: benchmark_begin_measure OK");
 
 	register_core_types();
+	MAIN_PRINT("MainDEBUG: register_core_types OK");
 	register_core_driver_types();
+	MAIN_PRINT("MainDEBUG: register_core_driver_types OK");
+	/////////////////////////////////////
 
 	MAIN_PRINT("Main: Initialize Globals");
 
@@ -1006,13 +1012,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// It's returned as the program exit code. ERR_HELP is special cased and handled as success (0).
 	Error exit_err = ERR_INVALID_PARAMETER;
 
+	MAIN_PRINT("Main: DEBUG LINE 0");
 	I = args.front();
+	MAIN_PRINT("Main: DEBUG LINE START WHILE");
+
 	while (I) {
 		List<String>::Element *N = I->next();
 
 		const String &arg = I->get();
 
+		MAIN_PRINT("Main: DEBUG LINE WHILE RUNNIG ...");
 #ifdef MACOS_ENABLED
+
+		MAIN_PRINT("Main: MACOS_ENABLED");
 		// Ignore the process serial number argument passed by macOS Gatekeeper.
 		// Otherwise, Godot would try to open a non-existent project on the first start and abort.
 		if (arg.begins_with("-psn_")) {
@@ -1020,6 +1032,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			continue;
 		}
 #endif
+		MAIN_PRINT("Main: DEBUG LINE 2");
 
 #ifdef TOOLS_ENABLED
 		if (arg == "--debug" ||
@@ -1754,6 +1767,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I = N;
 	}
 
+	MAIN_PRINT("Main: DEBUG LINE END WHILE");
+
 #ifdef TOOLS_ENABLED
 	if (editor && project_manager) {
 		OS::get_singleton()->print(
@@ -1779,9 +1794,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 		}
 	}
+	MAIN_PRINT("Main: DEBUG Initialize ZZZZZZZZZ");
 
 	OS::get_singleton()->_in_editor = editor;
 	if (globals->setup(project_path, main_pack, upwards, editor) == OK) {
+		MAIN_PRINT("Main: DEBUG Initialize AAAAAA22222");
 #ifdef TOOLS_ENABLED
 		found_project = true;
 #endif
@@ -1791,13 +1808,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #else
 		const String error_msg = "Error: Couldn't load project data at path \"" + project_path + "\". Is the .pck file missing?\nIf you've renamed the executable, the associated .pck file should also be renamed to match the executable's name (without the extension).\n";
 		OS::get_singleton()->print("%s", error_msg.utf8().get_data());
+		MAIN_PRINT("Main: DEBUG Initialize BB222222");
 		OS::get_singleton()->alert(error_msg);
+		MAIN_PRINT("Main: DEBUG Initialize BB2");
 
 		goto error;
 #endif
 	}
 
 	// Initialize WorkerThreadPool.
+
+	MAIN_PRINT("Main: DEBUG Initialize WorkerThreadPool");
 	{
 #ifdef THREADS_ENABLED
 		if (editor || project_manager) {
@@ -1820,12 +1841,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 
 	// Initialize user data dir.
+
+	MAIN_PRINT("Main: DEBUG Initialize user data dir.");
 	OS::get_singleton()->ensure_user_data_dir();
+	MAIN_PRINT("Main: DEBUG ensure_user_data_dir");
 
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+	MAIN_PRINT("Main: DEBUG register_core_extensions STARTING...");
 	register_core_extensions(); // core extensions must be registered after globals setup and before display
+	MAIN_PRINT("Main: DEBUG register_core_extensions DONE");
 
 	ResourceUID::get_singleton()->load_from_cache(true); // load UUIDs from cache.
+	MAIN_PRINT("Main: DEBUG load_from_cache");
 
 	if (ProjectSettings::get_singleton()->has_custom_feature("dedicated_server")) {
 		audio_driver = NULL_AUDIO_DRIVER;
@@ -1842,6 +1869,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			DisplayServer::get_singleton()->enable_for_stealing_focus(editor_pid);
 		}
 	});
+
+	MAIN_PRINT("Main: DEBUG LINE 666");
 
 #ifdef TOOLS_ENABLED
 	if (editor) {
@@ -1933,6 +1962,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
 
+	MAIN_PRINT("Main: DEBUG LINE set_cmdline");
 	{
 		String driver_hints = "";
 		String driver_hints_with_d3d12 = "";
@@ -2301,6 +2331,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// shows the correct driver string.
 	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 	OS::get_singleton()->set_current_rendering_method(rendering_method);
+	MAIN_PRINT("Main: DEBUG LINE set_current_rendering DONE");
 
 	// always convert to lower case for consistency in the code
 	rendering_driver = rendering_driver.to_lower();
@@ -2394,6 +2425,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
+	MAIN_PRINT("Main: DEBUG LINE MUMUSE AVEC THREAD STARTING ...");
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE);
 	}
@@ -2408,8 +2440,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
 	}
+	MAIN_PRINT("Main: DEBUG LINE MUMUSE AVEC THREAD DONE");
 
 	/* Determine audio and video drivers */
+	MAIN_PRINT("Main: DEBUG LINE AUDIO STARTING ...");
 
 	// Display driver, e.g. X11, Wayland.
 	// Make sure that headless is the last one, which it is assumed to be by design.
@@ -2423,9 +2457,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
+	MAIN_PRINT("Main: DEBUG LINE GLOBAL_DEF_RST_NOVAL => audio/driver/driver->get_name");
+
 	if (audio_driver.is_empty()) { // Specified in project.godot.
 		audio_driver = GLOBAL_GET("audio/driver/driver");
 	}
+	MAIN_PRINT("Main: DEBUG LINE GLOBAL_DEF_RST_NOVAL => audio/driver/driver");
 
 	// Make sure that dummy is the last one, which it is assumed to be by design.
 	DEV_ASSERT(NULL_AUDIO_DRIVER == AudioDriverManager::get_driver(AudioDriverManager::get_driver_count() - 1)->get_name());
@@ -3160,11 +3197,15 @@ Error Main::setup2(bool p_show_boot_logo) {
 	// Initialize ThemeDB early so that scene types can register their theme items.
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
+	MAIN_PRINT("Main: Load Scene Types initialize_theme_db");
 
 	register_scene_types();
+	MAIN_PRINT("Main: Load Scene Types register_scene_types");
 	register_driver_types();
+	MAIN_PRINT("Main: Load Scene Types register_driver_types");
 
 	register_scene_singletons();
+	MAIN_PRINT("Main: Load Scene Types register_scene_singletons");
 
 	{
 		OS::get_singleton()->benchmark_begin_measure("Scene", "Modules and Extensions");
