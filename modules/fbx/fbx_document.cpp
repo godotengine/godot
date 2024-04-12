@@ -1080,7 +1080,7 @@ Error FBXDocument::_parse_materials(Ref<FBXState> p_state) {
 
 		if (fbx_material->pbr.base_color.has_value) {
 			Color albedo = _material_color(fbx_material->pbr.base_color, fbx_material->pbr.base_factor);
-			material->set_albedo(albedo);
+			material->set_albedo(albedo.linear_to_srgb());
 		}
 
 		if (fbx_material->features.double_sided.enabled) {
@@ -1232,7 +1232,7 @@ Error FBXDocument::_parse_materials(Ref<FBXState> p_state) {
 
 		if (fbx_material->pbr.emission_color.has_value) {
 			material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
-			material->set_emission(_material_color(fbx_material->pbr.emission_color));
+			material->set_emission(_material_color(fbx_material->pbr.emission_color).linear_to_srgb());
 			material->set_emission_energy_multiplier(float(fbx_material->pbr.emission_factor.value_real));
 		}
 
