@@ -71,7 +71,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 	p_log->add_text(" ");
 	p_log->add_text(get_name());
 	p_log->add_text(" - ");
-	if (p_err == OK) {
+	if (p_err == OK && get_worst_message_type() < EditorExportPlatform::EXPORT_MESSAGE_ERROR) {
 		if (get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_WARNING) {
 			p_log->add_image(p_log->get_editor_theme_icon(SNAME("StatusWarning")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 			p_log->add_text(" ");
@@ -2026,6 +2026,11 @@ Error EditorExportPlatform::ssh_push_to_remote(const String &p_host, const Strin
 
 void EditorExportPlatform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_os_name"), &EditorExportPlatform::get_os_name);
+
+	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_NONE);
+	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_INFO);
+	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_WARNING);
+	BIND_ENUM_CONSTANT(EXPORT_MESSAGE_ERROR);
 }
 
 EditorExportPlatform::EditorExportPlatform() {

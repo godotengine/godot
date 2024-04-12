@@ -256,4 +256,6 @@ public:
 	EditorExportPlatform();
 };
 
+VARIANT_ENUM_CAST(EditorExportPlatform::ExportMessageType);
+
 #endif // EDITOR_EXPORT_PLATFORM_H

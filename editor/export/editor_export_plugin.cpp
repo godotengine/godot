@@ -48,6 +48,10 @@ Ref<EditorExportPreset> EditorExportPlugin::get_export_preset() const {
 	return export_preset;
 }
 
+void EditorExportPlugin::add_message(EditorExportPlatform::ExportMessageType p_type, const String &p_category, const String &p_message) const {
+	get_export_preset()->get_platform()->add_message(p_type, p_category, p_message);
+}
+
 void EditorExportPlugin::add_file(const String &p_path, const Vector<uint8_t> &p_file, bool p_remap) {
 	ExtraFile ef;
 	ef.data = p_file;
@@ -304,6 +308,7 @@ void EditorExportPlugin::skip() {
 }
 
 void EditorExportPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_message", "type", "category", "message"), &EditorExportPlugin::add_message);
 	ClassDB::bind_method(D_METHOD("add_shared_object", "path", "tags", "target"), &EditorExportPlugin::add_shared_object);
 	ClassDB::bind_method(D_METHOD("add_ios_project_static_lib", "path"), &EditorExportPlugin::add_ios_project_static_lib);
 	ClassDB::bind_method(D_METHOD("add_file", "path", "file", "remap"), &EditorExportPlugin::add_file);

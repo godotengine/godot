@@ -92,6 +92,8 @@ protected:
 	void set_export_preset(const Ref<EditorExportPreset> &p_preset);
 	Ref<EditorExportPreset> get_export_preset() const;
 
+	void add_message(EditorExportPlatform::ExportMessageType p_type, const String &p_category, const String &p_message) const;
+
 	void add_file(const String &p_path, const Vector<uint8_t> &p_file, bool p_remap);
 	void add_shared_object(const String &p_path, const Vector<String> &tags, const String &p_target = String());
 

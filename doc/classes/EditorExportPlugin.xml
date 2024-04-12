@@ -292,6 +292,15 @@
 				[b]Note:[/b] This is useful only for macOS exports.
 			</description>
 		</method>
+		<method name="add_message" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="EditorExportPlatform.ExportMessageType" />
+			<param index="1" name="category" type="String" />
+			<param index="2" name="message" type="String" />
+			<description>
+				Adds a message to the export log that will be displayed when exporting ends.
+			</description>
+		</method>
 		<method name="add_shared_object">
 			<return type="void" />
 			<param index="0" name="path" type="String" />

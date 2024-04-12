@@ -18,4 +18,18 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+		<constant name="EXPORT_MESSAGE_NONE" value="0" enum="ExportMessageType">
+			Invalid message type used as the default value when no type is specified.
+		</constant>
+		<constant name="EXPORT_MESSAGE_INFO" value="1" enum="ExportMessageType">
+			Message type for informational messages that have no effect on the export.
+		</constant>
+		<constant name="EXPORT_MESSAGE_WARNING" value="2" enum="ExportMessageType">
+			Message type for warning messages that should be addressed but still allow to complete the export.
+		</constant>
+		<constant name="EXPORT_MESSAGE_ERROR" value="3" enum="ExportMessageType">
+			Message type for error messages that must be addressed and fail the export.
+		</constant>
+	</constants>
 </class>
