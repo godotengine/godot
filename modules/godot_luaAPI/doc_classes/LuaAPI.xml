@@ -31,19 +31,21 @@
 			</description>
 		</method>
 		<method name="do_file">
-			<return type="LuaError" />
+			<return type="Variant" />
 			<param index="0" name="FilePath" type="String" />
+			<param index="1" name="Args" type="Array" default="[]" />
 			<description>
 				Loads a file with luaL_loadfile() passing its absolute path.
-				Similar to [code].DoString()[/code], this function loads a lua file into the LuaAPI Object and executes it as Lua. [code]FilePath[/code] must be an absolute path, and must exist or an error is reutrned.
+				Similar to [code].do_string()[/code], this function loads a lua file into the LuaAPI Object and executes it as Lua. [code]FilePath[/code] must be an absolute path, and must exist or an error is returned.
 			</description>
 		</method>
 		<method name="do_string">
-			<return type="LuaError" />
+			<return type="Variant" />
 			<param index="0" name="Code" type="String" />
+			<param index="1" name="Args" type="Array" default="[]" />
 			<description>
 				Loads a string with luaL_loadstring() and executes the top of the stack. Returns any errors.
-				Use [code].DoString()[/code] to execute a lua script or snippet stored within a string variable or a string literal.
+				Use [code].do_string()[/code] to execute a lua script or snippet stored within a string variable or a string literal.
 			</description>
 		</method>
 		<method name="function_exists">
@@ -125,7 +127,8 @@
 		</member>
 		<member name="use_callables" type="bool" setter="set_use_callables" getter="get_use_callables" default="true">
 			When true, Lua functions passed to Godot will use the LuaCallable type. This type is a CallableCustom which has issues currently with GDExtension and C#
-			When false, Lua functions passed to Godot will use the LuaFunctionRef type. This type is a RefCounted which behaves the same as a LuaCallable. But uses Inoke instead of Call.
+			When false, Lua functions passed to Godot will use the LuaFunctionRef type. This type is a RefCounted which behaves the same as a LuaCallable. But uses Invoke instead of Call.
+		</member>
 	</members>
 	<constants>
 		<constant name="GC_STOP" value="1" enum="HookMask">

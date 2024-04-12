@@ -23,7 +23,6 @@
 			<param index="1" name="lua" type="LuaAPI" />
 			<param index="2" name="other" type="Variant" />
 			<description>
-                The bitwise AND (&) operation. Behavior similar to the addition operation, except that Lua will try a metamethod if any operand is neither an integer nor a float coercible to an integer
 			</description>
 		</method>
 		<method name="__bnot" qualifiers="virtual">
@@ -120,7 +119,7 @@
 			<param index="1" name="lua" type="LuaAPI" />
 			<param index="2" name="other" type="Variant" />
 			<description>
-                The less equal (<=) operation. Behavior similar to the less than operation. 
+                The less equal  operation. Behavior similar to the less than operation. 
 			</description>
 		</method>
 		<method name="__len" qualifiers="virtual">
@@ -137,7 +136,7 @@
 			<param index="1" name="lua" type="LuaAPI" />
 			<param index="2" name="other" type="Variant" />
 			<description>
-                The less than (<) operation. Behavior similar to the addition operation, except that Lua will try a metamethod only when the values being compared are neither both numbers nor both strings. Moreover, the result of the call is always converted to a boolean. 
+                The less than  operation. Behavior similar to the addition operation, except that Lua will try a metamethod only when the values being compared are neither both numbers nor both strings. Moreover, the result of the call is always converted to a boolean. 
 			</description>
 		</method>
 		<method name="__mod" qualifiers="virtual">
@@ -187,7 +186,7 @@
 			<param index="1" name="lua" type="LuaAPI" />
 			<param index="2" name="other" type="Variant" />
 			<description>
-                The bitwise left shift (<<) operation. Behavior similar to the bitwise AND operation. 
+                The bitwise left shift  operation. Behavior similar to the bitwise AND operation. 
 			</description>
 		</method>
 		<method name="__shr" qualifiers="virtual">
@@ -196,7 +195,7 @@
 			<param index="1" name="lua" type="LuaAPI" />
 			<param index="2" name="other" type="Variant" />
 			<description>
-                The bitwise right shift (>>) operation. Behavior similar to the bitwise AND operation. 
+                The bitwise right shift  operation. Behavior similar to the bitwise AND operation. 
 			</description>
 		</method>
 		<method name="__sub" qualifiers="virtual">
