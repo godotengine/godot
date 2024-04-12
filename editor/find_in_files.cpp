@@ -103,6 +103,14 @@ void FindInFiles::set_filter(const HashSet<String> &exts) {
 	_extension_filter = exts;
 }
 
+void FindInFiles::set_includes(const HashSet<String> &p_include_wildcards) {
+	_include_wildcards = p_include_wildcards;
+}
+
+void FindInFiles::set_excludes(const HashSet<String> &p_exclude_wildcards) {
+	_exclude_wildcards = p_exclude_wildcards;
+}
+
 void FindInFiles::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PROCESS: {
@@ -253,7 +261,16 @@ void FindInFiles::_scan_dir(const String &path, PackedStringArray &out_folders, 
 		} else {
 			String file_ext = file.get_extension();
 			if (_extension_filter.has(file_ext)) {
-				out_files_to_scan.push_back(path.path_join(file));
+				String file_path = path.path_join(file);
+				bool case_sensitive = dir->is_case_sensitive(path);
+
+				if (!_exclude_wildcards.is_empty() && _is_file_matched(_exclude_wildcards, file_path, case_sensitive)) {
+					continue;
+				}
+
+				if (_include_wildcards.is_empty() || _is_file_matched(_include_wildcards, file_path, case_sensitive)) {
+					out_files_to_scan.push_back(file_path);
+				}
 			}
 		}
 	}
@@ -281,6 +298,19 @@ void FindInFiles::_scan_file(const String &fpath) {
 			emit_signal(SNAME(SIGNAL_RESULT_FOUND), fpath, line_number, begin, end, line);
 		}
 	}
+}
+
+bool FindInFiles::_is_file_matched(const HashSet<String> &p_wildcards, const String &p_file_path, bool p_case_sensitive) const {
+	const String file_path = "/" + p_file_path.replace_char('\\', '/') + "/";
+
+	for (const String &wildcard : p_wildcards) {
+		if (p_case_sensitive && file_path.match(wildcard)) {
+			return true;
+		} else if (!p_case_sensitive && file_path.matchn(wildcard)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void FindInFiles::_bind_methods() {
@@ -381,9 +411,36 @@ FindInFilesDialog::FindInFilesDialog() {
 		gc->add_child(hbc);
 	}
 
+	Label *includes_label = memnew(Label);
+	includes_label->set_text(TTR("Includes:"));
+	includes_label->set_tooltip_text(TTR("Include the files with the following expressions. Use \",\" to separate."));
+	includes_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	gc->add_child(includes_label);
+
+	_includes_line_edit = memnew(LineEdit);
+	_includes_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	_includes_line_edit->set_placeholder(TTR("example: scripts,scenes/*/test.gd"));
+	_includes_line_edit->set_accessibility_name(TTRC("Include Files"));
+	_includes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
+	gc->add_child(_includes_line_edit);
+
+	Label *excludes_label = memnew(Label);
+	excludes_label->set_text(TTR("Excludes:"));
+	excludes_label->set_tooltip_text(TTR("Exclude the files with the following expressions. Use \",\" to separate."));
+	excludes_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	gc->add_child(excludes_label);
+
+	_excludes_line_edit = memnew(LineEdit);
+	_excludes_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	_excludes_line_edit->set_placeholder(TTR("example: res://addons,scenes/test/*.gd"));
+	_excludes_line_edit->set_accessibility_name(TTRC("Exclude Files"));
+	_excludes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesDialog::_on_search_text_submitted));
+	gc->add_child(_excludes_line_edit);
+
 	Label *filter_label = memnew(Label);
 	filter_label->set_text(TTR("Filters:"));
 	filter_label->set_tooltip_text(TTR("Include the files with the following extensions. Add or remove them in ProjectSettings."));
+	filter_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	gc->add_child(filter_label);
 
 	_filters_container = memnew(HBoxContainer);
@@ -480,6 +537,36 @@ HashSet<String> FindInFilesDialog::get_filter() const {
 	return filters;
 }
 
+HashSet<String> FindInFilesDialog::get_includes() const {
+	HashSet<String> includes;
+	String text = _includes_line_edit->get_text();
+
+	if (text.is_empty()) {
+		return includes;
+	}
+
+	PackedStringArray wildcards = text.split(",", false);
+	for (const String &wildcard : wildcards) {
+		includes.insert(validate_filter_wildcard(wildcard));
+	}
+	return includes;
+}
+
+HashSet<String> FindInFilesDialog::get_excludes() const {
+	HashSet<String> excludes;
+	String text = _excludes_line_edit->get_text();
+
+	if (text.is_empty()) {
+		return excludes;
+	}
+
+	PackedStringArray wildcards = text.split(",", false);
+	for (const String &wildcard : wildcards) {
+		excludes.insert(validate_filter_wildcard(wildcard));
+	}
+	return excludes;
+}
+
 void FindInFilesDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -560,6 +647,29 @@ void FindInFilesDialog::_on_folder_selected(String path) {
 		path = path.substr(i + 3);
 	}
 	_folder_line_edit->set_text(path);
+}
+
+String FindInFilesDialog::validate_filter_wildcard(const String &p_expression) const {
+	String ret = p_expression.replace_char('\\', '/');
+	if (ret.begins_with("./")) {
+		// Relative to the project root.
+		ret = "res://" + ret.trim_prefix("./");
+	}
+
+	if (ret.begins_with(".")) {
+		// To match extension.
+		ret = "*" + ret;
+	}
+
+	if (!ret.begins_with("*")) {
+		ret = "*/" + ret.trim_prefix("/");
+	}
+
+	if (!ret.ends_with("*")) {
+		ret = ret.trim_suffix("/") + "/*";
+	}
+
+	return ret;
 }
 
 void FindInFilesDialog::_bind_methods() {
