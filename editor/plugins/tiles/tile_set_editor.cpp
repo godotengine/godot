@@ -384,7 +384,6 @@ void TileSetEditor::_notification(int p_what) {
 				}
 
 				_update_sources_list();
-				_update_patterns_list();
 
 				sources_add_button->set_disabled(read_only);
 				sources_advanced_menu_button->set_disabled(read_only);
@@ -402,60 +401,12 @@ void TileSetEditor::_notification(int p_what) {
 	}
 }
 
-void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(!tile_set.is_valid());
-
-	if (EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
-		return;
-	}
-
-	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
-		Vector<int> selected = patterns_item_list->get_selected_items();
-		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Remove TileSet patterns"));
-		for (int i = 0; i < selected.size(); i++) {
-			int pattern_index = selected[i];
-			undo_redo->add_do_method(*tile_set, "remove_pattern", pattern_index);
-			undo_redo->add_undo_method(*tile_set, "add_pattern", tile_set->get_pattern(pattern_index), pattern_index);
-		}
-		undo_redo->commit_action();
-		patterns_item_list->accept_event();
-	}
-}
-
-void TileSetEditor::_pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture) {
-	// TODO optimize ?
-	for (int i = 0; i < patterns_item_list->get_item_count(); i++) {
-		if (patterns_item_list->get_item_metadata(i) == p_pattern) {
-			patterns_item_list->set_item_icon(i, p_texture);
-			break;
-		}
-	}
-}
-
-void TileSetEditor::_update_patterns_list() {
-	ERR_FAIL_COND(!tile_set.is_valid());
-
-	// Recreate the items.
-	patterns_item_list->clear();
-	for (int i = 0; i < tile_set->get_patterns_count(); i++) {
-		int id = patterns_item_list->add_item("");
-		patterns_item_list->set_item_metadata(id, tile_set->get_pattern(i));
-		patterns_item_list->set_item_tooltip(id, vformat(TTR("Index: %d"), i));
-		TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileSetEditor::_pattern_preview_done));
-	}
-
-	// Update the label visibility.
-	patterns_help_label->set_visible(patterns_item_list->get_item_count() == 0);
-}
-
 void TileSetEditor::_tile_set_changed() {
 	tile_set_changed_needs_update = true;
 }
 
 void TileSetEditor::_tab_changed(int p_tab_changed) {
 	split_container->set_visible(p_tab_changed == 0);
-	patterns_item_list->set_visible(p_tab_changed == 1);
 }
 
 void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos) {
@@ -743,7 +694,6 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 		} else {
 			_update_sources_list();
 		}
-		_update_patterns_list();
 	}
 }
 
@@ -816,7 +766,6 @@ TileSetEditor::TileSetEditor() {
 	tabs_bar->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tabs_bar->set_clip_tabs(false);
 	tabs_bar->add_tab(TTR("Tiles"));
-	tabs_bar->add_tab(TTR("Patterns"));
 	tabs_bar->connect("tab_changed", callable_mp(this, &TileSetEditor::_tab_changed));
 
 	tile_set_toolbar = memnew(HBoxContainer);
