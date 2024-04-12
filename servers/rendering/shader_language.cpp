@@ -5029,6 +5029,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 	Vector<Expression> expression;
 
 	//Vector<TokenType> operators;
+#ifdef DEBUG_ENABLED
+	bool check_position_write = check_warnings && HAS_WARNING(ShaderWarning::MAGIC_POSITION_WRITE_FLAG);
+	check_position_write = check_position_write && String(shader_type_identifier) == "spatial" && current_function == "vertex";
+#endif
 
 	while (true) {
 		Node *expr = nullptr;
@@ -5589,6 +5593,24 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						_set_error(vformat(RTR("Can't use function as identifier: '%s'."), String(identifier)));
 						return nullptr;
 					}
+#ifdef DEBUG_ENABLED
+					if (check_position_write && ident_type == IDENTIFIER_BUILTIN_VAR) {
+						if (String(identifier) == "POSITION") {
+							// Check if the user wrote "POSITION = vec4(VERTEX," and warn if they did.
+							TkPos prev_pos = _get_tkpos();
+							if (_get_token().type == TK_OP_ASSIGN &&
+									_get_token().type == TK_TYPE_VEC4 &&
+									_get_token().type == TK_PARENTHESIS_OPEN &&
+									_get_token().text == "VERTEX" &&
+									_get_token().type == TK_COMMA) {
+								_add_line_warning(ShaderWarning::MAGIC_POSITION_WRITE);
+							}
+
+							// Reset the position so compiling can continue as normal.
+							_set_tkpos(prev_pos);
+						}
+					}
+#endif
 					if (is_const) {
 						last_type = IDENTIFIER_CONSTANT;
 					} else {
