@@ -1236,7 +1236,7 @@ Error FBXDocument::_parse_materials(Ref<FBXState> p_state) {
 			material->set_emission_energy_multiplier(float(fbx_material->pbr.emission_factor.value_real));
 		}
 
-		const ufbx_texture *emission_texture = _get_file_texture(fbx_material->pbr.ambient_occlusion.texture);
+		const ufbx_texture *emission_texture = _get_file_texture(fbx_material->pbr.emission_color.texture);
 		if (emission_texture) {
 			material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, GLTFTextureIndex(emission_texture->file_index), TEXTURE_TYPE_GENERIC));
 			material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
