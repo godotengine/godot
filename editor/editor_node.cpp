@@ -3516,6 +3516,7 @@ void EditorNode::add_extension_editor_plugin(const StringName &p_class_name) {
 	EditorPlugin *plugin = Object::cast_to<EditorPlugin>(ClassDB::instantiate(p_class_name));
 	singleton->editor_data.add_extension_editor_plugin(p_class_name, plugin);
 	add_editor_plugin(plugin);
+	plugin->enable_plugin();
 }
 
 void EditorNode::remove_extension_editor_plugin(const StringName &p_class_name) {
@@ -7259,7 +7260,9 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
-		add_editor_plugin(EditorPlugins::create(i));
+		EditorPlugin *plugin = EditorPlugins::create(i);
+		add_editor_plugin(plugin);
+		plugin->enable_plugin();
 	}
 
 	for (const StringName &extension_class_name : GDExtensionEditorPlugins::get_extension_classes()) {
