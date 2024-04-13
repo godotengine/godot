@@ -47,6 +47,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/3d/primitive_meshes.h"
+#include "scene/resources/3d/sky_material.h"
 
 class EditorFileDialog;
 class EditorInspector;
@@ -78,6 +79,9 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	Camera3D *camera = nullptr;
 	Ref<CameraAttributesPractical> camera_attributes;
+	Ref<Environment> environment;
+	Ref<Sky> sky;
+	Ref<ProceduralSkyMaterial> procedural_sky_material;
 	bool first_aabb = false;
 	AABB contents_aabb;
 

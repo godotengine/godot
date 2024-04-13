@@ -364,6 +364,7 @@ void EditorExport::update_export_presets() {
 		if (platform_options.has(preset->get_platform()->get_name())) {
 			export_presets_updated = true;
 
+			bool update_value_overrides = false;
 			List<EditorExportPlatform::ExportOption> options = platform_options[preset->get_platform()->get_name()];
 
 			// Clear the preset properties prior to reloading, keep the values to preserve options from plugins that may be currently disabled.
@@ -377,6 +378,13 @@ void EditorExport::update_export_presets() {
 					preset->values[option_name] = E.default_value;
 				}
 				preset->update_visibility[option_name] = E.update_visibility;
+				if (E.update_visibility) {
+					update_value_overrides = true;
+				}
+			}
+
+			if (update_value_overrides) {
+				preset->update_value_overrides();
 			}
 		}
 	}

@@ -2317,15 +2317,15 @@ void SpriteFramesEditorPlugin::edit(Object *p_object) {
 }
 
 bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
-	AnimatedSprite2D *animated_sprite = Object::cast_to<AnimatedSprite2D>(p_object);
-	AnimatedSprite3D *animated_sprite_3d = Object::cast_to<AnimatedSprite3D>(p_object);
-	if (animated_sprite && *animated_sprite->get_sprite_frames()) {
+	AnimatedSprite2D *animated_sprite_2d = Object::cast_to<AnimatedSprite2D>(p_object);
+	if (animated_sprite_2d && *animated_sprite_2d->get_sprite_frames()) {
 		return true;
-	} else if (animated_sprite_3d && *animated_sprite_3d->get_sprite_frames()) {
-		return true;
-	} else {
-		return p_object->is_class("SpriteFrames");
 	}
+	AnimatedSprite3D *animated_sprite_3d = Object::cast_to<AnimatedSprite3D>(p_object);
+	if (animated_sprite_3d && *animated_sprite_3d->get_sprite_frames()) {
+		return true;
+	}
+	return p_object->is_class("SpriteFrames");
 }
 
 void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
@@ -2334,7 +2334,9 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 		EditorNode::get_bottom_panel()->make_item_visible(frames_editor);
 	} else {
 		button->hide();
-		frames_editor->edit(Ref<SpriteFrames>());
+		if (frames_editor->is_visible_in_tree()) {
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
+		}
 	}
 }
 

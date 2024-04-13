@@ -915,7 +915,9 @@ typedef struct psa_pake_cipher_suite_s psa_pake_cipher_suite_t;
 
 /** Return an initial value for a PAKE cipher suite object.
  */
+#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_pake_cipher_suite_t psa_pake_cipher_suite_init(void);
+#endif
 
 /** Retrieve the PAKE algorithm from a PAKE cipher suite.
  *
@@ -1048,7 +1050,9 @@ typedef struct psa_jpake_computation_stage_s psa_jpake_computation_stage_t;
 
 /** Return an initial value for a PAKE operation object.
  */
+#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_pake_operation_t psa_pake_operation_init(void);
+#endif
 
 /** Get the length of the password in bytes from given inputs.
  *
