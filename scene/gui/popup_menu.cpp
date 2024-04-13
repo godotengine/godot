@@ -640,9 +640,15 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 
 		for (const Rect2 &E : autohide_areas) {
 			if (!Rect2(Point2(), get_size()).has_point(m->get_position()) && E.has_point(m->get_position())) {
+				// The mouse left the safe area, prepare to close.
 				_close_pressed();
 				return;
 			}
+		}
+
+		if (!minimum_lifetime_timer->is_stopped()) {
+			// The mouse left the safe area, but came back again, so cancel the auto-closing.
+			minimum_lifetime_timer->stop();
 		}
 
 		if (!item_clickable_area.has_point(m->get_position())) {
