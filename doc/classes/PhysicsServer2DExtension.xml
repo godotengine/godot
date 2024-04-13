@@ -185,7 +185,7 @@
 			<param index="1" name="pickable" type="bool" />
 			<description>
 				If set to [code]true[/code], allows the area with the given [RID] to detect mouse inputs when the mouse cursor is hovering on it.
-				Overridable version of [PhysicsServer2D]'s internal [code]area_set_pickable[/code] method. Corresponds to [member PhysicsBody2D.input_pickable].
+				Overridable version of [PhysicsServer2D]'s internal [code]area_set_pickable[/code] method. Corresponds to [member CollisionObject2D.input_pickable].
 			</description>
 		</method>
 		<method name="_area_set_shape" qualifiers="virtual">
@@ -650,7 +650,7 @@
 			<param index="1" name="pickable" type="bool" />
 			<description>
 				If set to [code]true[/code], allows the body with the given [RID] to detect mouse inputs when the mouse cursor is hovering on it.
-				Overridable version of [PhysicsServer2D]'s internal [code]body_set_pickable[/code] method. Corresponds to [member PhysicsBody2D.input_pickable].
+				Overridable version of [PhysicsServer2D]'s internal [code]body_set_pickable[/code] method. Corresponds to [member CollisionObject2D.input_pickable].
 			</description>
 		</method>
 		<method name="_body_set_shape" qualifiers="virtual">
