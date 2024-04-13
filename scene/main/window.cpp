@@ -1215,10 +1215,10 @@ void Window::set_force_native(bool p_force_native) {
 	if (force_native == p_force_native) {
 		return;
 	}
-	force_native = p_force_native;
 	if (is_visible() && !is_in_edited_scene_root()) {
-		WARN_PRINT("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
+		ERR_FAIL_MSG("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
 	}
+	force_native = p_force_native;
 }
 
 bool Window::get_force_native() const {
