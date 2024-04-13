@@ -411,10 +411,13 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             ret = old_spawn(sh, escape, cmd, args, env)
 
             try:
-                with open(tmp_stdout_name, "rt", encoding=sys.stdout.encoding) as tmp_stdout:
-                    # First line is always bloat, subsequent lines are always errors. This filter sends
-                    # either just the errors to stderr, or an empty string to effectively do nothing.
-                    sys.stderr.write("".join(tmp_stdout.readlines()[1:]))
+                with open(tmp_stdout_name, "rb") as tmp_stdout:
+                    # First line is always bloat, subsequent lines are always errors. If content
+                    # exists after discarding the first line, safely decode & send to stderr.
+                    tmp_stdout.readline()
+                    content = tmp_stdout.read()
+                    if content:
+                        sys.stderr.write(content.decode(sys.stdout.encoding, "replace"))
                 os.remove(tmp_stdout_name)
             except OSError:
                 pass
