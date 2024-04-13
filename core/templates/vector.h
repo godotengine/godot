@@ -47,9 +47,12 @@
 
 template <typename T>
 class VectorWriteProxy {
+private:
+	typedef typename CowData<T>::USize USize;
+
 public:
-	_FORCE_INLINE_ T &operator[](typename CowData<T>::Size p_index) {
-		CRASH_BAD_INDEX(p_index, ((Vector<T> *)(this))->_cowdata.size());
+	_FORCE_INLINE_ T &operator[](USize p_index) {
+		CRASH_BAD_UNSIGNED_INDEX(p_index, (USize)(((Vector<T> *)(this))->_cowdata.size()));
 
 		return ((Vector<T> *)(this))->_cowdata.ptrw()[p_index];
 	}
