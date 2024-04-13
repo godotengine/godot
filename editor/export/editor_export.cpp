@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
+#include "editor/editor_settings.h"
 
 EditorExport *EditorExport::singleton = nullptr;
 
@@ -189,6 +190,12 @@ void EditorExport::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			for (int i = 0; i < export_platforms.size(); i++) {
 				export_platforms.write[i]->cleanup();
+			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			for (int i = 0; i < export_platforms.size(); i++) {
+				export_platforms.write[i]->notification(p_what);
 			}
 		} break;
 	}
