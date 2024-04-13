@@ -323,8 +323,8 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 	ERR_FAIL_COND_V_MSG(config.is_empty(), Ref<Resource>(), "No config found in file: " + path + ".");
 
 	Vector<String> configs = config.split("\n");
-	for (int i = 0; i < configs.size(); i++) {
-		String c = configs[i].strip_edges();
+	for (String c : configs) {
+		c = c.strip_edges();
 		int p = c.find(":");
 		if (p == -1) {
 			continue;

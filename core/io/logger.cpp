@@ -255,10 +255,10 @@ void CompositeLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		return;
 	}
 
-	for (int i = 0; i < loggers.size(); ++i) {
+	for (Logger *logger : loggers) {
 		va_list list_copy;
 		va_copy(list_copy, p_list);
-		loggers[i]->logv(p_format, list_copy, p_err);
+		logger->logv(p_format, list_copy, p_err);
 		va_end(list_copy);
 	}
 }
@@ -268,8 +268,8 @@ void CompositeLogger::log_error(const char *p_function, const char *p_file, int 
 		return;
 	}
 
-	for (int i = 0; i < loggers.size(); ++i) {
-		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+	for (Logger *logger : loggers) {
+		logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
 	}
 }
 
@@ -278,7 +278,7 @@ void CompositeLogger::add_logger(Logger *p_logger) {
 }
 
 CompositeLogger::~CompositeLogger() {
-	for (int i = 0; i < loggers.size(); ++i) {
-		memdelete(loggers[i]);
+	for (Logger *logger : loggers) {
+		memdelete(logger);
 	}
 }

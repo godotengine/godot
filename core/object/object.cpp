@@ -120,8 +120,8 @@ MethodInfo::operator Dictionary() const {
 	d["name"] = name;
 	d["args"] = convert_property_list(&arguments);
 	Array da;
-	for (int i = 0; i < default_arguments.size(); i++) {
-		da.push_back(default_arguments[i]);
+	for (const Variant &default_argument : default_arguments) {
+		da.push_back(default_argument);
 	}
 	d["default_args"] = da;
 	d["flags"] = flags;
@@ -142,8 +142,7 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 		args = p_dict["args"];
 	}
 
-	for (const Variant &arg : args) {
-		Dictionary d = arg;
+	for (const Dictionary d : args) {
 		mi.arguments.push_back(PropertyInfo::from_dict(d));
 	}
 	Array defargs;
@@ -1252,8 +1251,7 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	MethodInfo mi;
 	mi.name = p_name;
 
-	for (const Variant &arg : p_args) {
-		Dictionary d = arg;
+	for (const Dictionary d : p_args) {
 		PropertyInfo param;
 
 		if (d.has("name")) {

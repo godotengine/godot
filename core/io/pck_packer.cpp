@@ -177,22 +177,22 @@ Error PCKPacker::flush(bool p_verbose) {
 		fhead = fae;
 	}
 
-	for (int i = 0; i < files.size(); i++) {
-		int string_len = files[i].path.utf8().length();
+	for (const File &f : files) {
+		int string_len = f.path.utf8().length();
 		int pad = _get_pad(4, string_len);
 
 		fhead->store_32(string_len + pad);
-		fhead->store_buffer((const uint8_t *)files[i].path.utf8().get_data(), string_len);
-		for (int j = 0; j < pad; j++) {
+		fhead->store_buffer((const uint8_t *)f.path.utf8().get_data(), string_len);
+		for (int i = 0; i < pad; i++) {
 			fhead->store_8(0);
 		}
 
-		fhead->store_64(files[i].ofs);
-		fhead->store_64(files[i].size); // pay attention here, this is where file is
-		fhead->store_buffer(files[i].md5.ptr(), 16); //also save md5 for file
+		fhead->store_64(f.ofs);
+		fhead->store_64(f.size); // pay attention here, this is where file is
+		fhead->store_buffer(f.md5.ptr(), 16); //also save md5 for file
 
 		uint32_t flags = 0;
-		if (files[i].encrypted) {
+		if (f.encrypted) {
 			flags |= PACK_FILE_ENCRYPTED;
 		}
 		fhead->store_32(flags);
@@ -217,12 +217,12 @@ Error PCKPacker::flush(bool p_verbose) {
 	uint8_t *buf = memnew_arr(uint8_t, buf_max);
 
 	int count = 0;
-	for (int i = 0; i < files.size(); i++) {
-		Ref<FileAccess> src = FileAccess::open(files[i].src_path, FileAccess::READ);
-		uint64_t to_write = files[i].size;
+	for (const File &f : files) {
+		Ref<FileAccess> src = FileAccess::open(f.src_path, FileAccess::READ);
+		uint64_t to_write = f.size;
 
 		Ref<FileAccess> ftmp = file;
-		if (files[i].encrypted) {
+		if (f.encrypted) {
 			fae.instantiate();
 			ERR_FAIL_COND_V(fae.is_null(), ERR_CANT_CREATE);
 
@@ -243,14 +243,14 @@ Error PCKPacker::flush(bool p_verbose) {
 		}
 
 		int pad = _get_pad(alignment, file->get_position());
-		for (int j = 0; j < pad; j++) {
+		for (int i = 0; i < pad; i++) {
 			file->store_8(0);
 		}
 
 		count += 1;
 		const int file_num = files.size();
 		if (p_verbose && (file_num > 0)) {
-			print_line(vformat("[%d/%d - %d%%] PCKPacker flush: %s -> %s", count, file_num, float(count) / file_num * 100, files[i].src_path, files[i].path));
+			print_line(vformat("[%d/%d - %d%%] PCKPacker flush: %s -> %s", count, file_num, float(count) / file_num * 100, f.src_path, f.path));
 		}
 	}
 

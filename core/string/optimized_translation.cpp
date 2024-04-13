@@ -168,8 +168,8 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	strings.resize(total_compression_size);
 	uint8_t *cw = strings.ptrw();
 
-	for (int i = 0; i < compressed.size(); i++) {
-		memcpy(&cw[compressed[i].offset], compressed[i].compressed.get_data(), compressed[i].compressed.size());
+	for (const CompressedString &comp : compressed) {
+		memcpy(&cw[comp.offset], comp.compressed.get_data(), comp.compressed.size());
 	}
 
 	ERR_FAIL_COND(btindex != bucket_table_size);

@@ -2156,8 +2156,8 @@ void ClassDB::cleanup() {
 			memdelete(F.value);
 		}
 		for (KeyValue<StringName, LocalVector<MethodBind *>> &F : ti.method_map_compatibility) {
-			for (uint32_t i = 0; i < F.value.size(); i++) {
-				memdelete(F.value[i]);
+			for (MethodBind *bind : F.value) {
+				memdelete(bind);
 			}
 		}
 	}

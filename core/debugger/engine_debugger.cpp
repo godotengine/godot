@@ -161,8 +161,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, co
 	ScriptDebugger *singleton_script_debugger = singleton->get_script_debugger();
 	singleton_script_debugger->set_skip_breakpoints(p_skip_breakpoints);
 
-	for (int i = 0; i < p_breakpoints.size(); i++) {
-		const String &bp = p_breakpoints[i];
+	for (const String &bp : p_breakpoints) {
 		int sp = bp.rfind(":");
 		ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
 

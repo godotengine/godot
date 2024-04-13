@@ -38,8 +38,8 @@
 #include <stdio.h>
 
 Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
-	for (int i = 0; i < sources.size(); i++) {
-		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset)) {
+	for (PackSource *source : sources) {
+		if (source->try_open_pack(p_path, p_replace_files, p_offset)) {
 			return OK;
 		}
 	}
@@ -74,17 +74,17 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 
 		if (p.contains("/")) { //in a subdir
 
-			Vector<String> ds = p.get_base_dir().split("/");
+			const Vector<String> dirs = p.get_base_dir().split("/");
 
-			for (int j = 0; j < ds.size(); j++) {
-				if (!cd->subdirs.has(ds[j])) {
+			for (const String &dir : dirs) {
+				if (!cd->subdirs.has(dir)) {
 					PackedDir *pd = memnew(PackedDir);
-					pd->name = ds[j];
+					pd->name = dir;
 					pd->parent = cd;
 					cd->subdirs[pd->name] = pd;
 					cd = pd;
 				} else {
-					cd = cd->subdirs[ds[j]];
+					cd = cd->subdirs[dir];
 				}
 			}
 		}
@@ -119,8 +119,8 @@ void PackedData::_free_packed_dirs(PackedDir *p_dir) {
 }
 
 PackedData::~PackedData() {
-	for (int i = 0; i < sources.size(); i++) {
-		memdelete(sources[i]);
+	for (PackSource *source : sources) {
+		memdelete(source);
 	}
 	_free_packed_dirs(root);
 }
@@ -497,8 +497,7 @@ PackedData::PackedDir *DirAccessPack::_find_dir(const String &p_dir) {
 		pd = current;
 	}
 
-	for (int i = 0; i < paths.size(); i++) {
-		const String &p = paths[i];
+	for (const String &p : paths) {
 		if (p == ".") {
 			continue;
 		} else if (p == "..") {

@@ -144,10 +144,10 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 			p_task->done_semaphore.post(p_task->waiting_user);
 		}
 		// Let awaiters know.
-		for (uint32_t i = 0; i < threads.size(); i++) {
-			if (threads[i].awaited_task == p_task) {
-				threads[i].cond_var.notify_one();
-				threads[i].signaled = true;
+		for (ThreadData &thread : threads) {
+			if (thread.awaited_task == p_task) {
+				thread.cond_var.notify_one();
+				thread.signaled = true;
 			}
 		}
 	}

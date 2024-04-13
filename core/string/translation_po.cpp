@@ -219,8 +219,8 @@ void TranslationPO::add_plural_message(const StringName &p_src_text, const Vecto
 		map_id_str[p_src_text].clear();
 	}
 
-	for (int i = 0; i < p_plural_xlated_texts.size(); i++) {
-		map_id_str[p_src_text].push_back(p_plural_xlated_texts[i]);
+	for (const String &plural_xlated_text : p_plural_xlated_texts) {
+		map_id_str[p_src_text].push_back(plural_xlated_text);
 	}
 }
 

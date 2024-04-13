@@ -201,8 +201,8 @@ uint32_t Array::recursive_hash(int recursion_count) const {
 	uint32_t h = hash_murmur3_one_32(Variant::ARRAY);
 
 	recursion_count++;
-	for (int i = 0; i < _p->array.size(); i++) {
-		h = hash_murmur3_one_32(_p->array[i].recursive_hash(recursion_count), h);
+	for (const Variant &var : _p->array) {
+		h = hash_murmur3_one_32(var.recursive_hash(recursion_count), h);
 	}
 	return hash_fmix32(h);
 }
@@ -290,8 +290,8 @@ void Array::append_array(const Array &p_array) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 
 	Vector<Variant> validated_array = p_array._p->array;
-	for (int i = 0; i < validated_array.size(); ++i) {
-		ERR_FAIL_COND(!_p->typed.validate(validated_array.write[i], "append_array"));
+	for (Variant &var : validated_array) {
+		ERR_FAIL_COND(!_p->typed.validate(var, "append_array"));
 	}
 
 	_p->array.append_array(validated_array);
@@ -402,8 +402,8 @@ int Array::count(const Variant &p_value) const {
 	}
 
 	int amount = 0;
-	for (int i = 0; i < _p->array.size(); i++) {
-		if (StringLikeVariantComparator::compare(_p->array[i], value)) {
+	for (const Variant &var : _p->array) {
+		if (StringLikeVariantComparator::compare(var, value)) {
 			amount++;
 		}
 	}

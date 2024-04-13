@@ -113,13 +113,13 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 const PackedStringArray ProjectSettings::get_unsupported_features(const PackedStringArray &p_project_features) {
 	PackedStringArray unsupported_features;
 	PackedStringArray supported_features = singleton->_get_supported_features();
-	for (int i = 0; i < p_project_features.size(); i++) {
-		if (!supported_features.has(p_project_features[i])) {
+	for (const String &feature : p_project_features) {
+		if (!supported_features.has(feature)) {
 			// Temporary compatibility code to ease upgrade to 4.0 beta 2+.
-			if (p_project_features[i].begins_with("Vulkan")) {
+			if (feature.begins_with("Vulkan")) {
 				continue;
 			}
-			unsupported_features.append(p_project_features[i]);
+			unsupported_features.append(feature);
 		}
 	}
 	unsupported_features.sort();
@@ -138,9 +138,9 @@ const PackedStringArray ProjectSettings::_trim_to_supported_features(const Packe
 	}
 	// Add required features if not present.
 	PackedStringArray required_features = get_required_features();
-	for (int i = 0; i < required_features.size(); i++) {
-		if (!features.has(required_features[i])) {
-			features.append(required_features[i]);
+	for (const String &feature : required_features) {
+		if (!features.has(feature)) {
+			features.append(feature);
 		}
 	}
 	features.sort();
@@ -293,8 +293,8 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	} else {
 		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
 			Vector<String> custom_feature_array = String(p_value).split(",");
-			for (int i = 0; i < custom_feature_array.size(); i++) {
-				custom_features.insert(custom_feature_array[i]);
+			for (const String &custom_feature : custom_feature_array) {
+				custom_features.insert(custom_feature);
 			}
 			_queue_changed();
 			return true;
@@ -362,10 +362,10 @@ Variant ProjectSettings::get_setting_with_override(const StringName &p_name) con
 	StringName name = p_name;
 	if (feature_overrides.has(name)) {
 		const LocalVector<Pair<StringName, StringName>> &overrides = feature_overrides[name];
-		for (uint32_t i = 0; i < overrides.size(); i++) {
-			if (OS::get_singleton()->has_feature(overrides[i].first)) { // Custom features are checked in OS.has_feature() already. No need to check twice.
-				if (props.has(overrides[i].second)) {
-					name = overrides[i].second;
+		for (const Pair<StringName, StringName> &override : overrides) {
+			if (OS::get_singleton()->has_feature(override.first)) { // Custom features are checked in OS.has_feature() already. No need to check twice.
+				if (props.has(override.second)) {
+					name = override.second;
 					break;
 				}
 			}
@@ -1203,8 +1203,7 @@ void ProjectSettings::refresh_global_class_list() {
 	// This is called after mounting a new PCK file to pick up class changes.
 	is_global_class_list_loaded = false; // Make sure we read from the freshly mounted PCK.
 	Array script_classes = get_global_class_list();
-	for (int i = 0; i < script_classes.size(); i++) {
-		Dictionary c = script_classes[i];
+	for (const Dictionary c : script_classes) {
 		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
 			continue;
 		}

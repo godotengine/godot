@@ -263,8 +263,8 @@ void TranslationServer::init_locale_info() {
 		info.script = locale_scripts[idx][1];
 		info.default_country = locale_scripts[idx][2];
 		Vector<String> supported_countries = String(locale_scripts[idx][3]).split(",", false);
-		for (int i = 0; i < supported_countries.size(); i++) {
-			info.supported_countries.insert(supported_countries[i]);
+		for (const String &supported_country : supported_countries) {
+			info.supported_countries.insert(supported_country);
 		}
 		locale_script_info.push_back(info);
 		idx++;
@@ -349,19 +349,19 @@ String TranslationServer::_standardize_locale(const String &p_locale, bool p_add
 	}
 
 	// Try extract script and variant from the extra part.
-	Vector<String> script_extra = univ_locale.get_slice("@", 1).split(";");
-	for (int i = 0; i < script_extra.size(); i++) {
-		if (script_extra[i].to_lower() == "cyrillic") {
+	Vector<String> script_extras = univ_locale.get_slice("@", 1).split(";");
+	for (const String &script_extra : script_extras) {
+		if (script_extra.to_lower() == "cyrillic") {
 			script_name = "Cyrl";
 			break;
-		} else if (script_extra[i].to_lower() == "latin") {
+		} else if (script_extra.to_lower() == "latin") {
 			script_name = "Latn";
 			break;
-		} else if (script_extra[i].to_lower() == "devanagari") {
+		} else if (script_extra.to_lower() == "devanagari") {
 			script_name = "Deva";
 			break;
-		} else if (variant_map.has(script_extra[i].to_lower()) && variant_map[script_extra[i].to_lower()] == lang_name) {
-			variant_name = script_extra[i].to_lower();
+		} else if (variant_map.has(script_extra.to_lower()) && variant_map[script_extra.to_lower()] == lang_name) {
+			variant_name = script_extra.to_lower();
 		}
 	}
 
@@ -383,8 +383,7 @@ String TranslationServer::_standardize_locale(const String &p_locale, bool p_add
 	// Add script code base on language and country codes for some ambiguous cases.
 	if (p_add_defaults) {
 		if (script_name.is_empty()) {
-			for (int i = 0; i < locale_script_info.size(); i++) {
-				const LocaleScriptInfo &info = locale_script_info[i];
+			for (const LocaleScriptInfo &info : locale_script_info) {
 				if (info.name == lang_name) {
 					if (country_name.is_empty() || info.supported_countries.has(country_name)) {
 						script_name = info.script;
@@ -395,8 +394,7 @@ String TranslationServer::_standardize_locale(const String &p_locale, bool p_add
 		}
 		if (!script_name.is_empty() && country_name.is_empty()) {
 			// Add conntry code based on script for some ambiguous cases.
-			for (int i = 0; i < locale_script_info.size(); i++) {
-				const LocaleScriptInfo &info = locale_script_info[i];
+			for (const LocaleScriptInfo &info : locale_script_info) {
 				if (info.name == lang_name && info.script == script_name) {
 					country_name = info.default_country;
 					break;

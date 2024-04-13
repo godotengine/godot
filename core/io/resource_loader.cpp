@@ -84,8 +84,8 @@ bool ResourceFormatLoader::handles_type(const String &p_type) const {
 void ResourceFormatLoader::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
 	Vector<String> ret;
 	if (GDVIRTUAL_CALL(_get_classes_used, p_path, ret)) {
-		for (int i = 0; i < ret.size(); i++) {
-			r_classes->insert(ret[i]);
+		for (const String &used : ret) {
+			r_classes->insert(used);
 		}
 		return;
 	}
@@ -137,9 +137,8 @@ bool ResourceFormatLoader::exists(const String &p_path) const {
 void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions) const {
 	PackedStringArray exts;
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, exts)) {
-		const String *r = exts.ptr();
-		for (int i = 0; i < exts.size(); ++i) {
-			p_extensions->push_back(r[i]);
+		for (const String &ext : exts) {
+			p_extensions->push_back(ext);
 		}
 	}
 }
@@ -166,9 +165,8 @@ Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_o
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 	PackedStringArray deps;
 	if (GDVIRTUAL_CALL(_get_dependencies, p_path, p_add_types, deps)) {
-		const String *r = deps.ptr();
-		for (int i = 0; i < deps.size(); ++i) {
-			p_dependencies->push_back(r[i]);
+		for (const String &dep : deps) {
+			p_dependencies->push_back(dep);
 		}
 	}
 }
@@ -926,15 +924,15 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		Vector<String> &res_remaps = *translation_remaps.getptr(new_path);
 
 		int best_score = 0;
-		for (int i = 0; i < res_remaps.size(); i++) {
-			int split = res_remaps[i].rfind(":");
+		for (const String &res_remap : res_remaps) {
+			int split = res_remap.rfind(":");
 			if (split == -1) {
 				continue;
 			}
-			String l = res_remaps[i].substr(split + 1).strip_edges();
+			String l = res_remap.substr(split + 1).strip_edges();
 			int score = TranslationServer::get_singleton()->compare_locales(locale, l);
 			if (score > 0 && score >= best_score) {
-				new_path = res_remaps[i].left(split);
+				new_path = res_remap.left(split);
 				best_score = score;
 				if (score == 10) {
 					break; // Exact match, skip the rest.
@@ -1183,8 +1181,8 @@ void ResourceLoader::remove_custom_loaders() {
 		}
 	}
 
-	for (int i = 0; i < custom_loaders.size(); ++i) {
-		remove_resource_format_loader(custom_loaders[i]);
+	for (const Ref<ResourceFormatLoader> &custom_loader : custom_loaders) {
+		remove_resource_format_loader(custom_loader);
 	}
 }
 

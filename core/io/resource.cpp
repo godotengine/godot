@@ -234,8 +234,8 @@ void Resource::_dupe_sub_resources(Variant &r_variant, Node *p_for_scene, HashMa
 	switch (r_variant.get_type()) {
 		case Variant::ARRAY: {
 			Array a = r_variant;
-			for (int i = 0; i < a.size(); i++) {
-				_dupe_sub_resources(a[i], p_for_scene, p_remap_cache);
+			for (Variant &var : a) {
+				_dupe_sub_resources(var, p_for_scene, p_remap_cache);
 			}
 		} break;
 		case Variant::DICTIONARY: {
@@ -308,8 +308,8 @@ void Resource::_find_sub_resources(const Variant &p_variant, HashSet<Ref<Resourc
 	switch (p_variant.get_type()) {
 		case Variant::ARRAY: {
 			Array a = p_variant;
-			for (int i = 0; i < a.size(); i++) {
-				_find_sub_resources(a[i], p_resources_found);
+			for (const Variant &var : a) {
+				_find_sub_resources(var, p_resources_found);
 			}
 		} break;
 		case Variant::DICTIONARY: {

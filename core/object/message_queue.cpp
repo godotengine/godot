@@ -533,8 +533,8 @@ CallQueue::CallQueue(Allocator *p_custom_allocator, uint32_t p_max_pages, const 
 CallQueue::~CallQueue() {
 	clear();
 	// Let go of pages.
-	for (uint32_t i = 0; i < pages.size(); i++) {
-		allocator->free(pages[i]);
+	for (Page *page : pages) {
+		allocator->free(page);
 	}
 	if (!allocator_is_custom) {
 		memdelete(allocator);

@@ -172,8 +172,8 @@ bool Dictionary::has(const Variant &p_key) const {
 }
 
 bool Dictionary::has_all(const Array &p_keys) const {
-	for (int i = 0; i < p_keys.size(); i++) {
-		if (!has(p_keys[i])) {
+	for (const Variant &key : p_keys) {
+		if (!has(key)) {
 			return false;
 		}
 	}

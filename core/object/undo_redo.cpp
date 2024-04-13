@@ -388,8 +388,8 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E, bool p_execu
 					} else {
 						args.clear();
 
-						for (int i = 0; i < binds.size(); i++) {
-							args.push_back(&binds[i]);
+						for (Variant &bind : binds) {
+							args.push_back(&bind);
 						}
 
 						method_callback(method_callback_ud, obj, op.name, args.ptr(), binds.size());

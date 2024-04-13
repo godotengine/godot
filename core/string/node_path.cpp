@@ -186,8 +186,8 @@ NodePath::operator String() const {
 		ret += data->path[i].operator String();
 	}
 
-	for (int i = 0; i < data->subpath.size(); i++) {
-		ret += ":" + data->subpath[i].operator String();
+	for (const StringName &subpath : data->subpath) {
+		ret += ":" + subpath.operator String();
 	}
 
 	return ret;

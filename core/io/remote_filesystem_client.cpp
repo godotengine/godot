@@ -120,8 +120,8 @@ Error RemoteFilesystemClient::_store_cache_file(const Vector<FileCache> &p_cache
 	Ref<FileAccess> f = FileAccess::open(full_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, "Unable to open the remote cache file for writing: " + full_path);
 	f->store_line(itos(FILESYSTEM_CACHE_VERSION));
-	for (int i = 0; i < p_cache.size(); i++) {
-		String l = p_cache[i].path + "::" + itos(p_cache[i].server_modified_time) + "::" + itos(p_cache[i].modified_time);
+	for (const FileCache &cache : p_cache) {
+		String l = cache.path + "::" + itos(cache.server_modified_time) + "::" + itos(cache.modified_time);
 		f->store_line(l);
 	}
 	return OK;
@@ -203,8 +203,8 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 	}
 
 	tcp_client->put_32(tags.size());
-	for (int i = 0; i < tags.size(); i++) {
-		tcp_client->put_utf8_string(tags[i]);
+	for (const String &tag : tags) {
+		tcp_client->put_utf8_string(tag);
 	}
 	// Size of compressed list of files
 	print_verbose("Remote Filesystem: Sending file list");
@@ -215,10 +215,10 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 	Vector<uint8_t> file_cache_buffer;
 	if (file_cache.size()) {
 		StringBuilder sbuild;
-		for (int i = 0; i < file_cache.size(); i++) {
-			sbuild.append(file_cache[i].path);
+		for (FileCache &cache : file_cache) {
+			sbuild.append(cache.path);
 			sbuild.append("::");
-			sbuild.append(itos(file_cache[i].server_modified_time));
+			sbuild.append(itos(cache.server_modified_time));
 			sbuild.append("\n");
 		}
 		String s = sbuild.as_string();
@@ -312,11 +312,11 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 	// unchanged (not sent again from the server).
 	// These need to be re-saved in the new list (new_file_cache).
 
-	for (int i = 0; i < file_cache.size(); i++) {
-		if (files_processed.has(file_cache[i].path)) {
+	for (FileCache &cache : file_cache) {
+		if (files_processed.has(cache.path)) {
 			continue; // This was either added or removed, so skip.
 		}
-		new_file_cache.push_back(file_cache[i]);
+		new_file_cache.push_back(cache);
 	}
 
 	err = _store_cache_file(new_file_cache);

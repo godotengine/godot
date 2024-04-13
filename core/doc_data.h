@@ -198,16 +198,16 @@ public:
 			if (p_dict.has("arguments")) {
 				arguments = p_dict["arguments"];
 			}
-			for (int i = 0; i < arguments.size(); i++) {
-				doc.arguments.push_back(ArgumentDoc::from_dict(arguments[i]));
+			for (const Variant &argument : arguments) {
+				doc.arguments.push_back(ArgumentDoc::from_dict(argument));
 			}
 
 			Array errors_returned;
 			if (p_dict.has("errors_returned")) {
 				errors_returned = p_dict["errors_returned"];
 			}
-			for (int i = 0; i < errors_returned.size(); i++) {
-				doc.errors_returned.push_back(errors_returned[i]);
+			for (const Variant &error_returned : errors_returned) {
+				doc.errors_returned.push_back(error_returned);
 			}
 
 			if (p_dict.has("keywords")) {
@@ -254,16 +254,16 @@ public:
 
 			if (!p_doc.arguments.is_empty()) {
 				Array arguments;
-				for (int i = 0; i < p_doc.arguments.size(); i++) {
-					arguments.push_back(ArgumentDoc::to_dict(p_doc.arguments[i]));
+				for (const ArgumentDoc &argument : p_doc.arguments) {
+					arguments.push_back(ArgumentDoc::to_dict(argument));
 				}
 				dict["arguments"] = arguments;
 			}
 
 			if (!p_doc.errors_returned.is_empty()) {
 				Array errors_returned;
-				for (int i = 0; i < p_doc.errors_returned.size(); i++) {
-					errors_returned.push_back(p_doc.errors_returned[i]);
+				for (const int &error_returned : p_doc.errors_returned) {
+					errors_returned.push_back(error_returned);
 				}
 				dict["errors_returned"] = errors_returned;
 			}
@@ -728,80 +728,82 @@ public:
 			if (p_dict.has("tutorials")) {
 				tutorials = p_dict["tutorials"];
 			}
-			for (int i = 0; i < tutorials.size(); i++) {
-				doc.tutorials.push_back(TutorialDoc::from_dict(tutorials[i]));
+			for (const Variant &tutorial : tutorials) {
+				doc.tutorials.push_back(TutorialDoc::from_dict(tutorial));
 			}
 
 			Array constructors;
 			if (p_dict.has("constructors")) {
 				constructors = p_dict["constructors"];
 			}
-			for (int i = 0; i < constructors.size(); i++) {
-				doc.constructors.push_back(MethodDoc::from_dict(constructors[i]));
+			for (const Variant &constructor : constructors) {
+				doc.constructors.push_back(MethodDoc::from_dict(constructor));
 			}
 
 			Array methods;
 			if (p_dict.has("methods")) {
 				methods = p_dict["methods"];
 			}
-			for (int i = 0; i < methods.size(); i++) {
-				doc.methods.push_back(MethodDoc::from_dict(methods[i]));
+			for (const Variant &method : methods) {
+				doc.methods.push_back(MethodDoc::from_dict(method));
 			}
 
 			Array operators;
 			if (p_dict.has("operators")) {
 				operators = p_dict["operators"];
 			}
-			for (int i = 0; i < operators.size(); i++) {
-				doc.operators.push_back(MethodDoc::from_dict(operators[i]));
+			for (const Variant &operator_ : operators) {
+				doc.operators.push_back(MethodDoc::from_dict(operator_));
 			}
 
 			Array signals;
 			if (p_dict.has("signals")) {
 				signals = p_dict["signals"];
 			}
-			for (int i = 0; i < signals.size(); i++) {
-				doc.signals.push_back(MethodDoc::from_dict(signals[i]));
+			for (const Variant &signal : signals) {
+				doc.signals.push_back(MethodDoc::from_dict(signal));
 			}
 
 			Array constants;
 			if (p_dict.has("constants")) {
 				constants = p_dict["constants"];
 			}
-			for (int i = 0; i < constants.size(); i++) {
-				doc.constants.push_back(ConstantDoc::from_dict(constants[i]));
+			for (const Variant &constant : constants) {
+				doc.constants.push_back(ConstantDoc::from_dict(constant));
 			}
 
 			Dictionary enums;
 			if (p_dict.has("enums")) {
 				enums = p_dict["enums"];
 			}
-			for (int i = 0; i < enums.size(); i++) {
-				doc.enums[enums.get_key_at_index(i)] = EnumDoc::from_dict(enums.get_value_at_index(i));
+			List<Variant> keys;
+			enums.get_key_list(&keys);
+			for (const Variant &key : keys) {
+				doc.enums[key] = EnumDoc::from_dict(enums[key]);
 			}
 
 			Array properties;
 			if (p_dict.has("properties")) {
 				properties = p_dict["properties"];
 			}
-			for (int i = 0; i < properties.size(); i++) {
-				doc.properties.push_back(PropertyDoc::from_dict(properties[i]));
+			for (const Variant &property : properties) {
+				doc.properties.push_back(PropertyDoc::from_dict(property));
 			}
 
 			Array annotations;
 			if (p_dict.has("annotations")) {
 				annotations = p_dict["annotations"];
 			}
-			for (int i = 0; i < annotations.size(); i++) {
-				doc.annotations.push_back(MethodDoc::from_dict(annotations[i]));
+			for (const Variant &annotation : annotations) {
+				doc.annotations.push_back(MethodDoc::from_dict(annotation));
 			}
 
 			Array theme_properties;
 			if (p_dict.has("theme_properties")) {
 				theme_properties = p_dict["theme_properties"];
 			}
-			for (int i = 0; i < theme_properties.size(); i++) {
-				doc.theme_properties.push_back(ThemeItemDoc::from_dict(theme_properties[i]));
+			for (const Variant &theme_property : theme_properties) {
+				doc.theme_properties.push_back(ThemeItemDoc::from_dict(theme_property));
 			}
 
 #ifndef DISABLE_DEPRECATED
@@ -855,48 +857,48 @@ public:
 
 			if (!p_doc.tutorials.is_empty()) {
 				Array tutorials;
-				for (int i = 0; i < p_doc.tutorials.size(); i++) {
-					tutorials.push_back(TutorialDoc::to_dict(p_doc.tutorials[i]));
+				for (const TutorialDoc &tutorial : p_doc.tutorials) {
+					tutorials.push_back(TutorialDoc::to_dict(tutorial));
 				}
 				dict["tutorials"] = tutorials;
 			}
 
 			if (!p_doc.constructors.is_empty()) {
 				Array constructors;
-				for (int i = 0; i < p_doc.constructors.size(); i++) {
-					constructors.push_back(MethodDoc::to_dict(p_doc.constructors[i]));
+				for (const MethodDoc &constructor : p_doc.constructors) {
+					constructors.push_back(MethodDoc::to_dict(constructor));
 				}
 				dict["constructors"] = constructors;
 			}
 
 			if (!p_doc.methods.is_empty()) {
 				Array methods;
-				for (int i = 0; i < p_doc.methods.size(); i++) {
-					methods.push_back(MethodDoc::to_dict(p_doc.methods[i]));
+				for (const MethodDoc &method : p_doc.methods) {
+					methods.push_back(MethodDoc::to_dict(method));
 				}
 				dict["methods"] = methods;
 			}
 
 			if (!p_doc.operators.is_empty()) {
 				Array operators;
-				for (int i = 0; i < p_doc.operators.size(); i++) {
-					operators.push_back(MethodDoc::to_dict(p_doc.operators[i]));
+				for (const MethodDoc &operator_ : p_doc.operators) {
+					operators.push_back(MethodDoc::to_dict(operator_));
 				}
 				dict["operators"] = operators;
 			}
 
 			if (!p_doc.signals.is_empty()) {
 				Array signals;
-				for (int i = 0; i < p_doc.signals.size(); i++) {
-					signals.push_back(MethodDoc::to_dict(p_doc.signals[i]));
+				for (const MethodDoc &signal : p_doc.signals) {
+					signals.push_back(MethodDoc::to_dict(signal));
 				}
 				dict["signals"] = signals;
 			}
 
 			if (!p_doc.constants.is_empty()) {
 				Array constants;
-				for (int i = 0; i < p_doc.constants.size(); i++) {
-					constants.push_back(ConstantDoc::to_dict(p_doc.constants[i]));
+				for (const ConstantDoc &constant : p_doc.constants) {
+					constants.push_back(ConstantDoc::to_dict(constant));
 				}
 				dict["constants"] = constants;
 			}
@@ -911,24 +913,24 @@ public:
 
 			if (!p_doc.properties.is_empty()) {
 				Array properties;
-				for (int i = 0; i < p_doc.properties.size(); i++) {
-					properties.push_back(PropertyDoc::to_dict(p_doc.properties[i]));
+				for (const PropertyDoc &property : p_doc.properties) {
+					properties.push_back(PropertyDoc::to_dict(property));
 				}
 				dict["properties"] = properties;
 			}
 
 			if (!p_doc.annotations.is_empty()) {
 				Array annotations;
-				for (int i = 0; i < p_doc.annotations.size(); i++) {
-					annotations.push_back(MethodDoc::to_dict(p_doc.annotations[i]));
+				for (const MethodDoc &annotation : p_doc.annotations) {
+					annotations.push_back(MethodDoc::to_dict(annotation));
 				}
 				dict["annotations"] = annotations;
 			}
 
 			if (!p_doc.theme_properties.is_empty()) {
 				Array theme_properties;
-				for (int i = 0; i < p_doc.theme_properties.size(); i++) {
-					theme_properties.push_back(ThemeItemDoc::to_dict(p_doc.theme_properties[i]));
+				for (const ThemeItemDoc &theme_property : p_doc.theme_properties) {
+					theme_properties.push_back(ThemeItemDoc::to_dict(theme_property));
 				}
 				dict["theme_properties"] = theme_properties;
 			}

@@ -303,8 +303,7 @@ void InputMap::load_from_project_settings() {
 		Array events = action["events"];
 
 		add_action(name, deadzone);
-		for (int i = 0; i < events.size(); i++) {
-			Ref<InputEvent> event = events[i];
+		for (const Ref<InputEvent> event : events) {
 			if (event.is_null()) {
 				continue;
 			}

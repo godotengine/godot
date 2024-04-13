@@ -411,8 +411,8 @@ String XMLParser::get_attribute_value(int p_idx) const {
 }
 
 bool XMLParser::has_attribute(const String &p_name) const {
-	for (int i = 0; i < attributes.size(); i++) {
-		if (attributes[i].name == p_name) {
+	for (const Attribute &attribute : attributes) {
+		if (attribute.name == p_name) {
 			return true;
 		}
 	}

@@ -84,8 +84,8 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_get_documentation, doc);
 
 		Vector<DocData::ClassDoc> class_doc;
-		for (int i = 0; i < doc.size(); i++) {
-			class_doc.append(DocData::ClassDoc::from_dict(doc[i]));
+		for (const Variant &dict : doc) {
+			class_doc.append(DocData::ClassDoc::from_dict(dict));
 		}
 
 		return class_doc;
@@ -138,8 +138,8 @@ public:
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override {
 		TypedArray<Dictionary> sl;
 		GDVIRTUAL_REQUIRED_CALL(_get_script_signal_list, sl);
-		for (int i = 0; i < sl.size(); i++) {
-			r_signals->push_back(MethodInfo::from_dict(sl[i]));
+		for (const Variant &dict : sl) {
+			r_signals->push_back(MethodInfo::from_dict(dict));
 		}
 	}
 
@@ -164,8 +164,8 @@ public:
 	virtual void get_script_method_list(List<MethodInfo> *r_methods) const override {
 		TypedArray<Dictionary> sl;
 		GDVIRTUAL_REQUIRED_CALL(_get_script_method_list, sl);
-		for (int i = 0; i < sl.size(); i++) {
-			r_methods->push_back(MethodInfo::from_dict(sl[i]));
+		for (const Variant &dict : sl) {
+			r_methods->push_back(MethodInfo::from_dict(dict));
 		}
 	}
 
@@ -174,8 +174,8 @@ public:
 	virtual void get_script_property_list(List<PropertyInfo> *r_propertys) const override {
 		TypedArray<Dictionary> sl;
 		GDVIRTUAL_REQUIRED_CALL(_get_script_property_list, sl);
-		for (int i = 0; i < sl.size(); i++) {
-			r_propertys->push_back(PropertyInfo::from_dict(sl[i]));
+		for (const Variant &dict : sl) {
+			r_propertys->push_back(PropertyInfo::from_dict(dict));
 		}
 	}
 
@@ -196,8 +196,8 @@ public:
 	virtual void get_members(HashSet<StringName> *p_members) override {
 		TypedArray<StringName> members;
 		GDVIRTUAL_REQUIRED_CALL(_get_members, members);
-		for (int i = 0; i < members.size(); i++) {
-			p_members->insert(members[i]);
+		for (const Variant &member : members) {
+			p_members->insert(member);
 		}
 	}
 
@@ -238,8 +238,8 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_reserved_words, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
+		for (const String &str : ret) {
+			p_words->push_back(str);
 		}
 	}
 	EXBIND1RC(bool, is_control_flow_keyword, const String &)
@@ -249,8 +249,8 @@ public:
 	virtual void get_comment_delimiters(List<String> *p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_comment_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
+		for (const String &str : ret) {
+			p_words->push_back(str);
 		}
 	}
 
@@ -259,8 +259,8 @@ public:
 	virtual void get_doc_comment_delimiters(List<String> *p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_doc_comment_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
+		for (const String &str : ret) {
+			p_words->push_back(str);
 		}
 	}
 
@@ -269,8 +269,8 @@ public:
 	virtual void get_string_delimiters(List<String> *p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_string_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
+		for (const String &str : ret) {
+			p_words->push_back(str);
 		}
 	}
 
@@ -282,8 +282,7 @@ public:
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_built_in_templates, p_object, ret);
 		Vector<ScriptTemplate> stret;
-		for (int i = 0; i < ret.size(); i++) {
-			Dictionary d = ret[i];
+		for (const Dictionary d : ret) {
 			ScriptTemplate st;
 			ERR_CONTINUE(!d.has("inherit"));
 			st.inherit = d["inherit"];
@@ -313,14 +312,13 @@ public:
 		}
 		if (r_functions != nullptr && ret.has("functions")) {
 			Vector<String> functions = ret["functions"];
-			for (int i = 0; i < functions.size(); i++) {
-				r_functions->push_back(functions[i]);
+			for (const String &function : functions) {
+				r_functions->push_back(function);
 			}
 		}
 		if (r_errors != nullptr && ret.has("errors")) {
 			Array errors = ret["errors"];
-			for (const Variant &error : errors) {
-				Dictionary err = error;
+			for (const Dictionary err : errors) {
 				ERR_CONTINUE(!err.has("line"));
 				ERR_CONTINUE(!err.has("column"));
 				ERR_CONTINUE(!err.has("message"));
@@ -339,8 +337,7 @@ public:
 		if (r_warnings != nullptr && ret.has("warnings")) {
 			ERR_FAIL_COND_V(!ret.has("warnings"), false);
 			Array warnings = ret["warnings"];
-			for (const Variant &warning : warnings) {
-				Dictionary warn = warning;
+			for (const Dictionary warn : warnings) {
 				ERR_CONTINUE(!warn.has("start_line"));
 				ERR_CONTINUE(!warn.has("end_line"));
 				ERR_CONTINUE(!warn.has("leftmost_column"));
@@ -363,8 +360,8 @@ public:
 		}
 		if (r_safe_lines != nullptr && ret.has("safe_lines")) {
 			PackedInt32Array safe_lines = ret["safe_lines"];
-			for (int i = 0; i < safe_lines.size(); i++) {
-				r_safe_lines->insert(safe_lines[i]);
+			for (const int32_t &safe_line : safe_lines) {
+				r_safe_lines->insert(safe_line);
 			}
 		}
 		return ret["valid"];
@@ -411,8 +408,7 @@ public:
 
 		if (r_options != nullptr && ret.has("options")) {
 			Array options = ret["options"];
-			for (const Variant &var : options) {
-				Dictionary op = var;
+			for (const Dictionary op : options) {
 				CodeCompletionOption option;
 				ERR_CONTINUE(!op.has("kind"));
 				option.kind = CodeCompletionKind(int(op["kind"]));
@@ -505,8 +501,8 @@ public:
 		}
 		if (p_locals != nullptr && ret.has("locals")) {
 			PackedStringArray strings = ret["locals"];
-			for (int i = 0; i < strings.size(); i++) {
-				p_locals->push_back(strings[i]);
+			for (const String &string : strings) {
+				p_locals->push_back(string);
 			}
 		}
 		if (p_values != nullptr && ret.has("values")) {
@@ -525,8 +521,8 @@ public:
 		}
 		if (p_members != nullptr && ret.has("members")) {
 			PackedStringArray strings = ret["members"];
-			for (int i = 0; i < strings.size(); i++) {
-				p_members->push_back(strings[i]);
+			for (const String &string : strings) {
+				p_members->push_back(string);
 			}
 		}
 		if (p_values != nullptr && ret.has("values")) {
@@ -552,8 +548,8 @@ public:
 		}
 		if (p_globals != nullptr && ret.has("globals")) {
 			PackedStringArray strings = ret["globals"];
-			for (int i = 0; i < strings.size(); i++) {
-				p_globals->push_back(strings[i]);
+			for (const String &string : strings) {
+				p_globals->push_back(string);
 			}
 		}
 		if (p_values != nullptr && ret.has("values")) {
@@ -571,9 +567,8 @@ public:
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_debug_get_current_stack_info, ret);
 		Vector<StackInfo> sret;
-		for (const Variant &var : ret) {
+		for (const Dictionary d : ret) {
 			StackInfo si;
-			Dictionary d = var;
 			ERR_CONTINUE(!d.has("file"));
 			ERR_CONTINUE(!d.has("func"));
 			ERR_CONTINUE(!d.has("line"));
@@ -595,8 +590,8 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override {
 		PackedStringArray ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_recognized_extensions, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_extensions->push_back(ret[i]);
+		for (const String &str : ret) {
+			p_extensions->push_back(str);
 		}
 	}
 

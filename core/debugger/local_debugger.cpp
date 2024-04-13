@@ -331,8 +331,8 @@ void LocalDebugger::print_variables(const List<String> &names, const List<Varian
 		} else {
 			print_line(E + ":");
 			value_lines = value.split("\n");
-			for (int i = 0; i < value_lines.size(); ++i) {
-				print_line(variable_prefix + value_lines[i]);
+			for (const String &value_line : value_lines) {
+				print_line(variable_prefix + value_line);
 			}
 		}
 

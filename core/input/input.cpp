@@ -1264,8 +1264,7 @@ void Input::_update_action_cache(const StringName &p_action_name, ActionState &r
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {
 	JoyEvent event;
 
-	for (int i = 0; i < mapping.bindings.size(); i++) {
-		const JoyBinding binding = mapping.bindings[i];
+	for (const JoyBinding &binding : mapping.bindings) {
 		if (binding.inputType == TYPE_BUTTON && binding.input.button == p_button) {
 			event.type = binding.outputType;
 			switch (binding.outputType) {
@@ -1299,8 +1298,7 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range) {
 	JoyEvent event;
 
-	for (int i = 0; i < mapping.bindings.size(); i++) {
-		const JoyBinding binding = mapping.bindings[i];
+	for (const JoyBinding &binding : mapping.bindings) {
 		if (binding.inputType == TYPE_AXIS && binding.input.axis.axis == p_axis) {
 			float value = p_value;
 			if (binding.input.axis.invert) {
@@ -1367,8 +1365,7 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, J
 }
 
 void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]) {
-	for (int i = 0; i < mapping.bindings.size(); i++) {
-		const JoyBinding binding = mapping.bindings[i];
+	for (const JoyBinding &binding : mapping.bindings) {
 		if (binding.inputType == TYPE_HAT && binding.input.hat.hat == p_hat) {
 			HatDir hat_direction;
 			switch (binding.input.hat.hat_mask) {
@@ -1637,19 +1634,19 @@ Input::Input() {
 	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
 	if (!env_mapping.is_empty()) {
 		Vector<String> entries = env_mapping.split("\n");
-		for (int i = 0; i < entries.size(); i++) {
-			if (entries[i].is_empty()) {
+		for (const String &entry : entries) {
+			if (entry.is_empty()) {
 				continue;
 			}
-			parse_mapping(entries[i]);
+			parse_mapping(entry);
 		}
 	}
 
 	String env_ignore_devices = OS::get_singleton()->get_environment("SDL_GAMECONTROLLER_IGNORE_DEVICES");
 	if (!env_ignore_devices.is_empty()) {
 		Vector<String> entries = env_ignore_devices.split(",");
-		for (int i = 0; i < entries.size(); i++) {
-			Vector<String> vid_pid = entries[i].split("/");
+		for (const String &entry : entries) {
+			Vector<String> vid_pid = entry.split("/");
 
 			if (vid_pid.size() < 2) {
 				continue;

@@ -1084,8 +1084,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						Vector<uint32_t> compat_hashes = ClassDB::get_method_compatibility_hashes(class_name, method_name);
 						Array compatibility;
 						if (compat_hashes.size()) {
-							for (int i = 0; i < compat_hashes.size(); i++) {
-								compatibility.push_back(compat_hashes[i]);
+							for (const uint32_t &compat_hash : compat_hashes) {
+								compatibility.push_back(compat_hash);
 							}
 						}
 
@@ -1363,8 +1363,7 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 	Array new_api = p_new_api[p_base_array];
 	HashMap<String, Dictionary> new_api_assoc;
 
-	for (const Variant &var : new_api) {
-		Dictionary elem = var;
+	for (const Dictionary elem : new_api) {
 		ERR_FAIL_COND_V_MSG(!elem.has(p_name_field), false, vformat("Validate extension JSON: Element of base_array '%s' is missing field '%s'. This is a bug.", base_array, p_name_field));
 		String name = elem[p_name_field];
 		if (p_compare_operators && elem.has("right_type")) {
@@ -1374,8 +1373,7 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 	}
 
 	Array old_api = p_old_api[p_base_array];
-	for (const Variant &var : old_api) {
-		Dictionary old_elem = var;
+	for (const Dictionary old_elem : old_api) {
 		if (!old_elem.has(p_name_field)) {
 			failed = true;
 			print_error(vformat("Validate extension JSON: JSON file: element of base array '%s' is missing the field: '%s'.", base_array, p_name_field));
@@ -1393,8 +1391,7 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 
 		Dictionary new_elem = new_api_assoc[name];
 
-		for (int j = 0; j < p_fields_to_compare.size(); j++) {
-			String field = p_fields_to_compare[j];
+		for (String field : p_fields_to_compare) {
 			bool optional = field.begins_with("*");
 			if (optional) {
 				// This is an optional field, but if exists it has to exist in both.
@@ -1486,8 +1483,8 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 				hash_found = true;
 			} else if (new_elem.has("hash_compatibility")) {
 				Array compatibility = new_elem["hash_compatibility"];
-				for (int j = 0; j < compatibility.size(); j++) {
-					new_hash = compatibility[j];
+				for (const Variant &compat : compatibility) {
+					new_hash = compat;
 					if (new_hash == old_hash) {
 						hash_found = true;
 						break;
@@ -1515,16 +1512,14 @@ static bool compare_sub_dict_array(HashSet<String> &r_removed_classes_registered
 	Array new_api = p_new_api[p_outer];
 	HashMap<String, Dictionary> new_api_assoc;
 
-	for (const Variant &var : new_api) {
-		Dictionary elem = var;
+	for (const Dictionary elem : new_api) {
 		ERR_FAIL_COND_V_MSG(!elem.has(p_outer_name), false, vformat("Validate extension JSON: Element of base_array '%s' is missing field '%s'. This is a bug.", p_outer, p_outer_name));
 		new_api_assoc.insert(elem[p_outer_name], elem);
 	}
 
 	Array old_api = p_old_api[p_outer];
 
-	for (const Variant &var : old_api) {
-		Dictionary old_elem = var;
+	for (const Dictionary old_elem : old_api) {
 		if (!old_elem.has(p_outer_name)) {
 			failed = true;
 			print_error(vformat("Validate extension JSON: JSON file: element of base array '%s' is missing the field: '%s'.", p_outer, p_outer_name));

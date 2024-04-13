@@ -257,8 +257,7 @@ void ScriptServer::init_languages() {
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
 			Array script_classes = GLOBAL_GET("_global_script_classes");
 
-			for (const Variant &script_class : script_classes) {
-				Dictionary c = script_class;
+			for (const Dictionary c : script_classes) {
 				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
 					continue;
 				}
@@ -269,8 +268,7 @@ void ScriptServer::init_languages() {
 #endif
 
 		Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
-		for (const Variant &script_class : script_classes) {
-			Dictionary c = script_class;
+		for (const Dictionary c : script_classes) {
 			if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
 				continue;
 			}
@@ -410,9 +408,9 @@ void ScriptServer::get_inheriters_list(const StringName &p_base_type, List<Strin
 		return;
 	}
 
-	const Vector<StringName> &v = inheriters_cache[p_base_type];
-	for (int i = 0; i < v.size(); i++) {
-		r_classes->push_back(v[i]);
+	const Vector<StringName> &inheriters = inheriters_cache[p_base_type];
+	for (const StringName &inheriter : inheriters) {
+		r_classes->push_back(inheriter);
 	}
 }
 
@@ -469,8 +467,7 @@ void ScriptServer::save_global_classes() {
 	Dictionary class_icons;
 
 	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
-	for (const Variant &script_class : script_classes) {
-		Dictionary d = script_class;
+	for (const Dictionary d : script_classes) {
 		if (!d.has("name") || !d.has("icon")) {
 			continue;
 		}

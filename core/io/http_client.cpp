@@ -69,17 +69,17 @@ Error HTTPClient::_request(Method p_method, const String &p_url, const Vector<St
 }
 
 String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
-	String query = "";
+	String query;
 	Array keys = p_dict.keys();
-	for (int i = 0; i < keys.size(); ++i) {
-		String encoded_key = String(keys[i]).uri_encode();
-		const Variant &value = p_dict[keys[i]];
+	for (const Variant &key : keys) {
+		String encoded_key = String(key).uri_encode();
+		const Variant &value = p_dict[key];
 		switch (value.get_type()) {
 			case Variant::ARRAY: {
 				// Repeat the key with every values
 				Array values = value;
-				for (int j = 0; j < values.size(); ++j) {
-					query += "&" + encoded_key + "=" + String(values[j]).uri_encode();
+				for (const Variant &var : values) {
+					query += "&" + encoded_key + "=" + String(var).uri_encode();
 				}
 				break;
 			}

@@ -62,9 +62,8 @@ bool ResourceFormatSaver::recognize(const Ref<Resource> &p_resource) const {
 void ResourceFormatSaver::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
 	PackedStringArray exts;
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, p_resource, exts)) {
-		const String *r = exts.ptr();
-		for (int i = 0; i < exts.size(); ++i) {
-			p_extensions->push_back(r[i]);
+		for (const String &ext : exts) {
+			p_extensions->push_back(ext);
 		}
 	}
 }
@@ -276,8 +275,8 @@ void ResourceSaver::remove_custom_savers() {
 		}
 	}
 
-	for (int i = 0; i < custom_savers.size(); ++i) {
-		remove_resource_format_saver(custom_savers[i]);
+	for (const Ref<ResourceFormatSaver> &custom_saver : custom_savers) {
+		remove_resource_format_saver(custom_saver);
 	}
 }
 

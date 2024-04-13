@@ -168,18 +168,18 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	bool add_clen = p_body_size > 0;
 	bool add_uagent = true;
 	bool add_accept = true;
-	for (int i = 0; i < p_headers.size(); i++) {
-		request += p_headers[i] + "\r\n";
-		if (add_host && p_headers[i].findn("Host:") == 0) {
+	for (const String &header : p_headers) {
+		request += header + "\r\n";
+		if (add_host && header.findn("Host:") == 0) {
 			add_host = false;
 		}
-		if (add_clen && p_headers[i].findn("Content-Length:") == 0) {
+		if (add_clen && header.findn("Content-Length:") == 0) {
 			add_clen = false;
 		}
-		if (add_uagent && p_headers[i].findn("User-Agent:") == 0) {
+		if (add_uagent && header.findn("User-Agent:") == 0) {
 			add_uagent = false;
 		}
-		if (add_accept && p_headers[i].findn("Accept:") == 0) {
+		if (add_accept && header.findn("Accept:") == 0) {
 			add_accept = false;
 		}
 	}
@@ -230,12 +230,12 @@ int HTTPClientTCP::get_response_code() const {
 }
 
 Error HTTPClientTCP::get_response_headers(List<String> *r_response) {
-	if (!response_headers.size()) {
+	if (response_headers.is_empty()) {
 		return ERR_INVALID_PARAMETER;
 	}
 
-	for (int i = 0; i < response_headers.size(); i++) {
-		r_response->push_back(response_headers[i]);
+	for (const String &response_header : response_headers) {
+		r_response->push_back(response_header);
 	}
 
 	response_headers.clear();

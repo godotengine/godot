@@ -173,8 +173,8 @@ Error DirAccess::make_dir_recursive(const String &p_dir) {
 	Vector<String> subdirs = full_dir.split("/");
 
 	String curpath = base;
-	for (int i = 0; i < subdirs.size(); i++) {
-		curpath = curpath.path_join(subdirs[i]);
+	for (const String &subdir : subdirs) {
+		curpath = curpath.path_join(subdir);
 		Error err = make_dir(curpath);
 		if (err != OK && err != ERR_ALREADY_EXISTS) {
 			ERR_FAIL_V_MSG(err, "Could not create directory: " + curpath);

@@ -685,8 +685,8 @@ Error ResourceLoaderBinary::load() {
 		return error;
 	}
 
-	for (int i = 0; i < external_resources.size(); i++) {
-		String path = external_resources[i].path;
+	for (ExtResource &external_resource : external_resources) {
+		String path = external_resource.path;
 
 		if (remaps.has(path)) {
 			path = remaps[path];
@@ -694,14 +694,14 @@ Error ResourceLoaderBinary::load() {
 
 		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path = ProjectSettings::get_singleton()->localize_path(path.get_base_dir().path_join(external_resources[i].path));
+			path = ProjectSettings::get_singleton()->localize_path(path.get_base_dir().path_join(external_resource.path));
 		}
 
-		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
-		external_resources.write[i].load_token = ResourceLoader::_load_start(path, external_resources[i].type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, cache_mode_for_external);
-		if (!external_resources[i].load_token.is_valid()) {
+		external_resource.path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
+		external_resource.load_token = ResourceLoader::_load_start(path, external_resource.type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, cache_mode_for_external);
+		if (!external_resource.load_token.is_valid()) {
 			if (!ResourceLoader::get_abort_on_missing_resources()) {
-				ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
+				ResourceLoader::notify_dependency_error(local_path, path, external_resource.type);
 			} else {
 				error = ERR_FILE_MISSING_DEPENDENCIES;
 				ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
@@ -922,8 +922,8 @@ void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_f, HashSet<StringN
 		return;
 	}
 
-	for (int i = 0; i < internal_resources.size(); i++) {
-		p_f->seek(internal_resources[i].offset);
+	for (const IntResource &internal_resource : internal_resources) {
+		p_f->seek(internal_resource.offset);
 		String t = get_unicode_string();
 		ERR_FAIL_COND(p_f->get_error() != OK);
 		if (t != String()) {
@@ -938,19 +938,19 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 		return;
 	}
 
-	for (int i = 0; i < external_resources.size(); i++) {
+	for (const ExtResource &external_resource : external_resources) {
 		String dep;
 		String fallback_path;
 
-		if (external_resources[i].uid != ResourceUID::INVALID_ID) {
-			dep = ResourceUID::get_singleton()->id_to_text(external_resources[i].uid);
-			fallback_path = external_resources[i].path; // Used by Dependency Editor, in case uid path fails.
+		if (external_resource.uid != ResourceUID::INVALID_ID) {
+			dep = ResourceUID::get_singleton()->id_to_text(external_resource.uid);
+			fallback_path = external_resource.path; // Used by Dependency Editor, in case uid path fails.
 		} else {
-			dep = external_resources[i].path;
+			dep = external_resource.path;
 		}
 
-		if (p_add_types && !external_resources[i].type.is_empty()) {
-			dep += "::" + external_resources[i].type;
+		if (p_add_types && !external_resource.type.is_empty()) {
+			dep += "::" + external_resource.type;
 		}
 		if (!fallback_path.is_empty()) {
 			if (!p_add_types) {
@@ -2249,8 +2249,8 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	}
 
 	f->store_32(strings.size()); //string table size
-	for (int i = 0; i < strings.size(); i++) {
-		save_unicode_string(f, strings[i]);
+	for (const StringName &string : strings) {
+		save_unicode_string(f, string);
 	}
 
 	// save external resource table
@@ -2262,12 +2262,12 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		save_order.write[E.value] = E.key;
 	}
 
-	for (int i = 0; i < save_order.size(); i++) {
-		save_unicode_string(f, save_order[i]->get_save_class());
-		String res_path = save_order[i]->get_path();
+	for (const Ref<Resource> &res : save_order) {
+		save_unicode_string(f, res->get_save_class());
+		String res_path = res->get_path();
 		res_path = relative_paths ? local_path.path_to_file(res_path) : res_path;
 		save_unicode_string(f, res_path);
-		ResourceUID::ID ruid = ResourceSaver::get_resource_id_for_path(save_order[i]->get_path(), false);
+		ResourceUID::ID ruid = ResourceSaver::get_resource_id_for_path(res->get_path(), false);
 		f->store_64(ruid);
 	}
 	// save internal resource table
