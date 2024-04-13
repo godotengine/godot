@@ -1308,14 +1308,14 @@ bool OpenXRInterface::is_overlay_enabled() {
 
 int OpenXRInterface::get_overlay_session_layers_placement() const {
 	if (overlay_wrapper == nullptr) {
-		WARN_PRINT_ED("The overlay extention is not enabled or not supported. Returning -1.");
+		WARN_PRINT_ED("The overlay extension is not enabled or not supported. Returning -1.");
 		return -1;
 	}
 	return overlay_wrapper->get_session_layers_placement();
 }
 
 void OpenXRInterface::set_overlay_session_layers_placement(int p_overlay_session_layers_placement) {
-	ERR_FAIL_NULL_MSG(overlay_wrapper, "The overlay extention is not enabled or not supported.");
+	ERR_FAIL_NULL_MSG(overlay_wrapper, "The overlay extension is not enabled or not supported.");
 	overlay_wrapper->set_session_layers_placement(p_overlay_session_layers_placement);
 }
 
