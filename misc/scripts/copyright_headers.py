@@ -73,7 +73,7 @@ for f in sys.argv[1:]:
         line = fileread.readline()
         header_done = False
 
-        while line.strip() == "":  # Skip empty lines at the top
+        while line.strip() == "" and line != "":  # Skip empty lines at the top
             line = fileread.readline()
 
         if line.find("/**********") == -1:  # Godot header starts this way
