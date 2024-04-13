@@ -97,4 +97,24 @@ public:
 	~UnityLinkServer();
 };
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_plugin.h"
+
+class UnityLinkServerEditorPlugin : public EditorPlugin {
+	GDCLASS(UnityLinkServerEditorPlugin, EditorPlugin);
+
+	UnityLinkServer server;
+
+	bool started = false;
+
+private:
+	void _notification(int p_what);
+
+public:
+	UnityLinkServerEditorPlugin();
+	void start();
+	void stop();
+};
+#endif
+
 #endif // EDITOR_FILE_SERVER_H

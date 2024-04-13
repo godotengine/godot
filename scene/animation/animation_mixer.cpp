@@ -660,8 +660,27 @@ bool AnimationMixer::_update_caches() {
 	if (has_reset_anim) {
 		reset_anim = get_animation(SceneStringNames::get_singleton()->RESET);
 	}
-	for (const StringName &E : sname) {
+	HashMap<Ref<Animation>,Dictionary> anima;
+	
+	for (const StringName &E : sname) 
+	{
 		Ref<Animation> anim = get_animation(E);
+		if(anim.is_valid())
+		{
+			anima.insert(anim,Dictionary());
+		}
+	}
+	for(int i = 0; i < animation_instances.size(); ++i)
+	{
+		Ref<Animation> anim = animation_instances[i].animation_data.animation;		
+		if(anim.is_valid())
+		{
+			anima.insert(anim,animation_instances[i].animation_data.bone_map);
+		}
+	}
+
+	for (auto &KV : anima) {
+		Ref<Animation> anim = KV.key;
 		for (int i = 0; i < anim->get_track_count(); i++) {
 			NodePath path = anim->track_get_path(i);
 			Animation::TypeHash thash = anim->track_get_type_hash(i);
@@ -688,7 +707,7 @@ bool AnimationMixer::_update_caches() {
 				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
 				if (!child) {
 					if (check_path) {
-						WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'. This warning can be disabled in Project Settings.");
+						WARN_PRINT_ED(mixer_name + ": '" + String(anim->get_name()) + "', couldn't resolve track:  '" + String(path) + "'. This warning can be disabled in Project Settings.");
 					}
 					continue;
 				}
@@ -698,7 +717,7 @@ bool AnimationMixer::_update_caches() {
 					case Animation::TYPE_VALUE: {
 						// If a value track without a key is cached first, the initial value cannot be determined.
 						// It is a corner case, but which may cause problems with blending.
-						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, mixer_name + ": '" + String(E) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
+						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, mixer_name + ": '" + String(anim->get_name()) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
 
 						TrackCacheValue *track_value = memnew(TrackCacheValue);
 
@@ -741,7 +760,7 @@ bool AnimationMixer::_update_caches() {
 						Node3D *node_3d = Object::cast_to<Node3D>(child);
 
 						if (!node_3d) {
-							ERR_PRINT(mixer_name + ": '" + String(E) + "', transform track does not point to Node3D:  '" + String(path) + "'.");
+							ERR_PRINT(mixer_name + ": '" + String(anim->get_name()) + "', transform track does not point to Node3D:  '" + String(path) + "'.");
 							continue;
 						}
 
@@ -754,7 +773,12 @@ bool AnimationMixer::_update_caches() {
 						Skeleton3D *sk = Object::cast_to<Skeleton3D>(node_3d);
 						if (sk && path.get_subname_count() == 1) {
 							track_xform->skeleton_id = sk->get_instance_id();
-							int bone_idx = sk->find_bone(path.get_subname(0));
+							// 获取骨骼映射
+							StringName bone_name = path.get_subname(0);
+							if(KV.value.has(bone_name)) {
+								bone_name = KV.value[bone_name];
+							}
+							int bone_idx = sk->find_bone(bone_name);
 							if (bone_idx != -1) {
 								has_rest = true;
 								track_xform->bone_idx = bone_idx;
@@ -807,20 +831,20 @@ bool AnimationMixer::_update_caches() {
 					case Animation::TYPE_BLEND_SHAPE: {
 #ifndef _3D_DISABLED
 						if (path.get_subname_count() != 1) {
-							ERR_PRINT(mixer_name + ": '" + String(E) + "', blend shape track does not contain a blend shape subname:  '" + String(path) + "'.");
+							ERR_PRINT(mixer_name + ": '" + String(anim->get_name()) + "', blend shape track does not contain a blend shape subname:  '" + String(path) + "'.");
 							continue;
 						}
 						MeshInstance3D *mesh_3d = Object::cast_to<MeshInstance3D>(child);
 
 						if (!mesh_3d) {
-							ERR_PRINT(mixer_name + ": '" + String(E) + "', blend shape track does not point to MeshInstance3D:  '" + String(path) + "'.");
+							ERR_PRINT(mixer_name + ": '" + String(anim->get_name()) + "', blend shape track does not point to MeshInstance3D:  '" + String(path) + "'.");
 							continue;
 						}
 
 						StringName blend_shape_name = path.get_subname(0);
 						int blend_shape_idx = mesh_3d->find_blend_shape_by_name(blend_shape_name);
 						if (blend_shape_idx == -1) {
-							ERR_PRINT(mixer_name + ": '" + String(E) + "', blend shape track points to a non-existing name:  '" + String(blend_shape_name) + "'.");
+							ERR_PRINT(mixer_name + ": '" + String(anim->get_name()) + "', blend shape track points to a non-existing name:  '" + String(blend_shape_name) + "'.");
 							continue;
 						}
 
@@ -901,12 +925,12 @@ bool AnimationMixer::_update_caches() {
 				bool was_using_angle = track_value->is_using_angle;
 				if (track_src_type == Animation::TYPE_VALUE) {
 					if (track_value->init_value.is_string() && anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE) {
-						WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
+						WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(anim->get_name()) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
 					}
 					track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 				}
 				if (check_angle_interpolation && (was_using_angle != track_value->is_using_angle)) {
-					WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' has different interpolation types for rotation between some animations which may be blended together. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
+					WARN_PRINT_ED(mixer_name + ": '" + String(anim->get_name()) + "', Value Track: '" + String(path) + "' has different interpolation types for rotation between some animations which may be blended together. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
 				}
 			}
 
@@ -943,267 +967,6 @@ bool AnimationMixer::_update_caches() {
 
 	return true;
 }
-
-void AnimationMixer::auto_cache_treak(Ref<Animation> anim,int i)	
-{
-	NodePath path = anim->track_get_path(i);
-	Animation::TypeHash thash = anim->track_get_type_hash(i);
-	Animation::TrackType track_src_type = anim->track_get_type(i);
-	Animation::TrackType track_cache_type = Animation::get_cache_type(track_src_type);
-
-	TrackCache *track = nullptr;
-	if (track_cache.has(thash)) {
-		return;
-	}
-
-	Node *parent = get_node_or_null(root_node);
-	if (!parent) {
-		cache_valid = false;
-		return ;
-	}
-	Ref<Animation> reset_anim;
-	bool has_reset_anim = has_animation(SceneStringNames::get_singleton()->RESET);
-	if (has_reset_anim) {
-		reset_anim = get_animation(SceneStringNames::get_singleton()->RESET);
-	}
-	// If not valid, delete track.
-	if (track && (track->type != track_cache_type || ObjectDB::get_instance(track->object_id) == nullptr)) {
-		playing_caches.erase(track);
-		memdelete(track);
-		track_cache.erase(thash);
-		track = nullptr;
-	}
-
-	if (!track) {
-		Ref<Resource> resource;
-		Vector<StringName> leftover_path;
-
-		Node *child = parent->get_node_and_resource(path, resource, leftover_path);
-		if (!child) {
-			// if (check_path) {
-			// 	WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'. This warning can be disabled in Project Settings.");
-			// }
-			return;
-		}
-
-		switch (track_src_type) {
-			case Animation::TYPE_BEZIER:
-			case Animation::TYPE_VALUE: {
-				// If a value track without a key is cached first, the initial value cannot be determined.
-				// It is a corner case, but which may cause problems with blending.
-				//ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, anim->get_name() + ": '" + String(E) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
-				if(anim->track_get_key_count(i) == 0)
-				{
-					return;
-				}
-				TrackCacheValue *track_value = memnew(TrackCacheValue);
-
-				if (resource.is_valid()) {
-					track_value->object_id = resource->get_instance_id();
-				} else {
-					track_value->object_id = child->get_instance_id();
-				}
-
-				track_value->is_using_angle = anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
-
-				track_value->subpath = leftover_path;
-
-				track = track_value;
-
-				track_value->init_value = anim->track_get_key_value(i, 0);
-				track_value->init_value.zero();
-
-				// Can't interpolate them, need to convert.
-				track_value->is_variant_interpolatable = Animation::is_variant_interpolatable(track_value->init_value);
-
-				// If there is a Reset Animation, it takes precedence by overwriting.
-				if (has_reset_anim) {
-					int rt = reset_anim->find_track(path, track_src_type);
-					if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
-						track_value->init_value = track_src_type == Animation::TYPE_VALUE ? reset_anim->track_get_key_value(rt, 0) : (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
-					}
-				}
-
-			} break;
-			case Animation::TYPE_POSITION_3D:
-			case Animation::TYPE_ROTATION_3D:
-			case Animation::TYPE_SCALE_3D: {
-#ifndef _3D_DISABLED
-				Node3D *node_3d = Object::cast_to<Node3D>(child);
-
-				if (!node_3d) {
-					//ERR_PRINT(mixer_name + ": '" + String(E) + "', transform track does not point to Node3D:  '" + String(path) + "'.");
-					return;
-				}
-
-				TrackCacheTransform *track_xform = memnew(TrackCacheTransform);
-				track_xform->type = Animation::TYPE_POSITION_3D;
-
-				track_xform->bone_idx = -1;
-
-				bool has_rest = false;
-				Skeleton3D *sk = Object::cast_to<Skeleton3D>(node_3d);
-				if (sk && path.get_subname_count() == 1) {
-					track_xform->skeleton_id = sk->get_instance_id();
-					int bone_idx = sk->find_bone(path.get_subname(0));
-					if (bone_idx != -1) {
-						has_rest = true;
-						track_xform->bone_idx = bone_idx;
-						Transform3D rest = sk->get_bone_rest(bone_idx);
-						track_xform->init_loc = rest.origin;
-						track_xform->init_rot = rest.basis.get_rotation_quaternion();
-						track_xform->init_scale = rest.basis.get_scale();
-					}
-				}
-
-				track_xform->object_id = node_3d->get_instance_id();
-
-				track = track_xform;
-
-				switch (track_src_type) {
-					case Animation::TYPE_POSITION_3D: {
-						track_xform->loc_used = true;
-					} break;
-					case Animation::TYPE_ROTATION_3D: {
-						track_xform->rot_used = true;
-					} break;
-					case Animation::TYPE_SCALE_3D: {
-						track_xform->scale_used = true;
-					} break;
-					default: {
-					}
-				}
-
-				// For non Skeleton3D bone animation.
-				if (has_reset_anim && !has_rest) {
-					int rt = reset_anim->find_track(path, track_src_type);
-					if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
-						switch (track_src_type) {
-							case Animation::TYPE_POSITION_3D: {
-								track_xform->init_loc = reset_anim->track_get_key_value(rt, 0);
-							} break;
-							case Animation::TYPE_ROTATION_3D: {
-								track_xform->init_rot = reset_anim->track_get_key_value(rt, 0);
-							} break;
-							case Animation::TYPE_SCALE_3D: {
-								track_xform->init_scale = reset_anim->track_get_key_value(rt, 0);
-							} break;
-							default: {
-							}
-						}
-					}
-				}
-#endif // _3D_DISABLED
-			} break;
-			case Animation::TYPE_BLEND_SHAPE: {
-#ifndef _3D_DISABLED
-				if (path.get_subname_count() != 1) {
-					// ERR_PRINT(mixer_name + ": '" + String(E) + "', blend shape track does not contain a blend shape subname:  '" + String(path) + "'.");
-					return;
-				}
-				MeshInstance3D *mesh_3d = Object::cast_to<MeshInstance3D>(child);
-
-				if (!mesh_3d) {
-					// ERR_PRINT(mixer_name + ": '" + String(E) + "', blend shape track does not point to MeshInstance3D:  '" + String(path) + "'.");
-					return;
-				}
-
-				StringName blend_shape_name = path.get_subname(0);
-				int blend_shape_idx = mesh_3d->find_blend_shape_by_name(blend_shape_name);
-				if (blend_shape_idx == -1) {
-					// ERR_PRINT(mixer_name + ": '" + String(E) + "', blend shape track points to a non-existing name:  '" + String(blend_shape_name) + "'.");
-					return;
-				}
-
-				TrackCacheBlendShape *track_bshape = memnew(TrackCacheBlendShape);
-
-				track_bshape->shape_index = blend_shape_idx;
-				track_bshape->object_id = mesh_3d->get_instance_id();
-				track = track_bshape;
-
-				if (has_reset_anim) {
-					int rt = reset_anim->find_track(path, track_src_type);
-					if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
-						track_bshape->init_value = reset_anim->track_get_key_value(rt, 0);
-					}
-				}
-#endif
-			} break;
-			case Animation::TYPE_METHOD: {
-				TrackCacheMethod *track_method = memnew(TrackCacheMethod);
-
-				if (resource.is_valid()) {
-					track_method->object_id = resource->get_instance_id();
-				} else {
-					track_method->object_id = child->get_instance_id();
-				}
-
-				track = track_method;
-
-			} break;
-			case Animation::TYPE_AUDIO: {
-				TrackCacheAudio *track_audio = memnew(TrackCacheAudio);
-
-				track_audio->object_id = child->get_instance_id();
-				track_audio->audio_stream.instantiate();
-				track_audio->audio_stream->set_polyphony(audio_max_polyphony);
-
-				track = track_audio;
-
-			} break;
-			case Animation::TYPE_ANIMATION: {
-				TrackCacheAnimation *track_animation = memnew(TrackCacheAnimation);
-
-				track_animation->object_id = child->get_instance_id();
-
-				track = track_animation;
-
-			} break;
-			default: {
-				ERR_PRINT("Animation corrupted (invalid track type).");
-				return;
-			}
-		}
-		track->path = path;
-		track_cache[thash] = track;
-	} else if (track_cache_type == Animation::TYPE_POSITION_3D) {
-		TrackCacheTransform *track_xform = static_cast<TrackCacheTransform *>(track);
-		if (track->setup_pass != setup_pass) {
-			track_xform->loc_used = false;
-			track_xform->rot_used = false;
-			track_xform->scale_used = false;
-		}
-		switch (track_src_type) {
-			case Animation::TYPE_POSITION_3D: {
-				track_xform->loc_used = true;
-			} break;
-			case Animation::TYPE_ROTATION_3D: {
-				track_xform->rot_used = true;
-			} break;
-			case Animation::TYPE_SCALE_3D: {
-				track_xform->scale_used = true;
-			} break;
-			default: {
-			}
-		}
-	} else if (track_cache_type == Animation::TYPE_VALUE) {
-		TrackCacheValue *track_value = static_cast<TrackCacheValue *>(track);
-		// If it has at least one angle interpolation, it also uses angle interpolation for blending.
-		bool was_using_angle = track_value->is_using_angle;
-		if (track_src_type == Animation::TYPE_VALUE) {
-			// if (track_value->init_value.is_string() && anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE) {
-			// 	WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
-			// }
-			track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
-		}
-		// if (check_angle_interpolation && (was_using_angle != track_value->is_using_angle)) {
-		// 	WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' has different interpolation types for rotation between some animations which may be blended together. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
-		// }
-	}
-
-	track->setup_pass = setup_pass;
-}
-
 
 
 /* -------------------------------------------- */
@@ -1269,7 +1032,7 @@ void AnimationMixer::_blend_init() {
 	root_motion_rotation_accumulator = Quaternion(0, 0, 0, 1);
 	root_motion_scale_accumulator = Vector3(1, 1, 1);
 
-	if (!cache_valid) {
+	if (!cache_valid || animation_instances.size() > 0) {
 		if (!_update_caches()) {
 			return;
 		}

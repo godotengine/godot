@@ -132,14 +132,41 @@ public:
 class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
 {
     GDCLASS(CharacterAnimatorNode1D, CharacterAnimatorNodeBase);
+    
+    static void bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_position_count", "count"), &CharacterAnimatorNode1D::set_position_count);
+        ClassDB::bind_method(D_METHOD("get_position_count"), &CharacterAnimatorNode1D::get_position_count);
+        ClassDB::bind_method(D_METHOD("set_position_array", "array"), &CharacterAnimatorNode1D::set_position_array);
+        ClassDB::bind_method(D_METHOD("get_position_array"), &CharacterAnimatorNode1D::get_position_array);
+
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "position_count"), "set_position_count", "get_position_count");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array"), "set_position_array", "get_position_array");
+    }
 public:
     virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard) override;
+
+    void set_position_count(uint32_t p_count) { blend_data.position_count = p_count; }
+    uint32_t get_position_count() { return blend_data.position_count; }
+
+    void set_position_array(Vector<float> p_array) { blend_data.position_array = p_array; }
+    Vector<float> get_position_array() { return blend_data.position_array; }
 public:
     Blend1dDataConstant   blend_data;
 };
 class CharacterAnimatorNode2D : public CharacterAnimatorNodeBase
 {
     GDCLASS(CharacterAnimatorNode2D, CharacterAnimatorNodeBase);
+    static void bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_position_count", "count"), &CharacterAnimatorNode1D::set_position_count);
+        ClassDB::bind_method(D_METHOD("get_position_count"), &CharacterAnimatorNode1D::get_position_count);
+        ClassDB::bind_method(D_METHOD("set_position_array", "array"), &CharacterAnimatorNode1D::set_position_array);
+        ClassDB::bind_method(D_METHOD("get_position_array"), &CharacterAnimatorNode1D::get_position_array);
+
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "position_count"), "set_position_count", "get_position_count");
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array"), "set_position_array", "get_position_array");
+    }
 public:
     enum BlendType
     {
@@ -152,7 +179,11 @@ public:
     void set_blend_type(BlendType p_blend_type) { blend_type = (BlendType)p_blend_type; }
     BlendType get_blend_type() { return blend_type; }
 
-    
+    void set_position_count(uint32_t p_count) { blend_data.position_count = p_count; }
+    uint32_t get_position_count() { return blend_data.position_count; }
+
+    void set_position_array(Vector<Vector2> p_array) { blend_data.position_array = p_array; }
+    Vector<Vector2> get_position_array() { return blend_data.position_array; }
 
 
 public:

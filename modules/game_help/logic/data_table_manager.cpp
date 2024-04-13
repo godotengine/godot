@@ -660,7 +660,8 @@ Ref<JSON> DataTableManager::parse_yaml_file(const String& file_path)
     return Ref<JSON>();
 }
 Ref<JSON> DataTableManager::parse_yaml(const String& text)
-{ // NOLINT(performance-unnecessary-value-param)
+{
+	// NOLINT(performance-unnecessary-value-param)
     auto parser = c4::yml::Parser();
     Ref<JSON> parseResult = memnew(JSON);
     std::string utf8 = text.utf8().get_data();

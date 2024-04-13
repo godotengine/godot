@@ -77,6 +77,7 @@ public:
 	struct AnimationData {
 		String name;
 		Ref<Animation> animation;
+		Dictionary bone_map;
 		StringName animation_library;
 		uint64_t last_update = 0;
 	};
@@ -320,7 +321,6 @@ protected:
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
 	bool _update_caches();
-	void auto_cache_treak(Ref<Animation> anim,int i);
 
 	/* ---- Blending processor ---- */
 	LocalVector<AnimationInstance> animation_instances;

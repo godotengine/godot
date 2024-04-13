@@ -44,6 +44,8 @@
 #include "modules/game_help/logic/path_manager.h"
 #include "modules/game_help/csv/CSV_EditorImportPlugin.h"
 
+#include "modules/game_help/unity/unity_link_server.h"
+
 
 
 
@@ -84,6 +86,8 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 		Ref<CSV_EditorImportPlugin> mp3_import;
 		mp3_import.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(mp3_import);
+		
+		EditorPlugins::add_by_type<UnityLinkServerEditorPlugin>();
 #endif
 	data_table_manager = memnew(DataTableManager);
 	path_manager = memnew(PathManager);
@@ -154,6 +158,8 @@ void uninitialize_game_help_module(ModuleInitializationLevel p_level) {
 	Engine::get_singleton()->remove_singleton("AnimationHelp");
 	Engine::get_singleton()->remove_singleton("DataTableManager");
 	Engine::get_singleton()->remove_singleton("PathManager");
+
+
 	memdelete(animation_help);
 	animation_help = nullptr;
 
