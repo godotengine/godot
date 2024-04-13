@@ -47,7 +47,7 @@ class XRFaceModifier3D : public Node3D {
 	GDCLASS(XRFaceModifier3D, Node3D);
 
 private:
-	StringName tracker_name = "/user/head";
+	StringName tracker_name = "/user/face_tracker";
 	NodePath target;
 
 	// Map from XRFaceTracker blend shape index to mesh blend shape index.

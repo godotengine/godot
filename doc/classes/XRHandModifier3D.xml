@@ -4,8 +4,8 @@
 		A node for driving hand meshes from [XRHandTracker] data.
 	</brief_description>
 	<description>
-		This node uses hand tracking data from a [XRHandTracker] to animate the skeleton of a hand mesh.
-		This node positions itself at the [constant XRHandTracker.HAND_JOINT_PALM] position and scales itself to [member XRServer.world_scale]. Adding the hand model as a child of this node will result in the model being positioned and scaled correctly for XR experiences.
+		This node uses hand tracking data from an [XRHandTracker] to pose the skeleton of a hand mesh.
+		Positioning of hands is performed by creating an [XRNode3D] ancestor of the hand mesh driven by the same [XRHandTracker].
 		The hand tracking position-data is scaled by [member Skeleton3D.motion_scale] when applied to the skeleton, which can be used to adjust the tracked hand to match the scale of the hand model.
 	</description>
 	<tutorials>
@@ -15,7 +15,7 @@
 		<member name="bone_update" type="int" setter="set_bone_update" getter="get_bone_update" enum="XRHandModifier3D.BoneUpdate" default="0">
 			Specifies the type of updates to perform on the bones.
 		</member>
-		<member name="hand_tracker" type="StringName" setter="set_hand_tracker" getter="get_hand_tracker" default="&amp;&quot;/user/left&quot;">
+		<member name="hand_tracker" type="StringName" setter="set_hand_tracker" getter="get_hand_tracker" default="&amp;&quot;/user/hand_tracker/left&quot;">
 			The name of the [XRHandTracker] registered with [XRServer] to obtain the hand tracking data from.
 		</member>
 	</members>

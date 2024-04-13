@@ -31,10 +31,10 @@
 #ifndef XR_HAND_TRACKER_H
 #define XR_HAND_TRACKER_H
 
-#include "core/object/ref_counted.h"
+#include "servers/xr/xr_positional_tracker.h"
 
-class XRHandTracker : public RefCounted {
-	GDCLASS(XRHandTracker, RefCounted);
+class XRHandTracker : public XRPositionalTracker {
+	GDCLASS(XRHandTracker, XRPositionalTracker);
 	_THREAD_SAFE_CLASS_
 
 public:
@@ -90,6 +90,9 @@ public:
 		HAND_JOINT_FLAG_ANGULAR_VELOCITY_VALID = 32,
 	};
 
+	void set_tracker_type(XRServer::TrackerType p_type) override;
+	void set_tracker_hand(const XRPositionalTracker::TrackerHand p_hand) override;
+
 	void set_hand(Hand p_hand);
 	Hand get_hand() const;
 
@@ -113,6 +116,8 @@ public:
 
 	void set_hand_joint_angular_velocity(HandJoint p_joint, const Vector3 &p_velocity);
 	Vector3 get_hand_joint_angular_velocity(HandJoint p_joint) const;
+
+	XRHandTracker();
 
 protected:
 	static void _bind_methods();

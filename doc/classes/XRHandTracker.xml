@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRHandTracker" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRHandTracker" inherits="XRPositionalTracker" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A tracked hand in XR.
 	</brief_description>
@@ -11,6 +11,12 @@
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_hand" qualifiers="const">
+			<return type="int" enum="XRHandTracker.Hand" />
+			<description>
+				Returns the type of hand.
+			</description>
+		</method>
 		<method name="get_hand_joint_angular_velocity" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
@@ -44,6 +50,13 @@
 			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
 			<description>
 				Returns the transform for the given hand joint.
+			</description>
+		</method>
+		<method name="set_hand">
+			<return type="void" />
+			<param index="0" name="hand" type="int" enum="XRHandTracker.Hand" />
+			<description>
+				Sets the type of hand.
 			</description>
 		</method>
 		<method name="set_hand_joint_angular_velocity">
@@ -88,15 +101,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="hand" type="int" setter="set_hand" getter="get_hand" enum="XRHandTracker.Hand" default="0">
-			The type of hand.
-		</member>
 		<member name="hand_tracking_source" type="int" setter="set_hand_tracking_source" getter="get_hand_tracking_source" enum="XRHandTracker.HandTrackingSource" default="0">
 			The source of the hand tracking data.
 		</member>
 		<member name="has_tracking_data" type="bool" setter="set_has_tracking_data" getter="get_has_tracking_data" default="false">
 			If [code]true[/code], the hand tracking data is valid.
 		</member>
+		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" overrides="XRTracker" enum="XRServer.TrackerType" default="16" />
 	</members>
 	<constants>
 		<constant name="HAND_LEFT" value="0" enum="Hand">

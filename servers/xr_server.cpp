@@ -35,6 +35,7 @@
 #include "xr/xr_hand_tracker.h"
 #include "xr/xr_interface.h"
 #include "xr/xr_positional_tracker.h"
+#include "xr_server.compat.inc"
 
 XRServer::XRMode XRServer::xr_mode = XRMODE_DEFAULT;
 
@@ -77,21 +78,6 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_trackers", "tracker_types"), &XRServer::get_trackers);
 	ClassDB::bind_method(D_METHOD("get_tracker", "tracker_name"), &XRServer::get_tracker);
 
-	ClassDB::bind_method(D_METHOD("add_hand_tracker", "tracker_name", "hand_tracker"), &XRServer::add_hand_tracker);
-	ClassDB::bind_method(D_METHOD("remove_hand_tracker", "tracker_name"), &XRServer::remove_hand_tracker);
-	ClassDB::bind_method(D_METHOD("get_hand_trackers"), &XRServer::get_hand_trackers);
-	ClassDB::bind_method(D_METHOD("get_hand_tracker", "tracker_name"), &XRServer::get_hand_tracker);
-
-	ClassDB::bind_method(D_METHOD("add_face_tracker", "tracker_name", "face_tracker"), &XRServer::add_face_tracker);
-	ClassDB::bind_method(D_METHOD("remove_face_tracker", "tracker_name"), &XRServer::remove_face_tracker);
-	ClassDB::bind_method(D_METHOD("get_face_trackers"), &XRServer::get_face_trackers);
-	ClassDB::bind_method(D_METHOD("get_face_tracker", "tracker_name"), &XRServer::get_face_tracker);
-
-	ClassDB::bind_method(D_METHOD("add_body_tracker", "tracker_name", "body_tracker"), &XRServer::add_body_tracker);
-	ClassDB::bind_method(D_METHOD("remove_body_tracker", "tracker_name"), &XRServer::remove_body_tracker);
-	ClassDB::bind_method(D_METHOD("get_body_trackers"), &XRServer::get_body_trackers);
-	ClassDB::bind_method(D_METHOD("get_body_tracker", "tracker_name"), &XRServer::get_body_tracker);
-
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &XRServer::get_primary_interface);
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &XRServer::set_primary_interface);
 
@@ -101,6 +87,9 @@ void XRServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_CONTROLLER);
 	BIND_ENUM_CONSTANT(TRACKER_BASESTATION);
 	BIND_ENUM_CONSTANT(TRACKER_ANCHOR);
+	BIND_ENUM_CONSTANT(TRACKER_HAND);
+	BIND_ENUM_CONSTANT(TRACKER_BODY);
+	BIND_ENUM_CONSTANT(TRACKER_FACE);
 	BIND_ENUM_CONSTANT(TRACKER_ANY_KNOWN);
 	BIND_ENUM_CONSTANT(TRACKER_UNKNOWN);
 	BIND_ENUM_CONSTANT(TRACKER_ANY);
@@ -115,18 +104,6 @@ void XRServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
-
-	ADD_SIGNAL(MethodInfo("hand_tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "hand_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRHandTracker")));
-	ADD_SIGNAL(MethodInfo("hand_tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "hand_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRHandTracker")));
-	ADD_SIGNAL(MethodInfo("hand_tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name")));
-
-	ADD_SIGNAL(MethodInfo("face_tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "face_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRFaceTracker")));
-	ADD_SIGNAL(MethodInfo("face_tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "face_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRFaceTracker")));
-	ADD_SIGNAL(MethodInfo("face_tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name")));
-
-	ADD_SIGNAL(MethodInfo("body_tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "body_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRBodyTracker")));
-	ADD_SIGNAL(MethodInfo("body_tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "body_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRBodyTracker")));
-	ADD_SIGNAL(MethodInfo("body_tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name")));
 };
 
 double XRServer::get_world_scale() const {
@@ -281,7 +258,7 @@ void XRServer::set_primary_interface(const Ref<XRInterface> &p_primary_interface
 	}
 };
 
-void XRServer::add_tracker(Ref<XRPositionalTracker> p_tracker) {
+void XRServer::add_tracker(const Ref<XRTracker> &p_tracker) {
 	ERR_FAIL_COND(p_tracker.is_null());
 
 	StringName tracker_name = p_tracker->get_tracker_name();
@@ -297,7 +274,7 @@ void XRServer::add_tracker(Ref<XRPositionalTracker> p_tracker) {
 	}
 };
 
-void XRServer::remove_tracker(Ref<XRPositionalTracker> p_tracker) {
+void XRServer::remove_tracker(const Ref<XRTracker> &p_tracker) {
 	ERR_FAIL_COND(p_tracker.is_null());
 
 	StringName tracker_name = p_tracker->get_tracker_name();
@@ -323,12 +300,12 @@ Dictionary XRServer::get_trackers(int p_tracker_types) {
 	return res;
 }
 
-Ref<XRPositionalTracker> XRServer::get_tracker(const StringName &p_name) const {
+Ref<XRTracker> XRServer::get_tracker(const StringName &p_name) const {
 	if (trackers.has(p_name)) {
 		return trackers[p_name];
 	} else {
 		// tracker hasn't been registered yet, which is fine, no need to spam the error log...
-		return Ref<XRPositionalTracker>();
+		return Ref<XRTracker>();
 	}
 };
 
@@ -382,120 +359,6 @@ PackedStringArray XRServer::get_suggested_pose_names(const StringName &p_tracker
 	return arr;
 }
 
-void XRServer::add_hand_tracker(const StringName &p_tracker_name, Ref<XRHandTracker> p_hand_tracker) {
-	ERR_FAIL_COND(p_hand_tracker.is_null());
-
-	if (!hand_trackers.has(p_tracker_name)) {
-		// We don't have a tracker with this name, we're going to add it.
-		hand_trackers[p_tracker_name] = p_hand_tracker;
-		emit_signal(SNAME("hand_tracker_added"), p_tracker_name, p_hand_tracker);
-	} else if (hand_trackers[p_tracker_name] != p_hand_tracker) {
-		// We already have a tracker with this name, we're going to replace it.
-		hand_trackers[p_tracker_name] = p_hand_tracker;
-		emit_signal(SNAME("hand_tracker_updated"), p_tracker_name, p_hand_tracker);
-	}
-}
-
-void XRServer::remove_hand_tracker(const StringName &p_tracker_name) {
-	// Skip if no hand tracker is found.
-	if (!hand_trackers.has(p_tracker_name)) {
-		return;
-	}
-
-	// Send the removed signal, then remove the hand tracker.
-	emit_signal(SNAME("hand_tracker_removed"), p_tracker_name);
-	hand_trackers.erase(p_tracker_name);
-}
-
-Dictionary XRServer::get_hand_trackers() const {
-	return hand_trackers;
-}
-
-Ref<XRHandTracker> XRServer::get_hand_tracker(const StringName &p_tracker_name) const {
-	// Skip if no tracker is found.
-	if (!hand_trackers.has(p_tracker_name)) {
-		return Ref<XRHandTracker>();
-	}
-
-	return hand_trackers[p_tracker_name];
-}
-
-void XRServer::add_face_tracker(const StringName &p_tracker_name, Ref<XRFaceTracker> p_face_tracker) {
-	ERR_FAIL_COND(p_face_tracker.is_null());
-
-	if (!face_trackers.has(p_tracker_name)) {
-		// We don't have a tracker with this name, we're going to add it.
-		face_trackers[p_tracker_name] = p_face_tracker;
-		emit_signal(SNAME("face_tracker_added"), p_tracker_name, p_face_tracker);
-	} else if (face_trackers[p_tracker_name] != p_face_tracker) {
-		// We already have a tracker with this name, we're going to replace it.
-		face_trackers[p_tracker_name] = p_face_tracker;
-		emit_signal(SNAME("face_tracker_updated"), p_tracker_name, p_face_tracker);
-	}
-}
-
-void XRServer::remove_face_tracker(const StringName &p_tracker_name) {
-	// Skip if no face tracker is found.
-	if (!face_trackers.has(p_tracker_name)) {
-		return;
-	}
-
-	// Send the removed signal, then remove the face tracker.
-	emit_signal(SNAME("face_tracker_removed"), p_tracker_name);
-	face_trackers.erase(p_tracker_name);
-}
-
-Dictionary XRServer::get_face_trackers() const {
-	return face_trackers;
-}
-
-Ref<XRFaceTracker> XRServer::get_face_tracker(const StringName &p_tracker_name) const {
-	// Skip if no tracker is found.
-	if (!face_trackers.has(p_tracker_name)) {
-		return Ref<XRFaceTracker>();
-	}
-
-	return face_trackers[p_tracker_name];
-}
-
-void XRServer::add_body_tracker(const StringName &p_tracker_name, Ref<XRBodyTracker> p_body_tracker) {
-	ERR_FAIL_COND(p_body_tracker.is_null());
-
-	if (!body_trackers.has(p_tracker_name)) {
-		// We don't have a tracker with this name, we're going to add it.
-		body_trackers[p_tracker_name] = p_body_tracker;
-		emit_signal(SNAME("body_tracker_added"), p_tracker_name, p_body_tracker);
-	} else if (body_trackers[p_tracker_name] != p_body_tracker) {
-		// We already have a tracker with this name, we're going to replace it.
-		body_trackers[p_tracker_name] = p_body_tracker;
-		emit_signal(SNAME("body_tracker_updated"), p_tracker_name, p_body_tracker);
-	}
-}
-
-void XRServer::remove_body_tracker(const StringName &p_tracker_name) {
-	// Skip if no face tracker is found.
-	if (!body_trackers.has(p_tracker_name)) {
-		return;
-	}
-
-	// Send the removed signal, then remove the face tracker.
-	emit_signal(SNAME("body_tracker_removed"), p_tracker_name);
-	body_trackers.erase(p_tracker_name);
-}
-
-Dictionary XRServer::get_body_trackers() const {
-	return body_trackers;
-}
-
-Ref<XRBodyTracker> XRServer::get_body_tracker(const StringName &p_tracker_name) const {
-	// Skip if no tracker is found.
-	if (!body_trackers.has(p_tracker_name)) {
-		return Ref<XRBodyTracker>();
-	}
-
-	return body_trackers[p_tracker_name];
-}
-
 void XRServer::_process() {
 	// called from our main game loop before we handle physics and game logic
 	// note that we can have multiple interfaces active if we have interfaces that purely handle tracking
@@ -545,14 +408,8 @@ XRServer::XRServer() {
 XRServer::~XRServer() {
 	primary_interface.unref();
 
-	while (interfaces.size() > 0) {
-		interfaces.remove_at(0);
-	}
-
-	// TODO pretty sure there is a clear function or something...
-	while (trackers.size() > 0) {
-		trackers.erase(trackers.get_key_at_index(0));
-	}
+	interfaces.clear();
+	trackers.clear();
 
 	singleton = nullptr;
 };
