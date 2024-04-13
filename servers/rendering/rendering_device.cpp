@@ -6400,11 +6400,11 @@ Vector<int64_t> RenderingDevice::_draw_list_switch_to_next_pass_split(uint32_t p
 #endif
 
 void RenderingDevice::_draw_list_set_push_constant(DrawListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size) {
-	ERR_FAIL_COND((uint32_t)p_data.size() > p_data_size);
+	ERR_FAIL_COND(p_data_size > (uint32_t)p_data.size());
 	draw_list_set_push_constant(p_list, p_data.ptr(), p_data_size);
 }
 
 void RenderingDevice::_compute_list_set_push_constant(ComputeListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size) {
-	ERR_FAIL_COND((uint32_t)p_data.size() > p_data_size);
+	ERR_FAIL_COND(p_data_size > (uint32_t)p_data.size());
 	compute_list_set_push_constant(p_list, p_data.ptr(), p_data_size);
 }
