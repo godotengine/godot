@@ -27,7 +27,7 @@ repos:
     hooks:
       - id: make-rst
         name: make-rst
-        entry: python3 doc/tools/make_rst.py doc/classes modules platform --dry-run --color
+        entry: python doc/tools/make_rst.py doc/classes modules platform --dry-run --color
         pass_filenames: false
         language: python
         files: ^(doc|modules|platform).*xml$
@@ -36,7 +36,7 @@ repos:
         name: copyright-headers
         language: python
         files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java)$
-        entry: python3 misc/scripts/copyright_headers.py
+        entry: python misc/scripts/copyright_headers.py
         exclude: |
           (?x)^(
             .*thirdparty.*|
@@ -51,5 +51,5 @@ repos:
       - id: dotnet-format
         name: dotnet-format
         language: python
-        entry: python3 misc/scripts/dotnet_format.py
+        entry: python misc/scripts/dotnet_format.py
         types_or: [c#]
