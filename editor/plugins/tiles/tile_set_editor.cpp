@@ -401,6 +401,7 @@ void TileSetEditor::_notification(int p_what) {
 	}
 }
 
+/* CHECK ME
 void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
@@ -432,10 +433,42 @@ void TileSetEditor::_pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Tex
 		}
 	}
 }
+*/
 
+//Check me later. Do I want to add a patterns display to tileset?
+/*
 void TileSetEditor::_update_patterns_list() {
 	ERR_FAIL_COND(!tile_set.is_valid());
+	TreeItem *pattern_set;
+	int sel_pattern_set_index;
 
+	// If this display update function was called by a pattern set being clicked on, get the selected pattern set and it's index. Then update to display the patterns inside of that specific pattern set.
+	if (pattern_sets_display->get_selected() != nullptr) {
+		pattern_set = pattern_sets_display->get_selected();
+		Dictionary metadata_dict = pattern_set->get_metadata(0);
+		sel_pattern_set_index = metadata_dict["pattern_set"];
+		patterns_item_list->clear();
+
+		if (pattern_set && pattern_set->get_metadata(0)) {
+			ERR_FAIL_INDEX(sel_pattern_set_index, tile_set->get_pattern_sets_count());
+			// Create the item's to display in the item list
+			for (int i = 0; i < tile_set->get_patterns_count(sel_pattern_set_index); i++) {
+				int pattern_id = patterns_item_list->add_item("");
+				patterns_item_list->set_item_metadata(pattern_id, tile_set->get_pattern(sel_pattern_set_index, pattern_id));
+				patterns_item_list->set_item_tooltip(pattern_id, vformat(TTR("Index: %d"), i));
+
+				// Name the pattern. Assign a default name if the user did not set a custom name.
+				Ref<TileMapPattern> current_pattern = patterns_item_list->get_item_metadata(i);
+				patterns_item_list->set_item_text(pattern_id, current_pattern->get_name());
+				if (current_pattern->get_name().is_empty()) {
+					patterns_item_list->set_item_text(pattern_id, vformat(TTR("Pattern %d"), pattern_id));
+				}
+				TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(sel_pattern_set_index, pattern_id), callable_mp(this, &TileMapEditorTilesPlugin::_pattern_preview_done));
+			}
+			// Update the label visibility.
+			patterns_help_label->set_visible(patterns_item_list->get_item_count() == 0);
+		}
+	}
 	// Recreate the items.
 	patterns_item_list->clear();
 	for (int i = 0; i < tile_set->get_patterns_count(); i++) {
@@ -448,7 +481,7 @@ void TileSetEditor::_update_patterns_list() {
 	// Update the label visibility.
 	patterns_help_label->set_visible(patterns_item_list->get_item_count() == 0);
 }
-
+*/
 void TileSetEditor::_tile_set_changed() {
 	tile_set_changed_needs_update = true;
 }
@@ -938,7 +971,7 @@ TileSetEditor::TileSetEditor() {
 	patterns_item_list->set_max_text_lines(2);
 	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	patterns_item_list->connect("gui_input", callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
+	//patterns_item_list->connect("gui_input", callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
 	main_vb->add_child(patterns_item_list);
 	patterns_item_list->hide();
 

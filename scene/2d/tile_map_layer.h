@@ -426,7 +426,7 @@ public:
 	Rect2i get_used_rect() const;
 
 	// Patterns.
-	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array);
+	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array, bool is_single_layer = true);
 	void set_pattern(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
 
 	// Terrains.

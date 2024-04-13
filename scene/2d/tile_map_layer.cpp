@@ -2344,7 +2344,9 @@ Rect2i TileMapLayer::get_used_rect() const {
 	return used_rect_cache;
 }
 
-Ref<TileMapPattern> TileMapLayer::get_pattern(TypedArray<Vector2i> p_coords_array) {
+Ref<TileMapPattern> TileMapLayer::get_pattern(TypedArray<Vector2i> p_coords_array, bool is_single_layer) {
+	
+	
 	ERR_FAIL_COND_V(tile_set.is_null(), nullptr);
 
 	Ref<TileMapPattern> output;
@@ -2361,40 +2363,45 @@ Ref<TileMapPattern> TileMapLayer::get_pattern(TypedArray<Vector2i> p_coords_arra
 	Vector<Vector2i> coords_in_pattern_array;
 	coords_in_pattern_array.resize(p_coords_array.size());
 	Vector2i ensure_positive_offset;
-	for (int i = 0; i < p_coords_array.size(); i++) {
-		Vector2i coords = p_coords_array[i];
-		Vector2i coords_in_pattern = coords - min;
-		if (tile_set->get_tile_shape() != TileSet::TILE_SHAPE_SQUARE) {
-			if (tile_set->get_tile_layout() == TileSet::TILE_LAYOUT_STACKED) {
-				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL && bool(min.y % 2) && bool(coords_in_pattern.y % 2)) {
-					coords_in_pattern.x -= 1;
-					if (coords_in_pattern.x < 0) {
-						ensure_positive_offset.x = 1;
+
+	if (is_single_layer == true) {
+		for (int i = 0; i < p_coords_array.size(); i++) {
+			Vector2i coords = p_coords_array[i];
+			Vector2i coords_in_pattern = coords - min;
+			if (tile_set->get_tile_shape() != TileSet::TILE_SHAPE_SQUARE) {
+				if (tile_set->get_tile_layout() == TileSet::TILE_LAYOUT_STACKED) {
+					if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL && bool(min.y % 2) && bool(coords_in_pattern.y % 2)) {
+						coords_in_pattern.x -= 1;
+						if (coords_in_pattern.x < 0) {
+							ensure_positive_offset.x = 1;
+						}
+					} else if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL && bool(min.x % 2) && bool(coords_in_pattern.x % 2)) {
+						coords_in_pattern.y -= 1;
+						if (coords_in_pattern.y < 0) {
+							ensure_positive_offset.y = 1;
+						}
 					}
-				} else if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL && bool(min.x % 2) && bool(coords_in_pattern.x % 2)) {
-					coords_in_pattern.y -= 1;
-					if (coords_in_pattern.y < 0) {
-						ensure_positive_offset.y = 1;
+				} else if (tile_set->get_tile_layout() == TileSet::TILE_LAYOUT_STACKED_OFFSET) {
+					if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL && bool(min.y % 2) && bool(coords_in_pattern.y % 2)) {
+						coords_in_pattern.x += 1;
+					} else if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL && bool(min.x % 2) && bool(coords_in_pattern.x % 2)) {
+						coords_in_pattern.y += 1;
 					}
-				}
-			} else if (tile_set->get_tile_layout() == TileSet::TILE_LAYOUT_STACKED_OFFSET) {
-				if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_HORIZONTAL && bool(min.y % 2) && bool(coords_in_pattern.y % 2)) {
-					coords_in_pattern.x += 1;
-				} else if (tile_set->get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL && bool(min.x % 2) && bool(coords_in_pattern.x % 2)) {
-					coords_in_pattern.y += 1;
 				}
 			}
+			coords_in_pattern_array.write[i] = coords_in_pattern;
 		}
-		coords_in_pattern_array.write[i] = coords_in_pattern;
-	}
 
-	for (int i = 0; i < coords_in_pattern_array.size(); i++) {
-		Vector2i coords = p_coords_array[i];
-		Vector2i coords_in_pattern = coords_in_pattern_array[i];
-		output->set_cell(coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords(coords), get_cell_alternative_tile(coords));
-	}
+		for (int i = 0; i < coords_in_pattern_array.size(); i++) {
+			Vector2i coords = p_coords_array[i];
+			Vector2i coords_in_pattern = coords_in_pattern_array[i];
+			output->set_cell(0, coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords( coords), get_cell_alternative_tile(coords));
+		}
 
-	return output;
+		return output;
+	} else {
+		return output;
+	}
 }
 
 void TileMapLayer::set_pattern(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern) {
@@ -2404,7 +2411,7 @@ void TileMapLayer::set_pattern(const Vector2i &p_position, const Ref<TileMapPatt
 	TypedArray<Vector2i> used_cells = p_pattern->get_used_cells();
 	for (int i = 0; i < used_cells.size(); i++) {
 		Vector2i coords = tile_set->map_pattern(p_position, used_cells[i], p_pattern);
-		set_cell(coords, p_pattern->get_cell_source_id(used_cells[i]), p_pattern->get_cell_atlas_coords(used_cells[i]), p_pattern->get_cell_alternative_tile(used_cells[i]));
+		set_cell( coords, p_pattern->get_cell_source_id(0, used_cells[i]), p_pattern->get_cell_atlas_coords(0, used_cells[i]), p_pattern->get_cell_alternative_tile(0, used_cells[i]));
 	}
 }
 

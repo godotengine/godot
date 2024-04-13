@@ -259,7 +259,7 @@ private:
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	//CHECK ME bool select_last_pattern = false;
+	bool select_last_pattern = false;
 
 	// General
 	void _update_theme();

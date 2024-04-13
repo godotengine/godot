@@ -168,7 +168,7 @@ public:
 	TileData *get_cell_tile_data(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 
 	// Patterns.
-	Ref<TileMapPattern> get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array, bool is_single_layer = true);
+	Ref<TileMapPattern> get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array);
 	Vector2i map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern);
 	void set_pattern(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
 
