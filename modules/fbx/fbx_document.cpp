@@ -1178,7 +1178,11 @@ Error FBXDocument::_parse_materials(Ref<FBXState> p_state) {
 			}
 
 			// Combined textures and factors are very unreliable in FBX
-			material->set_albedo(Color(1, 1, 1));
+			Color albedo_factor = Color(1, 1, 1);
+			if (fbx_material->pbr.base_factor.has_value) {
+				albedo_factor *= (float)fbx_material->pbr.base_factor.value_real;
+			}
+			material->set_albedo(albedo_factor.linear_to_srgb());
 
 			// TODO: Does not support rotation, could be inverted?
 			material->set_uv1_offset(_as_vec3(base_texture->uv_transform.translation));
