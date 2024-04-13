@@ -37,12 +37,12 @@ class ReflectionProbe : public VisualInstance3D {
 	GDCLASS(ReflectionProbe, VisualInstance3D);
 
 public:
-	enum UpdateMode {
+	enum UpdateMode : int32_t {
 		UPDATE_ONCE,
 		UPDATE_ALWAYS,
 	};
 
-	enum AmbientMode {
+	enum AmbientMode : int32_t {
 		AMBIENT_DISABLED,
 		AMBIENT_ENVIRONMENT,
 		AMBIENT_COLOR

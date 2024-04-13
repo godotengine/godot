@@ -41,7 +41,7 @@
 class EditorHelpSearch : public ConfirmationDialog {
 	GDCLASS(EditorHelpSearch, ConfirmationDialog);
 
-	enum SearchFlags {
+	enum SearchFlags : int32_t {
 		SEARCH_CLASSES = 1 << 0,
 		SEARCH_CONSTRUCTORS = 1 << 1,
 		SEARCH_METHODS = 1 << 2,
@@ -105,7 +105,7 @@ public:
 };
 
 class EditorHelpSearch::Runner : public RefCounted {
-	enum Phase {
+	enum Phase : int32_t {
 		PHASE_MATCH_CLASSES_INIT,
 		PHASE_MATCH_CLASSES,
 		PHASE_CLASS_ITEMS_INIT,

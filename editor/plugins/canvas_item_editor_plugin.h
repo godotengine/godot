@@ -75,7 +75,7 @@ class CanvasItemEditor : public VBoxContainer {
 	GDCLASS(CanvasItemEditor, VBoxContainer);
 
 public:
-	enum Tool {
+	enum Tool : int32_t {
 		TOOL_SELECT,
 		TOOL_LIST_SELECT,
 		TOOL_MOVE,
@@ -87,7 +87,7 @@ public:
 		TOOL_MAX
 	};
 
-	enum AddNodeOption {
+	enum AddNodeOption : int32_t {
 		ADD_NODE,
 		ADD_INSTANCE,
 		ADD_PASTE,
@@ -95,7 +95,7 @@ public:
 	};
 
 private:
-	enum SnapTarget {
+	enum SnapTarget : int32_t {
 		SNAP_TARGET_NONE = 0,
 		SNAP_TARGET_PARENT,
 		SNAP_TARGET_SELF_ANCHORS,
@@ -106,7 +106,7 @@ private:
 		SNAP_TARGET_PIXEL
 	};
 
-	enum MenuOption {
+	enum MenuOption : int32_t {
 		SNAP_USE,
 		SNAP_USE_NODE_PARENT,
 		SNAP_USE_NODE_ANCHORS,
@@ -149,7 +149,7 @@ private:
 		SKELETON_SHOW_BONES
 	};
 
-	enum DragType {
+	enum DragType : int32_t {
 		DRAG_NONE,
 		DRAG_BOX_SELECTION,
 		DRAG_LEFT,
@@ -180,7 +180,7 @@ private:
 		DRAG_KEY_MOVE
 	};
 
-	enum GridVisibility {
+	enum GridVisibility : int32_t {
 		GRID_VISIBILITY_SHOW,
 		GRID_VISIBILITY_SHOW_WHEN_SNAPPING,
 		GRID_VISIBILITY_HIDE,
@@ -415,7 +415,7 @@ private:
 	void _on_grid_menu_id_pressed(int p_id);
 
 public:
-	enum ThemePreviewMode {
+	enum ThemePreviewMode : int32_t {
 		THEME_PREVIEW_PROJECT,
 		THEME_PREVIEW_EDITOR,
 		THEME_PREVIEW_DEFAULT,
@@ -534,7 +534,7 @@ protected:
 	static CanvasItemEditor *singleton;
 
 public:
-	enum SnapMode {
+	enum SnapMode : int32_t {
 		SNAP_GRID = 1 << 0,
 		SNAP_GUIDES = 1 << 1,
 		SNAP_PIXEL = 1 << 2,

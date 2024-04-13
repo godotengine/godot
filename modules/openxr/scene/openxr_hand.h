@@ -42,25 +42,25 @@ class OpenXRHand : public SkeletonModifier3D {
 	GDCLASS(OpenXRHand, SkeletonModifier3D);
 
 public:
-	enum Hands { // Deprecated, need to change this to OpenXRInterface::Hands.
+	enum Hands : int32_t { // Deprecated, need to change this to OpenXRInterface::Hands.
 		HAND_LEFT,
 		HAND_RIGHT,
 		HAND_MAX
 	};
 
-	enum MotionRange { // Deprecated, need to change this to OpenXRInterface::HandMotionRange.
+	enum MotionRange : int32_t { // Deprecated, need to change this to OpenXRInterface::HandMotionRange.
 		MOTION_RANGE_UNOBSTRUCTED,
 		MOTION_RANGE_CONFORM_TO_CONTROLLER,
 		MOTION_RANGE_MAX
 	};
 
-	enum SkeletonRig {
+	enum SkeletonRig : int32_t {
 		SKELETON_RIG_OPENXR,
 		SKELETON_RIG_HUMANOID,
 		SKELETON_RIG_MAX
 	};
 
-	enum BoneUpdate {
+	enum BoneUpdate : int32_t {
 		BONE_UPDATE_FULL,
 		BONE_UPDATE_ROTATION_ONLY,
 		BONE_UPDATE_MAX

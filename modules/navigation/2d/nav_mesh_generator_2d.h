@@ -51,7 +51,7 @@ class NavMeshGenerator2D : public Object {
 	static bool baking_use_high_priority_threads;
 
 	struct NavMeshGeneratorTask2D {
-		enum TaskStatus {
+		enum TaskStatus : int32_t {
 			BAKING_STARTED,
 			BAKING_FINISHED,
 			BAKING_FAILED,

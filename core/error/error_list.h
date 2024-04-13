@@ -31,6 +31,8 @@
 #ifndef ERROR_LIST_H
 #define ERROR_LIST_H
 
+#include <cstdint>
+
 /** Error List. Please never compare an error against FAILED
  * Either do result != OK , or !result. This way, Error fail
  * values can be more detailed in the future.
@@ -43,7 +45,7 @@
  * - Are bound with BIND_CORE_ENUM_CONSTANT() in core/core_constants.cpp
  */
 
-enum Error {
+enum Error : int32_t {
 	OK, // (0)
 	FAILED, ///< Generic fail error
 	ERR_UNAVAILABLE, ///< What is requested is unsupported/unavailable

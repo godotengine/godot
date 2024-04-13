@@ -65,18 +65,18 @@ class ScriptEditorDebugger : public MarginContainer {
 	friend class DebugAdapterParser;
 
 private:
-	enum MessageType {
+	enum MessageType : int32_t {
 		MESSAGE_ERROR,
 		MESSAGE_WARNING,
 		MESSAGE_SUCCESS,
 	};
 
-	enum ProfilerType {
+	enum ProfilerType : int32_t {
 		PROFILER_VISUAL,
 		PROFILER_SCRIPTS_SERVERS
 	};
 
-	enum Actions {
+	enum Actions : int32_t {
 		ACTION_COPY_ERROR,
 		ACTION_OPEN_SOURCE,
 		ACTION_DELETE_BREAKPOINT,
@@ -104,7 +104,7 @@ private:
 	PopupMenu *breakpoints_menu = nullptr;
 
 	EditorFileDialog *file_dialog = nullptr;
-	enum FileDialogPurpose {
+	enum FileDialogPurpose : int32_t {
 		SAVE_MONITORS_CSV,
 		SAVE_VRAM_CSV,
 	};

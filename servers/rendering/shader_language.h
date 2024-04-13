@@ -51,7 +51,7 @@ public:
 		int tk_line;
 	};
 
-	enum TokenType {
+	enum TokenType : int32_t {
 		TK_EMPTY,
 		TK_IDENTIFIER,
 		TK_TRUE,
@@ -201,7 +201,7 @@ public:
 #undef TYPE_BOOL
 #endif
 
-	enum DataType {
+	enum DataType : int32_t {
 		TYPE_VOID,
 		TYPE_BOOL,
 		TYPE_BVEC2,
@@ -237,20 +237,20 @@ public:
 		TYPE_MAX
 	};
 
-	enum DataPrecision {
+	enum DataPrecision : int32_t {
 		PRECISION_LOWP,
 		PRECISION_MEDIUMP,
 		PRECISION_HIGHP,
 		PRECISION_DEFAULT,
 	};
 
-	enum DataInterpolation {
+	enum DataInterpolation : int32_t {
 		INTERPOLATION_FLAT,
 		INTERPOLATION_SMOOTH,
 		INTERPOLATION_DEFAULT,
 	};
 
-	enum Operator {
+	enum Operator : int32_t {
 		OP_EQUAL,
 		OP_NOT_EQUAL,
 		OP_LESS,
@@ -297,7 +297,7 @@ public:
 		OP_MAX
 	};
 
-	enum FlowOperation {
+	enum FlowOperation : int32_t {
 		FLOW_OP_IF,
 		FLOW_OP_RETURN,
 		FLOW_OP_FOR,
@@ -311,18 +311,18 @@ public:
 		FLOW_OP_DISCARD
 	};
 
-	enum ArgumentQualifier {
+	enum ArgumentQualifier : int32_t {
 		ARGUMENT_QUALIFIER_IN,
 		ARGUMENT_QUALIFIER_OUT,
 		ARGUMENT_QUALIFIER_INOUT,
 	};
 
-	enum SubClassTag {
+	enum SubClassTag : int32_t {
 		TAG_GLOBAL,
 		TAG_ARRAY,
 	};
 
-	enum TextureFilter {
+	enum TextureFilter : int32_t {
 		FILTER_NEAREST,
 		FILTER_LINEAR,
 		FILTER_NEAREST_MIPMAP,
@@ -332,13 +332,13 @@ public:
 		FILTER_DEFAULT,
 	};
 
-	enum TextureRepeat {
+	enum TextureRepeat : int32_t {
 		REPEAT_DISABLE,
 		REPEAT_ENABLE,
 		REPEAT_DEFAULT,
 	};
 
-	enum {
+	enum : int32_t {
 		MAX_INSTANCE_UNIFORM_INDICES = 16
 	};
 
@@ -356,7 +356,7 @@ public:
 	struct Node {
 		Node *next = nullptr;
 
-		enum Type {
+		enum Type : int32_t {
 			NODE_TYPE_SHADER,
 			NODE_TYPE_FUNCTION,
 			NODE_TYPE_BLOCK,
@@ -507,7 +507,7 @@ public:
 		FunctionNode *parent_function = nullptr;
 		BlockNode *parent_block = nullptr;
 
-		enum BlockType {
+		enum BlockType : int32_t {
 			BLOCK_TYPE_STANDARD,
 			BLOCK_TYPE_FOR_INIT,
 			BLOCK_TYPE_FOR_CONDITION,
@@ -637,7 +637,7 @@ public:
 		};
 
 		struct Varying {
-			enum Stage {
+			enum Stage : int32_t {
 				STAGE_UNKNOWN,
 				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT_LIGHT, emits warning if it's not used
 				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits warning if it's not used
@@ -656,7 +656,7 @@ public:
 		};
 
 		struct Uniform {
-			enum Hint {
+			enum Hint : int32_t {
 				HINT_NONE,
 				HINT_RANGE,
 				HINT_SOURCE_COLOR,
@@ -677,7 +677,7 @@ public:
 				HINT_MAX
 			};
 
-			enum Scope {
+			enum Scope : int32_t {
 				SCOPE_LOCAL,
 				SCOPE_INSTANCE,
 				SCOPE_GLOBAL,
@@ -741,7 +741,7 @@ public:
 		DataType type;
 	};
 
-	enum CompletionType {
+	enum CompletionType : int32_t {
 		COMPLETION_NONE,
 		COMPLETION_SHADER_TYPE,
 		COMPLETION_RENDER_MODE,
@@ -1015,7 +1015,7 @@ private:
 
 	ShaderNode *shader = nullptr;
 
-	enum IdentifierType {
+	enum IdentifierType : int32_t {
 		IDENTIFIER_FUNCTION,
 		IDENTIFIER_UNIFORM,
 		IDENTIFIER_VARYING,
@@ -1037,7 +1037,7 @@ private:
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = nullptr, int *r_ret_size = nullptr);
 
 	struct BuiltinFuncDef {
-		enum { MAX_ARGS = 5 };
+		enum : int32_t { MAX_ARGS = 5 };
 		const char *name;
 		DataType rettype;
 		const DataType args[MAX_ARGS];
@@ -1047,7 +1047,7 @@ private:
 	};
 
 	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
-		enum { MAX_ARGS = 2 };
+		enum : int32_t { MAX_ARGS = 2 };
 		const char *name;
 		const int arguments[MAX_ARGS];
 	};

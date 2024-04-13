@@ -42,7 +42,7 @@ class EditorFileDialog;
 class ResourcePreloaderEditor : public PanelContainer {
 	GDCLASS(ResourcePreloaderEditor, PanelContainer);
 
-	enum {
+	enum : int32_t {
 		BUTTON_OPEN_SCENE,
 		BUTTON_EDIT_RESOURCE,
 		BUTTON_REMOVE

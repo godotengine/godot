@@ -234,7 +234,7 @@ class VisualShaderEditor : public VBoxContainer {
 	bool preview_first = true;
 	bool preview_showed = false;
 
-	enum ShaderModeFlags {
+	enum ShaderModeFlags : int32_t {
 		MODE_FLAGS_SPATIAL_CANVASITEM = 1,
 		MODE_FLAGS_SKY = 2,
 		MODE_FLAGS_PARTICLES = 4,
@@ -243,13 +243,13 @@ class VisualShaderEditor : public VBoxContainer {
 
 	int mode = MODE_FLAGS_SPATIAL_CANVASITEM;
 
-	enum TypeFlags {
+	enum TypeFlags : int32_t {
 		TYPE_FLAGS_VERTEX = 1,
 		TYPE_FLAGS_FRAGMENT = 2,
 		TYPE_FLAGS_LIGHT = 4,
 	};
 
-	enum ParticlesTypeFlags {
+	enum ParticlesTypeFlags : int32_t {
 		TYPE_FLAGS_EMIT = 1,
 		TYPE_FLAGS_PROCESS = 2,
 		TYPE_FLAGS_COLLIDE = 4,
@@ -257,15 +257,15 @@ class VisualShaderEditor : public VBoxContainer {
 		TYPE_FLAGS_PROCESS_CUSTOM = 16,
 	};
 
-	enum SkyTypeFlags {
+	enum SkyTypeFlags : int32_t {
 		TYPE_FLAGS_SKY = 1,
 	};
 
-	enum FogTypeFlags {
+	enum FogTypeFlags : int32_t {
 		TYPE_FLAGS_FOG = 1,
 	};
 
-	enum ToolsMenuOptions {
+	enum ToolsMenuOptions : int32_t {
 		EXPAND_ALL,
 		COLLAPSE_ALL
 	};
@@ -274,7 +274,7 @@ class VisualShaderEditor : public VBoxContainer {
 #undef DELETE
 #endif
 
-	enum NodeMenuOptions {
+	enum NodeMenuOptions : int32_t {
 		ADD,
 		SEPARATOR, // ignore
 		CUT,
@@ -295,12 +295,12 @@ class VisualShaderEditor : public VBoxContainer {
 		ENABLE_FRAME_AUTOSHRINK,
 	};
 
-	enum ConnectionMenuOptions {
+	enum ConnectionMenuOptions : int32_t {
 		INSERT_NEW_NODE,
 		DISCONNECT,
 	};
 
-	enum class VaryingMenuOptions {
+	enum class VaryingMenuOptions : int32_t {
 		ADD,
 		REMOVE,
 	};

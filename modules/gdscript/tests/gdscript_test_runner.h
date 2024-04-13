@@ -47,7 +47,7 @@ void finish_language();
 // Single test instance in a suite.
 class GDScriptTest {
 public:
-	enum TestStatus {
+	enum TestStatus : int32_t {
 		GDTEST_OK,
 		GDTEST_LOAD_ERROR,
 		GDTEST_PARSER_ERROR,
@@ -62,7 +62,7 @@ public:
 		bool passed;
 	};
 
-	enum TokenizerMode {
+	enum TokenizerMode : int32_t {
 		TOKENIZER_TEXT,
 		TOKENIZER_BUFFER,
 	};

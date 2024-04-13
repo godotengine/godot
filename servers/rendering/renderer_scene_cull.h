@@ -55,7 +55,7 @@ class RendererSceneCull : public RenderingMethod {
 public:
 	RendererSceneRender *scene_render = nullptr;
 
-	enum {
+	enum : int32_t {
 		SDFGI_MAX_CASCADES = 8,
 		SDFGI_MAX_REGIONS_PER_CASCADE = 3,
 		MAX_INSTANCE_PAIRS = 32,
@@ -69,7 +69,7 @@ public:
 	/* CAMERA API */
 
 	struct Camera {
-		enum Type {
+		enum Type : int32_t {
 			PERSPECTIVE,
 			ORTHOGONAL,
 			FRUSTUM
@@ -253,7 +253,7 @@ public:
 	struct InstanceData {
 		// Store instance pointer as well as common instance processing information,
 		// to make processing more cache friendly.
-		enum Flags {
+		enum Flags : int32_t {
 			FLAG_BASE_TYPE_MASK = 0xFF,
 			FLAG_CAST_SHADOWS = (1 << 8),
 			FLAG_CAST_SHADOWS_ONLY = (1 << 9),
@@ -322,7 +322,7 @@ public:
 	PagedArrayPool<InstanceVisibilityData> instance_visibility_data_page_pool;
 
 	struct Scenario {
-		enum IndexerType {
+		enum IndexerType : int32_t {
 			INDEXER_GEOMETRY, //for geometry
 			INDEXER_VOLUMES, //for everything else
 			INDEXER_MAX

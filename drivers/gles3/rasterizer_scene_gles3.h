@@ -49,14 +49,14 @@
 #include "storage/render_scene_buffers_gles3.h"
 #include "storage/utilities.h"
 
-enum RenderListType {
+enum RenderListType : int32_t {
 	RENDER_LIST_OPAQUE, //used for opaque objects
 	RENDER_LIST_ALPHA, //used for transparent objects
 	RENDER_LIST_SECONDARY, //used for shadows and other objects
 	RENDER_LIST_MAX
 };
 
-enum PassMode {
+enum PassMode : int32_t {
 	PASS_MODE_COLOR,
 	PASS_MODE_COLOR_TRANSPARENT,
 	PASS_MODE_SHADOW,
@@ -65,7 +65,7 @@ enum PassMode {
 };
 
 // These should share as much as possible with SkyUniform Location
-enum SceneUniformLocation {
+enum SceneUniformLocation : int32_t {
 	SCENE_TONEMAP_UNIFORM_LOCATION,
 	SCENE_GLOBALS_UNIFORM_LOCATION,
 	SCENE_DATA_UNIFORM_LOCATION,
@@ -79,7 +79,7 @@ enum SceneUniformLocation {
 	SCENE_DIRECTIONAL_SHADOW_UNIFORM_LOCATION,
 };
 
-enum SkyUniformLocation {
+enum SkyUniformLocation : int32_t {
 	SKY_TONEMAP_UNIFORM_LOCATION,
 	SKY_GLOBALS_UNIFORM_LOCATION,
 	SKY_EMPTY, // Unused, put here to avoid conflicts with SCENE_DATA_UNIFORM_LOCATION.
@@ -228,7 +228,7 @@ private:
 
 	// Cached data for drawing surfaces
 	struct GeometryInstanceSurface {
-		enum {
+		enum : int32_t {
 			FLAG_PASS_DEPTH = 1,
 			FLAG_PASS_OPAQUE = 2,
 			FLAG_PASS_ALPHA = 4,
@@ -341,7 +341,7 @@ private:
 		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override {}
 	};
 
-	enum {
+	enum : int32_t {
 		INSTANCE_DATA_FLAGS_DYNAMIC = 1 << 3,
 		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 4,
 		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 5,

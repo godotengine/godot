@@ -51,7 +51,7 @@ class MeshLibraryEditor : public Control {
 	bool apply_xforms = false;
 	int to_erase = 0;
 
-	enum {
+	enum : int32_t {
 		MENU_OPTION_ADD_ITEM,
 		MENU_OPTION_REMOVE_ITEM,
 		MENU_OPTION_UPDATE_FROM_SCENE,

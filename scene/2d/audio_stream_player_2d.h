@@ -42,7 +42,7 @@ class AudioStreamPlayer2D : public Node2D {
 	GDCLASS(AudioStreamPlayer2D, Node2D);
 
 private:
-	enum {
+	enum : int32_t {
 		MAX_OUTPUTS = 8,
 		MAX_INTERSECT_AREAS = 32
 

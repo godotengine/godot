@@ -544,7 +544,7 @@ private:
 	static const uint32_t ROOT_SIGNATURE_SIZE = 256;
 	static const uint32_t PUSH_CONSTANT_SIZE = 128; // Mimicking Vulkan.
 
-	enum {
+	enum : int32_t {
 		// We can only aim to set a maximum here, since depending on the shader
 		// there may be more or less root signature free for descriptor tables.
 		// Therefore, we'll have to rely on the final check at runtime, when building
@@ -557,12 +557,12 @@ private:
 		MAX_UNIFORM_SETS = (ROOT_SIGNATURE_SIZE - PUSH_CONSTANT_SIZE) / sizeof(uint32_t),
 	};
 
-	enum RootSignatureLocationType {
+	enum RootSignatureLocationType : int32_t {
 		RS_LOC_TYPE_RESOURCE,
 		RS_LOC_TYPE_SAMPLER,
 	};
 
-	enum ResourceClass {
+	enum ResourceClass : int32_t {
 		RES_CLASS_INVALID,
 		RES_CLASS_CBV,
 		RES_CLASS_SRV,

@@ -40,7 +40,7 @@ class StreamPeerTCP : public StreamPeer {
 	GDCLASS(StreamPeerTCP, StreamPeer);
 
 public:
-	enum Status {
+	enum Status : int32_t {
 		STATUS_NONE,
 		STATUS_CONNECTING,
 		STATUS_CONNECTED,

@@ -37,7 +37,7 @@
 #include "core/math/vector3.h"
 
 struct _NO_DISCARD_ Face3 {
-	enum Side {
+	enum Side : int32_t {
 		SIDE_OVER,
 		SIDE_UNDER,
 		SIDE_SPANNING,

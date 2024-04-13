@@ -47,7 +47,7 @@ class Luminance {
 private:
 	bool prefer_raster_effects;
 
-	enum LuminanceReduceMode {
+	enum LuminanceReduceMode : int32_t {
 		LUMINANCE_REDUCE_READ,
 		LUMINANCE_REDUCE,
 		LUMINANCE_REDUCE_WRITE,
@@ -68,7 +68,7 @@ private:
 		RID pipelines[LUMINANCE_REDUCE_MAX];
 	} luminance_reduce;
 
-	enum LuminanceReduceRasterMode {
+	enum LuminanceReduceRasterMode : int32_t {
 		LUMINANCE_REDUCE_FRAGMENT_FIRST,
 		LUMINANCE_REDUCE_FRAGMENT,
 		LUMINANCE_REDUCE_FRAGMENT_FINAL,

@@ -243,7 +243,7 @@ protected:
 public:
 	static PhysicsServer3D *get_singleton();
 
-	enum ShapeType {
+	enum ShapeType : int32_t {
 		SHAPE_WORLD_BOUNDARY, ///< plane:"plane"
 		SHAPE_SEPARATION_RAY, ///< float:"length"
 		SHAPE_SPHERE, ///< float:"radius"
@@ -287,7 +287,7 @@ public:
 	virtual void space_set_active(RID p_space, bool p_active) = 0;
 	virtual bool space_is_active(RID p_space) const = 0;
 
-	enum SpaceParameter {
+	enum SpaceParameter : int32_t {
 		SPACE_PARAM_CONTACT_RECYCLE_RADIUS,
 		SPACE_PARAM_CONTACT_MAX_SEPARATION,
 		SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION,
@@ -314,7 +314,7 @@ public:
 
 	//missing attenuation? missing better override?
 
-	enum AreaParameter {
+	enum AreaParameter : int32_t {
 		AREA_PARAM_GRAVITY_OVERRIDE_MODE,
 		AREA_PARAM_GRAVITY,
 		AREA_PARAM_GRAVITY_VECTOR,
@@ -336,7 +336,7 @@ public:
 	virtual void area_set_space(RID p_area, RID p_space) = 0;
 	virtual RID area_get_space(RID p_area) const = 0;
 
-	enum AreaSpaceOverrideMode {
+	enum AreaSpaceOverrideMode : int32_t {
 		AREA_SPACE_OVERRIDE_DISABLED,
 		AREA_SPACE_OVERRIDE_COMBINE,
 		AREA_SPACE_OVERRIDE_COMBINE_REPLACE,
@@ -383,14 +383,14 @@ public:
 
 	//missing ccd?
 
-	enum BodyMode {
+	enum BodyMode : int32_t {
 		BODY_MODE_STATIC,
 		BODY_MODE_KINEMATIC,
 		BODY_MODE_RIGID,
 		BODY_MODE_RIGID_LINEAR,
 	};
 
-	enum BodyDampMode {
+	enum BodyDampMode : int32_t {
 		BODY_DAMP_MODE_COMBINE,
 		BODY_DAMP_MODE_REPLACE,
 	};
@@ -435,7 +435,7 @@ public:
 	virtual uint32_t body_get_user_flags(RID p_body) const = 0;
 
 	// common body variables
-	enum BodyParameter {
+	enum BodyParameter : int32_t {
 		BODY_PARAM_BOUNCE,
 		BODY_PARAM_FRICTION,
 		BODY_PARAM_MASS, ///< unused for static, always infinite
@@ -455,7 +455,7 @@ public:
 	virtual void body_reset_mass_properties(RID p_body) = 0;
 
 	//state
-	enum BodyState {
+	enum BodyState : int32_t {
 		BODY_STATE_TRANSFORM,
 		BODY_STATE_LINEAR_VELOCITY,
 		BODY_STATE_ANGULAR_VELOCITY,
@@ -486,7 +486,7 @@ public:
 
 	virtual void body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) = 0;
 
-	enum BodyAxis {
+	enum BodyAxis : int32_t {
 		BODY_AXIS_LINEAR_X = 1 << 0,
 		BODY_AXIS_LINEAR_Y = 1 << 1,
 		BODY_AXIS_LINEAR_Z = 1 << 2,
@@ -626,7 +626,7 @@ public:
 
 	/* JOINT API */
 
-	enum JointType {
+	enum JointType : int32_t {
 		JOINT_TYPE_PIN,
 		JOINT_TYPE_HINGE,
 		JOINT_TYPE_SLIDER,
@@ -650,7 +650,7 @@ public:
 
 	virtual void joint_make_pin(RID p_joint, RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) = 0;
 
-	enum PinJointParam {
+	enum PinJointParam : int32_t {
 		PIN_JOINT_BIAS,
 		PIN_JOINT_DAMPING,
 		PIN_JOINT_IMPULSE_CLAMP
@@ -665,7 +665,7 @@ public:
 	virtual void pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) = 0;
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const = 0;
 
-	enum HingeJointParam {
+	enum HingeJointParam : int32_t {
 		HINGE_JOINT_BIAS,
 		HINGE_JOINT_LIMIT_UPPER,
 		HINGE_JOINT_LIMIT_LOWER,
@@ -677,7 +677,7 @@ public:
 		HINGE_JOINT_MAX
 	};
 
-	enum HingeJointFlag {
+	enum HingeJointFlag : int32_t {
 		HINGE_JOINT_FLAG_USE_LIMIT,
 		HINGE_JOINT_FLAG_ENABLE_MOTOR,
 		HINGE_JOINT_FLAG_MAX
@@ -692,7 +692,7 @@ public:
 	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_enabled) = 0;
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const = 0;
 
-	enum SliderJointParam {
+	enum SliderJointParam : int32_t {
 		SLIDER_JOINT_LINEAR_LIMIT_UPPER,
 		SLIDER_JOINT_LINEAR_LIMIT_LOWER,
 		SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS,
@@ -725,7 +725,7 @@ public:
 	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) = 0;
 	virtual real_t slider_joint_get_param(RID p_joint, SliderJointParam p_param) const = 0;
 
-	enum ConeTwistJointParam {
+	enum ConeTwistJointParam : int32_t {
 		CONE_TWIST_JOINT_SWING_SPAN,
 		CONE_TWIST_JOINT_TWIST_SPAN,
 		CONE_TWIST_JOINT_BIAS,
@@ -739,7 +739,7 @@ public:
 	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) = 0;
 	virtual real_t cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const = 0;
 
-	enum G6DOFJointAxisParam {
+	enum G6DOFJointAxisParam : int32_t {
 		G6DOF_JOINT_LINEAR_LOWER_LIMIT,
 		G6DOF_JOINT_LINEAR_UPPER_LIMIT,
 		G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS,
@@ -765,7 +765,7 @@ public:
 		G6DOF_JOINT_MAX
 	};
 
-	enum G6DOFJointAxisFlag {
+	enum G6DOFJointAxisFlag : int32_t {
 		G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT,
 		G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT,
 		G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING,
@@ -785,7 +785,7 @@ public:
 
 	/* QUERY API */
 
-	enum AreaBodyStatus {
+	enum AreaBodyStatus : int32_t {
 		AREA_BODY_ADDED,
 		AREA_BODY_REMOVED
 	};
@@ -804,7 +804,7 @@ public:
 
 	virtual bool is_flushing_queries() const = 0;
 
-	enum ProcessInfo {
+	enum ProcessInfo : int32_t {
 		INFO_ACTIVE_OBJECTS,
 		INFO_COLLISION_PAIRS,
 		INFO_ISLAND_COUNT

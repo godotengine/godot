@@ -80,7 +80,7 @@ public:
 	static RenderingServer *get_singleton();
 	static RenderingServer *create();
 
-	enum {
+	enum : int32_t {
 		NO_INDEX_ARRAY = -1,
 		ARRAY_WEIGHTS_SIZE = 4,
 		CANVAS_ITEM_Z_MIN = -4096,
@@ -93,13 +93,13 @@ public:
 
 	/* TEXTURE API */
 
-	enum TextureLayeredType {
+	enum TextureLayeredType : int32_t {
 		TEXTURE_LAYERED_2D_ARRAY,
 		TEXTURE_LAYERED_CUBEMAP,
 		TEXTURE_LAYERED_CUBEMAP_ARRAY,
 	};
 
-	enum CubeMapLayer {
+	enum CubeMapLayer : int32_t {
 		CUBEMAP_LAYER_LEFT,
 		CUBEMAP_LAYER_RIGHT,
 		CUBEMAP_LAYER_BOTTOM,
@@ -139,7 +139,7 @@ public:
 	virtual void texture_set_detect_3d_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
 	virtual void texture_set_detect_normal_callback(RID p_texture, TextureDetectCallback p_callback, void *p_userdata) = 0;
 
-	enum TextureDetectRoughnessChannel {
+	enum TextureDetectRoughnessChannel : int32_t {
 		TEXTURE_DETECT_ROUGHNESS_R,
 		TEXTURE_DETECT_ROUGHNESS_G,
 		TEXTURE_DETECT_ROUGHNESS_B,
@@ -171,7 +171,7 @@ public:
 
 	/* SHADER API */
 
-	enum ShaderMode {
+	enum ShaderMode : int32_t {
 		SHADER_SPATIAL,
 		SHADER_CANVAS_ITEM,
 		SHADER_PARTICLES,
@@ -206,7 +206,7 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	enum {
+	enum : int32_t {
 		MATERIAL_RENDER_PRIORITY_MIN = -128,
 		MATERIAL_RENDER_PRIORITY_MAX = 127,
 	};
@@ -224,7 +224,7 @@ public:
 
 	/* MESH API */
 
-	enum ArrayType {
+	enum ArrayType : int32_t {
 		ARRAY_VERTEX = 0, // RG32F (2D), RGB32F, RGBA16 (compressed)
 		ARRAY_NORMAL = 1, // RG16
 		ARRAY_TANGENT = 2, // BA16 (with normal) or A16 (with vertex, when compressed)
@@ -241,11 +241,11 @@ public:
 		ARRAY_MAX = 13
 	};
 
-	enum {
+	enum : int32_t {
 		ARRAY_CUSTOM_COUNT = ARRAY_BONES - ARRAY_CUSTOM0
 	};
 
-	enum ArrayCustomFormat {
+	enum ArrayCustomFormat : int32_t {
 		ARRAY_CUSTOM_RGBA8_UNORM,
 		ARRAY_CUSTOM_RGBA8_SNORM,
 		ARRAY_CUSTOM_RG_HALF,
@@ -305,7 +305,7 @@ public:
 
 	static_assert(sizeof(ArrayFormat) == 8, "ArrayFormat should be 64 bits long.");
 
-	enum PrimitiveType {
+	enum PrimitiveType : int32_t {
 		PRIMITIVE_POINTS,
 		PRIMITIVE_LINES,
 		PRIMITIVE_LINE_STRIP,
@@ -368,7 +368,7 @@ public:
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;
 
-	enum BlendShapeMode {
+	enum BlendShapeMode : int32_t {
 		BLEND_SHAPE_MODE_NORMALIZED,
 		BLEND_SHAPE_MODE_RELATIVE,
 	};
@@ -401,7 +401,7 @@ public:
 
 	virtual RID multimesh_create() = 0;
 
-	enum MultimeshTransformFormat {
+	enum MultimeshTransformFormat : int32_t {
 		MULTIMESH_TRANSFORM_2D,
 		MULTIMESH_TRANSFORM_3D,
 	};
@@ -445,13 +445,13 @@ public:
 
 	/* Light API */
 
-	enum LightType {
+	enum LightType : int32_t {
 		LIGHT_DIRECTIONAL,
 		LIGHT_OMNI,
 		LIGHT_SPOT
 	};
 
-	enum LightParam {
+	enum LightParam : int32_t {
 		LIGHT_PARAM_ENERGY,
 		LIGHT_PARAM_INDIRECT_ENERGY,
 		LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY,
@@ -489,7 +489,7 @@ public:
 	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
 
-	enum LightBakeMode {
+	enum LightBakeMode : int32_t {
 		LIGHT_BAKE_DISABLED,
 		LIGHT_BAKE_STATIC,
 		LIGHT_BAKE_DYNAMIC,
@@ -499,7 +499,7 @@ public:
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
 
 	// Omni light
-	enum LightOmniShadowMode {
+	enum LightOmniShadowMode : int32_t {
 		LIGHT_OMNI_SHADOW_DUAL_PARABOLOID,
 		LIGHT_OMNI_SHADOW_CUBE,
 	};
@@ -507,13 +507,13 @@ public:
 	virtual void light_omni_set_shadow_mode(RID p_light, LightOmniShadowMode p_mode) = 0;
 
 	// Directional light
-	enum LightDirectionalShadowMode {
+	enum LightDirectionalShadowMode : int32_t {
 		LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL,
 		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS,
 		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS,
 	};
 
-	enum LightDirectionalSkyMode {
+	enum LightDirectionalSkyMode : int32_t {
 		LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_AND_SKY,
 		LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY,
 		LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY,
@@ -531,7 +531,7 @@ public:
 
 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) = 0;
 
-	enum ShadowQuality {
+	enum ShadowQuality : int32_t {
 		SHADOW_QUALITY_HARD,
 		SHADOW_QUALITY_SOFT_VERY_LOW,
 		SHADOW_QUALITY_SOFT_LOW,
@@ -544,7 +544,7 @@ public:
 	virtual void positional_soft_shadow_filter_set_quality(ShadowQuality p_quality) = 0;
 	virtual void directional_soft_shadow_filter_set_quality(ShadowQuality p_quality) = 0;
 
-	enum LightProjectorFilter {
+	enum LightProjectorFilter : int32_t {
 		LIGHT_PROJECTOR_FILTER_NEAREST,
 		LIGHT_PROJECTOR_FILTER_LINEAR,
 		LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS,
@@ -559,7 +559,7 @@ public:
 
 	virtual RID reflection_probe_create() = 0;
 
-	enum ReflectionProbeUpdateMode {
+	enum ReflectionProbeUpdateMode : int32_t {
 		REFLECTION_PROBE_UPDATE_ONCE,
 		REFLECTION_PROBE_UPDATE_ALWAYS,
 	};
@@ -567,7 +567,7 @@ public:
 	virtual void reflection_probe_set_update_mode(RID p_probe, ReflectionProbeUpdateMode p_mode) = 0;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) = 0;
 
-	enum ReflectionProbeAmbientMode {
+	enum ReflectionProbeAmbientMode : int32_t {
 		REFLECTION_PROBE_AMBIENT_DISABLED,
 		REFLECTION_PROBE_AMBIENT_ENVIRONMENT,
 		REFLECTION_PROBE_AMBIENT_COLOR,
@@ -589,7 +589,7 @@ public:
 
 	/* DECAL API */
 
-	enum DecalTexture {
+	enum DecalTexture : int32_t {
 		DECAL_TEXTURE_ALBEDO,
 		DECAL_TEXTURE_NORMAL,
 		DECAL_TEXTURE_ORM,
@@ -608,7 +608,7 @@ public:
 	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) = 0;
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
 
-	enum DecalFilter {
+	enum DecalFilter : int32_t {
 		DECAL_FILTER_NEAREST,
 		DECAL_FILTER_LINEAR,
 		DECAL_FILTER_NEAREST_MIPMAPS,
@@ -642,7 +642,7 @@ public:
 	virtual void voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) = 0;
 	virtual void voxel_gi_set_use_two_bounces(RID p_voxel_gi, bool p_enable) = 0;
 
-	enum VoxelGIQuality {
+	enum VoxelGIQuality : int32_t {
 		VOXEL_GI_QUALITY_LOW,
 		VOXEL_GI_QUALITY_HIGH,
 	};
@@ -671,7 +671,7 @@ public:
 
 	virtual RID particles_create() = 0;
 
-	enum ParticlesMode {
+	enum ParticlesMode : int32_t {
 		PARTICLES_MODE_2D,
 		PARTICLES_MODE_3D
 	};
@@ -695,7 +695,7 @@ public:
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_collision_base_size(RID p_particles, float p_size) = 0;
 
-	enum ParticlesTransformAlign {
+	enum ParticlesTransformAlign : int32_t {
 		PARTICLES_TRANSFORM_ALIGN_DISABLED,
 		PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD,
 		PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY,
@@ -713,7 +713,7 @@ public:
 
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) = 0;
 
-	enum ParticlesEmitFlags {
+	enum ParticlesEmitFlags : int32_t {
 		PARTICLES_EMIT_FLAG_POSITION = 1,
 		PARTICLES_EMIT_FLAG_ROTATION_SCALE = 2,
 		PARTICLES_EMIT_FLAG_VELOCITY = 4,
@@ -723,7 +723,7 @@ public:
 
 	virtual void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) = 0;
 
-	enum ParticlesDrawOrder {
+	enum ParticlesDrawOrder : int32_t {
 		PARTICLES_DRAW_ORDER_INDEX,
 		PARTICLES_DRAW_ORDER_LIFETIME,
 		PARTICLES_DRAW_ORDER_REVERSE_LIFETIME,
@@ -745,7 +745,7 @@ public:
 
 	virtual RID particles_collision_create() = 0;
 
-	enum ParticlesCollisionType {
+	enum ParticlesCollisionType : int32_t {
 		PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT,
 		PARTICLES_COLLISION_TYPE_BOX_ATTRACT,
 		PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT,
@@ -766,7 +766,7 @@ public:
 
 	virtual void particles_collision_height_field_update(RID p_particles_collision) = 0; // For SDF and vector field.
 
-	enum ParticlesCollisionHeightfieldResolution { // Longest axis resolution.
+	enum ParticlesCollisionHeightfieldResolution : int32_t { // Longest axis resolution.
 		PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_256,
 		PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_512,
 		PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024,
@@ -782,7 +782,7 @@ public:
 
 	virtual RID fog_volume_create() = 0;
 
-	enum FogVolumeShape {
+	enum FogVolumeShape : int32_t {
 		FOG_VOLUME_SHAPE_ELLIPSOID,
 		FOG_VOLUME_SHAPE_CONE,
 		FOG_VOLUME_SHAPE_CYLINDER,
@@ -821,7 +821,7 @@ public:
 
 	/* VIEWPORT API */
 
-	enum CanvasItemTextureFilter {
+	enum CanvasItemTextureFilter : int32_t {
 		CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, // Uses canvas item setting for draw command, uses global setting for canvas item.
 		CANVAS_ITEM_TEXTURE_FILTER_NEAREST,
 		CANVAS_ITEM_TEXTURE_FILTER_LINEAR,
@@ -832,7 +832,7 @@ public:
 		CANVAS_ITEM_TEXTURE_FILTER_MAX
 	};
 
-	enum CanvasItemTextureRepeat {
+	enum CanvasItemTextureRepeat : int32_t {
 		CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, // Uses canvas item setting for draw command, uses global setting for canvas item.
 		CANVAS_ITEM_TEXTURE_REPEAT_DISABLED,
 		CANVAS_ITEM_TEXTURE_REPEAT_ENABLED,
@@ -842,7 +842,7 @@ public:
 
 	virtual RID viewport_create() = 0;
 
-	enum ViewportScaling3DMode {
+	enum ViewportScaling3DMode : int32_t {
 		VIEWPORT_SCALING_3D_MODE_BILINEAR,
 		VIEWPORT_SCALING_3D_MODE_FSR,
 		VIEWPORT_SCALING_3D_MODE_FSR2,
@@ -864,7 +864,7 @@ public:
 	virtual void viewport_set_fsr_sharpness(RID p_viewport, float p_fsr_sharpness) = 0;
 	virtual void viewport_set_texture_mipmap_bias(RID p_viewport, float p_texture_mipmap_bias) = 0;
 
-	enum ViewportUpdateMode {
+	enum ViewportUpdateMode : int32_t {
 		VIEWPORT_UPDATE_DISABLED,
 		VIEWPORT_UPDATE_ONCE, // Then goes to disabled, must be manually updated.
 		VIEWPORT_UPDATE_WHEN_VISIBLE, // Default
@@ -875,7 +875,7 @@ public:
 	virtual void viewport_set_update_mode(RID p_viewport, ViewportUpdateMode p_mode) = 0;
 	virtual ViewportUpdateMode viewport_get_update_mode(RID p_viewport) const = 0;
 
-	enum ViewportClearMode {
+	enum ViewportClearMode : int32_t {
 		VIEWPORT_CLEAR_ALWAYS,
 		VIEWPORT_CLEAR_NEVER,
 		VIEWPORT_CLEAR_ONLY_NEXT_FRAME
@@ -886,7 +886,7 @@ public:
 	virtual RID viewport_get_render_target(RID p_viewport) const = 0;
 	virtual RID viewport_get_texture(RID p_viewport) const = 0;
 
-	enum ViewportEnvironmentMode {
+	enum ViewportEnvironmentMode : int32_t {
 		VIEWPORT_ENVIRONMENT_DISABLED,
 		VIEWPORT_ENVIRONMENT_ENABLED,
 		VIEWPORT_ENVIRONMENT_INHERIT,
@@ -913,7 +913,7 @@ public:
 	virtual void viewport_set_global_canvas_transform(RID p_viewport, const Transform2D &p_transform) = 0;
 	virtual void viewport_set_canvas_stacking(RID p_viewport, RID p_canvas, int p_layer, int p_sublayer) = 0;
 
-	enum ViewportSDFOversize {
+	enum ViewportSDFOversize : int32_t {
 		VIEWPORT_SDF_OVERSIZE_100_PERCENT,
 		VIEWPORT_SDF_OVERSIZE_120_PERCENT,
 		VIEWPORT_SDF_OVERSIZE_150_PERCENT,
@@ -921,7 +921,7 @@ public:
 		VIEWPORT_SDF_OVERSIZE_MAX
 	};
 
-	enum ViewportSDFScale {
+	enum ViewportSDFScale : int32_t {
 		VIEWPORT_SDF_SCALE_100_PERCENT,
 		VIEWPORT_SDF_SCALE_50_PERCENT,
 		VIEWPORT_SDF_SCALE_25_PERCENT,
@@ -933,7 +933,7 @@ public:
 	virtual void viewport_set_positional_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true) = 0;
 	virtual void viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
 
-	enum ViewportMSAA {
+	enum ViewportMSAA : int32_t {
 		VIEWPORT_MSAA_DISABLED,
 		VIEWPORT_MSAA_2X,
 		VIEWPORT_MSAA_4X,
@@ -944,7 +944,7 @@ public:
 	virtual void viewport_set_msaa_3d(RID p_viewport, ViewportMSAA p_msaa) = 0;
 	virtual void viewport_set_msaa_2d(RID p_viewport, ViewportMSAA p_msaa) = 0;
 
-	enum ViewportScreenSpaceAA {
+	enum ViewportScreenSpaceAA : int32_t {
 		VIEWPORT_SCREEN_SPACE_AA_DISABLED,
 		VIEWPORT_SCREEN_SPACE_AA_FXAA,
 		VIEWPORT_SCREEN_SPACE_AA_MAX,
@@ -961,7 +961,7 @@ public:
 	virtual void viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling) = 0;
 	virtual void viewport_set_occlusion_rays_per_thread(int p_rays_per_thread) = 0;
 
-	enum ViewportOcclusionCullingBuildQuality {
+	enum ViewportOcclusionCullingBuildQuality : int32_t {
 		VIEWPORT_OCCLUSION_BUILD_QUALITY_LOW = 0,
 		VIEWPORT_OCCLUSION_BUILD_QUALITY_MEDIUM = 1,
 		VIEWPORT_OCCLUSION_BUILD_QUALITY_HIGH = 2,
@@ -969,14 +969,14 @@ public:
 
 	virtual void viewport_set_occlusion_culling_build_quality(ViewportOcclusionCullingBuildQuality p_quality) = 0;
 
-	enum ViewportRenderInfo {
+	enum ViewportRenderInfo : int32_t {
 		VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME,
 		VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME,
 		VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME,
 		VIEWPORT_RENDER_INFO_MAX,
 	};
 
-	enum ViewportRenderInfoType {
+	enum ViewportRenderInfoType : int32_t {
 		VIEWPORT_RENDER_INFO_TYPE_VISIBLE,
 		VIEWPORT_RENDER_INFO_TYPE_SHADOW,
 		VIEWPORT_RENDER_INFO_TYPE_CANVAS,
@@ -985,7 +985,7 @@ public:
 
 	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfoType p_type, ViewportRenderInfo p_info) = 0;
 
-	enum ViewportDebugDraw {
+	enum ViewportDebugDraw : int32_t {
 		VIEWPORT_DEBUG_DRAW_DISABLED,
 		VIEWPORT_DEBUG_DRAW_UNSHADED,
 		VIEWPORT_DEBUG_DRAW_LIGHTING,
@@ -1023,7 +1023,7 @@ public:
 
 	virtual RID viewport_find_from_screen_attachment(DisplayServer::WindowID p_id = DisplayServer::MAIN_WINDOW_ID) const = 0;
 
-	enum ViewportVRSMode {
+	enum ViewportVRSMode : int32_t {
 		VIEWPORT_VRS_DISABLED,
 		VIEWPORT_VRS_TEXTURE,
 		VIEWPORT_VRS_XR,
@@ -1035,7 +1035,7 @@ public:
 
 	/* SKY API */
 
-	enum SkyMode {
+	enum SkyMode : int32_t {
 		SKY_MODE_AUTOMATIC,
 		SKY_MODE_QUALITY,
 		SKY_MODE_INCREMENTAL,
@@ -1050,7 +1050,7 @@ public:
 
 	/* COMPOSITOR EFFECTS API */
 
-	enum CompositorEffectFlags {
+	enum CompositorEffectFlags : int32_t {
 		COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_COLOR = 1,
 		COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH = 2,
 		COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS = 4,
@@ -1058,7 +1058,7 @@ public:
 		COMPOSITOR_EFFECT_FLAG_NEEDS_SEPARATE_SPECULAR = 16,
 	};
 
-	enum CompositorEffectCallbackType {
+	enum CompositorEffectCallbackType : int32_t {
 		COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE,
 		COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_OPAQUE,
 		COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_SKY,
@@ -1083,7 +1083,7 @@ public:
 
 	virtual RID environment_create() = 0;
 
-	enum EnvironmentBG {
+	enum EnvironmentBG : int32_t {
 		ENV_BG_CLEAR_COLOR,
 		ENV_BG_COLOR,
 		ENV_BG_SKY,
@@ -1093,14 +1093,14 @@ public:
 		ENV_BG_MAX
 	};
 
-	enum EnvironmentAmbientSource {
+	enum EnvironmentAmbientSource : int32_t {
 		ENV_AMBIENT_SOURCE_BG,
 		ENV_AMBIENT_SOURCE_DISABLED,
 		ENV_AMBIENT_SOURCE_COLOR,
 		ENV_AMBIENT_SOURCE_SKY,
 	};
 
-	enum EnvironmentReflectionSource {
+	enum EnvironmentReflectionSource : int32_t {
 		ENV_REFLECTION_SOURCE_BG,
 		ENV_REFLECTION_SOURCE_DISABLED,
 		ENV_REFLECTION_SOURCE_SKY,
@@ -1115,7 +1115,7 @@ public:
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, EnvironmentAmbientSource p_ambient = ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, EnvironmentReflectionSource p_reflection_source = ENV_REFLECTION_SOURCE_BG) = 0;
 
-	enum EnvironmentGlowBlendMode {
+	enum EnvironmentGlowBlendMode : int32_t {
 		ENV_GLOW_BLEND_MODE_ADDITIVE,
 		ENV_GLOW_BLEND_MODE_SCREEN,
 		ENV_GLOW_BLEND_MODE_SOFTLIGHT,
@@ -1127,7 +1127,7 @@ public:
 
 	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
 
-	enum EnvironmentToneMapper {
+	enum EnvironmentToneMapper : int32_t {
 		ENV_TONE_MAPPER_LINEAR,
 		ENV_TONE_MAPPER_REINHARD,
 		ENV_TONE_MAPPER_FILMIC,
@@ -1139,7 +1139,7 @@ public:
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance) = 0;
 
-	enum EnvironmentSSRRoughnessQuality {
+	enum EnvironmentSSRRoughnessQuality : int32_t {
 		ENV_SSR_ROUGHNESS_QUALITY_DISABLED,
 		ENV_SSR_ROUGHNESS_QUALITY_LOW,
 		ENV_SSR_ROUGHNESS_QUALITY_MEDIUM,
@@ -1150,7 +1150,7 @@ public:
 
 	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) = 0;
 
-	enum EnvironmentSSAOQuality {
+	enum EnvironmentSSAOQuality : int32_t {
 		ENV_SSAO_QUALITY_VERY_LOW,
 		ENV_SSAO_QUALITY_LOW,
 		ENV_SSAO_QUALITY_MEDIUM,
@@ -1162,7 +1162,7 @@ public:
 
 	virtual void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) = 0;
 
-	enum EnvironmentSSILQuality {
+	enum EnvironmentSSILQuality : int32_t {
 		ENV_SSIL_QUALITY_VERY_LOW,
 		ENV_SSIL_QUALITY_LOW,
 		ENV_SSIL_QUALITY_MEDIUM,
@@ -1172,7 +1172,7 @@ public:
 
 	virtual void environment_set_ssil_quality(EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
-	enum EnvironmentSDFGIYScale {
+	enum EnvironmentSDFGIYScale : int32_t {
 		ENV_SDFGI_Y_SCALE_50_PERCENT,
 		ENV_SDFGI_Y_SCALE_75_PERCENT,
 		ENV_SDFGI_Y_SCALE_100_PERCENT,
@@ -1180,7 +1180,7 @@ public:
 
 	virtual void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
 
-	enum EnvironmentSDFGIRayCount {
+	enum EnvironmentSDFGIRayCount : int32_t {
 		ENV_SDFGI_RAY_COUNT_4,
 		ENV_SDFGI_RAY_COUNT_8,
 		ENV_SDFGI_RAY_COUNT_16,
@@ -1193,7 +1193,7 @@ public:
 
 	virtual void environment_set_sdfgi_ray_count(EnvironmentSDFGIRayCount p_ray_count) = 0;
 
-	enum EnvironmentSDFGIFramesToConverge {
+	enum EnvironmentSDFGIFramesToConverge : int32_t {
 		ENV_SDFGI_CONVERGE_IN_5_FRAMES,
 		ENV_SDFGI_CONVERGE_IN_10_FRAMES,
 		ENV_SDFGI_CONVERGE_IN_15_FRAMES,
@@ -1205,7 +1205,7 @@ public:
 
 	virtual void environment_set_sdfgi_frames_to_converge(EnvironmentSDFGIFramesToConverge p_frames) = 0;
 
-	enum EnvironmentSDFGIFramesToUpdateLight {
+	enum EnvironmentSDFGIFramesToUpdateLight : int32_t {
 		ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME,
 		ENV_SDFGI_UPDATE_LIGHT_IN_2_FRAMES,
 		ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES,
@@ -1216,7 +1216,7 @@ public:
 
 	virtual void environment_set_sdfgi_frames_to_update_light(EnvironmentSDFGIFramesToUpdateLight p_update) = 0;
 
-	enum EnvironmentFogMode {
+	enum EnvironmentFogMode : int32_t {
 		ENV_FOG_MODE_EXPONENTIAL,
 		ENV_FOG_MODE_DEPTH,
 	};
@@ -1232,7 +1232,7 @@ public:
 
 	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_limit) = 0;
 
-	enum SubSurfaceScatteringQuality {
+	enum SubSurfaceScatteringQuality : int32_t {
 		SUB_SURFACE_SCATTERING_QUALITY_DISABLED,
 		SUB_SURFACE_SCATTERING_QUALITY_LOW,
 		SUB_SURFACE_SCATTERING_QUALITY_MEDIUM,
@@ -1246,7 +1246,7 @@ public:
 
 	virtual RID camera_attributes_create() = 0;
 
-	enum DOFBlurQuality {
+	enum DOFBlurQuality : int32_t {
 		DOF_BLUR_QUALITY_VERY_LOW,
 		DOF_BLUR_QUALITY_LOW,
 		DOF_BLUR_QUALITY_MEDIUM,
@@ -1255,7 +1255,7 @@ public:
 
 	virtual void camera_attributes_set_dof_blur_quality(DOFBlurQuality p_quality, bool p_use_jitter) = 0;
 
-	enum DOFBokehShape {
+	enum DOFBokehShape : int32_t {
 		DOF_BOKEH_BOX,
 		DOF_BOKEH_HEXAGON,
 		DOF_BOKEH_CIRCLE
@@ -1278,7 +1278,7 @@ public:
 
 	/* INSTANCING API */
 
-	enum InstanceType {
+	enum InstanceType : int32_t {
 		INSTANCE_NONE,
 		INSTANCE_MESH,
 		INSTANCE_MULTIMESH,
@@ -1329,7 +1329,7 @@ public:
 	PackedInt64Array _instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const;
 	PackedInt64Array _instances_cull_convex_bind(const TypedArray<Plane> &p_convex, RID p_scenario = RID()) const;
 
-	enum InstanceFlags {
+	enum InstanceFlags : int32_t {
 		INSTANCE_FLAG_USE_BAKED_LIGHT,
 		INSTANCE_FLAG_USE_DYNAMIC_GI,
 		INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE,
@@ -1337,14 +1337,14 @@ public:
 		INSTANCE_FLAG_MAX
 	};
 
-	enum ShadowCastingSetting {
+	enum ShadowCastingSetting : int32_t {
 		SHADOW_CASTING_SETTING_OFF,
 		SHADOW_CASTING_SETTING_ON,
 		SHADOW_CASTING_SETTING_DOUBLE_SIDED,
 		SHADOW_CASTING_SETTING_SHADOWS_ONLY,
 	};
 
-	enum VisibilityRangeFadeMode {
+	enum VisibilityRangeFadeMode : int32_t {
 		VISIBILITY_RANGE_FADE_DISABLED,
 		VISIBILITY_RANGE_FADE_SELF,
 		VISIBILITY_RANGE_FADE_DEPENDENCIES,
@@ -1366,7 +1366,7 @@ public:
 
 	/* Bake 3D objects */
 
-	enum BakeChannels {
+	enum BakeChannels : int32_t {
 		BAKE_CHANNEL_ALBEDO_ALPHA,
 		BAKE_CHANNEL_NORMAL,
 		BAKE_CHANNEL_ORM,
@@ -1388,7 +1388,7 @@ public:
 	/* CANVAS TEXTURE */
 	virtual RID canvas_texture_create() = 0;
 
-	enum CanvasTextureChannel {
+	enum CanvasTextureChannel : int32_t {
 		CANVAS_TEXTURE_CHANNEL_DIFFUSE,
 		CANVAS_TEXTURE_CHANNEL_NORMAL,
 		CANVAS_TEXTURE_CHANNEL_SPECULAR,
@@ -1423,7 +1423,7 @@ public:
 
 	virtual void canvas_item_set_draw_behind_parent(RID p_item, bool p_enable) = 0;
 
-	enum NinePatchAxisMode {
+	enum NinePatchAxisMode : int32_t {
 		NINE_PATCH_STRETCH,
 		NINE_PATCH_TILE,
 		NINE_PATCH_TILE_FIT,
@@ -1465,7 +1465,7 @@ public:
 
 	virtual void canvas_item_set_visibility_notifier(RID p_item, bool p_enable, const Rect2 &p_area, const Callable &p_enter_callbable, const Callable &p_exit_callable) = 0;
 
-	enum CanvasGroupMode {
+	enum CanvasGroupMode : int32_t {
 		CANVAS_GROUP_MODE_DISABLED,
 		CANVAS_GROUP_MODE_CLIP_ONLY,
 		CANVAS_GROUP_MODE_CLIP_AND_DRAW,
@@ -1484,7 +1484,7 @@ public:
 	/* CANVAS LIGHT */
 	virtual RID canvas_light_create() = 0;
 
-	enum CanvasLightMode {
+	enum CanvasLightMode : int32_t {
 		CANVAS_LIGHT_MODE_POINT,
 		CANVAS_LIGHT_MODE_DIRECTIONAL,
 	};
@@ -1508,7 +1508,7 @@ public:
 	virtual void canvas_light_set_texture(RID p_light, RID p_texture) = 0;
 	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2 &p_offset) = 0;
 
-	enum CanvasLightBlendMode {
+	enum CanvasLightBlendMode : int32_t {
 		CANVAS_LIGHT_BLEND_MODE_ADD,
 		CANVAS_LIGHT_BLEND_MODE_SUB,
 		CANVAS_LIGHT_BLEND_MODE_MIX,
@@ -1516,7 +1516,7 @@ public:
 
 	virtual void canvas_light_set_blend_mode(RID p_light, CanvasLightBlendMode p_mode) = 0;
 
-	enum CanvasLightShadowFilter {
+	enum CanvasLightShadowFilter : int32_t {
 		CANVAS_LIGHT_FILTER_NONE,
 		CANVAS_LIGHT_FILTER_PCF5,
 		CANVAS_LIGHT_FILTER_PCF13,
@@ -1551,7 +1551,7 @@ public:
 	virtual RID canvas_occluder_polygon_create() = 0;
 	virtual void canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const Vector<Vector2> &p_shape, bool p_closed) = 0;
 
-	enum CanvasOccluderPolygonCullMode {
+	enum CanvasOccluderPolygonCullMode : int32_t {
 		CANVAS_OCCLUDER_POLYGON_CULL_DISABLED,
 		CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE,
 		CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE,
@@ -1566,7 +1566,7 @@ public:
 
 	/* GLOBAL SHADER UNIFORMS */
 
-	enum GlobalShaderParameterType {
+	enum GlobalShaderParameterType : int32_t {
 		GLOBAL_VAR_TYPE_BOOL,
 		GLOBAL_VAR_TYPE_BVEC2,
 		GLOBAL_VAR_TYPE_BVEC3,
@@ -1634,7 +1634,7 @@ public:
 
 	/* STATUS INFORMATION */
 
-	enum RenderingInfo {
+	enum RenderingInfo : int32_t {
 		RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME,
 		RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME,
 		RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME,
@@ -1684,7 +1684,7 @@ public:
 
 #ifndef DISABLE_DEPRECATED
 	// Never actually used, should be removed when we can break compatibility.
-	enum Features {
+	enum Features : int32_t {
 		FEATURE_SHADERS,
 		FEATURE_MULTITHREADED,
 	};

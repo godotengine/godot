@@ -55,7 +55,7 @@ class Callable {
 
 public:
 	struct CallError {
-		enum Error {
+		enum Error : int32_t {
 			CALL_OK,
 			CALL_ERROR_INVALID_METHOD,
 			CALL_ERROR_INVALID_ARGUMENT, // expected is variant type

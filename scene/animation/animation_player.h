@@ -40,12 +40,12 @@ class AnimationPlayer : public AnimationMixer {
 
 #ifndef DISABLE_DEPRECATED
 public:
-	enum AnimationProcessCallback {
+	enum AnimationProcessCallback : int32_t {
 		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
 		ANIMATION_PROCESS_MANUAL,
 	};
-	enum AnimationMethodCallMode {
+	enum AnimationMethodCallMode : int32_t {
 		ANIMATION_METHOD_CALL_DEFERRED,
 		ANIMATION_METHOD_CALL_IMMEDIATE,
 	};

@@ -37,7 +37,7 @@ class TextureRect : public Control {
 	GDCLASS(TextureRect, Control);
 
 public:
-	enum ExpandMode {
+	enum ExpandMode : int32_t {
 		EXPAND_KEEP_SIZE,
 		EXPAND_IGNORE_SIZE,
 		EXPAND_FIT_WIDTH,
@@ -46,7 +46,7 @@ public:
 		EXPAND_FIT_HEIGHT_PROPORTIONAL,
 	};
 
-	enum StretchMode {
+	enum StretchMode : int32_t {
 		STRETCH_SCALE,
 		STRETCH_TILE,
 		STRETCH_KEEP,

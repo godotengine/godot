@@ -38,12 +38,12 @@ private:
 	GDCLASS(CPUParticles2D, Node2D);
 
 public:
-	enum DrawOrder {
+	enum DrawOrder : int32_t {
 		DRAW_ORDER_INDEX,
 		DRAW_ORDER_LIFETIME,
 	};
 
-	enum Parameter {
+	enum Parameter : int32_t {
 		PARAM_INITIAL_LINEAR_VELOCITY,
 		PARAM_ANGULAR_VELOCITY,
 		PARAM_ORBIT_VELOCITY,
@@ -59,14 +59,14 @@ public:
 		PARAM_MAX
 	};
 
-	enum ParticleFlags {
+	enum ParticleFlags : int32_t {
 		PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY,
 		PARTICLE_FLAG_ROTATE_Y, // Unused, but exposed for consistency with 3D.
 		PARTICLE_FLAG_DISABLE_Z, // Unused, but exposed for consistency with 3D.
 		PARTICLE_FLAG_MAX
 	};
 
-	enum EmissionShape {
+	enum EmissionShape : int32_t {
 		EMISSION_SHAPE_POINT,
 		EMISSION_SHAPE_SPHERE,
 		EMISSION_SHAPE_SPHERE_SURFACE,

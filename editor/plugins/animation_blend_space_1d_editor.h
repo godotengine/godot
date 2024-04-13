@@ -119,7 +119,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 
-	enum {
+	enum : int32_t {
 		MENU_LOAD_FILE = 1000,
 		MENU_PASTE = 1001,
 		MENU_LOAD_FILE_CONFIRM = 1002

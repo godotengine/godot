@@ -222,7 +222,7 @@ class AnimationTrackEdit : public Control {
 	GDCLASS(AnimationTrackEdit, Control);
 	friend class AnimationTimelineEdit;
 
-	enum {
+	enum : int32_t {
 		MENU_CALL_MODE_CONTINUOUS,
 		MENU_CALL_MODE_DISCRETE,
 		MENU_CALL_MODE_CAPTURE,
@@ -659,7 +659,7 @@ public:
 	void _key_selected(int p_key, bool p_single, int p_track);
 	void _key_deselected(int p_key, int p_track);
 
-	enum {
+	enum : int32_t {
 		EDIT_COPY_TRACKS,
 		EDIT_COPY_TRACKS_CONFIRM,
 		EDIT_PASTE_TRACKS,

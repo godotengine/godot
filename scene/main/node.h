@@ -76,13 +76,13 @@ public:
 		PROCESS_MODE_DISABLED, // never process
 	};
 
-	enum ProcessThreadGroup {
+	enum ProcessThreadGroup : int32_t {
 		PROCESS_THREAD_GROUP_INHERIT,
 		PROCESS_THREAD_GROUP_MAIN_THREAD,
 		PROCESS_THREAD_GROUP_SUB_THREAD,
 	};
 
-	enum ProcessThreadMessages {
+	enum ProcessThreadMessages : int32_t {
 		FLAG_PROCESS_THREAD_MESSAGES = 1,
 		FLAG_PROCESS_THREAD_MESSAGES_PHYSICS = 2,
 		FLAG_PROCESS_THREAD_MESSAGES_ALL = 3,
@@ -94,7 +94,7 @@ public:
 		PHYSICS_INTERPOLATION_MODE_OFF,
 	};
 
-	enum DuplicateFlags {
+	enum DuplicateFlags : int32_t {
 		DUPLICATE_SIGNALS = 1,
 		DUPLICATE_GROUPS = 2,
 		DUPLICATE_SCRIPTS = 4,
@@ -104,19 +104,19 @@ public:
 #endif
 	};
 
-	enum NameCasing {
+	enum NameCasing : int32_t {
 		NAME_CASING_PASCAL_CASE,
 		NAME_CASING_CAMEL_CASE,
 		NAME_CASING_SNAKE_CASE
 	};
 
-	enum InternalMode {
+	enum InternalMode : int32_t {
 		INTERNAL_MODE_DISABLED,
 		INTERNAL_MODE_FRONT,
 		INTERNAL_MODE_BACK,
 	};
 
-	enum AutoTranslateMode {
+	enum AutoTranslateMode : int32_t {
 		AUTO_TRANSLATE_MODE_INHERIT,
 		AUTO_TRANSLATE_MODE_ALWAYS,
 		AUTO_TRANSLATE_MODE_DISABLED,
@@ -360,7 +360,7 @@ protected:
 	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
 
 public:
-	enum {
+	enum : int32_t {
 		// You can make your own, but don't use the same numbers as other notifications in other nodes.
 		NOTIFICATION_ENTER_TREE = 10,
 		NOTIFICATION_EXIT_TREE = 11,

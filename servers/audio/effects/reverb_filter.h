@@ -37,13 +37,13 @@
 
 class Reverb {
 public:
-	enum {
+	enum : int32_t {
 		INPUT_BUFFER_MAX_SIZE = 1024,
 
 	};
 
 private:
-	enum {
+	enum : int32_t {
 		MAX_COMBS = 8,
 		MAX_ALLPASS = 4,
 		MAX_ECHO_MS = 500

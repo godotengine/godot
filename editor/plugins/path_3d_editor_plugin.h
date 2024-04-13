@@ -44,7 +44,7 @@ class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
 
 	// Map handle id to control point id and handle type.
-	enum HandleType {
+	enum HandleType : int32_t {
 		HANDLE_TYPE_IN,
 		HANDLE_TYPE_OUT,
 		HANDLE_TYPE_TILT,
@@ -126,7 +126,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 
 	float disk_size = 0.8;
 
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_CREATE,
 		MODE_EDIT,
 		MODE_EDIT_CURVE,
@@ -151,7 +151,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	void _clear_curve_points();
 	void _restore_curve_points(const PackedVector3Array &p_points);
 
-	enum HandleOption {
+	enum HandleOption : int32_t {
 		HANDLE_OPTION_ANGLE,
 		HANDLE_OPTION_LENGTH
 	};

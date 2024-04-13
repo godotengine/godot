@@ -39,19 +39,19 @@ class WebSocketPeer : public PacketPeer {
 	GDCLASS(WebSocketPeer, PacketPeer);
 
 public:
-	enum State {
+	enum State : int32_t {
 		STATE_CONNECTING,
 		STATE_OPEN,
 		STATE_CLOSING,
 		STATE_CLOSED
 	};
 
-	enum WriteMode {
+	enum WriteMode : int32_t {
 		WRITE_MODE_TEXT,
 		WRITE_MODE_BINARY,
 	};
 
-	enum {
+	enum : int32_t {
 		DEFAULT_BUFFER_SIZE = 65535,
 	};
 

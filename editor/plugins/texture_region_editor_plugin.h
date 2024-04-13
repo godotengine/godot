@@ -47,7 +47,7 @@ class ViewPanner;
 class TextureRegionEditor : public AcceptDialog {
 	GDCLASS(TextureRegionEditor, AcceptDialog);
 
-	enum SnapMode {
+	enum SnapMode : int32_t {
 		SNAP_NONE,
 		SNAP_PIXEL,
 		SNAP_GRID,

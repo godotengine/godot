@@ -72,7 +72,7 @@ struct PluginConfigIOS {
 
 	inline static const char *PLIST_SECTION = "plist";
 
-	enum PlistItemType {
+	enum PlistItemType : int32_t {
 		UNKNOWN,
 		STRING,
 		INTEGER,

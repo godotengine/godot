@@ -41,7 +41,7 @@ namespace RendererRD {
 
 class VRS {
 private:
-	enum VRSMode {
+	enum VRSMode : int32_t {
 		VRS_DEFAULT,
 		VRS_MULTIVIEW,
 		VRS_MAX,

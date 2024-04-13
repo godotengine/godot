@@ -43,21 +43,21 @@ class IP : public Object {
 	GDCLASS(IP, Object);
 
 public:
-	enum ResolverStatus {
+	enum ResolverStatus : int32_t {
 		RESOLVER_STATUS_NONE,
 		RESOLVER_STATUS_WAITING,
 		RESOLVER_STATUS_DONE,
 		RESOLVER_STATUS_ERROR,
 	};
 
-	enum Type {
+	enum Type : int32_t {
 		TYPE_NONE = 0,
 		TYPE_IPV4 = 1,
 		TYPE_IPV6 = 2,
 		TYPE_ANY = 3,
 	};
 
-	enum {
+	enum : int32_t {
 		RESOLVER_MAX_QUERIES = 256,
 		RESOLVER_INVALID_ID = -1
 	};

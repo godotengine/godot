@@ -47,7 +47,7 @@
 template <typename T>
 class TypedArray;
 
-enum PropertyHint {
+enum PropertyHint : int32_t {
 	PROPERTY_HINT_NONE, ///< no hint provided.
 	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.
 	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
@@ -89,7 +89,7 @@ enum PropertyHint {
 	PROPERTY_HINT_MAX,
 };
 
-enum PropertyUsageFlags {
+enum PropertyUsageFlags : int32_t {
 	PROPERTY_USAGE_NONE = 0,
 	PROPERTY_USAGE_STORAGE = 1 << 1,
 	PROPERTY_USAGE_EDITOR = 1 << 2,
@@ -206,7 +206,7 @@ struct PropertyInfo {
 
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);
 
-enum MethodFlags {
+enum MethodFlags : int32_t {
 	METHOD_FLAG_NORMAL = 1,
 	METHOD_FLAG_EDITOR = 2,
 	METHOD_FLAG_CONST = 4,
@@ -579,7 +579,7 @@ class Object {
 public:
 	typedef Object self_type;
 
-	enum ConnectFlags {
+	enum ConnectFlags : int32_t {
 		CONNECT_DEFERRED = 1,
 		CONNECT_PERSIST = 2, // hint for scene to save this connection
 		CONNECT_ONE_SHOT = 4,
@@ -807,7 +807,7 @@ public:
 		return p_object ? dynamic_cast<const T *>(p_object) : nullptr;
 	}
 
-	enum {
+	enum : int32_t {
 		NOTIFICATION_POSTINITIALIZE = 0,
 		NOTIFICATION_PREDELETE = 1,
 		NOTIFICATION_EXTENSION_RELOADED = 2,

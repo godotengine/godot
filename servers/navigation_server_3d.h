@@ -354,7 +354,7 @@ public:
 	NavigationServer3D();
 	~NavigationServer3D() override;
 
-	enum ProcessInfo {
+	enum ProcessInfo : int32_t {
 		INFO_ACTIVE_MAPS,
 		INFO_REGION_COUNT,
 		INFO_AGENT_COUNT,

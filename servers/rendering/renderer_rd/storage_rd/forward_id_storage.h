@@ -39,7 +39,7 @@ namespace RendererRD {
 
 typedef int32_t ForwardID;
 
-enum ForwardIDType {
+enum ForwardIDType : int32_t {
 	FORWARD_ID_TYPE_OMNI_LIGHT,
 	FORWARD_ID_TYPE_SPOT_LIGHT,
 	FORWARD_ID_TYPE_REFLECTION_PROBE,

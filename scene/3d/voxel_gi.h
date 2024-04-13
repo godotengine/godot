@@ -99,7 +99,7 @@ class VoxelGI : public VisualInstance3D {
 	GDCLASS(VoxelGI, VisualInstance3D);
 
 public:
-	enum Subdiv {
+	enum Subdiv : int32_t {
 		SUBDIV_64,
 		SUBDIV_128,
 		SUBDIV_256,

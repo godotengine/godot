@@ -61,7 +61,7 @@ protected:
 	RendererRD::Fog *fog = nullptr;
 	RendererSceneRenderRD *scene = nullptr;
 
-	enum BlitMode {
+	enum BlitMode : int32_t {
 		BLIT_MODE_NORMAL,
 		BLIT_MODE_USE_LAYER,
 		BLIT_MODE_LENS,

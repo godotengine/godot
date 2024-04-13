@@ -128,7 +128,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum ModifyButton {
+	enum ModifyButton : int32_t {
 		DELETE_GROUP,
 		COPY_GROUP,
 		RENAME_GROUP,

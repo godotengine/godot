@@ -163,7 +163,7 @@ private:
 	VBoxContainer *tile_create_help = nullptr;
 
 	// Dragging
-	enum DragType {
+	enum DragType : int32_t {
 		DRAG_TYPE_NONE = 0,
 		DRAG_TYPE_CREATE_TILES,
 		DRAG_TYPE_CREATE_TILES_USING_RECT,
@@ -199,7 +199,7 @@ private:
 	HashMap<Vector2i, List<const PropertyInfo *>> _group_properties_per_tiles(const List<PropertyInfo> &r_list, const TileSetAtlasSource *p_atlas);
 
 	// Popup functions.
-	enum MenuOptions {
+	enum MenuOptions : int32_t {
 		TILE_CREATE,
 		TILE_CREATE_ALTERNATIVE,
 		TILE_DELETE,

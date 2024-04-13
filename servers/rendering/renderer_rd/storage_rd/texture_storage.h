@@ -47,7 +47,7 @@ class MaterialStorage;
 
 class TextureStorage : public RendererTextureStorage {
 public:
-	enum DefaultRDTexture {
+	enum DefaultRDTexture : int32_t {
 		DEFAULT_RD_TEXTURE_WHITE,
 		DEFAULT_RD_TEXTURE_BLACK,
 		DEFAULT_RD_TEXTURE_TRANSPARENT,
@@ -70,7 +70,7 @@ public:
 		DEFAULT_RD_TEXTURE_MAX
 	};
 
-	enum TextureType {
+	enum TextureType : int32_t {
 		TYPE_2D,
 		TYPE_LAYERED,
 		TYPE_3D
@@ -427,7 +427,7 @@ private:
 	Rect2i _render_target_get_sdf_rect(const RenderTarget *rt) const;
 
 	struct RenderTargetSDF {
-		enum {
+		enum : int32_t {
 			SHADER_LOAD,
 			SHADER_LOAD_SHRINK,
 			SHADER_PROCESS,

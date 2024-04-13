@@ -39,7 +39,7 @@ template <typename T>
 class Vector;
 
 class Main {
-	enum CLIOptionAvailability {
+	enum CLIOptionAvailability : int32_t {
 		CLI_OPTION_AVAILABILITY_EDITOR,
 		CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG,
 		CLI_OPTION_AVAILABILITY_TEMPLATE_RELEASE,
@@ -63,7 +63,7 @@ class Main {
 public:
 	static bool is_cmdline_tool();
 #ifdef TOOLS_ENABLED
-	enum CLIScope {
+	enum CLIScope : int32_t {
 		CLI_SCOPE_TOOL, // Editor and project manager.
 		CLI_SCOPE_PROJECT,
 	};

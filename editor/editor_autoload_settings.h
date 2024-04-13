@@ -40,7 +40,7 @@ class EditorFileDialog;
 class EditorAutoloadSettings : public VBoxContainer {
 	GDCLASS(EditorAutoloadSettings, VBoxContainer);
 
-	enum {
+	enum : int32_t {
 		BUTTON_OPEN,
 		BUTTON_MOVE_UP,
 		BUTTON_MOVE_DOWN,

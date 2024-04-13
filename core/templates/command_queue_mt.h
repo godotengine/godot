@@ -332,7 +332,7 @@ class CommandQueueMT {
 
 	/***** BASE *******/
 
-	enum {
+	enum : int32_t {
 		DEFAULT_COMMAND_MEM_SIZE_KB = 256,
 		SYNC_SEMAPHORES = 8
 	};

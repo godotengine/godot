@@ -41,7 +41,7 @@
 
 class RemoteDebugger : public EngineDebugger {
 public:
-	enum MessageType {
+	enum MessageType : int32_t {
 		MESSAGE_TYPE_LOG,
 		MESSAGE_TYPE_ERROR,
 		MESSAGE_TYPE_LOG_RICH,

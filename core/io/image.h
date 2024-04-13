@@ -68,13 +68,13 @@ public:
 	static SaveWebPFunc save_webp_func;
 	static SaveWebPBufferFunc save_webp_buffer_func;
 
-	enum {
+	enum : int32_t {
 		MAX_WIDTH = (1 << 24), // force a limit somehow
 		MAX_HEIGHT = (1 << 24), // force a limit somehow
 		MAX_PIXELS = 268435456
 	};
 
-	enum Format {
+	enum Format : int32_t {
 		FORMAT_L8, //luminance
 		FORMAT_LA8, //luminance-alpha
 		FORMAT_R8,
@@ -118,7 +118,7 @@ public:
 	};
 
 	static const char *format_names[FORMAT_MAX];
-	enum Interpolation {
+	enum Interpolation : int32_t {
 		INTERPOLATE_NEAREST,
 		INTERPOLATE_BILINEAR,
 		INTERPOLATE_CUBIC,
@@ -129,7 +129,7 @@ public:
 	};
 
 	//this is used for compression
-	enum UsedChannels {
+	enum UsedChannels : int32_t {
 		USED_CHANNELS_L,
 		USED_CHANNELS_LA,
 		USED_CHANNELS_R,
@@ -139,7 +139,7 @@ public:
 	};
 	//some functions provided by something else
 
-	enum ASTCFormat {
+	enum ASTCFormat : int32_t {
 		ASTC_FORMAT_4x4,
 		ASTC_FORMAT_8x8,
 	};
@@ -243,7 +243,7 @@ public:
 	void get_mipmap_offset_and_size(int p_mipmap, int &r_ofs, int &r_size) const; //get where the mipmap begins in data
 	void get_mipmap_offset_size_and_dimensions(int p_mipmap, int &r_ofs, int &r_size, int &w, int &h) const; //get where the mipmap begins in data
 
-	enum Image3DValidateError {
+	enum Image3DValidateError : int32_t {
 		VALIDATE_3D_OK,
 		VALIDATE_3D_ERR_IMAGE_EMPTY,
 		VALIDATE_3D_ERR_MISSING_IMAGES,
@@ -280,7 +280,7 @@ public:
 	 */
 	Error generate_mipmaps(bool p_renormalize = false);
 
-	enum RoughnessChannel {
+	enum RoughnessChannel : int32_t {
 		ROUGHNESS_CHANNEL_R,
 		ROUGHNESS_CHANNEL_G,
 		ROUGHNESS_CHANNEL_B,
@@ -337,7 +337,7 @@ public:
 
 	~Image() {}
 
-	enum AlphaMode {
+	enum AlphaMode : int32_t {
 		ALPHA_NONE,
 		ALPHA_BIT,
 		ALPHA_BLEND
@@ -357,7 +357,7 @@ public:
 	static int get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);
 	static int get_image_mipmap_offset_and_dimensions(int p_width, int p_height, Format p_format, int p_mipmap, int &r_w, int &r_h);
 
-	enum CompressMode {
+	enum CompressMode : int32_t {
 		COMPRESS_S3TC,
 		COMPRESS_ETC,
 		COMPRESS_ETC2,
@@ -365,7 +365,7 @@ public:
 		COMPRESS_ASTC,
 		COMPRESS_MAX,
 	};
-	enum CompressSource {
+	enum CompressSource : int32_t {
 		COMPRESS_SOURCE_GENERIC,
 		COMPRESS_SOURCE_SRGB,
 		COMPRESS_SOURCE_NORMAL,

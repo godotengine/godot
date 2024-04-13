@@ -44,7 +44,7 @@ class OptionButton;
 class EditorLocaleDialog : public ConfirmationDialog {
 	GDCLASS(EditorLocaleDialog, ConfirmationDialog);
 
-	enum LocaleFilter {
+	enum LocaleFilter : int32_t {
 		SHOW_ALL_LOCALES,
 		SHOW_ONLY_SELECTED_LOCALES,
 	};

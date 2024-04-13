@@ -66,14 +66,14 @@ class SpriteFramesEditor : public HSplitContainer {
 	Ref<SpriteFrames> frames;
 	Node *animated_sprite = nullptr;
 
-	enum {
+	enum : int32_t {
 		PARAM_USE_CURRENT, // Used in callbacks to indicate `dominant_param` should be not updated.
 		PARAM_FRAME_COUNT, // Keep "Horizontal" & "Vertical" values.
 		PARAM_SIZE, // Keep "Size" values.
 	};
 	int dominant_param = PARAM_FRAME_COUNT;
 
-	enum {
+	enum : int32_t {
 		FRAME_ORDER_SELECTION, // Order frames were selected in.
 
 		// By Row.

@@ -64,7 +64,7 @@ class ExportTemplateManager : public AcceptDialog {
 	VBoxContainer *install_options_vb = nullptr;
 	OptionButton *mirrors_list = nullptr;
 
-	enum MirrorAction {
+	enum MirrorAction : int32_t {
 		VISIT_WEB_MIRROR,
 		COPY_MIRROR_URL,
 	};
@@ -77,7 +77,7 @@ class ExportTemplateManager : public AcceptDialog {
 	Button *install_file_button = nullptr;
 	HTTPRequest *request_mirrors = nullptr;
 
-	enum TemplatesAction {
+	enum TemplatesAction : int32_t {
 		OPEN_TEMPLATE_FOLDER,
 		UNINSTALL_TEMPLATE,
 	};

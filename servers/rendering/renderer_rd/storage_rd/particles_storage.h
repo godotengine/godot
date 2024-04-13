@@ -53,7 +53,7 @@ private:
 
 	/* PARTICLES */
 
-	enum {
+	enum : int32_t {
 		BASE_UNIFORM_SET,
 		MATERIAL_UNIFORM_SET,
 		COLLISION_TEXTURTES_UNIFORM_SET,
@@ -70,13 +70,13 @@ private:
 	};
 
 	struct ParticlesFrameParams {
-		enum {
+		enum : int32_t {
 			MAX_ATTRACTORS = 32,
 			MAX_COLLIDERS = 32,
 			MAX_3D_TEXTURES = 7
 		};
 
-		enum AttractorType {
+		enum AttractorType : int32_t {
 			ATTRACTOR_TYPE_SPHERE,
 			ATTRACTOR_TYPE_BOX,
 			ATTRACTOR_TYPE_VECTOR_FIELD,
@@ -93,7 +93,7 @@ private:
 			float directionality;
 		};
 
-		enum CollisionType {
+		enum CollisionType : int32_t {
 			COLLISION_TYPE_SPHERE,
 			COLLISION_TYPE_BOX,
 			COLLISION_TYPE_SDF,
@@ -314,10 +314,10 @@ private:
 			float inv_emission_transform[16];
 		};
 
-		enum {
+		enum : int32_t {
 			MAX_USERDATAS = 6
 		};
-		enum {
+		enum : int32_t {
 			COPY_MODE_FILL_INSTANCES,
 			COPY_MODE_FILL_SORT_BUFFER,
 			COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER,

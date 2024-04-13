@@ -46,7 +46,7 @@ class SceneState : public RefCounted {
 
 	int base_scene_idx = -1;
 
-	enum {
+	enum : int32_t {
 		NO_PARENT_SAVED = 0x7FFFFFFF,
 		NAME_INDEX_BITS = 18,
 		NAME_MASK = (1 << NAME_INDEX_BITS) - 1,
@@ -114,7 +114,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
+	enum : int32_t {
 		FLAG_ID_IS_PATH = (1 << 30),
 		TYPE_INSTANTIATED = 0x7FFFFFFF,
 		FLAG_INSTANCE_IS_PLACEHOLDER = (1 << 30),
@@ -123,7 +123,7 @@ public:
 		FLAG_MASK = (1 << 24) - 1,
 	};
 
-	enum GenEditState {
+	enum GenEditState : int32_t {
 		GEN_EDIT_STATE_DISABLED,
 		GEN_EDIT_STATE_INSTANCE,
 		GEN_EDIT_STATE_MAIN,
@@ -242,7 +242,7 @@ protected:
 	virtual void reset_state() override;
 
 public:
-	enum GenEditState {
+	enum GenEditState : int32_t {
 		GEN_EDIT_STATE_DISABLED,
 		GEN_EDIT_STATE_INSTANCE,
 		GEN_EDIT_STATE_MAIN,

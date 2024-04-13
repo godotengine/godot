@@ -64,7 +64,7 @@ public:
 	void build();
 
 private:
-	enum Orientation {
+	enum Orientation : int32_t {
 		UP = 0,
 		DOWN = 1
 	};

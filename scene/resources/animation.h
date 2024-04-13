@@ -43,7 +43,7 @@ class Animation : public Resource {
 public:
 	typedef uint32_t TypeHash;
 
-	enum TrackType {
+	enum TrackType : int32_t {
 		TYPE_VALUE, // Set a value in a property, can be interpolated.
 		TYPE_POSITION_3D, // Position 3D track, can be compressed.
 		TYPE_ROTATION_3D, // Rotation 3D track, can be compressed.
@@ -55,7 +55,7 @@ public:
 		TYPE_ANIMATION,
 	};
 
-	enum InterpolationType {
+	enum InterpolationType : int32_t {
 		INTERPOLATION_NEAREST,
 		INTERPOLATION_LINEAR,
 		INTERPOLATION_CUBIC,
@@ -63,39 +63,39 @@ public:
 		INTERPOLATION_CUBIC_ANGLE,
 	};
 
-	enum UpdateMode {
+	enum UpdateMode : int32_t {
 		UPDATE_CONTINUOUS,
 		UPDATE_DISCRETE,
 		UPDATE_CAPTURE,
 	};
 
-	enum LoopMode {
+	enum LoopMode : int32_t {
 		LOOP_NONE,
 		LOOP_LINEAR,
 		LOOP_PINGPONG,
 	};
 
 	// LoopedFlag is used in Animataion to "process the keys at both ends correct".
-	enum LoopedFlag {
+	enum LoopedFlag : int32_t {
 		LOOPED_FLAG_NONE,
 		LOOPED_FLAG_END,
 		LOOPED_FLAG_START,
 	};
 
-	enum FindMode {
+	enum FindMode : int32_t {
 		FIND_MODE_NEAREST,
 		FIND_MODE_APPROX,
 		FIND_MODE_EXACT,
 	};
 
 #ifdef TOOLS_ENABLED
-	enum HandleMode {
+	enum HandleMode : int32_t {
 		HANDLE_MODE_FREE,
 		HANDLE_MODE_LINEAR,
 		HANDLE_MODE_BALANCED,
 		HANDLE_MODE_MIRRORED,
 	};
-	enum HandleSetMode {
+	enum HandleSetMode : int32_t {
 		HANDLE_SET_MODE_NONE,
 		HANDLE_SET_MODE_RESET,
 		HANDLE_SET_MODE_AUTO,
@@ -323,7 +323,7 @@ private:
 	 */
 
 	struct Compression {
-		enum {
+		enum : int32_t {
 			MAX_DATA_TRACK_SIZE = 16384,
 			BLEND_SHAPE_RANGE = 8, // -8.0 to 8.0.
 			FORMAT_VERSION = 1

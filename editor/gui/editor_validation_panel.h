@@ -41,7 +41,7 @@ class EditorValidationPanel : public PanelContainer {
 	GDCLASS(EditorValidationPanel, PanelContainer);
 
 public:
-	enum MessageType {
+	enum MessageType : int32_t {
 		MSG_OK,
 		MSG_WARNING,
 		MSG_ERROR,

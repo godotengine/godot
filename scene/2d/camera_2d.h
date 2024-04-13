@@ -37,12 +37,12 @@ class Camera2D : public Node2D {
 	GDCLASS(Camera2D, Node2D);
 
 public:
-	enum AnchorMode {
+	enum AnchorMode : int32_t {
 		ANCHOR_MODE_FIXED_TOP_LEFT,
 		ANCHOR_MODE_DRAG_CENTER
 	};
 
-	enum Camera2DProcessCallback {
+	enum Camera2DProcessCallback : int32_t {
 		CAMERA2D_PROCESS_PHYSICS,
 		CAMERA2D_PROCESS_IDLE
 	};

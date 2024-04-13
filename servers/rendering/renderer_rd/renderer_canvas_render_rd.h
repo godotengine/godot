@@ -41,7 +41,7 @@
 #include "servers/rendering/shader_compiler.h"
 
 class RendererCanvasRenderRD : public RendererCanvasRender {
-	enum {
+	enum : int32_t {
 		BASE_UNIFORM_SET = 0,
 		MATERIAL_UNIFORM_SET = 1,
 		TRANSFORMS_UNIFORM_SET = 2,
@@ -50,7 +50,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	const int SAMPLERS_BINDING_FIRST_INDEX = 10;
 
-	enum ShaderVariant {
+	enum ShaderVariant : int32_t {
 		SHADER_VARIANT_QUAD,
 		SHADER_VARIANT_NINEPATCH,
 		SHADER_VARIANT_PRIMITIVE,
@@ -66,7 +66,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		SHADER_VARIANT_MAX
 	};
 
-	enum {
+	enum : int64_t {
 
 		FLAGS_INSTANCING_MASK = 0x7F,
 		FLAGS_INSTANCING_HAS_COLORS = (1 << 7),
@@ -95,7 +95,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		FLAGS_FLIP_V = (1 << 31),
 	};
 
-	enum {
+	enum : int32_t {
 		LIGHT_FLAGS_TEXTURE_MASK = 0xFFFF,
 		LIGHT_FLAGS_BLEND_SHIFT = 16,
 		LIGHT_FLAGS_BLEND_MASK = (3 << 16),
@@ -108,7 +108,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	};
 
-	enum {
+	enum : int32_t {
 		MAX_RENDER_ITEMS = 256 * 1024,
 		MAX_LIGHT_TEXTURES = 1024,
 		MAX_LIGHTS_PER_ITEM = 16,
@@ -119,7 +119,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	/**** SHADER ****/
 	/****************/
 
-	enum PipelineVariant {
+	enum PipelineVariant : int32_t {
 		PIPELINE_VARIANT_QUAD,
 		PIPELINE_VARIANT_NINEPATCH,
 		PIPELINE_VARIANT_PRIMITIVE_TRIANGLES,
@@ -133,7 +133,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		PIPELINE_VARIANT_QUAD_LCD_BLEND,
 		PIPELINE_VARIANT_MAX
 	};
-	enum PipelineLightMode {
+	enum PipelineLightMode : int32_t {
 		PIPELINE_LIGHT_MODE_DISABLED,
 		PIPELINE_LIGHT_MODE_ENABLED,
 		PIPELINE_LIGHT_MODE_MAX
@@ -155,7 +155,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	} shader;
 
 	struct CanvasShaderData : public RendererRD::MaterialStorage::ShaderData {
-		enum BlendMode { //used internally
+		enum BlendMode : int32_t { //used internally
 			BLEND_MODE_MIX,
 			BLEND_MODE_ADD,
 			BLEND_MODE_SUB,
@@ -309,12 +309,12 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	RID_Owner<OccluderPolygon> occluder_polygon_owner;
 
-	enum ShadowRenderMode {
+	enum ShadowRenderMode : int32_t {
 		SHADOW_RENDER_MODE_SHADOW,
 		SHADOW_RENDER_MODE_SDF,
 	};
 
-	enum {
+	enum : int32_t {
 		SHADOW_RENDER_SDF_TRIANGLES,
 		SHADOW_RENDER_SDF_LINES,
 	};

@@ -36,21 +36,21 @@
 
 namespace NavigationUtilities {
 
-enum PathfindingAlgorithm {
+enum PathfindingAlgorithm : int32_t {
 	PATHFINDING_ALGORITHM_ASTAR = 0,
 };
 
-enum PathPostProcessing {
+enum PathPostProcessing : int32_t {
 	PATH_POSTPROCESSING_CORRIDORFUNNEL = 0,
 	PATH_POSTPROCESSING_EDGECENTERED,
 };
 
-enum PathSegmentType {
+enum PathSegmentType : int32_t {
 	PATH_SEGMENT_TYPE_REGION = 0,
 	PATH_SEGMENT_TYPE_LINK
 };
 
-enum PathMetadataFlags {
+enum PathMetadataFlags : int32_t {
 	PATH_INCLUDE_NONE = 0,
 	PATH_INCLUDE_TYPES = 1,
 	PATH_INCLUDE_RIDS = 2,

@@ -46,7 +46,7 @@ class ResourceFormatLoader : public RefCounted {
 	GDCLASS(ResourceFormatLoader, RefCounted);
 
 public:
-	enum CacheMode {
+	enum CacheMode : int32_t {
 		CACHE_MODE_IGNORE,
 		CACHE_MODE_REUSE,
 		CACHE_MODE_REPLACE,
@@ -100,19 +100,19 @@ typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p_path);
 
 class ResourceLoader {
-	enum {
+	enum : int32_t {
 		MAX_LOADERS = 64
 	};
 
 public:
-	enum ThreadLoadStatus {
+	enum ThreadLoadStatus : int32_t {
 		THREAD_LOAD_INVALID_RESOURCE,
 		THREAD_LOAD_IN_PROGRESS,
 		THREAD_LOAD_FAILED,
 		THREAD_LOAD_LOADED
 	};
 
-	enum LoadThreadMode {
+	enum LoadThreadMode : int32_t {
 		LOAD_THREAD_FROM_CURRENT,
 		LOAD_THREAD_SPAWN_SINGLE,
 		LOAD_THREAD_DISTRIBUTE,

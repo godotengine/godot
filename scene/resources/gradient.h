@@ -40,13 +40,13 @@ class Gradient : public Resource {
 	OBJ_SAVE_TYPE(Gradient);
 
 public:
-	enum InterpolationMode {
+	enum InterpolationMode : int32_t {
 		GRADIENT_INTERPOLATE_LINEAR,
 		GRADIENT_INTERPOLATE_CONSTANT,
 		GRADIENT_INTERPOLATE_CUBIC,
 	};
 
-	enum ColorSpace {
+	enum ColorSpace : int32_t {
 		GRADIENT_COLOR_SPACE_SRGB,
 		GRADIENT_COLOR_SPACE_LINEAR_SRGB,
 		GRADIENT_COLOR_SPACE_OKLAB,

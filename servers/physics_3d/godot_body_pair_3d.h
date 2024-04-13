@@ -71,7 +71,7 @@ protected:
 };
 
 class GodotBodyPair3D : public GodotBodyContact3D {
-	enum {
+	enum : int32_t {
 		MAX_CONTACTS = 4
 	};
 

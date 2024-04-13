@@ -45,7 +45,7 @@
 class Delaunay3D {
 	struct Simplex;
 
-	enum {
+	enum : int32_t {
 		ACCEL_GRID_SIZE = 16
 	};
 	struct GridPos {

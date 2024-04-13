@@ -41,7 +41,7 @@ class EditorVCSInterface : public Object {
 	GDCLASS(EditorVCSInterface, Object)
 
 public:
-	enum ChangeType {
+	enum ChangeType : int32_t {
 		CHANGE_TYPE_NEW = 0,
 		CHANGE_TYPE_MODIFIED = 1,
 		CHANGE_TYPE_RENAMED = 2,
@@ -50,7 +50,7 @@ public:
 		CHANGE_TYPE_UNMERGED = 5
 	};
 
-	enum TreeArea {
+	enum TreeArea : int32_t {
 		TREE_AREA_COMMIT = 0,
 		TREE_AREA_STAGED = 1,
 		TREE_AREA_UNSTAGED = 2
@@ -134,7 +134,7 @@ public:
 	static EditorVCSInterface *get_singleton();
 	static void set_singleton(EditorVCSInterface *p_singleton);
 
-	enum class VCSMetadata {
+	enum class VCSMetadata : int32_t {
 		NONE,
 		GIT,
 	};

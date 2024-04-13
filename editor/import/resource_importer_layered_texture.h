@@ -61,21 +61,21 @@ class ResourceImporterLayeredTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterLayeredTexture, ResourceImporter);
 
 public:
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_2D_ARRAY,
 		MODE_CUBEMAP,
 		MODE_CUBEMAP_ARRAY,
 		MODE_3D,
 	};
 
-	enum CubemapFormat {
+	enum CubemapFormat : int32_t {
 		CUBEMAP_FORMAT_1X6,
 		CUBEMAP_FORMAT_2X3,
 		CUBEMAP_FORMAT_3X2,
 		CUBEMAP_FORMAT_6X1,
 	};
 
-	enum TextureFlags {
+	enum TextureFlags : int32_t {
 		TEXTURE_FLAGS_MIPMAPS = 1
 	};
 
@@ -96,7 +96,7 @@ public:
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
 
-	enum CompressMode {
+	enum CompressMode : int32_t {
 		COMPRESS_LOSSLESS,
 		COMPRESS_LOSSY,
 		COMPRESS_VRAM_COMPRESSED,

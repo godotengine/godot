@@ -45,7 +45,7 @@ class TreeItem : public Object {
 	GDCLASS(TreeItem, Object);
 
 public:
-	enum TreeCellMode {
+	enum TreeCellMode : int32_t {
 		CELL_MODE_STRING, ///< just a string
 		CELL_MODE_CHECK, ///< string + check
 		CELL_MODE_RANGE, ///< Contains a range
@@ -401,13 +401,13 @@ class Tree : public Control {
 	GDCLASS(Tree, Control);
 
 public:
-	enum SelectMode {
+	enum SelectMode : int32_t {
 		SELECT_SINGLE,
 		SELECT_ROW,
 		SELECT_MULTI
 	};
 
-	enum DropModeFlags {
+	enum DropModeFlags : int32_t {
 		DROP_MODE_DISABLED = 0,
 		DROP_MODE_ON_ITEM = 1,
 		DROP_MODE_INBETWEEN = 2
@@ -600,7 +600,7 @@ private:
 	} theme_cache;
 
 	struct Cache {
-		enum ClickType {
+		enum ClickType : int32_t {
 			CLICK_NONE,
 			CLICK_TITLE,
 			CLICK_BUTTON,

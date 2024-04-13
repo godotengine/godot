@@ -45,7 +45,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum TargetRayMode {
+	enum TargetRayMode : int32_t {
 		TARGET_RAY_MODE_UNKNOWN,
 		TARGET_RAY_MODE_GAZE,
 		TARGET_RAY_MODE_TRACKED_POINTER,

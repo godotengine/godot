@@ -61,7 +61,7 @@ class EditorDockManager : public Object {
 	GDCLASS(EditorDockManager, Object);
 
 public:
-	enum DockSlot {
+	enum DockSlot : int32_t {
 		DOCK_SLOT_NONE = -1,
 		DOCK_SLOT_LEFT_UL,
 		DOCK_SLOT_LEFT_BL,

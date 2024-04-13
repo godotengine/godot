@@ -36,7 +36,7 @@
 class TileSetAtlasSource;
 class TileMap;
 
-enum TileMapLayerDataFormat {
+enum TileMapLayerDataFormat : int32_t {
 	TILE_MAP_LAYER_DATA_FORMAT_0 = 0,
 	TILE_MAP_LAYER_DATA_FORMAT_MAX,
 };
@@ -223,19 +223,19 @@ class TileMapLayer : public Node2D {
 	GDCLASS(TileMapLayer, Node2D);
 
 public:
-	enum HighlightMode {
+	enum HighlightMode : int32_t {
 		HIGHLIGHT_MODE_DEFAULT,
 		HIGHLIGHT_MODE_ABOVE,
 		HIGHLIGHT_MODE_BELOW,
 	};
 
-	enum DebugVisibilityMode {
+	enum DebugVisibilityMode : int32_t {
 		DEBUG_VISIBILITY_MODE_DEFAULT,
 		DEBUG_VISIBILITY_MODE_FORCE_SHOW,
 		DEBUG_VISIBILITY_MODE_FORCE_HIDE,
 	};
 
-	enum DirtyFlags {
+	enum DirtyFlags : int32_t {
 		DIRTY_FLAGS_LAYER_ENABLED = 0,
 
 		DIRTY_FLAGS_LAYER_IN_TREE,

@@ -302,7 +302,7 @@ class EditorPropertyLayers : public EditorProperty {
 	GDCLASS(EditorPropertyLayers, EditorProperty);
 
 public:
-	enum LayerType {
+	enum LayerType : int32_t {
 		LAYER_PHYSICS_2D,
 		LAYER_RENDER_2D,
 		LAYER_NAVIGATION_2D,
@@ -422,7 +422,7 @@ class EditorPropertyEasing : public EditorProperty {
 	bool flip = false;
 	bool positive_only = false;
 
-	enum {
+	enum : int32_t {
 		EASING_ZERO,
 		EASING_LINEAR,
 		EASING_IN,
@@ -640,7 +640,7 @@ public:
 class EditorPropertyNodePath : public EditorProperty {
 	GDCLASS(EditorPropertyNodePath, EditorProperty);
 
-	enum {
+	enum : int32_t {
 		ACTION_CLEAR,
 		ACTION_COPY,
 		ACTION_EDIT,

@@ -33,7 +33,7 @@
 
 #include "core/io/image.h"
 
-enum BasisDecompressFormat {
+enum BasisDecompressFormat : int32_t {
 	BASIS_DECOMPRESS_RG,
 	BASIS_DECOMPRESS_RGB,
 	BASIS_DECOMPRESS_RGBA,

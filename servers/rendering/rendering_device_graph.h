@@ -46,7 +46,7 @@
 class RenderingDeviceGraph {
 public:
 	struct ComputeListInstruction {
-		enum Type {
+		enum Type : int32_t {
 			TYPE_NONE,
 			TYPE_BIND_PIPELINE,
 			TYPE_BIND_UNIFORM_SET,
@@ -60,7 +60,7 @@ public:
 	};
 
 	struct DrawListInstruction {
-		enum Type {
+		enum Type : int32_t {
 			TYPE_NONE,
 			TYPE_BIND_INDEX_BUFFER,
 			TYPE_BIND_PIPELINE,
@@ -83,7 +83,7 @@ public:
 	};
 
 	struct RecordedCommand {
-		enum Type {
+		enum Type : int32_t {
 			TYPE_NONE,
 			TYPE_BUFFER_CLEAR,
 			TYPE_BUFFER_COPY,
@@ -127,7 +127,7 @@ public:
 		RDD::BufferTextureCopyRegion region;
 	};
 
-	enum ResourceUsage {
+	enum ResourceUsage : int32_t {
 		RESOURCE_USAGE_NONE,
 		RESOURCE_USAGE_TRANSFER_FROM,
 		RESOURCE_USAGE_TRANSFER_TO,

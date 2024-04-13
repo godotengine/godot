@@ -47,7 +47,7 @@ protected:
 	GDVIRTUAL0(_finalize)
 
 public:
-	enum {
+	enum : int32_t {
 		//make sure these are replicated in Node
 		NOTIFICATION_OS_MEMORY_WARNING = 2009,
 		NOTIFICATION_TRANSLATION_CHANGED = 2010,

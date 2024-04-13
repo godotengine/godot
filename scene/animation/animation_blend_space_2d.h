@@ -37,14 +37,14 @@ class AnimationNodeBlendSpace2D : public AnimationRootNode {
 	GDCLASS(AnimationNodeBlendSpace2D, AnimationRootNode);
 
 public:
-	enum BlendMode {
+	enum BlendMode : int32_t {
 		BLEND_MODE_INTERPOLATED,
 		BLEND_MODE_DISCRETE,
 		BLEND_MODE_DISCRETE_CARRY,
 	};
 
 protected:
-	enum {
+	enum : int32_t {
 		MAX_BLEND_POINTS = 64
 	};
 

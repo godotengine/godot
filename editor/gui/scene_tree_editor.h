@@ -44,7 +44,7 @@ class SceneTreeEditor : public Control {
 
 	EditorSelection *editor_selection = nullptr;
 
-	enum SceneTreeEditorButton {
+	enum SceneTreeEditorButton : int32_t {
 		BUTTON_SUBSCENE = 0,
 		BUTTON_VISIBILITY = 1,
 		BUTTON_SCRIPT = 2,

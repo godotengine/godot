@@ -45,7 +45,7 @@ protected:
 	Error _rpc_bind(int p_peer, Object *p_obj, const StringName &p_method, Array args = Array());
 
 public:
-	enum RPCMode {
+	enum RPCMode : int32_t {
 		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
 		RPC_MODE_ANY_PEER, // Any peer can call this RPC
 		RPC_MODE_AUTHORITY, // Only the node's multiplayer authority (server by default) can call this RPC

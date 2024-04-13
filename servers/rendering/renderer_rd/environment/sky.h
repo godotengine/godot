@@ -48,7 +48,7 @@ namespace RendererRD {
 
 class SkyRD {
 public:
-	enum SkySet {
+	enum SkySet : int32_t {
 		SKY_SET_UNIFORMS,
 		SKY_SET_MATERIAL,
 		SKY_SET_TEXTURES,
@@ -70,7 +70,7 @@ public:
 private:
 	RD::DataFormat texture_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 
-	enum SkyTextureSetVersion {
+	enum SkyTextureSetVersion : int32_t {
 		SKY_TEXTURE_SET_BACKGROUND,
 		SKY_TEXTURE_SET_HALF_RES,
 		SKY_TEXTURE_SET_QUARTER_RES,
@@ -80,7 +80,7 @@ private:
 		SKY_TEXTURE_SET_MAX
 	};
 
-	enum SkyVersion {
+	enum SkyVersion : int32_t {
 		SKY_VERSION_BACKGROUND,
 		SKY_VERSION_HALF_RES,
 		SKY_VERSION_QUARTER_RES,

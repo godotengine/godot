@@ -126,7 +126,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 		Vector2i chr_off;
 
 		{
-			enum RangeParseStep {
+			enum RangeParseStep : int32_t {
 				STEP_START_BEGIN,
 				STEP_START_READ_HEX,
 				STEP_START_READ_DEC,

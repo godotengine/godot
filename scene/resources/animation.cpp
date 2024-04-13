@@ -4292,7 +4292,7 @@ void Animation::optimize(real_t p_allowed_velocity_err, real_t p_allowed_angular
 //#define print_animc(m_str) print_line(m_str);
 
 struct AnimationCompressionDataState {
-	enum {
+	enum : int32_t {
 		MIN_OPTIMIZE_PACKETS = 5,
 		MAX_PACKETS = 16
 	};

@@ -37,7 +37,7 @@ class SliderJoint3D : public Joint3D {
 	GDCLASS(SliderJoint3D, Joint3D);
 
 public:
-	enum Param {
+	enum Param : int32_t {
 		PARAM_LINEAR_LIMIT_UPPER = PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_UPPER,
 		PARAM_LINEAR_LIMIT_LOWER = PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_LOWER,
 		PARAM_LINEAR_LIMIT_SOFTNESS = PhysicsServer3D::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS,

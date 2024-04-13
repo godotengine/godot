@@ -47,7 +47,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum PathSegmentType {
+	enum PathSegmentType : int32_t {
 		PATH_SEGMENT_TYPE_REGION = 0,
 		PATH_SEGMENT_TYPE_LINK = 1,
 	};

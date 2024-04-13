@@ -98,7 +98,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	friend class Skeleton3DEditorPlugin;
 
-	enum SkeletonOption {
+	enum SkeletonOption : int32_t {
 		SKELETON_OPTION_RESET_ALL_POSES,
 		SKELETON_OPTION_RESET_SELECTED_POSES,
 		SKELETON_OPTION_ALL_POSES_TO_RESTS,

@@ -55,7 +55,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	SectionedInspector *inspector = nullptr;
 
 	// Shortcuts
-	enum ShortcutButton {
+	enum ShortcutButton : int32_t {
 		SHORTCUT_ADD,
 		SHORTCUT_EDIT,
 		SHORTCUT_ERASE,

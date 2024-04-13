@@ -44,7 +44,7 @@ protected:
 	static bool available;
 
 public:
-	enum Status {
+	enum Status : int32_t {
 		STATUS_DISCONNECTED,
 		STATUS_HANDSHAKING,
 		STATUS_CONNECTED,

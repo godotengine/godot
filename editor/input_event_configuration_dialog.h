@@ -72,7 +72,7 @@ private:
 
 	HBoxContainer *mod_container = nullptr; // Contains the subcontainer and the store command checkbox.
 
-	enum ModCheckbox {
+	enum ModCheckbox : int32_t {
 		MOD_ALT,
 		MOD_SHIFT,
 		MOD_CTRL,
@@ -91,7 +91,7 @@ private:
 	CheckBox *mod_checkboxes[MOD_MAX];
 	CheckBox *autoremap_command_or_control_checkbox = nullptr;
 
-	enum KeyMode {
+	enum KeyMode : int32_t {
 		KEYMODE_KEYCODE,
 		KEYMODE_PHY_KEYCODE,
 		KEYMODE_UNICODE,

@@ -46,7 +46,7 @@
 
 class ShaderPreprocessor {
 public:
-	enum CompletionType {
+	enum CompletionType : int32_t {
 		COMPLETION_TYPE_NONE,
 		COMPLETION_TYPE_DIRECTIVE,
 		COMPLETION_TYPE_PRAGMA_DIRECTIVE,

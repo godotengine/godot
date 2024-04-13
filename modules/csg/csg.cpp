@@ -553,7 +553,7 @@ bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *r_facebvhptr, int p_max_
 
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * p_max_depth);
 
-	enum {
+	enum : int32_t {
 		TEST_AABB_BIT = 0,
 		VISIT_LEFT_BIT = 1,
 		VISIT_RIGHT_BIT = 2,

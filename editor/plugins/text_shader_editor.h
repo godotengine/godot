@@ -108,7 +108,7 @@ public:
 class TextShaderEditor : public MarginContainer {
 	GDCLASS(TextShaderEditor, MarginContainer);
 
-	enum {
+	enum : int32_t {
 		EDIT_UNDO,
 		EDIT_REDO,
 		EDIT_CUT,

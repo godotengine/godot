@@ -52,7 +52,7 @@ class XRInterface : public RefCounted {
 	GDCLASS(XRInterface, RefCounted);
 
 public:
-	enum Capabilities { /* purely metadata, provides some info about what this interface supports */
+	enum Capabilities : int32_t { /* purely metadata, provides some info about what this interface supports */
 		XR_NONE = 0, /* no capabilities */
 		XR_MONO = 1, /* can be used with mono output */
 		XR_STEREO = 2, /* can be used with stereo output */
@@ -62,7 +62,7 @@ public:
 		XR_EXTERNAL = 32 /* renders to external device */
 	};
 
-	enum TrackingStatus { /* tracking status currently based on AR but we can start doing more with this for VR as well */
+	enum TrackingStatus : int32_t { /* tracking status currently based on AR but we can start doing more with this for VR as well */
 		XR_NORMAL_TRACKING,
 		XR_EXCESSIVE_MOTION,
 		XR_INSUFFICIENT_FEATURES,
@@ -70,7 +70,7 @@ public:
 		XR_NOT_TRACKING
 	};
 
-	enum PlayAreaMode { /* defines the mode used by the XR interface for tracking */
+	enum PlayAreaMode : int32_t { /* defines the mode used by the XR interface for tracking */
 		XR_PLAY_AREA_UNKNOWN, /* Area mode not set or not available */
 		XR_PLAY_AREA_3DOF, /* Only support orientation tracking, no positional tracking, area will center around player */
 		XR_PLAY_AREA_SITTING, /* Player is in seated position, limited positional tracking, fixed guardian around player */
@@ -78,7 +78,7 @@ public:
 		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space */
 	};
 
-	enum EnvironmentBlendMode {
+	enum EnvironmentBlendMode : int32_t {
 		XR_ENV_BLEND_MODE_OPAQUE, /* You cannot see the real world, VR like */
 		XR_ENV_BLEND_MODE_ADDITIVE, /* You can see the real world, AR like */
 		XR_ENV_BLEND_MODE_ALPHA_BLEND, /* Real world is passed through where alpha channel is 0.0 and gradually blends to opaque for value 1.0. */

@@ -31,6 +31,8 @@
 #ifndef GLTF_DEFINES_H
 #define GLTF_DEFINES_H
 
+#include <cstdint>
+
 // This file should only be included by other headers.
 
 // GLTF classes.
@@ -66,7 +68,7 @@ using GLTFSkinIndex = int;
 using GLTFTextureIndex = int;
 using GLTFTextureSamplerIndex = int;
 
-enum GLTFType {
+enum GLTFType : int32_t {
 	TYPE_SCALAR,
 	TYPE_VEC2,
 	TYPE_VEC3,

@@ -79,7 +79,7 @@ typedef Vector<Color> PackedColorArray;
 class Variant {
 public:
 	// If this changes the table in variant_op must be updated
-	enum Type {
+	enum Type : int32_t {
 		NIL,
 
 		// atomic types
@@ -130,7 +130,7 @@ public:
 		VARIANT_MAX
 	};
 
-	enum {
+	enum : int32_t {
 		// Maximum recursion depth allowed when serializing variants.
 		MAX_RECURSION_DEPTH = 1024,
 	};
@@ -500,7 +500,7 @@ public:
 #undef VARIANT_ENUM_CLASS_CONSTRUCTOR
 
 	// If this changes the table in variant_op must be updated
-	enum Operator {
+	enum Operator : int32_t {
 		//comparison
 		OP_EQUAL,
 		OP_NOT_EQUAL,
@@ -700,13 +700,13 @@ public:
 	bool has_key(const Variant &p_key, bool &r_valid) const;
 
 	/* Generic */
-	enum VariantSetError {
+	enum VariantSetError : int32_t {
 		SET_OK,
 		SET_KEYED_ERR,
 		SET_NAMED_ERR,
 		SET_INDEXED_ERR
 	};
-	enum VariantGetError {
+	enum VariantGetError : int32_t {
 		GET_OK,
 		GET_KEYED_ERR,
 		GET_NAMED_ERR,
@@ -731,7 +731,7 @@ public:
 	static ValidatedUtilityFunction get_validated_utility_function(const StringName &p_name);
 	static PTRUtilityFunction get_ptr_utility_function(const StringName &p_name);
 
-	enum UtilityFunctionType {
+	enum UtilityFunctionType : int32_t {
 		UTILITY_FUNC_TYPE_MATH,
 		UTILITY_FUNC_TYPE_RANDOM,
 		UTILITY_FUNC_TYPE_GENERAL,

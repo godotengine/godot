@@ -44,20 +44,20 @@ class RichTextLabel : public Control {
 	GDCLASS(RichTextLabel, Control);
 
 public:
-	enum ListType {
+	enum ListType : int32_t {
 		LIST_NUMBERS,
 		LIST_LETTERS,
 		LIST_ROMAN,
 		LIST_DOTS
 	};
 
-	enum MetaUnderline {
+	enum MetaUnderline : int32_t {
 		META_UNDERLINE_NEVER,
 		META_UNDERLINE_ALWAYS,
 		META_UNDERLINE_ON_HOVER,
 	};
 
-	enum ItemType {
+	enum ItemType : int32_t {
 		ITEM_FRAME,
 		ITEM_TEXT,
 		ITEM_IMAGE,
@@ -90,13 +90,13 @@ public:
 		ITEM_LANGUAGE,
 	};
 
-	enum MenuItems {
+	enum MenuItems : int32_t {
 		MENU_COPY,
 		MENU_SELECT_ALL,
 		MENU_MAX
 	};
 
-	enum DefaultFont {
+	enum DefaultFont : int32_t {
 		NORMAL_FONT,
 		BOLD_FONT,
 		ITALICS_FONT,
@@ -105,7 +105,7 @@ public:
 		CUSTOM_FONT,
 	};
 
-	enum ImageUpdateMask {
+	enum ImageUpdateMask : int32_t {
 		UPDATE_TEXTURE = 1 << 0,
 		UPDATE_SIZE = 1 << 1,
 		UPDATE_COLOR = 1 << 2,

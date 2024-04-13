@@ -127,7 +127,7 @@ public:
 	Error open_library(const String &p_path, const String &p_entry_symbol);
 	void close_library();
 
-	enum InitializationLevel {
+	enum InitializationLevel : int32_t {
 		INITIALIZATION_LEVEL_CORE = GDEXTENSION_INITIALIZATION_CORE,
 		INITIALIZATION_LEVEL_SERVERS = GDEXTENSION_INITIALIZATION_SERVERS,
 		INITIALIZATION_LEVEL_SCENE = GDEXTENSION_INITIALIZATION_SCENE,

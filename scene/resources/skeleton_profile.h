@@ -37,7 +37,7 @@ class SkeletonProfile : public Resource {
 	GDCLASS(SkeletonProfile, Resource);
 
 public:
-	enum TailDirection {
+	enum TailDirection : int32_t {
 		TAIL_DIRECTION_AVERAGE_CHILDREN,
 		TAIL_DIRECTION_SPECIFIC_CHILD,
 		TAIL_DIRECTION_END

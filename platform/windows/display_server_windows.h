@@ -154,7 +154,7 @@ typedef UINT(WINAPI *WTInfoPtr)(UINT p_category, UINT p_index, LPVOID p_output);
 typedef BOOL(WINAPI *WTPacketPtr)(HANDLE p_ctx, UINT p_param, LPVOID p_packets);
 typedef BOOL(WINAPI *WTEnablePtr)(HANDLE p_ctx, BOOL p_enable);
 
-enum PreferredAppMode {
+enum PreferredAppMode : int32_t {
 	APPMODE_DEFAULT = 0,
 	APPMODE_ALLOWDARK = 1,
 	APPMODE_FORCEDARK = 2,
@@ -331,7 +331,7 @@ class DisplayServerWindows : public DisplayServer {
 	String tablet_driver;
 	Vector<String> tablet_drivers;
 
-	enum {
+	enum : int32_t {
 		KEY_EVENT_BUFFER_SIZE = 512
 	};
 

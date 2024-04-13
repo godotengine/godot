@@ -49,7 +49,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum TimerProcessCallback {
+	enum TimerProcessCallback : int32_t {
 		TIMER_PROCESS_PHYSICS,
 		TIMER_PROCESS_IDLE,
 	};

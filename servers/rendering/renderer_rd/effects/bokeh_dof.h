@@ -74,7 +74,7 @@ private:
 		uint32_t pad[2];
 	};
 
-	enum BokehMode {
+	enum BokehMode : int32_t {
 		BOKEH_GEN_BLUR_SIZE,
 		BOKEH_GEN_BOKEH_BOX,
 		BOKEH_GEN_BOKEH_BOX_NOWEIGHT,

@@ -220,7 +220,7 @@ class VisualShaderNodeParticleRandomness : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeParticleRandomness, VisualShaderNode);
 
 public:
-	enum OpType {
+	enum OpType : int32_t {
 		OP_TYPE_SCALAR,
 		OP_TYPE_VECTOR_2D,
 		OP_TYPE_VECTOR_3D,
@@ -267,7 +267,7 @@ class VisualShaderNodeParticleAccelerator : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeParticleAccelerator, VisualShaderNode);
 
 public:
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_LINEAR,
 		MODE_RADIAL,
 		MODE_TANGENTIAL,
@@ -327,7 +327,7 @@ class VisualShaderNodeParticleEmit : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeParticleEmit, VisualShaderNode);
 
 public:
-	enum EmitFlags {
+	enum EmitFlags : int32_t {
 		EMIT_FLAG_POSITION = 1,
 		EMIT_FLAG_ROT_SCALE = 2,
 		EMIT_FLAG_VELOCITY = 4,

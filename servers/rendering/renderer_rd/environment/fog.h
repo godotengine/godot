@@ -74,7 +74,7 @@ private:
 
 	/* Volumetric Fog */
 	struct VolumetricFogShader {
-		enum FogSet {
+		enum FogSet : int32_t {
 			FOG_SET_BASE,
 			FOG_SET_UNIFORMS,
 			FOG_SET_MATERIAL,
@@ -127,7 +127,7 @@ private:
 
 		RID params_ubo;
 
-		enum {
+		enum : int32_t {
 			VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY,
 			VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY_WITH_SDFGI,
 			VOLUMETRIC_FOG_PROCESS_SHADER_FILTER,
@@ -284,7 +284,7 @@ public:
 		GDCLASS(VolumetricFog, RenderBufferCustomDataRD)
 
 	public:
-		enum {
+		enum : int32_t {
 			MAX_TEMPORAL_FRAMES = 16
 		};
 

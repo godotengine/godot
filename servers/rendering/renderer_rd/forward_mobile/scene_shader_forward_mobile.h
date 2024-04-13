@@ -41,7 +41,7 @@ private:
 	static SceneShaderForwardMobile *singleton;
 
 public:
-	enum ShaderVersion {
+	enum ShaderVersion : int32_t {
 		SHADER_VERSION_COLOR_PASS,
 		SHADER_VERSION_LIGHTMAP_COLOR_PASS,
 		SHADER_VERSION_SHADOW_PASS,
@@ -56,7 +56,7 @@ public:
 	};
 
 	struct ShaderData : public RendererRD::MaterialStorage::ShaderData {
-		enum BlendMode { //used internally
+		enum BlendMode : int32_t { //used internally
 			BLEND_MODE_MIX,
 			BLEND_MODE_ADD,
 			BLEND_MODE_SUB,
@@ -64,24 +64,24 @@ public:
 			BLEND_MODE_ALPHA_TO_COVERAGE
 		};
 
-		enum DepthDraw {
+		enum DepthDraw : int32_t {
 			DEPTH_DRAW_DISABLED,
 			DEPTH_DRAW_OPAQUE,
 			DEPTH_DRAW_ALWAYS
 		};
 
-		enum DepthTest {
+		enum DepthTest : int32_t {
 			DEPTH_TEST_DISABLED,
 			DEPTH_TEST_ENABLED
 		};
 
-		enum Cull {
+		enum Cull : int32_t {
 			CULL_DISABLED,
 			CULL_FRONT,
 			CULL_BACK
 		};
 
-		enum CullVariant {
+		enum CullVariant : int32_t {
 			CULL_VARIANT_NORMAL,
 			CULL_VARIANT_REVERSED,
 			CULL_VARIANT_DOUBLE_SIDED,
@@ -89,7 +89,7 @@ public:
 
 		};
 
-		enum AlphaAntiAliasing {
+		enum AlphaAntiAliasing : int32_t {
 			ALPHA_ANTIALIASING_OFF,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE

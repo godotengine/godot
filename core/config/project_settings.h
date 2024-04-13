@@ -47,7 +47,7 @@ public:
 	typedef HashMap<String, Variant> CustomMap;
 	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
 
-	enum {
+	enum : int32_t {
 		// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
 		NO_BUILTIN_ORDER_BASE = 1 << 16
 	};

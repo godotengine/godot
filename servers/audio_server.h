@@ -80,7 +80,7 @@ public:
 	double get_time_since_last_mix(); //useful for video -> audio sync
 	double get_time_to_next_mix();
 
-	enum SpeakerMode {
+	enum SpeakerMode : int32_t {
 		SPEAKER_MODE_STEREO,
 		SPEAKER_SURROUND_31,
 		SPEAKER_SURROUND_51,
@@ -134,7 +134,7 @@ public:
 };
 
 class AudioDriverManager {
-	enum {
+	enum : int32_t {
 		MAX_DRIVERS = 10
 	};
 
@@ -159,14 +159,14 @@ class AudioServer : public Object {
 
 public:
 	//re-expose this here, as AudioDriver is not exposed to script
-	enum SpeakerMode {
+	enum SpeakerMode : int32_t {
 		SPEAKER_MODE_STEREO,
 		SPEAKER_SURROUND_31,
 		SPEAKER_SURROUND_51,
 		SPEAKER_SURROUND_71,
 	};
 
-	enum {
+	enum : int32_t {
 		AUDIO_DATA_INVALID_ID = -1,
 		MAX_CHANNELS_PER_BUS = 4,
 		MAX_BUSES_PER_PLAYBACK = 6,
@@ -238,7 +238,7 @@ private:
 	};
 
 	struct AudioStreamPlaybackListNode {
-		enum PlaybackState {
+		enum PlaybackState : int32_t {
 			PAUSED = 0, // Paused. Keep this stream playback around though so it can be restarted.
 			PLAYING = 1, // Playing. Fading may still be necessary if volume changes!
 			FADE_OUT_TO_PAUSE = 2, // About to pause.

@@ -40,7 +40,7 @@ class AnimatedTexture : public Texture2D {
 	RWLock rw_lock;
 
 public:
-	enum {
+	enum : int32_t {
 		MAX_FRAMES = 256
 	};
 

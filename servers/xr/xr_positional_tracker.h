@@ -47,7 +47,7 @@ class XRPositionalTracker : public RefCounted {
 	_THREAD_SAFE_CLASS_
 
 public:
-	enum TrackerHand {
+	enum TrackerHand : int32_t {
 		TRACKER_HAND_UNKNOWN, /* unknown or not applicable */
 		TRACKER_HAND_LEFT, /* controller is the left hand controller */
 		TRACKER_HAND_RIGHT /* controller is the right hand controller */

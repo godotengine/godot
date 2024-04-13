@@ -74,7 +74,7 @@ class AudioEffectRecord : public AudioEffect {
 
 	friend class AudioEffectRecordInstance;
 
-	enum {
+	enum : int32_t {
 		IO_BUFFER_SIZE_MS = 1500
 	};
 

@@ -216,7 +216,7 @@ class FindInFilesPanel;
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
 
-	enum {
+	enum : int32_t {
 		FILE_NEW,
 		FILE_NEW_TEXTFILE,
 		FILE_OPEN,
@@ -250,20 +250,20 @@ class ScriptEditor : public PanelContainer {
 		WINDOW_SELECT_BASE = 100,
 	};
 
-	enum {
+	enum : int32_t {
 		THEME_IMPORT,
 		THEME_RELOAD,
 		THEME_SAVE,
 		THEME_SAVE_AS
 	};
 
-	enum ScriptSortBy {
+	enum ScriptSortBy : int32_t {
 		SORT_BY_NAME,
 		SORT_BY_PATH,
 		SORT_BY_NONE
 	};
 
-	enum ScriptListName {
+	enum ScriptListName : int32_t {
 		DISPLAY_NAME,
 		DISPLAY_DIR_AND_NAME,
 		DISPLAY_FULL_PATH,
@@ -325,7 +325,7 @@ class ScriptEditor : public PanelContainer {
 
 	WindowWrapper *window_wrapper = nullptr;
 
-	enum {
+	enum : int32_t {
 		SCRIPT_EDITOR_FUNC_MAX = 32,
 	};
 

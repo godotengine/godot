@@ -38,7 +38,7 @@ class CollisionObject3D : public Node3D {
 	GDCLASS(CollisionObject3D, Node3D);
 
 public:
-	enum DisableMode {
+	enum DisableMode : int32_t {
 		DISABLE_MODE_REMOVE,
 		DISABLE_MODE_MAKE_STATIC,
 		DISABLE_MODE_KEEP_ACTIVE,

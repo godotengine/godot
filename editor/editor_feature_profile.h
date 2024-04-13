@@ -46,7 +46,7 @@ class EditorFeatureProfile : public RefCounted {
 	GDCLASS(EditorFeatureProfile, RefCounted);
 
 public:
-	enum Feature {
+	enum Feature : int32_t {
 		FEATURE_3D,
 		FEATURE_SCRIPT,
 		FEATURE_ASSET_LIB,
@@ -106,7 +106,7 @@ VARIANT_ENUM_CAST(EditorFeatureProfile::Feature)
 class EditorFeatureProfileManager : public AcceptDialog {
 	GDCLASS(EditorFeatureProfileManager, AcceptDialog);
 
-	enum Action {
+	enum Action : int32_t {
 		PROFILE_CLEAR,
 		PROFILE_SET,
 		PROFILE_IMPORT,
@@ -116,7 +116,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 		PROFILE_MAX
 	};
 
-	enum ClassOptions {
+	enum ClassOptions : int32_t {
 		CLASS_OPTION_DISABLE_EDITOR
 	};
 

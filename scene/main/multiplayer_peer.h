@@ -41,7 +41,7 @@ class MultiplayerPeer : public PacketPeer {
 	GDCLASS(MultiplayerPeer, PacketPeer);
 
 public:
-	enum TransferMode {
+	enum TransferMode : int32_t {
 		TRANSFER_MODE_UNRELIABLE,
 		TRANSFER_MODE_UNRELIABLE_ORDERED,
 		TRANSFER_MODE_RELIABLE
@@ -56,12 +56,12 @@ private:
 	bool refuse_connections = false;
 
 public:
-	enum {
+	enum : int32_t {
 		TARGET_PEER_BROADCAST = 0,
 		TARGET_PEER_SERVER = 1
 	};
 
-	enum ConnectionStatus {
+	enum ConnectionStatus : int32_t {
 		CONNECTION_DISCONNECTED,
 		CONNECTION_CONNECTING,
 		CONNECTION_CONNECTED,

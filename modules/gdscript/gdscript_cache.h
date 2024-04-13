@@ -43,7 +43,7 @@ class GDScriptParser;
 
 class GDScriptParserRef : public RefCounted {
 public:
-	enum Status {
+	enum Status : int32_t {
 		EMPTY,
 		PARSED,
 		INHERITANCE_SOLVED,

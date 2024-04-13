@@ -49,13 +49,13 @@ class TextServer : public RefCounted {
 	GDCLASS(TextServer, RefCounted);
 
 public:
-	enum FontAntialiasing {
+	enum FontAntialiasing : int32_t {
 		FONT_ANTIALIASING_NONE,
 		FONT_ANTIALIASING_GRAY,
 		FONT_ANTIALIASING_LCD,
 	};
 
-	enum FontLCDSubpixelLayout {
+	enum FontLCDSubpixelLayout : int32_t {
 		FONT_LCD_SUBPIXEL_LAYOUT_NONE,
 		FONT_LCD_SUBPIXEL_LAYOUT_HRGB,
 		FONT_LCD_SUBPIXEL_LAYOUT_HBGR,
@@ -64,19 +64,19 @@ public:
 		FONT_LCD_SUBPIXEL_LAYOUT_MAX,
 	};
 
-	enum Direction {
+	enum Direction : int32_t {
 		DIRECTION_AUTO,
 		DIRECTION_LTR,
 		DIRECTION_RTL,
 		DIRECTION_INHERITED,
 	};
 
-	enum Orientation {
+	enum Orientation : int32_t {
 		ORIENTATION_HORIZONTAL,
 		ORIENTATION_VERTICAL
 	};
 
-	enum JustificationFlag {
+	enum JustificationFlag : int32_t {
 		JUSTIFICATION_NONE = 0,
 		JUSTIFICATION_KASHIDA = 1 << 0,
 		JUSTIFICATION_WORD_BOUND = 1 << 1,
@@ -88,7 +88,7 @@ public:
 		JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE = 1 << 7,
 	};
 
-	enum VisibleCharactersBehavior {
+	enum VisibleCharactersBehavior : int32_t {
 		VC_CHARS_BEFORE_SHAPING,
 		VC_CHARS_AFTER_SHAPING,
 		VC_GLYPHS_AUTO,
@@ -96,14 +96,14 @@ public:
 		VC_GLYPHS_RTL,
 	};
 
-	enum AutowrapMode {
+	enum AutowrapMode : int32_t {
 		AUTOWRAP_OFF,
 		AUTOWRAP_ARBITRARY,
 		AUTOWRAP_WORD,
 		AUTOWRAP_WORD_SMART
 	};
 
-	enum LineBreakFlag {
+	enum LineBreakFlag : int32_t {
 		BREAK_NONE = 0,
 		BREAK_MANDATORY = 1 << 0,
 		BREAK_WORD_BOUND = 1 << 1,
@@ -113,7 +113,7 @@ public:
 		BREAK_TRIM_INDENT = 1 << 5,
 	};
 
-	enum OverrunBehavior {
+	enum OverrunBehavior : int32_t {
 		OVERRUN_NO_TRIMMING,
 		OVERRUN_TRIM_CHAR,
 		OVERRUN_TRIM_WORD,
@@ -121,7 +121,7 @@ public:
 		OVERRUN_TRIM_WORD_ELLIPSIS,
 	};
 
-	enum TextOverrunFlag {
+	enum TextOverrunFlag : int32_t {
 		OVERRUN_NO_TRIM = 0,
 		OVERRUN_TRIM = 1 << 0,
 		OVERRUN_TRIM_WORD_ONLY = 1 << 1,
@@ -130,7 +130,7 @@ public:
 		OVERRUN_JUSTIFICATION_AWARE = 1 << 4,
 	};
 
-	enum GraphemeFlag {
+	enum GraphemeFlag : int32_t {
 		GRAPHEME_IS_VALID = 1 << 0, // Grapheme is valid.
 		GRAPHEME_IS_RTL = 1 << 1, // Grapheme is right-to-left.
 		GRAPHEME_IS_VIRTUAL = 1 << 2, // Grapheme is not part of source string (added by fit_to_width function, do not affect caret movement).
@@ -147,13 +147,13 @@ public:
 		GRAPHEME_IS_SOFT_HYPHEN = 1 << 13, // Grapheme is a soft hyphen.
 	};
 
-	enum Hinting {
+	enum Hinting : int32_t {
 		HINTING_NONE,
 		HINTING_LIGHT,
 		HINTING_NORMAL
 	};
 
-	enum SubpixelPositioning {
+	enum SubpixelPositioning : int32_t {
 		SUBPIXEL_POSITIONING_DISABLED = 0,
 		SUBPIXEL_POSITIONING_AUTO = 1,
 		SUBPIXEL_POSITIONING_ONE_HALF = 2,
@@ -163,7 +163,7 @@ public:
 		SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE = 16,
 	};
 
-	enum Feature {
+	enum Feature : int32_t {
 		FEATURE_SIMPLE_LAYOUT = 1 << 0,
 		FEATURE_BIDI_LAYOUT = 1 << 1,
 		FEATURE_VERTICAL_LAYOUT = 1 << 2,
@@ -181,13 +181,13 @@ public:
 		FEATURE_UNICODE_SECURITY = 1 << 14,
 	};
 
-	enum ContourPointTag {
+	enum ContourPointTag : int32_t {
 		CONTOUR_CURVE_TAG_ON = 0x01,
 		CONTOUR_CURVE_TAG_OFF_CONIC = 0x00,
 		CONTOUR_CURVE_TAG_OFF_CUBIC = 0x02
 	};
 
-	enum SpacingType {
+	enum SpacingType : int32_t {
 		SPACING_GLYPH,
 		SPACING_SPACE,
 		SPACING_TOP,
@@ -195,13 +195,13 @@ public:
 		SPACING_MAX,
 	};
 
-	enum FontStyle {
+	enum FontStyle : int32_t {
 		FONT_BOLD = 1 << 0,
 		FONT_ITALIC = 1 << 1,
 		FONT_FIXED_WIDTH = 1 << 2,
 	};
 
-	enum StructuredTextParser {
+	enum StructuredTextParser : int32_t {
 		STRUCTURED_TEXT_DEFAULT,
 		STRUCTURED_TEXT_URI,
 		STRUCTURED_TEXT_FILE,
@@ -211,7 +211,7 @@ public:
 		STRUCTURED_TEXT_CUSTOM
 	};
 
-	enum FixedSizeScaleMode {
+	enum FixedSizeScaleMode : int32_t {
 		FIXED_SIZE_SCALE_DISABLE,
 		FIXED_SIZE_SCALE_INTEGER_ONLY,
 		FIXED_SIZE_SCALE_ENABLED,

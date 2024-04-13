@@ -40,7 +40,7 @@ struct Vector2;
 struct _NO_DISCARD_ Vector2i {
 	static const int AXIS_COUNT = 2;
 
-	enum Axis {
+	enum Axis : int32_t {
 		AXIS_X,
 		AXIS_Y,
 	};

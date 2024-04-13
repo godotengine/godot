@@ -38,20 +38,20 @@ class XRHandTracker : public RefCounted {
 	_THREAD_SAFE_CLASS_
 
 public:
-	enum Hand {
+	enum Hand : int32_t {
 		HAND_LEFT,
 		HAND_RIGHT,
 		HAND_MAX,
 	};
 
-	enum HandTrackingSource {
+	enum HandTrackingSource : int32_t {
 		HAND_TRACKING_SOURCE_UNKNOWN,
 		HAND_TRACKING_SOURCE_UNOBSTRUCTED,
 		HAND_TRACKING_SOURCE_CONTROLLER,
 		HAND_TRACKING_SOURCE_MAX
 	};
 
-	enum HandJoint {
+	enum HandJoint : int32_t {
 		HAND_JOINT_PALM,
 		HAND_JOINT_WRIST,
 		HAND_JOINT_THUMB_METACARPAL,
@@ -81,7 +81,7 @@ public:
 		HAND_JOINT_MAX,
 	};
 
-	enum HandJointFlags {
+	enum HandJointFlags : int32_t {
 		HAND_JOINT_FLAG_ORIENTATION_VALID = 1,
 		HAND_JOINT_FLAG_ORIENTATION_TRACKED = 2,
 		HAND_JOINT_FLAG_POSITION_VALID = 4,

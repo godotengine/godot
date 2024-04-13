@@ -39,7 +39,7 @@ class Sky : public Resource {
 	GDCLASS(Sky, Resource);
 
 public:
-	enum RadianceSize {
+	enum RadianceSize : int32_t {
 		RADIANCE_SIZE_32,
 		RADIANCE_SIZE_64,
 		RADIANCE_SIZE_128,
@@ -50,7 +50,7 @@ public:
 		RADIANCE_SIZE_MAX
 	};
 
-	enum ProcessMode {
+	enum ProcessMode : int32_t {
 		PROCESS_MODE_AUTOMATIC,
 		PROCESS_MODE_QUALITY,
 		PROCESS_MODE_INCREMENTAL,

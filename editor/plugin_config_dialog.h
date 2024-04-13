@@ -44,7 +44,7 @@ class EditorValidationPanel;
 class PluginConfigDialog : public ConfirmationDialog {
 	GDCLASS(PluginConfigDialog, ConfirmationDialog);
 
-	enum {
+	enum : int32_t {
 		MSG_ID_PLUGIN,
 		MSG_ID_SUBFOLDER,
 		MSG_ID_SCRIPT,

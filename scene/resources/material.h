@@ -70,7 +70,7 @@ protected:
 	GDVIRTUAL0RC(bool, _can_do_next_pass)
 	GDVIRTUAL0RC(bool, _can_use_render_priority)
 public:
-	enum {
+	enum : int32_t {
 		RENDER_PRIORITY_MAX = RS::MATERIAL_RENDER_PRIORITY_MAX,
 		RENDER_PRIORITY_MIN = RS::MATERIAL_RENDER_PRIORITY_MIN,
 	};
@@ -136,7 +136,7 @@ class BaseMaterial3D : public Material {
 	GDCLASS(BaseMaterial3D, Material);
 
 public:
-	enum TextureParam {
+	enum TextureParam : int32_t {
 		TEXTURE_ALBEDO,
 		TEXTURE_METALLIC,
 		TEXTURE_ROUGHNESS,
@@ -159,7 +159,7 @@ public:
 
 	};
 
-	enum TextureFilter {
+	enum TextureFilter : int32_t {
 		TEXTURE_FILTER_NEAREST,
 		TEXTURE_FILTER_LINEAR,
 		TEXTURE_FILTER_NEAREST_WITH_MIPMAPS,
@@ -169,13 +169,13 @@ public:
 		TEXTURE_FILTER_MAX
 	};
 
-	enum DetailUV {
+	enum DetailUV : int32_t {
 		DETAIL_UV_1,
 		DETAIL_UV_2,
 		DETAIL_UV_MAX
 	};
 
-	enum Transparency {
+	enum Transparency : int32_t {
 		TRANSPARENCY_DISABLED,
 		TRANSPARENCY_ALPHA,
 		TRANSPARENCY_ALPHA_SCISSOR,
@@ -184,21 +184,21 @@ public:
 		TRANSPARENCY_MAX,
 	};
 
-	enum AlphaAntiAliasing {
+	enum AlphaAntiAliasing : int32_t {
 		ALPHA_ANTIALIASING_OFF,
 		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
 		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE,
 		ALPHA_ANTIALIASING_MAX
 	};
 
-	enum ShadingMode {
+	enum ShadingMode : int32_t {
 		SHADING_MODE_UNSHADED,
 		SHADING_MODE_PER_PIXEL,
 		SHADING_MODE_PER_VERTEX,
 		SHADING_MODE_MAX
 	};
 
-	enum Feature {
+	enum Feature : int32_t {
 		FEATURE_EMISSION,
 		FEATURE_NORMAL_MAPPING,
 		FEATURE_RIM,
@@ -214,7 +214,7 @@ public:
 		FEATURE_MAX
 	};
 
-	enum BlendMode {
+	enum BlendMode : int32_t {
 		BLEND_MODE_MIX,
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
@@ -222,21 +222,21 @@ public:
 		BLEND_MODE_MAX
 	};
 
-	enum DepthDrawMode {
+	enum DepthDrawMode : int32_t {
 		DEPTH_DRAW_OPAQUE_ONLY,
 		DEPTH_DRAW_ALWAYS,
 		DEPTH_DRAW_DISABLED,
 		DEPTH_DRAW_MAX
 	};
 
-	enum CullMode {
+	enum CullMode : int32_t {
 		CULL_BACK,
 		CULL_FRONT,
 		CULL_DISABLED,
 		CULL_MAX
 	};
 
-	enum Flags {
+	enum Flags : int32_t {
 		FLAG_DISABLE_DEPTH_TEST,
 		FLAG_ALBEDO_FROM_VERTEX_COLOR,
 		FLAG_SRGB_VERTEX_COLOR,
@@ -262,7 +262,7 @@ public:
 		FLAG_MAX
 	};
 
-	enum DiffuseMode {
+	enum DiffuseMode : int32_t {
 		DIFFUSE_BURLEY,
 		DIFFUSE_LAMBERT,
 		DIFFUSE_LAMBERT_WRAP,
@@ -270,14 +270,14 @@ public:
 		DIFFUSE_MAX
 	};
 
-	enum SpecularMode {
+	enum SpecularMode : int32_t {
 		SPECULAR_SCHLICK_GGX,
 		SPECULAR_TOON,
 		SPECULAR_DISABLED,
 		SPECULAR_MAX
 	};
 
-	enum BillboardMode {
+	enum BillboardMode : int32_t {
 		BILLBOARD_DISABLED,
 		BILLBOARD_ENABLED,
 		BILLBOARD_FIXED_Y,
@@ -285,7 +285,7 @@ public:
 		BILLBOARD_MAX
 	};
 
-	enum TextureChannel {
+	enum TextureChannel : int32_t {
 		TEXTURE_CHANNEL_RED,
 		TEXTURE_CHANNEL_GREEN,
 		TEXTURE_CHANNEL_BLUE,
@@ -294,13 +294,13 @@ public:
 		TEXTURE_CHANNEL_MAX
 	};
 
-	enum EmissionOperator {
+	enum EmissionOperator : int32_t {
 		EMISSION_OP_ADD,
 		EMISSION_OP_MULTIPLY,
 		EMISSION_OP_MAX
 	};
 
-	enum DistanceFadeMode {
+	enum DistanceFadeMode : int32_t {
 		DISTANCE_FADE_DISABLED,
 		DISTANCE_FADE_PIXEL_ALPHA,
 		DISTANCE_FADE_PIXEL_DITHER,

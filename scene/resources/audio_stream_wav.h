@@ -37,7 +37,7 @@ class AudioStreamWAV;
 
 class AudioStreamPlaybackWAV : public AudioStreamPlayback {
 	GDCLASS(AudioStreamPlaybackWAV, AudioStreamPlayback);
-	enum {
+	enum : int32_t {
 		MIX_FRAC_BITS = 13,
 		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
 		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,
@@ -85,14 +85,14 @@ class AudioStreamWAV : public AudioStream {
 	RES_BASE_EXTENSION("sample")
 
 public:
-	enum Format {
+	enum Format : int32_t {
 		FORMAT_8_BITS,
 		FORMAT_16_BITS,
 		FORMAT_IMA_ADPCM
 	};
 
 	// Keep the ResourceImporterWAV `edit/loop_mode` enum hint in sync with these options.
-	enum LoopMode {
+	enum LoopMode : int32_t {
 		LOOP_DISABLED,
 		LOOP_FORWARD,
 		LOOP_PINGPONG,
@@ -102,7 +102,7 @@ public:
 private:
 	friend class AudioStreamPlaybackWAV;
 
-	enum {
+	enum : int32_t {
 		DATA_PAD = 16 //padding for interpolation
 	};
 

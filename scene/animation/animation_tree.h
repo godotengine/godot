@@ -47,7 +47,7 @@ class AnimationNode : public Resource {
 public:
 	friend class AnimationTree;
 
-	enum FilterAction {
+	enum FilterAction : int32_t {
 		FILTER_IGNORE,
 		FILTER_PASS,
 		FILTER_STOP,
@@ -227,7 +227,7 @@ class AnimationTree : public AnimationMixer {
 
 #ifndef DISABLE_DEPRECATED
 public:
-	enum AnimationProcessCallback {
+	enum AnimationProcessCallback : int32_t {
 		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
 		ANIMATION_PROCESS_MANUAL,

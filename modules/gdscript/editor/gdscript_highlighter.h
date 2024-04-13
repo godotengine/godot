@@ -39,7 +39,7 @@ class GDScriptSyntaxHighlighter : public EditorSyntaxHighlighter {
 
 private:
 	struct ColorRegion {
-		enum Type {
+		enum Type : int32_t {
 			TYPE_NONE,
 			TYPE_STRING, // `"` and `'`, optional prefix `&`, `^`, or `r`.
 			TYPE_MULTILINE_STRING, // `"""` and `'''`, optional prefix `r`.
@@ -64,7 +64,7 @@ private:
 	HashMap<StringName, Color> member_keywords;
 	HashSet<StringName> global_functions;
 
-	enum Type {
+	enum Type : int32_t {
 		NONE,
 		REGION,
 		NODE_PATH,
@@ -97,7 +97,7 @@ private:
 	Color string_name_color;
 	Color type_color;
 
-	enum CommentMarkerLevel {
+	enum CommentMarkerLevel : int32_t {
 		COMMENT_MARKER_CRITICAL,
 		COMMENT_MARKER_WARNING,
 		COMMENT_MARKER_NOTICE,

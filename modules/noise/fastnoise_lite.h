@@ -46,7 +46,7 @@ class FastNoiseLite : public Noise {
 	OBJ_SAVE_TYPE(FastNoiseLite);
 
 public:
-	enum NoiseType {
+	enum NoiseType : int32_t {
 		TYPE_SIMPLEX = _FastNoiseLite::NoiseType_OpenSimplex2,
 		TYPE_SIMPLEX_SMOOTH = _FastNoiseLite::NoiseType_OpenSimplex2S,
 		TYPE_CELLULAR = _FastNoiseLite::NoiseType_Cellular,
@@ -55,21 +55,21 @@ public:
 		TYPE_VALUE = _FastNoiseLite::NoiseType_Value,
 	};
 
-	enum FractalType {
+	enum FractalType : int32_t {
 		FRACTAL_NONE = _FastNoiseLite::FractalType_None,
 		FRACTAL_FBM = _FastNoiseLite::FractalType_FBm,
 		FRACTAL_RIDGED = _FastNoiseLite::FractalType_Ridged,
 		FRACTAL_PING_PONG = _FastNoiseLite::FractalType_PingPong,
 	};
 
-	enum CellularDistanceFunction {
+	enum CellularDistanceFunction : int32_t {
 		DISTANCE_EUCLIDEAN = _FastNoiseLite::CellularDistanceFunction_Euclidean,
 		DISTANCE_EUCLIDEAN_SQUARED = _FastNoiseLite::CellularDistanceFunction_EuclideanSq,
 		DISTANCE_MANHATTAN = _FastNoiseLite::CellularDistanceFunction_Manhattan,
 		DISTANCE_HYBRID = _FastNoiseLite::CellularDistanceFunction_Hybrid
 	};
 
-	enum CellularReturnType {
+	enum CellularReturnType : int32_t {
 		RETURN_CELL_VALUE = _FastNoiseLite::CellularReturnType_CellValue,
 		RETURN_DISTANCE = _FastNoiseLite::CellularReturnType_Distance,
 		RETURN_DISTANCE2 = _FastNoiseLite::CellularReturnType_Distance2,
@@ -79,13 +79,13 @@ public:
 		RETURN_DISTANCE2_DIV = _FastNoiseLite::CellularReturnType_Distance2Div
 	};
 
-	enum DomainWarpType {
+	enum DomainWarpType : int32_t {
 		DOMAIN_WARP_SIMPLEX = _FastNoiseLite::DomainWarpType_OpenSimplex2,
 		DOMAIN_WARP_SIMPLEX_REDUCED = _FastNoiseLite::DomainWarpType_OpenSimplex2Reduced,
 		DOMAIN_WARP_BASIC_GRID = _FastNoiseLite::DomainWarpType_BasicGrid
 	};
 
-	enum DomainWarpFractalType {
+	enum DomainWarpFractalType : int32_t {
 		DOMAIN_WARP_FRACTAL_NONE,
 		DOMAIN_WARP_FRACTAL_PROGRESSIVE,
 		DOMAIN_WARP_FRACTAL_INDEPENDENT

@@ -60,7 +60,7 @@ typedef void (*ResourceSavedCallback)(Ref<Resource> p_resource, const String &p_
 typedef ResourceUID::ID (*ResourceSaverGetResourceIDForPath)(const String &p_path, bool p_generate);
 
 class ResourceSaver {
-	enum {
+	enum : int32_t {
 		MAX_SAVERS = 64
 	};
 
@@ -73,7 +73,7 @@ class ResourceSaver {
 	static Ref<ResourceFormatSaver> _find_custom_resource_format_saver(const String &path);
 
 public:
-	enum SaverFlags {
+	enum SaverFlags : int32_t {
 		FLAG_NONE = 0,
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,

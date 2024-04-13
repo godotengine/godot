@@ -39,7 +39,7 @@ class UndoRedo : public Object {
 	OBJ_SAVE_TYPE(UndoRedo);
 
 public:
-	enum MergeMode {
+	enum MergeMode : int32_t {
 		MERGE_DISABLE,
 		MERGE_ENDS,
 		MERGE_ALL
@@ -52,7 +52,7 @@ public:
 
 private:
 	struct Operation {
-		enum Type {
+		enum Type : int32_t {
 			TYPE_METHOD,
 			TYPE_PROPERTY,
 			TYPE_REFERENCE

@@ -49,7 +49,7 @@ public:
 
 	static const int INVALID_ID = -1;
 
-	enum DataFormat {
+	enum DataFormat : int32_t {
 		DATA_FORMAT_R4G4_UNORM_PACK8,
 		DATA_FORMAT_R4G4B4A4_UNORM_PACK16,
 		DATA_FORMAT_B4G4R4A4_UNORM_PACK16,
@@ -271,7 +271,7 @@ public:
 		DATA_FORMAT_MAX,
 	};
 
-	enum CompareOperator {
+	enum CompareOperator : int32_t {
 		COMPARE_OP_NEVER,
 		COMPARE_OP_LESS,
 		COMPARE_OP_EQUAL,
@@ -287,7 +287,7 @@ public:
 	/**** TEXTURE ****/
 	/*****************/
 
-	enum TextureType {
+	enum TextureType : int32_t {
 		TEXTURE_TYPE_1D,
 		TEXTURE_TYPE_2D,
 		TEXTURE_TYPE_3D,
@@ -298,7 +298,7 @@ public:
 		TEXTURE_TYPE_MAX,
 	};
 
-	enum TextureSamples {
+	enum TextureSamples : int32_t {
 		TEXTURE_SAMPLES_1,
 		TEXTURE_SAMPLES_2,
 		TEXTURE_SAMPLES_4,
@@ -309,7 +309,7 @@ public:
 		TEXTURE_SAMPLES_MAX,
 	};
 
-	enum TextureUsageBits {
+	enum TextureUsageBits : int32_t {
 		TEXTURE_USAGE_SAMPLING_BIT = (1 << 0),
 		TEXTURE_USAGE_COLOR_ATTACHMENT_BIT = (1 << 1),
 		TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT = (1 << 2),
@@ -363,7 +363,7 @@ public:
 		}
 	};
 
-	enum TextureSwizzle {
+	enum TextureSwizzle : int32_t {
 		TEXTURE_SWIZZLE_IDENTITY,
 		TEXTURE_SWIZZLE_ZERO,
 		TEXTURE_SWIZZLE_ONE,
@@ -374,7 +374,7 @@ public:
 		TEXTURE_SWIZZLE_MAX
 	};
 
-	enum TextureSliceType {
+	enum TextureSliceType : int32_t {
 		TEXTURE_SLICE_2D,
 		TEXTURE_SLICE_CUBEMAP,
 		TEXTURE_SLICE_3D,
@@ -386,12 +386,12 @@ public:
 	/**** SAMPLER ****/
 	/*****************/
 
-	enum SamplerFilter {
+	enum SamplerFilter : int32_t {
 		SAMPLER_FILTER_NEAREST,
 		SAMPLER_FILTER_LINEAR,
 	};
 
-	enum SamplerRepeatMode {
+	enum SamplerRepeatMode : int32_t {
 		SAMPLER_REPEAT_MODE_REPEAT,
 		SAMPLER_REPEAT_MODE_MIRRORED_REPEAT,
 		SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE,
@@ -400,7 +400,7 @@ public:
 		SAMPLER_REPEAT_MODE_MAX
 	};
 
-	enum SamplerBorderColor {
+	enum SamplerBorderColor : int32_t {
 		SAMPLER_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
 		SAMPLER_BORDER_COLOR_INT_TRANSPARENT_BLACK,
 		SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
@@ -432,12 +432,12 @@ public:
 	/**** VERTEX ARRAY ****/
 	/**********************/
 
-	enum IndexBufferFormat {
+	enum IndexBufferFormat : int32_t {
 		INDEX_BUFFER_FORMAT_UINT16,
 		INDEX_BUFFER_FORMAT_UINT32,
 	};
 
-	enum VertexFrequency {
+	enum VertexFrequency : int32_t {
 		VERTEX_FREQUENCY_VERTEX,
 		VERTEX_FREQUENCY_INSTANCE,
 	};
@@ -460,7 +460,7 @@ public:
 	/**** SHADER ****/
 	/****************/
 
-	enum ShaderStage {
+	enum ShaderStage : int32_t {
 		SHADER_STAGE_VERTEX,
 		SHADER_STAGE_FRAGMENT,
 		SHADER_STAGE_TESSELATION_CONTROL,
@@ -485,7 +485,7 @@ public:
 
 	static const uint32_t MAX_UNIFORM_SETS = 16;
 
-	enum UniformType {
+	enum UniformType : int32_t {
 		UNIFORM_TYPE_SAMPLER, // For sampling only (sampler GLSL type).
 		UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, // For sampling only, but includes a texture, (samplerXX GLSL type), first a sampler then a texture.
 		UNIFORM_TYPE_TEXTURE, // Only texture, (textureXX GLSL type).
@@ -503,7 +503,7 @@ public:
 	/**** PIPELINE ****/
 	/******************/
 
-	enum PipelineSpecializationConstantType {
+	enum PipelineSpecializationConstantType : int32_t {
 		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL,
 		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT,
 		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT,
@@ -525,7 +525,7 @@ public:
 
 	// ----- PIPELINE -----
 
-	enum RenderPrimitive {
+	enum RenderPrimitive : int32_t {
 		RENDER_PRIMITIVE_POINTS,
 		RENDER_PRIMITIVE_LINES,
 		RENDER_PRIMITIVE_LINES_WITH_ADJACENCY,
@@ -540,19 +540,19 @@ public:
 		RENDER_PRIMITIVE_MAX
 	};
 
-	enum PolygonCullMode {
+	enum PolygonCullMode : int32_t {
 		POLYGON_CULL_DISABLED,
 		POLYGON_CULL_FRONT,
 		POLYGON_CULL_BACK,
 		POLYGON_CULL_MAX
 	};
 
-	enum PolygonFrontFace {
+	enum PolygonFrontFace : int32_t {
 		POLYGON_FRONT_FACE_CLOCKWISE,
 		POLYGON_FRONT_FACE_COUNTER_CLOCKWISE,
 	};
 
-	enum StencilOperation {
+	enum StencilOperation : int32_t {
 		STENCIL_OP_KEEP,
 		STENCIL_OP_ZERO,
 		STENCIL_OP_REPLACE,
@@ -564,7 +564,7 @@ public:
 		STENCIL_OP_MAX
 	};
 
-	enum LogicOperation {
+	enum LogicOperation : int32_t {
 		LOGIC_OP_CLEAR,
 		LOGIC_OP_AND,
 		LOGIC_OP_AND_REVERSE,
@@ -584,7 +584,7 @@ public:
 		LOGIC_OP_MAX
 	};
 
-	enum BlendFactor {
+	enum BlendFactor : int32_t {
 		BLEND_FACTOR_ZERO,
 		BLEND_FACTOR_ONE,
 		BLEND_FACTOR_SRC_COLOR,
@@ -607,7 +607,7 @@ public:
 		BLEND_FACTOR_MAX
 	};
 
-	enum BlendOperation {
+	enum BlendOperation : int32_t {
 		BLEND_OP_ADD,
 		BLEND_OP_SUBTRACT,
 		BLEND_OP_REVERSE_SUBTRACT,
@@ -707,7 +707,7 @@ public:
 		Color blend_constant;
 	};
 
-	enum PipelineDynamicStateFlags {
+	enum PipelineDynamicStateFlags : int32_t {
 		DYNAMIC_STATE_LINE_WIDTH = (1 << 0),
 		DYNAMIC_STATE_DEPTH_BIAS = (1 << 1),
 		DYNAMIC_STATE_BLEND_CONSTANTS = (1 << 2),
@@ -723,7 +723,7 @@ public:
 
 	// This enum matches VkPhysicalDeviceType (except for `DEVICE_TYPE_MAX`).
 	// Unlike VkPhysicalDeviceType, DeviceType is exposed to the scripting API.
-	enum DeviceType {
+	enum DeviceType : int32_t {
 		DEVICE_TYPE_OTHER,
 		DEVICE_TYPE_INTEGRATED_GPU,
 		DEVICE_TYPE_DISCRETE_GPU,
@@ -734,7 +734,7 @@ public:
 
 	// Defined in an API-agnostic way.
 	// Some may not make sense for the underlying API; in that case, 0 is returned.
-	enum DriverResource {
+	enum DriverResource : int32_t {
 		DRIVER_RESOURCE_LOGICAL_DEVICE,
 		DRIVER_RESOURCE_PHYSICAL_DEVICE,
 		DRIVER_RESOURCE_TOPMOST_OBJECT,
@@ -765,7 +765,7 @@ public:
 #endif
 	};
 
-	enum Limit {
+	enum Limit : int32_t {
 		LIMIT_MAX_BOUND_UNIFORM_SETS,
 		LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS,
 		LIMIT_MAX_TEXTURES_PER_UNIFORM_SET,
@@ -812,7 +812,7 @@ public:
 		LIMIT_VRS_TEXEL_HEIGHT,
 	};
 
-	enum Features {
+	enum Features : int32_t {
 		SUPPORTS_MULTIVIEW,
 		SUPPORTS_FSR_HALF_FLOAT,
 		SUPPORTS_ATTACHMENT_VRS,
@@ -820,7 +820,7 @@ public:
 		SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS,
 	};
 
-	enum SubgroupOperations {
+	enum SubgroupOperations : int32_t {
 		SUBGROUP_BASIC_BIT = 1,
 		SUBGROUP_VOTE_BIT = 2,
 		SUBGROUP_ARITHMETIC_BIT = 4,

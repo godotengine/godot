@@ -265,12 +265,12 @@ public:
 		WaylandThread *wayland_thread;
 	};
 
-	enum class Gesture {
+	enum class Gesture : int32_t {
 		NONE,
 		MAGNIFY,
 	};
 
-	enum class PointerConstraint {
+	enum class PointerConstraint : int32_t {
 		NONE,
 		LOCKED,
 		CONFINED,

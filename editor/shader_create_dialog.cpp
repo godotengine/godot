@@ -38,7 +38,7 @@
 #include "scene/resources/visual_shader.h"
 #include "servers/rendering/shader_types.h"
 
-enum ShaderType {
+enum ShaderType : int32_t {
 	SHADER_TYPE_TEXT,
 	SHADER_TYPE_VISUAL,
 	SHADER_TYPE_INC,

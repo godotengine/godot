@@ -53,7 +53,7 @@ class GLTFDocument : public Resource {
 public:
 	const int32_t JOINT_GROUP_SIZE = 4;
 
-	enum {
+	enum : int32_t {
 		ARRAY_BUFFER = 34962,
 		ELEMENT_ARRAY_BUFFER = 34963,
 
@@ -64,11 +64,11 @@ public:
 		COMPONENT_TYPE_INT = 5125,
 		COMPONENT_TYPE_FLOAT = 5126,
 	};
-	enum {
+	enum : int32_t {
 		TEXTURE_TYPE_GENERIC = 0,
 		TEXTURE_TYPE_NORMAL = 1,
 	};
-	enum RootNodeMode {
+	enum RootNodeMode : int32_t {
 		ROOT_NODE_MODE_SINGLE_ROOT,
 		ROOT_NODE_MODE_KEEP_ROOT,
 		ROOT_NODE_MODE_MULTI_ROOT,

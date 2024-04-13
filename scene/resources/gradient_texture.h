@@ -74,12 +74,12 @@ class GradientTexture2D : public Texture2D {
 	GDCLASS(GradientTexture2D, Texture2D);
 
 public:
-	enum Fill {
+	enum Fill : int32_t {
 		FILL_LINEAR,
 		FILL_RADIAL,
 		FILL_SQUARE,
 	};
-	enum Repeat {
+	enum Repeat : int32_t {
 		REPEAT_NONE,
 		REPEAT,
 		REPEAT_MIRROR,

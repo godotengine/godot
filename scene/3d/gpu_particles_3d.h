@@ -39,21 +39,21 @@ private:
 	GDCLASS(GPUParticles3D, GeometryInstance3D);
 
 public:
-	enum DrawOrder {
+	enum DrawOrder : int32_t {
 		DRAW_ORDER_INDEX,
 		DRAW_ORDER_LIFETIME,
 		DRAW_ORDER_REVERSE_LIFETIME,
 		DRAW_ORDER_VIEW_DEPTH,
 	};
 
-	enum TransformAlign {
+	enum TransformAlign : int32_t {
 		TRANSFORM_ALIGN_DISABLED,
 		TRANSFORM_ALIGN_Z_BILLBOARD,
 		TRANSFORM_ALIGN_Y_TO_VELOCITY,
 		TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY
 	};
 
-	enum {
+	enum : int32_t {
 		MAX_DRAW_PASSES = 4
 	};
 
@@ -177,7 +177,7 @@ public:
 
 	void restart();
 
-	enum EmitFlags {
+	enum EmitFlags : int32_t {
 		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,
 		EMIT_FLAG_ROTATION_SCALE = RS::PARTICLES_EMIT_FLAG_ROTATION_SCALE,
 		EMIT_FLAG_VELOCITY = RS::PARTICLES_EMIT_FLAG_VELOCITY,

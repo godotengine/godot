@@ -41,7 +41,7 @@ class GodotSpace2D;
 
 class GodotCollisionObject2D : public GodotShapeOwner2D {
 public:
-	enum Type {
+	enum Type : int32_t {
 		TYPE_AREA,
 		TYPE_BODY
 	};

@@ -67,13 +67,13 @@ private:
 		}
 	};
 
-	enum NetworkNodeIdCompression {
+	enum NetworkNodeIdCompression : int32_t {
 		NETWORK_NODE_ID_COMPRESSION_8 = 0,
 		NETWORK_NODE_ID_COMPRESSION_16,
 		NETWORK_NODE_ID_COMPRESSION_32,
 	};
 
-	enum NetworkNameIdCompression {
+	enum NetworkNameIdCompression : int32_t {
 		NETWORK_NAME_ID_COMPRESSION_8 = 0,
 		NETWORK_NAME_ID_COMPRESSION_16,
 	};

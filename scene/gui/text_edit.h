@@ -43,7 +43,7 @@ class TextEdit : public Control {
 
 public:
 	/* Edit Actions. */
-	enum EditAction {
+	enum EditAction : int32_t {
 		ACTION_NONE,
 		ACTION_TYPING,
 		ACTION_BACKSPACE,
@@ -51,13 +51,13 @@ public:
 	};
 
 	/* Caret. */
-	enum CaretType {
+	enum CaretType : int32_t {
 		CARET_TYPE_LINE,
 		CARET_TYPE_BLOCK
 	};
 
 	/* Selection */
-	enum SelectionMode {
+	enum SelectionMode : int32_t {
 		SELECTION_MODE_NONE,
 		SELECTION_MODE_SHIFT,
 		SELECTION_MODE_POINTER,
@@ -66,20 +66,20 @@ public:
 	};
 
 	/* Line Wrapping.*/
-	enum LineWrappingMode {
+	enum LineWrappingMode : int32_t {
 		LINE_WRAPPING_NONE,
 		LINE_WRAPPING_BOUNDARY
 	};
 
 	/* Gutters. */
-	enum GutterType {
+	enum GutterType : int32_t {
 		GUTTER_TYPE_STRING,
 		GUTTER_TYPE_ICON,
 		GUTTER_TYPE_CUSTOM
 	};
 
 	/* Context Menu. */
-	enum MenuItems {
+	enum MenuItems : int32_t {
 		MENU_CUT,
 		MENU_COPY,
 		MENU_PASTE,
@@ -115,7 +115,7 @@ public:
 	};
 
 	/* Search. */
-	enum SearchFlags {
+	enum SearchFlags : int32_t {
 		SEARCH_MATCH_CASE = 1,
 		SEARCH_WHOLE_WORDS = 2,
 		SEARCH_BACKWARDS = 4
@@ -323,7 +323,7 @@ private:
 	/* Versioning */
 	struct Caret;
 	struct TextOperation {
-		enum Type {
+		enum Type : int32_t {
 			TYPE_NONE,
 			TYPE_INSERT,
 			TYPE_REMOVE

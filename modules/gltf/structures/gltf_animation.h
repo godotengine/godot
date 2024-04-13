@@ -40,7 +40,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum Interpolation {
+	enum Interpolation : int32_t {
 		INTERP_LINEAR,
 		INTERP_STEP,
 		INTERP_CATMULLROMSPLINE,

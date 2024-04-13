@@ -81,14 +81,14 @@ public:
 		HashMap<StringName, Category::Item *> item_ptrs;
 	};
 
-	enum DisplayMode {
+	enum DisplayMode : int32_t {
 		DISPLAY_FRAME_TIME,
 		DISPLAY_AVERAGE_TIME,
 		DISPLAY_FRAME_PERCENT,
 		DISPLAY_PHYSICS_FRAME_PERCENT,
 	};
 
-	enum DisplayTime {
+	enum DisplayTime : int32_t {
 		DISPLAY_TOTAL_TIME,
 		DISPLAY_SELF_TIME,
 	};

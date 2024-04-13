@@ -42,14 +42,14 @@ protected:
 	static void _bind_methods();
 
 private:
-	enum {
+	enum : int32_t {
 		CH_RELIABLE = 0,
 		CH_ORDERED = 1,
 		CH_UNRELIABLE = 2,
 		CH_RESERVED_MAX = 3
 	};
 
-	enum NetworkMode {
+	enum NetworkMode : int32_t {
 		MODE_NONE,
 		MODE_SERVER,
 		MODE_CLIENT,

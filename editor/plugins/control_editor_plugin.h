@@ -94,7 +94,7 @@ public:
 class EditorPropertySizeFlags : public EditorProperty {
 	GDCLASS(EditorPropertySizeFlags, EditorProperty);
 
-	enum FlagPreset {
+	enum FlagPreset : int32_t {
 		SIZE_FLAGS_PRESET_FILL,
 		SIZE_FLAGS_PRESET_SHRINK_BEGIN,
 		SIZE_FLAGS_PRESET_SHRINK_CENTER,

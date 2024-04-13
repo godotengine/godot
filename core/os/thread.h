@@ -66,7 +66,7 @@ public:
 		MAIN_ID = 1
 	};
 
-	enum Priority {
+	enum Priority : int32_t {
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
 		PRIORITY_HIGH
@@ -140,7 +140,7 @@ public:
 		MAIN_ID = 1
 	};
 
-	enum Priority {
+	enum Priority : int32_t {
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
 		PRIORITY_HIGH

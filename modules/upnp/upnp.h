@@ -56,7 +56,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum UPNPResult {
+	enum UPNPResult : int32_t {
 		UPNP_RESULT_SUCCESS,
 		UPNP_RESULT_NOT_AUTHORIZED,
 		UPNP_RESULT_PORT_MAPPING_NOT_FOUND,

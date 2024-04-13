@@ -46,7 +46,7 @@ class EditorRunBar : public MarginContainer {
 
 	static EditorRunBar *singleton;
 
-	enum RunMode {
+	enum RunMode : int32_t {
 		STOPPED = 0,
 		RUN_MAIN,
 		RUN_CURRENT,

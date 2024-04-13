@@ -41,7 +41,7 @@ class AudioStreamMP3;
 class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackMP3, AudioStreamPlaybackResampled);
 
-	enum {
+	enum : int32_t {
 		FADE_SIZE = 256
 	};
 	AudioFrame loop_fade[FADE_SIZE];

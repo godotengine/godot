@@ -43,7 +43,7 @@ class CSGShape3D : public GeometryInstance3D {
 	GDCLASS(CSGShape3D, GeometryInstance3D);
 
 public:
-	enum Operation {
+	enum Operation : int32_t {
 		OPERATION_UNION,
 		OPERATION_INTERSECTION,
 		OPERATION_SUBTRACTION,
@@ -345,18 +345,18 @@ class CSGPolygon3D : public CSGPrimitive3D {
 	GDCLASS(CSGPolygon3D, CSGPrimitive3D);
 
 public:
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_DEPTH,
 		MODE_SPIN,
 		MODE_PATH
 	};
 
-	enum PathIntervalType {
+	enum PathIntervalType : int32_t {
 		PATH_INTERVAL_DISTANCE,
 		PATH_INTERVAL_SUBDIVIDE
 	};
 
-	enum PathRotation {
+	enum PathRotation : int32_t {
 		PATH_ROTATION_POLYGON,
 		PATH_ROTATION_PATH,
 		PATH_ROTATION_PATH_FOLLOW,

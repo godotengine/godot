@@ -55,14 +55,14 @@ protected:
 	static ResourceLoader *singleton;
 
 public:
-	enum ThreadLoadStatus {
+	enum ThreadLoadStatus : int32_t {
 		THREAD_LOAD_INVALID_RESOURCE,
 		THREAD_LOAD_IN_PROGRESS,
 		THREAD_LOAD_FAILED,
 		THREAD_LOAD_LOADED
 	};
 
-	enum CacheMode {
+	enum CacheMode : int32_t {
 		CACHE_MODE_IGNORE,
 		CACHE_MODE_REUSE,
 		CACHE_MODE_REPLACE,
@@ -97,7 +97,7 @@ protected:
 	static ResourceSaver *singleton;
 
 public:
-	enum SaverFlags {
+	enum SaverFlags : int32_t {
 		FLAG_NONE = 0,
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,
@@ -128,7 +128,7 @@ protected:
 	static OS *singleton;
 
 public:
-	enum RenderingDriver {
+	enum RenderingDriver : int32_t {
 		RENDERING_DRIVER_VULKAN,
 		RENDERING_DRIVER_OPENGL3,
 		RENDERING_DRIVER_D3D12,
@@ -214,7 +214,7 @@ public:
 	int get_processor_count() const;
 	String get_processor_name() const;
 
-	enum SystemDir {
+	enum SystemDir : int32_t {
 		SYSTEM_DIR_DESKTOP,
 		SYSTEM_DIR_DCIM,
 		SYSTEM_DIR_DOCUMENTS,
@@ -277,7 +277,7 @@ public:
 	Vector<Point2> convex_hull(const Vector<Point2> &p_points);
 	TypedArray<PackedVector2Array> decompose_polygon_in_convex(const Vector<Vector2> &p_polygon);
 
-	enum PolyBooleanOperation {
+	enum PolyBooleanOperation : int32_t {
 		OPERATION_UNION,
 		OPERATION_DIFFERENCE,
 		OPERATION_INTERSECTION,
@@ -294,12 +294,12 @@ public:
 	TypedArray<PackedVector2Array> intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Chop.
 
 	// 2D offset polygons/polylines.
-	enum PolyJoinType {
+	enum PolyJoinType : int32_t {
 		JOIN_SQUARE,
 		JOIN_ROUND,
 		JOIN_MITER
 	};
-	enum PolyEndType {
+	enum PolyEndType : int32_t {
 		END_POLYGON,
 		END_JOINED,
 		END_BUTT,
@@ -405,7 +405,7 @@ protected:
 	static void _start_func(void *ud);
 
 public:
-	enum Priority {
+	enum Priority : int32_t {
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
 		PRIORITY_HIGH,

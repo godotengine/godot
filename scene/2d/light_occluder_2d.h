@@ -37,7 +37,7 @@ class OccluderPolygon2D : public Resource {
 	GDCLASS(OccluderPolygon2D, Resource);
 
 public:
-	enum CullMode {
+	enum CullMode : int32_t {
 		CULL_DISABLED,
 		CULL_CLOCKWISE,
 		CULL_COUNTER_CLOCKWISE

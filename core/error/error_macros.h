@@ -37,7 +37,7 @@
 
 class String;
 
-enum ErrorHandlerType {
+enum ErrorHandlerType : int32_t {
 	ERR_HANDLER_ERROR,
 	ERR_HANDLER_WARNING,
 	ERR_HANDLER_SCRIPT,

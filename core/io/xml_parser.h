@@ -45,7 +45,7 @@ class XMLParser : public RefCounted {
 
 public:
 	//! Enumeration of all supported source text file formats
-	enum SourceFormat {
+	enum SourceFormat : int32_t {
 		SOURCE_ASCII,
 		SOURCE_UTF8,
 		SOURCE_UTF16_BE,
@@ -54,7 +54,7 @@ public:
 		SOURCE_UTF32_LE
 	};
 
-	enum NodeType {
+	enum NodeType : int32_t {
 		NODE_NONE,
 		NODE_ELEMENT,
 		NODE_ELEMENT_END,

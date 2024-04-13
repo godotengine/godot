@@ -44,7 +44,7 @@ protected:
 	static bool _flush_stdout_on_print;
 
 public:
-	enum ErrorType {
+	enum ErrorType : int32_t {
 		ERR_ERROR,
 		ERR_WARNING,
 		ERR_SCRIPT,

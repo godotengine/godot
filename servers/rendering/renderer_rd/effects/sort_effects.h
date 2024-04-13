@@ -41,7 +41,7 @@ namespace RendererRD {
 
 class SortEffects {
 private:
-	enum SortMode {
+	enum SortMode : int32_t {
 		SORT_MODE_BLOCK,
 		SORT_MODE_STEP,
 		SORT_MODE_INNER,

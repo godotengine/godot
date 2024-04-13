@@ -52,7 +52,7 @@ public:
 	void window_destroy(DisplayServer::WindowID p_window);
 
 public:
-	enum Vendor {
+	enum Vendor : int32_t {
 		VENDOR_UNKNOWN = 0x0,
 		VENDOR_AMD = 0x1002,
 		VENDOR_IMGTEC = 0x1010,
@@ -64,7 +64,7 @@ public:
 		VENDOR_INTEL = 0x8086
 	};
 
-	enum DeviceType {
+	enum DeviceType : int32_t {
 		DEVICE_TYPE_OTHER = 0x0,
 		DEVICE_TYPE_INTEGRATED_GPU = 0x1,
 		DEVICE_TYPE_DISCRETE_GPU = 0x2,

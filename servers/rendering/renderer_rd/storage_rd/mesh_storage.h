@@ -43,7 +43,7 @@ namespace RendererRD {
 
 class MeshStorage : public RendererMeshStorage {
 public:
-	enum DefaultRDBuffer {
+	enum DefaultRDBuffer : int32_t {
 		DEFAULT_RD_BUFFER_VERTEX,
 		DEFAULT_RD_BUFFER_NORMAL,
 		DEFAULT_RD_BUFFER_TANGENT,
@@ -287,12 +287,12 @@ private:
 			float inverse_transform_offset[2];
 		};
 
-		enum {
+		enum : int32_t {
 			UNIFORM_SET_INSTANCE = 0,
 			UNIFORM_SET_SURFACE = 1,
 			UNIFORM_SET_SKELETON = 2,
 		};
-		enum {
+		enum : int32_t {
 			SHADER_MODE_2D,
 			SHADER_MODE_3D,
 			SHADER_MODE_MAX
@@ -330,7 +330,7 @@ private:
 
 	Skeleton *skeleton_dirty_list = nullptr;
 
-	enum AttributeLocation {
+	enum AttributeLocation : int32_t {
 		ATTRIBUTE_LOCATION_PREV_VERTEX = 12,
 		ATTRIBUTE_LOCATION_PREV_NORMAL = 13,
 		ATTRIBUTE_LOCATION_PREV_TANGENT = 14

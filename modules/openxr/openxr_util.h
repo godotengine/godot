@@ -53,7 +53,7 @@ public:
 		float m[16];
 	} XrMatrix4x4f;
 
-	typedef enum GraphicsAPI {
+	typedef enum GraphicsAPI : int32_t {
 		GRAPHICS_VULKAN,
 		GRAPHICS_OPENGL,
 		GRAPHICS_OPENGL_ES,

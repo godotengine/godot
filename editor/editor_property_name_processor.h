@@ -52,7 +52,7 @@ class EditorPropertyNameProcessor : public Node {
 
 public:
 	// Matches `interface/inspector/capitalize_properties` editor setting.
-	enum Style {
+	enum Style : int32_t {
 		STYLE_RAW,
 		STYLE_CAPITALIZED,
 		STYLE_LOCALIZED,

@@ -40,12 +40,12 @@ class ViewPanner : public RefCounted {
 	GDCLASS(ViewPanner, RefCounted);
 
 public:
-	enum ControlScheme {
+	enum ControlScheme : int32_t {
 		SCROLL_ZOOMS,
 		SCROLL_PANS,
 	};
 
-	enum PanAxis {
+	enum PanAxis : int32_t {
 		PAN_AXIS_BOTH,
 		PAN_AXIS_HORIZONTAL,
 		PAN_AXIS_VERTICAL,

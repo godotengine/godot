@@ -38,7 +38,7 @@
 struct DirAccessWindowsPrivate;
 
 class DirAccessWindows : public DirAccess {
-	enum {
+	enum : int32_t {
 		MAX_DRIVES = 26
 	};
 

@@ -56,7 +56,7 @@ public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 	typedef Error (*EditorExportSaveSharedObject)(void *p_userdata, const SharedObject &p_so);
 
-	enum ExportMessageType {
+	enum ExportMessageType : int32_t {
 		EXPORT_MESSAGE_NONE,
 		EXPORT_MESSAGE_INFO,
 		EXPORT_MESSAGE_WARNING,
@@ -229,7 +229,7 @@ public:
 	virtual String get_option_tooltip(int p_device) const { return ""; }
 	virtual String get_device_architecture(int p_device) const { return ""; }
 
-	enum DebugFlags {
+	enum DebugFlags : int32_t {
 		DEBUG_FLAG_DUMB_CLIENT = 1,
 		DEBUG_FLAG_REMOTE_DEBUG = 2,
 		DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST = 4,

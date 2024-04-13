@@ -35,7 +35,7 @@
 #include "godot_constraint_2d.h"
 
 class GodotBodyPair2D : public GodotConstraint2D {
-	enum {
+	enum : int32_t {
 		MAX_CONTACTS = 2
 	};
 	union {

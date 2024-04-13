@@ -37,14 +37,14 @@ class Light2D : public Node2D {
 	GDCLASS(Light2D, Node2D);
 
 public:
-	enum ShadowFilter {
+	enum ShadowFilter : int32_t {
 		SHADOW_FILTER_NONE,
 		SHADOW_FILTER_PCF5,
 		SHADOW_FILTER_PCF13,
 		SHADOW_FILTER_MAX
 	};
 
-	enum BlendMode {
+	enum BlendMode : int32_t {
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MIX,

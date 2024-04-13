@@ -46,7 +46,7 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-	enum FillMode {
+	enum FillMode : int32_t {
 		FILL_LEFT_TO_RIGHT = 0,
 		FILL_RIGHT_TO_LEFT,
 		FILL_TOP_TO_BOTTOM,

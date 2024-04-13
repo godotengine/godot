@@ -66,7 +66,7 @@ class PathFollow3D : public Node3D {
 	GDCLASS(PathFollow3D, Node3D);
 
 public:
-	enum RotationMode {
+	enum RotationMode : int32_t {
 		ROTATION_NONE,
 		ROTATION_Y,
 		ROTATION_XY,

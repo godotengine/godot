@@ -7158,7 +7158,7 @@ bool TextServerAdvanced::_is_valid_identifier(const String &p_string) const {
 	}
 #endif
 
-	enum UAX31SequenceStatus {
+	enum UAX31SequenceStatus : int32_t {
 		SEQ_NOT_STARTED,
 		SEQ_STARTED,
 		SEQ_STARTED_VIR,

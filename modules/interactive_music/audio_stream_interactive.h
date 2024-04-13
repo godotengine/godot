@@ -39,7 +39,7 @@ class AudioStreamInteractive : public AudioStream {
 	GDCLASS(AudioStreamInteractive, AudioStream)
 	OBJ_SAVE_TYPE(AudioStream)
 public:
-	enum TransitionFromTime {
+	enum TransitionFromTime : int32_t {
 		TRANSITION_FROM_TIME_IMMEDIATE,
 		TRANSITION_FROM_TIME_NEXT_BEAT,
 		TRANSITION_FROM_TIME_NEXT_BAR,
@@ -47,14 +47,14 @@ public:
 		TRANSITION_FROM_TIME_MAX
 	};
 
-	enum TransitionToTime {
+	enum TransitionToTime : int32_t {
 		TRANSITION_TO_TIME_SAME_POSITION,
 		TRANSITION_TO_TIME_START,
 		TRANSITION_TO_TIME_PREVIOUS_POSITION,
 		TRANSITION_TO_TIME_MAX,
 	};
 
-	enum FadeMode {
+	enum FadeMode : int32_t {
 		FADE_DISABLED,
 		FADE_IN,
 		FADE_OUT,
@@ -63,13 +63,13 @@ public:
 		FADE_MAX
 	};
 
-	enum AutoAdvanceMode {
+	enum AutoAdvanceMode : int32_t {
 		AUTO_ADVANCE_DISABLED,
 		AUTO_ADVANCE_ENABLED,
 		AUTO_ADVANCE_RETURN_TO_HOLD,
 	};
 
-	enum {
+	enum : int32_t {
 		CLIP_ANY = -1
 	};
 
@@ -81,7 +81,7 @@ private:
 
 	double time = 0;
 
-	enum {
+	enum : int32_t {
 		MAX_CLIPS = 63, // Because we use bitmasks for transition matching.
 		MAX_TRANSITIONS = 63,
 	};
@@ -205,7 +205,7 @@ private:
 	Ref<AudioStreamInteractive> stream;
 	uint64_t version = 0;
 
-	enum {
+	enum : int32_t {
 		BUFFER_SIZE = 1024
 	};
 

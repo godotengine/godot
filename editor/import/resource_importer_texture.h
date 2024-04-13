@@ -43,7 +43,7 @@ class ResourceImporterTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterTexture, ResourceImporter);
 
 public:
-	enum CompressMode {
+	enum CompressMode : int32_t {
 		COMPRESS_LOSSLESS,
 		COMPRESS_LOSSY,
 		COMPRESS_VRAM_COMPRESSED,
@@ -52,7 +52,7 @@ public:
 	};
 
 protected:
-	enum {
+	enum : int32_t {
 		MAKE_3D_FLAG = 1,
 		MAKE_ROUGHNESS_FLAG = 2,
 		MAKE_NORMAL_FLAG = 4
@@ -88,7 +88,7 @@ public:
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
 
-	enum Preset {
+	enum Preset : int32_t {
 		PRESET_DETECT,
 		PRESET_2D,
 		PRESET_3D,

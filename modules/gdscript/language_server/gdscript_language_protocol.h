@@ -68,7 +68,7 @@ private:
 		Error send_data();
 	};
 
-	enum LSPErrorCode {
+	enum LSPErrorCode : int32_t {
 		RequestCancelled = -32800,
 		ContentModified = -32801,
 	};

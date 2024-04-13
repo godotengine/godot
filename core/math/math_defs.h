@@ -31,6 +31,8 @@
 #ifndef MATH_DEFS_H
 #define MATH_DEFS_H
 
+#include <cstdint>
+
 #define CMP_EPSILON 0.00001
 #define CMP_EPSILON2 (CMP_EPSILON * CMP_EPSILON)
 
@@ -58,31 +60,31 @@
 
 #define USEC_TO_SEC(m_usec) ((m_usec) / 1000000.0)
 
-enum ClockDirection {
+enum ClockDirection : int32_t {
 	CLOCKWISE,
 	COUNTERCLOCKWISE
 };
 
-enum Orientation {
+enum Orientation : int32_t {
 	HORIZONTAL,
 	VERTICAL
 };
 
-enum HorizontalAlignment {
+enum HorizontalAlignment : int32_t {
 	HORIZONTAL_ALIGNMENT_LEFT,
 	HORIZONTAL_ALIGNMENT_CENTER,
 	HORIZONTAL_ALIGNMENT_RIGHT,
 	HORIZONTAL_ALIGNMENT_FILL,
 };
 
-enum VerticalAlignment {
+enum VerticalAlignment : int32_t {
 	VERTICAL_ALIGNMENT_TOP,
 	VERTICAL_ALIGNMENT_CENTER,
 	VERTICAL_ALIGNMENT_BOTTOM,
 	VERTICAL_ALIGNMENT_FILL,
 };
 
-enum InlineAlignment {
+enum InlineAlignment : int32_t {
 	// Image alignment points.
 	INLINE_ALIGNMENT_TOP_TO = 0b0000,
 	INLINE_ALIGNMENT_CENTER_TO = 0b0001,
@@ -103,21 +105,21 @@ enum InlineAlignment {
 	INLINE_ALIGNMENT_BOTTOM = INLINE_ALIGNMENT_BOTTOM_TO | INLINE_ALIGNMENT_TO_BOTTOM
 };
 
-enum Side {
+enum Side : int32_t {
 	SIDE_LEFT,
 	SIDE_TOP,
 	SIDE_RIGHT,
 	SIDE_BOTTOM
 };
 
-enum Corner {
+enum Corner : int32_t {
 	CORNER_TOP_LEFT,
 	CORNER_TOP_RIGHT,
 	CORNER_BOTTOM_RIGHT,
 	CORNER_BOTTOM_LEFT
 };
 
-enum class EulerOrder {
+enum class EulerOrder : int32_t {
 	XYZ,
 	XZY,
 	YXZ,

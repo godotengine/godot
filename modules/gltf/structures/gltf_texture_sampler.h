@@ -37,7 +37,7 @@ class GLTFTextureSampler : public Resource {
 	GDCLASS(GLTFTextureSampler, Resource);
 
 public:
-	enum FilterMode {
+	enum FilterMode : int32_t {
 		NEAREST = 9728,
 		LINEAR = 9729,
 		NEAREST_MIPMAP_NEAREST = 9984,
@@ -46,7 +46,7 @@ public:
 		LINEAR_MIPMAP_LINEAR = 9987
 	};
 
-	enum WrapMode {
+	enum WrapMode : int32_t {
 		CLAMP_TO_EDGE = 33071,
 		MIRRORED_REPEAT = 33648,
 		REPEAT = 10497,

@@ -77,7 +77,7 @@ public:
 	void register_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
 	void unregister_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
 
-	enum OpenXRAlphaBlendModeSupport {
+	enum OpenXRAlphaBlendModeSupport : int32_t {
 		OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE = 0,
 		OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL = 1,
 		OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING = 2,

@@ -46,7 +46,7 @@ class OptionButton;
 class GPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticles2DEditorPlugin, EditorPlugin);
 
-	enum {
+	enum : int32_t {
 		MENU_GENERATE_VISIBILITY_RECT,
 		MENU_LOAD_EMISSION_MASK,
 		MENU_CLEAR_EMISSION_MASK,
@@ -54,7 +54,7 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 		MENU_RESTART
 	};
 
-	enum EmissionMode {
+	enum EmissionMode : int32_t {
 		EMISSION_MODE_SOLID,
 		EMISSION_MODE_BORDER,
 		EMISSION_MODE_BORDER_DIRECTED

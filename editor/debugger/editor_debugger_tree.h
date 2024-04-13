@@ -40,7 +40,7 @@ class EditorDebuggerTree : public Tree {
 	GDCLASS(EditorDebuggerTree, Tree);
 
 private:
-	enum ItemMenu {
+	enum ItemMenu : int32_t {
 		ITEM_MENU_SAVE_REMOTE_NODE,
 		ITEM_MENU_COPY_NODE_PATH,
 	};
@@ -65,7 +65,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	enum Button {
+	enum Button : int32_t {
 		BUTTON_SUBSCENE = 0,
 		BUTTON_VISIBILITY = 1,
 	};

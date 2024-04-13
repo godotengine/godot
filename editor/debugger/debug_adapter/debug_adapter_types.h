@@ -36,7 +36,7 @@
 
 namespace DAP {
 
-enum ErrorType {
+enum ErrorType : int32_t {
 	UNKNOWN,
 	WRONG_PATH,
 	NOT_RUNNING,

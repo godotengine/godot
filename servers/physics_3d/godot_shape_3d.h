@@ -57,7 +57,7 @@ protected:
 	void configure(const AABB &p_aabb);
 
 public:
-	enum FeatureType {
+	enum FeatureType : int32_t {
 		FEATURE_POINT,
 		FEATURE_EDGE,
 		FEATURE_FACE,

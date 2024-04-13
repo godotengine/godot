@@ -40,7 +40,7 @@ class SceneReplicationConfig : public Resource {
 	RES_BASE_EXTENSION("repl");
 
 public:
-	enum ReplicationMode {
+	enum ReplicationMode : int32_t {
 		REPLICATION_MODE_NEVER,
 		REPLICATION_MODE_ALWAYS,
 		REPLICATION_MODE_ON_CHANGE,

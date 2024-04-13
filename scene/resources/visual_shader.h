@@ -45,7 +45,7 @@ class VisualShader : public Shader {
 	friend class VisualShaderNodeVersionChecker;
 
 public:
-	enum Type {
+	enum Type : int32_t {
 		TYPE_VERTEX,
 		TYPE_FRAGMENT,
 		TYPE_LIGHT,
@@ -71,13 +71,13 @@ public:
 		List<Ref<Texture2D>> params;
 	};
 
-	enum VaryingMode {
+	enum VaryingMode : int32_t {
 		VARYING_MODE_VERTEX_TO_FRAG_LIGHT,
 		VARYING_MODE_FRAG_TO_LIGHT,
 		VARYING_MODE_MAX,
 	};
 
-	enum VaryingType {
+	enum VaryingType : int32_t {
 		VARYING_TYPE_FLOAT,
 		VARYING_TYPE_INT,
 		VARYING_TYPE_UINT,
@@ -177,7 +177,7 @@ public: // internal methods
 	void set_shader_type(Type p_type);
 	Type get_shader_type() const;
 
-	enum {
+	enum : int32_t {
 		NODE_ID_INVALID = -1,
 		NODE_ID_OUTPUT = 0,
 	};
@@ -259,7 +259,7 @@ class VisualShaderNode : public Resource {
 	GDCLASS(VisualShaderNode, Resource);
 
 public:
-	enum PortType {
+	enum PortType : int32_t {
 		PORT_TYPE_SCALAR,
 		PORT_TYPE_SCALAR_INT,
 		PORT_TYPE_SCALAR_UINT,
@@ -272,7 +272,7 @@ public:
 		PORT_TYPE_MAX,
 	};
 
-	enum Category {
+	enum Category : int32_t {
 		CATEGORY_NONE,
 		CATEGORY_OUTPUT,
 		CATEGORY_COLOR,
@@ -584,7 +584,7 @@ class VisualShaderNodeParameter : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeParameter, VisualShaderNode);
 
 public:
-	enum Qualifier {
+	enum Qualifier : int32_t {
 		QUAL_NONE,
 		QUAL_GLOBAL,
 		QUAL_INSTANCE,
@@ -631,7 +631,7 @@ class VisualShaderNodeParameterRef : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeParameterRef, VisualShaderNode);
 
 public:
-	enum ParameterType {
+	enum ParameterType : int32_t {
 		PARAMETER_TYPE_FLOAT,
 		PARAMETER_TYPE_INT,
 		PARAMETER_TYPE_UINT,

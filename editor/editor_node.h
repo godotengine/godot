@@ -126,14 +126,14 @@ class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
 
 public:
-	enum EditorTable {
+	enum EditorTable : int32_t {
 		EDITOR_2D = 0,
 		EDITOR_3D,
 		EDITOR_SCRIPT,
 		EDITOR_ASSETLIB
 	};
 
-	enum SceneNameCasing {
+	enum SceneNameCasing : int32_t {
 		SCENE_NAME_CASING_AUTO,
 		SCENE_NAME_CASING_PASCAL_CASE,
 		SCENE_NAME_CASING_SNAKE_CASE,
@@ -154,7 +154,7 @@ private:
 	friend class EditorSceneTabs;
 	friend class SurfaceUpgradeTool;
 
-	enum MenuOptions {
+	enum MenuOptions : int32_t {
 		FILE_NEW_SCENE,
 		FILE_NEW_INHERITED_SCENE,
 		FILE_OPEN_SCENE,
@@ -242,7 +242,7 @@ private:
 		TOOL_MENU_BASE = 1000
 	};
 
-	enum {
+	enum : int32_t {
 		MAX_INIT_CALLBACKS = 128,
 		MAX_BUILD_CALLBACKS = 128
 	};

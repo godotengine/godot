@@ -49,7 +49,7 @@ struct AudioRBResampler {
 	SafeNumeric<int> rb_write_pos;
 
 	int32_t offset; //contains the fractional remainder of the resampler
-	enum {
+	enum : int32_t {
 		MIX_FRAC_BITS = 13,
 		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
 		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,

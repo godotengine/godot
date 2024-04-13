@@ -38,13 +38,13 @@ class AnimationNodeStateMachineTransition : public Resource {
 	GDCLASS(AnimationNodeStateMachineTransition, Resource);
 
 public:
-	enum SwitchMode {
+	enum SwitchMode : int32_t {
 		SWITCH_MODE_IMMEDIATE,
 		SWITCH_MODE_SYNC,
 		SWITCH_MODE_AT_END,
 	};
 
-	enum AdvanceMode {
+	enum AdvanceMode : int32_t {
 		ADVANCE_MODE_DISABLED,
 		ADVANCE_MODE_ENABLED,
 		ADVANCE_MODE_AUTO,
@@ -110,7 +110,7 @@ class AnimationNodeStateMachine : public AnimationRootNode {
 	GDCLASS(AnimationNodeStateMachine, AnimationRootNode);
 
 public:
-	enum StateMachineType {
+	enum StateMachineType : int32_t {
 		STATE_MACHINE_TYPE_ROOT,
 		STATE_MACHINE_TYPE_NESTED,
 		STATE_MACHINE_TYPE_GROUPED,

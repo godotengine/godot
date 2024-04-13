@@ -101,7 +101,7 @@ protected:
 	GDVIRTUAL0RC(bool, _has_mipmaps)
 	GDVIRTUAL1RC(Ref<Image>, _get_layer_data, int)
 public:
-	enum LayeredType {
+	enum LayeredType : int32_t {
 		LAYERED_TYPE_2D_ARRAY,
 		LAYERED_TYPE_CUBEMAP,
 		LAYERED_TYPE_CUBEMAP_ARRAY

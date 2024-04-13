@@ -39,11 +39,11 @@ class Tree;
 class EditorPluginSettings : public VBoxContainer {
 	GDCLASS(EditorPluginSettings, VBoxContainer);
 
-	enum {
+	enum : int32_t {
 		BUTTON_PLUGIN_EDIT
 	};
 
-	enum {
+	enum : int32_t {
 		COLUMN_PADDING_LEFT,
 		COLUMN_STATUS,
 		COLUMN_NAME,

@@ -41,7 +41,7 @@
 class NativeMenuWindows : public NativeMenu {
 	GDCLASS(NativeMenuWindows, NativeMenu)
 
-	enum GlobalMenuCheckType {
+	enum GlobalMenuCheckType : int32_t {
 		CHECKABLE_TYPE_NONE,
 		CHECKABLE_TYPE_CHECK_BOX,
 		CHECKABLE_TYPE_RADIO_BUTTON,

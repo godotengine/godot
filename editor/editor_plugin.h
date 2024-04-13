@@ -68,7 +68,7 @@ class EditorPlugin : public Node {
 #endif
 
 public:
-	enum CustomControlContainer {
+	enum CustomControlContainer : int32_t {
 		CONTAINER_TOOLBAR,
 		CONTAINER_SPATIAL_EDITOR_MENU,
 		CONTAINER_SPATIAL_EDITOR_SIDE_LEFT,
@@ -83,7 +83,7 @@ public:
 		CONTAINER_PROJECT_SETTING_TAB_RIGHT,
 	};
 
-	enum DockSlot {
+	enum DockSlot : int32_t {
 		DOCK_SLOT_LEFT_UL,
 		DOCK_SLOT_LEFT_BL,
 		DOCK_SLOT_LEFT_UR,
@@ -95,7 +95,7 @@ public:
 		DOCK_SLOT_MAX
 	};
 
-	enum AfterGUIInput {
+	enum AfterGUIInput : int32_t {
 		AFTER_GUI_INPUT_PASS,
 		AFTER_GUI_INPUT_STOP,
 		AFTER_GUI_INPUT_CUSTOM,
@@ -257,7 +257,7 @@ VARIANT_ENUM_CAST(EditorPlugin::AfterGUIInput);
 typedef EditorPlugin *(*EditorPluginCreateFunc)();
 
 class EditorPlugins {
-	enum {
+	enum : int32_t {
 		MAX_CREATE_FUNCS = 128
 	};
 

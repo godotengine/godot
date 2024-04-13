@@ -41,7 +41,7 @@ class HTTPClient : public RefCounted {
 	GDCLASS(HTTPClient, RefCounted);
 
 public:
-	enum ResponseCode {
+	enum ResponseCode : int32_t {
 		// 1xx informational
 		RESPONSE_CONTINUE = 100,
 		RESPONSE_SWITCHING_PROTOCOLS = 101,
@@ -115,7 +115,7 @@ public:
 
 	};
 
-	enum Method {
+	enum Method : int32_t {
 		METHOD_GET,
 		METHOD_HEAD,
 		METHOD_POST,
@@ -129,7 +129,7 @@ public:
 
 	};
 
-	enum Status {
+	enum Status : int32_t {
 		STATUS_DISCONNECTED,
 		STATUS_RESOLVING, // Resolving hostname (if passed a hostname)
 		STATUS_CANT_RESOLVE,
@@ -147,7 +147,7 @@ protected:
 	static const char *_methods[METHOD_MAX];
 	static const int HOST_MIN_LEN = 4;
 
-	enum Port {
+	enum Port : int32_t {
 		PORT_HTTP = 80,
 		PORT_HTTPS = 443,
 

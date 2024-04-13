@@ -42,18 +42,18 @@ class ENetMultiplayerPeer : public MultiplayerPeer {
 	GDCLASS(ENetMultiplayerPeer, MultiplayerPeer);
 
 private:
-	enum {
+	enum : int32_t {
 		SYSMSG_ADD_PEER,
 		SYSMSG_REMOVE_PEER
 	};
 
-	enum {
+	enum : int32_t {
 		SYSCH_RELIABLE = 0,
 		SYSCH_UNRELIABLE = 1,
 		SYSCH_MAX = 2
 	};
 
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_NONE,
 		MODE_SERVER,
 		MODE_CLIENT,

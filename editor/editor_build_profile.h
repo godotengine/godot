@@ -44,7 +44,7 @@ class EditorBuildProfile : public RefCounted {
 	GDCLASS(EditorBuildProfile, RefCounted);
 
 public:
-	enum BuildOption {
+	enum BuildOption : int32_t {
 		BUILD_OPTION_3D,
 		BUILD_OPTION_PHYSICS_2D,
 		BUILD_OPTION_PHYSICS_3D,
@@ -62,7 +62,7 @@ public:
 		BUILD_OPTION_MAX,
 	};
 
-	enum BuildOptionCategory {
+	enum BuildOptionCategory : int32_t {
 		BUILD_OPTION_CATEGORY_GENERAL,
 		BUILD_OPTION_CATEGORY_TEXT_SERVER,
 		BUILD_OPTION_CATEGORY_MAX,
@@ -123,7 +123,7 @@ class EditorFileSystemDirectory;
 class EditorBuildProfileManager : public AcceptDialog {
 	GDCLASS(EditorBuildProfileManager, AcceptDialog);
 
-	enum Action {
+	enum Action : int32_t {
 		ACTION_NEW,
 		ACTION_RESET,
 		ACTION_LOAD,

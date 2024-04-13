@@ -123,7 +123,7 @@ public:
 		ImportOption() {}
 	};
 
-	enum ImportOrder {
+	enum ImportOrder : int32_t {
 		IMPORT_ORDER_DEFAULT = 0,
 		IMPORT_ORDER_SCENE = 100,
 	};

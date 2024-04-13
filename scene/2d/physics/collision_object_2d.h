@@ -40,7 +40,7 @@ class CollisionObject2D : public Node2D {
 	GDCLASS(CollisionObject2D, Node2D);
 
 public:
-	enum DisableMode {
+	enum DisableMode : int32_t {
 		DISABLE_MODE_REMOVE,
 		DISABLE_MODE_MAKE_STATIC,
 		DISABLE_MODE_KEEP_ACTIVE,

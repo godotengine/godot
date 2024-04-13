@@ -38,7 +38,7 @@ class LinkButton : public BaseButton {
 	GDCLASS(LinkButton, BaseButton);
 
 public:
-	enum UnderlineMode {
+	enum UnderlineMode : int32_t {
 		UNDERLINE_MODE_ALWAYS,
 		UNDERLINE_MODE_ON_HOVER,
 		UNDERLINE_MODE_NEVER

@@ -40,7 +40,7 @@ class Label3D : public GeometryInstance3D {
 	GDCLASS(Label3D, GeometryInstance3D);
 
 public:
-	enum DrawFlags {
+	enum DrawFlags : int32_t {
 		FLAG_SHADED,
 		FLAG_DOUBLE_SIDED,
 		FLAG_DISABLE_DEPTH_TEST,
@@ -48,7 +48,7 @@ public:
 		FLAG_MAX
 	};
 
-	enum AlphaCutMode {
+	enum AlphaCutMode : int32_t {
 		ALPHA_CUT_DISABLED,
 		ALPHA_CUT_DISCARD,
 		ALPHA_CUT_OPAQUE_PREPASS,

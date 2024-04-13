@@ -42,7 +42,7 @@ class MultiplayerSpawner : public Node {
 	GDCLASS(MultiplayerSpawner, Node);
 
 public:
-	enum {
+	enum : int32_t {
 		INVALID_ID = 0xFF,
 	};
 

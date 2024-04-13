@@ -88,7 +88,7 @@ class ColorPicker : public VBoxContainer {
 	friend class ColorModeOKHSL;
 
 public:
-	enum ColorModeType {
+	enum ColorModeType : int32_t {
 		MODE_RGB,
 		MODE_HSV,
 		MODE_RAW,
@@ -97,7 +97,7 @@ public:
 		MODE_MAX
 	};
 
-	enum PickerShapeType {
+	enum PickerShapeType : int32_t {
 		SHAPE_HSV_RECTANGLE,
 		SHAPE_HSV_WHEEL,
 		SHAPE_VHS_CIRCLE,

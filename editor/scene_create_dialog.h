@@ -45,7 +45,7 @@ class OptionButton;
 class SceneCreateDialog : public ConfirmationDialog {
 	GDCLASS(SceneCreateDialog, ConfirmationDialog);
 
-	enum {
+	enum : int32_t {
 		MSG_ID_PATH,
 		MSG_ID_ROOT,
 	};
@@ -53,7 +53,7 @@ class SceneCreateDialog : public ConfirmationDialog {
 	const StringName type_meta = StringName("type");
 
 public:
-	enum RootType {
+	enum RootType : int32_t {
 		ROOT_2D_SCENE,
 		ROOT_3D_SCENE,
 		ROOT_USER_INTERFACE,

@@ -45,21 +45,21 @@ class AudioStreamPlayer3D : public Node3D {
 	GDCLASS(AudioStreamPlayer3D, Node3D);
 
 public:
-	enum AttenuationModel {
+	enum AttenuationModel : int32_t {
 		ATTENUATION_INVERSE_DISTANCE,
 		ATTENUATION_INVERSE_SQUARE_DISTANCE,
 		ATTENUATION_LOGARITHMIC,
 		ATTENUATION_DISABLED,
 	};
 
-	enum DopplerTracking {
+	enum DopplerTracking : int32_t {
 		DOPPLER_TRACKING_DISABLED,
 		DOPPLER_TRACKING_IDLE_STEP,
 		DOPPLER_TRACKING_PHYSICS_STEP
 	};
 
 private:
-	enum {
+	enum : int32_t {
 		MAX_OUTPUTS = 8,
 		MAX_INTERSECT_AREAS = 32
 

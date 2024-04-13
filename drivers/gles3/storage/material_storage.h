@@ -138,7 +138,7 @@ struct Material {
 /* CanvasItem Materials */
 
 struct CanvasShaderData : public ShaderData {
-	enum BlendMode { // Used internally.
+	enum BlendMode : int32_t { // Used internally.
 		BLEND_MODE_MIX,
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
@@ -243,7 +243,7 @@ MaterialData *_create_sky_material_func(ShaderData *p_shader);
 /* Scene Materials */
 
 struct SceneShaderData : public ShaderData {
-	enum BlendMode { // Used internally.
+	enum BlendMode : int32_t { // Used internally.
 		BLEND_MODE_MIX,
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
@@ -251,24 +251,24 @@ struct SceneShaderData : public ShaderData {
 		BLEND_MODE_ALPHA_TO_COVERAGE
 	};
 
-	enum DepthDraw {
+	enum DepthDraw : int32_t {
 		DEPTH_DRAW_DISABLED,
 		DEPTH_DRAW_OPAQUE,
 		DEPTH_DRAW_ALWAYS
 	};
 
-	enum DepthTest {
+	enum DepthTest : int32_t {
 		DEPTH_TEST_DISABLED,
 		DEPTH_TEST_ENABLED
 	};
 
-	enum Cull {
+	enum Cull : int32_t {
 		CULL_DISABLED,
 		CULL_FRONT,
 		CULL_BACK
 	};
 
-	enum AlphaAntiAliasing {
+	enum AlphaAntiAliasing : int32_t {
 		ALPHA_ANTIALIASING_OFF,
 		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
 		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
@@ -359,7 +359,7 @@ MaterialData *_create_scene_material_func(ShaderData *p_shader);
 
 /* Particle Shader */
 
-enum {
+enum : int32_t {
 	PARTICLES_MAX_USERDATAS = 6
 };
 
@@ -409,7 +409,7 @@ MaterialData *_create_particles_material_func(ShaderData *p_shader);
 
 /* Global shader uniform structs */
 struct GlobalShaderUniforms {
-	enum {
+	enum : int32_t {
 		BUFFER_DIRTY_REGION_SIZE = 1024
 	};
 	struct Variable {

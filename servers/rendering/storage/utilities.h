@@ -37,7 +37,7 @@ class DependencyTracker;
 
 class Dependency {
 public:
-	enum DependencyChangedNotification {
+	enum DependencyChangedNotification : int32_t {
 		DEPENDENCY_CHANGED_AABB,
 		DEPENDENCY_CHANGED_MATERIAL,
 		DEPENDENCY_CHANGED_MESH,

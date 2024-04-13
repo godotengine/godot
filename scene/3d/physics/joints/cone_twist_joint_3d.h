@@ -37,7 +37,7 @@ class ConeTwistJoint3D : public Joint3D {
 	GDCLASS(ConeTwistJoint3D, Joint3D);
 
 public:
-	enum Param {
+	enum Param : int32_t {
 		PARAM_SWING_SPAN,
 		PARAM_TWIST_SPAN,
 		PARAM_BIAS,

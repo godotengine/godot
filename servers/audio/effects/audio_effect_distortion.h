@@ -49,7 +49,7 @@ class AudioEffectDistortion : public AudioEffect {
 	GDCLASS(AudioEffectDistortion, AudioEffect);
 
 public:
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_CLIP,
 		MODE_ATAN,
 		MODE_LOFI,

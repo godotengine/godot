@@ -45,7 +45,7 @@ class VisualShaderNodeVectorBase : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeVectorBase, VisualShaderNode);
 
 public:
-	enum OpType {
+	enum OpType : int32_t {
 		OP_TYPE_VECTOR_2D,
 		OP_TYPE_VECTOR_3D,
 		OP_TYPE_VECTOR_4D,
@@ -385,7 +385,7 @@ class VisualShaderNodeTexture : public VisualShaderNode {
 	Ref<Texture2D> texture;
 
 public:
-	enum Source {
+	enum Source : int32_t {
 		SOURCE_TEXTURE,
 		SOURCE_SCREEN,
 		SOURCE_2D_TEXTURE,
@@ -397,7 +397,7 @@ public:
 		SOURCE_MAX,
 	};
 
-	enum TextureType {
+	enum TextureType : int32_t {
 		TYPE_DATA,
 		TYPE_COLOR,
 		TYPE_NORMAL_MAP,
@@ -525,7 +525,7 @@ class VisualShaderNodeSample3D : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeSample3D, VisualShaderNode);
 
 public:
-	enum Source {
+	enum Source : int32_t {
 		SOURCE_TEXTURE,
 		SOURCE_PORT,
 		SOURCE_MAX,
@@ -611,13 +611,13 @@ class VisualShaderNodeCubemap : public VisualShaderNode {
 	Ref<Cubemap> cube_map;
 
 public:
-	enum Source {
+	enum Source : int32_t {
 		SOURCE_TEXTURE,
 		SOURCE_PORT,
 		SOURCE_MAX,
 	};
 
-	enum TextureType {
+	enum TextureType : int32_t {
 		TYPE_DATA,
 		TYPE_COLOR,
 		TYPE_NORMAL_MAP,
@@ -749,7 +749,7 @@ class VisualShaderNodeFloatOp : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeFloatOp, VisualShaderNode);
 
 public:
-	enum Operator {
+	enum Operator : int32_t {
 		OP_ADD,
 		OP_SUB,
 		OP_MUL,
@@ -797,7 +797,7 @@ class VisualShaderNodeIntOp : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeIntOp, VisualShaderNode);
 
 public:
-	enum Operator {
+	enum Operator : int32_t {
 		OP_ADD,
 		OP_SUB,
 		OP_MUL,
@@ -847,7 +847,7 @@ class VisualShaderNodeUIntOp : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeUIntOp, VisualShaderNode);
 
 public:
-	enum Operator {
+	enum Operator : int32_t {
 		OP_ADD,
 		OP_SUB,
 		OP_MUL,
@@ -897,7 +897,7 @@ class VisualShaderNodeVectorOp : public VisualShaderNodeVectorBase {
 	GDCLASS(VisualShaderNodeVectorOp, VisualShaderNodeVectorBase);
 
 public:
-	enum Operator {
+	enum Operator : int32_t {
 		OP_ADD,
 		OP_SUB,
 		OP_MUL,
@@ -948,7 +948,7 @@ class VisualShaderNodeColorOp : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeColorOp, VisualShaderNode);
 
 public:
-	enum Operator {
+	enum Operator : int32_t {
 		OP_SCREEN,
 		OP_DIFFERENCE,
 		OP_DARKEN,
@@ -999,7 +999,7 @@ class VisualShaderNodeTransformOp : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeTransformOp, VisualShaderNode);
 
 public:
-	enum Operator {
+	enum Operator : int32_t {
 		OP_AxB,
 		OP_BxA,
 		OP_AxB_COMP,
@@ -1050,7 +1050,7 @@ class VisualShaderNodeTransformVecMult : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeTransformVecMult, VisualShaderNode);
 
 public:
-	enum Operator {
+	enum Operator : int32_t {
 		OP_AxB,
 		OP_BxA,
 		OP_3x3_AxB,
@@ -1096,7 +1096,7 @@ class VisualShaderNodeFloatFunc : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeFloatFunc, VisualShaderNode);
 
 public:
-	enum Function {
+	enum Function : int32_t {
 		FUNC_SIN,
 		FUNC_COS,
 		FUNC_TAN,
@@ -1170,7 +1170,7 @@ class VisualShaderNodeIntFunc : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeIntFunc, VisualShaderNode);
 
 public:
-	enum Function {
+	enum Function : int32_t {
 		FUNC_ABS,
 		FUNC_NEGATE,
 		FUNC_SIGN,
@@ -1216,7 +1216,7 @@ class VisualShaderNodeUIntFunc : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeUIntFunc, VisualShaderNode);
 
 public:
-	enum Function {
+	enum Function : int32_t {
 		FUNC_NEGATE,
 		FUNC_BITWISE_NOT,
 		FUNC_MAX,
@@ -1262,7 +1262,7 @@ class VisualShaderNodeVectorFunc : public VisualShaderNodeVectorBase {
 	void _update_default_input_values();
 
 public:
-	enum Function {
+	enum Function : int32_t {
 		FUNC_NORMALIZE,
 		FUNC_SATURATE,
 		FUNC_NEGATE,
@@ -1335,7 +1335,7 @@ class VisualShaderNodeColorFunc : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeColorFunc, VisualShaderNode);
 
 public:
-	enum Function {
+	enum Function : int32_t {
 		FUNC_GRAYSCALE,
 		FUNC_HSV2RGB,
 		FUNC_RGB2HSV,
@@ -1381,7 +1381,7 @@ class VisualShaderNodeTransformFunc : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeTransformFunc, VisualShaderNode);
 
 public:
-	enum Function {
+	enum Function : int32_t {
 		FUNC_INVERSE,
 		FUNC_TRANSPOSE,
 		FUNC_MAX,
@@ -1425,7 +1425,7 @@ class VisualShaderNodeUVFunc : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeUVFunc, VisualShaderNode);
 
 public:
-	enum Function {
+	enum Function : int32_t {
 		FUNC_PANNING,
 		FUNC_SCALING,
 		FUNC_MAX,
@@ -1571,7 +1571,7 @@ class VisualShaderNodeClamp : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeClamp, VisualShaderNode);
 
 public:
-	enum OpType {
+	enum OpType : int32_t {
 		OP_TYPE_FLOAT,
 		OP_TYPE_INT,
 		OP_TYPE_UINT,
@@ -1624,7 +1624,7 @@ class VisualShaderNodeDerivativeFunc : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeDerivativeFunc, VisualShaderNode);
 
 public:
-	enum OpType {
+	enum OpType : int32_t {
 		OP_TYPE_SCALAR,
 		OP_TYPE_VECTOR_2D,
 		OP_TYPE_VECTOR_3D,
@@ -1632,14 +1632,14 @@ public:
 		OP_TYPE_MAX,
 	};
 
-	enum Function {
+	enum Function : int32_t {
 		FUNC_SUM,
 		FUNC_X,
 		FUNC_Y,
 		FUNC_MAX,
 	};
 
-	enum Precision {
+	enum Precision : int32_t {
 		PRECISION_NONE,
 		PRECISION_COARSE,
 		PRECISION_FINE,
@@ -1743,7 +1743,7 @@ class VisualShaderNodeStep : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeStep, VisualShaderNode);
 
 public:
-	enum OpType {
+	enum OpType : int32_t {
 		OP_TYPE_SCALAR,
 		OP_TYPE_VECTOR_2D,
 		OP_TYPE_VECTOR_2D_SCALAR,
@@ -1798,7 +1798,7 @@ class VisualShaderNodeSmoothStep : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeSmoothStep, VisualShaderNode);
 
 public:
-	enum OpType {
+	enum OpType : int32_t {
 		OP_TYPE_SCALAR,
 		OP_TYPE_VECTOR_2D,
 		OP_TYPE_VECTOR_2D_SCALAR,
@@ -1898,7 +1898,7 @@ class VisualShaderNodeMix : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeMix, VisualShaderNode);
 
 public:
-	enum OpType {
+	enum OpType : int32_t {
 		OP_TYPE_SCALAR,
 		OP_TYPE_VECTOR_2D,
 		OP_TYPE_VECTOR_2D_SCALAR,
@@ -2044,7 +2044,7 @@ class VisualShaderNodeFloatParameter : public VisualShaderNodeParameter {
 	GDCLASS(VisualShaderNodeFloatParameter, VisualShaderNodeParameter);
 
 public:
-	enum Hint {
+	enum Hint : int32_t {
 		HINT_NONE,
 		HINT_RANGE,
 		HINT_RANGE_STEP,
@@ -2111,7 +2111,7 @@ class VisualShaderNodeIntParameter : public VisualShaderNodeParameter {
 	GDCLASS(VisualShaderNodeIntParameter, VisualShaderNodeParameter);
 
 public:
-	enum Hint {
+	enum Hint : int32_t {
 		HINT_NONE,
 		HINT_RANGE,
 		HINT_RANGE_STEP,
@@ -2480,7 +2480,7 @@ class VisualShaderNodeTextureParameter : public VisualShaderNodeParameter {
 	GDCLASS(VisualShaderNodeTextureParameter, VisualShaderNodeParameter);
 
 public:
-	enum TextureType {
+	enum TextureType : int32_t {
 		TYPE_DATA,
 		TYPE_COLOR,
 		TYPE_NORMAL_MAP,
@@ -2488,14 +2488,14 @@ public:
 		TYPE_MAX,
 	};
 
-	enum ColorDefault {
+	enum ColorDefault : int32_t {
 		COLOR_DEFAULT_WHITE,
 		COLOR_DEFAULT_BLACK,
 		COLOR_DEFAULT_TRANSPARENT,
 		COLOR_DEFAULT_MAX,
 	};
 
-	enum TextureFilter {
+	enum TextureFilter : int32_t {
 		FILTER_DEFAULT,
 		FILTER_NEAREST,
 		FILTER_LINEAR,
@@ -2506,14 +2506,14 @@ public:
 		FILTER_MAX,
 	};
 
-	enum TextureRepeat {
+	enum TextureRepeat : int32_t {
 		REPEAT_DEFAULT,
 		REPEAT_ENABLED,
 		REPEAT_DISABLED,
 		REPEAT_MAX,
 	};
 
-	enum TextureSource {
+	enum TextureSource : int32_t {
 		SOURCE_NONE,
 		SOURCE_SCREEN,
 		SOURCE_DEPTH,
@@ -2688,7 +2688,7 @@ class VisualShaderNodeSwitch : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeSwitch, VisualShaderNode);
 
 public:
-	enum OpType {
+	enum OpType : int32_t {
 		OP_TYPE_FLOAT,
 		OP_TYPE_INT,
 		OP_TYPE_UINT,
@@ -2765,7 +2765,7 @@ class VisualShaderNodeIs : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeIs, VisualShaderNode);
 
 public:
-	enum Function {
+	enum Function : int32_t {
 		FUNC_IS_INF,
 		FUNC_IS_NAN,
 		FUNC_MAX,
@@ -2810,7 +2810,7 @@ class VisualShaderNodeCompare : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeCompare, VisualShaderNode);
 
 public:
-	enum ComparisonType {
+	enum ComparisonType : int32_t {
 		CTYPE_SCALAR,
 		CTYPE_SCALAR_INT,
 		CTYPE_SCALAR_UINT,
@@ -2822,7 +2822,7 @@ public:
 		CTYPE_MAX,
 	};
 
-	enum Function {
+	enum Function : int32_t {
 		FUNC_EQUAL,
 		FUNC_NOT_EQUAL,
 		FUNC_GREATER_THAN,
@@ -2832,7 +2832,7 @@ public:
 		FUNC_MAX,
 	};
 
-	enum Condition {
+	enum Condition : int32_t {
 		COND_ALL,
 		COND_ANY,
 		COND_MAX,
@@ -2884,7 +2884,7 @@ class VisualShaderNodeMultiplyAdd : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeMultiplyAdd, VisualShaderNode);
 
 public:
-	enum OpType {
+	enum OpType : int32_t {
 		OP_TYPE_SCALAR,
 		OP_TYPE_VECTOR_2D,
 		OP_TYPE_VECTOR_3D,
@@ -2933,7 +2933,7 @@ class VisualShaderNodeBillboard : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeBillboard, VisualShaderNode);
 
 public:
-	enum BillboardType {
+	enum BillboardType : int32_t {
 		BILLBOARD_TYPE_DISABLED,
 		BILLBOARD_TYPE_ENABLED,
 		BILLBOARD_TYPE_FIXED_Y,

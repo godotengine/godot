@@ -58,7 +58,7 @@ public:
 		return singleton;
 	}
 
-	enum WindowMode {
+	enum WindowMode : int32_t {
 		WINDOW_MODE_WINDOWED,
 		WINDOW_MODE_MINIMIZED,
 		WINDOW_MODE_MAXIMIZED,
@@ -68,14 +68,14 @@ public:
 
 	// Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`
 	// project setting hint.
-	enum VSyncMode {
+	enum VSyncMode : int32_t {
 		VSYNC_DISABLED,
 		VSYNC_ENABLED,
 		VSYNC_ADAPTIVE,
 		VSYNC_MAILBOX
 	};
 
-	enum HandleType {
+	enum HandleType : int32_t {
 		DISPLAY_HANDLE,
 		WINDOW_HANDLE,
 		WINDOW_VIEW,
@@ -97,7 +97,7 @@ protected:
 
 	static Ref<Image> _get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot, Rect2 &r_atlas_rect);
 
-	enum {
+	enum : int32_t {
 		MAX_SERVERS = 64
 	};
 
@@ -113,7 +113,7 @@ protected:
 	friend class RendererViewport;
 
 public:
-	enum Feature {
+	enum Feature : int32_t {
 #ifndef DISABLE_DEPRECATED
 		FEATURE_GLOBAL_MENU,
 #endif
@@ -217,7 +217,7 @@ public:
 		int id = 0;
 	};
 
-	enum TTSUtteranceEvent {
+	enum TTSUtteranceEvent : int32_t {
 		TTS_UTTERANCE_STARTED,
 		TTS_UTTERANCE_ENDED,
 		TTS_UTTERANCE_CANCELED,
@@ -258,7 +258,7 @@ protected:
 public:
 	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
 
-	enum MouseMode {
+	enum MouseMode : int32_t {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
 		MOUSE_MODE_CAPTURED,
@@ -284,7 +284,7 @@ public:
 	virtual TypedArray<Rect2> get_display_cutouts() const { return TypedArray<Rect2>(); }
 	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
 
-	enum {
+	enum : int32_t {
 		SCREEN_WITH_MOUSE_FOCUS = -4,
 		SCREEN_WITH_KEYBOARD_FOCUS = -3,
 		SCREEN_PRIMARY = -2,
@@ -338,7 +338,7 @@ public:
 
 	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
 	// project setting hint.
-	enum ScreenOrientation {
+	enum ScreenOrientation : int32_t {
 		SCREEN_LANDSCAPE,
 		SCREEN_PORTRAIT,
 		SCREEN_REVERSE_LANDSCAPE,
@@ -353,7 +353,7 @@ public:
 
 	virtual void screen_set_keep_on(bool p_enable); //disable screensaver
 	virtual bool screen_is_kept_on() const;
-	enum {
+	enum : int32_t {
 		MAIN_WINDOW_ID = 0,
 		INVALID_WINDOW_ID = -1,
 		INVALID_INDICATOR_ID = -1
@@ -364,7 +364,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const = 0;
 
-	enum WindowFlags {
+	enum WindowFlags : int32_t {
 		WINDOW_FLAG_RESIZE_DISABLED,
 		WINDOW_FLAG_BORDERLESS,
 		WINDOW_FLAG_ALWAYS_ON_TOP,
@@ -377,7 +377,7 @@ public:
 	};
 
 	// Separate enum otherwise we get warnings in switches not handling all values.
-	enum WindowFlagsBit {
+	enum WindowFlagsBit : int32_t {
 		WINDOW_FLAG_RESIZE_DISABLED_BIT = (1 << WINDOW_FLAG_RESIZE_DISABLED),
 		WINDOW_FLAG_BORDERLESS_BIT = (1 << WINDOW_FLAG_BORDERLESS),
 		WINDOW_FLAG_ALWAYS_ON_TOP_BIT = (1 << WINDOW_FLAG_ALWAYS_ON_TOP),
@@ -405,7 +405,7 @@ public:
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
-	enum WindowEvent {
+	enum WindowEvent : int32_t {
 		WINDOW_EVENT_MOUSE_ENTER,
 		WINDOW_EVENT_MOUSE_EXIT,
 		WINDOW_EVENT_FOCUS_IN,
@@ -482,7 +482,7 @@ public:
 	virtual Point2i ime_get_selection() const;
 	virtual String ime_get_text() const;
 
-	enum VirtualKeyboardType {
+	enum VirtualKeyboardType : int32_t {
 		KEYBOARD_TYPE_DEFAULT,
 		KEYBOARD_TYPE_MULTILINE,
 		KEYBOARD_TYPE_NUMBER,
@@ -499,7 +499,7 @@ public:
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
 	virtual int virtual_keyboard_get_height() const;
 
-	enum CursorShape {
+	enum CursorShape : int32_t {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,
 		CURSOR_POINTING_HAND,
@@ -530,7 +530,7 @@ public:
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback);
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback);
 
-	enum FileDialogMode {
+	enum FileDialogMode : int32_t {
 		FILE_DIALOG_MODE_OPEN_FILE,
 		FILE_DIALOG_MODE_OPEN_FILES,
 		FILE_DIALOG_MODE_OPEN_DIR,
@@ -571,7 +571,7 @@ public:
 	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback);
 	virtual void delete_status_indicator(IndicatorID p_id);
 
-	enum Context {
+	enum Context : int32_t {
 		CONTEXT_EDITOR,
 		CONTEXT_PROJECTMAN,
 		CONTEXT_ENGINE,

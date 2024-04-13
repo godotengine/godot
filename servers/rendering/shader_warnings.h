@@ -41,7 +41,7 @@
 
 class ShaderWarning {
 public:
-	enum Code {
+	enum Code : int32_t {
 		FLOAT_COMPARISON,
 		UNUSED_CONSTANT,
 		UNUSED_FUNCTION,

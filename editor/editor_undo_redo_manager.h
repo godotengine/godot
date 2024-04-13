@@ -41,7 +41,7 @@ class EditorUndoRedoManager : public Object {
 	static EditorUndoRedoManager *singleton;
 
 public:
-	enum SpecialHistory {
+	enum SpecialHistory : int32_t {
 		GLOBAL_HISTORY = 0,
 		REMOTE_HISTORY = -9,
 		INVALID_HISTORY = -99,

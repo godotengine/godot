@@ -178,13 +178,13 @@ public:
 	void tracker_profile_changed(RID p_tracker, RID p_interaction_profile);
 
 	/** Hand tracking. */
-	enum Hand {
+	enum Hand : int32_t {
 		HAND_LEFT,
 		HAND_RIGHT,
 		HAND_MAX,
 	};
 
-	enum HandMotionRange {
+	enum HandMotionRange : int32_t {
 		HAND_MOTION_RANGE_UNOBSTRUCTED,
 		HAND_MOTION_RANGE_CONFORM_TO_CONTROLLER,
 		HAND_MOTION_RANGE_MAX
@@ -193,7 +193,7 @@ public:
 	void set_motion_range(const Hand p_hand, const HandMotionRange p_motion_range);
 	HandMotionRange get_motion_range(const Hand p_hand) const;
 
-	enum HandTrackedSource {
+	enum HandTrackedSource : int32_t {
 		HAND_TRACKED_SOURCE_UNKNOWN,
 		HAND_TRACKED_SOURCE_UNOBSTRUCTED,
 		HAND_TRACKED_SOURCE_CONTROLLER,
@@ -202,7 +202,7 @@ public:
 
 	HandTrackedSource get_hand_tracking_source(const Hand p_hand) const;
 
-	enum HandJoints {
+	enum HandJoints : int32_t {
 		HAND_JOINT_PALM = 0,
 		HAND_JOINT_WRIST = 1,
 		HAND_JOINT_THUMB_METACARPAL = 2,
@@ -232,7 +232,7 @@ public:
 		HAND_JOINT_MAX = 26,
 	};
 
-	enum HandJointFlags {
+	enum HandJointFlags : int32_t {
 		HAND_JOINT_NONE = 0,
 		HAND_JOINT_ORIENTATION_VALID = 1,
 		HAND_JOINT_ORIENTATION_TRACKED = 2,

@@ -43,7 +43,7 @@ class PhysicsMaterial;
 class GridMap : public Node3D {
 	GDCLASS(GridMap, Node3D);
 
-	enum {
+	enum : int32_t {
 		MAP_DIRTY_TRANSFORMS = 1,
 		MAP_DIRTY_INSTANCES = 2,
 	};
@@ -228,7 +228,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
+	enum : int32_t {
 		INVALID_CELL_ITEM = -1
 	};
 

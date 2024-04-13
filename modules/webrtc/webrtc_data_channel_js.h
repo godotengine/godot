@@ -45,7 +45,7 @@ private:
 	bool _was_string = false;
 	WriteMode _write_mode = WRITE_MODE_BINARY;
 
-	enum {
+	enum : int32_t {
 		PACKET_BUFFER_SIZE = 65536 - 5 // 4 bytes for the size, 1 for for type
 	};
 

@@ -39,7 +39,7 @@ class WebRTCPeerConnection : public RefCounted {
 	GDCLASS(WebRTCPeerConnection, RefCounted);
 
 public:
-	enum ConnectionState {
+	enum ConnectionState : int32_t {
 		STATE_NEW,
 		STATE_CONNECTING,
 		STATE_CONNECTED,
@@ -48,13 +48,13 @@ public:
 		STATE_CLOSED
 	};
 
-	enum GatheringState {
+	enum GatheringState : int32_t {
 		GATHERING_STATE_NEW,
 		GATHERING_STATE_GATHERING,
 		GATHERING_STATE_COMPLETE,
 	};
 
-	enum SignalingState {
+	enum SignalingState : int32_t {
 		SIGNALING_STATE_STABLE,
 		SIGNALING_STATE_HAVE_LOCAL_OFFER,
 		SIGNALING_STATE_HAVE_REMOTE_OFFER,

@@ -109,7 +109,7 @@ struct BVHHandle {
 template <typename T>
 class BVH_IterativeInfo {
 public:
-	enum {
+	enum : int32_t {
 		ALLOCA_STACK_SIZE = 128
 	};
 

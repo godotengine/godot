@@ -43,7 +43,7 @@ class TreeItem;
 class RunInstancesDialog : public AcceptDialog {
 	GDCLASS(RunInstancesDialog, AcceptDialog);
 
-	enum Columns {
+	enum Columns : int32_t {
 		COLUMN_OVERRIDE_ARGS,
 		COLUMN_LAUNCH_ARGUMENTS,
 		COLUMN_OVERRIDE_FEATURES,

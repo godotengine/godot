@@ -950,7 +950,7 @@ Transform3D Mesh::get_builtin_bind_pose(int p_index) const {
 Mesh::Mesh() {
 }
 
-enum OldArrayType {
+enum OldArrayType : int32_t {
 	OLD_ARRAY_VERTEX,
 	OLD_ARRAY_NORMAL,
 	OLD_ARRAY_TANGENT,
@@ -963,7 +963,7 @@ enum OldArrayType {
 	OLD_ARRAY_MAX,
 };
 
-enum OldArrayFormat {
+enum OldArrayFormat : int32_t {
 	/* OLD_ARRAY FORMAT FLAGS */
 	OLD_ARRAY_FORMAT_VERTEX = 1 << OLD_ARRAY_VERTEX, // mandatory
 	OLD_ARRAY_FORMAT_NORMAL = 1 << OLD_ARRAY_NORMAL,

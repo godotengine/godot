@@ -81,7 +81,7 @@ class AStar3D : public RefCounted {
 	struct Segment {
 		Pair<int64_t, int64_t> key;
 
-		enum {
+		enum : int32_t {
 			NONE = 0,
 			FORWARD = 1,
 			BACKWARD = 2,

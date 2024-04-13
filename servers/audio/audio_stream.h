@@ -79,7 +79,7 @@ public:
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {
 	GDCLASS(AudioStreamPlaybackResampled, AudioStreamPlayback);
 
-	enum {
+	enum : int32_t {
 		FP_BITS = 16, //fixed point used for resampling
 		FP_LEN = (1 << FP_BITS),
 		FP_MASK = FP_LEN - 1,
@@ -112,7 +112,7 @@ class AudioStream : public Resource {
 	GDCLASS(AudioStream, Resource);
 	OBJ_SAVE_TYPE(AudioStream); // Saves derived classes with common type so they can be interchanged.
 
-	enum {
+	enum : int32_t {
 		MAX_TAGGED_OFFSETS = 8
 	};
 
@@ -225,7 +225,7 @@ class AudioStreamRandomizer : public AudioStream {
 	GDCLASS(AudioStreamRandomizer, AudioStream);
 
 public:
-	enum PlaybackMode {
+	enum PlaybackMode : int32_t {
 		PLAYBACK_RANDOM_NO_REPEATS,
 		PLAYBACK_RANDOM,
 		PLAYBACK_SEQUENTIAL,

@@ -48,24 +48,24 @@ class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
 
 public:
-	enum Anchor {
+	enum Anchor : int32_t {
 		ANCHOR_BEGIN = 0,
 		ANCHOR_END = 1
 	};
 
-	enum GrowDirection {
+	enum GrowDirection : int32_t {
 		GROW_DIRECTION_BEGIN,
 		GROW_DIRECTION_END,
 		GROW_DIRECTION_BOTH
 	};
 
-	enum FocusMode {
+	enum FocusMode : int32_t {
 		FOCUS_NONE,
 		FOCUS_CLICK,
 		FOCUS_ALL
 	};
 
-	enum SizeFlags {
+	enum SizeFlags : int32_t {
 		SIZE_SHRINK_BEGIN = 0,
 		SIZE_FILL = 1,
 		SIZE_EXPAND = 2,
@@ -75,13 +75,13 @@ public:
 		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
 	};
 
-	enum MouseFilter {
+	enum MouseFilter : int32_t {
 		MOUSE_FILTER_STOP,
 		MOUSE_FILTER_PASS,
 		MOUSE_FILTER_IGNORE
 	};
 
-	enum CursorShape {
+	enum CursorShape : int32_t {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,
 		CURSOR_POINTING_HAND,
@@ -102,7 +102,7 @@ public:
 		CURSOR_MAX
 	};
 
-	enum LayoutPreset {
+	enum LayoutPreset : int32_t {
 		PRESET_TOP_LEFT,
 		PRESET_TOP_RIGHT,
 		PRESET_BOTTOM_LEFT,
@@ -121,28 +121,28 @@ public:
 		PRESET_FULL_RECT
 	};
 
-	enum LayoutPresetMode {
+	enum LayoutPresetMode : int32_t {
 		PRESET_MODE_MINSIZE,
 		PRESET_MODE_KEEP_WIDTH,
 		PRESET_MODE_KEEP_HEIGHT,
 		PRESET_MODE_KEEP_SIZE
 	};
 
-	enum LayoutMode {
+	enum LayoutMode : int32_t {
 		LAYOUT_MODE_POSITION,
 		LAYOUT_MODE_ANCHORS,
 		LAYOUT_MODE_CONTAINER,
 		LAYOUT_MODE_UNCONTROLLED,
 	};
 
-	enum LayoutDirection {
+	enum LayoutDirection : int32_t {
 		LAYOUT_DIRECTION_INHERITED,
 		LAYOUT_DIRECTION_LOCALE,
 		LAYOUT_DIRECTION_LTR,
 		LAYOUT_DIRECTION_RTL
 	};
 
-	enum TextDirection {
+	enum TextDirection : int32_t {
 		TEXT_DIRECTION_AUTO = TextServer::DIRECTION_AUTO,
 		TEXT_DIRECTION_LTR = TextServer::DIRECTION_LTR,
 		TEXT_DIRECTION_RTL = TextServer::DIRECTION_RTL,
@@ -363,7 +363,7 @@ protected:
 	GDVIRTUAL1(_gui_input, Ref<InputEvent>)
 
 public:
-	enum {
+	enum : int32_t {
 		NOTIFICATION_RESIZED = 40,
 		NOTIFICATION_MOUSE_ENTER = 41,
 		NOTIFICATION_MOUSE_EXIT = 42,

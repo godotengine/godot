@@ -59,7 +59,7 @@ private:
 		float color[4];
 	};
 
-	enum ShadowFrustumPipelines {
+	enum ShadowFrustumPipelines : int32_t {
 		SFP_TRANSPARENT,
 		SFP_WIREFRAME,
 		SFP_MAX

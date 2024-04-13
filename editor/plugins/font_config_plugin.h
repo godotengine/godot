@@ -157,7 +157,7 @@ public:
 class EditorPropertyOTFeatures : public EditorProperty {
 	GDCLASS(EditorPropertyOTFeatures, EditorProperty);
 
-	enum FeatureGroups {
+	enum FeatureGroups : int32_t {
 		FGRP_STYLISTIC_SET,
 		FGRP_CHARACTER_VARIANT,
 		FGRP_CAPITLS,

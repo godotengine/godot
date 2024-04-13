@@ -73,7 +73,7 @@ class Skeleton3D : public Node3D {
 #endif // _DISABLE_DEPRECATED
 
 public:
-	enum ModifierCallbackModeProcess {
+	enum ModifierCallbackModeProcess : int32_t {
 		MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS,
 		MODIFIER_CALLBACK_MODE_PROCESS_IDLE,
 	};
@@ -176,7 +176,7 @@ protected:
 	virtual void remove_child_notify(Node *p_child) override;
 
 public:
-	enum {
+	enum : int32_t {
 		NOTIFICATION_UPDATE_SKELETON = 50
 	};
 

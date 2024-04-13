@@ -185,7 +185,7 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces, const Vector<int32_t> 
 bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
-	enum {
+	enum : int32_t {
 		TEST_AABB_BIT = 0,
 		VISIT_LEFT_BIT = 1,
 		VISIT_RIGHT_BIT = 2,
@@ -286,7 +286,7 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
-	enum {
+	enum : int32_t {
 		TEST_AABB_BIT = 0,
 		VISIT_LEFT_BIT = 1,
 		VISIT_RIGHT_BIT = 2,
@@ -387,7 +387,7 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, Vector3 p_scale) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
-	enum {
+	enum : int32_t {
 		TEST_AABB_BIT = 0,
 		VISIT_LEFT_BIT = 1,
 		VISIT_RIGHT_BIT = 2,

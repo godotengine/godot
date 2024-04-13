@@ -60,7 +60,7 @@ protected:
 	double indeterminate_min_speed = 200.0;
 
 public:
-	enum FillMode {
+	enum FillMode : int32_t {
 		FILL_BEGIN_TO_END,
 		FILL_END_TO_BEGIN,
 		FILL_TOP_TO_BOTTOM,

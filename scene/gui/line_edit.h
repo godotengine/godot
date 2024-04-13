@@ -38,7 +38,7 @@ class LineEdit : public Control {
 	GDCLASS(LineEdit, Control);
 
 public:
-	enum MenuItems {
+	enum MenuItems : int32_t {
 		MENU_CUT,
 		MENU_COPY,
 		MENU_PASTE,
@@ -72,7 +72,7 @@ public:
 		MENU_MAX
 	};
 
-	enum VirtualKeyboardType {
+	enum VirtualKeyboardType : int32_t {
 		KEYBOARD_TYPE_DEFAULT,
 		KEYBOARD_TYPE_MULTILINE,
 		KEYBOARD_TYPE_NUMBER,

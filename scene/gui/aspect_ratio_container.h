@@ -42,13 +42,13 @@ protected:
 	virtual Size2 get_minimum_size() const override;
 
 public:
-	enum StretchMode {
+	enum StretchMode : int32_t {
 		STRETCH_WIDTH_CONTROLS_HEIGHT,
 		STRETCH_HEIGHT_CONTROLS_WIDTH,
 		STRETCH_FIT,
 		STRETCH_COVER,
 	};
-	enum AlignmentMode {
+	enum AlignmentMode : int32_t {
 		ALIGNMENT_BEGIN,
 		ALIGNMENT_CENTER,
 		ALIGNMENT_END,

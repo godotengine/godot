@@ -36,7 +36,7 @@
 class MovieWriterPNGWAV : public MovieWriter {
 	GDCLASS(MovieWriterPNGWAV, MovieWriter)
 
-	enum {
+	enum : int32_t {
 		MAX_TRAILING_ZEROS = 8 // more than 10 days at 60fps, no hard drive can put up with this anyway :)
 	};
 

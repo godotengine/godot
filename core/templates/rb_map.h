@@ -40,7 +40,7 @@
 
 template <typename K, typename V, typename C = Comparator<K>, typename A = DefaultAllocator>
 class RBMap {
-	enum Color {
+	enum Color : int32_t {
 		RED,
 		BLACK
 	};

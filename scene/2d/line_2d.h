@@ -37,19 +37,19 @@ class Line2D : public Node2D {
 	GDCLASS(Line2D, Node2D);
 
 public:
-	enum LineJointMode {
+	enum LineJointMode : int32_t {
 		LINE_JOINT_SHARP = 0,
 		LINE_JOINT_BEVEL,
 		LINE_JOINT_ROUND
 	};
 
-	enum LineCapMode {
+	enum LineCapMode : int32_t {
 		LINE_CAP_NONE = 0,
 		LINE_CAP_BOX,
 		LINE_CAP_ROUND
 	};
 
-	enum LineTextureMode {
+	enum LineTextureMode : int32_t {
 		LINE_TEXTURE_NONE = 0,
 		LINE_TEXTURE_TILE,
 		LINE_TEXTURE_STRETCH

@@ -63,7 +63,7 @@ public:
 		Vector<Area> areas;
 	};
 
-	enum DisplayTimeMode {
+	enum DisplayTimeMode : int32_t {
 		DISPLAY_FRAME_TIME,
 		DISPLAY_FRAME_PERCENT,
 	};

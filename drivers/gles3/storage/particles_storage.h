@@ -44,7 +44,7 @@
 
 namespace GLES3 {
 
-enum ParticlesUniformLocation {
+enum ParticlesUniformLocation : int32_t {
 	PARTICLES_FRAME_UNIFORM_LOCATION,
 	PARTICLES_GLOBALS_UNIFORM_LOCATION,
 	PARTICLES_MATERIAL_UNIFORM_LOCATION,
@@ -76,13 +76,13 @@ private:
 	};
 
 	struct ParticlesFrameParams {
-		enum {
+		enum : int32_t {
 			MAX_ATTRACTORS = 32,
 			MAX_COLLIDERS = 32,
 			MAX_3D_TEXTURES = 0 // GLES3 renderer doesn't support using 3D textures for flow field or collisions.
 		};
 
-		enum AttractorType {
+		enum AttractorType : int32_t {
 			ATTRACTOR_TYPE_SPHERE,
 			ATTRACTOR_TYPE_BOX,
 			ATTRACTOR_TYPE_VECTOR_FIELD,
@@ -98,7 +98,7 @@ private:
 			float directionality;
 		};
 
-		enum CollisionType {
+		enum CollisionType : int32_t {
 			COLLISION_TYPE_SPHERE,
 			COLLISION_TYPE_BOX,
 			COLLISION_TYPE_SDF,

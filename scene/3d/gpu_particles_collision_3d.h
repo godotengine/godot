@@ -97,7 +97,7 @@ class GPUParticlesCollisionSDF3D : public GPUParticlesCollision3D {
 	GDCLASS(GPUParticlesCollisionSDF3D, GPUParticlesCollision3D);
 
 public:
-	enum Resolution {
+	enum Resolution : int32_t {
 		RESOLUTION_16,
 		RESOLUTION_32,
 		RESOLUTION_64,
@@ -126,7 +126,7 @@ private:
 	void _find_meshes(const AABB &p_aabb, Node *p_at_node, List<PlotMesh> &plot_meshes);
 
 	struct BVH {
-		enum {
+		enum : int32_t {
 			LEAF_BIT = 1 << 30,
 			LEAF_MASK = LEAF_BIT - 1
 		};
@@ -209,7 +209,7 @@ class GPUParticlesCollisionHeightField3D : public GPUParticlesCollision3D {
 	GDCLASS(GPUParticlesCollisionHeightField3D, GPUParticlesCollision3D);
 
 public:
-	enum Resolution {
+	enum Resolution : int32_t {
 		RESOLUTION_256,
 		RESOLUTION_512,
 		RESOLUTION_1024,
@@ -219,7 +219,7 @@ public:
 		RESOLUTION_MAX,
 	};
 
-	enum UpdateMode {
+	enum UpdateMode : int32_t {
 		UPDATE_MODE_WHEN_MOVED,
 		UPDATE_MODE_ALWAYS,
 	};

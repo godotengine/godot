@@ -37,17 +37,17 @@ class RigidBody3D : public PhysicsBody3D {
 	GDCLASS(RigidBody3D, PhysicsBody3D);
 
 public:
-	enum FreezeMode {
+	enum FreezeMode : int32_t {
 		FREEZE_MODE_STATIC,
 		FREEZE_MODE_KINEMATIC,
 	};
 
-	enum CenterOfMassMode {
+	enum CenterOfMassMode : int32_t {
 		CENTER_OF_MASS_MODE_AUTO,
 		CENTER_OF_MASS_MODE_CUSTOM,
 	};
 
-	enum DampMode {
+	enum DampMode : int32_t {
 		DAMP_MODE_COMBINE,
 		DAMP_MODE_REPLACE,
 	};

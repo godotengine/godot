@@ -43,7 +43,7 @@ class XRHandModifier3D : public SkeletonModifier3D {
 	GDCLASS(XRHandModifier3D, SkeletonModifier3D);
 
 public:
-	enum BoneUpdate {
+	enum BoneUpdate : int32_t {
 		BONE_UPDATE_FULL,
 		BONE_UPDATE_ROTATION_ONLY,
 		BONE_UPDATE_MAX

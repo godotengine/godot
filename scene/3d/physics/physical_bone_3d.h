@@ -40,12 +40,12 @@ class PhysicalBone3D : public PhysicsBody3D {
 	GDCLASS(PhysicalBone3D, PhysicsBody3D);
 
 public:
-	enum DampMode {
+	enum DampMode : int32_t {
 		DAMP_MODE_COMBINE,
 		DAMP_MODE_REPLACE,
 	};
 
-	enum JointType {
+	enum JointType : int32_t {
 		JOINT_TYPE_NONE,
 		JOINT_TYPE_PIN,
 		JOINT_TYPE_CONE,

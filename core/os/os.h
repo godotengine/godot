@@ -90,7 +90,7 @@ public:
 	typedef void (*ImeCallback)(void *p_inp, const String &p_text, Point2 p_selection);
 	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
 
-	enum RenderThreadMode {
+	enum RenderThreadMode : int32_t {
 		RENDER_THREAD_UNSAFE,
 		RENDER_THREAD_SAFE,
 		RENDER_SEPARATE_THREAD
@@ -268,7 +268,7 @@ public:
 	virtual String get_user_data_dir() const;
 	virtual String get_resource_dir() const;
 
-	enum SystemDir {
+	enum SystemDir : int32_t {
 		SYSTEM_DIR_DESKTOP,
 		SYSTEM_DIR_DCIM,
 		SYSTEM_DIR_DOCUMENTS,
@@ -323,7 +323,7 @@ public:
 
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path);
 
-	enum PreferredTextureFormat {
+	enum PreferredTextureFormat : int32_t {
 		PREFERRED_TEXTURE_FORMAT_S3TC_BPTC,
 		PREFERRED_TEXTURE_FORMAT_ETC2_ASTC
 	};

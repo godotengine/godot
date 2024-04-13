@@ -43,7 +43,7 @@ class MenuButton;
 class Polygon3DEditor : public HBoxContainer {
 	GDCLASS(Polygon3DEditor, HBoxContainer);
 
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_CREATE,
 		MODE_EDIT,
 

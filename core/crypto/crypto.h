@@ -73,7 +73,7 @@ class TLSOptions : public RefCounted {
 	GDCLASS(TLSOptions, RefCounted);
 
 public:
-	enum TLSVerifyMode {
+	enum TLSVerifyMode : int32_t {
 		TLS_VERIFY_NONE = 0,
 		TLS_VERIFY_CERT = 1,
 		TLS_VERIFY_FULL = 2,

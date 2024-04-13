@@ -47,18 +47,18 @@ class EditorFileDialog : public ConfirmationDialog {
 	GDCLASS(EditorFileDialog, ConfirmationDialog);
 
 public:
-	enum DisplayMode {
+	enum DisplayMode : int32_t {
 		DISPLAY_THUMBNAILS,
 		DISPLAY_LIST
 	};
 
-	enum Access {
+	enum Access : int32_t {
 		ACCESS_RESOURCES,
 		ACCESS_USERDATA,
 		ACCESS_FILESYSTEM
 	};
 
-	enum FileMode {
+	enum FileMode : int32_t {
 		FILE_MODE_OPEN_FILE,
 		FILE_MODE_OPEN_FILES,
 		FILE_MODE_OPEN_DIR,
@@ -75,7 +75,7 @@ public:
 	static RegisterFunc unregister_func;
 
 private:
-	enum ItemMenu {
+	enum ItemMenu : int32_t {
 		ITEM_MENU_COPY_PATH,
 		ITEM_MENU_DELETE,
 		ITEM_MENU_REFRESH,

@@ -40,7 +40,7 @@ class SpriteBase3D : public GeometryInstance3D {
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
 
 public:
-	enum DrawFlags {
+	enum DrawFlags : int32_t {
 		FLAG_TRANSPARENT,
 		FLAG_SHADED,
 		FLAG_DOUBLE_SIDED,
@@ -50,7 +50,7 @@ public:
 
 	};
 
-	enum AlphaCutMode {
+	enum AlphaCutMode : int32_t {
 		ALPHA_CUT_DISABLED,
 		ALPHA_CUT_DISCARD,
 		ALPHA_CUT_OPAQUE_PREPASS,

@@ -37,7 +37,7 @@
 
 class GDScriptUtilityCallable : public CallableCustom {
 	StringName function_name;
-	enum Type {
+	enum Type : int32_t {
 		TYPE_INVALID,
 		TYPE_GLOBAL,
 		TYPE_GDSCRIPT,

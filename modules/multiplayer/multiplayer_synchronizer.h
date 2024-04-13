@@ -39,7 +39,7 @@ class MultiplayerSynchronizer : public Node {
 	GDCLASS(MultiplayerSynchronizer, Node);
 
 public:
-	enum VisibilityUpdateMode {
+	enum VisibilityUpdateMode : int32_t {
 		VISIBILITY_PROCESS_IDLE,
 		VISIBILITY_PROCESS_PHYSICS,
 		VISIBILITY_PROCESS_NONE,

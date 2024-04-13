@@ -41,7 +41,7 @@ class EditorThemeManager {
 
 	static String get_benchmark_key();
 
-	enum ColorMode {
+	enum ColorMode : int32_t {
 		AUTO_COLOR,
 		DARK_COLOR,
 		LIGHT_COLOR,

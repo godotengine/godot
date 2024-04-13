@@ -53,7 +53,7 @@ class BoneMapperButton : public TextureButton {
 	GDCLASS(BoneMapperButton, TextureButton);
 
 public:
-	enum BoneMapState {
+	enum BoneMapState : int32_t {
 		BONE_MAP_STATE_UNSET,
 		BONE_MAP_STATE_SET,
 		BONE_MAP_STATE_MISSING,
@@ -174,7 +174,7 @@ class BoneMapper : public VBoxContainer {
 
 #ifdef MODULE_REGEX_ENABLED
 	/* For auto mapping */
-	enum BoneSegregation {
+	enum BoneSegregation : int32_t {
 		BONE_SEGREGATION_NONE,
 		BONE_SEGREGATION_LEFT,
 		BONE_SEGREGATION_RIGHT

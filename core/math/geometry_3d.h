@@ -462,7 +462,7 @@ public:
 	}
 
 	static inline Vector<Vector3> clip_polygon(const Vector<Vector3> &polygon, const Plane &p_plane) {
-		enum LocationCache {
+		enum LocationCache : int32_t {
 			LOC_INSIDE = 1,
 			LOC_BOUNDARY = 0,
 			LOC_OUTSIDE = -1

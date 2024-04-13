@@ -35,7 +35,7 @@
 
 class OpenXRWMRControllerExtension : public OpenXRExtensionWrapper {
 public:
-	enum WMRControllers {
+	enum WMRControllers : int32_t {
 		WMR_HPMR,
 		WMR_SAMSUNG_ODESSY,
 		WMR_MAX_CONTROLLERS

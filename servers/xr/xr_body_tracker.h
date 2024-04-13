@@ -38,13 +38,13 @@ class XRBodyTracker : public RefCounted {
 	_THREAD_SAFE_CLASS_
 
 public:
-	enum BodyFlags {
+	enum BodyFlags : int32_t {
 		BODY_FLAG_UPPER_BODY_SUPPORTED = 1,
 		BODY_FLAG_LOWER_BODY_SUPPORTED = 2,
 		BODY_FLAG_HANDS_SUPPORTED = 4,
 	};
 
-	enum Joint {
+	enum Joint : int32_t {
 		JOINT_ROOT,
 
 		// Upper Body Joints
@@ -133,7 +133,7 @@ public:
 		JOINT_MAX,
 	};
 
-	enum JointFlags {
+	enum JointFlags : int32_t {
 		JOINT_FLAG_ORIENTATION_VALID = 1,
 		JOINT_FLAG_ORIENTATION_TRACKED = 2,
 		JOINT_FLAG_POSITION_VALID = 4,

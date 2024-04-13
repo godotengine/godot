@@ -33,7 +33,7 @@
 
 #include "scene/gui/line_edit.h"
 
-enum InputType {
+enum InputType : int32_t {
 	INPUT_KEY = 1,
 	INPUT_MOUSE_BUTTON = 2,
 	INPUT_JOY_BUTTON = 4,

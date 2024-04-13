@@ -51,7 +51,7 @@ protected:
 
 	GDVIRTUAL0RC(AABB, _get_aabb)
 public:
-	enum GetFacesFlags {
+	enum GetFacesFlags : int32_t {
 		FACES_SOLID = 1, // solid geometry
 		FACES_ENCLOSING = 2,
 		FACES_DYNAMIC = 4 // dynamic object geometry
@@ -84,20 +84,20 @@ class GeometryInstance3D : public VisualInstance3D {
 	GDCLASS(GeometryInstance3D, VisualInstance3D);
 
 public:
-	enum ShadowCastingSetting {
+	enum ShadowCastingSetting : int32_t {
 		SHADOW_CASTING_SETTING_OFF = RS::SHADOW_CASTING_SETTING_OFF,
 		SHADOW_CASTING_SETTING_ON = RS::SHADOW_CASTING_SETTING_ON,
 		SHADOW_CASTING_SETTING_DOUBLE_SIDED = RS::SHADOW_CASTING_SETTING_DOUBLE_SIDED,
 		SHADOW_CASTING_SETTING_SHADOWS_ONLY = RS::SHADOW_CASTING_SETTING_SHADOWS_ONLY
 	};
 
-	enum GIMode {
+	enum GIMode : int32_t {
 		GI_MODE_DISABLED,
 		GI_MODE_STATIC,
 		GI_MODE_DYNAMIC
 	};
 
-	enum LightmapScale {
+	enum LightmapScale : int32_t {
 		LIGHTMAP_SCALE_1X,
 		LIGHTMAP_SCALE_2X,
 		LIGHTMAP_SCALE_4X,
@@ -105,7 +105,7 @@ public:
 		LIGHTMAP_SCALE_MAX,
 	};
 
-	enum VisibilityRangeFadeMode {
+	enum VisibilityRangeFadeMode : int32_t {
 		VISIBILITY_RANGE_FADE_DISABLED = RS::VISIBILITY_RANGE_FADE_DISABLED,
 		VISIBILITY_RANGE_FADE_SELF = RS::VISIBILITY_RANGE_FADE_SELF,
 		VISIBILITY_RANGE_FADE_DEPENDENCIES = RS::VISIBILITY_RANGE_FADE_DEPENDENCIES,

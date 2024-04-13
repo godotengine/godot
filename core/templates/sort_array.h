@@ -53,7 +53,7 @@ struct _DefaultComparator {
 
 template <typename T, typename Comparator = _DefaultComparator<T>, bool Validate = SORT_ARRAY_VALIDATE_ENABLED>
 class SortArray {
-	enum {
+	enum : int32_t {
 		INTROSORT_THRESHOLD = 16
 	};
 

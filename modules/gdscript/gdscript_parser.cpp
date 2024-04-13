@@ -3522,7 +3522,7 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 }
 
 #ifdef TOOLS_ENABLED
-enum DocLineState {
+enum DocLineState : int32_t {
 	DOC_LINE_NORMAL,
 	DOC_LINE_IN_CODE,
 	DOC_LINE_IN_CODEBLOCK,

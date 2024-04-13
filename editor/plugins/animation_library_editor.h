@@ -43,20 +43,20 @@ class EditorFileDialog;
 class AnimationLibraryEditor : public AcceptDialog {
 	GDCLASS(AnimationLibraryEditor, AcceptDialog)
 
-	enum {
+	enum : int32_t {
 		LIB_BUTTON_ADD,
 		LIB_BUTTON_LOAD,
 		LIB_BUTTON_PASTE,
 		LIB_BUTTON_FILE,
 		LIB_BUTTON_DELETE,
 	};
-	enum {
+	enum : int32_t {
 		ANIM_BUTTON_COPY,
 		ANIM_BUTTON_FILE,
 		ANIM_BUTTON_DELETE,
 	};
 
-	enum FileMenuAction {
+	enum FileMenuAction : int32_t {
 		FILE_MENU_SAVE_LIBRARY,
 		FILE_MENU_SAVE_AS_LIBRARY,
 		FILE_MENU_MAKE_LIBRARY_UNIQUE,
@@ -68,7 +68,7 @@ class AnimationLibraryEditor : public AcceptDialog {
 		FILE_MENU_EDIT_ANIMATION,
 	};
 
-	enum FileDialogAction {
+	enum FileDialogAction : int32_t {
 		FILE_DIALOG_ACTION_OPEN_LIBRARY,
 		FILE_DIALOG_ACTION_SAVE_LIBRARY,
 		FILE_DIALOG_ACTION_OPEN_ANIMATION,

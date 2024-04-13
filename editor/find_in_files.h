@@ -95,7 +95,7 @@ class FindInFilesDialog : public AcceptDialog {
 	GDCLASS(FindInFilesDialog, AcceptDialog);
 
 public:
-	enum FindInFilesMode {
+	enum FindInFilesMode : int32_t {
 		SEARCH_MODE,
 		REPLACE_MODE
 	};

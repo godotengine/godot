@@ -55,7 +55,7 @@ class SplitContainer : public Container {
 	friend class SplitContainerDragger;
 
 public:
-	enum DraggerVisibility {
+	enum DraggerVisibility : int32_t {
 		DRAGGER_VISIBLE,
 		DRAGGER_HIDDEN,
 		DRAGGER_HIDDEN_COLLAPSED

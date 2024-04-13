@@ -41,7 +41,7 @@
  * (@TODO) abstraction should be greater, because in many platforms, you need to manage a nonreachable memory.
  */
 
-enum {
+enum : int32_t {
 	POOL_ALLOCATOR_INVALID_ID = -1 ///< default invalid value. use INVALID_ID( id ) to test
 };
 
@@ -50,7 +50,7 @@ public:
 	typedef int ID;
 
 private:
-	enum {
+	enum : int32_t {
 		CHECK_BITS = 8,
 		CHECK_LEN = (1 << CHECK_BITS),
 		CHECK_MASK = CHECK_LEN - 1
@@ -119,7 +119,7 @@ protected:
 	virtual void mt_unlock() const; ///< Reimplement for custom mt locking
 
 public:
-	enum {
+	enum : int32_t {
 		DEFAULT_MAX_ALLOCS = 4096,
 	};
 

@@ -36,7 +36,7 @@
 
 namespace gdmono {
 
-enum class CompletionKind {
+enum class CompletionKind : int32_t {
 	INPUT_ACTIONS = 0,
 	NODE_PATHS,
 	RESOURCE_PATHS,

@@ -39,18 +39,18 @@ class CompressedTexture2D : public Texture2D {
 	GDCLASS(CompressedTexture2D, Texture2D);
 
 public:
-	enum DataFormat {
+	enum DataFormat : int32_t {
 		DATA_FORMAT_IMAGE,
 		DATA_FORMAT_PNG,
 		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
-	enum {
+	enum : int32_t {
 		FORMAT_VERSION = 1
 	};
 
-	enum FormatBits {
+	enum FormatBits : int32_t {
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 		FORMAT_BIT_DETECT_3D = 1 << 24,
@@ -123,18 +123,18 @@ class CompressedTextureLayered : public TextureLayered {
 	GDCLASS(CompressedTextureLayered, TextureLayered);
 
 public:
-	enum DataFormat {
+	enum DataFormat : int32_t {
 		DATA_FORMAT_IMAGE,
 		DATA_FORMAT_PNG,
 		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
-	enum {
+	enum : int32_t {
 		FORMAT_VERSION = 1
 	};
 
-	enum FormatBits {
+	enum FormatBits : int32_t {
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 	};
@@ -211,18 +211,18 @@ class CompressedTexture3D : public Texture3D {
 	GDCLASS(CompressedTexture3D, Texture3D);
 
 public:
-	enum DataFormat {
+	enum DataFormat : int32_t {
 		DATA_FORMAT_IMAGE,
 		DATA_FORMAT_PNG,
 		DATA_FORMAT_WEBP,
 		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
-	enum {
+	enum : int32_t {
 		FORMAT_VERSION = 1
 	};
 
-	enum FormatBits {
+	enum FormatBits : int32_t {
 		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 	};

@@ -47,7 +47,7 @@ class ParticleProcessMaterial : public Material {
 	GDCLASS(ParticleProcessMaterial, Material);
 
 public:
-	enum Parameter {
+	enum Parameter : int32_t {
 		PARAM_INITIAL_LINEAR_VELOCITY,
 		PARAM_ANGULAR_VELOCITY,
 		PARAM_ORBIT_VELOCITY,
@@ -70,7 +70,7 @@ public:
 	};
 
 	// When extending, make sure not to overflow the size of the MaterialKey below.
-	enum ParticleFlags {
+	enum ParticleFlags : int32_t {
 		PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY,
 		PARTICLE_FLAG_ROTATE_Y,
 		PARTICLE_FLAG_DISABLE_Z,
@@ -79,7 +79,7 @@ public:
 	};
 
 	// When extending, make sure not to overflow the size of the MaterialKey below.
-	enum EmissionShape {
+	enum EmissionShape : int32_t {
 		EMISSION_SHAPE_POINT,
 		EMISSION_SHAPE_SPHERE,
 		EMISSION_SHAPE_SPHERE_SURFACE,
@@ -91,7 +91,7 @@ public:
 	};
 
 	// When extending, make sure not to overflow the size of the MaterialKey below.
-	enum SubEmitterMode {
+	enum SubEmitterMode : int32_t {
 		SUB_EMITTER_DISABLED,
 		SUB_EMITTER_CONSTANT,
 		SUB_EMITTER_AT_END,
@@ -100,7 +100,7 @@ public:
 	};
 
 	// When extending, make sure not to overflow the size of the MaterialKey below.
-	enum CollisionMode {
+	enum CollisionMode : int32_t {
 		COLLISION_DISABLED,
 		COLLISION_RIGID,
 		COLLISION_HIDE_ON_CONTACT,

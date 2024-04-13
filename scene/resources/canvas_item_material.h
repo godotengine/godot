@@ -37,7 +37,7 @@ class CanvasItemMaterial : public Material {
 	GDCLASS(CanvasItemMaterial, Material);
 
 public:
-	enum BlendMode {
+	enum BlendMode : int32_t {
 		BLEND_MODE_MIX,
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
@@ -46,7 +46,7 @@ public:
 		BLEND_MODE_DISABLED
 	};
 
-	enum LightMode {
+	enum LightMode : int32_t {
 		LIGHT_MODE_NORMAL,
 		LIGHT_MODE_UNSHADED,
 		LIGHT_MODE_LIGHT_ONLY

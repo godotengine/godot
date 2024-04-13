@@ -65,7 +65,7 @@ class VisibleOnScreenEnabler3D : public VisibleOnScreenNotifier3D {
 	GDCLASS(VisibleOnScreenEnabler3D, VisibleOnScreenNotifier3D);
 
 public:
-	enum EnableMode {
+	enum EnableMode : int32_t {
 		ENABLE_MODE_INHERIT,
 		ENABLE_MODE_ALWAYS,
 		ENABLE_MODE_WHEN_PAUSED,

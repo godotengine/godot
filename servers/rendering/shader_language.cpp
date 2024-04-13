@@ -661,7 +661,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					bool uint_suffix_found = false;
 					bool end_suffix_found = false;
 
-					enum {
+					enum : int32_t {
 						CASE_ALL,
 						CASE_HEXA_PERIOD,
 						CASE_EXPONENT,

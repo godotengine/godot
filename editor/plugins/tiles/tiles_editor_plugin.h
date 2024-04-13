@@ -44,7 +44,7 @@ class TilesEditorUtils : public Object {
 	static TilesEditorUtils *singleton;
 
 public:
-	enum SourceSortOption {
+	enum SourceSortOption : int32_t {
 		SOURCE_SORT_ID = 0,
 		SOURCE_SORT_ID_REVERSE,
 		SOURCE_SORT_NAME,

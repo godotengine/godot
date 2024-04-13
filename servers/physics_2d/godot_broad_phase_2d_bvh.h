@@ -55,12 +55,12 @@ class GodotBroadPhase2DBVH : public GodotBroadPhase2D {
 		}
 	};
 
-	enum Tree {
+	enum Tree : int32_t {
 		TREE_STATIC = 0,
 		TREE_DYNAMIC = 1,
 	};
 
-	enum TreeFlag {
+	enum TreeFlag : int32_t {
 		TREE_FLAG_STATIC = 1 << TREE_STATIC,
 		TREE_FLAG_DYNAMIC = 1 << TREE_DYNAMIC,
 	};

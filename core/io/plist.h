@@ -43,7 +43,7 @@ class PList : public RefCounted {
 	friend class PListNode;
 
 public:
-	enum PLNodeType {
+	enum PLNodeType : int32_t {
 		PL_NODE_TYPE_NIL,
 		PL_NODE_TYPE_STRING,
 		PL_NODE_TYPE_ARRAY,

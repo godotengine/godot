@@ -46,7 +46,7 @@ class ResourceImporterTextureAtlas : public ResourceImporter {
 	};
 
 public:
-	enum ImportMode {
+	enum ImportMode : int32_t {
 		IMPORT_MODE_REGION,
 		IMPORT_MODE_2D_MESH
 	};

@@ -199,7 +199,7 @@ class ConnectionsDockTree : public Tree {
 class ConnectionsDock : public VBoxContainer {
 	GDCLASS(ConnectionsDock, VBoxContainer);
 
-	enum TreeItemType {
+	enum TreeItemType : int32_t {
 		TREE_ITEM_TYPE_ROOT,
 		TREE_ITEM_TYPE_CLASS,
 		TREE_ITEM_TYPE_SIGNAL,
@@ -207,16 +207,16 @@ class ConnectionsDock : public VBoxContainer {
 	};
 
 	// Right-click context menu options.
-	enum ClassMenuOption {
+	enum ClassMenuOption : int32_t {
 		CLASS_MENU_OPEN_DOCS,
 	};
-	enum SignalMenuOption {
+	enum SignalMenuOption : int32_t {
 		SIGNAL_MENU_CONNECT,
 		SIGNAL_MENU_DISCONNECT_ALL,
 		SIGNAL_MENU_COPY_NAME,
 		SIGNAL_MENU_OPEN_DOCS,
 	};
-	enum SlotMenuOption {
+	enum SlotMenuOption : int32_t {
 		SLOT_MENU_EDIT,
 		SLOT_MENU_GO_TO_METHOD,
 		SLOT_MENU_DISCONNECT,

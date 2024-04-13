@@ -35,7 +35,7 @@
 
 class OpenXRHTCControllerExtension : public OpenXRExtensionWrapper {
 public:
-	enum HTCControllers {
+	enum HTCControllers : int32_t {
 		// Note, HTC Vive Wand controllers are part of the core spec and not part of our extension.
 		HTC_VIVE_COSMOS,
 		HTC_VIVE_FOCUS3,

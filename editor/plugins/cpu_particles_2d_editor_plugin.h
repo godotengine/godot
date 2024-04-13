@@ -46,14 +46,14 @@ class OptionButton;
 class CPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(CPUParticles2DEditorPlugin, EditorPlugin);
 
-	enum {
+	enum : int32_t {
 		MENU_LOAD_EMISSION_MASK,
 		MENU_CLEAR_EMISSION_MASK,
 		MENU_RESTART,
 		MENU_CONVERT_TO_GPU_PARTICLES,
 	};
 
-	enum EmissionMode {
+	enum EmissionMode : int32_t {
 		EMISSION_MODE_SOLID,
 		EMISSION_MODE_BORDER,
 		EMISSION_MODE_BORDER_DIRECTED

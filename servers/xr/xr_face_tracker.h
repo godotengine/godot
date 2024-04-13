@@ -46,7 +46,7 @@ class XRFaceTracker : public RefCounted {
 	_THREAD_SAFE_CLASS_
 
 public:
-	enum BlendShapeEntry {
+	enum BlendShapeEntry : int32_t {
 		// Base Shapes
 		FT_EYE_LOOK_OUT_RIGHT, // Right eye looks outwards.
 		FT_EYE_LOOK_IN_RIGHT, // Right eye looks inwards.

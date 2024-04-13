@@ -37,7 +37,7 @@ class BoxContainer : public Container {
 	GDCLASS(BoxContainer, Container);
 
 public:
-	enum AlignmentMode {
+	enum AlignmentMode : int32_t {
 		ALIGNMENT_BEGIN,
 		ALIGNMENT_CENTER,
 		ALIGNMENT_END

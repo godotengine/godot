@@ -47,7 +47,7 @@ public:
 	void fsr_upscale(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_texture, RID p_destination_texture);
 
 private:
-	enum FSRUpscalePass {
+	enum FSRUpscalePass : int32_t {
 		FSR_UPSCALE_PASS_EASU = 0,
 		FSR_UPSCALE_PASS_RCAS = 1
 	};

@@ -37,7 +37,7 @@ class Light3D : public VisualInstance3D {
 	GDCLASS(Light3D, VisualInstance3D);
 
 public:
-	enum Param {
+	enum Param : int32_t {
 		PARAM_ENERGY = RS::LIGHT_PARAM_ENERGY,
 		PARAM_INDIRECT_ENERGY = RS::LIGHT_PARAM_INDIRECT_ENERGY,
 		PARAM_VOLUMETRIC_FOG_ENERGY = RS::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY,
@@ -62,7 +62,7 @@ public:
 		PARAM_MAX = RS::LIGHT_PARAM_MAX
 	};
 
-	enum BakeMode {
+	enum BakeMode : int32_t {
 		BAKE_DISABLED,
 		BAKE_STATIC,
 		BAKE_DYNAMIC,
@@ -160,13 +160,13 @@ class DirectionalLight3D : public Light3D {
 	GDCLASS(DirectionalLight3D, Light3D);
 
 public:
-	enum ShadowMode {
+	enum ShadowMode : int32_t {
 		SHADOW_ORTHOGONAL,
 		SHADOW_PARALLEL_2_SPLITS,
 		SHADOW_PARALLEL_4_SPLITS,
 	};
 
-	enum SkyMode {
+	enum SkyMode : int32_t {
 		SKY_MODE_LIGHT_AND_SKY,
 		SKY_MODE_LIGHT_ONLY,
 		SKY_MODE_SKY_ONLY,
@@ -202,7 +202,7 @@ class OmniLight3D : public Light3D {
 
 public:
 	// omni light
-	enum ShadowMode {
+	enum ShadowMode : int32_t {
 		SHADOW_DUAL_PARABOLOID,
 		SHADOW_CUBE,
 	};

@@ -48,11 +48,11 @@ class Node3DEditorPlugin;
 class GridMapEditor : public VBoxContainer {
 	GDCLASS(GridMapEditor, VBoxContainer);
 
-	enum {
+	enum : int32_t {
 		GRID_CURSOR_SIZE = 50
 	};
 
-	enum InputAction {
+	enum InputAction : int32_t {
 		INPUT_NONE,
 		INPUT_PAINT,
 		INPUT_ERASE,
@@ -61,7 +61,7 @@ class GridMapEditor : public VBoxContainer {
 		INPUT_PASTE,
 	};
 
-	enum DisplayMode {
+	enum DisplayMode : int32_t {
 		DISPLAY_THUMBNAIL,
 		DISPLAY_LIST
 	};
@@ -153,7 +153,7 @@ class GridMapEditor : public VBoxContainer {
 	int selected_palette = -1;
 	int cursor_rot = 0;
 
-	enum Menu {
+	enum Menu : int32_t {
 		MENU_OPTION_NEXT_LEVEL,
 		MENU_OPTION_PREV_LEVEL,
 		MENU_OPTION_LOCK_VIEW,

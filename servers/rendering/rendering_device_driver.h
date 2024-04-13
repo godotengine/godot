@@ -174,7 +174,7 @@ public:
 	/**** MEMORY ****/
 	/****************/
 
-	enum MemoryAllocationType {
+	enum MemoryAllocationType : int32_t {
 		MEMORY_ALLOCATION_TYPE_CPU, // For images, CPU allocation also means linear, GPU is tiling optimal.
 		MEMORY_ALLOCATION_TYPE_GPU,
 	};
@@ -183,7 +183,7 @@ public:
 	/**** BUFFERS ****/
 	/*****************/
 
-	enum BufferUsageBits {
+	enum BufferUsageBits : int32_t {
 		BUFFER_USAGE_TRANSFER_FROM_BIT = (1 << 0),
 		BUFFER_USAGE_TRANSFER_TO_BIT = (1 << 1),
 		BUFFER_USAGE_TEXEL_BIT = (1 << 2),
@@ -194,7 +194,7 @@ public:
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
 	};
 
-	enum {
+	enum : uint64_t {
 		BUFFER_WHOLE_SIZE = ~0ULL
 	};
 
@@ -218,7 +218,7 @@ public:
 		TextureSwizzle swizzle_a = TEXTURE_SWIZZLE_A;
 	};
 
-	enum TextureLayout {
+	enum TextureLayout : int32_t {
 		TEXTURE_LAYOUT_UNDEFINED,
 		TEXTURE_LAYOUT_GENERAL,
 		TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -231,14 +231,14 @@ public:
 		TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL = 1000164003,
 	};
 
-	enum TextureAspect {
+	enum TextureAspect : int32_t {
 		TEXTURE_ASPECT_COLOR = 0,
 		TEXTURE_ASPECT_DEPTH = 1,
 		TEXTURE_ASPECT_STENCIL = 2,
 		TEXTURE_ASPECT_MAX
 	};
 
-	enum TextureAspectBits {
+	enum TextureAspectBits : int32_t {
 		TEXTURE_ASPECT_COLOR_BIT = (1 << TEXTURE_ASPECT_COLOR),
 		TEXTURE_ASPECT_DEPTH_BIT = (1 << TEXTURE_ASPECT_DEPTH),
 		TEXTURE_ASPECT_STENCIL_BIT = (1 << TEXTURE_ASPECT_STENCIL),
@@ -304,7 +304,7 @@ public:
 	/**** BARRIERS ****/
 	/******************/
 
-	enum PipelineStageBits {
+	enum PipelineStageBits : int32_t {
 		PIPELINE_STAGE_TOP_OF_PIPE_BIT = (1 << 0),
 		PIPELINE_STAGE_DRAW_INDIRECT_BIT = (1 << 1),
 		PIPELINE_STAGE_VERTEX_INPUT_BIT = (1 << 2),
@@ -323,7 +323,7 @@ public:
 		PIPELINE_STAGE_ALL_COMMANDS_BIT = (1 << 16),
 	};
 
-	enum BarrierAccessBits {
+	enum BarrierAccessBits : int32_t {
 		BARRIER_ACCESS_INDIRECT_COMMAND_READ_BIT = (1 << 0),
 		BARRIER_ACCESS_INDEX_READ_BIT = (1 << 1),
 		BARRIER_ACCESS_VERTEX_ATTRIBUTE_READ_BIT = (1 << 2),
@@ -395,7 +395,7 @@ public:
 
 	// ----- QUEUE FAMILY -----
 
-	enum CommandQueueFamilyBits {
+	enum CommandQueueFamilyBits : int32_t {
 		COMMAND_QUEUE_FAMILY_GRAPHICS_BIT = 0x1,
 		COMMAND_QUEUE_FAMILY_COMPUTE_BIT = 0x2,
 		COMMAND_QUEUE_FAMILY_TRANSFER_BIT = 0x4
@@ -413,7 +413,7 @@ public:
 
 	// ----- POOL -----
 
-	enum CommandBufferType {
+	enum CommandBufferType : int32_t {
 		COMMAND_BUFFER_TYPE_PRIMARY,
 		COMMAND_BUFFER_TYPE_SECONDARY,
 	};
@@ -549,13 +549,13 @@ public:
 
 	// ----- SUBPASS -----
 
-	enum AttachmentLoadOp {
+	enum AttachmentLoadOp : int32_t {
 		ATTACHMENT_LOAD_OP_LOAD = 0,
 		ATTACHMENT_LOAD_OP_CLEAR = 1,
 		ATTACHMENT_LOAD_OP_DONT_CARE = 2,
 	};
 
-	enum AttachmentStoreOp {
+	enum AttachmentStoreOp : int32_t {
 		ATTACHMENT_STORE_OP_STORE = 0,
 		ATTACHMENT_STORE_OP_DONT_CARE = 1,
 	};
@@ -712,7 +712,7 @@ public:
 	/**** MISC ****/
 	/**************/
 
-	enum ObjectType {
+	enum ObjectType : int32_t {
 		OBJECT_TYPE_TEXTURE,
 		OBJECT_TYPE_SAMPLER,
 		OBJECT_TYPE_BUFFER,
@@ -729,14 +729,14 @@ public:
 		uint32_t max_instance_count = 0;
 	};
 
-	enum ApiTrait {
+	enum ApiTrait : int32_t {
 		API_TRAIT_HONORS_PIPELINE_BARRIERS,
 		API_TRAIT_SHADER_CHANGE_INVALIDATION,
 		API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT,
 		API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP,
 		API_TRAIT_SECONDARY_VIEWPORT_SCISSOR,
 	};
-	enum ShaderChangeInvalidation {
+	enum ShaderChangeInvalidation : int32_t {
 		SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS,
 		// What Vulkan does.
 		SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE,
@@ -744,7 +744,7 @@ public:
 		SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH,
 	};
 
-	enum DeviceFamily {
+	enum DeviceFamily : int32_t {
 		DEVICE_UNKNOWN,
 		DEVICE_OPENGL,
 		DEVICE_VULKAN,

@@ -39,7 +39,7 @@ class Environment : public Resource {
 	GDCLASS(Environment, Resource);
 
 public:
-	enum BGMode {
+	enum BGMode : int32_t {
 		BG_CLEAR_COLOR,
 		BG_COLOR,
 		BG_SKY,
@@ -49,38 +49,38 @@ public:
 		BG_MAX
 	};
 
-	enum AmbientSource {
+	enum AmbientSource : int32_t {
 		AMBIENT_SOURCE_BG,
 		AMBIENT_SOURCE_DISABLED,
 		AMBIENT_SOURCE_COLOR,
 		AMBIENT_SOURCE_SKY,
 	};
 
-	enum ReflectionSource {
+	enum ReflectionSource : int32_t {
 		REFLECTION_SOURCE_BG,
 		REFLECTION_SOURCE_DISABLED,
 		REFLECTION_SOURCE_SKY,
 	};
 
-	enum ToneMapper {
+	enum ToneMapper : int32_t {
 		TONE_MAPPER_LINEAR,
 		TONE_MAPPER_REINHARDT,
 		TONE_MAPPER_FILMIC,
 		TONE_MAPPER_ACES,
 	};
 
-	enum SDFGIYScale {
+	enum SDFGIYScale : int32_t {
 		SDFGI_Y_SCALE_50_PERCENT,
 		SDFGI_Y_SCALE_75_PERCENT,
 		SDFGI_Y_SCALE_100_PERCENT,
 	};
 
-	enum FogMode {
+	enum FogMode : int32_t {
 		FOG_MODE_EXPONENTIAL,
 		FOG_MODE_DEPTH,
 	};
 
-	enum GlowBlendMode {
+	enum GlowBlendMode : int32_t {
 		GLOW_BLEND_MODE_ADDITIVE,
 		GLOW_BLEND_MODE_SCREEN,
 		GLOW_BLEND_MODE_SOFTLIGHT,

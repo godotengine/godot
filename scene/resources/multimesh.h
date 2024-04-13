@@ -39,7 +39,7 @@ class MultiMesh : public Resource {
 	RES_BASE_EXTENSION("multimesh");
 
 public:
-	enum TransformFormat {
+	enum TransformFormat : int32_t {
 		TRANSFORM_2D = RS::MULTIMESH_TRANSFORM_2D,
 		TRANSFORM_3D = RS::MULTIMESH_TRANSFORM_3D
 	};

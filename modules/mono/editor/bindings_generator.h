@@ -107,7 +107,7 @@ class BindingsGenerator {
 	};
 
 	struct ArgumentInterface {
-		enum DefaultParamMode {
+		enum DefaultParamMode : int32_t {
 			CONSTANT,
 			NULLABLE_VAL,
 			NULLABLE_REF

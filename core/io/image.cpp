@@ -768,7 +768,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 template <int CC, typename T>
 static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
-	enum {
+	enum : int32_t {
 		FRAC_BITS = 8,
 		FRAC_LEN = (1 << FRAC_BITS),
 		FRAC_HALF = (FRAC_LEN >> 1),
@@ -2235,7 +2235,7 @@ void Image::initialize_data(const char **p_xpm) {
 	mipmaps = false;
 	bool has_alpha = false;
 
-	enum Status {
+	enum Status : int32_t {
 		READING_HEADER,
 		READING_COLORS,
 		READING_PIXELS,

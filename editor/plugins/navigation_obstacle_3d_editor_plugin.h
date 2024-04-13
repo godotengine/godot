@@ -45,7 +45,7 @@ class MenuButton;
 class NavigationObstacle3DEditor : public HBoxContainer {
 	GDCLASS(NavigationObstacle3DEditor, HBoxContainer);
 
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_CREATE,
 		MODE_EDIT,
 

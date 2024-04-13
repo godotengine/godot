@@ -55,7 +55,7 @@ private:
 
 	// Blur raster shader
 
-	enum BlurRasterMode {
+	enum BlurRasterMode : int32_t {
 		BLUR_MIPMAP,
 
 		BLUR_MODE_GAUSSIAN_BLUR,
@@ -68,7 +68,7 @@ private:
 		BLUR_MODE_MAX
 	};
 
-	enum {
+	enum : int32_t {
 		BLUR_FLAG_HORIZONTAL = (1 << 0),
 		BLUR_FLAG_USE_ORTHOGONAL_PROJECTION = (1 << 1),
 		BLUR_FLAG_GLOW_FIRST_PASS = (1 << 2),
@@ -105,7 +105,7 @@ private:
 
 	// Copy shader
 
-	enum CopyMode {
+	enum CopyMode : int32_t {
 		COPY_MODE_GAUSSIAN_COPY,
 		COPY_MODE_GAUSSIAN_COPY_8BIT,
 		COPY_MODE_GAUSSIAN_GLOW,
@@ -123,7 +123,7 @@ private:
 
 	};
 
-	enum {
+	enum : int32_t {
 		COPY_FLAG_HORIZONTAL = (1 << 0),
 		COPY_FLAG_USE_COPY_SECTION = (1 << 1),
 		COPY_FLAG_USE_ORTHOGONAL_PROJECTION = (1 << 2),
@@ -168,7 +168,7 @@ private:
 
 	// Copy to FB shader
 
-	enum CopyToFBMode {
+	enum CopyToFBMode : int32_t {
 		COPY_TO_FB_COPY,
 		COPY_TO_FB_COPY_PANORAMA_TO_DP,
 		COPY_TO_FB_COPY2,
@@ -182,7 +182,7 @@ private:
 		COPY_TO_FB_MAX,
 	};
 
-	enum CopyToFBFlags {
+	enum CopyToFBFlags : int32_t {
 		COPY_TO_FB_FLAG_FLIP_Y = (1 << 0),
 		COPY_TO_FB_FLAG_USE_SECTION = (1 << 1),
 		COPY_TO_FB_FLAG_FORCE_LUMINANCE = (1 << 2),
@@ -242,7 +242,7 @@ private:
 		PipelineCacheRD raster_pipeline;
 	} cubemap_downsampler;
 
-	enum CubemapFilterMode {
+	enum CubemapFilterMode : int32_t {
 		FILTER_MODE_HIGH_QUALITY,
 		FILTER_MODE_LOW_QUALITY,
 		FILTER_MODE_HIGH_QUALITY_ARRAY,
@@ -290,7 +290,7 @@ private:
 
 	// Merge specular
 
-	enum SpecularMergeMode {
+	enum SpecularMergeMode : int32_t {
 		SPECULAR_MERGE_ADD,
 		SPECULAR_MERGE_SSR,
 		SPECULAR_MERGE_ADDITIVE_ADD,

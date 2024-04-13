@@ -127,7 +127,7 @@ public:
 class Lightmapper : public RefCounted {
 	GDCLASS(Lightmapper, RefCounted)
 public:
-	enum GenerateProbes {
+	enum GenerateProbes : int32_t {
 		GENERATE_PROBES_DISABLED,
 		GENERATE_PROBES_SUBDIV_4,
 		GENERATE_PROBES_SUBDIV_8,
@@ -136,19 +136,19 @@ public:
 
 	};
 
-	enum LightType {
+	enum LightType : int32_t {
 		LIGHT_TYPE_DIRECTIONAL,
 		LIGHT_TYPE_OMNI,
 		LIGHT_TYPE_SPOT
 	};
 
-	enum BakeError {
+	enum BakeError : int32_t {
 		BAKE_ERROR_LIGHTMAP_TOO_SMALL,
 		BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES,
 		BAKE_OK
 	};
 
-	enum BakeQuality {
+	enum BakeQuality : int32_t {
 		BAKE_QUALITY_LOW,
 		BAKE_QUALITY_MEDIUM,
 		BAKE_QUALITY_HIGH,

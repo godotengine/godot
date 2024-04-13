@@ -45,14 +45,14 @@ class CameraFeed : public RefCounted {
 	GDCLASS(CameraFeed, RefCounted);
 
 public:
-	enum FeedDataType {
+	enum FeedDataType : int32_t {
 		FEED_NOIMAGE, // we don't have an image yet
 		FEED_RGB, // our texture will contain a normal RGB texture that can be used directly
 		FEED_YCBCR, // our texture will contain a YCbCr texture that needs to be converted to RGB before output
 		FEED_YCBCR_SEP // our camera is split into two textures, first plane contains Y data, second plane contains CbCr data
 	};
 
-	enum FeedPosition {
+	enum FeedPosition : int32_t {
 		FEED_UNSPECIFIED, // we have no idea
 		FEED_FRONT, // this is a camera on the front of the device
 		FEED_BACK // this is a camera on the back of the device

@@ -217,7 +217,7 @@ protected:
 public:
 	static PhysicsServer2D *get_singleton();
 
-	enum ShapeType {
+	enum ShapeType : int32_t {
 		SHAPE_WORLD_BOUNDARY, ///< plane:"plane"
 		SHAPE_SEPARATION_RAY, ///< float:"length"
 		SHAPE_SEGMENT, ///< float:"length"
@@ -254,7 +254,7 @@ public:
 	virtual void space_set_active(RID p_space, bool p_active) = 0;
 	virtual bool space_is_active(RID p_space) const = 0;
 
-	enum SpaceParameter {
+	enum SpaceParameter : int32_t {
 		SPACE_PARAM_CONTACT_RECYCLE_RADIUS,
 		SPACE_PARAM_CONTACT_MAX_SEPARATION,
 		SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION,
@@ -282,7 +282,7 @@ public:
 
 	//missing attenuation? missing better override?
 
-	enum AreaParameter {
+	enum AreaParameter : int32_t {
 		AREA_PARAM_GRAVITY_OVERRIDE_MODE,
 		AREA_PARAM_GRAVITY,
 		AREA_PARAM_GRAVITY_VECTOR,
@@ -300,7 +300,7 @@ public:
 	virtual void area_set_space(RID p_area, RID p_space) = 0;
 	virtual RID area_get_space(RID p_area) const = 0;
 
-	enum AreaSpaceOverrideMode {
+	enum AreaSpaceOverrideMode : int32_t {
 		AREA_SPACE_OVERRIDE_DISABLED,
 		AREA_SPACE_OVERRIDE_COMBINE,
 		AREA_SPACE_OVERRIDE_COMBINE_REPLACE, // Combines, then discards all subsequent calculations
@@ -349,7 +349,7 @@ public:
 
 	//missing ccd?
 
-	enum BodyMode {
+	enum BodyMode : int32_t {
 		BODY_MODE_STATIC,
 		BODY_MODE_KINEMATIC,
 		BODY_MODE_RIGID,
@@ -384,7 +384,7 @@ public:
 	virtual void body_attach_canvas_instance_id(RID p_body, ObjectID p_id) = 0;
 	virtual ObjectID body_get_canvas_instance_id(RID p_body) const = 0;
 
-	enum CCDMode {
+	enum CCDMode : int32_t {
 		CCD_MODE_DISABLED,
 		CCD_MODE_CAST_RAY,
 		CCD_MODE_CAST_SHAPE,
@@ -403,7 +403,7 @@ public:
 	virtual real_t body_get_collision_priority(RID p_body) const = 0;
 
 	// common body variables
-	enum BodyParameter {
+	enum BodyParameter : int32_t {
 		BODY_PARAM_BOUNCE,
 		BODY_PARAM_FRICTION,
 		BODY_PARAM_MASS, ///< unused for static, always infinite
@@ -417,7 +417,7 @@ public:
 		BODY_PARAM_MAX,
 	};
 
-	enum BodyDampMode {
+	enum BodyDampMode : int32_t {
 		BODY_DAMP_MODE_COMBINE,
 		BODY_DAMP_MODE_REPLACE,
 	};
@@ -428,7 +428,7 @@ public:
 	virtual void body_reset_mass_properties(RID p_body) = 0;
 
 	//state
-	enum BodyState {
+	enum BodyState : int32_t {
 		BODY_STATE_TRANSFORM,
 		BODY_STATE_LINEAR_VELOCITY,
 		BODY_STATE_ANGULAR_VELOCITY,
@@ -529,14 +529,14 @@ public:
 
 	virtual void joint_clear(RID p_joint) = 0;
 
-	enum JointType {
+	enum JointType : int32_t {
 		JOINT_TYPE_PIN,
 		JOINT_TYPE_GROOVE,
 		JOINT_TYPE_DAMPED_SPRING,
 		JOINT_TYPE_MAX
 	};
 
-	enum JointParam {
+	enum JointParam : int32_t {
 		JOINT_PARAM_BIAS,
 		JOINT_PARAM_MAX_BIAS,
 		JOINT_PARAM_MAX_FORCE,
@@ -552,7 +552,7 @@ public:
 	virtual void joint_make_groove(RID p_joint, const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, RID p_body_a, RID p_body_b) = 0;
 	virtual void joint_make_damped_spring(RID p_joint, const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, RID p_body_a, RID p_body_b = RID()) = 0;
 
-	enum PinJointParam {
+	enum PinJointParam : int32_t {
 		PIN_JOINT_SOFTNESS,
 		PIN_JOINT_LIMIT_UPPER,
 		PIN_JOINT_LIMIT_LOWER,
@@ -562,7 +562,7 @@ public:
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) = 0;
 	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const = 0;
 
-	enum PinJointFlag {
+	enum PinJointFlag : int32_t {
 		PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED,
 		PIN_JOINT_FLAG_MOTOR_ENABLED
 	};
@@ -570,7 +570,7 @@ public:
 	virtual void pin_joint_set_flag(RID p_joint, PinJointFlag p_flag, bool p_enabled) = 0;
 	virtual bool pin_joint_get_flag(RID p_joint, PinJointFlag p_flag) const = 0;
 
-	enum DampedSpringParam {
+	enum DampedSpringParam : int32_t {
 		DAMPED_SPRING_REST_LENGTH,
 		DAMPED_SPRING_STIFFNESS,
 		DAMPED_SPRING_DAMPING
@@ -582,7 +582,7 @@ public:
 
 	/* QUERY API */
 
-	enum AreaBodyStatus {
+	enum AreaBodyStatus : int32_t {
 		AREA_BODY_ADDED,
 		AREA_BODY_REMOVED
 	};
@@ -601,7 +601,7 @@ public:
 
 	virtual bool is_flushing_queries() const = 0;
 
-	enum ProcessInfo {
+	enum ProcessInfo : int32_t {
 		INFO_ACTIVE_OBJECTS,
 		INFO_COLLISION_PAIRS,
 		INFO_ISLAND_COUNT

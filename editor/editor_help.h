@@ -88,7 +88,7 @@ public:
 class EditorHelp : public VBoxContainer {
 	GDCLASS(EditorHelp, VBoxContainer);
 
-	enum MethodType {
+	enum MethodType : int32_t {
 		METHOD_TYPE_METHOD,
 		METHOD_TYPE_CONSTRUCTOR,
 		METHOD_TYPE_OPERATOR,
@@ -305,7 +305,7 @@ class EditorSyntaxHighlighter;
 
 class EditorHelpHighlighter {
 public:
-	enum Language {
+	enum Language : int32_t {
 		LANGUAGE_GDSCRIPT,
 		LANGUAGE_CSHARP,
 		LANGUAGE_MAX,

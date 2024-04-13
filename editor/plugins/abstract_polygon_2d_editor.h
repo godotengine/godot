@@ -93,7 +93,7 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	ConfirmationDialog *create_resource = nullptr;
 
 protected:
-	enum {
+	enum : int32_t {
 		MODE_CREATE,
 		MODE_EDIT,
 		MODE_DELETE,

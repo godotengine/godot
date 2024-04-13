@@ -55,7 +55,7 @@ public:
 	// Edit mode for the rotation.
 	// THIS MODE ONLY AFFECTS HOW DATA IS EDITED AND SAVED
 	// IT DOES _NOT_ AFFECT THE TRANSFORM LOGIC (see comment in TransformDirty).
-	enum RotationEditMode {
+	enum RotationEditMode : int32_t {
 		ROTATION_EDIT_MODE_EULER,
 		ROTATION_EDIT_MODE_QUATERNION,
 		ROTATION_EDIT_MODE_BASIS,
@@ -78,7 +78,7 @@ private:
 	//
 	// NOTE: Again, RotationEditMode is _independent_ of this mechanism, it is only meant to expose the right set of properties for editing (editor) and saving
 	// (to scene, in order to keep the same values and avoid data loss on conversions). It has zero influence in the logic described above.
-	enum TransformDirty {
+	enum TransformDirty : int32_t {
 		DIRTY_NONE = 0,
 		DIRTY_EULER_ROTATION_AND_SCALE = 1,
 		DIRTY_LOCAL_TRANSFORM = 2,
@@ -159,7 +159,7 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 public:
-	enum {
+	enum : int32_t {
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED,
 		NOTIFICATION_ENTER_WORLD = 41,
 		NOTIFICATION_EXIT_WORLD = 42,

@@ -39,7 +39,7 @@ class OpenXRAction : public Resource {
 	GDCLASS(OpenXRAction, Resource);
 
 public:
-	enum ActionType {
+	enum ActionType : int32_t {
 		OPENXR_ACTION_BOOL,
 		OPENXR_ACTION_FLOAT,
 		OPENXR_ACTION_VECTOR2,

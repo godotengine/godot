@@ -63,7 +63,7 @@ class RenderingDevice : public RenderingDeviceCommons {
 
 	_THREAD_SAFE_CLASS_
 public:
-	enum ShaderLanguage {
+	enum ShaderLanguage : int32_t {
 		SHADER_LANGUAGE_GLSL,
 		SHADER_LANGUAGE_HLSL
 	};
@@ -101,11 +101,11 @@ protected:
 	/***************************/
 public:
 	//base numeric ID for all types
-	enum {
+	enum : int32_t {
 		INVALID_FORMAT_ID = -1
 	};
 
-	enum IDType {
+	enum IDType : int32_t {
 		ID_TYPE_FRAMEBUFFER_FORMAT,
 		ID_TYPE_VERTEX_FORMAT,
 		ID_TYPE_DRAW_LIST,
@@ -160,7 +160,7 @@ private:
 	uint64_t staging_buffer_max_size = 0;
 	bool staging_buffer_used = false;
 
-	enum StagingRequiredAction {
+	enum StagingRequiredAction : int32_t {
 		STAGING_REQUIRED_ACTION_NONE,
 		STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL,
 		STAGING_REQUIRED_ACTION_STALL_PREVIOUS
@@ -302,7 +302,7 @@ public:
 	/**** DRAW LISTS (I) ****/
 	/************************/
 
-	enum InitialAction {
+	enum InitialAction : int32_t {
 		INITIAL_ACTION_LOAD,
 		INITIAL_ACTION_CLEAR,
 		INITIAL_ACTION_DISCARD,
@@ -316,7 +316,7 @@ public:
 #endif
 	};
 
-	enum FinalAction {
+	enum FinalAction : int32_t {
 		FINAL_ACTION_STORE,
 		FINAL_ACTION_DISCARD,
 		FINAL_ACTION_MAX,
@@ -337,7 +337,7 @@ public:
 	// used for the render pipelines.
 
 	struct AttachmentFormat {
-		enum { UNUSED_ATTACHMENT = 0xFFFFFFFF };
+		enum : int64_t { UNUSED_ATTACHMENT = 0xFFFFFFFF };
 		DataFormat format;
 		TextureSamples samples;
 		uint32_t usage_flags;
@@ -821,7 +821,7 @@ public:
 	/**** UNIFORMS ****/
 	/******************/
 
-	enum StorageBufferUsage {
+	enum StorageBufferUsage : int32_t {
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1,
 	};
 
@@ -1331,7 +1331,7 @@ public:
 	void submit();
 	void sync();
 
-	enum MemoryType {
+	enum MemoryType : int32_t {
 		MEMORY_TEXTURES,
 		MEMORY_BUFFERS,
 		MEMORY_TOTAL

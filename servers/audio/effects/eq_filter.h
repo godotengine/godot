@@ -36,7 +36,7 @@
 
 class EQ {
 public:
-	enum Preset {
+	enum Preset : int32_t {
 		PRESET_6_BANDS,
 		PRESET_8_BANDS,
 		PRESET_10_BANDS,

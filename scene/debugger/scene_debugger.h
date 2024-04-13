@@ -95,7 +95,7 @@ public:
 		String scene_file_path;
 		uint8_t view_flags = 0;
 
-		enum ViewFlags {
+		enum ViewFlags : int32_t {
 			VIEW_HAS_VISIBLE_METHOD = 1 << 1,
 			VIEW_VISIBLE = 1 << 2,
 			VIEW_VISIBLE_IN_TREE = 1 << 3,

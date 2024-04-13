@@ -598,7 +598,7 @@ private:
 		}
 	};
 
-	enum Orientation { ORIENTATION_NONE,
+	enum Orientation : int32_t { ORIENTATION_NONE,
 		ORIENTATION_CLOCKWISE,
 		ORIENTATION_COUNTER_CLOCKWISE };
 

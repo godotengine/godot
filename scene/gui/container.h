@@ -53,7 +53,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
+	enum : int32_t {
 		NOTIFICATION_PRE_SORT_CHILDREN = 50,
 		NOTIFICATION_SORT_CHILDREN = 51,
 	};

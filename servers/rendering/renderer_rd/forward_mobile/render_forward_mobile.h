@@ -52,14 +52,14 @@ private:
 
 	/* Scene Shader */
 
-	enum {
+	enum : int32_t {
 		SCENE_UNIFORM_SET = 0,
 		RENDER_PASS_UNIFORM_SET = 1,
 		TRANSFORMS_UNIFORM_SET = 2,
 		MATERIAL_UNIFORM_SET = 3,
 	};
 
-	enum {
+	enum : int32_t {
 
 		SPEC_CONSTANT_USING_PROJECTOR = 0,
 		SPEC_CONSTANT_USING_SOFT_SHADOWS = 1,
@@ -84,13 +84,13 @@ private:
 
 	};
 
-	enum {
+	enum : int32_t {
 		MAX_LIGHTMAPS = 8,
 		MAX_RDL_CULL = 8, // maximum number of reflection probes, decals or lights we can cull per geometry instance
 		INSTANCE_DATA_BUFFER_MIN_SIZE = 4096
 	};
 
-	enum RenderListType {
+	enum RenderListType : int32_t {
 		RENDER_LIST_OPAQUE, //used for opaque objects
 		RENDER_LIST_ALPHA, //used for transparent objects
 		RENDER_LIST_SECONDARY, //used for shadows and other objects
@@ -107,7 +107,7 @@ private:
 		GDCLASS(RenderBufferDataForwardMobile, RenderBufferCustomDataRD);
 
 	public:
-		enum FramebufferConfigType {
+		enum FramebufferConfigType : int32_t {
 			FB_CONFIG_RENDER_PASS, // Single pass framebuffer for normal rendering.
 			FB_CONFIG_RENDER_AND_POST_PASS, // Two subpasses, one for normal rendering, one for post processing.
 			FB_CONFIG_MAX
@@ -125,7 +125,7 @@ private:
 
 	/* Rendering */
 
-	enum PassMode {
+	enum PassMode : int32_t {
 		PASS_MODE_COLOR,
 		// PASS_MODE_COLOR_SPECULAR,
 		PASS_MODE_COLOR_TRANSPARENT,
@@ -377,7 +377,7 @@ protected:
 	class GeometryInstanceForwardMobile;
 
 	// When changing any of these enums, remember to change the corresponding enums in the shader files as well.
-	enum {
+	enum : int32_t {
 		INSTANCE_DATA_FLAGS_DYNAMIC = 1 << 3,
 		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 4,
 		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 5,
@@ -401,7 +401,7 @@ protected:
 
 	// Cached data for drawing surfaces
 	struct GeometryInstanceSurfaceDataCache {
-		enum {
+		enum : int32_t {
 			FLAG_PASS_DEPTH = 1,
 			FLAG_PASS_OPAQUE = 2,
 			FLAG_PASS_ALPHA = 4,

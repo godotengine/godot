@@ -45,7 +45,7 @@ struct StaticCString {
 };
 
 class StringName {
-	enum {
+	enum : int32_t {
 		STRING_TABLE_BITS = 16,
 		STRING_TABLE_LEN = 1 << STRING_TABLE_BITS,
 		STRING_TABLE_MASK = STRING_TABLE_LEN - 1

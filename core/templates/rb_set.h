@@ -39,7 +39,7 @@
 
 template <typename T, typename C = Comparator<T>, typename A = DefaultAllocator>
 class RBSet {
-	enum Color {
+	enum Color : int32_t {
 		RED,
 		BLACK
 	};

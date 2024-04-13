@@ -33,7 +33,7 @@
 
 #include "core/io/image.h"
 
-enum class EtcpakType {
+enum class EtcpakType : int32_t {
 	ETCPAK_TYPE_ETC1,
 	ETCPAK_TYPE_ETC2,
 	ETCPAK_TYPE_ETC2_ALPHA,

@@ -38,7 +38,7 @@ class StyleBoxTexture : public StyleBox {
 	GDCLASS(StyleBoxTexture, StyleBox);
 
 public:
-	enum AxisStretchMode {
+	enum AxisStretchMode : int32_t {
 		AXIS_STRETCH_MODE_STRETCH,
 		AXIS_STRETCH_MODE_TILE,
 		AXIS_STRETCH_MODE_TILE_FIT,

@@ -54,7 +54,7 @@ public:
 	using ThemeColorMap = HashMap<StringName, Color>;
 	using ThemeConstantMap = HashMap<StringName, int>;
 
-	enum DataType {
+	enum DataType : int32_t {
 		DATA_TYPE_COLOR,
 		DATA_TYPE_CONSTANT,
 		DATA_TYPE_FONT,

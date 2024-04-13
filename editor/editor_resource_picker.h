@@ -64,7 +64,7 @@ class EditorResourcePicker : public HBoxContainer {
 
 	Size2i assign_button_min_size = Size2i(1, 1);
 
-	enum MenuOption {
+	enum MenuOption : int32_t {
 		OBJ_MENU_LOAD,
 		OBJ_MENU_QUICKLOAD,
 		OBJ_MENU_INSPECT,
@@ -145,7 +145,7 @@ public:
 class EditorScriptPicker : public EditorResourcePicker {
 	GDCLASS(EditorScriptPicker, EditorResourcePicker);
 
-	enum ExtraMenuOption {
+	enum ExtraMenuOption : int32_t {
 		OBJ_MENU_NEW_SCRIPT = 50,
 		OBJ_MENU_EXTEND_SCRIPT = 51
 	};
@@ -168,7 +168,7 @@ public:
 class EditorShaderPicker : public EditorResourcePicker {
 	GDCLASS(EditorShaderPicker, EditorResourcePicker);
 
-	enum ExtraMenuOption {
+	enum ExtraMenuOption : int32_t {
 		OBJ_MENU_NEW_SHADER = 50,
 	};
 
@@ -192,7 +192,7 @@ class EditorAudioStreamPicker : public EditorResourcePicker {
 	uint64_t last_preview_version = 0;
 	Control *stream_preview_rect = nullptr;
 
-	enum {
+	enum : int32_t {
 		MAX_TAGGED_FRAMES = 8
 	};
 	float tagged_frame_offsets[MAX_TAGGED_FRAMES];

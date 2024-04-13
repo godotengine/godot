@@ -39,7 +39,7 @@
 
 class PacketPeerMbedDTLS : public PacketPeerDTLS {
 private:
-	enum {
+	enum : int32_t {
 		PACKET_BUFFER_SIZE = 65536
 	};
 

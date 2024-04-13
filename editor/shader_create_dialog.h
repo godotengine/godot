@@ -45,7 +45,7 @@ class EditorValidationPanel;
 class ShaderCreateDialog : public ConfirmationDialog {
 	GDCLASS(ShaderCreateDialog, ConfirmationDialog);
 
-	enum {
+	enum : int32_t {
 		MSG_ID_SHADER,
 		MSG_ID_PATH,
 		MSG_ID_BUILT_IN,

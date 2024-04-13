@@ -58,7 +58,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	static SceneImportSettingsDialog *singleton;
 
-	enum Actions {
+	enum Actions : int32_t {
 		ACTION_EXTRACT_MATERIALS,
 		ACTION_CHOOSE_MESH_SAVE_PATHS,
 		ACTION_CHOOSE_ANIMATION_SAVE_PATHS,

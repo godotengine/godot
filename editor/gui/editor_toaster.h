@@ -43,7 +43,7 @@ class EditorToaster : public HBoxContainer {
 	GDCLASS(EditorToaster, HBoxContainer);
 
 public:
-	enum Severity {
+	enum Severity : int32_t {
 		SEVERITY_INFO = 0,
 		SEVERITY_WARNING,
 		SEVERITY_ERROR,

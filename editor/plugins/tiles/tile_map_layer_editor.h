@@ -75,7 +75,7 @@ class TileMapLayerEditorTilesPlugin : public TileMapLayerSubEditorPlugin {
 	GDCLASS(TileMapLayerEditorTilesPlugin, TileMapLayerSubEditorPlugin);
 
 public:
-	enum {
+	enum : int32_t {
 		TRANSFORM_ROTATE_LEFT,
 		TRANSFORM_ROTATE_RIGHT,
 		TRANSFORM_FLIP_H,
@@ -124,7 +124,7 @@ private:
 	bool has_mouse = false;
 	void _mouse_exited_viewport();
 
-	enum DragType {
+	enum DragType : int32_t {
 		DRAG_TYPE_NONE = 0,
 		DRAG_TYPE_SELECT,
 		DRAG_TYPE_MOVE,
@@ -273,7 +273,7 @@ private:
 	bool has_mouse = false;
 	void _mouse_exited_viewport();
 
-	enum DragType {
+	enum DragType : int32_t {
 		DRAG_TYPE_NONE = 0,
 		DRAG_TYPE_PAINT,
 		DRAG_TYPE_LINE,
@@ -296,7 +296,7 @@ private:
 	HashMap<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase);
 	void _stop_dragging();
 
-	enum SelectedType {
+	enum SelectedType : int32_t {
 		SELECTED_TYPE_CONNECT = 0,
 		SELECTED_TYPE_PATH,
 		SELECTED_TYPE_PATTERN,
@@ -377,7 +377,7 @@ private:
 	Button *toggle_grid_button = nullptr;
 	void _on_grid_toggled(bool p_pressed);
 
-	enum {
+	enum : int32_t {
 		ADVANCED_MENU_REPLACE_WITH_PROXIES,
 		ADVANCED_MENU_EXTRACT_TILE_MAP_LAYERS,
 	};

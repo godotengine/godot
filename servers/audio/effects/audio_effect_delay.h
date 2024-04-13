@@ -62,7 +62,7 @@ class AudioEffectDelay : public AudioEffect {
 	GDCLASS(AudioEffectDelay, AudioEffect);
 
 	friend class AudioEffectDelayInstance;
-	enum {
+	enum : int32_t {
 		MAX_DELAY_MS = 3000,
 		MAX_TAPS = 2
 	};

@@ -66,7 +66,7 @@ class Performance : public Object {
 	uint64_t _monitor_modification_time;
 
 public:
-	enum Monitor {
+	enum Monitor : int32_t {
 		TIME_FPS,
 		TIME_PROCESS,
 		TIME_PHYSICS_PROCESS,
@@ -103,7 +103,7 @@ public:
 		MONITOR_MAX
 	};
 
-	enum MonitorType {
+	enum MonitorType : int32_t {
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_TIME

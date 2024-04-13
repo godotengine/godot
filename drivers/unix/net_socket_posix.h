@@ -50,7 +50,7 @@ private:
 	IP::Type _ip_type = IP::TYPE_NONE;
 	bool _is_stream = false;
 
-	enum NetError {
+	enum NetError : int32_t {
 		ERR_NET_WOULD_BLOCK,
 		ERR_NET_IS_CONNECTED,
 		ERR_NET_IN_PROGRESS,

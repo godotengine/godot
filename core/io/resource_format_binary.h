@@ -164,7 +164,7 @@ class ResourceFormatSaverBinaryInstance {
 	int get_string_index(const String &p_string);
 
 public:
-	enum {
+	enum : int32_t {
 		FORMAT_FLAG_NAMED_SCENE_IDS = 1,
 		FORMAT_FLAG_UIDS = 2,
 		FORMAT_FLAG_REAL_T_IS_DOUBLE = 4,

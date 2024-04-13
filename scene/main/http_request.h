@@ -43,7 +43,7 @@ class HTTPRequest : public Node {
 	GDCLASS(HTTPRequest, Node);
 
 public:
-	enum Result {
+	enum Result : int32_t {
 		RESULT_SUCCESS,
 		RESULT_CHUNKED_BODY_SIZE_MISMATCH,
 		RESULT_CANT_CONNECT,

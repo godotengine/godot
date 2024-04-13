@@ -47,7 +47,7 @@ class Input : public Object {
 	static constexpr uint64_t MAX_EVENT = 32;
 
 public:
-	enum MouseMode {
+	enum MouseMode : int32_t {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
 		MOUSE_MODE_CAPTURED,
@@ -56,7 +56,7 @@ public:
 	};
 
 #undef CursorShape
-	enum CursorShape {
+	enum CursorShape : int32_t {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,
 		CURSOR_POINTING_HAND,
@@ -77,7 +77,7 @@ public:
 		CURSOR_MAX
 	};
 
-	enum {
+	enum : int32_t {
 		JOYPADS_MAX = 16,
 	};
 
@@ -179,14 +179,14 @@ private:
 
 	CursorShape default_shape = CURSOR_ARROW;
 
-	enum JoyType {
+	enum JoyType : int32_t {
 		TYPE_BUTTON,
 		TYPE_AXIS,
 		TYPE_HAT,
 		TYPE_MAX,
 	};
 
-	enum JoyAxisRange {
+	enum JoyAxisRange : int32_t {
 		NEGATIVE_HALF_AXIS = -1,
 		FULL_AXIS = 0,
 		POSITIVE_HALF_AXIS = 1

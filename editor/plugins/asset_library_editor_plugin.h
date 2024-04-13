@@ -224,14 +224,14 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _force_online_mode();
 
-	enum Support {
+	enum Support : int32_t {
 		SUPPORT_FEATURED,
 		SUPPORT_COMMUNITY,
 		SUPPORT_TESTING,
 		SUPPORT_MAX
 	};
 
-	enum SortOrder {
+	enum SortOrder : int32_t {
 		SORT_UPDATED,
 		SORT_UPDATED_REVERSE,
 		SORT_NAME,
@@ -248,7 +248,7 @@ class EditorAssetLibrary : public PanelContainer {
 
 	///MainListing
 
-	enum ImageType {
+	enum ImageType : int32_t {
 		IMAGE_QUEUE_ICON,
 		IMAGE_QUEUE_THUMBNAIL,
 		IMAGE_QUEUE_SCREENSHOT,
@@ -280,7 +280,7 @@ class EditorAssetLibrary : public PanelContainer {
 	EditorAssetLibraryItemDescription *description = nullptr;
 	//
 
-	enum RequestType {
+	enum RequestType : int32_t {
 		REQUESTING_NONE,
 		REQUESTING_CONFIG,
 		REQUESTING_SEARCH,

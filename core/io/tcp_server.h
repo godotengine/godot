@@ -40,7 +40,7 @@ class TCPServer : public RefCounted {
 	GDCLASS(TCPServer, RefCounted);
 
 protected:
-	enum {
+	enum : int32_t {
 		MAX_PENDING_CONNECTIONS = 8
 	};
 

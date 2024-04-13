@@ -58,7 +58,7 @@ class EditorProperty : public Container {
 	GDCLASS(EditorProperty, Container);
 
 public:
-	enum MenuItems {
+	enum MenuItems : int32_t {
 		MENU_COPY_VALUE,
 		MENU_PASTE_VALUE,
 		MENU_COPY_PROPERTY_PATH,
@@ -258,7 +258,7 @@ class EditorInspectorCategory : public Control {
 	friend class EditorInspector;
 
 	// Right-click context menu options.
-	enum ClassMenuOption {
+	enum ClassMenuOption : int32_t {
 		MENU_OPEN_DOCS,
 	};
 
@@ -359,7 +359,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 	bool movable = true;
 	bool numbered = false;
 
-	enum MenuOptions {
+	enum MenuOptions : int32_t {
 		OPTION_MOVE_UP = 0,
 		OPTION_MOVE_DOWN,
 		OPTION_NEW_BEFORE,
@@ -461,7 +461,7 @@ public:
 class EditorInspector : public ScrollContainer {
 	GDCLASS(EditorInspector, ScrollContainer);
 
-	enum {
+	enum : int32_t {
 		MAX_PLUGINS = 1024
 	};
 	static Ref<EditorInspectorPlugin> inspector_plugins[MAX_PLUGINS];

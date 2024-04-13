@@ -46,7 +46,7 @@ private:
 	Ref<WebSocketPeer> _create_peer();
 
 protected:
-	enum {
+	enum : int32_t {
 		SYS_NONE = 0,
 		SYS_ADD = 1,
 		SYS_DEL = 2,

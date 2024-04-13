@@ -38,7 +38,7 @@ class Label : public Control {
 	GDCLASS(Label, Control);
 
 private:
-	enum LabelDrawStep {
+	enum LabelDrawStep : int32_t {
 		DRAW_STEP_SHADOW,
 		DRAW_STEP_OUTLINE,
 		DRAW_STEP_TEXT,

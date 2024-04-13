@@ -89,7 +89,7 @@ class ProjectList : public ScrollContainer {
 	friend class ProjectManager;
 
 public:
-	enum FilterOption {
+	enum FilterOption : int32_t {
 		EDIT_DATE,
 		NAME,
 		PATH,

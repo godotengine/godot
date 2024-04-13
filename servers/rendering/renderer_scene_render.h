@@ -46,7 +46,7 @@ private:
 	RendererCompositorStorage compositor_storage;
 
 public:
-	enum {
+	enum : int32_t {
 		MAX_DIRECTIONAL_LIGHTS = 8,
 		MAX_DIRECTIONAL_LIGHT_CASCADES = 4,
 		MAX_RENDER_VIEWS = 2

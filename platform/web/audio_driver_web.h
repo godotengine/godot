@@ -93,7 +93,7 @@ public:
 #ifdef THREADS_ENABLED
 class AudioDriverWorklet : public AudioDriverWeb {
 private:
-	enum {
+	enum : int32_t {
 		STATE_LOCK,
 		STATE_PROCESS,
 		STATE_SAMPLES_IN,

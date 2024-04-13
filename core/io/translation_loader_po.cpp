@@ -136,7 +136,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 		// Try to load as text PO file.
 		f->seek(0);
 
-		enum Status {
+		enum Status : int32_t {
 			STATUS_NONE,
 			STATUS_READING_ID,
 			STATUS_READING_STRING,

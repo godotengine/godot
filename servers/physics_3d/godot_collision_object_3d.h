@@ -47,7 +47,7 @@ class GodotSpace3D;
 
 class GodotCollisionObject3D : public GodotShapeOwner3D {
 public:
-	enum Type {
+	enum Type : int32_t {
 		TYPE_AREA,
 		TYPE_BODY,
 		TYPE_SOFT_BODY,

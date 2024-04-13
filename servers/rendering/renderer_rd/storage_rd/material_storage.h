@@ -46,7 +46,7 @@ namespace RendererRD {
 
 class MaterialStorage : public RendererMaterialStorage {
 public:
-	enum ShaderType {
+	enum ShaderType : int32_t {
 		SHADER_TYPE_2D,
 		SHADER_TYPE_3D,
 		SHADER_TYPE_PARTICLES,
@@ -135,7 +135,7 @@ private:
 	/* GLOBAL SHADER UNIFORM API */
 
 	struct GlobalShaderUniforms {
-		enum {
+		enum : int32_t {
 			BUFFER_DIRTY_REGION_SIZE = 1024
 		};
 		struct Variable {

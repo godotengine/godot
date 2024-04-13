@@ -49,7 +49,7 @@ class ImageFormatLoader : public RefCounted {
 	friend class ResourceFormatLoaderImage;
 
 public:
-	enum LoaderFlags {
+	enum LoaderFlags : int32_t {
 		FLAG_NONE = 0,
 		FLAG_FORCE_LINEAR = 1,
 		FLAG_CONVERT_COLORS = 2,

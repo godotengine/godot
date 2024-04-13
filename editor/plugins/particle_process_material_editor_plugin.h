@@ -44,14 +44,14 @@ class VBoxContainer;
 class ParticleProcessMaterialMinMaxPropertyEditor : public EditorProperty {
 	GDCLASS(ParticleProcessMaterialMinMaxPropertyEditor, EditorProperty);
 
-	enum class Hover {
+	enum class Hover : int32_t {
 		NONE,
 		LEFT,
 		RIGHT,
 		MIDDLE,
 	};
 
-	enum class Drag {
+	enum class Drag : int32_t {
 		NONE,
 		LEFT,
 		RIGHT,
@@ -59,7 +59,7 @@ class ParticleProcessMaterialMinMaxPropertyEditor : public EditorProperty {
 		SCALE,
 	};
 
-	enum class Mode {
+	enum class Mode : int32_t {
 		RANGE,
 		MIDPOINT,
 	};

@@ -40,7 +40,7 @@ class ParallaxBackground;
 class ParallaxBackgroundEditorPlugin : public EditorPlugin {
 	GDCLASS(ParallaxBackgroundEditorPlugin, EditorPlugin);
 
-	enum {
+	enum : int32_t {
 		MENU_CONVERT_TO_PARALLAX_2D,
 	};
 

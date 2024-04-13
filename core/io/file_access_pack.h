@@ -43,12 +43,12 @@
 // The current packed file format version number.
 #define PACK_FORMAT_VERSION 2
 
-enum PackFlags {
+enum PackFlags : int32_t {
 	PACK_DIR_ENCRYPTED = 1 << 0,
 	PACK_REL_FILEBASE = 1 << 1,
 };
 
-enum PackFileFlags {
+enum PackFileFlags : int32_t {
 	PACK_FILE_ENCRYPTED = 1 << 0
 };
 

@@ -66,7 +66,7 @@ class SceneMultiplayer : public MultiplayerAPI {
 	GDCLASS(SceneMultiplayer, MultiplayerAPI);
 
 public:
-	enum NetworkCommands {
+	enum NetworkCommands : int32_t {
 		NETWORK_COMMAND_REMOTE_CALL = 0,
 		NETWORK_COMMAND_SIMPLIFY_PATH,
 		NETWORK_COMMAND_CONFIRM_PATH,
@@ -77,19 +77,19 @@ public:
 		NETWORK_COMMAND_SYS,
 	};
 
-	enum SysCommands {
+	enum SysCommands : int32_t {
 		SYS_COMMAND_AUTH,
 		SYS_COMMAND_ADD_PEER,
 		SYS_COMMAND_DEL_PEER,
 		SYS_COMMAND_RELAY,
 	};
 
-	enum {
+	enum : int32_t {
 		SYS_CMD_SIZE = 6, // Command + sys command + peer_id (+ optional payload).
 	};
 
 	// For each command, the 4 MSB can contain custom flags, as defined by subsystems.
-	enum {
+	enum : int32_t {
 		CMD_FLAG_0_SHIFT = 4,
 		CMD_FLAG_1_SHIFT = 5,
 		CMD_FLAG_2_SHIFT = 6,
@@ -97,7 +97,7 @@ public:
 	};
 
 	// This is the mask that will be used to extract the command.
-	enum {
+	enum : int32_t {
 		CMD_MASK = 7, // 0x7 -> 0b00000111
 	};
 

@@ -59,7 +59,7 @@ public:
 	void process_joypads();
 
 private:
-	enum {
+	enum : int32_t {
 		JOYPADS_MAX = 16,
 		JOY_AXIS_COUNT = 6,
 		MIN_JOY_AXIS = 10,

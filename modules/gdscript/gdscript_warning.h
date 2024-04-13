@@ -39,13 +39,13 @@
 
 class GDScriptWarning {
 public:
-	enum WarnLevel {
+	enum WarnLevel : int32_t {
 		IGNORE,
 		WARN,
 		ERROR
 	};
 
-	enum Code {
+	enum Code : int32_t {
 		UNASSIGNED_VARIABLE, // Variable used but never assigned.
 		UNASSIGNED_VARIABLE_OP_ASSIGN, // Variable never assigned but used in an assignment operation (+=, *=, etc).
 		UNUSED_VARIABLE, // Local variable is declared but never used.

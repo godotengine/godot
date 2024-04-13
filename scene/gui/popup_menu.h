@@ -55,7 +55,7 @@ class PopupMenu : public Popup {
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_AUTO;
 
 		bool checked = false;
-		enum {
+		enum : int32_t {
 			CHECKABLE_TYPE_NONE,
 			CHECKABLE_TYPE_CHECK_BOX,
 			CHECKABLE_TYPE_RADIO_BUTTON,

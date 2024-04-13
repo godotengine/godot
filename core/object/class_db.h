@@ -79,7 +79,7 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 
 class ClassDB {
 public:
-	enum APIType {
+	enum APIType : int32_t {
 		API_CORE,
 		API_EDITOR,
 		API_EXTENSION,

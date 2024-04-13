@@ -37,7 +37,7 @@ class Decal : public VisualInstance3D {
 	GDCLASS(Decal, VisualInstance3D);
 
 public:
-	enum DecalTexture {
+	enum DecalTexture : int32_t {
 		TEXTURE_ALBEDO,
 		TEXTURE_NORMAL,
 		TEXTURE_ORM,

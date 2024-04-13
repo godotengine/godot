@@ -227,7 +227,7 @@ public:
 	void trim_trailing_whitespace();
 	void insert_final_newline();
 
-	enum CaseStyle {
+	enum CaseStyle : int32_t {
 		UPPER,
 		LOWER,
 		CAPITALIZE,

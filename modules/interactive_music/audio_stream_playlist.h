@@ -42,7 +42,7 @@ class AudioStreamPlaylist : public AudioStream {
 private:
 	friend class AudioStreamPlaybackPlaylist;
 
-	enum {
+	enum : int32_t {
 		MAX_STREAMS = 64
 	};
 
@@ -83,7 +83,7 @@ class AudioStreamPlaybackPlaylist : public AudioStreamPlayback {
 	friend class AudioStreamPlaylist;
 
 private:
-	enum {
+	enum : int32_t {
 		MIX_BUFFER_SIZE = 128
 	};
 	AudioFrame mix_buffer[MIX_BUFFER_SIZE];

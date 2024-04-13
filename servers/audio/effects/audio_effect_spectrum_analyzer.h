@@ -39,7 +39,7 @@ class AudioEffectSpectrumAnalyzerInstance : public AudioEffectInstance {
 	GDCLASS(AudioEffectSpectrumAnalyzerInstance, AudioEffectInstance);
 
 public:
-	enum MagnitudeMode {
+	enum MagnitudeMode : int32_t {
 		MAGNITUDE_AVERAGE,
 		MAGNITUDE_MAX,
 	};
@@ -71,7 +71,7 @@ class AudioEffectSpectrumAnalyzer : public AudioEffect {
 	GDCLASS(AudioEffectSpectrumAnalyzer, AudioEffect);
 
 public:
-	enum FFTSize {
+	enum FFTSize : int32_t {
 		FFT_SIZE_256,
 		FFT_SIZE_512,
 		FFT_SIZE_1024,

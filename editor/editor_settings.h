@@ -57,7 +57,7 @@ public:
 		Vector<String> install_files;
 	};
 
-	enum NetworkMode {
+	enum NetworkMode : int32_t {
 		NETWORK_OFFLINE,
 		NETWORK_ONLINE,
 	};
@@ -119,7 +119,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
+	enum : int32_t {
 		NOTIFICATION_EDITOR_SETTINGS_CHANGED = 10000
 	};
 

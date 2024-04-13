@@ -47,7 +47,7 @@ private:
 		uint32_t pad;
 	};
 
-	enum ResolveMode {
+	enum ResolveMode : int32_t {
 		RESOLVE_MODE_GI,
 		RESOLVE_MODE_GI_VOXEL_GI,
 		RESOLVE_MODE_DEPTH,

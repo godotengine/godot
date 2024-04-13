@@ -107,7 +107,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	bool theme_loaded = false;
 
-	enum {
+	enum : int32_t {
 		EDIT_UNDO,
 		EDIT_REDO,
 		EDIT_CUT,

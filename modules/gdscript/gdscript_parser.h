@@ -104,7 +104,7 @@ public:
 	public:
 		Vector<DataType> container_element_types;
 
-		enum Kind {
+		enum Kind : int32_t {
 			BUILTIN,
 			NATIVE,
 			SCRIPT,
@@ -116,7 +116,7 @@ public:
 		};
 		Kind kind = UNRESOLVED;
 
-		enum TypeSource {
+		enum TypeSource : int32_t {
 			UNDETECTED, // Can be any type.
 			INFERRED, // Has inferred type, but still dynamic.
 			ANNOTATED_EXPLICIT, // Has a specific type annotated.
@@ -256,7 +256,7 @@ public:
 
 	struct ParserError {
 		// TODO: Do I really need a "type"?
-		// enum Type {
+		// enum Type : int32_t {
 		//     NO_ERROR,
 		//     EMPTY_FILE,
 		//     CLASS_NAME_USED_TWICE,
@@ -289,7 +289,7 @@ public:
 #endif // TOOLS_ENABLED
 
 	struct Node {
-		enum Type {
+		enum Type : int32_t {
 			NONE,
 			ANNOTATION,
 			ARRAY,
@@ -413,7 +413,7 @@ public:
 
 	struct AssignmentNode : public ExpressionNode {
 		// Assignment is not really an expression but it's easier to parse as if it were.
-		enum Operation {
+		enum Operation : int32_t {
 			OP_NONE,
 			OP_ADDITION,
 			OP_SUBTRACTION,
@@ -448,7 +448,7 @@ public:
 	};
 
 	struct BinaryOpNode : public ExpressionNode {
-		enum OpType {
+		enum OpType : int32_t {
 			OP_ADDITION,
 			OP_SUBTRACTION,
 			OP_MULTIPLICATION,
@@ -552,7 +552,7 @@ public:
 
 	struct ClassNode : public Node {
 		struct Member {
-			enum Type {
+			enum Type : int32_t {
 				UNDEFINED,
 				CLASS,
 				CONSTANT,
@@ -819,7 +819,7 @@ public:
 		};
 		Vector<Pair> elements;
 
-		enum Style {
+		enum Style : int32_t {
 			LUA_TABLE,
 			PYTHON_DICT,
 		};
@@ -879,7 +879,7 @@ public:
 		StringName name;
 		SuiteNode *suite = nullptr; // The block in which the identifier is used.
 
-		enum Source {
+		enum Source : int32_t {
 			UNDEFINED_SOURCE,
 			FUNCTION_PARAMETER,
 			LOCAL_VARIABLE,
@@ -980,7 +980,7 @@ public:
 	};
 
 	struct PatternNode : public Node {
-		enum Type {
+		enum Type : int32_t {
 			PT_LITERAL,
 			PT_EXPRESSION,
 			PT_BIND,
@@ -1075,7 +1075,7 @@ public:
 		SuiteNode *parent_block = nullptr;
 		Vector<Node *> statements;
 		struct Local {
-			enum Type {
+			enum Type : int32_t {
 				UNDEFINED,
 				CONSTANT,
 				VARIABLE,
@@ -1218,7 +1218,7 @@ public:
 	};
 
 	struct UnaryOpNode : public ExpressionNode {
-		enum OpType {
+		enum OpType : int32_t {
 			OP_POSITIVE,
 			OP_NEGATIVE,
 			OP_COMPLEMENT,
@@ -1235,7 +1235,7 @@ public:
 	};
 
 	struct VariableNode : public AssignableNode {
-		enum PropertyStyle {
+		enum PropertyStyle : int32_t {
 			PROP_NONE,
 			PROP_INLINE,
 			PROP_SETGET,
@@ -1275,7 +1275,7 @@ public:
 		}
 	};
 
-	enum CompletionType {
+	enum CompletionType : int32_t {
 		COMPLETION_NONE,
 		COMPLETION_ANNOTATION, // Annotation (following @).
 		COMPLETION_ANNOTATION_ARGUMENTS, // Annotation arguments hint.
@@ -1367,7 +1367,7 @@ private:
 
 	typedef bool (GDScriptParser::*AnnotationAction)(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	struct AnnotationInfo {
-		enum TargetKind {
+		enum TargetKind : int32_t {
 			NONE = 0,
 			SCRIPT = 1 << 0,
 			CLASS = 1 << 1,
@@ -1388,7 +1388,7 @@ private:
 
 	typedef ExpressionNode *(GDScriptParser::*ParseFunction)(ExpressionNode *p_previous_operand, bool p_can_assign);
 	// Higher value means higher precedence (i.e. is evaluated first).
-	enum Precedence {
+	enum Precedence : int32_t {
 		PREC_NONE,
 		PREC_ASSIGNMENT,
 		PREC_CAST,

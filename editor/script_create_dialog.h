@@ -45,7 +45,7 @@ class LineEdit;
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
 
-	enum {
+	enum : int32_t {
 		MSG_ID_SCRIPT,
 		MSG_ID_PATH,
 		MSG_ID_BUILT_IN,

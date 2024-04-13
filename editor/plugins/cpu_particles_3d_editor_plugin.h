@@ -37,7 +37,7 @@
 class CPUParticles3DEditor : public GPUParticles3DEditorBase {
 	GDCLASS(CPUParticles3DEditor, GPUParticles3DEditorBase);
 
-	enum Menu {
+	enum Menu : int32_t {
 		MENU_OPTION_GENERATE_AABB,
 		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE,
 		MENU_OPTION_CLEAR_EMISSION_VOLUME,

@@ -46,7 +46,7 @@ public:
 	void add_doc(const DocData::ClassDoc &p_class_doc);
 	void remove_doc(const String &p_class_name);
 	bool has_doc(const String &p_class_name);
-	enum GenerateFlags {
+	enum GenerateFlags : int32_t {
 		GENERATE_FLAG_SKIP_BASIC_TYPES = (1 << 0),
 		GENERATE_FLAG_EXTENSION_CLASSES_ONLY = (1 << 1),
 	};

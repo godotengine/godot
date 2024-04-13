@@ -46,7 +46,7 @@ public:
 	// user code can change this to make Godot generate a different node type.
 	// When exporting, this will be squashed down to one of "static",
 	// "kinematic", or "dynamic" motion types, or the "trigger" property.
-	enum class PhysicsBodyType {
+	enum class PhysicsBodyType : int32_t {
 		STATIC,
 		ANIMATABLE,
 		CHARACTER,

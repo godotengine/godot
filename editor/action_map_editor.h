@@ -57,7 +57,7 @@ public:
 	};
 
 private:
-	enum ItemButton {
+	enum ItemButton : int32_t {
 		BUTTON_ADD_EVENT,
 		BUTTON_EDIT_EVENT,
 		BUTTON_REMOVE_ACTION,

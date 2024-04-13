@@ -50,7 +50,7 @@ class ImageTexture;
 class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	GDCLASS(VideoStreamPlaybackTheora, VideoStreamPlayback);
 
-	enum {
+	enum : int32_t {
 		MAX_FRAMES = 4,
 	};
 
@@ -105,7 +105,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 #ifdef THEORA_USE_THREAD_STREAMING
 
-	enum {
+	enum : int32_t {
 		RB_SIZE_KB = 1024
 	};
 

@@ -105,7 +105,7 @@ class Node3DEditorViewport : public Control {
 	friend class Node3DEditor;
 	friend class ViewportNavigationControl;
 	friend class ViewportRotationControl;
-	enum {
+	enum : int32_t {
 		VIEW_TOP,
 		VIEW_BOTTOM,
 		VIEW_LEFT,
@@ -167,7 +167,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_MAX
 	};
 
-	enum ViewType {
+	enum ViewType : int32_t {
 		VIEW_TYPE_USER,
 		VIEW_TYPE_TOP,
 		VIEW_TYPE_BOTTOM,
@@ -178,7 +178,7 @@ class Node3DEditorViewport : public Control {
 	};
 
 public:
-	enum {
+	enum : int32_t {
 		GIZMO_BASE_LAYER = 27,
 		GIZMO_EDIT_LAYER = 26,
 		GIZMO_GRID_LAYER = 25,
@@ -187,13 +187,13 @@ public:
 		FRAME_TIME_HISTORY = 20,
 	};
 
-	enum NavigationScheme {
+	enum NavigationScheme : int32_t {
 		NAVIGATION_GODOT,
 		NAVIGATION_MAYA,
 		NAVIGATION_MODO,
 	};
 
-	enum FreelookNavigationScheme {
+	enum FreelookNavigationScheme : int32_t {
 		FREELOOK_DEFAULT,
 		FREELOOK_PARTIALLY_AXIS_LOCKED,
 		FREELOOK_FULLY_AXIS_LOCKED,
@@ -303,12 +303,12 @@ private:
 
 	PopupMenu *selection_menu = nullptr;
 
-	enum NavigationZoomStyle {
+	enum NavigationZoomStyle : int32_t {
 		NAVIGATION_ZOOM_VERTICAL,
 		NAVIGATION_ZOOM_HORIZONTAL
 	};
 
-	enum NavigationMode {
+	enum NavigationMode : int32_t {
 		NAVIGATION_NONE,
 		NAVIGATION_PAN,
 		NAVIGATION_ZOOM,
@@ -316,14 +316,14 @@ private:
 		NAVIGATION_LOOK,
 		NAVIGATION_MOVE
 	};
-	enum TransformMode {
+	enum TransformMode : int32_t {
 		TRANSFORM_NONE,
 		TRANSFORM_ROTATE,
 		TRANSFORM_TRANSLATE,
 		TRANSFORM_SCALE
 
 	};
-	enum TransformPlane {
+	enum TransformPlane : int32_t {
 		TRANSFORM_VIEW,
 		TRANSFORM_X_AXIS,
 		TRANSFORM_Y_AXIS,
@@ -525,7 +525,7 @@ class Node3DEditorViewportContainer : public Container {
 	GDCLASS(Node3DEditorViewportContainer, Container);
 
 public:
-	enum View {
+	enum View : int32_t {
 		VIEW_USE_1_VIEWPORT,
 		VIEW_USE_2_VIEWPORTS,
 		VIEW_USE_2_VIEWPORTS_ALT,
@@ -566,7 +566,7 @@ class Node3DEditor : public VBoxContainer {
 public:
 	static const unsigned int VIEWPORTS_COUNT = 4;
 
-	enum ToolMode {
+	enum ToolMode : int32_t {
 		TOOL_MODE_SELECT,
 		TOOL_MODE_MOVE,
 		TOOL_MODE_ROTATE,
@@ -579,7 +579,7 @@ public:
 		TOOL_MAX
 	};
 
-	enum ToolOptions {
+	enum ToolOptions : int32_t {
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
 		TOOL_OPT_OVERRIDE_CAMERA,
@@ -654,7 +654,7 @@ private:
 		Transform3D transform;
 	} gizmo;
 
-	enum MenuOption {
+	enum MenuOption : int32_t {
 		MENU_TOOL_SELECT,
 		MENU_TOOL_MOVE,
 		MENU_TOOL_ROTATE,

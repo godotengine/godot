@@ -38,7 +38,7 @@ class Control;
 class TileMapLayer;
 class TerrainConstraint;
 
-enum TileMapDataFormat {
+enum TileMapDataFormat : int32_t {
 	TILE_MAP_DATA_FORMAT_1 = 0,
 	TILE_MAP_DATA_FORMAT_2,
 	TILE_MAP_DATA_FORMAT_3,
@@ -50,7 +50,7 @@ class TileMap : public Node2D {
 
 public:
 	// Kept for compatibility, but should use TileMapLayer::VisibilityMode instead.
-	enum VisibilityMode {
+	enum VisibilityMode : int32_t {
 		VISIBILITY_MODE_DEFAULT,
 		VISIBILITY_MODE_FORCE_SHOW,
 		VISIBILITY_MODE_FORCE_HIDE,

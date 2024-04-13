@@ -39,7 +39,7 @@ class VariantParser {
 public:
 	struct Stream {
 	private:
-		enum { READAHEAD_SIZE = 2048 };
+		enum : int32_t { READAHEAD_SIZE = 2048 };
 		char32_t readahead_buffer[READAHEAD_SIZE];
 		uint32_t readahead_pointer = 0;
 		uint32_t readahead_filled = 0;
@@ -98,7 +98,7 @@ public:
 		ParseResourceFunc sub_func = nullptr;
 	};
 
-	enum TokenType {
+	enum TokenType : int32_t {
 		TK_CURLY_BRACKET_OPEN,
 		TK_CURLY_BRACKET_CLOSE,
 		TK_BRACKET_OPEN,
@@ -119,7 +119,7 @@ public:
 		TK_MAX
 	};
 
-	enum Expecting {
+	enum Expecting : int32_t {
 		EXPECT_OBJECT,
 		EXPECT_OBJECT_KEY,
 		EXPECT_COLON,

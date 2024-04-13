@@ -37,12 +37,12 @@ class WebRTCDataChannel : public PacketPeer {
 	GDCLASS(WebRTCDataChannel, PacketPeer);
 
 public:
-	enum WriteMode {
+	enum WriteMode : int32_t {
 		WRITE_MODE_TEXT,
 		WRITE_MODE_BINARY,
 	};
 
-	enum ChannelState {
+	enum ChannelState : int32_t {
 		STATE_CONNECTING,
 		STATE_OPEN,
 		STATE_CLOSING,

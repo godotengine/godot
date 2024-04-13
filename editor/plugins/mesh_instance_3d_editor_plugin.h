@@ -42,7 +42,7 @@ class SpinBox;
 class MeshInstance3DEditor : public Control {
 	GDCLASS(MeshInstance3DEditor, Control);
 
-	enum Menu {
+	enum Menu : int32_t {
 		MENU_OPTION_CREATE_STATIC_TRIMESH_BODY,
 		MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE,
 		MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE,

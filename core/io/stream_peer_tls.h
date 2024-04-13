@@ -42,7 +42,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum Status {
+	enum Status : int32_t {
 		STATUS_DISCONNECTED,
 		STATUS_HANDSHAKING,
 		STATUS_CONNECTED,

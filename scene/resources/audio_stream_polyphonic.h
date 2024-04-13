@@ -54,7 +54,7 @@ public:
 class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 	GDCLASS(AudioStreamPlaybackPolyphonic, AudioStreamPlayback)
 
-	enum {
+	enum : int64_t {
 		INTERNAL_BUFFER_LEN = 128,
 		ID_MASK = 0xFFFFFFFF,
 		INDEX_SHIFT = 32
@@ -90,7 +90,7 @@ protected:
 
 public:
 	typedef int64_t ID;
-	enum {
+	enum : int32_t {
 		INVALID_ID = -1
 	};
 

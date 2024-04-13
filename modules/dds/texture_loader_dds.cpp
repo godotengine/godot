@@ -37,7 +37,7 @@
 
 // Reference: https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dds-header
 
-enum {
+enum : int32_t {
 	DDS_MAGIC = 0x20534444,
 	DDSD_PITCH = 0x00000008,
 	DDSD_LINEARSIZE = 0x00080000,
@@ -47,7 +47,7 @@ enum {
 	DDPF_RGB = 0x00000040
 };
 
-enum DDSFourCC {
+enum DDSFourCC : int32_t {
 	DDFCC_DXT1 = PF_FOURCC("DXT1"),
 	DDFCC_DXT3 = PF_FOURCC("DXT3"),
 	DDFCC_DXT5 = PF_FOURCC("DXT5"),
@@ -66,7 +66,7 @@ enum DDSFourCC {
 };
 
 // Reference: https://learn.microsoft.com/en-us/windows/win32/api/dxgiformat/ne-dxgiformat-dxgi_format
-enum DXGIFormat {
+enum DXGIFormat : int32_t {
 	DXGI_R32G32B32A32_FLOAT = 2,
 	DXGI_R16G16B16A16_FLOAT = 10,
 	DXGI_R32G32_FLOAT = 16,
@@ -92,7 +92,7 @@ enum DXGIFormat {
 
 // The legacy bitmasked format names here represent the actual data layout in the files,
 // while their official names are flipped (e.g. RGBA8 layout is officially called ABGR8).
-enum DDSFormat {
+enum DDSFormat : int32_t {
 	DDS_DXT1,
 	DDS_DXT3,
 	DDS_DXT5,

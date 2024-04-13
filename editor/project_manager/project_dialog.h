@@ -44,7 +44,7 @@ class ProjectDialog : public ConfirmationDialog {
 	GDCLASS(ProjectDialog, ConfirmationDialog);
 
 public:
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_NEW,
 		MODE_IMPORT,
 		MODE_INSTALL,
@@ -52,13 +52,13 @@ public:
 	};
 
 private:
-	enum MessageType {
+	enum MessageType : int32_t {
 		MESSAGE_ERROR,
 		MESSAGE_WARNING,
 		MESSAGE_SUCCESS,
 	};
 
-	enum InputType {
+	enum InputType : int32_t {
 		PROJECT_PATH,
 		INSTALL_PATH,
 	};

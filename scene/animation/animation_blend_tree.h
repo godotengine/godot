@@ -48,7 +48,7 @@ class AnimationNodeAnimation : public AnimationRootNode {
 	bool skip = false;
 
 public:
-	enum PlayMode {
+	enum PlayMode : int32_t {
 		PLAY_MODE_FORWARD,
 		PLAY_MODE_BACKWARD
 	};
@@ -119,14 +119,14 @@ class AnimationNodeOneShot : public AnimationNodeSync {
 	GDCLASS(AnimationNodeOneShot, AnimationNodeSync);
 
 public:
-	enum OneShotRequest {
+	enum OneShotRequest : int32_t {
 		ONE_SHOT_REQUEST_NONE,
 		ONE_SHOT_REQUEST_FIRE,
 		ONE_SHOT_REQUEST_ABORT,
 		ONE_SHOT_REQUEST_FADE_OUT,
 	};
 
-	enum MixMode {
+	enum MixMode : int32_t {
 		MIX_MODE_BLEND,
 		MIX_MODE_ADD
 	};
@@ -438,7 +438,7 @@ protected:
 	virtual void reset_state() override;
 
 public:
-	enum ConnectionError {
+	enum ConnectionError : int32_t {
 		CONNECTION_OK,
 		CONNECTION_ERROR_NO_INPUT,
 		CONNECTION_ERROR_NO_INPUT_INDEX,

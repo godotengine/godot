@@ -39,7 +39,7 @@ class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);
 
 public:
-	enum ScrollMode {
+	enum ScrollMode : int32_t {
 		SCROLL_MODE_DISABLED = 0,
 		SCROLL_MODE_AUTO,
 		SCROLL_MODE_SHOW_ALWAYS,

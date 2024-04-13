@@ -95,14 +95,14 @@ class Viewport : public Node {
 	GDCLASS(Viewport, Node);
 
 public:
-	enum Scaling3DMode {
+	enum Scaling3DMode : int32_t {
 		SCALING_3D_MODE_BILINEAR,
 		SCALING_3D_MODE_FSR,
 		SCALING_3D_MODE_FSR2,
 		SCALING_3D_MODE_MAX
 	};
 
-	enum PositionalShadowAtlasQuadrantSubdiv {
+	enum PositionalShadowAtlasQuadrantSubdiv : int32_t {
 		SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_1,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_4,
@@ -113,7 +113,7 @@ public:
 		SHADOW_ATLAS_QUADRANT_SUBDIV_MAX,
 	};
 
-	enum MSAA {
+	enum MSAA : int32_t {
 		MSAA_DISABLED,
 		MSAA_2X,
 		MSAA_4X,
@@ -122,27 +122,27 @@ public:
 		MSAA_MAX
 	};
 
-	enum ScreenSpaceAA {
+	enum ScreenSpaceAA : int32_t {
 		SCREEN_SPACE_AA_DISABLED,
 		SCREEN_SPACE_AA_FXAA,
 		SCREEN_SPACE_AA_MAX
 	};
 
-	enum RenderInfo {
+	enum RenderInfo : int32_t {
 		RENDER_INFO_OBJECTS_IN_FRAME,
 		RENDER_INFO_PRIMITIVES_IN_FRAME,
 		RENDER_INFO_DRAW_CALLS_IN_FRAME,
 		RENDER_INFO_MAX
 	};
 
-	enum RenderInfoType {
+	enum RenderInfoType : int32_t {
 		RENDER_INFO_TYPE_VISIBLE,
 		RENDER_INFO_TYPE_SHADOW,
 		RENDER_INFO_TYPE_CANVAS,
 		RENDER_INFO_TYPE_MAX
 	};
 
-	enum DebugDraw {
+	enum DebugDraw : int32_t {
 		DEBUG_DRAW_DISABLED,
 		DEBUG_DRAW_UNSHADED,
 		DEBUG_DRAW_LIGHTING,
@@ -172,7 +172,7 @@ public:
 		DEBUG_DRAW_INTERNAL_BUFFER,
 	};
 
-	enum DefaultCanvasItemTextureFilter {
+	enum DefaultCanvasItemTextureFilter : int32_t {
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST,
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR,
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
@@ -180,14 +180,14 @@ public:
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX
 	};
 
-	enum DefaultCanvasItemTextureRepeat {
+	enum DefaultCanvasItemTextureRepeat : int32_t {
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED,
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED,
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR,
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX,
 	};
 
-	enum SDFOversize {
+	enum SDFOversize : int32_t {
 		SDF_OVERSIZE_100_PERCENT,
 		SDF_OVERSIZE_120_PERCENT,
 		SDF_OVERSIZE_150_PERCENT,
@@ -195,18 +195,18 @@ public:
 		SDF_OVERSIZE_MAX
 	};
 
-	enum SDFScale {
+	enum SDFScale : int32_t {
 		SDF_SCALE_100_PERCENT,
 		SDF_SCALE_50_PERCENT,
 		SDF_SCALE_25_PERCENT,
 		SDF_SCALE_MAX
 	};
 
-	enum {
+	enum : int32_t {
 		SUBWINDOW_CANVAS_LAYER = 1024
 	};
 
-	enum VRSMode {
+	enum VRSMode : int32_t {
 		VRS_DISABLED,
 		VRS_TEXTURE,
 		VRS_XR,
@@ -309,14 +309,14 @@ private:
 
 	uint32_t canvas_cull_mask = 0xffffffff; // by default show everything
 
-	enum SubWindowDrag {
+	enum SubWindowDrag : int32_t {
 		SUB_WINDOW_DRAG_DISABLED,
 		SUB_WINDOW_DRAG_MOVE,
 		SUB_WINDOW_DRAG_CLOSE,
 		SUB_WINDOW_DRAG_RESIZE,
 	};
 
-	enum SubWindowResize {
+	enum SubWindowResize : int32_t {
 		SUB_WINDOW_RESIZE_DISABLED,
 		SUB_WINDOW_RESIZE_TOP_LEFT,
 		SUB_WINDOW_RESIZE_TOP,
@@ -715,7 +715,7 @@ private:
 
 	struct Camera3DOverrideData {
 		Transform3D transform;
-		enum Projection {
+		enum Projection : int32_t {
 			PROJECTION_PERSPECTIVE,
 			PROJECTION_ORTHOGONAL
 		};
@@ -782,13 +782,13 @@ class SubViewport : public Viewport {
 	GDCLASS(SubViewport, Viewport);
 
 public:
-	enum ClearMode {
+	enum ClearMode : int32_t {
 		CLEAR_MODE_ALWAYS,
 		CLEAR_MODE_NEVER,
 		CLEAR_MODE_ONCE
 	};
 
-	enum UpdateMode {
+	enum UpdateMode : int32_t {
 		UPDATE_DISABLED,
 		UPDATE_ONCE, //then goes to disabled
 		UPDATE_WHEN_VISIBLE, // default

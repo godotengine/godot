@@ -50,18 +50,18 @@ class AnimationMixer : public Node {
 	bool reset_on_save = true;
 
 public:
-	enum AnimationCallbackModeProcess {
+	enum AnimationCallbackModeProcess : int32_t {
 		ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS,
 		ANIMATION_CALLBACK_MODE_PROCESS_IDLE,
 		ANIMATION_CALLBACK_MODE_PROCESS_MANUAL,
 	};
 
-	enum AnimationCallbackModeMethod {
+	enum AnimationCallbackModeMethod : int32_t {
 		ANIMATION_CALLBACK_MODE_METHOD_DEFERRED,
 		ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE,
 	};
 
-	enum AnimationCallbackModeDiscrete {
+	enum AnimationCallbackModeDiscrete : int32_t {
 		ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT,
 		ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE,
 		ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS,

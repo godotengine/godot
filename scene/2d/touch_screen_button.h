@@ -40,7 +40,7 @@ class TouchScreenButton : public Node2D {
 	GDCLASS(TouchScreenButton, Node2D);
 
 public:
-	enum VisibilityMode {
+	enum VisibilityMode : int32_t {
 		VISIBILITY_ALWAYS,
 		VISIBILITY_TOUCHSCREEN_ONLY
 	};

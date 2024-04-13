@@ -49,7 +49,7 @@ private:
 	TileSetAtlasSource *tile_set_atlas_source = nullptr;
 	int source_id = TileSet::INVALID_SOURCE;
 
-	enum DragType {
+	enum DragType : int32_t {
 		DRAG_TYPE_NONE,
 		DRAG_TYPE_PAN,
 	};

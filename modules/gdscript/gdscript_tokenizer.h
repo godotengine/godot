@@ -45,7 +45,7 @@
 
 class GDScriptTokenizer {
 public:
-	enum CursorPlace {
+	enum CursorPlace : int32_t {
 		CURSOR_NONE,
 		CURSOR_BEGINNING,
 		CURSOR_MIDDLE,
@@ -53,7 +53,7 @@ public:
 	};
 
 	struct Token {
-		enum Type {
+		enum Type : int32_t {
 			EMPTY,
 			// Basic
 			ANNOTATION,

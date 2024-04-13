@@ -38,7 +38,7 @@ private:
 	GDCLASS(GPUParticles2D, Node2D);
 
 public:
-	enum DrawOrder {
+	enum DrawOrder : int32_t {
 		DRAW_ORDER_INDEX,
 		DRAW_ORDER_LIFETIME,
 		DRAW_ORDER_REVERSE_LIFETIME,
@@ -166,7 +166,7 @@ public:
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;
 
-	enum EmitFlags {
+	enum EmitFlags : int32_t {
 		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,
 		EMIT_FLAG_ROTATION_SCALE = RS::PARTICLES_EMIT_FLAG_ROTATION_SCALE,
 		EMIT_FLAG_VELOCITY = RS::PARTICLES_EMIT_FLAG_VELOCITY,

@@ -217,7 +217,7 @@ private:
 	uint32_t voxel_gi_max_lights = 32;
 	RID voxel_gi_lights_uniform;
 
-	enum {
+	enum : int32_t {
 		VOXEL_GI_SHADER_VERSION_COMPUTE_LIGHT,
 		VOXEL_GI_SHADER_VERSION_COMPUTE_SECOND_BOUNCE,
 		VOXEL_GI_SHADER_VERSION_COMPUTE_MIPMAP,
@@ -234,7 +234,7 @@ private:
 	RID voxel_gi_lighting_shader_version_shaders[VOXEL_GI_SHADER_VERSION_MAX];
 	RID voxel_gi_lighting_shader_version_pipelines[VOXEL_GI_SHADER_VERSION_MAX];
 
-	enum {
+	enum : int32_t {
 		VOXEL_GI_DEBUG_COLOR,
 		VOXEL_GI_DEBUG_LIGHT,
 		VOXEL_GI_DEBUG_EMISSION,
@@ -261,7 +261,7 @@ private:
 	/* SDFGI */
 
 	struct SDFGIShader {
-		enum SDFGIPreprocessShaderVersion {
+		enum SDFGIPreprocessShaderVersion : int32_t {
 			PRE_PROCESS_SCROLL,
 			PRE_PROCESS_SCROLL_OCCLUSION,
 			PRE_PROCESS_JUMP_FLOOD_INITIALIZE,
@@ -310,7 +310,7 @@ private:
 		RID debug_shader_version;
 		RID debug_pipeline;
 
-		enum ProbeDebugMode {
+		enum ProbeDebugMode : int32_t {
 			PROBE_DEBUG_PROBES,
 			PROBE_DEBUG_PROBES_MULTIVIEW,
 			PROBE_DEBUG_VISIBILITY,
@@ -374,7 +374,7 @@ private:
 			uint32_t use_occlusion;
 		};
 
-		enum {
+		enum : int32_t {
 			DIRECT_LIGHT_MODE_STATIC,
 			DIRECT_LIGHT_MODE_DYNAMIC,
 			DIRECT_LIGHT_MODE_MAX
@@ -383,7 +383,7 @@ private:
 		RID direct_light_shader;
 		RID direct_light_pipeline[DIRECT_LIGHT_MODE_MAX];
 
-		enum {
+		enum : int32_t {
 			INTEGRATE_MODE_PROCESS,
 			INTEGRATE_MODE_STORE,
 			INTEGRATE_MODE_SCROLL,
@@ -391,7 +391,7 @@ private:
 			INTEGRATE_MODE_MAX
 		};
 		struct IntegratePushConstant {
-			enum {
+			enum : int32_t {
 				SKY_MODE_DISABLED,
 				SKY_MODE_COLOR,
 				SKY_MODE_SKY,
@@ -435,7 +435,7 @@ public:
 
 	/* GI */
 
-	enum {
+	enum : int32_t {
 		MAX_VOXEL_GI_INSTANCES = 8
 	};
 
@@ -547,7 +547,7 @@ public:
 		GDCLASS(SDFGI, RenderBufferCustomDataRD)
 
 	public:
-		enum {
+		enum : int32_t {
 			MAX_CASCADES = 8,
 			CASCADE_SIZE = 128,
 			PROBE_DIVISOR = 16,
@@ -789,14 +789,14 @@ public:
 
 	RID sdfgi_ubo;
 
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_VOXEL_GI,
 		MODE_SDFGI,
 		MODE_COMBINED,
 		MODE_MAX
 	};
 
-	enum ShaderSpecializations {
+	enum ShaderSpecializations : int32_t {
 		SHADER_SPECIALIZATION_HALF_RES = 1 << 0,
 		SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX = 1 << 1,
 		SHADER_SPECIALIZATION_USE_VRS = 1 << 2,

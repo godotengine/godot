@@ -72,7 +72,7 @@ class ThemeItemImportTree : public VBoxContainer {
 		}
 	};
 
-	enum ItemCheckedState {
+	enum ItemCheckedState : int32_t {
 		SELECT_IMPORT_DEFINITION,
 		SELECT_IMPORT_FULL,
 	};
@@ -91,7 +91,7 @@ class ThemeItemImportTree : public VBoxContainer {
 
 	bool updating_tree = false;
 
-	enum ItemActionFlag {
+	enum ItemActionFlag : int32_t {
 		IMPORT_ITEM = 1,
 		IMPORT_ITEM_DATA = 2,
 	};
@@ -196,7 +196,7 @@ class ThemeItemEditorDialog : public AcceptDialog {
 
 	TabContainer *tc = nullptr;
 
-	enum TypesTreeAction {
+	enum TypesTreeAction : int32_t {
 		TYPES_TREE_REMOVE_ITEM,
 	};
 
@@ -217,7 +217,7 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	Tree *edit_items_tree = nullptr;
 	Label *edit_items_message = nullptr;
 
-	enum ItemsTreeAction {
+	enum ItemsTreeAction : int32_t {
 		ITEMS_TREE_RENAME_ITEM,
 		ITEMS_TREE_REMOVE_ITEM,
 		ITEMS_TREE_REMOVE_DATA_TYPE,
@@ -228,7 +228,7 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	Label *theme_item_old_name = nullptr;
 	LineEdit *theme_item_name = nullptr;
 
-	enum ItemPopupMode {
+	enum ItemPopupMode : int32_t {
 		CREATE_THEME_ITEM,
 		RENAME_THEME_ITEM,
 		ITEM_POPUP_MODE_MAX
@@ -359,7 +359,7 @@ class ThemeTypeEditor : public MarginContainer {
 	Button *type_variation_button = nullptr;
 	Label *type_variation_locked = nullptr;
 
-	enum TypeDialogMode {
+	enum TypeDialogMode : int32_t {
 		ADD_THEME_TYPE,
 		ADD_VARIATION_BASE,
 	};

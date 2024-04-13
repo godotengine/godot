@@ -41,7 +41,7 @@ class PacketPeerUDP : public PacketPeer {
 	GDCLASS(PacketPeerUDP, PacketPeer);
 
 protected:
-	enum {
+	enum : int32_t {
 		PACKET_BUFFER_SIZE = 65536
 	};
 

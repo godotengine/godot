@@ -40,12 +40,12 @@ class ItemList : public Control {
 	GDCLASS(ItemList, Control);
 
 public:
-	enum IconMode {
+	enum IconMode : int32_t {
 		ICON_MODE_TOP,
 		ICON_MODE_LEFT
 	};
 
-	enum SelectMode {
+	enum SelectMode : int32_t {
 		SELECT_SINGLE,
 		SELECT_MULTI
 	};

@@ -40,7 +40,7 @@ class MenuButton;
 class Skeleton2DEditor : public Control {
 	GDCLASS(Skeleton2DEditor, Control);
 
-	enum Menu {
+	enum Menu : int32_t {
 		MENU_OPTION_SET_REST,
 		MENU_OPTION_MAKE_REST,
 	};

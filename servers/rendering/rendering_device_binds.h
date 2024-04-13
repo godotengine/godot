@@ -145,7 +145,7 @@ public:
 	RD_SETGET(PackedInt32Array, preserve_attachments)
 	RD_SETGET(int32_t, depth_attachment)
 protected:
-	enum {
+	enum : int32_t {
 		ATTACHMENT_UNUSED = -1
 	};
 

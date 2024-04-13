@@ -47,7 +47,7 @@ class EditorObjectSelector;
 class InspectorDock : public VBoxContainer {
 	GDCLASS(InspectorDock, VBoxContainer);
 
-	enum MenuOptions {
+	enum MenuOptions : int32_t {
 		RESOURCE_LOAD,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,

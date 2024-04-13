@@ -63,7 +63,7 @@ struct CSGBrush {
 };
 
 struct CSGBrushOperation {
-	enum Operation {
+	enum Operation : int32_t {
 		OPERATION_UNION,
 		OPERATION_INTERSECTION,
 		OPERATION_SUBTRACTION,

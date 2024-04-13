@@ -38,14 +38,14 @@ class TabBar : public Control {
 	GDCLASS(TabBar, Control);
 
 public:
-	enum AlignmentMode {
+	enum AlignmentMode : int32_t {
 		ALIGNMENT_LEFT,
 		ALIGNMENT_CENTER,
 		ALIGNMENT_RIGHT,
 		ALIGNMENT_MAX,
 	};
 
-	enum CloseButtonDisplayPolicy {
+	enum CloseButtonDisplayPolicy : int32_t {
 		CLOSE_BUTTON_SHOW_NEVER,
 		CLOSE_BUTTON_SHOW_ACTIVE_ONLY,
 		CLOSE_BUTTON_SHOW_ALWAYS,

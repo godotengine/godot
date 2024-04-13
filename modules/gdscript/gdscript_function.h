@@ -48,7 +48,7 @@ class GDScriptDataType {
 public:
 	Vector<GDScriptDataType> container_element_types;
 
-	enum Kind {
+	enum Kind : int32_t {
 		UNINITIALIZED,
 		BUILTIN,
 		NATIVE,
@@ -196,7 +196,7 @@ public:
 
 class GDScriptFunction {
 public:
-	enum Opcode {
+	enum Opcode : int32_t {
 		OPCODE_OPERATOR,
 		OPCODE_OPERATOR_VALIDATED,
 		OPCODE_TYPE_TEST_BUILTIN,
@@ -345,7 +345,7 @@ public:
 		OPCODE_END
 	};
 
-	enum Address {
+	enum Address : int32_t {
 		ADDR_BITS = 24,
 		ADDR_MASK = ((1 << ADDR_BITS) - 1),
 		ADDR_TYPE_MASK = ~ADDR_MASK,
@@ -355,7 +355,7 @@ public:
 		ADDR_TYPE_MAX = 3,
 	};
 
-	enum FixedAddresses {
+	enum FixedAddresses : int32_t {
 		ADDR_STACK_SELF = 0,
 		ADDR_STACK_CLASS = 1,
 		ADDR_STACK_NIL = 2,

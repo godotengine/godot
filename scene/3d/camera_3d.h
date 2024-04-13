@@ -41,18 +41,18 @@ class Camera3D : public Node3D {
 	GDCLASS(Camera3D, Node3D);
 
 public:
-	enum ProjectionType {
+	enum ProjectionType : int32_t {
 		PROJECTION_PERSPECTIVE,
 		PROJECTION_ORTHOGONAL,
 		PROJECTION_FRUSTUM
 	};
 
-	enum KeepAspect {
+	enum KeepAspect : int32_t {
 		KEEP_WIDTH,
 		KEEP_HEIGHT
 	};
 
-	enum DopplerTracking {
+	enum DopplerTracking : int32_t {
 		DOPPLER_TRACKING_DISABLED,
 		DOPPLER_TRACKING_IDLE_STEP,
 		DOPPLER_TRACKING_PHYSICS_STEP
@@ -111,7 +111,7 @@ protected:
 	Projection _get_camera_projection(real_t p_near) const;
 
 public:
-	enum {
+	enum : int32_t {
 		NOTIFICATION_BECAME_CURRENT = 50,
 		NOTIFICATION_LOST_CURRENT = 51
 	};

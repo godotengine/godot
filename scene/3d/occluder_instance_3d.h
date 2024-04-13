@@ -183,7 +183,7 @@ protected:
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;
 
-	enum BakeError {
+	enum BakeError : int32_t {
 		BAKE_ERROR_OK,
 		BAKE_ERROR_NO_SAVE_PATH,
 		BAKE_ERROR_NO_MESHES,

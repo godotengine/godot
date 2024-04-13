@@ -66,18 +66,18 @@ class Tween : public RefCounted {
 	friend class PropertyTweener;
 
 public:
-	enum TweenProcessMode {
+	enum TweenProcessMode : int32_t {
 		TWEEN_PROCESS_PHYSICS,
 		TWEEN_PROCESS_IDLE,
 	};
 
-	enum TweenPauseMode {
+	enum TweenPauseMode : int32_t {
 		TWEEN_PAUSE_BOUND,
 		TWEEN_PAUSE_STOP,
 		TWEEN_PAUSE_PROCESS,
 	};
 
-	enum TransitionType {
+	enum TransitionType : int32_t {
 		TRANS_LINEAR,
 		TRANS_SINE,
 		TRANS_QUINT,
@@ -93,7 +93,7 @@ public:
 		TRANS_MAX
 	};
 
-	enum EaseType {
+	enum EaseType : int32_t {
 		EASE_IN,
 		EASE_OUT,
 		EASE_IN_OUT,

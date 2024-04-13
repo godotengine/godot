@@ -58,7 +58,7 @@ class AudioEffectFilter : public AudioEffect {
 	GDCLASS(AudioEffectFilter, AudioEffect);
 
 public:
-	enum FilterDB {
+	enum FilterDB : int32_t {
 		FILTER_6DB,
 		FILTER_12DB,
 		FILTER_18DB,

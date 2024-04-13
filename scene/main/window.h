@@ -45,7 +45,7 @@ class Window : public Viewport {
 
 public:
 	// Keep synced with enum hint for `mode` property.
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_WINDOWED = DisplayServer::WINDOW_MODE_WINDOWED,
 		MODE_MINIMIZED = DisplayServer::WINDOW_MODE_MINIMIZED,
 		MODE_MAXIMIZED = DisplayServer::WINDOW_MODE_MAXIMIZED,
@@ -53,7 +53,7 @@ public:
 		MODE_EXCLUSIVE_FULLSCREEN = DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
 	};
 
-	enum Flags {
+	enum Flags : int32_t {
 		FLAG_RESIZE_DISABLED = DisplayServer::WINDOW_FLAG_RESIZE_DISABLED,
 		FLAG_BORDERLESS = DisplayServer::WINDOW_FLAG_BORDERLESS,
 		FLAG_ALWAYS_ON_TOP = DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP,
@@ -65,13 +65,13 @@ public:
 		FLAG_MAX = DisplayServer::WINDOW_FLAG_MAX,
 	};
 
-	enum ContentScaleMode {
+	enum ContentScaleMode : int32_t {
 		CONTENT_SCALE_MODE_DISABLED,
 		CONTENT_SCALE_MODE_CANVAS_ITEMS,
 		CONTENT_SCALE_MODE_VIEWPORT,
 	};
 
-	enum ContentScaleAspect {
+	enum ContentScaleAspect : int32_t {
 		CONTENT_SCALE_ASPECT_IGNORE,
 		CONTENT_SCALE_ASPECT_KEEP,
 		CONTENT_SCALE_ASPECT_KEEP_WIDTH,
@@ -79,24 +79,24 @@ public:
 		CONTENT_SCALE_ASPECT_EXPAND,
 	};
 
-	enum ContentScaleStretch {
+	enum ContentScaleStretch : int32_t {
 		CONTENT_SCALE_STRETCH_FRACTIONAL,
 		CONTENT_SCALE_STRETCH_INTEGER,
 	};
 
-	enum LayoutDirection {
+	enum LayoutDirection : int32_t {
 		LAYOUT_DIRECTION_INHERITED,
 		LAYOUT_DIRECTION_LOCALE,
 		LAYOUT_DIRECTION_LTR,
 		LAYOUT_DIRECTION_RTL
 	};
 
-	enum {
+	enum : int32_t {
 		DEFAULT_WINDOW_SIZE = 100,
 	};
 
 	// Keep synced with enum hint for `initial_position` property.
-	enum WindowInitialPosition {
+	enum WindowInitialPosition : int32_t {
 		WINDOW_INITIAL_POSITION_ABSOLUTE,
 		WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN,
 		WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN,
@@ -260,7 +260,7 @@ protected:
 	GDVIRTUAL0RC(Vector2, _get_contents_minimum_size)
 
 public:
-	enum {
+	enum : int32_t {
 		NOTIFICATION_VISIBILITY_CHANGED = 30,
 		NOTIFICATION_POST_POPUP = 31,
 		NOTIFICATION_THEME_CHANGED = 32

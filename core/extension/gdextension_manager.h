@@ -45,7 +45,7 @@ class GDExtensionManager : public Object {
 	static GDExtensionManager *singleton;
 
 public:
-	enum LoadStatus {
+	enum LoadStatus : int32_t {
 		LOAD_STATUS_OK,
 		LOAD_STATUS_FAILED,
 		LOAD_STATUS_ALREADY_LOADED,

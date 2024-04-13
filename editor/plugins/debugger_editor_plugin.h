@@ -46,7 +46,7 @@ private:
 	EditorFileServer *file_server = nullptr;
 	RunInstancesDialog *run_instances_dialog = nullptr;
 
-	enum MenuOptions {
+	enum MenuOptions : int32_t {
 		RUN_FILE_SERVER,
 		RUN_LIVE_DEBUG,
 		RUN_DEBUG_COLLISIONS,

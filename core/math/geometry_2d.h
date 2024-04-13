@@ -275,18 +275,18 @@ public:
 		return false;
 	}
 
-	enum PolyBooleanOperation {
+	enum PolyBooleanOperation : int32_t {
 		OPERATION_UNION,
 		OPERATION_DIFFERENCE,
 		OPERATION_INTERSECTION,
 		OPERATION_XOR
 	};
-	enum PolyJoinType {
+	enum PolyJoinType : int32_t {
 		JOIN_SQUARE,
 		JOIN_ROUND,
 		JOIN_MITER
 	};
-	enum PolyEndType {
+	enum PolyEndType : int32_t {
 		END_POLYGON,
 		END_JOINED,
 		END_BUTT,

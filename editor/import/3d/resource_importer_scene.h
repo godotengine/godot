@@ -64,7 +64,7 @@ protected:
 	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String)
 
 public:
-	enum ImportFlags {
+	enum ImportFlags : int32_t {
 		IMPORT_SCENE = 1,
 		IMPORT_ANIMATION = 2,
 		IMPORT_FAIL_ON_MISSING_DEPENDENCIES = 4,
@@ -105,7 +105,7 @@ class EditorScenePostImportPlugin : public RefCounted {
 	GDCLASS(EditorScenePostImportPlugin, RefCounted);
 
 public:
-	enum InternalImportCategory {
+	enum InternalImportCategory : int32_t {
 		INTERNAL_IMPORT_CATEGORY_NODE,
 		INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE,
 		INTERNAL_IMPORT_CATEGORY_MESH,
@@ -165,14 +165,14 @@ class ResourceImporterScene : public ResourceImporter {
 	static ResourceImporterScene *scene_singleton;
 	static ResourceImporterScene *animation_singleton;
 
-	enum LightBakeMode {
+	enum LightBakeMode : int32_t {
 		LIGHT_BAKE_DISABLED,
 		LIGHT_BAKE_STATIC,
 		LIGHT_BAKE_STATIC_LIGHTMAPS,
 		LIGHT_BAKE_DYNAMIC,
 	};
 
-	enum MeshPhysicsMode {
+	enum MeshPhysicsMode : int32_t {
 		MESH_PHYSICS_DISABLED,
 		MESH_PHYSICS_MESH_AND_STATIC_COLLIDER,
 		MESH_PHYSICS_RIGID_BODY_AND_MESH,
@@ -180,31 +180,31 @@ class ResourceImporterScene : public ResourceImporter {
 		MESH_PHYSICS_AREA_ONLY,
 	};
 
-	enum NavMeshMode {
+	enum NavMeshMode : int32_t {
 		NAVMESH_DISABLED,
 		NAVMESH_MESH_AND_NAVMESH,
 		NAVMESH_NAVMESH_ONLY,
 	};
 
-	enum OccluderMode {
+	enum OccluderMode : int32_t {
 		OCCLUDER_DISABLED,
 		OCCLUDER_MESH_AND_OCCLUDER,
 		OCCLUDER_OCCLUDER_ONLY,
 	};
 
-	enum MeshOverride {
+	enum MeshOverride : int32_t {
 		MESH_OVERRIDE_DEFAULT,
 		MESH_OVERRIDE_ENABLE,
 		MESH_OVERRIDE_DISABLE,
 	};
 
-	enum BodyType {
+	enum BodyType : int32_t {
 		BODY_TYPE_STATIC,
 		BODY_TYPE_DYNAMIC,
 		BODY_TYPE_AREA
 	};
 
-	enum ShapeType {
+	enum ShapeType : int32_t {
 		SHAPE_TYPE_DECOMPOSE_CONVEX,
 		SHAPE_TYPE_SIMPLE_CONVEX,
 		SHAPE_TYPE_TRIMESH,
@@ -220,12 +220,12 @@ class ResourceImporterScene : public ResourceImporter {
 	Node *_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
 	void _add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes);
 
-	enum AnimationImportTracks {
+	enum AnimationImportTracks : int32_t {
 		ANIMATION_IMPORT_TRACKS_IF_PRESENT,
 		ANIMATION_IMPORT_TRACKS_IF_PRESENT_FOR_ALL,
 		ANIMATION_IMPORT_TRACKS_NEVER,
 	};
-	enum TrackChannel {
+	enum TrackChannel : int32_t {
 		TRACK_CHANNEL_POSITION,
 		TRACK_CHANNEL_ROTATION,
 		TRACK_CHANNEL_SCALE,
@@ -261,7 +261,7 @@ public:
 	virtual int get_preset_count() const override;
 	virtual String get_preset_name(int p_idx) const override;
 
-	enum InternalImportCategory {
+	enum InternalImportCategory : int32_t {
 		INTERNAL_IMPORT_CATEGORY_NODE = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_NODE,
 		INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE,
 		INTERNAL_IMPORT_CATEGORY_MESH = EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH,

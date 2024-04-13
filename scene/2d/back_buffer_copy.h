@@ -37,7 +37,7 @@ class BackBufferCopy : public Node2D {
 	GDCLASS(BackBufferCopy, Node2D);
 
 public:
-	enum CopyMode {
+	enum CopyMode : int32_t {
 		COPY_MODE_DISABLED,
 		COPY_MODE_RECT,
 		COPY_MODE_VIEWPORT

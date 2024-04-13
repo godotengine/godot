@@ -56,7 +56,7 @@ class Mesh : public Resource {
 	Vector<Vector3> _get_faces() const;
 
 public:
-	enum PrimitiveType {
+	enum PrimitiveType : int32_t {
 		PRIMITIVE_POINTS = RenderingServer::PRIMITIVE_POINTS,
 		PRIMITIVE_LINES = RenderingServer::PRIMITIVE_LINES,
 		PRIMITIVE_LINE_STRIP = RenderingServer::PRIMITIVE_LINE_STRIP,
@@ -84,15 +84,15 @@ protected:
 	GDVIRTUAL0RC(AABB, _get_aabb)
 
 public:
-	enum {
+	enum : int32_t {
 		NO_INDEX_ARRAY = RenderingServer::NO_INDEX_ARRAY,
 		ARRAY_WEIGHTS_SIZE = RenderingServer::ARRAY_WEIGHTS_SIZE
 	};
-	enum BlendShapeMode {
+	enum BlendShapeMode : int32_t {
 		BLEND_SHAPE_MODE_NORMALIZED = RS::BLEND_SHAPE_MODE_NORMALIZED,
 		BLEND_SHAPE_MODE_RELATIVE = RS::BLEND_SHAPE_MODE_RELATIVE,
 	};
-	enum ArrayType {
+	enum ArrayType : int32_t {
 		ARRAY_VERTEX = RenderingServer::ARRAY_VERTEX,
 		ARRAY_NORMAL = RenderingServer::ARRAY_NORMAL,
 		ARRAY_TANGENT = RenderingServer::ARRAY_TANGENT,
@@ -110,7 +110,7 @@ public:
 
 	};
 
-	enum ArrayCustomFormat {
+	enum ArrayCustomFormat : int32_t {
 		ARRAY_CUSTOM_RGBA8_UNORM,
 		ARRAY_CUSTOM_RGBA8_SNORM,
 		ARRAY_CUSTOM_RG_HALF,

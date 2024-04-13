@@ -50,7 +50,7 @@ class VScrollBar;
 class Polygon2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);
 
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_EDIT_UV = MODE_CONT,
 		UVEDIT_POLYGON_TO_UV,
 		UVEDIT_UV_TO_POLYGON,
@@ -58,7 +58,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		UVEDIT_GRID_SETTINGS
 	};
 
-	enum UVMode {
+	enum UVMode : int32_t {
 		UV_MODE_CREATE,
 		UV_MODE_CREATE_INTERNAL,
 		UV_MODE_REMOVE_INTERNAL,

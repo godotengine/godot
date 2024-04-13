@@ -37,7 +37,7 @@ extern "C" {
 
 #include <stddef.h>
 
-enum WebXRInputEvent {
+enum WebXRInputEvent : int32_t {
 	WEBXR_INPUT_EVENT_SELECTSTART,
 	WEBXR_INPUT_EVENT_SELECTEND,
 	WEBXR_INPUT_EVENT_SQUEEZESTART,

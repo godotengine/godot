@@ -41,7 +41,7 @@ namespace RendererRD {
 
 class ToneMapper {
 private:
-	enum TonemapMode {
+	enum TonemapMode : int32_t {
 		TONEMAP_MODE_NORMAL,
 		TONEMAP_MODE_BICUBIC_GLOW_FILTER,
 		TONEMAP_MODE_1D_LUT,
@@ -59,7 +59,7 @@ private:
 		TONEMAP_MODE_MAX
 	};
 
-	enum {
+	enum : int32_t {
 		TONEMAP_FLAG_USE_BCS = (1 << 0),
 		TONEMAP_FLAG_USE_GLOW = (1 << 1),
 		TONEMAP_FLAG_USE_AUTO_EXPOSURE = (1 << 2),
@@ -107,7 +107,7 @@ public:
 
 	struct TonemapSettings {
 		bool use_glow = false;
-		enum GlowMode {
+		enum GlowMode : int32_t {
 			GLOW_MODE_ADD,
 			GLOW_MODE_SCREEN,
 			GLOW_MODE_SOFTLIGHT,

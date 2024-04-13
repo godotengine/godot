@@ -46,7 +46,7 @@ public:
 	JSONRPC();
 	~JSONRPC();
 
-	enum ErrorCode {
+	enum ErrorCode : int32_t {
 		PARSE_ERROR = -32700,
 		INVALID_REQUEST = -32600,
 		METHOD_NOT_FOUND = -32601,

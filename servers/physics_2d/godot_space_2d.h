@@ -60,7 +60,7 @@ public:
 
 class GodotSpace2D {
 public:
-	enum ElapsedTime {
+	enum ElapsedTime : int32_t {
 		ELAPSED_TIME_INTEGRATE_FORCES,
 		ELAPSED_TIME_GENERATE_ISLANDS,
 		ELAPSED_TIME_SETUP_CONSTRAINTS,
@@ -104,7 +104,7 @@ private:
 	real_t contact_bias = 0.0;
 	real_t constraint_bias = 0.0;
 
-	enum {
+	enum : int32_t {
 		INTERSECTION_QUERY_MAX = 2048
 	};
 

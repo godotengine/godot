@@ -39,7 +39,7 @@ class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
 
 public:
-	enum TabPosition {
+	enum TabPosition : int32_t {
 		POSITION_TOP,
 		POSITION_BOTTOM,
 		POSITION_MAX,

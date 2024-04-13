@@ -56,7 +56,7 @@ struct GLManager_X11_Private;
 
 class GLManager_X11 {
 public:
-	enum ContextType {
+	enum ContextType : int32_t {
 		GLES_3_0_COMPATIBLE,
 	};
 

@@ -41,7 +41,7 @@ class GradientTexture2D;
 class GradientTexture2DEdit : public Control {
 	GDCLASS(GradientTexture2DEdit, Control);
 
-	enum Handle {
+	enum Handle : int32_t {
 		HANDLE_NONE,
 		HANDLE_FROM,
 		HANDLE_TO

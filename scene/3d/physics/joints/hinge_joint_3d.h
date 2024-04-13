@@ -37,7 +37,7 @@ class HingeJoint3D : public Joint3D {
 	GDCLASS(HingeJoint3D, Joint3D);
 
 public:
-	enum Param {
+	enum Param : int32_t {
 		PARAM_BIAS = PhysicsServer3D::HINGE_JOINT_BIAS,
 		PARAM_LIMIT_UPPER = PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER,
 		PARAM_LIMIT_LOWER = PhysicsServer3D::HINGE_JOINT_LIMIT_LOWER,
@@ -49,7 +49,7 @@ public:
 		PARAM_MAX = PhysicsServer3D::HINGE_JOINT_MAX
 	};
 
-	enum Flag {
+	enum Flag : int32_t {
 		FLAG_USE_LIMIT = PhysicsServer3D::HINGE_JOINT_FLAG_USE_LIMIT,
 		FLAG_ENABLE_MOTOR = PhysicsServer3D::HINGE_JOINT_FLAG_ENABLE_MOTOR,
 		FLAG_MAX = PhysicsServer3D::HINGE_JOINT_FLAG_MAX

@@ -88,7 +88,7 @@ class DependencyEditorOwners : public AcceptDialog {
 	void _file_option(int p_option);
 
 private:
-	enum FileMenu {
+	enum FileMenu : int32_t {
 		FILE_OPEN
 	};
 
@@ -140,7 +140,7 @@ class DependencyErrorDialog : public ConfirmationDialog {
 	GDCLASS(DependencyErrorDialog, ConfirmationDialog);
 
 public:
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_SCENE,
 		MODE_RESOURCE,
 	};

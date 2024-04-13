@@ -43,7 +43,7 @@ public:
 		float b2 = 0.0f;
 	};
 
-	enum Mode {
+	enum Mode : int32_t {
 		BANDPASS,
 		HIGHPASS,
 		LOWPASS,

@@ -60,7 +60,7 @@ public:
 		Vertex() {}
 	};
 
-	enum CustomFormat {
+	enum CustomFormat : int32_t {
 		CUSTOM_RGBA8_UNORM = RS::ARRAY_CUSTOM_RGBA8_UNORM,
 		CUSTOM_RGBA8_SNORM = RS::ARRAY_CUSTOM_RGBA8_SNORM,
 		CUSTOM_RG_HALF = RS::ARRAY_CUSTOM_RG_HALF,
@@ -72,12 +72,12 @@ public:
 		CUSTOM_MAX = RS::ARRAY_CUSTOM_MAX
 	};
 
-	enum SkinWeightCount {
+	enum SkinWeightCount : int32_t {
 		SKIN_4_WEIGHTS,
 		SKIN_8_WEIGHTS
 	};
 
-	enum {
+	enum : int32_t {
 		/* Do not move vertices that are located on the topological border (vertices on triangle edges that don't have a paired triangle). Useful for simplifying portions of the larger mesh. */
 		SIMPLIFY_LOCK_BORDER = 1 << 0, // From meshopt_SimplifyLockBorder
 	};

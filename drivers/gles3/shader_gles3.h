@@ -122,7 +122,7 @@ private:
 
 	struct StageTemplate {
 		struct Chunk {
-			enum Type {
+			enum Type : int32_t {
 				TYPE_MATERIAL_UNIFORMS,
 				TYPE_VERTEX_GLOBALS,
 				TYPE_FRAGMENT_GLOBALS,
@@ -150,7 +150,7 @@ private:
 
 	int64_t max_image_units = 0;
 
-	enum StageType {
+	enum StageType : int32_t {
 		STAGE_TYPE_VERTEX,
 		STAGE_TYPE_FRAGMENT,
 		STAGE_TYPE_MAX,

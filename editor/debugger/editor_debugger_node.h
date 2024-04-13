@@ -49,7 +49,7 @@ class EditorDebuggerNode : public MarginContainer {
 	GDCLASS(EditorDebuggerNode, MarginContainer);
 
 public:
-	enum CameraOverride {
+	enum CameraOverride : int32_t {
 		OVERRIDE_NONE,
 		OVERRIDE_2D,
 		OVERRIDE_3D_1, // 3D Viewport 1
@@ -59,7 +59,7 @@ public:
 	};
 
 private:
-	enum Options {
+	enum Options : int32_t {
 		DEBUG_NEXT,
 		DEBUG_STEP,
 		DEBUG_BREAK,

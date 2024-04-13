@@ -104,7 +104,7 @@ private:
 	int hovered_segment_index = -1;
 	Vector2 hovered_segment_point;
 
-	enum DragType {
+	enum DragType : int32_t {
 		DRAG_TYPE_NONE,
 		DRAG_TYPE_DRAG_POINT,
 		DRAG_TYPE_CREATE_POINT,
@@ -124,7 +124,7 @@ private:
 	Button *button_delete = nullptr;
 	MenuButton *button_advanced_menu = nullptr;
 
-	enum Snap {
+	enum Snap : int32_t {
 		SNAP_NONE,
 		SNAP_HALF_PIXEL,
 		SNAP_GRID,
@@ -151,7 +151,7 @@ private:
 
 	Color polygon_color = Color(1.0, 0.0, 0.0);
 
-	enum AdvancedMenuOption {
+	enum AdvancedMenuOption : int32_t {
 		RESET_TO_DEFAULT_TILE,
 		CLEAR_TILE,
 		ROTATE_RIGHT,
@@ -213,7 +213,7 @@ private:
 	EditorProperty *property_editor = nullptr;
 
 	// Painting state.
-	enum DragType {
+	enum DragType : int32_t {
 		DRAG_TYPE_NONE = 0,
 		DRAG_TYPE_PAINT,
 		DRAG_TYPE_PAINT_RECT,
@@ -349,7 +349,7 @@ private:
 	Button *picker_button = nullptr;
 
 	// Painting state.
-	enum DragType {
+	enum DragType : int32_t {
 		DRAG_TYPE_NONE = 0,
 		DRAG_TYPE_PAINT_TERRAIN_SET,
 		DRAG_TYPE_PAINT_TERRAIN_SET_RECT,

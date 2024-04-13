@@ -60,7 +60,7 @@ struct TypeInherits {
 };
 
 namespace GodotTypeInfo {
-enum Metadata {
+enum Metadata : int32_t {
 	METADATA_NONE,
 	METADATA_INT_IS_INT8,
 	METADATA_INT_IS_INT16,

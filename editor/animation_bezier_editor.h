@@ -39,7 +39,7 @@ class ViewPanner;
 class AnimationBezierTrackEdit : public Control {
 	GDCLASS(AnimationBezierTrackEdit, Control);
 
-	enum {
+	enum : int32_t {
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
 		MENU_KEY_CUT,
@@ -71,7 +71,7 @@ class AnimationBezierTrackEdit : public Control {
 
 	RBMap<int, Rect2> subtracks;
 
-	enum {
+	enum : int32_t {
 		REMOVE_ICON,
 		LOCK_ICON,
 		SOLO_ICON,

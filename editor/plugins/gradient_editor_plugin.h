@@ -51,7 +51,7 @@ class GradientEdit : public Control {
 	bool snap_enabled = false;
 	int snap_count = 10;
 
-	enum GrabMode {
+	enum GrabMode : int32_t {
 		GRAB_NONE,
 		GRAB_ADD,
 		GRAB_MOVE

@@ -46,7 +46,7 @@ class TypedArray;
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
 class ScriptServer {
-	enum {
+	enum : int32_t {
 		MAX_LANGUAGES = 16
 	};
 
@@ -226,13 +226,13 @@ public:
 		String message;
 	};
 
-	enum TemplateLocation {
+	enum TemplateLocation : int32_t {
 		TEMPLATE_BUILT_IN,
 		TEMPLATE_EDITOR,
 		TEMPLATE_PROJECT
 	};
 
-	enum ScriptNameCasing {
+	enum ScriptNameCasing : int32_t {
 		SCRIPT_NAME_CASING_AUTO,
 		SCRIPT_NAME_CASING_PASCAL_CASE,
 		SCRIPT_NAME_CASING_SNAKE_CASE,
@@ -279,7 +279,7 @@ public:
 
 	// Keep enums in sync with:
 	// scene/gui/code_edit.h - CodeEdit::CodeCompletionKind
-	enum CodeCompletionKind {
+	enum CodeCompletionKind : int32_t {
 		CODE_COMPLETION_KIND_CLASS,
 		CODE_COMPLETION_KIND_FUNCTION,
 		CODE_COMPLETION_KIND_SIGNAL,
@@ -294,7 +294,7 @@ public:
 	};
 
 	// scene/gui/code_edit.h - CodeEdit::CodeCompletionLocation
-	enum CodeCompletionLocation {
+	enum CodeCompletionLocation : int32_t {
 		LOCATION_LOCAL = 0,
 		LOCATION_PARENT_MASK = 1 << 8,
 		LOCATION_OTHER_USER_CODE = 1 << 9,
@@ -333,7 +333,7 @@ public:
 
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
-	enum LookupResultType {
+	enum LookupResultType : int32_t {
 		LOOKUP_RESULT_SCRIPT_LOCATION,
 		LOOKUP_RESULT_CLASS,
 		LOOKUP_RESULT_CLASS_CONSTANT,

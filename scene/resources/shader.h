@@ -42,7 +42,7 @@ class Shader : public Resource {
 	OBJ_SAVE_TYPE(Shader);
 
 public:
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_SPATIAL,
 		MODE_CANVAS_ITEM,
 		MODE_PARTICLES,

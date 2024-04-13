@@ -36,7 +36,7 @@
 class ScrollBar : public Range {
 	GDCLASS(ScrollBar, Range);
 
-	enum HighlightStatus {
+	enum HighlightStatus : int32_t {
 		HIGHLIGHT_NONE,
 		HIGHLIGHT_DECR,
 		HIGHLIGHT_RANGE,

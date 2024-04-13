@@ -43,7 +43,7 @@ class CallQueue {
 	friend class MessageQueue;
 
 public:
-	enum {
+	enum : int32_t {
 		PAGE_SIZE_BYTES = 4096
 	};
 
@@ -56,7 +56,7 @@ public:
 	typedef PagedAllocator<Page, true> Allocator;
 
 private:
-	enum {
+	enum : int32_t {
 		TYPE_CALL,
 		TYPE_NOTIFICATION,
 		TYPE_SET,

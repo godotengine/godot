@@ -238,7 +238,7 @@ private:
 	friend class LiveEditor;
 #endif
 
-	enum {
+	enum : int32_t {
 		MAX_IDLE_CALLBACKS = 256
 	};
 
@@ -250,7 +250,7 @@ private:
 	void _main_window_close();
 	void _main_window_go_back();
 
-	enum CallInputType {
+	enum CallInputType : int32_t {
 		CALL_INPUT_TYPE_INPUT,
 		CALL_INPUT_TYPE_SHORTCUT_INPUT,
 		CALL_INPUT_TYPE_UNHANDLED_INPUT,
@@ -265,11 +265,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
+	enum : int32_t {
 		NOTIFICATION_TRANSFORM_CHANGED = 2000
 	};
 
-	enum GroupCallFlags {
+	enum GroupCallFlags : int32_t {
 		GROUP_CALL_DEFAULT = 0,
 		GROUP_CALL_REVERSE = 1,
 		GROUP_CALL_DEFERRED = 2,

@@ -43,7 +43,7 @@
 #include <xaudio2.h>
 
 class AudioDriverXAudio2 : public AudioDriver {
-	enum {
+	enum : int32_t {
 		AUDIO_BUFFERS = 2
 	};
 

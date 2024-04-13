@@ -155,7 +155,7 @@ private:
 	XrCompositionLayerProjectionView *projection_views = nullptr;
 	XrCompositionLayerDepthInfoKHR *depth_views = nullptr; // Only used by Composition Layer Depth Extension if available
 
-	enum OpenXRSwapChainTypes {
+	enum OpenXRSwapChainTypes : int32_t {
 		OPENXR_SWAPCHAIN_COLOR,
 		OPENXR_SWAPCHAIN_DEPTH,
 		// OPENXR_SWAPCHAIN_VELOCITY,
@@ -468,7 +468,7 @@ public:
 	bool set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode);
 	XrEnvironmentBlendMode get_environment_blend_mode() const { return requested_environment_blend_mode; }
 
-	enum OpenXRAlphaBlendModeSupport {
+	enum OpenXRAlphaBlendModeSupport : int32_t {
 		OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE = 0,
 		OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL = 1,
 		OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING = 2,

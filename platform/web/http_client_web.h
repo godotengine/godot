@@ -39,7 +39,7 @@ extern "C" {
 
 #include <stddef.h>
 
-typedef enum {
+typedef enum : int32_t {
 	GODOT_JS_FETCH_STATE_REQUESTING = 0,
 	GODOT_JS_FETCH_STATE_BODY = 1,
 	GODOT_JS_FETCH_STATE_DONE = 2,

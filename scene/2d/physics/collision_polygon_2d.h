@@ -39,7 +39,7 @@ class CollisionPolygon2D : public Node2D {
 	GDCLASS(CollisionPolygon2D, Node2D);
 
 public:
-	enum BuildMode {
+	enum BuildMode : int32_t {
 		BUILD_SOLIDS,
 		BUILD_SEGMENTS,
 	};

@@ -43,7 +43,7 @@ public:
 
 	static const char *SIGNAL_RANGE_CHANGED;
 
-	enum TangentMode {
+	enum TangentMode : int32_t {
 		TANGENT_FREE = 0,
 		TANGENT_LINEAR,
 		TANGENT_MODE_COUNT

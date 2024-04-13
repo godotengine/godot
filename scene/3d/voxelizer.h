@@ -35,7 +35,7 @@
 
 class Voxelizer {
 private:
-	enum {
+	enum : int64_t {
 		CHILD_EMPTY = 0xFFFFFFFF
 
 	};

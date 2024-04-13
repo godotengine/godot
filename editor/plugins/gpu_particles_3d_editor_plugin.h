@@ -75,7 +75,7 @@ class GPUParticles3DEditor : public GPUParticles3DEditorBase {
 	SpinBox *generate_seconds = nullptr;
 	GPUParticles3D *node = nullptr;
 
-	enum Menu {
+	enum Menu : int32_t {
 		MENU_OPTION_GENERATE_AABB,
 		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE,
 		MENU_OPTION_CLEAR_EMISSION_VOLUME,

@@ -38,7 +38,7 @@ class RendererCanvasRender {
 public:
 	static RendererCanvasRender *singleton;
 
-	enum CanvasRectFlags {
+	enum CanvasRectFlags : int32_t {
 		CANVAS_RECT_REGION = 1,
 		CANVAS_RECT_TILE = 2,
 		CANVAS_RECT_FLIP_H = 4,
@@ -170,7 +170,7 @@ public:
 		//blocks always grow but never shrink.
 
 		struct CommandBlock {
-			enum {
+			enum : int32_t {
 				MAX_SIZE = 4096
 			};
 			uint32_t usage;
@@ -178,7 +178,7 @@ public:
 		};
 
 		struct Command {
-			enum Type {
+			enum Type : int32_t {
 				TYPE_RECT,
 				TYPE_NINEPATCH,
 				TYPE_POLYGON,

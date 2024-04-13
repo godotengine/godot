@@ -46,7 +46,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum ZipAppend {
+	enum ZipAppend : int32_t {
 		APPEND_CREATE = 0,
 		APPEND_CREATEAFTER = 1,
 		APPEND_ADDINZIP = 2,

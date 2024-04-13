@@ -42,7 +42,7 @@ class FBXDocument : public GLTFDocument {
 	GDCLASS(FBXDocument, GLTFDocument);
 
 public:
-	enum {
+	enum : int32_t {
 		TEXTURE_TYPE_GENERIC = 0,
 		TEXTURE_TYPE_NORMAL = 1,
 	};

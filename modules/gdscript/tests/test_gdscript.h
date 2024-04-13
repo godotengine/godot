@@ -37,7 +37,7 @@
 
 namespace GDScriptTests {
 
-enum TestType {
+enum TestType : int32_t {
 	TEST_TOKENIZER,
 	TEST_TOKENIZER_BUFFER,
 	TEST_PARSER,

@@ -49,7 +49,7 @@ namespace RendererRD {
 
 class LightStorage : public RendererLightStorage {
 public:
-	enum ShadowAtlastQuadrant {
+	enum ShadowAtlastQuadrant : int64_t {
 		QUADRANT_SHIFT = 27,
 		OMNI_LIGHT_FLAG = 1 << 26,
 		SHADOW_INDEX_MASK = OMNI_LIGHT_FLAG - 1,
@@ -289,7 +289,7 @@ private:
 
 	/* REFLECTION DATA */
 
-	enum {
+	enum : int32_t {
 		REFLECTION_AMBIENT_DISABLED = 0,
 		REFLECTION_AMBIENT_ENVIRONMENT = 1,
 		REFLECTION_AMBIENT_COLOR = 2,

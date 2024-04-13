@@ -41,7 +41,7 @@ class AudioDriverOpenSL : public AudioDriver {
 	bool active = false;
 	Mutex mutex;
 
-	enum {
+	enum : int32_t {
 		BUFFER_COUNT = 2
 	};
 

@@ -58,14 +58,14 @@ namespace RendererSceneRenderImplementation {
 class RenderForwardClustered : public RendererSceneRenderRD {
 	friend SceneShaderForwardClustered;
 
-	enum {
+	enum : int32_t {
 		SCENE_UNIFORM_SET = 0,
 		RENDER_PASS_UNIFORM_SET = 1,
 		TRANSFORMS_UNIFORM_SET = 2,
 		MATERIAL_UNIFORM_SET = 3,
 	};
 
-	enum {
+	enum : int32_t {
 		SPEC_CONSTANT_SOFT_SHADOW_SAMPLES = 6,
 		SPEC_CONSTANT_PENUMBRA_SHADOW_SAMPLES = 7,
 		SPEC_CONSTANT_DIRECTIONAL_SOFT_SHADOW_SAMPLES = 8,
@@ -75,7 +75,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		SPEC_CONSTANT_USE_DEPTH_FOG = 12,
 	};
 
-	enum {
+	enum : int32_t {
 		SDFGI_MAX_CASCADES = 8,
 		MAX_VOXEL_GI_INSTANCESS = 8,
 		MAX_LIGHTMAPS = 8,
@@ -83,7 +83,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		INSTANCE_DATA_BUFFER_MIN_SIZE = 4096
 	};
 
-	enum RenderListType {
+	enum RenderListType : int32_t {
 		RENDER_LIST_OPAQUE, //used for opaque objects
 		RENDER_LIST_MOTION, //used for opaque objects with motion
 		RENDER_LIST_ALPHA, //used for transparent objects
@@ -116,7 +116,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 			RendererRD::SSEffects::SSRRenderBuffers ssr;
 		} ss_effects_data;
 
-		enum DepthFrameBufferType {
+		enum DepthFrameBufferType : int32_t {
 			DEPTH_FB,
 			DEPTH_FB_ROUGHNESS,
 			DEPTH_FB_ROUGHNESS_VOXELGI
@@ -173,7 +173,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID texture;
 	} best_fit_normal;
 
-	enum PassMode {
+	enum PassMode : int32_t {
 		PASS_MODE_COLOR,
 		PASS_MODE_SHADOW,
 		PASS_MODE_SHADOW_DP,
@@ -184,7 +184,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		PASS_MODE_SDF,
 	};
 
-	enum ColorPassFlags {
+	enum ColorPassFlags : int32_t {
 		COLOR_PASS_FLAG_TRANSPARENT = 1 << 0,
 		COLOR_PASS_FLAG_SEPARATE_SPECULAR = 1 << 1,
 		COLOR_PASS_FLAG_MULTIVIEW = 1 << 2,
@@ -244,7 +244,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	};
 
 	// When changing any of these enums, remember to change the corresponding enums in the shader files as well.
-	enum {
+	enum : int64_t {
 		INSTANCE_DATA_FLAGS_DYNAMIC = 1 << 3,
 		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 4,
 		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 5,
@@ -367,7 +367,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	void _setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
 
 	struct RenderElementInfo {
-		enum { MAX_REPEATS = (1 << 20) - 1 };
+		enum : int32_t { MAX_REPEATS = (1 << 20) - 1 };
 		uint32_t repeat : 20;
 		uint32_t uses_projector : 1;
 		uint32_t uses_softshadow : 1;
@@ -396,7 +396,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	// Cached data for drawing surfaces
 	struct GeometryInstanceSurfaceDataCache {
-		enum {
+		enum : int32_t {
 			FLAG_PASS_DEPTH = 1,
 			FLAG_PASS_OPAQUE = 2,
 			FLAG_PASS_ALPHA = 4,

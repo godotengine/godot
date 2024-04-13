@@ -39,7 +39,7 @@
 class JSON : public Resource {
 	GDCLASS(JSON, Resource);
 
-	enum TokenType {
+	enum TokenType : int32_t {
 		TK_CURLY_BRACKET_OPEN,
 		TK_CURLY_BRACKET_CLOSE,
 		TK_BRACKET_OPEN,
@@ -53,7 +53,7 @@ class JSON : public Resource {
 		TK_MAX
 	};
 
-	enum Expecting {
+	enum Expecting : int32_t {
 		EXPECT_OBJECT,
 		EXPECT_OBJECT_KEY,
 		EXPECT_COLON,

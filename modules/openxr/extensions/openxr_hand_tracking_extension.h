@@ -38,13 +38,13 @@
 
 class OpenXRHandTrackingExtension : public OpenXRExtensionWrapper {
 public:
-	enum HandTrackedHands {
+	enum HandTrackedHands : int32_t {
 		OPENXR_TRACKED_LEFT_HAND,
 		OPENXR_TRACKED_RIGHT_HAND,
 		OPENXR_MAX_TRACKED_HANDS
 	};
 
-	enum HandTrackedSource {
+	enum HandTrackedSource : int32_t {
 		OPENXR_SOURCE_UNKNOWN,
 		OPENXR_SOURCE_UNOBSTRUCTED,
 		OPENXR_SOURCE_CONTROLLER,

@@ -244,7 +244,7 @@ class PlaneMesh : public PrimitiveMesh {
 	GDCLASS(PlaneMesh, PrimitiveMesh);
 
 public:
-	enum Orientation {
+	enum Orientation : int32_t {
 		FACE_X,
 		FACE_Y,
 		FACE_Z,
@@ -478,7 +478,7 @@ class RibbonTrailMesh : public PrimitiveMesh {
 	GDCLASS(RibbonTrailMesh, PrimitiveMesh);
 
 public:
-	enum Shape {
+	enum Shape : int32_t {
 		SHAPE_FLAT,
 		SHAPE_CROSS
 	};

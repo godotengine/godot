@@ -40,7 +40,7 @@ class AStarGrid2D : public RefCounted {
 	GDCLASS(AStarGrid2D, RefCounted);
 
 public:
-	enum DiagonalMode {
+	enum DiagonalMode : int32_t {
 		DIAGONAL_MODE_ALWAYS,
 		DIAGONAL_MODE_NEVER,
 		DIAGONAL_MODE_AT_LEAST_ONE_WALKABLE,
@@ -48,7 +48,7 @@ public:
 		DIAGONAL_MODE_MAX,
 	};
 
-	enum Heuristic {
+	enum Heuristic : int32_t {
 		HEURISTIC_EUCLIDEAN,
 		HEURISTIC_MANHATTAN,
 		HEURISTIC_OCTILE,
@@ -56,7 +56,7 @@ public:
 		HEURISTIC_MAX,
 	};
 
-	enum CellShape {
+	enum CellShape : int32_t {
 		CELL_SHAPE_SQUARE,
 		CELL_SHAPE_ISOMETRIC_RIGHT,
 		CELL_SHAPE_ISOMETRIC_DOWN,

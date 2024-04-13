@@ -38,11 +38,11 @@ class CharacterBody3D : public PhysicsBody3D {
 	GDCLASS(CharacterBody3D, PhysicsBody3D);
 
 public:
-	enum MotionMode {
+	enum MotionMode : int32_t {
 		MOTION_MODE_GROUNDED,
 		MOTION_MODE_FLOATING,
 	};
-	enum PlatformOnLeave {
+	enum PlatformOnLeave : int32_t {
 		PLATFORM_ON_LEAVE_ADD_VELOCITY,
 		PLATFORM_ON_LEAVE_ADD_UPWARD_VELOCITY,
 		PLATFORM_ON_LEAVE_DO_NOTHING,

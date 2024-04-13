@@ -51,7 +51,7 @@ class FramebufferCacheRD : public Object {
 
 	PagedAllocator<Cache> cache_allocator;
 
-	enum {
+	enum : int32_t {
 		HASH_TABLE_SIZE = 16381 // Prime
 	};
 

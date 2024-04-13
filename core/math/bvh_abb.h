@@ -47,7 +47,7 @@ struct BVH_ABB {
 		POINT to;
 	};
 
-	enum IntersectResult {
+	enum IntersectResult : int32_t {
 		IR_MISS = 0,
 		IR_PARTIAL,
 		IR_FULL,

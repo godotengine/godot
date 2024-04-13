@@ -34,7 +34,7 @@
 #include "servers/audio/audio_effect.h"
 
 class SMBPitchShift {
-	enum {
+	enum : int32_t {
 		MAX_FRAME_LENGTH = 8192
 	};
 
@@ -77,7 +77,7 @@ class AudioEffectPitchShift : public AudioEffect {
 public:
 	friend class AudioEffectPitchShiftInstance;
 
-	enum FFTSize {
+	enum FFTSize : int32_t {
 		FFT_SIZE_256,
 		FFT_SIZE_512,
 		FFT_SIZE_1024,

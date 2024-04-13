@@ -37,7 +37,7 @@ class TextureButton : public BaseButton {
 	GDCLASS(TextureButton, BaseButton);
 
 public:
-	enum StretchMode {
+	enum StretchMode : int32_t {
 		STRETCH_SCALE,
 		STRETCH_TILE,
 		STRETCH_KEEP,

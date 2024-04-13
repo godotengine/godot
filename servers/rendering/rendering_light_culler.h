@@ -74,7 +74,7 @@ public:
 private:
 	class LightSource {
 	public:
-		enum SourceType {
+		enum SourceType : int32_t {
 			ST_UNKNOWN,
 			ST_DIRECTIONAL,
 			ST_SPOTLIGHT,
@@ -97,7 +97,7 @@ private:
 	};
 
 	// Same order as godot.
-	enum PlaneOrder {
+	enum PlaneOrder : int32_t {
 		PLANE_NEAR,
 		PLANE_FAR,
 		PLANE_LEFT,
@@ -108,7 +108,7 @@ private:
 	};
 
 	// Same order as godot.
-	enum PointOrder {
+	enum PointOrder : int32_t {
 		PT_FAR_LEFT_TOP,
 		PT_FAR_LEFT_BOTTOM,
 		PT_FAR_RIGHT_TOP,
@@ -120,7 +120,7 @@ private:
 	};
 
 	// 6 bits, 6 planes.
-	enum {
+	enum : int32_t {
 		NUM_CAM_PLANES = 6,
 		NUM_CAM_POINTS = 8,
 		MAX_CULL_PLANES = 17,

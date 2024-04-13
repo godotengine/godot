@@ -42,7 +42,7 @@ class AudioStreamPlayer : public Node {
 	GDCLASS(AudioStreamPlayer, Node);
 
 public:
-	enum MixTarget {
+	enum MixTarget : int32_t {
 		MIX_TARGET_STEREO,
 		MIX_TARGET_SURROUND,
 		MIX_TARGET_CENTER

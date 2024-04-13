@@ -45,7 +45,7 @@ class ENetConnection : public RefCounted {
 	GDCLASS(ENetConnection, RefCounted);
 
 public:
-	enum CompressionMode {
+	enum CompressionMode : int32_t {
 		COMPRESS_NONE = 0,
 		COMPRESS_RANGE_CODER,
 		COMPRESS_FASTLZ,
@@ -53,14 +53,14 @@ public:
 		COMPRESS_ZSTD,
 	};
 
-	enum HostStatistic {
+	enum HostStatistic : int32_t {
 		HOST_TOTAL_SENT_DATA,
 		HOST_TOTAL_SENT_PACKETS,
 		HOST_TOTAL_RECEIVED_DATA,
 		HOST_TOTAL_RECEIVED_PACKETS,
 	};
 
-	enum EventType {
+	enum EventType : int32_t {
 		EVENT_ERROR = -1,
 		EVENT_NONE = 0,
 		EVENT_CONNECT,

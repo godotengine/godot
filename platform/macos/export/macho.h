@@ -48,7 +48,7 @@ class MachO : public RefCounted {
 		uint32_t flags;
 	};
 
-	enum LoadCommandID {
+	enum LoadCommandID : int64_t {
 		LC_SEGMENT = 0x00000001,
 		LC_SYMTAB = 0x00000002,
 		LC_SYMSEG = 0x00000003,

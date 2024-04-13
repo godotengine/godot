@@ -36,7 +36,7 @@
 class ResourceImporterDynamicFont : public ResourceImporter {
 	GDCLASS(ResourceImporterDynamicFont, ResourceImporter);
 
-	enum Presets {
+	enum Presets : int32_t {
 		PRESET_DYNAMIC,
 		PRESET_MSDF,
 		PRESET_MAX

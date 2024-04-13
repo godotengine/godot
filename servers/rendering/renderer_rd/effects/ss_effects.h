@@ -186,7 +186,7 @@ private:
 		uint32_t pad[2];
 	};
 
-	enum SSEffectsMode {
+	enum SSEffectsMode : int32_t {
 		SS_EFFECTS_DOWNSAMPLE,
 		SS_EFFECTS_DOWNSAMPLE_HALF_RES,
 		SS_EFFECTS_DOWNSAMPLE_MIPMAP,
@@ -218,7 +218,7 @@ private:
 
 	/* SSIL */
 
-	enum SSILMode {
+	enum SSILMode : int32_t {
 		SSIL_GATHER,
 		SSIL_GATHER_BASE,
 		SSIL_GATHER_ADAPTIVE,
@@ -317,7 +317,7 @@ private:
 
 	/* SSAO */
 
-	enum SSAOMode {
+	enum SSAOMode : int32_t {
 		SSAO_GATHER,
 		SSAO_GATHER_BASE,
 		SSAO_GATHER_ADAPTIVE,
@@ -411,7 +411,7 @@ private:
 
 	/* Screen Space Reflection */
 
-	enum SSRShaderSpecializations {
+	enum SSRShaderSpecializations : int32_t {
 		SSR_MULTIVIEW = 1 << 0,
 		SSR_VARIATIONS = 2,
 	};
@@ -443,7 +443,7 @@ private:
 
 	// SSR main
 
-	enum ScreenSpaceReflectionMode {
+	enum ScreenSpaceReflectionMode : int32_t {
 		SCREEN_SPACE_REFLECTION_NORMAL,
 		SCREEN_SPACE_REFLECTION_ROUGH,
 		SCREEN_SPACE_REFLECTION_MAX,
@@ -492,7 +492,7 @@ private:
 		uint32_t steps; //  4 - 48
 	};
 
-	enum SSRReflectionMode {
+	enum SSRReflectionMode : int32_t {
 		SCREEN_SPACE_REFLECTION_FILTER_HORIZONTAL,
 		SCREEN_SPACE_REFLECTION_FILTER_VERTICAL,
 		SCREEN_SPACE_REFLECTION_FILTER_MAX,

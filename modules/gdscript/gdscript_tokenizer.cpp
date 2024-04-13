@@ -871,7 +871,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 }
 
 GDScriptTokenizer::Token GDScriptTokenizerText::string() {
-	enum StringType {
+	enum StringType : int32_t {
 		STRING_REGULAR,
 		STRING_NAME,
 		STRING_NODEPATH,

@@ -81,18 +81,18 @@ class FileSystemDock : public VBoxContainer {
 	GDCLASS(FileSystemDock, VBoxContainer);
 
 public:
-	enum FileListDisplayMode {
+	enum FileListDisplayMode : int32_t {
 		FILE_LIST_DISPLAY_THUMBNAILS,
 		FILE_LIST_DISPLAY_LIST
 	};
 
-	enum DisplayMode {
+	enum DisplayMode : int32_t {
 		DISPLAY_MODE_TREE_ONLY,
 		DISPLAY_MODE_VSPLIT,
 		DISPLAY_MODE_HSPLIT,
 	};
 
-	enum FileSortOption {
+	enum FileSortOption : int32_t {
 		FILE_SORT_NAME = 0,
 		FILE_SORT_NAME_REVERSE,
 		FILE_SORT_TYPE,
@@ -102,14 +102,14 @@ public:
 		FILE_SORT_MAX,
 	};
 
-	enum Overwrite {
+	enum Overwrite : int32_t {
 		OVERWRITE_UNDECIDED,
 		OVERWRITE_REPLACE,
 		OVERWRITE_RENAME,
 	};
 
 private:
-	enum FileMenu {
+	enum FileMenu : int32_t {
 		FILE_OPEN,
 		FILE_INHERIT,
 		FILE_MAIN_SCENE,

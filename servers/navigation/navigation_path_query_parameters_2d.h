@@ -43,16 +43,16 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum PathfindingAlgorithm {
+	enum PathfindingAlgorithm : int32_t {
 		PATHFINDING_ALGORITHM_ASTAR = 0,
 	};
 
-	enum PathPostProcessing {
+	enum PathPostProcessing : int32_t {
 		PATH_POSTPROCESSING_CORRIDORFUNNEL = 0,
 		PATH_POSTPROCESSING_EDGECENTERED,
 	};
 
-	enum PathMetadataFlags {
+	enum PathMetadataFlags : int32_t {
 		PATH_METADATA_INCLUDE_NONE = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_NONE,
 		PATH_METADATA_INCLUDE_TYPES = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_TYPES,
 		PATH_METADATA_INCLUDE_RIDS = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_RIDS,

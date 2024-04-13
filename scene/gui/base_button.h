@@ -40,7 +40,7 @@ class BaseButton : public Control {
 	GDCLASS(BaseButton, Control);
 
 public:
-	enum ActionMode {
+	enum ActionMode : int32_t {
 		ACTION_MODE_BUTTON_PRESS,
 		ACTION_MODE_BUTTON_RELEASE,
 	};
@@ -92,7 +92,7 @@ protected:
 	GDVIRTUAL1(_toggled, bool)
 
 public:
-	enum DrawMode {
+	enum DrawMode : int32_t {
 		DRAW_NORMAL,
 		DRAW_PRESSED,
 		DRAW_HOVER,

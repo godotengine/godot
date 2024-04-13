@@ -56,21 +56,21 @@ protected:
 	Array _get_polygons() const;
 
 public:
-	enum SamplePartitionType {
+	enum SamplePartitionType : int32_t {
 		SAMPLE_PARTITION_WATERSHED = 0,
 		SAMPLE_PARTITION_MONOTONE,
 		SAMPLE_PARTITION_LAYERS,
 		SAMPLE_PARTITION_MAX
 	};
 
-	enum ParsedGeometryType {
+	enum ParsedGeometryType : int32_t {
 		PARSED_GEOMETRY_MESH_INSTANCES = 0,
 		PARSED_GEOMETRY_STATIC_COLLIDERS,
 		PARSED_GEOMETRY_BOTH,
 		PARSED_GEOMETRY_MAX
 	};
 
-	enum SourceGeometryMode {
+	enum SourceGeometryMode : int32_t {
 		SOURCE_GEOMETRY_ROOT_NODE_CHILDREN = 0,
 		SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN,
 		SOURCE_GEOMETRY_GROUPS_EXPLICIT,

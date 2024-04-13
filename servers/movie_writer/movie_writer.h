@@ -49,7 +49,7 @@ class MovieWriter : public Object {
 
 	LocalVector<int32_t> audio_mix_buffer;
 
-	enum {
+	enum : int32_t {
 		MAX_WRITERS = 8
 	};
 	static MovieWriter *writers[];

@@ -55,7 +55,7 @@ private:
 
 	GotoLineDialog *goto_line_dialog = nullptr;
 
-	enum {
+	enum : int32_t {
 		EDIT_UNDO,
 		EDIT_REDO,
 		EDIT_CUT,

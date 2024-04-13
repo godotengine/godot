@@ -55,7 +55,7 @@ public:
 
 	Size2 get_minimum_size() const override;
 
-	enum PresetID {
+	enum PresetID : int32_t {
 		PRESET_CONSTANT = 0,
 		PRESET_LINEAR,
 		PRESET_EASE_IN,
@@ -64,7 +64,7 @@ public:
 		PRESET_COUNT
 	};
 
-	enum TangentIndex {
+	enum TangentIndex : int32_t {
 		TANGENT_NONE = -1,
 		TANGENT_LEFT = 0,
 		TANGENT_RIGHT = 1
@@ -129,7 +129,7 @@ private:
 	int tangent_hover_radius = BASE_TANGENT_HOVER_RADIUS;
 	int tangent_length = BASE_TANGENT_LENGTH;
 
-	enum GrabMode {
+	enum GrabMode : int32_t {
 		GRAB_NONE,
 		GRAB_ADD,
 		GRAB_MOVE

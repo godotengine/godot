@@ -39,7 +39,7 @@ class EditorExportPreset : public RefCounted {
 	GDCLASS(EditorExportPreset, RefCounted);
 
 public:
-	enum ExportFilter {
+	enum ExportFilter : int32_t {
 		EXPORT_ALL_RESOURCES,
 		EXPORT_SELECTED_SCENES,
 		EXPORT_SELECTED_RESOURCES,
@@ -47,14 +47,14 @@ public:
 		EXPORT_CUSTOMIZED,
 	};
 
-	enum FileExportMode {
+	enum FileExportMode : int32_t {
 		MODE_FILE_NOT_CUSTOMIZED,
 		MODE_FILE_STRIP,
 		MODE_FILE_KEEP,
 		MODE_FILE_REMOVE,
 	};
 
-	enum ScriptExportMode {
+	enum ScriptExportMode : int32_t {
 		MODE_SCRIPT_TEXT,
 		MODE_SCRIPT_BINARY_TOKENS,
 		MODE_SCRIPT_BINARY_TOKENS_COMPRESSED,

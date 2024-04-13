@@ -47,7 +47,7 @@ class EditorLog : public HBoxContainer {
 	GDCLASS(EditorLog, HBoxContainer);
 
 public:
-	enum MessageType {
+	enum MessageType : int32_t {
 		MSG_TYPE_STD,
 		MSG_TYPE_ERROR,
 		MSG_TYPE_STD_RICH,

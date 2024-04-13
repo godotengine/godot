@@ -62,7 +62,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	// Always valid operations come first in the enum, file-specific ones
 	// should go after FILE_SAVE which is used to build the menu accordingly.
-	enum {
+	enum : int32_t {
 		FILE_NEW,
 		FILE_NEW_INCLUDE,
 		FILE_OPEN,

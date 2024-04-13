@@ -46,17 +46,17 @@ class VersionControlEditorPlugin : public EditorPlugin {
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)
 
 public:
-	enum ButtonType {
+	enum ButtonType : int32_t {
 		BUTTON_TYPE_OPEN = 0,
 		BUTTON_TYPE_DISCARD = 1,
 	};
 
-	enum DiffViewType {
+	enum DiffViewType : int32_t {
 		DIFF_VIEW_TYPE_SPLIT = 0,
 		DIFF_VIEW_TYPE_UNIFIED = 1,
 	};
 
-	enum ExtraOption {
+	enum ExtraOption : int32_t {
 		EXTRA_OPTION_FORCE_PUSH,
 		EXTRA_OPTION_CREATE_BRANCH,
 		EXTRA_OPTION_CREATE_REMOTE,

@@ -37,7 +37,7 @@ class UPNPDevice : public RefCounted {
 	GDCLASS(UPNPDevice, RefCounted);
 
 public:
-	enum IGDStatus {
+	enum IGDStatus : int32_t {
 		IGD_STATUS_OK,
 		IGD_STATUS_HTTP_ERROR,
 		IGD_STATUS_HTTP_EMPTY,

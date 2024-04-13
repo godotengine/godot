@@ -187,7 +187,7 @@ private:
 		int z_index = 0;
 	};
 
-	enum CompatibilityTileMode {
+	enum CompatibilityTileMode : int32_t {
 		COMPATIBILITY_TILE_MODE_SINGLE_TILE = 0,
 		COMPATIBILITY_TILE_MODE_AUTO_TILE,
 		COMPATIBILITY_TILE_MODE_ATLAS_TILE,
@@ -208,7 +208,7 @@ public:
 public:
 	static const int INVALID_SOURCE; // -1;
 
-	enum CellNeighbor {
+	enum CellNeighbor : int32_t {
 		CELL_NEIGHBOR_RIGHT_SIDE = 0,
 		CELL_NEIGHBOR_RIGHT_CORNER,
 		CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE,
@@ -230,20 +230,20 @@ public:
 
 	static const char *CELL_NEIGHBOR_ENUM_TO_TEXT[];
 
-	enum TerrainMode {
+	enum TerrainMode : int32_t {
 		TERRAIN_MODE_MATCH_CORNERS_AND_SIDES = 0,
 		TERRAIN_MODE_MATCH_CORNERS,
 		TERRAIN_MODE_MATCH_SIDES,
 	};
 
-	enum TileShape {
+	enum TileShape : int32_t {
 		TILE_SHAPE_SQUARE,
 		TILE_SHAPE_ISOMETRIC,
 		TILE_SHAPE_HALF_OFFSET_SQUARE,
 		TILE_SHAPE_HEXAGON,
 	};
 
-	enum TileLayout {
+	enum TileLayout : int32_t {
 		TILE_LAYOUT_STACKED,
 		TILE_LAYOUT_STACKED_OFFSET,
 		TILE_LAYOUT_STAIRS_RIGHT,
@@ -252,7 +252,7 @@ public:
 		TILE_LAYOUT_DIAMOND_DOWN,
 	};
 
-	enum TileOffsetAxis {
+	enum TileOffsetAxis : int32_t {
 		TILE_OFFSET_AXIS_HORIZONTAL,
 		TILE_OFFSET_AXIS_VERTICAL,
 	};
@@ -607,13 +607,13 @@ class TileSetAtlasSource : public TileSetSource {
 	GDCLASS(TileSetAtlasSource, TileSetSource);
 
 public:
-	enum TileAnimationMode {
+	enum TileAnimationMode : int32_t {
 		TILE_ANIMATION_MODE_DEFAULT,
 		TILE_ANIMATION_MODE_RANDOM_START_TIMES,
 		TILE_ANIMATION_MODE_MAX,
 	};
 
-	enum TransformBits {
+	enum TransformBits : int32_t {
 		TRANSFORM_FLIP_H = 1 << 12,
 		TRANSFORM_FLIP_V = 1 << 13,
 		TRANSFORM_TRANSPOSE = 1 << 14,

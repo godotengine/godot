@@ -51,7 +51,7 @@ class CameraServer : public Object {
 	_THREAD_SAFE_CLASS_
 
 public:
-	enum FeedImage {
+	enum FeedImage : int32_t {
 		FEED_RGBA_IMAGE = 0,
 		FEED_YCBCR_IMAGE = 0,
 		FEED_Y_IMAGE = 0,

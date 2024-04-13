@@ -48,7 +48,7 @@ class AudioStreamPlaybackOggVorbis : public AudioStreamPlaybackResampled {
 	bool looping = false;
 	int loops = 0;
 
-	enum {
+	enum : int32_t {
 		FADE_SIZE = 256
 	};
 	AudioFrame loop_fade[FADE_SIZE];

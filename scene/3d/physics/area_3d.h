@@ -39,7 +39,7 @@ class Area3D : public CollisionObject3D {
 	GDCLASS(Area3D, CollisionObject3D);
 
 public:
-	enum SpaceOverride {
+	enum SpaceOverride : int32_t {
 		SPACE_OVERRIDE_DISABLED,
 		SPACE_OVERRIDE_COMBINE,
 		SPACE_OVERRIDE_COMBINE_REPLACE,

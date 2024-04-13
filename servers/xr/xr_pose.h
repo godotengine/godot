@@ -38,7 +38,7 @@ class XRPose : public RefCounted {
 
 public:
 	// TrackingConfidence gives an indication of how reliable our transform data is.
-	enum TrackingConfidence {
+	enum TrackingConfidence : int32_t {
 		XR_TRACKING_CONFIDENCE_NONE, // No tracking information is available for this pose.
 		XR_TRACKING_CONFIDENCE_LOW, // Tracking information may be inaccurate or estimated.
 		XR_TRACKING_CONFIDENCE_HIGH // Tracking information is deemed accurate and up to date.

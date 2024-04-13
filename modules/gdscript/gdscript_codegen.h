@@ -40,7 +40,7 @@
 class GDScriptCodeGenerator {
 public:
 	struct Address {
-		enum AddressMode {
+		enum AddressMode : int32_t {
 			SELF,
 			CLASS,
 			MEMBER,

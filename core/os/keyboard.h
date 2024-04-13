@@ -35,7 +35,7 @@
 
 // Keep the values in this enum in sync with `_keycodes` in `keyboard.cpp`,
 // and the bindings in `core_constants.cpp`.
-enum class Key {
+enum class Key : int32_t {
 	NONE = 0,
 	// Special key: The strategy here is similar to the one used by toolkits,
 	// which consists in leaving the 21 bits unicode range for printable
@@ -247,7 +247,7 @@ enum class Key {
 	SECTION = 0x00A7,
 };
 
-enum class KeyModifierMask {
+enum class KeyModifierMask : int32_t {
 	CODE_MASK = ((1 << 23) - 1), ///< Apply this mask to any keycode to remove modifiers.
 	MODIFIER_MASK = (0x7F << 22), ///< Apply this mask to isolate modifiers.
 	//RESERVED = (1 << 23),
@@ -260,7 +260,7 @@ enum class KeyModifierMask {
 	GROUP_SWITCH = (1 << 30)
 };
 
-enum class KeyLocation {
+enum class KeyLocation : int32_t {
 	UNSPECIFIED,
 	LEFT,
 	RIGHT

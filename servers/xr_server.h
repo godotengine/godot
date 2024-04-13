@@ -60,13 +60,13 @@ class XRServer : public Object {
 	_THREAD_SAFE_CLASS_
 
 public:
-	enum XRMode {
+	enum XRMode : int32_t {
 		XRMODE_DEFAULT, /* Default behavior, means we check project settings */
 		XRMODE_OFF, /* Ignore project settings, disable OpenXR, disable shaders */
 		XRMODE_ON, /* Ignore project settings, enable OpenXR, enable shaders, run editor in VR (if applicable) */
 	};
 
-	enum TrackerType {
+	enum TrackerType : int32_t {
 		TRACKER_HEAD = 0x01, /* tracks the position of the players head (or in case of handheld AR, location of the phone) */
 		TRACKER_CONTROLLER = 0x02, /* tracks a controller */
 		TRACKER_BASESTATION = 0x04, /* tracks location of a base station */
@@ -77,7 +77,7 @@ public:
 		TRACKER_ANY = 0xff /* used by get_connected_trackers to return all types */
 	};
 
-	enum RotationMode {
+	enum RotationMode : int32_t {
 		RESET_FULL_ROTATION = 0, /* we reset the full rotation, regardless of how the HMD is oriented, we're looking dead ahead */
 		RESET_BUT_KEEP_TILT = 1, /* reset rotation but keep tilt. */
 		DONT_RESET_ROTATION = 2, /* don't reset the rotation, we will only center on position */

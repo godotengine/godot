@@ -40,7 +40,7 @@ class AudioEffectStereoEnhanceInstance : public AudioEffectInstance {
 	friend class AudioEffectStereoEnhance;
 	Ref<AudioEffectStereoEnhance> base;
 
-	enum {
+	enum : int32_t {
 		MAX_DELAY_MS = 50
 	};
 

@@ -87,7 +87,7 @@ class ProjectManager : public Control {
 	HBoxContainer *main_view_toggles = nullptr;
 	Button *quick_settings_button = nullptr;
 
-	enum MainViewTab {
+	enum MainViewTab : int32_t {
 		MAIN_VIEW_PROJECTS,
 		MAIN_VIEW_ASSETLIB,
 		MAIN_VIEW_MAX

@@ -54,7 +54,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	AnimationPlayer *player = nullptr; // For AnimationPlayerEditor, could be dummy.
 	bool is_dummy = false;
 
-	enum {
+	enum : int32_t {
 		TOOL_NEW_ANIM,
 		TOOL_ANIM_LIBRARY,
 		TOOL_DUPLICATE_ANIM,
@@ -64,7 +64,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 		TOOL_EDIT_RESOURCE
 	};
 
-	enum {
+	enum : int32_t {
 		ONION_SKINNING_ENABLE,
 		ONION_SKINNING_PAST,
 		ONION_SKINNING_FUTURE,
@@ -77,13 +77,13 @@ class AnimationPlayerEditor : public VBoxContainer {
 		ONION_SKINNING_INCLUDE_GIZMOS,
 	};
 
-	enum {
+	enum : int32_t {
 		ANIM_OPEN,
 		ANIM_SAVE,
 		ANIM_SAVE_AS
 	};
 
-	enum {
+	enum : int32_t {
 		RESOURCE_LOAD,
 		RESOURCE_SAVE
 	};

@@ -66,7 +66,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
 public:
-	enum {
+	enum : int32_t {
 		NEW_KEY_INDEX = -2,
 		NEW_VALUE_INDEX,
 	};

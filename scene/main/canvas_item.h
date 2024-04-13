@@ -47,7 +47,7 @@ class CanvasItem : public Node {
 	friend class CanvasLayer;
 
 public:
-	enum TextureFilter {
+	enum TextureFilter : int32_t {
 		TEXTURE_FILTER_PARENT_NODE,
 		TEXTURE_FILTER_NEAREST,
 		TEXTURE_FILTER_LINEAR,
@@ -58,7 +58,7 @@ public:
 		TEXTURE_FILTER_MAX
 	};
 
-	enum TextureRepeat {
+	enum TextureRepeat : int32_t {
 		TEXTURE_REPEAT_PARENT_NODE,
 		TEXTURE_REPEAT_DISABLED,
 		TEXTURE_REPEAT_ENABLED,
@@ -66,7 +66,7 @@ public:
 		TEXTURE_REPEAT_MAX,
 	};
 
-	enum ClipChildrenMode {
+	enum ClipChildrenMode : int32_t {
 		CLIP_CHILDREN_DISABLED,
 		CLIP_CHILDREN_ONLY,
 		CLIP_CHILDREN_AND_DRAW,
@@ -173,7 +173,7 @@ protected:
 	GDVIRTUAL0(_draw)
 
 public:
-	enum {
+	enum : int32_t {
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED, //unique
 		NOTIFICATION_DRAW = 30,
 		NOTIFICATION_VISIBILITY_CHANGED = 31,

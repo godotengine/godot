@@ -41,7 +41,7 @@
 class CreateDialog : public ConfirmationDialog {
 	GDCLASS(CreateDialog, ConfirmationDialog);
 
-	enum TypeCategory {
+	enum TypeCategory : int32_t {
 		CPP_TYPE,
 		PATH_TYPE,
 		OTHER_TYPE

@@ -77,7 +77,7 @@ class MIDIDriverALSAMidi : public MIDIDriver {
 
 	static void thread_func(void *p_udata);
 
-	enum class MessageCategory {
+	enum class MessageCategory : int32_t {
 		Data,
 		Voice,
 		SysExBegin,

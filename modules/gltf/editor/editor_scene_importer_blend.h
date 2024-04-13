@@ -47,21 +47,21 @@ class EditorSceneFormatImporterBlend : public EditorSceneFormatImporter {
 	int blender_minor_version = -1;
 
 public:
-	enum {
+	enum : int32_t {
 		BLEND_VISIBLE_ALL,
 		BLEND_VISIBLE_VISIBLE_ONLY,
 		BLEND_VISIBLE_RENDERABLE
 	};
-	enum {
+	enum : int32_t {
 		BLEND_BONE_INFLUENCES_NONE,
 		BLEND_BONE_INFLUENCES_COMPATIBLE,
 		BLEND_BONE_INFLUENCES_ALL
 	};
-	enum {
+	enum : int32_t {
 		BLEND_MATERIAL_EXPORT_PLACEHOLDER,
 		BLEND_MATERIAL_EXPORT_EXPORT
 	};
-	enum {
+	enum : int32_t {
 		BLEND_MODIFIERS_NONE,
 		BLEND_MODIFIERS_ALL
 	};

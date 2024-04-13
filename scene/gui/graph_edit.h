@@ -136,12 +136,12 @@ public:
 	};
 
 	// Should be in sync with ControlScheme in ViewPanner.
-	enum PanningScheme {
+	enum PanningScheme : int32_t {
 		SCROLL_ZOOMS,
 		SCROLL_PANS,
 	};
 
-	enum GridPattern {
+	enum GridPattern : int32_t {
 		GRID_PATTERN_LINES,
 		GRID_PATTERN_DOTS
 	};

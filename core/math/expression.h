@@ -55,7 +55,7 @@ private:
 
 	bool _compile_expression();
 
-	enum TokenType {
+	enum TokenType : int32_t {
 		TK_CURLY_BRACKET_OPEN,
 		TK_CURLY_BRACKET_CLOSE,
 		TK_BRACKET_OPEN,
@@ -118,7 +118,7 @@ private:
 	bool error_set = true;
 
 	struct ENode {
-		enum Type {
+		enum Type : int32_t {
 			TYPE_INPUT,
 			TYPE_CONSTANT,
 			TYPE_SELF,

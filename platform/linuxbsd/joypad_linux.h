@@ -47,7 +47,7 @@ public:
 	void process_joypads();
 
 private:
-	enum {
+	enum : int32_t {
 		JOYPADS_MAX = 16,
 		MAX_ABS = 63,
 		MAX_KEY = 767, // Hack because <linux/input.h> can't be included here

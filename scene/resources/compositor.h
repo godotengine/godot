@@ -41,7 +41,7 @@ class CompositorEffect : public Resource {
 	GDCLASS(CompositorEffect, Resource);
 
 public:
-	enum EffectCallbackType {
+	enum EffectCallbackType : int32_t {
 		EFFECT_CALLBACK_TYPE_PRE_OPAQUE,
 		EFFECT_CALLBACK_TYPE_POST_OPAQUE,
 		EFFECT_CALLBACK_TYPE_POST_SKY,

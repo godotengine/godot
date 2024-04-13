@@ -39,7 +39,7 @@ class CanvasItemEditor;
 class CollisionShape2DEditor : public Control {
 	GDCLASS(CollisionShape2DEditor, Control);
 
-	enum ShapeType {
+	enum ShapeType : int32_t {
 		CAPSULE_SHAPE,
 		CIRCLE_SHAPE,
 		CONCAVE_POLYGON_SHAPE,

@@ -42,7 +42,7 @@ class AudioStreamSynchronized : public AudioStream {
 private:
 	friend class AudioStreamPlaybackSynchronized;
 
-	enum {
+	enum : int32_t {
 		MAX_STREAMS = 32
 	};
 
@@ -79,7 +79,7 @@ class AudioStreamPlaybackSynchronized : public AudioStreamPlayback {
 	friend class AudioStreamSynchronized;
 
 private:
-	enum {
+	enum : int32_t {
 		MIX_BUFFER_SIZE = 128
 	};
 	AudioFrame mix_buffer[MIX_BUFFER_SIZE];

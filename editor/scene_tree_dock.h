@@ -53,7 +53,7 @@ class RenameDialog;
 class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);
 
-	enum Tool {
+	enum Tool : int32_t {
 		TOOL_NEW,
 		TOOL_INSTANTIATE,
 		TOOL_EXPAND_COLLAPSE,
@@ -98,7 +98,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	};
 
-	enum {
+	enum : int32_t {
 		EDIT_SUBRESOURCE_BASE = 100
 	};
 
@@ -162,7 +162,7 @@ class SceneTreeDock : public VBoxContainer {
 	EditorQuickOpen *quick_open = nullptr;
 	EditorFileDialog *new_scene_from_dialog = nullptr;
 
-	enum FilterMenuItems {
+	enum FilterMenuItems : int32_t {
 		FILTER_BY_TYPE = 64, // Used in the same menus as the Tool enum.
 		FILTER_BY_GROUP,
 	};
@@ -197,7 +197,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
 
-	enum ReplaceOwnerMode {
+	enum ReplaceOwnerMode : int32_t {
 		MODE_BIDI,
 		MODE_DO,
 		MODE_UNDO

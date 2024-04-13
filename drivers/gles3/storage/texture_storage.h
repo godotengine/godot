@@ -112,7 +112,7 @@ namespace GLES3 {
 
 #define _EXT_TEXTURE_CUBE_MAP_SEAMLESS 0x884F
 
-enum DefaultGLTexture {
+enum DefaultGLTexture : int32_t {
 	DEFAULT_GL_TEXTURE_WHITE,
 	DEFAULT_GL_TEXTURE_BLACK,
 	DEFAULT_GL_TEXTURE_TRANSPARENT,
@@ -163,7 +163,7 @@ struct Texture {
 	Image::Format format = Image::FORMAT_R8;
 	Image::Format real_format = Image::FORMAT_R8;
 
-	enum Type {
+	enum Type : int32_t {
 		TYPE_2D,
 		TYPE_LAYERED,
 		TYPE_3D

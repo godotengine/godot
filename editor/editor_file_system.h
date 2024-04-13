@@ -140,7 +140,7 @@ class EditorFileSystem : public Node {
 	_THREAD_SAFE_CLASS_
 
 	struct ItemAction {
-		enum Action {
+		enum Action : int32_t {
 			ACTION_NONE,
 			ACTION_DIR_ADD,
 			ACTION_DIR_REMOVE,

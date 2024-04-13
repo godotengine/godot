@@ -44,13 +44,13 @@ class FileDialog : public ConfirmationDialog {
 	GDCLASS(FileDialog, ConfirmationDialog);
 
 public:
-	enum Access {
+	enum Access : int32_t {
 		ACCESS_RESOURCES,
 		ACCESS_USERDATA,
 		ACCESS_FILESYSTEM
 	};
 
-	enum FileMode {
+	enum FileMode : int32_t {
 		FILE_MODE_OPEN_FILE,
 		FILE_MODE_OPEN_FILES,
 		FILE_MODE_OPEN_DIR,

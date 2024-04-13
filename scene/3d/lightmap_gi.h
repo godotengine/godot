@@ -116,14 +116,14 @@ class LightmapGI : public VisualInstance3D {
 	GDCLASS(LightmapGI, VisualInstance3D);
 
 public:
-	enum BakeQuality {
+	enum BakeQuality : int32_t {
 		BAKE_QUALITY_LOW,
 		BAKE_QUALITY_MEDIUM,
 		BAKE_QUALITY_HIGH,
 		BAKE_QUALITY_ULTRA,
 	};
 
-	enum GenerateProbes {
+	enum GenerateProbes : int32_t {
 		GENERATE_PROBES_DISABLED,
 		GENERATE_PROBES_SUBDIV_4,
 		GENERATE_PROBES_SUBDIV_8,
@@ -131,7 +131,7 @@ public:
 		GENERATE_PROBES_SUBDIV_32,
 	};
 
-	enum BakeError {
+	enum BakeError : int32_t {
 		BAKE_ERROR_OK,
 		BAKE_ERROR_NO_SCENE_ROOT,
 		BAKE_ERROR_FOREIGN_DATA,
@@ -145,7 +145,7 @@ public:
 		BAKE_ERROR_LIGHTMAP_TOO_SMALL,
 	};
 
-	enum EnvironmentMode {
+	enum EnvironmentMode : int32_t {
 		ENVIRONMENT_MODE_DISABLED,
 		ENVIRONMENT_MODE_SCENE,
 		ENVIRONMENT_MODE_CUSTOM_SKY,

@@ -40,7 +40,7 @@ class CodeEdit : public TextEdit {
 public:
 	// Keep enums in sync with:
 	// core/object/script_language.h - ScriptLanguage::CodeCompletionKind
-	enum CodeCompletionKind {
+	enum CodeCompletionKind : int32_t {
 		KIND_CLASS,
 		KIND_FUNCTION,
 		KIND_SIGNAL,
@@ -54,7 +54,7 @@ public:
 	};
 
 	// core/object/script_language.h - ScriptLanguage::CodeCompletionLocation
-	enum CodeCompletionLocation {
+	enum CodeCompletionLocation : int32_t {
 		LOCATION_LOCAL = 0,
 		LOCATION_PARENT_MASK = 1 << 8,
 		LOCATION_OTHER_USER_CODE = 1 << 9,
@@ -89,7 +89,7 @@ private:
 	int _get_auto_brace_pair_close_at_pos(int p_line, int p_col);
 
 	/* Main Gutter */
-	enum MainGutterType {
+	enum MainGutterType : int32_t {
 		MAIN_GUTTER_BREAKPOINT = 0x01,
 		MAIN_GUTTER_BOOKMARK = 0x02,
 		MAIN_GUTTER_EXECUTING = 0x04
@@ -132,7 +132,7 @@ private:
 	void _update_code_region_tags();
 
 	/* Delimiters */
-	enum DelimiterType {
+	enum DelimiterType : int32_t {
 		TYPE_STRING,
 		TYPE_COMMENT,
 	};

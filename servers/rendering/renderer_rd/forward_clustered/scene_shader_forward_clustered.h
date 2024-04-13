@@ -41,14 +41,14 @@ private:
 	static SceneShaderForwardClustered *singleton;
 
 public:
-	enum ShaderGroup {
+	enum ShaderGroup : int32_t {
 		SHADER_GROUP_BASE, // Always compiled at the beginning.
 		SHADER_GROUP_ADVANCED,
 		SHADER_GROUP_MULTIVIEW,
 		SHADER_GROUP_ADVANCED_MULTIVIEW,
 	};
 
-	enum ShaderVersion {
+	enum ShaderVersion : int32_t {
 		SHADER_VERSION_DEPTH_PASS,
 		SHADER_VERSION_DEPTH_PASS_DP,
 		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS,
@@ -62,7 +62,7 @@ public:
 		SHADER_VERSION_MAX
 	};
 
-	enum ShaderColorPassFlags {
+	enum ShaderColorPassFlags : int32_t {
 		SHADER_COLOR_PASS_FLAG_SEPARATE_SPECULAR = 1 << 0,
 		SHADER_COLOR_PASS_FLAG_LIGHTMAP = 1 << 1,
 		SHADER_COLOR_PASS_FLAG_MULTIVIEW = 1 << 2,
@@ -70,7 +70,7 @@ public:
 		SHADER_COLOR_PASS_FLAG_COUNT = 1 << 4
 	};
 
-	enum PipelineVersion {
+	enum PipelineVersion : int32_t {
 		PIPELINE_VERSION_DEPTH_PASS,
 		PIPELINE_VERSION_DEPTH_PASS_DP,
 		PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS,
@@ -84,7 +84,7 @@ public:
 		PIPELINE_VERSION_MAX
 	};
 
-	enum PipelineColorPassFlags {
+	enum PipelineColorPassFlags : int32_t {
 		PIPELINE_COLOR_PASS_FLAG_TRANSPARENT = 1 << 0, // Can't combine with SEPARATE_SPECULAR.
 		PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR = 1 << 1, // Can't combine with TRANSPARENT.
 		PIPELINE_COLOR_PASS_FLAG_LIGHTMAP = 1 << 2,
@@ -93,7 +93,7 @@ public:
 		PIPELINE_COLOR_PASS_FLAG_COUNT = 1 << 5,
 	};
 
-	enum ShaderSpecializations {
+	enum ShaderSpecializations : int32_t {
 		SHADER_SPECIALIZATION_FORWARD_GI = 1 << 0,
 		SHADER_SPECIALIZATION_PROJECTOR = 1 << 1,
 		SHADER_SPECIALIZATION_SOFT_SHADOWS = 1 << 2,
@@ -101,7 +101,7 @@ public:
 	};
 
 	struct ShaderData : public RendererRD::MaterialStorage::ShaderData {
-		enum BlendMode { //used internally
+		enum BlendMode : int32_t { //used internally
 			BLEND_MODE_MIX,
 			BLEND_MODE_ADD,
 			BLEND_MODE_SUB,
@@ -109,24 +109,24 @@ public:
 			BLEND_MODE_ALPHA_TO_COVERAGE
 		};
 
-		enum DepthDraw {
+		enum DepthDraw : int32_t {
 			DEPTH_DRAW_DISABLED,
 			DEPTH_DRAW_OPAQUE,
 			DEPTH_DRAW_ALWAYS
 		};
 
-		enum DepthTest {
+		enum DepthTest : int32_t {
 			DEPTH_TEST_DISABLED,
 			DEPTH_TEST_ENABLED
 		};
 
-		enum Cull {
+		enum Cull : int32_t {
 			CULL_DISABLED,
 			CULL_FRONT,
 			CULL_BACK
 		};
 
-		enum CullVariant {
+		enum CullVariant : int32_t {
 			CULL_VARIANT_NORMAL,
 			CULL_VARIANT_REVERSED,
 			CULL_VARIANT_DOUBLE_SIDED,
@@ -134,7 +134,7 @@ public:
 
 		};
 
-		enum AlphaAntiAliasing {
+		enum AlphaAntiAliasing : int32_t {
 			ALPHA_ANTIALIASING_OFF,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE

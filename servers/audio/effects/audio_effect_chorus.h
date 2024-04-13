@@ -59,7 +59,7 @@ class AudioEffectChorus : public AudioEffect {
 	friend class AudioEffectChorusInstance;
 
 public:
-	enum {
+	enum : int32_t {
 		MAX_DELAY_MS = 50,
 		MAX_DEPTH_MS = 20,
 		MAX_WIDTH_MS = 50,

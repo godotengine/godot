@@ -87,7 +87,7 @@ namespace GjkEpa2 {
 
 
 struct sResults	{
-	enum eStatus {
+	enum eStatus : int32_t {
 		Separated,		/* Shapes doesn't penetrate */
 		Penetrating,	/* Shapes are penetrating */
 		GJK_Failed,		/* GJK phase fail, no big issue, shapes are probably just 'touching'	*/

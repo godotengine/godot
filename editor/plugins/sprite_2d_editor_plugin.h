@@ -45,7 +45,7 @@ class ViewPanner;
 class Sprite2DEditor : public Control {
 	GDCLASS(Sprite2DEditor, Control);
 
-	enum Menu {
+	enum Menu : int32_t {
 		MENU_OPTION_CONVERT_TO_MESH_2D,
 		MENU_OPTION_CONVERT_TO_POLYGON_2D,
 		MENU_OPTION_CREATE_COLLISION_POLY_2D,

@@ -53,7 +53,7 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 	_FORCE_INLINE_ void _update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4);
 	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform3D &p_transform, float *p_mat4);
 
-	enum {
+	enum : int64_t {
 
 		FLAGS_INSTANCING_MASK = 0x7F,
 		FLAGS_INSTANCING_HAS_COLORS = (1 << 7),
@@ -80,7 +80,7 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 		FLAGS_FLIP_V = (1 << 31),
 	};
 
-	enum {
+	enum : int32_t {
 		LIGHT_FLAGS_TEXTURE_MASK = 0xFFFF,
 		LIGHT_FLAGS_BLEND_SHIFT = 16,
 		LIGHT_FLAGS_BLEND_MASK = (3 << 16),
@@ -93,7 +93,7 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 
 	};
 
-	enum {
+	enum : int32_t {
 		MAX_RENDER_ITEMS = 256 * 1024,
 		MAX_LIGHT_TEXTURES = 1024,
 		MAX_LIGHTS_PER_ITEM = 16,
@@ -158,7 +158,7 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 	};
 
 public:
-	enum {
+	enum : int32_t {
 		BASE_UNIFORM_LOCATION = 0,
 		GLOBAL_UNIFORM_LOCATION = 1,
 		LIGHT_UNIFORM_LOCATION = 2,

@@ -38,7 +38,7 @@
 
 class Collada {
 public:
-	enum ImportFlags {
+	enum ImportFlags : int32_t {
 		IMPORT_FLAG_SCENE = 1,
 		IMPORT_FLAG_ANIMATION = 2
 	};
@@ -77,7 +77,7 @@ public:
 	};
 
 	struct CameraData {
-		enum Mode {
+		enum Mode : int32_t {
 			MODE_PERSPECTIVE,
 			MODE_ORTHOGONAL
 		};
@@ -103,7 +103,7 @@ public:
 	};
 
 	struct LightData {
-		enum Mode {
+		enum Mode : int32_t {
 			MODE_AMBIENT,
 			MODE_DIRECTIONAL,
 			MODE_OMNI,
@@ -312,7 +312,7 @@ public:
 	};
 
 	struct Node {
-		enum Type {
+		enum Type : int32_t {
 			TYPE_NODE,
 			TYPE_JOINT,
 			TYPE_SKELETON, //this bone is not collada, it's added afterwards as optimization
@@ -322,7 +322,7 @@ public:
 		};
 
 		struct XForm {
-			enum Op {
+			enum Op : int32_t {
 				OP_ROTATE,
 				OP_SCALE,
 				OP_TRANSLATE,
@@ -427,13 +427,13 @@ public:
 		String component;
 		bool property = false;
 
-		enum InterpolationType {
+		enum InterpolationType : int32_t {
 			INTERP_LINEAR,
 			INTERP_BEZIER
 		};
 
 		struct Key {
-			enum Type {
+			enum Type : int32_t {
 				TYPE_FLOAT,
 				TYPE_MATRIX
 			};

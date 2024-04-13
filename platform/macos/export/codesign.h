@@ -60,7 +60,7 @@
 
 class CodeSignCodeResources {
 public:
-	enum class CRMatch {
+	enum class CRMatch : int32_t {
 		CR_MATCH_NO,
 		CR_MATCH_YES,
 		CR_MATCH_NESTED,
@@ -222,7 +222,7 @@ public:
 
 class CodeSignCodeDirectory : public CodeSignBlob {
 public:
-	enum Slot {
+	enum Slot : int32_t {
 		SLOT_INFO_PLIST = -1,
 		SLOT_REQUIREMENTS = -2,
 		SLOT_RESOURCES = -3,
@@ -232,7 +232,7 @@ public:
 		SLOT_DER_ENTITLEMENTS = -7,
 	};
 
-	enum CodeSignExecSegFlags {
+	enum CodeSignExecSegFlags : int32_t {
 		EXECSEG_MAIN_BINARY = 0x1,
 		EXECSEG_ALLOW_UNSIGNED = 0x10,
 		EXECSEG_DEBUGGER = 0x20,
@@ -242,7 +242,7 @@ public:
 		EXECSEG_CAN_EXEC_CDHASH = 0x200,
 	};
 
-	enum CodeSignatureFlags {
+	enum CodeSignatureFlags : int32_t {
 		SIGNATURE_HOST = 0x0001,
 		SIGNATURE_ADHOC = 0x0002,
 		SIGNATURE_TASK_ALLOW = 0x0004,

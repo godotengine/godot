@@ -49,7 +49,7 @@ public:
 		Point2 pos;
 	};
 
-	enum {
+	enum : int32_t {
 		JOY_EVENT_BUTTON = 0,
 		JOY_EVENT_AXIS = 1,
 		JOY_EVENT_HAT = 2

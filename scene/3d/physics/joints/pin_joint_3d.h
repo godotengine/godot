@@ -37,7 +37,7 @@ class PinJoint3D : public Joint3D {
 	GDCLASS(PinJoint3D, Joint3D);
 
 public:
-	enum Param {
+	enum Param : int32_t {
 		PARAM_BIAS = PhysicsServer3D::PIN_JOINT_BIAS,
 		PARAM_DAMPING = PhysicsServer3D::PIN_JOINT_DAMPING,
 		PARAM_IMPULSE_CLAMP = PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP

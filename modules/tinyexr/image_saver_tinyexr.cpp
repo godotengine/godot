@@ -58,7 +58,7 @@ static bool is_supported_format(Image::Format p_format) {
 	}
 }
 
-enum SrcPixelType {
+enum SrcPixelType : int32_t {
 	SRC_FLOAT,
 	SRC_HALF,
 	SRC_BYTE,

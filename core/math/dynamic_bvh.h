@@ -229,7 +229,7 @@ private:
 	uint32_t opath = 0;
 	uint32_t index = 0;
 
-	enum {
+	enum : int32_t {
 		ALLOCA_STACK_SIZE = 128
 	};
 

@@ -38,7 +38,7 @@ class UDPServer : public RefCounted {
 	GDCLASS(UDPServer, RefCounted);
 
 protected:
-	enum {
+	enum : int32_t {
 		PACKET_BUFFER_SIZE = 65536
 	};
 

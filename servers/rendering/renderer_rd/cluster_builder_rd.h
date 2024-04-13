@@ -56,7 +56,7 @@ class ClusterBuilderSharedDataRD {
 	RID box_index_buffer;
 	RID box_index_array;
 
-	enum Divisor {
+	enum Divisor : int32_t {
 		DIVISOR_1,
 		DIVISOR_2,
 		DIVISOR_4,
@@ -74,7 +74,7 @@ class ClusterBuilderSharedDataRD {
 		RID shader_version;
 		RID shader;
 
-		enum PipelineVersion {
+		enum PipelineVersion : int32_t {
 			PIPELINE_NORMAL,
 			PIPELINE_MSAA,
 			PIPELINE_MAX
@@ -133,17 +133,17 @@ class ClusterBuilderRD {
 public:
 	static constexpr float WIDE_SPOT_ANGLE_THRESHOLD_DEG = 60.0f;
 
-	enum LightType {
+	enum LightType : int32_t {
 		LIGHT_TYPE_OMNI,
 		LIGHT_TYPE_SPOT
 	};
 
-	enum BoxType {
+	enum BoxType : int32_t {
 		BOX_TYPE_REFLECTION_PROBE,
 		BOX_TYPE_DECAL,
 	};
 
-	enum ElementType {
+	enum ElementType : int32_t {
 		ELEMENT_TYPE_OMNI_LIGHT,
 		ELEMENT_TYPE_SPOT_LIGHT,
 		ELEMENT_TYPE_DECAL,
@@ -178,7 +178,7 @@ private:
 	float z_near = 0;
 	bool camera_orthogonal = false;
 
-	enum Divisor {
+	enum Divisor : int32_t {
 		DIVISOR_1,
 		DIVISOR_2,
 		DIVISOR_4,

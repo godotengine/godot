@@ -48,7 +48,7 @@ class Path2DEditor : public HBoxContainer {
 	Panel *panel = nullptr;
 	Path2D *node = nullptr;
 
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_CREATE,
 		MODE_EDIT,
 		MODE_EDIT_CURVE,
@@ -72,12 +72,12 @@ class Path2DEditor : public HBoxContainer {
 	bool mirror_handle_length;
 	bool on_edge;
 
-	enum HandleOption {
+	enum HandleOption : int32_t {
 		HANDLE_OPTION_ANGLE,
 		HANDLE_OPTION_LENGTH,
 	};
 
-	enum Action {
+	enum Action : int32_t {
 		ACTION_NONE,
 		ACTION_MOVING_POINT,
 		ACTION_MOVING_NEW_POINT,

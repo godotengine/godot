@@ -68,7 +68,7 @@ class MultiMeshEditor : public Control {
 	SpinBox *populate_scale = nullptr;
 	SpinBox *populate_amount = nullptr;
 
-	enum Menu {
+	enum Menu : int32_t {
 		MENU_OPTION_POPULATE
 	};
 

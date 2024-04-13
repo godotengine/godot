@@ -77,7 +77,7 @@ class DynamicFontImportSettingsDialog : public ConfirmationDialog {
 	GDCLASS(DynamicFontImportSettingsDialog, ConfirmationDialog)
 	friend class DynamicFontImportSettingsData;
 
-	enum ItemButton {
+	enum ItemButton : int32_t {
 		BUTTON_ADD_VAR,
 		BUTTON_REMOVE_VAR,
 	};

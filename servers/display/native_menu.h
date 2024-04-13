@@ -51,7 +51,7 @@ public:
 		return singleton;
 	}
 
-	enum Feature {
+	enum Feature : int32_t {
 		FEATURE_GLOBAL_MENU,
 		FEATURE_POPUP_MENU,
 		FEATURE_OPEN_CLOSE_CALLBACK,
@@ -59,7 +59,7 @@ public:
 		FEATURE_KEY_CALLBACK,
 	};
 
-	enum SystemMenus {
+	enum SystemMenus : int32_t {
 		INVALID_MENU_ID,
 		MAIN_MENU_ID,
 		APPLICATION_MENU_ID,

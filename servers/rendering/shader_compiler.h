@@ -37,7 +37,7 @@
 
 class ShaderCompiler {
 public:
-	enum Stage {
+	enum Stage : int32_t {
 		STAGE_VERTEX,
 		STAGE_FRAGMENT,
 		STAGE_COMPUTE,

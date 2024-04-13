@@ -38,7 +38,7 @@
 class ResourceImporterOggVorbis : public ResourceImporter {
 	GDCLASS(ResourceImporterOggVorbis, ResourceImporter);
 
-	enum {
+	enum : int32_t {
 		OGG_SYNC_BUFFER_SIZE = 8192,
 	};
 

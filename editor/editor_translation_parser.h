@@ -54,7 +54,7 @@ class EditorTranslationParser {
 	static EditorTranslationParser *singleton;
 
 public:
-	enum ParserType {
+	enum ParserType : int32_t {
 		STANDARD, // GDScript, CSharp, ...
 		CUSTOM // User-defined parser plugins. This will override standard parsers if the same extension type is defined.
 	};

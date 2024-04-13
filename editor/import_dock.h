@@ -83,7 +83,7 @@ class ImportDock : public VBoxContainer {
 	void _replace_resource_in_object(Object *p_object, const Ref<Resource> &old_resource, const Ref<Resource> &new_resource);
 
 	void _advanced_options();
-	enum {
+	enum : int32_t {
 		ITEM_SET_AS_DEFAULT = 100,
 		ITEM_LOAD_DEFAULT,
 		ITEM_CLEAR_DEFAULT,
