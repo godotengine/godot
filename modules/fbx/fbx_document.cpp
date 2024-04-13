@@ -990,8 +990,8 @@ Error FBXDocument::_parse_images(Ref<FBXState> p_state, const String &p_base_pat
 	for (int texture_i = 0; texture_i < static_cast<int>(fbx_scene->texture_files.count); texture_i++) {
 		const ufbx_texture_file &fbx_texture_file = fbx_scene->texture_files[texture_i];
 		String path = _as_string(fbx_texture_file.filename);
-		path = ProjectSettings::get_singleton()->localize_path(path);
-		if (path.is_absolute_path() && !path.is_resource_file()) {
+		// Use only filename for absolute paths to avoid portability issues.
+		if (path.is_absolute_path()) {
 			path = path.get_file();
 		}
 		if (!p_base_path.is_empty()) {
@@ -2239,6 +2239,10 @@ Error FBXDocument::_parse_lights(Ref<FBXState> p_state) {
 }
 
 String FBXDocument::_get_texture_path(const String &p_base_dir, const String &p_source_file_path) const {
+	// Check if the original path exists first.
+	if (FileAccess::exists(p_source_file_path)) {
+		return p_source_file_path.strip_edges();
+	}
 	const String tex_file_name = p_source_file_path.get_file();
 	const Vector<String> subdirs = {
 		"", "textures/", "Textures/", "images/",
