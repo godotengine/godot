@@ -173,6 +173,15 @@ void NavigationMeshSourceGeometryData3D::_add_faces(const PackedVector3Array &p_
 
 void NavigationMeshSourceGeometryData3D::add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform) {
 	ERR_FAIL_COND(!p_mesh.is_valid());
+
+#ifdef DEBUG_ENABLED
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		WARN_PRINT_ONCE("Source geometry parsing for navigation mesh baking had to parse RenderingServer meshes at runtime.\n\
+		This poses a significant performance issues as visual meshes store geometry data on the GPU and transferring this data back to the CPU blocks the rendering.\n\
+		For runtime (re)baking navigation meshes use and parse collision shapes as source geometry or create geometry data procedurally in scripts.");
+	}
+#endif
+
 	_add_mesh(p_mesh, root_node_transform * p_xform);
 }
 
