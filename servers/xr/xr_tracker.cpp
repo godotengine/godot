@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  webxr_interface.h                                                     */
+/*  xr_tracker.cpp                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,55 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WEBXR_INTERFACE_H
-#define WEBXR_INTERFACE_H
+#include "xr_tracker.h"
 
-#include "servers/xr/xr_controller_tracker.h"
-#include "servers/xr/xr_interface.h"
+void XRTracker::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_tracker_type"), &XRTracker::get_tracker_type);
+	ClassDB::bind_method(D_METHOD("set_tracker_type", "type"), &XRTracker::set_tracker_type);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_tracker_type", "get_tracker_type");
 
-/**
-	The WebXR interface is a VR/AR interface that can be used on the web.
-*/
+	ClassDB::bind_method(D_METHOD("get_tracker_name"), &XRTracker::get_tracker_name);
+	ClassDB::bind_method(D_METHOD("set_tracker_name", "name"), &XRTracker::set_tracker_name);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_tracker_name", "get_tracker_name");
 
-class WebXRInterface : public XRInterface {
-	GDCLASS(WebXRInterface, XRInterface);
-
-protected:
-	static void _bind_methods();
-
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-	Ref<XRPositionalTracker> _get_input_source_tracker_bind_compat_90645(int p_input_source_id) const;
-#endif
-
-public:
-	enum TargetRayMode {
-		TARGET_RAY_MODE_UNKNOWN,
-		TARGET_RAY_MODE_GAZE,
-		TARGET_RAY_MODE_TRACKED_POINTER,
-		TARGET_RAY_MODE_SCREEN,
-	};
-
-	virtual void is_session_supported(const String &p_session_mode) = 0;
-	virtual void set_session_mode(String p_session_mode) = 0;
-	virtual String get_session_mode() const = 0;
-	virtual void set_required_features(String p_required_features) = 0;
-	virtual String get_required_features() const = 0;
-	virtual void set_optional_features(String p_optional_features) = 0;
-	virtual String get_optional_features() const = 0;
-	virtual void set_requested_reference_space_types(String p_requested_reference_space_types) = 0;
-	virtual String get_requested_reference_space_types() const = 0;
-	virtual String get_reference_space_type() const = 0;
-	virtual String get_enabled_features() const = 0;
-	virtual bool is_input_source_active(int p_input_source_id) const = 0;
-	virtual Ref<XRControllerTracker> get_input_source_tracker(int p_input_source_id) const = 0;
-	virtual TargetRayMode get_input_source_target_ray_mode(int p_input_source_id) const = 0;
-	virtual String get_visibility_state() const = 0;
-	virtual float get_display_refresh_rate() const = 0;
-	virtual void set_display_refresh_rate(float p_refresh_rate) = 0;
-	virtual Array get_available_display_refresh_rates() const = 0;
+	ClassDB::bind_method(D_METHOD("get_tracker_desc"), &XRTracker::get_tracker_desc);
+	ClassDB::bind_method(D_METHOD("set_tracker_desc", "description"), &XRTracker::set_tracker_desc);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_tracker_desc", "get_tracker_desc");
 };
 
-VARIANT_ENUM_CAST(WebXRInterface::TargetRayMode);
+void XRTracker::set_tracker_type(XRServer::TrackerType p_type) {
+	type = p_type;
+};
 
-#endif // WEBXR_INTERFACE_H
+XRServer::TrackerType XRTracker::get_tracker_type() const {
+	return type;
+};
+
+void XRTracker::set_tracker_name(const StringName &p_name) {
+	// Note: this should not be changed after the tracker is registered with the XRServer!
+	name = p_name;
+};
+
+StringName XRTracker::get_tracker_name() const {
+	return name;
+};
+
+void XRTracker::set_tracker_desc(const String &p_desc) {
+	description = p_desc;
+}
+
+String XRTracker::get_tracker_desc() const {
+	return description;
+}

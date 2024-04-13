@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRFaceTracker" inherits="RefCounted" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRFaceTracker" inherits="XRTracker" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A tracked face.
 	</brief_description>
@@ -31,6 +31,7 @@
 		<member name="blend_shapes" type="PackedFloat32Array" setter="set_blend_shapes" getter="get_blend_shapes" default="PackedFloat32Array()">
 			The array of face blend shape weights with indices corresponding to the [enum BlendShapeEntry] enum.
 		</member>
+		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" overrides="XRTracker" enum="XRServer.TrackerType" default="64" />
 	</members>
 	<constants>
 		<constant name="FT_EYE_LOOK_OUT_RIGHT" value="0" enum="BlendShapeEntry">
