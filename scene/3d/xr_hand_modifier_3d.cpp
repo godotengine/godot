@@ -40,7 +40,7 @@ void XRHandModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_update", "bone_update"), &XRHandModifier3D::set_bone_update);
 	ClassDB::bind_method(D_METHOD("get_bone_update"), &XRHandModifier3D::get_bone_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "hand_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/left,/user/right"), "set_hand_tracker", "get_hand_tracker");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "hand_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/hand_tracker/left,/user/hand_tracker/right"), "set_hand_tracker", "get_hand_tracker");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_update", PROPERTY_HINT_ENUM, "Full,Rotation Only"), "set_bone_update", "get_bone_update");
 
 	BIND_ENUM_CONSTANT(BONE_UPDATE_FULL);
@@ -111,22 +111,30 @@ void XRHandModifier3D::_get_joint_data() {
 		joints[i].parent_joint = -1;
 	}
 
-	Skeleton3D *skeleton = get_skeleton();
+	const Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton) {
 		return;
 	}
 
-	XRServer *xr_server = XRServer::get_singleton();
+	const XRServer *xr_server = XRServer::get_singleton();
 	if (!xr_server) {
 		return;
 	}
 
-	Ref<XRHandTracker> tracker = xr_server->get_hand_tracker(tracker_name);
+	const Ref<XRHandTracker> tracker = xr_server->get_tracker(tracker_name);
 	if (tracker.is_null()) {
 		return;
 	}
 
-	XRHandTracker::Hand hand = tracker->get_hand();
+	// Verify we have a left or right hand tracker.
+	const XRPositionalTracker::TrackerHand tracker_hand = tracker->get_tracker_hand();
+	if (tracker_hand != XRPositionalTracker::TRACKER_HAND_LEFT &&
+			tracker_hand != XRPositionalTracker::TRACKER_HAND_RIGHT) {
+		return;
+	}
+
+	// Get the hand index (0 = left, 1 = right).
+	const int hand = tracker_hand == XRPositionalTracker::TRACKER_HAND_LEFT ? 0 : 1;
 
 	// Find the skeleton-bones associated with each joint.
 	int bones[XRHandTracker::HAND_JOINT_MAX];
@@ -176,18 +184,22 @@ void XRHandModifier3D::_process_modification() {
 		return;
 	}
 
-	XRServer *xr_server = XRServer::get_singleton();
+	const XRServer *xr_server = XRServer::get_singleton();
 	if (!xr_server) {
 		return;
 	}
 
-	Ref<XRHandTracker> tracker = xr_server->get_hand_tracker(tracker_name);
+	const Ref<XRHandTracker> tracker = xr_server->get_tracker(tracker_name);
 	if (tracker.is_null()) {
 		return;
 	}
 
+	// Skip if no tracking data
+	if (!tracker->get_has_tracking_data()) {
+		return;
+	}
+
 	// Get the world and skeleton scale.
-	const float ws = xr_server->get_world_scale();
 	const float ss = skeleton->get_motion_scale();
 
 	// We cache our transforms so we can quickly calculate local transforms.
@@ -195,55 +207,44 @@ void XRHandModifier3D::_process_modification() {
 	Transform3D transforms[XRHandTracker::HAND_JOINT_MAX];
 	Transform3D inv_transforms[XRHandTracker::HAND_JOINT_MAX];
 
-	if (tracker->get_has_tracking_data()) {
-		for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
-			BitField<XRHandTracker::HandJointFlags> flags = tracker->get_hand_joint_flags((XRHandTracker::HandJoint)joint);
-			has_valid_data[joint] = flags.has_flag(XRHandTracker::HAND_JOINT_FLAG_ORIENTATION_VALID);
+	for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
+		BitField<XRHandTracker::HandJointFlags> flags = tracker->get_hand_joint_flags((XRHandTracker::HandJoint)joint);
+		has_valid_data[joint] = flags.has_flag(XRHandTracker::HAND_JOINT_FLAG_ORIENTATION_VALID);
 
-			if (has_valid_data[joint]) {
-				transforms[joint] = tracker->get_hand_joint_transform((XRHandTracker::HandJoint)joint);
-				transforms[joint].origin *= ss;
-				inv_transforms[joint] = transforms[joint].inverse();
-			}
+		if (has_valid_data[joint]) {
+			transforms[joint] = tracker->get_hand_joint_transform((XRHandTracker::HandJoint)joint);
+			transforms[joint].origin *= ss;
+			inv_transforms[joint] = transforms[joint].inverse();
+		}
+	}
+
+	// Skip if palm has no tracking data
+	if (!has_valid_data[XRHandTracker::HAND_JOINT_PALM]) {
+		return;
+	}
+
+	for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
+		// Get the skeleton bone (skip if none).
+		const int bone = joints[joint].bone;
+		if (bone == -1) {
+			continue;
 		}
 
-		if (has_valid_data[XRHandTracker::HAND_JOINT_PALM]) {
-			for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
-				// Get the skeleton bone (skip if none).
-				const int bone = joints[joint].bone;
-				if (bone == -1) {
-					continue;
-				}
+		// Calculate the relative relationship to the parent bone joint.
+		const int parent_joint = joints[joint].parent_joint;
+		const Transform3D relative_transform = inv_transforms[parent_joint] * transforms[joint];
 
-				// Calculate the relative relationship to the parent bone joint.
-				const int parent_joint = joints[joint].parent_joint;
-				const Transform3D relative_transform = inv_transforms[parent_joint] * transforms[joint];
-
-				// Update the bone position if enabled by update mode.
-				if (bone_update == BONE_UPDATE_FULL) {
-					skeleton->set_bone_pose_position(joints[joint].bone, relative_transform.origin);
-				}
-
-				// Always update the bone rotation.
-				skeleton->set_bone_pose_rotation(joints[joint].bone, Quaternion(relative_transform.basis));
-			}
-
-			// Transform to the skeleton pose. This uses the HAND_JOINT_PALM position without skeleton-scaling, as it
-			// must be positioned to match the physical hand location. It is scaled with the world space to match
-			// the scaling done to the camera and eyes.
-			set_transform(
-					tracker->get_hand_joint_transform(XRHandTracker::HAND_JOINT_PALM) * ws);
-
-			set_visible(true);
-		} else {
-			set_visible(false);
+		// Update the bone position if enabled by update mode.
+		if (bone_update == BONE_UPDATE_FULL) {
+			skeleton->set_bone_pose_position(joints[joint].bone, relative_transform.origin);
 		}
-	} else {
-		set_visible(false);
+
+		// Always update the bone rotation.
+		skeleton->set_bone_pose_rotation(joints[joint].bone, Quaternion(relative_transform.basis));
 	}
 }
 
-void XRHandModifier3D::_tracker_changed(StringName p_tracker_name, const Ref<XRHandTracker> &p_tracker) {
+void XRHandModifier3D::_tracker_changed(StringName p_tracker_name, XRServer::TrackerType p_tracker_type) {
 	if (tracker_name == p_tracker_name) {
 		_get_joint_data();
 	}
@@ -258,9 +259,9 @@ void XRHandModifier3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			XRServer *xr_server = XRServer::get_singleton();
 			if (xr_server) {
-				xr_server->connect("hand_tracker_added", callable_mp(this, &XRHandModifier3D::_tracker_changed));
-				xr_server->connect("hand_tracker_updated", callable_mp(this, &XRHandModifier3D::_tracker_changed));
-				xr_server->connect("hand_tracker_removed", callable_mp(this, &XRHandModifier3D::_tracker_changed).bind(Ref<XRHandTracker>()));
+				xr_server->connect("tracker_added", callable_mp(this, &XRHandModifier3D::_tracker_changed));
+				xr_server->connect("tracker_updated", callable_mp(this, &XRHandModifier3D::_tracker_changed));
+				xr_server->connect("tracker_removed", callable_mp(this, &XRHandModifier3D::_tracker_changed));
 			}
 
 			_get_joint_data();
@@ -268,9 +269,9 @@ void XRHandModifier3D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			XRServer *xr_server = XRServer::get_singleton();
 			if (xr_server) {
-				xr_server->disconnect("hand_tracker_added", callable_mp(this, &XRHandModifier3D::_tracker_changed));
-				xr_server->disconnect("hand_tracker_updated", callable_mp(this, &XRHandModifier3D::_tracker_changed));
-				xr_server->disconnect("hand_tracker_removed", callable_mp(this, &XRHandModifier3D::_tracker_changed).bind(Ref<XRHandTracker>()));
+				xr_server->disconnect("tracker_added", callable_mp(this, &XRHandModifier3D::_tracker_changed));
+				xr_server->disconnect("tracker_updated", callable_mp(this, &XRHandModifier3D::_tracker_changed));
+				xr_server->disconnect("tracker_removed", callable_mp(this, &XRHandModifier3D::_tracker_changed));
 			}
 
 			for (int i = 0; i < XRHandTracker::HAND_JOINT_MAX; i++) {
