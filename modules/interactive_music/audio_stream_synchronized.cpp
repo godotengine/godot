@@ -151,10 +151,10 @@ void AudioStreamSynchronized::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sync_stream_volume", "stream_index", "volume_db"), &AudioStreamSynchronized::set_sync_stream_volume);
 	ClassDB::bind_method(D_METHOD("get_sync_stream_volume", "stream_index"), &AudioStreamSynchronized::get_sync_stream_volume);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "0," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Streams,stream_,unfoldable,page_size=999,add_button_text=" + String(RTR("Add Stream"))), "set_stream_count", "get_stream_count");
+	ADD_PROPERTY(PropertyInfo::make_array_count("stream_count", "Streams,stream_,unfoldable,page_size=999,add_button_text=" + String(RTR("Add Stream")), PROPERTY_HINT_RANGE, "0," + itos(MAX_STREAMS)), "set_stream_count", "get_stream_count");
 
 	for (int i = 0; i < MAX_STREAMS; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "stream_" + itos(i) + "/stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_sync_stream", "get_sync_stream", i);
+		ADD_PROPERTYI(PropertyInfo::make_object("stream_" + itos(i) + "/stream", "AudioStream", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_sync_stream", "get_sync_stream", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "stream_" + itos(i) + "/volume", PROPERTY_HINT_RANGE, "-60,12,0.01,suffix:db", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_sync_stream_volume", "get_sync_stream_volume", i);
 	}
 

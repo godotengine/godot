@@ -716,23 +716,48 @@ void EditorPropertyArray::_add_element() {
 	_length_changed(double(object->get_array().call("size")) + 1.0);
 }
 
-void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string) {
+void EditorPropertyArray::setup(Variant::Type p_array_type, const PropertyHint p_hint, const String &p_hint_string) {
 	array_type = p_array_type;
 
-	// The format of p_hint_string is:
-	// subType/subTypeHint:nextSubtype ... etc.
-	if (!p_hint_string.is_empty()) {
-		int hint_subtype_separator = p_hint_string.find(":");
-		if (hint_subtype_separator >= 0) {
-			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
-			int slash_pos = subtype_string.find("/");
-			if (slash_pos >= 0) {
-				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1, subtype_string.size() - slash_pos - 1).to_int());
-				subtype_string = subtype_string.substr(0, slash_pos);
+	if (p_hint == PROPERTY_HINT_ARRAY_TYPE) {
+		Variant::Type type = Variant::get_type_by_name(p_hint_string);
+		if (type != Variant::VARIANT_MAX && type != Variant::OBJECT) {
+			subtype = type;
+			subtype_hint = PROPERTY_HINT_NONE;
+			subtype_hint_string = String();
+		} else {
+			if (ClassDB::is_parent_class(p_hint_string, "Resource")) {
+				subtype = Variant::OBJECT;
+				subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				subtype_hint_string = p_hint_string;
+			} else if (ClassDB::is_parent_class(p_hint_string, "Node")) {
+				subtype = Variant::OBJECT;
+				subtype_hint = PROPERTY_HINT_NODE_TYPE;
+				subtype_hint_string = p_hint_string;
+			} else {
+				subtype = Variant::NIL;
+				subtype_hint = PROPERTY_HINT_NONE;
+				subtype_hint_string = String();
+				ERR_PRINT(vformat(R"("%s" is not a Variant type, a resource, or a node.)", p_hint_string));
 			}
+			// TODO: Check script classes.
+		}
+	} else { // PROPERTY_HINT_TYPE_STRING and others.
+		// The format of p_hint_string is:
+		// subType/subTypeHint:nextSubtype ... etc.
+		if (!p_hint_string.is_empty()) {
+			int hint_subtype_separator = p_hint_string.find(":");
+			if (hint_subtype_separator >= 0) {
+				String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
+				int slash_pos = subtype_string.find("/");
+				if (slash_pos >= 0) {
+					subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1, subtype_string.size() - slash_pos - 1).to_int());
+					subtype_string = subtype_string.substr(0, slash_pos);
+				}
 
-			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1, p_hint_string.size() - hint_subtype_separator - 1);
-			subtype = Variant::Type(subtype_string.to_int());
+				subtype = Variant::Type(subtype_string.to_int());
+				subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1, p_hint_string.size() - hint_subtype_separator - 1);
+			}
 		}
 	}
 }

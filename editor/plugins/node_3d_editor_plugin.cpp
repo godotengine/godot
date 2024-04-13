@@ -4025,8 +4025,8 @@ Dictionary Node3DEditorViewport::get_state() const {
 }
 
 void Node3DEditorViewport::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
-	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(Variant::OBJECT, "viewport")));
+	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo::make_object("viewport", "Object")));
+	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo::make_object("viewport", "Object")));
 }
 
 void Node3DEditorViewport::reset() {

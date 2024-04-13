@@ -59,8 +59,8 @@ public:
 		FILL_MODE_MAX,
 	};
 
-	void set_fill_mode(int p_fill);
-	int get_fill_mode();
+	void set_fill_mode(FillMode p_fill);
+	FillMode get_fill_mode();
 
 	void set_progress_offset(Point2 p_offset);
 	Point2 get_progress_offset() const;

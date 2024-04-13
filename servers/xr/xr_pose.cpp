@@ -43,24 +43,24 @@ void XRPose::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &XRPose::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &XRPose::get_name);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name"), "set_name", "get_name");
 
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &XRPose::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &XRPose::get_transform);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "transform"), "set_transform", "get_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform"), "set_transform", "get_transform");
 	ClassDB::bind_method(D_METHOD("get_adjusted_transform"), &XRPose::get_adjusted_transform);
 
 	ClassDB::bind_method(D_METHOD("set_linear_velocity", "velocity"), &XRPose::set_linear_velocity);
 	ClassDB::bind_method(D_METHOD("get_linear_velocity"), &XRPose::get_linear_velocity);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 
 	ClassDB::bind_method(D_METHOD("set_angular_velocity", "velocity"), &XRPose::set_angular_velocity);
 	ClassDB::bind_method(D_METHOD("get_angular_velocity"), &XRPose::get_angular_velocity);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 
 	ClassDB::bind_method(D_METHOD("set_tracking_confidence", "tracking_confidence"), &XRPose::set_tracking_confidence);
 	ClassDB::bind_method(D_METHOD("get_tracking_confidence"), &XRPose::get_tracking_confidence);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tracking_confidence"), "set_tracking_confidence", "get_tracking_confidence");
+	ADD_PROPERTY(PropertyInfo::make_enum("tracking_confidence", "XRPose.TrackingConfidence", "None,Low,High"), "set_tracking_confidence", "get_tracking_confidence");
 }
 
 void XRPose::set_has_tracking_data(const bool p_has_tracking_data) {

@@ -537,9 +537,9 @@ bool Skeleton2D::_get(const StringName &p_path, Variant &r_ret) const {
 
 void Skeleton2D::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(
-			PropertyInfo(Variant::OBJECT, PNAME("modification_stack"),
-					PROPERTY_HINT_RESOURCE_TYPE,
+			PropertyInfo::make_object(PNAME("modification_stack"),
 					"SkeletonModificationStack2D",
+					"",
 					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 }
 

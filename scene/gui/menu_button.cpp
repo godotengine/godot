@@ -176,11 +176,11 @@ void MenuButton::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < popup->get_item_count(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("popup/item_%d/text", i)));
 
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("popup/item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		PropertyInfo pi = PropertyInfo::make_object(vformat("popup/item_%d/icon", i), "Texture2D");
 		pi.usage &= ~(popup->get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As Checkbox,As Radio Button");
+		pi = PropertyInfo::make_enum(vformat("popup/item_%d/checkable", i), "", "No,As Checkbox,As Radio Button");
 		pi.usage &= ~(!popup->is_item_checkable(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
@@ -212,7 +212,7 @@ void MenuButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_count"), &MenuButton::get_item_count);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
-	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
+	ADD_PROPERTY(PropertyInfo::make_array_count("item_count", "Items,popup/item_"), "set_item_count", "get_item_count");
 
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
 }

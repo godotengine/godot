@@ -33,7 +33,7 @@
 void OpenXRIPBinding::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_action", "action"), &OpenXRIPBinding::set_action);
 	ClassDB::bind_method(D_METHOD("get_action"), &OpenXRIPBinding::get_action);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "action", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRAction"), "set_action", "get_action");
+	ADD_PROPERTY(PropertyInfo::make_object("action", "OpenXRAction"), "set_action", "get_action");
 
 	ClassDB::bind_method(D_METHOD("get_path_count"), &OpenXRIPBinding::get_path_count);
 	ClassDB::bind_method(D_METHOD("set_paths", "paths"), &OpenXRIPBinding::set_paths);
@@ -114,7 +114,7 @@ void OpenXRInteractionProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_binding", "index"), &OpenXRInteractionProfile::get_binding);
 	ClassDB::bind_method(D_METHOD("set_bindings", "bindings"), &OpenXRInteractionProfile::set_bindings);
 	ClassDB::bind_method(D_METHOD("get_bindings"), &OpenXRInteractionProfile::get_bindings);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bindings", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRIPBinding", PROPERTY_USAGE_NO_EDITOR), "set_bindings", "get_bindings");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bindings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bindings", "get_bindings");
 }
 
 Ref<OpenXRInteractionProfile> OpenXRInteractionProfile::new_profile(const char *p_input_profile_path) {

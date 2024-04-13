@@ -41,7 +41,7 @@ void CompositorEffect::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_effect_callback_type", "effect_callback_type"), &CompositorEffect::set_effect_callback_type);
 	ClassDB::bind_method(D_METHOD("get_effect_callback_type"), &CompositorEffect::get_effect_callback_type);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "effect_callback_type", PROPERTY_HINT_ENUM, "Pre Opaque,Post Opaque,Post Sky,Pre Transparent,Post Transparent"), "set_effect_callback_type", "get_effect_callback_type");
+	ADD_PROPERTY(PropertyInfo::make_enum("effect_callback_type", "CompositorEffect.EffectCallbackType", "Pre Opaque,Post Opaque,Post Sky,Pre Transparent,Post Transparent"), "set_effect_callback_type", "get_effect_callback_type");
 
 	ClassDB::bind_method(D_METHOD("set_access_resolved_color", "enable"), &CompositorEffect::set_access_resolved_color);
 	ClassDB::bind_method(D_METHOD("get_access_resolved_color"), &CompositorEffect::get_access_resolved_color);
@@ -200,7 +200,7 @@ void Compositor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_compositor_effects", "compositor_effects"), &Compositor::set_compositor_effects);
 	ClassDB::bind_method(D_METHOD("get_compositor_effects"), &Compositor::get_compositor_effects);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "compositor_effects", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("CompositorEffect")), "set_compositor_effects", "get_compositor_effects");
+	ADD_PROPERTY(PropertyInfo::make_typed_array("compositor_effects", "CompositorEffect"), "set_compositor_effects", "get_compositor_effects");
 }
 
 Compositor::Compositor() {

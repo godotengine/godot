@@ -445,7 +445,7 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 		MethodInfo mi;
 		mi.name = "preload";
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "path"));
-		mi.return_val = PropertyInfo(Variant::OBJECT, "", PROPERTY_HINT_RESOURCE_TYPE, "Resource");
+		mi.return_val = PropertyInfo::make_object("", "Resource");
 		p_functions->push_back(mi);
 	}
 	{
@@ -2454,17 +2454,8 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 
 				PropertyInfo prop;
 				if (ClassDB::get_property_info(class_name, p_identifier, &prop)) {
-					StringName getter = ClassDB::get_property_getter(class_name, p_identifier);
-					if (getter != StringName()) {
-						MethodBind *g = ClassDB::get_method(class_name, getter);
-						if (g) {
-							r_type = _type_from_property(g->get_return_info());
-							return true;
-						}
-					} else {
-						r_type = _type_from_property(prop);
-						return true;
-					}
+					r_type = _type_from_property(prop);
+					return true;
 				}
 				return false;
 			} break;
@@ -2969,7 +2960,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), r_result);
 		}
 
-		MethodInfo mi(PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), "preload", PropertyInfo(Variant::STRING, "path"));
+		MethodInfo mi(PropertyInfo::make_object("resource", "Resource"), "preload", PropertyInfo(Variant::STRING, "path"));
 		r_arghint = _make_arguments_hint(mi, p_argidx);
 		return;
 	} else if (p_call->type != GDScriptParser::Node::CALL) {

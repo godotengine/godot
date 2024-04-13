@@ -47,9 +47,9 @@ void XRBodyModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_show_when_tracked", "show"), &XRBodyModifier3D::set_show_when_tracked);
 	ClassDB::bind_method(D_METHOD("get_show_when_tracked"), &XRBodyModifier3D::get_show_when_tracked);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "body_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/body"), "set_body_tracker", "get_body_tracker");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_update", PROPERTY_HINT_FLAGS, "Upper Body,Lower Body,Hands"), "set_body_update", "get_body_update");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_update", PROPERTY_HINT_ENUM, "Full,Rotation Only"), "set_bone_update", "get_bone_update");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "body_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/body"), "set_body_tracker", "get_body_tracker");
+	ADD_PROPERTY(PropertyInfo::make_flags("body_update", "XRBodyModifier3D.BodyUpdate", "Upper Body,Lower Body,Hands"), "set_body_update", "get_body_update");
+	ADD_PROPERTY(PropertyInfo::make_enum("bone_update", "XRBodyModifier3D.BoneUpdate", "Full,Rotation Only"), "set_bone_update", "get_bone_update");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_when_tracked"), "set_show_when_tracked", "get_show_when_tracked");
 
 	BIND_BITFIELD_FLAG(BODY_UPDATE_UPPER_BODY);

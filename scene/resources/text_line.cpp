@@ -36,12 +36,12 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &TextLine::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextLine::get_direction);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Left-to-right,Right-to-left"), "set_direction", "get_direction");
+	ADD_PROPERTY(PropertyInfo::make_enum("direction", "TextServer.Direction", "Auto,Left-to-right,Right-to-left"), "set_direction", "get_direction");
 
 	ClassDB::bind_method(D_METHOD("set_orientation", "orientation"), &TextLine::set_orientation);
 	ClassDB::bind_method(D_METHOD("get_orientation"), &TextLine::get_orientation);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "orientation", PROPERTY_HINT_ENUM, "Horizontal,Orientation"), "set_orientation", "get_orientation");
+	ADD_PROPERTY(PropertyInfo::make_enum("orientation", "TextServer.Orientation", "Horizontal,Orientation"), "set_orientation", "get_orientation");
 
 	ClassDB::bind_method(D_METHOD("set_preserve_invalid", "enabled"), &TextLine::set_preserve_invalid);
 	ClassDB::bind_method(D_METHOD("get_preserve_invalid"), &TextLine::get_preserve_invalid);
@@ -67,19 +67,19 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &TextLine::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &TextLine::get_horizontal_alignment);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo::make_enum("alignment", "HorizontalAlignment", "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 
 	ClassDB::bind_method(D_METHOD("tab_align", "tab_stops"), &TextLine::tab_align);
 
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &TextLine::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &TextLine::get_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Kashida Justification,Word Justification,Trim Edge Spaces After Justification,Justify Only After Last Tab,Constrain Ellipsis"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo::make_flags("flags", "TextServer.JustificationFlag", "Kashida Justification,Word Justification,Trim Edge Spaces After Justification,Justify Only After Last Tab,Constrain Ellipsis"), "set_flags", "get_flags");
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextLine::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextLine::get_text_overrun_behavior);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo::make_enum("text_overrun_behavior", "TextServer.OverrunBehavior", "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 
 	ClassDB::bind_method(D_METHOD("set_ellipsis_char", "char"), &TextLine::set_ellipsis_char);
 	ClassDB::bind_method(D_METHOD("get_ellipsis_char"), &TextLine::get_ellipsis_char);

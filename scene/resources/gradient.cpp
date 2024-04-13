@@ -71,8 +71,8 @@ void Gradient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_interpolation_color_space"), &Gradient::get_interpolation_color_space);
 
 	ADD_GROUP("Interpolation", "interpolation_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "interpolation_mode", PROPERTY_HINT_ENUM, "Linear,Constant,Cubic"), "set_interpolation_mode", "get_interpolation_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "interpolation_color_space", PROPERTY_HINT_ENUM, "sRGB,Linear sRGB,Oklab"), "set_interpolation_color_space", "get_interpolation_color_space");
+	ADD_PROPERTY(PropertyInfo::make_enum("interpolation_mode", "Gradient.InterpolationMode", "Linear,Constant,Cubic"), "set_interpolation_mode", "get_interpolation_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("interpolation_color_space", "Gradient.ColorSpace", "sRGB,Linear sRGB,Oklab"), "set_interpolation_color_space", "get_interpolation_color_space");
 
 	ADD_GROUP("Raw Data", "");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "offsets"), "set_offsets", "get_offsets");

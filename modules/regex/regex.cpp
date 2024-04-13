@@ -154,7 +154,7 @@ void RegExMatch::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "subject"), "", "get_subject");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "names"), "", "get_names");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "strings"), "", "get_strings");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "strings"), "", "get_strings");
 }
 
 void RegEx::_pattern_info(uint32_t what, void *where) const {

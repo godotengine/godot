@@ -195,11 +195,11 @@ void AspectRatioContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_alignment_vertical"), &AspectRatioContainer::get_alignment_vertical);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "0.001,10.0,0.0001,or_greater"), "set_ratio", "get_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Width Controls Height,Height Controls Width,Fit,Cover"), "set_stretch_mode", "get_stretch_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("stretch_mode", "AspectRatioContainer.StretchMode", "Width Controls Height,Height Controls Width,Fit,Cover"), "set_stretch_mode", "get_stretch_mode");
 
 	ADD_GROUP("Alignment", "alignment_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment_horizontal", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment_horizontal", "get_alignment_horizontal");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment_vertical", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment_vertical", "get_alignment_vertical");
+	ADD_PROPERTY(PropertyInfo::make_enum("alignment_horizontal", "AspectRatioContainer.AlignmentMode", "Begin,Center,End"), "set_alignment_horizontal", "get_alignment_horizontal");
+	ADD_PROPERTY(PropertyInfo::make_enum("alignment_vertical", "AspectRatioContainer.AlignmentMode", "Begin,Center,End"), "set_alignment_vertical", "get_alignment_vertical");
 
 	BIND_ENUM_CONSTANT(STRETCH_WIDTH_CONTROLS_HEIGHT);
 	BIND_ENUM_CONSTANT(STRETCH_HEIGHT_CONTROLS_WIDTH);

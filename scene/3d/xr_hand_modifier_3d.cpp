@@ -40,8 +40,8 @@ void XRHandModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_update", "bone_update"), &XRHandModifier3D::set_bone_update);
 	ClassDB::bind_method(D_METHOD("get_bone_update"), &XRHandModifier3D::get_bone_update);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "hand_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/left,/user/right"), "set_hand_tracker", "get_hand_tracker");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone_update", PROPERTY_HINT_ENUM, "Full,Rotation Only"), "set_bone_update", "get_bone_update");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "hand_tracker", PROPERTY_HINT_ENUM_SUGGESTION, "/user/left,/user/right"), "set_hand_tracker", "get_hand_tracker");
+	ADD_PROPERTY(PropertyInfo::make_enum("bone_update", "XRHandModifier3D.BoneUpdate", "Full,Rotation Only"), "set_bone_update", "get_bone_update");
 
 	BIND_ENUM_CONSTANT(BONE_UPDATE_FULL);
 	BIND_ENUM_CONSTANT(BONE_UPDATE_ROTATION_ONLY);

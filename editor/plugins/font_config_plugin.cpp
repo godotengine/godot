@@ -1032,7 +1032,7 @@ bool EditorInspectorPluginSystemFont::can_handle(Object *p_object) {
 bool EditorInspectorPluginSystemFont::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	if (p_path == "font_names") {
 		EditorPropertyFontNamesArray *editor = memnew(EditorPropertyFontNamesArray);
-		editor->setup(p_type, p_hint_text);
+		editor->setup(p_type, p_hint, p_hint_text);
 		add_property_editor(p_path, editor);
 		return true;
 	}

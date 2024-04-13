@@ -606,19 +606,19 @@ void TextureProgressBar::_notification(int p_what) {
 	}
 }
 
-void TextureProgressBar::set_fill_mode(int p_fill) {
+void TextureProgressBar::set_fill_mode(FillMode p_fill) {
 	ERR_FAIL_INDEX(p_fill, FILL_MODE_MAX);
 
-	if (mode == (FillMode)p_fill) {
+	if (mode == p_fill) {
 		return;
 	}
 
-	mode = (FillMode)p_fill;
+	mode = p_fill;
 	queue_redraw();
 	notify_property_list_changed();
 }
 
-int TextureProgressBar::get_fill_mode() {
+TextureProgressBar::FillMode TextureProgressBar::get_fill_mode() {
 	return mode;
 }
 
@@ -720,7 +720,7 @@ void TextureProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_nine_patch_stretch", "stretch"), &TextureProgressBar::set_nine_patch_stretch);
 	ClassDB::bind_method(D_METHOD("get_nine_patch_stretch"), &TextureProgressBar::get_nine_patch_stretch);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise,Bilinear (Left and Right),Bilinear (Top and Bottom),Clockwise and Counter Clockwise"), "set_fill_mode", "get_fill_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("fill_mode", "TextureProgressBar.FillMode", "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise,Bilinear (Left and Right),Bilinear (Top and Bottom),Clockwise and Counter Clockwise"), "set_fill_mode", "get_fill_mode");
 	ADD_GROUP("Radial Fill", "radial_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,degrees"), "set_radial_initial_angle", "get_radial_initial_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,degrees"), "set_fill_degrees", "get_fill_degrees");
@@ -735,9 +735,9 @@ void TextureProgressBar::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_bottom", PROPERTY_HINT_RANGE, "0,16384,1,suffix:px"), "set_stretch_margin", "get_stretch_margin", SIDE_BOTTOM);
 
 	ADD_GROUP("Textures", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_under", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_under_texture", "get_under_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_over", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_over_texture", "get_over_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_progress", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_progress_texture", "get_progress_texture");
+	ADD_PROPERTY(PropertyInfo::make_object("texture_under", "Texture2D"), "set_under_texture", "get_under_texture");
+	ADD_PROPERTY(PropertyInfo::make_object("texture_over", "Texture2D"), "set_over_texture", "get_over_texture");
+	ADD_PROPERTY(PropertyInfo::make_object("texture_progress", "Texture2D"), "set_progress_texture", "get_progress_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_progress_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_progress_offset", "get_texture_progress_offset");
 
 	ADD_GROUP("Tint", "tint_");

@@ -45,9 +45,9 @@ void GLTFMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFMesh::set_additional_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_name"), "set_original_name", "get_original_name");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo::make_object("mesh", "ImporterMesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "blend_weights"), "set_blend_weights", "get_blend_weights"); // Vector<float>
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "instance_materials"), "set_instance_materials", "get_instance_materials");
+	ADD_PROPERTY(PropertyInfo::make_typed_array("instance_materials", "Material"), "set_instance_materials", "get_instance_materials");
 }
 
 String GLTFMesh::get_original_name() {

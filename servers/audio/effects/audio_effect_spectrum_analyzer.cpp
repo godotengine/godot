@@ -266,7 +266,7 @@ void AudioEffectSpectrumAnalyzer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.1,4,0.1,suffix:s"), "set_buffer_length", "get_buffer_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tap_back_pos", PROPERTY_HINT_RANGE, "0.1,4,0.1"), "set_tap_back_pos", "get_tap_back_pos");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fft_size", PROPERTY_HINT_ENUM, "256,512,1024,2048,4096"), "set_fft_size", "get_fft_size");
+	ADD_PROPERTY(PropertyInfo::make_enum("fft_size", "AudioEffectSpectrumAnalyzer.FFTSize", "256,512,1024,2048,4096"), "set_fft_size", "get_fft_size");
 
 	BIND_ENUM_CONSTANT(FFT_SIZE_256);
 	BIND_ENUM_CONSTANT(FFT_SIZE_512);
