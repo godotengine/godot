@@ -64,7 +64,10 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Vector<Vector3> lines;
 	for (int i = 0; i < points.size(); i++) {
-		int n = (i + 1) % points.size();
+		int n = i + 1;
+		if (n == points.size()) {
+			n = 0;
+		}
 		lines.push_back(Vector3(points[i].x, points[i].y, depth));
 		lines.push_back(Vector3(points[n].x, points[n].y, depth));
 		lines.push_back(Vector3(points[i].x, points[i].y, -depth));

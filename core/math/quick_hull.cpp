@@ -370,8 +370,12 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		Geometry3D::MeshData::Face &f = E->get();
 
 		for (uint32_t i = 0; i < f.indices.size(); i++) {
+			uint32_t i_n = i + 1;
+			if (i_n == f.indices.size()) {
+				i_n = 0;
+			}
 			int a = E->get().indices[i];
-			int b = E->get().indices[(i + 1) % f.indices.size()];
+			int b = E->get().indices[i_n];
 			Edge e(a, b);
 
 			HashMap<Edge, RetFaceConnect, Edge>::Iterator F = ret_edges.find(e);
@@ -390,8 +394,16 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 					if (O->get().indices[j] == a) {
 						//append the rest
 						for (int k = 0; k < o_index_size; k++) {
-							int idx = O->get().indices[(k + j) % o_index_size];
-							int idxn = O->get().indices[(k + j + 1) % o_index_size];
+							int k_plus_j = k + j;
+							if (k_plus_j >= o_index_size) {
+								k_plus_j -= o_index_size;
+							}
+							int k_plus_j_n = k_plus_j + 1;
+							if (k_plus_j_n == o_index_size) {
+								k_plus_j_n = 0;
+							}
+							int idx = O->get().indices[k_plus_j];
+							int idxn = O->get().indices[k_plus_j_n];
 							if (idx == b && idxn == a) { //already have b!
 								break;
 							}

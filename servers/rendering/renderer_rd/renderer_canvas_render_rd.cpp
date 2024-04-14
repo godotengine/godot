@@ -1977,14 +1977,18 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 			const Vector2 *r = p_points.ptr();
 
 			int max = lc / 2;
-			if (!p_closed) {
-				max--;
-			}
-			for (int i = 0; i < max; i++) {
+			for (int i = 0; i < max - 1; i++) {
 				Vector2 a = r[i];
-				Vector2 b = r[(i + 1) % (lc / 2)];
+				Vector2 b = r[i + 1];
 				w[i * 2 + 0] = a;
 				w[i * 2 + 1] = b;
+			}
+
+			if (p_closed) {
+				Vector2 a = r[max - 1];
+				Vector2 b = r[0];
+				w[(max - 1) * 2 + 0] = a;
+				w[(max - 1) * 2 + 1] = b;
 			}
 		}
 	}
@@ -2086,10 +2090,13 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 			sdf_indices.resize(max * 2);
 
 			int *iw = sdf_indices.ptrw();
-			for (int i = 0; i < max; i++) {
+			int max_minus_one = max - 1;
+			for (int i = 0; i < max_minus_one; i++) {
 				iw[i * 2 + 0] = i;
-				iw[i * 2 + 1] = (i + 1) % max;
+				iw[i * 2 + 1] = i + 1;
 			}
+			iw[max_minus_one * 2 + 0] = max_minus_one;
+			iw[max_minus_one * 2 + 1] = 0;
 			oc->sdf_is_lines = true;
 		}
 	}

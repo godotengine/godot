@@ -313,10 +313,24 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 	// Fill the indices and the colors for the border.
 
 	if (draw_border) {
-		for (int i = 0; i < ring_vert_count; i++) {
-			indices.push_back(vert_offset + ((i + 0) % ring_vert_count));
-			indices.push_back(vert_offset + ((i + 2) % ring_vert_count));
-			indices.push_back(vert_offset + ((i + 1) % ring_vert_count));
+		if (ring_vert_count == 1) {
+			indices.push_back(vert_offset);
+			indices.push_back(vert_offset);
+			indices.push_back(vert_offset);
+		} else {
+			for (int i = 0; i < ring_vert_count; i++) {
+				int i_next = i + 1;
+				int i_next2 = i + 2;
+				if (i_next == ring_vert_count) {
+					i_next = 0;
+				}
+				if (i_next2 >= ring_vert_count) {
+					i_next2 -= ring_vert_count;
+				}
+				indices.push_back(vert_offset + i);
+				indices.push_back(vert_offset + i_next2);
+				indices.push_back(vert_offset + i_next);
+			}
 		}
 	}
 

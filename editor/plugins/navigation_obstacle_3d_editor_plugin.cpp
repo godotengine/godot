@@ -198,9 +198,13 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
 							for (int i = 0; i < poly.size(); i++) {
+								int next = i + 1;
+								if (next == poly.size()) {
+									next = 0;
+								}
 								Vector2 points[2] = {
 									p_camera->unproject_position(gt.xform(Vector3(poly[i].x, 0.0, poly[i].y))),
-									p_camera->unproject_position(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, 0.0, poly[(i + 1) % poly.size()].y)))
+									p_camera->unproject_position(gt.xform(Vector3(poly[next].x, 0.0, poly[next].y)))
 								};
 
 								Vector2 cp = Geometry2D::get_closest_point_to_segment(gpoint, points);
@@ -382,6 +386,10 @@ void NavigationObstacle3DEditor::_polygon_draw() {
 	Rect2 rect;
 
 	for (int i = 0; i < poly.size(); i++) {
+		int next = i + 1;
+		if (next == poly.size()) {
+			next = 0;
+		}
 		Vector2 p, p2;
 		if (i == edited_point) {
 			p = edited_point_pos;
@@ -389,10 +397,10 @@ void NavigationObstacle3DEditor::_polygon_draw() {
 			p = poly[i];
 		}
 
-		if ((wip_active && i == poly.size() - 1) || (((i + 1) % poly.size()) == edited_point)) {
+		if ((wip_active && i == poly.size() - 1) || (next == edited_point)) {
 			p2 = edited_point_pos;
 		} else {
-			p2 = poly[(i + 1) % poly.size()];
+			p2 = poly[next];
 		}
 
 		if (i == 0) {

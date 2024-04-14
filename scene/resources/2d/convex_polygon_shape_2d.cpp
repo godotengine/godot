@@ -50,13 +50,22 @@ bool left_test(const Vector2 &p1, const Vector2 &p2, const Vector2 &p3) {
 bool is_convex(const Vector<Vector2> &p_points) {
 	// Pre-condition: Polygon is in counter-clockwise order.
 	int polygon_size = p_points.size();
-	for (int i = 0; i < polygon_size && polygon_size > 3; i++) {
-		int j = (i + 1) % polygon_size;
-		int k = (j + 1) % polygon_size;
+	if (polygon_size <= 3) {
+		return true;
+	}
+
+	int polygon_end_minus_one_index = p_points.size() - 2;
+	for (int i = 0; i < polygon_end_minus_one_index; i++) {
 		// If any consecutive three points fail left-test, then there is a concavity.
-		if (!left_test(p_points[i], p_points[j], p_points[k])) {
+		if (!left_test(p_points[i], p_points[i + 1], p_points[i + 2])) {
 			return false;
 		}
+	}
+	if (!left_test(p_points[polygon_end_minus_one_index], p_points[polygon_end_minus_one_index + 1], p_points[0])) {
+		return false;
+	}
+	if (!left_test(p_points[polygon_end_minus_one_index], p_points[0], p_points[1])) {
+		return false;
 	}
 
 	return true;

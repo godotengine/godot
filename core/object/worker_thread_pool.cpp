@@ -247,7 +247,11 @@ void WorkerThreadPool::_notify_threads(const ThreadData *p_current_thread_data, 
 	// 2. For promoting: since it's exclusive with processing, we fin threads able to promote low-prio tasks now.
 	for (uint32_t i = 0;
 			i < thread_count && (to_process || to_promote);
-			i++, notify_index = (notify_index + 1) % thread_count) {
+			i++) {
+		notify_index++;
+		if (notify_index == thread_count) {
+			notify_index = 0;
+		}
 		ThreadData &th = threads[notify_index];
 
 		if (th.signaled) {
@@ -277,7 +281,11 @@ void WorkerThreadPool::_notify_threads(const ThreadData *p_current_thread_data, 
 	// For processing: if the first round wasn't enough, let's try now with threads processing tasks but currently awaiting.
 	for (uint32_t i = 0;
 			i < thread_count && to_process;
-			i++, notify_index = (notify_index + 1) % thread_count) {
+			i++) {
+		notify_index++;
+		if (notify_index == thread_count) {
+			notify_index = 0;
+		}
 		ThreadData &th = threads[notify_index];
 
 		if (th.signaled) {

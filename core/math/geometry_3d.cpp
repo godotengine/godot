@@ -629,7 +629,10 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 			}
 
 			for (uint32_t k = 0; k < vertices.size(); k++) {
-				int k_n = (k + 1) % vertices.size();
+				uint32_t k_n = k + 1;
+				if (k_n == vertices.size()) {
+					k_n = 0;
+				}
 
 				Vector3 edge0_A = vertices[k];
 				Vector3 edge1_A = vertices[k_n];
@@ -692,8 +695,12 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 		// Add edge.
 
 		for (uint32_t j = 0; j < face.indices.size(); j++) {
+			uint32_t j_n = j + 1;
+			if (j_n == face.indices.size()) {
+				j_n = 0;
+			}
 			int a = face.indices[j];
-			int b = face.indices[(j + 1) % face.indices.size()];
+			int b = face.indices[j_n];
 
 			bool found = false;
 			int found_idx = -1;

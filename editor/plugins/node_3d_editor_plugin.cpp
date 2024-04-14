@@ -6868,11 +6868,19 @@ void fragment() {
 				}
 
 				for (int j = 0; j < n; ++j) {
+					int j_next = j + 1;
+					if (j_next == n) {
+						j_next = 0;
+					}
 					for (int k = 0; k < m; ++k) {
+						int k_next = k + 1;
+						if (k_next == m) {
+							k_next = 0;
+						}
 						int current_ring = j * m;
-						int next_ring = ((j + 1) % n) * m;
+						int next_ring = j_next * m;
 						int current_segment = k;
-						int next_segment = (k + 1) % m;
+						int next_segment = k_next;
 
 						surftool->add_index(current_ring + next_segment);
 						surftool->add_index(current_ring + current_segment);

@@ -77,7 +77,10 @@ void AudioEffectHardLimiterInstance::process(const AudioFrame *p_src_frames, Aud
 
 		gain_buckets[bucket_id] = MIN(gain_buckets[bucket_id], gain);
 
-		gain_bucket_cursor = (gain_bucket_cursor + 1) % gain_samples_to_store;
+		gain_bucket_cursor++;
+		if (gain_bucket_cursor == gain_samples_to_store) {
+			gain_bucket_cursor = 0;
+		}
 
 		for (int j = 0; j < (int)gain_buckets.size(); j++) {
 			gain = MIN(gain, gain_buckets[j]);
@@ -92,7 +95,10 @@ void AudioEffectHardLimiterInstance::process(const AudioFrame *p_src_frames, Aud
 		sample_buffer_left[sample_cursor] = sample_left;
 		sample_buffer_right[sample_cursor] = sample_right;
 
-		sample_cursor = (sample_cursor + 1) % sample_buffer_left.size();
+		sample_cursor++;
+		if ((uint32_t)sample_cursor == sample_buffer_left.size()) {
+			sample_cursor = 0;
+		}
 
 		p_dst_frames[i].left = dst_buffer_left * gain;
 		p_dst_frames[i].right = dst_buffer_right * gain;

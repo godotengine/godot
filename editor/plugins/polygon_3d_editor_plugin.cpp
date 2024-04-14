@@ -202,9 +202,13 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
 							for (int i = 0; i < poly.size(); i++) {
+								uint32_t point_num = i + 1;
+								if (point_num == poly.size()) {
+									point_num = 0;
+								}
 								Vector2 points[2] = {
 									p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth))),
-									p_camera->unproject_position(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, poly[(i + 1) % poly.size()].y, depth)))
+									p_camera->unproject_position(gt.xform(Vector3(poly[point_num].x, poly[point_num].y, depth)))
 								};
 
 								Vector2 cp = Geometry2D::get_closest_point_to_segment(gpoint, points);
@@ -394,11 +398,15 @@ void Polygon3DEditor::_polygon_draw() {
 
 	for (int i = 0; i < poly.size(); i++) {
 		Vector2 p, p2;
+		int poly_next = i + 1;
+		if (poly_next == poly.size()) {
+			poly_next = 0;
+		}
 		p = i == edited_point ? edited_point_pos : poly[i];
-		if ((wip_active && i == poly.size() - 1) || (((i + 1) % poly.size()) == edited_point)) {
+		if ((wip_active && i == poly.size() - 1) || ((poly_next) == edited_point)) {
 			p2 = edited_point_pos;
 		} else {
-			p2 = poly[(i + 1) % poly.size()];
+			p2 = poly[poly_next];
 		}
 
 		if (i == 0) {

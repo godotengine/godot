@@ -530,9 +530,13 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 			const Color col = Color(0.5, 0.5, 0.5); // FIXME polygon->get_outline_color();
 			const int n = pre_move_edit.size();
 			for (int i = 0; i < n - (is_closed ? 0 : 1); i++) {
+				int next = i + 1;
+				if (next == n) {
+					next = 0;
+				}
 				Vector2 p, p2;
 				p = pre_move_edit[i] + offset;
-				p2 = pre_move_edit[(i + 1) % n] + offset;
+				p2 = pre_move_edit[next] + offset;
 
 				Vector2 point = xform.xform(p);
 				Vector2 next_point = xform.xform(p2);
@@ -552,11 +556,15 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 
 			if (is_closed || i < n_points - 1) {
 				Vector2 p2;
+				int next = i + 1;
+				if (next == n_points) {
+					next = 0;
+				}
 				if (j == edited_point.polygon &&
-						((wip_active && i == n_points - 1) || (((i + 1) % n_points) == edited_point.vertex))) {
+						((wip_active && i == n_points - 1) || (next == edited_point.vertex))) {
 					p2 = edited_point.pos;
 				} else {
-					p2 = points[(i + 1) % n_points] + offset;
+					p2 = points[next] + offset;
 				}
 
 				const Vector2 next_point = xform.xform(p2);
@@ -699,8 +707,12 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 		const int n_segments = n_points - (_is_line() ? 1 : 0);
 
 		for (int i = 0; i < n_segments; i++) {
+			int next = i + 1;
+			if (next == n_points) {
+				next = 0;
+			}
 			Vector2 segment[2] = { xform.xform(points[i] + offset),
-				xform.xform(points[(i + 1) % n_points] + offset) };
+				xform.xform(points[next] + offset) };
 
 			Vector2 cp = Geometry2D::get_closest_point_to_segment(p_pos, segment);
 

@@ -279,10 +279,13 @@ void NavigationPolygon::make_polygons_from_outlines() {
 			}
 			const Vector2 *r2 = ol2.ptr();
 
-			for (int l = 0; l < olsize2; l++) {
-				if (Geometry2D::segment_intersects_segment(r[0], outside_point, r2[l], r2[(l + 1) % olsize2], nullptr)) {
+			for (int l = 0; l < olsize2 - 1; l++) {
+				if (Geometry2D::segment_intersects_segment(r[0], outside_point, r2[l], r2[l + 1], nullptr)) {
 					interscount++;
 				}
+			}
+			if (Geometry2D::segment_intersects_segment(r[0], outside_point, r2[olsize2 - 1], r2[0], nullptr)) {
+				interscount++;
 			}
 		}
 

@@ -284,8 +284,10 @@ Error RenderingDevice::_staging_buffer_allocate(uint32_t p_amount, uint32_t p_re
 			} else {
 				// Can't fit it into this buffer.
 				// Will need to try next buffer.
-
-				staging_buffer_current = (staging_buffer_current + 1) % staging_buffer_blocks.size();
+				staging_buffer_current++;
+				if (staging_buffer_current == staging_buffer_blocks.size()) {
+					staging_buffer_current = 0;
+				}
 
 				// Before doing anything, though, let's check that we didn't manage to fill all blocks.
 				// Possible in a single frame.
@@ -367,7 +369,10 @@ void RenderingDevice::_staging_buffer_execute_required_action(StagingRequiredAct
 
 			for (int i = 0; i < staging_buffer_blocks.size(); i++) {
 				// Clear all blocks but the ones from this frame.
-				int block_idx = (i + staging_buffer_current) % staging_buffer_blocks.size();
+				int block_idx = i + staging_buffer_current;
+				if (block_idx >= staging_buffer_blocks.size()) {
+					block_idx -= staging_buffer_blocks.size();
+				}
 				if (staging_buffer_blocks[block_idx].frame_used == frames_drawn) {
 					break; // Ok, we reached something from this frame, abort.
 				}
@@ -4708,7 +4713,10 @@ void RenderingDevice::swap_buffers() {
 	_execute_frame(true);
 
 	// Advance to the next frame and begin recording again.
-	frame = (frame + 1) % frames.size();
+	frame++;
+	if ((uint32_t)frame == frames.size()) {
+		frame = 0;
+	}
 	_begin_frame();
 }
 
@@ -4847,7 +4855,10 @@ void RenderingDevice::_begin_frame() {
 
 	// Advance staging buffer if used.
 	if (staging_buffer_used) {
-		staging_buffer_current = (staging_buffer_current + 1) % staging_buffer_blocks.size();
+		staging_buffer_current++;
+		if (staging_buffer_current == staging_buffer_blocks.size()) {
+			staging_buffer_current = 0;
+		}
 		staging_buffer_used = false;
 	}
 
@@ -5376,7 +5387,10 @@ void RenderingDevice::finalize() {
 
 	// Free everything pending.
 	for (uint32_t i = 0; i < frames.size(); i++) {
-		int f = (frame + i) % frames.size();
+		int f = frame + i;
+		if ((uint32_t)f >= frames.size()) {
+			f -= frames.size();
+		}
 		_free_pending_resources(f);
 		driver->command_pool_free(frames[i].command_pool);
 		driver->timestamp_query_pool_free(frames[i].timestamp_pool);

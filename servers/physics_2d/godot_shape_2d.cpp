@@ -505,9 +505,13 @@ void GodotConvexPolygonShape2D::get_supports(const Vector2 &p_normal, Vector2 *r
 
 		//test segment
 		if (points[i].normal.dot(p_normal) > segment_is_valid_support_threshold) {
+			int i_next = i + 1;
+			if (i_next == point_count) {
+				i_next = 0;
+			}
 			r_amount = 2;
 			r_supports[0] = points[i].pos;
-			r_supports[1] = points[(i + 1) % point_count].pos;
+			r_supports[1] = points[i_next].pos;
 			return;
 		}
 	}
@@ -540,9 +544,13 @@ bool GodotConvexPolygonShape2D::intersect_segment(const Vector2 &p_begin, const 
 	bool inters = false;
 
 	for (int i = 0; i < point_count; i++) {
+		int i_next = i + 1;
+		if (i_next == point_count) {
+			i_next = 0;
+		}
 		Vector2 res;
 
-		if (!Geometry2D::segment_intersects_segment(p_begin, p_end, points[i].pos, points[(i + 1) % point_count].pos, &res)) {
+		if (!Geometry2D::segment_intersects_segment(p_begin, p_end, points[i].pos, points[i_next].pos, &res)) {
 			continue;
 		}
 
@@ -594,8 +602,12 @@ void GodotConvexPolygonShape2D::set_data(const Variant &p_data) {
 		}
 
 		for (int i = 0; i < point_count; i++) {
+			int i_next = i + 1;
+			if (i_next == point_count) {
+				i_next = 0;
+			}
 			Vector2 p = points[i].pos;
-			Vector2 pn = points[(i + 1) % point_count].pos;
+			Vector2 pn = points[i_next].pos;
 			points[i].normal = (pn - p).orthogonal().normalized();
 		}
 	} else {

@@ -303,7 +303,10 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 
 	// go through all of B points
 	for (int i = 0; i < p_point_count_B; i++) {
-		int i_n = (i + 1) % p_point_count_B;
+		int i_n = i + 1;
+		if (i_n == p_point_count_B) {
+			i_n = 0;
+		}
 
 		Vector3 edge0_B = p_points_B[i];
 		Vector3 edge1_B = p_points_B[i_n];
@@ -316,7 +319,10 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 		int dst_idx = 0;
 		bool edge = clipbuf_len == 2;
 		for (int j = 0; j < clipbuf_len; j++) {
-			int j_n = (j + 1) % clipbuf_len;
+			int j_n = j + 1;
+			if (j_n == clipbuf_len) {
+				j_n = 0;
+			}
 
 			Vector3 edge0_A = clipbuf_src[j];
 			Vector3 edge1_A = clipbuf_src[j_n];
@@ -400,7 +406,10 @@ static void _generate_contacts_face_circle(const Vector3 *p_points_A, int p_poin
 	int num_points = 0;
 
 	for (int i = 0; i < p_point_count_A; i++) {
-		int i_n = (i + 1) % p_point_count_A;
+		int i_n = i + 1;
+		if (i_n == p_point_count_A) {
+			i_n = 0;
+		}
 
 		const Vector3 &edge0_A = p_points_A[i];
 		const Vector3 &edge1_A = p_points_A[i_n];

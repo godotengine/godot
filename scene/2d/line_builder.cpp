@@ -170,10 +170,23 @@ void LineBuilder::build() {
 	Vector2 first_pos_up, first_pos_down;
 	bool is_first_joint_sharp = false;
 
-	// For each additional segment
+	// For each additional segment.
 	for (int i = first_point; i <= segments_count; ++i) {
-		pos1 = points[(i == -1) ? point_count - 1 : i % point_count]; // First point.
-		Vector2 pos2 = points[(i + 1) % point_count]; // Second point.
+		int pos1_index = i;
+		int pos2_index = i + 1;
+		if (pos1_index == -1) {
+			pos1_index = point_count - 1;
+		} else {
+			if (pos2_index == point_count) {
+				pos2_index = 0;
+			} else if (pos1_index == point_count) {
+				pos1_index = 0;
+				pos2_index = 1;
+			}
+		}
+
+		pos1 = points[pos1_index]; // First point.
+		Vector2 pos2 = points[pos2_index]; // Second point.
 
 		Vector2 f1 = (pos2 - pos1).normalized();
 		Vector2 u1 = f1.orthogonal();

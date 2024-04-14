@@ -129,7 +129,11 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 			//time to do a FFT
 			smbFft(fftw, fft_size * 2, -1);
 			smbFft(fftw + fft_size * 4, fft_size * 2, -1);
-			int next = (fft_pos + 1) % fft_count;
+
+			int next = fft_pos + 1;
+			if (next == fft_count) {
+				next = 0;
+			}
 
 			AudioFrame *hw = (AudioFrame *)fft_history[next].ptr(); //do not use write, avoid cow
 

@@ -569,7 +569,10 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 
 	// Clear out state used in 2D pass
 	reset_canvas();
-	state.current_data_buffer_index = (state.current_data_buffer_index + 1) % state.canvas_instance_data_buffers.size();
+	state.current_data_buffer_index++;
+	if (state.current_data_buffer_index == state.canvas_instance_data_buffers.size()) {
+		state.current_data_buffer_index = 0;
+	}
 	state.current_instance_buffer_index = 0;
 }
 
@@ -1963,14 +1966,17 @@ void RasterizerCanvasGLES3::occluder_polygon_set_shape(RID p_occluder, const Vec
 			const Vector2 *r = p_points.ptr();
 
 			int max = lc / 2;
-			if (!p_closed) {
-				max--;
-			}
-			for (int i = 0; i < max; i++) {
+			for (int i = 0; i < max - 1; i++) {
 				Vector2 a = r[i];
-				Vector2 b = r[(i + 1) % (lc / 2)];
+				Vector2 b = r[i + 1];
 				w[i * 2 + 0] = a;
 				w[i * 2 + 1] = b;
+			}
+			if (p_closed) {
+				Vector2 a = r[max - 1];
+				Vector2 b = r[0];
+				w[(max - 1) * 2 + 0] = a;
+				w[(max - 1) * 2 + 1] = b;
 			}
 		}
 	}
@@ -2070,10 +2076,12 @@ void RasterizerCanvasGLES3::occluder_polygon_set_shape(RID p_occluder, const Vec
 			sdf_indices.resize(max * 2);
 
 			int *iw = sdf_indices.ptrw();
-			for (int i = 0; i < max; i++) {
+			for (int i = 0; i < max - 1; i++) {
 				iw[i * 2 + 0] = i;
-				iw[i * 2 + 1] = (i + 1) % max;
+				iw[i * 2 + 1] = i + 1;
 			}
+			iw[(max - 1) * 2 + 0] = max - 1;
+			iw[(max - 1) * 2 + 1] = 0;
 			oc->sdf_is_lines = true;
 		}
 	}
@@ -2572,14 +2580,16 @@ void RasterizerCanvasGLES3::_allocate_instance_data_buffer() {
 	glBindBuffer(GL_UNIFORM_BUFFER, new_buffers[2]);
 	GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, new_buffers[2], sizeof(StateBuffer), nullptr, GL_STREAM_DRAW, "2D State UBO[" + itos(state.current_data_buffer_index) + "]");
 
-	state.current_data_buffer_index = (state.current_data_buffer_index + 1);
+	state.current_data_buffer_index++;
 	DataBuffer db;
 	db.instance_buffers.push_back(new_buffers[0]);
 	db.light_ubo = new_buffers[1];
 	db.state_ubo = new_buffers[2];
 	db.last_frame_used = RSG::rasterizer->get_frame_number();
 	state.canvas_instance_data_buffers.insert(state.current_data_buffer_index, db);
-	state.current_data_buffer_index = state.current_data_buffer_index % state.canvas_instance_data_buffers.size();
+	if (state.current_data_buffer_index >= state.canvas_instance_data_buffers.size()) {
+		state.current_data_buffer_index -= state.canvas_instance_data_buffers.size();
+	}
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }

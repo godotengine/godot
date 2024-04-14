@@ -2194,7 +2194,10 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 			// some hardware expects multiple semaphores to be used.
 			present_semaphore = command_queue->present_semaphores[command_queue->present_semaphore_index];
 			signal_semaphores.push_back(present_semaphore);
-			command_queue->present_semaphore_index = (command_queue->present_semaphore_index + 1) % command_queue->present_semaphores.size();
+			command_queue->present_semaphore_index++;
+			if (command_queue->present_semaphore_index == command_queue->present_semaphores.size()) {
+				command_queue->present_semaphore_index = 0;
+			}
 		}
 
 		VkSubmitInfo submit_info = {};

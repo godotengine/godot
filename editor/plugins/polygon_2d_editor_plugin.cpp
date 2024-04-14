@@ -1157,7 +1157,13 @@ void Polygon2DEditor::_uv_draw() {
 	}
 
 	for (int i = 0; i < uvs.size(); i++) {
-		int next = uv_draw_max > 0 ? (i + 1) % uv_draw_max : 0;
+		int next = 0;
+		if (uv_draw_max > 0) {
+			next = i + 1;
+			if (next >= uv_draw_max) {
+				next -= uv_draw_max;
+			}
+		}
 
 		if (i < uv_draw_max && uv_drag && uv_move_current == UV_MODE_EDIT_POINT && EDITOR_GET("editors/polygon_editor/show_previous_outline")) {
 			uv_edit_draw->draw_line(mtx.xform(points_prev[i]), mtx.xform(points_prev[next]), prev_color, Math::round(EDSCALE));
@@ -1176,7 +1182,10 @@ void Polygon2DEditor::_uv_draw() {
 		Vector<int> points = polygons[i];
 		Vector<Vector2> polypoints;
 		for (int j = 0; j < points.size(); j++) {
-			int next = (j + 1) % points.size();
+			int next = j + 1;
+			if (next == points.size()) {
+				next = 0;
+			}
 
 			int idx = points[j];
 			int idx_next = points[next];

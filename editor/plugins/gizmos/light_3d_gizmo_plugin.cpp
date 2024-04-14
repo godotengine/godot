@@ -181,10 +181,14 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 			for (int i = 0; i < arrow_sides; i++) {
 				for (int j = 0; j < arrow_points; j++) {
+					int next = j + 1;
+					if (next == arrow_points) {
+						next = 0;
+					}
 					Basis ma(Vector3(0, 0, 1), Math_PI * i / arrow_sides);
 
 					Vector3 v1 = arrow[j] - Vector3(0, 0, arrow_length);
-					Vector3 v2 = arrow[(j + 1) % arrow_points] - Vector3(0, 0, arrow_length);
+					Vector3 v2 = arrow[next] - Vector3(0, 0, arrow_length);
 
 					lines.push_back(ma.xform(v1));
 					lines.push_back(ma.xform(v2));

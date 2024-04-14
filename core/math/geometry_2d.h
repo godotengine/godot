@@ -357,11 +357,15 @@ public:
 		}
 		const Vector2 *p = p_polygon.ptr();
 		real_t sum = 0;
-		for (int i = 0; i < c; i++) {
+		int polygon_end_index = c - 1;
+		for (int i = 0; i < polygon_end_index; i++) {
 			const Vector2 &v1 = p[i];
-			const Vector2 &v2 = p[(i + 1) % c];
+			const Vector2 &v2 = p[i + 1];
 			sum += (v2.x - v1.x) * (v2.y + v1.y);
 		}
+		const Vector2 &v1 = p[polygon_end_index];
+		const Vector2 &v2 = p[0];
+		sum += (v2.x - v1.x) * (v2.y + v1.y);
 
 		return sum > 0.0f;
 	}
@@ -385,9 +389,10 @@ public:
 		further_away += (further_away - further_away_opposite) * Vector2(1.221313, 1.512312);
 
 		int intersections = 0;
-		for (int i = 0; i < c; i++) {
+		int polygon_end_index = c - 1;
+		for (int i = 0; i < polygon_end_index; i++) {
 			const Vector2 &v1 = p[i];
-			const Vector2 &v2 = p[(i + 1) % c];
+			const Vector2 &v2 = p[i + 1];
 
 			Vector2 res;
 			if (segment_intersects_segment(v1, v2, p_point, further_away, &res)) {
@@ -398,20 +403,38 @@ public:
 				}
 			}
 		}
+		const Vector2 &v1 = p[polygon_end_index];
+		const Vector2 &v2 = p[0];
+
+		Vector2 res;
+		if (segment_intersects_segment(v1, v2, p_point, further_away, &res)) {
+			intersections++;
+			if (res.is_equal_approx(p_point)) {
+				// Point is in one of the polygon edges.
+				return true;
+			}
+		}
 
 		return (intersections & 1);
 	}
 
 	static bool is_segment_intersecting_polygon(const Vector2 &p_from, const Vector2 &p_to, const Vector<Vector2> &p_polygon) {
-		int c = p_polygon.size();
+		int polygon_end_index = p_polygon.size() - 1;
 		const Vector2 *p = p_polygon.ptr();
-		for (int i = 0; i < c; i++) {
+		for (int i = 0; i < polygon_end_index; i++) {
 			const Vector2 &v1 = p[i];
-			const Vector2 &v2 = p[(i + 1) % c];
+			const Vector2 &v2 = p[i + 1];
 			if (segment_intersects_segment(p_from, p_to, v1, v2, nullptr)) {
 				return true;
 			}
 		}
+
+		const Vector2 &v1 = p[polygon_end_index];
+		const Vector2 &v2 = p[0];
+		if (segment_intersects_segment(p_from, p_to, v1, v2, nullptr)) {
+			return true;
+		}
+
 		return false;
 	}
 

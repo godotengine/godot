@@ -178,7 +178,10 @@ void Polygon2D::_notification(int p_what) {
 						highest_idx = i;
 						highest_y = points[i].y;
 					}
-					int ni = (i + 1) % len;
+					int ni = i + 1;
+					if (ni == len) {
+						ni = 0;
+					}
 					sum += (points[ni].x - points[i].x) * (points[ni].y + points[i].y);
 				}
 

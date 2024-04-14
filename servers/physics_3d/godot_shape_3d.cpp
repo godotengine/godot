@@ -1042,14 +1042,21 @@ Vector3 GodotConvexPolygonShape3D::get_closest_point_to(const Vector3 &p_point) 
 		int ic = faces[i].indices.size();
 		const int *indices = faces[i].indices.ptr();
 
-		for (int j = 0; j < ic; j++) {
+		for (int j = 0; j < ic - 1; j++) {
 			Vector3 a = vertices[indices[j]];
-			Vector3 b = vertices[indices[(j + 1) % ic]];
+			Vector3 b = vertices[indices[j + 1]];
 			Vector3 n = (a - b).cross(faces[i].plane.normal).normalized();
 			if (Plane(n, a).is_point_over(p_point)) {
 				is_inside = false;
 				break;
 			}
+		}
+		Vector3 a = vertices[indices[ic - 1]];
+		Vector3 b = vertices[indices[0]];
+		Vector3 n = (a - b).cross(faces[i].plane.normal).normalized();
+		if (Plane(n, a).is_point_over(p_point)) {
+			is_inside = false;
+			break;
 		}
 
 		if (is_inside) {

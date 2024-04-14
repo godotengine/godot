@@ -1976,7 +1976,10 @@ void RenderingDeviceGraph::end(RDD::CommandBufferID p_command_buffer, bool p_reo
 	}
 
 	// Advance the frame counter. It's not necessary to do this if no commands are recorded because that means no secondary command buffers were used.
-	frame = (frame + 1) % frames.size();
+	frame++;
+	if (frame == frames.size()) {
+		frame = 0;
+	}
 }
 
 #if PRINT_RESOURCE_TRACKER_TOTAL

@@ -631,13 +631,17 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 
 		if (use_collision == false) {
 			for (size_t point_id = 0; point_id < p.points.size(); point_id += 1) {
+				size_t point_id_next = point_id + 1;
+				if (point_id_next == p.points.size()) {
+					point_id_next = 0;
+				}
 				Vector3 a, b;
 
 				Geometry3D::get_closest_points_between_segments(
 						p_from,
 						p_to,
 						p.points[point_id].pos,
-						p.points[(point_id + 1) % p.points.size()].pos,
+						p.points[point_id_next].pos,
 						a,
 						b);
 
@@ -953,7 +957,10 @@ void NavMap::sync() {
 		HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey> connections;
 		for (gd::Polygon &poly : polygons) {
 			for (uint32_t p = 0; p < poly.points.size(); p++) {
-				int next_point = (p + 1) % poly.points.size();
+				uint32_t next_point = p + 1;
+				if (next_point == poly.points.size()) {
+					next_point = 0;
+				}
 				gd::EdgeKey ek(poly.points[p].key, poly.points[next_point].key);
 
 				HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey>::Iterator connection = connections.find(ek);

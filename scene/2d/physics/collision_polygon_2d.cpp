@@ -67,11 +67,13 @@ void CollisionPolygon2D::_build_polygon() {
 		Vector<Vector2> segments;
 		segments.resize(polygon.size() * 2);
 		Vector2 *w = segments.ptrw();
-
-		for (int i = 0; i < polygon.size(); i++) {
+		int polygon_end_position = polygon.size() - 1;
+		for (int i = 0; i < polygon_end_position; i++) {
 			w[(i << 1) + 0] = polygon[i];
-			w[(i << 1) + 1] = polygon[(i + 1) % polygon.size()];
+			w[(i << 1) + 1] = polygon[i + 1];
 		}
+		w[(polygon_end_position << 1) + 0] = polygon[polygon_end_position];
+		w[(polygon_end_position << 1) + 1] = polygon[0];
 
 		concave->set_segments(segments);
 

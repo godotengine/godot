@@ -2046,7 +2046,10 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			}
 
 			for (int y0 = 0; y0 < shape_sides; y0++) {
-				int y1 = (y0 + 1) % shape_sides;
+				int y1 = y0 + 1;
+				if (y1 == shape_sides) {
+					y1 = 0;
+				}
 				// Use the top half of the texture.
 				double v0 = (y0 * v_step) / 2;
 				double v1 = ((y0 + 1) * v_step) / 2;
