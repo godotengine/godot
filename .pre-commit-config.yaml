@@ -1,3 +1,6 @@
+default_language_version:
+    python: python3
+
 repos:
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v17.0.6
@@ -27,16 +30,16 @@ repos:
     hooks:
       - id: make-rst
         name: make-rst
-        entry: python3 doc/tools/make_rst.py doc/classes modules platform --dry-run --color
-        pass_filenames: false
         language: python
+        entry: doc/tools/make_rst.py doc/classes modules platform --dry-run --color
+        pass_filenames: false
         files: ^(doc|modules|platform).*xml$
 
       - id: copyright-headers
         name: copyright-headers
         language: python
+        entry: misc/scripts/copyright_headers.py
         files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java)$
-        entry: python3 misc/scripts/copyright_headers.py
         exclude: |
           (?x)^(
             .*thirdparty.*|
@@ -51,5 +54,5 @@ repos:
       - id: dotnet-format
         name: dotnet-format
         language: python
-        entry: python3 misc/scripts/dotnet_format.py
+        entry: misc/scripts/dotnet_format.py
         types_or: [c#]
