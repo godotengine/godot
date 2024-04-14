@@ -419,6 +419,7 @@ void Time::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_time_string_from_unix_time", "unix_time_val"), &Time::get_time_string_from_unix_time);
 	ClassDB::bind_method(D_METHOD("get_datetime_dict_from_datetime_string", "datetime", "weekday"), &Time::get_datetime_dict_from_datetime_string);
 	ClassDB::bind_method(D_METHOD("get_datetime_string_from_datetime_dict", "datetime", "use_space"), &Time::get_datetime_string_from_datetime_dict);
+	ClassDB::bind_method(D_METHOD("get_date_dict_from_date_string", "date", "weekday"), &Time::get_date_dict_from_date_string);
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime_dict", "datetime"), &Time::get_unix_time_from_datetime_dict);
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime_string", "datetime"), &Time::get_unix_time_from_datetime_string);
 	ClassDB::bind_method(D_METHOD("get_offset_string_from_offset_minutes", "offset_minutes"), &Time::get_offset_string_from_offset_minutes);
