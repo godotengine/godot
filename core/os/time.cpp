@@ -287,6 +287,22 @@ String Time::get_datetime_string_from_datetime_dict(const Dictionary &p_datetime
 	return timestamp;
 }
 
+
+Dictionary Time::get_date_dict_from_date_string(const String &p_date, bool p_weekday) const {
+	PARSE_ISO8601_STRING(Dictionary())
+	Dictionary dict;
+	dict[YEAR_KEY] = year;
+	dict[MONTH_KEY] = (uint8_t)month;
+	dict[DAY_KEY] = day;
+	if (p_weekday) {
+		YMD_TO_DAY_NUMBER
+		// Unix epoch was a Thursday (day 0 aka 1970-01-01).
+		dict[WEEKDAY_KEY] = Math::posmod(day_number + WEEKDAY_THURSDAY, 7);
+	}
+
+	return dict;
+}
+
 int64_t Time::get_unix_time_from_datetime_dict(const Dictionary &p_datetime) const {
 	ERR_FAIL_COND_V_MSG(p_datetime.is_empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
 	EXTRACT_FROM_DICTIONARY
