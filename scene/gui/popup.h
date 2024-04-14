@@ -43,10 +43,6 @@ class Popup : public Window {
 	LocalVector<Window *> visible_parents;
 	bool popped_up = false;
 
-	struct ThemeCache {
-		Ref<StyleBox> panel_style;
-	} theme_cache;
-
 	void _initialize_visible_parents();
 	void _deinitialize_visible_parents();
 
