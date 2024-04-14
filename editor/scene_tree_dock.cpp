@@ -3020,6 +3020,13 @@ void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
 }
 
+void SceneTreeDock::set_selection(const Vector<Node *> &p_nodes) {
+	editor_selection->clear();
+	for (Node *node : p_nodes) {
+		editor_selection->add_node(node);
+	}
+}
+
 void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected) {
 	scene_tree->set_selected(p_node, p_emit_selected);
 }

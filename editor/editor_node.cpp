@@ -2364,7 +2364,13 @@ static bool overrides_external_editor(Object *p_object) {
 
 void EditorNode::_add_to_history(const Object *p_object, const String &p_property, bool p_inspector_only) {
 	ObjectID id = p_object->get_instance_id();
-	if (id != editor_history.get_current()) {
+	ObjectID history_id = editor_history.get_current();
+	if (id != history_id) {
+		const MultiNodeEdit *multi_node_edit = Object::cast_to<const MultiNodeEdit>(p_object);
+		const MultiNodeEdit *history_multi_node_edit = Object::cast_to<const MultiNodeEdit>(ObjectDB::get_instance(history_id));
+		if (multi_node_edit && history_multi_node_edit && multi_node_edit->is_same_selection(history_multi_node_edit)) {
+			return;
+		}
 		if (p_inspector_only) {
 			editor_history.add_object(id, String(), true);
 		} else if (p_property.is_empty()) {
@@ -2458,6 +2464,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		if (current_node->is_inside_tree()) {
 			NodeDock::get_singleton()->set_node(current_node);
 			SceneTreeDock::get_singleton()->set_selected(current_node);
+			SceneTreeDock::get_singleton()->set_selection({ current_node });
 			InspectorDock::get_singleton()->update(current_node);
 			if (!inspector_only && !skip_main_plugin) {
 				skip_main_plugin = stay_in_script_editor_on_node_selected && !ScriptEditor::get_singleton()->is_editor_floating() && ScriptEditor::get_singleton()->is_visible_in_tree();
@@ -2479,13 +2486,13 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 	} else {
 		Node *selected_node = nullptr;
 
+		Vector<Node *> multi_nodes;
 		if (current_obj->is_class("MultiNodeEdit")) {
 			Node *scene = get_edited_scene();
 			if (scene) {
 				MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(current_obj);
 				int node_count = multi_node_edit->get_node_count();
 				if (node_count > 0) {
-					List<Node *> multi_nodes;
 					for (int node_index = 0; node_index < node_count; ++node_index) {
 						Node *node = scene->get_node(multi_node_edit->get_node(node_index));
 						if (node) {
@@ -2495,7 +2502,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 					if (!multi_nodes.is_empty()) {
 						// Pick the top-most node.
 						multi_nodes.sort_custom<Node::Comparator>();
-						selected_node = multi_nodes.front()->get();
+						selected_node = multi_nodes[0];
 					}
 				}
 			}
@@ -2504,6 +2511,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		InspectorDock::get_inspector_singleton()->edit(current_obj);
 		NodeDock::get_singleton()->set_node(nullptr);
 		SceneTreeDock::get_singleton()->set_selected(selected_node);
+		SceneTreeDock::get_singleton()->set_selection(multi_nodes);
 		InspectorDock::get_singleton()->update(nullptr);
 	}
 
