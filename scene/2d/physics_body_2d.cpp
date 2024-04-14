@@ -998,7 +998,7 @@ Ref<KinematicCollision2D> KinematicBody2D::_move(const Vector2 &p_motion, bool p
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
 			motion_cache.instance();
-			motion_cache->owner = this;
+			motion_cache->owner_id = get_instance_id();
 		}
 
 		motion_cache->collision = col;
@@ -1364,7 +1364,7 @@ Ref<KinematicCollision2D> KinematicBody2D::_get_slide_collision(int p_bounce) {
 	// Create a new instance when the cached reference is invalid or still in use in script.
 	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->reference_get_count() > 1) {
 		slide_colliders.write[p_bounce].instance();
-		slide_colliders.write[p_bounce]->owner = this;
+		slide_colliders.write[p_bounce]->owner_id = get_instance_id();
 	}
 
 	slide_colliders.write[p_bounce]->collision = colliders[p_bounce];
@@ -1488,17 +1488,6 @@ KinematicBody2D::KinematicBody2D() :
 	on_wall = false;
 	sync_to_physics = false;
 }
-KinematicBody2D::~KinematicBody2D() {
-	if (motion_cache.is_valid()) {
-		motion_cache->owner = nullptr;
-	}
-
-	for (int i = 0; i < slide_colliders.size(); i++) {
-		if (slide_colliders[i].is_valid()) {
-			slide_colliders.write[i]->owner = nullptr;
-		}
-	}
-}
 
 ////////////////////////
 
@@ -1521,6 +1510,7 @@ real_t KinematicCollision2D::get_angle(const Vector2 &p_up_direction) const {
 }
 
 Object *KinematicCollision2D::get_local_shape() const {
+	PhysicsBody2D *owner = Object::cast_to<PhysicsBody2D>(ObjectDB::get_instance(owner_id));
 	if (!owner) {
 		return nullptr;
 	}
@@ -1596,5 +1586,5 @@ KinematicCollision2D::KinematicCollision2D() {
 	collision.collider = 0;
 	collision.collider_shape = 0;
 	collision.local_shape = 0;
-	owner = nullptr;
+	owner_id = 0;
 }
