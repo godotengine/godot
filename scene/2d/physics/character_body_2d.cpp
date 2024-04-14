@@ -501,7 +501,7 @@ Ref<KinematicCollision2D> CharacterBody2D::_get_slide_collision(int p_bounce) {
 	// Create a new instance when the cached reference is invalid or still in use in script.
 	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->get_reference_count() > 1) {
 		slide_colliders.write[p_bounce].instantiate();
-		slide_colliders.write[p_bounce]->owner = this;
+		slide_colliders.write[p_bounce]->owner_id = get_instance_id();
 	}
 
 	slide_colliders.write[p_bounce]->result = motion_results[p_bounce];
@@ -744,12 +744,4 @@ void CharacterBody2D::_bind_methods() {
 
 CharacterBody2D::CharacterBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_KINEMATIC) {
-}
-
-CharacterBody2D::~CharacterBody2D() {
-	for (int i = 0; i < slide_colliders.size(); i++) {
-		if (slide_colliders[i].is_valid()) {
-			slide_colliders.write[i]->owner = nullptr;
-		}
-	}
 }

@@ -40,7 +40,7 @@ class PhysicsBody2D;
 class KinematicCollision2D : public RefCounted {
 	GDCLASS(KinematicCollision2D, RefCounted);
 
-	PhysicsBody2D *owner = nullptr;
+	ObjectID owner_id;
 	friend class PhysicsBody2D;
 	friend class CharacterBody2D;
 	PhysicsServer2D::MotionResult result;
