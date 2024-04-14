@@ -35,6 +35,8 @@
 #include "core/os/thread_safe.h"
 #include "core/templates/command_queue_mt.h"
 
+WorkerThreadPool::Task *const WorkerThreadPool::ThreadData::YIELDING = (Task *)1;
+
 void WorkerThreadPool::Task::free_template_userdata() {
 	ERR_FAIL_NULL(template_userdata);
 	ERR_FAIL_NULL(native_func_userdata);
@@ -60,11 +62,13 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
 		// Therefore, we do it late at the first opportunity, so in case the task
 		// about to be run uses scripting, guarantees are held.
+		task_mutex.lock();
 		if (!curr_thread.ready_for_scripting && ScriptServer::are_languages_initialized()) {
+			task_mutex.unlock();
 			ScriptServer::thread_enter();
+			task_mutex.lock();
 			curr_thread.ready_for_scripting = true;
 		}
-		task_mutex.lock();
 		p_task->pool_thread_index = pool_thread_index;
 		prev_task = curr_thread.current_task;
 		curr_thread.current_task = p_task;
@@ -191,7 +195,7 @@ void WorkerThreadPool::_thread_function(void *p_user) {
 	}
 }
 
-void WorkerThreadPool::_post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, bool p_high_priority) {
+void WorkerThreadPool::_post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, BitField<TaskFlags> p_flags) {
 	// Fall back to processing on the calling thread if there are no worker threads.
 	// Separated into its own variable to make it easier to extend this logic
 	// in custom builds.
@@ -210,10 +214,12 @@ void WorkerThreadPool::_post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, 
 	ThreadData *caller_pool_thread = thread_ids.has(Thread::get_caller_id()) ? &threads[thread_ids[Thread::get_caller_id()]] : nullptr;
 
 	for (uint32_t i = 0; i < p_count; i++) {
-		p_tasks[i]->low_priority = !p_high_priority;
-		if (p_high_priority || low_priority_threads_used < max_low_priority_threads) {
+		bool high_prio = p_flags.has_flag(TASK_FLAG_HIGH_PRIORITY);
+		p_tasks[i]->low_priority = !high_prio;
+		p_tasks[i]->daemon = p_flags.has_flag(TASK_FLAG_DAEMON);
+		if (high_prio || low_priority_threads_used < max_low_priority_threads) {
 			task_queue.add_last(&p_tasks[i]->task_elem);
-			if (!p_high_priority) {
+			if (!high_prio) {
 				low_priority_threads_used++;
 			}
 			to_process++;
@@ -306,10 +312,10 @@ bool WorkerThreadPool::_try_promote_low_priority_task() {
 }
 
 WorkerThreadPool::TaskID WorkerThreadPool::add_native_task(void (*p_func)(void *), void *p_userdata, bool p_high_priority, const String &p_description) {
-	return _add_task(Callable(), p_func, p_userdata, nullptr, p_high_priority, p_description);
+	return _add_task(Callable(), p_func, p_userdata, nullptr, p_high_priority ? TASK_FLAG_HIGH_PRIORITY : TASK_FLAGS_NONE, p_description);
 }
 
-WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description) {
+WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, BitField<TaskFlags> p_flags, const String &p_description) {
 	task_mutex.lock();
 	// Get a free task
 	Task *task = task_allocator.alloc();
@@ -322,13 +328,17 @@ WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable,
 	task->template_userdata = p_template_userdata;
 	tasks.insert(id, task);
 
-	_post_tasks_and_unlock(&task, 1, p_high_priority);
+	_post_tasks_and_unlock(&task, 1, p_flags);
 
 	return id;
 }
 
 WorkerThreadPool::TaskID WorkerThreadPool::add_task(const Callable &p_action, bool p_high_priority, const String &p_description) {
-	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority, p_description);
+	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority ? TASK_FLAG_HIGH_PRIORITY : TASK_FLAGS_NONE, p_description);
+}
+
+WorkerThreadPool::TaskID WorkerThreadPool::add_task_with_flags(const Callable &p_action, BitField<TaskFlags> p_flags, const String &p_description) {
+	return _add_task(p_action, nullptr, nullptr, nullptr, p_flags, p_description);
 }
 
 bool WorkerThreadPool::is_task_completed(TaskID p_task_id) const {
@@ -389,70 +399,11 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 	task_mutex.unlock();
 
 	if (caller_pool_thread) {
-		while (true) {
-			Task *task_to_process = nullptr;
-			{
-				MutexLock lock(task_mutex);
-				bool was_signaled = caller_pool_thread->signaled;
-				caller_pool_thread->signaled = false;
-
-				if (task->completed) {
-					// This thread was awaken also for some reason, but it's about to exit.
-					// Let's find out what may be pending and forward the requests.
-					if (!exit_threads && was_signaled) {
-						uint32_t to_process = task_queue.first() ? 1 : 0;
-						uint32_t to_promote = caller_pool_thread->current_task->low_priority && low_priority_task_queue.first() ? 1 : 0;
-						if (to_process || to_promote) {
-							// This thread must be left alone since it won't loop again.
-							caller_pool_thread->signaled = true;
-							_notify_threads(caller_pool_thread, to_process, to_promote);
-						}
-					}
-
-					task->waiting_pool--;
-					if (task->waiting_pool == 0 && task->waiting_user == 0) {
-						tasks.erase(p_task_id);
-						task_allocator.free(task);
-					}
-
-					break;
-				}
-
-				if (!exit_threads) {
-					// This is a thread from the pool. It shouldn't just idle.
-					// Let's try to process other tasks while we wait.
-
-					if (caller_pool_thread->current_task->low_priority && low_priority_task_queue.first()) {
-						if (_try_promote_low_priority_task()) {
-							_notify_threads(caller_pool_thread, 1, 0);
-						}
-					}
-
-					if (singleton->task_queue.first()) {
-						task_to_process = task_queue.first()->self();
-						task_queue.remove(task_queue.first());
-					}
-
-					if (!task_to_process) {
-						caller_pool_thread->awaited_task = task;
-
-						if (flushing_cmd_queue) {
-							flushing_cmd_queue->unlock();
-						}
-						caller_pool_thread->cond_var.wait(lock);
-						if (flushing_cmd_queue) {
-							flushing_cmd_queue->lock();
-						}
-
-						DEV_ASSERT(exit_threads || caller_pool_thread->signaled || task->completed);
-						caller_pool_thread->awaited_task = nullptr;
-					}
-				}
-			}
-
-			if (task_to_process) {
-				_process_task(task_to_process);
-			}
+		_wait_collaboratively(caller_pool_thread, task);
+		task->waiting_pool--;
+		if (task->waiting_pool == 0 && task->waiting_user == 0) {
+			tasks.erase(p_task_id);
+			task_allocator.free(task);
 		}
 	} else {
 		task->done_semaphore.wait();
@@ -466,6 +417,99 @@ Error WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 	}
 
 	return OK;
+}
+
+void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task) {
+	// Keep processing tasks until the condition to stop waiting is met.
+
+#define IS_WAIT_OVER (unlikely(p_task == ThreadData::YIELDING) ? p_caller_pool_thread->yield_is_over : p_task->completed)
+
+	while (true) {
+		Task *task_to_process = nullptr;
+		{
+			MutexLock lock(task_mutex);
+			bool was_signaled = p_caller_pool_thread->signaled;
+			p_caller_pool_thread->signaled = false;
+
+			if (IS_WAIT_OVER) {
+				p_caller_pool_thread->yield_is_over = false;
+				if (!exit_threads && was_signaled) {
+					// This thread was awaken for some additional reason, but it's about to exit.
+					// Let's find out what may be pending and forward the requests.
+					uint32_t to_process = task_queue.first() ? 1 : 0;
+					uint32_t to_promote = p_caller_pool_thread->current_task->low_priority && low_priority_task_queue.first() ? 1 : 0;
+					if (to_process || to_promote) {
+						// This thread must be left alone since it won't loop again.
+						p_caller_pool_thread->signaled = true;
+						_notify_threads(p_caller_pool_thread, to_process, to_promote);
+					}
+				}
+
+				break;
+			}
+
+			if (!exit_threads) {
+				if (p_caller_pool_thread->current_task->low_priority && low_priority_task_queue.first()) {
+					if (_try_promote_low_priority_task()) {
+						_notify_threads(p_caller_pool_thread, 1, 0);
+					}
+				}
+
+				if (singleton->task_queue.first()) {
+					task_to_process = task_queue.first()->self();
+					task_queue.remove(task_queue.first());
+				}
+
+				if (!task_to_process) {
+					p_caller_pool_thread->awaited_task = p_task;
+
+					if (flushing_cmd_queue) {
+						flushing_cmd_queue->unlock();
+					}
+					p_caller_pool_thread->cond_var.wait(lock);
+					if (flushing_cmd_queue) {
+						flushing_cmd_queue->lock();
+					}
+
+					DEV_ASSERT(exit_threads || p_caller_pool_thread->signaled || IS_WAIT_OVER);
+					p_caller_pool_thread->awaited_task = nullptr;
+				}
+			}
+		}
+
+		if (task_to_process) {
+			_process_task(task_to_process);
+		}
+	}
+}
+
+void WorkerThreadPool::yield() {
+	int th_index = get_thread_index();
+	ERR_FAIL_COND_MSG(th_index == -1, "This function can only be called from a worker thread.");
+	_wait_collaboratively(&threads[th_index], ThreadData::YIELDING);
+}
+
+void WorkerThreadPool::notify_yield_over(TaskID p_task_id) {
+	task_mutex.lock();
+	Task **taskp = tasks.getptr(p_task_id);
+	if (!taskp) {
+		task_mutex.unlock();
+		ERR_FAIL_MSG("Invalid Task ID.");
+	}
+	Task *task = *taskp;
+
+#ifdef DEBUG_ENABLED
+	if (task->pool_thread_index == get_thread_index()) {
+		WARN_PRINT("A worker thread is attempting to notify itself. That makes no sense.");
+	}
+#endif
+
+	ThreadData &td = threads[task->pool_thread_index];
+	td.yield_is_over = true;
+	td.signaled = true;
+	td.cond_var.notify_one();
+
+	task_mutex.unlock();
 }
 
 WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description) {
@@ -509,7 +553,7 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 
 	groups[id] = group;
 
-	_post_tasks_and_unlock(tasks_posted, p_tasks, p_high_priority);
+	_post_tasks_and_unlock(tasks_posted, p_tasks, p_high_priority ? TASK_FLAG_HIGH_PRIORITY : TASK_FLAGS_NONE);
 
 	return id;
 }
@@ -651,13 +695,19 @@ void WorkerThreadPool::finish() {
 
 void WorkerThreadPool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_task", "action", "high_priority", "description"), &WorkerThreadPool::add_task, DEFVAL(false), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("add_task_with_flags", "action", "flags", "description"), &WorkerThreadPool::add_task_with_flags, DEFVAL(TASK_FLAGS_NONE), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_task_completed", "task_id"), &WorkerThreadPool::is_task_completed);
 	ClassDB::bind_method(D_METHOD("wait_for_task_completion", "task_id"), &WorkerThreadPool::wait_for_task_completion);
+	ClassDB::bind_method(D_METHOD("yield"), &WorkerThreadPool::yield);
+	ClassDB::bind_method(D_METHOD("notify_yield_over", "task_id"), &WorkerThreadPool::notify_yield_over);
 
 	ClassDB::bind_method(D_METHOD("add_group_task", "action", "elements", "tasks_needed", "high_priority", "description"), &WorkerThreadPool::add_group_task, DEFVAL(-1), DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_group_task_completed", "group_id"), &WorkerThreadPool::is_group_task_completed);
 	ClassDB::bind_method(D_METHOD("get_group_processed_element_count", "group_id"), &WorkerThreadPool::get_group_processed_element_count);
 	ClassDB::bind_method(D_METHOD("wait_for_group_task_completion", "group_id"), &WorkerThreadPool::wait_for_group_task_completion);
+
+	BIND_BITFIELD_FLAG(TASK_FLAG_HIGH_PRIORITY);
+	BIND_BITFIELD_FLAG(TASK_FLAG_DAEMON);
 }
 
 WorkerThreadPool::WorkerThreadPool() {

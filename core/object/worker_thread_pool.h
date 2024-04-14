@@ -53,6 +53,12 @@ public:
 	typedef int64_t TaskID;
 	typedef int64_t GroupID;
 
+	enum TaskFlags {
+		TASK_FLAGS_NONE = 0,
+		TASK_FLAG_HIGH_PRIORITY = (1 << 0),
+		TASK_FLAG_DAEMON = (1 << 1),
+	};
+
 private:
 	struct Task;
 
@@ -86,13 +92,16 @@ private:
 		SelfList<Task> task_elem;
 		uint32_t waiting_pool = 0;
 		uint32_t waiting_user = 0;
-		bool low_priority = false;
+		bool low_priority : 1;
+		bool daemon : 1;
 		BaseTemplateUserdata *template_userdata = nullptr;
 		int pool_thread_index = -1;
 
 		void free_template_userdata();
 		Task() :
-				task_elem(this) {}
+				task_elem(this),
+				low_priority(false),
+				daemon(false) {}
 	};
 
 	static const uint32_t TASKS_PAGE_SIZE = 1024;
@@ -107,13 +116,21 @@ private:
 	BinaryMutex task_mutex;
 
 	struct ThreadData {
+		static Task *const YIELDING; // Too bad constexpr doesn't work here.
+
 		uint32_t index = 0;
 		Thread thread;
-		bool ready_for_scripting = false;
-		bool signaled = false;
+		bool ready_for_scripting : 1;
+		bool signaled : 1;
+		bool yield_is_over : 1;
 		Task *current_task = nullptr;
-		Task *awaited_task = nullptr; // Null if not awaiting the condition variable. Special value for idle-waiting.
+		Task *awaited_task = nullptr; // Null if not awaiting the condition variable, or special value (YIELDING).
 		ConditionVariable cond_var;
+
+		ThreadData() :
+				ready_for_scripting(false),
+				signaled(false),
+				yield_is_over(false) {}
 	};
 
 	TightLocalVector<ThreadData> threads;
@@ -145,7 +162,7 @@ private:
 
 	void _process_task(Task *task);
 
-	void _post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, bool p_high_priority);
+	void _post_tasks_and_unlock(Task **p_tasks, uint32_t p_count, BitField<TaskFlags> p_flags);
 	void _notify_threads(const ThreadData *p_current_thread_data, uint32_t p_process_count, uint32_t p_promote_count);
 
 	bool _try_promote_low_priority_task();
@@ -154,7 +171,7 @@ private:
 
 	static thread_local CommandQueueMT *flushing_cmd_queue;
 
-	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description);
+	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, BitField<TaskFlags> p_flags, const String &p_description);
 	GroupID _add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description);
 
 	template <typename C, typename M, typename U>
@@ -177,6 +194,8 @@ private:
 		}
 	};
 
+	void _wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task);
+
 protected:
 	static void _bind_methods();
 
@@ -188,13 +207,17 @@ public:
 		ud->instance = p_instance;
 		ud->method = p_method;
 		ud->userdata = p_userdata;
-		return _add_task(Callable(), nullptr, nullptr, ud, p_high_priority, p_description);
+		return _add_task(Callable(), nullptr, nullptr, ud, p_high_priority ? TASK_FLAG_HIGH_PRIORITY : TASK_FLAGS_NONE, p_description);
 	}
 	TaskID add_native_task(void (*p_func)(void *), void *p_userdata, bool p_high_priority = false, const String &p_description = String());
 	TaskID add_task(const Callable &p_action, bool p_high_priority = false, const String &p_description = String());
+	TaskID add_task_with_flags(const Callable &p_action, BitField<TaskFlags> p_flags = TASK_FLAGS_NONE, const String &p_description = String());
 
 	bool is_task_completed(TaskID p_task_id) const;
 	Error wait_for_task_completion(TaskID p_task_id);
+
+	void yield();
+	void notify_yield_over(TaskID p_task_id);
 
 	template <typename C, typename M, typename U>
 	GroupID add_template_group_task(C *p_instance, M p_method, U p_userdata, int p_elements, int p_tasks = -1, bool p_high_priority = false, const String &p_description = String()) {
@@ -224,5 +247,7 @@ public:
 	WorkerThreadPool();
 	~WorkerThreadPool();
 };
+
+VARIANT_BITFIELD_CAST(WorkerThreadPool::TaskFlags);
 
 #endif // WORKER_THREAD_POOL_H
