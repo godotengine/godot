@@ -16,7 +16,7 @@
 				Registers a buffered callback for the log capture system.
 				Your callback will occasionally be called when log messages have been output. This is guaranteed to happen on the main thread and preserve message order; however, there may be some delay (at most, one frame) between the message being sent and the callback being called.
 				Your callback will be called with a single Variant containing a dictionary with fields. It is guaranteed to include:
-				[code]type[/code]: The type of message. Currently "error", "warning", 'info", "script", and "shader".
+				[code]type[/code]: The type of message. Currently "error", "warning", "info", "script", and "shader".
 				[code]text[/code]: The message text.
 				Optionally, the dictionary may contain:
 				[code]file[/code]: The source file the message originated from.
