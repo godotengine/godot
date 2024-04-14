@@ -329,7 +329,7 @@ Error Expression::_get_token(Token &r_token) {
 				}
 
 				char32_t next_char = (str_ofs >= expression.length()) ? 0 : expression[str_ofs];
-				if (is_digit(cchar) || (cchar == '.' && is_digit(next_char))) {
+				if (is_digit(cchar) || cchar == '.') {
 					//a number
 
 					String num;
@@ -1039,6 +1039,9 @@ Expression::ENode *Expression::_parse_expression() {
 			case TK_OP_BIT_INVERT:
 				op = Variant::OP_BIT_NEGATE;
 				break;
+			case TK_IDENTIFIER:
+				_set_error("Unexpected character.");
+				return nullptr;
 			default: {
 			}
 		}
