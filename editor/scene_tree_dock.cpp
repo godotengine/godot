@@ -75,7 +75,7 @@ void SceneTreeDock::_quick_open() {
 }
 
 void SceneTreeDock::_inspect_hovered_node() {
-	scene_tree->set_selected(node_hovered_now);
+	select_node_hovered_at_end_of_drag = true;
 	scene_tree->set_marked(node_hovered_now);
 	Tree *tree = scene_tree->get_scene_tree();
 	TreeItem *item = tree->get_item_at_position(tree->get_local_mouse_position());
@@ -1588,6 +1588,10 @@ void SceneTreeDock::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_END: {
 			_reset_hovering_timer();
+			if (select_node_hovered_at_end_of_drag) {
+				scene_tree->set_selected(node_hovered_now);
+				select_node_hovered_at_end_of_drag = false;
+			}
 		} break;
 	}
 }
