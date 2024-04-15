@@ -278,6 +278,12 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="node_adding">
+			<param index="0" name="node" type="Node" />
+			<description>
+				Emitted before the [param node] enters this tree.
+			</description>
+		</signal>
 		<signal name="node_added">
 			<param index="0" name="node" type="Node" />
 			<description>
