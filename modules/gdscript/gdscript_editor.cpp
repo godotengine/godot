@@ -911,6 +911,29 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			option.insert_text = option.display.quote(p_quote_style);
 			r_result.insert(option.display, option);
 		}
+	} else if (p_annotation->name == SNAME("@export_custom")) {
+		switch (p_argument) {
+			case 0: {
+				static HashMap<StringName, int64_t> items;
+				if (unlikely(items.is_empty())) {
+					CoreConstants::get_enum_values(SNAME("PropertyHint"), &items);
+				}
+				for (const KeyValue<StringName, int64_t> &item : items) {
+					ScriptLanguage::CodeCompletionOption option(item.key, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+					r_result.insert(option.display, option);
+				}
+			} break;
+			case 2: {
+				static HashMap<StringName, int64_t> items;
+				if (unlikely(items.is_empty())) {
+					CoreConstants::get_enum_values(SNAME("PropertyUsageFlags"), &items);
+				}
+				for (const KeyValue<StringName, int64_t> &item : items) {
+					ScriptLanguage::CodeCompletionOption option(item.key, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+					r_result.insert(option.display, option);
+				}
+			} break;
+		}
 	} else if (p_annotation->name == SNAME("@warning_ignore")) {
 		for (int warning_code = 0; warning_code < GDScriptWarning::WARNING_MAX; warning_code++) {
 			ScriptLanguage::CodeCompletionOption warning(GDScriptWarning::get_name_from_code((GDScriptWarning::Code)warning_code).to_lower(), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);

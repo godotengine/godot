@@ -1967,7 +1967,7 @@ void EditorHelp::_update_doc() {
 
 					class_desc->add_text(argument.name);
 					class_desc->add_text(": ");
-					_add_type(argument.type);
+					_add_type(argument.type, argument.enumeration, argument.is_bitfield);
 
 					if (!argument.default_value.is_empty()) {
 						class_desc->push_color(theme_cache.symbol_color);
