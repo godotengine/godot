@@ -394,12 +394,12 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 						//append the rest
 						for (uint32_t k = 0; k < o_index_size; k++) {
 							uint32_t k_plus_j = k + j;
-							if (k_plus_j >= o_index_size) {
-								k_plus_j -= o_index_size;
-							}
 							uint32_t k_plus_j_n = k_plus_j + 1;
-							if (k_plus_j_n == o_index_size) {
-								k_plus_j_n = 0;
+							if (k_plus_j_n >= o_index_size) {
+								k_plus_j_n -= o_index_size;
+								if (k_plus_j >= o_index_size) {
+									k_plus_j -= o_index_size;
+								}
 							}
 							int idx = O->get().indices[k_plus_j];
 							int idxn = O->get().indices[k_plus_j_n];
