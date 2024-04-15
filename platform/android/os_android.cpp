@@ -776,6 +776,10 @@ void OS_Android::benchmark_dump() {
 }
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
+	if (p_feature == "macos" || p_feature == "web_ios" || p_feature == "web_macos" || p_feature == "windows") {
+		return false;
+	}
+
 	if (p_feature == "system_fonts") {
 		return true;
 	}

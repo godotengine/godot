@@ -408,6 +408,14 @@ void FileAccessFilesystemJAndroid::setup(jobject p_file_access_handler) {
 	_file_resize = env->GetMethodID(cls, "fileResize", "(IJ)I");
 }
 
+void FileAccessFilesystemJAndroid::terminate() {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(cls);
+	env->DeleteGlobalRef(file_access_handler);
+}
+
 void FileAccessFilesystemJAndroid::close() {
 	if (is_open()) {
 		_close();
