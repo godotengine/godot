@@ -17,20 +17,63 @@
 class CharacterAnimatorMask : public Resource
 {
     GDCLASS(CharacterAnimatorMask, Resource);
+
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_disable_path", "disable_path"), &CharacterAnimatorMask::set_disable_path);
+        ClassDB::bind_method(D_METHOD("get_disable_path"), &CharacterAnimatorMask::get_disable_path);
+
+        ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "disable_path"), "set_disable_path", "get_disable_path");
+    }
+
 public:
+    void set_disable_path(const Dictionary& p_disable_path) { disable_path = p_disable_path; }
+    Dictionary get_disable_path() { return disable_path; }
 	Dictionary disable_path;
 };
-class CharacterAnimationItem : public RefCounted
+class CharacterBoneMap : public Resource
 {
-    GDCLASS(CharacterAnimationItem, RefCounted);
+    GDCLASS(CharacterBoneMap, Resource);
+
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_bone_map", "bone_map"), &CharacterBoneMap::set_bone_map);
+        ClassDB::bind_method(D_METHOD("get_bone_map"), &CharacterBoneMap::get_bone_map);
+
+        ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "bone_map"), "set_bone_map", "get_bone_map");
+
+        IMP_GODOT_PROPERTY(bool,is_init_skeleton);
+        IMP_GODOT_PROPERTY(String, ref_skeleton_file_path);
+        IMP_GODOT_PROPERTY(bool, is_by_sekeleton_file);
+    }
+
+public:
+    void set_bone_map(const Dictionary& p_bone_map) { bone_map = p_bone_map; }
+    Dictionary get_bone_map() { return bone_map; }
+    void init_skeleton_bone_map();
+
+	Dictionary bone_map;
+    DECL_GODOT_PROPERTY(bool,is_init_skeleton,false);
+    DECL_GODOT_PROPERTY(String, ref_skeleton_file_path,"");
+    DECL_GODOT_PROPERTY(bool, is_by_sekeleton_file,false);
+};
+class CharacterAnimationItem : public Resource
+{
+    GDCLASS(CharacterAnimationItem, Resource);
     static void bind_methods();
 
 public:
     void set_animation_name(const String& p_animation_name) { animation_name = p_animation_name; }
     String get_animation_name() { return animation_name; }
 
+
+
     void set_animation_path(const String& p_animation_path) { animation_path = p_animation_path; }
     String get_animation_path() { return animation_path; }
+
+
+    void set_bone_map_path(const String& p_bone_map_path) { bone_map_path = p_bone_map_path; }
+    String get_bone_map_path() { return bone_map_path; }
 
     void set_speed(float p_speed) { speed = p_speed; }
     float get_speed() { return speed; }
@@ -38,15 +81,26 @@ public:
     void set_is_clip(bool p_is_clip) { is_clip = p_is_clip; }
     bool get_is_clip() { return is_clip; }
 
+    void set_child_node(const Ref<class CharacterAnimatorNodeBase>& p_child_node) ;
+    Ref<class CharacterAnimatorNodeBase> get_child_node();
 
+    Ref<Animation> get_animation();
+    Ref<CharacterBoneMap> get_bone_map();
+
+    void _init();
 
 
     StringName animation_name;
+    // 动画资源路径
     String animation_path;
+    // 骨骼映射名称
+    String bone_map_path;
     float speed = 1.0f;
     bool is_clip = true;
     Ref<Animation> animation;
+    Ref<CharacterBoneMap> bone_map;
     Ref<class CharacterAnimatorNodeBase> child_node;
+    bool is_init = false;
 };
 class CharacterAnimatorNodeBase : public Resource
 {
@@ -67,6 +121,7 @@ public:
 
     void set_animation_arrays(TypedArray<CharacterAnimationItem> p_animation_arrays) { animation_arrays = p_animation_arrays; }
     TypedArray<CharacterAnimationItem> get_animation_arrays() { return animation_arrays; }
+    virtual void _init();
 
     
     TypedArray<CharacterAnimationItem>    animation_arrays;

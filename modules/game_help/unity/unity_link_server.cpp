@@ -69,6 +69,20 @@ static void _buffer_to_animationItem(StreamPeerConstBuffer& buffer,Ref<Character
 		}
 		animation_item->animation_path = buffer.get_utf8_string(path_size);
 
+
+		
+		int bone_map_path_size = buffer.get_32();
+		if(bone_map_path_size < 0 || bone_map_path_size > 10240){
+			err = ERR_OUT_OF_MEMORY;
+			return ;			
+		}
+
+		if(buffer.is_end()){
+			err = ERR_OUT_OF_MEMORY;
+			return ;
+		}
+		animation_item->bone_map_path = buffer.get_utf8_string(bone_map_path_size);
+
 		animation_item->speed = buffer.get_float();
 
 

@@ -1,6 +1,37 @@
 #include "body_animator.h"
 #include "body_main.h"
 
+void CharacterBoneMap::init_skeleton_bone_map()
+{
+    if(!is_by_sekeleton_file)
+    {
+        return;
+    }
+    if(!FileAccess::exists(ref_skeleton_file_path))
+    {
+        return;
+    }
+    Ref<PackedScene> scene = ResourceLoader::load(ref_skeleton_file_path);
+
+    if(!scene.is_valid())
+    {
+        return;
+    }
+    Node* node = scene->instantiate();
+    if(node == nullptr)
+    {
+        return;
+    }
+    Skeleton3D* skele = Object::cast_to<Skeleton3D>( node->get_node(NodePath("Seleton3D")));
+    if(skele == nullptr)
+    {
+        return;
+    }
+    bone_map = skele->get_human_bone_mapping();
+    node->queue_free();
+    is_init_skeleton = true;
+
+}
 
 void CharacterAnimationItem::bind_methods()
 {
@@ -10,18 +41,84 @@ void CharacterAnimationItem::bind_methods()
     ClassDB::bind_method(D_METHOD("set_animation_path", "animation_path"), &CharacterAnimationItem::set_animation_path);
     ClassDB::bind_method(D_METHOD("get_animation_path"), &CharacterAnimationItem::get_animation_path);
 
+    ClassDB::bind_method(D_METHOD("set_bone_map_path", "bone_map_path"), &CharacterAnimationItem::set_bone_map_path);
+    ClassDB::bind_method(D_METHOD("get_bone_map_path"), &CharacterAnimationItem::get_bone_map_path);
+
     ClassDB::bind_method(D_METHOD("set_speed", "speed"), &CharacterAnimationItem::set_speed);
     ClassDB::bind_method(D_METHOD("get_speed"), &CharacterAnimationItem::get_speed);
 
     ClassDB::bind_method(D_METHOD("set_is_clip", "is_clip"), &CharacterAnimationItem::set_is_clip);
     ClassDB::bind_method(D_METHOD("get_is_clip"), &CharacterAnimationItem::get_is_clip);
 
+    ClassDB::bind_method(D_METHOD("set_child_node", "child_node"), &CharacterAnimationItem::set_child_node);
+    ClassDB::bind_method(D_METHOD("get_child_node"), &CharacterAnimationItem::get_child_node);
+
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation_name"), "set_animation_name", "get_animation_name");
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation_path"), "set_animation_path", "get_animation_path");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "bone_map_path"), "set_bone_map_path", "get_bone_map_path");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed"), "set_speed", "get_speed");
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_clip"), "set_is_clip", "get_is_clip");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "child_node"), "set_child_node", "get_child_node");
 
 }
+void CharacterAnimationItem::set_child_node(const Ref<CharacterAnimatorNodeBase>& p_child_node) 
+{ 
+    child_node = p_child_node; 
+}
+Ref<CharacterAnimatorNodeBase> CharacterAnimationItem::get_child_node() 
+{
+        return child_node; 
+}
+Ref<Animation> CharacterAnimationItem::get_animation()
+{
+    if(animation.is_null())
+    {
+        if(FileAccess::exists(animation_path))
+        {
+            animation = ResourceLoader::load(animation_path);
+        }
+    }
+    return animation;
+}
+Ref<CharacterBoneMap> CharacterAnimationItem::get_bone_map()
+{
+    if(bone_map.is_null())
+    {
+        if(FileAccess::exists(bone_map_path))
+        {
+            bone_map = ResourceLoader::load(bone_map_path);
+        }
+    }
+    return bone_map;
+}
+
+void CharacterAnimationItem::_init()
+{
+    if(is_init)
+    {
+        return;
+    }
+    if(is_clip)
+    {
+        if(FileAccess::exists(animation_path))
+        {
+        animation = ResourceLoader::load(animation_path);
+        }
+        if(FileAccess::exists(bone_map_path))
+        {
+            bone_map = ResourceLoader::load(bone_map_path);
+        }
+    }
+    else
+    {
+        if(child_node.is_valid())
+        {
+            child_node->_init();
+        }
+    }
+    is_init = true;
+}
+
 
 
 void CharacterAnimatorNodeBase::bind_methods()
@@ -30,12 +127,23 @@ void CharacterAnimatorNodeBase::bind_methods()
     ClassDB::bind_method(D_METHOD("get_animation_arrays"), &CharacterAnimatorNodeBase::get_animation_arrays);
 
     ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "animation_arrays"), "set_animation_arrays", "get_animation_arrays");
+}    
+void CharacterAnimatorNodeBase::_init()
+{
+    for(int i = 0; i < animation_arrays.size(); ++i)
+    {
+        Ref<CharacterAnimationItem> item = animation_arrays[i];
+        if(item.is_valid())
+        {
+            item->_init();
+        }
+    }
 }
 
 void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array,Blackboard *p_blackboard)
 {
     AnimationMixer::PlaybackInfo * p_playback_info_ptr = p_playback_info->m_ChildAnimationPlaybackArray.ptrw();
-    for (uint32_t i = 0; i < child_count; i++)
+    for (int32_t i = 0; i < child_count; i++)
     {
         float w = weight_array[i] * total_weight;
         if(w > 0.01f)
@@ -46,9 +154,16 @@ void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,
                 p_playback_info_ptr[i].time = p_playback_info->time;
                 p_playback_info_ptr[i].delta = p_playback_info->delta;
                 p_playback_info_ptr[i].disable_path = p_playback_info->disable_path;
-                if(item->animation.is_valid())
+                Ref<Animation> animation = item->get_animation();
+                if(animation.is_valid())
                 {
-                    p_layer->make_animation_instance_anim(item->animation, p_playback_info_ptr[i]);
+                    Ref<CharacterBoneMap> bone_map = item->get_bone_map();
+                    Dictionary bp;
+                    if(bone_map.is_valid())
+                    {
+                        bp = bone_map->bone_map;
+                    }
+                    p_layer->make_animation_instance_anim(item->animation, p_playback_info_ptr[i],bp);
                 }
                 else
                 {
@@ -752,7 +867,11 @@ void CharacterAnimatorLayer::layer_blend_apply() {
 
 void CharacterAnimatorLayer::play_animation(Ref<CharacterAnimatorNodeBase> p_node)
 {
-    
+    if(p_node.is_null())
+    {
+        return;
+    }
+    p_node->_init();
     for(auto& anim : m_AnimationInstances)
     {
         anim.m_PlayState = CharacterAnimationInstance::PS_FadeOut;
