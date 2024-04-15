@@ -43,9 +43,9 @@
 #include "scene/resources/2d/circle_shape_2d.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
-#include "scene/resources/navigation_mesh_source_geometry_data_2d.h"
-#include "scene/resources/navigation_polygon.h"
 
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
 #include "thirdparty/misc/polypartition.h"
