@@ -95,6 +95,7 @@ void GodotJavaViewWrapper::configure_pointer_icon(int pointer_type, const String
 
 		jstring jImagePath = env->NewStringUTF(image_path.utf8().get_data());
 		env->CallVoidMethod(_godot_view, _configure_pointer_icon, pointer_type, jImagePath, p_hotspot.x, p_hotspot.y);
+		env->DeleteLocalRef(jImagePath);
 	}
 }
 
