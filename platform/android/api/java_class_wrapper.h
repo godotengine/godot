@@ -209,8 +209,6 @@ class JavaClassWrapper : public Object {
 #ifdef ANDROID_ENABLED
 	RBMap<String, Ref<JavaClass>> class_cache;
 	friend class JavaClass;
-	jclass activityClass;
-	jmethodID findClass;
 	jmethodID getDeclaredMethods;
 	jmethodID getFields;
 	jmethodID getParameterTypes;
@@ -229,7 +227,6 @@ class JavaClassWrapper : public Object {
 	jmethodID Long_longValue;
 	jmethodID Float_floatValue;
 	jmethodID Double_doubleValue;
-	jobject classLoader;
 
 	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig);
 #endif

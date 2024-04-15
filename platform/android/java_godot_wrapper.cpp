@@ -172,6 +172,8 @@ void GodotJavaWrapper::alert(const String &p_message, const String &p_title) {
 		jstring jStrMessage = env->NewStringUTF(p_message.utf8().get_data());
 		jstring jStrTitle = env->NewStringUTF(p_title.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _alert, jStrMessage, jStrTitle);
+		env->DeleteLocalRef(jStrMessage);
+		env->DeleteLocalRef(jStrTitle);
 	}
 }
 
@@ -231,6 +233,7 @@ void GodotJavaWrapper::set_clipboard(const String &p_text) {
 		ERR_FAIL_NULL(env);
 		jstring jStr = env->NewStringUTF(p_text.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _set_clipboard, jStr);
+		env->DeleteLocalRef(jStr);
 	}
 }
 
@@ -253,7 +256,9 @@ bool GodotJavaWrapper::request_permission(const String &p_name) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, false);
 		jstring jStrName = env->NewStringUTF(p_name.utf8().get_data());
-		return env->CallBooleanMethod(godot_instance, _request_permission, jStrName);
+		bool result = env->CallBooleanMethod(godot_instance, _request_permission, jStrName);
+		env->DeleteLocalRef(jStrName);
+		return result;
 	} else {
 		return false;
 	}
@@ -340,7 +345,9 @@ int GodotJavaWrapper::create_new_godot_instance(const List<String> &args) {
 		ERR_FAIL_NULL_V(env, 0);
 		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
 		for (int i = 0; i < args.size(); i++) {
-			env->SetObjectArrayElement(jargs, i, env->NewStringUTF(args[i].utf8().get_data()));
+			jstring j_arg = env->NewStringUTF(args[i].utf8().get_data());
+			env->SetObjectArrayElement(jargs, i, j_arg);
+			env->DeleteLocalRef(j_arg);
 		}
 		return env->CallIntMethod(godot_instance, _create_new_godot_instance, jargs);
 	} else {
@@ -355,6 +362,8 @@ void GodotJavaWrapper::begin_benchmark_measure(const String &p_context, const St
 		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
 		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _begin_benchmark_measure, j_context, j_label);
+		env->DeleteLocalRef(j_context);
+		env->DeleteLocalRef(j_label);
 	}
 }
 
@@ -365,6 +374,8 @@ void GodotJavaWrapper::end_benchmark_measure(const String &p_context, const Stri
 		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
 		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _end_benchmark_measure, j_context, j_label);
+		env->DeleteLocalRef(j_context);
+		env->DeleteLocalRef(j_label);
 	}
 }
 
@@ -374,6 +385,7 @@ void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
 		ERR_FAIL_NULL(env);
 		jstring j_benchmark_file = env->NewStringUTF(benchmark_file.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _dump_benchmark, j_benchmark_file);
+		env->DeleteLocalRef(j_benchmark_file);
 	}
 }
 
@@ -383,7 +395,9 @@ bool GodotJavaWrapper::has_feature(const String &p_feature) const {
 		ERR_FAIL_NULL_V(env, false);
 
 		jstring j_feature = env->NewStringUTF(p_feature.utf8().get_data());
-		return env->CallBooleanMethod(godot_instance, _has_feature, j_feature);
+		bool result = env->CallBooleanMethod(godot_instance, _has_feature, j_feature);
+		env->DeleteLocalRef(j_feature);
+		return result;
 	} else {
 		return false;
 	}

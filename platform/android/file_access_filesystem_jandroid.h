@@ -97,6 +97,7 @@ public:
 	virtual bool file_exists(const String &p_path) override; ///< return true if a file exists
 
 	static void setup(jobject p_file_access_handler);
+	static void terminate();
 
 	virtual uint64_t _get_modified_time(const String &p_file) override;
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }

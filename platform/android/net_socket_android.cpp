@@ -49,6 +49,14 @@ void NetSocketAndroid::setup(jobject p_net_utils) {
 	_multicast_lock_release = env->GetMethodID(cls, "multicastLockRelease", "()V");
 }
 
+void NetSocketAndroid::terminate() {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(cls);
+	env->DeleteGlobalRef(net_utils);
+}
+
 void NetSocketAndroid::multicast_lock_acquire() {
 	if (_multicast_lock_acquire) {
 		JNIEnv *env = get_jni_env();

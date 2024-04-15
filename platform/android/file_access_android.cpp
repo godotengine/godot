@@ -31,8 +31,12 @@
 #include "file_access_android.h"
 
 #include "core/string/print_string.h"
+#include "thread_jandroid.h"
+
+#include <android/asset_manager_jni.h>
 
 AAssetManager *FileAccessAndroid::asset_manager = nullptr;
+jobject FileAccessAndroid::j_asset_manager = nullptr;
 
 String FileAccessAndroid::get_path() const {
 	return path_src;
@@ -256,4 +260,17 @@ void FileAccessAndroid::close() {
 
 FileAccessAndroid::~FileAccessAndroid() {
 	_close();
+}
+
+void FileAccessAndroid::setup(jobject p_asset_manager) {
+	JNIEnv *env = get_jni_env();
+	j_asset_manager = env->NewGlobalRef(p_asset_manager);
+	asset_manager = AAssetManager_fromJava(env, j_asset_manager);
+}
+
+void FileAccessAndroid::terminate() {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(j_asset_manager);
 }

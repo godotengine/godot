@@ -95,6 +95,13 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	if (godot_io_java) {
 		delete godot_io_java;
 	}
+
+	TTS_Android::terminate();
+	FileAccessAndroid::terminate();
+	DirAccessJAndroid::terminate();
+	FileAccessFilesystemJAndroid::terminate();
+	NetSocketAndroid::terminate();
+
 	if (godot_java) {
 		if (!restart_on_cleanup) {
 			if (p_restart) {
@@ -125,10 +132,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 
 	init_thread_jandroid(jvm, env);
 
-	jobject amgr = env->NewGlobalRef(p_asset_manager);
-
-	FileAccessAndroid::asset_manager = AAssetManager_fromJava(env, amgr);
-
+	FileAccessAndroid::setup(p_asset_manager);
 	DirAccessJAndroid::setup(p_directory_access_handler);
 	FileAccessFilesystemJAndroid::setup(p_file_access_handler);
 	NetSocketAndroid::setup(p_net_utils);
