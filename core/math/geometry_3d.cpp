@@ -584,6 +584,59 @@ Vector<Face3> Geometry3D::wrap_geometry(const Vector<Face3> &p_array, real_t *p_
 	return wrapped_faces;
 }
 
+_FORCE_INLINE_ static void _add_new_vertices_from_edges_and_clip(LocalVector<Vector3> &new_vertices, Vector3 &edge0, Vector3 &edge1, Plane &clip) {
+	real_t dist0 = clip.distance_to(edge0);
+	real_t dist1 = clip.distance_to(edge1);
+
+	if (dist0 <= 0) { // Behind plane.
+
+		new_vertices.push_back(edge0);
+	}
+
+	// Check for different sides and non coplanar.
+	if ((dist0 * dist1) < 0) {
+		// Calculate intersection.
+		Vector3 rel = edge1 - edge0;
+
+		real_t den = clip.normal.dot(rel);
+		if (Math::is_zero_approx(den)) {
+			return; // Point too short.
+		}
+
+		real_t dist = -(clip.normal.dot(edge0) - clip.d) / den;
+		Vector3 inters = edge0 + rel * dist;
+		new_vertices.push_back(inters);
+	}
+}
+
+_FORCE_INLINE_ static void _add_edges_for_mesh(int a, int b, int n, LocalVector<Geometry3D::MeshData::Edge> &edges) {
+	bool found = false;
+	int found_idx = -1;
+	for (uint32_t k = 0; k < edges.size(); k++) {
+		if (edges[k].vertex_a == a && edges[k].vertex_b == b) {
+			found = true;
+			found_idx = k;
+			break;
+		}
+		if (edges[k].vertex_b == a && edges[k].vertex_a == b) {
+			found = true;
+			found_idx = k;
+			break;
+		}
+	}
+
+	if (found) {
+		edges[found_idx].face_b = n;
+		return;
+	}
+	Geometry3D::MeshData::Edge edge;
+	edge.vertex_a = a;
+	edge.vertex_b = b;
+	edge.face_a = n;
+	edge.face_b = -1;
+	edges.push_back(edge);
+}
+
 Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes) {
 	MeshData mesh;
 
@@ -628,38 +681,14 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 				break;
 			}
 
-			for (uint32_t k = 0; k < vertices.size(); k++) {
-				uint32_t k_n = k + 1;
-				if (k_n == vertices.size()) {
-					k_n = 0;
-				}
-
+			for (uint32_t k = 0; k < vertices.size() - 1; k++) {
 				Vector3 edge0_A = vertices[k];
-				Vector3 edge1_A = vertices[k_n];
-
-				real_t dist0 = clip.distance_to(edge0_A);
-				real_t dist1 = clip.distance_to(edge1_A);
-
-				if (dist0 <= 0) { // Behind plane.
-
-					new_vertices.push_back(vertices[k]);
-				}
-
-				// Check for different sides and non coplanar.
-				if ((dist0 * dist1) < 0) {
-					// Calculate intersection.
-					Vector3 rel = edge1_A - edge0_A;
-
-					real_t den = clip.normal.dot(rel);
-					if (Math::is_zero_approx(den)) {
-						continue; // Point too short.
-					}
-
-					real_t dist = -(clip.normal.dot(edge0_A) - clip.d) / den;
-					Vector3 inters = edge0_A + rel * dist;
-					new_vertices.push_back(inters);
-				}
+				Vector3 edge1_A = vertices[k + 1];
+				_add_new_vertices_from_edges_and_clip(new_vertices, edge0_A, edge1_A, clip);
 			}
+			Vector3 edge0_A = vertices[vertices.size() - 1];
+			Vector3 edge1_A = vertices[0];
+			_add_new_vertices_from_edges_and_clip(new_vertices, edge0_A, edge1_A, clip);
 
 			vertices = new_vertices;
 		}
@@ -694,40 +723,14 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 
 		// Add edge.
 
-		for (uint32_t j = 0; j < face.indices.size(); j++) {
-			uint32_t j_n = j + 1;
-			if (j_n == face.indices.size()) {
-				j_n = 0;
-			}
+		for (uint32_t j = 0; j < face.indices.size() - 1; j++) {
 			int a = face.indices[j];
-			int b = face.indices[j_n];
-
-			bool found = false;
-			int found_idx = -1;
-			for (uint32_t k = 0; k < mesh.edges.size(); k++) {
-				if (mesh.edges[k].vertex_a == a && mesh.edges[k].vertex_b == b) {
-					found = true;
-					found_idx = k;
-					break;
-				}
-				if (mesh.edges[k].vertex_b == a && mesh.edges[k].vertex_a == b) {
-					found = true;
-					found_idx = k;
-					break;
-				}
-			}
-
-			if (found) {
-				mesh.edges[found_idx].face_b = j;
-				continue;
-			}
-			MeshData::Edge edge;
-			edge.vertex_a = a;
-			edge.vertex_b = b;
-			edge.face_a = j;
-			edge.face_b = -1;
-			mesh.edges.push_back(edge);
+			int b = face.indices[j + 1];
+			_add_edges_for_mesh(a, b, j, mesh.edges);
 		}
+		int a = face.indices[face.indices.size() - 1];
+		int b = face.indices[0];
+		_add_edges_for_mesh(a, b, face.indices.size() - 1, mesh.edges);
 	}
 
 	return mesh;
