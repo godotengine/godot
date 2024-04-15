@@ -49,13 +49,13 @@ int AudioStreamPlaybackQOA::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	while (todo && active) {
 		if (decoded_len <= decoded_offset) {
 			// Decode the next or previous QOA frame
-			data_offset += int(frame_data_len) * sign;
+			data_offset += int(frame_data_len) * increment;
 			qoa_decode_frame(qoa_stream->data.ptr() + data_offset, frame_data_len, qoad, decoded, &decoded_len);
-			decoded_offset = sign > 0 ? 0 : decoded_len - 1;
+			decoded_offset = increment > 0 ? 0 : decoded_len - 1;
 		}
 
-		uint32_t dec_index = decoded_offset * qoa_stream->channels;
-		p_buffer[p_frames - todo][0] = decoded[qoa_stream->channels == 1 ? dec_index : dec_index++];
+		uint32_t dec_index = decoded_offset * qoad->channels;
+		p_buffer[p_frames - todo][0] = decoded[qoa_stream->stereo ? dec_index++ : dec_index];
 		p_buffer[p_frames - todo][1] = decoded[dec_index];
 		p_buffer[p_frames - todo] /= 32767.0f;
 
@@ -64,10 +64,9 @@ int AudioStreamPlaybackQOA::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 		if (frames_mixed <= begin_limit + 1) {
 			// Begin of file or loop
 			if (qoa_stream->loop_mode == AudioStreamQOA::LOOP_PINGPONG) {
-				sign = 1;
+				increment = 1;
 			} else if (qoa_stream->loop_mode == AudioStreamQOA::LOOP_BACKWARD) {
 				seek(double(end_limit - 1) / qoa_stream->mix_rate);
-				loops++;
 			}
 		}
 
@@ -75,9 +74,8 @@ int AudioStreamPlaybackQOA::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 			// End of file or loop
 			if (qoa_stream->loop_mode == AudioStreamQOA::LOOP_FORWARD) {
 				seek(double(begin_limit) / qoa_stream->mix_rate);
-				loops++;
 			} else if (qoa_stream->loop_mode == AudioStreamQOA::LOOP_PINGPONG) {
-				sign = -1;
+				increment = -1;
 			} else if (qoa_stream->loop_mode == AudioStreamQOA::LOOP_DISABLED) {
 				frames_mixed_this_step = p_frames - todo;
 				//fill remainder with silence
@@ -89,8 +87,8 @@ int AudioStreamPlaybackQOA::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 			}
 		}
 
-		frames_mixed += sign;
-		decoded_offset += sign;
+		frames_mixed += increment;
+		decoded_offset += increment;
 	}
 	return frames_mixed_this_step;
 }
@@ -103,9 +101,8 @@ void AudioStreamPlaybackQOA::start(double p_from_pos) {
 	active = true;
 	seek(p_from_pos);
 	if (qoa_stream->loop_mode == AudioStreamQOA::LOOP_BACKWARD) {
-		sign = -1;
+		increment = -1;
 	}
-	loops = 0;
 	begin_resample();
 }
 
@@ -118,7 +115,7 @@ bool AudioStreamPlaybackQOA::is_playing() const {
 }
 
 int AudioStreamPlaybackQOA::get_loop_count() const {
-	return loops;
+	return 0;
 }
 
 double AudioStreamPlaybackQOA::get_playback_position() const {
@@ -177,7 +174,6 @@ Ref<AudioStreamPlayback> AudioStreamQOA::instantiate_playback() {
 	qoas->data_offset = 0;
 	qoas->frames_mixed = 0;
 	qoas->active = false;
-	qoas->loops = 0;
 
 	ERR_FAIL_NULL_V(qoas->qoad, Ref<AudioStreamPlaybackQOA>());
 
@@ -197,12 +193,10 @@ void AudioStreamQOA::set_data(const Vector<uint8_t> &p_data) {
 	const uint8_t *src_datar = p_data.ptr();
 
 	qoa_desc qoad;
-	qoad.channels = 0;
-	qoad.samplerate = 0;
 	uint32_t ffp = qoa_decode_header(src_datar, src_data_len, &qoad);
 	ERR_FAIL_COND_MSG(ffp != 8, "Failed to decode QOA header. Make sure it is a valid QOA audio file.");
 
-	channels = qoad.channels;
+	stereo = qoad.channels > 1;
 	mix_rate = qoad.samplerate;
 	length = float(qoad.samples) / (mix_rate);
 	clear_data();
@@ -252,6 +246,14 @@ double AudioStreamQOA::get_length() const {
 	return length;
 }
 
+void AudioStreamQOA::set_stereo(bool p_stereo) {
+	stereo = p_stereo;
+}
+
+bool AudioStreamQOA::is_stereo() const {
+	return stereo;
+}
+
 bool AudioStreamQOA::is_monophonic() const {
 	return false;
 }
@@ -272,11 +274,15 @@ void AudioStreamQOA::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mix_rate", "hz"), &AudioStreamQOA::set_mix_rate);
 	ClassDB::bind_method(D_METHOD("get_mix_rate"), &AudioStreamQOA::get_mix_rate);
 
+	ClassDB::bind_method(D_METHOD("set_stereo", "stereo"), &AudioStreamQOA::set_stereo);
+	ClassDB::bind_method(D_METHOD("is_stereo"), &AudioStreamQOA::is_stereo);
+
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "Disabled,Forward,Ping-Pong,Backward"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_begin"), "set_loop_begin", "get_loop_begin");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_end"), "set_loop_end", "get_loop_end");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_rate"), "set_mix_rate", "get_mix_rate");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stereo"), "set_stereo", "is_stereo");
 
 	BIND_ENUM_CONSTANT(LOOP_DISABLED);
 	BIND_ENUM_CONSTANT(LOOP_FORWARD);

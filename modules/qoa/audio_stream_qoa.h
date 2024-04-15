@@ -50,8 +50,7 @@ class AudioStreamPlaybackQOA : public AudioStreamPlaybackResampled {
 	uint32_t decoded_offset = 0;
 
 	bool active = false;
-	int sign = 1;
-	int loops = 0;
+	int increment = 1;
 
 	friend class AudioStreamQOA;
 
@@ -98,7 +97,7 @@ private:
 	uint32_t data_len = 0;
 
 	LoopMode loop_mode = LOOP_DISABLED;
-	int channels = 1;
+	bool stereo = false;
 	float length = 0.0;
 	int loop_begin = 0;
 	int loop_end = -1;
@@ -121,15 +120,18 @@ public:
 	void set_mix_rate(int p_hz);
 	int get_mix_rate() const;
 
-	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
-
-	void set_data(const Vector<uint8_t> &p_data);
-	Vector<uint8_t> get_data() const;
+	void set_stereo(bool p_stereo);
+	bool is_stereo() const;
 
 	virtual double get_length() const override;
 
 	virtual bool is_monophonic() const override;
+
+	void set_data(const Vector<uint8_t> &p_data);
+	Vector<uint8_t> get_data() const;
+
+	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
+	virtual String get_stream_name() const override;
 
 	AudioStreamQOA();
 	virtual ~AudioStreamQOA();
