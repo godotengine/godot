@@ -387,18 +387,17 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 			if (O->get().plane.is_equal_approx(f.plane)) {
 				//merge and delete edge and contiguous face, while repointing edges (uuugh!)
-				int o_index_size = O->get().indices.size();
-
-				for (int j = 0; j < o_index_size; j++) {
+				uint32_t o_index_size = O->get().indices.size();
+				for (uint32_t j = 0; j < o_index_size; j++) {
 					//search a
 					if (O->get().indices[j] == a) {
 						//append the rest
-						for (int k = 0; k < o_index_size; k++) {
-							int k_plus_j = k + j;
+						for (uint32_t k = 0; k < o_index_size; k++) {
+							uint32_t k_plus_j = k + j;
 							if (k_plus_j >= o_index_size) {
 								k_plus_j -= o_index_size;
 							}
-							int k_plus_j_n = k_plus_j + 1;
+							uint32_t k_plus_j_n = k_plus_j + 1;
 							if (k_plus_j_n == o_index_size) {
 								k_plus_j_n = 0;
 							}
