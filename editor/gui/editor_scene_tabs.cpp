@@ -135,6 +135,17 @@ void EditorSceneTabs::_scene_tab_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
+void EditorSceneTabs::unhandled_key_input(const Ref<InputEvent> &p_event) {
+	if (!tab_preview_panel->is_visible()) {
+		return;
+	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		tab_preview_panel->hide();
+	}
+}
+
 void EditorSceneTabs::_reposition_active_tab(int p_to_index) {
 	EditorNode::get_editor_data().move_edited_scene_to_index(p_to_index);
 	update_scene_tabs();
@@ -369,6 +380,7 @@ EditorSceneTabs::EditorSceneTabs() {
 	singleton = this;
 
 	set_process_shortcut_input(true);
+	set_process_unhandled_key_input(true);
 
 	tabbar_panel = memnew(PanelContainer);
 	add_child(tabbar_panel);
