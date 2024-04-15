@@ -358,7 +358,6 @@ void DisplayServerMacOS::_dispatch_input_events(const Ref<InputEvent> &p_event) 
 }
 
 void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-	_THREAD_SAFE_METHOD_
 	if (!in_dispatch_input_event) {
 		in_dispatch_input_event = true;
 
@@ -2986,7 +2985,7 @@ Key DisplayServerMacOS::keyboard_get_label_from_physical(Key p_keycode) const {
 }
 
 void DisplayServerMacOS::process_events() {
-	_THREAD_SAFE_METHOD_
+	_THREAD_SAFE_LOCK_
 
 	while (true) {
 		NSEvent *event = [NSApp
@@ -3019,7 +3018,9 @@ void DisplayServerMacOS::process_events() {
 
 	if (!drop_events) {
 		_process_key_events();
+		_THREAD_SAFE_UNLOCK_
 		Input::get_singleton()->flush_buffered_events();
+		_THREAD_SAFE_LOCK_
 	}
 
 	for (KeyValue<WindowID, WindowData> &E : windows) {
@@ -3045,6 +3046,8 @@ void DisplayServerMacOS::process_events() {
 			}
 		}
 	}
+
+	_THREAD_SAFE_UNLOCK_
 }
 
 void DisplayServerMacOS::force_process_and_drop_events() {
@@ -3056,9 +3059,14 @@ void DisplayServerMacOS::force_process_and_drop_events() {
 }
 
 void DisplayServerMacOS::release_rendering_thread() {
-}
-
-void DisplayServerMacOS::make_rendering_thread() {
+#if defined(GLES3_ENABLED)
+	if (gl_manager_angle) {
+		gl_manager_angle->release_current();
+	}
+	if (gl_manager_legacy) {
+		gl_manager_legacy->release_current();
+	}
+#endif
 }
 
 void DisplayServerMacOS::swap_buffers() {
