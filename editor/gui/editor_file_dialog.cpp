@@ -968,8 +968,10 @@ void EditorFileDialog::update_file_list() {
 			}
 		} else if (!dir_access->current_is_hidden()) {
 			String full_path = cdir == "res://" ? item : dir_access->get_current_dir() + "/" + item;
-			if (dir_access->current_is_dir() && (Engine::get_singleton()->is_project_manager_hint() || !EditorFileSystem::_should_skip_directory(full_path))) {
-				dirs.push_back(item);
+			if (dir_access->current_is_dir()) {
+				if (Engine::get_singleton()->is_project_manager_hint() || !EditorFileSystem::_should_skip_directory(full_path)) {
+					dirs.push_back(item);
+				}
 			} else {
 				files.push_back(item);
 			}
