@@ -1838,7 +1838,8 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		Vector2i separation = tile_set_atlas_source->get_separation();
 		Vector2i tile_size = tile_set_atlas_source->get_texture_region_size();
 		Vector2i origin = margins + (area.position * (tile_size + separation));
-		TilesEditorUtils::draw_selection_rect(tile_atlas_control, Rect2i(origin, area.size * tile_size));
+		Vector2i size = area.size * tile_size + (area.size - Vector2i(1, 1)).max(Vector2i(0, 0)) * separation;
+		TilesEditorUtils::draw_selection_rect(tile_atlas_control, Rect2i(origin, size));
 	} else {
 		Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 		if (hovered_base_tile_coords.x >= 0 && hovered_base_tile_coords.y >= 0 && hovered_base_tile_coords.x < grid_size.x && hovered_base_tile_coords.y < grid_size.y) {
