@@ -44,6 +44,8 @@ class AudioStreamPlaybackOggVorbis : public AudioStreamPlaybackResampled {
 
 	uint32_t frames_mixed = 0;
 	bool active = false;
+	bool looping_override = false;
+	bool looping = false;
 	int loops = 0;
 
 	enum {
@@ -95,6 +97,9 @@ public:
 
 	virtual void tag_used_streams() override;
 
+	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
+	virtual Variant get_parameter(const StringName &p_name) const override;
+
 	AudioStreamPlaybackOggVorbis() {}
 	~AudioStreamPlaybackOggVorbis();
 };
@@ -107,9 +112,9 @@ class AudioStreamOggVorbis : public AudioStream {
 	friend class AudioStreamPlaybackOggVorbis;
 
 	int channels = 1;
-	float length = 0.0;
+	double length = 0.0;
 	bool loop = false;
-	float loop_offset = 0.0;
+	double loop_offset = 0.0;
 
 	// Performs a seek to the beginning of the stream, should not be called during playback!
 	// Also causes allocation and deallocation.
@@ -151,6 +156,8 @@ public:
 	virtual double get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
+
+	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
 
 	AudioStreamOggVorbis();
 	virtual ~AudioStreamOggVorbis();

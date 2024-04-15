@@ -192,6 +192,11 @@ void GPUParticles2D::set_trail_section_subdivisions(int p_subdivisions) {
 	queue_redraw();
 }
 
+void GPUParticles2D::set_interp_to_end(float p_interp) {
+	interp_to_end_factor = CLAMP(p_interp, 0.0, 1.0);
+	RS::get_singleton()->particles_set_interp_to_end(particles, interp_to_end_factor);
+}
+
 #ifdef TOOLS_ENABLED
 void GPUParticles2D::set_show_visibility_rect(bool p_show_visibility_rect) {
 	show_visibility_rect = p_show_visibility_rect;
@@ -318,6 +323,10 @@ bool GPUParticles2D::get_interpolate() const {
 	return interpolate;
 }
 
+float GPUParticles2D::get_interp_to_end() const {
+	return interp_to_end_factor;
+}
+
 PackedStringArray GPUParticles2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
@@ -421,6 +430,15 @@ void GPUParticles2D::set_sub_emitter(const NodePath &p_path) {
 
 NodePath GPUParticles2D::get_sub_emitter() const {
 	return sub_emitter;
+}
+
+void GPUParticles2D::set_amount_ratio(float p_ratio) {
+	amount_ratio = p_ratio;
+	RenderingServer::get_singleton()->particles_set_amount_ratio(particles, p_ratio);
+}
+
+float GPUParticles2D::get_amount_ratio() const {
+	return amount_ratio;
 }
 
 void GPUParticles2D::restart() {
@@ -670,6 +688,8 @@ void GPUParticles2D::_notification(int p_what) {
 			} else {
 				RS::get_singleton()->particles_set_speed_scale(particles, 0);
 			}
+			set_process_internal(true);
+			previous_position = get_global_position();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -692,6 +712,15 @@ void GPUParticles2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
+			const Vector3 velocity = Vector3((get_global_position() - previous_position).x, (get_global_position() - previous_position).y, 0.0) /
+					get_process_delta_time();
+
+			if (velocity != previous_velocity) {
+				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
+				previous_velocity = velocity;
+			}
+			previous_position = get_global_position();
+
 			if (one_shot) {
 				time += get_process_delta_time();
 				if (time > emission_time) {
@@ -730,6 +759,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_material", "material"), &GPUParticles2D::set_process_material);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &GPUParticles2D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles2D::set_collision_base_size);
+	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles2D::set_interp_to_end);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles2D::get_amount);
@@ -746,6 +776,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_process_material"), &GPUParticles2D::get_process_material);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &GPUParticles2D::get_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_collision_base_size"), &GPUParticles2D::get_collision_base_size);
+	ClassDB::bind_method(D_METHOD("get_interp_to_end"), &GPUParticles2D::get_interp_to_end);
 
 	ClassDB::bind_method(D_METHOD("set_draw_order", "order"), &GPUParticles2D::set_draw_order);
 	ClassDB::bind_method(D_METHOD("get_draw_order"), &GPUParticles2D::get_draw_order);
@@ -776,13 +807,17 @@ void GPUParticles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &GPUParticles2D::convert_from_particles);
 
+	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles2D::set_amount_ratio);
+	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles2D::get_amount_ratio);
+
 	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "amount_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_amount_ratio", "get_amount_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles2D"), "set_sub_emitter", "get_sub_emitter");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticleProcessMaterial"), "set_process_material", "get_process_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial"), "set_process_material", "get_process_material");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,suffix:s"), "set_lifetime", "get_lifetime");
@@ -794,6 +829,7 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolate"), "set_interpolate", "get_interpolate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "interp_to_end", PROPERTY_HINT_RANGE, "0.00,1.0,0.001"), "set_interp_to_end", "get_interp_to_end");
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater"), "set_collision_base_size", "get_collision_base_size");
 	ADD_GROUP("Drawing", "");
@@ -829,6 +865,7 @@ GPUParticles2D::GPUParticles2D() {
 	set_emitting(true);
 	set_one_shot(false);
 	set_amount(8);
+	set_amount_ratio(1.0);
 	set_lifetime(1);
 	set_fixed_fps(0);
 	set_fractional_delta(true);

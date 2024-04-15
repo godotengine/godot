@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2024, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -14,12 +14,13 @@
 #include "api_layer_interface.hpp"
 #include "exception_handling.hpp"
 #include "hex_and_handles.h"
+#include "loader_init_data.hpp"
 #include "loader_instance.hpp"
 #include "loader_logger_recorders.hpp"
 #include "loader_logger.hpp"
 #include "loader_platform.hpp"
 #include "runtime_interface.hpp"
-#include "xr_generated_dispatch_table.h"
+#include "xr_generated_dispatch_table_core.h"
 #include "xr_generated_loader.hpp"
 
 #include <openxr/openxr.h>
@@ -77,7 +78,7 @@ inline bool IsMissingNullTerminator(const char (&str)[max_length]) {
 #ifdef XR_KHR_LOADER_INIT_SUPPORT  // platforms that support XR_KHR_loader_init.
 XRAPI_ATTR XrResult XRAPI_CALL LoaderXrInitializeLoaderKHR(const XrLoaderInitInfoBaseHeaderKHR *loaderInitInfo) XRLOADER_ABI_TRY {
     LoaderLogger::LogVerboseMessage("xrInitializeLoaderKHR", "Entering loader trampoline");
-    return InitializeLoader(loaderInitInfo);
+    return InitializeLoaderInitData(loaderInitInfo);
 }
 XRLOADER_ABI_CATCH_FALLBACK
 #endif

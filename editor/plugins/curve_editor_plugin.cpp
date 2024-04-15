@@ -36,11 +36,11 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup_menu.h"
@@ -118,8 +118,13 @@ void CurveEdit::_notification(int p_what) {
 				queue_redraw();
 			}
 		} break;
-		case NOTIFICATION_THEME_CHANGED:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
 			float gizmo_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
 			point_radius = Math::round(BASE_POINT_RADIUS * get_theme_default_base_scale() * gizmo_scale);
 			hover_radius = Math::round(BASE_HOVER_RADIUS * get_theme_default_base_scale() * gizmo_scale);
@@ -140,6 +145,9 @@ void CurveEdit::_notification(int p_what) {
 
 void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+	if (curve.is_null()) {
+		return;
+	}
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
@@ -225,7 +233,7 @@ void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 			} else if (grabbing == GRAB_NONE) {
 				// Adding a new point. Insert a temporary point for the user to adjust, so it's not in the undo/redo.
 				Vector2 new_pos = get_world_pos(mpos).clamp(Vector2(0.0, curve->get_min_value()), Vector2(1.0, curve->get_max_value()));
-				if (snap_enabled || mb->is_ctrl_pressed()) {
+				if (snap_enabled || mb->is_command_or_control_pressed()) {
 					new_pos.x = Math::snapped(new_pos.x, 1.0 / snap_count);
 					new_pos.y = Math::snapped(new_pos.y - curve->get_min_value(), curve->get_range() / snap_count) + curve->get_min_value();
 				}
@@ -276,7 +284,7 @@ void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 					// Drag point.
 					Vector2 new_pos = get_world_pos(mpos).clamp(Vector2(0.0, curve->get_min_value()), Vector2(1.0, curve->get_max_value()));
 
-					if (snap_enabled || mm->is_ctrl_pressed()) {
+					if (snap_enabled || mm->is_command_or_control_pressed()) {
 						new_pos.x = Math::snapped(new_pos.x, 1.0 / snap_count);
 						new_pos.y = Math::snapped(new_pos.y - curve->get_min_value(), curve->get_range() / snap_count) + curve->get_min_value();
 					}
@@ -1041,7 +1049,7 @@ bool EditorInspectorPluginCurve::can_handle(Object *p_object) {
 
 void EditorInspectorPluginCurve::parse_begin(Object *p_object) {
 	Curve *curve = Object::cast_to<Curve>(p_object);
-	ERR_FAIL_COND(!curve);
+	ERR_FAIL_NULL(curve);
 	Ref<Curve> c(curve);
 
 	CurveEditor *editor = memnew(CurveEditor);

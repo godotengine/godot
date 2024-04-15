@@ -221,7 +221,7 @@ void RaycastOcclusionCull::occluder_initialize(RID p_occluder) {
 
 void RaycastOcclusionCull::occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices) {
 	Occluder *occluder = occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 
 	occluder->vertices = p_vertices;
 	occluder->indices = p_indices;
@@ -242,7 +242,7 @@ void RaycastOcclusionCull::occluder_set_mesh(RID p_occluder, const PackedVector3
 
 void RaycastOcclusionCull::free_occluder(RID p_occluder) {
 	Occluder *occluder = occluder_owner.get_or_null(p_occluder);
-	ERR_FAIL_COND(!occluder);
+	ERR_FAIL_NULL(occluder);
 	memdelete(occluder);
 	occluder_owner.free(p_occluder);
 }
@@ -250,17 +250,15 @@ void RaycastOcclusionCull::free_occluder(RID p_occluder) {
 ////////////////////////////////////////////////////////
 
 void RaycastOcclusionCull::add_scenario(RID p_scenario) {
-	if (scenarios.has(p_scenario)) {
-		scenarios[p_scenario].removed = false;
-	} else {
-		scenarios[p_scenario] = Scenario();
-	}
+	ERR_FAIL_COND(scenarios.has(p_scenario));
+	scenarios[p_scenario] = Scenario();
 }
 
 void RaycastOcclusionCull::remove_scenario(RID p_scenario) {
-	ERR_FAIL_COND(!scenarios.has(p_scenario));
-	Scenario &scenario = scenarios[p_scenario];
-	scenario.removed = true;
+	Scenario *scenario = scenarios.getptr(p_scenario);
+	ERR_FAIL_NULL(scenario);
+	scenario->free();
+	scenarios.erase(p_scenario);
 }
 
 void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance, RID p_occluder, const Transform3D &p_xform, bool p_enabled) {
@@ -291,7 +289,7 @@ void RaycastOcclusionCull::scenario_set_instance(RID p_scenario, RID p_instance,
 
 		if (p_occluder.is_valid()) {
 			Occluder *occluder = occluder_owner.get_or_null(p_occluder);
-			ERR_FAIL_COND(!occluder);
+			ERR_FAIL_NULL(occluder);
 			occluder->users.insert(InstanceID(p_scenario, p_instance));
 		}
 		changed = true;
@@ -390,6 +388,23 @@ void RaycastOcclusionCull::Scenario::_transform_vertices_range(const Vector3 *p_
 	}
 }
 
+void RaycastOcclusionCull::Scenario::free() {
+	if (commit_thread) {
+		if (commit_thread->is_started()) {
+			commit_thread->wait_to_finish();
+		}
+		memdelete(commit_thread);
+		commit_thread = nullptr;
+	}
+
+	for (int i = 0; i < 2; i++) {
+		if (ebr_scene[i]) {
+			rtcReleaseScene(ebr_scene[i]);
+			ebr_scene[i] = nullptr;
+		}
+	}
+}
+
 void RaycastOcclusionCull::Scenario::_commit_scene(void *p_ud) {
 	Scenario *scenario = (Scenario *)p_ud;
 	int commit_idx = 1 - (scenario->current_scene_idx);
@@ -397,8 +412,8 @@ void RaycastOcclusionCull::Scenario::_commit_scene(void *p_ud) {
 	scenario->commit_done = true;
 }
 
-bool RaycastOcclusionCull::Scenario::update() {
-	ERR_FAIL_COND_V(singleton == nullptr, false);
+void RaycastOcclusionCull::Scenario::update() {
+	ERR_FAIL_NULL(singleton);
 
 	if (commit_thread == nullptr) {
 		commit_thread = memnew(Thread);
@@ -409,22 +424,12 @@ bool RaycastOcclusionCull::Scenario::update() {
 			commit_thread->wait_to_finish();
 			current_scene_idx = 1 - current_scene_idx;
 		} else {
-			return false;
+			return;
 		}
-	}
-
-	if (removed) {
-		if (ebr_scene[0]) {
-			rtcReleaseScene(ebr_scene[0]);
-		}
-		if (ebr_scene[1]) {
-			rtcReleaseScene(ebr_scene[1]);
-		}
-		return true;
 	}
 
 	if (!dirty && removed_instances.is_empty() && dirty_instances_array.is_empty()) {
-		return false;
+		return;
 	}
 
 	for (const RID &scenario : removed_instances) {
@@ -480,19 +485,20 @@ bool RaycastOcclusionCull::Scenario::update() {
 	dirty = false;
 	commit_done = false;
 	commit_thread->start(&Scenario::_commit_scene, this);
-	return false;
 }
 
 void RaycastOcclusionCull::Scenario::_raycast(uint32_t p_idx, const RaycastThreadData *p_raycast_data) const {
-	RTCIntersectContext ctx;
-	rtcInitIntersectContext(&ctx);
-	ctx.flags = RTC_INTERSECT_CONTEXT_FLAG_COHERENT;
-
-	rtcIntersect16((const int *)&p_raycast_data->masks[p_idx * TILE_RAYS], ebr_scene[current_scene_idx], &ctx, &p_raycast_data->rays[p_idx]);
+	RTCRayQueryContext context;
+	rtcInitRayQueryContext(&context);
+	RTCIntersectArguments args;
+	rtcInitIntersectArguments(&args);
+	args.flags = RTC_RAY_QUERY_FLAG_COHERENT;
+	args.context = &context;
+	rtcIntersect16((const int *)&p_raycast_data->masks[p_idx * TILE_RAYS], ebr_scene[current_scene_idx], &p_raycast_data->rays[p_idx], &args);
 }
 
 void RaycastOcclusionCull::Scenario::raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count) const {
-	ERR_FAIL_COND(singleton == nullptr);
+	ERR_FAIL_NULL(singleton);
 	if (raycast_singleton->ebr_device == nullptr) {
 		return; // Embree is initialized on demand when there is some scenario with occluders in it.
 	}
@@ -532,6 +538,64 @@ void RaycastOcclusionCull::buffer_set_size(RID p_buffer, const Vector2i &p_size)
 	buffers[p_buffer].resize(p_size);
 }
 
+Projection RaycastOcclusionCull::_jitter_projection(const Projection &p_cam_projection, const Size2i &p_viewport_size) {
+	if (!_jitter_enabled) {
+		return p_cam_projection;
+	}
+
+	// Prevent divide by zero when using NULL viewport.
+	if ((p_viewport_size.x <= 0) || (p_viewport_size.y <= 0)) {
+		return p_cam_projection;
+	}
+
+	Projection p = p_cam_projection;
+
+	int32_t frame = Engine::get_singleton()->get_frames_drawn();
+	frame %= 9;
+
+	Vector2 jitter;
+
+	switch (frame) {
+		default:
+			break;
+		case 1: {
+			jitter = Vector2(-1, -1);
+		} break;
+		case 2: {
+			jitter = Vector2(1, -1);
+		} break;
+		case 3: {
+			jitter = Vector2(-1, 1);
+		} break;
+		case 4: {
+			jitter = Vector2(1, 1);
+		} break;
+		case 5: {
+			jitter = Vector2(-0.5f, -0.5f);
+		} break;
+		case 6: {
+			jitter = Vector2(0.5f, -0.5f);
+		} break;
+		case 7: {
+			jitter = Vector2(-0.5f, 0.5f);
+		} break;
+		case 8: {
+			jitter = Vector2(0.5f, 0.5f);
+		} break;
+	}
+
+	// The multiplier here determines the divergence from center,
+	// and is to some extent a balancing act.
+	// Higher divergence gives fewer false hidden, but more false shown.
+	// False hidden is obvious to viewer, false shown is not.
+	// False shown can lower percentage that are occluded, and therefore performance.
+	jitter *= Vector2(1 / (float)p_viewport_size.x, 1 / (float)p_viewport_size.y) * 0.05f;
+
+	p.add_jitter_offset(jitter);
+
+	return p;
+}
+
 void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {
 	if (!buffers.has(p_buffer)) {
 		return;
@@ -544,15 +608,11 @@ void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_
 	}
 
 	Scenario &scenario = scenarios[buffer.scenario_rid];
+	scenario.update();
 
-	bool removed = scenario.update();
+	Projection jittered_proj = _jitter_projection(p_cam_projection, buffer.get_occlusion_buffer_size());
 
-	if (removed) {
-		scenarios.erase(buffer.scenario_rid);
-		return;
-	}
-
-	buffer.update_camera_rays(p_cam_transform, p_cam_projection, p_cam_orthogonal);
+	buffer.update_camera_rays(p_cam_transform, jittered_proj, p_cam_orthogonal);
 
 	scenario.raycast(buffer.camera_rays, buffer.camera_ray_masks.ptr(), buffer.camera_rays_tile_count);
 	buffer.sort_rays(-p_cam_transform.basis.get_column(2), p_cam_orthogonal);
@@ -598,24 +658,13 @@ void RaycastOcclusionCull::_init_embree() {
 RaycastOcclusionCull::RaycastOcclusionCull() {
 	raycast_singleton = this;
 	int default_quality = GLOBAL_GET("rendering/occlusion_culling/bvh_build_quality");
+	_jitter_enabled = GLOBAL_GET("rendering/occlusion_culling/jitter_projection");
 	build_quality = RS::ViewportOcclusionCullingBuildQuality(default_quality);
 }
 
 RaycastOcclusionCull::~RaycastOcclusionCull() {
 	for (KeyValue<RID, Scenario> &K : scenarios) {
-		Scenario &scenario = K.value;
-		if (scenario.commit_thread) {
-			if (scenario.commit_thread->is_started()) {
-				scenario.commit_thread->wait_to_finish();
-			}
-			memdelete(scenario.commit_thread);
-		}
-
-		for (int i = 0; i < 2; i++) {
-			if (scenario.ebr_scene[i]) {
-				rtcReleaseScene(scenario.ebr_scene[i]);
-			}
-		}
+		K.value.free();
 	}
 
 	if (ebr_device != nullptr) {

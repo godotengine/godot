@@ -9,10 +9,10 @@
 	</description>
 	<tutorials>
 		<link title="Kinematic character (2D)">$DOCS_URL/tutorials/physics/kinematic_character_2d.html</link>
-		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
 		<method name="apply_floor_snap">
@@ -25,13 +25,14 @@
 			<return type="float" />
 			<param index="0" name="up_direction" type="Vector3" default="Vector3(0, 1, 0)" />
 			<description>
-				Returns the floor's collision angle at the last collision point according to [param up_direction], which is [code]Vector3.UP[/code] by default. This value is always positive and only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+				Returns the floor's collision angle at the last collision point according to [param up_direction], which is [constant Vector3.UP] by default. This value is always positive and only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
 			</description>
 		</method>
 		<method name="get_floor_normal" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the surface normal of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+				Returns the collision normal of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+				[b]Warning:[/b] The collision normal is not always the same as the surface normal.
 			</description>
 		</method>
 		<method name="get_last_motion" qualifiers="const">
@@ -86,7 +87,8 @@
 		<method name="get_wall_normal" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the surface normal of the wall at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_wall] returns [code]true[/code].
+				Returns the collision normal of the wall at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_wall] returns [code]true[/code].
+				[b]Warning:[/b] The collision normal is not always the same as the surface normal.
 			</description>
 		</method>
 		<method name="is_on_ceiling" qualifiers="const">
@@ -179,7 +181,7 @@
 			If [code]true[/code], during a jump against the ceiling, the body will slide, if [code]false[/code] it will be stopped and will fall vertically.
 		</member>
 		<member name="up_direction" type="Vector3" setter="set_up_direction" getter="get_up_direction" default="Vector3(0, 1, 0)">
-			Vector pointing upwards, used to determine what is a wall and what is a floor (or a ceiling) when calling [method move_and_slide]. Defaults to [code]Vector3.UP[/code]. As the vector will be normalized it can't be equal to [constant Vector3.ZERO], if you want all collisions to be reported as walls, consider using [constant MOTION_MODE_FLOATING] as [member motion_mode].
+			Vector pointing upwards, used to determine what is a wall and what is a floor (or a ceiling) when calling [method move_and_slide]. Defaults to [constant Vector3.UP]. As the vector will be normalized it can't be equal to [constant Vector3.ZERO], if you want all collisions to be reported as walls, consider using [constant MOTION_MODE_FLOATING] as [member motion_mode].
 		</member>
 		<member name="velocity" type="Vector3" setter="set_velocity" getter="get_velocity" default="Vector3(0, 0, 0)">
 			Current velocity vector (typically meters per second), used and modified during calls to [method move_and_slide].

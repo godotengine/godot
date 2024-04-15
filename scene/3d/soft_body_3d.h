@@ -44,6 +44,7 @@ class SoftBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHand
 	int surface = 0;
 	Vector<uint8_t> buffer;
 	uint32_t stride = 0;
+	uint32_t normal_stride = 0;
 	uint32_t offset_vertices = 0;
 	uint32_t offset_normal = 0;
 
@@ -59,8 +60,8 @@ private:
 	void commit_changes();
 
 public:
-	void set_vertex(int p_vertex_id, const void *p_vector3) override;
-	void set_normal(int p_vertex_id, const void *p_vector3) override;
+	void set_vertex(int p_vertex_id, const Vector3 &p_vertex) override;
+	void set_normal(int p_vertex_id, const Vector3 &p_normal) override;
 	void set_aabb(const AABB &p_aabb) override;
 };
 

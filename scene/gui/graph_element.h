@@ -49,6 +49,10 @@ protected:
 
 	Vector2 position_offset;
 
+	struct ThemeCache {
+		Ref<Texture2D> resizer;
+	} theme_cache;
+
 #ifdef TOOLS_ENABLED
 	void _edit_set_position(const Point2 &p_position) override;
 #endif

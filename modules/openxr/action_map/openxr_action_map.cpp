@@ -177,7 +177,6 @@ void OpenXRActionMap::create_default_action_sets() {
 	Ref<OpenXRAction> trigger_touch = action_set->add_new_action("trigger_touch", "Trigger touching", OpenXRAction::OPENXR_ACTION_BOOL, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> grip = action_set->add_new_action("grip", "Grip", OpenXRAction::OPENXR_ACTION_FLOAT, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> grip_click = action_set->add_new_action("grip_click", "Grip click", OpenXRAction::OPENXR_ACTION_BOOL, "/user/hand/left,/user/hand/right");
-	Ref<OpenXRAction> grip_touch = action_set->add_new_action("grip_touch", "Grip touching", OpenXRAction::OPENXR_ACTION_BOOL, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> grip_force = action_set->add_new_action("grip_force", "Grip force", OpenXRAction::OPENXR_ACTION_FLOAT, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> primary = action_set->add_new_action("primary", "Primary joystick/thumbstick/trackpad", OpenXRAction::OPENXR_ACTION_VECTOR2, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> primary_click = action_set->add_new_action("primary_click", "Primary joystick/thumbstick/trackpad click", OpenXRAction::OPENXR_ACTION_BOOL, "/user/hand/left,/user/hand/right");
@@ -206,7 +205,8 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/waist,"
 			"/user/vive_tracker_htcx/role/chest,"
 			"/user/vive_tracker_htcx/role/camera,"
-			"/user/vive_tracker_htcx/role/keyboard");
+			"/user/vive_tracker_htcx/role/keyboard,"
+			"/user/eyes_ext");
 	Ref<OpenXRAction> aim_pose = action_set->add_new_action("aim_pose", "Aim pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> grip_pose = action_set->add_new_action("grip_pose", "Grip pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> palm_pose = action_set->add_new_action("palm_pose", "Palm pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
@@ -502,6 +502,11 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/chest/output/haptic,"
 			"/user/vive_tracker_htcx/role/camera/output/haptic,"
 			"/user/vive_tracker_htcx/role/keyboard/output/haptic");
+	add_interaction_profile(profile);
+
+	// Create our eye gaze interaction profile
+	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/ext/eye_gaze_interaction");
+	profile->add_new_binding(default_pose, "/user/eyes_ext/input/gaze_ext/pose");
 	add_interaction_profile(profile);
 }
 

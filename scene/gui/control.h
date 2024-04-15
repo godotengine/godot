@@ -253,7 +253,6 @@ private:
 		bool is_rtl_dirty = true;
 		bool is_rtl = false;
 
-		bool auto_translate = true;
 		bool localize_numeral_system = true;
 
 		// Extra properties.
@@ -317,6 +316,8 @@ private:
 
 	// Extra properties.
 
+	static int root_layout_direction;
+
 	String get_tooltip_text() const;
 
 protected:
@@ -343,6 +344,10 @@ protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#endif
+
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
@@ -368,6 +373,8 @@ public:
 		NOTIFICATION_SCROLL_BEGIN = 47,
 		NOTIFICATION_SCROLL_END = 48,
 		NOTIFICATION_LAYOUT_DIRECTION_CHANGED = 49,
+		NOTIFICATION_MOUSE_ENTER_SELF = 60,
+		NOTIFICATION_MOUSE_EXIT_SELF = 61,
 	};
 
 	// Editor plugin interoperability.
@@ -401,8 +408,12 @@ public:
 
 	// Editor integration.
 
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+	static void set_root_layout_direction(int p_root_dir);
+
 	PackedStringArray get_configuration_warnings() const override;
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	virtual bool is_text_field() const;
 
@@ -527,6 +538,7 @@ public:
 
 	Control *find_next_valid_focus() const;
 	Control *find_prev_valid_focus() const;
+	Control *find_valid_focus_neighbor(Side p_size) const;
 
 	void set_focus_neighbor(Side p_side, const NodePath &p_neighbor);
 	NodePath get_focus_neighbor(Side p_side) const;
@@ -617,11 +629,10 @@ public:
 	void set_localize_numeral_system(bool p_enable);
 	bool is_localizing_numeral_system() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-	_FORCE_INLINE_ String atr(const String p_string) const {
-		return is_auto_translating() ? tr(p_string) : p_string;
-	};
+#endif
 
 	// Extra properties.
 

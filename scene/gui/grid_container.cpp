@@ -259,6 +259,10 @@ int GridContainer::get_columns() const {
 	return columns;
 }
 
+int GridContainer::get_h_separation() const {
+	return theme_cache.h_separation;
+}
+
 void GridContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_columns", "columns"), &GridContainer::set_columns);
 	ClassDB::bind_method(D_METHOD("get_columns"), &GridContainer::get_columns);

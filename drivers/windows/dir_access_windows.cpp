@@ -31,7 +31,9 @@
 #if defined(WINDOWS_ENABLED)
 
 #include "dir_access_windows.h"
+#include "file_access_windows.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/memory.h"
 #include "core/string/print_string.h"
 
@@ -40,13 +42,33 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+typedef struct _NT_IO_STATUS_BLOCK {
+	union {
+		LONG Status;
+		PVOID Pointer;
+	} DUMMY;
+	ULONG_PTR Information;
+} NT_IO_STATUS_BLOCK;
+
+typedef struct _NT_FILE_CASE_SENSITIVE_INFO {
+	ULONG Flags;
+} NT_FILE_CASE_SENSITIVE_INFO;
+
+typedef enum _NT_FILE_INFORMATION_CLASS {
+	FileCaseSensitiveInformation = 71,
+} NT_FILE_INFORMATION_CLASS;
+
+#define NT_FILE_CS_FLAG_CASE_SENSITIVE_DIR 0x00000001
+
+extern "C" NTSYSAPI LONG NTAPI NtQueryInformationFile(HANDLE FileHandle, NT_IO_STATUS_BLOCK *IoStatusBlock, PVOID FileInformation, ULONG Length, NT_FILE_INFORMATION_CLASS FileInformationClass);
+
 struct DirAccessWindowsPrivate {
 	HANDLE h; // handle for FindFirstFile.
 	WIN32_FIND_DATA f;
 	WIN32_FIND_DATAW fu; // Unicode version.
 };
 
-String DirAccessWindows::fix_path(String p_path) const {
+String DirAccessWindows::fix_path(const String &p_path) const {
 	String r_path = DirAccess::fix_path(p_path);
 	if (r_path.is_absolute_path() && !r_path.is_network_share_path() && r_path.length() > MAX_PATH) {
 		r_path = "\\\\?\\" + r_path.replace("/", "\\");
@@ -154,6 +176,13 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	if (p_dir.is_relative_path()) {
 		p_dir = current_dir.path_join(p_dir);
 		p_dir = fix_path(p_dir);
+	}
+
+	if (FileAccessWindows::is_path_invalid(p_dir)) {
+#ifdef DEBUG_ENABLED
+		WARN_PRINT("The path :" + p_dir + " is a reserved Windows system pipe, so it can't be used for creating directories.");
+#endif
+		return ERR_INVALID_PARAMETER;
 	}
 
 	p_dir = p_dir.simplify_path().replace("/", "\\");
@@ -338,6 +367,33 @@ String DirAccessWindows::get_filesystem_type() const {
 	}
 
 	ERR_FAIL_V("");
+}
+
+bool DirAccessWindows::is_case_sensitive(const String &p_path) const {
+	String f = p_path;
+	if (!f.is_absolute_path()) {
+		f = get_current_dir().path_join(f);
+	}
+	f = fix_path(f);
+
+	HANDLE h_file = ::CreateFileW((LPCWSTR)(f.utf16().get_data()), 0,
+			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+			nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+
+	if (h_file == INVALID_HANDLE_VALUE) {
+		return false;
+	}
+
+	NT_IO_STATUS_BLOCK io_status_block;
+	NT_FILE_CASE_SENSITIVE_INFO file_info;
+	LONG out = NtQueryInformationFile(h_file, &io_status_block, &file_info, sizeof(NT_FILE_CASE_SENSITIVE_INFO), FileCaseSensitiveInformation);
+	::CloseHandle(h_file);
+
+	if (out >= 0) {
+		return file_info.Flags & NT_FILE_CS_FLAG_CASE_SENSITIVE_DIR;
+	} else {
+		return false;
+	}
 }
 
 DirAccessWindows::DirAccessWindows() {

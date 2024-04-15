@@ -115,7 +115,7 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 			cpu_particles->set_z_index(particles->get_z_index());
 
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(TTR("Convert to CPUParticles2D"));
+			ur->create_action(TTR("Convert to CPUParticles2D"), UndoRedo::MERGE_DISABLE, particles);
 			SceneTreeDock::get_singleton()->replace_node(particles, cpu_particles);
 			ur->commit_action(false);
 
@@ -280,7 +280,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		valid_normals.resize(vpc);
 	}
 
-	ERR_FAIL_COND_MSG(valid_positions.size() == 0, "No pixels with transparency > 128 in image...");
+	ERR_FAIL_COND_MSG(valid_positions.is_empty(), "No pixels with transparency > 128 in image...");
 
 	Vector<uint8_t> texdata;
 
@@ -369,8 +369,6 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
 	toolbar->hide();
 
-	toolbar->add_child(memnew(VSeparator));
-
 	menu = memnew(MenuButton);
 	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
 	menu->get_popup()->add_item(TTR("Generate Visibility Rect"), MENU_GENERATE_VISIBILITY_RECT);
@@ -389,13 +387,6 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	}
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);
-
-	epoints = memnew(SpinBox);
-	epoints->set_min(1);
-	epoints->set_max(8192);
-	epoints->set_step(1);
-	epoints->set_value(512);
-	file->get_vbox()->add_margin_child(TTR("Generated Point Count:"), epoints);
 
 	generate_visibility_rect = memnew(ConfirmationDialog);
 	generate_visibility_rect->set_title(TTR("Generate Visibility Rect"));

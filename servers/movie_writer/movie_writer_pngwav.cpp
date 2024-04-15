@@ -70,6 +70,8 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 		//Remove existing files before writing anew
 		uint32_t idx = 0;
 		Ref<DirAccess> d = DirAccess::open(base_path.get_base_dir());
+		ERR_FAIL_COND_V(d.is_null(), FAILED);
+
 		String file = base_path.get_file();
 		while (true) {
 			String path = file + zeros_str(idx) + ".png";

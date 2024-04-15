@@ -35,10 +35,10 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("3D Editor"),
@@ -503,7 +503,7 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 	bool disabled_editor = edited->is_class_editor_disabled(p_class);
 	bool disabled_properties = edited->has_class_properties_disabled(p_class);
 	if (disabled) {
-		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	} else if (disabled_editor && disabled_properties) {
 		text += " " + TTR("(Editor Disabled, Properties Disabled)");
 	} else if (disabled_properties) {
@@ -555,21 +555,22 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 
 	Variant md = item->get_metadata(0);
 	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
-		String class_name = md;
-		String class_description;
-
-		DocTools *dd = EditorHelp::get_doc_data();
-		HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_name);
-		if (E) {
-			class_description = DTR(E->value.brief_description);
+		String text = description_bit->get_class_description(md);
+		if (!text.is_empty()) {
+			// Display both class name and description, since the help bit may be displayed
+			// far away from the location (especially if the dialog was resized to be taller).
+			description_bit->set_text(vformat("[b]%s[/b]: %s", md, text));
+			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
+		} else {
+			// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
+			description_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", md)));
+			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
 		}
-
-		description_bit->set_text(class_description);
 	} else if (md.get_type() == Variant::INT) {
-		int feature_id = md;
-		String feature_description = EditorFeatureProfile::get_feature_description(EditorFeatureProfile::Feature(feature_id));
+		String feature_description = EditorFeatureProfile::get_feature_description(EditorFeatureProfile::Feature((int)md));
+		description_bit->set_text(vformat("[b]%s[/b]: %s", TTR(item->get_text(0)), TTRGET(feature_description)));
+		description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
 
-		description_bit->set_text(TTRGET(feature_description));
 		return;
 	} else {
 		return;
@@ -618,8 +619,8 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 			if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 				continue;
 			}
-			const String text = EditorPropertyNameProcessor::get_singleton()->process_name(name, text_style);
-			const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(name, tooltip_style);
+			const String text = EditorPropertyNameProcessor::get_singleton()->process_name(name, text_style, name, class_name);
+			const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(name, tooltip_style, name, class_name);
 
 			TreeItem *property = property_list->create_item(properties);
 			property->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
@@ -931,7 +932,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	HBoxContainer *profiles_hbc = memnew(HBoxContainer);
 	profile_list = memnew(OptionButton);
 	profile_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	profile_list->set_auto_translate(false);
+	profile_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	profiles_hbc->add_child(profile_list);
 	profile_list->connect("item_selected", callable_mp(this, &EditorFeatureProfileManager::_profile_selected));
 
@@ -975,6 +976,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	class_list_vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	class_list = memnew(Tree);
+	class_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	class_list_vbc->add_margin_child(TTR("Configure Selected Profile:"), class_list, true);
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);

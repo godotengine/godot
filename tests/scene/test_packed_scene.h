@@ -150,6 +150,71 @@ TEST_CASE("[PackedScene] Instantiate Packed Scene With Children") {
 	memdelete(instance);
 }
 
+TEST_CASE("[PackedScene] Set Path") {
+	// Create a scene to pack.
+	Node *scene = memnew(Node);
+	scene->set_name("TestScene");
+
+	// Pack the scene.
+	PackedScene packed_scene;
+	packed_scene.pack(scene);
+
+	// Set a new path for the packed scene.
+	const String new_path = "NewTestPath";
+	packed_scene.set_path(new_path);
+
+	// Check if the path has been set correctly.
+	Ref<SceneState> state = packed_scene.get_state();
+	CHECK(state.is_valid());
+	CHECK(state->get_path() == new_path);
+
+	memdelete(scene);
+}
+
+TEST_CASE("[PackedScene] Replace State") {
+	// Create a scene to pack.
+	Node *scene = memnew(Node);
+	scene->set_name("TestScene");
+
+	// Pack the scene.
+	PackedScene packed_scene;
+	packed_scene.pack(scene);
+
+	// Create another scene state to replace with.
+	Ref<SceneState> new_state = memnew(SceneState);
+	new_state->set_path("NewPath");
+
+	// Replace the state.
+	packed_scene.replace_state(new_state);
+
+	// Check if the state has been replaced.
+	Ref<SceneState> state = packed_scene.get_state();
+	CHECK(state.is_valid());
+	CHECK(state == new_state);
+
+	memdelete(scene);
+}
+
+TEST_CASE("[PackedScene] Recreate State") {
+	// Create a scene to pack.
+	Node *scene = memnew(Node);
+	scene->set_name("TestScene");
+
+	// Pack the scene.
+	PackedScene packed_scene;
+	packed_scene.pack(scene);
+
+	// Recreate the state.
+	packed_scene.recreate_state();
+
+	// Check if the state has been recreated.
+	Ref<SceneState> state = packed_scene.get_state();
+	CHECK(state.is_valid());
+	CHECK(state->get_node_count() == 0); // Since the state was recreated, it should be empty.
+
+	memdelete(scene);
+}
+
 } // namespace TestPackedScene
 
 #endif // TEST_PACKED_SCENE_H

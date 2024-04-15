@@ -36,8 +36,8 @@
 #include "core/version.h"
 #include "main/main.h"
 
-#ifdef DEBUG_ENABLED
-#define CRASH_HANDLER_ENABLED 1
+#ifndef DEBUG_ENABLED
+#undef CRASH_HANDLER_ENABLED
 #endif
 
 #ifdef CRASH_HANDLER_ENABLED
@@ -49,6 +49,10 @@
 #include <stdlib.h>
 
 static void handle_crash(int sig) {
+	signal(SIGSEGV, SIG_DFL);
+	signal(SIGFPE, SIG_DFL);
+	signal(SIGILL, SIG_DFL);
+
 	if (OS::get_singleton() == nullptr) {
 		abort();
 	}
@@ -156,9 +160,9 @@ void CrashHandler::disable() {
 	}
 
 #ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, nullptr);
-	signal(SIGFPE, nullptr);
-	signal(SIGILL, nullptr);
+	signal(SIGSEGV, SIG_DFL);
+	signal(SIGFPE, SIG_DFL);
+	signal(SIGILL, SIG_DFL);
 #endif
 
 	disabled = true;

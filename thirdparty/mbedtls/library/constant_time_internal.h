@@ -2,23 +2,14 @@
  *  Constant-time functions
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #ifndef MBEDTLS_CONSTANT_TIME_INTERNAL_H
 #define MBEDTLS_CONSTANT_TIME_INTERNAL_H
+
+#include <stdint.h>
+#include <stddef.h>
 
 #include "common.h"
 
@@ -26,199 +17,497 @@
 #include "mbedtls/bignum.h"
 #endif
 
-#if defined(MBEDTLS_SSL_TLS_C)
-#include "mbedtls/ssl_internal.h"
+/* The constant-time interface provides various operations that are likely
+ * to result in constant-time code that does not branch or use conditional
+ * instructions for secret data (for secret pointers, this also applies to
+ * the data pointed to).
+ *
+ * It has three main parts:
+ *
+ * - boolean operations
+ *   These are all named mbedtls_ct_<type>_<operation>.
+ *   They operate over <type> and return mbedtls_ct_condition_t.
+ *   All arguments are considered secret.
+ *   example: bool x = y | z          =>    x = mbedtls_ct_bool_or(y, z)
+ *   example: bool x = y == z         =>    x = mbedtls_ct_uint_eq(y, z)
+ *
+ * - conditional data selection
+ *   These are all named mbedtls_ct_<type>_if and mbedtls_ct_<type>_if_else_0
+ *   All arguments are considered secret.
+ *   example: size_t a = x ? b : c    =>    a = mbedtls_ct_size_if(x, b, c)
+ *   example: unsigned a = x ? b : 0  =>    a = mbedtls_ct_uint_if_else_0(x, b)
+ *
+ * - block memory operations
+ *   Only some arguments are considered secret, as documented for each
+ *   function.
+ *   example: if (x) memcpy(...)      =>    mbedtls_ct_memcpy_if(x, ...)
+ *
+ * mbedtls_ct_condition_t must be treated as opaque and only created and
+ * manipulated via the functions in this header. The compiler should never
+ * be able to prove anything about its value at compile-time.
+ *
+ * mbedtls_ct_uint_t is an unsigned integer type over which constant time
+ * operations may be performed via the functions in this header. It is as big
+ * as the larger of size_t and mbedtls_mpi_uint, i.e. it is safe to cast
+ * to/from "unsigned int", "size_t", and "mbedtls_mpi_uint" (and any other
+ * not-larger integer types).
+ *
+ * For Arm (32-bit, 64-bit and Thumb), x86 and x86-64, assembly implementations
+ * are used to ensure that the generated code is constant time. For other
+ * architectures, it uses a plain C fallback designed to yield constant-time code
+ * (this has been observed to be constant-time on latest gcc, clang and MSVC
+ * as of May 2023).
+ *
+ * For readability, the static inline definitions are separated out into
+ * constant_time_impl.h.
+ */
+
+#if (SIZE_MAX > 0xffffffffffffffffULL)
+/* Pointer size > 64-bit */
+typedef size_t    mbedtls_ct_condition_t;
+typedef size_t    mbedtls_ct_uint_t;
+typedef ptrdiff_t mbedtls_ct_int_t;
+#define MBEDTLS_CT_TRUE  ((mbedtls_ct_condition_t) mbedtls_ct_compiler_opaque(SIZE_MAX))
+#elif (SIZE_MAX > 0xffffffff) || defined(MBEDTLS_HAVE_INT64)
+/* 32-bit < pointer size <= 64-bit, or 64-bit MPI */
+typedef uint64_t  mbedtls_ct_condition_t;
+typedef uint64_t  mbedtls_ct_uint_t;
+typedef int64_t   mbedtls_ct_int_t;
+#define MBEDTLS_CT_SIZE_64
+#define MBEDTLS_CT_TRUE  ((mbedtls_ct_condition_t) mbedtls_ct_compiler_opaque(UINT64_MAX))
+#else
+/* Pointer size <= 32-bit, and no 64-bit MPIs */
+typedef uint32_t  mbedtls_ct_condition_t;
+typedef uint32_t  mbedtls_ct_uint_t;
+typedef int32_t   mbedtls_ct_int_t;
+#define MBEDTLS_CT_SIZE_32
+#define MBEDTLS_CT_TRUE  ((mbedtls_ct_condition_t) mbedtls_ct_compiler_opaque(UINT32_MAX))
 #endif
+#define MBEDTLS_CT_FALSE ((mbedtls_ct_condition_t) mbedtls_ct_compiler_opaque(0))
 
-#include <stddef.h>
-
-/** Turn a value into a mask:
- * - if \p value == 0, return the all-bits 0 mask, aka 0
- * - otherwise, return the all-bits 1 mask, aka (unsigned) -1
- *
- * This function can be used to write constant-time code by replacing branches
- * with bit operations using masks.
- *
- * \param value     The value to analyze.
- *
- * \return          Zero if \p value is zero, otherwise all-bits-one.
+/* ============================================================================
+ * Boolean operations
  */
-unsigned mbedtls_ct_uint_mask(unsigned value);
 
-#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC)
-
-/** Turn a value into a mask:
- * - if \p value == 0, return the all-bits 0 mask, aka 0
- * - otherwise, return the all-bits 1 mask, aka (size_t) -1
+/** Convert a number into a mbedtls_ct_condition_t.
  *
- * This function can be used to write constant-time code by replacing branches
- * with bit operations using masks.
+ * \param x Number to convert.
  *
- * \param value     The value to analyze.
+ * \return MBEDTLS_CT_TRUE if \p x != 0, or MBEDTLS_CT_FALSE if \p x == 0
  *
- * \return          Zero if \p value is zero, otherwise all-bits-one.
  */
-size_t mbedtls_ct_size_mask(size_t value);
+static inline mbedtls_ct_condition_t mbedtls_ct_bool(mbedtls_ct_uint_t x);
 
-#endif /* MBEDTLS_SSL_SOME_MODES_USE_MAC */
-
-#if defined(MBEDTLS_BIGNUM_C)
-
-/** Turn a value into a mask:
- * - if \p value == 0, return the all-bits 0 mask, aka 0
- * - otherwise, return the all-bits 1 mask, aka (mbedtls_mpi_uint) -1
+/** Boolean "not equal" operation.
  *
- * This function can be used to write constant-time code by replacing branches
- * with bit operations using masks.
+ * Functionally equivalent to:
  *
- * \param value     The value to analyze.
- *
- * \return          Zero if \p value is zero, otherwise all-bits-one.
- */
-mbedtls_mpi_uint mbedtls_ct_mpi_uint_mask(mbedtls_mpi_uint value);
-
-#endif /* MBEDTLS_BIGNUM_C */
-
-#if defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC)
-
-/** Constant-flow mask generation for "greater or equal" comparison:
- * - if \p x >= \p y, return all-bits 1, that is (size_t) -1
- * - otherwise, return all bits 0, that is 0
- *
- * This function can be used to write constant-time code by replacing branches
- * with bit operations using masks.
+ * \p x != \p y
  *
  * \param x     The first value to analyze.
  * \param y     The second value to analyze.
  *
- * \return      All-bits-one if \p x is greater or equal than \p y,
- *              otherwise zero.
+ * \return      MBEDTLS_CT_TRUE if \p x != \p y, otherwise MBEDTLS_CT_FALSE.
  */
-size_t mbedtls_ct_size_mask_ge(size_t x,
-                               size_t y);
+static inline mbedtls_ct_condition_t mbedtls_ct_uint_ne(mbedtls_ct_uint_t x, mbedtls_ct_uint_t y);
 
-#endif /* MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC */
-
-/** Constant-flow boolean "equal" comparison:
- * return x == y
+/** Boolean "equals" operation.
  *
- * This is equivalent to \p x == \p y, but is likely to be compiled
- * to code using bitwise operation rather than a branch.
+ * Functionally equivalent to:
+ *
+ * \p x == \p y
  *
  * \param x     The first value to analyze.
  * \param y     The second value to analyze.
  *
- * \return      1 if \p x equals to \p y, otherwise 0.
+ * \return      MBEDTLS_CT_TRUE if \p x == \p y, otherwise MBEDTLS_CT_FALSE.
  */
-unsigned mbedtls_ct_size_bool_eq(size_t x,
-                                 size_t y);
+static inline mbedtls_ct_condition_t mbedtls_ct_uint_eq(mbedtls_ct_uint_t x,
+                                                        mbedtls_ct_uint_t y);
 
-#if defined(MBEDTLS_BIGNUM_C)
-
-/** Decide if an integer is less than the other, without branches.
+/** Boolean "less than" operation.
  *
- * This is equivalent to \p x < \p y, but is likely to be compiled
- * to code using bitwise operation rather than a branch.
+ * Functionally equivalent to:
+ *
+ * \p x < \p y
  *
  * \param x     The first value to analyze.
  * \param y     The second value to analyze.
  *
- * \return      1 if \p x is less than \p y, otherwise 0.
+ * \return      MBEDTLS_CT_TRUE if \p x < \p y, otherwise MBEDTLS_CT_FALSE.
  */
-unsigned mbedtls_ct_mpi_uint_lt(const mbedtls_mpi_uint x,
-                                const mbedtls_mpi_uint y);
+static inline mbedtls_ct_condition_t mbedtls_ct_uint_lt(mbedtls_ct_uint_t x, mbedtls_ct_uint_t y);
 
-#endif /* MBEDTLS_BIGNUM_C */
-
-/** Choose between two integer values without branches.
+/** Boolean "greater than" operation.
  *
- * This is equivalent to `condition ? if1 : if0`, but is likely to be compiled
- * to code using bitwise operation rather than a branch.
+ * Functionally equivalent to:
+ *
+ * \p x > \p y
+ *
+ * \param x     The first value to analyze.
+ * \param y     The second value to analyze.
+ *
+ * \return      MBEDTLS_CT_TRUE if \p x > \p y, otherwise MBEDTLS_CT_FALSE.
+ */
+static inline mbedtls_ct_condition_t mbedtls_ct_uint_gt(mbedtls_ct_uint_t x,
+                                                        mbedtls_ct_uint_t y);
+
+/** Boolean "greater or equal" operation.
+ *
+ * Functionally equivalent to:
+ *
+ * \p x >= \p y
+ *
+ * \param x     The first value to analyze.
+ * \param y     The second value to analyze.
+ *
+ * \return      MBEDTLS_CT_TRUE if \p x >= \p y,
+ *              otherwise MBEDTLS_CT_FALSE.
+ */
+static inline mbedtls_ct_condition_t mbedtls_ct_uint_ge(mbedtls_ct_uint_t x,
+                                                        mbedtls_ct_uint_t y);
+
+/** Boolean "less than or equal" operation.
+ *
+ * Functionally equivalent to:
+ *
+ * \p x <= \p y
+ *
+ * \param x     The first value to analyze.
+ * \param y     The second value to analyze.
+ *
+ * \return      MBEDTLS_CT_TRUE if \p x <= \p y,
+ *              otherwise MBEDTLS_CT_FALSE.
+ */
+static inline mbedtls_ct_condition_t mbedtls_ct_uint_le(mbedtls_ct_uint_t x,
+                                                        mbedtls_ct_uint_t y);
+
+/** Boolean not-equals operation.
+ *
+ * Functionally equivalent to:
+ *
+ * \p x != \p y
+ *
+ * \param x     The first value to analyze.
+ * \param y     The second value to analyze.
+ *
+ * \note        This is more efficient than mbedtls_ct_uint_ne if both arguments are
+ *              mbedtls_ct_condition_t.
+ *
+ * \return      MBEDTLS_CT_TRUE if \p x != \p y,
+ *              otherwise MBEDTLS_CT_FALSE.
+ */
+static inline mbedtls_ct_condition_t mbedtls_ct_bool_ne(mbedtls_ct_condition_t x,
+                                                        mbedtls_ct_condition_t y);
+
+/** Boolean "and" operation.
+ *
+ * Functionally equivalent to:
+ *
+ * \p x && \p y
+ *
+ * \param x     The first value to analyze.
+ * \param y     The second value to analyze.
+ *
+ * \return      MBEDTLS_CT_TRUE if \p x && \p y,
+ *              otherwise MBEDTLS_CT_FALSE.
+ */
+static inline mbedtls_ct_condition_t mbedtls_ct_bool_and(mbedtls_ct_condition_t x,
+                                                         mbedtls_ct_condition_t y);
+
+/** Boolean "or" operation.
+ *
+ * Functionally equivalent to:
+ *
+ * \p x || \p y
+ *
+ * \param x     The first value to analyze.
+ * \param y     The second value to analyze.
+ *
+ * \return      MBEDTLS_CT_TRUE if \p x || \p y,
+ *              otherwise MBEDTLS_CT_FALSE.
+ */
+static inline mbedtls_ct_condition_t mbedtls_ct_bool_or(mbedtls_ct_condition_t x,
+                                                        mbedtls_ct_condition_t y);
+
+/** Boolean "not" operation.
+ *
+ * Functionally equivalent to:
+ *
+ * ! \p x
+ *
+ * \param x     The value to invert
+ *
+ * \return      MBEDTLS_CT_FALSE if \p x, otherwise MBEDTLS_CT_TRUE.
+ */
+static inline mbedtls_ct_condition_t mbedtls_ct_bool_not(mbedtls_ct_condition_t x);
+
+
+/* ============================================================================
+ * Data selection operations
+ */
+
+/** Choose between two size_t values.
+ *
+ * Functionally equivalent to:
+ *
+ * condition ? if1 : if0.
  *
  * \param condition     Condition to test.
- * \param if1           Value to use if \p condition is nonzero.
- * \param if0           Value to use if \p condition is zero.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ * \param if0           Value to use if \p condition == MBEDTLS_CT_FALSE.
  *
- * \return  \c if1 if \p condition is nonzero, otherwise \c if0.
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise \c if0.
  */
-unsigned mbedtls_ct_uint_if(unsigned condition,
-                            unsigned if1,
-                            unsigned if0);
+static inline size_t mbedtls_ct_size_if(mbedtls_ct_condition_t condition,
+                                        size_t if1,
+                                        size_t if0);
+
+/** Choose between two unsigned values.
+ *
+ * Functionally equivalent to:
+ *
+ * condition ? if1 : if0.
+ *
+ * \param condition     Condition to test.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ * \param if0           Value to use if \p condition == MBEDTLS_CT_FALSE.
+ *
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise \c if0.
+ */
+static inline unsigned mbedtls_ct_uint_if(mbedtls_ct_condition_t condition,
+                                          unsigned if1,
+                                          unsigned if0);
+
+/** Choose between two mbedtls_ct_condition_t values.
+ *
+ * Functionally equivalent to:
+ *
+ * condition ? if1 : if0.
+ *
+ * \param condition     Condition to test.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ * \param if0           Value to use if \p condition == MBEDTLS_CT_FALSE.
+ *
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise \c if0.
+ */
+static inline mbedtls_ct_condition_t mbedtls_ct_bool_if(mbedtls_ct_condition_t condition,
+                                                        mbedtls_ct_condition_t if1,
+                                                        mbedtls_ct_condition_t if0);
 
 #if defined(MBEDTLS_BIGNUM_C)
 
-/** Conditionally assign a value without branches.
+/** Choose between two mbedtls_mpi_uint values.
  *
- * This is equivalent to `if ( condition ) dest = src`, but is likely
- * to be compiled to code using bitwise operation rather than a branch.
+ * Functionally equivalent to:
  *
- * \param n             \p dest and \p src must be arrays of limbs of size n.
- * \param dest          The MPI to conditionally assign to. This must point
- *                      to an initialized MPI.
- * \param src           The MPI to be assigned from. This must point to an
- *                      initialized MPI.
- * \param condition     Condition to test, must be 0 or 1.
+ * condition ? if1 : if0.
+ *
+ * \param condition     Condition to test.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ * \param if0           Value to use if \p condition == MBEDTLS_CT_FALSE.
+ *
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise \c if0.
  */
-void mbedtls_ct_mpi_uint_cond_assign(size_t n,
-                                     mbedtls_mpi_uint *dest,
-                                     const mbedtls_mpi_uint *src,
-                                     unsigned char condition);
+static inline mbedtls_mpi_uint mbedtls_ct_mpi_uint_if(mbedtls_ct_condition_t condition, \
+                                                      mbedtls_mpi_uint if1, \
+                                                      mbedtls_mpi_uint if0);
 
-#endif /* MBEDTLS_BIGNUM_C */
+#endif
 
-#if defined(MBEDTLS_BASE64_C)
-
-/** Given a value in the range 0..63, return the corresponding Base64 digit.
+/** Choose between an unsigned value and 0.
  *
- * The implementation assumes that letters are consecutive (e.g. ASCII
- * but not EBCDIC).
+ * Functionally equivalent to:
  *
- * \param value     A value in the range 0..63.
+ * condition ? if1 : 0.
  *
- * \return          A base64 digit converted from \p value.
+ * Functionally equivalent to mbedtls_ct_uint_if(condition, if1, 0) but
+ * results in smaller code size.
+ *
+ * \param condition     Condition to test.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ *
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise 0.
  */
-unsigned char mbedtls_ct_base64_enc_char(unsigned char value);
+static inline unsigned mbedtls_ct_uint_if_else_0(mbedtls_ct_condition_t condition, unsigned if1);
 
-/** Given a Base64 digit, return its value.
+/** Choose between an mbedtls_ct_condition_t and 0.
  *
- * If c is not a Base64 digit ('A'..'Z', 'a'..'z', '0'..'9', '+' or '/'),
- * return -1.
+ * Functionally equivalent to:
  *
- * The implementation assumes that letters are consecutive (e.g. ASCII
- * but not EBCDIC).
+ * condition ? if1 : 0.
  *
- * \param c     A base64 digit.
+ * Functionally equivalent to mbedtls_ct_bool_if(condition, if1, 0) but
+ * results in smaller code size.
  *
- * \return      The value of the base64 digit \p c.
+ * \param condition     Condition to test.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ *
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise 0.
  */
-signed char mbedtls_ct_base64_dec_value(unsigned char c);
+static inline mbedtls_ct_condition_t mbedtls_ct_bool_if_else_0(mbedtls_ct_condition_t condition,
+                                                               mbedtls_ct_condition_t if1);
 
-#endif /* MBEDTLS_BASE64_C */
-
-#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC)
-
-/** Conditional memcpy without branches.
+/** Choose between a size_t value and 0.
  *
- * This is equivalent to `if ( c1 == c2 ) memcpy(dest, src, len)`, but is likely
- * to be compiled to code using bitwise operation rather than a branch.
+ * Functionally equivalent to:
  *
- * \param dest      The pointer to conditionally copy to.
- * \param src       The pointer to copy from. Shouldn't overlap with \p dest.
- * \param len       The number of bytes to copy.
- * \param c1        The first value to analyze in the condition.
- * \param c2        The second value to analyze in the condition.
+ * condition ? if1 : 0.
+ *
+ * Functionally equivalent to mbedtls_ct_size_if(condition, if1, 0) but
+ * results in smaller code size.
+ *
+ * \param condition     Condition to test.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ *
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise 0.
  */
-void mbedtls_ct_memcpy_if_eq(unsigned char *dest,
-                             const unsigned char *src,
-                             size_t len,
-                             size_t c1, size_t c2);
+static inline size_t mbedtls_ct_size_if_else_0(mbedtls_ct_condition_t condition, size_t if1);
 
-/** Copy data from a secret position with constant flow.
+#if defined(MBEDTLS_BIGNUM_C)
+
+/** Choose between an mbedtls_mpi_uint value and 0.
  *
- * This function copies \p len bytes from \p src_base + \p offset_secret to \p
- * dst, with a code flow and memory access pattern that does not depend on \p
- * offset_secret, but only on \p offset_min, \p offset_max and \p len.
- * Functionally equivalent to `memcpy(dst, src + offset_secret, len)`.
+ * Functionally equivalent to:
+ *
+ * condition ? if1 : 0.
+ *
+ * Functionally equivalent to mbedtls_ct_mpi_uint_if(condition, if1, 0) but
+ * results in smaller code size.
+ *
+ * \param condition     Condition to test.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ *
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise 0.
+ */
+static inline mbedtls_mpi_uint mbedtls_ct_mpi_uint_if_else_0(mbedtls_ct_condition_t condition,
+                                                             mbedtls_mpi_uint if1);
+
+#endif
+
+/** Constant-flow char selection
+ *
+ * \param low   Secret. Bottom of range
+ * \param high  Secret. Top of range
+ * \param c     Secret. Value to compare to range
+ * \param t     Secret. Value to return, if in range
+ *
+ * \return      \p t if \p low <= \p c <= \p high, 0 otherwise.
+ */
+static inline unsigned char mbedtls_ct_uchar_in_range_if(unsigned char low,
+                                                         unsigned char high,
+                                                         unsigned char c,
+                                                         unsigned char t);
+
+/** Choose between two error values. The values must be in the range [-32767..0].
+ *
+ * Functionally equivalent to:
+ *
+ * condition ? if1 : if0.
+ *
+ * \param condition     Condition to test.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ * \param if0           Value to use if \p condition == MBEDTLS_CT_FALSE.
+ *
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise \c if0.
+ */
+static inline int mbedtls_ct_error_if(mbedtls_ct_condition_t condition, int if1, int if0);
+
+/** Choose between an error value and 0. The error value must be in the range [-32767..0].
+ *
+ * Functionally equivalent to:
+ *
+ * condition ? if1 : 0.
+ *
+ * Functionally equivalent to mbedtls_ct_error_if(condition, if1, 0) but
+ * results in smaller code size.
+ *
+ * \param condition     Condition to test.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ *
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise 0.
+ */
+static inline int mbedtls_ct_error_if_else_0(mbedtls_ct_condition_t condition, int if1);
+
+/* ============================================================================
+ * Block memory operations
+ */
+
+#if defined(MBEDTLS_PKCS1_V15) && defined(MBEDTLS_RSA_C) && !defined(MBEDTLS_RSA_ALT)
+
+/** Conditionally set a block of memory to zero.
+ *
+ * Regardless of the condition, every byte will be read once and written to
+ * once.
+ *
+ * \param condition     Secret. Condition to test.
+ * \param buf           Secret. Pointer to the start of the buffer.
+ * \param len           Number of bytes to set to zero.
+ *
+ * \warning Unlike mbedtls_platform_zeroize, this does not have the same guarantees
+ * about not being optimised away if the memory is never read again.
+ */
+void mbedtls_ct_zeroize_if(mbedtls_ct_condition_t condition, void *buf, size_t len);
+
+/** Shift some data towards the left inside a buffer.
+ *
+ * Functionally equivalent to:
+ *
+ * memmove(start, start + offset, total - offset);
+ * memset(start + (total - offset), 0, offset);
+ *
+ * Timing independence comes at the expense of performance.
+ *
+ * \param start     Secret. Pointer to the start of the buffer.
+ * \param total     Total size of the buffer.
+ * \param offset    Secret. Offset from which to copy \p total - \p offset bytes.
+ */
+void mbedtls_ct_memmove_left(void *start,
+                             size_t total,
+                             size_t offset);
+
+#endif /* defined(MBEDTLS_PKCS1_V15) && defined(MBEDTLS_RSA_C) && !defined(MBEDTLS_RSA_ALT) */
+
+/** Conditional memcpy.
+ *
+ * Functionally equivalent to:
+ *
+ * if (condition) {
+ *      memcpy(dest, src1, len);
+ * } else {
+ *      if (src2 != NULL)
+ *          memcpy(dest, src2, len);
+ * }
+ *
+ * It will always read len bytes from src1.
+ * If src2 != NULL, it will always read len bytes from src2.
+ * If src2 == NULL, it will instead read len bytes from dest (as if src2 == dest).
+ *
+ * \param condition The condition
+ * \param dest      Secret. Destination pointer.
+ * \param src1      Secret. Pointer to copy from (if \p condition == MBEDTLS_CT_TRUE).
+ *                  This may be equal to \p dest, but may not overlap in other ways.
+ * \param src2      Secret (contents only - may branch to determine if this parameter is NULL).
+ *                  Pointer to copy from (if \p condition == MBEDTLS_CT_FALSE and \p src2 is not NULL). May be NULL.
+ *                  This may be equal to \p dest, but may not overlap it in other ways. It may overlap with \p src1.
+ * \param len       Number of bytes to copy.
+ */
+void mbedtls_ct_memcpy_if(mbedtls_ct_condition_t condition,
+                          unsigned char *dest,
+                          const unsigned char *src1,
+                          const unsigned char *src2,
+                          size_t len
+                          );
+
+/** Copy data from a secret position.
+ *
+ * Functionally equivalent to:
+ *
+ * memcpy(dst, src + offset, len)
+ *
+ * This function copies \p len bytes from \p src + \p offset to
+ * \p dst, with a code flow and memory access pattern that does not depend on
+ * \p offset, but only on \p offset_min, \p offset_max and \p len.
  *
  * \note                This function reads from \p dest, but the value that
  *                      is read does not influence the result and this
@@ -227,12 +516,12 @@ void mbedtls_ct_memcpy_if_eq(unsigned char *dest,
  *                      positives from static or dynamic analyzers, especially
  *                      if \p dest is not initialized.
  *
- * \param dest          The destination buffer. This must point to a writable
+ * \param dest          Secret. The destination buffer. This must point to a writable
  *                      buffer of at least \p len bytes.
- * \param src           The base of the source buffer. This must point to a
+ * \param src           Secret. The base of the source buffer. This must point to a
  *                      readable buffer of at least \p offset_max + \p len
- *                      bytes. Shouldn't overlap with \p dest.
- * \param offset        The offset in the source buffer from which to copy.
+ *                      bytes. Shouldn't overlap with \p dest
+ * \param offset        Secret. The offset in the source buffer from which to copy.
  *                      This must be no less than \p offset_min and no greater
  *                      than \p offset_max.
  * \param offset_min    The minimal value of \p offset.
@@ -246,90 +535,45 @@ void mbedtls_ct_memcpy_offset(unsigned char *dest,
                               size_t offset_max,
                               size_t len);
 
-/** Compute the HMAC of variable-length data with constant flow.
- *
- * This function computes the HMAC of the concatenation of \p add_data and \p
- * data, and does with a code flow and memory access pattern that does not
- * depend on \p data_len_secret, but only on \p min_data_len and \p
- * max_data_len. In particular, this function always reads exactly \p
- * max_data_len bytes from \p data.
- *
- * \param ctx               The HMAC context. It must have keys configured
- *                          with mbedtls_md_hmac_starts() and use one of the
- *                          following hashes: SHA-384, SHA-256, SHA-1 or MD-5.
- *                          It is reset using mbedtls_md_hmac_reset() after
- *                          the computation is complete to prepare for the
- *                          next computation.
- * \param add_data          The first part of the message whose HMAC is being
- *                          calculated. This must point to a readable buffer
- *                          of \p add_data_len bytes.
- * \param add_data_len      The length of \p add_data in bytes.
- * \param data              The buffer containing the second part of the
- *                          message. This must point to a readable buffer
- *                          of \p max_data_len bytes.
- * \param data_len_secret   The length of the data to process in \p data.
- *                          This must be no less than \p min_data_len and no
- *                          greater than \p max_data_len.
- * \param min_data_len      The minimal length of the second part of the
- *                          message, read from \p data.
- * \param max_data_len      The maximal length of the second part of the
- *                          message, read from \p data.
- * \param output            The HMAC will be written here. This must point to
- *                          a writable buffer of sufficient size to hold the
- *                          HMAC value.
- *
- * \retval 0 on success.
- * \retval #MBEDTLS_ERR_PLATFORM_HW_ACCEL_FAILED
- *         The hardware accelerator failed.
+/* Documented in include/mbedtls/constant_time.h. a and b are secret.
+
+   int mbedtls_ct_memcmp(const void *a,
+                         const void *b,
+                         size_t n);
  */
-int mbedtls_ct_hmac(mbedtls_md_context_t *ctx,
-                    const unsigned char *add_data,
-                    size_t add_data_len,
-                    const unsigned char *data,
-                    size_t data_len_secret,
-                    size_t min_data_len,
-                    size_t max_data_len,
-                    unsigned char *output);
 
-#endif /* MBEDTLS_SSL_SOME_MODES_USE_MAC */
+#if defined(MBEDTLS_NIST_KW_C)
 
-#if defined(MBEDTLS_PKCS1_V15) && defined(MBEDTLS_RSA_C) && !defined(MBEDTLS_RSA_ALT)
-
-/** This function performs the unpadding part of a PKCS#1 v1.5 decryption
- *  operation (EME-PKCS1-v1_5 decoding).
+/** Constant-time buffer comparison without branches.
  *
- * \note The return value from this function is a sensitive value
- *       (this is unusual). #MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE shouldn't happen
- *       in a well-written application, but 0 vs #MBEDTLS_ERR_RSA_INVALID_PADDING
- *       is often a situation that an attacker can provoke and leaking which
- *       one is the result is precisely the information the attacker wants.
+ * Similar to mbedtls_ct_memcmp, except that the result only depends on part of
+ * the input data - differences in the head or tail are ignored. Functionally equivalent to:
  *
- * \param mode           The mode of operation. This must be either
- *                       #MBEDTLS_RSA_PRIVATE or #MBEDTLS_RSA_PUBLIC (deprecated).
- * \param input          The input buffer which is the payload inside PKCS#1v1.5
- *                       encryption padding, called the "encoded message EM"
- *                       by the terminology.
- * \param ilen           The length of the payload in the \p input buffer.
- * \param output         The buffer for the payload, called "message M" by the
- *                       PKCS#1 terminology. This must be a writable buffer of
- *                       length \p output_max_len bytes.
- * \param olen           The address at which to store the length of
- *                       the payload. This must not be \c NULL.
- * \param output_max_len The length in bytes of the output buffer \p output.
+ * memcmp(a + skip_head, b + skip_head, size - skip_head - skip_tail)
  *
- * \return      \c 0 on success.
- * \return      #MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE
- *              The output buffer is too small for the unpadded payload.
- * \return      #MBEDTLS_ERR_RSA_INVALID_PADDING
- *              The input doesn't contain properly formatted padding.
+ * Time taken depends on \p n, but not on \p skip_head or \p skip_tail .
+ *
+ * Behaviour is undefined if ( \p skip_head + \p skip_tail) > \p n.
+ *
+ * \param a         Secret. Pointer to the first buffer, containing at least \p n bytes. May not be NULL.
+ * \param b         Secret. Pointer to the second buffer, containing at least \p n bytes. May not be NULL.
+ * \param n         The number of bytes to examine (total size of the buffers).
+ * \param skip_head Secret. The number of bytes to treat as non-significant at the start of the buffer.
+ *                  These bytes will still be read.
+ * \param skip_tail Secret. The number of bytes to treat as non-significant at the end of the buffer.
+ *                  These bytes will still be read.
+ *
+ * \return          Zero if the contents of the two buffers are the same, otherwise non-zero.
  */
-int mbedtls_ct_rsaes_pkcs1_v15_unpadding(int mode,
-                                         unsigned char *input,
-                                         size_t ilen,
-                                         unsigned char *output,
-                                         size_t output_max_len,
-                                         size_t *olen);
+int mbedtls_ct_memcmp_partial(const void *a,
+                              const void *b,
+                              size_t n,
+                              size_t skip_head,
+                              size_t skip_tail);
 
-#endif /* MBEDTLS_PKCS1_V15 && MBEDTLS_RSA_C && ! MBEDTLS_RSA_ALT */
+#endif
+
+/* Include the implementation of static inline functions above. */
+#include "constant_time_impl.h"
 
 #endif /* MBEDTLS_CONSTANT_TIME_INTERNAL_H */

@@ -32,7 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 
 Rect2i EditorQuickOpen::prev_rect = Rect2i();
 bool EditorQuickOpen::was_showed = false;
@@ -250,14 +250,14 @@ void EditorQuickOpen::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
 		} break;
 	}
-}
-
-void EditorQuickOpen::_theme_changed() {
-	search_box->set_right_icon(search_options->get_editor_theme_icon(SNAME("Search")));
 }
 
 void EditorQuickOpen::_bind_methods() {
@@ -266,7 +266,6 @@ void EditorQuickOpen::_bind_methods() {
 
 EditorQuickOpen::EditorQuickOpen() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
-	vbc->connect("theme_changed", callable_mp(this, &EditorQuickOpen::_theme_changed));
 	add_child(vbc);
 
 	search_box = memnew(LineEdit);
@@ -276,6 +275,7 @@ EditorQuickOpen::EditorQuickOpen() {
 	register_text_enter(search_box);
 
 	search_options = memnew(Tree);
+	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->connect("item_activated", callable_mp(this, &EditorQuickOpen::_confirmed));
 	search_options->create_item();
 	search_options->set_hide_root(true);

@@ -54,11 +54,11 @@ Tween::interpolater Tween::interpolaters[Tween::TRANS_MAX][Tween::EASE_MAX] = {
 };
 
 void Tweener::set_tween(const Ref<Tween> &p_tween) {
-	tween = p_tween;
+	tween_id = p_tween->get_instance_id();
 }
 
-void Tweener::clear_tween() {
-	tween.unref();
+Ref<Tween> Tweener::_get_tween() {
+	return Ref<Tween>(ObjectDB::get_instance(tween_id));
 }
 
 void Tweener::_bind_methods() {
@@ -104,7 +104,15 @@ Ref<PropertyTweener> Tween::tween_property(const Object *p_target, const NodePat
 	CHECK_VALID();
 
 	Vector<StringName> property_subnames = p_property.get_as_property_path().get_subnames();
-	if (!_validate_type_match(p_target->get_indexed(property_subnames), p_to)) {
+#ifdef DEBUG_ENABLED
+	bool prop_valid;
+	const Variant &prop_value = p_target->get_indexed(property_subnames, &prop_valid);
+	ERR_FAIL_COND_V_MSG(!prop_valid, nullptr, vformat("The tweened property \"%s\" does not exist in object \"%s\".", p_property, p_target));
+#else
+	const Variant &prop_value = p_target->get_indexed(property_subnames);
+#endif
+
+	if (!_validate_type_match(prop_value, p_to)) {
 		return nullptr;
 	}
 
@@ -184,12 +192,6 @@ bool Tween::is_valid() {
 
 void Tween::clear() {
 	valid = false;
-
-	for (List<Ref<Tweener>> &step : tweeners) {
-		for (Ref<Tweener> &tweener : step) {
-			tweener->clear_tween();
-		}
-	}
 	tweeners.clear();
 }
 
@@ -412,13 +414,8 @@ Variant Tween::interpolate_variant(const Variant &p_initial_val, const Variant &
 	ERR_FAIL_INDEX_V(p_trans, TransitionType::TRANS_MAX, Variant());
 	ERR_FAIL_INDEX_V(p_ease, EaseType::EASE_MAX, Variant());
 
-	// Special case for bool.
-	if (p_initial_val.get_type() == Variant::BOOL) {
-		return run_equation(p_trans, p_ease, p_time, p_initial_val, p_delta_val, p_duration) >= 0.5;
-	}
-
 	Variant ret = Animation::add_variant(p_initial_val, p_delta_val);
-	ret = Animation::interpolate_variant(p_initial_val, ret, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration));
+	ret = Animation::interpolate_variant(p_initial_val, ret, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration), p_initial_val.is_string());
 	return ret;
 }
 
@@ -501,12 +498,15 @@ Tween::Tween(bool p_valid) {
 }
 
 Ref<PropertyTweener> PropertyTweener::from(const Variant &p_value) {
+	Ref<Tween> tween = _get_tween();
 	ERR_FAIL_COND_V(tween.is_null(), nullptr);
-	if (!tween->_validate_type_match(p_value, final_val)) {
+
+	Variant from_value = p_value;
+	if (!tween->_validate_type_match(final_val, from_value)) {
 		return nullptr;
 	}
 
-	initial_val = p_value;
+	initial_val = from_value;
 	do_continue = false;
 	return this;
 }
@@ -531,6 +531,11 @@ Ref<PropertyTweener> PropertyTweener::set_ease(Tween::EaseType p_ease) {
 	return this;
 }
 
+Ref<PropertyTweener> PropertyTweener::set_custom_interpolator(const Callable &p_method) {
+	custom_method = p_method;
+	return this;
+}
+
 Ref<PropertyTweener> PropertyTweener::set_delay(double p_delay) {
 	delay = p_delay;
 	return this;
@@ -546,9 +551,12 @@ void PropertyTweener::start() {
 		return;
 	}
 
-	if (do_continue && Math::is_zero_approx(delay)) {
-		initial_val = target_instance->get_indexed(property);
-		do_continue = false;
+	if (do_continue) {
+		if (Math::is_zero_approx(delay)) {
+			initial_val = target_instance->get_indexed(property);
+		} else {
+			do_continue_delayed = true;
+		}
 	}
 
 	if (relative) {
@@ -573,15 +581,33 @@ bool PropertyTweener::step(double &r_delta) {
 	if (elapsed_time < delay) {
 		r_delta = 0;
 		return true;
-	} else if (do_continue && !Math::is_zero_approx(delay)) {
+	} else if (do_continue_delayed && !Math::is_zero_approx(delay)) {
 		initial_val = target_instance->get_indexed(property);
 		delta_val = Animation::subtract_variant(final_val, initial_val);
-		do_continue = false;
+		do_continue_delayed = false;
 	}
+
+	Ref<Tween> tween = _get_tween();
 
 	double time = MIN(elapsed_time - delay, duration);
 	if (time < duration) {
-		target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
+		if (custom_method.is_valid()) {
+			const Variant t = tween->interpolate_variant(0.0, 1.0, time, duration, trans_type, ease_type);
+			const Variant *argptr = &t;
+
+			Variant result;
+			Callable::CallError ce;
+			custom_method.callp(&argptr, 1, result, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_FAIL_V_MSG(false, "Error calling custom method from PropertyTweener: " + Variant::get_callable_error_text(custom_method, &argptr, 1, ce) + ".");
+			} else if (result.get_type() != Variant::FLOAT) {
+				ERR_FAIL_V_MSG(false, vformat("Wrong return type in PropertyTweener custom method. Expected float, got %s.", Variant::get_type_name(result.get_type())));
+			}
+
+			target_instance->set_indexed(property, Animation::interpolate_variant(initial_val, final_val, result));
+		} else {
+			target_instance->set_indexed(property, tween->interpolate_variant(initial_val, delta_val, time, duration, trans_type, ease_type));
+		}
 		r_delta = 0;
 		return true;
 	} else {
@@ -594,12 +620,12 @@ bool PropertyTweener::step(double &r_delta) {
 }
 
 void PropertyTweener::set_tween(const Ref<Tween> &p_tween) {
-	tween = p_tween;
+	Tweener::set_tween(p_tween);
 	if (trans_type == Tween::TRANS_MAX) {
-		trans_type = tween->get_trans();
+		trans_type = p_tween->get_trans();
 	}
 	if (ease_type == Tween::EASE_MAX) {
-		ease_type = tween->get_ease();
+		ease_type = p_tween->get_ease();
 	}
 }
 
@@ -609,6 +635,7 @@ void PropertyTweener::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("as_relative"), &PropertyTweener::as_relative);
 	ClassDB::bind_method(D_METHOD("set_trans", "trans"), &PropertyTweener::set_trans);
 	ClassDB::bind_method(D_METHOD("set_ease", "ease"), &PropertyTweener::set_ease);
+	ClassDB::bind_method(D_METHOD("set_custom_interpolator", "interpolator_method"), &PropertyTweener::set_custom_interpolator);
 	ClassDB::bind_method(D_METHOD("set_delay", "delay"), &PropertyTweener::set_delay);
 }
 
@@ -675,7 +702,7 @@ bool CallbackTweener::step(double &r_delta) {
 		return false;
 	}
 
-	if (!callback.get_object()) {
+	if (!callback.is_valid()) {
 		return false;
 	}
 
@@ -685,7 +712,7 @@ bool CallbackTweener::step(double &r_delta) {
 		Callable::CallError ce;
 		callback.callp(nullptr, 0, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_callable_error_text(callback, nullptr, 0, ce));
+			ERR_FAIL_V_MSG(false, "Error calling method from CallbackTweener: " + Variant::get_callable_error_text(callback, nullptr, 0, ce) + ".");
 		}
 
 		finished = true;
@@ -740,7 +767,7 @@ bool MethodTweener::step(double &r_delta) {
 		return false;
 	}
 
-	if (!callback.get_object()) {
+	if (!callback.is_valid()) {
 		return false;
 	}
 
@@ -750,6 +777,8 @@ bool MethodTweener::step(double &r_delta) {
 		r_delta = 0;
 		return true;
 	}
+
+	Ref<Tween> tween = _get_tween();
 
 	Variant current_val;
 	double time = MIN(elapsed_time - delay, duration);
@@ -765,7 +794,7 @@ bool MethodTweener::step(double &r_delta) {
 	Callable::CallError ce;
 	callback.callp(argptr, 1, result, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_callable_error_text(callback, argptr, 1, ce));
+		ERR_FAIL_V_MSG(false, "Error calling method from MethodTweener: " + Variant::get_callable_error_text(callback, argptr, 1, ce) + ".");
 	}
 
 	if (time < duration) {
@@ -780,12 +809,12 @@ bool MethodTweener::step(double &r_delta) {
 }
 
 void MethodTweener::set_tween(const Ref<Tween> &p_tween) {
-	tween = p_tween;
+	Tweener::set_tween(p_tween);
 	if (trans_type == Tween::TRANS_MAX) {
-		trans_type = tween->get_trans();
+		trans_type = p_tween->get_trans();
 	}
 	if (ease_type == Tween::EASE_MAX) {
-		ease_type = tween->get_ease();
+		ease_type = p_tween->get_ease();
 	}
 }
 

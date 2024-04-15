@@ -1,5 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -838,7 +842,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Vector4 other && Equals(other);
         }
@@ -884,25 +888,22 @@ namespace Godot
         /// <returns>A hash code for this vector.</returns>
         public override readonly int GetHashCode()
         {
-            return Y.GetHashCode() ^ X.GetHashCode() ^ Z.GetHashCode() ^ W.GetHashCode();
+            return HashCode.Combine(X, Y, Z, W);
         }
 
         /// <summary>
         /// Converts this <see cref="Vector4"/> to a string.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public override string ToString()
-        {
-            return $"({X}, {Y}, {Z}, {W})";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Vector4"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
-            return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)}, {W.ToString(format)})";
+            return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)}, {Z.ToString(format, CultureInfo.InvariantCulture)}, {W.ToString(format, CultureInfo.InvariantCulture)})";
         }
     }
 }

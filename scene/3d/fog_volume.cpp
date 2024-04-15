@@ -73,9 +73,7 @@ bool FogVolume::_get(const StringName &p_name, Variant &r_property) const {
 
 void FogVolume::set_size(const Vector3 &p_size) {
 	size = p_size;
-	size.x = MAX(0.0, size.x);
-	size.y = MAX(0.0, size.y);
-	size.z = MAX(0.0, size.z);
+	size = size.max(Vector3());
 	RS::get_singleton()->fog_volume_set_size(_get_volume(), size);
 	update_gizmos();
 }

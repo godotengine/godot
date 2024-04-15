@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
 
@@ -7,8 +6,10 @@ namespace Godot;
 
 #nullable enable
 
-[SuppressMessage("ReSharper", "RedundantNameQualifier")]
+// TODO: Disabled because it is a false positive, see https://github.com/dotnet/roslyn-analyzers/issues/6151
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
 public partial struct Variant : IDisposable
+#pragma warning restore CA1001
 {
     internal godot_variant.movable NativeVar;
     private object? _obj;

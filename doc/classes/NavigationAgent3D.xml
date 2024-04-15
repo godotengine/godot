@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationAgent3D" inherits="Node" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationAgent3D" inherits="Node" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 3D agent used to pathfind to a position while avoiding obstacles.
 	</brief_description>
@@ -84,8 +84,8 @@
 		<method name="is_navigation_finished">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the end of the currently loaded navigation path has been reached.
-				[b]Note:[/b] While true prefer to stop calling update functions like [method get_next_path_position]. This avoids jittering the standing agent due to calling repeated path updates.
+				Returns [code]true[/code] if the agent's navigation has finished. If the target is reachable, navigation ends when the target is reached. If the target is unreachable, navigation ends when the last waypoint of the path is reached.
+				[b]Note:[/b] While [code]true[/code] prefer to stop calling update functions like [method get_next_path_position]. This avoids jittering the standing agent due to calling repeated path updates.
 			</description>
 		</method>
 		<method name="is_target_reachable">
@@ -97,7 +97,7 @@
 		<method name="is_target_reached" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns true if [member target_position] is reached. It may not always be possible to reach the target position. It should always be possible to reach the final position though. See [method get_final_position].
+				Returns [code]true[/code] if the agent reached the target, i.e. the agent moved within [member target_desired_distance] of the [member target_position]. It may not always be possible to reach the target but it should always be possible to reach the final position. See [method get_final_position].
 			</description>
 		</method>
 		<method name="set_avoidance_layer_value">
@@ -167,6 +167,9 @@
 		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
 			The height of the avoidance agent. Agents will ignore other agents or obstacles that are above or below their current position + height in 2D avoidance. Does nothing in 3D avoidance which uses radius spheres alone.
 		</member>
+		<member name="keep_y_velocity" type="bool" setter="set_keep_y_velocity" getter="get_keep_y_velocity" default="true">
+			If [code]true[/code], and the agent uses 2D avoidance, it will remember the set y-axis velocity and reapply it after the avoidance step. While 2D avoidance has no y-axis and simulates on a flat plane this setting can help to soften the most obvious clipping on uneven 3D geometry.
+		</member>
 		<member name="max_neighbors" type="int" setter="set_max_neighbors" getter="get_max_neighbors" default="10">
 			The maximum number of neighbors for the agent to consider.
 		</member>
@@ -180,7 +183,7 @@
 			The distance to search for other agents.
 		</member>
 		<member name="path_desired_distance" type="float" setter="set_path_desired_distance" getter="get_path_desired_distance" default="1.0">
-			The distance threshold before a path point is considered to be reached. This allows agents to not have to hit a path point on the path exactly, but only to reach its general area. If this value is set too high, the NavigationAgent will skip points on the path, which can lead to leaving the navigation mesh. If this value is set too low, the NavigationAgent will be stuck in a repath loop because it will constantly overshoot or undershoot the distance to the next point on each physics frame update.
+			The distance threshold before a path point is considered to be reached. This allows agents to not have to hit a path point on the path exactly, but only to reach its general area. If this value is set too high, the NavigationAgent will skip points on the path, which can lead to it leaving the navigation mesh. If this value is set too low, the NavigationAgent will be stuck in a repath loop because it will constantly overshoot the distance to the next point on each physics frame update.
 		</member>
 		<member name="path_height_offset" type="float" setter="set_path_height_offset" getter="get_path_height_offset" default="0.0">
 			The height offset is subtracted from the y-axis value of any vector path position for this NavigationAgent. The NavigationAgent height offset does not change or influence the navigation mesh or pathfinding query result. Additional navigation maps that use regions with navigation meshes that the developer baked with appropriate agent radius or height values are required to support different-sized agents.
@@ -201,11 +204,20 @@
 			The radius of the avoidance agent. This is the "body" of the avoidance agent and not the avoidance maneuver starting radius (which is controlled by [member neighbor_distance]).
 			Does not affect normal pathfinding. To change an actor's pathfinding radius bake [NavigationMesh] resources with a different [member NavigationMesh.agent_radius] property and use different navigation maps for each actor size.
 		</member>
+		<member name="simplify_epsilon" type="float" setter="set_simplify_epsilon" getter="get_simplify_epsilon" default="0.0">
+			The path simplification amount in worlds units.
+		</member>
+		<member name="simplify_path" type="bool" setter="set_simplify_path" getter="get_simplify_path" default="false">
+			If [code]true[/code] a simplified version of the path will be returned with less critical path points removed. The simplification amount is controlled by [member simplify_epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
+			Path simplification can be helpful to mitigate various path following issues that can arise with certain agent types and script behaviors. E.g. "steering" agents or avoidance in "open fields".
+		</member>
 		<member name="target_desired_distance" type="float" setter="set_target_desired_distance" getter="get_target_desired_distance" default="1.0">
-			The distance threshold before the final target point is considered to be reached. This allows agents to not have to hit the point of the final target exactly, but only to reach its general area. If this value is set too low, the NavigationAgent will be stuck in a repath loop because it will constantly overshoot or undershoot the distance to the final target point on each physics frame update.
+			The distance threshold before the target is considered to be reached. On reaching the target, [signal target_reached] is emitted and navigation ends (see [method is_navigation_finished] and [signal navigation_finished]).
+			You can make navigation end early by setting this property to a value greater than [member path_desired_distance] (navigation will end before reaching the last waypoint).
+			You can also make navigation end closer to the target than each individual path position by setting this property to a value lower than [member path_desired_distance] (navigation won't immediately end when reaching the last waypoint). However, if the value set is too low, the agent will be stuck in a repath loop because it will constantly overshoot the distance to the target on each physics frame update.
 		</member>
 		<member name="target_position" type="Vector3" setter="set_target_position" getter="get_target_position" default="Vector3(0, 0, 0)">
-			If set a new navigation path from the current agent position to the [member target_position] is requested from the NavigationServer.
+			If set, a new navigation path from the current agent position to the [member target_position] is requested from the NavigationServer.
 		</member>
 		<member name="time_horizon_agents" type="float" setter="set_time_horizon_agents" getter="get_time_horizon_agents" default="1.0">
 			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to other agents. The larger the number, the sooner the agent will respond to other agents, but less freedom in choosing its velocities. A too high value will slow down agents movement considerably. Must be positive.
@@ -225,7 +237,7 @@
 		<signal name="link_reached">
 			<param index="0" name="details" type="Dictionary" />
 			<description>
-				Notifies when a navigation link has been reached.
+				Signals that the agent reached a navigation link. Emitted when the agent moves within [member path_desired_distance] of the next position of the path when that position is a navigation link.
 				The details dictionary may contain the following keys depending on the value of [member path_metadata_flags]:
 				- [code]position[/code]: The start position of the link that was reached.
 				- [code]type[/code]: Always [constant NavigationPathQueryResult3D.PATH_SEGMENT_TYPE_LINK].
@@ -237,7 +249,8 @@
 		</signal>
 		<signal name="navigation_finished">
 			<description>
-				Emitted once per loaded path when the agent internal navigation path index reaches the last index of the loaded path array. The agent internal navigation path index can be received with [method get_current_navigation_path_index].
+				Signals that the agent's navigation has finished. If the target is reachable, navigation ends when the target is reached. If the target is unreachable, navigation ends when the last waypoint of the path is reached. This signal is emitted only once per loaded path.
+				This signal will be emitted just after [signal target_reached] when the target is reachable.
 			</description>
 		</signal>
 		<signal name="path_changed">
@@ -250,7 +263,9 @@
 		</signal>
 		<signal name="target_reached">
 			<description>
-				Emitted once per loaded path when the agent's global position is the first time within [member target_desired_distance] to the [member target_position].
+				Signals that the agent reached the target, i.e. the agent moved within [member target_desired_distance] of the [member target_position]. This signal is emitted only once per loaded path.
+				This signal will be emitted just before [signal navigation_finished] when the target is reachable.
+				It may not always be possible to reach the target but it should always be possible to reach the final position. See [method get_final_position].
 			</description>
 		</signal>
 		<signal name="velocity_computed">
@@ -262,7 +277,7 @@
 		<signal name="waypoint_reached">
 			<param index="0" name="details" type="Dictionary" />
 			<description>
-				Notifies when a waypoint along the path has been reached.
+				Signals that the agent reached a waypoint. Emitted when the agent moves within [member path_desired_distance] of the next position of the path.
 				The details dictionary may contain the following keys depending on the value of [member path_metadata_flags]:
 				- [code]position[/code]: The position of the waypoint that was reached.
 				- [code]type[/code]: The type of navigation primitive (region or link) that contains this waypoint.

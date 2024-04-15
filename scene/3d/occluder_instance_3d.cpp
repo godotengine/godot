@@ -36,7 +36,7 @@
 #include "core/math/triangulate.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/importer_mesh.h"
+#include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
 
 #ifdef TOOLS_ENABLED
@@ -236,7 +236,7 @@ void BoxOccluder3D::set_size(const Vector3 &p_size) {
 		return;
 	}
 
-	size = Vector3(MAX(p_size.x, 0.0f), MAX(p_size.y, 0.0f), MAX(p_size.z, 0.0f));
+	size = p_size.max(Vector3());
 	_update();
 }
 

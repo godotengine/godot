@@ -34,7 +34,7 @@
 #include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tree.h"
@@ -370,46 +370,15 @@ void PropertySelector::_item_selected() {
 		class_type = instance->get_class();
 	}
 
-	DocTools *dd = EditorHelp::get_doc_data();
 	String text;
-	if (properties) {
-		while (!class_type.is_empty()) {
-			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
-			if (E) {
-				for (int i = 0; i < E->value.properties.size(); i++) {
-					if (E->value.properties[i].name == name) {
-						text = DTR(E->value.properties[i].description);
-						break;
-					}
-				}
-			}
-
-			if (!text.is_empty()) {
-				break;
-			}
-
-			// The property may be from a parent class, keep looking.
-			class_type = ClassDB::get_parent_class(class_type);
+	while (!class_type.is_empty()) {
+		text = properties ? help_bit->get_property_description(class_type, name) : help_bit->get_method_description(class_type, name);
+		if (!text.is_empty()) {
+			break;
 		}
-	} else {
-		while (!class_type.is_empty()) {
-			HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(class_type);
-			if (E) {
-				for (int i = 0; i < E->value.methods.size(); i++) {
-					if (E->value.methods[i].name == name) {
-						text = DTR(E->value.methods[i].description);
-						break;
-					}
-				}
-			}
 
-			if (!text.is_empty()) {
-				break;
-			}
-
-			// The method may be from a parent class, keep looking.
-			class_type = ClassDB::get_parent_class(class_type);
-		}
+		// It may be from a parent class, keep looking.
+		class_type = ClassDB::get_parent_class(class_type);
 	}
 
 	if (!text.is_empty()) {
@@ -588,6 +557,7 @@ PropertySelector::PropertySelector() {
 	search_box->connect("text_changed", callable_mp(this, &PropertySelector::_text_changed));
 	search_box->connect("gui_input", callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
+	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	set_ok_button_text(TTR("Open"));
 	get_ok_button()->set_disabled(true);
@@ -600,5 +570,7 @@ PropertySelector::PropertySelector() {
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
+	help_bit->get_rich_text()->set_fit_content(false);
+	help_bit->get_rich_text()->set_custom_minimum_size(Size2(help_bit->get_rich_text()->get_minimum_size().x, 135 * EDSCALE));
 	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
 }

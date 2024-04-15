@@ -36,28 +36,73 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/progress_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
+#include "scene/gui/link_button.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/split_container.h"
 
-void EditorAssetInstaller::_item_checked() {
-	if (updating || !tree->get_edited()) {
+void EditorAssetInstaller::_item_checked_cbk() {
+	if (updating_source || !source_tree->get_edited()) {
 		return;
 	}
 
-	updating = true;
-	TreeItem *item = tree->get_edited();
+	updating_source = true;
+	TreeItem *item = source_tree->get_edited();
 	item->propagate_check(0);
-	updating = false;
+	_fix_conflicted_indeterminate_state(source_tree->get_root(), 0);
+	_update_confirm_button();
+	_rebuild_destination_tree();
+	updating_source = false;
 }
 
-void EditorAssetInstaller::_check_propagated_to_item(Object *p_obj, int column) {
-	TreeItem *affected_item = Object::cast_to<TreeItem>(p_obj);
-	if (affected_item && affected_item->get_custom_color(0) != Color()) {
-		affected_item->set_checked(0, false);
-		affected_item->propagate_check(0, false);
+// Determine parent state based on non-conflict children, to avoid indeterminate state, and allow toggle dir with conflicts.
+bool EditorAssetInstaller::_fix_conflicted_indeterminate_state(TreeItem *p_item, int p_column) {
+	if (p_item->get_child_count() == 0) {
+		return false;
 	}
+	bool all_non_conflict_checked = true;
+	bool all_non_conflict_unchecked = true;
+	bool has_conflict_child = false;
+	bool has_indeterminate_child = false;
+	TreeItem *child_item = p_item->get_first_child();
+	while (child_item) {
+		has_conflict_child |= _fix_conflicted_indeterminate_state(child_item, p_column);
+		Dictionary child_meta = child_item->get_metadata(p_column);
+		bool child_conflict = child_meta.get("is_conflict", false);
+		if (child_conflict) {
+			child_item->set_checked(p_column, false);
+			has_conflict_child = true;
+		} else {
+			bool child_checked = child_item->is_checked(p_column);
+			bool child_indeterminate = child_item->is_indeterminate(p_column);
+			all_non_conflict_checked &= (child_checked || child_indeterminate);
+			all_non_conflict_unchecked &= !child_checked;
+			has_indeterminate_child |= child_indeterminate;
+		}
+		child_item = child_item->get_next();
+	}
+	if (has_indeterminate_child) {
+		p_item->set_indeterminate(p_column, true);
+	} else if (all_non_conflict_checked) {
+		p_item->set_checked(p_column, true);
+	} else if (all_non_conflict_unchecked) {
+		p_item->set_checked(p_column, false);
+	}
+	if (has_conflict_child) {
+		p_item->set_custom_color(p_column, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+	} else {
+		p_item->clear_custom_color(p_column);
+	}
+	return has_conflict_child;
+}
+
+bool EditorAssetInstaller::_is_item_checked(const String &p_source_path) const {
+	return file_item_map.has(p_source_path) && (file_item_map[p_source_path]->is_checked(0) || file_item_map[p_source_path]->is_indeterminate(0));
 }
 
 void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_toplevel) {
@@ -104,27 +149,24 @@ void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_topl
 
 	unzClose(pkg);
 
+	asset_title_label->set_text(asset_name);
+
 	_check_has_toplevel();
 	// Default to false, unless forced.
 	skip_toplevel = p_autoskip_toplevel;
+	skip_toplevel_check->set_block_signals(true);
 	skip_toplevel_check->set_pressed(!skip_toplevel_check->is_disabled() && skip_toplevel);
+	skip_toplevel_check->set_block_signals(false);
 
-	_rebuild_tree();
+	_update_file_mappings();
+	_rebuild_source_tree();
+	_rebuild_destination_tree();
+
+	popup_centered_clamped(Size2(620, 640) * EDSCALE);
 }
 
-void EditorAssetInstaller::_rebuild_tree() {
-	updating = true;
-	tree->clear();
-
-	TreeItem *root = tree->create_item();
-	root->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-	root->set_checked(0, true);
-	root->set_icon(0, get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
-	root->set_text(0, "res://");
-	root->set_editable(0, true);
-
-	HashMap<String, TreeItem *> directory_item_map;
-	int num_file_conflicts = 0;
+void EditorAssetInstaller::_update_file_mappings() {
+	mapped_files.clear();
 
 	bool first = true;
 	for (const String &E : asset_files) {
@@ -141,9 +183,31 @@ void EditorAssetInstaller::_rebuild_tree() {
 			path = path.trim_prefix(toplevel_prefix);
 		}
 
+		mapped_files[E] = path;
+	}
+}
+
+void EditorAssetInstaller::_rebuild_source_tree() {
+	updating_source = true;
+	source_tree->clear();
+
+	TreeItem *root = source_tree->create_item();
+	root->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+	root->set_checked(0, true);
+	root->set_icon(0, get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
+	root->set_text(0, "/");
+	root->set_editable(0, true);
+
+	file_item_map.clear();
+	HashMap<String, TreeItem *> directory_item_map;
+	int num_file_conflicts = 0;
+	first_file_conflict = nullptr;
+
+	for (const String &E : asset_files) {
+		String path = E; // We're going to mutate it.
+
 		bool is_directory = false;
 		if (path.ends_with("/")) {
-			// Directory.
 			path = path.trim_suffix("/");
 			is_directory = true;
 		}
@@ -162,45 +226,157 @@ void EditorAssetInstaller::_rebuild_tree() {
 
 		TreeItem *ti;
 		if (is_directory) {
-			ti = _create_dir_item(parent_item, path, directory_item_map);
+			ti = _create_dir_item(source_tree, parent_item, path, directory_item_map);
 		} else {
-			ti = _create_file_item(parent_item, path, &num_file_conflicts);
+			ti = _create_file_item(source_tree, parent_item, path, &num_file_conflicts);
 		}
 		file_item_map[E] = ti;
 	}
 
-	asset_title_label->set_text(asset_name);
-	if (num_file_conflicts >= 1) {
-		asset_conflicts_label->set_text(vformat(TTRN("%d file conflicts with your project", "%d files conflict with your project", num_file_conflicts), num_file_conflicts));
-		asset_conflicts_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-	} else {
-		asset_conflicts_label->set_text(TTR("No files conflict with your project"));
-		asset_conflicts_label->remove_theme_color_override("font_color");
-	}
+	_update_conflict_status(num_file_conflicts);
+	_update_confirm_button();
 
-	popup_centered_ratio(0.5);
-	updating = false;
+	updating_source = false;
 }
 
-TreeItem *EditorAssetInstaller::_create_dir_item(TreeItem *p_parent, const String &p_path, HashMap<String, TreeItem *> &p_item_map) {
-	TreeItem *ti = tree->create_item(p_parent);
-	ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-	ti->set_checked(0, true);
-	ti->set_editable(0, true);
+void EditorAssetInstaller::_update_source_tree() {
+	int num_file_conflicts = 0;
+	first_file_conflict = nullptr;
+
+	for (const KeyValue<String, TreeItem *> &E : file_item_map) {
+		TreeItem *ti = E.value;
+		Dictionary item_meta = ti->get_metadata(0);
+		if ((bool)item_meta.get("is_dir", false)) {
+			continue;
+		}
+
+		String asset_path = item_meta.get("asset_path", "");
+		ERR_CONTINUE(asset_path.is_empty());
+
+		bool target_exists = _update_source_item_status(ti, asset_path);
+		if (target_exists) {
+			if (first_file_conflict == nullptr) {
+				first_file_conflict = ti;
+			}
+			num_file_conflicts += 1;
+		}
+
+		item_meta["is_conflict"] = target_exists;
+		ti->set_metadata(0, item_meta);
+	}
+
+	_update_conflict_status(num_file_conflicts);
+	_update_confirm_button();
+}
+
+bool EditorAssetInstaller::_update_source_item_status(TreeItem *p_item, const String &p_path) {
+	ERR_FAIL_COND_V(!mapped_files.has(p_path), false);
+	String target_path = target_dir_path.path_join(mapped_files[p_path]);
+
+	bool target_exists = FileAccess::exists(target_path);
+	if (target_exists) {
+		p_item->set_custom_color(0, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		p_item->set_tooltip_text(0, vformat(TTR("%s (already exists)"), target_path));
+		p_item->set_checked(0, false);
+	} else {
+		p_item->clear_custom_color(0);
+		p_item->set_tooltip_text(0, target_path);
+		p_item->set_checked(0, true);
+	}
+
+	p_item->propagate_check(0);
+	_fix_conflicted_indeterminate_state(p_item->get_tree()->get_root(), 0);
+	return target_exists;
+}
+
+void EditorAssetInstaller::_rebuild_destination_tree() {
+	destination_tree->clear();
+
+	TreeItem *root = destination_tree->create_item();
+	root->set_icon(0, get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
+	root->set_text(0, target_dir_path + (target_dir_path == "res://" ? "" : "/"));
+
+	HashMap<String, TreeItem *> directory_item_map;
+
+	for (const KeyValue<String, String> &E : mapped_files) {
+		if (!_is_item_checked(E.key)) {
+			continue;
+		}
+
+		String path = E.value; // We're going to mutate it.
+
+		bool is_directory = false;
+		if (path.ends_with("/")) {
+			path = path.trim_suffix("/");
+			is_directory = true;
+		}
+
+		TreeItem *parent_item;
+
+		int separator = path.rfind("/");
+		if (separator == -1) {
+			parent_item = root;
+		} else {
+			String parent_path = path.substr(0, separator);
+			HashMap<String, TreeItem *>::Iterator I = directory_item_map.find(parent_path);
+			ERR_CONTINUE(!I);
+			parent_item = I->value;
+		}
+
+		if (is_directory) {
+			_create_dir_item(destination_tree, parent_item, path, directory_item_map);
+		} else {
+			int num_file_conflicts = 0; // Don't need it, but need to pass something.
+			_create_file_item(destination_tree, parent_item, path, &num_file_conflicts);
+		}
+	}
+}
+
+TreeItem *EditorAssetInstaller::_create_dir_item(Tree *p_tree, TreeItem *p_parent, const String &p_path, HashMap<String, TreeItem *> &p_item_map) {
+	TreeItem *ti = p_tree->create_item(p_parent);
+
+	if (p_tree == source_tree) {
+		ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+		ti->set_editable(0, true);
+		ti->set_checked(0, true);
+		ti->propagate_check(0);
+		_fix_conflicted_indeterminate_state(ti->get_tree()->get_root(), 0);
+
+		Dictionary meta;
+		meta["asset_path"] = p_path + "/";
+		meta["is_dir"] = true;
+		meta["is_conflict"] = false;
+		ti->set_metadata(0, meta);
+	}
 
 	ti->set_text(0, p_path.get_file() + "/");
 	ti->set_icon(0, get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
-	ti->set_metadata(0, String());
 
 	p_item_map[p_path] = ti;
 	return ti;
 }
 
-TreeItem *EditorAssetInstaller::_create_file_item(TreeItem *p_parent, const String &p_path, int *r_conflicts) {
-	TreeItem *ti = tree->create_item(p_parent);
-	ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-	ti->set_checked(0, true);
-	ti->set_editable(0, true);
+TreeItem *EditorAssetInstaller::_create_file_item(Tree *p_tree, TreeItem *p_parent, const String &p_path, int *r_conflicts) {
+	TreeItem *ti = p_tree->create_item(p_parent);
+
+	if (p_tree == source_tree) {
+		ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+		ti->set_editable(0, true);
+
+		bool target_exists = _update_source_item_status(ti, p_path);
+		if (target_exists) {
+			if (first_file_conflict == nullptr) {
+				first_file_conflict = ti;
+			}
+			*r_conflicts += 1;
+		}
+
+		Dictionary meta;
+		meta["asset_path"] = p_path;
+		meta["is_dir"] = false;
+		meta["is_conflict"] = target_exists;
+		ti->set_metadata(0, meta);
+	}
 
 	String file = p_path.get_file();
 	String extension = file.get_extension().to_lower();
@@ -211,20 +387,38 @@ TreeItem *EditorAssetInstaller::_create_file_item(TreeItem *p_parent, const Stri
 	}
 	ti->set_text(0, file);
 
-	String res_path = "res://" + p_path;
-	if (FileAccess::exists(res_path)) {
-		*r_conflicts += 1;
-		ti->set_custom_color(0, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-		ti->set_tooltip_text(0, vformat(TTR("%s (already exists)"), res_path));
-		ti->set_checked(0, false);
-		ti->propagate_check(0);
+	return ti;
+}
+
+void EditorAssetInstaller::_update_conflict_status(int p_conflicts) {
+	if (p_conflicts >= 1) {
+		asset_conflicts_link->set_text(vformat(TTRN("%d file conflicts with your project and won't be installed", "%d files conflict with your project and won't be installed", p_conflicts), p_conflicts));
+		asset_conflicts_link->show();
+		asset_conflicts_label->hide();
 	} else {
-		ti->set_tooltip_text(0, res_path);
+		asset_conflicts_link->hide();
+		asset_conflicts_label->show();
+	}
+}
+
+void EditorAssetInstaller::_update_confirm_button() {
+	TreeItem *root = source_tree->get_root();
+	get_ok_button()->set_disabled(!root || (!root->is_checked(0) && !root->is_indeterminate(0)));
+}
+
+void EditorAssetInstaller::_toggle_source_tree(bool p_visible, bool p_scroll_to_error) {
+	source_tree_vb->set_visible(p_visible);
+	show_source_files_button->set_pressed_no_signal(p_visible); // To keep in sync if triggered by something else.
+
+	if (p_visible) {
+		show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+	} else {
+		show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
 	}
 
-	ti->set_metadata(0, res_path);
-
-	return ti;
+	if (p_visible && p_scroll_to_error && first_file_conflict) {
+		source_tree->scroll_to_item(first_file_conflict, true);
+	}
 }
 
 void EditorAssetInstaller::_check_has_toplevel() {
@@ -259,12 +453,42 @@ void EditorAssetInstaller::_check_has_toplevel() {
 
 	toplevel_prefix = first_asset;
 	skip_toplevel_check->set_disabled(false);
-	skip_toplevel_check->set_tooltip_text("");
+	skip_toplevel_check->set_tooltip_text(TTR("Ignore the root directory when extracting files."));
 }
 
 void EditorAssetInstaller::_set_skip_toplevel(bool p_checked) {
+	if (skip_toplevel == p_checked) {
+		return;
+	}
+
 	skip_toplevel = p_checked;
-	_rebuild_tree();
+	_update_file_mappings();
+	_update_source_tree();
+	_rebuild_destination_tree();
+}
+
+void EditorAssetInstaller::_open_target_dir_dialog() {
+	if (!target_dir_dialog) {
+		target_dir_dialog = memnew(EditorFileDialog);
+		target_dir_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
+		target_dir_dialog->set_title(TTR("Select Install Folder"));
+		target_dir_dialog->set_current_dir(target_dir_path);
+		target_dir_dialog->connect("dir_selected", callable_mp(this, &EditorAssetInstaller::_target_dir_selected));
+		add_child(target_dir_dialog);
+	}
+
+	target_dir_dialog->popup_file_dialog();
+}
+
+void EditorAssetInstaller::_target_dir_selected(const String &p_target_path) {
+	if (target_dir_path == p_target_path) {
+		return;
+	}
+
+	target_dir_path = p_target_path;
+	_update_file_mappings();
+	_update_source_tree();
+	_rebuild_destination_tree();
 }
 
 void EditorAssetInstaller::ok_pressed() {
@@ -296,26 +520,25 @@ void EditorAssetInstaller::_install_asset() {
 		}
 
 		String source_name = String::utf8(fname);
-		if (!file_item_map.has(source_name) || (!file_item_map[source_name]->is_checked(0) && !file_item_map[source_name]->is_indeterminate(0))) {
+		if (!_is_item_checked(source_name)) {
 			continue;
 		}
 
-		String path = file_item_map[source_name]->get_metadata(0);
-		if (path.is_empty()) { // Directory.
-			// TODO: Metadata can be used to store the entire path of directories too,
-			// so this tree iteration can be avoided.
-			String dir_path;
-			TreeItem *t = file_item_map[source_name];
-			while (t) {
-				dir_path = t->get_text(0) + dir_path;
-				t = t->get_parent();
+		HashMap<String, String>::Iterator E = mapped_files.find(source_name);
+		if (!E) {
+			continue; // No remapped path means we don't want it; most likely the root.
+		}
+
+		String target_path = target_dir_path.path_join(E->value);
+
+		Dictionary asset_meta = file_item_map[source_name]->get_metadata(0);
+		bool is_dir = asset_meta.get("is_dir", false);
+		if (is_dir) {
+			if (target_path.ends_with("/")) {
+				target_path = target_path.substr(0, target_path.length() - 1);
 			}
 
-			if (dir_path.ends_with("/")) {
-				dir_path = dir_path.substr(0, dir_path.length() - 1);
-			}
-
-			da->make_dir_recursive(dir_path);
+			da->make_dir_recursive(target_path);
 		} else {
 			Vector<uint8_t> uncomp_data;
 			uncomp_data.resize(info.uncompressed_size);
@@ -325,16 +548,16 @@ void EditorAssetInstaller::_install_asset() {
 			unzCloseCurrentFile(pkg);
 
 			// Ensure that the target folder exists.
-			da->make_dir_recursive(path.get_base_dir());
+			da->make_dir_recursive(target_path.get_base_dir());
 
-			Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open(target_path, FileAccess::WRITE);
 			if (f.is_valid()) {
 				f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
 			} else {
-				failed_files.push_back(path);
+				failed_files.push_back(target_path);
 			}
 
-			ProgressDialog::get_singleton()->task_step("uncompress", path, idx);
+			ProgressDialog::get_singleton()->task_step("uncompress", target_path, idx);
 		}
 	}
 
@@ -358,6 +581,7 @@ void EditorAssetInstaller::_install_asset() {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Asset \"%s\" installed successfully!"), asset_name), TTR("Success!"));
 		}
 	}
+
 	EditorFileSystem::get_singleton()->scan_changes();
 }
 
@@ -372,6 +596,13 @@ String EditorAssetInstaller::get_asset_name() const {
 void EditorAssetInstaller::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			if (show_source_files_button->is_pressed()) {
+				show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+			} else {
+				show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
+			}
+			asset_conflicts_link->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+
 			generic_extension_icon = get_editor_theme_icon(SNAME("Object"));
 
 			extension_icon_map.clear();
@@ -412,7 +643,7 @@ void EditorAssetInstaller::_notification(int p_what) {
 				extension_icon_map["tres"] = get_editor_theme_icon(SNAME("Resource"));
 				extension_icon_map["atlastex"] = get_editor_theme_icon(SNAME("AtlasTexture"));
 				// By default, OBJ files are imported as Mesh resources rather than PackedScenes.
-				extension_icon_map["obj"] = get_editor_theme_icon(SNAME("Mesh"));
+				extension_icon_map["obj"] = get_editor_theme_icon(SNAME("MeshItem"));
 
 				extension_icon_map["txt"] = get_editor_theme_icon(SNAME("TextFile"));
 				extension_icon_map["md"] = get_editor_theme_icon(SNAME("TextFile"));
@@ -435,36 +666,98 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
 
+	// Status bar.
+
 	HBoxContainer *asset_status = memnew(HBoxContainer);
 	vb->add_child(asset_status);
 
 	Label *asset_label = memnew(Label);
-	asset_label->set_text(TTR("Contents of asset:"));
+	asset_label->set_text(TTR("Asset:"));
+	asset_label->set_theme_type_variation("HeaderSmall");
 	asset_status->add_child(asset_label);
 
 	asset_title_label = memnew(Label);
-	asset_title_label->set_theme_type_variation("HeaderSmall");
 	asset_status->add_child(asset_title_label);
 
-	asset_status->add_spacer();
+	// File remapping controls.
+
+	HBoxContainer *remapping_tools = memnew(HBoxContainer);
+	vb->add_child(remapping_tools);
+
+	show_source_files_button = memnew(Button);
+	show_source_files_button->set_toggle_mode(true);
+	show_source_files_button->set_tooltip_text(TTR("Open the list of the asset contents and select which files to install."));
+	remapping_tools->add_child(show_source_files_button);
+	show_source_files_button->connect("toggled", callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
+
+	Button *target_dir_button = memnew(Button);
+	target_dir_button->set_text(TTR("Change Install Folder"));
+	target_dir_button->set_tooltip_text(TTR("Change the folder where the contents of the asset are going to be installed."));
+	remapping_tools->add_child(target_dir_button);
+	target_dir_button->connect("pressed", callable_mp(this, &EditorAssetInstaller::_open_target_dir_dialog));
+
+	remapping_tools->add_child(memnew(VSeparator));
+
+	skip_toplevel_check = memnew(CheckBox);
+	skip_toplevel_check->set_text(TTR("Ignore asset root"));
+	skip_toplevel_check->set_tooltip_text(TTR("Ignore the root directory when extracting files."));
+	skip_toplevel_check->connect("toggled", callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
+	remapping_tools->add_child(skip_toplevel_check);
+
+	remapping_tools->add_spacer();
 
 	asset_conflicts_label = memnew(Label);
 	asset_conflicts_label->set_theme_type_variation("HeaderSmall");
-	asset_status->add_child(asset_conflicts_label);
+	asset_conflicts_label->set_text(TTR("No files conflict with your project"));
+	remapping_tools->add_child(asset_conflicts_label);
+	asset_conflicts_link = memnew(LinkButton);
+	asset_conflicts_link->set_theme_type_variation("HeaderSmallLink");
+	asset_conflicts_link->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	asset_conflicts_link->set_tooltip_text(TTR("Show contents of the asset and conflicting files."));
+	asset_conflicts_link->set_visible(false);
+	remapping_tools->add_child(asset_conflicts_link);
+	asset_conflicts_link->connect("pressed", callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(true, true));
 
-	skip_toplevel_check = memnew(CheckBox);
-	skip_toplevel_check->set_text(TTR("Ignore the root directory when extracting files"));
-	skip_toplevel_check->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
-	skip_toplevel_check->connect("toggled", callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
-	vb->add_child(skip_toplevel_check);
+	// File hierarchy trees.
 
-	tree = memnew(Tree);
-	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked));
-	tree->connect("check_propagated_to_item", callable_mp(this, &EditorAssetInstaller::_check_propagated_to_item));
-	vb->add_child(tree);
+	HSplitContainer *tree_split = memnew(HSplitContainer);
+	tree_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(tree_split);
 
-	set_title(TTR("Select Asset Files to Install"));
+	source_tree_vb = memnew(VBoxContainer);
+	source_tree_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	source_tree_vb->set_visible(show_source_files_button->is_pressed());
+	tree_split->add_child(source_tree_vb);
+
+	Label *source_tree_label = memnew(Label);
+	source_tree_label->set_text(TTR("Contents of the asset:"));
+	source_tree_label->set_theme_type_variation("HeaderSmall");
+	source_tree_vb->add_child(source_tree_label);
+
+	source_tree = memnew(Tree);
+	source_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	source_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	source_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
+	source_tree_vb->add_child(source_tree);
+
+	VBoxContainer *destination_tree_vb = memnew(VBoxContainer);
+	destination_tree_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	tree_split->add_child(destination_tree_vb);
+
+	Label *destination_tree_label = memnew(Label);
+	destination_tree_label->set_text(TTR("Installation preview:"));
+	destination_tree_label->set_theme_type_variation("HeaderSmall");
+	destination_tree_vb->add_child(destination_tree_label);
+
+	destination_tree = memnew(Tree);
+	destination_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	destination_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	destination_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
+	destination_tree_vb->add_child(destination_tree);
+
+	// Dialog configuration.
+
+	set_title(TTR("Configure Asset Before Installing"));
 	set_ok_button_text(TTR("Install"));
 	set_hide_on_ok(true);
 }

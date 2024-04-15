@@ -61,34 +61,37 @@
 		</method>
 	</methods>
 	<members>
+		<member name="linked_parent_graph_frame" type="int" setter="set_frame" getter="get_frame" default="-1">
+			Represents the index of the frame this node is linked to. If set to [code]-1[/code] the node is not linked to any frame.
+		</member>
 		<member name="output_port_for_preview" type="int" setter="set_output_port_for_preview" getter="get_output_port_for_preview" default="-1">
 			Sets the output port index which will be showed for preview. If set to [code]-1[/code] no port will be open for preview.
 		</member>
 	</members>
 	<constants>
 		<constant name="PORT_TYPE_SCALAR" value="0" enum="PortType">
-			Floating-point scalar. Translated to [code]float[/code] type in shader code.
+			Floating-point scalar. Translated to [code skip-lint]float[/code] type in shader code.
 		</constant>
 		<constant name="PORT_TYPE_SCALAR_INT" value="1" enum="PortType">
-			Integer scalar. Translated to [code]int[/code] type in shader code.
+			Integer scalar. Translated to [code skip-lint]int[/code] type in shader code.
 		</constant>
 		<constant name="PORT_TYPE_SCALAR_UINT" value="2" enum="PortType">
-			Unsigned integer scalar. Translated to [code]uint[/code] type in shader code.
+			Unsigned integer scalar. Translated to [code skip-lint]uint[/code] type in shader code.
 		</constant>
 		<constant name="PORT_TYPE_VECTOR_2D" value="3" enum="PortType">
-			2D vector of floating-point values. Translated to [code]vec2[/code] type in shader code.
+			2D vector of floating-point values. Translated to [code skip-lint]vec2[/code] type in shader code.
 		</constant>
 		<constant name="PORT_TYPE_VECTOR_3D" value="4" enum="PortType">
-			3D vector of floating-point values. Translated to [code]vec3[/code] type in shader code.
+			3D vector of floating-point values. Translated to [code skip-lint]vec3[/code] type in shader code.
 		</constant>
 		<constant name="PORT_TYPE_VECTOR_4D" value="5" enum="PortType">
-			4D vector of floating-point values. Translated to [code]vec4[/code] type in shader code.
+			4D vector of floating-point values. Translated to [code skip-lint]vec4[/code] type in shader code.
 		</constant>
 		<constant name="PORT_TYPE_BOOLEAN" value="6" enum="PortType">
-			Boolean type. Translated to [code]bool[/code] type in shader code.
+			Boolean type. Translated to [code skip-lint]bool[/code] type in shader code.
 		</constant>
 		<constant name="PORT_TYPE_TRANSFORM" value="7" enum="PortType">
-			Transform type. Translated to [code]mat4[/code] type in shader code.
+			Transform type. Translated to [code skip-lint]mat4[/code] type in shader code.
 		</constant>
 		<constant name="PORT_TYPE_SAMPLER" value="8" enum="PortType">
 			Sampler type. Translated to reference of sampler uniform in shader code. Can only be used for input ports in non-uniform nodes.

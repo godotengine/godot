@@ -52,6 +52,8 @@ public:
 	int get_columns() const;
 	virtual Size2 get_minimum_size() const override;
 
+	int get_h_separation() const;
+
 	GridContainer();
 };
 

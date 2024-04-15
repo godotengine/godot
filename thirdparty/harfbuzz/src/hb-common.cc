@@ -815,7 +815,7 @@ parse_tag (const char **pp, const char *end, hb_tag_t *tag)
   }
 
   const char *p = *pp;
-  while (*pp < end && (ISALNUM(**pp) || **pp == '_'))
+  while (*pp < end && (**pp != ' ' && **pp != '=' && **pp != '[' && **pp != quote))
     (*pp)++;
 
   if (p == *pp || *pp - p > 4)
@@ -996,7 +996,7 @@ hb_feature_to_string (hb_feature_t *feature,
   if (feature->value > 1)
   {
     s[len++] = '=';
-    len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%u", feature->value));
+    len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%" PRIu32, feature->value));
   }
   assert (len < ARRAY_LENGTH (s));
   len = hb_min (len, size - 1);

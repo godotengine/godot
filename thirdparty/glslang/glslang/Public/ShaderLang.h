@@ -318,8 +318,8 @@ typedef void* ShHandle;
 // Driver calls these to create and destroy compiler/linker
 // objects.
 //
-GLSLANG_EXPORT ShHandle ShConstructCompiler(const EShLanguage, int debugOptions);  // one per shader
-GLSLANG_EXPORT ShHandle ShConstructLinker(const EShExecutable, int debugOptions);  // one per shader pair
+GLSLANG_EXPORT ShHandle ShConstructCompiler(const EShLanguage, int /*debugOptions unused*/); // one per shader
+GLSLANG_EXPORT ShHandle ShConstructLinker(const EShExecutable, int /*debugOptions unused*/); // one per shader pair
 GLSLANG_EXPORT ShHandle ShConstructUniformMap();                 // one per uniform namespace (currently entire program object)
 GLSLANG_EXPORT void ShDestruct(ShHandle);
 
@@ -330,18 +330,13 @@ GLSLANG_EXPORT void ShDestruct(ShHandle);
 // The info-log should be written by ShCompile into
 // ShHandle, so it can answer future queries.
 //
-GLSLANG_EXPORT int ShCompile(
-    const ShHandle,
-    const char* const shaderStrings[],
-    const int numStrings,
-    const int* lengths,
-    const EShOptimizationLevel,
-    const TBuiltInResource *resources,
-    int debugOptions,
-    int defaultVersion = 110,            // use 100 for ES environment, overridden by #version in shader
-    bool forwardCompatible = false,      // give errors for use of deprecated features
-    EShMessages messages = EShMsgDefault // warnings and errors
-    );
+GLSLANG_EXPORT int ShCompile(const ShHandle, const char* const shaderStrings[], const int numStrings,
+                             const int* lengths, const EShOptimizationLevel, const TBuiltInResource* resources,
+                             int,                      // debugOptions unused
+                             int defaultVersion = 110, // use 100 for ES environment, overridden by #version in shader
+                             bool forwardCompatible = false,      // give errors for use of deprecated features
+                             EShMessages messages = EShMsgDefault // warnings and errors
+);
 
 GLSLANG_EXPORT int ShLinkExt(
     const ShHandle,               // linker object
@@ -573,6 +568,9 @@ public:
     void setEnvInputVulkanRulesRelaxed() { environment.input.vulkanRulesRelaxed = true; }
     bool getEnvInputVulkanRulesRelaxed() const { return environment.input.vulkanRulesRelaxed; }
 
+    void setCompileOnly() { compileOnly = true; }
+    bool getCompileOnly() const { return compileOnly; }
+
     // Interface to #include handlers.
     //
     // To support #include, a client of Glslang does the following:
@@ -722,13 +720,14 @@ protected:
 
     TEnvironment environment;
 
+    // Indicates this shader is meant to be used without linking
+    bool compileOnly = false;
+
     friend class TProgram;
 
 private:
     TShader& operator=(TShader&);
 };
-
-#if !defined(GLSLANG_WEB)
 
 //
 // A reflection database and its interface, consistent with the OpenGL API reflection queries.
@@ -846,8 +845,6 @@ public:
     virtual void addStage(EShLanguage stage, TIntermediate& stageIntermediate) = 0;
 };
 
-#endif // !GLSLANG_WEB
-
 // Make one TProgram per set of shaders that will get linked together.  Add all
 // the shaders that are to be linked together.  After calling shader.parse()
 // for all shaders, call link().
@@ -866,8 +863,6 @@ public:
     GLSLANG_EXPORT const char* getInfoDebugLog();
 
     TIntermediate* getIntermediate(EShLanguage stage) const { return intermediate[stage]; }
-
-#if !defined(GLSLANG_WEB)
 
     // Reflection Interface
 
@@ -961,7 +956,6 @@ public:
     // If resolver is not provided it uses the previous approach
     // and respects auto assignment and offsets.
     GLSLANG_EXPORT bool mapIO(TIoMapResolver* pResolver = nullptr, TIoMapper* pIoMapper = nullptr);
-#endif // !GLSLANG_WEB
 
 protected:
     GLSLANG_EXPORT bool linkStage(EShLanguage, EShMessages);
@@ -972,9 +966,7 @@ protected:
     TIntermediate* intermediate[EShLangCount];
     bool newedIntermediate[EShLangCount];      // track which intermediate were "new" versus reusing a singleton unit in a stage
     TInfoSink* infoSink;
-#if !defined(GLSLANG_WEB)
     TReflection* reflection;
-#endif
     bool linked;
 
 private:

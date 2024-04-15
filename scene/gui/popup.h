@@ -43,18 +43,13 @@ class Popup : public Window {
 	LocalVector<Window *> visible_parents;
 	bool popped_up = false;
 
-	struct ThemeCache {
-		Ref<StyleBox> panel_style;
-	} theme_cache;
-
-	void _input_from_window(const Ref<InputEvent> &p_event);
-
 	void _initialize_visible_parents();
 	void _deinitialize_visible_parents();
 
 protected:
 	void _close_pressed();
 	virtual Rect2i _popup_adjust_rect() const override;
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;

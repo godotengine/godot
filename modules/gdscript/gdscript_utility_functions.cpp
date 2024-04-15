@@ -45,14 +45,12 @@
 #define VALIDATE_ARG_COUNT(m_count)                                         \
 	if (p_arg_count < m_count) {                                            \
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;  \
-		r_error.argument = m_count;                                         \
 		r_error.expected = m_count;                                         \
 		*r_ret = Variant();                                                 \
 		return;                                                             \
 	}                                                                       \
 	if (p_arg_count > m_count) {                                            \
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS; \
-		r_error.argument = m_count;                                         \
 		r_error.expected = m_count;                                         \
 		*r_ret = Variant();                                                 \
 		return;                                                             \
@@ -99,6 +97,9 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		} else {
 			Variant::construct(Variant::Type(type), *r_ret, p_args, 1, r_error);
+			if (r_error.error != Callable::CallError::CALL_OK) {
+				*r_ret = vformat(RTR(R"(Cannot convert "%s" to "%s".)"), Variant::get_type_name(p_args[0]->get_type()), Variant::get_type_name(Variant::Type(type)));
+			}
 		}
 	}
 #endif // DISABLE_DEPRECATED
@@ -119,7 +120,6 @@ struct GDScriptUtilityFunctionsDefinitions {
 		switch (p_arg_count) {
 			case 0: {
 				r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-				r_error.argument = 1;
 				r_error.expected = 1;
 				*r_ret = Variant();
 			} break;
@@ -133,8 +133,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 				Error err = arr.resize(count);
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 
@@ -158,8 +158,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 				Error err = arr.resize(to - from);
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 				for (int i = from; i < to; i++) {
@@ -194,16 +194,16 @@ struct GDScriptUtilityFunctionsDefinitions {
 				// Calculate how many.
 				int count = 0;
 				if (incr > 0) {
-					count = ((to - from - 1) / incr) + 1;
+					count = Math::division_round_up(to - from, incr);
 				} else {
-					count = ((from - to - 1) / -incr) + 1;
+					count = Math::division_round_up(from - to, -incr);
 				}
 
 				Error err = arr.resize(count);
 
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 
@@ -223,7 +223,6 @@ struct GDScriptUtilityFunctionsDefinitions {
 			} break;
 			default: {
 				r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-				r_error.argument = 3;
 				r_error.expected = 3;
 				*r_ret = Variant();
 
@@ -251,6 +250,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		} else if (p_args[0]->get_type() != Variant::OBJECT) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
+			r_error.expected = Variant::OBJECT;
 			*r_ret = Variant();
 		} else {
 			Object *obj = *p_args[0];
@@ -373,7 +373,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = gdscr->_new(nullptr, -1 /*skip initializer*/, r_error);
 
 		if (r_error.error != Callable::CallError::CALL_OK) {
-			*r_ret = Variant();
+			*r_ret = RTR("Cannot instantiate GDScript class.");
 			return;
 		}
 
@@ -390,13 +390,13 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void Color8(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		if (p_arg_count < 3) {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 3;
+			r_error.expected = 3;
 			*r_ret = Variant();
 			return;
 		}
 		if (p_arg_count > 4) {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-			r_error.argument = 4;
+			r_error.expected = 4;
 			*r_ret = Variant();
 			return;
 		}
@@ -470,7 +470,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void len(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 		switch (p_args[0]->get_type()) {
-			case Variant::STRING: {
+			case Variant::STRING:
+			case Variant::STRING_NAME: {
 				String d = *p_args[0];
 				*r_ret = d.length();
 			} break;
@@ -729,50 +730,50 @@ void GDScriptUtilityFunctions::unregister_functions() {
 
 GDScriptUtilityFunctions::FunctionPtr GDScriptUtilityFunctions::get_function(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, nullptr);
+	ERR_FAIL_NULL_V(info, nullptr);
 	return info->function;
 }
 
 bool GDScriptUtilityFunctions::has_function_return_value(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, false);
+	ERR_FAIL_NULL_V(info, false);
 	return info->info.return_val.type != Variant::NIL || bool(info->info.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
 }
 
 Variant::Type GDScriptUtilityFunctions::get_function_return_type(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, Variant::NIL);
+	ERR_FAIL_NULL_V(info, Variant::NIL);
 	return info->info.return_val.type;
 }
 
 StringName GDScriptUtilityFunctions::get_function_return_class(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, StringName());
+	ERR_FAIL_NULL_V(info, StringName());
 	return info->info.return_val.class_name;
 }
 
 Variant::Type GDScriptUtilityFunctions::get_function_argument_type(const StringName &p_function, int p_arg) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, Variant::NIL);
+	ERR_FAIL_NULL_V(info, Variant::NIL);
 	ERR_FAIL_COND_V(p_arg >= info->info.arguments.size(), Variant::NIL);
 	return info->info.arguments[p_arg].type;
 }
 
-int GDScriptUtilityFunctions::get_function_argument_count(const StringName &p_function, int p_arg) {
+int GDScriptUtilityFunctions::get_function_argument_count(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, 0);
+	ERR_FAIL_NULL_V(info, 0);
 	return info->info.arguments.size();
 }
 
 bool GDScriptUtilityFunctions::is_function_vararg(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, false);
+	ERR_FAIL_NULL_V(info, false);
 	return (bool)(info->info.flags & METHOD_FLAG_VARARG);
 }
 
 bool GDScriptUtilityFunctions::is_function_constant(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, false);
+	ERR_FAIL_NULL_V(info, false);
 	return info->is_constant;
 }
 
@@ -788,6 +789,6 @@ void GDScriptUtilityFunctions::get_function_list(List<StringName> *r_functions) 
 
 MethodInfo GDScriptUtilityFunctions::get_function_info(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, MethodInfo());
+	ERR_FAIL_NULL_V(info, MethodInfo());
 	return info->info;
 }

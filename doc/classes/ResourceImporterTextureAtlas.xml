@@ -22,7 +22,7 @@
 			[b]Mesh:[/b] Imports the atlas as an [ArrayMesh] resource, keeping the original bitmap visible (but rendered as a polygon). This can be used to reduce fill rate when rendering large transparent sprites, at the cost of slower rendering if there are little to no transparent areas in the sprite.
 		</member>
 		<member name="trim_alpha_border_from_region" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], trims the region to exclude fully transparent pixels using a clipping rectangle (which is never rotated). This can be used to save memory. See also [member trim_alpha_border_from_region].
+			If [code]true[/code], trims the region to exclude fully transparent pixels using a clipping rectangle (which is never rotated). This can be used to save memory. See also [member crop_to_region].
 			[b]Note:[/b] Only effective if [member import_mode] is [b]Region[/b].
 		</member>
 	</members>

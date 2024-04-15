@@ -108,12 +108,13 @@ Array ServersDebugger::ServersProfilerFrame::serialize() {
 		}
 	}
 
-	arr.push_back(script_functions.size() * 4);
+	arr.push_back(script_functions.size() * 5);
 	for (int i = 0; i < script_functions.size(); i++) {
 		arr.push_back(script_functions[i].sig_id);
 		arr.push_back(script_functions[i].call_count);
 		arr.push_back(script_functions[i].self_time);
 		arr.push_back(script_functions[i].total_time);
+		arr.push_back(script_functions[i].internal_time);
 	}
 	return arr;
 }
@@ -149,14 +150,15 @@ bool ServersDebugger::ServersProfilerFrame::deserialize(const Array &p_arr) {
 	int func_size = p_arr[idx];
 	idx += 1;
 	CHECK_SIZE(p_arr, idx + func_size, "ServersProfilerFrame");
-	for (int i = 0; i < func_size / 4; i++) {
+	for (int i = 0; i < func_size / 5; i++) {
 		ScriptFunctionInfo fi;
 		fi.sig_id = p_arr[idx];
 		fi.call_count = p_arr[idx + 1];
 		fi.self_time = p_arr[idx + 2];
 		fi.total_time = p_arr[idx + 3];
+		fi.internal_time = p_arr[idx + 4];
 		script_functions.push_back(fi);
-		idx += 4;
+		idx += 5;
 	}
 	CHECK_END(p_arr, idx, "ServersProfilerFrame");
 	return true;
@@ -196,7 +198,7 @@ class ServersDebugger::ScriptsProfiler : public EngineProfiler {
 	typedef ServersDebugger::ScriptFunctionInfo FunctionInfo;
 	struct ProfileInfoSort {
 		bool operator()(ScriptLanguage::ProfilingInfo *A, ScriptLanguage::ProfilingInfo *B) const {
-			return A->total_time < B->total_time;
+			return A->total_time > B->total_time;
 		}
 	};
 	Vector<ScriptLanguage::ProfilingInfo> info;
@@ -210,8 +212,11 @@ public:
 			sig_map.clear();
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				ScriptServer::get_language(i)->profiling_start();
+				if (p_opts.size() == 2 && p_opts[1].get_type() == Variant::BOOL) {
+					ScriptServer::get_language(i)->profiling_set_save_native_calls(p_opts[1]);
+				}
 			}
-			if (p_opts.size() == 1 && p_opts[0].get_type() == Variant::INT) {
+			if (p_opts.size() > 0 && p_opts[0].get_type() == Variant::INT) {
 				max_frame_functions = MAX(0, int(p_opts[0]));
 			}
 		} else {
@@ -265,6 +270,7 @@ public:
 			w[i].call_count = ptrs[i]->call_count;
 			w[i].total_time = ptrs[i]->total_time / 1000000.0;
 			w[i].self_time = ptrs[i]->self_time / 1000000.0;
+			w[i].internal_time = ptrs[i]->internal_time / 1000000.0;
 		}
 	}
 
@@ -336,10 +342,12 @@ public:
 		}
 		ServerInfo &srv = server_data[name];
 
-		ServerFunctionInfo fi;
-		fi.name = p_data[1];
-		fi.time = p_data[2];
-		srv.functions.push_back(fi);
+		for (int idx = 1; idx < p_data.size() - 1; idx += 2) {
+			ServerFunctionInfo fi;
+			fi.name = p_data[idx];
+			fi.time = p_data[idx + 1];
+			srv.functions.push_back(fi);
+		}
 	}
 
 	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
@@ -396,7 +404,7 @@ void ServersDebugger::deinitialize() {
 }
 
 Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
-	ERR_FAIL_COND_V(!singleton, ERR_BUG);
+	ERR_FAIL_NULL_V(singleton, ERR_BUG);
 	r_captured = true;
 	if (p_cmd == "memory") {
 		singleton->_send_resource_usage();

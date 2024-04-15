@@ -254,8 +254,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				OTHER_LDFLAGS = "$linker_flags";
+				IPHONEOS_DEPLOYMENT_TARGET = $min_version;
+				"LD_CLASSIC_1500" = "-ld_classic";
+				"LD_CLASSIC_1501" = "-ld_classic";
+				"LD_CLASSIC_1510" = "-ld_classic";
+				OTHER_LDFLAGS = "$(LD_CLASSIC_$(XCODE_VERSION_ACTUAL)) $linker_flags";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "$targeted_device_family";
 			};
@@ -293,8 +296,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				OTHER_LDFLAGS = "$linker_flags";
+				IPHONEOS_DEPLOYMENT_TARGET = $min_version;
+				"LD_CLASSIC_1500" = "-ld_classic";
+				"LD_CLASSIC_1501" = "-ld_classic";
+				"LD_CLASSIC_1510" = "-ld_classic";
+				OTHER_LDFLAGS = "$(LD_CLASSIC_$(XCODE_VERSION_ACTUAL)) $linker_flags";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "$targeted_device_family";
 				VALIDATE_PRODUCT = YES;
@@ -306,7 +312,6 @@
 			buildSettings = {
 				ARCHS = "$godot_archs";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				$pbx_launch_image_usage_setting
 				CODE_SIGN_ENTITLEMENTS = "$binary/$binary.entitlements";
 				CODE_SIGN_IDENTITY = "$code_sign_identity_debug";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_debug";
@@ -314,7 +319,7 @@
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				DEVELOPMENT_TEAM = $team_id;
 				INFOPLIST_FILE = "$binary/$binary-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = $min_version;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -342,7 +347,6 @@
 			buildSettings = {
 				ARCHS = "$godot_archs";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				$pbx_launch_image_usage_setting
 				CODE_SIGN_ENTITLEMENTS = "$binary/$binary.entitlements";
 				CODE_SIGN_IDENTITY = "$code_sign_identity_release";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_release";
@@ -350,7 +354,7 @@
 				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				DEVELOPMENT_TEAM = $team_id;
 				INFOPLIST_FILE = "$binary/$binary-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = $min_version;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

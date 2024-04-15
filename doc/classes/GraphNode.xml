@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphNode" inherits="GraphElement" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GraphNode" inherits="GraphElement" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container with connection ports, representing a node in a [GraphEdit].
 	</brief_description>
@@ -116,6 +116,20 @@
 				Returns the right (output) [Color] of the slot with the given [param slot_index].
 			</description>
 		</method>
+		<method name="get_slot_custom_icon_left" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the left (input) custom [Texture2D] of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_slot_custom_icon_right" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the right (output) custom [Texture2D] of the slot with the given [param slot_index].
+			</description>
+		</method>
 		<method name="get_slot_type_left" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="slot_index" type="int" />
@@ -195,6 +209,22 @@
 				Sets the [Color] of the right (output) side of the slot with the given [param slot_index] to [param color].
 			</description>
 		</method>
+		<method name="set_slot_custom_icon_left">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="custom_icon" type="Texture2D" />
+			<description>
+				Sets the custom [Texture2D] of the left (input) side of the slot with the given [param slot_index] to [param custom_icon].
+			</description>
+		</method>
+		<method name="set_slot_custom_icon_right">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="custom_icon" type="Texture2D" />
+			<description>
+				Sets the custom [Texture2D] of the right (output) side of the slot with the given [param slot_index] to [param custom_icon].
+			</description>
+		</method>
 		<method name="set_slot_draw_stylebox">
 			<return type="void" />
 			<param index="0" name="slot_index" type="int" />
@@ -262,9 +292,6 @@
 		</theme_item>
 		<theme_item name="port" data_type="icon" type="Texture2D">
 			The icon used for representing ports.
-		</theme_item>
-		<theme_item name="resizer" data_type="icon" type="Texture2D">
-			The icon used for the resizer, visible when [member GraphElement.resizable] is enabled.
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The default background for the slot area of the [GraphNode].

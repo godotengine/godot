@@ -52,13 +52,13 @@ struct VariantUtilityFunctions {
 	static double fmod(double b, double r);
 	static double fposmod(double b, double r);
 	static int64_t posmod(int64_t b, int64_t r);
-	static Variant floor(Variant x, Callable::CallError &r_error);
+	static Variant floor(const Variant &x, Callable::CallError &r_error);
 	static double floorf(double x);
 	static int64_t floori(double x);
-	static Variant ceil(Variant x, Callable::CallError &r_error);
+	static Variant ceil(const Variant &x, Callable::CallError &r_error);
 	static double ceilf(double x);
 	static int64_t ceili(double x);
-	static Variant round(Variant x, Callable::CallError &r_error);
+	static Variant round(const Variant &x, Callable::CallError &r_error);
 	static double roundf(double x);
 	static int64_t roundi(double x);
 	static Variant abs(const Variant &x, Callable::CallError &r_error);
@@ -90,11 +90,13 @@ struct VariantUtilityFunctions {
 			double to_t, double pre_t, double post_t);
 	static double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t);
 	static double bezier_derivative(double p_start, double p_control_1, double p_control_2, double p_end, double p_t);
+	static double angle_difference(double from, double to);
 	static double lerp_angle(double from, double to, double weight);
 	static double inverse_lerp(double from, double to, double weight);
 	static double remap(double value, double istart, double istop, double ostart, double ostop);
 	static double smoothstep(double from, double to, double val);
 	static double move_toward(double from, double to, double delta);
+	static double rotate_toward(double from, double to, double delta);
 	static double deg_to_rad(double angle_deg);
 	static double rad_to_deg(double angle_rad);
 	static double linear_to_db(double linear);
@@ -128,6 +130,7 @@ struct VariantUtilityFunctions {
 	static Variant type_convert(const Variant &p_variant, const Variant::Type p_type);
 	static String str(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static String error_string(Error error);
+	static String type_string(Variant::Type p_type);
 	static void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 	static void print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error);
 #undef print_verbose

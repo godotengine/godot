@@ -51,7 +51,7 @@ typedef struct {
   uint32_t*       huffman_image_;
   int             num_htree_groups_;
   HTreeGroup*     htree_groups_;
-  HuffmanCode*    huffman_tables_;
+  HuffmanTables   huffman_tables_;
 } VP8LMetadata;
 
 typedef struct VP8LDecoder VP8LDecoder;

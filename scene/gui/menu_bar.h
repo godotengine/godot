@@ -41,7 +41,7 @@ class MenuBar : public Control {
 
 	bool switch_on_hover = true;
 	bool disable_shortcuts = false;
-	bool is_native = true;
+	bool prefer_native = true;
 	bool flat = false;
 	int start_index = -1;
 
@@ -55,6 +55,7 @@ class MenuBar : public Control {
 		Ref<TextLine> text_buf;
 		bool hidden = false;
 		bool disabled = false;
+		RID submenu_rid;
 
 		Menu(const String &p_name) {
 			name = p_name;
@@ -66,13 +67,11 @@ class MenuBar : public Control {
 		}
 	};
 	Vector<Menu> menu_cache;
-	HashSet<String> global_menus;
 
 	int focused_menu = -1;
 	int selected_menu = -1;
 	int active_menu = -1;
 
-	Vector2i mouse_pos_adjusted;
 	Vector2i old_mouse_pos;
 	ObjectID shortcut_context;
 
@@ -114,9 +113,30 @@ class MenuBar : public Control {
 
 	void _open_popup(int p_index, bool p_focus_item = false);
 	void _popup_visibility_changed(bool p_visible);
-	void _update_submenu(const String &p_menu_name, PopupMenu *p_child);
-	void _clear_menu();
-	void _update_menu();
+
+	String global_menu_tag;
+
+	int _find_global_start_index() {
+		if (global_menu_tag.is_empty()) {
+			return -1;
+		}
+
+		NativeMenu *nmenu = NativeMenu::get_singleton();
+		if (!nmenu) {
+			return -1;
+		}
+		RID main_menu = nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
+		int count = nmenu->get_item_count(main_menu);
+		for (int i = 0; i < count; i++) {
+			if (nmenu->get_item_tag(main_menu, i).operator String().begins_with(global_menu_tag)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	void bind_global_menu();
+	void unbind_global_menu();
 
 protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;

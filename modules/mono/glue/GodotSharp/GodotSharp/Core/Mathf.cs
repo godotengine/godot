@@ -36,11 +36,11 @@ namespace Godot
         public const real_t NaN = real_t.NaN;
 
         // 0.0174532924f and 0.0174532925199433
-        private const float _degToRadConstF = (float)0.0174532925199432957692369077M;
-        private const double _degToRadConstD = (double)0.0174532925199432957692369077M;
+        private const float DegToRadConstF = (float)0.0174532925199432957692369077M;
+        private const double DegToRadConstD = (double)0.0174532925199432957692369077M;
         // 57.29578f and 57.2957795130823
-        private const float _radToDegConstF = (float)57.295779513082320876798154814M;
-        private const double _radToDegConstD = (double)57.295779513082320876798154814M;
+        private const float RadToDegConstF = (float)57.295779513082320876798154814M;
+        private const double RadToDegConstD = (double)57.295779513082320876798154814M;
 
         /// <summary>
         /// Returns the absolute value of <paramref name="s"/> (i.e. positive value).
@@ -131,6 +131,38 @@ namespace Godot
         public static double Acosh(double s)
         {
             return Math.Acosh(s);
+        }
+
+        /// <summary>
+        /// Returns the difference between the two angles,
+        /// in range of -<see cref="Pi"/>, <see cref="Pi"/>.
+        /// When <paramref name="from"/> and <paramref name="to"/> are opposite,
+        /// returns -<see cref="Pi"/> if <paramref name="from"/> is smaller than <paramref name="to"/>,
+        /// or <see cref="Pi"/> otherwise.
+        /// </summary>
+        /// <param name="from">The start angle.</param>
+        /// <param name="to">The destination angle.</param>
+        /// <returns>The difference between the two angles.</returns>
+        public static float AngleDifference(float from, float to)
+        {
+            float difference = (to - from) % MathF.Tau;
+            return ((2.0f * difference) % MathF.Tau) - difference;
+        }
+
+        /// <summary>
+        /// Returns the difference between the two angles,
+        /// in range of -<see cref="Pi"/>, <see cref="Pi"/>.
+        /// When <paramref name="from"/> and <paramref name="to"/> are opposite,
+        /// returns -<see cref="Pi"/> if <paramref name="from"/> is smaller than <paramref name="to"/>,
+        /// or <see cref="Pi"/> otherwise.
+        /// </summary>
+        /// <param name="from">The start angle.</param>
+        /// <param name="to">The destination angle.</param>
+        /// <returns>The difference between the two angles.</returns>
+        public static double AngleDifference(double from, double to)
+        {
+            double difference = (to - from) % Math.Tau;
+            return ((2.0 * difference) % Math.Tau) - difference;
         }
 
         /// <summary>
@@ -728,7 +760,7 @@ namespace Godot
         /// <returns>The same angle expressed in radians.</returns>
         public static float DegToRad(float deg)
         {
-            return deg * _degToRadConstF;
+            return deg * DegToRadConstF;
         }
 
         /// <summary>
@@ -738,7 +770,7 @@ namespace Godot
         /// <returns>The same angle expressed in radians.</returns>
         public static double DegToRad(double deg)
         {
-            return deg * _degToRadConstD;
+            return deg * DegToRadConstD;
         }
 
         /// <summary>
@@ -925,10 +957,10 @@ namespace Godot
                 return true;
             }
             // Then check for approximate equality.
-            float tolerance = _epsilonF * Math.Abs(a);
-            if (tolerance < _epsilonF)
+            float tolerance = EpsilonF * Math.Abs(a);
+            if (tolerance < EpsilonF)
             {
-                tolerance = _epsilonF;
+                tolerance = EpsilonF;
             }
             return Math.Abs(a - b) < tolerance;
         }
@@ -949,10 +981,10 @@ namespace Godot
                 return true;
             }
             // Then check for approximate equality.
-            double tolerance = _epsilonD * Math.Abs(a);
-            if (tolerance < _epsilonD)
+            double tolerance = EpsilonD * Math.Abs(a);
+            if (tolerance < EpsilonD)
             {
-                tolerance = _epsilonD;
+                tolerance = EpsilonD;
             }
             return Math.Abs(a - b) < tolerance;
         }
@@ -1037,7 +1069,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsZeroApprox(float s)
         {
-            return Math.Abs(s) < _epsilonF;
+            return Math.Abs(s) < EpsilonF;
         }
 
         /// <summary>
@@ -1052,7 +1084,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsZeroApprox(double s)
         {
-            return Math.Abs(s) < _epsilonD;
+            return Math.Abs(s) < EpsilonD;
         }
 
         /// <summary>
@@ -1093,9 +1125,7 @@ namespace Godot
         /// <returns>The resulting angle of the interpolation.</returns>
         public static float LerpAngle(float from, float to, float weight)
         {
-            float difference = (to - from) % MathF.Tau;
-            float distance = ((2 * difference) % MathF.Tau) - difference;
-            return from + (distance * weight);
+            return from + AngleDifference(from, to) * weight;
         }
 
         /// <summary>
@@ -1110,9 +1140,7 @@ namespace Godot
         /// <returns>The resulting angle of the interpolation.</returns>
         public static double LerpAngle(double from, double to, double weight)
         {
-            double difference = (to - from) % Math.Tau;
-            double distance = ((2 * difference) % Math.Tau) - difference;
-            return from + (distance * weight);
+            return from + AngleDifference(from, to) * weight;
         }
 
         /// <summary>
@@ -1384,7 +1412,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float RadToDeg(float rad)
         {
-            return rad * _radToDegConstF;
+            return rad * RadToDegConstF;
         }
 
         /// <summary>
@@ -1395,7 +1423,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double RadToDeg(double rad)
         {
-            return rad * _radToDegConstD;
+            return rad * RadToDegConstD;
         }
 
         /// <summary>
@@ -1426,6 +1454,38 @@ namespace Godot
         public static double Remap(double value, double inFrom, double inTo, double outFrom, double outTo)
         {
             return Lerp(outFrom, outTo, InverseLerp(inFrom, inTo, value));
+        }
+
+        /// <summary>
+        /// Rotates <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> amount. Will not go past <paramref name="to"/>.
+        /// Similar to <see cref="MoveToward(float, float, float)"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
+        /// If <paramref name="delta"/> is negative, this function will rotate away from <paramref name="to"/>, toward the opposite angle, and will not go past the opposite angle.
+        /// </summary>
+        /// <param name="from">The start angle.</param>
+        /// <param name="to">The angle to move towards.</param>
+        /// <param name="delta">The amount to move by.</param>
+        /// <returns>The angle after moving.</returns>
+        public static float RotateToward(float from, float to, float delta)
+        {
+            float difference = AngleDifference(from, to);
+            float absDifference = Math.Abs(difference);
+            return from + Math.Clamp(delta, absDifference - MathF.PI, absDifference) * (difference >= 0.0f ? 1.0f : -1.0f);
+        }
+
+        /// <summary>
+        /// Rotates <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> amount. Will not go past <paramref name="to"/>.
+        /// Similar to <see cref="MoveToward(double, double, double)"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
+        /// If <paramref name="delta"/> is negative, this function will rotate away from <paramref name="to"/>, toward the opposite angle, and will not go past the opposite angle.
+        /// </summary>
+        /// <param name="from">The start angle.</param>
+        /// <param name="to">The angle to move towards.</param>
+        /// <param name="delta">The amount to move by.</param>
+        /// <returns>The angle after moving.</returns>
+        public static double RotateToward(double from, double to, double delta)
+        {
+            double difference = AngleDifference(from, to);
+            double absDifference = Math.Abs(difference);
+            return from + Math.Clamp(delta, absDifference - Math.PI, absDifference) * (difference >= 0.0 ? 1.0 : -1.0);
         }
 
         /// <summary>

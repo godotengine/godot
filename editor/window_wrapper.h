@@ -78,7 +78,7 @@ public:
 	void restore_window_from_saved_position(const Rect2 p_window_rect, int p_screen, const Rect2 p_screen_rect);
 	void enable_window_on_screen(int p_screen = -1, bool p_auto_scale = false);
 
-	void set_window_title(const String p_title);
+	void set_window_title(const String &p_title);
 	void set_margins_enabled(bool p_enabled);
 
 	WindowWrapper();

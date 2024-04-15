@@ -35,9 +35,9 @@
 #include "core/io/resource_loader.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 void DependencyEditor::_searched(const String &p_path) {
@@ -66,7 +66,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, M
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), &ext);
 	for (const String &E : ext) {
-		search->add_filter("*" + E);
+		search->add_filter("*." + E);
 	}
 	search->popup_file_dialog();
 }
@@ -246,6 +246,7 @@ DependencyEditor::DependencyEditor() {
 	add_child(vb);
 
 	tree = memnew(Tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0, TTR("Resource"));
@@ -398,6 +399,7 @@ DependencyEditorOwners::DependencyEditorOwners() {
 	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
+	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	owners->set_select_mode(ItemList::SELECT_MULTI);
 	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
@@ -671,6 +673,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	vb->add_child(text);
 
 	owners = memnew(Tree);
+	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	owners->set_hide_root(true);
 	vb->add_child(owners);
 	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -723,6 +726,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	add_child(vb);
 
 	files = memnew(Tree);
+	files->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	files->set_hide_root(true);
 	vb->add_margin_child(TTR("Load failed due to missing dependencies:"), files, true);
 	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -878,6 +882,7 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	add_child(vbc);
 
 	files = memnew(Tree);
+	files->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	files->set_columns(2);
 	files->set_column_titles_visible(true);
 	files->set_column_custom_minimum_width(1, 100 * EDSCALE);

@@ -80,6 +80,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_script_method_argument_count" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Return the expected argument count for the given [param method], or [code]null[/code] if it can't be determined (which will then fall back to the default behavior).
+			</description>
+		</method>
 		<method name="_get_script_method_list" qualifiers="virtual const">
 			<return type="Dictionary[]" />
 			<description>
@@ -123,6 +130,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_has_static_method" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+			</description>
+		</method>
 		<method name="_inherits_script" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="script" type="Script" />
@@ -139,6 +152,12 @@
 			<return type="bool" />
 			<param index="0" name="object" type="Object" />
 			<description>
+			</description>
+		</method>
+		<method name="_is_abstract" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the script is an abstract script. An abstract script does not have a constructor and cannot be instantiated.
 			</description>
 		</method>
 		<method name="_is_placeholder_fallback_enabled" qualifiers="virtual const">

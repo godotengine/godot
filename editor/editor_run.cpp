@@ -34,47 +34,9 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/run_instances_dialog.h"
 #include "main/main.h"
 #include "servers/display_server.h"
-
-/**
- * Separates command line arguments without splitting up quoted strings.
- */
-Vector<String> EditorRun::_split_cmdline_args(const String &arg_string) {
-	Vector<String> split_args;
-	int arg_start = 0;
-	bool is_quoted = false;
-	char32_t quote_char = '-';
-	char32_t arg_char;
-	int arg_length;
-	for (int i = 0; i < arg_string.length(); i++) {
-		arg_char = arg_string[i];
-		if (arg_char == '\"' || arg_char == '\'') {
-			if (i == 0 || arg_string[i - 1] != '\\') {
-				if (is_quoted) {
-					if (arg_char == quote_char) {
-						is_quoted = false;
-						quote_char = '-';
-					}
-				} else {
-					is_quoted = true;
-					quote_char = arg_char;
-				}
-			}
-		} else if (!is_quoted && arg_char == ' ') {
-			arg_length = i - arg_start;
-			if (arg_length > 0) {
-				split_args.push_back(arg_string.substr(arg_start, arg_length));
-			}
-			arg_start = i + 1;
-		}
-	}
-	arg_length = arg_string.length() - arg_start;
-	if (arg_length > 0) {
-		split_args.push_back(arg_string.substr(arg_start, arg_length));
-	}
-	return split_args;
-}
 
 EditorRun::Status EditorRun::get_status() const {
 	return status;
@@ -110,6 +72,8 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	bool debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
 	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	bool debug_avoidance = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_avoidance", false);
+	bool debug_canvas_redraw = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_canvas_redraw", false);
+
 	if (debug_collisions) {
 		args.push_back("--debug-collisions");
 	}
@@ -124,6 +88,10 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 
 	if (debug_avoidance) {
 		args.push_back("--debug-avoidance");
+	}
+
+	if (debug_canvas_redraw) {
+		args.push_back("--debug-canvas-item-redraw");
 	}
 
 	if (p_write_movie != "") {
@@ -255,67 +223,27 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		args.push_back(p_scene);
 	}
 
-	String exec = OS::get_singleton()->get_executable_path();
-
-	const String raw_custom_args = GLOBAL_GET("editor/run/main_run_args");
-	if (!raw_custom_args.is_empty()) {
-		// Allow the user to specify a command to run, similar to Steam's launch options.
-		// In this case, Godot will no longer be run directly; it's up to the underlying command
-		// to run it. For instance, this can be used on Linux to force a running project
-		// to use Optimus using `prime-run` or similar.
-		// Example: `prime-run %command% --time-scale 0.5`
-		const int placeholder_pos = raw_custom_args.find("%command%");
-
-		Vector<String> custom_args;
-
-		if (placeholder_pos != -1) {
-			// Prepend executable-specific custom arguments.
-			// If nothing is placed before `%command%`, behave as if no placeholder was specified.
-			Vector<String> exec_args = _split_cmdline_args(raw_custom_args.substr(0, placeholder_pos));
-			if (exec_args.size() >= 1) {
-				exec = exec_args[0];
-				exec_args.remove_at(0);
-
-				// Append the Godot executable name before we append executable arguments
-				// (since the order is reversed when using `push_front()`).
-				args.push_front(OS::get_singleton()->get_executable_path());
-			}
-
-			for (int i = exec_args.size() - 1; i >= 0; i--) {
-				// Iterate backwards as we're pushing items in the reverse order.
-				args.push_front(exec_args[i].replace(" ", "%20"));
-			}
-
-			// Append Godot-specific custom arguments.
-			custom_args = _split_cmdline_args(raw_custom_args.substr(placeholder_pos + String("%command%").size()));
-			for (int i = 0; i < custom_args.size(); i++) {
-				args.push_back(custom_args[i].replace(" ", "%20"));
-			}
-		} else {
-			// Append Godot-specific custom arguments.
-			custom_args = _split_cmdline_args(raw_custom_args);
-			for (int i = 0; i < custom_args.size(); i++) {
-				args.push_back(custom_args[i].replace(" ", "%20"));
-			}
-		}
-	}
-
 	// Pass the debugger stop shortcut to the running instance(s).
 	String shortcut;
 	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/stop_running_project"), shortcut);
 	OS::get_singleton()->set_environment("__GODOT_EDITOR_STOP_SHORTCUT__", shortcut);
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line(vformat("Running: %s", exec));
-		for (const String &E : args) {
-			print_line(vformat(" %s", E));
-		}
-	}
+	String exec = OS::get_singleton()->get_executable_path();
+	int instance_count = RunInstancesDialog::get_singleton()->get_instance_count();
+	for (int i = 0; i < instance_count; i++) {
+		List<String> instance_args(args);
+		RunInstancesDialog::get_singleton()->get_argument_list_for_instance(i, instance_args);
+		RunInstancesDialog::get_singleton()->apply_custom_features(i);
 
-	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
-	for (int i = 0; i < instances; i++) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			print_line(vformat("Running: %s", exec));
+			for (const String &E : instance_args) {
+				print_line(" %s", E);
+			}
+		}
+
 		OS::ProcessID pid = 0;
-		Error err = OS::get_singleton()->create_instance(args, &pid);
+		Error err = OS::get_singleton()->create_instance(instance_args, &pid);
 		ERR_FAIL_COND_V(err, err);
 		if (pid != 0) {
 			pids.push_back(pid);

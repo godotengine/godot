@@ -39,7 +39,8 @@
 
 // Version 2: changed names for Basis, AABB, Vectors, etc.
 // Version 3: new string ID for ext/subresources, breaks forward compat.
-#define FORMAT_VERSION 3
+// Version 4: PackedByteArray is now stored as base64 encoded.
+#define FORMAT_VERSION 4
 
 #define BINARY_FORMAT_VERSION 4
 
@@ -176,6 +177,13 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 		} else {
 			r_res = Ref<Resource>();
 		}
+#ifdef TOOLS_ENABLED
+		if (r_res.is_null()) {
+			// Hack to allow checking original path.
+			r_res.instantiate();
+			r_res->set_meta("__load_path__", ext_resources[id].path);
+		}
+#endif
 	}
 
 	VariantParser::get_token(p_stream, token, line, r_err_str);
@@ -266,8 +274,8 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("groups")) {
 				Array groups = next_tag.fields["groups"];
-				for (int i = 0; i < groups.size(); i++) {
-					packed_scene->get_state()->add_node_group(node_id, packed_scene->get_state()->add_name(groups[i]));
+				for (const Variant &group : groups) {
+					packed_scene->get_state()->add_node_group(node_id, packed_scene->get_state()->add_name(group));
 				}
 			}
 
@@ -281,7 +289,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 					if (error == ERR_FILE_MISSING_DEPENDENCIES) {
 						// Resource loading error, just skip it.
 					} else if (error != ERR_FILE_EOF) {
-						_printerr();
+						ERR_PRINT(vformat("Parse Error: %s. [Resource file %s:%d]", error_names[error], res_path, lines));
 						return Ref<PackedScene>();
 					} else {
 						error = OK;
@@ -345,8 +353,8 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			}
 
 			Vector<int> bind_ints;
-			for (int i = 0; i < binds.size(); i++) {
-				bind_ints.push_back(packed_scene->get_state()->add_value(binds[i]));
+			for (const Variant &bind : binds) {
+				bind_ints.push_back(packed_scene->get_state()->add_value(bind));
 			}
 
 			packed_scene->get_state()->add_connection(
@@ -464,7 +472,7 @@ Error ResourceLoaderText::load() {
 
 		ext_resources[id].path = path;
 		ext_resources[id].type = type;
-		ext_resources[id].load_token = ResourceLoader::_load_start(path, type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, ResourceFormatLoader::CACHE_MODE_REUSE);
+		ext_resources[id].load_token = ResourceLoader::_load_start(path, type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, cache_mode_for_external);
 		if (!ext_resources[id].load_token.is_valid()) {
 			if (ResourceLoader::get_abort_on_missing_resources()) {
 				error = ERR_FILE_CORRUPT;
@@ -577,6 +585,8 @@ Error ResourceLoaderText::load() {
 		if (do_assign) {
 			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 				res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
+			} else {
+				res->set_path_cache(path);
 			}
 			res->set_scene_unique_id(id);
 		}
@@ -712,6 +722,8 @@ Error ResourceLoaderText::load() {
 							resource->set_path(res_path);
 						}
 						resource->set_as_translation_remapped(translation_remapped);
+					} else {
+						resource->set_path_cache(res_path);
 					}
 				}
 				return error;
@@ -796,8 +808,13 @@ Error ResourceLoaderText::load() {
 		error = OK;
 		//get it here
 		resource = packed_scene;
-		if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE && !ResourceCache::has(res_path)) {
-			packed_scene->set_path(res_path);
+		if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+			if (!ResourceCache::has(res_path)) {
+				packed_scene->set_path(res_path);
+			}
+		} else {
+			packed_scene->get_state()->set_path(res_path);
+			packed_scene->set_path_cache(res_path);
 		}
 
 		resource_current++;
@@ -971,8 +988,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 			}
 
 			if (p_map.has(path)) {
-				String np = p_map[path];
-				path = np;
+				path = p_map[path];
 			}
 
 			if (relative) {
@@ -1051,7 +1067,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 		if (fmt > FORMAT_VERSION) {
 			error_text = "Saved with newer format version";
 			_printerr();
-			error = ERR_PARSE_ERROR;
+			error = ERR_FILE_UNRECOGNIZED;
 			return;
 		}
 	}
@@ -1389,6 +1405,8 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 	wf->store_buffer(data.ptr(), data.size());
 	{
 		Ref<DirAccess> dar = DirAccess::open(temp_file.get_base_dir());
+		ERR_FAIL_COND_V(dar.is_null(), FAILED);
+
 		dar->remove(temp_file);
 	}
 
@@ -1640,7 +1658,22 @@ Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String 
 
 	ResourceLoaderText loader;
 	String path = !p_original_path.is_empty() ? p_original_path : p_path;
-	loader.cache_mode = p_cache_mode;
+	switch (p_cache_mode) {
+		case CACHE_MODE_IGNORE:
+		case CACHE_MODE_REUSE:
+		case CACHE_MODE_REPLACE:
+			loader.cache_mode = p_cache_mode;
+			loader.cache_mode_for_external = CACHE_MODE_REUSE;
+			break;
+		case CACHE_MODE_IGNORE_DEEP:
+			loader.cache_mode = ResourceFormatLoader::CACHE_MODE_IGNORE;
+			loader.cache_mode_for_external = p_cache_mode;
+			break;
+		case CACHE_MODE_REPLACE_DEEP:
+			loader.cache_mode = ResourceFormatLoader::CACHE_MODE_REPLACE;
+			loader.cache_mode_for_external = p_cache_mode;
+			break;
+	}
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.progress = r_progress;
@@ -1787,8 +1820,8 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const 
 		err = loader.rename_dependencies(f, p_path, p_map);
 	}
 
-	if (err == OK) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (err == OK && da->file_exists(p_path + ".depren")) {
 		da->remove(p_path);
 		da->rename(p_path + ".depren", p_path);
 	}
@@ -1919,10 +1952,9 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 		} break;
 		case Variant::ARRAY: {
 			Array varray = p_variant;
-			int len = varray.size();
-			for (int i = 0; i < len; i++) {
-				const Variant &v = varray.get(i);
-				_find_resources(v);
+			_find_resources(varray.get_typed_script());
+			for (const Variant &var : varray) {
+				_find_resources(var);
 			}
 
 		} break;
@@ -2286,10 +2318,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			}
 
 			String connstr = "[connection";
-			connstr += " signal=\"" + String(state->get_connection_signal(i)) + "\"";
-			connstr += " from=\"" + String(state->get_connection_source(i).simplified()) + "\"";
-			connstr += " to=\"" + String(state->get_connection_target(i).simplified()) + "\"";
-			connstr += " method=\"" + String(state->get_connection_method(i)) + "\"";
+			connstr += " signal=\"" + String(state->get_connection_signal(i)).c_escape() + "\"";
+			connstr += " from=\"" + String(state->get_connection_source(i).simplified()).c_escape() + "\"";
+			connstr += " to=\"" + String(state->get_connection_target(i).simplified()).c_escape() + "\"";
+			connstr += " method=\"" + String(state->get_connection_method(i)).c_escape() + "\"";
 			int flags = state->get_connection_flags(i);
 			if (flags != Object::CONNECT_PERSIST) {
 				connstr += " flags=" + itos(flags);
@@ -2316,7 +2348,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			if (i == 0) {
 				f->store_line("");
 			}
-			f->store_line("[editable path=\"" + editable_instances[i].operator String() + "\"]");
+			f->store_line("[editable path=\"" + editable_instances[i].operator String().c_escape() + "\"]");
 		}
 	}
 

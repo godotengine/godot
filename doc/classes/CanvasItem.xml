@@ -6,13 +6,13 @@
 	<description>
 		Abstract base class for everything in 2D space. Canvas items are laid out in a tree; children inherit and extend their parent's transform. [CanvasItem] is extended by [Control] for GUI-related nodes, and by [Node2D] for 2D game objects.
 		Any [CanvasItem] can draw. For this, [method queue_redraw] is called by the engine, then [constant NOTIFICATION_DRAW] will be received on idle time to request a redraw. Because of this, canvas items don't need to be redrawn on every frame, improving the performance significantly. Several functions for drawing on the [CanvasItem] are provided (see [code]draw_*[/code] functions). However, they can only be used inside [method _draw], its corresponding [method Object._notification] or methods connected to the [signal draw] signal.
-		Canvas items are drawn in tree order. By default, children are on top of their parents, so a root [CanvasItem] will be drawn behind everything. This behavior can be changed on a per-item basis.
+		Canvas items are drawn in tree order on their canvas layer. By default, children are on top of their parents, so a root [CanvasItem] will be drawn behind everything. This behavior can be changed on a per-item basis.
 		A [CanvasItem] can be hidden, which will also hide its children. By adjusting various other properties of a [CanvasItem], you can also modulate its color (via [member modulate] or [member self_modulate]), change its Z-index, blend mode, and more.
 	</description>
 	<tutorials>
 		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
 		<link title="Custom drawing in 2D">$DOCS_URL/tutorials/2d/custom_drawing_in_2d.html</link>
-		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
+		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
 	</tutorials>
 	<methods>
 		<method name="_draw" qualifiers="virtual">
@@ -44,7 +44,7 @@
 			<param index="7" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws an unfilled arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. See also [method draw_circle].
-				If [param width] is negative, then the arc is drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the arc will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param width] is negative, it will be ignored and the arc will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the arc will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				The arc is drawn from [param start_angle] towards the value of [param end_angle] so in clockwise direction if [code]start_angle &lt; end_angle[/code] and counter-clockwise otherwise. Passing the same angles but in reversed order will produce the same arc. If absolute difference of [param start_angle] and [param end_angle] is greater than [constant @GDScript.TAU] radians, then a full circle arc is drawn (i.e. arc will not overlap itself).
 			</description>
 		</method>
@@ -246,7 +246,7 @@
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws interconnected line segments with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
-				If [param width] is negative, the polyline is drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param width] is negative, it will be ignored and the polyline will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
 		<method name="draw_polyline_colors">
@@ -257,7 +257,7 @@
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws interconnected line segments with a uniform [param width], point-by-point coloring, and optional antialiasing (supported only for positive [param width]). Colors assigned to line points match by index between [param points] and [param colors], i.e. each line segment is filled with a gradient between the colors of the endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
-				If [param width] is negative, then the polyline is drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param width] is negative, it will be ignored and the polyline will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
 		<method name="draw_primitive">
@@ -411,6 +411,12 @@
 				Returns the canvas item RID used by [RenderingServer] for this item.
 			</description>
 		</method>
+		<method name="get_canvas_layer_node" qualifiers="const">
+			<return type="CanvasLayer" />
+			<description>
+				Returns the [CanvasLayer] that contains this node, or [code]null[/code] if the node is not in any [CanvasLayer].
+			</description>
+		</method>
 		<method name="get_canvas_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
@@ -501,7 +507,7 @@
 		<method name="is_visible_in_tree" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its ancestors are also visible. If any ancestor is hidden, this node will not be visible in the scene tree, and is consequently not drawn (see [method _draw]).
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its ancestors are also visible. If any ancestor is hidden, this node will not be visible in the scene tree, and is therefore not drawn (see [method _draw]).
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
@@ -522,7 +528,7 @@
 			<return type="void" />
 			<description>
 				Moves this node to display on top of its siblings.
-				Internally, the node is moved to the bottom of parent's children list. The method has no effect on nodes without a parent.
+				Internally, the node is moved to the bottom of parent's child list. The method has no effect on nodes without a parent.
 			</description>
 		</method>
 		<method name="queue_redraw">
@@ -562,7 +568,7 @@
 	</methods>
 	<members>
 		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
-			Allows the current node to clip children nodes, essentially acting as a mask.
+			Allows the current node to clip child nodes, essentially acting as a mask.
 		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
@@ -570,7 +576,7 @@
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material applied to this [CanvasItem].
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			The color applied to this [CanvasItem]. This property does affect child [CanvasItem]s, unlike [member self_modulate] which only affects the node itself.
 		</member>
 		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate" default="Color(1, 1, 1, 1)">
@@ -600,14 +606,15 @@
 			[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 		</member>
 		<member name="y_sort_enabled" type="bool" setter="set_y_sort_enabled" getter="is_y_sort_enabled" default="false">
-			If [code]true[/code], child nodes with the lowest Y position are drawn before those with a higher Y position. If [code]false[/code], Y-sorting is disabled. Y-sorting only affects children that inherit from [CanvasItem].
-			You can nest nodes with Y-sorting. Child Y-sorted nodes are sorted in the same space as the parent Y-sort. This feature allows you to organize a scene better or divide it into multiple ones without changing your scene tree.
+			If [code]true[/code], this and child [CanvasItem] nodes with a lower Y position are rendered in front of nodes with a higher Y position. If [code]false[/code], this and child [CanvasItem] nodes are rendered normally in scene tree order.
+			With Y-sorting enabled on a parent node ('A') but disabled on a child node ('B'), the child node ('B') is sorted but its children ('C1', 'C2', etc) render together on the same Y position as the child node 'B'. This allows you to organize the render order of a scene without changing the scene tree.
+			Nodes sort relative to each other only if they are on the same [member z_index].
 		</member>
 		<member name="z_as_relative" type="bool" setter="set_z_as_relative" getter="is_z_relative" default="true">
 			If [code]true[/code], the node's Z index is relative to its parent's Z index. If this node's Z index is 2 and its parent's effective Z index is 3, then this node's effective Z index will be 2 + 3 = 5.
 		</member>
 		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index" default="0">
-			Z index. Controls the order in which the nodes render. A node with a higher Z index will display in front of others. Must be between [constant RenderingServer.CANVAS_ITEM_Z_MIN] and [constant RenderingServer.CANVAS_ITEM_Z_MAX] (inclusive).
+			Controls the order in which the nodes render. A node with a higher Z index will display in front of others. Must be between [constant RenderingServer.CANVAS_ITEM_Z_MIN] and [constant RenderingServer.CANVAS_ITEM_Z_MAX] (inclusive).
 			[b]Note:[/b] Changing the Z index of a [Control] only affects the drawing order, not the order in which input events are handled. This can be useful to implement certain UI animations, e.g. a menu where hovered items are scaled and should overlap others.
 		</member>
 	</members>
@@ -660,24 +667,26 @@
 			The [CanvasItem] will inherit the filter from its parent.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST" value="1" enum="TextureFilter">
-			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering. Useful for pixel art.
+			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR" value="2" enum="TextureFilter">
-			The texture filter blends between the nearest four pixels. Use this for most cases where you want to avoid a pixelated style.
+			The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="TextureFilter">
-			The texture filter reads from the nearest pixel in the nearest mipmap. This is the fastest way to read from textures with mipmaps.
+			The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
+			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="4" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps. Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
+			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="TextureFilter">
-			The texture filter reads from the nearest pixel, but selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
-			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_NEAREST_WITH_MIPMAPS] is usually more appropriate.
+			The texture filter reads from the nearest pixel and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look pixelated from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_NEAREST_WITH_MIPMAPS] is usually more appropriate in this case.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="6" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels and selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. This is the slowest of the filtering options, but results in the highest quality texturing. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
-			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_LINEAR_WITH_MIPMAPS] is usually more appropriate.
+			The texture filter blends between the nearest 4 pixels and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look smooth from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_LINEAR_WITH_MIPMAPS] is usually more appropriate in this case.
 		</constant>
 		<constant name="TEXTURE_FILTER_MAX" value="7" enum="TextureFilter">
 			Represents the size of the [enum TextureFilter] enum.
@@ -692,7 +701,7 @@
 			Texture will repeat normally.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MIRROR" value="3" enum="TextureRepeat">
-			Texture will repeat in a 2x2 tiled mode, where elements at even positions are mirrored.
+			Texture will repeat in a 2×2 tiled mode, where elements at even positions are mirrored.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MAX" value="4" enum="TextureRepeat">
 			Represents the size of the [enum TextureRepeat] enum.

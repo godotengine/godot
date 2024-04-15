@@ -7,6 +7,10 @@ using System.ComponentModel;
 
 namespace Godot;
 
+#pragma warning disable CS1734 // XML comment on 'X' has a paramref tag for 'Y', but there is no parameter by that name.
+// TODO: This is currently disabled because of https://github.com/dotnet/roslyn/issues/52904
+#pragma warning disable IDE0040 // Add accessibility modifiers.
+
 partial class AnimationNode
 {
     /// <inheritdoc cref="BlendInput(int, double, bool, bool, float, FilterAction, bool, bool)"/>
@@ -24,9 +28,47 @@ partial class AnimationNode
     }
 }
 
+partial class AnimationPlayer
+{
+    /// <inheritdoc cref="AnimationMixer.CallbackModeMethod"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public AnimationMethodCallMode MethodCallMode
+    {
+        get => (AnimationMethodCallMode)CallbackModeMethod;
+        set => CallbackModeMethod = (AnimationCallbackModeMethod)value;
+    }
+
+    /// <inheritdoc cref="AnimationMixer.Active"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool PlaybackActive
+    {
+        get => Active;
+        set => Active = value;
+    }
+
+    /// <inheritdoc cref="AnimationMixer.CallbackModeProcess"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public AnimationProcessCallback PlaybackProcessMode
+    {
+        get => (AnimationProcessCallback)CallbackModeProcess;
+        set => CallbackModeProcess = (AnimationCallbackModeProcess)value;
+    }
+}
+
+partial class AnimationTree
+{
+    /// <inheritdoc cref="AnimationMixer.CallbackModeProcess"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public AnimationProcessCallback ProcessCallback
+    {
+        get => (AnimationProcessCallback)CallbackModeProcess;
+        set => CallbackModeProcess = (AnimationCallbackModeProcess)value;
+    }
+}
+
 partial class CodeEdit
 {
-    /// <inheritdoc cref="AddCodeCompletionOption(CodeCompletionKind, string, string, Nullable{Color}, Resource, Nullable{Variant}, int)"/>
+    /// <inheritdoc cref="AddCodeCompletionOption(CodeCompletionKind, string, string, Nullable{Color}, Resource, Variant, int)"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public void AddCodeCompletionOption(CodeCompletionKind type, string displayText, string insertText, Nullable<Color> textColor, Resource icon, Nullable<Variant> value)
     {
@@ -36,13 +78,68 @@ partial class CodeEdit
 
 partial class Geometry3D
 {
-    /// <inheritdoc cref="SegmentIntersectsConvex(Vector3, Vector3, Collections.Array{Plane})"/>
+    /// <inheritdoc cref="SegmentIntersectsConvex(Vector3, Vector3, Godot.Collections.Array{Plane})"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static Vector3[] SegmentIntersectsConvex(Vector3 from, Vector3 to, Godot.Collections.Array planes)
     {
         return SegmentIntersectsConvex(from, to, new Godot.Collections.Array<Plane>(planes));
     }
 }
+
+partial class GraphEdit
+{
+    /// <inheritdoc cref="ShowArrangeButton"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool ArrangeNodesButtonHidden
+    {
+        get => !ShowArrangeButton;
+        set => ShowArrangeButton = !value;
+    }
+
+    /// <inheritdoc cref="GetMenuHBox()"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public HBoxContainer GetZoomHBox()
+    {
+        return GetMenuHBox();
+    }
+
+    /// <inheritdoc cref="SnappingDistance"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int SnapDistance
+    {
+        get => SnappingDistance;
+        set => SnappingDistance = value;
+    }
+
+    /// <inheritdoc cref="SnappingEnabled"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool UseSnap
+    {
+        get => SnappingEnabled;
+        set => SnappingEnabled = value;
+    }
+}
+
+partial class GraphNode
+{
+    /// <inheritdoc cref="GraphElement.DeleteRequest"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public event Action CloseRequest
+    {
+        add => DeleteRequest += value;
+        remove => DeleteRequest -= value;
+    }
+}
+partial class ImporterMesh
+{
+    /// <inheritdoc cref="AddSurface(Mesh.PrimitiveType, Godot.Collections.Array, Godot.Collections.Array{Godot.Collections.Array}, Godot.Collections.Dictionary, Material, string, ulong)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void AddSurface(Mesh.PrimitiveType primitive, Godot.Collections.Array arrays, Godot.Collections.Array<Godot.Collections.Array> blendShapes, Godot.Collections.Dictionary lods, Material material, string name, uint flags)
+    {
+        AddSurface(primitive, arrays, blendShapes, lods, material, name, (ulong)flags);
+    }
+}
+
 
 partial class MeshInstance3D
 {
@@ -106,6 +203,26 @@ partial class SurfaceTool
     {
         AddTriangleFan(vertices, uvs, colors, uv2S, normals, new Godot.Collections.Array<Plane>(tangents));
     }
+
+    /// <inheritdoc cref="Commit(ArrayMesh, ulong)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ArrayMesh Commit(ArrayMesh existing, uint flags)
+    {
+        return Commit(existing, (ulong)flags);
+    }
+}
+
+partial class TileMap
+{
+    /// <summary>
+    /// The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public int CellQuadrantSize
+    {
+        get => RenderingQuadrantSize;
+        set => RenderingQuadrantSize = value;
+    }
 }
 
 partial class Tree
@@ -127,3 +244,5 @@ partial class UndoRedo
         CreateAction(name, mergeMode, backwardUndoOps: false);
     }
 }
+
+#pragma warning restore CS1734

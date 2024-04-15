@@ -30,16 +30,14 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                             {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
                                 {
-                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
                                     return false;
                                 }
 
                                 return true;
                             }
 
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -91,16 +89,20 @@ namespace Godot.SourceGenerators
             if (isInnerClass)
             {
                 var containingType = symbol.ContainingType;
+                AppendPartialContainingTypeDeclarations(containingType);
 
-                while (containingType != null)
+                void AppendPartialContainingTypeDeclarations(INamedTypeSymbol? containingType)
                 {
+                    if (containingType == null)
+                        return;
+
+                    AppendPartialContainingTypeDeclarations(containingType.ContainingType);
+
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
                     source.Append(containingType.NameWithTypeParameters());
                     source.Append("\n{\n");
-
-                    containingType = containingType.ContainingType;
                 }
             }
 
@@ -119,8 +121,14 @@ namespace Godot.SourceGenerators
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
                 .Cast<IFieldSymbol>();
 
-            var godotClassProperties = propertySymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
-            var godotClassFields = fieldSymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
+            // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
+            // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
+            var godotClassProperties = propertySymbols.Where(property => !(property.IsReadOnly || property.IsWriteOnly || property.SetMethod!.IsInitOnly))
+                .WhereIsGodotCompatibleType(typeCache)
+                .ToArray();
+            var godotClassFields = fieldSymbols.Where(property => !property.IsReadOnly)
+                .WhereIsGodotCompatibleType(typeCache)
+                .ToArray();
 
             var signalDelegateSymbols = members
                 .Where(s => s.Kind == SymbolKind.NamedType)

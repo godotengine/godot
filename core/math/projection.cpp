@@ -37,7 +37,7 @@
 #include "core/math/transform_3d.h"
 #include "core/string/ustring.h"
 
-float Projection::determinant() const {
+real_t Projection::determinant() const {
 	return columns[0][3] * columns[1][2] * columns[2][1] * columns[3][0] - columns[0][2] * columns[1][3] * columns[2][1] * columns[3][0] -
 			columns[0][3] * columns[1][1] * columns[2][2] * columns[3][0] + columns[0][1] * columns[1][3] * columns[2][2] * columns[3][0] +
 			columns[0][2] * columns[1][1] * columns[2][3] * columns[3][0] - columns[0][1] * columns[1][2] * columns[2][3] * columns[3][0] -
@@ -408,7 +408,6 @@ real_t Projection::get_z_far() const {
 			matrix[11] - matrix[10],
 			matrix[15] - matrix[14]);
 
-	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
 	return new_plane.d;
@@ -720,7 +719,8 @@ Projection Projection::operator*(const Projection &p_matrix) const {
 	return new_matrix;
 }
 
-void Projection::set_depth_correction(bool p_flip_y) {
+void Projection::set_depth_correction(bool p_flip_y, bool p_reverse_z, bool p_remap_z) {
+	// p_remap_z is used to convert from OpenGL-style clip space (-1 - 1) to Vulkan style (0 - 1).
 	real_t *m = &columns[0][0];
 
 	m[0] = 1;
@@ -733,11 +733,11 @@ void Projection::set_depth_correction(bool p_flip_y) {
 	m[7] = 0.0;
 	m[8] = 0.0;
 	m[9] = 0.0;
-	m[10] = 0.5;
+	m[10] = p_remap_z ? (p_reverse_z ? -0.5 : 0.5) : (p_reverse_z ? -1.0 : 1.0);
 	m[11] = 0.0;
 	m[12] = 0.0;
 	m[13] = 0.0;
-	m[14] = 0.5;
+	m[14] = p_remap_z ? 0.5 : 0.0;
 	m[15] = 1.0;
 }
 
@@ -832,13 +832,13 @@ real_t Projection::get_fov() const {
 	}
 }
 
-float Projection::get_lod_multiplier() const {
+real_t Projection::get_lod_multiplier() const {
 	if (is_orthogonal()) {
 		return get_viewport_half_extents().x;
 	} else {
-		float zn = get_z_near();
-		float width = get_viewport_half_extents().x * 2.0;
-		return 1.0 / (zn / width);
+		const real_t zn = get_z_near();
+		const real_t width = get_viewport_half_extents().x * 2.0f;
+		return 1.0f / (zn / width);
 	}
 
 	// Usage is lod_size / (lod_distance * multiplier) < threshold

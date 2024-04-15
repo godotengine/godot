@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 #endif
 
 #include "tvgXmlParser.h"
-#include "tvgSvgUtil.h"
+#include "tvgStr.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
@@ -171,10 +171,11 @@ static const char* _simpleXmlFindStartTag(const char* itr, const char* itrEnd)
 
 static const char* _simpleXmlFindEndTag(const char* itr, const char* itrEnd)
 {
-    bool insideQuote = false;
+    bool insideQuote[2] = {false, false}; // 0: ", 1: '
     for (; itr < itrEnd; itr++) {
-        if (*itr == '"') insideQuote = !insideQuote;
-        if (!insideQuote) {
+        if (*itr == '"' && !insideQuote[1]) insideQuote[0] = !insideQuote[0];
+        if (*itr == '\'' && !insideQuote[0]) insideQuote[1] = !insideQuote[1];
+        if (!insideQuote[0] && !insideQuote[1]) {
             if ((*itr == '>') || (*itr == '<'))
                 return itr;
         }
@@ -557,10 +558,10 @@ const char* simpleXmlParseCSSAttribute(const char* buf, unsigned bufLength, char
     }
 
     if (p == itr) *tag = strdup("all");
-    else *tag = svgUtilStrndup(itr, p - itr);
+    else *tag = strDuplicate(itr, p - itr);
 
     if (p == itrEnd) *name = nullptr;
-    else *name = svgUtilStrndup(p + 1, itrEnd - p - 1);
+    else *name = strDuplicate(p + 1, itrEnd - p - 1);
 
     return (nextElement ? nextElement + 1 : nullptr);
 }

@@ -32,10 +32,12 @@ package org.godotengine.godot
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.fragment.app.FragmentActivity
+import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 
 /**
@@ -81,8 +83,9 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	override fun onDestroy() {
 		Log.v(TAG, "Destroying Godot app...")
 		super.onDestroy()
-		if (godotFragment != null) {
-			terminateGodotInstance(godotFragment!!.godot)
+
+		godotFragment?.let {
+			terminateGodotInstance(it.godot)
 		}
 	}
 
@@ -91,22 +94,26 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	}
 
 	private fun terminateGodotInstance(instance: Godot) {
-		if (godotFragment != null && instance === godotFragment!!.godot) {
-			Log.v(TAG, "Force quitting Godot instance")
-			ProcessPhoenix.forceQuit(this)
+		godotFragment?.let {
+			if (instance === it.godot) {
+				Log.v(TAG, "Force quitting Godot instance")
+				ProcessPhoenix.forceQuit(this)
+			}
 		}
 	}
 
 	override fun onGodotRestartRequested(instance: Godot) {
 		runOnUiThread {
-			if (godotFragment != null && instance === godotFragment!!.godot) {
-				// It's very hard to properly de-initialize Godot on Android to restart the game
-				// from scratch. Therefore, we need to kill the whole app process and relaunch it.
-				//
-				// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
-				// releasing and reloading native libs or resetting their state somehow and clearing static data).
-				Log.v(TAG, "Restarting Godot instance...")
-				ProcessPhoenix.triggerRebirth(this)
+			godotFragment?.let {
+				if (instance === it.godot) {
+					// It's very hard to properly de-initialize Godot on Android to restart the game
+					// from scratch. Therefore, we need to kill the whole app process and relaunch it.
+					//
+					// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
+					// releasing and reloading native libs or resetting their state somehow and clearing static data).
+					Log.v(TAG, "Restarting Godot instance...")
+					ProcessPhoenix.triggerRebirth(this)
+				}
 			}
 		}
 	}
@@ -148,6 +155,15 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 		godotFragment?.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+		// Logging the result of permission requests
+		if (requestCode == PermissionsUtil.REQUEST_ALL_PERMISSION_REQ_CODE || requestCode == PermissionsUtil.REQUEST_SINGLE_PERMISSION_REQ_CODE) {
+			Log.d(TAG, "Received permissions request result..")
+			for (i in permissions.indices) {
+				val permissionGranted = grantResults[i] == PackageManager.PERMISSION_GRANTED
+				Log.d(TAG, "Permission ${permissions[i]} ${if (permissionGranted) { "granted"} else { "denied" }}")
+			}
+		}
 	}
 
 	override fun onBackPressed() {
@@ -156,6 +172,10 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 
 	override fun getActivity(): Activity? {
 		return this
+	}
+
+	override fun getGodot(): Godot? {
+		return godotFragment?.godot
 	}
 
 	/**
