@@ -5217,11 +5217,11 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					funcname->name = name;
 					func->arguments.push_back(funcname);
 
-					for (int i = 0; i < pstruct->members.size(); i++) {
+					for (List<ShaderLanguage::MemberNode *>::Element *E = pstruct->members.front(); E; E = E->next()) {
 						Node *nexpr;
 
-						if (pstruct->members[i]->array_size != 0) {
-							nexpr = _parse_array_constructor(p_block, p_function_info, pstruct->members[i]->get_datatype(), pstruct->members[i]->struct_name, pstruct->members[i]->array_size);
+						if (E->get()->array_size != 0) {
+							nexpr = _parse_array_constructor(p_block, p_function_info, E->get()->get_datatype(), E->get()->struct_name, E->get()->array_size);
 							if (!nexpr) {
 								return nullptr;
 							}
@@ -5230,12 +5230,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							if (!nexpr) {
 								return nullptr;
 							}
-							if (!_compare_datatypes_in_nodes(pstruct->members[i], nexpr)) {
+							if (!_compare_datatypes_in_nodes(E->get(), nexpr)) {
 								return nullptr;
 							}
 						}
 
-						if (i + 1 < pstruct->members.size()) {
+						if (E->next()) {
 							tk = _get_token();
 							if (tk.type != TK_COMMA) {
 								_set_expected_error(",");
@@ -7485,8 +7485,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					continue;
 				} else {
 					HashSet<int> constants;
-					for (int i = 0; i < switch_block->statements.size(); i++) { // Checks for duplicates.
-						ControlFlowNode *flow = static_cast<ControlFlowNode *>(switch_block->statements[i]);
+					for (ShaderLanguage::Node *statement : switch_block->statements) { // Checks for duplicates.
+						ControlFlowNode *flow = static_cast<ControlFlowNode *>(statement);
 						if (flow) {
 							if (flow->flow_op == FLOW_OP_CASE) {
 								if (flow->expressions[0]->type == Node::NODE_TYPE_CONSTANT) {
@@ -9862,9 +9862,9 @@ Error ShaderLanguage::_find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOper
 Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op) {
 	bool found = false;
 
-	for (int i = p_block->statements.size() - 1; i >= 0; i--) {
-		if (p_block->statements[i]->type == Node::NODE_TYPE_CONTROL_FLOW) {
-			ControlFlowNode *flow = static_cast<ControlFlowNode *>(p_block->statements[i]);
+	for (List<ShaderLanguage::Node *>::Element *E = p_block->statements.back(); E; E = E->prev()) {
+		if (E->get()->type == Node::NODE_TYPE_CONTROL_FLOW) {
+			ControlFlowNode *flow = static_cast<ControlFlowNode *>(E->get());
 			if (flow->flow_op == p_op) {
 				found = true;
 				break;
@@ -9874,8 +9874,8 @@ Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperat
 					break;
 				}
 			}
-		} else if (p_block->statements[i]->type == Node::NODE_TYPE_BLOCK) {
-			BlockNode *block = static_cast<BlockNode *>(p_block->statements[i]);
+		} else if (E->get()->type == Node::NODE_TYPE_BLOCK) {
+			BlockNode *block = static_cast<BlockNode *>(E->get());
 			if (_find_last_flow_op_in_block(block, p_op) == OK) {
 				found = true;
 				break;
@@ -10167,8 +10167,8 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		case COMPLETION_STRUCT: {
 			if (shader->structs.has(completion_struct)) {
 				StructNode *node = shader->structs[completion_struct].shader_struct;
-				for (int i = 0; i < node->members.size(); i++) {
-					ScriptLanguage::CodeCompletionOption option(node->members[i]->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+				for (ShaderLanguage::MemberNode *member : node->members) {
+					ScriptLanguage::CodeCompletionOption option(member->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
 					r_options->push_back(option);
 				}
 			}

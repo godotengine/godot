@@ -583,9 +583,7 @@ void ShaderTextEditor::_update_warning_panel() {
 	int warning_count = 0;
 
 	warnings_panel->push_table(2);
-	for (int i = 0; i < warnings.size(); i++) {
-		ShaderWarning &w = warnings[i];
-
+	for (const ShaderWarning &w : warnings) {
 		if (warning_count == 0) {
 			if (saved_treat_warning_as_errors) {
 				String error_text = "error(" + itos(w.get_line()) + "): " + w.get_message() + " " + TTR("Warnings should be fixed to prevent errors.");

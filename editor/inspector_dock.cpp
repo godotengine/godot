@@ -213,7 +213,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 				current->get_method_list(&methods);
 
 				ERR_FAIL_INDEX(idx, methods.size());
-				String name = methods[idx].name;
+				String name = methods.get(idx).name;
 
 				current->call(name);
 			}
@@ -232,8 +232,8 @@ void InspectorDock::_load_resource(const String &p_type) {
 	ResourceLoader::get_recognized_extensions_for_type(p_type, &extensions);
 
 	load_resource_dialog->clear_filters();
-	for (int i = 0; i < extensions.size(); i++) {
-		load_resource_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
+	for (const String &extension : extensions) {
+		load_resource_dialog->add_filter("*." + extension, extension.to_upper());
 	}
 
 	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);

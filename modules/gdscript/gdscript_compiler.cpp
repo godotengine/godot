@@ -241,9 +241,9 @@ static bool _can_use_validate_call(const MethodBind *p_method, const Vector<GDSc
 	}
 	MethodInfo info;
 	ClassDB::get_method_info(p_method->get_instance_class(), p_method->get_name(), &info);
-	for (int i = 0; i < p_arguments.size(); i++) {
-		const PropertyInfo &prop = info.arguments[i];
-		if (!_is_exact_type(prop, p_arguments[i].type)) {
+	int i = 0;
+	for (List<PropertyInfo>::ConstIterator itr = info.arguments.begin(); itr != info.arguments.end(); ++itr, ++i) {
+		if (!_is_exact_type(*itr, p_arguments[i].type)) {
 			return false;
 		}
 	}

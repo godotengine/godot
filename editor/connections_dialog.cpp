@@ -529,12 +529,13 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 	signature.append(p_method.name);
 	signature.append("(");
 
-	for (int i = 0; i < p_method.arguments.size(); i++) {
-		if (i > 0) {
+	int i = 0;
+	for (List<PropertyInfo>::ConstIterator itr = p_method.arguments.begin(); itr != p_method.arguments.end(); ++itr, ++i) {
+		if (itr != p_method.arguments.begin()) {
 			signature.append(", ");
 		}
 
-		const PropertyInfo &pi = p_method.arguments[i];
+		const PropertyInfo &pi = *itr;
 		String type_name;
 		switch (pi.type) {
 			case Variant::NIL:

@@ -458,8 +458,8 @@ void ColorPicker::set_editor_settings(Object *p_editor_settings) {
 		}
 	}
 
-	for (int i = 0; i < preset_cache.size(); i++) {
-		presets.push_back(preset_cache[i]);
+	for (const Color &preset : preset_cache) {
+		presets.push_back(preset);
 	}
 
 	if (recent_preset_cache.is_empty()) {
@@ -469,8 +469,8 @@ void ColorPicker::set_editor_settings(Object *p_editor_settings) {
 		}
 	}
 
-	for (int i = 0; i < recent_preset_cache.size(); i++) {
-		recent_presets.push_back(recent_preset_cache[i]);
+	for (const Color &preset : recent_preset_cache) {
+		recent_presets.push_back(preset);
 	}
 
 	_update_presets();
@@ -660,8 +660,8 @@ void ColorPicker::_update_presets() {
 		for (int i = 1; i < preset_container->get_child_count(); i++) {
 			preset_container->get_child(i)->queue_free();
 		}
-		for (int i = 0; i < preset_cache.size(); i++) {
-			_add_preset_button(preset_size, preset_cache[i]);
+		for (const Color &preset : preset_cache) {
+			_add_preset_button(preset_size, preset);
 		}
 		_notification(NOTIFICATION_VISIBILITY_CHANGED);
 	}
@@ -677,13 +677,13 @@ void ColorPicker::_update_recent_presets() {
 		}
 
 		recent_presets.clear();
-		for (int i = 0; i < recent_preset_cache.size(); i++) {
-			recent_presets.push_back(recent_preset_cache[i]);
+		for (const Color &preset : recent_preset_cache) {
+			recent_presets.push_back(preset);
 		}
 
 		int preset_size = _get_preset_size();
-		for (int i = 0; i < recent_presets.size(); i++) {
-			_add_recent_preset_button(preset_size, recent_presets[i]);
+		for (const Color &preset : recent_presets) {
+			_add_recent_preset_button(preset_size, preset);
 		}
 
 		_notification(NOTIFICATION_VISIBILITY_CHANGED);
@@ -937,8 +937,9 @@ void ColorPicker::erase_recent_preset(const Color &p_color) {
 PackedColorArray ColorPicker::get_presets() const {
 	PackedColorArray arr;
 	arr.resize(presets.size());
-	for (int i = 0; i < presets.size(); i++) {
-		arr.set(i, presets[i]);
+	int i = 0;
+	for (List<Color>::ConstIterator itr = presets.begin(); itr != presets.end(); ++itr, ++i) {
+		arr.set(i, *itr);
 	}
 	return arr;
 }
@@ -946,8 +947,9 @@ PackedColorArray ColorPicker::get_presets() const {
 PackedColorArray ColorPicker::get_recent_presets() const {
 	PackedColorArray arr;
 	arr.resize(recent_presets.size());
-	for (int i = 0; i < recent_presets.size(); i++) {
-		arr.set(i, recent_presets[i]);
+	int i = 0;
+	for (List<Color>::ConstIterator itr = recent_presets.begin(); itr != recent_presets.end(); ++itr, ++i) {
+		arr.set(i, *itr);
 	}
 	return arr;
 }

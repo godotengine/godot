@@ -748,8 +748,9 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		bool first = true;
 		VBoxContainer *vbox = nullptr;
 
-		for (int i = 0; i < custom_node->dp_props.size(); i++) {
-			const VisualShaderNodeCustom::DropDownListProperty &dp = custom_node->dp_props[i];
+		int i = 0;
+		for (List<VisualShaderNodeCustom::DropDownListProperty>::ConstIterator itr = custom_node->dp_props.begin(); itr != custom_node->dp_props.end(); ++itr, ++i) {
+			const VisualShaderNodeCustom::DropDownListProperty &dp = *itr;
 
 			if (first) {
 				first = false;
@@ -1828,9 +1829,9 @@ void VisualShaderEditor::_update_nodes() {
 		List<StringName> class_list;
 		ScriptServer::get_global_class_list(&class_list);
 
-		for (int i = 0; i < class_list.size(); i++) {
-			if (ScriptServer::get_global_class_native_base(class_list[i]) == "VisualShaderNodeCustom") {
-				String script_path = ScriptServer::get_global_class_path(class_list[i]);
+		for (const StringName &E : class_list) {
+			if (ScriptServer::get_global_class_native_base(E) == "VisualShaderNodeCustom") {
+				String script_path = ScriptServer::get_global_class_path(E);
 				Ref<Resource> res = ResourceLoader::load(script_path);
 				ERR_CONTINUE(res.is_null());
 				ERR_CONTINUE(!res->is_class("Script"));
@@ -1858,16 +1859,16 @@ void VisualShaderEditor::_update_nodes() {
 		List<StringName> class_list;
 		ClassDB::get_class_list(&class_list);
 
-		for (int i = 0; i < class_list.size(); i++) {
-			if (ClassDB::get_parent_class(class_list[i]) == "VisualShaderNodeCustom") {
-				Object *instance = ClassDB::instantiate(class_list[i]);
+		for (const StringName &E : class_list) {
+			if (ClassDB::get_parent_class(E) == "VisualShaderNodeCustom") {
+				Object *instance = ClassDB::instantiate(E);
 				Ref<VisualShaderNodeCustom> ref = Object::cast_to<VisualShaderNodeCustom>(instance);
 				ERR_CONTINUE(ref.is_null());
 				if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
 					continue;
 				}
 				Dictionary dict = get_custom_node_data(ref);
-				dict["type"] = class_list[i];
+				dict["type"] = E;
 				dict["script"] = Ref<Script>();
 
 				String key;
@@ -3982,7 +3983,7 @@ void VisualShaderEditor::_handle_node_drop_on_connection() {
 		return;
 	}
 
-	int selected_node_id = drag_buffer[0].node;
+	int selected_node_id = drag_buffer.front()->get().node;
 	VisualShader::Type shader_type = get_current_shader_type();
 	Ref<VisualShaderNode> selected_vsnode = visual_shader->get_node(shader_type, selected_node_id);
 
@@ -7540,8 +7541,9 @@ void VisualShaderNodePortPreview::_shader_changed() {
 	preview_shader.instantiate();
 	preview_shader->set_code(shader_code);
 	for (int i = 0; i < default_textures.size(); i++) {
-		for (int j = 0; j < default_textures[i].params.size(); j++) {
-			preview_shader->set_default_texture_parameter(default_textures[i].name, default_textures[i].params[j], j);
+		int j = 0;
+		for (List<Ref<Texture2D>>::ConstIterator itr = default_textures[i].params.begin(); itr != default_textures[i].params.end(); ++itr, ++j) {
+			preview_shader->set_default_texture_parameter(default_textures[i].name, *itr, j);
 		}
 	}
 

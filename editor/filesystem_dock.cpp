@@ -2270,11 +2270,11 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 
 			const bool is_directory = fpath.ends_with("/");
-			for (int i = 0; i < terminal_emulator_args.size(); i++) {
+			for (String &terminal_emulator_arg : terminal_emulator_args) {
 				if (is_directory) {
-					terminal_emulator_args[i] = terminal_emulator_args[i].replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath));
+					terminal_emulator_arg = terminal_emulator_arg.replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath));
 				} else {
-					terminal_emulator_args[i] = terminal_emulator_args[i].replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath).get_base_dir());
+					terminal_emulator_arg = terminal_emulator_arg.replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath).get_base_dir());
 				}
 			}
 
@@ -2290,8 +2290,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			const Error err = OS::get_singleton()->create_process(chosen_terminal_emulator, terminal_emulator_args, nullptr, true);
 			if (err != OK) {
 				String args_string;
-				for (int i = 0; i < terminal_emulator_args.size(); i++) {
-					args_string += terminal_emulator_args[i];
+				for (const String &terminal_emulator_arg : terminal_emulator_args) {
+					args_string += terminal_emulator_arg;
 				}
 				ERR_PRINT_ED(vformat(TTR("Couldn't run external terminal program (error code %d): %s %s\nCheck `filesystem/external_programs/terminal_emulator` and `filesystem/external_programs/terminal_emulator_flags` in the Editor Settings."), err, chosen_terminal_emulator, args_string));
 			}

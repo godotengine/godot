@@ -479,8 +479,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				struct_code += _mkid(pnode->vstructs[i].name);
 				struct_code += " ";
 				struct_code += "{\n";
-				for (int j = 0; j < st->members.size(); j++) {
-					SL::MemberNode *m = st->members[j];
+				for (SL::MemberNode *m : st->members) {
 					if (m->datatype == SL::TYPE_STRUCT) {
 						struct_code += _mkid(m->struct_name);
 					} else {
@@ -807,10 +806,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				code += _mktab(p_level - 1) + "{\n";
 			}
 
-			for (int i = 0; i < bnode->statements.size(); i++) {
-				String scode = _dump_node_code(bnode->statements[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+			int i = 0;
+			for (List<ShaderLanguage::Node *>::ConstIterator itr = bnode->statements.begin(); itr != bnode->statements.end(); ++itr, ++i) {
+				String scode = _dump_node_code(*itr, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 
-				if (bnode->statements[i]->type == SL::Node::NODE_TYPE_CONTROL_FLOW || bnode->single_statement) {
+				if ((*itr)->type == SL::Node::NODE_TYPE_CONTROL_FLOW || bnode->single_statement) {
 					code += scode; //use directly
 					if (bnode->use_comma_between_statements && i + 1 < bnode->statements.size()) {
 						code += ",";

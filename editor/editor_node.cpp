@@ -2603,8 +2603,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 			file->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
-				file->add_filter("*." + extensions[i], extensions[i].to_upper());
+			for (const String &extension : extensions) {
+				file->add_filter("*." + extension, extension.to_upper());
 			}
 
 			Node *scene = editor_data.get_edited_scene_root();
@@ -2722,8 +2722,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			Ref<PackedScene> sd = memnew(PackedScene);
 			ResourceSaver::get_recognized_extensions(sd, &extensions);
 			file->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
-				file->add_filter("*." + extensions[i], extensions[i].to_upper());
+			for (const String &extension : extensions) {
+				file->add_filter("*." + extension, extension.to_upper());
 			}
 
 			if (!scene->get_scene_file_path().is_empty()) {
@@ -3054,14 +3054,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 			file->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
-				file->add_filter("*." + extensions[i], extensions[i].to_upper());
+			for (const String &extension : extensions) {
+				file->add_filter("*." + extension, extension.to_upper());
 			}
 
 			Node *scene = editor_data.get_edited_scene_root();
 			if (scene) {
 				file->set_current_path(scene->get_scene_file_path());
-			};
+			}
 			file->set_title(TTR("Pick a Main Scene"));
 			file->popup_file_dialog();
 

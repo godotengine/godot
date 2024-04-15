@@ -351,8 +351,9 @@ int GodotJavaWrapper::create_new_godot_instance(const List<String> &args) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, 0);
 		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
-		for (int i = 0; i < args.size(); i++) {
-			jstring j_arg = env->NewStringUTF(args[i].utf8().get_data());
+		int i = 0;
+		for (List<String>::ConstIterator itr = args.begin(); itr != args.end(); ++itr, ++i) {
+			jstring j_arg = env->NewStringUTF(itr->utf8().get_data());
 			env->SetObjectArrayElement(jargs, i, j_arg);
 			env->DeleteLocalRef(j_arg);
 		}
