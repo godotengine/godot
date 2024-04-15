@@ -529,14 +529,20 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 		if (!wip_active && j == edited_point.polygon && EDITOR_GET("editors/polygon_editor/show_previous_outline")) {
 			const Color col = Color(0.5, 0.5, 0.5); // FIXME polygon->get_outline_color();
 			const int n = pre_move_edit.size();
-			for (int i = 0; i < n - (is_closed ? 0 : 1); i++) {
-				int next = i + 1;
-				if (next == n) {
-					next = 0;
-				}
+			for (int i = 0; i < n - 1; i++) {
 				Vector2 p, p2;
 				p = pre_move_edit[i] + offset;
-				p2 = pre_move_edit[next] + offset;
+				p2 = pre_move_edit[i + 1] + offset;
+
+				Vector2 point = xform.xform(p);
+				Vector2 next_point = xform.xform(p2);
+
+				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE));
+			}
+			if (is_closed) {
+				Vector2 p, p2;
+				p = pre_move_edit[n - 1] + offset;
+				p2 = pre_move_edit[0] + offset;
 
 				Vector2 point = xform.xform(p);
 				Vector2 next_point = xform.xform(p2);
@@ -548,28 +554,34 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 		const int n_points = points.size();
 		const Color col = Color(1, 0.3, 0.1, 0.8);
 
-		for (int i = 0; i < n_points; i++) {
+		for (int i = 0; i < n_points - 1; i++) {
 			const Vertex vertex(j, i);
 
 			const Vector2 p = (vertex == edited_point) ? edited_point.pos : (points[i] + offset);
 			const Vector2 point = xform.xform(p);
 
-			if (is_closed || i < n_points - 1) {
-				Vector2 p2;
-				int next = i + 1;
-				if (next == n_points) {
-					next = 0;
-				}
-				if (j == edited_point.polygon &&
-						((wip_active && i == n_points - 1) || (next == edited_point.vertex))) {
-					p2 = edited_point.pos;
-				} else {
-					p2 = points[next] + offset;
-				}
-
-				const Vector2 next_point = xform.xform(p2);
-				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE));
+			Vector2 p2;
+			if (j == edited_point.polygon && (i + 1 == edited_point.vertex)) {
+				p2 = edited_point.pos;
+			} else {
+				p2 = points[i + 1] + offset;
 			}
+
+			const Vector2 next_point = xform.xform(p2);
+			p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE));
+		}
+		if (is_closed) {
+			const Vertex vertex(j, n_points - 1);
+			const Vector2 p = (vertex == edited_point) ? edited_point.pos : (points[n_points - 1] + offset);
+			const Vector2 point = xform.xform(p);
+			Vector2 p2;
+			if (j == edited_point.polygon && (wip_active || (0 == edited_point.vertex))) {
+				p2 = edited_point.pos;
+			} else {
+				p2 = points[0] + offset;
+			}
+			const Vector2 next_point = xform.xform(p2);
+			p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE));
 		}
 
 		for (int i = 0; i < n_points; i++) {
@@ -704,15 +716,9 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 		Vector<Vector2> points = _get_polygon(j);
 		const Vector2 offset = _get_offset(j);
 		const int n_points = points.size();
-		const int n_segments = n_points - (_is_line() ? 1 : 0);
-
-		for (int i = 0; i < n_segments; i++) {
-			int next = i + 1;
-			if (next == n_points) {
-				next = 0;
-			}
+		for (int i = 0; i < n_points - 1; i++) {
 			Vector2 segment[2] = { xform.xform(points[i] + offset),
-				xform.xform(points[next] + offset) };
+				xform.xform(points[i + 1] + offset) };
 
 			Vector2 cp = Geometry2D::get_closest_point_to_segment(p_pos, segment);
 
@@ -724,6 +730,22 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 			if (d < closest_dist && d < grab_threshold) {
 				closest_dist = d;
 				closest = PosVertex(j, i, cp);
+			}
+		}
+		if (!_is_line()) {
+			Vector2 segment[2] = { xform.xform(points[n_points - 1] + offset),
+				xform.xform(points[0] + offset) };
+
+			Vector2 cp = Geometry2D::get_closest_point_to_segment(p_pos, segment);
+
+			if (cp.distance_squared_to(segment[0]) < eps2 || cp.distance_squared_to(segment[1]) < eps2) {
+				continue; //not valid to reuse point
+			}
+
+			real_t d = cp.distance_to(p_pos);
+			if (d < closest_dist && d < grab_threshold) {
+				closest_dist = d;
+				closest = PosVertex(j, n_points - 1, cp);
 			}
 		}
 	}
