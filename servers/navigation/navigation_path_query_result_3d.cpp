@@ -86,7 +86,7 @@ void NavigationPathQueryResult3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "path"), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "path_types"), "set_path_types", "get_path_types");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "path_rids", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_path_rids", "get_path_rids");
+	ADD_PROPERTY(PropertyInfo::make_typed_array("path_rids", "RID"), "set_path_rids", "get_path_rids");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT64_ARRAY, "path_owner_ids"), "set_path_owner_ids", "get_path_owner_ids");
 
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_REGION);

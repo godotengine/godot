@@ -192,7 +192,7 @@ void TileSetScenesCollectionSourceEditor::SceneTileProxyObject::_get_property_li
 	}
 
 	p_list->push_back(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_NONE, ""));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "scene", PROPERTY_HINT_RESOURCE_TYPE, "PackedScene"));
+	p_list->push_back(PropertyInfo::make_object("scene", "PackedScene"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "display_placeholder", PROPERTY_HINT_NONE, ""));
 }
 

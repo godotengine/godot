@@ -166,7 +166,7 @@ void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p
 	_property_list.push_back(image_format_prop);
 	PropertyInfo lossy_quality_prop = PropertyInfo(Variant::FLOAT, "lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01");
 	_property_list.push_back(lossy_quality_prop);
-	PropertyInfo root_node_mode_prop = PropertyInfo(Variant::INT, "root_node_mode", PROPERTY_HINT_ENUM, "Single Root,Keep Root,Multi Root");
+	PropertyInfo root_node_mode_prop = PropertyInfo::make_enum("root_node_mode", "", "Single Root,Keep Root,Multi Root");
 	_property_list.push_back(root_node_mode_prop);
 }
 

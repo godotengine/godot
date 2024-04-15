@@ -167,9 +167,9 @@ void NavigationPathQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "start_position"), "set_start_position", "get_start_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "pathfinding_algorithm", PROPERTY_HINT_ENUM, "AStar"), "set_pathfinding_algorithm", "get_pathfinding_algorithm");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_postprocessing", PROPERTY_HINT_ENUM, "Corridorfunnel,Edgecentered"), "set_path_postprocessing", "get_path_postprocessing");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_metadata_flags", "get_metadata_flags");
+	ADD_PROPERTY(PropertyInfo::make_enum("pathfinding_algorithm", "NavigationPathQueryParameters3D.PathfindingAlgorithm", "AStar"), "set_pathfinding_algorithm", "get_pathfinding_algorithm");
+	ADD_PROPERTY(PropertyInfo::make_enum("path_postprocessing", "NavigationPathQueryParameters3D.PathPostProcessing", "Corridorfunnel,Edgecentered"), "set_path_postprocessing", "get_path_postprocessing");
+	ADD_PROPERTY(PropertyInfo::make_flags("metadata_flags", "NavigationPathQueryParameters3D.PathMetadataFlags", "Include Types,Include RIDs,Include Owners"), "set_metadata_flags", "get_metadata_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simplify_path"), "set_simplify_path", "get_simplify_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "simplify_epsilon"), "set_simplify_epsilon", "get_simplify_epsilon");
 

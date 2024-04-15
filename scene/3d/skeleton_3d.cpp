@@ -1056,7 +1056,7 @@ void Skeleton3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_rest_only"), "set_show_rest_only", "is_show_rest_only");
 
 	ADD_GROUP("Modifier", "modifier_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "modifier_callback_mode_process", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_modifier_callback_mode_process", "get_modifier_callback_mode_process");
+	ADD_PROPERTY(PropertyInfo::make_enum("modifier_callback_mode_process", "Skeleton3D.ModifierCallbackModeProcess", "Physics,Idle"), "set_modifier_callback_mode_process", "get_modifier_callback_mode_process");
 
 	ADD_SIGNAL(MethodInfo("pose_updated"));
 	ADD_SIGNAL(MethodInfo("skeleton_updated"));

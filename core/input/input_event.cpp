@@ -30,6 +30,7 @@
 
 #include "input_event.h"
 
+#include "core/core_constants.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
@@ -648,11 +649,23 @@ void InputEventKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("as_text_location"), &InputEventKey::as_text_location);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "keycode"), "set_keycode", "get_keycode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "physical_keycode"), "set_physical_keycode", "get_physical_keycode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "key_label"), "set_key_label", "get_key_label");
+
+	String key_hint_string;
+	HashMap<StringName, int64_t> keys;
+	CoreConstants::get_enum_values("Key", &keys);
+	for (const KeyValue<StringName, int64_t> &E : keys) {
+		if (!key_hint_string.is_empty()) {
+			key_hint_string += ",";
+		}
+		key_hint_string += String(E.key).trim_prefix("KEY_").capitalize() + ":" + itos(E.value);
+	}
+
+	ADD_PROPERTY(PropertyInfo::make_enum("keycode", "Key", key_hint_string), "set_keycode", "get_keycode");
+	ADD_PROPERTY(PropertyInfo::make_enum("physical_keycode", "Key", key_hint_string), "set_physical_keycode", "get_physical_keycode");
+	ADD_PROPERTY(PropertyInfo::make_enum("key_label", "Key", key_hint_string), "set_key_label", "get_key_label");
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "unicode"), "set_unicode", "get_unicode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "location", PROPERTY_HINT_ENUM, "Unspecified,Left,Right"), "set_location", "get_location");
+	ADD_PROPERTY(PropertyInfo::make_enum("location", "KeyLocation", "Unspecified,Left,Right"), "set_location", "get_location");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
@@ -693,7 +706,7 @@ void InputEventMouse::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_global_position", "global_position"), &InputEventMouse::set_global_position);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &InputEventMouse::get_global_position);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask"), "set_button_mask", "get_button_mask");
+	ADD_PROPERTY(PropertyInfo::make_flags("button_mask", "MouseButtonMask", "Mouse Left,Mouse Right,Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px"), "set_global_position", "get_global_position");
 }
@@ -888,8 +901,18 @@ void InputEventMouseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_double_click", "double_click"), &InputEventMouseButton::set_double_click);
 	ClassDB::bind_method(D_METHOD("is_double_click"), &InputEventMouseButton::is_double_click);
 
+	String mouse_button_hint_string;
+	HashMap<StringName, int64_t> mouse_buttons;
+	CoreConstants::get_enum_values("MouseButton", &mouse_buttons);
+	for (const KeyValue<StringName, int64_t> &E : mouse_buttons) {
+		if (!mouse_button_hint_string.is_empty()) {
+			mouse_button_hint_string += ",";
+		}
+		mouse_button_hint_string += String(E.key).trim_prefix("MOUSE_BUTTON_").capitalize() + ":" + itos(E.value);
+	}
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "factor"), "set_factor", "get_factor");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
+	ADD_PROPERTY(PropertyInfo::make_enum("button_index", "MouseButton", mouse_button_hint_string), "set_button_index", "get_button_index");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "canceled"), "set_canceled", "is_canceled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_click"), "set_double_click", "is_double_click");
@@ -1197,7 +1220,20 @@ void InputEventJoypadMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis_value", "axis_value"), &InputEventJoypadMotion::set_axis_value);
 	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEventJoypadMotion::get_axis_value);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis"), "set_axis", "get_axis");
+	String joy_axis_hint_string;
+	HashMap<StringName, int64_t> joy_axis;
+	CoreConstants::get_enum_values("JoyAxis", &joy_axis);
+	for (const KeyValue<StringName, int64_t> &E : joy_axis) {
+		if (E.value == (int64_t)JoyAxis::MAX) {
+			continue;
+		}
+		if (!joy_axis_hint_string.is_empty()) {
+			joy_axis_hint_string += ",";
+		}
+		joy_axis_hint_string += String(E.key).trim_prefix("JOY_AXIS_").capitalize() + ":" + itos(E.value);
+	}
+
+	ADD_PROPERTY(PropertyInfo::make_enum("axis", "JoyAxis", joy_axis_hint_string), "set_axis", "get_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "axis_value"), "set_axis_value", "get_axis_value");
 }
 
@@ -1317,7 +1353,20 @@ void InputEventJoypadButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventJoypadButton::set_pressed);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
+	String joy_buttons_hint_string;
+	HashMap<StringName, int64_t> joy_buttons;
+	CoreConstants::get_enum_values("JoyButton", &joy_buttons);
+	for (const KeyValue<StringName, int64_t> &E : joy_buttons) {
+		if (E.value == (int64_t)JoyButton::MAX) {
+			continue;
+		}
+		if (!joy_buttons_hint_string.is_empty()) {
+			joy_buttons_hint_string += ",";
+		}
+		joy_buttons_hint_string += String(E.key).trim_prefix("JOY_BUTTON_").capitalize() + ":" + itos(E.value);
+	}
+
+	ADD_PROPERTY(PropertyInfo::make_enum("button_index", "JoyButton", joy_buttons_hint_string), "set_button_index", "get_button_index");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 }
@@ -1863,8 +1912,18 @@ void InputEventMIDI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_controller_value", "controller_value"), &InputEventMIDI::set_controller_value);
 	ClassDB::bind_method(D_METHOD("get_controller_value"), &InputEventMIDI::get_controller_value);
 
+	String midi_messages_hint_string;
+	HashMap<StringName, int64_t> midi_messages;
+	CoreConstants::get_enum_values("MIDIMessage", &midi_messages);
+	for (const KeyValue<StringName, int64_t> &E : midi_messages) {
+		if (!midi_messages_hint_string.is_empty()) {
+			midi_messages_hint_string += ",";
+		}
+		midi_messages_hint_string += String(E.key).trim_prefix("MIDI_MESSAGE_").capitalize() + ":" + itos(E.value);
+	}
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "channel"), "set_channel", "get_channel");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "message"), "set_message", "get_message");
+	ADD_PROPERTY(PropertyInfo::make_enum("message", "MIDIMessage", midi_messages_hint_string), "set_message", "get_message");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pitch"), "set_pitch", "get_pitch");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "velocity"), "set_velocity", "get_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "instrument"), "set_instrument", "get_instrument");
@@ -1888,7 +1947,7 @@ void InputEventShortcut::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &InputEventShortcut::set_shortcut);
 	ClassDB::bind_method(D_METHOD("get_shortcut"), &InputEventShortcut::get_shortcut);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo::make_object("shortcut", "Shortcut"), "set_shortcut", "get_shortcut");
 }
 
 String InputEventShortcut::as_text() const {

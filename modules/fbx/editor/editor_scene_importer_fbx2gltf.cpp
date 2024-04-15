@@ -135,8 +135,8 @@ Variant EditorSceneFormatImporterFBX2GLTF::get_option_visibility(const String &p
 	return true;
 }
 
-#define ADD_OPTION_ENUM(PATH, ENUM_HINT, VALUE) \
-	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, SNAME(PATH), PROPERTY_HINT_ENUM, ENUM_HINT), VALUE));
+#define ADD_OPTION_ENUM(m_path, m_enum_hint, m_value) \
+	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo::make_enum(SNAME(m_path), "", m_enum_hint), m_value));
 
 void EditorSceneFormatImporterFBX2GLTF::get_import_options(const String &p_path,
 		List<ResourceImporter::ImportOption> *r_options) {

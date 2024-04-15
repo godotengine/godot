@@ -6107,8 +6107,8 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("stop_child_process", &EditorNode::stop_child_process);
 
 	ADD_SIGNAL(MethodInfo("request_help_search"));
-	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
-	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
+	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo::make_object("obj", "Object"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
+	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo::make_object("obj", "Object")));
 	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "path")));

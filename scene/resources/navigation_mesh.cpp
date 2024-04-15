@@ -541,13 +541,13 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 
 	ADD_GROUP("Sampling", "sample_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sample_partition_type", PROPERTY_HINT_ENUM, "Watershed,Monotone,Layers"), "set_sample_partition_type", "get_sample_partition_type");
+	ADD_PROPERTY(PropertyInfo::make_enum("sample_partition_type", "NavigationMesh.SamplePartitionType", "Watershed,Monotone,Layers"), "set_sample_partition_type", "get_sample_partition_type");
 	ADD_GROUP("Geometry", "geometry_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Both"), "set_parsed_geometry_type", "get_parsed_geometry_type");
+	ADD_PROPERTY(PropertyInfo::make_enum("geometry_parsed_geometry_type", "NavigationMesh.ParsedGeometryType", "Mesh Instances,Static Colliders,Both"), "set_parsed_geometry_type", "get_parsed_geometry_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY_DEFAULT("geometry_collision_mask", 0xFFFFFFFF);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "Root Node Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry_source_group_name"), "set_source_group_name", "get_source_group_name");
+	ADD_PROPERTY(PropertyInfo::make_enum("geometry_source_geometry_mode", "NavigationMesh.SourceGeometryMode", "Root Node Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "geometry_source_group_name"), "set_source_group_name", "get_source_group_name");
 	ADD_PROPERTY_DEFAULT("geometry_source_group_name", StringName("navigation_mesh_source_group"));
 	ADD_GROUP("Cells", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_size", "get_cell_size");

@@ -349,12 +349,12 @@ void AnimationNodeAnimation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_loop_mode"), &AnimationNodeAnimation::get_loop_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "play_mode", PROPERTY_HINT_ENUM, "Forward,Backward"), "set_play_mode", "get_play_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("play_mode", "AnimationNodeAnimation.PlayMode", "Forward,Backward"), "set_play_mode", "get_play_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_custom_timeline"), "set_use_custom_timeline", "is_using_custom_timeline");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "timeline_length", PROPERTY_HINT_RANGE, "0.001,60,0.001,or_greater,or_less,hide_slider,suffix:s"), "set_timeline_length", "get_timeline_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch_time_scale"), "set_stretch_time_scale", "is_stretching_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "start_offset", PROPERTY_HINT_RANGE, "-60,60,0.001,or_greater,or_less,hide_slider,suffix:s"), "set_start_offset", "get_start_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("loop_mode", "Animation.LoopMode", "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
 
 	BIND_ENUM_CONSTANT(PLAY_MODE_FORWARD);
 	BIND_ENUM_CONSTANT(PLAY_MODE_BACKWARD);
@@ -388,7 +388,7 @@ void AnimationNodeOneShot::get_parameter_list(List<PropertyInfo> *r_list) const 
 	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::BOOL, active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
 	r_list->push_back(PropertyInfo(Variant::BOOL, internal_active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
-	r_list->push_back(PropertyInfo(Variant::INT, request, PROPERTY_HINT_ENUM, ",Fire,Abort,Fade Out"));
+	r_list->push_back(PropertyInfo::make_enum(request, "", ",Fire,Abort,Fade Out"));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, fade_in_remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, fade_out_remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time_to_restart, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
@@ -694,12 +694,12 @@ void AnimationNodeOneShot::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mix_mode", "mode"), &AnimationNodeOneShot::set_mix_mode);
 	ClassDB::bind_method(D_METHOD("get_mix_mode"), &AnimationNodeOneShot::get_mix_mode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_mode", PROPERTY_HINT_ENUM, "Blend,Add"), "set_mix_mode", "get_mix_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("mix_mode", "AnimationNodeOneShot.MixMode", "Blend,Add"), "set_mix_mode", "get_mix_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fadein_time", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_fadein_time", "get_fadein_time");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fadein_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_fadein_curve", "get_fadein_curve");
+	ADD_PROPERTY(PropertyInfo::make_object("fadein_curve", "Curve"), "set_fadein_curve", "get_fadein_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fadeout_time", PROPERTY_HINT_RANGE, "0,60,0.01,or_greater,suffix:s"), "set_fadeout_time", "get_fadeout_time");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fadeout_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_fadeout_curve", "get_fadeout_curve");
+	ADD_PROPERTY(PropertyInfo::make_object("fadeout_curve", "Curve"), "set_fadeout_curve", "get_fadeout_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "break_loop_at_end"), "set_break_loop_at_end", "is_loop_broken_at_end");
 
 	ADD_GROUP("Auto Restart", "autorestart_");
@@ -1393,9 +1393,9 @@ void AnimationNodeTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_allow_transition_to_self"), &AnimationNodeTransition::is_allow_transition_to_self);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
+	ADD_PROPERTY(PropertyInfo::make_object("xfade_curve", "Curve"), "set_xfade_curve", "get_xfade_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_transition_to_self"), "set_allow_transition_to_self", "is_allow_transition_to_self");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED, "Inputs,input_"), "set_input_count", "get_input_count");
+	ADD_PROPERTY(PropertyInfo::make_array_count("input_count", "Inputs,input_", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_input_count", "get_input_count");
 }
 
 AnimationNodeTransition::AnimationNodeTransition() {
@@ -1737,7 +1737,7 @@ void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) cons
 	for (const StringName &E : names) {
 		String prop_name = E;
 		if (prop_name != "output") {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "nodes/" + prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
+			p_list->push_back(PropertyInfo::make_object("nodes/" + prop_name + "/node", "AnimationNode", "", PROPERTY_USAGE_NO_EDITOR));
 		}
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "nodes/" + prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}

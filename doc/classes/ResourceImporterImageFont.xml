@@ -32,7 +32,7 @@
 		<member name="descent" type="int" setter="" getter="" default="0">
 			Font descent (number of pixels below the baseline). If set to [code]0[/code], half of the character height is used.
 		</member>
-		<member name="fallbacks" type="Array" setter="" getter="" default="[]">
+		<member name="fallbacks" type="Font[]" setter="" getter="" default="[]">
 			List of font fallbacks to use if a glyph isn't found in this bitmap font. Fonts at the beginning of the array are attempted first.
 		</member>
 		<member name="image_margin" type="Rect2i" setter="" getter="" default="Rect2i(0, 0, 0, 0)">

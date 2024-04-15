@@ -210,15 +210,15 @@ PackedStringArray WorldEnvironment::get_configuration_warnings() const {
 void WorldEnvironment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &WorldEnvironment::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &WorldEnvironment::get_environment);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
+	ADD_PROPERTY(PropertyInfo::make_object("environment", "Environment"), "set_environment", "get_environment");
 
 	ClassDB::bind_method(D_METHOD("set_camera_attributes", "camera_attributes"), &WorldEnvironment::set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &WorldEnvironment::get_camera_attributes);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
+	ADD_PROPERTY(PropertyInfo::make_object("camera_attributes", "CameraAttributes", "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
 
 	ClassDB::bind_method(D_METHOD("set_compositor", "compositor"), &WorldEnvironment::set_compositor);
 	ClassDB::bind_method(D_METHOD("get_compositor"), &WorldEnvironment::get_compositor);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "compositor", PROPERTY_HINT_RESOURCE_TYPE, "Compositor"), "set_compositor", "get_compositor");
+	ADD_PROPERTY(PropertyInfo::make_object("compositor", "Compositor"), "set_compositor", "get_compositor");
 }
 
 WorldEnvironment::WorldEnvironment() {

@@ -162,7 +162,7 @@ protected:
 	virtual void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
-	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
+	void setup(Variant::Type p_array_type, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "");
 	virtual void update_property() override;
 	EditorPropertyArray();
 };

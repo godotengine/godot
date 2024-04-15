@@ -80,8 +80,8 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 
 void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 		List<ResourceImporter::ImportOption> *r_options) {
-	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.1 or 4.0,Godot 4.2 or later"), 1));
-	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_EXTRACT_TEXTURES));
+	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo::make_enum("gltf/naming_version", "", "Godot 4.1 or 4.0,Godot 4.2 or later"), 1));
+	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo::make_enum("gltf/embedded_image_handling", "", "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_EXTRACT_TEXTURES));
 }
 
 void EditorSceneFormatImporterGLTF::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {

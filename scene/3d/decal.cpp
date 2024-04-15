@@ -225,10 +225,10 @@ void Decal::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,suffix:m"), "set_size", "get_size");
 
 	ADD_GROUP("Textures", "texture_");
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_albedo", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_ALBEDO);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_NORMAL);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_orm", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_ORM);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_emission", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_EMISSION);
+	ADD_PROPERTYI(PropertyInfo::make_object("texture_albedo", "Texture2D"), "set_texture", "get_texture", TEXTURE_ALBEDO);
+	ADD_PROPERTYI(PropertyInfo::make_object("texture_normal", "Texture2D"), "set_texture", "get_texture", TEXTURE_NORMAL);
+	ADD_PROPERTYI(PropertyInfo::make_object("texture_orm", "Texture2D"), "set_texture", "get_texture", TEXTURE_ORM);
+	ADD_PROPERTYI(PropertyInfo::make_object("texture_emission", "Texture2D"), "set_texture", "get_texture", TEXTURE_EMISSION);
 
 	ADD_GROUP("Parameters", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_emission_energy", "get_emission_energy");

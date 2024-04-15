@@ -2685,7 +2685,7 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_lookup_on_click"), "set_symbol_lookup_on_click_enabled", "is_symbol_lookup_on_click_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "line_folding"), "set_line_folding_enabled", "is_line_folding_enabled");
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "line_length_guidelines"), "set_line_length_guidelines", "get_line_length_guidelines");
+	ADD_PROPERTY(PropertyInfo::make_typed_array("line_length_guidelines", "int"), "set_line_length_guidelines", "get_line_length_guidelines");
 
 	ADD_GROUP("Gutters", "gutters_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
@@ -2700,18 +2700,18 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
 
 	ADD_GROUP("Delimiters", "delimiter_");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_strings"), "set_string_delimiters", "get_string_delimiters");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_comments"), "set_comment_delimiters", "get_comment_delimiters");
+	ADD_PROPERTY(PropertyInfo::make_typed_array("delimiter_strings", "String"), "set_string_delimiters", "get_string_delimiters");
+	ADD_PROPERTY(PropertyInfo::make_typed_array("delimiter_comments", "String"), "set_comment_delimiters", "get_comment_delimiters");
 
 	ADD_GROUP("Code Completion", "code_completion_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "code_completion_enabled"), "set_code_completion_enabled", "is_code_completion_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "code_completion_prefixes"), "set_code_completion_prefixes", "get_code_completion_prefixes");
+	ADD_PROPERTY(PropertyInfo::make_typed_array("code_completion_prefixes", "String"), "set_code_completion_prefixes", "get_code_completion_prefixes");
 
 	ADD_GROUP("Indentation", "indent_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "indent_size"), "set_indent_size", "get_indent_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_use_spaces"), "set_indent_using_spaces", "is_indent_using_spaces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_automatic"), "set_auto_indent_enabled", "is_auto_indent_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "indent_automatic_prefixes"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
+	ADD_PROPERTY(PropertyInfo::make_typed_array("indent_automatic_prefixes", "String"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
 
 	ADD_GROUP("Auto Brace Completion", "auto_brace_completion_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_enabled"), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");

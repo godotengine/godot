@@ -71,7 +71,7 @@ void NinePatchRect::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo::make_object("texture", "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_region_rect", "get_region_rect");
 
@@ -81,8 +81,8 @@ void NinePatchRect::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_right", PROPERTY_HINT_RANGE, "0,16384,1,suffix:px"), "set_patch_margin", "get_patch_margin", SIDE_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_bottom", PROPERTY_HINT_RANGE, "0,16384,1,suffix:px"), "set_patch_margin", "get_patch_margin", SIDE_BOTTOM);
 	ADD_GROUP("Axis Stretch", "axis_stretch_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_vertical", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_v_axis_stretch_mode", "get_v_axis_stretch_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("axis_stretch_horizontal", "NinePatchRect.AxisStretchMode", "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("axis_stretch_vertical", "NinePatchRect.AxisStretchMode", "Stretch,Tile,Tile Fit"), "set_v_axis_stretch_mode", "get_v_axis_stretch_mode");
 
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_STRETCH);
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE);

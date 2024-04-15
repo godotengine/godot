@@ -454,7 +454,7 @@ private:
 
 	int blocked = 0;
 
-	int drop_mode_flags = 0;
+	BitField<DropModeFlags> drop_mode_flags;
 
 	struct ColumnInfo {
 		int custom_min_width = 0;
@@ -784,8 +784,8 @@ public:
 	void set_enable_recursive_folding(bool p_enable);
 	bool is_recursive_folding_enabled() const;
 
-	void set_drop_mode_flags(int p_flags);
-	int get_drop_mode_flags() const;
+	void set_drop_mode_flags(BitField<DropModeFlags> p_flags);
+	BitField<DropModeFlags> get_drop_mode_flags() const;
 
 	void set_edit_checkbox_cell_only_when_checkbox_is_pressed(bool p_enable);
 	bool get_edit_checkbox_cell_only_when_checkbox_is_pressed() const;
@@ -806,6 +806,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(Tree::SelectMode);
-VARIANT_ENUM_CAST(Tree::DropModeFlags);
+VARIANT_BITFIELD_CAST(Tree::DropModeFlags);
 
 #endif // TREE_H

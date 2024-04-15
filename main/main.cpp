@@ -2027,7 +2027,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 #undef BLOCK_DEVICE
 
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_ARRAY_TYPE, vformat("%s/%s:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), device_blocklist);
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::ARRAY, "rendering/gl_compatibility/force_angle_on_devices", PROPERTY_HINT_TYPE_STRING, vformat("%d/%d:%s", Variant::DICTIONARY, PROPERTY_HINT_NONE, String())), device_blocklist);
 	}
 
 	// Start with RenderingDevice-based backends.
@@ -2382,11 +2382,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// XR project settings.
 	GLOBAL_DEF_RST_BASIC("xr/openxr/enabled", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"), "res://openxr_action_map.tres");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head Mounted,Handheld"), "0");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo"), "1"); // "Mono,Stereo,Quad,Observer"
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage,Local Floor"), "1");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/environment_blend_mode", PROPERTY_HINT_ENUM, "Opaque,Additive,Alpha"), "0");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/foveation_level", PROPERTY_HINT_ENUM, "Off,Low,Medium,High"), "0");
+	GLOBAL_DEF_BASIC(PropertyInfo::make_enum("xr/openxr/form_factor", "", "Head Mounted,Handheld"), "0");
+	GLOBAL_DEF_BASIC(PropertyInfo::make_enum("xr/openxr/view_configuration", "", "Mono,Stereo"), "1"); // "Mono,Stereo,Quad,Observer"
+	GLOBAL_DEF_BASIC(PropertyInfo::make_enum("xr/openxr/reference_space", "", "Local,Stage,Local Floor"), "1");
+	GLOBAL_DEF_BASIC(PropertyInfo::make_enum("xr/openxr/environment_blend_mode", "", "Opaque,Additive,Alpha"), "0");
+	GLOBAL_DEF_BASIC(PropertyInfo::make_enum("xr/openxr/foveation_level", "", "Off,Low,Medium,High"), "0");
 	GLOBAL_DEF_BASIC("xr/openxr/foveation_dynamic", false);
 
 	GLOBAL_DEF_BASIC("xr/openxr/submit_depth_buffer", false);
@@ -2940,7 +2940,7 @@ Error Main::setup2() {
 
 		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
 		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
-		GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
+		GLOBAL_DEF_BASIC(PropertyInfo::make_enum("input_devices/pointing/android/rotary_input_scroll_axis", "", "Horizontal,Vertical"), 1);
 		OS::get_singleton()->benchmark_end_measure("Startup", "Setup Window and Boot");
 	}
 

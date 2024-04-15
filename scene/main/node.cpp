@@ -1300,9 +1300,9 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 	data.name = p_name;
 }
 
-void Node::set_name(const String &p_name) {
+void Node::set_name(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use `set_name.call_deferred(new_name)`.");
-	String name = p_name.validate_node_name();
+	String name = p_name.operator String().validate_node_name();
 
 	ERR_FAIL_COND(name.is_empty());
 
@@ -3495,8 +3495,8 @@ void Node::notify_thread_safe(int p_notification) {
 }
 
 void Node::_bind_methods() {
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/node_name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"), 0);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/node_name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"), NAME_CASING_PASCAL_CASE);
+	GLOBAL_DEF(PropertyInfo::make_enum("editor/naming/node_name_num_separator", "", "None,Space,Underscore,Dash"), 0);
+	GLOBAL_DEF(PropertyInfo::make_enum("editor/naming/node_name_casing", "", "PascalCase,camelCase,snake_case"), NAME_CASING_PASCAL_CASE);
 
 	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
@@ -3753,34 +3753,34 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_entered"));
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
-	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
-	ADD_SIGNAL(MethodInfo("child_exiting_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo::make_object("node", "Node")));
+	ADD_SIGNAL(MethodInfo("child_exiting_tree", PropertyInfo::make_object("node", "Node")));
 
 	ADD_SIGNAL(MethodInfo("child_order_changed"));
-	ADD_SIGNAL(MethodInfo("replacing_by", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
-	ADD_SIGNAL(MethodInfo("editor_description_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("replacing_by", PropertyInfo::make_object("node", "Node")));
+	ADD_SIGNAL(MethodInfo("editor_description_changed", PropertyInfo::make_object("node", "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");
+	ADD_PROPERTY(PropertyInfo::make_object("owner", "Node", "", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
+	ADD_PROPERTY(PropertyInfo::make_object("multiplayer", "MultiplayerAPI", "", PROPERTY_USAGE_NONE), "", "get_multiplayer");
 
 	ADD_GROUP("Process", "process_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("process_mode", "Node.ProcessMode", "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_priority"), "set_process_priority", "get_process_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_physics_priority"), "set_physics_process_priority", "get_physics_process_priority");
 
 	ADD_SUBGROUP("Thread Group", "process_thread");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_group", PROPERTY_HINT_ENUM, "Inherit,Main Thread,Sub Thread"), "set_process_thread_group", "get_process_thread_group");
+	ADD_PROPERTY(PropertyInfo::make_enum("process_thread_group", "Node.ProcessThreadGroup", "Inherit,Main Thread,Sub Thread"), "set_process_thread_group", "get_process_thread_group");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_group_order"), "set_process_thread_group_order", "get_process_thread_group_order");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_thread_messages", PROPERTY_HINT_FLAGS, "Process,Physics Process"), "set_process_thread_messages", "get_process_thread_messages");
+	ADD_PROPERTY(PropertyInfo::make_flags("process_thread_messages", "Node.ProcessThreadMessages", "Process,Physics Process"), "set_process_thread_messages", "get_process_thread_messages");
 
 	ADD_GROUP("Physics Interpolation", "physics_interpolation_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_mode", PROPERTY_HINT_ENUM, "Inherit,On,Off"), "set_physics_interpolation_mode", "get_physics_interpolation_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("physics_interpolation_mode", "Node.PhysicsInterpolationMode", "Inherit,On,Off"), "set_physics_interpolation_mode", "get_physics_interpolation_mode");
 
 	ADD_GROUP("Auto Translate", "auto_translate_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("auto_translate_mode", "Node.AutoTranslateMode", "Inherit,Always,Disabled"), "set_auto_translate_mode", "get_auto_translate_mode");
 
 	ADD_GROUP("Editor Description", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT), "set_editor_description", "get_editor_description");

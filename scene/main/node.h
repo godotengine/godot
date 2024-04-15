@@ -415,7 +415,7 @@ public:
 
 	StringName get_name() const;
 	String get_description() const;
-	void set_name(const String &p_name);
+	void set_name(const StringName &p_name);
 
 	InternalMode get_internal_mode() const;
 

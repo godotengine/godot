@@ -71,7 +71,7 @@ bool MultiplayerSpawner::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void MultiplayerSpawner::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::INT, "_spawnable_scene_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Auto Spawn List,scenes/"));
+	p_list->push_back(PropertyInfo::make_array_count("_spawnable_scene_count", "Auto Spawn List,scenes/", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 	List<String> exts;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &exts);
 	String ext_hint;
@@ -177,8 +177,8 @@ void MultiplayerSpawner::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spawn_function", "spawn_function"), &MultiplayerSpawner::set_spawn_function);
 	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "spawn_function", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_spawn_function", "get_spawn_function");
 
-	ADD_SIGNAL(MethodInfo("despawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("spawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("despawned", PropertyInfo::make_object("node", "Node")));
+	ADD_SIGNAL(MethodInfo("spawned", PropertyInfo::make_object("node", "Node")));
 }
 
 void MultiplayerSpawner::_update_spawn_node() {

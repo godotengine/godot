@@ -3846,17 +3846,15 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			name = "_init";
 		}
 
-		MethodInfo method_info;
-		if (ClassDB::has_property(native, name)) {
-			StringName getter_name = ClassDB::get_property_getter(native, name);
-			MethodBind *getter = ClassDB::get_method(native, getter_name);
-			if (getter != nullptr) {
-				bool has_setter = ClassDB::get_property_setter(native, name) != StringName();
-				p_identifier->set_datatype(type_from_property(getter->get_return_info(), false, !has_setter));
-				p_identifier->source = GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
-			}
+		PropertyInfo property_info;
+		if (ClassDB::get_property_info(native, name, &property_info)) {
+			bool has_setter = ClassDB::get_property_setter(native, name) != StringName();
+			p_identifier->set_datatype(type_from_property(property_info, false, !has_setter));
+			p_identifier->source = GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
 			return;
 		}
+
+		MethodInfo method_info;
 		if (ClassDB::get_method_info(native, name, &method_info)) {
 			// Method is callable.
 			p_identifier->set_datatype(make_callable_type(method_info));
@@ -3869,13 +3867,14 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			p_identifier->source = GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
 			return;
 		}
+
 		if (ClassDB::has_enum(native, name)) {
 			p_identifier->set_datatype(make_native_enum_type(name, native));
 			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 			return;
 		}
-		bool valid = false;
 
+		bool valid = false;
 		int64_t int_constant = ClassDB::get_integer_constant(native, name, &valid);
 		if (valid) {
 			p_identifier->is_constant = true;

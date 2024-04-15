@@ -370,7 +370,7 @@ void SoftBody3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,KeepActive"), "set_disable_mode", "get_disable_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("disable_mode", "SoftBody3D.DisableMode", "Remove,KeepActive"), "set_disable_mode", "get_disable_mode");
 
 	BIND_ENUM_CONSTANT(DISABLE_MODE_REMOVE);
 	BIND_ENUM_CONSTANT(DISABLE_MODE_KEEP_ACTIVE);

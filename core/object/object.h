@@ -49,21 +49,21 @@ class TypedArray;
 
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
-	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.
-	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
-	PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
+	PROPERTY_HINT_RANGE, ///< hint_string = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.
+	PROPERTY_HINT_ENUM, ///< hint_string = "val1,val2,val3,etc"
+	PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_string = "val1,val2,val3,etc"
 	PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease) use "attenuation" hint string to revert (flip h), "positive_only" to exclude in-out and out-in. (ie: "attenuation,positive_only")
 	PROPERTY_HINT_LINK,
-	PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
+	PROPERTY_HINT_FLAGS, ///< hint_string= "flag1,flag2,etc" (as bit flags)
 	PROPERTY_HINT_LAYERS_2D_RENDER,
 	PROPERTY_HINT_LAYERS_2D_PHYSICS,
 	PROPERTY_HINT_LAYERS_2D_NAVIGATION,
 	PROPERTY_HINT_LAYERS_3D_RENDER,
 	PROPERTY_HINT_LAYERS_3D_PHYSICS,
 	PROPERTY_HINT_LAYERS_3D_NAVIGATION,
-	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
+	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_string (optionally) is a filter "*.png,*.wav,*.doc,"
 	PROPERTY_HINT_DIR, ///< a directory path must be passed
-	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
+	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_string (optionally) is a filter "*.png,*.wav,*.doc,"
 	PROPERTY_HINT_GLOBAL_DIR, ///< a directory path must be passed
 	PROPERTY_HINT_RESOURCE_TYPE, ///< a resource object type
 	PROPERTY_HINT_MULTILINE_TEXT, ///< used for string properties that can contain multiple lines
@@ -71,15 +71,15 @@ enum PropertyHint {
 	PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
 	PROPERTY_HINT_OBJECT_ID,
-	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
+	PROPERTY_HINT_TYPE_STRING, ///< A type string, the hint_string is the base type to choose. Or a typed array, hint_string supports advanced syntax (see docs).
 	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, // Deprecated.
 	PROPERTY_HINT_OBJECT_TOO_BIG, ///< object is too big to send
 	PROPERTY_HINT_NODE_PATH_VALID_TYPES,
-	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
-	PROPERTY_HINT_GLOBAL_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
+	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_string (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
+	PROPERTY_HINT_GLOBAL_SAVE_FILE, ///< a file path must be passed, hint_string (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_INT_IS_OBJECTID, // Deprecated.
 	PROPERTY_HINT_INT_IS_POINTER,
-	PROPERTY_HINT_ARRAY_TYPE,
+	PROPERTY_HINT_ARRAY_TYPE, ///< A typed array, hint_string is the name of type (Variant type or class). Do not confuse with PROPERTY_HINT_TYPE_STRING!
 	PROPERTY_HINT_LOCALE_ID,
 	PROPERTY_HINT_LOCALIZABLE_STRING,
 	PROPERTY_HINT_NODE_TYPE, ///< a node object type
@@ -134,14 +134,12 @@ enum PropertyUsageFlags {
 #define ADD_SUBGROUP(m_name, m_prefix) ::ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix)
 #define ADD_SUBGROUP_INDENT(m_name, m_prefix, m_depth) ::ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix, m_depth)
 #define ADD_LINKED_PROPERTY(m_property, m_linked_property) ::ClassDB::add_linked_property(get_class_static(), m_property, m_linked_property)
-
-#define ADD_ARRAY_COUNT(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix)
-#define ADD_ARRAY_COUNT_WITH_USAGE_FLAGS(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix, m_property_usage_flags) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix, m_property_usage_flags)
 #define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
 
-// Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
-// PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
-#define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
+// Helper macro to use with PROPERTY_HINT_TYPE_STRING for arrays of specific resources. Example:
+// PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_TYPE_STRING, MAKE_RESOURCE_TYPE_HINT("Font")
+// WARNING: Do NOT use with PROPERTY_HINT_ARRAY_TYPE, use PropertyInfo::make_typed_array() instead.
+#define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%d/%d:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
 struct PropertyInfo {
 	Variant::Type type = Variant::NIL;
@@ -163,6 +161,34 @@ struct PropertyInfo {
 
 	static PropertyInfo from_dict(const Dictionary &p_dict);
 
+	// Only for `int` enums. For `String`/`StringName` enums use the constructor.
+	_FORCE_INLINE_ static PropertyInfo make_enum(const String &p_name, const StringName &p_enum, const String &p_options, const uint32_t p_usage = PROPERTY_USAGE_DEFAULT) {
+		return PropertyInfo(Variant::INT, p_name, PROPERTY_HINT_ENUM, p_options, p_usage | (p_enum == StringName() ? 0 : PROPERTY_USAGE_CLASS_IS_ENUM), p_enum);
+	}
+
+	_FORCE_INLINE_ static PropertyInfo make_flags(const String &p_name, const StringName &p_enum, const String &p_options, const uint32_t p_usage = PROPERTY_USAGE_DEFAULT) {
+		return PropertyInfo(Variant::INT, p_name, PROPERTY_HINT_FLAGS, p_options, p_usage | (p_enum == StringName() ? 0 : PROPERTY_USAGE_CLASS_IS_BITFIELD), p_enum);
+	}
+
+	// If you want `Variant::NIL` use the constructor instead.
+	_FORCE_INLINE_ static PropertyInfo make_array_count(const StringName &p_name, const String &p_params, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT) {
+		return PropertyInfo(Variant::INT, p_name, p_hint, p_hint_string, p_usage | PROPERTY_USAGE_ARRAY, p_params);
+	}
+
+	_FORCE_INLINE_ static PropertyInfo make_typed_array(const StringName &p_name, const String &p_element_type, const uint32_t p_usage = PROPERTY_USAGE_DEFAULT) {
+		return PropertyInfo(Variant::ARRAY, p_name, PROPERTY_HINT_ARRAY_TYPE, p_element_type, p_usage); // class_name must be empty.
+	}
+
+	// `p_class_list` is an optional comma-separated list of derived classes. For example "CanvasItemMaterial,ShaderMaterial" instead of "Material".
+	_FORCE_INLINE_ static PropertyInfo make_object(const StringName &p_name, const StringName &p_class_name, const String &p_class_list = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT) {
+		return PropertyInfo(Variant::OBJECT, p_name, PROPERTY_HINT_RESOURCE_TYPE, p_class_list.is_empty() ? String(p_class_name) : p_class_list, p_usage, p_class_name);
+	}
+
+	// Same as `make_object()`, but for node export (see GH-62185).
+	_FORCE_INLINE_ static PropertyInfo make_node(const StringName &p_name, const StringName &p_class_name, const String &p_class_list = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT) {
+		return PropertyInfo(Variant::OBJECT, p_name, PROPERTY_HINT_NODE_TYPE, p_class_list.is_empty() ? String(p_class_name) : p_class_list, p_usage, p_class_name);
+	}
+
 	PropertyInfo() {}
 
 	PropertyInfo(const Variant::Type p_type, const String &p_name, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName()) :
@@ -171,7 +197,7 @@ struct PropertyInfo {
 			hint(p_hint),
 			hint_string(p_hint_string),
 			usage(p_usage) {
-		if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		if (hint == PROPERTY_HINT_RESOURCE_TYPE && p_class_name == StringName()) {
 			class_name = hint_string;
 		} else {
 			class_name = p_class_name;

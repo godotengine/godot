@@ -7003,7 +7003,7 @@ void GLTFDocument::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "image_format"), "set_image_format", "get_image_format");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lossy_quality"), "set_lossy_quality", "get_lossy_quality");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "root_node_mode"), "set_root_node_mode", "get_root_node_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("root_node_mode", "GLTFDocument.RootNodeMode", "Single Root,Keep Root,Multi Root"), "set_root_node_mode", "get_root_node_mode");
 
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("register_gltf_document_extension", "extension", "first_priority"),
 			&GLTFDocument::register_gltf_document_extension, DEFVAL(false));

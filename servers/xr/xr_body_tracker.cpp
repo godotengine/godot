@@ -44,7 +44,7 @@ void XRBodyTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joint_transform", "joint"), &XRBodyTracker::get_joint_transform);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "has_tracking_data", PROPERTY_HINT_NONE), "set_has_tracking_data", "get_has_tracking_data");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_flags", PROPERTY_HINT_FLAGS, "Upper Body,Lower Body,Hands"), "set_body_flags", "get_body_flags");
+	ADD_PROPERTY(PropertyInfo::make_flags("body_flags", "XRBodyTracker.BodyFlags", "Upper Body,Lower Body,Hands"), "set_body_flags", "get_body_flags");
 
 	BIND_BITFIELD_FLAG(BODY_FLAG_UPPER_BODY_SUPPORTED);
 	BIND_BITFIELD_FLAG(BODY_FLAG_LOWER_BODY_SUPPORTED);

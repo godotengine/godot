@@ -62,7 +62,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_play_area"), &XRInterface::get_play_area);
 
 	ADD_GROUP("XR", "xr_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "xr_play_area_mode", PROPERTY_HINT_ENUM, "Unknown,3DOF,Sitting,Roomscale,Stage"), "set_play_area_mode", "get_play_area_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("xr_play_area_mode", "XRInterface.PlayAreaMode", "Unknown,3DOF,Sitting,Roomscale,Stage"), "set_play_area_mode", "get_play_area_mode");
 
 	// methods and properties specific to AR....
 	ClassDB::bind_method(D_METHOD("get_anchor_detection_is_enabled"), &XRInterface::get_anchor_detection_is_enabled);
@@ -80,7 +80,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_supported_environment_blend_modes"), &XRInterface::get_supported_environment_blend_modes);
 	ClassDB::bind_method(D_METHOD("set_environment_blend_mode", "mode"), &XRInterface::set_environment_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_environment_blend_mode"), &XRInterface::get_environment_blend_mode);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "environment_blend_mode"), "set_environment_blend_mode", "get_environment_blend_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("environment_blend_mode", "XRInterface.EnvironmentBlendMode", "Opaque,Additive,Alpha Blend"), "set_environment_blend_mode", "get_environment_blend_mode");
 
 	ADD_GROUP("AR", "ar_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ar_is_anchor_detection_enabled"), "set_anchor_detection_is_enabled", "get_anchor_detection_is_enabled");

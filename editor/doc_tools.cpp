@@ -569,51 +569,38 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					prop.default_value = DocData::get_default_value_string(default_value);
 				}
 
+				if (E.type == Variant::INT) {
+					prop.type = "int";
+					if (E.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
+						prop.enumeration = E.class_name;
+						prop.is_bitfield = E.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
+					}
+				} else if (E.type == Variant::ARRAY) {
+					if (E.hint == PROPERTY_HINT_ARRAY_TYPE && !E.hint_string.is_empty()) {
+						prop.type = E.hint_string + "[]";
+					} else {
+						prop.type = "Array";
+					}
+				} else if (E.type == Variant::NIL) {
+					prop.type = (E.usage & PROPERTY_USAGE_NIL_IS_VARIANT) ? "Variant" : "void";
+				} else if (E.class_name != StringName()) {
+					prop.type = E.class_name;
+				} else {
+					prop.type = Variant::get_type_name(E.type);
+				}
+
 				StringName setter = ClassDB::get_property_setter(name, E.name);
 				StringName getter = ClassDB::get_property_getter(name, E.name);
 
 				prop.setter = setter;
 				prop.getter = getter;
 
-				bool found_type = false;
-				if (getter != StringName()) {
-					MethodBind *mb = ClassDB::get_method(name, getter);
-					if (mb) {
-						PropertyInfo retinfo = mb->get_return_info();
-
-						found_type = true;
-						if (retinfo.type == Variant::INT && retinfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
-							prop.enumeration = retinfo.class_name;
-							prop.is_bitfield = retinfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
-							prop.type = "int";
-						} else if (retinfo.class_name != StringName()) {
-							prop.type = retinfo.class_name;
-						} else if (retinfo.type == Variant::ARRAY && retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
-							prop.type = retinfo.hint_string + "[]";
-						} else if (retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-							prop.type = retinfo.hint_string;
-						} else if (retinfo.type == Variant::NIL && retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
-							prop.type = "Variant";
-						} else if (retinfo.type == Variant::NIL) {
-							prop.type = "void";
-						} else {
-							prop.type = Variant::get_type_name(retinfo.type);
-						}
-					}
-
-					setters_getters.insert(getter);
-				}
-
 				if (setter != StringName()) {
 					setters_getters.insert(setter);
 				}
 
-				if (!found_type) {
-					if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-						prop.type = E.hint_string;
-					} else {
-						prop.type = Variant::get_type_name(E.type);
-					}
+				if (getter != StringName()) {
+					setters_getters.insert(getter);
 				}
 
 				c.properties.push_back(prop);

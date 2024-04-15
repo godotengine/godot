@@ -473,7 +473,7 @@ void EditorUndoRedoManager::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "add_do_method";
-		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
+		mi.arguments.push_back(PropertyInfo::make_object("object", "Object"));
 		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "add_do_method", &EditorUndoRedoManager::_add_do_method, mi, varray(), false);
@@ -482,7 +482,7 @@ void EditorUndoRedoManager::_bind_methods() {
 	{
 		MethodInfo mi;
 		mi.name = "add_undo_method";
-		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
+		mi.arguments.push_back(PropertyInfo::make_object("object", "Object"));
 		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "add_undo_method", &EditorUndoRedoManager::_add_undo_method, mi, varray(), false);

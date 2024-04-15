@@ -33,7 +33,7 @@
 void MultiMeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_multimesh", "multimesh"), &MultiMeshInstance3D::set_multimesh);
 	ClassDB::bind_method(D_METHOD("get_multimesh"), &MultiMeshInstance3D::get_multimesh);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, "MultiMesh"), "set_multimesh", "get_multimesh");
+	ADD_PROPERTY(PropertyInfo::make_object("multimesh", "MultiMesh"), "set_multimesh", "get_multimesh");
 }
 
 void MultiMeshInstance3D::set_multimesh(const Ref<MultiMesh> &p_multimesh) {

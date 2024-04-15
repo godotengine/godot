@@ -63,7 +63,7 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hmd_transform"), &XRServer::get_hmd_transform);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "world_scale"), "set_world_scale", "get_world_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "world_origin"), "set_world_origin", "get_world_origin");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "world_origin"), "set_world_origin", "get_world_origin");
 
 	ClassDB::bind_method(D_METHOD("add_interface", "interface"), &XRServer::add_interface);
 	ClassDB::bind_method(D_METHOD("get_interface_count"), &XRServer::get_interface_count);
@@ -95,7 +95,7 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &XRServer::get_primary_interface);
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &XRServer::set_primary_interface);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "primary_interface"), "set_primary_interface", "get_primary_interface");
+	ADD_PROPERTY(PropertyInfo::make_object("primary_interface", "XRInterface"), "set_primary_interface", "get_primary_interface");
 
 	BIND_ENUM_CONSTANT(TRACKER_HEAD);
 	BIND_ENUM_CONSTANT(TRACKER_CONTROLLER);
@@ -116,16 +116,16 @@ void XRServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
 
-	ADD_SIGNAL(MethodInfo("hand_tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "hand_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRHandTracker")));
-	ADD_SIGNAL(MethodInfo("hand_tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "hand_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRHandTracker")));
+	ADD_SIGNAL(MethodInfo("hand_tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo::make_object("hand_tracker", "XRHandTracker")));
+	ADD_SIGNAL(MethodInfo("hand_tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo::make_object("hand_tracker", "XRHandTracker")));
 	ADD_SIGNAL(MethodInfo("hand_tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name")));
 
-	ADD_SIGNAL(MethodInfo("face_tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "face_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRFaceTracker")));
-	ADD_SIGNAL(MethodInfo("face_tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "face_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRFaceTracker")));
+	ADD_SIGNAL(MethodInfo("face_tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo::make_object("face_tracker", "XRFaceTracker")));
+	ADD_SIGNAL(MethodInfo("face_tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo::make_object("face_tracker", "XRFaceTracker")));
 	ADD_SIGNAL(MethodInfo("face_tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name")));
 
-	ADD_SIGNAL(MethodInfo("body_tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "body_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRBodyTracker")));
-	ADD_SIGNAL(MethodInfo("body_tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::OBJECT, "body_tracker", PROPERTY_HINT_RESOURCE_TYPE, "XRBodyTracker")));
+	ADD_SIGNAL(MethodInfo("body_tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo::make_object("body_tracker", "XRBodyTracker")));
+	ADD_SIGNAL(MethodInfo("body_tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo::make_object("body_tracker", "XRBodyTracker")));
 	ADD_SIGNAL(MethodInfo("body_tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name")));
 };
 

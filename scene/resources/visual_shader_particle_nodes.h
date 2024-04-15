@@ -336,7 +336,7 @@ public:
 	};
 
 protected:
-	int flags = EMIT_FLAG_POSITION | EMIT_FLAG_ROT_SCALE | EMIT_FLAG_VELOCITY | EMIT_FLAG_COLOR | EMIT_FLAG_CUSTOM;
+	BitField<EmitFlags> flags = EMIT_FLAG_POSITION | EMIT_FLAG_ROT_SCALE | EMIT_FLAG_VELOCITY | EMIT_FLAG_COLOR | EMIT_FLAG_CUSTOM;
 	static void _bind_methods();
 
 public:
@@ -354,8 +354,8 @@ public:
 	void add_flag(EmitFlags p_flag);
 	bool has_flag(EmitFlags p_flag) const;
 
-	void set_flags(EmitFlags p_flags);
-	EmitFlags get_flags() const;
+	void set_flags(BitField<EmitFlags> p_flags);
+	BitField<EmitFlags> get_flags() const;
 
 	virtual bool is_show_prop_names() const override;
 	virtual bool is_generate_input_var(int p_port) const override;
@@ -367,6 +367,6 @@ public:
 	VisualShaderNodeParticleEmit();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeParticleEmit::EmitFlags)
+VARIANT_BITFIELD_CAST(VisualShaderNodeParticleEmit::EmitFlags)
 
 #endif // VISUAL_SHADER_PARTICLE_NODES_H

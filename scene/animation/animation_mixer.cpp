@@ -2249,9 +2249,9 @@ void AnimationMixer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_max_polyphony", PROPERTY_HINT_RANGE, "1,127,1"), "set_audio_max_polyphony", "get_audio_max_polyphony");
 
 	ADD_GROUP("Callback Mode", "callback_mode_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "callback_mode_process", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_callback_mode_process", "get_callback_mode_process");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "callback_mode_method", PROPERTY_HINT_ENUM, "Deferred,Immediate"), "set_callback_mode_method", "get_callback_mode_method");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "callback_mode_discrete", PROPERTY_HINT_ENUM, "Dominant,Recessive,Force Continuous"), "set_callback_mode_discrete", "get_callback_mode_discrete");
+	ADD_PROPERTY(PropertyInfo::make_enum("callback_mode_process", "AnimationMixer.AnimationCallbackModeProcess", "Physics,Idle,Manual"), "set_callback_mode_process", "get_callback_mode_process");
+	ADD_PROPERTY(PropertyInfo::make_enum("callback_mode_method", "AnimationMixer.AnimationCallbackModeMethod", "Deferred,Immediate"), "set_callback_mode_method", "get_callback_mode_method");
+	ADD_PROPERTY(PropertyInfo::make_enum("callback_mode_discrete", "AnimationMixer.AnimationCallbackModeDiscrete", "Dominant,Recessive,Force Continuous"), "set_callback_mode_discrete", "get_callback_mode_discrete");
 
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_PROCESS_IDLE);
