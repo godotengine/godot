@@ -31,6 +31,13 @@
 				Returns whether the specified [param class] is available or not.
 			</description>
 		</method>
+		<method name="class_get_api_type" qualifiers="const">
+			<return type="int" enum="ClassDB.APIType" />
+			<param index="0" name="class" type="StringName" />
+			<description>
+				Returns the API type of [param class]. See [enum APIType].
+			</description>
+		</method>
 		<method name="class_get_enum_constants" qualifiers="const">
 			<return type="PackedStringArray" />
 			<param index="0" name="class" type="StringName" />
@@ -242,4 +249,21 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+		<constant name="API_CORE" value="0" enum="APIType">
+			Native Core class type.
+		</constant>
+		<constant name="API_EDITOR" value="1" enum="APIType">
+			Native Editor class type.
+		</constant>
+		<constant name="API_EXTENSION" value="2" enum="APIType">
+			GDExtension class type.
+		</constant>
+		<constant name="API_EDITOR_EXTENSION" value="3" enum="APIType">
+			GDExtension Editor class type.
+		</constant>
+		<constant name="API_NONE" value="4" enum="APIType">
+			Unknown class type.
+		</constant>
+	</constants>
 </class>
