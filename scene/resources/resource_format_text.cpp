@@ -1067,7 +1067,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 		if (fmt > FORMAT_VERSION) {
 			error_text = "Saved with newer format version";
 			_printerr();
-			error = ERR_PARSE_ERROR;
+			error = ERR_FILE_UNRECOGNIZED;
 			return;
 		}
 	}
