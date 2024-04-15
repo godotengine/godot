@@ -43,6 +43,7 @@
 #include "editor/editor_about.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/engine_update_label.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
@@ -526,7 +527,7 @@ void ProjectManager::_open_selected_projects_ask() {
 		return;
 	}
 
-	const Size2i popup_min_size = Size2i(600.0 * EDSCALE, 0);
+	const Size2i popup_min_size = Size2i(400.0 * EDSCALE, 0);
 
 	if (selected_list.size() > 1) {
 		multi_open_ask->set_text(vformat(TTR("You requested to open %d projects in parallel. Do you confirm?\nNote that usual checks for engine version compatibility will be bypassed."), selected_list.size()));
@@ -1397,7 +1398,14 @@ ProjectManager::ProjectManager() {
 	{
 		HBoxContainer *footer_bar = memnew(HBoxContainer);
 		footer_bar->set_alignment(BoxContainer::ALIGNMENT_END);
+		footer_bar->add_theme_constant_override("separation", 20 * EDSCALE);
 		main_vbox->add_child(footer_bar);
+
+#ifdef ENGINE_UPDATE_CHECK_ENABLED
+		EngineUpdateLabel *update_label = memnew(EngineUpdateLabel);
+		footer_bar->add_child(update_label);
+		update_label->connect("offline_clicked", callable_mp(this, &ProjectManager::_show_quick_settings));
+#endif
 
 		version_btn = memnew(LinkButton);
 		String hash = String(VERSION_HASH);
