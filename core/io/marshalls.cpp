@@ -656,10 +656,19 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					ERR_FAIL_COND_V(!ClassDB::can_instantiate(str), ERR_INVALID_DATA);
 
 					Object *obj = ClassDB::instantiate(str);
-
 					ERR_FAIL_NULL_V(obj, ERR_UNAVAILABLE);
-					ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 
+					// Avoid premature free `RefCounted`. This must be done before properties are initialized,
+					// since script functions (setters, implicit initializer) may be called. See GH-68666.
+					Variant variant;
+					if (Object::cast_to<RefCounted>(obj)) {
+						Ref<RefCounted> ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
+						variant = ref;
+					} else {
+						variant = obj;
+					}
+
+					ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 					int32_t count = decode_uint32(buf);
 					buf += 4;
 					len -= 4;
@@ -699,12 +708,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 						}
 					}
 
-					if (Object::cast_to<RefCounted>(obj)) {
-						Ref<RefCounted> ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
-						r_variant = ref;
-					} else {
-						r_variant = obj;
-					}
+					r_variant = variant;
 				}
 			}
 

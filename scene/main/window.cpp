@@ -1215,10 +1215,10 @@ void Window::set_force_native(bool p_force_native) {
 	if (force_native == p_force_native) {
 		return;
 	}
-	force_native = p_force_native;
 	if (is_visible() && !is_in_edited_scene_root()) {
-		WARN_PRINT("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
+		ERR_FAIL_MSG("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
 	}
+	force_native = p_force_native;
 }
 
 bool Window::get_force_native() const {
@@ -1579,6 +1579,7 @@ bool Window::_can_consume_input_events() const {
 }
 
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
+	ERR_MAIN_THREAD_GUARD;
 	if (EngineDebugger::is_active()) {
 		// Quit from game window using the stop shortcut (F8 by default).
 		// The custom shortcut is provided via environment variable when running from the editor.

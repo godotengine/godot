@@ -272,3 +272,11 @@ Validate extension JSON: API was removed: classes/SkeletonIK3D/methods/set_inter
 Validate extension JSON: API was removed: classes/SkeletonIK3D/properties/interpolation
 
 These base class is changed to SkeletonModifier3D which is processed by Skeleton3D with the assumption that it is Skeleton3D's child.
+
+
+GH-90575
+--------
+Validate extension JSON: API was removed: classes/BoneAttachment3D/methods/on_bone_pose_update
+Validate extension JSON: API was removed: classes/Skeleton3D/signals/bone_pose_changed
+
+They have been replaced by a safer API due to performance concerns. Compatibility method registered.

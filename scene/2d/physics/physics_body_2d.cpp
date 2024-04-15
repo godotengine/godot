@@ -30,8 +30,6 @@
 
 #include "physics_body_2d.h"
 
-#include "scene/scene_string_names.h"
-
 void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::_move, DEFVAL(false), DEFVAL(0.08), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision"), &PhysicsBody2D::test_move, DEFVAL(Variant()), DEFVAL(0.08), DEFVAL(false));
@@ -48,12 +46,6 @@ PhysicsBody2D::PhysicsBody2D(PhysicsServer2D::BodyMode p_mode) :
 	set_pickable(false);
 }
 
-PhysicsBody2D::~PhysicsBody2D() {
-	if (motion_cache.is_valid()) {
-		motion_cache->owner = nullptr;
-	}
-}
-
 Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_test_only, real_t p_margin, bool p_recovery_as_collision) {
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), p_motion, p_margin);
 	parameters.recovery_as_collision = p_recovery_as_collision;
@@ -64,7 +56,7 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_motion, bool p_t
 		// Create a new instance when the cached reference is invalid or still in use in script.
 		if (motion_cache.is_null() || motion_cache->get_reference_count() > 1) {
 			motion_cache.instantiate();
-			motion_cache->owner = this;
+			motion_cache->owner_id = get_instance_id();
 		}
 
 		motion_cache->result = result;
