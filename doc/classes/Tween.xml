@@ -69,6 +69,15 @@
 		In the example above, all children of a node are moved one after another to position (0, 0).
 		You should avoid using more than one [Tween] per object's property. If two or more tweens animate one property at the same time, the last one created will take priority and assign the final value. If you want to interrupt and restart an animation, consider assigning the [Tween] to a variable:
 		[codeblocks]
+		[codeblocks]
+		[gdscript]
+		tween.tween_property(self, "rotation:x", deg_to_rad(-90), 0.5)
+		[/gdscript]
+		[csharp]
+		tween.TweenProperty(this, "rotation:x", Mathf.DegToRad(-90f), 0.5f)
+		[/csharp]
+		[/codeblocks]
+		When doing a rotation in 3D you must convert degrees to radians for expected results. See the example above
 		[gdscript]
 		var tween
 		func animate():
