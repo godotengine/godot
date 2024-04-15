@@ -1275,8 +1275,8 @@ void ScriptEditor::_menu_option(int p_option) {
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
 			file_dialog->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
-				file_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
+			for (const String &extension : extensions) {
+				file_dialog->add_filter("*." + extension, extension.to_upper());
 			}
 
 			for (const String &E : textfile_extensions) {

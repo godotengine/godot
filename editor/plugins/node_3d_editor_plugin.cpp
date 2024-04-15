@@ -764,7 +764,7 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 		}
 
 		if (editor_selection->get_selected_node_list().size() == 1) {
-			EditorNode::get_singleton()->edit_node(editor_selection->get_selected_node_list()[0]);
+			EditorNode::get_singleton()->edit_node(editor_selection->get_selected_node_list().front()->get());
 		}
 	}
 }
@@ -1084,7 +1084,7 @@ void Node3DEditorViewport::_select_region() {
 	}
 
 	if (editor_selection->get_selected_node_list().size() == 1) {
-		EditorNode::get_singleton()->edit_node(editor_selection->get_selected_node_list()[0]);
+		EditorNode::get_singleton()->edit_node(editor_selection->get_selected_node_list().front()->get());
 	}
 }
 
@@ -4592,7 +4592,7 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
 	if (selected_nodes.size() > 0) {
-		Node *selected_node = selected_nodes[0];
+		Node *selected_node = selected_nodes.front()->get();
 		target_node = selected_node;
 		if (is_alt) {
 			target_node = root_node;
@@ -6069,9 +6069,9 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 				continue;
 			}
 			int state = EditorNode3DGizmoPlugin::VISIBLE;
-			for (int i = 0; i < keys.size(); i++) {
-				if (gizmo_plugins_by_name.write[j]->get_gizmo_name() == String(keys[i])) {
-					state = gizmos_status[keys[i]];
+			for (const Variant &key : keys) {
+				if (gizmo_plugins_by_name.write[j]->get_gizmo_name() == String(key)) {
+					state = gizmos_status[key];
 					break;
 				}
 			}

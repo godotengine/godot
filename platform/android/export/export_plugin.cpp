@@ -2974,11 +2974,11 @@ void EditorExportPlatformAndroid::_remove_copied_libs(String p_gdextension_libs_
 
 String EditorExportPlatformAndroid::join_list(const List<String> &p_parts, const String &p_separator) {
 	String ret;
-	for (int i = 0; i < p_parts.size(); ++i) {
-		if (i > 0) {
+	for (List<String>::ConstIterator itr = p_parts.begin(); itr != p_parts.end(); ++itr) {
+		if (itr != p_parts.begin()) {
 			ret += p_separator;
 		}
-		ret += p_parts[i];
+		ret += *itr;
 	}
 	return ret;
 }

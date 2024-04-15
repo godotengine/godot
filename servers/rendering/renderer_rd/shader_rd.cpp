@@ -687,8 +687,8 @@ void ShaderRD::enable_group(int p_group) {
 	// Compile all versions again to include the new group.
 	List<RID> all_versions;
 	version_owner.get_owned_list(&all_versions);
-	for (int i = 0; i < all_versions.size(); i++) {
-		Version *version = version_owner.get_or_null(all_versions[i]);
+	for (const RID &E : all_versions) {
+		Version *version = version_owner.get_or_null(E);
 		_compile_version(version, p_group);
 	}
 }

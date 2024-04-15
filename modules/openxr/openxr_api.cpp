@@ -1335,8 +1335,8 @@ bool OpenXRAPI::on_state_synchronized() {
 	// Just in case, see if we already have active trackers...
 	List<RID> trackers;
 	tracker_owner.get_owned_list(&trackers);
-	for (int i = 0; i < trackers.size(); i++) {
-		tracker_check_profile(trackers[i]);
+	for (const RID &tracker : trackers) {
+		tracker_check_profile(tracker);
 	}
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
@@ -1963,8 +1963,8 @@ bool OpenXRAPI::poll_events() {
 
 				List<RID> trackers;
 				tracker_owner.get_owned_list(&trackers);
-				for (int i = 0; i < trackers.size(); i++) {
-					tracker_check_profile(trackers[i], event->session);
+				for (const RID &tracker : trackers) {
+					tracker_check_profile(tracker, event->session);
 				}
 
 			} break;

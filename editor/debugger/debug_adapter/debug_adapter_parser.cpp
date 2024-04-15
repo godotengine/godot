@@ -407,9 +407,10 @@ Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
 	HashMap<DAP::StackFrame, List<int>, DAP::StackFrame>::Iterator E = DebugAdapterProtocol::get_singleton()->stackframe_list.find(frame);
 	if (E) {
 		ERR_FAIL_COND_V(E->value.size() != 3, prepare_error_response(p_params, DAP::ErrorType::UNKNOWN));
-		for (int i = 0; i < 3; i++) {
+		List<int>::ConstIterator itr = E->value.begin();
+		for (int i = 0; i < 3; ++itr, ++i) {
 			DAP::Scope scope;
-			scope.variablesReference = E->value[i];
+			scope.variablesReference = *itr;
 			switch (i) {
 				case 0:
 					scope.name = "Locals";

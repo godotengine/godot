@@ -60,8 +60,8 @@ void SpriteFramesEditor::_open_sprite_sheet() {
 	file_split_sheet->clear_filters();
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
-	for (int i = 0; i < extensions.size(); i++) {
-		file_split_sheet->add_filter("*." + extensions[i]);
+	for (const String &extension : extensions) {
+		file_split_sheet->add_filter("*." + extension);
 	}
 
 	file_split_sheet->popup_file_dialog();
@@ -668,8 +668,8 @@ void SpriteFramesEditor::_load_pressed() {
 	file->clear_filters();
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
-	for (int i = 0; i < extensions.size(); i++) {
-		file->add_filter("*." + extensions[i]);
+	for (const String &extension : extensions) {
+		file->add_filter("*." + extension);
 	}
 
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
@@ -1117,10 +1117,10 @@ void SpriteFramesEditor::_animation_remove_confirmed() {
 	frames->get_animation_list(&anim_names);
 	anim_names.sort_custom<StringName::AlphCompare>();
 	if (anim_names.size() >= 2) {
-		if (edited_anim == anim_names[0]) {
-			new_edited = anim_names[1];
+		if (edited_anim == anim_names.get(0)) {
+			new_edited = anim_names.get(1);
 		} else {
-			new_edited = anim_names[0];
+			new_edited = anim_names.get(0);
 		}
 	} else {
 		new_edited = StringName();
@@ -1648,7 +1648,7 @@ void SpriteFramesEditor::_fetch_sprite_node() {
 	Node *selected = nullptr;
 	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	if (editor_selection->get_selected_node_list().size() == 1) {
-		selected = editor_selection->get_selected_node_list()[0];
+		selected = editor_selection->get_selected_node_list().front()->get();
 	}
 
 	bool show_node_edit = false;

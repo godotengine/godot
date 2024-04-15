@@ -476,10 +476,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				ResourceImporter *resimp = Object::cast_to<ResourceImporter>(ClassDB::instantiate(name));
 				List<ResourceImporter::ImportOption> options;
 				resimp->get_import_options("", &options);
-				for (int i = 0; i < options.size(); i++) {
-					const PropertyInfo &prop = options[i].option;
+				for (const ResourceImporter::ImportOption &option : options) {
+					const PropertyInfo &prop = option.option;
 					properties.push_back(prop);
-					import_options_default[prop.name] = options[i].default_value;
+					import_options_default[prop.name] = option.default_value;
 				}
 				own_properties = properties;
 				memdelete(resimp);
@@ -665,8 +665,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				for (List<MethodInfo>::Element *EV = signal_list.front(); EV; EV = EV->next()) {
 					DocData::MethodDoc signal;
 					signal.name = EV->get().name;
-					for (int i = 0; i < EV->get().arguments.size(); i++) {
-						const PropertyInfo &arginfo = EV->get().arguments[i];
+					for (List<PropertyInfo>::Element *EA = EV->get().arguments.front(); EA; EA = EA->next()) {
+						const PropertyInfo &arginfo = EA->get();
 						DocData::ArgumentDoc argument;
 						DocData::argument_doc_from_arginfo(argument, arginfo);
 
@@ -857,10 +857,11 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 			method.name = mi.name;
 
-			for (int j = 0; j < mi.arguments.size(); j++) {
-				PropertyInfo arginfo = mi.arguments[j];
+			int j = 0;
+			for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++j) {
+				PropertyInfo arginfo = *itr;
 				DocData::ArgumentDoc ad;
-				DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
+				DocData::argument_doc_from_arginfo(ad, arginfo);
 				ad.name = arginfo.name;
 
 				int darg_idx = mi.default_arguments.size() - mi.arguments.size() + j;
@@ -1047,9 +1048,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				DocData::return_doc_from_retinfo(md, mi.return_val);
 
-				for (int j = 0; j < mi.arguments.size(); j++) {
+				int j = 0;
+				for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++j) {
 					DocData::ArgumentDoc ad;
-					DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
+					DocData::argument_doc_from_arginfo(ad, *itr);
 
 					int darg_idx = j - (mi.arguments.size() - mi.default_arguments.size());
 					if (darg_idx >= 0) {
@@ -1091,9 +1093,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				DocData::return_doc_from_retinfo(atd, ai.return_val);
 
-				for (int j = 0; j < ai.arguments.size(); j++) {
+				int j = 0;
+				for (List<PropertyInfo>::ConstIterator itr = ai.arguments.begin(); itr != ai.arguments.end(); ++itr, ++j) {
 					DocData::ArgumentDoc ad;
-					DocData::argument_doc_from_arginfo(ad, ai.arguments[j]);
+					DocData::argument_doc_from_arginfo(ad, *itr);
 
 					int darg_idx = j - (ai.arguments.size() - ai.default_arguments.size());
 					if (darg_idx >= 0) {

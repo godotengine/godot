@@ -139,31 +139,6 @@ public:
 
 	typedef T ValueType;
 
-	struct Iterator {
-		_FORCE_INLINE_ T &operator*() const {
-			return E->get();
-		}
-		_FORCE_INLINE_ T *operator->() const { return &E->get(); }
-		_FORCE_INLINE_ Iterator &operator++() {
-			E = E->next();
-			return *this;
-		}
-		_FORCE_INLINE_ Iterator &operator--() {
-			E = E->prev();
-			return *this;
-		}
-
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
-
-		Iterator(Element *p_E) { E = p_E; }
-		Iterator() {}
-		Iterator(const Iterator &p_it) { E = p_it.E; }
-
-	private:
-		Element *E = nullptr;
-	};
-
 	struct ConstIterator {
 		_FORCE_INLINE_ const T &operator*() const {
 			return E->get();
@@ -187,6 +162,35 @@ public:
 
 	private:
 		const Element *E = nullptr;
+	};
+
+	struct Iterator {
+		_FORCE_INLINE_ T &operator*() const {
+			return E->get();
+		}
+		_FORCE_INLINE_ T *operator->() const { return &E->get(); }
+		_FORCE_INLINE_ Iterator &operator++() {
+			E = E->next();
+			return *this;
+		}
+		_FORCE_INLINE_ Iterator &operator--() {
+			E = E->prev();
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+
+		Iterator(Element *p_E) { E = p_E; }
+		Iterator() {}
+		Iterator(const Iterator &p_it) { E = p_it.E; }
+
+		operator ConstIterator() const {
+			return ConstIterator(E);
+		}
+
+	private:
+		Element *E = nullptr;
 	};
 
 	_FORCE_INLINE_ Iterator begin() {
@@ -519,7 +523,9 @@ public:
 		}
 	}
 
-	T &operator[](int p_index) {
+	// Random access to elements, use with care,
+	// do not use for iteration.
+	T &get(int p_index) {
 		CRASH_BAD_INDEX(p_index, size());
 
 		Element *I = front();
@@ -532,7 +538,9 @@ public:
 		return I->get();
 	}
 
-	const T &operator[](int p_index) const {
+	// Random access to elements, use with care,
+	// do not use for iteration.
+	const T &get(int p_index) const {
 		CRASH_BAD_INDEX(p_index, size());
 
 		const Element *I = front();
