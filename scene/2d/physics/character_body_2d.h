@@ -111,7 +111,6 @@ public:
 	PlatformOnLeave get_platform_on_leave() const;
 
 	CharacterBody2D();
-	~CharacterBody2D();
 
 private:
 	real_t margin = 0.08;
