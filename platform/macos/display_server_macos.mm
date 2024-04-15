@@ -2985,7 +2985,7 @@ Key DisplayServerMacOS::keyboard_get_label_from_physical(Key p_keycode) const {
 }
 
 void DisplayServerMacOS::process_events() {
-	_THREAD_SAFE_LOCK_
+	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	while (true) {
 		NSEvent *event = [NSApp
@@ -3018,10 +3018,10 @@ void DisplayServerMacOS::process_events() {
 
 	if (!drop_events) {
 		_process_key_events();
-		_THREAD_SAFE_UNLOCK_
 		Input::get_singleton()->flush_buffered_events();
-		_THREAD_SAFE_LOCK_
 	}
+
+	_THREAD_SAFE_LOCK_
 
 	for (KeyValue<WindowID, WindowData> &E : windows) {
 		WindowData &wd = E.value;
@@ -3051,7 +3051,7 @@ void DisplayServerMacOS::process_events() {
 }
 
 void DisplayServerMacOS::force_process_and_drop_events() {
-	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	drop_events = true;
 	process_events();
