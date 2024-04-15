@@ -31,7 +31,7 @@
 #ifndef NAVIGATION_REGION_2D_H
 #define NAVIGATION_REGION_2D_H
 
-#include "scene/resources/navigation_polygon.h"
+#include "scene/resources/2d/navigation_polygon.h"
 
 class NavigationRegion2D : public Node2D {
 	GDCLASS(NavigationRegion2D, Node2D);
