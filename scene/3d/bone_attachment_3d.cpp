@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "bone_attachment_3d.h"
+#include "bone_attachment_3d.compat.inc"
 
 void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "bone_name") {
@@ -148,9 +149,9 @@ void BoneAttachment3D::_check_bind() {
 			bone_idx = sk->find_bone(bone_name);
 		}
 		if (bone_idx != -1) {
-			sk->connect(SNAME("bone_pose_changed"), callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
+			sk->connect(SNAME("skeleton_updated"), callable_mp(this, &BoneAttachment3D::on_skeleton_update));
 			bound = true;
-			callable_mp(this, &BoneAttachment3D::on_bone_pose_update).call_deferred(bone_idx);
+			callable_mp(this, &BoneAttachment3D::on_skeleton_update);
 		}
 	}
 }
@@ -176,7 +177,7 @@ void BoneAttachment3D::_check_unbind() {
 		Skeleton3D *sk = _get_skeleton3d();
 
 		if (sk) {
-			sk->disconnect(SNAME("bone_pose_changed"), callable_mp(this, &BoneAttachment3D::on_bone_pose_update));
+			sk->disconnect(SNAME("skeleton_updated"), callable_mp(this, &BoneAttachment3D::on_skeleton_update));
 		}
 		bound = false;
 	}
@@ -308,12 +309,12 @@ void BoneAttachment3D::_notification(int p_what) {
 	}
 }
 
-void BoneAttachment3D::on_bone_pose_update(int p_bone_index) {
+void BoneAttachment3D::on_skeleton_update() {
 	if (updating) {
 		return;
 	}
 	updating = true;
-	if (bone_idx == p_bone_index) {
+	if (bone_idx >= 0) {
 		Skeleton3D *sk = _get_skeleton3d();
 		if (sk) {
 			if (!override_pose) {
@@ -371,7 +372,7 @@ void BoneAttachment3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bone_idx", "bone_idx"), &BoneAttachment3D::set_bone_idx);
 	ClassDB::bind_method(D_METHOD("get_bone_idx"), &BoneAttachment3D::get_bone_idx);
 
-	ClassDB::bind_method(D_METHOD("on_bone_pose_update", "bone_index"), &BoneAttachment3D::on_bone_pose_update);
+	ClassDB::bind_method(D_METHOD("on_skeleton_update"), &BoneAttachment3D::on_skeleton_update);
 
 	ClassDB::bind_method(D_METHOD("set_override_pose", "override_pose"), &BoneAttachment3D::set_override_pose);
 	ClassDB::bind_method(D_METHOD("get_override_pose"), &BoneAttachment3D::get_override_pose);
