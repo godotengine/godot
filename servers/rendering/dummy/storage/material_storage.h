@@ -77,6 +77,8 @@ public:
 
 	/* SHADER API */
 
+	bool owns_shader(RID p_rid) { return shader_owner.owns(p_rid); }
+
 	virtual RID shader_allocate() override;
 	virtual void shader_initialize(RID p_rid) override;
 	virtual void shader_free(RID p_rid) override;
