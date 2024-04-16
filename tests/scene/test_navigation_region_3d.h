@@ -43,7 +43,7 @@ namespace TestNavigationRegion3D {
 TEST_SUITE("[Navigation]") {
 	TEST_CASE("[SceneTree][NavigationRegion3D] New region should have valid RID") {
 		NavigationRegion3D *region_node = memnew(NavigationRegion3D);
-		CHECK(region_node->get_region_rid().is_valid());
+		CHECK(region_node->get_rid().is_valid());
 		memdelete(region_node);
 	}
 
