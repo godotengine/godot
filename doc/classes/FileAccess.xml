@@ -190,7 +190,7 @@
 		<method name="get_line" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the next line of the file as a [String].
+				Returns the next line of the file as a [String]. The returned string doesn't include newline ([code]\n[/code]) or carriage return ([code]\r[/code]) characters, but does include any other leading or trailing whitespace.
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
