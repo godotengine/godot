@@ -218,7 +218,7 @@ branches, and linked at the [end of this file](#Past-releases).
 - Doc: Clarify some details about deferred calls ([GH-88961](https://github.com/godotengine/godot/pull/88961)).
 - [C#] Fix typo in `Color` documentation ([GH-89092](https://github.com/godotengine/godot/pull/89092)).
 - Address a few issues in Transform3D documentation ([GH-89147](https://github.com/godotengine/godot/pull/89147)).
-- Docs: C#] Use `PropertyName` constants in more places ([GH-89246](https://github.com/godotengine/godot/pull/89246)).
+- Docs: [C#] Use `PropertyName` constants in more places ([GH-89246](https://github.com/godotengine/godot/pull/89246)).
 - Doc: Clarify `bsearch(_custom)` behavior ([GH-89280](https://github.com/godotengine/godot/pull/89280)).
 - Doc: Clarify description for `get_unix_time_from_system` on UTC ([GH-89454](https://github.com/godotengine/godot/pull/89454)).
 - Doc: Clarify behavior of `String.format` with keys in replacements ([GH-89608](https://github.com/godotengine/godot/pull/89608)).
@@ -375,6 +375,7 @@ branches, and linked at the [end of this file](#Past-releases).
 #### Network
 
 - enet: Sync with upstream commit c44b7d0 ([GH-90244](https://github.com/godotengine/godot/pull/90244)).
+- Fix missing return in `StreamPeerTCP::poll` when connection is `STATUS_CONNECTED` ([GH-90471](https://github.com/godotengine/godot/pull/90741)).
 
 #### Particles
 
