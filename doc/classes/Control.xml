@@ -969,8 +969,8 @@
 			Tells Godot which node it should give focus to if the user presses [kbd]Shift + Tab[/kbd] on a keyboard by default. You can change the key by editing the [member ProjectSettings.input/ui_focus_prev] input action.
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
-		<member name="global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
-			The node's global position, relative to the world (usually to the [CanvasLayer]).
+		<member name="global_position" type="Vector2" setter="_set_global_position" getter="get_global_position" default="Vector2(0, 0)">
+			The node's global position, relative to the [World2D] (usually to the [CanvasLayer]).
 		</member>
 		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" enum="Control.GrowDirection" default="1">
 			Controls the direction on the horizontal axis in which the control should grow if its horizontal minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
