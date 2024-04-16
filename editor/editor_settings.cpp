@@ -668,6 +668,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "0,50,1")
 
 	// Behavior
+	// Behavior: General
+	_initial_set("text_editor/behavior/general/empty_selection_clipboard", true);
+
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true, true);
 	_initial_set("text_editor/behavior/navigation/scroll_past_end_of_file", false, true);
