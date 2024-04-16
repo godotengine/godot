@@ -3585,6 +3585,54 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 		}
 
+		SUBCASE("[TextEdit] cut when empty selection clipboard disabled") {
+			text_edit->set_empty_selection_clipboard_enabled(false);
+			DS->clipboard_set("");
+
+			text_edit->set_text("this is\nsome\n");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(6);
+			MessageQueue::get_singleton()->flush();
+			SIGNAL_DISCARD("text_set");
+			SIGNAL_DISCARD("text_changed");
+			SIGNAL_DISCARD("lines_edited_from");
+			SIGNAL_DISCARD("caret_changed");
+
+			text_edit->cut();
+			MessageQueue::get_singleton()->flush();
+			CHECK(DS->clipboard_get() == "");
+			CHECK(text_edit->get_text() == "this is\nsome\n");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 6);
+			SIGNAL_CHECK_FALSE("caret_changed");
+			SIGNAL_CHECK_FALSE("text_changed");
+			SIGNAL_CHECK_FALSE("lines_edited_from");
+		}
+
+		SUBCASE("[TextEdit] copy when empty selection clipboard disabled") {
+			text_edit->set_empty_selection_clipboard_enabled(false);
+			DS->clipboard_set("");
+
+			text_edit->set_text("this is\nsome\n");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(6);
+			MessageQueue::get_singleton()->flush();
+			SIGNAL_DISCARD("text_set");
+			SIGNAL_DISCARD("text_changed");
+			SIGNAL_DISCARD("lines_edited_from");
+			SIGNAL_DISCARD("caret_changed");
+
+			text_edit->copy();
+			MessageQueue::get_singleton()->flush();
+			CHECK(DS->clipboard_get() == "");
+			CHECK(text_edit->get_text() == "this is\nsome\n");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 6);
+			SIGNAL_CHECK_FALSE("caret_changed");
+			SIGNAL_CHECK_FALSE("text_changed");
+			SIGNAL_CHECK_FALSE("lines_edited_from");
+		}
+
 		SIGNAL_UNWATCH(text_edit, "text_set");
 		SIGNAL_UNWATCH(text_edit, "text_changed");
 		SIGNAL_UNWATCH(text_edit, "lines_edited_from");
