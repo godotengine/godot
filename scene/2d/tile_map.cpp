@@ -429,6 +429,7 @@ Color TileMap::get_layer_modulate(int p_layer) const {
 
 void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
 	TILEMAP_CALL_FOR_LAYER(p_layer, set_y_sort_enabled, p_y_sort_enabled);
+	update_configuration_warnings();
 }
 
 bool TileMap::is_layer_y_sort_enabled(int p_layer) const {
@@ -437,6 +438,7 @@ bool TileMap::is_layer_y_sort_enabled(int p_layer) const {
 
 void TileMap::set_layer_y_sort_origin(int p_layer, int p_y_sort_origin) {
 	TILEMAP_CALL_FOR_LAYER(p_layer, set_y_sort_origin, p_y_sort_origin);
+	update_configuration_warnings();
 }
 
 int TileMap::get_layer_y_sort_origin(int p_layer) const {
@@ -518,9 +520,6 @@ void TileMap::set_y_sort_enabled(bool p_enable) {
 		return;
 	}
 	Node2D::set_y_sort_enabled(p_enable);
-	for (TileMapLayer *layer : layers) {
-		layer->set_y_sort_enabled(p_enable);
-	}
 	_emit_changed();
 	update_configuration_warnings();
 }
