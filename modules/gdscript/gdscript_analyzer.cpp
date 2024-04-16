@@ -1957,6 +1957,18 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 		} else {
 			parser->push_warning(p_assignable, GDScriptWarning::UNTYPED_DECLARATION, declaration_type, p_assignable->identifier->name);
 		}
+	} else if (specified_type.kind == GDScriptParser::DataType::ENUM && p_assignable->initializer == nullptr) {
+		// Warn about enum variables without default value. Unless the enum defines the "0" value, then it's fine.
+		bool has_zero_value = false;
+		for (const KeyValue<StringName, int64_t> &kv : specified_type.enum_values) {
+			if (kv.value == 0) {
+				has_zero_value = true;
+				break;
+			}
+		}
+		if (!has_zero_value) {
+			parser->push_warning(p_assignable, GDScriptWarning::ENUM_VARIABLE_WITHOUT_DEFAULT, p_assignable->identifier->name);
+		}
 	}
 #endif
 

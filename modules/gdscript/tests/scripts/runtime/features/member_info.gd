@@ -23,6 +23,7 @@ var test_var_hard_int: int
 var test_var_hard_variant_type: Variant.Type
 @export var test_var_hard_variant_type_exported: Variant.Type
 var test_var_hard_node_process_mode: Node.ProcessMode
+@warning_ignore("enum_variable_without_default")
 var test_var_hard_my_enum: MyEnum
 var test_var_hard_array: Array
 var test_var_hard_array_int: Array[int]
