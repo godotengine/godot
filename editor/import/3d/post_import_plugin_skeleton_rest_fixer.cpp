@@ -109,7 +109,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 
 		// Apply node transforms.
 		if (bool(p_options["retarget/rest_fixer/apply_node_transforms"])) {
-			Vector3 scl = global_transform.basis.get_scale_local();
+			Vector3 scl = global_transform.basis.get_scale_global();
 
 			Vector<int> bones_to_process = src_skeleton->get_parentless_bones();
 			for (int i = 0; i < bones_to_process.size(); i++) {
@@ -674,7 +674,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 						int bone_idx = src_skeleton->find_bone(bn);
 						if (bone_idx >= 0) {
 							Transform3D adjust_transform = src_skeleton->get_bone_global_rest(bone_idx).affine_inverse() * silhouette_diff[bone_idx].affine_inverse() * pre_silhouette_skeleton_global_rest[bone_idx];
-							adjust_transform.scale(global_transform.basis.get_scale_local());
+							adjust_transform.scale(global_transform.basis.get_scale_global());
 							skin->set_bind_pose(i, adjust_transform * skin->get_bind_pose(i));
 						}
 					}
@@ -691,7 +691,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 					}
 					ERR_CONTINUE(bone_idx < 0 || bone_idx >= src_skeleton->get_bone_count());
 					Transform3D adjust_transform = src_skeleton->get_bone_global_rest(bone_idx).affine_inverse() * silhouette_diff[bone_idx].affine_inverse() * pre_silhouette_skeleton_global_rest[bone_idx];
-					adjust_transform.scale(global_transform.basis.get_scale_local());
+					adjust_transform.scale(global_transform.basis.get_scale_global());
 
 					TypedArray<Node> child_nodes = attachment->get_children();
 					while (child_nodes.size()) {
