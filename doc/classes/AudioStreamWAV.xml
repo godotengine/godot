@@ -15,7 +15,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Saves the AudioStreamWAV as a WAV file to [param path]. Samples with IMA ADPCM format can't be saved.
+				Saves the AudioStreamWAV as a WAV file to [param path]. Samples with IMA ADPCM or QOA formats can't be saved.
 				[b]Note:[/b] A [code].wav[/code] extension is automatically appended to [param path] if it is missing.
 			</description>
 		</method>
@@ -55,6 +55,9 @@
 		</constant>
 		<constant name="FORMAT_IMA_ADPCM" value="2" enum="Format">
 			Audio is compressed using IMA ADPCM.
+		</constant>
+		<constant name="FORMAT_QOA" value="3" enum="Format">
+			Audio is compressed as QOA ([url=https://qoaformat.org/]Quite OK Audio[/url]).
 		</constant>
 		<constant name="LOOP_DISABLED" value="0" enum="LoopMode">
 			Audio does not loop.
