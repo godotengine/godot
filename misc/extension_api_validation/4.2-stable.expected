@@ -263,9 +263,6 @@ Removed VisualShaderNodeComment, which is replaced by VisualShaderNodeFrame.
 
 GH-87888
 --------
-Validate extension JSON: API was removed: classes/OpenXRHand/methods/get_hand_skeleton
-Validate extension JSON: API was removed: classes/OpenXRHand/methods/set_hand_skeleton
-Validate extension JSON: API was removed: classes/OpenXRHand/properties/hand_skeleton
 Validate extension JSON: API was removed: classes/Skeleton3D/properties/animate_physical_bones
 Validate extension JSON: API was removed: classes/SkeletonIK3D/methods/get_interpolation
 Validate extension JSON: API was removed: classes/SkeletonIK3D/methods/set_interpolation

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenXRHand" inherits="SkeletonModifier3D" deprecated="Use [XRHandModifier3D] instead." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="OpenXRHand" inherits="Node3D" deprecated="Use [XRHandModifier3D] instead." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Node supporting hand and finger tracking in OpenXR.
 	</brief_description>
@@ -18,11 +18,14 @@
 		<member name="hand" type="int" setter="set_hand" getter="get_hand" enum="OpenXRHand.Hands" default="0">
 			Specifies whether this node tracks the left or right hand of the player.
 		</member>
+		<member name="hand_skeleton" type="NodePath" setter="set_hand_skeleton" getter="get_hand_skeleton" default="NodePath(&quot;&quot;)">
+			Set a [Skeleton3D] node for which the pose positions will be updated.
+		</member>
 		<member name="motion_range" type="int" setter="set_motion_range" getter="get_motion_range" enum="OpenXRHand.MotionRange" default="0">
 			Set the motion range (if supported) limiting the hand motion.
 		</member>
 		<member name="skeleton_rig" type="int" setter="set_skeleton_rig" getter="get_skeleton_rig" enum="OpenXRHand.SkeletonRig" default="0">
-			Set the type of skeleton rig the parent [Skeleton3D] is compliant with.
+			Set the type of skeleton rig the [member hand_skeleton] is compliant with.
 		</member>
 	</members>
 	<constants>
