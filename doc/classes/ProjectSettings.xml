@@ -1439,6 +1439,10 @@
 		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
 			Force layout direction and text writing direction to RTL for all controls.
 		</member>
+		<member name="internationalization/rendering/root_node_auto_translate" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], root node will use [constant Node.AUTO_TRANSLATE_MODE_ALWAYS], otherwise [constant Node.AUTO_TRANSLATE_MODE_DISABLED] will be used.
+			[b]Note:[/b] This property is only read when the project starts. To change the auto translate mode at runtime, set [member Node.auto_translate_mode] of [member SceneTree.root] instead.
+		</member>
 		<member name="internationalization/rendering/root_node_layout_direction" type="int" setter="" getter="" default="0">
 			Root node default layout direction.
 		</member>
