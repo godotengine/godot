@@ -280,3 +280,16 @@ Validate extension JSON: API was removed: classes/BoneAttachment3D/methods/on_bo
 Validate extension JSON: API was removed: classes/Skeleton3D/signals/bone_pose_changed
 
 They have been replaced by a safer API due to performance concerns. Compatibility method registered.
+
+GH-90747
+--------
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/properties/avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_avoidance_layer_value
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_avoidance_layer_value
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_constrain_avoidance
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_constrain_avoidance
+Validate extension JSON: API was removed: classes/NavigationRegion2D/properties/constrain_avoidance
+
+Experimental NavigationRegion2D feature "constrain_avoidance" was discontinued with no replacement.
