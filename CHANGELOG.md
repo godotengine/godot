@@ -217,6 +217,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix NavigationObstacle elevation ([GH-84830](https://github.com/godotengine/godot/pull/84830)).
 - Fix NavigationObstacle height ([GH-84857](https://github.com/godotengine/godot/pull/84857)).
 
+#### Networking
+
+- Fix missing return in `StreamPeerTCP::poll` when connection is `STATUS_CONNECTED` ([GH-90741](https://github.com/godotengine/godot/pull/90741)).
+
 #### Particles
 
 - Fix several Material texture parameter updates ([GH-84303](https://github.com/godotengine/godot/pull/84303)).
