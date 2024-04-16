@@ -579,7 +579,9 @@ bool SceneTree::iteration(float p_time) {
 
 	flush_transform_notifications();
 
-	MainLoop::iteration(p_time);
+	if (MainLoop::iteration(p_time)) {
+		_quit = true;
+	}
 	physics_process_time = p_time;
 
 	emit_signal("physics_frame");
@@ -620,7 +622,9 @@ bool SceneTree::idle(float p_time) {
 
 	root_lock++;
 
-	MainLoop::idle(p_time);
+	if (MainLoop::idle(p_time)) {
+		_quit = true;
+	}
 
 	idle_process_time = p_time;
 
