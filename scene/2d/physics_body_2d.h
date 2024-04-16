@@ -347,7 +347,6 @@ public:
 	bool is_sync_to_physics_enabled() const;
 
 	KinematicBody2D();
-	~KinematicBody2D();
 };
 
 VARIANT_ENUM_CAST(KinematicBody2D::MovingPlatformApplyVelocityOnLeave);
@@ -355,7 +354,7 @@ VARIANT_ENUM_CAST(KinematicBody2D::MovingPlatformApplyVelocityOnLeave);
 class KinematicCollision2D : public Reference {
 	GDCLASS(KinematicCollision2D, Reference);
 
-	KinematicBody2D *owner;
+	ObjectID owner_id;
 	friend class KinematicBody2D;
 	KinematicBody2D::Collision collision;
 
