@@ -794,11 +794,11 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 					ERR_FAIL_INDEX_V(bt, Variant::VARIANT_MAX, ERR_INVALID_DATA);
 					builtin_type = (Variant::Type)bt;
-					ERR_FAIL_COND_V(!p_allow_objects && builtin_type == Variant::OBJECT, ERR_UNAUTHORIZED);
+					if (!p_allow_objects && builtin_type == Variant::OBJECT) {
+						class_name = EncodedObjectAsID::get_class_static();
+					}
 				} break;
 				case HEADER_DATA_FIELD_TYPED_ARRAY_CLASS_NAME: {
-					ERR_FAIL_COND_V(!p_allow_objects, ERR_UNAUTHORIZED);
-
 					String str;
 					Error err = _decode_string(buf, len, r_len, str);
 					if (err) {
@@ -806,22 +806,28 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					}
 
 					builtin_type = Variant::OBJECT;
-					class_name = str;
+					if (p_allow_objects) {
+						class_name = str;
+					} else {
+						class_name = EncodedObjectAsID::get_class_static();
+					}
 				} break;
 				case HEADER_DATA_FIELD_TYPED_ARRAY_SCRIPT: {
-					ERR_FAIL_COND_V(!p_allow_objects, ERR_UNAUTHORIZED);
-
 					String path;
 					Error err = _decode_string(buf, len, r_len, path);
 					if (err) {
 						return err;
 					}
-					ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://") || !ResourceLoader::exists(path, "Script"), ERR_INVALID_DATA, "Invalid script path: '" + path + "'.");
-					script = ResourceLoader::load(path, "Script");
-					ERR_FAIL_COND_V_MSG(script.is_null(), ERR_INVALID_DATA, "Can't load script at path: '" + path + "'.");
 
 					builtin_type = Variant::OBJECT;
-					class_name = script->get_instance_base_type();
+					if (p_allow_objects) {
+						ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://") || !ResourceLoader::exists(path, "Script"), ERR_INVALID_DATA, "Invalid script path: '" + path + "'.");
+						script = ResourceLoader::load(path, "Script");
+						ERR_FAIL_COND_V_MSG(script.is_null(), ERR_INVALID_DATA, "Can't load script at path: '" + path + "'.");
+						class_name = script->get_instance_base_type();
+					} else {
+						class_name = EncodedObjectAsID::get_class_static();
+					}
 				} break;
 				default:
 					ERR_FAIL_V(ERR_INVALID_DATA); // Future proofing.
@@ -1243,13 +1249,10 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			if (array.is_typed()) {
 				Ref<Script> script = array.get_typed_script();
 				if (script.is_valid()) {
-					ERR_FAIL_COND_V(!p_full_objects, ERR_UNAVAILABLE);
 					header |= HEADER_DATA_FIELD_TYPED_ARRAY_SCRIPT;
 				} else if (array.get_typed_class_name() != StringName()) {
-					ERR_FAIL_COND_V(!p_full_objects, ERR_UNAVAILABLE);
 					header |= HEADER_DATA_FIELD_TYPED_ARRAY_CLASS_NAME;
 				} else {
-					ERR_FAIL_COND_V(!p_full_objects && array.get_typed_builtin() == Variant::OBJECT, ERR_UNAVAILABLE);
 					header |= HEADER_DATA_FIELD_TYPED_ARRAY_BUILTIN;
 				}
 			}
