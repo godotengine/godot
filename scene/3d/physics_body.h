@@ -292,7 +292,8 @@ private:
 
 	Vector3 floor_normal;
 	Vector3 floor_velocity;
-	RID on_floor_body;
+	RID on_floor_body_rid;
+	ObjectID on_floor_body_id;
 	bool on_floor;
 	bool on_ceiling;
 	bool on_wall;
