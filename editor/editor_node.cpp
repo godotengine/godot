@@ -1087,9 +1087,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 		}
 
 		// Start preview thread now that it's safe.
-		if (!singleton->cmdline_export_mode) {
-			EditorResourcePreview::get_singleton()->start();
-		}
+		EditorResourcePreview::get_singleton()->start();
 	}
 }
 
@@ -1703,9 +1701,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 	save.step(TTR("Saving Scene"), 4);
 	_save_scene(p_file, p_idx);
 
-	if (!singleton->cmdline_export_mode) {
-		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
-	}
+	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 }
 
 bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_node) {
@@ -4638,18 +4634,21 @@ bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringNa
 }
 
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
-	if (singleton->cmdline_export_mode) {
+	if (singleton->verbose_tasks) {
 		print_line(p_task + ": begin: " + p_label + " steps: " + itos(p_steps));
-	} else if (singleton->progress_dialog) {
+	}
+
+	if (singleton->progress_dialog) {
 		singleton->progress_dialog->add_task(p_task, p_label, p_steps, p_can_cancel);
 	}
 }
 
 bool EditorNode::progress_task_step(const String &p_task, const String &p_state, int p_step, bool p_force_refresh) {
-	if (singleton->cmdline_export_mode) {
+	if (singleton->verbose_tasks) {
 		print_line("\t" + p_task + ": step " + itos(p_step) + ": " + p_state);
-		return false;
-	} else if (singleton->progress_dialog) {
+	}
+
+	if (singleton->progress_dialog) {
 		return singleton->progress_dialog->task_step(p_task, p_state, p_step, p_force_refresh);
 	} else {
 		return false;
@@ -4657,9 +4656,11 @@ bool EditorNode::progress_task_step(const String &p_task, const String &p_state,
 }
 
 void EditorNode::progress_end_task(const String &p_task) {
-	if (singleton->cmdline_export_mode) {
+	if (singleton->verbose_tasks) {
 		print_line(p_task + ": end");
-	} else if (singleton->progress_dialog) {
+	}
+
+	if (singleton->progress_dialog) {
 		singleton->progress_dialog->end_task(p_task);
 	}
 }
@@ -4864,7 +4865,6 @@ Error EditorNode::export_preset(const String &p_preset, const String &p_path, bo
 	export_defer.debug = p_debug;
 	export_defer.pack_only = p_pack_only;
 	export_defer.android_build_template = p_android_build_template;
-	cmdline_export_mode = true;
 	return OK;
 }
 
