@@ -43,6 +43,7 @@ class MenuButton : public Button {
 	PopupMenu *popup = nullptr;
 
 	void _popup_visibility_changed(bool p_visible);
+	void _popup_signal_repeat(int p_id, const StringName &p_signal_name);
 
 protected:
 	void _notification(int p_what);

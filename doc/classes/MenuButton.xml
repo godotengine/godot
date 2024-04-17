@@ -49,5 +49,23 @@
 				Emitted when the [PopupMenu] of this MenuButton is about to show.
 			</description>
 		</signal>
+		<signal name="id_focused">
+			<param index="0" name="id" type="int" />
+			<description>
+				Mirrors [signal PopupMenu.id_focused].
+			</description>
+		</signal>
+		<signal name="id_pressed">
+			<param index="0" name="id" type="int" />
+			<description>
+				Mirrors [signal PopupMenu.id_pressed].
+			</description>
+		</signal>
+		<signal name="index_pressed">
+			<param index="0" name="index" type="int" />
+			<description>
+				Mirrors [signal PopupMenu.index_pressed].
+			</description>
+		</signal>
 	</signals>
 </class>
