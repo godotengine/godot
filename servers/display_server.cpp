@@ -212,7 +212,7 @@ String DisplayServer::global_menu_get_item_submenu(const String &p_menu_root, in
 	ERR_FAIL_NULL_V(nmenu, String());
 	RID rid = nmenu->get_item_submenu(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 	if (!nmenu->is_system_menu(rid)) {
-		for (HashMap<String, RID>::Iterator E = menu_names.begin(); E;) {
+		for (HashMap<String, RID>::Iterator E = menu_names.begin(); E; ++E) {
 			if (E->value == rid) {
 				return E->key;
 			}
