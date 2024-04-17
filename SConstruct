@@ -121,38 +121,38 @@ elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", False):
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually.
 # Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
-env_base = Environment(tools=custom_tools)
-env_base.PrependENVPath("PATH", os.getenv("PATH"))
-env_base.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
+env = Environment(tools=custom_tools)
+env.PrependENVPath("PATH", os.getenv("PATH"))
+env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
-    env_base["ENV"]["TERM"] = os.environ["TERM"]
+    env["ENV"]["TERM"] = os.environ["TERM"]
 
-env_base.disabled_modules = []
-env_base.module_version_string = ""
-env_base.msvc = False
+env.disabled_modules = []
+env.module_version_string = ""
+env.msvc = False
 
-env_base.__class__.disable_module = methods.disable_module
+env.__class__.disable_module = methods.disable_module
 
-env_base.__class__.add_module_version_string = methods.add_module_version_string
+env.__class__.add_module_version_string = methods.add_module_version_string
 
-env_base.__class__.add_source_files = methods.add_source_files
-env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
+env.__class__.add_source_files = methods.add_source_files
+env.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 
-env_base.__class__.add_shared_library = methods.add_shared_library
-env_base.__class__.add_library = methods.add_library
-env_base.__class__.add_program = methods.add_program
-env_base.__class__.CommandNoCache = methods.CommandNoCache
-env_base.__class__.Run = methods.Run
-env_base.__class__.disable_warnings = methods.disable_warnings
-env_base.__class__.force_optimization_on_debug = methods.force_optimization_on_debug
-env_base.__class__.module_add_dependencies = methods.module_add_dependencies
-env_base.__class__.module_check_dependencies = methods.module_check_dependencies
+env.__class__.add_shared_library = methods.add_shared_library
+env.__class__.add_library = methods.add_library
+env.__class__.add_program = methods.add_program
+env.__class__.CommandNoCache = methods.CommandNoCache
+env.__class__.Run = methods.Run
+env.__class__.disable_warnings = methods.disable_warnings
+env.__class__.force_optimization_on_debug = methods.force_optimization_on_debug
+env.__class__.module_add_dependencies = methods.module_add_dependencies
+env.__class__.module_check_dependencies = methods.module_check_dependencies
 
-env_base["x86_libtheora_opt_gcc"] = False
-env_base["x86_libtheora_opt_vc"] = False
+env["x86_libtheora_opt_gcc"] = False
+env["x86_libtheora_opt_vc"] = False
 
 # avoid issues when building with different versions of python out of the same directory
-env_base.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
+env.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
 
 # Build options
 
@@ -275,22 +275,22 @@ opts.Add("linkflags", "Custom flags for the linker")
 
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
-opts.Update(env_base)
+opts.Update(env)
 
 # Copy custom environment variables if set.
-if env_base["import_env_vars"]:
-    for env_var in str(env_base["import_env_vars"]).split(","):
+if env["import_env_vars"]:
+    for env_var in str(env["import_env_vars"]).split(","):
         if env_var in os.environ:
-            env_base["ENV"][env_var] = os.environ[env_var]
+            env["ENV"][env_var] = os.environ[env_var]
 
 # Platform selection: validate input, and add options.
 
 selected_platform = ""
 
-if env_base["platform"] != "":
-    selected_platform = env_base["platform"]
-elif env_base["p"] != "":
-    selected_platform = env_base["p"]
+if env["platform"] != "":
+    selected_platform = env["platform"]
+elif env["p"] != "":
+    selected_platform = env["p"]
 else:
     # Missing `platform` argument, try to detect platform automatically
     if (
@@ -343,7 +343,7 @@ if selected_platform not in platform_list:
 
 # Make sure to update this to the found, valid platform as it's used through the buildsystem as the reference.
 # It should always be re-set after calling `opts.Update()` otherwise it uses the original input value.
-env_base["platform"] = selected_platform
+env["platform"] = selected_platform
 
 # Add platform-specific options.
 if selected_platform in platform_opts:
@@ -351,15 +351,15 @@ if selected_platform in platform_opts:
         opts.Add(opt)
 
 # Update the environment to take platform-specific options into account.
-opts.Update(env_base)
-env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
+opts.Update(env)
+env["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
 
 # Detect modules.
 modules_detected = OrderedDict()
 module_search_paths = ["modules"]  # Built-in path.
 
-if env_base["custom_modules"]:
-    paths = env_base["custom_modules"].split(",")
+if env["custom_modules"]:
+    paths = env["custom_modules"].split(",")
     for p in paths:
         try:
             module_search_paths.append(methods.convert_custom_modules_path(p))
@@ -373,13 +373,13 @@ for path in module_search_paths:
         # so save the time it takes to parse directories.
         modules = methods.detect_modules(path, recursive=False)
     else:  # Custom.
-        modules = methods.detect_modules(path, env_base["custom_modules_recursive"])
+        modules = methods.detect_modules(path, env["custom_modules_recursive"])
         # Provide default include path for both the custom module search `path`
         # and the base directory containing custom modules, as it may be different
         # from the built-in "modules" name (e.g. "custom_modules/summator/summator.h"),
         # so it can be referenced simply as `#include "summator/summator.h"`
         # independently of where a module is located on user's filesystem.
-        env_base.Prepend(CPPPATH=[path, os.path.dirname(path)])
+        env.Prepend(CPPPATH=[path, os.path.dirname(path)])
     # Note: custom modules can override built-in ones.
     modules_detected.update(modules)
 
@@ -388,7 +388,7 @@ for name, path in modules_detected.items():
     sys.path.insert(0, path)
     import config
 
-    if env_base["modules_enabled_by_default"]:
+    if env["modules_enabled_by_default"]:
         enabled = True
         try:
             enabled = config.is_enabled()
@@ -412,17 +412,17 @@ for name, path in modules_detected.items():
 methods.write_modules(modules_detected)
 
 # Update the environment again after all the module options are added.
-opts.Update(env_base)
-env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
-Help(opts.GenerateHelpText(env_base))
+opts.Update(env)
+env["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
+Help(opts.GenerateHelpText(env))
 
 # add default include paths
 
-env_base.Prepend(CPPPATH=["#"])
+env.Prepend(CPPPATH=["#"])
 
 # configure ENV for platform
-env_base.platform_exporters = platform_exporters
-env_base.platform_apis = platform_apis
+env.platform_exporters = platform_exporters
+env.platform_apis = platform_apis
 
 # Configuration of build targets:
 # - Editor or template
@@ -431,70 +431,68 @@ env_base.platform_apis = platform_apis
 # - Optimization level
 # - Debug symbols for crash traces / debuggers
 
-env_base.editor_build = env_base["target"] == "editor"
-env_base.dev_build = env_base["dev_build"]
-env_base.debug_features = env_base["target"] in ["editor", "template_debug"]
+env.editor_build = env["target"] == "editor"
+env.dev_build = env["dev_build"]
+env.debug_features = env["target"] in ["editor", "template_debug"]
 
-if env_base.dev_build:
+if env.dev_build:
     opt_level = "none"
-elif env_base.debug_features:
+elif env.debug_features:
     opt_level = "speed_trace"
 else:  # Release
     opt_level = "speed"
 
-env_base["optimize"] = ARGUMENTS.get("optimize", opt_level)
-env_base["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env_base.dev_build)
+env["optimize"] = ARGUMENTS.get("optimize", opt_level)
+env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env.dev_build)
 
-if env_base.editor_build:
-    env_base.Append(CPPDEFINES=["TOOLS_ENABLED"])
+if env.editor_build:
+    env.Append(CPPDEFINES=["TOOLS_ENABLED"])
 
-if env_base.debug_features:
+if env.debug_features:
     # DEBUG_ENABLED enables debugging *features* and debug-only code, which is intended
     # to give *users* extra debugging information for their game development.
-    env_base.Append(CPPDEFINES=["DEBUG_ENABLED"])
+    env.Append(CPPDEFINES=["DEBUG_ENABLED"])
 
-if env_base.dev_build:
+if env.dev_build:
     # DEV_ENABLED enables *engine developer* code which should only be compiled for those
     # working on the engine itself.
-    env_base.Append(CPPDEFINES=["DEV_ENABLED"])
+    env.Append(CPPDEFINES=["DEV_ENABLED"])
 else:
     # Disable assert() for production targets (only used in thirdparty code).
-    env_base.Append(CPPDEFINES=["NDEBUG"])
+    env.Append(CPPDEFINES=["NDEBUG"])
 
 # SCons speed optimization controlled by the `fast_unsafe` option, which provide
 # more than 10 s speed up for incremental rebuilds.
 # Unsafe as they reduce the certainty of rebuilding all changed files, so it's
 # enabled by default for `debug` builds, and can be overridden from command line.
 # Ref: https://github.com/SCons/scons/wiki/GoFastButton
-if methods.get_cmdline_bool("fast_unsafe", env_base.dev_build):
+if methods.get_cmdline_bool("fast_unsafe", env.dev_build):
     # Renamed to `content-timestamp` in SCons >= 4.2, keeping MD5 for compat.
-    env_base.Decider("MD5-timestamp")
-    env_base.SetOption("implicit_cache", 1)
-    env_base.SetOption("max_drift", 60)
+    env.Decider("MD5-timestamp")
+    env.SetOption("implicit_cache", 1)
+    env.SetOption("max_drift", 60)
 
-if env_base["use_precise_math_checks"]:
-    env_base.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
+if env["use_precise_math_checks"]:
+    env.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
-if env_base.editor_build and env_base["engine_update_check"]:
-    env_base.Append(CPPDEFINES=["ENGINE_UPDATE_CHECK_ENABLED"])
+if env.editor_build and env["engine_update_check"]:
+    env.Append(CPPDEFINES=["ENGINE_UPDATE_CHECK_ENABLED"])
 
-if not env_base.File("#main/splash_editor.png").exists():
+if not env.File("#main/splash_editor.png").exists():
     # Force disabling editor splash if missing.
-    env_base["no_editor_splash"] = True
-if env_base["no_editor_splash"]:
-    env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
+    env["no_editor_splash"] = True
+if env["no_editor_splash"]:
+    env.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
 
-if not env_base["deprecated"]:
-    env_base.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
+if not env["deprecated"]:
+    env.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
 
-if env_base["precision"] == "double":
-    env_base.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
+if env["precision"] == "double":
+    env.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
 
 tmppath = "./platform/" + selected_platform
 sys.path.insert(0, tmppath)
 import detect
-
-env = env_base.Clone()
 
 # Default num_jobs to local cpu count if not user specified.
 # SCons has a peculiarity where user-specified options won't be overridden
@@ -570,7 +568,7 @@ if env["production"]:
 # Run SCU file generation script if in a SCU build.
 if env["scu_build"]:
     max_includes_per_scu = 8
-    if env_base.dev_build == True:
+    if env.dev_build == True:
         max_includes_per_scu = 1024
 
     read_scu_limit = int(env["scu_limit"])
@@ -844,7 +842,7 @@ suffix += "." + env["target"]
 if env.dev_build:
     suffix += ".dev"
 
-if env_base["precision"] == "double":
+if env["precision"] == "double":
     suffix += ".double"
 
 suffix += "." + env["arch"]
