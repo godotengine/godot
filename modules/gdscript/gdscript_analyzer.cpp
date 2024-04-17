@@ -1997,7 +1997,7 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 
 #ifdef DEBUG_ENABLED
 	if (p_is_local) {
-		if (p_constant->usages == 0) {
+		if (p_constant->usages == 0 && !String(p_constant->identifier->name).begins_with("_")) {
 			parser->push_warning(p_constant, GDScriptWarning::UNUSED_LOCAL_CONSTANT, p_constant->identifier->name);
 		}
 	}
