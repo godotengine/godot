@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+
+Import("env")
+
+env.main_sources = []
+
+env_main = env.Clone()
+
+env_main.add_source_files(env.main_sources, "main.cpp")
+
+if env["tests"]:
+    env_main.Append(CPPDEFINES=["TESTS_ENABLED"])
+
+lib = env_main.add_library("main", env.main_sources)
+env.Prepend(LIBS=[lib])

@@ -1223,8 +1223,10 @@ TypedArray<Dictionary> ProjectSettings::get_global_class_list() {
 		global_class_list = cf->get_value("", "list", Array());
 	} else {
 #ifndef TOOLS_ENABLED
+#ifndef GDSCRIPT_BUILD
 		// Script classes can't be recreated in exported project, so print an error.
 		ERR_PRINT("Could not load global script cache.");
+#endif
 #endif
 	}
 

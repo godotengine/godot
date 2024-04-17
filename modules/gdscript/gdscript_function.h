@@ -521,9 +521,10 @@ public:
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
 	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) || defined(GDSCRIPT_BUILD)
 	void _profile_native_call(uint64_t p_t_taken, const String &p_function_name, const String &p_instance_class_name = String());
 	void disassemble(const Vector<String> &p_code_lines) const;
+	String signature() const;
 #endif
 
 	GDScriptFunction();

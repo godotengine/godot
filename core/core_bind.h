@@ -182,7 +182,9 @@ public:
 	Vector<String> get_cmdline_args();
 	Vector<String> get_cmdline_user_args();
 
+#ifndef GDSCRIPT_BUILD
 	Vector<String> get_video_adapter_driver_info() const;
+#endif
 
 	String get_locale() const;
 	String get_locale_language() const;

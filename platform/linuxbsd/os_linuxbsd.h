@@ -102,7 +102,9 @@ public:
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
 
+#ifndef GDSCRIPT_BUILD
 	virtual Vector<String> get_video_adapter_driver_info() const override;
+#endif
 
 	virtual MainLoop *get_main_loop() const override;
 
