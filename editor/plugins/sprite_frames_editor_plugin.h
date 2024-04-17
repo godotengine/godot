@@ -253,7 +253,6 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _update_show_settings();
 
 	void _edit();
-	void _regist_scene_undo(EditorUndoRedoManager *undo_redo);
 	void _fetch_sprite_node();
 	void _remove_sprite_node();
 
@@ -270,6 +269,8 @@ protected:
 
 public:
 	void edit(Ref<SpriteFrames> p_frames);
+	bool is_editing() const;
+
 	SpriteFramesEditor();
 };
 
