@@ -332,7 +332,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			child_item_count = ci->ysort_children_count + 1;
 			child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
-			ci->ysort_xform = final_xform.affine_inverse();
+			ci->ysort_xform = ci->xform_curr.affine_inverse();
 			ci->ysort_pos = Vector2();
 			ci->ysort_modulate = Color(1, 1, 1, 1);
 			ci->ysort_index = 0;
