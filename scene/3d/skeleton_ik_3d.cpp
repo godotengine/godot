@@ -366,6 +366,12 @@ void SkeletonIK3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_node"), "set_target_node", "get_target_node");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_distance", PROPERTY_HINT_NONE, "suffix:m"), "set_min_distance", "get_min_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_iterations"), "set_max_iterations", "get_max_iterations");
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_interpolation", "interpolation"), &SkeletonIK3D::_set_interpolation);
+	ClassDB::bind_method(D_METHOD("get_interpolation"), &SkeletonIK3D::_get_interpolation);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "interpolation", PROPERTY_HINT_RANGE, "0,1,0.001", PROPERTY_USAGE_NONE), "set_interpolation", "get_interpolation");
+#endif
 }
 
 void SkeletonIK3D::_process_modification() {
@@ -414,6 +420,16 @@ void SkeletonIK3D::set_tip_bone(const StringName &p_tip_bone) {
 StringName SkeletonIK3D::get_tip_bone() const {
 	return tip_bone;
 }
+
+#ifndef DISABLE_DEPRECATED
+void SkeletonIK3D::_set_interpolation(real_t p_interpolation) {
+	set_influence(p_interpolation);
+}
+
+real_t SkeletonIK3D::_get_interpolation() const {
+	return get_influence();
+}
+#endif
 
 void SkeletonIK3D::set_target_transform(const Transform3D &p_target) {
 	target = p_target;
