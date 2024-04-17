@@ -491,12 +491,10 @@ void WorkerThreadPool::notify_yield_over(TaskID p_task_id) {
 		ERR_FAIL_MSG("Invalid Task ID.");
 	}
 	Task *task = *taskp;
-
-#ifdef DEBUG_ENABLED
-	if (task->pool_thread_index == get_thread_index()) {
-		WARN_PRINT("A worker thread is attempting to notify itself. That makes no sense.");
+	if (task->completed) {
+		task_mutex.unlock();
+		return;
 	}
-#endif
 
 	ThreadData &td = threads[task->pool_thread_index];
 	td.yield_is_over = true;
