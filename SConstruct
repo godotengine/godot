@@ -475,7 +475,7 @@ if methods.get_cmdline_bool("fast_unsafe", env_base.dev_build):
 if env_base["use_precise_math_checks"]:
     env_base.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
-if env_base["engine_update_check"]:
+if env_base.editor_build and env_base["engine_update_check"]:
     env_base.Append(CPPDEFINES=["ENGINE_UPDATE_CHECK_ENABLED"])
 
 if not env_base.File("#main/splash_editor.png").exists():
