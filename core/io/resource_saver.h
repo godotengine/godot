@@ -45,6 +45,7 @@ protected:
 	GDVIRTUAL1RC(bool, _recognize, Ref<Resource>)
 	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, Ref<Resource>)
 	GDVIRTUAL2RC(bool, _recognize_path, Ref<Resource>, String)
+	GDVIRTUAL2RC(int, _get_current_format_version, Ref<Resource>, String)
 
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
@@ -52,6 +53,7 @@ public:
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 	virtual bool recognize_path(const Ref<Resource> &p_resource, const String &p_path) const;
+	virtual int get_current_format_version(const Ref<Resource> &p_resource, const String &p_path) const;
 
 	virtual ~ResourceFormatSaver() {}
 };
@@ -70,6 +72,7 @@ class ResourceSaver {
 	static ResourceSavedCallback save_callback;
 	static ResourceSaverGetResourceIDForPath save_get_id_for_path;
 
+	static Ref<ResourceFormatSaver> _find_resource_format_saver_for_resource(const Ref<Resource> &p_resource, const String &p_path);
 	static Ref<ResourceFormatSaver> _find_custom_resource_format_saver(const String &path);
 
 public:
@@ -85,6 +88,7 @@ public:
 	};
 
 	static Error save(const Ref<Resource> &p_resource, const String &p_path = "", uint32_t p_flags = (uint32_t)FLAG_NONE);
+	static int get_current_format_version(const Ref<Resource> &p_resource, const String &p_path = "");
 	static void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions);
 	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
 	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);

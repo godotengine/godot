@@ -89,23 +89,30 @@ bool ResourceFormatSaver::recognize_path(const Ref<Resource> &p_resource, const 
 	return false;
 }
 
+int ResourceFormatSaver::get_current_format_version(const Ref<Resource> &p_resource, const String &p_path) const {
+	int ret = false;
+	if (GDVIRTUAL_CALL(_get_current_format_version, p_resource, p_path, ret)) {
+		return ret;
+	}
+
+	return 0;
+}
+
 void ResourceFormatSaver::_bind_methods() {
 	GDVIRTUAL_BIND(_save, "resource", "path", "flags");
 	GDVIRTUAL_BIND(_set_uid, "path", "uid");
 	GDVIRTUAL_BIND(_recognize, "resource");
 	GDVIRTUAL_BIND(_get_recognized_extensions, "resource");
 	GDVIRTUAL_BIND(_recognize_path, "resource", "path");
+	GDVIRTUAL_BIND(_get_current_format_version, "resource", "path");
 }
 
-Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+Ref<ResourceFormatSaver> ResourceSaver::_find_resource_format_saver_for_resource(const Ref<Resource> &p_resource, const String &p_path) {
 	String path = p_path;
 	if (path.is_empty()) {
 		path = p_resource->get_path();
 	}
-	ERR_FAIL_COND_V_MSG(path.is_empty(), ERR_INVALID_PARAMETER, "Can't save resource to empty path. Provide non-empty path or a Resource with non-empty resource_path.");
-
-	String extension = path.get_extension();
-	Error err = ERR_FILE_UNRECOGNIZED;
+	ERR_FAIL_COND_V_MSG(path.is_empty(), Ref<ResourceFormatSaver>(), "Can't save resource to empty path. Provide non-empty path or a Resource with non-empty resource_path.");
 
 	for (int i = 0; i < saver_count; i++) {
 		if (!saver[i]->recognize(p_resource)) {
@@ -116,40 +123,55 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 			continue;
 		}
 
-		String old_path = p_resource->get_path();
+		return saver[i];
+	}
 
-		String local_path = ProjectSettings::get_singleton()->localize_path(path);
+	return Ref<ResourceFormatSaver>();
+}
 
-		if (p_flags & FLAG_CHANGE_PATH) {
-			p_resource->set_path(local_path);
-		}
+Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+	String path = p_path;
+	if (path.is_empty()) {
+		path = p_resource->get_path();
+	}
+	ERR_FAIL_COND_V_MSG(path.is_empty(), ERR_INVALID_PARAMETER, "Can't save resource to empty path. Provide non-empty path or a Resource with non-empty resource_path.");
 
-		err = saver[i]->save(p_resource, path, p_flags);
+	Ref<ResourceFormatSaver> resource_format_saver = _find_resource_format_saver_for_resource(p_resource, p_path);
+	if (resource_format_saver.is_null()) {
+		return ERR_FILE_UNRECOGNIZED;
+	}
 
-		if (err == OK) {
+	String old_path = p_resource->get_path();
+
+	String local_path = ProjectSettings::get_singleton()->localize_path(path);
+
+	if (p_flags & FLAG_CHANGE_PATH) {
+		p_resource->set_path(local_path);
+	}
+
+	Error err = resource_format_saver->save(p_resource, path, p_flags);
+
+	if (err == OK) {
 #ifdef TOOLS_ENABLED
 
-			((Resource *)p_resource.ptr())->set_edited(false);
-			if (timestamp_on_save) {
-				uint64_t mt = FileAccess::get_modified_time(path);
+		((Resource *)p_resource.ptr())->set_edited(false);
+		if (timestamp_on_save) {
+			uint64_t mt = FileAccess::get_modified_time(path);
 
-				((Resource *)p_resource.ptr())->set_last_modified_time(mt);
-			}
+			((Resource *)p_resource.ptr())->set_last_modified_time(mt);
+		}
 #endif
 
-			if (p_flags & FLAG_CHANGE_PATH) {
-				p_resource->set_path(old_path);
-			}
+		if (p_flags & FLAG_CHANGE_PATH) {
+			p_resource->set_path(old_path);
+		}
 
-			if (save_callback && path.begins_with("res://")) {
-				save_callback(p_resource, path);
-			}
-
-			return OK;
+		if (save_callback && path.begins_with("res://")) {
+			save_callback(p_resource, path);
 		}
 	}
 
-	return err;
+	return err; // We tried/successed to save, return.
 }
 
 Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
@@ -171,6 +193,15 @@ Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 
 void ResourceSaver::set_save_callback(ResourceSavedCallback p_callback) {
 	save_callback = p_callback;
+}
+
+int ResourceSaver::get_current_format_version(const Ref<Resource> &p_resource, const String &p_path) {
+	Ref<ResourceFormatSaver> resource_format_saver = _find_resource_format_saver_for_resource(p_resource, p_path);
+	if (resource_format_saver.is_null()) {
+		return -1;
+	}
+
+	return resource_format_saver->get_current_format_version(p_resource, p_path);
 }
 
 void ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) {

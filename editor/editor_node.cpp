@@ -683,11 +683,11 @@ void EditorNode::_notification(int p_what) {
 			if (warning) {
 				warning->queue_free();
 			}
-			if (accept) {
-				accept->queue_free();
+			if (accept_dialog) {
+				accept_dialog->queue_free();
 			}
-			if (save_accept) {
-				save_accept->queue_free();
+			if (confirm_dialog) {
+				confirm_dialog->queue_free();
 			}
 			editor_data.save_editor_external_data();
 			FileAccess::set_file_close_fail_notify_callback(nullptr);
@@ -1797,7 +1797,7 @@ static void _reset_animation_mixers(Node *p_node, List<Pair<AnimationMixer *, Re
 	}
 }
 
-void EditorNode::_save_scene(String p_file, int idx) {
+void EditorNode::_save_scene(String p_file, int idx, bool p_force_save_to_new_format) {
 	if (!saving_scene.is_empty() && saving_scene == p_file) {
 		return;
 	}
@@ -1812,6 +1812,16 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	if (!scene->get_scene_file_path().is_empty() && _validate_scene_recursive(scene->get_scene_file_path(), scene)) {
 		show_accept(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."), TTR("OK"));
 		return;
+	}
+
+	if (!p_force_save_to_new_format) {
+		Ref<PackedScene> dummy_packed_scene;
+		dummy_packed_scene.instantiate();
+		if (ResourceLoader::exists(p_file) && ResourceLoader::get_format_version(p_file) < ResourceSaver::get_current_format_version(dummy_packed_scene, p_file)) {
+			// Note: we use a dummy packed scene here as waiting for the scene to be loaded can cause other things being saved too soon.
+			show_confirm(TTR("You are about to save a scene to a newer format. This can prevent opening the scene again in previous versions of Godot.\nAre you sure to continue?"), TTR("OK"), callable_mp(this, &EditorNode::_save_scene).bind(p_file, idx, true));
+			return;
+		}
 	}
 
 	scene->propagate_notification(NOTIFICATION_EDITOR_PRE_SAVE);
@@ -1839,6 +1849,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	} else {
 		sdata.instantiate();
 	}
+
 	Error err = sdata->pack(scene);
 
 	if (err != OK) {
@@ -2672,7 +2683,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 					save_editor_layout_delayed();
 				} else {
-					show_save_accept(vformat(TTR("%s no longer exists! Please specify a new save location."), scene->get_scene_file_path().get_base_dir()), TTR("OK"));
+					show_accept(vformat(TTR("%s no longer exists! Please specify a new save location."), scene->get_scene_file_path().get_base_dir()), TTR("OK"), callable_mp(this, &EditorNode::_menu_option).bind((int)MenuOptions::FILE_SAVE_AS_SCENE));
 				}
 				break;
 			}
@@ -4862,21 +4873,41 @@ bool EditorNode::is_project_exporting() const {
 	return project_export && project_export->is_exporting();
 }
 
-void EditorNode::show_accept(const String &p_text, const String &p_title) {
+void EditorNode::show_accept(const String &p_text, const String &p_title, Callable p_action) {
 	current_menu_option = -1;
-	if (accept) {
-		accept->set_ok_button_text(p_title);
-		accept->set_text(p_text);
-		EditorInterface::get_singleton()->popup_dialog_centered(accept);
+	if (accept_dialog) {
+		accept_dialog->set_ok_button_text(p_title);
+		accept_dialog->set_text(p_text);
+
+		// Disconnect the action.
+		if (accept_dialog_action.is_valid()) {
+			accept_dialog->disconnect("confirmed", accept_dialog_action);
+		}
+		accept_dialog_action = p_action;
+		// Connect to the new action.
+		if (p_action.is_valid()) {
+			accept_dialog->connect("confirmed", accept_dialog_action);
+		}
+		EditorInterface::get_singleton()->popup_dialog_centered(accept_dialog);
 	}
 }
 
-void EditorNode::show_save_accept(const String &p_text, const String &p_title) {
+void EditorNode::show_confirm(const String &p_text, const String &p_title, Callable p_action) {
 	current_menu_option = -1;
-	if (save_accept) {
-		save_accept->set_ok_button_text(p_title);
-		save_accept->set_text(p_text);
-		EditorInterface::get_singleton()->popup_dialog_centered(save_accept);
+	if (confirm_dialog) {
+		confirm_dialog->set_ok_button_text(p_title);
+		confirm_dialog->set_text(p_text);
+
+		// Disconnect the action.
+		if (confirm_dialog_action.is_valid()) {
+			confirm_dialog->disconnect("confirmed", confirm_dialog_action);
+		}
+		confirm_dialog_action = p_action;
+		// Connect to the new action.
+		if (p_action.is_valid()) {
+			confirm_dialog->connect("confirmed", confirm_dialog_action);
+		}
+		EditorInterface::get_singleton()->popup_dialog_centered(confirm_dialog);
 	}
 }
 
@@ -6656,14 +6687,15 @@ EditorNode::EditorNode() {
 	main_menu->add_child(file_menu);
 	main_menu->set_menu_tooltip(0, TTR("Operations with scene files."));
 
-	accept = memnew(AcceptDialog);
-	accept->set_autowrap(true);
-	accept->set_min_size(Vector2i(600, 0));
-	accept->set_unparent_when_invisible(true);
+	accept_dialog = memnew(AcceptDialog);
+	accept_dialog->set_autowrap(true);
+	accept_dialog->set_min_size(Vector2i(600, 0));
+	accept_dialog->set_unparent_when_invisible(true);
 
-	save_accept = memnew(AcceptDialog);
-	save_accept->set_unparent_when_invisible(true);
-	save_accept->connect("confirmed", callable_mp(this, &EditorNode::_menu_option).bind((int)MenuOptions::FILE_SAVE_AS_SCENE));
+	confirm_dialog = memnew(ConfirmationDialog);
+	confirm_dialog->set_autowrap(true);
+	confirm_dialog->set_min_size(Vector2i(600, 0));
+	confirm_dialog->set_unparent_when_invisible(true);
 
 	project_export = memnew(ProjectExportDialog);
 	gui_base->add_child(project_export);
