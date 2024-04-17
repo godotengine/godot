@@ -558,6 +558,30 @@ public:
 		return Size2i(tex->width_2d, tex->height_2d);
 	}
 
+	RID texture_2d_init_for_3d(RID p_rid, int p_width, int p_height) {
+		Texture texture;
+
+		texture.rd_texture = p_rid;
+		texture.is_render_target = true;
+		texture.width = p_width;
+		texture.height = p_height;
+		texture.rd_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		texture.rd_format_srgb = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		texture.format = Image::FORMAT_RGBAH;
+		texture.validated_format = Image::FORMAT_RGBAH;
+		texture.is_proxy = false;
+
+		return texture_owner.make_rid(texture);
+	}
+
+	void texture_2d_for_3d_free(RID p_texture) {
+		Texture *t = texture_owner.get_or_null(p_texture);
+		ERR_FAIL_NULL(t);
+
+		t->is_render_target = false;
+		texture_free(p_texture);
+	}
+
 	/* DECAL API */
 
 	void update_decal_atlas();

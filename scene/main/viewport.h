@@ -63,6 +63,7 @@ class ViewportTexture : public Texture2D {
 	bool vp_changed = false;
 
 	void _setup_local_to_scene(const Node *p_loc_scene);
+	void _update_rid_from_vp();
 
 	mutable RID proxy_ph;
 	mutable RID proxy;
@@ -211,6 +212,13 @@ public:
 		VRS_TEXTURE,
 		VRS_XR,
 		VRS_MAX
+	};
+
+	enum ViewportMode {
+		VIEWPORT_MODE_2D_AND_3D,
+		VIEWPORT_MODE_3D,
+		VIEWPORT_MODE_XR,
+		VIEWPORT_MODE_MAX
 	};
 
 private:
@@ -698,7 +706,7 @@ public:
 #ifndef _3D_DISABLED
 private:
 	// 3D audio, camera, physics, and world.
-	bool use_xr = false;
+	ViewportMode viewport_mode = VIEWPORT_MODE_2D_AND_3D;
 	friend class AudioListener3D;
 	AudioListener3D *audio_listener_3d = nullptr;
 	HashSet<AudioListener3D *> audio_listener_3d_set;
@@ -772,6 +780,9 @@ public:
 
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
+
+	void set_viewport_mode(ViewportMode p_viewport_mode);
+	ViewportMode get_viewport_mode() const;
 #endif // _3D_DISABLED
 
 	Viewport();
@@ -849,5 +860,6 @@ VARIANT_ENUM_CAST(Viewport::RenderInfo);
 VARIANT_ENUM_CAST(Viewport::RenderInfoType);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureFilter);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureRepeat);
+VARIANT_ENUM_CAST(Viewport::ViewportMode);
 
 #endif // VIEWPORT_H
