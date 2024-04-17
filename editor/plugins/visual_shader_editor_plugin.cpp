@@ -953,8 +953,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		bool port_left_used = false;
 		String name_left;
 		if (valid_left) {
-			name_left = vsnode->get_input_port_name(i);
-			port_left = vsnode->get_input_port_type(i);
+			name_left = vsnode->get_input_port_name(j);
+			port_left = vsnode->get_input_port_type(j);
 			for (const VisualShader::Connection &E : connections) {
 				if (E.to_node == p_id && E.to_port == j) {
 					port_left_used = true;
@@ -989,15 +989,15 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		Variant default_value;
 
 		if (valid_left && !port_left_used) {
-			default_value = vsnode->get_input_port_default_value(i);
+			default_value = vsnode->get_input_port_default_value(j);
 		}
 
 		Button *button = memnew(Button);
 		hb->add_child(button);
-		register_default_input_button(p_id, i, button);
-		button->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_port_default_input).bind(button, p_id, i));
+		register_default_input_button(p_id, j, button);
+		button->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_port_default_input).bind(button, p_id, j));
 		if (default_value.get_type() != Variant::NIL) { // only a label
-			set_input_port_default_value(p_type, p_id, i, default_value);
+			set_input_port_default_value(p_type, p_id, j, default_value);
 		} else {
 			button->hide();
 		}
