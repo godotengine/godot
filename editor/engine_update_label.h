@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_navigation_region_3d.h                                           */
+/*  engine_update_label.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,55 +28,80 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_NAVIGATION_REGION_3D_H
-#define TEST_NAVIGATION_REGION_3D_H
+#ifndef ENGINE_UPDATE_LABEL_H
+#define ENGINE_UPDATE_LABEL_H
 
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/navigation_region_3d.h"
-#include "scene/main/window.h"
-#include "scene/resources/3d/primitive_meshes.h"
+#include "scene/gui/link_button.h"
 
-#include "tests/test_macros.h"
+class HTTPRequest;
 
-namespace TestNavigationRegion3D {
+class EngineUpdateLabel : public LinkButton {
+	GDCLASS(EngineUpdateLabel, LinkButton);
 
-TEST_SUITE("[Navigation]") {
-	TEST_CASE("[SceneTree][NavigationRegion3D] New region should have valid RID") {
-		NavigationRegion3D *region_node = memnew(NavigationRegion3D);
-		CHECK(region_node->get_rid().is_valid());
-		memdelete(region_node);
-	}
+public:
+	enum class UpdateMode {
+		DISABLED,
+		NEWEST_UNSTABLE,
+		NEWEST_STABLE,
+		NEWEST_PATCH,
+	};
 
-	TEST_CASE("[SceneTree][NavigationRegion3D] Region should bake successfully from valid geometry") {
-		Node3D *node_3d = memnew(Node3D);
-		SceneTree::get_singleton()->get_root()->add_child(node_3d);
-		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
-		NavigationRegion3D *navigation_region = memnew(NavigationRegion3D);
-		navigation_region->set_navigation_mesh(navigation_mesh);
-		node_3d->add_child(navigation_region);
-		Ref<PlaneMesh> plane_mesh = memnew(PlaneMesh);
-		plane_mesh->set_size(Size2(10.0, 10.0));
-		MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
-		mesh_instance->set_mesh(plane_mesh);
-		navigation_region->add_child(mesh_instance);
+private:
+	static constexpr int DEV_VERSION = 9999; // Version index for unnumbered builds (assumed to always be newest).
 
-		CHECK_FALSE(navigation_region->is_baking());
-		CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
-		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
+	enum class VersionType {
+		STABLE,
+		RC,
+		BETA,
+		ALPHA,
+		DEV,
+		UNKNOWN,
+	};
 
-		SUBCASE("Synchronous bake should have immediate effects") {
-			navigation_region->bake_navigation_mesh(false);
-			CHECK_FALSE(navigation_region->is_baking());
-			CHECK_NE(navigation_mesh->get_polygon_count(), 0);
-			CHECK_NE(navigation_mesh->get_vertices().size(), 0);
-		}
+	enum class UpdateStatus {
+		NONE,
+		DEV,
+		OFFLINE,
+		BUSY,
+		ERROR,
+		UPDATE_AVAILABLE,
+		UP_TO_DATE,
+	};
 
-		memdelete(mesh_instance);
-		memdelete(navigation_region);
-		memdelete(node_3d);
-	}
-}
+	struct ThemeCache {
+		Color default_color;
+		Color disabled_color;
+		Color error_color;
+		Color update_color;
+	} theme_cache;
 
-} //namespace TestNavigationRegion3D
+	HTTPRequest *http = nullptr;
+	bool compact_mode = false;
 
-#endif // TEST_NAVIGATION_REGION_3D_H
+	UpdateStatus status = UpdateStatus::NONE;
+	bool checked_update = false;
+	String found_version;
+
+	bool _can_check_updates() const;
+	void _check_update();
+	void _http_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
+
+	void _set_message(const String &p_message, const Color &p_color);
+	void _set_status(UpdateStatus p_status);
+
+	VersionType _get_version_type(const String &p_string, int *r_index) const;
+	String _extract_sub_string(const String &p_line) const;
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+	virtual void pressed() override;
+
+public:
+	void enable_compact_mode();
+
+	EngineUpdateLabel();
+};
+
+#endif // ENGINE_UPDATE_LABEL_H

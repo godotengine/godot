@@ -126,6 +126,9 @@ String GDScriptWarning::get_message() const {
 		case INT_AS_ENUM_WITHOUT_MATCH:
 			CHECK_SYMBOLS(3);
 			return vformat(R"(Cannot %s %s as Enum "%s": no enum member has matching value.)", symbols[0], symbols[1], symbols[2]);
+		case ENUM_VARIABLE_WITHOUT_DEFAULT:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(The variable "%s" has an enum type and does not set an explicit default value. The default will be set to "0".)", symbols[0]);
 		case EMPTY_FILE:
 			return "Empty script file.";
 		case DEPRECATED_KEYWORD:
@@ -221,6 +224,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"NARROWING_CONVERSION",
 		"INT_AS_ENUM_WITHOUT_CAST",
 		"INT_AS_ENUM_WITHOUT_MATCH",
+		"ENUM_VARIABLE_WITHOUT_DEFAULT",
 		"EMPTY_FILE",
 		"DEPRECATED_KEYWORD",
 		"RENAMED_IN_GODOT_4_HINT",
