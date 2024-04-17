@@ -263,12 +263,30 @@ Removed VisualShaderNodeComment, which is replaced by VisualShaderNodeFrame.
 
 GH-87888
 --------
-Validate extension JSON: API was removed: classes/OpenXRHand/methods/get_hand_skeleton
-Validate extension JSON: API was removed: classes/OpenXRHand/methods/set_hand_skeleton
-Validate extension JSON: API was removed: classes/OpenXRHand/properties/hand_skeleton
 Validate extension JSON: API was removed: classes/Skeleton3D/properties/animate_physical_bones
 Validate extension JSON: API was removed: classes/SkeletonIK3D/methods/get_interpolation
 Validate extension JSON: API was removed: classes/SkeletonIK3D/methods/set_interpolation
 Validate extension JSON: API was removed: classes/SkeletonIK3D/properties/interpolation
 
 These base class is changed to SkeletonModifier3D which is processed by Skeleton3D with the assumption that it is Skeleton3D's child.
+
+
+GH-90575
+--------
+Validate extension JSON: API was removed: classes/BoneAttachment3D/methods/on_bone_pose_update
+Validate extension JSON: API was removed: classes/Skeleton3D/signals/bone_pose_changed
+
+They have been replaced by a safer API due to performance concerns. Compatibility method registered.
+
+GH-90747
+--------
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/properties/avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_avoidance_layer_value
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_avoidance_layer_value
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_constrain_avoidance
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_constrain_avoidance
+Validate extension JSON: API was removed: classes/NavigationRegion2D/properties/constrain_avoidance
+
+Experimental NavigationRegion2D feature "constrain_avoidance" was discontinued with no replacement.

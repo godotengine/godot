@@ -33,7 +33,7 @@
 
 #include "core/os/rw_lock.h"
 #include "scene/2d/node_2d.h"
-#include "scene/resources/navigation_polygon.h"
+#include "scene/resources/2d/navigation_polygon.h"
 
 class NavigationMeshSourceGeometryData2D : public Resource {
 	GDCLASS(NavigationMeshSourceGeometryData2D, Resource);

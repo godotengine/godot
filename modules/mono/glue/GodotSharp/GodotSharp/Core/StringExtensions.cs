@@ -1208,39 +1208,39 @@ namespace Godot
         /// Do a simple expression match, where '*' matches zero or more
         /// arbitrary characters and '?' matches any single character except '.'.
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <param name="expr">Expression to check.</param>
+        /// <param name="str">The string to check.</param>
+        /// <param name="pattern">Expression to check.</param>
         /// <param name="caseSensitive">
         /// If <see langword="true"/>, the check will be case sensitive.
         /// </param>
         /// <returns>If the expression has any matches.</returns>
-        private static bool ExprMatch(this string instance, string expr, bool caseSensitive)
+        private static bool WildcardMatch(ReadOnlySpan<char> str, ReadOnlySpan<char> pattern, bool caseSensitive)
         {
             // case '\0':
-            if (expr.Length == 0)
-                return instance.Length == 0;
+            if (pattern.IsEmpty)
+                return str.IsEmpty;
 
-            switch (expr[0])
+            switch (pattern[0])
             {
                 case '*':
-                    return ExprMatch(instance, expr.Substring(1), caseSensitive) || (instance.Length > 0 &&
-                        ExprMatch(instance.Substring(1), expr, caseSensitive));
+                    return WildcardMatch(str, pattern.Slice(1), caseSensitive)
+                        || (!str.IsEmpty && WildcardMatch(str.Slice(1), pattern, caseSensitive));
                 case '?':
-                    return instance.Length > 0 && instance[0] != '.' &&
-                           ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
+                    return !str.IsEmpty && str[0] != '.' &&
+                        WildcardMatch(str.Slice(1), pattern.Slice(1), caseSensitive);
                 default:
-                    if (instance.Length == 0)
+                    if (str.IsEmpty)
                         return false;
-                    if (caseSensitive)
-                        return instance[0] == expr[0];
-                    return (char.ToUpperInvariant(instance[0]) == char.ToUpperInvariant(expr[0])) &&
-                           ExprMatch(instance.Substring(1), expr.Substring(1), caseSensitive);
+                    bool charMatches = caseSensitive ?
+                        str[0] == pattern[0] :
+                        char.ToUpperInvariant(str[0]) == char.ToUpperInvariant(pattern[0]);
+                    return charMatches &&
+                        WildcardMatch(str.Slice(1), pattern.Slice(1), caseSensitive);
             }
         }
 
         /// <summary>
-        /// Do a simple case sensitive expression match, using ? and * wildcards
-        /// (see <see cref="ExprMatch(string, string, bool)"/>).
+        /// Do a simple case sensitive expression match, using ? and * wildcards.
         /// </summary>
         /// <seealso cref="MatchN(string, string)"/>
         /// <param name="instance">The string to check.</param>
@@ -1254,12 +1254,11 @@ namespace Godot
             if (instance.Length == 0 || expr.Length == 0)
                 return false;
 
-            return instance.ExprMatch(expr, caseSensitive);
+            return WildcardMatch(instance, expr, caseSensitive);
         }
 
         /// <summary>
-        /// Do a simple case insensitive expression match, using ? and * wildcards
-        /// (see <see cref="ExprMatch(string, string, bool)"/>).
+        /// Do a simple case insensitive expression match, using ? and * wildcards.
         /// </summary>
         /// <seealso cref="Match(string, string, bool)"/>
         /// <param name="instance">The string to check.</param>
@@ -1270,7 +1269,7 @@ namespace Godot
             if (instance.Length == 0 || expr.Length == 0)
                 return false;
 
-            return instance.ExprMatch(expr, caseSensitive: false);
+            return WildcardMatch(instance, expr, caseSensitive: false);
         }
 
         /// <summary>

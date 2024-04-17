@@ -555,12 +555,16 @@ TEST_CASE("[Array] Iteration") {
 		idx++;
 	}
 
+	CHECK_EQ(idx, a1.size());
+
 	idx = 0;
 
 	for (const Variant &E : (const Array &)a1) {
 		CHECK_EQ(int(a2[idx]), int(E));
 		idx++;
 	}
+
+	CHECK_EQ(idx, a1.size());
 
 	a1.clear();
 }

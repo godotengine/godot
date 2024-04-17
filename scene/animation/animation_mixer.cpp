@@ -698,9 +698,15 @@ bool AnimationMixer::_update_caches() {
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_src_type);
 							if (rt >= 0) {
-								track_value->init_use_continuous = track_value->init_use_continuous || (reset_anim->value_track_get_update_mode(rt) != Animation::UPDATE_DISCRETE); // Take precedence Force Continuous.
-								if (reset_anim->track_get_key_count(rt) > 0) {
-									track_value->init_value = track_src_type == Animation::TYPE_VALUE ? reset_anim->track_get_key_value(rt, 0) : (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
+								if (track_src_type == Animation::TYPE_VALUE) {
+									track_value->init_use_continuous = track_value->init_use_continuous || (reset_anim->value_track_get_update_mode(rt) != Animation::UPDATE_DISCRETE); // Take precedence Force Continuous.
+									if (reset_anim->track_get_key_count(rt) > 0) {
+										track_value->init_value = reset_anim->track_get_key_value(rt, 0);
+									}
+								} else {
+									if (reset_anim->track_get_key_count(rt) > 0) {
+										track_value->init_value = (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
+									}
 								}
 							}
 						}
@@ -875,7 +881,7 @@ bool AnimationMixer::_update_caches() {
 					if (track_value->init_value.is_string() && anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE) {
 						WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
 					}
-					track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
+					track_value->is_using_angle = track_value->is_using_angle || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 				}
 				if (check_angle_interpolation && (was_using_angle != track_value->is_using_angle)) {
 					WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' has different interpolation types for rotation between some animations which may be blended together. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");

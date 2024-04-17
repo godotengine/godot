@@ -132,6 +132,10 @@ bool OS_Web::is_process_running(const ProcessID &p_pid) const {
 	return false;
 }
 
+int OS_Web::get_process_exit_code(const ProcessID &p_pid) const {
+	return -1;
+}
+
 int OS_Web::get_processor_count() const {
 	return godot_js_os_hw_concurrency_get();
 }

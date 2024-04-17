@@ -1664,8 +1664,13 @@ void EditorFileSystem::_queue_update_script_class(const String &p_path) {
 }
 
 void EditorFileSystem::_update_scene_groups() {
-	update_scene_mutex.lock();
+	EditorProgress *ep = nullptr;
+	if (update_scene_paths.size() > 1) {
+		ep = memnew(EditorProgress("update_scene_groups", TTR("Update Scene Groups"), update_scene_paths.size()));
+	}
+	int step_count = 0;
 
+	update_scene_mutex.lock();
 	for (const String &path : update_scene_paths) {
 		ProjectSettings::get_singleton()->remove_scene_groups_cache(path);
 
@@ -1681,8 +1686,13 @@ void EditorFileSystem::_update_scene_groups() {
 		if (!scene_groups.is_empty()) {
 			ProjectSettings::get_singleton()->add_scene_groups_cache(path, scene_groups);
 		}
+
+		if (ep) {
+			ep->step(TTR("Updating Scene Groups..."), step_count++);
+		}
 	}
 
+	memdelete_notnull(ep);
 	update_scene_paths.clear();
 	update_scene_mutex.unlock();
 

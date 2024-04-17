@@ -2079,17 +2079,19 @@ bool SceneTreeDock::_validate_no_foreign() {
 			return false;
 		}
 
-		// When edited_scene inherits from another one the root Node will be the parent Scene,
-		// we don't want to consider that Node a foreign one otherwise we would not be able to
-		// delete it.
-		if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene == E) {
-			continue;
-		}
+		if (edited_scene->get_scene_inherited_state().is_valid()) {
+			// When edited_scene inherits from another one the root Node will be the parent Scene,
+			// we don't want to consider that Node a foreign one otherwise we would not be able to
+			// delete it.
+			if (edited_scene == E && current_option != TOOL_REPLACE) {
+				continue;
+			}
 
-		if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
-			accept->set_text(TTR("Can't operate on nodes the current scene inherits from!"));
-			accept->popup_centered();
-			return false;
+			if (edited_scene == E || edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
+				accept->set_text(TTR("Can't operate on nodes the current scene inherits from!"));
+				accept->popup_centered();
+				return false;
+			}
 		}
 	}
 
@@ -3018,6 +3020,13 @@ void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
 }
 
+void SceneTreeDock::set_selection(const Vector<Node *> &p_nodes) {
+	editor_selection->clear();
+	for (Node *node : p_nodes) {
+		editor_selection->add_node(node);
+	}
+}
+
 void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected) {
 	scene_tree->set_selected(p_node, p_emit_selected);
 }
@@ -3442,6 +3451,13 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			if (E != edited_scene && (E->get_owner() != edited_scene || !E->get_scene_file_path().is_empty())) {
 				can_replace = false;
 				break;
+			}
+
+			if (edited_scene->get_scene_inherited_state().is_valid()) {
+				if (E == edited_scene || edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
+					can_replace = false;
+					break;
+				}
 			}
 		}
 

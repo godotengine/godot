@@ -1653,6 +1653,28 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 		camera->set_attributes(camera_attributes);
 	}
 
+	// Use a grayscale gradient sky to avoid skewing the preview towards a specific color,
+	// but still allow shaded areas to be easily distinguished (using the ambient and reflected light).
+	// This also helps the user orient themselves in the preview, since the bottom of the sky is black
+	// and the top of the sky is white.
+	procedural_sky_material.instantiate();
+	procedural_sky_material->set_sky_top_color(Color(1, 1, 1));
+	procedural_sky_material->set_sky_horizon_color(Color(0.5, 0.5, 0.5));
+	procedural_sky_material->set_ground_horizon_color(Color(0.5, 0.5, 0.5));
+	procedural_sky_material->set_ground_bottom_color(Color(0, 0, 0));
+	procedural_sky_material->set_sky_curve(2.0);
+	procedural_sky_material->set_ground_curve(0.5);
+	// Hide the sun from the sky.
+	procedural_sky_material->set_sun_angle_max(0.0);
+	sky.instantiate();
+	sky->set_material(procedural_sky_material);
+	environment.instantiate();
+	environment->set_background(Environment::BG_SKY);
+	environment->set_sky(sky);
+	// A custom FOV must be specified, as an orthogonal camera is used for the preview.
+	environment->set_sky_custom_fov(50.0);
+	camera->set_environment(environment);
+
 	light = memnew(DirectionalLight3D);
 	light->set_transform(Transform3D().looking_at(Vector3(-1, -2, -0.6), Vector3(0, 1, 0)));
 	base_viewport->add_child(light);
