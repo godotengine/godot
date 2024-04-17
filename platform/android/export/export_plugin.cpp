@@ -2002,7 +2002,7 @@ String EditorExportPlatformAndroid::get_device_architecture(int p_index) const {
 	return devices[p_index].architecture;
 }
 
-Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
+Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) {
 	ERR_FAIL_INDEX_V(p_device, devices.size(), ERR_INVALID_PARAMETER);
 
 	String can_export_error;
@@ -2024,11 +2024,11 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	}
 
 	const bool use_wifi_for_remote_debug = EDITOR_GET("export/android/use_wifi_for_remote_debug");
-	const bool use_remote = (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) || (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT);
+	const bool use_remote = p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT);
 	const bool use_reverse = devices[p_device].api_level >= 21 && !use_wifi_for_remote_debug;
 
 	if (use_reverse) {
-		p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
+		p_debug_flags.set_flag(DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST);
 	}
 
 	String tmp_export_path = EditorPaths::get_singleton()->get_cache_dir().path_join("tmpexport." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
@@ -2107,7 +2107,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 			OS::get_singleton()->execute(adb, args, &output, &rv, true);
 			print_verbose(output);
 
-			if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) {
+			if (p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG)) {
 				int dbg_port = EDITOR_GET("network/debug/remote_port");
 				args.clear();
 				args.push_back("-s");
@@ -2122,7 +2122,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 				print_line("Reverse result: " + itos(rv));
 			}
 
-			if (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT) {
+			if (p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
 				int fs_port = EDITOR_GET("filesystem/file_server/port");
 
 				args.clear();
@@ -2667,7 +2667,7 @@ Error EditorExportPlatformAndroid::save_apk_expansion_file(const Ref<EditorExpor
 	return err;
 }
 
-void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, int p_flags, Vector<uint8_t> &r_command_line_flags) {
+void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, Vector<uint8_t> &r_command_line_flags) {
 	String cmdline = p_preset->get("command_line/extra_args");
 	Vector<String> command_line_strings = cmdline.strip_edges().split(" ");
 	for (int i = 0; i < command_line_strings.size(); i++) {
@@ -2677,7 +2677,7 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 		}
 	}
 
-	gen_export_flags(command_line_strings, p_flags);
+	command_line_strings.append_array(gen_export_flags(p_flags));
 
 	bool apk_expansion = p_preset->get("apk_expansion/enable");
 	if (apk_expansion) {
@@ -3000,13 +3000,13 @@ bool EditorExportPlatformAndroid::_is_clean_build_required(const Ref<EditorExpor
 	return have_plugins_changed || has_build_dir_changed || first_build;
 }
 
-Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	int export_format = int(p_preset->get("gradle_build/export_format"));
 	bool should_sign = p_preset->get("package/signed");
 	return export_project_helper(p_preset, p_debug, p_path, export_format, should_sign, p_flags);
 }
 
-Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, int p_flags) {
+Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	const String base_dir = p_path.get_base_dir();
@@ -3022,7 +3022,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	bool use_gradle_build = bool(p_preset->get("gradle_build/use_gradle_build"));
 	String gradle_build_directory = use_gradle_build ? ExportTemplateManager::get_android_build_directory(p_preset) : "";
-	bool p_give_internet = p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG);
+	bool p_give_internet = p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT) || p_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG);
 	bool apk_expansion = p_preset->get("apk_expansion/enable");
 	Vector<ABI> enabled_abis = get_enabled_abis(p_preset);
 
@@ -3127,7 +3127,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			user_data.assets_directory = assets_directory;
 			user_data.libs_directory = gradle_build_directory.path_join("libs");
 			user_data.debug = p_debug;
-			if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
+			if (p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
 				err = export_project_files(p_preset, p_debug, ignore_apk_file, &user_data, copy_gradle_so);
 			} else {
 				err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
@@ -3500,7 +3500,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 	err = OK;
 
-	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
+	if (p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
 		APKExportData ed;
 		ed.ep = &ep;
 		ed.apk = unaligned_apk;

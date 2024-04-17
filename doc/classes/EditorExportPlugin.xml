@@ -305,6 +305,18 @@
 				In case of a directory code-sign will error if you place non code object in directory.
 			</description>
 		</method>
+		<method name="get_export_platform" qualifiers="const">
+			<return type="EditorExportPlatform" />
+			<description>
+				Returns currently used export platform.
+			</description>
+		</method>
+		<method name="get_export_preset" qualifiers="const">
+			<return type="EditorExportPreset" />
+			<description>
+				Returns currently used export preset.
+			</description>
+		</method>
 		<method name="get_option" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
