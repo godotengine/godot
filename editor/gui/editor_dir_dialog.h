@@ -53,7 +53,7 @@ class EditorDirDialog : public ConfirmationDialog {
 
 	void _item_collapsed(Object *p_item);
 	void _item_activated();
-	void _update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path = String());
+	void _update_dir(const Color &p_default_folder_color, const Dictionary &p_assigned_folder_colors, const HashMap<String, Color> &p_folder_colors, bool p_is_dark_theme, TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path = String());
 
 	void _make_dir();
 	void _make_dir_confirm(const String &p_path);
