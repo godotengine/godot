@@ -1103,7 +1103,7 @@ private:
 
 public:
 	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
-	DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 0.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
+	DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
 
 	void draw_list_set_blend_constants(DrawListID p_list, const Color &p_color);
 	void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
