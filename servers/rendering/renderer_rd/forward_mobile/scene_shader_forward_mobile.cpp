@@ -550,6 +550,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";
 		actions.renames["SPECULAR_LIGHT"] = "specular_light";
 
+		actions.usage_defines["DEPTH"] = "#define DEPTH_USED\n";
 		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 		actions.usage_defines["TANGENT"] = "#define TANGENT_USED\n";
 		actions.usage_defines["BINORMAL"] = "@TANGENT";

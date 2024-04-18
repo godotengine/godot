@@ -1028,6 +1028,12 @@ void fragment_shader(in SceneData scene_data) {
 #CODE : FRAGMENT
 	}
 
+#ifdef DEPTH_USED
+	vec3 ndc = vec3(screen_uv * 2.0 - 1.0, gl_FragDepth);
+	vec4 view_pos = inv_projection_matrix * vec4(ndc, 1.0);
+	vertex = view_pos.xyz / view_pos.w;
+#endif //DEPTH_USED
+
 #ifdef LIGHT_TRANSMITTANCE_USED
 	transmittance_color.a *= sss_strength;
 #endif
