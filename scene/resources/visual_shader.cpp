@@ -4206,7 +4206,7 @@ VisualShaderNodeResizableBase::VisualShaderNodeResizableBase() {
 	set_allow_v_resize(true);
 }
 
-////////////// Comment
+////////////// Frame
 
 String VisualShaderNodeFrame::get_caption() const {
 	return title;
@@ -4322,6 +4322,25 @@ void VisualShaderNodeFrame::_bind_methods() {
 
 VisualShaderNodeFrame::VisualShaderNodeFrame() {
 }
+
+////////////// Comment (Deprecated)
+
+#ifndef DISABLE_DEPRECATED
+void VisualShaderNodeComment::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_description", "description"), &VisualShaderNodeComment::set_description);
+	ClassDB::bind_method(D_METHOD("get_description"), &VisualShaderNodeComment::get_description);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_description", "get_description");
+}
+
+void VisualShaderNodeComment::set_description(const String &p_description) {
+	description = p_description;
+}
+
+String VisualShaderNodeComment::get_description() const {
+	return description;
+}
+#endif
 
 ////////////// GroupBase
 
