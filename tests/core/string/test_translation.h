@@ -147,9 +147,77 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 	List<StringName> messages;
 	// `get_message_list()` can't return the list of messages stored in an OptimizedTranslation.
 	optimized_translation->get_message_list(&messages);
+	if (!optimized_translation->get_translated_message_list().is_empty())
+	{
+		String message = "";
+		for (const auto iter : optimized_translation->get_translated_message_list())
+			message += iter;
+		MESSAGE(message);
+	}
 	CHECK(optimized_translation->get_message_count() == 0);
 	CHECK(messages.size() == 0);
+
+
+	MESSAGE("TEST:)");
 }
+
+TEST_CASE("[OptimizedTranslation] Generates translatoins and checks get_translated_message_list") {
+	Ref<Translation> translation = memnew(Translation);
+	translation->set_locale("fr");
+	translation->add_message("Hello", "Bonjour");
+	translation->add_message("Hello2", "Bonjour2");
+	translation->add_message("Hello3", "Bonjour3");
+
+	Ref<OptimizedTranslation> optimized_translation = memnew(OptimizedTranslation);
+	optimized_translation->generate(translation);
+	//if (!optimized_translation->get_translated_message_list().is_empty()) {
+	//	String message = "";
+	//	for (const auto iter : optimized_translation->get_translated_message_list())
+	//		message += iter;
+	//	MESSAGE(message);
+	//}
+
+	//CHECK(std::find(optimized_translation->get_translated_message_list().cbegin(), optimized_translation->get_translated_message_list().cend(), "Bonjour") != optimized_translation->get_translated_message_list().cend());
+	//CHECK(std::find(optimized_translation->get_translated_message_list().cbegin(), optimized_translation->get_translated_message_list().cend(), "Bonjour2") != optimized_translation->get_translated_message_list().cend());
+	//CHECK(std::find(optimized_translation->get_translated_message_list().cbegin(), optimized_translation->get_translated_message_list().cend(), "Bonjour3") != optimized_translation->get_translated_message_list().cend());
+	//CHECK(std::find(optimized_translation->get_translated_message_list().cbegin(), optimized_translation->get_translated_message_list().cend(), "NotInList") == optimized_translation->get_translated_message_list().cend());
+
+	CHECK(optimized_translation->get_translated_message_list().size() == 3);
+	CHECK(optimized_translation->get_translated_message_list().find("Bonjour") != -1);
+	CHECK(optimized_translation->get_translated_message_list().find("Bonjour2") != -1);
+	CHECK(optimized_translation->get_translated_message_list().find("Bonjour3") != -1);
+	CHECK(optimized_translation->get_translated_message_list().find("NotInList") == -1);
+
+
+	// might be a little over kill
+	// std::find(optimized_translation->get_translated_message_list().cbegin(), optimized_translation->get_translated_message_list().cend(), )
+
+	MESSAGE("TEST D:");
+}
+
+// Not yet supported 
+//TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") {
+//	Ref<TranslationPO> translation = memnew(TranslationPO);
+//	translation->set_locale("fr");
+//	translation->set_plural_rule("Plural-Forms: nplurals=2; plural=(n >= 2);");
+//	CHECK(translation->get_plural_forms() == 2);
+//
+//	PackedStringArray plurals;
+//	plurals.push_back("Il y a %d pomme");
+//	plurals.push_back("Il y a %d pommes");
+//	translation->add_plural_message("There are %d apples", plurals);
+//	Ref<OptimizedTranslation> optimized_translation = memnew(OptimizedTranslation);
+//	optimized_translation->generate(translation);
+//	ERR_PRINT_OFF;
+//	// This is invalid, as the number passed to `get_plural_message()` may not be negative.
+//	CHECK(vformat(optimized_translation->get_plural_message("There are %d apples", "", -1), -1) == "");
+//	ERR_PRINT_ON;
+//	CHECK(vformat(optimized_translation->get_plural_message("There are %d apples", "", 0), 0) == "Il y a 0 pomme");
+//	CHECK(vformat(optimized_translation->get_plural_message("There are %d apples", "", 1), 1) == "Il y a 1 pomme");
+//	CHECK(vformat(optimized_translation->get_plural_message("There are %d apples", "", 2), 2) == "Il y a 2 pommes");
+//
+//	MESSAGE("TEST:O");
+//}
 
 TEST_CASE("[TranslationCSV] CSV import") {
 	Ref<ResourceImporterCSVTranslation> import_csv_translation = memnew(ResourceImporterCSVTranslation);
