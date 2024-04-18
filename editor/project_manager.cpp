@@ -1571,6 +1571,8 @@ ProjectManager::ProjectManager() {
 
 	// Initialize project list.
 	{
+		project_list->load_project_list();
+
 		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::AccessType::ACCESS_FILESYSTEM);
 
 		String default_project_path = EDITOR_GET("filesystem/directories/default_project_path");
@@ -1581,13 +1583,10 @@ ProjectManager::ProjectManager() {
 			}
 		}
 
-		bool scanned_for_projects = false; // Scanning will update the list automatically.
-
 		String autoscan_path = EDITOR_GET("filesystem/directories/autoscan_project_path");
 		if (!autoscan_path.is_empty()) {
 			if (dir_access->dir_exists(autoscan_path)) {
 				project_list->find_projects(autoscan_path);
-				scanned_for_projects = true;
 			} else {
 				Error error = dir_access->make_dir_recursive(autoscan_path);
 				if (error != OK) {
@@ -1595,10 +1594,8 @@ ProjectManager::ProjectManager() {
 				}
 			}
 		}
-
-		if (!scanned_for_projects) {
-			project_list->update_project_list();
-		}
+		project_list->update_project_list();
+		initialized = true;
 	}
 
 	// Extend menu bar to window title.
