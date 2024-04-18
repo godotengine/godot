@@ -128,6 +128,80 @@ TEST_CASE("[HashMap] Const iteration") {
 		++idx;
 	}
 }
+
+TEST_CASE("[HashMap] Replace key") {
+	HashMap<int, int> map;
+	map.insert(42, 84);
+	map.insert(0, 12934);
+	CHECK(map.replace_key(0, 1));
+	CHECK(map.has(1));
+	CHECK(map[1] == 12934);
+}
+
+TEST_CASE("[HashMap] Clear") {
+	HashMap<int, int> map;
+	map.insert(42, 84);
+	map.insert(123, 12385);
+	map.insert(0, 12934);
+
+	map.clear();
+	CHECK(!map.has(42));
+	CHECK(map.size() == 0);
+	CHECK(map.is_empty());
+}
+
+TEST_CASE("[HashMap] Get") {
+	HashMap<int, int> map;
+	map.insert(42, 84);
+	map.insert(123, 12385);
+	map.insert(0, 12934);
+
+	CHECK(map.get(123) == 12385);
+	map.get(123) = 10;
+	CHECK(map.get(123) == 10);
+
+	CHECK(*map.getptr(0) == 12934);
+	*map.getptr(0) = 1;
+	CHECK(*map.getptr(0) == 1);
+
+	CHECK(map.get(42) == 84);
+	CHECK(map.getptr(-10) == nullptr);
+}
+
+TEST_CASE("[OAHashMap] Copy constructor") {
+	uint64_t pre_mem = Memory::get_mem_usage();
+	{
+		HashMap<int, int> map0;
+		const uint32_t count = 5;
+		for (uint32_t i = 0; i < count; i++) {
+			map0.insert(i, i);
+		}
+		HashMap<int, int> map1(map0);
+		CHECK(map0.size() == map1.size());
+		CHECK(map0.get_capacity() == map1.get_capacity());
+		CHECK(*map0.getptr(0) == *map1.getptr(0));
+	}
+	CHECK(Memory::get_mem_usage() == pre_mem);
+}
+
+TEST_CASE("[OAHashMap] Operator =") {
+	uint64_t pre_mem = Memory::get_mem_usage();
+	{
+		HashMap<int, int> map0;
+		HashMap<int, int> map1;
+		const uint32_t count = 5;
+		map1.insert(1234, 1234);
+		for (uint32_t i = 0; i < count; i++) {
+			map0.insert(i, i);
+		}
+		map1 = map0;
+		CHECK(map0.size() == map1.size());
+		CHECK(map0.get_capacity() == map1.get_capacity());
+		CHECK(*map0.getptr(0) == *map1.getptr(0));
+	}
+	CHECK(Memory::get_mem_usage() == pre_mem);
+}
+
 } // namespace TestHashMap
 
 #endif // TEST_HASH_MAP_H
