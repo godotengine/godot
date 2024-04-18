@@ -168,8 +168,7 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-opts.Add("platform", "Target platform (%s)" % ("|".join(platform_list),), "")
-opts.Add("p", "Platform (alias for 'platform')", "")
+opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(platform_list), "")
 opts.Add(EnumVariable("target", "Compilation target", "editor", ("editor", "template_release", "template_debug")))
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
 opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
@@ -285,13 +284,9 @@ if env["import_env_vars"]:
 
 # Platform selection: validate input, and add options.
 
-selected_platform = ""
+selected_platform = env["platform"]
 
-if env["platform"] != "":
-    selected_platform = env["platform"]
-elif env["p"] != "":
-    selected_platform = env["p"]
-else:
+if selected_platform == "":
     # Missing `platform` argument, try to detect platform automatically
     if (
         sys.platform.startswith("linux")
