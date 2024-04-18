@@ -256,9 +256,9 @@ Compatibility methods registered.
 
 GH-88014
 --------
-Validate extension JSON: API was removed: classes/VisualShaderNodeComment
-
-Removed VisualShaderNodeComment, which is replaced by VisualShaderNodeFrame.
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/methods/get_title
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/methods/set_title
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/properties/title
 
 
 GH-87888
