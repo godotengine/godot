@@ -619,6 +619,7 @@ private:
 
 		MethodInfo user;
 		HashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
+		bool removable = false;
 	};
 
 	HashMap<StringName, SignalData> signal_map;
@@ -646,6 +647,7 @@ private:
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
+	void _remove_user_signal(const StringName &p_name);
 	Error _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	TypedArray<Dictionary> _get_signal_list() const;
 	TypedArray<Dictionary> _get_signal_connection_list(const StringName &p_signal) const;
