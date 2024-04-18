@@ -4963,6 +4963,9 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="ViewportDebugDraw">
 			Internal buffer is drawn instead of regular scene so you can see the per-pixel output that will be used by post-processing effects.
 		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER" value="27" enum="ViewportDebugDraw">
+			Depth buffer is drawn instead of regular scene so you can see the per-pixel depth.
+		</constant>
 		<constant name="VIEWPORT_VRS_DISABLED" value="0" enum="ViewportVRSMode">
 			Variable rate shading is disabled.
 		</constant>

@@ -1013,6 +1013,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_OCCLUDERS,
 		VIEWPORT_DEBUG_DRAW_MOTION_VECTORS,
 		VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER,
+		VIEWPORT_DEBUG_DRAW_DEPTH_BUFFER,
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
