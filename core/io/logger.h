@@ -34,6 +34,10 @@
 #include "core/io/file_access.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif // MODULE_REGEX_ENABLED
 
 #include <stdarg.h>
 
@@ -85,6 +89,10 @@ class RotatedFileLogger : public Logger {
 
 	void clear_old_backups();
 	void rotate_file();
+
+#ifdef MODULE_REGEX_ENABLED
+	Ref<RegEx> strip_ansi_regex;
+#endif // MODULE_REGEX_ENABLED
 
 public:
 	explicit RotatedFileLogger(const String &p_base_path, int p_max_files = 10);
