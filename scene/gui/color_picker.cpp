@@ -403,8 +403,9 @@ void ColorPicker::add_mode(ColorMode *p_mode) {
 }
 
 void ColorPicker::create_slider(GridContainer *gc, int idx) {
-	Label *lbl = memnew(Label());
+	Label *lbl = memnew(Label);
 	lbl->set_v_size_flags(SIZE_SHRINK_CENTER);
+	lbl->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	gc->add_child(lbl);
 
 	HSlider *slider = memnew(HSlider);
