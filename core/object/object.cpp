@@ -1100,6 +1100,20 @@ bool Object::_has_user_signal(const StringName &p_name) const {
 	return signal_map[p_name].user.name.length() > 0;
 }
 
+void Object::_remove_user_signal(const StringName &p_name) {
+	SignalData *s = signal_map.getptr(p_name);
+	ERR_FAIL_NULL_MSG(s, "Provided signal does not exist.");
+	ERR_FAIL_COND_MSG(!s->removable, "Signal is not removable (not added with add_user_signal).");
+	for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
+		Object *target = slot_kv.key.get_object();
+		if (likely(target)) {
+			target->connections.erase(slot_kv.value.cE);
+		}
+	}
+
+	signal_map.erase(p_name);
+}
+
 Error Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (unlikely(p_argcount < 1)) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -1248,6 +1262,10 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	}
 
 	add_user_signal(mi);
+
+	if (signal_map.has(p_name)) {
+		signal_map.getptr(p_name)->removable = true;
+	}
 }
 
 TypedArray<Dictionary> Object::_get_signal_list() const {
@@ -1661,6 +1679,7 @@ void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_user_signal", "signal", "arguments"), &Object::_add_user_signal, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("has_user_signal", "signal"), &Object::_has_user_signal);
+	ClassDB::bind_method(D_METHOD("remove_user_signal", "signal"), &Object::_remove_user_signal);
 
 	{
 		MethodInfo mi;
