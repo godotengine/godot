@@ -264,12 +264,6 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 		content_minsize = child_minsize.max(content_minsize);
 	}
 
-	// Then we take the background panel as it provides the offsets,
-	// which are always added to the minimum size.
-	if (theme_cache.panel_style.is_valid()) {
-		content_minsize += theme_cache.panel_style->get_minimum_size();
-	}
-
 	// Then we add buttons. Horizontally we're interested in whichever
 	// value is the biggest. Vertically buttons add to the overall size.
 	Size2 buttons_minsize = buttons_hbox->get_combined_minimum_size();
@@ -277,6 +271,12 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	content_minsize.y += buttons_minsize.y;
 	// Plus there is a separation size added on top.
 	content_minsize.y += theme_cache.buttons_separation;
+
+	// Then we take the background panel as it provides the offsets,
+	// which are always added to the minimum size.
+	if (theme_cache.panel_style.is_valid()) {
+		content_minsize += theme_cache.panel_style->get_minimum_size();
+	}
 
 	return content_minsize;
 }
