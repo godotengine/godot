@@ -118,7 +118,7 @@ void GraphFrame::_notification(int p_what) {
 					sb_panel_flat->set_border_color(selected ? original_border_color : tint_color.lightened(0.3));
 					draw_style_box(sb_panel_flat, body_rect);
 				} else if (sb_panel_texture.is_valid()) {
-					sb_panel_texture = sb_panel_flat->duplicate();
+					sb_panel_texture = sb_panel_texture->duplicate();
 					sb_panel_texture->set_modulate(tint_color);
 					draw_style_box(sb_panel_texture, body_rect);
 				}
