@@ -118,6 +118,24 @@ void CharacterAnimationItem::_init()
     }
     is_init = true;
 }
+float CharacterAnimationItem::_get_animation_length()
+{
+    _init();
+    if(is_clip)
+    {
+        if(animation.is_valid())
+            return ABS(animation->get_length() * speed);
+    }
+    else
+    {
+        return child_node->_get_animation_length();
+    }
+    return 0.0f;
+}
+void CharacterAnimationItem::_set_animation_scale_by_length(float p_length)
+{
+
+}
 
 
 
@@ -148,7 +166,7 @@ void CharacterAnimatorNodeBase::_init()
     }
 }
 
-void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array,Blackboard *p_blackboard)
+void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array,const Ref<Blackboard> &p_blackboard)
 {
     AnimationMixer::PlaybackInfo * p_playback_info_ptr = p_playback_info->m_ChildAnimationPlaybackArray.ptrw();
     for (int32_t i = 0; i < child_count; i++)
@@ -185,6 +203,31 @@ void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,
             }
         }
     }
+}
+void CharacterAnimatorNodeBase::_normal_animation_length()
+{
+    float length = _get_animation_length();
+    if(length > 0.0f)
+    {
+        _set_animation_scale_by_length(length);
+    }
+}
+void CharacterAnimatorNodeBase::_set_animation_scale_by_length(float p_length)
+{
+
+}
+float CharacterAnimatorNodeBase::_get_animation_length()
+{
+    float length = 0.0f;
+    for(int i = 0; i < animation_arrays.size(); ++i)
+    {
+        Ref<CharacterAnimationItem> item = animation_arrays[i];
+        if(item.is_valid())
+        {
+            length = MAX(length,item->_get_animation_length());
+        }
+    }
+    return length;
 }
 
 float CharacterAnimatorNodeBase::weight_for_index(const float* thresholdArray, uint32_t count, uint32_t index, float blend)
@@ -570,7 +613,7 @@ void CharacterAnimatorNodeBase::get_weights1d(const Blend1dDataConstant& blendCo
         weightArray[j] = weight_for_index(blendConstant.position_array.ptr(), blendConstant.position_count, j, blendValue);
 }
 
-void CharacterAnimatorNode1D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard)
+void CharacterAnimatorNode1D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
 {
     if(!p_blackboard->has_var(black_board_property))
     {
@@ -586,7 +629,7 @@ void CharacterAnimatorNode1D::process_animation(class CharacterAnimatorLayer *p_
     _blend_anmation(p_layer,blend_data.position_count, p_playback_info, total_weight,p_playback_info->m_WeightArray,p_blackboard);
 
 }
-void CharacterAnimatorNode2D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard)
+void CharacterAnimatorNode2D::process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
 {
     if(!p_blackboard->has_var(black_board_property))
     {
@@ -616,7 +659,7 @@ void CharacterAnimatorNode2D::process_animation(class CharacterAnimatorLayer *p_
 
 }
 // 处理动画
-void CharacterAnimatorLayer::_process_animation(Blackboard *p_playback_info,double p_delta,bool is_first)
+void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first)
 {
     
     for(auto& anim : m_AnimationInstances)
@@ -924,6 +967,21 @@ void CharacterAnimator::clear_layer()
     {
         CharacterAnimatorLayer* layer = *m_LayerList.begin();
         memdelete(layer);
+    }
+}
+void CharacterAnimator::update_animation(float delta)
+{
+    auto it = m_LayerList.begin();
+    bool is_first = true;
+    while(it!=m_LayerList.end())
+    {
+        CharacterAnimatorLayer* layer = *it;
+        if(layer->is_active())
+        {
+            layer->_process_animation(m_Body->get_blackboard(),delta,is_first);
+            is_first = false;
+        }
+        ++it;
     }
 }
 

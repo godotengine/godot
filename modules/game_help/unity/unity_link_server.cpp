@@ -243,13 +243,14 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer,Callable& on_load_anim
 			return true;
 		}
 		// 解析动画文件
-		int file_size = size - 12 - path_size;
+		int mirror = msg_buffer.get_32();
+		int file_size = size - 16 - path_size;
 		Vector<uint8_t> ba = Vector<uint8_t>();
 		ba.resize(file_size);
 		memcpy(ba.ptrw(),msg_buffer.get_u8_ptr(),file_size);
 		Ref<Animation> anim;
 		anim.instantiate();
-		on_load_animation.call(ba,anim);
+		on_load_animation.call(ba,mirror,anim);
 		anim->optimize();
 		String save_path = "res://" + path + "/" + anim->get_class() + "_" + anim->get_name() +  ".anim.tres";
 		ResourceSaver::save(anim,save_path);

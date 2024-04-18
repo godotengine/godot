@@ -88,6 +88,8 @@ public:
     Ref<CharacterBoneMap> get_bone_map();
 
     void _init();
+    float _get_animation_length();
+    void _set_animation_scale_by_length(float p_length);
 
 
     StringName animation_name;
@@ -112,12 +114,16 @@ public:
     bool isLoop = false;
 
 public:
-    virtual void process_animation(class CharacterAnimatorLayer *p_layer,struct CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard)
+    virtual void process_animation(class CharacterAnimatorLayer *p_layer,struct CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard)
     {
 
     }
 public:
-    void _blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,struct CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array,Blackboard *p_blackboard);
+    void _blend_anmation(CharacterAnimatorLayer *p_layer,int child_count,struct CharacterAnimationInstance *p_playback_info,float total_weight,const Vector<float> &weight_array,const Ref<Blackboard> &p_blackboard);
+    // 统一动画长度
+    void _normal_animation_length();
+    float _get_animation_length();
+    void _set_animation_scale_by_length(float p_length);
 
     void set_animation_arrays(TypedArray<CharacterAnimationItem> p_animation_arrays) { animation_arrays = p_animation_arrays; }
     TypedArray<CharacterAnimationItem> get_animation_arrays() { return animation_arrays; }
@@ -206,7 +212,7 @@ class CharacterAnimatorNode1D : public CharacterAnimatorNodeBase
         ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "position_array"), "set_position_array", "get_position_array");
     }
 public:
-    virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard) override;
+    virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard) override;
 
     void set_position_count(uint32_t p_count) { blend_data.position_count = p_count; }
     uint32_t get_position_count() { return blend_data.position_count; }
@@ -236,7 +242,7 @@ public:
         FreeformDirectionnal2D = 2,
         FreeformCartesian2D = 3,
     };
-    virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,Blackboard *p_blackboard) override;
+    virtual void process_animation(class CharacterAnimatorLayer *p_layer,CharacterAnimationInstance *p_playback_info,float total_weight,const Ref<Blackboard> &p_blackboard) override;
 
     void set_blend_type(BlendType p_blend_type) { blend_type = (BlendType)p_blend_type; }
     BlendType get_blend_type() { return blend_type; }
@@ -338,7 +344,7 @@ public:
     Ref<CharacterAnimatorLayerConfig> config;
 
     // 处理动画
-    void _process_animation(Blackboard *p_playback_info,double p_delta,bool is_first = true);
+    void _process_animation(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first = true);
     void layer_blend_apply() ;
     Vector<Vector2> m_ChildInputVectorArray;
     Vector<int> m_TempCropArray;
@@ -381,6 +387,8 @@ public:
     void set_body(class CharacterBodyMain* p_body) { m_Body = p_body; }
 
     void add_layer(const StringName& name,const Ref<CharacterAnimatorLayerConfig>& _mask);
+
+    void update_animation(float delta);
 
     void clear_layer();
 
