@@ -33,6 +33,7 @@
 
 #include "core/io/image.h"
 #include "core/io/resource.h"
+#include "scene/property_list_helper.h"
 #include "servers/audio/audio_filter_sw.h"
 #include "servers/audio_server.h"
 
@@ -236,8 +237,11 @@ private:
 
 	struct PoolEntry {
 		Ref<AudioStream> stream;
-		float weight;
+		float weight = 1.0;
 	};
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	HashSet<AudioStreamPlaybackRandomizer *> playbacks;
 	Vector<PoolEntry> audio_stream_pool;
@@ -254,9 +258,11 @@ private:
 protected:
 	static void _bind_methods();
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list, audio_stream_pool.size()); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 
 public:
 	void add_stream(int p_index, Ref<AudioStream> p_stream, float p_weight = 1.0);
