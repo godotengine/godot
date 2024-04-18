@@ -905,7 +905,7 @@
 				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
-		<method name="remove_user_signal" experimental="">
+		<method name="remove_user_signal">
 			<return type="void" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
