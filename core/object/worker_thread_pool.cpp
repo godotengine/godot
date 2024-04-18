@@ -72,6 +72,9 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		p_task->pool_thread_index = pool_thread_index;
 		prev_task = curr_thread.current_task;
 		curr_thread.current_task = p_task;
+		if (p_task->pending_notify_yield_over) {
+			curr_thread.yield_is_over = true;
+		}
 		task_mutex.unlock();
 	}
 #endif
@@ -491,7 +494,11 @@ void WorkerThreadPool::notify_yield_over(TaskID p_task_id) {
 		ERR_FAIL_MSG("Invalid Task ID.");
 	}
 	Task *task = *taskp;
-	if (task->completed) {
+	if (task->pool_thread_index == -1) { // Completed or not started yet.
+		if (!task->completed) {
+			// This avoids a race condition where a task is created and yield-over called before it's processed.
+			task->pending_notify_yield_over = true;
+		}
 		task_mutex.unlock();
 		return;
 	}

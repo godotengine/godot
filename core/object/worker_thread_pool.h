@@ -81,7 +81,8 @@ private:
 		void *native_func_userdata = nullptr;
 		String description;
 		Semaphore done_semaphore; // For user threads awaiting.
-		bool completed = false;
+		bool completed : 1;
+		bool pending_notify_yield_over : 1;
 		Group *group = nullptr;
 		SelfList<Task> task_elem;
 		uint32_t waiting_pool = 0;
@@ -92,6 +93,8 @@ private:
 
 		void free_template_userdata();
 		Task() :
+				completed(false),
+				pending_notify_yield_over(false),
 				task_elem(this) {}
 	};
 
