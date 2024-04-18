@@ -108,7 +108,6 @@ private:
 			Ref<Texture2D> texture;
 			Color color = Color(1, 1, 1, 1);
 			String tooltip;
-			Rect2i rect;
 		};
 
 		Vector<Button> buttons;

@@ -2459,7 +2459,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				if (rtl) {
 					button_ofs.x = get_size().width - button_ofs.x - button_texture->get_width();
 				}
-				p_item->cells.write[i].buttons.write[j].rect = Rect2i(button_ofs, button_size);
 				button_texture->draw(ci, button_ofs, p_item->cells[i].buttons[j].disabled ? Color(1, 1, 1, 0.5) : p_item->cells[i].buttons[j].color);
 				item_width_with_buttons -= button_size.width + theme_cache.button_margin;
 			}
@@ -5408,7 +5407,6 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 			return Control::get_tooltip(p_pos);
 		}
 
-		Point2 button_pos = pos;
 		if (h_scroll->is_visible_in_tree()) {
 			pos.x += h_scroll->get_value();
 		}
@@ -5421,13 +5419,22 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 
 		if (it) {
 			const TreeItem::Cell &c = it->cells[col];
+			int col_width = get_column_width(col);
+
+			for (int i = 0; i < col; i++) {
+				pos.x -= get_column_width(i);
+			}
+
 			for (int j = c.buttons.size() - 1; j >= 0; j--) {
-				if (c.buttons[j].rect.has_point(button_pos)) {
+				Ref<Texture2D> b = c.buttons[j].texture;
+				Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
+				if (pos.x > col_width - size.width) {
 					String tooltip = c.buttons[j].tooltip;
 					if (!tooltip.is_empty()) {
 						return tooltip;
 					}
 				}
+				col_width -= size.width;
 			}
 			String ret;
 			if (it->get_tooltip_text(col) == "") {
