@@ -59,8 +59,6 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
 
@@ -234,15 +232,15 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	Color custom_color = has_custom_color ? folder_colors[assigned_folder_colors[lpath]] : Color();
 
 	if (has_custom_color) {
-		subdirectory_item->set_icon_modulate(0, editor_is_dark_theme ? custom_color : custom_color * 1.75);
-		subdirectory_item->set_custom_bg_color(0, Color(custom_color, editor_is_dark_theme ? 0.1 : 0.15));
+		subdirectory_item->set_icon_modulate(0, editor_is_dark_theme ? custom_color : custom_color * ITEM_COLOR_SCALE);
+		subdirectory_item->set_custom_bg_color(0, Color(custom_color, editor_is_dark_theme ? ITEM_ALPHA_MIN : ITEM_ALPHA_MAX));
 	} else {
 		TreeItem *parent = subdirectory_item->get_parent();
 		if (parent) {
 			Color parent_bg_color = parent->get_custom_bg_color(0);
 			if (parent_bg_color != Color()) {
 				bool parent_has_custom_color = assigned_folder_colors.has(parent->get_metadata(0));
-				subdirectory_item->set_custom_bg_color(0, parent_has_custom_color ? parent_bg_color.darkened(0.3) : parent_bg_color);
+				subdirectory_item->set_custom_bg_color(0, parent_has_custom_color ? parent_bg_color.darkened(ITEM_BG_DARK_SCALE) : parent_bg_color);
 				subdirectory_item->set_icon_modulate(0, parent->get_icon_modulate(0));
 			} else {
 				subdirectory_item->set_icon_modulate(0, get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));
@@ -328,7 +326,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			file_item->set_icon_max_width(0, icon_size);
 			Color parent_bg_color = subdirectory_item->get_custom_bg_color(0);
 			if (has_custom_color) {
-				file_item->set_custom_bg_color(0, parent_bg_color.darkened(0.3));
+				file_item->set_custom_bg_color(0, parent_bg_color.darkened(ITEM_BG_DARK_SCALE));
 			} else if (parent_bg_color != Color()) {
 				file_item->set_custom_bg_color(0, parent_bg_color);
 			}
@@ -1076,7 +1074,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 					files->set_item_metadata(-1, bd);
 					files->set_item_selectable(-1, false);
-					files->set_item_icon_modulate(-1, editor_is_dark_theme ? inherited_folder_color : inherited_folder_color * 1.75);
+					files->set_item_icon_modulate(-1, editor_is_dark_theme ? inherited_folder_color : inherited_folder_color * ITEM_COLOR_SCALE);
 				}
 
 				bool reversed = file_sort == FILE_SORT_NAME_REVERSE;
@@ -1090,7 +1088,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 					files->add_item(dname, folder_icon, true);
 					files->set_item_metadata(-1, dpath);
 					Color this_folder_color = has_custom_color ? folder_colors[assigned_folder_colors[dpath]] : inherited_folder_color;
-					files->set_item_icon_modulate(-1, editor_is_dark_theme ? this_folder_color : this_folder_color * 1.75);
+					files->set_item_icon_modulate(-1, editor_is_dark_theme ? this_folder_color : this_folder_color * ITEM_COLOR_SCALE);
 
 					if (previous_selection.has(dname)) {
 						files->select(files->get_item_count() - 1, false);
@@ -1786,8 +1784,19 @@ void FileSystemDock::_folder_removed(const String &p_folder) {
 		current_path = current_path.get_base_dir();
 	}
 
-	if (assigned_folder_colors.has(p_folder)) {
-		assigned_folder_colors.erase(p_folder);
+	// Remove assigned folder color for all subfolders.
+	bool folder_colors_updated = false;
+	List<Variant> paths;
+	assigned_folder_colors.get_key_list(&paths);
+	for (const Variant &E : paths) {
+		const String &path = E;
+		// These folder paths are guaranteed to end with a "/".
+		if (path.begins_with(p_folder)) {
+			assigned_folder_colors.erase(path);
+			folder_colors_updated = true;
+		}
+	}
+	if (folder_colors_updated) {
 		_update_folder_colors_setting();
 	}
 
@@ -3094,6 +3103,8 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 
 	_update_tree(get_uncollapsed_paths());
 	_update_file_list(true);
+
+	emit_signal(SNAME("folder_color_changed"));
 }
 
 void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options) {
@@ -3804,6 +3815,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
 	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));
 	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_folder")));
+	ADD_SIGNAL(MethodInfo("folder_color_changed"));
 
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
 }

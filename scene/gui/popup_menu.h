@@ -97,6 +97,10 @@ class PopupMenu : public Popup {
 	static inline PropertyListHelper base_property_helper;
 	PropertyListHelper property_helper;
 
+	// To make Item available.
+	friend class OptionButton;
+	friend class MenuButton;
+
 	RID global_menu;
 	RID system_menu;
 	NativeMenu::SystemMenus system_menu_id = NativeMenu::INVALID_MENU_ID;

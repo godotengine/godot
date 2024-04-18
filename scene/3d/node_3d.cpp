@@ -293,7 +293,7 @@ Vector3 Node3D::get_global_rotation_degrees() const {
 void Node3D::set_global_rotation(const Vector3 &p_euler_rad) {
 	ERR_THREAD_GUARD;
 	Transform3D transform = get_global_transform();
-	transform.basis = Basis::from_euler(p_euler_rad);
+	transform.basis = Basis::from_euler(p_euler_rad) * Basis::from_scale(transform.basis.get_scale());
 	set_global_transform(transform);
 }
 

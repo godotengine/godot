@@ -204,8 +204,10 @@ void RayCast3D::_notification(int p_what) {
 
 			bool prev_collision_state = collided;
 			_update_raycast_state();
-			if (prev_collision_state != collided && get_tree()->is_debugging_collisions_hint()) {
-				_update_debug_shape_material(true);
+			if (get_tree()->is_debugging_collisions_hint()) {
+				if (prev_collision_state != collided) {
+					_update_debug_shape_material(true);
+				}
 				if (is_inside_tree() && debug_instance.is_valid()) {
 					RenderingServer::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
 				}

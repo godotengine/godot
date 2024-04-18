@@ -358,7 +358,7 @@ void Button::_notification(int p_what) {
 			if (!xl_text.is_empty()) {
 				text_buf->set_alignment(align_rtl_checked);
 
-				float text_buf_width = MAX(1.0f, drawable_size_remained.width); // The space's width filled by the text_buf.
+				float text_buf_width = Math::ceil(MAX(1.0f, drawable_size_remained.width)); // The space's width filled by the text_buf.
 				text_buf->set_width(text_buf_width);
 
 				Point2 text_ofs;

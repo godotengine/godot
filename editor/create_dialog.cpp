@@ -516,7 +516,14 @@ void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 
 	favorite->set_disabled(false);
 	favorite->set_pressed(favorite_list.has(p_type));
-	get_ok_button()->set_disabled(false);
+
+	if (to_select->get_meta("__instantiable", true)) {
+		get_ok_button()->set_disabled(false);
+		get_ok_button()->set_tooltip_text(String());
+	} else {
+		get_ok_button()->set_disabled(true);
+		get_ok_button()->set_tooltip_text(TTR("The selected class can't be instantiated."));
+	}
 }
 
 void CreateDialog::select_base() {

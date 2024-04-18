@@ -2459,7 +2459,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				if (rtl) {
 					button_ofs.x = get_size().width - button_ofs.x - button_texture->get_width();
 				}
-				p_item->cells.write[i].buttons.write[j].rect = Rect2i(button_ofs, button_size);
 				button_texture->draw(ci, button_ofs, p_item->cells[i].buttons[j].disabled ? Color(1, 1, 1, 0.5) : p_item->cells[i].buttons[j].color);
 				item_width_with_buttons -= button_size.width + theme_cache.button_margin;
 			}
@@ -3995,12 +3994,14 @@ bool Tree::edit_selected(bool p_force_edit) {
 		return false;
 	}
 
+	float popup_scale = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
 	Rect2 rect;
 	if (select_mode == SELECT_ROW) {
 		rect = s->get_meta("__focus_col_" + itos(selected_col));
 	} else {
 		rect = s->get_meta("__focus_rect");
 	}
+	rect.position *= popup_scale;
 	popup_edited_item = s;
 	popup_edited_item_col = col;
 
@@ -4043,7 +4044,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 		popup_rect.size = rect.size;
 
 		// Account for icon.
-		Size2 icon_size = _get_cell_icon_size(c);
+		Size2 icon_size = _get_cell_icon_size(c) * popup_scale;
 		popup_rect.position.x += icon_size.x;
 		popup_rect.size.x -= icon_size.x;
 
@@ -4070,7 +4071,10 @@ bool Tree::edit_selected(bool p_force_edit) {
 		}
 
 		popup_editor->set_position(popup_rect.position);
-		popup_editor->set_size(popup_rect.size);
+		popup_editor->set_size(popup_rect.size * popup_scale);
+		if (!popup_editor->is_embedded()) {
+			popup_editor->set_content_scale_factor(popup_scale);
+		}
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
@@ -4086,7 +4090,10 @@ bool Tree::edit_selected(bool p_force_edit) {
 		text_editor->show();
 
 		popup_editor->set_position(get_screen_position() + rect.position);
-		popup_editor->set_size(rect.size);
+		popup_editor->set_size(rect.size * popup_scale);
+		if (!popup_editor->is_embedded()) {
+			popup_editor->set_content_scale_factor(popup_scale);
+		}
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
@@ -5400,7 +5407,6 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 			return Control::get_tooltip(p_pos);
 		}
 
-		Point2 button_pos = pos;
 		if (h_scroll->is_visible_in_tree()) {
 			pos.x += h_scroll->get_value();
 		}
@@ -5413,13 +5419,22 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 
 		if (it) {
 			const TreeItem::Cell &c = it->cells[col];
+			int col_width = get_column_width(col);
+
+			for (int i = 0; i < col; i++) {
+				pos.x -= get_column_width(i);
+			}
+
 			for (int j = c.buttons.size() - 1; j >= 0; j--) {
-				if (c.buttons[j].rect.has_point(button_pos)) {
+				Ref<Texture2D> b = c.buttons[j].texture;
+				Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
+				if (pos.x > col_width - size.width) {
 					String tooltip = c.buttons[j].tooltip;
 					if (!tooltip.is_empty()) {
 						return tooltip;
 					}
 				}
+				col_width -= size.width;
 			}
 			String ret;
 			if (it->get_tooltip_text(col) == "") {

@@ -256,17 +256,14 @@ Compatibility methods registered.
 
 GH-88014
 --------
-Validate extension JSON: API was removed: classes/VisualShaderNodeComment
-
-Removed VisualShaderNodeComment, which is replaced by VisualShaderNodeFrame.
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/methods/get_title
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/methods/set_title
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/properties/title
 
 
 GH-87888
 --------
 Validate extension JSON: API was removed: classes/Skeleton3D/properties/animate_physical_bones
-Validate extension JSON: API was removed: classes/SkeletonIK3D/methods/get_interpolation
-Validate extension JSON: API was removed: classes/SkeletonIK3D/methods/set_interpolation
-Validate extension JSON: API was removed: classes/SkeletonIK3D/properties/interpolation
 
 These base class is changed to SkeletonModifier3D which is processed by Skeleton3D with the assumption that it is Skeleton3D's child.
 
