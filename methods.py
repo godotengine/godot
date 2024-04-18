@@ -990,6 +990,10 @@ def using_emcc(env):
 
 
 def show_progress(env):
+    if env["ninja"]:
+        # Has its own progress/tracking tool that clashes with ours
+        return
+
     import sys
     from SCons.Script import Progress, Command, AlwaysBuild
 
