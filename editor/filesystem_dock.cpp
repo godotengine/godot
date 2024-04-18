@@ -59,8 +59,6 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
 
@@ -1778,8 +1776,19 @@ void FileSystemDock::_folder_removed(const String &p_folder) {
 		current_path = current_path.get_base_dir();
 	}
 
-	if (assigned_folder_colors.has(p_folder)) {
-		assigned_folder_colors.erase(p_folder);
+	// Remove assigned folder color for all subfolders.
+	bool folder_colors_updated = false;
+	List<Variant> paths;
+	assigned_folder_colors.get_key_list(&paths);
+	for (const Variant &E : paths) {
+		const String &path = E;
+		// These folder paths are guaranteed to end with a "/".
+		if (path.begins_with(p_folder)) {
+			assigned_folder_colors.erase(path);
+			folder_colors_updated = true;
+		}
+	}
+	if (folder_colors_updated) {
 		_update_folder_colors_setting();
 	}
 
