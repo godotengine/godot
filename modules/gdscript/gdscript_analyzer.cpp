@@ -721,14 +721,22 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				}
 			}
 		} else if (ProjectSettings::get_singleton()->has_autoload(first) && ProjectSettings::get_singleton()->get_autoload(first).is_singleton) {
-			const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(first);
-			Ref<GDScriptParserRef> ref = get_parser_for(autoload.path);
+			const String autoload_original_path = ProjectSettings::get_singleton()->get_autoload(first).path;
+			String autoload_script_path = autoload_original_path;
+			if (autoload_script_path.get_extension() != "gd") {
+				autoload_script_path = autoload_script_path.get_basename() + ".gd";
+				if (!ResourceLoader::exists(autoload_script_path)) {
+					push_error(vformat(R"(Could not find script for autoload "%s".)", first, autoload_original_path), p_type);
+					return bad_type;
+				}
+			}
+			Ref<GDScriptParserRef> ref = get_parser_for(autoload_script_path);
 			if (ref.is_null()) {
-				push_error(vformat(R"(The referenced autoload "%s" (from "%s") could not be loaded.)", first, autoload.path), p_type);
+				push_error(vformat(R"(The referenced autoload "%s" (from "%s") could not be loaded.)", first, autoload_script_path), p_type);
 				return bad_type;
 			}
 			if (ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED) != OK) {
-				push_error(vformat(R"(Could not parse singleton "%s" from "%s".)", first, autoload.path), p_type);
+				push_error(vformat(R"(Could not parse singleton "%s" from "%s".)", first, autoload_script_path), p_type);
 				return bad_type;
 			}
 			result = ref->get_parser()->head->get_datatype();
