@@ -767,6 +767,28 @@ public:
 	VisualShaderNodeFrame();
 };
 
+#ifndef DISABLE_DEPRECATED
+// Deprecated, for compatibility only.
+class VisualShaderNodeComment : public VisualShaderNodeFrame {
+	GDCLASS(VisualShaderNodeComment, VisualShaderNodeFrame);
+
+	String description;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override { return "Comment(Deprecated)"; }
+
+	virtual Category get_category() const override { return CATEGORY_NONE; }
+
+	void set_description(const String &p_description);
+	String get_description() const;
+
+	VisualShaderNodeComment() {}
+};
+#endif
+
 class VisualShaderNodeGroupBase : public VisualShaderNodeResizableBase {
 	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNodeResizableBase);
 
