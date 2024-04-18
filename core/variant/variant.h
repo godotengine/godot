@@ -331,6 +331,7 @@ public:
 		return type;
 	}
 	static String get_type_name(Variant::Type p_type);
+	static bool can_match(Type p_type_test, Type p_type_pattern);
 	static bool can_convert(Type p_type_from, Type p_type_to);
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 	static bool is_type_shared(Variant::Type p_type);

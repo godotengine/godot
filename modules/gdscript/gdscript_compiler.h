@@ -38,6 +38,8 @@
 
 #include "core/templates/hash_set.h"
 
+#include <functional>
+
 class GDScriptCompiler {
 	const GDScriptParser *parser = nullptr;
 	HashSet<GDScript *> parsed_classes;
@@ -156,7 +158,7 @@ class GDScriptCompiler {
 
 	GDScriptCodeGenerator::Address _parse_assign_right_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::AssignmentNode *p_assignmentint, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
 	GDScriptCodeGenerator::Address _parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root = false, bool p_initializer = false, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
-	GDScriptCodeGenerator::Address _parse_match_pattern(CodeGen &codegen, Error &r_error, const GDScriptParser::PatternNode *p_pattern, const GDScriptCodeGenerator::Address &p_value_addr, const GDScriptCodeGenerator::Address &p_type_addr, const GDScriptCodeGenerator::Address &p_previous_test, bool p_is_first, bool p_is_nested);
+	GDScriptCodeGenerator::Address _parse_match_pattern(CodeGen &codegen, Error &r_error, const GDScriptParser::PatternNode *p_pattern, const GDScriptCodeGenerator::Address &p_value_addr, std::function<GDScriptCodeGenerator::Address(void)> &p_get_type_addr, const GDScriptCodeGenerator::Address &p_previous_test, bool p_is_first, bool p_is_nested, const GDScriptDataType &p_test_type = GDScriptDataType());
 	List<GDScriptCodeGenerator::Address> _add_locals_in_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block);
 	void _clear_addresses(CodeGen &codegen, const List<GDScriptCodeGenerator::Address> &p_addresses);
 	Error _parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, bool p_add_locals = true, bool p_reset_locals = true);
