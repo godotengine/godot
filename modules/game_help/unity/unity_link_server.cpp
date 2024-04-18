@@ -39,7 +39,7 @@
 #define PASSWORD_LENGTH 32
 #define MAX_FILE_BUFFER_SIZE 100 * 1024 * 1024 // 100mb max file buffer size (description of files to update, compressed).
 
-
+UnityLinkServer * UnityLinkServer::instance = nullptr;
 static void  _buffer_to_animationNode(StreamPeerConstBuffer& buffer,Ref<CharacterAnimatorNodeBase> &rs,Error &err) ;
 // 解析动画节点
 static void _buffer_to_animationItem(StreamPeerConstBuffer& buffer,Ref<CharacterAnimationItem> &animation_item,Error &err) 
@@ -146,7 +146,13 @@ static void _buffer_to_animationNode(StreamPeerConstBuffer&  buffer,Ref<Characte
 		err = ERR_OUT_OF_MEMORY;
 		return ;
 	}
-	rs->black_board_property = buffer.get_utf8_string(name_length);
+	rs->black_board_property = buffer.get_utf8_string(pro_name_len);
+	pro_name_len = buffer.get_32();
+	if(pro_name_len < 0 || pro_name_len > 10240){
+		err = ERR_OUT_OF_MEMORY;
+		return ;
+	}
+	rs->black_board_property_y = buffer.get_utf8_string(pro_name_len);
 
 	if(type == 0){
 		// 0 代表是CharacterAnimatorNode1D
@@ -180,15 +186,15 @@ static void _buffer_to_animationNode(StreamPeerConstBuffer&  buffer,Ref<Characte
 
 	return ;
 }
-static bool poll_client(StreamPeerConstBuffer& tcp_peer,Callable& on_load_animation) {
-	int tag = tcp_peer.get_u32();
-	int size = tcp_peer.get_u32();
-	int type = tcp_peer.get_u32();
-	int path_size = tcp_peer.get_u32();
+static bool poll_client(StreamPeerConstBuffer& msg_buffer,Callable& on_load_animation) {
+	int tag = msg_buffer.get_u32();
+	int size = msg_buffer.get_u32();
+	int type = msg_buffer.get_u32();
+	int path_size = msg_buffer.get_u32();
 	if(path_size < 0 || path_size > 10240){
 		return false;
 	}
-	String path = tcp_peer.get_utf8_string(path_size);
+	String path = msg_buffer.get_utf8_string(path_size);
 
 	if(!DirAccess::exists("res://" + path))
 	{
@@ -202,7 +208,7 @@ static bool poll_client(StreamPeerConstBuffer& tcp_peer,Callable& on_load_animat
 		// 1 代表是动画节点
 		Ref<CharacterAnimatorNodeBase> anima_node;
 		Error err;
-		_buffer_to_animationNode(tcp_peer,anima_node,err);
+		_buffer_to_animationNode(msg_buffer,anima_node,err);
 		if(err != OK){
 			ERR_FAIL_V_MSG(false,"UnityLinkServer: create animation node error " + itos(err) + " " + path);
 		}
@@ -213,30 +219,55 @@ static bool poll_client(StreamPeerConstBuffer& tcp_peer,Callable& on_load_animat
 		if(on_load_animation.is_null()){
 			return true;
 		}
+		// 解析骨骼映射文件
+		int file_size = msg_buffer.get_32();
+		if(file_size < 0 || file_size > 10240){
+			ERR_FAIL_V_MSG(false,"UnityLinkServer: create bone map error :" + path);
+			
+		}
+		String file_name = msg_buffer.get_utf8_string(file_size);
+		String save_name = file_name.get_basename();
+
+		Ref<CharacterBoneMap> bone_map;
+		bone_map.instantiate();
+		bone_map->ref_skeleton_file_path = path + "/" + file_name;
+		bone_map->is_by_sekeleton_file = true;
+
+
+		String save_path = "res://" + path + "/" + save_name +  ".bone_map.tres";
+		ResourceSaver::save(bone_map,save_path);		
+		print_line("UnityLinkServer: save bone map :" + save_path);
+	}
+	else if(type == 3){
+		if(on_load_animation.is_null()){
+			return true;
+		}
 		// 解析动画文件
 		int file_size = size - 12 - path_size;
 		Vector<uint8_t> ba = Vector<uint8_t>();
 		ba.resize(file_size);
-		memcpy(ba.ptrw(),tcp_peer.get_u8_ptr(),file_size);
+		memcpy(ba.ptrw(),msg_buffer.get_u8_ptr(),file_size);
 		Ref<Animation> anim;
 		anim.instantiate();
 		on_load_animation.call(ba,anim);
+		anim->optimize();
 		String save_path = "res://" + path + "/" + anim->get_class() + "_" + anim->get_name() +  ".anim.tres";
-		ResourceSaver::save(anim,save_path);		
+		ResourceSaver::save(anim,save_path);
+		print_line("UnityLinkServer: save animation node :" + save_path);		
 	}
-	else if(type == 3){
+	else if(type == 4){
 		// 直接存儲的文件，fbx，png。。。。
 		
 		int file_size = size - 12 - path_size;
 
-		int name_size = tcp_peer.get_32();
+		int name_size = msg_buffer.get_32();
 		if(name_size < 0 || name_size > 10240){
 			return false;
 		}
-		String name = tcp_peer.get_utf8_string(name_size);
+		String name = msg_buffer.get_utf8_string(name_size);
 
 		Ref<FileAccess> f = FileAccess::open("res://" + path + "/" + name,FileAccess::WRITE);
-		f->store_buffer(tcp_peer.get_u8_ptr(),file_size);	
+		f->store_buffer(msg_buffer.get_u8_ptr(),file_size);	
 	}
 	return true;
 }
@@ -367,11 +398,13 @@ void UnityLinkServer::stop() {
 }
 
 UnityLinkServer::UnityLinkServer() {
+	instance = this;
 	server.instantiate();
 
 }
 
 UnityLinkServer::~UnityLinkServer() {
+	instance = nullptr;
 	stop();
 }
 

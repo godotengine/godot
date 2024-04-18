@@ -81,17 +81,18 @@ class UnityLinkServer : public Object {
 	List<Ref<ClientPeer>> clients;
 
 
+public:
 	void set_animation_load_callback(const Callable &p_callback)
 	{
 		on_load_animation = p_callback;
 	}
-public:
 	void poll();
 
 	void start();
 	void stop();
 
 	bool is_active() const;
+	static UnityLinkServer * instance;
 
 	UnityLinkServer();
 	~UnityLinkServer();

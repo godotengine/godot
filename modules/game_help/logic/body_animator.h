@@ -121,11 +121,18 @@ public:
 
     void set_animation_arrays(TypedArray<CharacterAnimationItem> p_animation_arrays) { animation_arrays = p_animation_arrays; }
     TypedArray<CharacterAnimationItem> get_animation_arrays() { return animation_arrays; }
+
+    void set_black_board_property(const StringName& p_black_board_property) { black_board_property = p_black_board_property; }
+    StringName get_black_board_property() { return black_board_property; }
+
+    void set_black_board_property_y(const StringName& p_black_board_property_y) { black_board_property_y = p_black_board_property_y; }
+    StringName get_black_board_property_y() { return black_board_property_y; }
     virtual void _init();
 
     
     TypedArray<CharacterAnimationItem>    animation_arrays;
     StringName               black_board_property;
+    StringName               black_board_property_y;
 
     struct Blend1dDataConstant
     {

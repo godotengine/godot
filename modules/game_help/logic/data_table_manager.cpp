@@ -1,5 +1,6 @@
 #include "data_table_manager.h"
 #include "../csv/CSV_EditorImportPlugin.h"
+#include "../unity/unity_link_server.h"
 #include "../yaml/tree.hpp"
 #include "../yaml/parse.hpp"
 #include <map>
@@ -690,6 +691,13 @@ Ref<JSON> DataTableManager::parse_yaml(const String& text)
     }
     return parseResult;
 }
+void DataTableManager::set_animation_load_cb(const Callable& cb )
+{
+	if(UnityLinkServer::instance)
+	{
+		UnityLinkServer::instance->set_animation_load_callback(cb);
+	}
+}
 
 void DataTableManager::_bind_methods()
 {
@@ -697,6 +705,7 @@ void DataTableManager::_bind_methods()
     ClassDB::bind_method(D_METHOD("reload"),&DataTableManager::reload);
     ClassDB::bind_method(D_METHOD("parse_yaml","text"),&DataTableManager::parse_yaml);
     ClassDB::bind_method(D_METHOD("parse_yaml_file","file_path"),&DataTableManager::parse_yaml_file);
+    ClassDB::bind_method(D_METHOD("set_animation_load_cb","callback"),&DataTableManager::set_animation_load_cb);
 
 
 

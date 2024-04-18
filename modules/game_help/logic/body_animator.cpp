@@ -126,7 +126,15 @@ void CharacterAnimatorNodeBase::bind_methods()
     ClassDB::bind_method(D_METHOD("set_animation_arrays", "animation_arrays"), &CharacterAnimatorNodeBase::set_animation_arrays);
     ClassDB::bind_method(D_METHOD("get_animation_arrays"), &CharacterAnimatorNodeBase::get_animation_arrays);
 
+    ClassDB::bind_method(D_METHOD("set_black_board_property", "black_board_property"), &CharacterAnimatorNodeBase::set_black_board_property);
+    ClassDB::bind_method(D_METHOD("get_black_board_property"), &CharacterAnimatorNodeBase::get_black_board_property);
+
+    ClassDB::bind_method(D_METHOD("set_black_board_property_y", "black_board_property"), &CharacterAnimatorNodeBase::set_black_board_property_y);
+    ClassDB::bind_method(D_METHOD("get_black_board_property_y"), &CharacterAnimatorNodeBase::get_black_board_property_y);
+
     ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "animation_arrays"), "set_animation_arrays", "get_animation_arrays");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property"), "set_black_board_property", "get_black_board_property");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "black_board_property_y"), "set_black_board_property_y", "get_black_board_property_y");
 }    
 void CharacterAnimatorNodeBase::_init()
 {
@@ -151,8 +159,8 @@ void CharacterAnimatorNodeBase::_blend_anmation(CharacterAnimatorLayer *p_layer,
             Ref<CharacterAnimationItem> item = animation_arrays[i];
             if(item->is_clip){
                 p_playback_info_ptr[i].weight = w;
-                p_playback_info_ptr[i].time = p_playback_info->time;
-                p_playback_info_ptr[i].delta = p_playback_info->delta;
+                p_playback_info_ptr[i].delta = p_playback_info->delta * item->get_speed();
+                p_playback_info_ptr[i].time += p_playback_info_ptr[i].delta ;
                 p_playback_info_ptr[i].disable_path = p_playback_info->disable_path;
                 Ref<Animation> animation = item->get_animation();
                 if(animation.is_valid())

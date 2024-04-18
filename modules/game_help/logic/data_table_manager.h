@@ -169,6 +169,7 @@ public:
 
     Ref<JSON> parse_yaml(const String& text);
     Ref<JSON> parse_yaml_file(const String& file_path);
+    void set_animation_load_cb(const Callable& cb );
 
     bool is_init = false;
     int version = 0;
