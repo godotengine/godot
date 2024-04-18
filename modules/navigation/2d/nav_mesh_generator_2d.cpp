@@ -53,11 +53,14 @@
 NavMeshGenerator2D *NavMeshGenerator2D::singleton = nullptr;
 Mutex NavMeshGenerator2D::baking_navmesh_mutex;
 Mutex NavMeshGenerator2D::generator_task_mutex;
+RWLock NavMeshGenerator2D::generator_rid_rwlock;
 bool NavMeshGenerator2D::use_threads = true;
 bool NavMeshGenerator2D::baking_use_multiple_threads = true;
 bool NavMeshGenerator2D::baking_use_high_priority_threads = true;
 HashSet<Ref<NavigationPolygon>> NavMeshGenerator2D::baking_navmeshes;
 HashMap<WorkerThreadPool::TaskID, NavMeshGenerator2D::NavMeshGeneratorTask2D *> NavMeshGenerator2D::generator_tasks;
+RID_Owner<NavMeshGenerator2D::NavMeshGeometryParser2D> NavMeshGenerator2D::generator_parser_owner;
+LocalVector<NavMeshGenerator2D::NavMeshGeometryParser2D *> NavMeshGenerator2D::generator_parsers;
 
 NavMeshGenerator2D *NavMeshGenerator2D::get_singleton() {
 	return singleton;
@@ -125,6 +128,13 @@ void NavMeshGenerator2D::cleanup() {
 		memdelete(generator_task);
 	}
 	generator_tasks.clear();
+
+	generator_rid_rwlock.write_lock();
+	for (NavMeshGeometryParser2D *parser : generator_parsers) {
+		generator_parser_owner.free(parser->self);
+	}
+	generator_parsers.clear();
+	generator_rid_rwlock.write_unlock();
 
 	generator_task_mutex.unlock();
 	baking_navmesh_mutex.unlock();
@@ -235,6 +245,15 @@ void NavMeshGenerator2D::generator_parse_geometry_node(Ref<NavigationPolygon> p_
 	generator_parse_staticbody2d_node(p_navigation_mesh, p_source_geometry_data, p_node);
 	generator_parse_tilemap_node(p_navigation_mesh, p_source_geometry_data, p_node);
 	generator_parse_navigationobstacle_node(p_navigation_mesh, p_source_geometry_data, p_node);
+
+	generator_rid_rwlock.read_lock();
+	for (const NavMeshGeometryParser2D *parser : generator_parsers) {
+		if (!parser->callback.is_valid()) {
+			continue;
+		}
+		parser->callback.call(p_navigation_mesh, p_source_geometry_data, p_node);
+	}
+	generator_rid_rwlock.read_unlock();
 
 	if (p_recurse_children) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -811,6 +830,47 @@ bool NavMeshGenerator2D::generator_emit_callback(const Callable &p_callback) {
 	p_callback.callp(nullptr, 0, result, ce);
 
 	return ce.error == Callable::CallError::CALL_OK;
+}
+
+RID NavMeshGenerator2D::source_geometry_parser_create() {
+	RWLockWrite write_lock(generator_rid_rwlock);
+
+	RID rid = generator_parser_owner.make_rid();
+
+	NavMeshGeometryParser2D *parser = generator_parser_owner.get_or_null(rid);
+	parser->self = rid;
+
+	generator_parsers.push_back(parser);
+
+	return rid;
+}
+
+void NavMeshGenerator2D::source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) {
+	RWLockWrite write_lock(generator_rid_rwlock);
+
+	NavMeshGeometryParser2D *parser = generator_parser_owner.get_or_null(p_parser);
+	ERR_FAIL_NULL(parser);
+
+	parser->callback = p_callback;
+}
+
+bool NavMeshGenerator2D::owns(RID p_object) {
+	RWLockRead read_lock(generator_rid_rwlock);
+	return generator_parser_owner.owns(p_object);
+}
+
+void NavMeshGenerator2D::free(RID p_object) {
+	RWLockWrite write_lock(generator_rid_rwlock);
+
+	if (generator_parser_owner.owns(p_object)) {
+		NavMeshGeometryParser2D *parser = generator_parser_owner.get_or_null(p_object);
+
+		generator_parsers.erase(parser);
+
+		generator_parser_owner.free(p_object);
+	} else {
+		ERR_PRINT("Attempted to free a NavMeshGenerator2D RID that did not exist (or was already freed).");
+	}
 }
 
 void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data) {

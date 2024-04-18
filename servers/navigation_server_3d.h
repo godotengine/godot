@@ -351,6 +351,9 @@ public:
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const = 0;
 #endif // _3D_DISABLED
 
+	virtual RID source_geometry_parser_create() = 0;
+	virtual void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) = 0;
+
 	virtual Vector<Vector3> simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) = 0;
 
 	NavigationServer3D();

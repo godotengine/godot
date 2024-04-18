@@ -35,6 +35,7 @@
 
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/templates/rid_owner.h"
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
 
 class Node;
@@ -46,6 +47,14 @@ class NavMeshGenerator3D : public Object {
 
 	static Mutex baking_navmesh_mutex;
 	static Mutex generator_task_mutex;
+
+	static RWLock generator_rid_rwlock;
+	struct NavMeshGeometryParser3D {
+		RID self;
+		Callable callback;
+	};
+	static RID_Owner<NavMeshGeometryParser3D> generator_parser_owner;
+	static LocalVector<NavMeshGeometryParser3D *> generator_parsers;
 
 	static bool use_threads;
 	static bool baking_use_multiple_threads;
@@ -101,6 +110,12 @@ public:
 	static void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback = Callable());
 	static void bake_from_source_geometry_data_async(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback = Callable());
 	static bool is_baking(Ref<NavigationMesh> p_navigation_mesh);
+
+	static RID source_geometry_parser_create();
+	static void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback);
+
+	static bool owns(RID p_object);
+	static void free(RID p_object);
 
 	NavMeshGenerator3D();
 	~NavMeshGenerator3D();
