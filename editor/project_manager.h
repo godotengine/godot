@@ -141,6 +141,7 @@ class ProjectManager : public Control {
 	void _update_list_placeholder();
 
 	ProjectList *project_list = nullptr;
+	bool initialized = false;
 
 	LineEdit *search_box = nullptr;
 	Label *loading_label = nullptr;
@@ -239,6 +240,7 @@ public:
 
 	// Project list.
 
+	bool is_initialized() const { return initialized; }
 	LineEdit *get_search_box();
 
 	// Project tag management.
