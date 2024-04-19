@@ -116,6 +116,8 @@ public:
 	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
 	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
 
+	ResourceUID::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
+
 	ResourceSaver() { singleton = this; }
 };
 
