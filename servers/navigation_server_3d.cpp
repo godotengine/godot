@@ -188,6 +188,9 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_baking_navigation_mesh", "navigation_mesh"), &NavigationServer3D::is_baking_navigation_mesh);
 #endif // _3D_DISABLED
 
+	ClassDB::bind_method(D_METHOD("source_geometry_parser_create"), &NavigationServer3D::source_geometry_parser_create);
+	ClassDB::bind_method(D_METHOD("source_geometry_parser_set_callback", "parser", "callback"), &NavigationServer3D::source_geometry_parser_set_callback);
+
 	ClassDB::bind_method(D_METHOD("simplify_path", "path", "epsilon"), &NavigationServer3D::simplify_path);
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &NavigationServer3D::free);
