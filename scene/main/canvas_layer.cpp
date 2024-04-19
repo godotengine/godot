@@ -228,13 +228,14 @@ void CanvasLayer::_notification(int p_what) {
 			viewport = RID();
 			_update_follow_viewport(false);
 		} break;
-		case NOTIFICATION_MOVED_IN_PARENT: {
-			// Note: As this step requires traversing the entire scene tree, it is thus expensive
-			// to move the canvas layer multiple times. Take special care when deleting / moving
-			// multiple nodes to prevent multiple NOTIFICATION_MOVED_IN_PARENT occurring.
-			_update_layer_orders();
-		} break;
 	}
+}
+
+void CanvasLayer::update_draw_order() {
+	// Note: As this step requires traversing the entire scene tree, it is thus expensive
+	// to move the canvas layer multiple times. Take special care when deleting / moving
+	// multiple nodes to prevent this happening multiple times.
+	_update_layer_orders();
 }
 
 Size2 CanvasLayer::get_viewport_size() const {
