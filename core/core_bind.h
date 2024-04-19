@@ -447,6 +447,8 @@ public:
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
+	Variant class_get_property_default_value(const StringName &p_class, const StringName &p_property) const;
+
 	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
 	int class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
