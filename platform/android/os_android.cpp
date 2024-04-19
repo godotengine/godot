@@ -194,7 +194,7 @@ bool OS_Android::copy_dynamic_library(const String &p_library_path, const String
 	return copy_exists;
 }
 
-Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path, bool p_generate_temp_files, PackedStringArray *p_library_dependencies) {
+Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	String path = p_path;
 	bool so_file_exists = true;
 	if (!FileAccess::exists(path)) {
@@ -208,7 +208,7 @@ Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_ha
 		// Try to copy to the internal directory for access.
 		const String dynamic_library_path = get_dynamic_libraries_path();
 
-		if (p_library_dependencies != nullptr && !p_library_dependencies->is_empty()) {
+		if (p_data != nullptr && p_data->library_dependencies != nullptr && !p_data->library_dependencies->is_empty()) {
 			// Copy the library dependencies
 			print_verbose("Copying library dependencies..");
 			for (const String &library_dependency_path : *p_data->library_dependencies) {
@@ -239,8 +239,8 @@ Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_ha
 
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
-	if (r_resolved_path != nullptr) {
-		*r_resolved_path = path;
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
 	}
 
 	return OK;
