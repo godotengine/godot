@@ -173,7 +173,8 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_variant* GetUnsafeAddress()
             => (godot_variant*)Unsafe.AsPointer(ref Unsafe.AsRef(in _typeField));
 
-        // Variant.Type is generated as an enum of type long, so we can't use for the field as it must only take 32-bits. (the native enum actually has no fixed underlying type so it is only at least 6 bits long)
+        // Variant.Type is generated as an enum of type long, so we can't use for the field as it must only take 32-bits.
+        // The native enum actually has no fixed underlying type, so it is only at least 6 bits long.
         private int _typeField;
 
         // There's padding here
@@ -481,8 +482,10 @@ namespace Godot.NativeInterop
             Type = Variant.Type.Nil;
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Explicit)]
         internal struct movable
+#pragma warning restore CS8981
         {
             // Variant.Type is generated as an enum of type long, so we can't use for the field as it must only take 32-bits.
             [FieldOffset(0)] private int _typeField;
@@ -588,8 +591,10 @@ namespace Godot.NativeInterop
             return _data.GetHashCode();
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Sequential)]
         internal struct movable
+#pragma warning restore CS8981
         {
             private IntPtr _data;
 
@@ -634,8 +639,10 @@ namespace Godot.NativeInterop
             get => _data == IntPtr.Zero;
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Sequential)]
         internal struct movable
+#pragma warning restore CS8981
         {
             private IntPtr _data;
 
@@ -809,8 +816,10 @@ namespace Godot.NativeInterop
             _p = null;
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Sequential)]
         internal struct movable
+#pragma warning restore CS8981
         {
             private unsafe ArrayPrivate* _p;
 
@@ -876,8 +885,10 @@ namespace Godot.NativeInterop
             _p = null;
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Sequential)]
         internal struct movable
+#pragma warning restore CS8981
         {
             private unsafe DictionaryPrivate* _p;
 

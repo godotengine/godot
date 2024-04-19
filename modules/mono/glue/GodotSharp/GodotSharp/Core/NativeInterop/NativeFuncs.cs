@@ -233,51 +233,51 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_variant_new_packed_color_array(out godot_variant r_dest,
             scoped in godot_packed_color_array p_pca);
 
-        public static partial godot_bool godotsharp_variant_as_bool(in godot_variant p_self);
+        public static partial godot_bool godotsharp_variant_as_bool(scoped in godot_variant p_self);
 
-        public static partial Int64 godotsharp_variant_as_int(in godot_variant p_self);
+        public static partial Int64 godotsharp_variant_as_int(scoped in godot_variant p_self);
 
-        public static partial double godotsharp_variant_as_float(in godot_variant p_self);
+        public static partial double godotsharp_variant_as_float(scoped in godot_variant p_self);
 
         public static partial godot_string godotsharp_variant_as_string(scoped in godot_variant p_self);
 
-        public static partial Vector2 godotsharp_variant_as_vector2(in godot_variant p_self);
+        public static partial Vector2 godotsharp_variant_as_vector2(scoped in godot_variant p_self);
 
-        public static partial Vector2I godotsharp_variant_as_vector2i(in godot_variant p_self);
+        public static partial Vector2I godotsharp_variant_as_vector2i(scoped in godot_variant p_self);
 
-        public static partial Rect2 godotsharp_variant_as_rect2(in godot_variant p_self);
+        public static partial Rect2 godotsharp_variant_as_rect2(scoped in godot_variant p_self);
 
-        public static partial Rect2I godotsharp_variant_as_rect2i(in godot_variant p_self);
+        public static partial Rect2I godotsharp_variant_as_rect2i(scoped in godot_variant p_self);
 
-        public static partial Vector3 godotsharp_variant_as_vector3(in godot_variant p_self);
+        public static partial Vector3 godotsharp_variant_as_vector3(scoped in godot_variant p_self);
 
-        public static partial Vector3I godotsharp_variant_as_vector3i(in godot_variant p_self);
+        public static partial Vector3I godotsharp_variant_as_vector3i(scoped in godot_variant p_self);
 
-        public static partial Transform2D godotsharp_variant_as_transform2d(in godot_variant p_self);
+        public static partial Transform2D godotsharp_variant_as_transform2d(scoped in godot_variant p_self);
 
-        public static partial Vector4 godotsharp_variant_as_vector4(in godot_variant p_self);
+        public static partial Vector4 godotsharp_variant_as_vector4(scoped in godot_variant p_self);
 
-        public static partial Vector4I godotsharp_variant_as_vector4i(in godot_variant p_self);
+        public static partial Vector4I godotsharp_variant_as_vector4i(scoped in godot_variant p_self);
 
-        public static partial Plane godotsharp_variant_as_plane(in godot_variant p_self);
+        public static partial Plane godotsharp_variant_as_plane(scoped in godot_variant p_self);
 
-        public static partial Quaternion godotsharp_variant_as_quaternion(in godot_variant p_self);
+        public static partial Quaternion godotsharp_variant_as_quaternion(scoped in godot_variant p_self);
 
-        public static partial Aabb godotsharp_variant_as_aabb(in godot_variant p_self);
+        public static partial Aabb godotsharp_variant_as_aabb(scoped in godot_variant p_self);
 
-        public static partial Basis godotsharp_variant_as_basis(in godot_variant p_self);
+        public static partial Basis godotsharp_variant_as_basis(scoped in godot_variant p_self);
 
-        public static partial Transform3D godotsharp_variant_as_transform3d(in godot_variant p_self);
+        public static partial Transform3D godotsharp_variant_as_transform3d(scoped in godot_variant p_self);
 
-        public static partial Projection godotsharp_variant_as_projection(in godot_variant p_self);
+        public static partial Projection godotsharp_variant_as_projection(scoped in godot_variant p_self);
 
-        public static partial Color godotsharp_variant_as_color(in godot_variant p_self);
+        public static partial Color godotsharp_variant_as_color(scoped in godot_variant p_self);
 
         public static partial godot_string_name godotsharp_variant_as_string_name(scoped in godot_variant p_self);
 
         public static partial godot_node_path godotsharp_variant_as_node_path(scoped in godot_variant p_self);
 
-        public static partial Rid godotsharp_variant_as_rid(in godot_variant p_self);
+        public static partial Rid godotsharp_variant_as_rid(scoped in godot_variant p_self);
 
         public static partial godot_callable godotsharp_variant_as_callable(scoped in godot_variant p_self);
 
@@ -293,27 +293,22 @@ namespace Godot.NativeInterop
 
         public static partial godot_packed_int64_array godotsharp_variant_as_packed_int64_array(scoped in godot_variant p_self);
 
-        public static partial godot_packed_float32_array godotsharp_variant_as_packed_float32_array(
-            scoped in godot_variant p_self);
+        public static partial godot_packed_float32_array godotsharp_variant_as_packed_float32_array(scoped in godot_variant p_self);
 
-        public static partial godot_packed_float64_array godotsharp_variant_as_packed_float64_array(
-            scoped in godot_variant p_self);
+        public static partial godot_packed_float64_array godotsharp_variant_as_packed_float64_array(scoped in godot_variant p_self);
 
-        public static partial godot_packed_string_array godotsharp_variant_as_packed_string_array(
-            scoped in godot_variant p_self);
+        public static partial godot_packed_string_array godotsharp_variant_as_packed_string_array(scoped in godot_variant p_self);
 
-        public static partial godot_packed_vector2_array godotsharp_variant_as_packed_vector2_array(
-            scoped in godot_variant p_self);
+        public static partial godot_packed_vector2_array godotsharp_variant_as_packed_vector2_array(scoped in godot_variant p_self);
 
-        public static partial godot_packed_vector3_array godotsharp_variant_as_packed_vector3_array(
-            scoped in godot_variant p_self);
+        public static partial godot_packed_vector3_array godotsharp_variant_as_packed_vector3_array(scoped in godot_variant p_self);
 
         public static partial godot_packed_vector4_array godotsharp_variant_as_packed_vector4_array(
             in godot_variant p_self);
 
         public static partial godot_packed_color_array godotsharp_variant_as_packed_color_array(scoped in godot_variant p_self);
 
-        public static partial godot_bool godotsharp_variant_equals(in godot_variant p_a, in godot_variant p_b);
+        public static partial godot_bool godotsharp_variant_equals(scoped in godot_variant p_a, scoped in godot_variant p_b);
 
         // string.h
 

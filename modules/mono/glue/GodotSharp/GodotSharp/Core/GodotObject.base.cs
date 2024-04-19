@@ -90,8 +90,7 @@ namespace Godot
             // NativePtr is assigned, that would result in UB or crashes when calling
             // native functions that receive the pointer, which can happen because the
             // debugger calls ToString() and tries to get the value of properties.
-            if (instance._disposed || instance.NativePtr == IntPtr.Zero)
-                throw new ObjectDisposedException(instance.GetType().FullName);
+            ObjectDisposedException.ThrowIf(instance._disposed || instance.NativePtr == IntPtr.Zero, instance);
 
             return instance.NativePtr;
         }
