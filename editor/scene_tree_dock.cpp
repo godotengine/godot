@@ -57,11 +57,9 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/check_box.h"
-#include "scene/main/window.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
-#include "servers/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
@@ -3636,10 +3634,7 @@ void SceneTreeDock::_filter_option_selected(int p_option) {
 
 void SceneTreeDock::_append_filter_options_to(PopupMenu *p_menu, bool p_include_separator) {
 	if (p_include_separator) {
-		p_menu->add_separator();
-
-		p_menu->set_item_text(-1, TTR("Filters"));
-		p_menu->set_item_indent(-1, -2);
+		p_menu->add_separator(TTR("Filters"));
 	}
 
 	p_menu->add_item(TTR("Filter by Type"), FILTER_BY_TYPE);
