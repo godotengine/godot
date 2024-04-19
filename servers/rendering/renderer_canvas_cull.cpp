@@ -1970,6 +1970,8 @@ void RendererCanvasCull::canvas_light_occluder_set_polygon(RID p_occluder, RID p
 void RendererCanvasCull::canvas_light_occluder_set_as_sdf_collision(RID p_occluder, bool p_enable) {
 	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
 	ERR_FAIL_NULL(occluder);
+
+	occluder->sdf_collision = p_enable;
 }
 
 void RendererCanvasCull::canvas_light_occluder_set_transform(RID p_occluder, const Transform2D &p_xform) {
