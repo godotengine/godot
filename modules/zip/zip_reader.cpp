@@ -130,8 +130,8 @@ BitField<FileAccess::UnixPermissionFlags> ZIPReader::get_file_unix_permissions(c
 
 	int err = UNZ_OK;
 	String file_path = p_path;
-	
-	// Locate the file
+
+	// Locate the file.
 	err = godot_unzip_locate_file(uzf, p_path, p_case_sensitive);
 	ERR_FAIL_COND_V_MSG(err != UNZ_OK, -1, "File does not exist in zip archive: " + p_path);
 
