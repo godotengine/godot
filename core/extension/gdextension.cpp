@@ -773,7 +773,13 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 	}
 
 	String actual_lib_path;
-	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true, &actual_lib_path, Engine::get_singleton()->is_editor_hint(), &abs_dependencies_paths);
+	OS::GDExtensionData data = {
+		true, // also_set_library_path
+		&actual_lib_path, // r_resolved_path
+		Engine::get_singleton()->is_editor_hint(), // generate_temp_files
+		&abs_dependencies_paths, // library_dependencies
+	};
+	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
 
 	if (actual_lib_path.get_file() != abs_path.get_file()) {
 		// If temporary files are generated, let's change the library path to point at the original,
