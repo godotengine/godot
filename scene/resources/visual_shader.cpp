@@ -4928,6 +4928,10 @@ String VisualShaderNodeExpression::generate_code(Shader::Mode p_mode, VisualShad
 	return code;
 }
 
+bool VisualShaderNodeExpression::is_output_port_expandable(int p_port) const {
+	return false;
+}
+
 void VisualShaderNodeExpression::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_expression", "expression"), &VisualShaderNodeExpression::set_expression);
 	ClassDB::bind_method(D_METHOD("get_expression"), &VisualShaderNodeExpression::get_expression);

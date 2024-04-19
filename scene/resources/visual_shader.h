@@ -878,6 +878,7 @@ public:
 	String get_expression() const;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
 	VisualShaderNodeExpression();
 };
