@@ -196,6 +196,7 @@ Ref<AudioStream> AudioStreamPlayer2D::get_stream() const {
 }
 
 void AudioStreamPlayer2D::set_volume_db(float p_volume) {
+	ERR_FAIL_COND_MSG(Math::is_nan(p_volume), "Volume can't be set to NaN.");
 	internal->volume_db = p_volume;
 }
 
