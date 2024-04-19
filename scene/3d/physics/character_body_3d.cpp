@@ -232,7 +232,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 							} else {
 								// Travel is too high to be safely canceled, we take it into account.
 								result.travel = result.travel.slide(up_direction);
-								motion = motion.normalized() * result.travel.length();
+								motion = result.remainder;
 							}
 							set_global_transform(gt);
 							// Determines if you are on the ground, and limits the possibility of climbing on the walls because of the approximations.
