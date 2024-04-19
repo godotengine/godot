@@ -219,7 +219,7 @@ void ProgressDialog::end_task(const String &p_task) {
 	tasks.erase(p_task);
 
 	if (tasks.is_empty()) {
-		hide();
+		_check_should_hide();
 	} else {
 		_popup();
 	}
@@ -232,6 +232,41 @@ void ProgressDialog::add_host_window(Window *p_window) {
 
 void ProgressDialog::_cancel_pressed() {
 	canceled = true;
+}
+
+void ProgressDialog::_check_should_hide() {
+	if (!tasks.is_empty()) {
+		return;
+	}
+
+	bool has_child_window_visible = false;
+	for (int i = 0; i < get_child_count(); i++) {
+		Window *window = Object::cast_to<Window>(get_child(i));
+		if (window && window->is_visible()) {
+			has_child_window_visible = true;
+			break;
+		}
+	}
+
+	if (!has_child_window_visible) {
+		hide();
+	}
+}
+
+void ProgressDialog::add_child_notify(Node *p_child) {
+	Window *window = Object::cast_to<Window>(p_child);
+	if (window) {
+		window->connect("visibility_changed", callable_mp(this, &ProgressDialog::_check_should_hide));
+		callable_mp(this, &ProgressDialog::_check_should_hide).call_deferred();
+	}
+}
+
+void ProgressDialog::remove_child_notify(Node *p_child) {
+	Window *window = Object::cast_to<Window>(p_child);
+	if (window) {
+		window->disconnect("visibility_changed", callable_mp(this, &ProgressDialog::_check_should_hide));
+		callable_mp(this, &ProgressDialog::_check_should_hide).call_deferred();
+	}
 }
 
 ProgressDialog::ProgressDialog() {

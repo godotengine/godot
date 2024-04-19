@@ -127,6 +127,7 @@ public:
 	void open(Ref<FileAccess> p_f, bool p_skip_first_tag = false);
 	String recognize(Ref<FileAccess> p_f);
 	String recognize_script_class(Ref<FileAccess> p_f);
+	int get_format_version(Ref<FileAccess> p_f);
 	ResourceUID::ID get_uid(Ref<FileAccess> p_f);
 	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
 	Error rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const HashMap<String, String> &p_map);
@@ -143,6 +144,7 @@ public:
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual bool handles_type(const String &p_type) const override;
+	virtual int get_format_version(const String &p_path) const override;
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
 
 	virtual String get_resource_type(const String &p_path) const override;
@@ -203,6 +205,7 @@ public:
 	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+	virtual int get_current_format_version(const Ref<Resource> &p_resource, const String &p_path) const override;
 
 	ResourceFormatSaverText();
 };

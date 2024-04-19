@@ -1617,6 +1617,31 @@ String ResourceLoaderText::recognize(Ref<FileAccess> p_f) {
 	return tag.fields["type"];
 }
 
+int ResourceLoaderText::get_format_version(Ref<FileAccess> p_f) {
+	error = OK;
+
+	lines = 1;
+	f = p_f;
+
+	stream.f = f;
+
+	ignore_resource_parsing = true;
+
+	VariantParser::Tag tag;
+	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
+
+	if (err) {
+		_printerr();
+		return -1;
+	}
+
+	if (tag.fields.has("format")) {
+		return tag.fields["format"];
+	}
+
+	return -1;
+}
+
 ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 	error = OK;
 
@@ -1713,6 +1738,18 @@ void ResourceFormatLoaderText::get_recognized_extensions(List<String> *p_extensi
 
 bool ResourceFormatLoaderText::handles_type(const String &p_type) const {
 	return true;
+}
+
+int ResourceFormatLoaderText::get_format_version(const String &p_path) const {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return -1; // Could not read.
+	}
+
+	ResourceLoaderText loader;
+	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	loader.res_path = loader.local_path;
+	return loader.get_format_version(f);
 }
 
 void ResourceFormatLoaderText::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
@@ -2441,6 +2478,10 @@ void ResourceFormatSaverText::get_recognized_extensions(const Ref<Resource> &p_r
 	} else {
 		p_extensions->push_back("tres"); // Text resource.
 	}
+}
+
+int ResourceFormatSaverText::get_current_format_version(const Ref<Resource> &p_resource, const String &p_path) const {
+	return FORMAT_VERSION;
 }
 
 ResourceFormatSaverText *ResourceFormatSaverText::singleton = nullptr;

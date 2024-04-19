@@ -81,6 +81,15 @@ bool ResourceFormatLoader::handles_type(const String &p_type) const {
 	return success;
 }
 
+int ResourceFormatLoader::get_format_version(const String &p_path) const {
+	int ret;
+	if (GDVIRTUAL_CALL(_get_format_version, p_path, ret)) {
+		return ret;
+	}
+
+	return 0;
+}
+
 void ResourceFormatLoader::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
 	Vector<String> ret;
 	if (GDVIRTUAL_CALL(_get_classes_used, p_path, ret)) {
@@ -194,6 +203,7 @@ void ResourceFormatLoader::_bind_methods() {
 	GDVIRTUAL_BIND(_get_recognized_extensions);
 	GDVIRTUAL_BIND(_recognize_path, "path", "type");
 	GDVIRTUAL_BIND(_handles_type, "type");
+	GDVIRTUAL_BIND(_get_format_version, "path");
 	GDVIRTUAL_BIND(_get_resource_type, "path");
 	GDVIRTUAL_BIND(_get_resource_script_class, "path");
 	GDVIRTUAL_BIND(_get_resource_uid, "path");
@@ -851,6 +861,18 @@ Error ResourceLoader::rename_dependencies(const String &p_path, const HashMap<St
 	}
 
 	return OK; // ??
+}
+
+int ResourceLoader::get_format_version(const String &p_path) {
+	String local_path = _validate_local_path(p_path);
+
+	for (int i = 0; i < loader_count; i++) {
+		if (!loader[i]->recognize_path(local_path)) {
+			continue;
+		}
+
+		return loader[i]->get_format_version(p_path);
+	}
 }
 
 void ResourceLoader::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {

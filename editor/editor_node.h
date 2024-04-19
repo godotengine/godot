@@ -372,8 +372,10 @@ private:
 	ConfirmationDialog *import_confirmation = nullptr;
 	ConfirmationDialog *pick_main_scene = nullptr;
 	Button *select_current_scene_button = nullptr;
-	AcceptDialog *accept = nullptr;
-	AcceptDialog *save_accept = nullptr;
+	AcceptDialog *accept_dialog = nullptr;
+	Callable accept_dialog_action;
+	ConfirmationDialog *confirm_dialog = nullptr;
+	Callable confirm_dialog_action;
 	EditorAbout *about = nullptr;
 	AcceptDialog *warning = nullptr;
 	EditorPlugin *plugin_to_save = nullptr;
@@ -566,7 +568,7 @@ private:
 	void _set_current_scene(int p_idx);
 	void _set_current_scene_nocheck(int p_idx);
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
-	void _save_scene(String p_file, int idx = -1);
+	void _save_scene(String p_file, int idx = -1, bool p_force_save_to_new_format = false);
 	void _save_all_scenes();
 	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
 	void _discard_changes(const String &p_str = String());
@@ -838,8 +840,8 @@ public:
 
 	bool is_object_of_custom_type(const Object *p_object, const StringName &p_class);
 
-	void show_accept(const String &p_text, const String &p_title);
-	void show_save_accept(const String &p_text, const String &p_title);
+	void show_accept(const String &p_text, const String &p_title, Callable p_confirm_action = Callable());
+	void show_confirm(const String &p_text, const String &p_title, Callable p_confirm_action);
 	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));
 
 	void _copy_warning(const String &p_str);

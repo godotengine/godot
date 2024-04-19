@@ -87,6 +87,12 @@ class ProgressDialog : public PopupPanel {
 	void _cancel_pressed();
 	bool canceled = false;
 
+	void _check_should_hide();
+
+protected:
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
+
 public:
 	static ProgressDialog *get_singleton() { return singleton; }
 	void add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel = false);
