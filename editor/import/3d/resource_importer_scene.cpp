@@ -1908,6 +1908,7 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 
 		new_anim->set_loop_mode(loop_mode);
 		new_anim->set_length(to - from);
+		new_anim->set_step(anim->get_step());
 
 		al->add_animation(name, new_anim);
 

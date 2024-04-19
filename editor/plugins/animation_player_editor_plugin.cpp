@@ -548,8 +548,13 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		} break;
 
 		case TOOL_NEW_ANIM: {
+			String current = animation->get_item_text(animation->get_selected());
+			Ref<Animation> current_anim = player->get_animation(current);
 			Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
 			new_anim->set_name(new_name);
+			if (current_anim.is_valid()) {
+				new_anim->set_step(current_anim->get_step());
+			}
 			String library_name;
 			Ref<AnimationLibrary> al;
 			library_name = library->get_item_metadata(library->get_selected());
