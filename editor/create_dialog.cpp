@@ -202,8 +202,7 @@ void CreateDialog::_update_search() {
 		select_type(_top_result(candidates, search_text));
 	} else {
 		favorite->set_disabled(true);
-		help_bit->set_text(vformat(TTR("No results for \"%s\"."), search_text));
-		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
+		help_bit->set_custom_text(String(), String(), vformat(TTR("No results for \"%s\"."), search_text.replace("[", "[lb]")));
 		get_ok_button()->set_disabled(true);
 		search_options->deselect_all();
 	}
@@ -502,17 +501,7 @@ void CreateDialog::select_type(const String &p_type, bool p_center_on_item) {
 	to_select->select(0);
 	search_options->scroll_to_item(to_select, p_center_on_item);
 
-	String text = help_bit->get_class_description(p_type);
-	if (!text.is_empty()) {
-		// Display both class name and description, since the help bit may be displayed
-		// far away from the location (especially if the dialog was resized to be taller).
-		help_bit->set_text(vformat("[b]%s[/b]: %s", p_type, text));
-		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
-	} else {
-		// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
-		help_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", p_type)));
-		help_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
-	}
+	help_bit->parse_symbol("class|" + p_type + "|");
 
 	favorite->set_disabled(false);
 	favorite->set_pressed(favorite_list.has(p_type));
@@ -837,6 +826,7 @@ CreateDialog::CreateDialog() {
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
 	help_bit = memnew(EditorHelpBit);
+	help_bit->set_content_height_limits(64 * EDSCALE, 64 * EDSCALE);
 	help_bit->connect("request_hide", callable_mp(this, &CreateDialog::_hide_requested));
 	vbc->add_margin_child(TTR("Description:"), help_bit);
 

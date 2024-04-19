@@ -142,6 +142,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 
 	void _profile_action(int p_action);
 	void _profile_selected(int p_what);
+	void _hide_requested();
 
 	String current_profile;
 	void _update_profile_list(const String &p_select_profile = String());
