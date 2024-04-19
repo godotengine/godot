@@ -57,5 +57,15 @@
 				Must be called after [method open].
 			</description>
 		</method>
+		<method name="get_file_unix_permissions">
+			<return type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="case_sensitive" type="bool" default="true" />
+			<description>
+				Returns file UNIX permissions.
+				[b]Note:[/b] This method is implemented on Linux/BSD, and macOS.
+				Must be called after [method open].
+			</description>
+		</method>
 	</methods>
 </class>
