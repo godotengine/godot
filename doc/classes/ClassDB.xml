@@ -91,6 +91,14 @@
 				Returns the value of [param property] of [param object] or its ancestry.
 			</description>
 		</method>
+		<method name="class_get_property_default_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="property" type="StringName" />
+			<description>
+				Returns the default value of [param property] of [param class] or its ancestor classes.
+			</description>
+		</method>
 		<method name="class_get_property_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="class" type="StringName" />
