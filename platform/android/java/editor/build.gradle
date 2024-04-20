@@ -5,16 +5,6 @@ plugins {
     id 'base'
 }
 
-dependencies {
-    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
-    implementation project(":lib")
-
-    implementation "androidx.window:window:1.3.0"
-    implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
-    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
-    implementation "org.bouncycastle:bcprov-jdk15to18:1.77"
-}
-
 ext {
     // Retrieve the build number from the environment variable; default to 0 if none is specified.
     // The build number is added as a suffix to the version code for upload to the Google Play store.
@@ -154,4 +144,37 @@ android {
             doNotStrip '**/*.so'
         }
     }
+
+    flavorDimensions = ["vendor"]
+    productFlavors {
+        google {
+            dimension "vendor"
+            missingDimensionStrategy 'products', 'editor'
+        }
+        meta {
+            dimension "vendor"
+            missingDimensionStrategy 'products', 'editor'
+            ndk {
+                //noinspection ChromeOsAbiSupport
+                abiFilters "arm64-v8a"
+            }
+            applicationIdSuffix ".meta"
+            versionNameSuffix "-meta"
+            minSdkVersion 23
+            targetSdkVersion 32
+        }
+    }
+}
+
+dependencies {
+    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+    implementation project(":lib")
+
+    implementation "androidx.window:window:1.3.0"
+    implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
+    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
+    implementation "org.bouncycastle:bcprov-jdk15to18:1.77"
+
+    // Meta dependencies
+    metaImplementation "org.godotengine:godot-openxr-vendors-meta:3.0.0-stable"
 }

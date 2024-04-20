@@ -30,6 +30,7 @@
 
 package org.godotengine.editor
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.PictureInPictureParams
 import android.content.Intent
@@ -38,12 +39,15 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.annotation.CallSuper
 import org.godotengine.godot.GodotLib
+import org.godotengine.godot.utils.PermissionsUtil
+import org.godotengine.godot.utils.ProcessPhoenix
 
 /**
  * Drives the 'run project' window of the Godot Editor.
  */
-class GodotGame : GodotEditor() {
+open class GodotGame : GodotEditor() {
 
 	companion object {
 		private val TAG = GodotGame::class.java.simpleName
@@ -136,8 +140,53 @@ class GodotGame : GodotEditor() {
 
 	override fun enablePanAndScaleGestures() = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
 
-	override fun checkForProjectPermissionsToEnable() {
-		// Nothing to do.. by the time we get here, the project permissions will have already
-		// been requested by the Editor window.
+	override fun onGodotSetupCompleted() {
+		super.onGodotSetupCompleted()
+		Log.v(TAG, "OnGodotSetupCompleted")
+
+		// Check if we should be running in XR instead (if available) as it's possible we were
+		// launched from the project manager which doesn't have that information.
+		val launchingArgs = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
+		if (launchingArgs != null) {
+			val editorWindowInfo = retrieveEditorWindowInfo(launchingArgs)
+			if (editorWindowInfo != getEditorWindowInfo()) {
+				val relaunchIntent = getNewGodotInstanceIntent(editorWindowInfo, launchingArgs)
+				relaunchIntent.putExtra(EXTRA_NEW_LAUNCH, true)
+					.putExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD, intent.getBundleExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD))
+
+				Log.d(TAG, "Relaunching XR project using ${editorWindowInfo.windowClassName} with parameters ${launchingArgs.contentToString()}")
+				val godot = godot
+				if (godot != null) {
+					godot.destroyAndKillProcess {
+						ProcessPhoenix.triggerRebirth(this, relaunchIntent)
+					}
+				} else {
+					ProcessPhoenix.triggerRebirth(this, relaunchIntent)
+				}
+				return
+			}
+		}
+
+		// Request project runtime permissions if necessary
+		val permissionsToEnable = getProjectPermissionsToEnable()
+		if (permissionsToEnable.isNotEmpty()) {
+			PermissionsUtil.requestPermissions(this, permissionsToEnable)
+		}
+	}
+
+	/**
+	 * Check for project permissions to enable
+	 */
+	@CallSuper
+	protected open fun getProjectPermissionsToEnable(): MutableList<String> {
+		val permissionsToEnable = mutableListOf<String>()
+
+		// Check for RECORD_AUDIO permission
+		val audioInputEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("audio/driver/enable_input"))
+		if (audioInputEnabled) {
+			permissionsToEnable.add(Manifest.permission.RECORD_AUDIO)
+		}
+
+		return permissionsToEnable
 	}
 }
