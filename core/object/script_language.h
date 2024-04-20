@@ -124,6 +124,8 @@ protected:
 	TypedArray<Dictionary> _get_script_signal_list();
 	Dictionary _get_script_constant_map();
 
+	void _set_debugger_break_language();
+
 public:
 	virtual void reload_from_file() override;
 

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_quick_open.h                                                   */
+/*  geometry_instance_3d_gizmo_plugin.cpp                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,62 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_QUICK_OPEN_H
-#define EDITOR_QUICK_OPEN_H
+#include "geometry_instance_3d_gizmo_plugin.h"
 
-#include "core/templates/oa_hash_map.h"
-#include "editor/editor_file_system.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/visual_instance_3d.h"
 
-class EditorQuickOpen : public ConfirmationDialog {
-	GDCLASS(EditorQuickOpen, ConfirmationDialog);
+GeometryInstance3DGizmoPlugin::GeometryInstance3DGizmoPlugin() {
+}
 
-	static Rect2i prev_rect;
-	static bool was_showed;
+bool GeometryInstance3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<GeometryInstance3D>(p_spatial) != nullptr;
+}
 
-	LineEdit *search_box = nullptr;
-	Tree *search_options = nullptr;
-	String base_type;
-	bool allow_multi_select = false;
+String GeometryInstance3DGizmoPlugin::get_gizmo_name() const {
+	return "MeshInstance3DCustomAABB";
+}
 
-	Vector<String> files;
-	OAHashMap<String, Ref<Texture2D>> icons;
+int GeometryInstance3DGizmoPlugin::get_priority() const {
+	return -1;
+}
 
-	struct Entry {
-		String path;
-		float score = 0;
-	};
+void GeometryInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	GeometryInstance3D *geometry = Object::cast_to<GeometryInstance3D>(p_gizmo->get_node_3d());
 
-	struct EntryComparator {
-		_FORCE_INLINE_ bool operator()(const Entry &A, const Entry &B) const {
-			return A.score > B.score;
+	p_gizmo->clear();
+
+	if (p_gizmo->is_selected()) {
+		AABB aabb = geometry->get_custom_aabb();
+
+		Vector<Vector3> lines;
+		for (int i = 0; i < 12; i++) {
+			Vector3 a;
+			Vector3 b;
+			aabb.get_edge(i, a, b);
+
+			lines.push_back(a);
+			lines.push_back(b);
 		}
-	};
 
-	void _update_search();
-	void _build_search_cache(EditorFileSystemDirectory *p_efsd);
-	float _score_search_result(const PackedStringArray &p_search_tokens, const String &p_path);
-
-	void _confirmed();
-	virtual void cancel_pressed() override;
-	void _cleanup();
-
-	void _sbox_input(const Ref<InputEvent> &p_ie);
-	void _text_changed(const String &p_newtext);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	String get_base_type() const;
-
-	String get_selected() const;
-	Vector<String> get_selected_files() const;
-
-	void popup_dialog(const String &p_base, bool p_enable_multi = false, bool p_dontclear = false);
-	EditorQuickOpen();
-};
-
-#endif // EDITOR_QUICK_OPEN_H
+		Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
+		mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+		const Color selection_box_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/aabb");
+		mat->set_albedo(selection_box_color);
+		mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		p_gizmo->add_lines(lines, mat);
+	}
+}

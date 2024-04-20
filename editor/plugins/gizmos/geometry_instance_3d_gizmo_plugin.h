@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_quick_open.h                                                   */
+/*  geometry_instance_3d_gizmo_plugin.h                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,62 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_QUICK_OPEN_H
-#define EDITOR_QUICK_OPEN_H
+#ifndef GEOMETRY_INSTANCE_3D_GIZMO_PLUGIN_H
+#define GEOMETRY_INSTANCE_3D_GIZMO_PLUGIN_H
 
-#include "core/templates/oa_hash_map.h"
-#include "editor/editor_file_system.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
+#include "editor/plugins/node_3d_editor_gizmos.h"
 
-class EditorQuickOpen : public ConfirmationDialog {
-	GDCLASS(EditorQuickOpen, ConfirmationDialog);
-
-	static Rect2i prev_rect;
-	static bool was_showed;
-
-	LineEdit *search_box = nullptr;
-	Tree *search_options = nullptr;
-	String base_type;
-	bool allow_multi_select = false;
-
-	Vector<String> files;
-	OAHashMap<String, Ref<Texture2D>> icons;
-
-	struct Entry {
-		String path;
-		float score = 0;
-	};
-
-	struct EntryComparator {
-		_FORCE_INLINE_ bool operator()(const Entry &A, const Entry &B) const {
-			return A.score > B.score;
-		}
-	};
-
-	void _update_search();
-	void _build_search_cache(EditorFileSystemDirectory *p_efsd);
-	float _score_search_result(const PackedStringArray &p_search_tokens, const String &p_path);
-
-	void _confirmed();
-	virtual void cancel_pressed() override;
-	void _cleanup();
-
-	void _sbox_input(const Ref<InputEvent> &p_ie);
-	void _text_changed(const String &p_newtext);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
+class GeometryInstance3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(GeometryInstance3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	String get_base_type() const;
+	virtual bool has_gizmo(Node3D *p_spatial) override;
+	virtual String get_gizmo_name() const override;
+	virtual int get_priority() const override;
 
-	String get_selected() const;
-	Vector<String> get_selected_files() const;
+	virtual void redraw(EditorNode3DGizmo *p_gizmo) override;
 
-	void popup_dialog(const String &p_base, bool p_enable_multi = false, bool p_dontclear = false);
-	EditorQuickOpen();
+	GeometryInstance3DGizmoPlugin();
 };
 
-#endif // EDITOR_QUICK_OPEN_H
+#endif // GEOMETRY_INSTANCE_3D_GIZMO_PLUGIN_H
