@@ -1463,7 +1463,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 		return String();
 	}
 
-	while (port_name.length() && !is_ascii_char(port_name[0])) {
+	while (port_name.length() && !is_ascii_alphabet_char(port_name[0])) {
 		port_name = port_name.substr(1, port_name.length() - 1);
 	}
 
@@ -1508,7 +1508,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 
 String VisualShader::validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const {
 	String param_name = p_name; //validate name first
-	while (param_name.length() && !is_ascii_char(param_name[0])) {
+	while (param_name.length() && !is_ascii_alphabet_char(param_name[0])) {
 		param_name = param_name.substr(1, param_name.length() - 1);
 	}
 	if (!param_name.is_empty()) {
