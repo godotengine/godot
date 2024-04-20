@@ -233,18 +233,25 @@ void GDScriptWorkspace::reload_all_workspace_scripts() {
 void GDScriptWorkspace::list_script_files(const String &p_root_dir, List<String> &r_files) {
 	Error err;
 	Ref<DirAccess> dir = DirAccess::open(p_root_dir, &err);
-	if (OK == err) {
-		dir->list_dir_begin();
-		String file_name = dir->get_next();
-		while (file_name.length()) {
-			if (dir->current_is_dir() && file_name != "." && file_name != ".." && file_name != "./") {
-				list_script_files(p_root_dir.path_join(file_name), r_files);
-			} else if (file_name.ends_with(".gd")) {
-				String script_file = p_root_dir.path_join(file_name);
-				r_files.push_back(script_file);
-			}
-			file_name = dir->get_next();
+	if (OK != err) {
+		return;
+	}
+
+	// Ignore scripts in directories with a .gdignore file.
+	if (dir->file_exists(".gdignore")) {
+		return;
+	}
+
+	dir->list_dir_begin();
+	String file_name = dir->get_next();
+	while (file_name.length()) {
+		if (dir->current_is_dir() && file_name != "." && file_name != ".." && file_name != "./") {
+			list_script_files(p_root_dir.path_join(file_name), r_files);
+		} else if (file_name.ends_with(".gd")) {
+			String script_file = p_root_dir.path_join(file_name);
+			r_files.push_back(script_file);
 		}
+		file_name = dir->get_next();
 	}
 }
 
