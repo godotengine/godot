@@ -393,9 +393,6 @@
 		<member name="editors/3d_gizmos/gizmo_colors/joint" type="Color" setter="" getter="">
 			The 3D editor gizmo color for [Joint3D]s and [PhysicalBone3D]s.
 		</member>
-		<member name="editors/3d_gizmos/gizmo_colors/shape" type="Color" setter="" getter="">
-			The 3D editor gizmo color for [CollisionShape3D]s, [VehicleWheel3D]s, [RayCast3D]s and [SpringArm3D]s.
-		</member>
 		<member name="editors/animation/autorename_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], automatically updates animation tracks' target paths when renaming or reparenting nodes in the Scene tree dock.
 		</member>
