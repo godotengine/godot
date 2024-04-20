@@ -1715,7 +1715,13 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			if (array.is_typed()) {
 				Variant variant = array.get_typed_script();
 				Ref<Script> script = variant;
+
+				bool valid_script = false;
 				if (script.is_valid()) {
+					valid_script = !script->get_path().is_empty();
+				}
+
+				if (valid_script) {
 					String path = script->get_path();
 					ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), ERR_UNAVAILABLE, "Failed to encode a path to a custom script for an array type.");
 					_encode_string(path, buf, r_len);
