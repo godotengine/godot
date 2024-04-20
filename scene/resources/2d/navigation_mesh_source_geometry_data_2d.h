@@ -82,6 +82,9 @@ public:
 	void set_obstruction_outlines(const TypedArray<Vector<Vector2>> &p_obstruction_outlines);
 	TypedArray<Vector<Vector2>> get_obstruction_outlines() const;
 
+	void append_traversable_outlines(const TypedArray<Vector<Vector2>> &p_traversable_outlines);
+	void append_obstruction_outlines(const TypedArray<Vector<Vector2>> &p_obstruction_outlines);
+
 	void add_traversable_outline(const PackedVector2Array &p_shape_outline);
 	void add_obstruction_outline(const PackedVector2Array &p_shape_outline);
 
