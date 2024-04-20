@@ -993,7 +993,7 @@ String TranslationServer::add_padding(const String &p_message, int p_length) con
 }
 
 const char32_t *TranslationServer::get_accented_version(char32_t p_character) const {
-	if (!is_ascii_char(p_character)) {
+	if (!is_ascii_alphabet_char(p_character)) {
 		return nullptr;
 	}
 

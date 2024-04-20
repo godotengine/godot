@@ -313,7 +313,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 			}
 		}
 
-		if (!in_word && (is_ascii_char(str[j]) || is_underscore(str[j])) && !is_number) {
+		if (!in_word && (is_ascii_alphabet_char(str[j]) || is_underscore(str[j])) && !is_number) {
 			in_word = true;
 		}
 

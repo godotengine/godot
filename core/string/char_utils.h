@@ -92,7 +92,7 @@ static _FORCE_INLINE_ bool is_binary_digit(char32_t c) {
 	return (c == '0' || c == '1');
 }
 
-static _FORCE_INLINE_ bool is_ascii_char(char32_t c) {
+static _FORCE_INLINE_ bool is_ascii_alphabet_char(char32_t c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
