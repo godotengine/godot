@@ -544,6 +544,9 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 			}
 		}
 	}
+
+	editor_dock_manager->update_tab_styles();
+	editor_dock_manager->set_tab_icon_max_width(theme->get_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 }
 
 void EditorNode::update_preview_themes(int p_mode) {
@@ -787,6 +790,10 @@ void EditorNode::_notification(int p_what) {
 				_update_theme();
 				_build_icon_type_cache();
 				recent_scenes->reset_size();
+			}
+
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/dock_tab_style")) {
+				editor_dock_manager->update_tab_styles();
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/scene_tabs")) {
@@ -7045,22 +7052,22 @@ EditorNode::EditorNode() {
 	history_dock = memnew(HistoryDock);
 
 	// Scene: Top left.
-	editor_dock_manager->add_dock(SceneTreeDock::get_singleton(), TTR("Scene"), EditorDockManager::DOCK_SLOT_LEFT_UR);
+	editor_dock_manager->add_dock(SceneTreeDock::get_singleton(), TTR("Scene"), EditorDockManager::DOCK_SLOT_LEFT_UR, nullptr, "PackedScene");
 
 	// Import: Top left, behind Scene.
-	editor_dock_manager->add_dock(ImportDock::get_singleton(), TTR("Import"), EditorDockManager::DOCK_SLOT_LEFT_UR);
+	editor_dock_manager->add_dock(ImportDock::get_singleton(), TTR("Import"), EditorDockManager::DOCK_SLOT_LEFT_UR, nullptr, "FileAccess");
 
 	// FileSystem: Bottom left.
-	editor_dock_manager->add_dock(FileSystemDock::get_singleton(), TTR("FileSystem"), EditorDockManager::DOCK_SLOT_LEFT_BR, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_filesystem_bottom_panel", TTR("Toggle FileSystem Bottom Panel"), KeyModifierMask::ALT | Key::F));
+	editor_dock_manager->add_dock(FileSystemDock::get_singleton(), TTR("FileSystem"), EditorDockManager::DOCK_SLOT_LEFT_BR, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_filesystem_bottom_panel", TTR("Toggle FileSystem Bottom Panel"), KeyModifierMask::ALT | Key::F), "Folder");
 
 	// Inspector: Full height right.
-	editor_dock_manager->add_dock(InspectorDock::get_singleton(), TTR("Inspector"), EditorDockManager::DOCK_SLOT_RIGHT_UL);
+	editor_dock_manager->add_dock(InspectorDock::get_singleton(), TTR("Inspector"), EditorDockManager::DOCK_SLOT_RIGHT_UL, nullptr, "AnimationTrackList");
 
 	// Node: Full height right, behind Inspector.
-	editor_dock_manager->add_dock(NodeDock::get_singleton(), TTR("Node"), EditorDockManager::DOCK_SLOT_RIGHT_UL);
+	editor_dock_manager->add_dock(NodeDock::get_singleton(), TTR("Node"), EditorDockManager::DOCK_SLOT_RIGHT_UL, nullptr, "Object");
 
 	// History: Full height right, behind Node.
-	editor_dock_manager->add_dock(history_dock, TTR("History"), EditorDockManager::DOCK_SLOT_RIGHT_UL);
+	editor_dock_manager->add_dock(history_dock, TTR("History"), EditorDockManager::DOCK_SLOT_RIGHT_UL, nullptr, "History");
 
 	// Add some offsets to left_r and main hsplits to make LEFT_R and RIGHT_L docks wider than minsize.
 	left_r_hsplit->set_split_offset(270 * EDSCALE);
