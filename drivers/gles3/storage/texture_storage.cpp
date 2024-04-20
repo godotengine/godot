@@ -37,6 +37,8 @@
 #include "config.h"
 #include "utilities.h"
 
+#include <GLES2/gl2ext.h>
+
 #ifdef ANDROID_ENABLED
 #define glFramebufferTextureMultiviewOVR GLES3::Config::get_singleton()->eglFramebufferTextureMultiviewOVR
 #endif
@@ -741,6 +743,7 @@ void TextureStorage::texture_free(RID p_texture) {
 
 void TextureStorage::texture_set_external(RID p_texture, int p_width, int p_height) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
+	OS::get_singleton()->print("MCT_Godot : TextureStorage::texture_set_external : p_texture = %d", p_texture.get_id());
 	ERR_FAIL_COND(!texture);
 
 	texture->width = p_width;
@@ -753,7 +756,7 @@ void TextureStorage::texture_set_external(RID p_texture, int p_width, int p_heig
 	// texture->flags = 0;
 	texture->type = Texture::TYPE_2D;
 
-	texture->target = _GL_TEXTURE_EXTERNAL_OES;
+	texture->target = GL_TEXTURE_EXTERNAL_OES;
 	// texture->images.resize(0);
 
 	glActiveTexture(GL_TEXTURE0);
@@ -762,6 +765,7 @@ void TextureStorage::texture_set_external(RID p_texture, int p_width, int p_heig
 	glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	texture->active = true;
+	// texture_owner.initialize_rid(p_texture, *texture);
 }
 
 void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) {
@@ -1428,12 +1432,14 @@ uint32_t TextureStorage::texture_get_depth(RID p_texture) const {
 }
 
 void TextureStorage::texture_bind(RID p_texture, uint32_t p_texture_no) {
+	OS::get_singleton()->print("MCT_Godot : 1 texture_bind/n");
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
 	ERR_FAIL_NULL(texture);
 
 	glActiveTexture(GL_TEXTURE0 + p_texture_no);
 	glBindTexture(texture->target, texture->tex_id);
+	OS::get_singleton()->print("MCT_Godot : 2 texture_bind/n");
 }
 
 /* TEXTURE ATLAS API */

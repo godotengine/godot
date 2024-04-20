@@ -1,4 +1,6 @@
 /* clang-format off */
+#version 300 es
+
 #[modes]
 
 mode_default = #define MODE_SIMPLE_COPY
@@ -10,6 +12,8 @@ mode_simple_color = #define MODE_SIMPLE_COLOR \n#define USE_COPY_SECTION
 mode_cube_to_octahedral = #define CUBE_TO_OCTAHEDRAL \n#define USE_COPY_SECTION
 
 #[specializations]
+
+USE_EXTERNAL_SAMPLER = false
 
 #[vertex]
 
@@ -41,11 +45,6 @@ void main() {
 /* clang-format off */
 #[fragment]
 
-#ifdef USE_EXTERNAL_SAMPLER
-// Leave the ifdef so we have this define, for now the extension is loaded through custom defines
-// #extension GL_OES_EGL_image_external_essl3 : require
-#endif
-
 in vec2 uv_interp;
 /* clang-format on */
 #ifdef MODE_SIMPLE_COLOR
@@ -66,11 +65,12 @@ vec3 oct_to_vec3(vec2 e) {
 	v.xy += t * -sign(v.xy);
 	return normalize(v);
 }
-#elif defined(USE_EXTERNAL_SAMPLER)
-uniform samplerExternalOES source;
+#else 
+#ifdef USE_EXTERNAL_SAMPLER
+uniform samplerExternalOES source; // texunit:0
 #else
 uniform sampler2D source; // texunit:0
-
+#endif
 #endif
 
 layout(location = 0) out vec4 frag_color;
@@ -118,4 +118,6 @@ void main() {
 	frag_color = texture(source_cube, dir);
 
 #endif
+
+	// frag_color = vec4(1.0, 1.0, 0.1, 1.0);
 }

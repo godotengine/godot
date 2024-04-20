@@ -33,6 +33,8 @@
 #include "copy_effects.h"
 #include "../storage/texture_storage.h"
 
+#include <GLES3/gl3ext.h>
+
 using namespace GLES3;
 
 CopyEffects *CopyEffects::singleton = nullptr;
@@ -153,6 +155,26 @@ void CopyEffects::copy_cube_to_rect(const Rect2 &p_rect) {
 	}
 
 	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION);
+	draw_screen_quad();
+}
+
+void CopyEffects::copy_external(RID p_source_texture, RID p_dest_framebuffer) {
+
+	// Check if GL_OES_EGL_image_external_essl3 extension is supported
+    const char *extensions = (const char *)glGetString(GL_EXTENSIONS);
+    if (!extensions || !strstr(extensions, "GL_OES_EGL_image_external_essl3")) {
+		OS::get_singleton()->print("MCT_Godot : GL_OES_EGL_image_external_essl3 extension not supported!");
+        // Handle the error
+        return;
+    }
+
+	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_DEFAULT, CopyShaderGLES3::USE_EXTERNAL_SAMPLER);
+	if (!success) {
+		OS::get_singleton()->print("MCT_Godot : Could not bind version_bind_shader USE_EXTERNAL_SAMPLER");
+		return;
+	}
+
+	// OS::get_singleton()->print("MCT_Godot : Should draw copy!"); -> OK
 	draw_screen_quad();
 }
 

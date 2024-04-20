@@ -41,6 +41,10 @@
 #include "core/templates/sort_array.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_globals.h"
+#include "servers/camera/camera_feed.h"
+#include "servers/camera_server.h"
+
+#include <GLES2/gl2ext.h>
 
 #ifdef GLES3_ENABLED
 
@@ -2306,7 +2310,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	bool draw_sky = false;
 	bool draw_sky_fog_only = false;
 	bool keep_color = false;
+	bool draw_image = false;
 	float sky_energy_multiplier = 1.0;
+	int camera_feed_id = -1;
 
 	if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
@@ -2349,8 +2355,10 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				keep_color = true;
 			} break;
 			case RS::ENV_BG_CAMERA_FEED: {
+				camera_feed_id = environment_get_camera_feed_id(render_data.environment);
+				draw_image = true;
 				// RID camera_RGBA = feed->get_texture(CameraServer::FEED_RGBA_IMAGE);
-				// VS::get_singleton()->texture_bind(camera_RGBA, 0);
+				// RS::get_singleton()->texture_bind(camera_RGBA, 0);
 				// // TODO: we need to find a better way of doing this
 				// storage->shaders.copy.add_custom_define("#extension GL_OES_EGL_image_external : require\n");
 				// storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_EXTERNAL_SAMPLER, true);
@@ -2451,10 +2459,11 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
-	if (!keep_color) {
+	if (!keep_color && !draw_image) {
 		clear_color.a = render_data.transparent_bg ? 0.0f : 1.0f;
 		glClearBufferfv(GL_COLOR, 0, clear_color.components);
 	}
+
 	RENDER_TIMESTAMP("Render Opaque Pass");
 	uint64_t spec_constant_base_flags = 0;
 
@@ -2487,6 +2496,24 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
 		_draw_sky(render_data.environment, render_data.cam_projection, render_data.cam_transform, sky_energy_multiplier, p_camera_data->view_count > 1, flip_y);
+	}
+
+	if (draw_image && camera_feed_id > -1) {
+		RENDER_TIMESTAMP("Render Camera feed");
+
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+
+		GLES3::CopyEffects *copy_effects = GLES3::CopyEffects::get_singleton();
+		Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+		// OS::get_singleton()->print("MCT_Godot : 1 RasterizerSceneGLES3/n");
+
+		RID dest_framebuffer = rt->self;
+		RID camera_YCBCR = feed->get_texture(CameraServer::FEED_YCBCR_IMAGE);
+		GLES3::TextureStorage::get_singleton()->texture_bind(camera_YCBCR, 0);
+		copy_effects->copy_external(camera_YCBCR, dest_framebuffer);
 	}
 
 	if (scene_state.used_screen_texture || scene_state.used_depth_texture) {

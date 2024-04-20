@@ -141,6 +141,7 @@ RID CameraFeed::get_texture(CameraServer::FeedImage p_which) {
 
 CameraFeed::CameraFeed() {
 	// initialize our feed
+	OS::get_singleton()->print("MCT_Godot : CameraFeed CameraFeed()/n");
 	id = CameraServer::get_singleton()->get_free_id();
 	base_width = 0;
 	base_height = 0;
@@ -154,6 +155,7 @@ CameraFeed::CameraFeed() {
 }
 
 CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
+	OS::get_singleton()->print("MCT_Godot : CameraFeed CameraFeed(String p_name, FeedPosition p_position)/n");
 	// initialize our feed
 	id = CameraServer::get_singleton()->get_free_id();
 	base_width = 0;
@@ -249,12 +251,17 @@ void CameraFeed::set_YCbCr_imgs(const Ref<Image> &p_y_img, const Ref<Image> &p_c
 }
 
 void CameraFeed::set_external(int p_width, int p_height) {
+	OS::get_singleton()->print("MCT_Godot : CameraFeed::set_external");
 	if ((base_width != p_width) || (base_height != p_height)) {
 		// We're assuming here that our camera image doesn't change around formats etc, allocate the whole lot...
 		base_width = p_width;
 		base_height = p_height;
 
-		RenderingServer::get_singleton()->texture_set_external(texture[CameraServer::FEED_RGBA_IMAGE], p_width, p_height);
+		// Ref<Image> image = memnew(Image(p_width, p_height, false, Image::FORMAT_RGBA8));
+		// RID new_texture = RenderingServer::get_singleton()->texture_2d_create(image);
+		// texture[CameraServer::FEED_YCBCR_IMAGE] = new_texture;
+
+		RenderingServer::get_singleton()->texture_set_external(texture[CameraServer::FEED_YCBCR_IMAGE], p_width, p_height);
 	}
 
 	datatype = CameraFeed::FEED_EXTERNAL;

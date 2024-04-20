@@ -51,9 +51,9 @@ void initialize_camera_module(ModuleInitializationLevel p_level) {
 #if defined(MACOS_ENABLED)
 	CameraServer::make_default<CameraMacOS>();
 #endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
+// #if defined(ANDROID_ENABLED)
+// 	CameraServer::make_default<CameraAndroid>();
+// #endif
 }
 
 void uninitialize_camera_module(ModuleInitializationLevel p_level) {
