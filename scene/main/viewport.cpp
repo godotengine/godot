@@ -1249,6 +1249,27 @@ void Viewport::_propagate_drag_notification(Node *p_node, int p_what) {
 	}
 }
 
+void Viewport::force_can_drop_data_check() {
+	if (!gui.dragging) {
+		return;
+	}
+
+	DisplayServer::CursorShape ds_cursor_shape;
+	gui.drag_mouse_over = get_section_root_viewport()->gui.target_control;
+	if (gui.drag_mouse_over) {
+		if (!_gui_drop(gui.drag_mouse_over, gui.drag_mouse_over->get_local_mouse_position(), true)) {
+			gui.drag_mouse_over = nullptr;
+			ds_cursor_shape = DisplayServer::CURSOR_FORBIDDEN;
+		} else {
+			ds_cursor_shape = DisplayServer::CURSOR_CAN_DROP;
+		}
+
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+			DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
+		}
+	}
+}
+
 Ref<World2D> Viewport::get_world_2d() const {
 	ERR_READ_THREAD_GUARD_V(Ref<World2D>());
 	return world_2d;
@@ -4545,6 +4566,7 @@ void Viewport::_propagate_world_2d_changed(Node *p_node) {
 
 void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d"), &Viewport::set_world_2d);
+	ClassDB::bind_method(D_METHOD("force_can_drop_data_check"), &Viewport::force_can_drop_data_check);
 	ClassDB::bind_method(D_METHOD("get_world_2d"), &Viewport::get_world_2d);
 	ClassDB::bind_method(D_METHOD("find_world_2d"), &Viewport::find_world_2d);
 

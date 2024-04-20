@@ -625,6 +625,7 @@ public:
 	bool gui_is_dragging() const;
 	bool gui_is_drag_successful() const;
 	void gui_cancel_drag();
+	void force_can_drop_data_check();
 
 	Control *gui_find_control(const Point2 &p_global);
 
