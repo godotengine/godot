@@ -516,25 +516,27 @@ void Node::set_pause_mode(PauseMode p_mode) {
 	}
 
 	bool prev_inherits = data.pause_mode == PAUSE_MODE_INHERIT;
+	bool prev_can_process = is_inside_tree() && can_process();
 	data.pause_mode = p_mode;
 	if (!is_inside_tree()) {
 		return; //pointless
 	}
-	if ((data.pause_mode == PAUSE_MODE_INHERIT) == prev_inherits) {
-		return; ///nothing changed
-	}
+	if ((data.pause_mode == PAUSE_MODE_INHERIT) != prev_inherits) {
+		Node *owner = nullptr;
 
-	Node *owner = nullptr;
-
-	if (data.pause_mode == PAUSE_MODE_INHERIT) {
-		if (data.parent) {
-			owner = data.parent->data.pause_owner;
+		if (data.pause_mode == PAUSE_MODE_INHERIT) {
+			if (data.parent) {
+				owner = data.parent->data.pause_owner;
+			}
+		} else {
+			owner = this;
 		}
-	} else {
-		owner = this;
-	}
 
-	_propagate_pause_owner(owner);
+		_propagate_pause_owner(owner);
+	}
+	if (prev_can_process != can_process()) {
+		_propagate_pause_change_notification(can_process() ? NOTIFICATION_UNPAUSED : NOTIFICATION_PAUSED);
+	}
 }
 
 Node::PauseMode Node::get_pause_mode() const {
@@ -548,6 +550,16 @@ void Node::_propagate_pause_owner(Node *p_owner) {
 	data.pause_owner = p_owner;
 	for (int i = 0; i < data.children.size(); i++) {
 		data.children[i]->_propagate_pause_owner(p_owner);
+	}
+}
+
+void Node::_propagate_pause_change_notification(int p_notification) {
+	notification(p_notification);
+
+	for (int i = 0; i < data.children.size(); i++) {
+		if (data.children[i]->data.pause_mode == PAUSE_MODE_INHERIT) {
+			data.children[i]->_propagate_pause_change_notification(p_notification);
+		}
 	}
 }
 
