@@ -40,8 +40,8 @@
 			<param index="1" name="case_sensitive" type="bool" default="true" />
 			<description>
 				Returns file UNIX permissions.
-				[b]Warning:[/b] Using this method on zip archives created by an Operating System that does not use UNIX permissions, such as Windows and Android will not work as intended.
 				Must be called after [method open].
+				[b]Warning:[/b] Using this method on zip archives created by an operating system that does not use UNIX permissions, such as Windows and Android might not work as expected.
 			</description>
 		</method>
 		<method name="get_files">
