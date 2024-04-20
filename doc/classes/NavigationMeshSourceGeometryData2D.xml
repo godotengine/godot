@@ -31,6 +31,20 @@
 				Adds the outline points of a shape as traversable area.
 			</description>
 		</method>
+		<method name="append_obstruction_outlines">
+			<return type="void" />
+			<param index="0" name="obstruction_outlines" type="PackedVector2Array[]" />
+			<description>
+				Appends another array of [param obstruction_outlines] at the end of the existing obstruction outlines array.
+			</description>
+		</method>
+		<method name="append_traversable_outlines">
+			<return type="void" />
+			<param index="0" name="traversable_outlines" type="PackedVector2Array[]" />
+			<description>
+				Appends another array of [param traversable_outlines] at the end of the existing traversable outlines array.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
