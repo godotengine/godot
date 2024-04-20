@@ -97,6 +97,24 @@ TypedArray<Vector<Vector2>> NavigationMeshSourceGeometryData2D::get_obstruction_
 	return typed_array_obstruction_outlines;
 }
 
+void NavigationMeshSourceGeometryData2D::append_traversable_outlines(const TypedArray<Vector<Vector2>> &p_traversable_outlines) {
+	RWLockWrite write_lock(geometry_rwlock);
+	int traversable_outlines_size = traversable_outlines.size();
+	traversable_outlines.resize(traversable_outlines_size + p_traversable_outlines.size());
+	for (int i = traversable_outlines_size; i < p_traversable_outlines.size(); i++) {
+		traversable_outlines.write[i] = p_traversable_outlines[i];
+	}
+}
+
+void NavigationMeshSourceGeometryData2D::append_obstruction_outlines(const TypedArray<Vector<Vector2>> &p_obstruction_outlines) {
+	RWLockWrite write_lock(geometry_rwlock);
+	int obstruction_outlines_size = obstruction_outlines.size();
+	obstruction_outlines.resize(obstruction_outlines_size + p_obstruction_outlines.size());
+	for (int i = obstruction_outlines_size; i < p_obstruction_outlines.size(); i++) {
+		obstruction_outlines.write[i] = p_obstruction_outlines[i];
+	}
+}
+
 void NavigationMeshSourceGeometryData2D::add_traversable_outline(const PackedVector2Array &p_shape_outline) {
 	if (p_shape_outline.size() > 1) {
 		Vector<Vector2> traversable_outline;
@@ -239,6 +257,9 @@ void NavigationMeshSourceGeometryData2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_obstruction_outlines", "obstruction_outlines"), &NavigationMeshSourceGeometryData2D::set_obstruction_outlines);
 	ClassDB::bind_method(D_METHOD("get_obstruction_outlines"), &NavigationMeshSourceGeometryData2D::get_obstruction_outlines);
+
+	ClassDB::bind_method(D_METHOD("append_traversable_outlines", "traversable_outlines"), &NavigationMeshSourceGeometryData2D::append_traversable_outlines);
+	ClassDB::bind_method(D_METHOD("append_obstruction_outlines", "obstruction_outlines"), &NavigationMeshSourceGeometryData2D::append_obstruction_outlines);
 
 	ClassDB::bind_method(D_METHOD("add_traversable_outline", "shape_outline"), &NavigationMeshSourceGeometryData2D::add_traversable_outline);
 	ClassDB::bind_method(D_METHOD("add_obstruction_outline", "shape_outline"), &NavigationMeshSourceGeometryData2D::add_obstruction_outline);

@@ -80,6 +80,8 @@ public:
 	void set_indices(const Vector<int> &p_indices);
 	const Vector<int> &get_indices() const { return indices; }
 
+	void append_arrays(const Vector<float> &p_vertices, const Vector<int> &p_indices);
+
 	bool has_data() { return vertices.size() && indices.size(); };
 	void clear();
 	void clear_projected_obstructions();

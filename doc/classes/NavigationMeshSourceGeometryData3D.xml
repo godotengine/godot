@@ -43,6 +43,14 @@
 				Adds a projected obstruction shape to the source geometry. The [param vertices] are considered projected on a xz-axes plane, placed at the global y-axis [param elevation] and extruded by [param height]. If [param carve] is [code]true[/code] the carved shape will not be affected by additional offsets (e.g. agent radius) of the navigation mesh baking process.
 			</description>
 		</method>
+		<method name="append_arrays">
+			<return type="void" />
+			<param index="0" name="vertices" type="PackedFloat32Array" />
+			<param index="1" name="indices" type="PackedInt32Array" />
+			<description>
+				Appends arrays of [param vertices] and [param indices] at the end of the existing arrays. Adds the existing index as an offset to the appended indices.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>

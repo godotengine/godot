@@ -35,7 +35,22 @@ void NavigationMeshSourceGeometryData3D::set_vertices(const Vector<float> &p_ver
 }
 
 void NavigationMeshSourceGeometryData3D::set_indices(const Vector<int> &p_indices) {
+	ERR_FAIL_COND(vertices.size() < p_indices.size());
 	indices = p_indices;
+}
+
+void NavigationMeshSourceGeometryData3D::append_arrays(const Vector<float> &p_vertices, const Vector<int> &p_indices) {
+	RWLockWrite write_lock(geometry_rwlock);
+
+	const int64_t number_of_vertices_before_merge = vertices.size();
+	const int64_t number_of_indices_before_merge = indices.size();
+
+	vertices.append_array(p_vertices);
+	indices.append_array(p_indices);
+
+	for (int64_t i = number_of_indices_before_merge; i < indices.size(); i++) {
+		indices.set(i, indices[i] + number_of_vertices_before_merge / 3);
+	}
 }
 
 void NavigationMeshSourceGeometryData3D::clear() {
@@ -174,14 +189,7 @@ void NavigationMeshSourceGeometryData3D::add_faces(const PackedVector3Array &p_f
 void NavigationMeshSourceGeometryData3D::merge(const Ref<NavigationMeshSourceGeometryData3D> &p_other_geometry) {
 	ERR_FAIL_NULL(p_other_geometry);
 
-	// No need to worry about `root_node_transform` here as the vertices are already xformed.
-	const int64_t number_of_vertices_before_merge = vertices.size();
-	const int64_t number_of_indices_before_merge = indices.size();
-	vertices.append_array(p_other_geometry->vertices);
-	indices.append_array(p_other_geometry->indices);
-	for (int64_t i = number_of_indices_before_merge; i < indices.size(); i++) {
-		indices.set(i, indices[i] + number_of_vertices_before_merge / 3);
-	}
+	append_arrays(p_other_geometry->vertices, p_other_geometry->indices);
 
 	if (p_other_geometry->_projected_obstructions.size() > 0) {
 		RWLockWrite write_lock(geometry_rwlock);
@@ -305,6 +313,8 @@ void NavigationMeshSourceGeometryData3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_indices", "indices"), &NavigationMeshSourceGeometryData3D::set_indices);
 	ClassDB::bind_method(D_METHOD("get_indices"), &NavigationMeshSourceGeometryData3D::get_indices);
+
+	ClassDB::bind_method(D_METHOD("append_arrays", "vertices", "indices"), &NavigationMeshSourceGeometryData3D::append_arrays);
 
 	ClassDB::bind_method(D_METHOD("clear"), &NavigationMeshSourceGeometryData3D::clear);
 	ClassDB::bind_method(D_METHOD("has_data"), &NavigationMeshSourceGeometryData3D::has_data);
