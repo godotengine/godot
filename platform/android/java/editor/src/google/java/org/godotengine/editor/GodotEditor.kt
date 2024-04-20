@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotRenderView.java                                                  */
+/*  GodotEditor.kt                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,47 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package org.godotengine.editor
 
-import org.godotengine.godot.input.GodotInputHandler;
-import org.godotengine.godot.utils.DeviceUtils;
-
-import android.view.SurfaceView;
-
-public interface GodotRenderView {
-	SurfaceView getView();
-
-	/**
-	 * Starts the thread that will drive Godot's rendering.
-	 */
-	void startRenderer();
-
-	/**
-	 * Queues a runnable to be run on the rendering thread.
-	 */
-	void queueOnRenderThread(Runnable event);
-
-	void onActivityPaused();
-
-	void onActivityStopped();
-
-	void onActivityResumed();
-
-	void onActivityStarted();
-
-	void onActivityDestroyed();
-
-	GodotInputHandler getInputHandler();
-
-	void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY);
-
-	void setPointerIcon(int pointerType);
-
-	/**
-	 * @return true if pointer capture is supported.
-	 */
-	default boolean canCapturePointer() {
-		// Pointer capture is not supported on Horizon OS
-		return !DeviceUtils.isHorizonOSDevice() && getInputHandler().canCapturePointer();
-	}
+/**
+ * Primary window of the Godot Editor.
+ *
+ * This is the implementation of the editor used when running on regular Android devices.
+ */
+open class GodotEditor : BaseGodotEditor() {
 }

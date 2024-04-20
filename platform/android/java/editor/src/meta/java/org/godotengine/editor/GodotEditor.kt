@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotRenderView.java                                                  */
+/*  GodotEditor.kt                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,47 +28,67 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package org.godotengine.editor
 
-import org.godotengine.godot.input.GodotInputHandler;
-import org.godotengine.godot.utils.DeviceUtils;
+import org.godotengine.godot.GodotLib
+import org.godotengine.godot.utils.isNativeXRDevice
 
-import android.view.SurfaceView;
+/**
+ * Primary window of the Godot Editor.
+ *
+ * This is the implementation of the editor used when running on Meta devices.
+ */
+open class GodotEditor : BaseGodotEditor() {
 
-public interface GodotRenderView {
-	SurfaceView getView();
+	companion object {
+		private val TAG = GodotEditor::class.java.simpleName
 
-	/**
-	 * Starts the thread that will drive Godot's rendering.
-	 */
-	void startRenderer();
+		internal val XR_RUN_GAME_INFO = EditorWindowInfo(GodotXRGame::class.java, 1667, ":GodotXRGame")
 
-	/**
-	 * Queues a runnable to be run on the rendering thread.
-	 */
-	void queueOnRenderThread(Runnable event);
+		internal const val USE_ANCHOR_API_PERMISSION = "com.oculus.permission.USE_ANCHOR_API"
+		internal const val USE_SCENE_PERMISSION = "com.oculus.permission.USE_SCENE"
+	}
 
-	void onActivityPaused();
+	override fun getExcludedPermissions(): MutableSet<String> {
+		val excludedPermissions = super.getExcludedPermissions()
+		// The USE_ANCHOR_API and USE_SCENE permissions are requested when the "xr/openxr/enabled"
+		// project setting is enabled.
+		excludedPermissions.add(USE_ANCHOR_API_PERMISSION)
+		excludedPermissions.add(USE_SCENE_PERMISSION)
+		return excludedPermissions
+	}
 
-	void onActivityStopped();
+	override fun retrieveEditorWindowInfo(args: Array<String>): EditorWindowInfo {
+		var hasEditor = false
+		var xrModeOn = false
 
-	void onActivityResumed();
+		var i = 0
+		while (i < args.size) {
+			when (args[i++]) {
+				EDITOR_ARG, EDITOR_ARG_SHORT, EDITOR_PROJECT_MANAGER_ARG, EDITOR_PROJECT_MANAGER_ARG_SHORT -> hasEditor = true
+				XR_MODE_ARG -> {
+					val argValue = args[i++]
+					xrModeOn = xrModeOn || ("on" == argValue)
+				}
+			}
+		}
 
-	void onActivityStarted();
+		return if (hasEditor) {
+			EDITOR_MAIN_INFO
+		} else {
+			val openxrEnabled = GodotLib.getGlobal("xr/openxr/enabled").toBoolean()
+			if (openxrEnabled && isNativeXRDevice()) {
+				XR_RUN_GAME_INFO
+			} else {
+				RUN_GAME_INFO
+			}
+		}
+	}
 
-	void onActivityDestroyed();
-
-	GodotInputHandler getInputHandler();
-
-	void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY);
-
-	void setPointerIcon(int pointerType);
-
-	/**
-	 * @return true if pointer capture is supported.
-	 */
-	default boolean canCapturePointer() {
-		// Pointer capture is not supported on Horizon OS
-		return !DeviceUtils.isHorizonOSDevice() && getInputHandler().canCapturePointer();
+	override fun getEditorWindowInfoForInstanceId(instanceId: Int): EditorWindowInfo? {
+		return when (instanceId) {
+			XR_RUN_GAME_INFO.windowId -> XR_RUN_GAME_INFO
+			else -> super.getEditorWindowInfoForInstanceId(instanceId)
+		}
 	}
 }

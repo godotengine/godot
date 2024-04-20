@@ -42,9 +42,9 @@ import android.util.Log
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Used by the [GodotEditor] classes to dispatch messages across processes.
+ * Used by the [BaseGodotEditor] classes to dispatch messages across processes.
  */
-internal class EditorMessageDispatcher(private val editor: GodotEditor) {
+internal class EditorMessageDispatcher(private val editor: BaseGodotEditor) {
 
 	companion object {
 		private val TAG = EditorMessageDispatcher::class.java.simpleName
@@ -173,7 +173,11 @@ internal class EditorMessageDispatcher(private val editor: GodotEditor) {
 		// to the sender.
 		val senderId = messengerBundle.getInt(KEY_EDITOR_ID)
 		val senderMessenger: Messenger? = messengerBundle.getParcelable(KEY_EDITOR_MESSENGER)
-		registerMessenger(senderId, senderMessenger)
+		registerMessenger(senderId, senderMessenger) {
+			// Terminate current instance when parent is no longer available.
+			Log.d(TAG, "Terminating current editor instance because parent is no longer available")
+			editor.finish()
+		}
 
 		// Register ourselves to the sender so that it can communicate with us.
 		registerSelfTo(pm, senderMessenger, editor.getEditorWindowInfo().windowId)
