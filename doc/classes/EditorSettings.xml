@@ -635,6 +635,9 @@
 			If set to [b]Auto[/b], the editor scale is automatically determined based on the screen resolution and reported display DPI. This heuristic is not always ideal, which means you can get better results by setting the editor scale manually.
 			If set to [b]Custom[/b], the scaling value in [member interface/editor/custom_display_scale] will be used.
 		</member>
+		<member name="interface/editor/dock_tab_style" type="int" setter="" getter="">
+			Tab style of editor docks.
+		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface.
 			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]

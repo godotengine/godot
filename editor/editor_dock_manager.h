@@ -87,6 +87,8 @@ private:
 		WindowWrapper *dock_window = nullptr;
 		int dock_slot_index = DOCK_SLOT_NONE;
 		Ref<Shortcut> shortcut;
+		Ref<Texture2D> icon; // Only used when `icon_name` is empty.
+		StringName icon_name;
 	};
 
 	static EditorDockManager *singleton;
@@ -126,8 +128,13 @@ private:
 	void _move_dock_tab_index(Control *p_dock, int p_tab_index, bool p_set_current);
 	void _move_dock(Control *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
 
+	void _update_tab_style(Control *p_dock);
+
 public:
 	static EditorDockManager *get_singleton() { return singleton; }
+
+	void update_tab_styles();
+	void set_tab_icon_max_width(int p_max_width);
 
 	void add_vsplit(DockSplitContainer *p_split);
 	void add_hsplit(DockSplitContainer *p_split);
@@ -150,8 +157,10 @@ public:
 	void set_docks_visible(bool p_show);
 	bool are_docks_visible() const;
 
-	void add_dock(Control *p_dock, const String &p_title = "", DockSlot p_slot = DOCK_SLOT_NONE, const Ref<Shortcut> &p_shortcut = nullptr);
+	void add_dock(Control *p_dock, const String &p_title = "", DockSlot p_slot = DOCK_SLOT_NONE, const Ref<Shortcut> &p_shortcut = nullptr, const StringName &p_icon_name = StringName());
 	void remove_dock(Control *p_dock);
+
+	void set_dock_tab_icon(Control *p_dock, const Ref<Texture2D> &p_icon);
 
 	EditorDockManager();
 };
