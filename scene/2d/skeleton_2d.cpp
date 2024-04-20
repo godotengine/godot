@@ -30,9 +30,20 @@
 
 #include "skeleton_2d.h"
 
+void Bone2D::_order_changed_in_parent() {
+	if (skeleton) {
+		skeleton->_make_bone_setup_dirty();
+	}
+}
+
 void Bone2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		Node *parent = get_parent();
+
+		if (parent) {
+			parent->connect("child_order_changed", this, "_order_changed_in_parent");
+		}
+
 		parent_bone = Object::cast_to<Bone2D>(parent);
 		skeleton = nullptr;
 		while (parent) {
@@ -59,13 +70,13 @@ void Bone2D::_notification(int p_what) {
 			skeleton->_make_transform_dirty();
 		}
 	}
-	if (p_what == NOTIFICATION_MOVED_IN_PARENT) {
-		if (skeleton) {
-			skeleton->_make_bone_setup_dirty();
-		}
-	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
+		Node *parent = get_parent();
+		if (parent) {
+			parent->disconnect("child_order_changed", this, "_order_changed_in_parent");
+		}
+
 		if (skeleton) {
 			for (int i = 0; i < skeleton->bones.size(); i++) {
 				if (skeleton->bones[i].bone == this) {
@@ -88,6 +99,8 @@ void Bone2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_default_length", "default_length"), &Bone2D::set_default_length);
 	ClassDB::bind_method(D_METHOD("get_default_length"), &Bone2D::get_default_length);
+
+	ClassDB::bind_method(D_METHOD("_order_changed_in_parent"), &Bone2D::_order_changed_in_parent);
 
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "rest"), "set_rest", "get_rest");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "default_length", PROPERTY_HINT_RANGE, "1,1024,1"), "set_default_length", "get_default_length");

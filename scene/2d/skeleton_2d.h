@@ -53,6 +53,7 @@ class Bone2D : public Node2D {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _order_changed_in_parent();
 
 public:
 	void set_rest(const Transform2D &p_rest);
