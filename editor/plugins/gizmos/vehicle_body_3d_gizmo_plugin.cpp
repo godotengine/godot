@@ -35,7 +35,7 @@
 #include "scene/3d/physics/vehicle_body_3d.h"
 
 VehicleWheel3DGizmoPlugin::VehicleWheel3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	Color gizmo_color = SceneTree::get_singleton()->get_debug_collisions_color();
 	create_material("shape_material", gizmo_color);
 }
 

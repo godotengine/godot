@@ -144,7 +144,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				}
 #endif
 
-				const Color stroke_color = Color(0.9, 0.2, 0.0);
+				const Color stroke_color = get_tree()->get_debug_collisions_color();
 				draw_polyline(polygon, stroke_color);
 				// Draw the last segment.
 				draw_line(polygon[polygon.size() - 1], polygon[0], stroke_color);

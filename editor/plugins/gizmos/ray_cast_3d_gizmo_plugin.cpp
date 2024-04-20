@@ -35,7 +35,7 @@
 #include "scene/3d/physics/ray_cast_3d.h"
 
 RayCast3DGizmoPlugin::RayCast3DGizmoPlugin() {
-	const Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	const Color gizmo_color = SceneTree::get_singleton()->get_debug_collisions_color();
 	create_material("shape_material", gizmo_color);
 	const float gizmo_value = gizmo_color.get_v();
 	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
