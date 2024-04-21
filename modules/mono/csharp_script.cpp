@@ -2519,13 +2519,20 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 		return MethodInfo();
 	}
 
+	MethodInfo mi;
 	for (const CSharpMethodInfo &E : methods) {
 		if (E.name == p_method) {
-			return E.method_info;
+			if (mi.name == p_method) {
+				// We already found a method with the same name before so
+				// that means this method has overloads, the best we can do
+				// is return an empty MethodInfo.
+				return MethodInfo();
+			}
+			mi = E.method_info;
 		}
 	}
 
-	return MethodInfo();
+	return mi;
 }
 
 Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
