@@ -186,16 +186,14 @@
 			<return type="void" />
 			<param index="0" name="exception" type="RID" />
 			<description>
-				Adds a collision exception to the physical bone.
-				Works just like the [RigidBody3D] node.
+				Adds the given [RID] to the list of [RID]s of bodies in the [PhysicsServer3D] that will be excluded from collisions with the physical bones. Use [method CollisionObject3D.get_rid] to get the [RID] associated with a [CollisionObject3D]-derived node.
 			</description>
 		</method>
 		<method name="physical_bones_remove_collision_exception" deprecated="">
 			<return type="void" />
 			<param index="0" name="exception" type="RID" />
 			<description>
-				Removes a collision exception to the physical bone.
-				Works just like the [RigidBody3D] node.
+				Removes the given [RID] from the list of [RID]s of bodies in the [PhysicsServer3D] that will be excluded from collisions with the physical bones. Use [method CollisionObject3D.get_rid] to get the [RID] associated with a [CollisionObject3D]-derived node.
 			</description>
 		</method>
 		<method name="physical_bones_start_simulation" deprecated="">

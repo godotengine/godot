@@ -35,7 +35,7 @@
 			The physics layers the query will detect (as a bitmask). By default, all collision layers are detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="exclude" type="RID[]" setter="set_exclude" getter="get_exclude" default="[]">
-			The list of object [RID]s that will be excluded from collisions. Use [method CollisionObject3D.get_rid] to get the [RID] associated with a [CollisionObject3D]-derived node.
+			The list of [RID]s of objects in the [PhysicsServer3D] that will be excluded from collisions. Use [method CollisionObject3D.get_rid] to get the [RID] associated with a [CollisionObject3D]-derived node.
 		</member>
 		<member name="from" type="Vector3" setter="set_from" getter="get_from" default="Vector3(0, 0, 0)">
 			The starting point of the ray being queried for, in global coordinates.

@@ -39,7 +39,7 @@
 				[code]linear_velocity[/code]: The colliding object's velocity [Vector2]. If the object is an [Area2D], the result is [code](0, 0)[/code].
 				[code]normal[/code]: The object's surface normal at the intersection point.
 				[code]point[/code]: The intersection point.
-				[code]rid[/code]: The intersecting object's [RID].
+				[code]rid[/code]: The [RID] of the intersecting object in the [PhysicsServer2D].
 				[code]shape[/code]: The shape index of the colliding shape.
 			</description>
 		</method>
@@ -51,7 +51,7 @@
 				Checks whether a point is inside any solid shape. Position and other parameters are defined through [PhysicsPointQueryParameters2D]. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
-				[code]rid[/code]: The intersecting object's [RID].
+				[code]rid[/code]: The [RID] of the intersecting object in the [PhysicsServer2D].
 				[code]shape[/code]: The shape index of the colliding shape.
 				The number of intersections can be limited with the [param max_results] parameter, to reduce the processing time.
 				[b]Note:[/b] [ConcavePolygonShape2D]s and [CollisionPolygon2D]s in [code]Segments[/code] build mode are not solid shapes. Therefore, they will not be detected.
@@ -66,7 +66,7 @@
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]normal[/code]: The object's surface normal at the intersection point, or [code]Vector2(0, 0)[/code] if the ray starts inside the shape and [member PhysicsRayQueryParameters2D.hit_from_inside] is [code]true[/code].
 				[code]position[/code]: The intersection point.
-				[code]rid[/code]: The intersecting object's [RID].
+				[code]rid[/code]: The [RID] of the intersecting object in the [PhysicsServer2D].
 				[code]shape[/code]: The shape index of the colliding shape.
 				If the ray did not intersect anything, then an empty dictionary is returned instead.
 			</description>
@@ -79,7 +79,7 @@
 				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. The intersected shapes are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
-				[code]rid[/code]: The intersecting object's [RID].
+				[code]rid[/code]: The [RID] of the intersecting object in the [PhysicsServer2D].
 				[code]shape[/code]: The shape index of the colliding shape.
 				The number of intersections can be limited with the [param max_results] parameter, to reduce the processing time.
 			</description>

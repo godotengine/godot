@@ -27,7 +27,7 @@
 			<return type="RID" />
 			<param index="0" name="collision_index" type="int" default="0" />
 			<description>
-				Returns the colliding body's [RID] used by the [PhysicsServer3D] given a collision index (the deepest collision by default), if a collision occurred.
+				Returns the [RID] of the colliding body in the [PhysicsServer3D] given a collision index (the deepest collision by default), if a collision occurred.
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">

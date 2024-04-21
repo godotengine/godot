@@ -25,7 +25,7 @@
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
 			<description>
-				Adds a collision exception so the ray does not report collisions with the specified [RID].
+				Adds a collision exception so the ray does not report collisions with the object in the [PhysicsServer3D] with the given [RID].
 			</description>
 		</method>
 		<method name="clear_exceptions">
@@ -50,7 +50,7 @@
 		<method name="get_collider_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of the first object that the ray intersects, or an empty [RID] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
+				Returns the [RID] of the first object (in the [PhysicsServer3D]) that the ray intersects, or an empty [RID] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
@@ -118,7 +118,7 @@
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
 			<description>
-				Removes a collision exception so the ray does report collisions with the specified [RID].
+				Removes a collision exception so the ray does report collisions with the object in the [PhysicsServer3D] with the given [RID].
 			</description>
 		</method>
 		<method name="set_collision_mask_value">

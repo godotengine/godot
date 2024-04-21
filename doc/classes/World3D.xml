@@ -29,7 +29,7 @@
 			The World3D's visual scenario.
 		</member>
 		<member name="space" type="RID" setter="" getter="get_space">
-			The World3D's physics space.
+			The [RID] of this world's physics space resource. Used by the [PhysicsServer3D] for 3D physics.
 		</member>
 	</members>
 </class>

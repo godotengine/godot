@@ -32,7 +32,7 @@
 		<method name="get_collider_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the colliding body's [RID] used by the [PhysicsServer2D].
+				Returns the [RID] of the colliding body in the [PhysicsServer2D].
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">

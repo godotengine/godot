@@ -13,13 +13,13 @@
 			<return type="void" />
 			<param index="0" name="RID" type="RID" />
 			<description>
-				Adds the [PhysicsBody3D] object with the given [RID] to the list of [PhysicsBody3D] objects excluded from the collision check.
+				Adds the given [RID] of an object in the [PhysicsServer3D] to the list of [RID]s excluded from the collision check. Use [method CollisionObject3D.get_rid] to get the [RID] associated with a [CollisionObject3D]-derived node.
 			</description>
 		</method>
 		<method name="clear_excluded_objects">
 			<return type="void" />
 			<description>
-				Clears the list of [PhysicsBody3D] objects excluded from the collision check.
+				Clears the list of objects excluded from the collision check.
 			</description>
 		</method>
 		<method name="get_hit_length">
@@ -32,7 +32,7 @@
 			<return type="bool" />
 			<param index="0" name="RID" type="RID" />
 			<description>
-				Removes the given [RID] from the list of [PhysicsBody3D] objects excluded from the collision check.
+				Removes the given [RID] from the list of [RID]s of objects in the [PhysicsServer3D] excluded from the collision check. Use [method CollisionObject3D.get_rid] to get the [RID] associated with a [CollisionObject3D]-derived node.
 			</description>
 		</method>
 	</methods>

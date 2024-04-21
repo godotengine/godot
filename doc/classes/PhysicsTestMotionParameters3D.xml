@@ -14,7 +14,7 @@
 			If set to [code]false[/code], shapes of type [constant PhysicsServer3D.SHAPE_SEPARATION_RAY] are only used for separation when overlapping with other bodies. That's the main use for separation ray shapes.
 		</member>
 		<member name="exclude_bodies" type="RID[]" setter="set_exclude_bodies" getter="get_exclude_bodies" default="[]">
-			Optional array of body [RID] to exclude from collision. Use [method CollisionObject3D.get_rid] to get the [RID] associated with a [CollisionObject3D]-derived node.
+			Optional array [RID]s of bodies in the [PhysicsServer3D] to exclude from collision. Use [method CollisionObject3D.get_rid] to get the [RID] associated with a [CollisionObject3D]-derived node.
 		</member>
 		<member name="exclude_objects" type="int[]" setter="set_exclude_objects" getter="get_exclude_objects" default="[]">
 			Optional array of object unique instance ID to exclude from collision. See [method Object.get_instance_id].

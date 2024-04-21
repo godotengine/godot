@@ -12,7 +12,7 @@
 		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the joint's [RID].
+				Returns the internal [RID] used by the [PhysicsServer2D] for this joint.
 			</description>
 		</method>
 	</methods>
