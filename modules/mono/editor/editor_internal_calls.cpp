@@ -44,6 +44,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
+#include "editor/export/lipo.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
@@ -115,6 +116,13 @@ bool godot_icall_Internal_IsMacOSAppBundleInstalled(const godot_string *p_bundle
 	(void)p_bundle_id; // UNUSED
 	return (bool)false;
 #endif
+}
+
+bool godot_icall_Internal_LipOCreateFile(const godot_string *p_output_path, const godot_packed_array *p_files) {
+	String output_path = *reinterpret_cast<const String *>(p_output_path);
+	PackedStringArray files = *reinterpret_cast<const PackedStringArray *>(p_files);
+	LipO lip;
+	return lip.create_file(output_path, files);
 }
 
 bool godot_icall_Internal_GodotIs32Bits() {
@@ -258,6 +266,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godot_icall_EditorProgress_Step,
 	(void *)godot_icall_Internal_FullExportTemplatesDir,
 	(void *)godot_icall_Internal_IsMacOSAppBundleInstalled,
+	(void *)godot_icall_Internal_LipOCreateFile,
 	(void *)godot_icall_Internal_GodotIs32Bits,
 	(void *)godot_icall_Internal_GodotIsRealTDouble,
 	(void *)godot_icall_Internal_GodotMainIteration,
