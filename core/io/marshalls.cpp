@@ -75,6 +75,33 @@ ObjectID EncodedObjectAsID::get_object_id() const {
 #define HEADER_DATA_FIELD_TYPED_ARRAY_CLASS_NAME (0b10 << 16)
 #define HEADER_DATA_FIELD_TYPED_ARRAY_SCRIPT (0b11 << 16)
 
+static String _get_script_id(const Ref<Script> &p_script) {
+	ERR_FAIL_COND_V(p_script.is_null(), String());
+	if (p_script->get_path().begins_with("res://")) {
+		return p_script->get_path();
+	}
+	return "instance:" + itos(p_script->get_instance_id());
+}
+
+static Ref<Script> _get_script_by_id(const String &p_id) {
+	if (p_id.begins_with("res://")) {
+		if (ResourceLoader::exists(p_id, "Script")) {
+			return ResourceLoader::load(p_id, "Script");
+		}
+	} else if (p_id.begins_with("instance:")) {
+		Object *object = ObjectDB::get_instance(ObjectID(p_id.trim_prefix("instance:").to_int()));
+		if (object != nullptr) {
+			Script *script = Object::cast_to<Script>(object);
+			if (script != nullptr) {
+				return Ref<Script>(script);
+			}
+		}
+	} else {
+		ERR_PRINT("Invalid script id: expected res:// path or instance id.");
+	}
+	return Ref<Script>();
+}
+
 static Error _decode_string(const uint8_t *&buf, int &len, int *r_len, String &r_string) {
 	ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 
@@ -697,11 +724,10 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 						}
 
 						if (str == "script" && value.get_type() != Variant::NIL) {
-							ERR_FAIL_COND_V_MSG(value.get_type() != Variant::STRING, ERR_INVALID_DATA, "Invalid value for \"script\" property, expected script path as String.");
-							String path = value;
-							ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://") || !ResourceLoader::exists(path, "Script"), ERR_INVALID_DATA, "Invalid script path: '" + path + "'.");
-							Ref<Script> script = ResourceLoader::load(path, "Script");
-							ERR_FAIL_COND_V_MSG(script.is_null(), ERR_INVALID_DATA, "Can't load script at path: '" + path + "'.");
+							ERR_FAIL_COND_V_MSG(value.get_type() != Variant::STRING, ERR_INVALID_DATA, "Invalid value for \"script\" property, expected script id as String.");
+							String script_id = value;
+							Ref<Script> script = _get_script_by_id(script_id);
+							ERR_FAIL_COND_V_MSG(script.is_null(), ERR_INVALID_DATA, "Can't load script with id \"" + script_id + "\".");
 							obj->set_script(script);
 						} else {
 							obj->set(str, value);
@@ -813,17 +839,16 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					}
 				} break;
 				case HEADER_DATA_FIELD_TYPED_ARRAY_SCRIPT: {
-					String path;
-					Error err = _decode_string(buf, len, r_len, path);
+					String script_id;
+					Error err = _decode_string(buf, len, r_len, script_id);
 					if (err) {
 						return err;
 					}
 
 					builtin_type = Variant::OBJECT;
 					if (p_allow_objects) {
-						ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://") || !ResourceLoader::exists(path, "Script"), ERR_INVALID_DATA, "Invalid script path: '" + path + "'.");
-						script = ResourceLoader::load(path, "Script");
-						ERR_FAIL_COND_V_MSG(script.is_null(), ERR_INVALID_DATA, "Can't load script at path: '" + path + "'.");
+						script = _get_script_by_id(script_id);
+						ERR_FAIL_COND_V_MSG(script.is_null(), ERR_INVALID_DATA, "Can't load script with id \"" + script_id + "\".");
 						class_name = script->get_instance_base_type();
 					} else {
 						class_name = EncodedObjectAsID::get_class_static();
@@ -1631,9 +1656,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 						if (E.name == CoreStringNames::get_singleton()->_script) {
 							Ref<Script> script = obj->get_script();
 							if (script.is_valid()) {
-								String path = script->get_path();
-								ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), ERR_UNAVAILABLE, "Failed to encode a path to a custom script.");
-								value = path;
+								value = _get_script_id(script);
 							}
 						} else {
 							value = obj->get(E.name);
@@ -1716,9 +1739,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				Variant variant = array.get_typed_script();
 				Ref<Script> script = variant;
 				if (script.is_valid()) {
-					String path = script->get_path();
-					ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), ERR_UNAVAILABLE, "Failed to encode a path to a custom script for an array type.");
-					_encode_string(path, buf, r_len);
+					_encode_string(_get_script_id(script), buf, r_len);
 				} else if (array.get_typed_class_name() != StringName()) {
 					_encode_string(array.get_typed_class_name(), buf, r_len);
 				} else {
