@@ -31,7 +31,7 @@
 #ifndef GPU_PARTICLES_2D_EDITOR_PLUGIN_H
 #define GPU_PARTICLES_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/gui/box_container.h"

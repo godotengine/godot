@@ -32,7 +32,7 @@
 #define MATERIAL_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/material.h"

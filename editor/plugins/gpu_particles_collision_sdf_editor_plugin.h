@@ -31,7 +31,7 @@
 #ifndef GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H
 #define GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/resources/material.h"
 

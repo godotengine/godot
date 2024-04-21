@@ -31,7 +31,7 @@
 #ifndef MESH_INSTANCE_3D_EDITOR_PLUGIN_H
 #define MESH_INSTANCE_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/option_button.h"
 

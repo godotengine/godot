@@ -41,7 +41,7 @@
 #include "core/templates/self_list.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #endif
 
 class CSharpScript;
