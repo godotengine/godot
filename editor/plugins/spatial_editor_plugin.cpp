@@ -47,6 +47,7 @@
 #include "scene/3d/collision_shape.h"
 #include "scene/3d/lod_manager.h"
 #include "scene/3d/mesh_instance.h"
+#include "scene/3d/multimesh_instance.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/room_manager.h"
 #include "scene/3d/visual_instance.h"
@@ -2779,6 +2780,19 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		_update_camera(delta);
 
+		bool show_selected_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_SELECTED_INFO)) && (message_time <= 0);
+
+		struct SelectedInfo {
+			bool filled = false;
+			uint32_t tri_count = 0;
+			uint32_t vertex_count = 0;
+			uint32_t index_count = 0;
+			uint32_t mesh_count = 0;
+			uint32_t multimesh_count = 0;
+			uint32_t surface_count = 0;
+			uint32_t array_format = 0;
+		} selected_info;
+
 		Map<Node *, Object *> &selection = editor_selection->get_selection();
 
 		bool changed = false;
@@ -2788,6 +2802,48 @@ void SpatialEditorViewport::_notification(int p_what) {
 			Spatial *sp = Object::cast_to<Spatial>(E->key());
 			if (!sp) {
 				continue;
+			}
+
+			// Only retrieve stats for selected items if we are currently showing the selection stats box.
+			if (show_selected_info) {
+				MeshInstance *mi = Object::cast_to<MeshInstance>(sp);
+				if (mi) {
+					const Ref<Mesh> &mesh = mi->get_mesh();
+					if (mesh.is_valid()) {
+						selected_info.filled = true;
+						const Mesh::CachedStats &stats = mesh->get_cached_stats();
+						selected_info.tri_count += stats.triangle_count;
+						selected_info.vertex_count += stats.vertex_count;
+						selected_info.index_count += stats.index_count;
+						selected_info.mesh_count += 1;
+						selected_info.surface_count += mesh->get_surface_count();
+						selected_info.array_format |= stats.array_format;
+					}
+				}
+
+				MultiMeshInstance *mmi = Object::cast_to<MultiMeshInstance>(sp);
+				if (mmi) {
+					const Ref<MultiMesh> &mm = mmi->get_multimesh();
+					if (mm.is_valid()) {
+						const Ref<Mesh> &mesh = mm->get_mesh();
+						int icount = mm->get_visible_instance_count();
+						if (icount < 0) {
+							icount = mm->get_instance_count();
+						}
+
+						if (mesh.is_valid() && icount) {
+							selected_info.filled = true;
+							const Mesh::CachedStats &stats = mesh->get_cached_stats();
+							selected_info.tri_count += stats.triangle_count * icount;
+							selected_info.vertex_count += stats.vertex_count * icount;
+							selected_info.index_count += stats.index_count * icount;
+							selected_info.mesh_count += icount;
+							selected_info.multimesh_count += 1;
+							selected_info.surface_count += mesh->get_surface_count() * icount;
+							selected_info.array_format |= stats.array_format;
+						}
+					}
+				}
 			}
 
 			SpatialEditorSelectedItem *se = editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
@@ -2841,11 +2897,17 @@ void SpatialEditorViewport::_notification(int p_what) {
 			if (message != last_message) {
 				surface->update();
 				last_message = message;
-			}
 
-			message_time -= get_physics_process_delta_time();
-			if (message_time < 0) {
-				surface->update();
+				// If there is now no message,
+				// disable the timing counter.
+				if (message == "") {
+					message_time = 0;
+				}
+			} else {
+				message_time -= get_physics_process_delta_time();
+				if (message_time < 0) {
+					surface->update();
+				}
 			}
 		}
 
@@ -2891,6 +2953,29 @@ void SpatialEditorViewport::_notification(int p_what) {
 			text += TTR("Draw Calls:") + " " + itos(viewport->get_render_info(Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME)) + "\n";
 			text += TTR("Vertices:") + " " + itos(viewport->get_render_info(Viewport::RENDER_INFO_VERTICES_IN_FRAME));
 			info_label->set_text(text);
+		}
+
+		selected_info_label->set_visible(show_selected_info && selected_info.filled);
+		if (show_selected_info) {
+			if (selected_info.filled) {
+				String text;
+				if (selected_info.multimesh_count > 0) {
+					text += TTR("MultiMeshes:") + " " + itos(selected_info.multimesh_count) + "\n";
+				}
+				if (selected_info.mesh_count > 1) {
+					text += TTR("Meshes:") + " " + itos(selected_info.mesh_count) + "\n";
+				}
+				if (selected_info.surface_count > 1) {
+					text += TTR("Surfaces:") + " " + itos(selected_info.surface_count) + "\n";
+				}
+				text += TTR("Triangles:") + " " + itos(selected_info.tri_count) + "\n";
+				text += TTR("Vertices:") + " " + itos(selected_info.vertex_count) + "\n";
+				text += TTR("Indices:") + " " + itos(selected_info.index_count);
+
+				selected_info_label->set_text(text);
+			} else {
+				selected_info_label->set_text("");
+			}
 		}
 
 		// FPS Counter.
@@ -2959,6 +3044,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 		preview_camera->add_style_override("disabled", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 
 		info_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		selected_info_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 		fps_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 		cinema_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 		locked_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
@@ -3375,6 +3461,12 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(idx, !current);
 
 		} break;
+		case VIEW_SELECTED_INFO: {
+			int idx = view_menu->get_popup()->get_item_index(VIEW_SELECTED_INFO);
+			bool current = view_menu->get_popup()->is_item_checked(idx);
+			view_menu->get_popup()->set_item_checked(idx, !current);
+
+		} break;
 		case VIEW_FPS: {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_FPS);
 			bool current = view_menu->get_popup()->is_item_checked(idx);
@@ -3744,6 +3836,14 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 			_menu_option(VIEW_INFORMATION);
 		}
 	}
+	if (p_state.has("selected_info")) {
+		bool selected_info = p_state["selected_info"];
+
+		int idx = view_menu->get_popup()->get_item_index(VIEW_SELECTED_INFO);
+		if (view_menu->get_popup()->is_item_checked(idx) != selected_info) {
+			_menu_option(VIEW_SELECTED_INFO);
+		}
+	}
 	if (p_state.has("fps")) {
 		bool fps = p_state["fps"];
 
@@ -3806,6 +3906,7 @@ Dictionary SpatialEditorViewport::get_state() const {
 	d["doppler"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUDIO_DOPPLER));
 	d["gizmos"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS));
 	d["information"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
+	d["selected_info"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_SELECTED_INFO));
 	d["fps"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FPS));
 	d["half_res"] = viewport_container->get_stretch_shrink() > 1;
 	d["cinematic_preview"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
@@ -4344,6 +4445,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("View Gizmos")), VIEW_GIZMOS);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS), true);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_information", TTR("View Information")), VIEW_INFORMATION);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_selected_info", TTR("View Selected Mesh Stats")), VIEW_SELECTED_INFO);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_fps", TTR("View FPS")), VIEW_FPS);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_half_resolution", TTR("Half Resolution")), VIEW_HALF_RESOLUTION);
@@ -4427,6 +4529,16 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	info_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
 	surface->add_child(info_label);
 	info_label->hide();
+
+	selected_info_label = memnew(Label);
+	selected_info_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 10 * EDSCALE);
+	selected_info_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -20 * EDSCALE);
+	selected_info_label->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_BEGIN, 90 * EDSCALE);
+	selected_info_label->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -10 * EDSCALE);
+	selected_info_label->set_h_grow_direction(GROW_DIRECTION_END);
+	selected_info_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	surface->add_child(selected_info_label);
+	selected_info_label->hide();
 
 	cinema_label = memnew(Label);
 	cinema_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);

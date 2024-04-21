@@ -204,6 +204,7 @@ class SpatialEditorViewport : public Control {
 		VIEW_AUDIO_DOPPLER,
 		VIEW_GIZMOS,
 		VIEW_INFORMATION,
+		VIEW_SELECTED_INFO,
 		VIEW_FPS,
 		VIEW_DISPLAY_NORMAL,
 		VIEW_DISPLAY_WIREFRAME,
@@ -283,6 +284,7 @@ private:
 	Vector2 previous_mouse_position;
 
 	Label *info_label;
+	Label *selected_info_label;
 	Label *cinema_label;
 	Label *locked_label;
 	Label *zoom_limit_label;

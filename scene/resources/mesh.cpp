@@ -42,6 +42,52 @@
 
 Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 
+#ifdef TOOLS_ENABLED
+const Mesh::CachedStats &Mesh::get_cached_stats() const {
+	if (_cached_stats.dirty) {
+		_cached_stats.dirty = false;
+
+		_cached_stats.triangle_count = get_triangle_count();
+
+		// Vertex count.
+		_cached_stats.vertex_count = 0;
+		for (int i = 0; i < get_surface_count(); i++) {
+			_cached_stats.vertex_count += surface_get_array_len(i);
+		}
+
+		// Index count.
+		_cached_stats.index_count = 0;
+		for (int i = 0; i < get_surface_count(); i++) {
+			_cached_stats.index_count += surface_get_index_count(i);
+		}
+
+		// Array format.
+		_cached_stats.array_format = 0;
+		for (int i = 0; i < get_surface_count(); i++) {
+			_cached_stats.array_format |= surface_get_format(i);
+		}
+	}
+
+	return _cached_stats;
+}
+#endif
+
+int Mesh::surface_get_index_count(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, get_surface_count(), 0);
+
+	switch (surface_get_primitive_type(p_idx)) {
+		case PRIMITIVE_TRIANGLES:
+		case PRIMITIVE_TRIANGLE_FAN:
+		case PRIMITIVE_TRIANGLE_STRIP: {
+			return (surface_get_format(p_idx) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(p_idx) : surface_get_array_len(p_idx);
+		} break;
+		default: {
+		} break;
+	}
+
+	return 0;
+}
+
 int Mesh::surface_get_triangle_count(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, get_surface_count(), 0);
 
@@ -625,6 +671,9 @@ void Mesh::set_storage_mode(StorageMode p_storage_mode) {
 void Mesh::clear_cache() const {
 	triangle_mesh.unref();
 	debug_lines.clear();
+#ifdef TOOLS_ENABLED
+	_cached_stats.dirty = true;
+#endif
 }
 
 Vector<Ref<Shape>> Mesh::convex_decompose(int p_max_convex_hulls) const {
