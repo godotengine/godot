@@ -46,9 +46,6 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> m = p_event;
-	if (!m.is_valid() || drag.active) {
-		emit_signal(SNAME("scrolling"));
-	}
 
 	Ref<InputEventMouseButton> b = p_event;
 
@@ -57,13 +54,13 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (b->get_button_index() == MouseButton::WHEEL_DOWN && b->is_pressed()) {
 			double change = get_page() != 0.0 ? get_page() / 4.0 : (get_max() - get_min()) / 16.0;
-			set_value(get_value() + MAX(change, get_step()));
+			scroll(MAX(change, get_step()));
 			accept_event();
 		}
 
 		if (b->get_button_index() == MouseButton::WHEEL_UP && b->is_pressed()) {
 			double change = get_page() != 0.0 ? get_page() / 4.0 : (get_max() - get_min()) / 16.0;
-			set_value(get_value() - MAX(change, get_step()));
+			scroll(-MAX(change, get_step()));
 			accept_event();
 		}
 
@@ -84,14 +81,14 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 
 			if (ofs < decr_size) {
 				decr_active = true;
-				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+				scroll(-(custom_step >= 0 ? custom_step : get_step()));
 				queue_redraw();
 				return;
 			}
 
 			if (ofs > total - incr_size) {
 				incr_active = true;
-				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+				scroll(custom_step >= 0 ? custom_step : get_step());
 				queue_redraw();
 				return;
 			}
@@ -110,7 +107,7 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 					scrolling = true;
 					set_physics_process_internal(true);
 				} else {
-					set_value(target_scroll);
+					scroll_to(target_scroll);
 				}
 				return;
 			}
@@ -134,7 +131,7 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 					scrolling = true;
 					set_physics_process_internal(true);
 				} else {
-					set_value(target_scroll);
+					scroll_to(target_scroll);
 				}
 			}
 
@@ -158,7 +155,13 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 
 			double diff = (ofs - drag.pos_at_click) / get_area_size();
 
+			double prev_scroll = get_value();
+
 			set_as_ratio(drag.value_at_click + diff);
+
+			if (!Math::is_equal_approx(prev_scroll, get_value())) {
+				emit_signal(SNAME("scrolling"));
+			}
 		} else {
 			double ofs = orientation == VERTICAL ? m->get_position().y : m->get_position().x;
 			Ref<Texture2D> decr = theme_cache.decrement_icon;
@@ -192,32 +195,32 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
-			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			scroll(-(custom_step >= 0 ? custom_step : get_step()));
 
 		} else if (p_event->is_action("ui_right", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
-			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			scroll(custom_step >= 0 ? custom_step : get_step());
 
 		} else if (p_event->is_action("ui_up", true)) {
 			if (orientation != VERTICAL) {
 				return;
 			}
 
-			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			scroll(-(custom_step >= 0 ? custom_step : get_step()));
 
 		} else if (p_event->is_action("ui_down", true)) {
 			if (orientation != VERTICAL) {
 				return;
 			}
-			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			scroll(custom_step >= 0 ? custom_step : get_step());
 
 		} else if (p_event->is_action("ui_home", true)) {
-			set_value(get_min());
+			scroll_to(get_min());
 
 		} else if (p_event->is_action("ui_end", true)) {
-			set_value(get_max());
+			scroll_to(get_max());
 		}
 	}
 }
@@ -329,11 +332,11 @@ void ScrollBar::_notification(int p_what) {
 					double vel = ((target / dist) * 500) * get_physics_process_delta_time();
 
 					if (Math::abs(vel) >= dist) {
-						set_value(target_scroll);
+						scroll_to(target_scroll);
 						scrolling = false;
 						set_physics_process_internal(false);
 					} else {
-						set_value(get_value() + vel);
+						scroll(vel);
 					}
 				} else {
 					scrolling = false;
@@ -358,7 +361,7 @@ void ScrollBar::_notification(int p_what) {
 							turnoff = true;
 						}
 
-						set_value(pos.x);
+						scroll_to(pos.x);
 
 						float sgn_x = drag_node_speed.x < 0 ? -1 : 1;
 						float val_x = Math::abs(drag_node_speed.x);
@@ -381,7 +384,7 @@ void ScrollBar::_notification(int p_what) {
 							turnoff = true;
 						}
 
-						set_value(pos.y);
+						scroll_to(pos.y);
 
 						float sgn_y = drag_node_speed.y < 0 ? -1 : 1;
 						float val_y = Math::abs(drag_node_speed.y);
@@ -497,6 +500,18 @@ Size2 ScrollBar::get_minimum_size() const {
 	return minsize;
 }
 
+void ScrollBar::scroll(double p_amount) {
+	scroll_to(get_value() + p_amount);
+}
+
+void ScrollBar::scroll_to(double p_position) {
+	double prev_scroll = get_value();
+	set_value(p_position);
+	if (!Math::is_equal_approx(prev_scroll, get_value())) {
+		emit_signal(SNAME("scrolling"));
+	}
+}
+
 void ScrollBar::set_custom_step(float p_custom_step) {
 	custom_step = p_custom_step;
 }
@@ -561,11 +576,11 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 			Vector2 diff = drag_node_from + drag_node_accum;
 
 			if (orientation == HORIZONTAL) {
-				set_value(diff.x);
+				scroll_to(diff.x);
 			}
 
 			if (orientation == VERTICAL) {
-				set_value(diff.y);
+				scroll_to(diff.y);
 			}
 
 			time_since_motion = 0;

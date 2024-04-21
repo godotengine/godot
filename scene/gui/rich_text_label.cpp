@@ -2149,12 +2149,12 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (b->get_button_index() == MouseButton::WHEEL_UP) {
 			if (scroll_active) {
-				vscroll->set_value(vscroll->get_value() - vscroll->get_page() * b->get_factor() * 0.5 / 8);
+				vscroll->scroll(-vscroll->get_page() * b->get_factor() * 0.5 / 8);
 			}
 		}
 		if (b->get_button_index() == MouseButton::WHEEL_DOWN) {
 			if (scroll_active) {
-				vscroll->set_value(vscroll->get_value() + vscroll->get_page() * b->get_factor() * 0.5 / 8);
+				vscroll->scroll(vscroll->get_page() * b->get_factor() * 0.5 / 8);
 			}
 		}
 		if (b->get_button_index() == MouseButton::RIGHT && context_menu_enabled) {
@@ -2169,7 +2169,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		if (scroll_active) {
-			vscroll->set_value(vscroll->get_value() + vscroll->get_page() * pan_gesture->get_delta().y * 0.5 / 8);
+			vscroll->scroll(vscroll->get_page() * pan_gesture->get_delta().y * 0.5 / 8);
 		}
 
 		return;
@@ -2182,27 +2182,27 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			bool handled = false;
 
 			if (k->is_action("ui_page_up", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(vscroll->get_value() - vscroll->get_page());
+				vscroll->scroll(-vscroll->get_page());
 				handled = true;
 			}
 			if (k->is_action("ui_page_down", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(vscroll->get_value() + vscroll->get_page());
+				vscroll->scroll(vscroll->get_page());
 				handled = true;
 			}
 			if (k->is_action("ui_up", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(vscroll->get_value() - theme_cache.normal_font->get_height(theme_cache.normal_font_size));
+				vscroll->scroll(-theme_cache.normal_font->get_height(theme_cache.normal_font_size));
 				handled = true;
 			}
 			if (k->is_action("ui_down", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(vscroll->get_value() + theme_cache.normal_font->get_height(theme_cache.normal_font_size));
+				vscroll->scroll(vscroll->get_value() + theme_cache.normal_font->get_height(theme_cache.normal_font_size));
 				handled = true;
 			}
 			if (k->is_action("ui_home", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(0);
+				vscroll->scroll_to(0);
 				handled = true;
 			}
 			if (k->is_action("ui_end", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(vscroll->get_max());
+				vscroll->scroll_to(vscroll->get_max());
 				handled = true;
 			}
 			if (is_shortcut_keys_enabled()) {
