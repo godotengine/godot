@@ -32,7 +32,7 @@
 #define AUDIO_STREAM_INTERACTIVE_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 
 class CheckBox;

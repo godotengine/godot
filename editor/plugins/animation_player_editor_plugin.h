@@ -32,8 +32,8 @@
 #define ANIMATION_PLAYER_EDITOR_PLUGIN_H
 
 #include "editor/animation_track_editor.h"
-#include "editor/editor_plugin.h"
 #include "editor/plugins/animation_library_editor.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/slider.h"

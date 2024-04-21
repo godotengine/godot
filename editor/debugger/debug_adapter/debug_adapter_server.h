@@ -32,7 +32,7 @@
 #define DEBUG_ADAPTER_SERVER_H
 
 #include "debug_adapter_protocol.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class DebugAdapterServer : public EditorPlugin {
 	GDCLASS(DebugAdapterServer, EditorPlugin);

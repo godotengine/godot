@@ -31,8 +31,8 @@
 #ifndef VISUAL_SHADER_EDITOR_PLUGIN_H
 #define VISUAL_SHADER_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/resources/syntax_highlighter.h"

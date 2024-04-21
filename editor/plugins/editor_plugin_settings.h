@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  plugin_config_dialog.h                                                */
+/*  editor_plugin_settings.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,61 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PLUGIN_CONFIG_DIALOG_H
-#define PLUGIN_CONFIG_DIALOG_H
+#ifndef EDITOR_PLUGIN_SETTINGS_H
+#define EDITOR_PLUGIN_SETTINGS_H
 
-#include "scene/gui/check_box.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/text_edit.h"
-#include "scene/gui/texture_rect.h"
+#include "editor/editor_data.h"
+#include "editor/plugins/plugin_config_dialog.h"
 
-class EditorValidationPanel;
+class Tree;
 
-class PluginConfigDialog : public ConfirmationDialog {
-	GDCLASS(PluginConfigDialog, ConfirmationDialog);
+class EditorPluginSettings : public VBoxContainer {
+	GDCLASS(EditorPluginSettings, VBoxContainer);
 
 	enum {
-		MSG_ID_PLUGIN,
-		MSG_ID_SUBFOLDER,
-		MSG_ID_SCRIPT,
-		MSG_ID_ACTIVE,
+		BUTTON_PLUGIN_EDIT
 	};
 
-	LineEdit *name_edit = nullptr;
-	LineEdit *subfolder_edit = nullptr;
-	TextEdit *desc_edit = nullptr;
-	LineEdit *author_edit = nullptr;
-	LineEdit *version_edit = nullptr;
-	OptionButton *script_option_edit = nullptr;
-	LineEdit *script_edit = nullptr;
-	CheckBox *active_edit = nullptr;
+	enum {
+		COLUMN_PADDING_LEFT,
+		COLUMN_STATUS,
+		COLUMN_NAME,
+		COLUMN_VERSION,
+		COLUMN_AUTHOR,
+		COLUMN_EDIT,
+		COLUMN_PADDING_RIGHT,
+		COLUMN_MAX,
+	};
 
-	LocalVector<Control *> plugin_edit_hidden_controls;
+	PluginConfigDialog *plugin_config_dialog = nullptr;
+	Tree *plugin_list = nullptr;
+	bool updating = false;
 
-	EditorValidationPanel *validation_panel = nullptr;
+	void _plugin_activity_changed();
+	void _create_clicked();
+	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
-	bool _edit_mode = false;
-
-	void _clear_fields();
-	void _on_confirmed();
-	void _on_canceled();
-	void _on_required_text_changed();
-	String _get_subfolder();
-
-	static String _to_absolute_plugin_path(const String &p_plugin_name);
+	static Vector<String> _get_plugins(const String &p_dir);
 
 protected:
-	virtual void _notification(int p_what);
+	void _notification(int p_what);
+
 	static void _bind_methods();
 
 public:
-	void config(const String &p_config_path);
+	void update_plugins();
 
-	PluginConfigDialog();
-	~PluginConfigDialog();
+	EditorPluginSettings();
 };
 
-#endif // PLUGIN_CONFIG_DIALOG_H
+#endif // EDITOR_PLUGIN_SETTINGS_H

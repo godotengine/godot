@@ -31,7 +31,7 @@
 #ifndef CANVAS_ITEM_EDITOR_PLUGIN_H
 #define CANVAS_ITEM_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/base_button.h"
 #include "scene/gui/box_container.h"
 

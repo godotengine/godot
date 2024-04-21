@@ -34,7 +34,7 @@
 #include "core/os/thread.h"
 #include "editor/code_editor.h"
 #include "editor/doc_tools.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup.h"

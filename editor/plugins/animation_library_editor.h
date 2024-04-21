@@ -32,7 +32,7 @@
 #define ANIMATION_LIBRARY_EDITOR_H
 
 #include "editor/animation_track_editor.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_mixer.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
