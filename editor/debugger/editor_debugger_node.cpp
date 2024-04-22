@@ -268,11 +268,7 @@ Error EditorDebuggerNode::start(const String &p_uri) {
 	}
 	stop(true);
 	current_uri = p_uri;
-	if (EDITOR_GET("run/output/always_open_output_on_play")) {
-		EditorNode::get_bottom_panel()->make_item_visible(EditorNode::get_log());
-	} else {
-		EditorNode::get_bottom_panel()->make_item_visible(this);
-	}
+
 	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create(p_uri.substr(0, p_uri.find("://") + 3)));
 	const Error err = server->start(p_uri);
 	if (err != OK) {

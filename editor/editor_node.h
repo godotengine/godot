@@ -140,6 +140,17 @@ public:
 		SCENE_NAME_CASING_KEBAB_CASE,
 	};
 
+	enum ActionOnPlay {
+		ACTION_ON_PLAY_DO_NOTHING,
+		ACTION_ON_PLAY_OPEN_OUTPUT,
+		ACTION_ON_PLAY_OPEN_DEBUGGER,
+	};
+
+	enum ActionOnStop {
+		ACTION_ON_STOP_DO_NOTHING,
+		ACTION_ON_STOP_CLOSE_BUTTOM_PANEL,
+	};
+
 	struct ExecuteThreadArgs {
 		String path;
 		List<String> args;
