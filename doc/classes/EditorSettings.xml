@@ -792,9 +792,12 @@
 		<member name="interface/scene_tabs/maximum_width" type="int" setter="" getter="">
 			The maximum width of each scene tab at the top editor (in pixels).
 		</member>
-		<member name="interface/scene_tabs/restore_scenes_on_load" type="bool" setter="" getter="">
-			If [code]true[/code], when a project is loaded, restores scenes that were opened on the last editor session.
-			[b]Note:[/b] With many opened scenes, the editor may take longer to become usable. If starting the editor quickly is necessary, consider setting this to [code]false[/code].
+		<member name="interface/scene_tabs/restore_scenes_on_load" type="int" setter="" getter="">
+			Determines whether and how to restore scenes that were open during the previous editor session.
+			If set to [code]all[/code], when a project is loaded the editor will restore all scenes that were open when the editor was last closed.
+			If set to [code]active tab[/code], only the single scene from the previous editor session's active tab will be restored.
+			If set to [code]none[/code], no scenes from the previous session will automatically be restored.
+			[b]Note:[/b] With many opened scenes, the editor may take longer to become usable. If starting the editor quickly is necessary, consider setting this to [code]active tab[/code] or [code]none[/code].
 		</member>
 		<member name="interface/scene_tabs/show_script_button" type="bool" setter="" getter="">
 			If [code]true[/code], show a button next to each scene tab that opens the scene's "dominant" script when clicked. The "dominant" script is the one that is at the highest level in the scene's hierarchy.

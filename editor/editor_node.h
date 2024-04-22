@@ -247,6 +247,13 @@ private:
 		MAX_BUILD_CALLBACKS = 128
 	};
 
+	enum SessionRestorePolicy {
+		RESTORE_NONE,
+		RESTORE_ACTIVE,
+		RESTORE_ALL,
+		NUM_RESTORE
+	};
+
 	struct ExportDefer {
 		String preset;
 		String path;
