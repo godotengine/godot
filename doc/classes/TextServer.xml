@@ -1505,6 +1505,7 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="264" />
+			<param index="2" name="skip_grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="4" />
 			<description>
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking (see [enum GraphemeFlag]).
 			</description>
