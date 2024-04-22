@@ -52,11 +52,6 @@ internal abstract class DataAccess(private val filePath: String) {
 	companion object {
 		private val TAG = DataAccess::class.java.simpleName
 
-		private const val OK_ERROR_ID = 0;
-		private const val FAILED_ERROR_ID = -1;
-		private const val FILE_CANT_OPEN_ERROR_ID = -2;
-		private const val INVALID_PARAMETER_ERROR_ID = -3;
-
 		fun generateDataAccess(
 			storageScope: StorageScope,
 			context: Context,
@@ -145,15 +140,15 @@ internal abstract class DataAccess(private val filePath: String) {
 	fun resize(length: Long): Int {
 		return try {
 			fileChannel.truncate(length)
-			OK_ERROR_ID
+			FileErrors.OK.nativeValue
 		} catch (e: NonWritableChannelException) {
-			FILE_CANT_OPEN_ERROR_ID
+			FileErrors.FILE_CANT_OPEN.nativeValue
 		} catch (e: ClosedChannelException) {
-			FILE_CANT_OPEN_ERROR_ID
+			FileErrors.FILE_CANT_OPEN.nativeValue
 		} catch (e: IllegalArgumentException) {
-			INVALID_PARAMETER_ERROR_ID
+			FileErrors.INVALID_PARAMETER.nativeValue
 		} catch (e: IOException) {
-			FAILED_ERROR_ID
+			FileErrors.FAILED.nativeValue
 		}
 	}
 

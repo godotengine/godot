@@ -83,7 +83,7 @@ Error FileAccessFilesystemJAndroid::open_internal(const String &p_path, int p_mo
 				default:
 					return ERR_FILE_CANT_OPEN;
 
-				case -1:
+				case -2:
 					return ERR_FILE_NOT_FOUND;
 			}
 		}
@@ -334,10 +334,13 @@ Error FileAccessFilesystemJAndroid::resize(int64_t p_length) {
 		switch (res) {
 			case 0:
 				return OK;
-			case -3:
+			case -4:
 				return ERR_INVALID_PARAMETER;
-			case -2:
+			case -3:
 				return ERR_FILE_CANT_OPEN;
+			case -2:
+				return ERR_FILE_NOT_FOUND;
+			case -1:
 			default:
 				return FAILED;
 		}
