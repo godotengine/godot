@@ -312,7 +312,7 @@ void XRBodyModifier3D::_process_modification() {
 	}
 }
 
-void XRBodyModifier3D::_tracker_changed(const StringName &p_tracker_name, const Ref<XRBodyTracker> &p_tracker) {
+void XRBodyModifier3D::_tracker_changed(const StringName &p_tracker_name, XRServer::TrackerType p_tracker_type) {
 	if (tracker_name == p_tracker_name) {
 		_get_joint_data();
 	}
@@ -327,18 +327,18 @@ void XRBodyModifier3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			XRServer *xr_server = XRServer::get_singleton();
 			if (xr_server) {
-				xr_server->connect("body_tracker_added", callable_mp(this, &XRBodyModifier3D::_tracker_changed));
-				xr_server->connect("body_tracker_updated", callable_mp(this, &XRBodyModifier3D::_tracker_changed));
-				xr_server->connect("body_tracker_removed", callable_mp(this, &XRBodyModifier3D::_tracker_changed).bind(Ref<XRBodyTracker>()));
+				xr_server->connect("tracker_added", callable_mp(this, &XRBodyModifier3D::_tracker_changed));
+				xr_server->connect("tracker_updated", callable_mp(this, &XRBodyModifier3D::_tracker_changed));
+				xr_server->connect("tracker_removed", callable_mp(this, &XRBodyModifier3D::_tracker_changed));
 			}
 			_get_joint_data();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			XRServer *xr_server = XRServer::get_singleton();
 			if (xr_server) {
-				xr_server->disconnect("body_tracker_added", callable_mp(this, &XRBodyModifier3D::_tracker_changed));
-				xr_server->disconnect("body_tracker_updated", callable_mp(this, &XRBodyModifier3D::_tracker_changed));
-				xr_server->disconnect("body_tracker_removed", callable_mp(this, &XRBodyModifier3D::_tracker_changed).bind(Ref<XRBodyTracker>()));
+				xr_server->disconnect("tracker_added", callable_mp(this, &XRBodyModifier3D::_tracker_changed));
+				xr_server->disconnect("tracker_updated", callable_mp(this, &XRBodyModifier3D::_tracker_changed));
+				xr_server->disconnect("tracker_removed", callable_mp(this, &XRBodyModifier3D::_tracker_changed));
 			}
 			for (int i = 0; i < XRBodyTracker::JOINT_MAX; i++) {
 				joints[i].bone = -1;
