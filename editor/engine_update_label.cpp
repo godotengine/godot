@@ -180,22 +180,15 @@ void EngineUpdateLabel::_set_message(const String &p_message, const Color &p_col
 
 void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 	status = p_status;
-	if (compact_mode) {
-		if (status != UpdateStatus::BUSY && status != UpdateStatus::UPDATE_AVAILABLE) {
-			hide();
-			return;
-		} else {
-			show();
-		}
+	if (status == UpdateStatus::DEV || status == UpdateStatus::BUSY || status == UpdateStatus::UP_TO_DATE) {
+		// Hide the label to prevent unnecessary distraction.
+		hide();
+		return;
+	} else {
+		show();
 	}
 
 	switch (status) {
-		case UpdateStatus::DEV: {
-			set_disabled(true);
-			_set_message(TTR("Running a development build."), theme_cache.disabled_color);
-			set_tooltip_text(TTR("Exact version can't be determined for update checking."));
-			break;
-		}
 		case UpdateStatus::OFFLINE: {
 			set_disabled(false);
 			if (int(EDITOR_GET("network/connection/network_mode")) == EditorSettings::NETWORK_OFFLINE) {
@@ -206,21 +199,10 @@ void EngineUpdateLabel::_set_status(UpdateStatus p_status) {
 			set_tooltip_text("");
 			break;
 		}
-		case UpdateStatus::BUSY: {
-			set_disabled(true);
-			_set_message(TTR("Checking for updates..."), theme_cache.default_color);
-			set_tooltip_text("");
-		} break;
 
 		case UpdateStatus::ERROR: {
 			set_disabled(false);
 			set_tooltip_text(TTR("An error has occurred. Click to try again."));
-		} break;
-
-		case UpdateStatus::UP_TO_DATE: {
-			set_disabled(false);
-			_set_message(TTR("Current version up to date."), theme_cache.disabled_color);
-			set_tooltip_text(TTR("Click to check again."));
 		} break;
 
 		case UpdateStatus::UPDATE_AVAILABLE: {
@@ -315,8 +297,7 @@ void EngineUpdateLabel::pressed() {
 			emit_signal("offline_clicked");
 		} break;
 
-		case UpdateStatus::ERROR:
-		case UpdateStatus::UP_TO_DATE: {
+		case UpdateStatus::ERROR: {
 			_check_update();
 		} break;
 
@@ -327,10 +308,6 @@ void EngineUpdateLabel::pressed() {
 		default: {
 		}
 	}
-}
-
-void EngineUpdateLabel::enable_compact_mode() {
-	compact_mode = true;
 }
 
 EngineUpdateLabel::EngineUpdateLabel() {
