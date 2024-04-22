@@ -5591,6 +5591,11 @@ Ref<ImageTexture> TileSetAtlasSource::_create_padded_image_texture(const Ref<Tex
 		ret.instantiate();
 		return ret;
 	}
+	if (src_image->is_compressed()) {
+		src_image = src_image->duplicate();
+		Error err = src_image->decompress();
+		ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Unable to decompress image.");
+	}
 
 	Size2 size = get_atlas_grid_size() * (texture_region_size + Vector2i(2, 2));
 	Ref<Image> image = Image::create_empty(size.x, size.y, false, src_image->get_format());

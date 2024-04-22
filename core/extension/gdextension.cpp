@@ -46,6 +46,41 @@ String GDExtension::get_extension_list_config_file() {
 	return ProjectSettings::get_singleton()->get_project_data_path().path_join("extension_list.cfg");
 }
 
+Vector<SharedObject> GDExtension::find_extension_dependencies(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature) {
+	Vector<SharedObject> dependencies_shared_objects;
+	if (p_config->has_section("dependencies")) {
+		List<String> config_dependencies;
+		p_config->get_section_keys("dependencies", &config_dependencies);
+
+		for (const String &dependency : config_dependencies) {
+			Vector<String> dependency_tags = dependency.split(".");
+			bool all_tags_met = true;
+			for (int i = 0; i < dependency_tags.size(); i++) {
+				String tag = dependency_tags[i].strip_edges();
+				if (!p_has_feature(tag)) {
+					all_tags_met = false;
+					break;
+				}
+			}
+
+			if (all_tags_met) {
+				Dictionary dependency_value = p_config->get_value("dependencies", dependency);
+				for (const Variant *key = dependency_value.next(nullptr); key; key = dependency_value.next(key)) {
+					String dependency_path = *key;
+					String target_path = dependency_value[*key];
+					if (dependency_path.is_relative_path()) {
+						dependency_path = p_path.get_base_dir().path_join(dependency_path);
+					}
+					dependencies_shared_objects.push_back(SharedObject(dependency_path, dependency_tags, target_path));
+				}
+				break;
+			}
+		}
+	}
+
+	return dependencies_shared_objects;
+}
+
 String GDExtension::find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags) {
 	// First, check the explicit libraries.
 	if (p_config->has_section("libraries")) {
@@ -727,10 +762,24 @@ GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(const String
 	return *function;
 }
 
-Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol) {
+Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol, Vector<SharedObject> *p_dependencies) {
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+
+	Vector<String> abs_dependencies_paths;
+	if (p_dependencies != nullptr && !p_dependencies->is_empty()) {
+		for (const SharedObject &dependency : *p_dependencies) {
+			abs_dependencies_paths.push_back(ProjectSettings::get_singleton()->globalize_path(dependency.path));
+		}
+	}
+
 	String actual_lib_path;
-	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true, &actual_lib_path, Engine::get_singleton()->is_editor_hint());
+	OS::GDExtensionData data = {
+		true, // also_set_library_path
+		&actual_lib_path, // r_resolved_path
+		Engine::get_singleton()->is_editor_hint(), // generate_temp_files
+		&abs_dependencies_paths, // library_dependencies
+	};
+	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
 
 	if (actual_lib_path.get_file() != abs_path.get_file()) {
 		// If temporary files are generated, let's change the library path to point at the original,
@@ -970,7 +1019,8 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 			FileAccess::get_modified_time(library_path));
 #endif
 
-	err = p_extension->open_library(is_static_library ? String() : library_path, entry_symbol);
+	Vector<SharedObject> library_dependencies = GDExtension::find_extension_dependencies(p_path, config, [](const String &p_feature) { return OS::get_singleton()->has_feature(p_feature); });
+	err = p_extension->open_library(is_static_library ? String() : library_path, entry_symbol, &library_dependencies);
 	if (err != OK) {
 		// Unreference the extension so that this loading can be considered a failure.
 		p_extension.unref();

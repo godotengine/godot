@@ -293,7 +293,7 @@ Vector3 Basis::get_scale_abs() const {
 			Vector3(rows[0][2], rows[1][2], rows[2][2]).length());
 }
 
-Vector3 Basis::get_scale_local() const {
+Vector3 Basis::get_scale_global() const {
 	real_t det_sign = SIGN(determinant());
 	return det_sign * Vector3(rows[0].length(), rows[1].length(), rows[2].length());
 }

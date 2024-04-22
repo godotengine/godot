@@ -77,6 +77,14 @@ void TTS_Android::setup(jobject p_tts) {
 	}
 }
 
+void TTS_Android::terminate() {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(cls);
+	env->DeleteGlobalRef(tts);
+}
+
 void TTS_Android::_java_utterance_callback(int p_event, int p_id, int p_pos) {
 	ERR_FAIL_COND_MSG(!initialized, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (ids.has(p_id)) {
@@ -170,6 +178,8 @@ void TTS_Android::speak(const String &p_text, const String &p_voice, int p_volum
 		jstring jStrT = env->NewStringUTF(p_text.utf8().get_data());
 		jstring jStrV = env->NewStringUTF(p_voice.utf8().get_data());
 		env->CallVoidMethod(tts, _speak, jStrT, jStrV, CLAMP(p_volume, 0, 100), CLAMP(p_pitch, 0.f, 2.f), CLAMP(p_rate, 0.1f, 10.f), p_utterance_id, p_interrupt);
+		env->DeleteLocalRef(jStrT);
+		env->DeleteLocalRef(jStrV);
 	}
 }
 

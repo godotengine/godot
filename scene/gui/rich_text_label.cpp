@@ -3212,33 +3212,6 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	queue_redraw();
 }
 
-void RichTextLabel::_remove_item(Item *p_item, const int p_line) {
-	int size = p_item->subitems.size();
-	if (size == 0) {
-		p_item->parent->subitems.erase(p_item);
-		// If a newline was erased, all lines AFTER the newline need to be decremented.
-		if (p_item->type == ITEM_NEWLINE) {
-			current_frame->lines.remove_at(p_line);
-			if (p_line < (int)current_frame->lines.size() && current_frame->lines[p_line].from) {
-				for (List<Item *>::Element *E = current_frame->lines[p_line].from->E; E; E = E->next()) {
-					if (E->get()->line > p_line) {
-						E->get()->line--;
-					}
-				}
-			}
-		}
-	} else {
-		// First, remove all child items for the provided item.
-		while (p_item->subitems.size()) {
-			_remove_item(p_item->subitems.front()->get(), p_line);
-		}
-		// Then remove the provided item itself.
-		p_item->parent->subitems.erase(p_item);
-	}
-	items.free(p_item->rid);
-	memdelete(p_item);
-}
-
 Size2 RichTextLabel::_get_image_size(const Ref<Texture2D> &p_image, int p_width, int p_height, const Rect2 &p_region) {
 	Size2 ret;
 	if (p_width > 0) {
@@ -3424,48 +3397,97 @@ void RichTextLabel::add_newline() {
 	queue_redraw();
 }
 
+void RichTextLabel::_remove_frame(HashSet<Item *> &r_erase_list, ItemFrame *p_frame, int p_line, bool p_erase, int p_char_offset, int p_line_offset) {
+	Line &l = p_frame->lines[p_line];
+	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
+	if (!p_erase) {
+		l.char_offset -= p_char_offset;
+	}
+
+	for (Item *it = l.from; it && it != it_to;) {
+		Item *next_it = _get_next_item(it);
+		it->line -= p_line_offset;
+		if (!p_erase) {
+			while (r_erase_list.has(it->parent)) {
+				it->E->erase();
+				it->parent = it->parent->parent;
+				it->E = it->parent->subitems.push_back(it);
+			}
+		}
+		if (it->type == ITEM_TABLE) {
+			ItemTable *table = static_cast<ItemTable *>(it);
+			for (List<Item *>::Element *sub_it = table->subitems.front(); sub_it; sub_it = sub_it->next()) {
+				ERR_CONTINUE(sub_it->get()->type != ITEM_FRAME); // Children should all be frames.
+				ItemFrame *frame = static_cast<ItemFrame *>(sub_it->get());
+				for (int i = 0; i < (int)frame->lines.size(); i++) {
+					_remove_frame(r_erase_list, frame, i, p_erase, p_char_offset, 0);
+				}
+				if (p_erase) {
+					r_erase_list.insert(frame);
+				} else {
+					frame->char_ofs -= p_char_offset;
+				}
+			}
+		}
+		if (p_erase) {
+			r_erase_list.insert(it);
+		} else {
+			it->char_ofs -= p_char_offset;
+		}
+		it = next_it;
+	}
+}
+
 bool RichTextLabel::remove_paragraph(const int p_paragraph) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
-	if (p_paragraph >= (int)current_frame->lines.size() || p_paragraph < 0) {
+	if (p_paragraph >= (int)main->lines.size() || p_paragraph < 0) {
 		return false;
 	}
 
-	// Remove all subitems with the same line as that provided.
-	Vector<List<Item *>::Element *> subitem_to_remove;
-	if (current_frame->lines[p_paragraph].from) {
-		for (List<Item *>::Element *E = current_frame->lines[p_paragraph].from->E; E; E = E->next()) {
-			if (E->get()->line == p_paragraph) {
-				subitem_to_remove.push_back(E);
+	if (main->lines.size() == 1) {
+		// Clear all.
+		main->_clear_children();
+		current = main;
+		current_frame = main;
+		main->lines.clear();
+		main->lines.resize(1);
+
+		current_char_ofs = 0;
+	} else {
+		HashSet<Item *> erase_list;
+		Line &l = main->lines[p_paragraph];
+		int off = l.char_count;
+		for (int i = p_paragraph; i < (int)main->lines.size(); i++) {
+			if (i == p_paragraph) {
+				_remove_frame(erase_list, main, i, true, off, 0);
 			} else {
-				break;
+				_remove_frame(erase_list, main, i, false, off, 1);
 			}
 		}
-	}
-
-	bool had_newline = false;
-	// Reverse for loop to remove items from the end first.
-	for (int i = subitem_to_remove.size() - 1; i >= 0; i--) {
-		List<Item *>::Element *subitem = subitem_to_remove[i];
-		had_newline = had_newline || subitem->get()->type == ITEM_NEWLINE;
-		if (subitem->get() == current) {
-			pop();
+		for (HashSet<Item *>::Iterator E = erase_list.begin(); E; ++E) {
+			Item *it = *E;
+			if (current_frame == it) {
+				current_frame = main;
+			}
+			if (current == it) {
+				current = main;
+			}
+			if (!erase_list.has(it->parent)) {
+				it->E->erase();
+			}
+			items.free(it->rid);
+			it->subitems.clear();
+			memdelete(it);
 		}
-		_remove_item(subitem->get(), p_paragraph);
+		main->lines.remove_at(p_paragraph);
+		current_char_ofs -= off;
 	}
 
-	if (!had_newline) {
-		current_frame->lines.remove_at(p_paragraph);
-	}
-
-	if (current_frame->lines.is_empty()) {
-		current_frame->lines.resize(1);
-	}
-
-	if (p_paragraph == 0 && current->subitems.size() > 0) {
-		main->lines[0].from = main;
-	}
+	selection.click_frame = nullptr;
+	selection.click_item = nullptr;
+	deselect();
 
 	main->first_invalid_line.store(MIN(main->first_invalid_line.load(), p_paragraph));
 	main->first_resized_line.store(MIN(main->first_resized_line.load(), p_paragraph));
@@ -5197,7 +5219,7 @@ void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
 }
 
 int RichTextLabel::get_paragraph_count() const {
-	return current_frame->lines.size();
+	return main->lines.size();
 }
 
 int RichTextLabel::get_visible_paragraph_count() const {

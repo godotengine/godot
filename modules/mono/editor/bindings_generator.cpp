@@ -2581,6 +2581,10 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		p_output.append("\")]");
 	}
 
+	if (p_iprop.is_hidden) {
+		p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
+	}
+
 	p_output.append(MEMBER_BEGIN "public ");
 
 	if (prop_allowed_inherited_member_hiding.has(p_itype.proxy_name + "." + p_iprop.proxy_name)) {
@@ -2840,7 +2844,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output.append("\")]");
 		}
 
-		if (p_imethod.is_compat) {
+		if (p_imethod.is_hidden) {
 			p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
 		}
 
@@ -3654,11 +3658,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
 			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
 
-			if (iprop.setter != StringName()) {
-				accessor_methods[iprop.setter] = iprop.cname;
-			}
-			if (iprop.getter != StringName()) {
-				accessor_methods[iprop.getter] = iprop.cname;
+			// If the property is internal hide it; otherwise, hide the getter and setter.
+			if (property.usage & PROPERTY_USAGE_INTERNAL) {
+				iprop.is_hidden = true;
+			} else {
+				if (iprop.setter != StringName()) {
+					accessor_methods[iprop.setter] = iprop.cname;
+				}
+				if (iprop.getter != StringName()) {
+					accessor_methods[iprop.getter] = iprop.cname;
+				}
 			}
 
 			bool valid = false;
@@ -3860,10 +3869,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			HashMap<StringName, StringName>::Iterator accessor = accessor_methods.find(imethod.cname);
 			if (accessor) {
-				// We only make internal an accessor method if it's in the same class as the property.
+				// We only hide an accessor method if it's in the same class as the property.
 				// It's easier this way, but also we don't know if an accessor method in a different class
 				// could have other purposes, so better leave those untouched.
-				imethod.is_internal = true;
+				imethod.is_hidden = true;
 			}
 
 			if (itype.class_doc) {
@@ -3892,6 +3901,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			// after all the non-compat methods have been added. The compat methods are added in
 			// reverse so the most recently added ones take precedence over older compat methods.
 			if (imethod.is_compat) {
+				imethod.is_hidden = true;
 				compat_methods.push_front(imethod);
 				continue;
 			}

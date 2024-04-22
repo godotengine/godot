@@ -34,6 +34,7 @@
 #include "core/os/thread_safe.h"
 #include "scene/resources/mesh.h"
 #include "servers/xr/xr_pose.h"
+#include "servers/xr/xr_tracker.h"
 #include "servers/xr_server.h"
 
 /**
@@ -42,41 +43,33 @@
 	This is where potentially additional AR/VR interfaces may be active as there are AR/VR SDKs that solely deal with positional tracking.
 */
 
-class XRPositionalTracker : public RefCounted {
-	GDCLASS(XRPositionalTracker, RefCounted);
+class XRPositionalTracker : public XRTracker {
+	GDCLASS(XRPositionalTracker, XRTracker);
 	_THREAD_SAFE_CLASS_
 
 public:
 	enum TrackerHand {
 		TRACKER_HAND_UNKNOWN, /* unknown or not applicable */
 		TRACKER_HAND_LEFT, /* controller is the left hand controller */
-		TRACKER_HAND_RIGHT /* controller is the right hand controller */
+		TRACKER_HAND_RIGHT, /* controller is the right hand controller */
+		TRACKER_HAND_MAX
 	};
 
-private:
-	XRServer::TrackerType type; // type of tracker
-	StringName name; // (unique) name of the tracker
-	String description; // description of the tracker
+protected:
 	String profile; // this is interface dependent, for OpenXR this will be the interaction profile bound for to the tracker
-	TrackerHand hand; // if known, the hand this tracker is held in
+	TrackerHand tracker_hand = TRACKER_HAND_UNKNOWN; // if known, the hand this tracker is held in
 
 	HashMap<StringName, Ref<XRPose>> poses;
 	HashMap<StringName, Variant> inputs;
 
-protected:
 	static void _bind_methods();
 
 public:
-	void set_tracker_type(XRServer::TrackerType p_type);
-	XRServer::TrackerType get_tracker_type() const;
-	void set_tracker_name(const StringName &p_name);
-	StringName get_tracker_name() const;
-	void set_tracker_desc(const String &p_desc);
-	String get_tracker_desc() const;
 	void set_tracker_profile(const String &p_profile);
 	String get_tracker_profile() const;
+
 	XRPositionalTracker::TrackerHand get_tracker_hand() const;
-	void set_tracker_hand(const XRPositionalTracker::TrackerHand p_hand);
+	virtual void set_tracker_hand(const XRPositionalTracker::TrackerHand p_hand);
 
 	bool has_pose(const StringName &p_action_name) const;
 	Ref<XRPose> get_pose(const StringName &p_action_name) const;
@@ -85,9 +78,6 @@ public:
 
 	Variant get_input(const StringName &p_action_name) const;
 	void set_input(const StringName &p_action_name, const Variant &p_value);
-
-	XRPositionalTracker();
-	~XRPositionalTracker() {}
 };
 
 VARIANT_ENUM_CAST(XRPositionalTracker::TrackerHand);
