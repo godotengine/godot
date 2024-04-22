@@ -163,7 +163,20 @@ private:
 	void _unref(void *p_data);
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
-	USize _copy_on_write();
+	CowData<T>::USize _copy();
+
+	_FORCE_INLINE_ USize _copy_on_write() {
+		if (unlikely(!_ptr)) {
+			return 0;
+		}
+		SafeNumeric<USize> *refc = _get_refcount_ptr((uint8_t *)_ptr - DATA_OFFSET);
+		USize rc = refc->get();
+		if (unlikely(rc > 1)) {
+			/* in use by more than me */
+			return _copy();
+		}
+		return rc;
+	}
 
 public:
 	void operator=(const CowData<T> &p_from) { _ref(p_from); }
@@ -178,12 +191,11 @@ public:
 	}
 
 	_FORCE_INLINE_ Size size() const {
-		USize *size = (USize *)_get_size();
-		if (size) {
-			return *size;
-		} else {
+		if (unlikely(_ptr == nullptr)) {
 			return 0;
 		}
+
+		return *_get_size_ptr((uint8_t *)_ptr - DATA_OFFSET);
 	}
 
 	_FORCE_INLINE_ void clear() { resize(0); }
@@ -269,43 +281,31 @@ void CowData<T>::_unref(void *p_data) {
 }
 
 template <typename T>
-typename CowData<T>::USize CowData<T>::_copy_on_write() {
-	if (!_ptr) {
-		return 0;
-	}
+typename CowData<T>::USize CowData<T>::_copy() {
+	USize current_size = *_get_size();
 
-	SafeNumeric<USize> *refc = _get_refcount();
+	uint8_t *mem_new = (uint8_t *)Memory::alloc_static(_get_alloc_size(current_size) + DATA_OFFSET, false);
+	ERR_FAIL_NULL_V(mem_new, 0);
 
-	USize rc = refc->get();
-	if (unlikely(rc > 1)) {
-		/* in use by more than me */
-		USize current_size = *_get_size();
+	SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
+	USize *_size_ptr = _get_size_ptr(mem_new);
+	T *_data_ptr = _get_data_ptr(mem_new);
 
-		uint8_t *mem_new = (uint8_t *)Memory::alloc_static(_get_alloc_size(current_size) + DATA_OFFSET, false);
-		ERR_FAIL_NULL_V(mem_new, 0);
+	new (_refc_ptr) SafeNumeric<USize>(1); //refcount
+	*(_size_ptr) = current_size; //size
 
-		SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
-		USize *_size_ptr = _get_size_ptr(mem_new);
-		T *_data_ptr = _get_data_ptr(mem_new);
-
-		new (_refc_ptr) SafeNumeric<USize>(1); //refcount
-		*(_size_ptr) = current_size; //size
-
-		// initialize new elements
-		if constexpr (std::is_trivially_copyable_v<T>) {
-			memcpy((uint8_t *)_data_ptr, _ptr, current_size * sizeof(T));
-		} else {
-			for (USize i = 0; i < current_size; i++) {
-				memnew_placement(&_data_ptr[i], T(_ptr[i]));
-			}
+	// initialize new elements
+	if constexpr (std::is_trivially_copyable_v<T>) {
+		memcpy((uint8_t *)_data_ptr, _ptr, current_size * sizeof(T));
+	} else {
+		for (USize i = 0; i < current_size; i++) {
+			memnew_placement(&_data_ptr[i], T(_ptr[i]));
 		}
-
-		_unref(_ptr);
-		_ptr = _data_ptr;
-
-		rc = 1;
 	}
-	return rc;
+
+	_unref(_ptr);
+	_ptr = _data_ptr;
+	return 1;
 }
 
 template <typename T>
