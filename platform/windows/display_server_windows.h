@@ -61,6 +61,8 @@
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
+#include "native_menu_windows.h"
+
 #include <io.h>
 #include <stdio.h>
 
@@ -152,11 +154,23 @@ typedef UINT(WINAPI *WTInfoPtr)(UINT p_category, UINT p_index, LPVOID p_output);
 typedef BOOL(WINAPI *WTPacketPtr)(HANDLE p_ctx, UINT p_param, LPVOID p_packets);
 typedef BOOL(WINAPI *WTEnablePtr)(HANDLE p_ctx, BOOL p_enable);
 
+enum PreferredAppMode {
+	APPMODE_DEFAULT = 0,
+	APPMODE_ALLOWDARK = 1,
+	APPMODE_FORCEDARK = 2,
+	APPMODE_FORCELIGHT = 3,
+	APPMODE_MAX = 4
+};
+
 typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
 typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
 typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);
 typedef int(WINAPI *GetImmersiveUserColorSetPreferencePtr)(bool bForceCheckRegistry, bool bSkipCheckOnFail);
 typedef HRESULT(WINAPI *RtlGetVersionPtr)(OSVERSIONINFOW *lpVersionInformation);
+typedef bool(WINAPI *AllowDarkModeForAppPtr)(bool darkMode);
+typedef PreferredAppMode(WINAPI *SetPreferredAppModePtr)(PreferredAppMode appMode);
+typedef void(WINAPI *RefreshImmersiveColorPolicyStatePtr)();
+typedef void(WINAPI *FlushMenuThemesPtr)();
 
 // Windows Ink API
 #ifndef POINTER_STRUCTURES
@@ -358,6 +372,7 @@ class DisplayServerWindows : public DisplayServer {
 	HANDLE power_request;
 
 	TTS_Windows *tts = nullptr;
+	NativeMenuWindows *native_menu = nullptr;
 
 	struct WindowData {
 		HWND hWnd;
@@ -367,6 +382,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
 		bool maximized = false;
+		bool maximized_fs = false;
 		bool minimized = false;
 		bool fullscreen = false;
 		bool multiwindow_fs = false;
@@ -376,7 +392,6 @@ class DisplayServerWindows : public DisplayServer {
 		bool was_maximized = false;
 		bool always_on_top = false;
 		bool no_focus = false;
-		bool window_has_focus = false;
 		bool exclusive = false;
 		bool context_created = false;
 		bool mpass = false;
@@ -387,7 +402,6 @@ class DisplayServerWindows : public DisplayServer {
 
 		// Timers.
 		uint32_t move_timer_id = 0U;
-		uint32_t focus_timer_id = 0U;
 
 		HANDLE wtctx;
 		LOGCONTEXTW wtlc;
@@ -457,7 +471,7 @@ class DisplayServerWindows : public DisplayServer {
 	HashMap<IndicatorID, IndicatorData> indicators;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	int restore_mouse_trails = 0;
@@ -665,7 +679,6 @@ public:
 	virtual void force_process_and_drop_events() override;
 
 	virtual void release_rendering_thread() override;
-	virtual void make_rendering_thread() override;
 	virtual void swap_buffers() override;
 
 	virtual void set_native_icon(const String &p_filename) override;

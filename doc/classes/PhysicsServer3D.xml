@@ -482,7 +482,7 @@
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Returns [code]true[/code] if the body is omitting the standard force integration. See [method body_set_omit_force_integration].
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
@@ -582,9 +582,12 @@
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="userdata" type="Variant" default="null" />
 			<description>
-				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]). The force integration function takes 2 arguments:
-				- [code]state[/code] — [PhysicsDirectBodyState3D] used to retrieve and modify the body's state.
-				- [code skip-lint]userdata[/code] — optional user data passed to [method body_set_force_integration_callback].
+				Sets the body's custom force integration callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback.
+				The function [param callable] will be called every physics tick, before the standard force integration (see [method body_set_omit_force_integration]). It can be used for example to update the body's linear and angular velocity based on contact with other bodies.
+				If [param userdata] is not [code]null[/code], the function [param callable] must take the following two parameters:
+				1. [code]state[/code]: a [PhysicsDirectBodyState3D], used to retrieve and modify the body's state,
+				2. [code skip-lint]userdata[/code]: a [Variant]; its value will be the [param userdata] passed into this method.
+				If [param userdata] is [code]null[/code], then [param callable] must take only the [code]state[/code] parameter.
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -608,7 +611,8 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Sets whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Sets whether the body omits the standard force integration. If [param enable] is [code]true[/code], the body will not automatically use applied forces, torques, and damping to update the body's linear and angular velocity. In this case, [method body_set_force_integration_callback] can be used to manually update the linear and angular velocity instead.
+				This method is called when the property [member RigidBody3D.custom_integrator] is set.
 			</description>
 		</method>
 		<method name="body_set_param">
@@ -740,7 +744,7 @@
 			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
 			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
 			<description>
-				Gets a generic_6_DOF_joint flag (see [enum G6DOFJointAxisFlag] constants).
+				Returns the value of a generic 6DOF joint flag. See [enum G6DOFJointAxisFlag] for the list of available flags.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_get_param" qualifiers="const">
@@ -749,7 +753,7 @@
 			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
 			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
 			<description>
-				Gets a generic_6_DOF_joint parameter (see [enum G6DOFJointAxisParam] constants).
+				Returns the value of a generic 6DOF joint parameter. See [enum G6DOFJointAxisParam] for the list of available parameters.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_set_flag">
@@ -759,7 +763,7 @@
 			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
 			<param index="3" name="enable" type="bool" />
 			<description>
-				Sets a generic_6_DOF_joint flag (see [enum G6DOFJointAxisFlag] constants).
+				Sets the value of a given generic 6DOF joint flag. See [enum G6DOFJointAxisFlag] for the list of available flags.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_set_param">
@@ -769,7 +773,7 @@
 			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
 			<param index="3" name="value" type="float" />
 			<description>
-				Sets a generic_6_DOF_joint parameter (see [enum G6DOFJointAxisParam] constants).
+				Sets the value of a given generic 6DOF joint parameter. See [enum G6DOFJointAxisParam] for the list of available parameters.
 			</description>
 		</method>
 		<method name="get_process_info">
@@ -876,6 +880,7 @@
 			<param index="3" name="body_B" type="RID" />
 			<param index="4" name="local_ref_B" type="Transform3D" />
 			<description>
+				Make the joint a generic six degrees of freedom (6DOF) joint. Use [method generic_6dof_joint_set_flag] and [method generic_6dof_joint_set_param] to set the joint's flags and parameters respectively.
 			</description>
 		</method>
 		<method name="joint_make_hinge">
@@ -1497,6 +1502,12 @@
 		<constant name="G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="G6DOFJointAxisParam">
 			The maximum force that the linear motor can apply while trying to reach the target velocity.
 		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_SPRING_STIFFNESS" value="7" enum="G6DOFJointAxisParam">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_SPRING_DAMPING" value="8" enum="G6DOFJointAxisParam">
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT" value="9" enum="G6DOFJointAxisParam">
+		</constant>
 		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="10" enum="G6DOFJointAxisParam">
 			The minimum rotation in negative direction to break loose and rotate around the axes.
 		</constant>
@@ -1524,17 +1535,33 @@
 		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="18" enum="G6DOFJointAxisParam">
 			Maximum acceleration for the motor at the axes.
 		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS" value="19" enum="G6DOFJointAxisParam">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_SPRING_DAMPING" value="20" enum="G6DOFJointAxisParam">
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT" value="21" enum="G6DOFJointAxisParam">
+		</constant>
+		<constant name="G6DOF_JOINT_MAX" value="22" enum="G6DOFJointAxisParam">
+			Represents the size of the [enum G6DOFJointAxisParam] enum.
+		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="G6DOFJointAxisFlag">
 			If set, linear motion is possible within the given limits.
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1" enum="G6DOFJointAxisFlag">
 			If set, rotational motion is possible.
 		</constant>
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING" value="2" enum="G6DOFJointAxisFlag">
+		</constant>
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING" value="3" enum="G6DOFJointAxisFlag">
+		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="4" enum="G6DOFJointAxisFlag">
 			If set, there is a rotational motor across these axes.
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR" value="5" enum="G6DOFJointAxisFlag">
 			If set, there is a linear motor on this axis that targets a specific velocity.
+		</constant>
+		<constant name="G6DOF_JOINT_FLAG_MAX" value="6" enum="G6DOFJointAxisFlag">
+			Represents the size of the [enum G6DOFJointAxisFlag] enum.
 		</constant>
 		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">
 			The [Shape3D] is a [WorldBoundaryShape3D].
@@ -1601,7 +1628,7 @@
 			Constant to set/get the priority (order of processing) of an area.
 		</constant>
 		<constant name="AREA_PARAM_WIND_FORCE_MAGNITUDE" value="10" enum="AreaParameter">
-			Constant to set/get the magnitude of area-specific wind force.
+			Constant to set/get the magnitude of area-specific wind force. This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
 		</constant>
 		<constant name="AREA_PARAM_WIND_SOURCE" value="11" enum="AreaParameter">
 			Constant to set/get the 3D vector that specifies the origin from which an area-specific wind blows.

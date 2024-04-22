@@ -545,6 +545,58 @@ TEST_CASE("[Array] Recursive self comparison") {
 	a2.clear();
 }
 
+TEST_CASE("[Array] Iteration") {
+	Array a1 = build_array(1, 2, 3);
+	Array a2 = build_array(1, 2, 3);
+
+	int idx = 0;
+	for (Variant &E : a1) {
+		CHECK_EQ(int(a2[idx]), int(E));
+		idx++;
+	}
+
+	CHECK_EQ(idx, a1.size());
+
+	idx = 0;
+
+	for (const Variant &E : (const Array &)a1) {
+		CHECK_EQ(int(a2[idx]), int(E));
+		idx++;
+	}
+
+	CHECK_EQ(idx, a1.size());
+
+	a1.clear();
+}
+
+TEST_CASE("[Array] Iteration and modification") {
+	Array a1 = build_array(1, 2, 3);
+	Array a2 = build_array(2, 3, 4);
+	Array a3 = build_array(1, 2, 3);
+	Array a4 = build_array(1, 2, 3);
+	a3.make_read_only();
+
+	int idx = 0;
+	for (Variant &E : a1) {
+		E = a2[idx];
+		idx++;
+	}
+
+	CHECK_EQ(a1, a2);
+
+	// Ensure read-only is respected.
+	idx = 0;
+	for (Variant &E : a3) {
+		E = a2[idx];
+	}
+
+	CHECK_EQ(a3, a4);
+
+	a1.clear();
+	a2.clear();
+	a4.clear();
+}
+
 } // namespace TestArray
 
 #endif // TEST_ARRAY_H

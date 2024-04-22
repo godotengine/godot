@@ -312,9 +312,8 @@ def generate_sdk_package_versions():
     )
 
     # We write in ../SdkPackageVersions.props.
-    with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w", encoding="utf-8") as f:
+    with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w", encoding="utf-8", newline="\n") as f:
         f.write(props)
-        f.close()
 
     # Also write the versioned docs URL to a constant for the Source Generators.
 
@@ -340,9 +339,8 @@ def generate_sdk_package_versions():
     )
     os.makedirs(generators_dir, exist_ok=True)
 
-    with open(os.path.join(generators_dir, "Common.Constants.cs"), "w", newline="\n", encoding="utf-8") as f:
+    with open(os.path.join(generators_dir, "Common.Constants.cs"), "w", encoding="utf-8", newline="\n") as f:
         f.write(constants)
-        f.close()
 
 
 def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision):

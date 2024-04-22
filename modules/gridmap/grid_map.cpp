@@ -195,7 +195,7 @@ real_t GridMap::get_collision_priority() const {
 
 void GridMap::set_physics_material(Ref<PhysicsMaterial> p_material) {
 	physics_material = p_material;
-	_recreate_octant_data();
+	_update_physics_bodies_characteristics();
 }
 
 Ref<PhysicsMaterial> GridMap::get_physics_material() const {
@@ -370,8 +370,8 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(g->static_body, collision_mask);
 		PhysicsServer3D::get_singleton()->body_set_collision_priority(g->static_body, collision_priority);
 		if (physics_material.is_valid()) {
-			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material->get_friction());
-			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->get_bounce());
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material->computed_friction());
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
 		}
 		SceneTree *st = SceneTree::get_singleton();
 
@@ -745,6 +745,19 @@ void GridMap::_update_physics_bodies_collision_properties() {
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(E.value->static_body, collision_layer);
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(E.value->static_body, collision_mask);
 		PhysicsServer3D::get_singleton()->body_set_collision_priority(E.value->static_body, collision_priority);
+	}
+}
+
+void GridMap::_update_physics_bodies_characteristics() {
+	real_t friction = 1.0;
+	real_t bounce = 0.0;
+	if (physics_material.is_valid()) {
+		friction = physics_material->computed_friction();
+		bounce = physics_material->computed_bounce();
+	}
+	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
+		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, friction);
+		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, bounce);
 	}
 }
 

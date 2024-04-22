@@ -776,9 +776,9 @@ void TranslationServer::set_property_translation(const Ref<Translation> &p_trans
 	property_translation = p_translation;
 }
 
-StringName TranslationServer::property_translate(const StringName &p_message) const {
+StringName TranslationServer::property_translate(const StringName &p_message, const StringName &p_context) const {
 	if (property_translation.is_valid()) {
-		StringName r = property_translation->get_message(p_message);
+		StringName r = property_translation->get_message(p_message, p_context);
 		if (r) {
 			return r;
 		}
@@ -993,7 +993,7 @@ String TranslationServer::add_padding(const String &p_message, int p_length) con
 }
 
 const char32_t *TranslationServer::get_accented_version(char32_t p_character) const {
-	if (!is_ascii_char(p_character)) {
+	if (!is_ascii_alphabet_char(p_character)) {
 		return nullptr;
 	}
 

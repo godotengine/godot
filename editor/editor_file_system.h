@@ -68,14 +68,6 @@ class EditorFileSystemDirectory : public Object {
 		String script_class_icon_path;
 	};
 
-	struct FileInfoSort {
-		bool operator()(const FileInfo *p_a, const FileInfo *p_b) const {
-			return p_a->file < p_b->file;
-		}
-	};
-
-	void sort_files();
-
 	Vector<FileInfo *> files;
 
 	static void _bind_methods();
@@ -312,6 +304,7 @@ public:
 	EditorFileSystemDirectory *get_filesystem();
 	bool is_scanning() const;
 	bool is_importing() const { return importing; }
+	bool doing_first_scan() const { return first_scan; }
 	float get_scanning_progress() const;
 	void scan();
 	void scan_changes();

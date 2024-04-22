@@ -46,6 +46,29 @@ namespace Godot
         }
 
         [UnmanagedCallersOnly]
+        internal static unsafe int GetArgumentCount(IntPtr delegateGCHandle, godot_bool* outIsValid)
+        {
+            try
+            {
+                var @delegate = (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target;
+                int? argCount = @delegate?.Method?.GetParameters().Length;
+                if (argCount is null)
+                {
+                    *outIsValid = godot_bool.False;
+                    return 0;
+                }
+                *outIsValid = godot_bool.True;
+                return argCount.Value;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *outIsValid = godot_bool.False;
+                return 0;
+            }
+        }
+
+        [UnmanagedCallersOnly]
         internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, void* trampoline,
             godot_variant** args, int argc, godot_variant* outRet)
         {
@@ -184,7 +207,7 @@ namespace Godot
 
                             foreach (FieldInfo field in fields)
                             {
-                                Type fieldType = field.GetType();
+                                Type fieldType = field.FieldType;
 
                                 Variant.Type variantType = GD.TypeToVariantType(fieldType);
 
@@ -193,7 +216,7 @@ namespace Godot
 
                                 static byte[] VarToBytes(in godot_variant var)
                                 {
-                                    NativeFuncs.godotsharp_var_to_bytes(var, false.ToGodotBool(), out var varBytes);
+                                    NativeFuncs.godotsharp_var_to_bytes(var, godot_bool.True, out var varBytes);
                                     using (varBytes)
                                         return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
                                 }
@@ -460,7 +483,7 @@ namespace Godot
 
                             if (fieldInfo != null)
                             {
-                                var variantValue = GD.BytesToVar(valueBuffer);
+                                var variantValue = GD.BytesToVarWithObjects(valueBuffer);
                                 object? managedValue = RuntimeTypeConversionHelper.ConvertToObjectOfType(
                                     (godot_variant)variantValue.NativeVar, fieldInfo.FieldType);
                                 fieldInfo.SetValue(recreatedTarget, managedValue);
@@ -776,7 +799,7 @@ namespace Godot
                     return func(variant);
 
                 if (typeof(GodotObject).IsAssignableFrom(type))
-                    return Convert.ChangeType(VariantUtils.ConvertTo<GodotObject>(variant), type, CultureInfo.InvariantCulture);
+                    return VariantUtils.ConvertTo<GodotObject>(variant);
 
                 if (typeof(GodotObject[]).IsAssignableFrom(type))
                 {
@@ -795,7 +818,7 @@ namespace Godot
                     }
 
                     using var godotArray = NativeFuncs.godotsharp_variant_as_array(variant);
-                    return Convert.ChangeType(ConvertToSystemArrayOfGodotObject(godotArray, type), type, CultureInfo.InvariantCulture);
+                    return ConvertToSystemArrayOfGodotObject(godotArray, type);
                 }
 
                 if (type.IsEnum)

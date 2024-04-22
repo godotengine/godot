@@ -182,8 +182,20 @@ public:
 
 		// Construct a placeholder.
 		Object *obj = native_parent->creation_func();
+
+		// ClassDB::set_object_extension_instance() won't be called for placeholders.
+		// We need need to make sure that all the things it would have done (even if
+		// done in a different way to support placeholders) will also be done here.
+
 		obj->_extension = ClassDB::get_placeholder_extension(ti->name);
 		obj->_extension_instance = memnew(PlaceholderExtensionInstance(ti->name));
+
+#ifdef TOOLS_ENABLED
+		if (obj->_extension->track_instance) {
+			obj->_extension->track_instance(obj->_extension->tracking_userdata, obj);
+		}
+#endif
+
 		return obj;
 	}
 
@@ -506,14 +518,7 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 			extension = get_placeholder_extension(ti->name);
 		}
 #endif
-		Object *obj = (Object *)extension->create_instance(extension->class_userdata);
-
-#ifdef TOOLS_ENABLED
-		if (extension->track_instance) {
-			extension->track_instance(extension->tracking_userdata, obj);
-		}
-#endif
-		return obj;
+		return (Object *)extension->create_instance(extension->class_userdata);
 	} else {
 #ifdef TOOLS_ENABLED
 		if (!p_require_real_class && ti->is_runtime && Engine::get_singleton()->is_editor_hint()) {
@@ -638,6 +643,12 @@ void ClassDB::set_object_extension_instance(Object *p_object, const StringName &
 
 	p_object->_extension = ti->gdextension;
 	p_object->_extension_instance = p_instance;
+
+#ifdef TOOLS_ENABLED
+	if (p_object->_extension->track_instance) {
+		p_object->_extension->track_instance(p_object->_extension->tracking_userdata, p_object);
+	}
+#endif
 }
 
 bool ClassDB::can_instantiate(const StringName &p_class) {
@@ -1664,6 +1675,31 @@ bool ClassDB::has_method(const StringName &p_class, const StringName &p_method, 
 	}
 
 	return false;
+}
+
+int ClassDB::get_method_argument_count(const StringName &p_class, const StringName &p_method, bool *r_is_valid, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		MethodBind **method = type->method_map.getptr(p_method);
+		if (method && *method) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return (*method)->get_argument_count();
+		}
+		if (p_no_inheritance) {
+			break;
+		}
+		type = type->inherits_ptr;
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
 }
 
 void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method) {

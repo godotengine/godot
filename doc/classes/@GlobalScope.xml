@@ -368,7 +368,7 @@
 			<param index="1" name="curve" type="float" />
 			<description>
 				Returns an "eased" value of [param x] based on an easing function defined with [param curve]. This easing function is based on an exponent. The [param curve] can be any floating-point number, with specific values leading to the following behaviors:
-				[codeblock]
+				[codeblock lang=text]
 				- Lower than -1.0 (exclusive): Ease in-out
 				- 1.0: Linear
 				- Between -1.0 and 0.0 (exclusive): Ease out-in
@@ -460,8 +460,8 @@
 				    var x = i * 0.5 - 1.5
 				    print("%4.1f           %4.1f  | %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
 				[/codeblock]
-				Produces:
-				[codeblock]
+				Prints:
+				[codeblock lang=text]
 				 (x)  (fmod(x, 1.5))   (fposmod(x, 1.5))
 				-1.5           -0.0  |  0.0
 				-1.0           -1.0  |  0.5
@@ -818,8 +818,8 @@
 				for i in range(-3, 4):
 				    print("%2d       %2d  | %2d" % [i, i % 3, posmod(i, 3)])
 				[/codeblock]
-				Produces:
-				[codeblock]
+				Prints:
+				[codeblock lang=text]
 				(i)  (i % 3)   (posmod(i, 3))
 				-3        0  |  0
 				-2       -2  |  1
@@ -901,6 +901,7 @@
 		<method name="printraw" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to strings in the best way possible to the OS terminal. Unlike [method print], no newline is automatically added at the end.
+				[b]Note:[/b] The OS terminal is [i]not[/i] the same as the editor's Output dock. The output sent to the OS terminal can be seen when running Godot from a terminal. On Windows, this requires using the [code]console.exe[/code] executable.
 				[codeblocks]
 				[gdscript]
 				printraw("A")
@@ -1099,14 +1100,14 @@
 		<method name="rid_allocate_id">
 			<return type="int" />
 			<description>
-				Allocates a unique ID which can be used by the implementation to construct a RID. This is used mainly from native extensions to implement servers.
+				Allocates a unique ID which can be used by the implementation to construct an RID. This is used mainly from native extensions to implement servers.
 			</description>
 		</method>
 		<method name="rid_from_int64">
 			<return type="RID" />
 			<param index="0" name="base" type="int" />
 			<description>
-				Creates a RID from a [param base]. This is used mainly from native extensions to build servers.
+				Creates an RID from a [param base]. This is used mainly from native extensions to build servers.
 			</description>
 		</method>
 		<method name="rotate_toward">
@@ -1457,7 +1458,7 @@
 				[/csharp]
 				[/codeblocks]
 				Prints:
-				[codeblock]
+				[codeblock lang=text]
 				{
 				    "a": 1,
 				    "b": 2
@@ -1589,6 +1590,10 @@
 		</member>
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
+		</member>
+		<member name="NativeMenu" type="NativeMenu" setter="" getter="">
+			The [NativeMenu] singleton.
+			[b]Note:[/b] Only implemented on macOS.
 		</member>
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.

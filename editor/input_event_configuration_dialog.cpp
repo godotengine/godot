@@ -263,14 +263,6 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 	_set_event(received_event, received_original_event);
 }
 
-void InputEventConfigurationDialog::_on_listen_focus_changed() {
-	if (event_listener->has_focus()) {
-		set_close_on_escape(false);
-	} else {
-		set_close_on_escape(true);
-	}
-}
-
 void InputEventConfigurationDialog::_search_term_updated(const String &) {
 	_update_input_list();
 }
@@ -595,7 +587,7 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 
 void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event, const String &p_current_action_name) {
 	if (p_event.is_valid()) {
-		_set_event(p_event->duplicate(), p_event);
+		_set_event(p_event->duplicate(), p_event->duplicate());
 	} else {
 		// Clear Event
 		_set_event(Ref<InputEvent>(), Ref<InputEvent>());
@@ -656,8 +648,8 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	event_listener->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	event_listener->set_stretch_ratio(0.75);
 	event_listener->connect("event_changed", callable_mp(this, &InputEventConfigurationDialog::_on_listen_input_changed));
-	event_listener->connect("focus_entered", callable_mp(this, &InputEventConfigurationDialog::_on_listen_focus_changed));
-	event_listener->connect("focus_exited", callable_mp(this, &InputEventConfigurationDialog::_on_listen_focus_changed));
+	event_listener->connect("focus_entered", callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(false));
+	event_listener->connect("focus_exited", callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(true));
 	main_vbox->add_child(event_listener);
 
 	main_vbox->add_child(memnew(HSeparator));
@@ -676,6 +668,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	manual_vbox->add_child(input_list_search);
 
 	input_list_tree = memnew(Tree);
+	input_list_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	input_list_tree->set_custom_minimum_size(Size2(0, 100 * EDSCALE)); // Min height for tree
 	input_list_tree->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
 	input_list_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);

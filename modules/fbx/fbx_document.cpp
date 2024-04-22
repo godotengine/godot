@@ -990,8 +990,8 @@ Error FBXDocument::_parse_images(Ref<FBXState> p_state, const String &p_base_pat
 	for (int texture_i = 0; texture_i < static_cast<int>(fbx_scene->texture_files.count); texture_i++) {
 		const ufbx_texture_file &fbx_texture_file = fbx_scene->texture_files[texture_i];
 		String path = _as_string(fbx_texture_file.filename);
-		path = ProjectSettings::get_singleton()->localize_path(path);
-		if (path.is_absolute_path() && !path.is_resource_file()) {
+		// Use only filename for absolute paths to avoid portability issues.
+		if (path.is_absolute_path()) {
 			path = path.get_file();
 		}
 		if (!p_base_path.is_empty()) {
@@ -1080,7 +1080,7 @@ Error FBXDocument::_parse_materials(Ref<FBXState> p_state) {
 
 		if (fbx_material->pbr.base_color.has_value) {
 			Color albedo = _material_color(fbx_material->pbr.base_color, fbx_material->pbr.base_factor);
-			material->set_albedo(albedo);
+			material->set_albedo(albedo.linear_to_srgb());
 		}
 
 		if (fbx_material->features.double_sided.enabled) {
@@ -1178,7 +1178,11 @@ Error FBXDocument::_parse_materials(Ref<FBXState> p_state) {
 			}
 
 			// Combined textures and factors are very unreliable in FBX
-			material->set_albedo(Color(1, 1, 1));
+			Color albedo_factor = Color(1, 1, 1);
+			if (fbx_material->pbr.base_factor.has_value) {
+				albedo_factor *= (float)fbx_material->pbr.base_factor.value_real;
+			}
+			material->set_albedo(albedo_factor.linear_to_srgb());
 
 			// TODO: Does not support rotation, could be inverted?
 			material->set_uv1_offset(_as_vec3(base_texture->uv_transform.translation));
@@ -1232,11 +1236,11 @@ Error FBXDocument::_parse_materials(Ref<FBXState> p_state) {
 
 		if (fbx_material->pbr.emission_color.has_value) {
 			material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
-			material->set_emission(_material_color(fbx_material->pbr.emission_color));
+			material->set_emission(_material_color(fbx_material->pbr.emission_color).linear_to_srgb());
 			material->set_emission_energy_multiplier(float(fbx_material->pbr.emission_factor.value_real));
 		}
 
-		const ufbx_texture *emission_texture = _get_file_texture(fbx_material->pbr.ambient_occlusion.texture);
+		const ufbx_texture *emission_texture = _get_file_texture(fbx_material->pbr.emission_color.texture);
 		if (emission_texture) {
 			material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, GLTFTextureIndex(emission_texture->file_index), TEXTURE_TYPE_GENERIC));
 			material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
@@ -1266,7 +1270,7 @@ Error FBXDocument::_parse_cameras(Ref<FBXState> p_state) {
 			camera->set_fov(Math::deg_to_rad(real_t(fbx_camera->field_of_view_deg.y)));
 		} else {
 			camera->set_perspective(false);
-			camera->set_size_mag(real_t(fbx_camera->orthographic_size.y));
+			camera->set_size_mag(real_t(fbx_camera->orthographic_size.y * 0.5f));
 		}
 		if (fbx_camera->near_plane != 0.0f) {
 			camera->set_depth_near(fbx_camera->near_plane);
@@ -1625,6 +1629,9 @@ void FBXDocument::_generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTF
 
 	active_skeleton = skeleton;
 	current_node = active_skeleton;
+	if (active_skeleton) {
+		p_scene_parent = active_skeleton;
+	}
 
 	if (requires_extra_node) {
 		current_node = nullptr;
@@ -2015,8 +2022,8 @@ Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool
 	GLTFNodeIndex fbx_root = state->root_nodes.write[0];
 	Node *fbx_root_node = state->get_scene_node(fbx_root);
 	Node *root = fbx_root_node;
-	if (fbx_root_node && fbx_root_node->get_parent()) {
-		root = fbx_root_node->get_parent();
+	if (root && root->get_owner() && root->get_owner() != root) {
+		root = root->get_owner();
 	}
 	ERR_FAIL_NULL_V(root, nullptr);
 	_process_mesh_instances(state, root);
@@ -2235,6 +2242,10 @@ Error FBXDocument::_parse_lights(Ref<FBXState> p_state) {
 }
 
 String FBXDocument::_get_texture_path(const String &p_base_dir, const String &p_source_file_path) const {
+	// Check if the original path exists first.
+	if (FileAccess::exists(p_source_file_path)) {
+		return p_source_file_path.strip_edges();
+	}
 	const String tex_file_name = p_source_file_path.get_file();
 	const Vector<String> subdirs = {
 		"", "textures/", "Textures/", "images/",
@@ -2347,7 +2358,7 @@ PackedByteArray FBXDocument::generate_buffer(Ref<GLTFState> p_state) {
 	return PackedByteArray();
 }
 
-Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
+Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
 	return ERR_UNAVAILABLE;
 }
 

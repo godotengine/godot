@@ -31,6 +31,7 @@
 
 #define MATH_PI  3.14159265358979323846f
 #define MATH_PI2 1.57079632679489661923f
+#define PATH_KAPPA 0.552284f
 
 #define mathMin(x, y) (((x) < (y)) ? (x) : (y))
 #define mathMax(x, y) (((x) > (y)) ? (x) : (y))
@@ -69,7 +70,7 @@ static inline bool mathEqual(const Matrix& a, const Matrix& b)
 static inline bool mathRightAngle(const Matrix* m)
 {
    auto radian = fabsf(atan2f(m->e21, m->e11));
-   if (radian < FLT_EPSILON || mathEqual(radian, float(M_PI_2)) || mathEqual(radian, float(M_PI))) return true;
+   if (radian < FLT_EPSILON || mathEqual(radian, MATH_PI2) || mathEqual(radian, MATH_PI)) return true;
    return false;
 }
 

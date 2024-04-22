@@ -128,6 +128,11 @@ public:
 	GDVIRTUAL2(_font_set_antialiasing, RID, TextServer::FontAntialiasing);
 	GDVIRTUAL1RC(TextServer::FontAntialiasing, _font_get_antialiasing, RID);
 
+	virtual void font_set_disable_embedded_bitmaps(const RID &p_font_rid, bool p_disable_embedded_bitmaps) override;
+	virtual bool font_get_disable_embedded_bitmaps(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_disable_embedded_bitmaps, RID, bool);
+	GDVIRTUAL1RC(bool, _font_get_disable_embedded_bitmaps, RID);
+
 	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) override;
 	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_generate_mipmaps, RID, bool);
@@ -486,8 +491,12 @@ public:
 
 	virtual Array shaped_text_get_objects(const RID &p_shaped) const override;
 	virtual Rect2 shaped_text_get_object_rect(const RID &p_shaped, const Variant &p_key) const override;
+	virtual Vector2i shaped_text_get_object_range(const RID &p_shaped, const Variant &p_key) const override;
+	virtual int64_t shaped_text_get_object_glyph(const RID &p_shaped, const Variant &p_key) const override;
 	GDVIRTUAL1RC(Array, _shaped_text_get_objects, RID);
 	GDVIRTUAL2RC(Rect2, _shaped_text_get_object_rect, RID, const Variant &);
+	GDVIRTUAL2RC(Vector2i, _shaped_text_get_object_range, RID, const Variant &);
+	GDVIRTUAL2RC(int64_t, _shaped_text_get_object_glyph, RID, const Variant &);
 
 	virtual Size2 shaped_text_get_size(const RID &p_shaped) const override;
 	virtual double shaped_text_get_ascent(const RID &p_shaped) const override;
@@ -557,8 +566,10 @@ public:
 
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const override;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const override;
+	virtual String string_to_title(const String &p_string, const String &p_language = "") const override;
 	GDVIRTUAL2RC(String, _string_to_upper, const String &, const String &);
 	GDVIRTUAL2RC(String, _string_to_lower, const String &, const String &);
+	GDVIRTUAL2RC(String, _string_to_title, const String &, const String &);
 
 	TypedArray<Vector3i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 	GDVIRTUAL3RC(TypedArray<Vector3i>, _parse_structured_text, StructuredTextParser, const Array &, const String &);

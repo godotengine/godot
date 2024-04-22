@@ -55,6 +55,9 @@ struct hb_priority_queue_t
 
   bool in_error () const { return heap.in_error (); }
 
+  bool alloc (unsigned size)
+  { return heap.alloc (size); }
+
 #ifndef HB_OPTIMIZE_SIZE
   HB_ALWAYS_INLINE
 #endif
@@ -160,7 +163,7 @@ struct hb_priority_queue_t
     goto repeat;
   }
 
-  void swap (unsigned a, unsigned b)
+  void swap (unsigned a, unsigned b) noexcept
   {
     assert (a < heap.length);
     assert (b < heap.length);

@@ -241,10 +241,6 @@ PackedStringArray Control::get_configuration_warnings() const {
 		warnings.push_back(RTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."));
 	}
 
-	if (get_z_index() != 0) {
-		warnings.push_back(RTR("Changing the Z index of a control only affects the drawing order, not the input event handling order."));
-	}
-
 	return warnings;
 }
 
@@ -1406,15 +1402,11 @@ void Control::_set_global_position(const Point2 &p_point) {
 
 void Control::set_global_position(const Point2 &p_point, bool p_keep_offsets) {
 	ERR_MAIN_THREAD_GUARD;
-
-	Transform2D global_transform_cache = get_global_transform();
-	if (p_point == global_transform_cache.get_origin()) {
-		return; // Edge case, but avoids calculation.
-	}
-
-	Point2 internal_position = global_transform_cache.affine_inverse().xform(p_point);
-
-	set_position(internal_position + data.pos_cache, p_keep_offsets);
+	// (parent_global_transform * T(new_position) * internal_transform).origin == new_global_position
+	// (T(new_position) * internal_transform).origin == new_position_in_parent_space
+	// new_position == new_position_in_parent_space - internal_transform.origin
+	Point2 position_in_parent_space = data.parent_canvas_item ? data.parent_canvas_item->get_global_transform().affine_inverse().xform(p_point) : p_point;
+	set_position(position_in_parent_space - _get_internal_transform().get_origin(), p_keep_offsets);
 }
 
 Point2 Control::get_global_position() const {
@@ -1657,8 +1649,7 @@ Size2 Control::get_custom_minimum_size() const {
 
 void Control::_update_minimum_size_cache() {
 	Size2 minsize = get_minimum_size();
-	minsize.x = MAX(minsize.x, data.custom_minimum_size.x);
-	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
+	minsize = minsize.max(data.custom_minimum_size);
 
 	data.minimum_size_cache = minsize;
 	data.minimum_size_valid = true;
@@ -3558,7 +3549,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "localize_numeral_system"), "set_localize_numeral_system", "is_localizing_numeral_system");
 
 #ifndef DISABLE_DEPRECATED
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_auto_translate", "is_auto_translating");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_auto_translate", "is_auto_translating");
 #endif
 
 	ADD_GROUP("Tooltip", "tooltip_");
@@ -3694,6 +3685,8 @@ void Control::_bind_methods() {
 
 Control::Control() {
 	data.theme_owner = memnew(ThemeOwner(this));
+
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }
 
 Control::~Control() {

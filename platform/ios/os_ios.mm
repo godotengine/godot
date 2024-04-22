@@ -149,10 +149,6 @@ void OS_IOS::deinitialize_modules() {
 
 void OS_IOS::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
-
-	if (main_loop) {
-		main_loop->initialize();
-	}
 }
 
 MainLoop *OS_IOS::get_main_loop() const {
@@ -181,7 +177,9 @@ bool OS_IOS::iterate() {
 }
 
 void OS_IOS::start() {
-	Main::start();
+	if (Main::start() == EXIT_SUCCESS) {
+		main_loop->initialize();
+	}
 
 	if (joypad_ios) {
 		joypad_ios->start_processing();
@@ -219,13 +217,13 @@ _FORCE_INLINE_ String OS_IOS::get_framework_executable(const String &p_path) {
 	return p_path;
 }
 
-Error OS_IOS::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_IOS::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	if (p_path.length() == 0) {
 		// Static xcframework.
 		p_library_handle = RTLD_SELF;
 
-		if (r_resolved_path != nullptr) {
-			*r_resolved_path = p_path;
+		if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+			*p_data->r_resolved_path = p_path;
 		}
 
 		return OK;
@@ -258,8 +256,8 @@ Error OS_IOS::open_dynamic_library(const String &p_path, void *&p_library_handle
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
-	if (r_resolved_path != nullptr) {
-		*r_resolved_path = path;
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
 	}
 
 	return OK;
@@ -361,7 +359,7 @@ String OS_IOS::get_unique_id() const {
 String OS_IOS::get_processor_name() const {
 	char buffer[256];
 	size_t buffer_len = 256;
-	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, nullptr, 0) == 0) {
 		return String::utf8(buffer, buffer_len);
 	}
 	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));

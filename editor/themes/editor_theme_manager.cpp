@@ -356,20 +356,25 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 		if (config.spacing_preset != "Custom") {
 			int preset_base_spacing = 0;
 			int preset_extra_spacing = 0;
+			Size2 preset_dialogs_buttons_min_size;
 
 			if (config.spacing_preset == "Compact") {
 				preset_base_spacing = 0;
 				preset_extra_spacing = 4;
+				preset_dialogs_buttons_min_size = Size2(90, 26);
 			} else if (config.spacing_preset == "Spacious") {
 				preset_base_spacing = 6;
 				preset_extra_spacing = 2;
+				preset_dialogs_buttons_min_size = Size2(112, 36);
 			} else { // Default
 				preset_base_spacing = 4;
 				preset_extra_spacing = 0;
+				preset_dialogs_buttons_min_size = Size2(105, 34);
 			}
 
 			config.base_spacing = preset_base_spacing;
 			config.extra_spacing = preset_extra_spacing;
+			config.dialogs_buttons_min_size = preset_dialogs_buttons_min_size;
 
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_spacing", config.base_spacing);
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/additional_spacing", config.extra_spacing);
@@ -1271,6 +1276,9 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		// AcceptDialog.
 		p_theme->set_stylebox("panel", "AcceptDialog", p_config.dialog_style);
 		p_theme->set_constant("buttons_separation", "AcceptDialog", 8 * EDSCALE);
+		// Make buttons with short texts such as "OK" easier to click/tap.
+		p_theme->set_constant("buttons_min_width", "AcceptDialog", p_config.dialogs_buttons_min_size.x * EDSCALE);
+		p_theme->set_constant("buttons_min_height", "AcceptDialog", p_config.dialogs_buttons_min_size.y * EDSCALE);
 
 		// FileDialog.
 		p_theme->set_icon("folder", "FileDialog", p_theme->get_icon(SNAME("Folder"), EditorStringName(EditorIcons)));
@@ -1528,7 +1536,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_color("resizer_color", "GraphEditMinimap", minimap_resizer_color);
 		}
 
-		// GraphElement & GraphNode.
+		// GraphElement, GraphNode & GraphFrame.
 		{
 			const int gn_margin_top = 2;
 			const int gn_margin_side = 2;
@@ -1619,6 +1627,41 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("shadow_offset_x", "GraphNodeTitleLabel", 0);
 			p_theme->set_constant("shadow_offset_y", "GraphNodeTitleLabel", 1);
 			p_theme->set_constant("line_spacing", "GraphNodeTitleLabel", 3 * EDSCALE);
+
+			// GraphFrame.
+
+			const int gf_corner_width = 7 * EDSCALE;
+			const int gf_border_width = 2 * MAX(1, EDSCALE);
+
+			Ref<StyleBoxFlat> graphframe_sb = make_flat_stylebox(Color(0.0, 0.0, 0.0, 0.2), gn_margin_side, gn_margin_side, gn_margin_side, gn_margin_bottom, gf_corner_width);
+			graphframe_sb->set_expand_margin(SIDE_TOP, 38 * EDSCALE);
+			graphframe_sb->set_border_width_all(gf_border_width);
+			graphframe_sb->set_border_color(high_contrast_borders ? gn_bg_color.lightened(0.2) : gn_bg_color.darkened(0.3));
+			graphframe_sb->set_shadow_size(8 * EDSCALE);
+			graphframe_sb->set_shadow_color(Color(p_config.shadow_color, p_config.shadow_color.a * 0.25));
+			graphframe_sb->set_anti_aliased(true);
+
+			Ref<StyleBoxFlat> graphframe_sb_selected = graphframe_sb->duplicate();
+			graphframe_sb_selected->set_border_color(gn_selected_border_color);
+
+			p_theme->set_stylebox("panel", "GraphFrame", graphframe_sb);
+			p_theme->set_stylebox("panel_selected", "GraphFrame", graphframe_sb_selected);
+			p_theme->set_stylebox("titlebar", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
+			p_theme->set_stylebox("titlebar_selected", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
+			p_theme->set_color("resizer_color", "GraphFrame", gn_decoration_color);
+
+			// GraphFrame's title Label
+			p_theme->set_type_variation("GraphFrameTitleLabel", "Label");
+			p_theme->set_stylebox("normal", "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
+			p_theme->set_font_size("font_size", "GraphFrameTitleLabel", 22);
+			p_theme->set_color("font_color", "GraphFrameTitleLabel", Color(1, 1, 1));
+			p_theme->set_color("font_shadow_color", "GraphFrameTitleLabel", Color(0, 0, 0, 0));
+			p_theme->set_color("font_outline_color", "GraphFrameTitleLabel", Color(1, 1, 1));
+			p_theme->set_constant("shadow_offset_x", "GraphFrameTitleLabel", 1 * EDSCALE);
+			p_theme->set_constant("shadow_offset_y", "GraphFrameTitleLabel", 1 * EDSCALE);
+			p_theme->set_constant("outline_size", "GraphFrameTitleLabel", 0);
+			p_theme->set_constant("shadow_outline_size", "GraphFrameTitleLabel", 1 * EDSCALE);
+			p_theme->set_constant("line_spacing", "GraphFrameTitleLabel", 3 * EDSCALE);
 		}
 	}
 
@@ -1659,6 +1702,8 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 	{
 		p_theme->set_stylebox("project_list", "ProjectManager", p_config.tree_panel_style);
 		p_theme->set_constant("sidebar_button_icon_separation", "ProjectManager", int(6 * EDSCALE));
+		p_theme->set_icon("browse_folder", "ProjectManager", p_theme->get_icon(SNAME("FolderBrowse"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("browse_file", "ProjectManager", p_theme->get_icon(SNAME("FileBrowse"), EditorStringName(EditorIcons)));
 
 		// ProjectTag.
 		{
@@ -1740,29 +1785,40 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_stylebox("ScriptEditorPanelFloating", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
 		p_theme->set_stylebox("ScriptEditor", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
 
-		// Bottom panel.
-		Ref<StyleBoxFlat> style_bottom_panel = p_config.content_panel_style->duplicate();
-		style_bottom_panel->set_corner_radius_all(p_config.corner_radius * EDSCALE);
-		p_theme->set_stylebox("BottomPanel", EditorStringName(EditorStyles), style_bottom_panel);
-
 		// Main menu.
 		Ref<StyleBoxFlat> menu_transparent_style = p_config.button_style->duplicate();
 		menu_transparent_style->set_bg_color(Color(1, 1, 1, 0));
 		menu_transparent_style->set_border_width_all(0);
-		Ref<StyleBoxFlat> main_screen_button_transparent = menu_transparent_style->duplicate();
+		Ref<StyleBoxFlat> main_screen_button_hover = p_config.button_style_hover->duplicate();
 		for (int i = 0; i < 4; i++) {
-			menu_transparent_style->set_content_margin((Side)i, p_config.button_style->get_margin((Side)i) + p_config.button_style->get_border_width((Side)i));
+			menu_transparent_style->set_content_margin((Side)i, p_config.button_style->get_content_margin((Side)i));
+			main_screen_button_hover->set_content_margin((Side)i, p_config.button_style_hover->get_content_margin((Side)i));
 		}
-		p_theme->set_stylebox("MenuTransparent", EditorStringName(EditorStyles), menu_transparent_style);
-		p_theme->set_stylebox("MenuHover", EditorStringName(EditorStyles), p_config.button_style_hover);
-		p_theme->set_stylebox("normal", "MainScreenButton", main_screen_button_transparent);
-		p_theme->set_stylebox("pressed", "MainScreenButton", main_screen_button_transparent);
-		p_theme->set_stylebox("hover_pressed", "MainScreenButton", p_config.button_style_hover);
+		p_theme->set_stylebox("normal", "MainScreenButton", menu_transparent_style);
+		p_theme->set_stylebox("pressed", "MainScreenButton", menu_transparent_style);
+		p_theme->set_stylebox("hover", "MainScreenButton", main_screen_button_hover);
+		p_theme->set_stylebox("hover_pressed", "MainScreenButton", main_screen_button_hover);
+
+		p_theme->set_type_variation("MainMenuBar", "FlatMenuButton");
+		p_theme->set_stylebox("normal", "MainMenuBar", menu_transparent_style);
+		p_theme->set_stylebox("pressed", "MainMenuBar", main_screen_button_hover);
+		p_theme->set_stylebox("hover", "MainMenuBar", main_screen_button_hover);
+		p_theme->set_stylebox("hover_pressed", "MainMenuBar", main_screen_button_hover);
 
 		// Run bar.
 		p_theme->set_type_variation("RunBarButton", "FlatMenuButton");
 		p_theme->set_stylebox("disabled", "RunBarButton", menu_transparent_style);
 		p_theme->set_stylebox("pressed", "RunBarButton", menu_transparent_style);
+
+		// Bottom panel.
+		Ref<StyleBoxFlat> style_bottom_panel = p_config.content_panel_style->duplicate();
+		style_bottom_panel->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+		p_theme->set_stylebox("BottomPanel", EditorStringName(EditorStyles), style_bottom_panel);
+		p_theme->set_type_variation("BottomPanelButton", "FlatMenuButton");
+		p_theme->set_stylebox("normal", "BottomPanelButton", menu_transparent_style);
+		p_theme->set_stylebox("pressed", "BottomPanelButton", menu_transparent_style);
+		p_theme->set_stylebox("hover_pressed", "BottomPanelButton", main_screen_button_hover);
+		p_theme->set_stylebox("hover", "BottomPanelButton", main_screen_button_hover);
 	}
 
 	// Editor GUI widgets.
@@ -1819,9 +1875,9 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			Ref<StyleBoxFlat> style_flat_button_pressed = p_config.button_style_pressed->duplicate();
 
 			for (int i = 0; i < 4; i++) {
-				style_flat_button->set_content_margin((Side)i, p_config.button_style->get_margin((Side)i) + p_config.button_style->get_border_width((Side)i));
-				style_flat_button_hover->set_content_margin((Side)i, p_config.button_style->get_margin((Side)i) + p_config.button_style->get_border_width((Side)i));
-				style_flat_button_pressed->set_content_margin((Side)i, p_config.button_style->get_margin((Side)i) + p_config.button_style->get_border_width((Side)i));
+				style_flat_button->set_content_margin((Side)i, p_config.button_style->get_content_margin((Side)i));
+				style_flat_button_hover->set_content_margin((Side)i, p_config.button_style->get_content_margin((Side)i));
+				style_flat_button_pressed->set_content_margin((Side)i, p_config.button_style->get_content_margin((Side)i));
 			}
 			Color flat_pressed_color = p_config.dark_color_1.lightened(0.24).lerp(p_config.accent_color, 0.2) * Color(0.8, 0.8, 0.8, 0.85);
 			if (p_config.dark_theme) {
@@ -1852,6 +1908,9 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			Ref<StyleBoxFlat> editor_log_button_pressed = style_flat_button_pressed->duplicate();
 			editor_log_button_pressed->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
 			editor_log_button_pressed->set_border_color(p_config.accent_color);
+
+			p_theme->set_stylebox("normal", "EditorLogFilterButton", style_flat_button);
+			p_theme->set_stylebox("hover", "EditorLogFilterButton", style_flat_button_hover);
 			p_theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
 		}
 
@@ -2105,6 +2164,28 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_constant("table_v_separation", "EditorHelp", 6 * EDSCALE);
 		p_theme->set_constant("text_highlight_h_padding", "EditorHelp", 1 * EDSCALE);
 		p_theme->set_constant("text_highlight_v_padding", "EditorHelp", 2 * EDSCALE);
+	}
+
+	// EditorHelpBitTitle.
+	{
+		Ref<StyleBoxFlat> style = p_config.tree_panel_style->duplicate();
+		style->set_bg_color(p_config.dark_theme ? style->get_bg_color().lightened(0.04) : style->get_bg_color().darkened(0.04));
+		style->set_border_color(p_config.dark_theme ? style->get_border_color().lightened(0.04) : style->get_border_color().darkened(0.04));
+		style->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		style->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+
+		p_theme->set_type_variation("EditorHelpBitTitle", "RichTextLabel");
+		p_theme->set_stylebox("normal", "EditorHelpBitTitle", style);
+	}
+
+	// EditorHelpBitContent.
+	{
+		Ref<StyleBoxFlat> style = p_config.tree_panel_style->duplicate();
+		style->set_corner_radius(CORNER_TOP_LEFT, 0);
+		style->set_corner_radius(CORNER_TOP_RIGHT, 0);
+
+		p_theme->set_type_variation("EditorHelpBitContent", "RichTextLabel");
+		p_theme->set_stylebox("normal", "EditorHelpBitContent", style);
 	}
 
 	// Asset Library.

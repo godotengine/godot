@@ -293,7 +293,7 @@ Vector3 Node3D::get_global_rotation_degrees() const {
 void Node3D::set_global_rotation(const Vector3 &p_euler_rad) {
 	ERR_THREAD_GUARD;
 	Transform3D transform = get_global_transform();
-	transform.basis = Basis::from_euler(p_euler_rad);
+	transform.basis = Basis::from_euler(p_euler_rad) * Basis::from_scale(transform.basis.get_scale());
 	set_global_transform(transform);
 }
 
@@ -751,6 +751,15 @@ void Node3D::set_as_top_level(bool p_enabled) {
 		}
 	}
 	data.top_level = p_enabled;
+}
+
+void Node3D::set_as_top_level_keep_local(bool p_enabled) {
+	ERR_THREAD_GUARD;
+	if (data.top_level == p_enabled) {
+		return;
+	}
+	data.top_level = p_enabled;
+	_propagate_transform_changed(this);
 }
 
 bool Node3D::is_set_as_top_level() const {

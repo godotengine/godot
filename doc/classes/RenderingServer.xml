@@ -424,6 +424,14 @@
 				[b]Note:[/b] The equivalent node is [CanvasItem].
 			</description>
 		</method>
+		<method name="canvas_item_reset_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving a canvas item to a new location, to give an instantaneous change rather than interpolation from the previous location.
+			</description>
+		</method>
 		<method name="canvas_item_set_canvas_group_mode">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -502,6 +510,14 @@
 			<param index="1" name="index" type="int" />
 			<description>
 				Sets the index for the [CanvasItem].
+			</description>
+		</method>
+		<method name="canvas_item_set_interpolated">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="interpolated" type="bool" />
+			<description>
+				If [param interpolated] is [code]true[/code], turns on physics interpolation for the canvas item.
 			</description>
 		</method>
 		<method name="canvas_item_set_light_mask">
@@ -612,6 +628,15 @@
 				Sets the [CanvasItem]'s Z index, i.e. its draw order (lower indexes are drawn first).
 			</description>
 		</method>
+		<method name="canvas_item_transform_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<description>
+				Transforms both the current and previous stored transform for a canvas item.
+				This allows transforming a canvas item without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilising a shifting origin.
+			</description>
+		</method>
 		<method name="canvas_light_attach_to_canvas">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
@@ -644,6 +669,14 @@
 				[b]Note:[/b] The equivalent node is [LightOccluder2D].
 			</description>
 		</method>
+		<method name="canvas_light_occluder_reset_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="occluder" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving an occluder to a new location, to give an instantaneous change rather than interpolation from the previous location.
+			</description>
+		</method>
 		<method name="canvas_light_occluder_set_as_sdf_collision">
 			<return type="void" />
 			<param index="0" name="occluder" type="RID" />
@@ -657,6 +690,14 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Enables or disables light occluder.
+			</description>
+		</method>
+		<method name="canvas_light_occluder_set_interpolated">
+			<return type="void" />
+			<param index="0" name="occluder" type="RID" />
+			<param index="1" name="interpolated" type="bool" />
+			<description>
+				If [param interpolated] is [code]true[/code], turns on physics interpolation for the light occluder.
 			</description>
 		</method>
 		<method name="canvas_light_occluder_set_light_mask">
@@ -681,6 +722,23 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets a light occluder's [Transform2D].
+			</description>
+		</method>
+		<method name="canvas_light_occluder_transform_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="occluder" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<description>
+				Transforms both the current and previous stored transform for a light occluder.
+				This allows transforming an occluder without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilising a shifting origin.
+			</description>
+		</method>
+		<method name="canvas_light_reset_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving a canvas item to a new location, to give an instantaneous change rather than interpolation from the previous location.
 			</description>
 		</method>
 		<method name="canvas_light_set_blend_mode">
@@ -721,6 +779,14 @@
 			<param index="1" name="height" type="float" />
 			<description>
 				Sets a canvas light's height.
+			</description>
+		</method>
+		<method name="canvas_light_set_interpolated">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="interpolated" type="bool" />
+			<description>
+				If [param interpolated] is [code]true[/code], turns on physics interpolation for the canvas light.
 			</description>
 		</method>
 		<method name="canvas_light_set_item_cull_mask">
@@ -827,6 +893,15 @@
 			<param index="2" name="max_z" type="int" />
 			<description>
 				Sets the Z range of objects that will be affected by this light. Equivalent to [member Light2D.range_z_min] and [member Light2D.range_z_max].
+			</description>
+		</method>
+		<method name="canvas_light_transform_physics_interpolation">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<description>
+				Transforms both the current and previous stored transform for a canvas light.
+				This allows transforming a light without creating a "glitch" in the interpolation, which is is particularly useful for large worlds utilising a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_create">
@@ -1857,7 +1932,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="transform" type="Transform3D" />
 			<description>
-				Sets the world space transform of the instance. Equivalent to [member Node3D.transform].
+				Sets the world space transform of the instance. Equivalent to [member Node3D.global_transform].
 			</description>
 		</method>
 		<method name="instance_set_visibility_parent">
@@ -2501,7 +2576,7 @@
 			<description>
 				Set the entire data to use for drawing the [param multimesh] at once to [param buffer] (such as instance transforms and colors). [param buffer]'s size must match the number of instances multiplied by the per-instance data size (which depends on the enabled MultiMesh fields). Otherwise, an error message is printed and nothing is rendered. See also [method multimesh_get_buffer].
 				The per-instance data size and expected data order is:
-				[codeblock]
+				[codeblock lang=text]
 				2D:
 				  - Position: 8 floats (8 floats for Transform2D)
 				  - Position + Vertex color: 12 floats (8 floats for Transform2D, 4 floats for Color)
@@ -3609,6 +3684,14 @@
 				Returns the viewport's last rendered frame.
 			</description>
 		</method>
+		<method name="viewport_get_update_mode" qualifiers="const">
+			<return type="int" enum="RenderingServer.ViewportUpdateMode" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Returns the viewport's update mode. See [enum ViewportUpdateMode] constants for options.
+				[b]Warning:[/b] Calling this from any thread other than the rendering thread will be detrimental to performance.
+			</description>
+		</method>
 		<method name="viewport_remove_canvas">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -3903,7 +3986,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be a [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be a [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
+				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
 				[b]Note:[/b] This setting will have no effect when using the GL Compatibility renderer as the GL Compatibility renderer always renders in low dynamic range for performance reasons.
 			</description>
 		</method>

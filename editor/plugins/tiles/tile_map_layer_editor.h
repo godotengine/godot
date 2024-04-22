@@ -339,10 +339,16 @@ class TileMapLayerEditor : public VBoxContainer {
 	GDCLASS(TileMapLayerEditor, VBoxContainer);
 
 private:
-	bool tileset_changed_needs_update = false;
+	bool tile_map_layer_changed_needs_update = false;
 
 	ObjectID edited_tile_map_layer_id;
+	bool is_multi_node_edit = false;
+	Vector<TileMapLayer *> tile_map_layers_in_scene_cache;
+	bool layers_in_scene_list_cache_needs_update = false;
 	TileMapLayer *_get_edited_layer() const;
+	void _find_tile_map_layers_in_scene(Node *p_current, const Node *p_owner, Vector<TileMapLayer *> &r_list) const;
+	void _update_tile_map_layers_in_scene_list_cache();
+	void _node_change(Node *p_node);
 
 	// Vector to keep plugins.
 	Vector<TileMapLayerSubEditorPlugin *> tile_map_editor_plugins;
@@ -350,20 +356,36 @@ private:
 	// Toolbar.
 	HFlowContainer *tile_map_toolbar = nullptr;
 
+	bool show_layers_selector = false;
+
+	HBoxContainer *layer_selection_hbox = nullptr;
+	Button *select_previous_layer = nullptr;
+	void _select_previous_layer_pressed();
+	Button *select_next_layer = nullptr;
+	void _select_next_layer_pressed();
+	Button *select_all_layers = nullptr;
+	void _select_all_layers_pressed();
 	OptionButton *layers_selection_button = nullptr;
 	void _layers_selection_item_selected(int p_index);
+	void _update_layers_selector();
 
 	Button *toggle_highlight_selected_layer_button = nullptr;
+	void _clear_all_layers_highlighting();
+	void _update_all_layers_highlighting();
 	void _highlight_selected_layer_button_toggled(bool p_pressed);
 
 	Button *toggle_grid_button = nullptr;
 	void _on_grid_toggled(bool p_pressed);
 
+	enum {
+		ADVANCED_MENU_REPLACE_WITH_PROXIES,
+		ADVANCED_MENU_EXTRACT_TILE_MAP_LAYERS,
+	};
 	MenuButton *advanced_menu_button = nullptr;
 	void _advanced_menu_button_id_pressed(int p_id);
 
 	// Bottom panel.
-	Label *missing_tileset_label = nullptr;
+	Label *cant_edit_label = nullptr;
 	TabBar *tabs_bar = nullptr;
 	LocalVector<TileMapLayerSubEditorPlugin::TabData> tabs_data;
 	LocalVector<TileMapLayerSubEditorPlugin *> tabs_plugins;
@@ -379,22 +401,20 @@ private:
 
 	// Updates.
 	void _layers_select_next_or_previous(bool p_next);
-	void _update_highlighting_toggle();
 
 	// Inspector undo/redo callback.
 	void _move_tile_map_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos);
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 	void _draw_shape(Control *p_control, Rect2 p_region, TileSet::TileShape p_shape, TileSet::TileOffsetAxis p_offset_axis, Color p_color);
 
 public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
-	void edit(TileMapLayer *p_tile_map_layer);
-	void update_layers_selector();
+	void edit(Object *p_tile_map_layer);
+	void set_show_layer_selector(bool p_show_layer_selector);
 
 	TileMapLayerEditor();
 	~TileMapLayerEditor();

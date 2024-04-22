@@ -38,8 +38,8 @@
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/image_texture.h"
-#include "scene/resources/navigation_polygon.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/physics_material.h"
 
@@ -298,6 +298,10 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &p_property) const;
+
+#ifdef TOOLS_ENABLED
+	virtual uint32_t hash_edited_version_for_preview() const override { return 0; } // Not using preview, so disable it for performance.
+#endif
 
 private:
 	// --- TileSet data ---
@@ -615,6 +619,8 @@ public:
 		TRANSFORM_TRANSPOSE = 1 << 14,
 	};
 
+	static const int16_t UNTRANSFORM_MASK = ~(TileSetAtlasSource::TRANSFORM_FLIP_H + TileSetAtlasSource::TRANSFORM_FLIP_V + TileSetAtlasSource::TRANSFORM_TRANSPOSE);
+
 private:
 	struct TileAlternativesData {
 		Vector2i size_in_atlas = Vector2i(1, 1);
@@ -632,6 +638,8 @@ private:
 		Vector<int> alternatives_ids;
 		int next_alternative_id = 1;
 	};
+
+	bool initializing = true;
 
 	Ref<Texture2D> texture;
 	Vector2i margins;
@@ -656,12 +664,14 @@ private:
 	void _queue_update_padded_texture();
 	Ref<ImageTexture> _create_padded_image_texture(const Ref<Texture2D> &p_source);
 	void _update_padded_texture();
+	void _try_emit_changed();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	void _notification(int p_notification);
 	static void _bind_methods();
 
 public:
@@ -775,13 +785,17 @@ private:
 	HashMap<int, SceneData> scenes;
 	int next_scene_id = 1;
 
+	bool initializing = true;
+
 	void _compute_next_alternative_id();
+	void _try_emit_changed();
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	void _notification(int p_notification);
 	static void _bind_methods();
 
 public:

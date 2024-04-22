@@ -260,7 +260,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	if (depth_test != DEPTH_TEST_DISABLED) {
 		depth_stencil_state.enable_depth_test = true;
-		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 		depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED ? true : false;
 	}
 	bool depth_pre_pass_enabled = bool(GLOBAL_GET("rendering/driver/depth_prepass/enable"));
@@ -737,7 +737,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		default_shader = material_storage->shader_allocate();
 		material_storage->shader_initialize(default_shader);
 		material_storage->shader_set_code(default_shader, R"(
-// Default 3D material shader (clustered).
+// Default 3D material shader (Forward+).
 
 shader_type spatial;
 
@@ -768,11 +768,11 @@ void fragment() {
 		material_storage->shader_initialize(overdraw_material_shader);
 		// Use relatively low opacity so that more "layers" of overlapping objects can be distinguished.
 		material_storage->shader_set_code(overdraw_material_shader, R"(
-// 3D editor Overdraw debug draw mode shader (clustered).
+// 3D editor Overdraw debug draw mode shader (Forward+).
 
 shader_type spatial;
 
-render_mode blend_add, unshaded;
+render_mode blend_add, unshaded, fog_disabled;
 
 void fragment() {
 	ALBEDO = vec3(0.4, 0.8, 0.8);
@@ -792,11 +792,11 @@ void fragment() {
 		debug_shadow_splits_material_shader = material_storage->shader_allocate();
 		material_storage->shader_initialize(debug_shadow_splits_material_shader);
 		material_storage->shader_set_code(debug_shadow_splits_material_shader, R"(
-// 3D debug shadow splits mode shader(mobile).
+// 3D debug shadow splits mode shader (Forward+).
 
 shader_type spatial;
 
-render_mode debug_shadow_splits;
+render_mode debug_shadow_splits, fog_disabled;
 
 void fragment() {
 	ALBEDO = vec3(1.0, 1.0, 1.0);
@@ -827,7 +827,7 @@ void fragment() {
 		sampler.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 		sampler.min_filter = RD::SAMPLER_FILTER_LINEAR;
 		sampler.enable_compare = true;
-		sampler.compare_op = RD::COMPARE_OP_LESS;
+		sampler.compare_op = RD::COMPARE_OP_GREATER;
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 }

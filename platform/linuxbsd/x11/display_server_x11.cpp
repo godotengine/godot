@@ -109,6 +109,11 @@ static String get_atom_name(Display *p_disp, Atom p_atom) {
 
 bool DisplayServerX11::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		case FEATURE_SUBWINDOWS:
 #ifdef TOUCH_ENABLED
 		case FEATURE_TOUCHSCREEN:
@@ -123,8 +128,10 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		//case FEATURE_HIDPI:
 		case FEATURE_ICON:
 #ifdef DBUS_ENABLED
-		case FEATURE_NATIVE_DIALOG:
+		case FEATURE_NATIVE_DIALOG_FILE:
 #endif
+		//case FEATURE_NATIVE_DIALOG:
+		//case FEATURE_NATIVE_DIALOG_INPUT:
 		//case FEATURE_NATIVE_ICON:
 		case FEATURE_SWAP_BUFFERS:
 #ifdef DBUS_ENABLED
@@ -1990,8 +1997,7 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 		Size2i wsize = window_get_size(p_window);
 		wpos += srect.position;
 		if (srect != Rect2i()) {
-			wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - wsize.width / 3);
-			wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - wsize.height / 3);
+			wpos = wpos.clamp(srect.position, srect.position + srect.size - wsize / 3);
 		}
 		window_set_position(wpos, p_window);
 	}
@@ -2219,8 +2225,7 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
 	Size2i size = p_size;
-	size.x = MAX(1, size.x);
-	size.y = MAX(1, size.y);
+	size = size.max(Size2i(1, 1));
 
 	WindowData &wd = windows[p_window];
 
@@ -4263,7 +4268,7 @@ bool DisplayServerX11::_window_focus_check() {
 }
 
 void DisplayServerX11::process_events() {
-	_THREAD_SAFE_METHOD_
+	_THREAD_SAFE_LOCK_
 
 #ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
 	static int frame = 0;
@@ -4701,19 +4706,6 @@ void DisplayServerX11::process_events() {
 					break;
 				}
 
-				const WindowData &wd = windows[window_id];
-
-				XWindowAttributes xwa;
-				XSync(x11_display, False);
-				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
-
-				// Set focus when menu window is re-used.
-				// RevertToPointerRoot is used to make sure we don't lose all focus in case
-				// a subwindow and its parent are both destroyed.
-				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup && _window_focus_check()) {
-					_set_input_focus(wd.x11_window, RevertToPointerRoot);
-				}
-
 				_window_changed(&event);
 			} break;
 
@@ -5105,6 +5097,8 @@ void DisplayServerX11::process_events() {
 		*/
 	}
 
+	_THREAD_SAFE_UNLOCK_
+
 	Input::get_singleton()->flush_buffered_events();
 }
 
@@ -5115,17 +5109,6 @@ void DisplayServerX11::release_rendering_thread() {
 	}
 	if (gl_manager_egl) {
 		gl_manager_egl->release_current();
-	}
-#endif
-}
-
-void DisplayServerX11::make_rendering_thread() {
-#if defined(GLES3_ENABLED)
-	if (gl_manager) {
-		gl_manager->make_current();
-	}
-	if (gl_manager_egl) {
-		gl_manager_egl->make_current();
 	}
 #endif
 }
@@ -5220,7 +5203,7 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 			if (g_set_icon_error) {
 				g_set_icon_error = false;
 
-				WARN_PRINT("Icon too large, attempting to resize icon.");
+				WARN_PRINT(vformat("Icon too large (%dx%d), attempting to downscale icon.", w, h));
 
 				int new_width, new_height;
 				if (w > h) {
@@ -5459,8 +5442,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	} else {
 		Rect2i srect = screen_get_usable_rect(rq_screen);
 		Point2i wpos = p_rect.position;
-		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
-		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
+		wpos = wpos.clamp(srect.position, srect.position + srect.size - p_rect.size / 3);
 
 		win_rect.position = wpos;
 	}
@@ -5764,6 +5746,8 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
 	KeyMappingX11::initialize();
+
+	native_menu = memnew(NativeMenu);
 
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
@@ -6356,6 +6340,11 @@ DisplayServerX11::~DisplayServerX11() {
 
 	events_thread_done.set();
 	events_thread.wait_to_finish();
+
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
 
 	//destroy all windows
 	for (KeyValue<WindowID, WindowData> &E : windows) {

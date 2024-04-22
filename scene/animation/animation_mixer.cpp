@@ -33,13 +33,17 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
+
+#ifndef _3D_DISABLED
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/3d/skeleton_modifier_3d.h"
+#endif // _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
@@ -481,10 +485,6 @@ void AnimationMixer::set_callback_mode_process(AnimationCallbackModeProcess p_mo
 	if (was_active) {
 		set_active(true);
 	}
-
-#ifdef TOOLS_ENABLED
-	emit_signal(SNAME("mixer_updated"));
-#endif // TOOLS_ENABLED
 }
 
 AnimationMixer::AnimationCallbackModeProcess AnimationMixer::get_callback_mode_process() const {
@@ -493,9 +493,7 @@ AnimationMixer::AnimationCallbackModeProcess AnimationMixer::get_callback_mode_p
 
 void AnimationMixer::set_callback_mode_method(AnimationCallbackModeMethod p_mode) {
 	callback_mode_method = p_mode;
-#ifdef TOOLS_ENABLED
 	emit_signal(SNAME("mixer_updated"));
-#endif // TOOLS_ENABLED
 }
 
 AnimationMixer::AnimationCallbackModeMethod AnimationMixer::get_callback_mode_method() const {
@@ -504,9 +502,7 @@ AnimationMixer::AnimationCallbackModeMethod AnimationMixer::get_callback_mode_me
 
 void AnimationMixer::set_callback_mode_discrete(AnimationCallbackModeDiscrete p_mode) {
 	callback_mode_discrete = p_mode;
-#ifdef TOOLS_ENABLED
 	emit_signal(SNAME("mixer_updated"));
-#endif // TOOLS_ENABLED
 }
 
 AnimationMixer::AnimationCallbackModeDiscrete AnimationMixer::get_callback_mode_discrete() const {
@@ -693,14 +689,25 @@ bool AnimationMixer::_update_caches() {
 						track_value->init_value = anim->track_get_key_value(i, 0);
 						track_value->init_value.zero();
 
+						track_value->init_use_continuous = callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS;
+
 						// Can't interpolate them, need to convert.
 						track_value->is_variant_interpolatable = Animation::is_variant_interpolatable(track_value->init_value);
 
 						// If there is a Reset Animation, it takes precedence by overwriting.
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_src_type);
-							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
-								track_value->init_value = track_src_type == Animation::TYPE_VALUE ? reset_anim->track_get_key_value(rt, 0) : (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
+							if (rt >= 0) {
+								if (track_src_type == Animation::TYPE_VALUE) {
+									track_value->init_use_continuous = track_value->init_use_continuous || (reset_anim->value_track_get_update_mode(rt) != Animation::UPDATE_DISCRETE); // Take precedence Force Continuous.
+									if (reset_anim->track_get_key_count(rt) > 0) {
+										track_value->init_value = reset_anim->track_get_key_value(rt, 0);
+									}
+								} else {
+									if (reset_anim->track_get_key_count(rt) > 0) {
+										track_value->init_value = (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
+									}
+								}
 							}
 						}
 
@@ -874,7 +881,7 @@ bool AnimationMixer::_update_caches() {
 					if (track_value->init_value.is_string() && anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE) {
 						WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
 					}
-					track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
+					track_value->is_using_angle = track_value->is_using_angle || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 				}
 				if (check_angle_interpolation && (was_using_angle != track_value->is_using_angle)) {
 					WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' has different interpolation types for rotation between some animations which may be blended together. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
@@ -927,6 +934,7 @@ void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 		_blend_process(p_delta, p_update_only);
 		_blend_apply();
 		_blend_post_process();
+		emit_signal(SNAME("mixer_applied"));
 	};
 	clear_animation_instances();
 }
@@ -999,6 +1007,7 @@ void AnimationMixer::_blend_init() {
 				TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 				t->value = Animation::cast_to_blendwise(t->init_value);
 				t->element_size = t->init_value.is_string() ? (real_t)(t->init_value.operator String()).length() : 0;
+				t->use_continuous = t->init_use_continuous;
 				t->use_discrete = false;
 			} break;
 			case Animation::TYPE_AUDIO: {
@@ -1418,6 +1427,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					bool is_discrete = is_value && a->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE;
 					bool force_continuous = callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS;
 					if (t->is_variant_interpolatable && (!is_discrete || force_continuous)) {
+						t->use_continuous = true;
 						Variant value = is_value ? a->value_track_interpolate(i, time, is_discrete && force_continuous ? backward : false) : Variant(a->bezier_track_interpolate(i, time));
 						value = post_process_key_value(a, i, value, t->object_id);
 						if (value == Variant()) {
@@ -1453,6 +1463,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							t->value = Animation::blend_variant(t->value, value, blend);
 						}
 					} else {
+						t->use_discrete = true;
 						if (seeked) {
 							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
 							if (idx < 0) {
@@ -1476,7 +1487,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								}
 							}
 						}
-						t->use_discrete = true;
 					}
 				} break;
 				case Animation::TYPE_METHOD: {
@@ -1593,7 +1603,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 				} break;
 				case Animation::TYPE_ANIMATION: {
-					if (p_update_only || Math::is_zero_approx(blend)) {
+					if (Math::is_zero_approx(blend)) {
 						continue;
 					}
 					TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
@@ -1620,10 +1630,10 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						double at_anim_pos = 0.0;
 						switch (anim->get_loop_mode()) {
 							case Animation::LOOP_NONE: {
-								at_anim_pos = MAX((double)anim->get_length(), time - pos); //seek to end
+								at_anim_pos = MIN((double)anim->get_length(), time - pos); // Seek to end.
 							} break;
 							case Animation::LOOP_LINEAR: {
-								at_anim_pos = Math::fposmod(time - pos, (double)anim->get_length()); //seek to loop
+								at_anim_pos = Math::fposmod(time - pos, (double)anim->get_length()); // Seek to loop.
 							} break;
 							case Animation::LOOP_PINGPONG: {
 								at_anim_pos = Math::pingpong(time - pos, (double)a->get_length());
@@ -1631,14 +1641,14 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							default:
 								break;
 						}
-						if (player2->is_playing() || seeked) {
-							player2->seek(at_anim_pos);
+						if (player2->is_playing()) {
+							player2->seek(at_anim_pos, false, p_update_only);
 							player2->play(anim_name);
 							t->playing = true;
 							playing_caches.insert(t);
 						} else {
 							player2->set_assigned_animation(anim_name);
-							player2->seek(at_anim_pos, true);
+							player2->seek(at_anim_pos, true, p_update_only);
 						}
 					} else {
 						// Find stuff to play.
@@ -1730,7 +1740,7 @@ void AnimationMixer::_blend_apply() {
 			case Animation::TYPE_VALUE: {
 				TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-				if (!t->is_variant_interpolatable || (callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT && t->use_discrete)) {
+				if (!t->is_variant_interpolatable || !t->use_continuous || (callback_mode_discrete == ANIMATION_CALLBACK_MODE_DISCRETE_DOMINANT && t->use_discrete)) {
 					break; // Don't overwrite the value set by UPDATE_DISCRETE.
 				}
 
@@ -1972,6 +1982,7 @@ void AnimationMixer::_build_backup_track_cache() {
 				if (t_obj) {
 					t->value = Animation::cast_to_blendwise(t_obj->get_indexed(t->subpath));
 				}
+				t->use_continuous = true;
 				t->use_discrete = false;
 				if (t->init_value.is_array()) {
 					t->element_size = MAX(t->element_size.operator int(), (t->value.operator Array()).size());
@@ -2225,19 +2236,16 @@ void AnimationMixer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationMixer::advance);
 	GDVIRTUAL_BIND(_post_process_key_value, "animation", "track", "value", "object_id", "object_sub_idx");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
+	/* ---- Capture feature ---- */
+	ClassDB::bind_method(D_METHOD("capture", "name", "duration", "trans_type", "ease_type"), &AnimationMixer::capture, DEFVAL(Tween::TRANS_LINEAR), DEFVAL(Tween::EASE_IN));
 
 	/* ---- Reset on save ---- */
 	ClassDB::bind_method(D_METHOD("set_reset_on_save_enabled", "enabled"), &AnimationMixer::set_reset_on_save_enabled);
 	ClassDB::bind_method(D_METHOD("is_reset_on_save_enabled"), &AnimationMixer::is_reset_on_save_enabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deterministic"), "set_deterministic", "is_deterministic");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_on_save", PROPERTY_HINT_NONE, ""), "set_reset_on_save_enabled", "is_reset_on_save_enabled");
-
-	/* ---- Capture feature ---- */
-	ClassDB::bind_method(D_METHOD("capture", "name", "duration", "trans_type", "ease_type"), &AnimationMixer::capture, DEFVAL(Tween::TRANS_LINEAR), DEFVAL(Tween::EASE_IN));
-
-	ADD_SIGNAL(MethodInfo("mixer_updated")); // For updating dummy player.
-
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root_node", "get_root_node");
 
 	ADD_GROUP("Root Motion", "root_motion_");
@@ -2267,6 +2275,8 @@ void AnimationMixer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo(SNAME("animation_finished"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo(SNAME("animation_started"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo(SNAME("caches_cleared")));
+	ADD_SIGNAL(MethodInfo(SNAME("mixer_applied")));
+	ADD_SIGNAL(MethodInfo(SNAME("mixer_updated"))); // For updating dummy player.
 
 	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
 	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);

@@ -168,8 +168,10 @@
 			<return type="PackedInt64Array" />
 			<param index="0" name="from_id" type="int" />
 			<param index="1" name="to_id" type="int" />
+			<param index="2" name="allow_partial_path" type="bool" default="false" />
 			<description>
 				Returns an array with the IDs of the points that form the path found by AStar3D between the given points. The array is ordered from the starting point to the ending point of the path.
+				If there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
 				[codeblocks]
 				[gdscript]
 				var astar = AStar3D.new()
@@ -255,9 +257,11 @@
 			<return type="PackedVector3Array" />
 			<param index="0" name="from_id" type="int" />
 			<param index="1" name="to_id" type="int" />
+			<param index="2" name="allow_partial_path" type="bool" default="false" />
 			<description>
 				Returns an array with the points that are in the path found by AStar3D between the given points. The array is ordered from the starting point to the ending point of the path.
-				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
+				If there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
+				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty array and will print an error message.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">

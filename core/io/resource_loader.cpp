@@ -402,7 +402,7 @@ static String _validate_local_path(const String &p_path) {
 	if (uid != ResourceUID::INVALID_ID) {
 		return ResourceUID::get_singleton()->get_id_path(uid);
 	} else if (p_path.is_relative_path()) {
-		return "res://" + p_path;
+		return ("res://" + p_path).simplify_path();
 	} else {
 		return ProjectSettings::get_singleton()->localize_path(p_path);
 	}
@@ -1035,8 +1035,9 @@ void ResourceLoader::load_translation_remaps() {
 		Array langs = remaps[E];
 		Vector<String> lang_remaps;
 		lang_remaps.resize(langs.size());
-		for (int i = 0; i < langs.size(); i++) {
-			lang_remaps.write[i] = langs[i];
+		String *lang_remaps_ptrw = lang_remaps.ptrw();
+		for (const Variant &lang : langs) {
+			*lang_remaps_ptrw++ = lang;
 		}
 
 		translation_remaps[String(E)] = lang_remaps;

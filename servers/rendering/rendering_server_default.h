@@ -31,6 +31,7 @@
 #ifndef RENDERING_SERVER_DEFAULT_H
 #define RENDERING_SERVER_DEFAULT_H
 
+#include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/hash_map.h"
@@ -75,21 +76,16 @@ class RenderingServerDefault : public RenderingServer {
 
 	mutable CommandQueueMT command_queue;
 
-	static void _thread_callback(void *_instance);
 	void _thread_loop();
 
-	Thread::ID server_thread = 0;
-	SafeFlag exit;
-	Thread thread;
-	SafeFlag draw_thread_up;
-	bool create_thread;
+	Thread::ID server_thread = Thread::UNASSIGNED_ID;
+	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
+	bool exit = false;
+	bool create_thread = false;
 
 	void _thread_draw(bool p_swap_buffers, double frame_step);
-	void _thread_flush();
 
 	void _thread_exit();
-
-	Mutex alloc_mutex;
 
 	void _draw(bool p_swap_buffers, double frame_step);
 	void _init();
@@ -125,6 +121,10 @@ public:
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
 #else
 #define SYNC_DEBUG
+#endif
+
+#ifdef DEBUG_ENABLED
+#define MAIN_THREAD_SYNC_WARN WARN_PRINT("Call to " + String(__FUNCTION__) + " causing RenderingServer synchronizations on every frame. This significantly affects performance.");
 #endif
 
 #include "servers/server_wrap_mt_common.h"
@@ -625,6 +625,7 @@ public:
 	FUNC2(viewport_set_texture_mipmap_bias, RID, float)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
+	FUNC1RC(ViewportUpdateMode, viewport_get_update_mode, RID)
 
 	FUNC1RC(RID, viewport_get_render_target, RID)
 	FUNC1RC(RID, viewport_get_texture, RID)
@@ -926,6 +927,10 @@ public:
 	FUNC1(canvas_item_set_debug_redraw, bool)
 	FUNC0RC(bool, canvas_item_get_debug_redraw)
 
+	FUNC2(canvas_item_set_interpolated, RID, bool)
+	FUNC1(canvas_item_reset_physics_interpolation, RID)
+	FUNC2(canvas_item_transform_physics_interpolation, RID, const Transform2D &)
+
 	FUNCRIDSPLIT(canvas_light)
 
 	FUNC2(canvas_light_set_mode, RID, CanvasLightMode)
@@ -952,6 +957,10 @@ public:
 	FUNC2(canvas_light_set_shadow_color, RID, const Color &)
 	FUNC2(canvas_light_set_shadow_smooth, RID, float)
 
+	FUNC2(canvas_light_set_interpolated, RID, bool)
+	FUNC1(canvas_light_reset_physics_interpolation, RID)
+	FUNC2(canvas_light_transform_physics_interpolation, RID, const Transform2D &)
+
 	FUNCRIDSPLIT(canvas_light_occluder)
 	FUNC2(canvas_light_occluder_attach_to_canvas, RID, RID)
 	FUNC2(canvas_light_occluder_set_enabled, RID, bool)
@@ -959,6 +968,10 @@ public:
 	FUNC2(canvas_light_occluder_set_as_sdf_collision, RID, bool)
 	FUNC2(canvas_light_occluder_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_light_occluder_set_light_mask, RID, int)
+
+	FUNC2(canvas_light_occluder_set_interpolated, RID, bool)
+	FUNC1(canvas_light_occluder_reset_physics_interpolation, RID)
+	FUNC2(canvas_light_occluder_transform_physics_interpolation, RID, const Transform2D &)
 
 	FUNCRIDSPLIT(canvas_occluder_polygon)
 	FUNC3(canvas_occluder_polygon_set_shape, RID, const Vector<Vector2> &, bool)
@@ -1000,6 +1013,9 @@ public:
 #undef ServerName
 #undef WRITE_ACTION
 #undef SYNC_DEBUG
+#ifdef DEBUG_ENABLED
+#undef MAIN_THREAD_SYNC_WARN
+#endif
 
 	virtual uint64_t get_rendering_info(RenderingInfo p_info) override;
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;
@@ -1020,6 +1036,11 @@ public:
 			command_queue.push(this, &RenderingServerDefault::_free, p_rid);
 		}
 	}
+
+	/* INTERPOLATION */
+
+	virtual void tick() override;
+	virtual void set_physics_interpolation_enabled(bool p_enabled) override;
 
 	/* EVENT QUEUING */
 

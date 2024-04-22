@@ -1838,7 +1838,8 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		Vector2i separation = tile_set_atlas_source->get_separation();
 		Vector2i tile_size = tile_set_atlas_source->get_texture_region_size();
 		Vector2i origin = margins + (area.position * (tile_size + separation));
-		TilesEditorUtils::draw_selection_rect(tile_atlas_control, Rect2i(origin, area.size * tile_size));
+		Vector2i size = area.size * tile_size + (area.size - Vector2i(1, 1)).max(Vector2i(0, 0)) * separation;
+		TilesEditorUtils::draw_selection_rect(tile_atlas_control, Rect2i(origin, size));
 	} else {
 		Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 		if (hovered_base_tile_coords.x >= 0 && hovered_base_tile_coords.y >= 0 && hovered_base_tile_coords.x < grid_size.x && hovered_base_tile_coords.y < grid_size.y) {
@@ -2683,10 +2684,8 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	help_label = memnew(Label(TTR("Hold Shift to create big tiles.")));
 	tile_create_help->add_child(help_label);
 
-	tile_create_help->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT, Control::PRESET_MODE_MINSIZE);
-	Vector2 pos = tile_create_help->get_position();
-	pos.y -= 8 * EDSCALE;
-	tile_create_help->set_position(pos);
+	tile_create_help->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT, Control::PRESET_MODE_MINSIZE, 8);
+	tile_create_help->set_grow_direction_preset(Control::PRESET_BOTTOM_LEFT);
 
 	base_tile_popup_menu = memnew(PopupMenu);
 	base_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);

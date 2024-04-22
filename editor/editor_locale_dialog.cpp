@@ -322,7 +322,7 @@ void EditorLocaleDialog::_update_tree() {
 
 	if (!is_edit_mode) {
 		TreeItem *t = cnt_list->create_item(c_root);
-		t->set_text(0, "[Default]");
+		t->set_text(0, TTR("[Default]"));
 		t->set_metadata(0, "");
 	}
 
@@ -433,6 +433,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			}
 			{
 				lang_list = memnew(Tree);
+				lang_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				lang_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 				lang_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
 				lang_list->set_columns(1);
@@ -452,6 +453,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			}
 			{
 				script_list = memnew(Tree);
+				script_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				script_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 				script_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
 				script_list->set_columns(1);
@@ -470,6 +472,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			}
 			{
 				cnt_list = memnew(Tree);
+				cnt_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				cnt_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 				cnt_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
 				cnt_list->set_columns(1);

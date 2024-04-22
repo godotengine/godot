@@ -132,6 +132,7 @@ class DisplayServerWayland : public DisplayServer {
 #ifdef SPEECHD_ENABLED
 	TTS_Linux *tts = nullptr;
 #endif
+	NativeMenu *native_menu = nullptr;
 
 #if DBUS_ENABLED
 	FreeDesktopPortalDesktop *portal_desktop = nullptr;
@@ -275,7 +276,6 @@ public:
 	virtual void process_events() override;
 
 	virtual void release_rendering_thread() override;
-	virtual void make_rendering_thread() override;
 	virtual void swap_buffers() override;
 
 	virtual void set_context(Context p_context) override;

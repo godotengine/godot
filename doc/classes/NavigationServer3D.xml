@@ -14,8 +14,8 @@
 		This server keeps tracks of any call and executes them during the sync phase. This means that you can request any change to the map, using any thread, without worrying.
 	</description>
 	<tutorials>
-		<link title="3D Navmesh Demo">https://godotengine.org/asset-library/asset/124</link>
 		<link title="Using NavigationServer">$DOCS_URL/tutorials/navigation/navigation_using_navigationservers.html</link>
+		<link title="3D Navigation Demo">https://godotengine.org/asset-library/asset/2743</link>
 	</tutorials>
 	<methods>
 		<method name="agent_create">
@@ -1092,6 +1092,32 @@
 			<param index="0" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code] enables debug mode on the NavigationServer.
+			</description>
+		</method>
+		<method name="simplify_path">
+			<return type="PackedVector3Array" />
+			<param index="0" name="path" type="PackedVector3Array" />
+			<param index="1" name="epsilon" type="float" />
+			<description>
+				Returns a simplified version of [param path] with less critical path points removed. The simplification amount is in worlds units and controlled by [param epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
+				Path simplification can be helpful to mitigate various path following issues that can arise with certain agent types and script behaviors. E.g. "steering" agents or avoidance in "open fields".
+			</description>
+		</method>
+		<method name="source_geometry_parser_create">
+			<return type="RID" />
+			<description>
+				Creates a new source geometry parser. If a [Callable] is set for the parser with [method source_geometry_parser_set_callback] the callback will be called for every single node that gets parsed whenever [method parse_source_geometry_data] is used.
+			</description>
+		</method>
+		<method name="source_geometry_parser_set_callback">
+			<return type="void" />
+			<param index="0" name="parser" type="RID" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Sets the [param callback] [Callable] for the specific source geometry [param parser]. The [Callable] will receive a call with the following parameters:
+				- [code]navigation_mesh[/code] - The [NavigationMesh] reference used to define the parse settings. Do NOT edit or add directly to the navigation mesh.
+				- [code]source_geometry_data[/code] - The [NavigationMeshSourceGeometryData3D] reference. Add custom source geometry for navigation mesh baking to this object.
+				- [code]node[/code] - The [Node] that is parsed.
 			</description>
 		</method>
 	</methods>

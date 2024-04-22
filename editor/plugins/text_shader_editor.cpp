@@ -598,8 +598,7 @@ void ShaderTextEditor::_update_warning_panel() {
 		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		if (line != -1) {
 			warnings_panel->push_meta(line - 1);
-			warnings_panel->add_text(TTR("Line") + " " + itos(line));
-			warnings_panel->add_text(" (" + w.get_name() + "):");
+			warnings_panel->add_text(vformat(TTR("Line %d (%s):"), line, w.get_name()));
 			warnings_panel->pop(); // Meta goto.
 		} else {
 			warnings_panel->add_text(w.get_name() + ":");

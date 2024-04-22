@@ -57,11 +57,9 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/check_box.h"
-#include "scene/main/window.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
-#include "servers/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
@@ -74,6 +72,43 @@ void SceneTreeDock::_nodes_drag_begin() {
 
 void SceneTreeDock::_quick_open() {
 	instantiate_scenes(quick_open->get_selected_files(), scene_tree->get_selected());
+}
+
+void SceneTreeDock::_inspect_hovered_node() {
+	scene_tree->set_selected(node_hovered_now);
+	scene_tree->set_marked(node_hovered_now);
+	Tree *tree = scene_tree->get_scene_tree();
+	TreeItem *item = tree->get_item_at_position(tree->get_local_mouse_position());
+	if (item) {
+		item->set_as_cursor(0);
+	}
+	InspectorDock::get_inspector_singleton()->edit(node_hovered_now);
+	InspectorDock::get_inspector_singleton()->propagate_notification(NOTIFICATION_DRAG_BEGIN); // Enable inspector drag preview after it updated.
+	InspectorDock::get_singleton()->update(node_hovered_now);
+	EditorNode::get_singleton()->hide_unused_editors();
+}
+
+void SceneTreeDock::_handle_hover_to_inspect() {
+	Tree *tree = scene_tree->get_scene_tree();
+	TreeItem *item = tree->get_item_at_position(tree->get_local_mouse_position());
+
+	if (item) {
+		const NodePath &np = item->get_metadata(0);
+		node_hovered_now = get_node_or_null(np);
+		if (node_hovered_previously != node_hovered_now) {
+			inspect_hovered_node_delay->start();
+		}
+		node_hovered_previously = node_hovered_now;
+	} else {
+		_reset_hovering_timer();
+	}
+}
+
+void SceneTreeDock::_reset_hovering_timer() {
+	if (!inspect_hovered_node_delay->is_stopped()) {
+		inspect_hovered_node_delay->stop();
+	}
+	node_hovered_previously = nullptr;
 }
 
 void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
@@ -92,6 +127,17 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 			_push_item(pending_click_select);
 			pending_click_select = nullptr;
 		}
+
+		if (mb->is_released()) {
+			if (scene_tree->has_marked()) {
+				scene_tree->set_marked(nullptr);
+			}
+			_reset_hovering_timer();
+		}
+	}
+
+	if (tree_clicked && get_viewport()->gui_is_dragging()) {
+		_handle_hover_to_inspect();
 	}
 }
 
@@ -1539,6 +1585,10 @@ void SceneTreeDock::_notification(int p_what) {
 				}
 			}
 		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			_reset_hovering_timer();
+		} break;
 	}
 }
 
@@ -1812,8 +1862,6 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 			}
 		} break;
 
-// FIXME: This approach causes a significant performance regression, see GH-84910.
-#if 0
 		case Variant::OBJECT: {
 			Resource *resource = Object::cast_to<Resource>(r_variant);
 			if (!resource) {
@@ -1822,6 +1870,11 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 
 			if (Object::cast_to<Animation>(resource)) {
 				// Animation resources are handled by animation editor.
+				break;
+			}
+
+			if (!resource->is_built_in()) {
+				// For performance reasons, assume that scene paths are no concern for external resources.
 				break;
 			}
 
@@ -1841,9 +1894,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 					undo_redo->add_undo_property(resource, propertyname, old_variant);
 				}
 			}
-			break;
-		};
-#endif
+		} break;
 
 		default: {
 		}
@@ -2026,17 +2077,19 @@ bool SceneTreeDock::_validate_no_foreign() {
 			return false;
 		}
 
-		// When edited_scene inherits from another one the root Node will be the parent Scene,
-		// we don't want to consider that Node a foreign one otherwise we would not be able to
-		// delete it.
-		if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene == E) {
-			continue;
-		}
+		if (edited_scene->get_scene_inherited_state().is_valid()) {
+			// When edited_scene inherits from another one the root Node will be the parent Scene,
+			// we don't want to consider that Node a foreign one otherwise we would not be able to
+			// delete it.
+			if (edited_scene == E && current_option != TOOL_REPLACE) {
+				continue;
+			}
 
-		if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
-			accept->set_text(TTR("Can't operate on nodes the current scene inherits from!"));
-			accept->popup_centered();
-			return false;
+			if (edited_scene == E || edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
+				accept->set_text(TTR("Can't operate on nodes the current scene inherits from!"));
+				accept->popup_centered();
+				return false;
+			}
 		}
 	}
 
@@ -2965,6 +3018,13 @@ void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
 }
 
+void SceneTreeDock::set_selection(const Vector<Node *> &p_nodes) {
+	editor_selection->clear();
+	for (Node *node : p_nodes) {
+		editor_selection->add_node(node);
+	}
+}
+
 void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected) {
 	scene_tree->set_selected(p_node, p_emit_selected);
 }
@@ -3155,7 +3215,7 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 			const EditorPropertyNameProcessor::Style style = InspectorDock::get_singleton()->get_property_name_style();
 			menu_properties->clear();
 			for (const String &p : valid_properties) {
-				menu_properties->add_item(EditorPropertyNameProcessor::get_singleton()->process_name(p, style));
+				menu_properties->add_item(EditorPropertyNameProcessor::get_singleton()->process_name(p, style, p, node->get_class_name()));
 				menu_properties->set_item_metadata(-1, p);
 			}
 
@@ -3390,6 +3450,13 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				can_replace = false;
 				break;
 			}
+
+			if (edited_scene->get_scene_inherited_state().is_valid()) {
+				if (E == edited_scene || edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
+					can_replace = false;
+					break;
+				}
+			}
 		}
 
 		if (can_replace) {
@@ -3510,6 +3577,7 @@ void SceneTreeDock::_update_tree_menu() {
 	tree_menu->set_item_tooltip(tree_menu->get_item_index(TOOL_CENTER_PARENT), TTR("If enabled, Reparent to New Node will create the new node in the center of the selected nodes, if possible."));
 
 	PopupMenu *resource_list = memnew(PopupMenu);
+	resource_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	resource_list->connect("about_to_popup", callable_mp(this, &SceneTreeDock::_list_all_subresources).bind(resource_list));
 	resource_list->connect("index_pressed", callable_mp(this, &SceneTreeDock::_edit_subresource).bind(resource_list));
 	tree_menu->add_submenu_node_item(TTR("All Scene Sub-Resources"), resource_list);
@@ -3566,10 +3634,7 @@ void SceneTreeDock::_filter_option_selected(int p_option) {
 
 void SceneTreeDock::_append_filter_options_to(PopupMenu *p_menu, bool p_include_separator) {
 	if (p_include_separator) {
-		p_menu->add_separator();
-
-		p_menu->set_item_text(-1, TTR("Filters"));
-		p_menu->set_item_indent(-1, -2);
+		p_menu->add_separator(TTR("Filters"));
 	}
 
 	p_menu->add_item(TTR("Filter by Type"), FILTER_BY_TYPE);
@@ -4298,6 +4363,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->connect("files_dropped", callable_mp(this, &SceneTreeDock::_files_dropped));
 	scene_tree->connect("script_dropped", callable_mp(this, &SceneTreeDock::_script_dropped));
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
+	scene_tree->connect("mouse_exited", callable_mp(this, &SceneTreeDock::_reset_hovering_timer));
 
 	scene_tree->get_scene_tree()->connect("gui_input", callable_mp(this, &SceneTreeDock::_scene_tree_gui_input));
 	scene_tree->get_scene_tree()->connect("item_icon_double_clicked", callable_mp(this, &SceneTreeDock::_focus_node));
@@ -4306,6 +4372,11 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	scene_tree->set_as_scene_tree_dock();
 	scene_tree->set_editor_selection(editor_selection);
+
+	inspect_hovered_node_delay = memnew(Timer);
+	inspect_hovered_node_delay->connect("timeout", callable_mp(this, &SceneTreeDock::_inspect_hovered_node));
+	inspect_hovered_node_delay->set_one_shot(true);
+	add_child(inspect_hovered_node_delay);
 
 	create_dialog = memnew(CreateDialog);
 	create_dialog->set_base_type("Node");

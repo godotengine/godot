@@ -105,6 +105,10 @@ Error OS_Web::execute(const String &p_path, const List<String> &p_arguments, Str
 	return create_process(p_path, p_arguments);
 }
 
+Dictionary OS_Web::execute_with_pipe(const String &p_path, const List<String> &p_arguments) {
+	ERR_FAIL_V_MSG(Dictionary(), "OS::execute_with_pipe is not available on the Web platform.");
+}
+
 Error OS_Web::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	Array args;
 	for (const String &E : p_arguments) {
@@ -126,6 +130,10 @@ int OS_Web::get_process_id() const {
 
 bool OS_Web::is_process_running(const ProcessID &p_pid) const {
 	return false;
+}
+
+int OS_Web::get_process_exit_code(const ProcessID &p_pid) const {
+	return -1;
 }
 
 int OS_Web::get_processor_count() const {
@@ -239,13 +247,13 @@ bool OS_Web::is_userfs_persistent() const {
 	return idb_available;
 }
 
-Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	String path = p_path.get_file();
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
-	if (r_resolved_path != nullptr) {
-		*r_resolved_path = path;
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
 	}
 
 	return OK;

@@ -167,6 +167,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	bool frames_need_sort = false;
 	int last_frame_selected = 0;
 
+	Size2i previous_texture_size;
+
 	float scale_ratio;
 	int thumbnail_default_size;
 	float thumbnail_zoom;
@@ -251,7 +253,6 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _update_show_settings();
 
 	void _edit();
-	void _regist_scene_undo(EditorUndoRedoManager *undo_redo);
 	void _fetch_sprite_node();
 	void _remove_sprite_node();
 
@@ -268,6 +269,8 @@ protected:
 
 public:
 	void edit(Ref<SpriteFrames> p_frames);
+	bool is_editing() const;
+
 	SpriteFramesEditor();
 };
 

@@ -182,7 +182,7 @@ struct SwShapeTask : SwTask
         shapeDelOutline(&shape, mpool, tid);
 
         //Clip Path
-        for (auto clip = clips.data; clip < clips.end(); ++clip) {
+        for (auto clip = clips.begin(); clip < clips.end(); ++clip) {
             auto clipper = static_cast<SwTask*>(*clip);
             //Clip shape rle
             if (shape.rle && !clipper->clip(shape.rle)) goto err;
@@ -242,7 +242,7 @@ struct SwSceneTask : SwTask
             rleMerge(sceneRle, clipper1->rle(), clipper2->rle());
 
             //Unify the remained clippers
-            for (auto rd = scene.data + 2; rd < scene.end(); ++rd) {
+            for (auto rd = scene.begin() + 2; rd < scene.end(); ++rd) {
                 auto clipper = static_cast<SwTask*>(*rd);
                 rleMerge(sceneRle, sceneRle, clipper->rle());
             }
@@ -301,7 +301,7 @@ struct SwImageTask : SwTask
                 if (image.rle) {
                     //Clear current task memorypool here if the clippers would use the same memory pool
                     imageDelOutline(&image, mpool, tid);
-                    for (auto clip = clips.data; clip < clips.end(); ++clip) {
+                    for (auto clip = clips.begin(); clip < clips.end(); ++clip) {
                         auto clipper = static_cast<SwTask*>(*clip);
                         if (!clipper->clip(image.rle)) goto err;
                     }
@@ -377,7 +377,7 @@ SwRenderer::~SwRenderer()
 
 bool SwRenderer::clear()
 {
-    for (auto task = tasks.data; task < tasks.end(); ++task) {
+    for (auto task = tasks.begin(); task < tasks.end(); ++task) {
         if ((*task)->disposed) {
             delete(*task);
         } else {
@@ -451,7 +451,7 @@ bool SwRenderer::preRender()
 void SwRenderer::clearCompositors()
 {
     //Free Composite Caches
-    for (auto comp = compositors.data; comp < compositors.end(); ++comp) {
+    for (auto comp = compositors.begin(); comp < compositors.end(); ++comp) {
         free((*comp)->compositor->image.data);
         delete((*comp)->compositor);
         delete(*comp);
@@ -467,7 +467,7 @@ bool SwRenderer::postRender()
         rasterUnpremultiply(surface);
     }
 
-    for (auto task = tasks.data; task < tasks.end(); ++task) {
+    for (auto task = tasks.begin(); task < tasks.end(); ++task) {
         if ((*task)->disposed) delete(*task);
         else (*task)->pushed = false;
     }
@@ -624,7 +624,7 @@ Compositor* SwRenderer::target(const RenderRegion& region, ColorSpace cs)
     auto reqChannelSize = CHANNEL_SIZE(cs);
 
     //Use cached data
-    for (auto p = compositors.data; p < compositors.end(); ++p) {
+    for (auto p = compositors.begin(); p < compositors.end(); ++p) {
         if ((*p)->compositor->valid && (*p)->compositor->image.channelSize == reqChannelSize) {
             cmp = *p;
             break;
@@ -723,7 +723,7 @@ void* SwRenderer::prepareCommon(SwTask* task, const RenderTransform* transform, 
     //TODO: Failed threading them. It would be better if it's possible.
     //See: https://github.com/thorvg/thorvg/issues/1409
     //Guarantee composition targets get ready.
-    for (auto clip = clips.data; clip < clips.end(); ++clip) {
+    for (auto clip = clips.begin(); clip < clips.end(); ++clip) {
         static_cast<SwTask*>(*clip)->done();
     }
 
@@ -784,7 +784,7 @@ RenderData SwRenderer::prepare(const Array<RenderData>& scene, RenderData data, 
     //TODO: Failed threading them. It would be better if it's possible.
     //See: https://github.com/thorvg/thorvg/issues/1409
     //Guarantee composition targets get ready.
-    for (auto task = scene.data; task < scene.end(); ++task) {
+    for (auto task = scene.begin(); task < scene.end(); ++task) {
         static_cast<SwTask*>(*task)->done();
     }
     return prepareCommon(task, transform, clips, opacity, flags);

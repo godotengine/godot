@@ -3,7 +3,7 @@
 Import("env")
 
 import os, json
-from platform_methods import run_in_subprocess, architectures, lipo, get_build_version, detect_mvk
+from platform_methods import architectures, lipo, get_build_version, detect_mvk
 import subprocess
 import shutil
 

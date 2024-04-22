@@ -202,9 +202,7 @@ def get_opts():
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
-        BoolVariable(
-            "silence_msvc", "Silence MSVC's stdout to decrease output log bloat. May hide error messages.", False
-        ),
+        BoolVariable("silence_msvc", "Silence MSVC's cl/link stdout bloat, redirecting any errors to stderr.", True),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
         # Direct3D 12 support.
         (
@@ -398,16 +396,35 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     env["MAXLINELENGTH"] = 8192  # Windows Vista and beyond, so always applicable.
 
     if env["silence_msvc"]:
-        env.Prepend(CCFLAGS=[">", "NUL"])
-        env.Prepend(LINKFLAGS=[">", "NUL"])
+        from tempfile import mkstemp
 
-        # "> NUL" fails if using a tempfile, circumvent by removing the argument altogether.
-        old_esc_func = env["TEMPFILEARGESCFUNC"]
+        old_spawn = env["SPAWN"]
 
-        def trim_nul(arg):
-            return "" if arg in [">", "NUL"] else old_esc_func(arg)
+        def spawn_capture(sh, escape, cmd, args, env):
+            # We only care about cl/link, process everything else as normal.
+            if args[0] not in ["cl", "link"]:
+                return old_spawn(sh, escape, cmd, args, env)
 
-        env["TEMPFILEARGESCFUNC"] = trim_nul
+            tmp_stdout, tmp_stdout_name = mkstemp()
+            os.close(tmp_stdout)
+            args.append(f">{tmp_stdout_name}")
+            ret = old_spawn(sh, escape, cmd, args, env)
+
+            try:
+                with open(tmp_stdout_name, "rb") as tmp_stdout:
+                    # First line is always bloat, subsequent lines are always errors. If content
+                    # exists after discarding the first line, safely decode & send to stderr.
+                    tmp_stdout.readline()
+                    content = tmp_stdout.read()
+                    if content:
+                        sys.stderr.write(content.decode(sys.stdout.encoding, "replace"))
+                os.remove(tmp_stdout_name)
+            except OSError:
+                pass
+
+            return ret
+
+        env["SPAWN"] = spawn_capture
 
     if env["debug_crt"]:
         # Always use dynamic runtime, static debug CRT breaks thread_local.

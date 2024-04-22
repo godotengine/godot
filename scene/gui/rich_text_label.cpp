@@ -835,10 +835,13 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	// Draw dropcap.
 	int dc_lines = l.text_buf->get_dropcap_lines();
 	float h_off = l.text_buf->get_dropcap_size().x;
-	if (l.dc_ol_size > 0) {
-		l.text_buf->draw_dropcap_outline(ci, p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_ol_size, l.dc_ol_color);
+	bool skip_dc = (trim_chars && l.char_offset > visible_characters) || (trim_glyphs_ltr && (r_processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (r_processed_glyphs < total_glyphs - visible_glyphs));
+	if (!skip_dc) {
+		if (l.dc_ol_size > 0) {
+			l.text_buf->draw_dropcap_outline(ci, p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_ol_size, l.dc_ol_color);
+		}
+		l.text_buf->draw_dropcap(ci, p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_color);
 	}
-	l.text_buf->draw_dropcap(ci, p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_color);
 
 	int line_count = 0;
 	Size2 ctrl_size = get_size();
@@ -894,7 +897,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			} break;
 		}
 
-		if (!prefix.is_empty() && line == 0) {
+		bool skip_prefix = (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && l.char_offset == visible_characters) || (trim_chars && l.char_offset > visible_characters) || (trim_glyphs_ltr && (r_processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (r_processed_glyphs < total_glyphs - visible_glyphs));
+		if (!prefix.is_empty() && line == 0 && !skip_prefix) {
 			Ref<Font> font = theme_cache.normal_font;
 			int font_size = theme_cache.normal_font_size;
 
@@ -935,13 +939,23 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		for (int i = 0; i < objects.size(); i++) {
 			Item *it = items.get_or_null(objects[i]);
 			if (it != nullptr) {
+				Vector2i obj_range = TS->shaped_text_get_object_range(rid, objects[i]);
+				if (trim_chars && l.char_offset + obj_range.y > visible_characters) {
+					continue;
+				}
+				if (trim_glyphs_ltr || trim_glyphs_rtl) {
+					int obj_glyph = r_processed_glyphs + TS->shaped_text_get_object_glyph(rid, objects[i]);
+					if ((trim_glyphs_ltr && (obj_glyph >= visible_glyphs)) || (trim_glyphs_rtl && (obj_glyph < total_glyphs - visible_glyphs))) {
+						continue;
+					}
+				}
 				Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
 				//draw_rect(rect, Color(1,0,0), false, 2); //DEBUG_RECTS
 				switch (it->type) {
 					case ITEM_IMAGE: {
 						ItemImage *img = static_cast<ItemImage *>(it);
 						if (img->pad) {
-							Size2 pad_size = Size2(MIN(rect.size.x, img->image->get_width()), MIN(rect.size.y, img->image->get_height()));
+							Size2 pad_size = rect.size.min(img->image->get_size());
 							Vector2 pad_off = (rect.size - pad_size) / 2;
 							img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off + pad_off, pad_size), false, img->color);
 						} else {
@@ -3198,33 +3212,6 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	queue_redraw();
 }
 
-void RichTextLabel::_remove_item(Item *p_item, const int p_line) {
-	int size = p_item->subitems.size();
-	if (size == 0) {
-		p_item->parent->subitems.erase(p_item);
-		// If a newline was erased, all lines AFTER the newline need to be decremented.
-		if (p_item->type == ITEM_NEWLINE) {
-			current_frame->lines.remove_at(p_line);
-			if (p_line < (int)current_frame->lines.size() && current_frame->lines[p_line].from) {
-				for (List<Item *>::Element *E = current_frame->lines[p_line].from->E; E; E = E->next()) {
-					if (E->get()->line > p_line) {
-						E->get()->line--;
-					}
-				}
-			}
-		}
-	} else {
-		// First, remove all child items for the provided item.
-		while (p_item->subitems.size()) {
-			_remove_item(p_item->subitems.front()->get(), p_line);
-		}
-		// Then remove the provided item itself.
-		p_item->parent->subitems.erase(p_item);
-	}
-	items.free(p_item->rid);
-	memdelete(p_item);
-}
-
 Size2 RichTextLabel::_get_image_size(const Ref<Texture2D> &p_image, int p_width, int p_height, const Rect2 &p_region) {
 	Size2 ret;
 	if (p_width > 0) {
@@ -3410,48 +3397,97 @@ void RichTextLabel::add_newline() {
 	queue_redraw();
 }
 
+void RichTextLabel::_remove_frame(HashSet<Item *> &r_erase_list, ItemFrame *p_frame, int p_line, bool p_erase, int p_char_offset, int p_line_offset) {
+	Line &l = p_frame->lines[p_line];
+	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
+	if (!p_erase) {
+		l.char_offset -= p_char_offset;
+	}
+
+	for (Item *it = l.from; it && it != it_to;) {
+		Item *next_it = _get_next_item(it);
+		it->line -= p_line_offset;
+		if (!p_erase) {
+			while (r_erase_list.has(it->parent)) {
+				it->E->erase();
+				it->parent = it->parent->parent;
+				it->E = it->parent->subitems.push_back(it);
+			}
+		}
+		if (it->type == ITEM_TABLE) {
+			ItemTable *table = static_cast<ItemTable *>(it);
+			for (List<Item *>::Element *sub_it = table->subitems.front(); sub_it; sub_it = sub_it->next()) {
+				ERR_CONTINUE(sub_it->get()->type != ITEM_FRAME); // Children should all be frames.
+				ItemFrame *frame = static_cast<ItemFrame *>(sub_it->get());
+				for (int i = 0; i < (int)frame->lines.size(); i++) {
+					_remove_frame(r_erase_list, frame, i, p_erase, p_char_offset, 0);
+				}
+				if (p_erase) {
+					r_erase_list.insert(frame);
+				} else {
+					frame->char_ofs -= p_char_offset;
+				}
+			}
+		}
+		if (p_erase) {
+			r_erase_list.insert(it);
+		} else {
+			it->char_ofs -= p_char_offset;
+		}
+		it = next_it;
+	}
+}
+
 bool RichTextLabel::remove_paragraph(const int p_paragraph) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
-	if (p_paragraph >= (int)current_frame->lines.size() || p_paragraph < 0) {
+	if (p_paragraph >= (int)main->lines.size() || p_paragraph < 0) {
 		return false;
 	}
 
-	// Remove all subitems with the same line as that provided.
-	Vector<List<Item *>::Element *> subitem_to_remove;
-	if (current_frame->lines[p_paragraph].from) {
-		for (List<Item *>::Element *E = current_frame->lines[p_paragraph].from->E; E; E = E->next()) {
-			if (E->get()->line == p_paragraph) {
-				subitem_to_remove.push_back(E);
+	if (main->lines.size() == 1) {
+		// Clear all.
+		main->_clear_children();
+		current = main;
+		current_frame = main;
+		main->lines.clear();
+		main->lines.resize(1);
+
+		current_char_ofs = 0;
+	} else {
+		HashSet<Item *> erase_list;
+		Line &l = main->lines[p_paragraph];
+		int off = l.char_count;
+		for (int i = p_paragraph; i < (int)main->lines.size(); i++) {
+			if (i == p_paragraph) {
+				_remove_frame(erase_list, main, i, true, off, 0);
 			} else {
-				break;
+				_remove_frame(erase_list, main, i, false, off, 1);
 			}
 		}
-	}
-
-	bool had_newline = false;
-	// Reverse for loop to remove items from the end first.
-	for (int i = subitem_to_remove.size() - 1; i >= 0; i--) {
-		List<Item *>::Element *subitem = subitem_to_remove[i];
-		had_newline = had_newline || subitem->get()->type == ITEM_NEWLINE;
-		if (subitem->get() == current) {
-			pop();
+		for (HashSet<Item *>::Iterator E = erase_list.begin(); E; ++E) {
+			Item *it = *E;
+			if (current_frame == it) {
+				current_frame = main;
+			}
+			if (current == it) {
+				current = main;
+			}
+			if (!erase_list.has(it->parent)) {
+				it->E->erase();
+			}
+			items.free(it->rid);
+			it->subitems.clear();
+			memdelete(it);
 		}
-		_remove_item(subitem->get(), p_paragraph);
+		main->lines.remove_at(p_paragraph);
+		current_char_ofs -= off;
 	}
 
-	if (!had_newline) {
-		current_frame->lines.remove_at(p_paragraph);
-	}
-
-	if (current_frame->lines.is_empty()) {
-		current_frame->lines.resize(1);
-	}
-
-	if (p_paragraph == 0 && current->subitems.size() > 0) {
-		main->lines[0].from = main;
-	}
+	selection.click_frame = nullptr;
+	selection.click_item = nullptr;
+	deselect();
 
 	main->first_invalid_line.store(MIN(main->first_invalid_line.load(), p_paragraph));
 	main->first_resized_line.store(MIN(main->first_resized_line.load(), p_paragraph));
@@ -4396,6 +4432,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag.begins_with("char=")) {
+			int32_t char_code = tag.substr(5, tag.length()).hex_to_int();
+			add_text(String::chr(char_code));
+			pos = brk_end + 1;
 		} else if (tag == "lb") {
 			add_text("[");
 			pos = brk_end + 1;
@@ -5179,7 +5219,7 @@ void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
 }
 
 int RichTextLabel::get_paragraph_count() const {
-	return current_frame->lines.size();
+	return main->lines.size();
 }
 
 int RichTextLabel::get_visible_paragraph_count() const {

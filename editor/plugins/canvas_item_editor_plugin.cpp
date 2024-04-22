@@ -2640,6 +2640,45 @@ void CanvasItemEditor::_update_cursor() {
 	set_default_cursor_shape(c);
 }
 
+void CanvasItemEditor::_update_lock_and_group_button() {
+	bool all_locked = true;
+	bool all_group = true;
+	bool has_canvas_item = false;
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	if (selection.is_empty()) {
+		all_locked = false;
+		all_group = false;
+	} else {
+		for (Node *E : selection) {
+			CanvasItem *item = Object::cast_to<CanvasItem>(E);
+			if (item) {
+				if (all_locked && !item->has_meta("_edit_lock_")) {
+					all_locked = false;
+				}
+				if (all_group && !item->has_meta("_edit_group_")) {
+					all_group = false;
+				}
+				has_canvas_item = true;
+			}
+			if (!all_locked && !all_group) {
+				break;
+			}
+		}
+	}
+
+	all_locked = all_locked && has_canvas_item;
+	all_group = all_group && has_canvas_item;
+
+	lock_button->set_visible(!all_locked);
+	lock_button->set_disabled(!has_canvas_item);
+	unlock_button->set_visible(all_locked);
+	unlock_button->set_disabled(!has_canvas_item);
+	group_button->set_visible(!all_group);
+	group_button->set_disabled(!has_canvas_item);
+	ungroup_button->set_visible(all_group);
+	ungroup_button->set_disabled(!has_canvas_item);
+}
+
 Control::CursorShape CanvasItemEditor::get_cursor_shape(const Point2 &p_pos) const {
 	// Compute an eventual rotation of the cursor
 	const CursorShape rotation_array[4] = { CURSOR_HSIZE, CURSOR_BDIAGSIZE, CURSOR_VSIZE, CURSOR_FDIAGSIZE };
@@ -3795,35 +3834,6 @@ void CanvasItemEditor::_draw_viewport() {
 	transform.columns[2] = -view_offset * zoom;
 	EditorNode::get_singleton()->get_scene_root()->set_global_canvas_transform(transform);
 
-	// hide/show buttons depending on the selection
-	bool all_locked = true;
-	bool all_group = true;
-	List<Node *> selection = editor_selection->get_selected_node_list();
-	if (selection.is_empty()) {
-		all_locked = false;
-		all_group = false;
-	} else {
-		for (Node *E : selection) {
-			if (Object::cast_to<CanvasItem>(E) && !Object::cast_to<CanvasItem>(E)->has_meta("_edit_lock_")) {
-				all_locked = false;
-				break;
-			}
-		}
-		for (Node *E : selection) {
-			if (Object::cast_to<CanvasItem>(E) && !Object::cast_to<CanvasItem>(E)->has_meta("_edit_group_")) {
-				all_group = false;
-				break;
-			}
-		}
-	}
-
-	lock_button->set_visible(!all_locked);
-	lock_button->set_disabled(selection.is_empty());
-	unlock_button->set_visible(all_locked);
-	group_button->set_visible(!all_group);
-	group_button->set_disabled(selection.is_empty());
-	ungroup_button->set_visible(all_group);
-
 	_draw_grid();
 	_draw_ruler_tool();
 	_draw_axis();
@@ -3908,16 +3918,19 @@ void CanvasItemEditor::_update_editor_settings() {
 	warped_panning = bool(EDITOR_GET("editors/panning/warped_mouse_panning"));
 }
 
+void CanvasItemEditor::_project_settings_changed() {
+	EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
+}
+
 void CanvasItemEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(true));
 			EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &CanvasItemEditor::_update_override_camera_button).bind(false));
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CanvasItemEditor::_project_settings_changed));
 		} break;
 
-		case NOTIFICATION_PHYSICS_PROCESS: {
-			EditorNode::get_singleton()->get_scene_root()->set_snap_controls_to_pixels(GLOBAL_GET("gui/common/snap_controls_to_pixels"));
-
+		case NOTIFICATION_PROCESS: {
 			int nb_having_pivot = 0;
 
 			// Update the viewport if the canvas_item changes
@@ -4005,6 +4018,9 @@ void CanvasItemEditor::_notification(int p_what) {
 			AnimationPlayerEditor::get_singleton()->connect("animation_selected", callable_mp(this, &CanvasItemEditor::_keying_changed).unbind(1));
 			_keying_changed();
 			_update_editor_settings();
+
+			connect("item_lock_status_changed", callable_mp(this, &CanvasItemEditor::_update_lock_and_group_button));
+			connect("item_group_status_changed", callable_mp(this, &CanvasItemEditor::_update_lock_and_group_button));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -4027,6 +4043,7 @@ void CanvasItemEditor::_notification(int p_what) {
 }
 
 void CanvasItemEditor::_selection_changed() {
+	_update_lock_and_group_button();
 	if (!selected_from_canvas) {
 		_reset_drag();
 	}
@@ -5577,13 +5594,13 @@ bool CanvasItemEditorPlugin::handles(Object *p_object) const {
 void CanvasItemEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		canvas_item_editor->show();
-		canvas_item_editor->set_physics_process(true);
+		canvas_item_editor->set_process(true);
 		RenderingServer::get_singleton()->viewport_set_disable_2d(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), false);
 		RenderingServer::get_singleton()->viewport_set_environment_mode(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), RS::VIEWPORT_ENVIRONMENT_ENABLED);
 
 	} else {
 		canvas_item_editor->hide();
-		canvas_item_editor->set_physics_process(false);
+		canvas_item_editor->set_process(false);
 		RenderingServer::get_singleton()->viewport_set_disable_2d(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), true);
 		RenderingServer::get_singleton()->viewport_set_environment_mode(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), RS::VIEWPORT_ENVIRONMENT_DISABLED);
 	}
@@ -5691,8 +5708,11 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 }
 
 void CanvasItemEditorViewport::_remove_preview() {
-	if (preview_node->get_parent()) {
+	if (!canvas_item_editor->message.is_empty()) {
 		canvas_item_editor->message = "";
+		canvas_item_editor->update_viewport();
+	}
+	if (preview_node->get_parent()) {
 		for (int i = preview_node->get_child_count() - 1; i >= 0; i--) {
 			Node *node = preview_node->get_child(i);
 			node->queue_free();
@@ -5705,7 +5725,7 @@ void CanvasItemEditorViewport::_remove_preview() {
 	}
 }
 
-bool CanvasItemEditorViewport::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) {
+bool CanvasItemEditorViewport::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const {
 	if (p_desired_node->get_scene_file_path() == p_target_scene_path) {
 		return true;
 	}
@@ -5840,16 +5860,37 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 }
 
 void CanvasItemEditorViewport::_perform_drop_data() {
+	ERR_FAIL_COND(selected_files.size() <= 0);
+
 	_remove_preview();
 
-	// Without root dropping multiple files is not allowed
-	if (!target_node && selected_files.size() > 1) {
-		accept->set_text(TTR("Cannot instantiate multiple nodes without root."));
-		accept->popup_centered();
-		return;
+	if (!target_node) {
+		// Without root dropping multiple files is not allowed
+		if (selected_files.size() > 1) {
+			accept->set_text(TTR("Cannot instantiate multiple nodes without root."));
+			accept->popup_centered();
+			return;
+		}
+
+		const String &path = selected_files[0];
+		Ref<Resource> res = ResourceLoader::load(path);
+		if (res.is_null()) {
+			return;
+		}
+
+		Ref<PackedScene> scene = res;
+		if (scene.is_valid()) {
+			// Without root node act the same as "Load Inherited Scene".
+			Error err = EditorNode::get_singleton()->load_scene(path, false, true);
+			if (err != OK) {
+				accept->set_text(vformat(TTR("Error instantiating scene from %s."), path.get_file()));
+				accept->popup_centered();
+			}
+			return;
+		}
 	}
 
-	Vector<String> error_files;
+	PackedStringArray error_files;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action_for_history(TTR("Create Node"), EditorNode::get_editor_data().get_current_edited_scene_history_id());
@@ -5862,39 +5903,28 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		if (res.is_null()) {
 			continue;
 		}
-		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		if (scene != nullptr && scene.is_valid()) {
-			if (!target_node) {
-				// Without root node act the same as "Load Inherited Scene"
-				Error err = EditorNode::get_singleton()->load_scene(path, false, true);
-				if (err != OK) {
-					error_files.push_back(path);
-				}
-			} else {
-				bool success = _create_instance(target_node, path, drop_pos);
-				if (!success) {
-					error_files.push_back(path);
-				}
+
+		Ref<PackedScene> scene = res;
+		if (scene.is_valid()) {
+			bool success = _create_instance(target_node, path, drop_pos);
+			if (!success) {
+				error_files.push_back(path.get_file());
 			}
-		} else {
-			Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
-			if (texture != nullptr && texture.is_valid()) {
-				Node *child = Object::cast_to<Node>(ClassDB::instantiate(default_texture_node_type));
-				_create_nodes(target_node, child, path, drop_pos);
-				undo_redo->add_do_method(editor_selection, "add_node", child);
-			}
+			continue;
+		}
+
+		Ref<Texture2D> texture = res;
+		if (texture.is_valid()) {
+			Node *child = Object::cast_to<Node>(ClassDB::instantiate(default_texture_node_type));
+			_create_nodes(target_node, child, path, drop_pos);
+			undo_redo->add_do_method(editor_selection, "add_node", child);
 		}
 	}
 
 	undo_redo->commit_action();
 
 	if (error_files.size() > 0) {
-		String files_str;
-		for (int i = 0; i < error_files.size(); i++) {
-			files_str += error_files[i].get_file().get_basename() + ",";
-		}
-		files_str = files_str.substr(0, files_str.length() - 1);
-		accept->set_text(vformat(TTR("Error instantiating scene from %s"), files_str.get_data()));
+		accept->set_text(vformat(TTR("Error instantiating scene from %s."), String(", ").join(error_files)));
 		accept->popup_centered();
 	}
 }
@@ -5908,6 +5938,8 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 
 	Vector<String> files = d["files"];
 	bool can_instantiate = false;
+	bool is_cyclical_dep = false;
+	String error_file;
 
 	// Check if at least one of the dragged files is a texture or scene.
 	for (int i = 0; i < files.size(); i++) {
@@ -5925,11 +5957,24 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 				if (!instantiated_scene) {
 					continue;
 				}
+
+				Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+				if (edited_scene && !edited_scene->get_scene_file_path().is_empty() && _cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
+					memdelete(instantiated_scene);
+					can_instantiate = false;
+					is_cyclical_dep = true;
+					error_file = files[i].get_file();
+					break;
+				}
 				memdelete(instantiated_scene);
 			}
 			can_instantiate = true;
-			break;
 		}
+	}
+	if (is_cyclical_dep) {
+		canvas_item_editor->message = vformat(TTR("Can't instantiate: %s."), vformat(TTR("Circular dependency found at %s"), error_file));
+		canvas_item_editor->update_viewport();
+		return false;
 	}
 	if (can_instantiate) {
 		if (!preview_node->get_parent()) { // create preview only once

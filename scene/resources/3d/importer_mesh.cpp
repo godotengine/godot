@@ -1139,7 +1139,7 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 		s.material = get_surface_material(i);
 		s.name = get_surface_name(i);
 
-		SurfaceTool::create_vertex_array_from_triangle_arrays(arrays, s.vertices, &s.format);
+		SurfaceTool::create_vertex_array_from_arrays(arrays, s.vertices, &s.format);
 
 		PackedVector3Array rvertices = arrays[Mesh::ARRAY_VERTEX];
 		int vc = rvertices.size();

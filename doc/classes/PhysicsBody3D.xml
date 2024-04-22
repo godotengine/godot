@@ -68,7 +68,7 @@
 				Locks or unlocks the specified linear or rotational [param axis] depending on the value of [param lock].
 			</description>
 		</method>
-		<method name="test_move">
+		<method name="test_move" keywords="check, collision, sweep">
 			<return type="bool" />
 			<param index="0" name="from" type="Transform3D" />
 			<param index="1" name="motion" type="Vector3" />

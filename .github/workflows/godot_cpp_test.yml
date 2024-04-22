@@ -19,6 +19,8 @@ jobs:
     name: "Build and test Godot CPP"
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps

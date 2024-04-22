@@ -81,7 +81,8 @@ private:
 		void *native_func_userdata = nullptr;
 		String description;
 		Semaphore done_semaphore; // For user threads awaiting.
-		bool completed = false;
+		bool completed : 1;
+		bool pending_notify_yield_over : 1;
 		Group *group = nullptr;
 		SelfList<Task> task_elem;
 		uint32_t waiting_pool = 0;
@@ -92,6 +93,8 @@ private:
 
 		void free_template_userdata();
 		Task() :
+				completed(false),
+				pending_notify_yield_over(false),
 				task_elem(this) {}
 	};
 
@@ -107,13 +110,21 @@ private:
 	BinaryMutex task_mutex;
 
 	struct ThreadData {
+		static Task *const YIELDING; // Too bad constexpr doesn't work here.
+
 		uint32_t index = 0;
 		Thread thread;
-		bool ready_for_scripting = false;
-		bool signaled = false;
+		bool ready_for_scripting : 1;
+		bool signaled : 1;
+		bool yield_is_over : 1;
 		Task *current_task = nullptr;
-		Task *awaited_task = nullptr; // Null if not awaiting the condition variable. Special value for idle-waiting.
+		Task *awaited_task = nullptr; // Null if not awaiting the condition variable, or special value (YIELDING).
 		ConditionVariable cond_var;
+
+		ThreadData() :
+				ready_for_scripting(false),
+				signaled(false),
+				yield_is_over(false) {}
 	};
 
 	TightLocalVector<ThreadData> threads;
@@ -157,7 +168,7 @@ private:
 	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description);
 	GroupID _add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description);
 
-	template <class C, class M, class U>
+	template <typename C, typename M, typename U>
 	struct TaskUserData : public BaseTemplateUserdata {
 		C *instance;
 		M method;
@@ -167,7 +178,7 @@ private:
 		}
 	};
 
-	template <class C, class M, class U>
+	template <typename C, typename M, typename U>
 	struct GroupUserData : public BaseTemplateUserdata {
 		C *instance;
 		M method;
@@ -177,11 +188,13 @@ private:
 		}
 	};
 
+	void _wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task);
+
 protected:
 	static void _bind_methods();
 
 public:
-	template <class C, class M, class U>
+	template <typename C, typename M, typename U>
 	TaskID add_template_task(C *p_instance, M p_method, U p_userdata, bool p_high_priority = false, const String &p_description = String()) {
 		typedef TaskUserData<C, M, U> TUD;
 		TUD *ud = memnew(TUD);
@@ -196,7 +209,10 @@ public:
 	bool is_task_completed(TaskID p_task_id) const;
 	Error wait_for_task_completion(TaskID p_task_id);
 
-	template <class C, class M, class U>
+	void yield();
+	void notify_yield_over(TaskID p_task_id);
+
+	template <typename C, typename M, typename U>
 	GroupID add_template_group_task(C *p_instance, M p_method, U p_userdata, int p_elements, int p_tasks = -1, bool p_high_priority = false, const String &p_description = String()) {
 		typedef GroupUserData<C, M, U> GroupUD;
 		GroupUD *ud = memnew(GroupUD);

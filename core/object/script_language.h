@@ -124,7 +124,11 @@ protected:
 	TypedArray<Dictionary> _get_script_signal_list();
 	Dictionary _get_script_constant_map();
 
+	void _set_debugger_break_language();
+
 public:
+	virtual void reload_from_file() override;
+
 	virtual bool can_instantiate() const = 0;
 
 	virtual Ref<Script> get_base_script() const = 0; //for script inheritance
@@ -150,6 +154,8 @@ public:
 	// TODO: In the next compat breakage rename to `*_script_*` to disambiguate from `Object::has_method()`.
 	virtual bool has_method(const StringName &p_method) const = 0;
 	virtual bool has_static_method(const StringName &p_method) const { return false; }
+
+	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
 
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
@@ -441,6 +447,13 @@ public:
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
+
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
 
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;

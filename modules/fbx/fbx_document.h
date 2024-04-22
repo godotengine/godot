@@ -53,14 +53,13 @@ public:
 	static String _gen_unique_name(HashSet<String> &unique_names, const String &p_name);
 
 public:
-	Error append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, String p_base_path = String());
-	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0);
-	Error append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags = 0);
+	Error append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, String p_base_path = String()) override;
+	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0) override;
+	Error append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags = 0) override;
 
-public:
-	Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true);
-	PackedByteArray generate_buffer(Ref<GLTFState> p_state);
-	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path);
+	Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true) override;
+	PackedByteArray generate_buffer(Ref<GLTFState> p_state) override;
+	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) override;
 
 protected:
 	static void _bind_methods();

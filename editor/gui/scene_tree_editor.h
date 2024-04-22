@@ -123,6 +123,7 @@ class SceneTreeEditor : public Control {
 	void _set_item_custom_color(TreeItem *p_item, Color p_color);
 	void _update_node_tooltip(Node *p_node, TreeItem *p_item);
 	void _queue_update_node_tooltip(Node *p_node, TreeItem *p_item);
+	void _tree_scroll_to_item(ObjectID p_item_id);
 
 	void _selection_changed();
 	Node *get_scene_node() const;
@@ -157,8 +158,9 @@ public:
 	void set_as_scene_tree_dock();
 	void set_display_foreign_nodes(bool p_display);
 
-	void set_marked(const HashSet<Node *> &p_marked, bool p_selectable = false, bool p_children_selectable = true);
-	void set_marked(Node *p_marked, bool p_selectable = false, bool p_children_selectable = true);
+	void set_marked(const HashSet<Node *> &p_marked, bool p_selectable = true, bool p_children_selectable = true);
+	void set_marked(Node *p_marked, bool p_selectable = true, bool p_children_selectable = true);
+	bool has_marked() const { return !marked.is_empty(); }
 	void set_selected(Node *p_node, bool p_emit_selected = true);
 	Node *get_selected();
 	void set_can_rename(bool p_can_rename) { can_rename = p_can_rename; }
@@ -201,7 +203,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void popup_scenetree_dialog();
+	void popup_scenetree_dialog(Node *p_selected_node = nullptr, Node *p_marked_node = nullptr, bool p_marked_node_selectable = true, bool p_marked_node_children_selectable = true);
 	void set_valid_types(const Vector<StringName> &p_valid);
 
 	SceneTreeEditor *get_scene_tree() { return tree; }

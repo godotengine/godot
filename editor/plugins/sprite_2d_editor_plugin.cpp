@@ -46,7 +46,9 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
-#include "thirdparty/misc/clipper.hpp"
+#include "thirdparty/clipper2/include/clipper2/clipper.h"
+
+#define PRECISION 1
 
 void Sprite2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -59,58 +61,39 @@ void Sprite2DEditor::edit(Sprite2D *p_sprite) {
 	node = p_sprite;
 }
 
-#define PRECISION 10.0
-
 Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float epsilon = 2.0) {
 	int size = points.size();
 	ERR_FAIL_COND_V(size < 2, Vector<Vector2>());
 
-	ClipperLib::Path subj;
-	ClipperLib::PolyTree solution;
-	ClipperLib::PolyTree out;
-
+	Clipper2Lib::PathD subj(points.size());
 	for (int i = 0; i < points.size(); i++) {
-		subj << ClipperLib::IntPoint(points[i].x * PRECISION, points[i].y * PRECISION);
-	}
-	ClipperLib::ClipperOffset co;
-	co.AddPath(subj, ClipperLib::jtMiter, ClipperLib::etClosedPolygon);
-	co.Execute(solution, epsilon * PRECISION);
-
-	ClipperLib::PolyNode *p = solution.GetFirst();
-
-	ERR_FAIL_NULL_V(p, points);
-
-	while (p->IsHole()) {
-		p = p->GetNext();
+		subj[i] = Clipper2Lib::PointD(points[i].x, points[i].y);
 	}
 
-	//turn the result into simply polygon (AKA, fix overlap)
+	Clipper2Lib::PathsD solution = Clipper2Lib::InflatePaths({ subj }, epsilon, Clipper2Lib::JoinType::Miter, Clipper2Lib::EndType::Polygon, 2.0, PRECISION, 0.0);
+	// Here the miter_limit = 2.0 and arc_tolerance = 0.0 are Clipper2 defaults,
+	// and PRECISION is used to scale points up internally, to attain the desired precision.
 
-	//clamp into the specified rect
-	ClipperLib::Clipper cl;
-	cl.StrictlySimple(true);
-	cl.AddPath(p->Contour, ClipperLib::ptSubject, true);
-	//create the clipping rect
-	ClipperLib::Path clamp;
-	clamp.push_back(ClipperLib::IntPoint(0, 0));
-	clamp.push_back(ClipperLib::IntPoint(rect.size.width * PRECISION, 0));
-	clamp.push_back(ClipperLib::IntPoint(rect.size.width * PRECISION, rect.size.height * PRECISION));
-	clamp.push_back(ClipperLib::IntPoint(0, rect.size.height * PRECISION));
-	cl.AddPath(clamp, ClipperLib::ptClip, true);
-	cl.Execute(ClipperLib::ctIntersection, out);
+	ERR_FAIL_COND_V(solution.size() == 0, points);
+
+	// Clamp into the specified rect.
+	Clipper2Lib::RectD clamp(rect.position.x,
+			rect.position.y,
+			rect.position.x + rect.size.width,
+			rect.position.y + rect.size.height);
+	Clipper2Lib::PathsD out = Clipper2Lib::RectClip(clamp, solution[0], PRECISION);
+	// Here PRECISION is used to scale points up internally, to attain the desired precision.
+
+	ERR_FAIL_COND_V(out.size() == 0, points);
+
+	const Clipper2Lib::PathD &p2 = out[0];
 
 	Vector<Vector2> outPoints;
-	ClipperLib::PolyNode *p2 = out.GetFirst();
-	ERR_FAIL_NULL_V(p2, points);
 
-	while (p2->IsHole()) {
-		p2 = p2->GetNext();
-	}
-
-	int lasti = p2->Contour.size() - 1;
-	Vector2 prev = Vector2(p2->Contour[lasti].X / PRECISION, p2->Contour[lasti].Y / PRECISION);
-	for (uint64_t i = 0; i < p2->Contour.size(); i++) {
-		Vector2 cur = Vector2(p2->Contour[i].X / PRECISION, p2->Contour[i].Y / PRECISION);
+	int lasti = p2.size() - 1;
+	Vector2 prev = Vector2(p2[lasti].x, p2[lasti].y);
+	for (uint64_t i = 0; i < p2.size(); i++) {
+		Vector2 cur = Vector2(p2[i].x, p2[i].y);
 		if (cur.distance_to(prev) > 0.5) {
 			outPoints.push_back(cur);
 			prev = cur;

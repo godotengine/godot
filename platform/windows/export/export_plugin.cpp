@@ -285,15 +285,15 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 
 	if (p_preset->get("codesign/enable")) {
 		_code_sign(p_preset, pck_path);
-		String wrapper_path = p_path.get_basename() + ".console.exe";
+		String wrapper_path = path.get_basename() + ".console.exe";
 		if (FileAccess::exists(wrapper_path)) {
 			_code_sign(p_preset, wrapper_path);
 		}
 	}
 
 	if (embedded) {
-		Ref<DirAccess> tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
-		err = tmp_dir->rename(pck_path, p_path);
+		Ref<DirAccess> tmp_dir = DirAccess::create_for_path(path.get_base_dir());
+		err = tmp_dir->rename(pck_path, path);
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to rename temporary file \"%s\"."), pck_path));
 		}
@@ -367,10 +367,16 @@ String EditorExportPlatformWindows::get_export_option_warning(const EditorExport
 }
 
 bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	if (p_preset == nullptr) {
+		return true;
+	}
+
 	// This option is not supported by "osslsigncode", used on non-Windows host.
 	if (!OS::get_singleton()->has_feature("windows") && p_option == "codesign/identity_type") {
 		return false;
 	}
+
+	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
 
 	// Hide codesign.
 	bool codesign = p_preset->get("codesign/enable");
@@ -390,6 +396,9 @@ bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExpor
 		return false;
 	}
 
+	if (p_option == "dotnet/embed_build_outputs") {
+		return advanced_options_enabled;
+	}
 	return true;
 }
 

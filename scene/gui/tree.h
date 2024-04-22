@@ -108,7 +108,6 @@ private:
 			Ref<Texture2D> texture;
 			Color color = Color(1, 1, 1, 1);
 			String tooltip;
-			Rect2i rect;
 		};
 
 		Vector<Button> buttons;
@@ -129,6 +128,7 @@ private:
 
 	bool collapsed = false; // won't show children
 	bool visible = true;
+	bool parent_visible_in_tree = true;
 	bool disable_folding = false;
 	int custom_min_height = 0;
 
@@ -147,6 +147,8 @@ private:
 	void _changed_notify();
 	void _cell_selected(int p_cell);
 	void _cell_deselected(int p_cell);
+	void _handle_visibility_changed(bool p_visible);
+	void _propagate_visibility_changed(bool p_parent_visible_in_tree);
 
 	void _change_tree(Tree *p_tree);
 
@@ -300,6 +302,7 @@ public:
 
 	void set_visible(bool p_visible);
 	bool is_visible();
+	bool is_visible_in_tree() const;
 
 	void uncollapse_tree();
 
@@ -641,6 +644,8 @@ private:
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
 
 	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const;
+
+	void _find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index) const;
 
 	/*	float drag_speed;
 	float drag_accum;

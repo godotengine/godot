@@ -47,11 +47,33 @@ TEST_CASE("[OS] Environment variables") {
 			OS::get_singleton()->has_environment("HOME"),
 			"The HOME environment variable should be present.");
 #endif
+}
 
-	OS::get_singleton()->set_environment("HELLO", "world");
+TEST_CASE("[OS] UTF-8 environment variables") {
+	String value = String::utf8("hell\xc3\xb6"); // "hellö", UTF-8 encoded
+
+	OS::get_singleton()->set_environment("HELLO", value);
+	String val = OS::get_singleton()->get_environment("HELLO");
 	CHECK_MESSAGE(
-			OS::get_singleton()->get_environment("HELLO") == "world",
+			val == value,
 			"The previously-set HELLO environment variable should return the expected value.");
+	CHECK_MESSAGE(
+			val.length() == 5,
+			"The previously-set HELLO environment variable was decoded as UTF-8 and should have a length of 5.");
+	OS::get_singleton()->unset_environment("HELLO");
+}
+
+TEST_CASE("[OS] Non-UTF-8 environment variables") {
+	String value = String("\xff t\xf6rkylempij\xe4vongahdus"); // hex FF and a Finnish pangram, latin-1
+	OS::get_singleton()->set_environment("HELLO", value);
+	String val = OS::get_singleton()->get_environment("HELLO");
+	CHECK_MESSAGE(
+			val == value,
+			"The previously-set HELLO environment variable should return the expected value.");
+	CHECK_MESSAGE(
+			val.length() == 23,
+			"The previously-set HELLO environment variable was not decoded from Latin-1.");
+	OS::get_singleton()->unset_environment("HELLO");
 }
 
 TEST_CASE("[OS] Command line arguments") {

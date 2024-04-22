@@ -45,7 +45,7 @@ struct VariantSetterGetterInfo {
 static LocalVector<VariantSetterGetterInfo> variant_setters_getters[Variant::VARIANT_MAX];
 static LocalVector<StringName> variant_setters_getters_names[Variant::VARIANT_MAX]; //one next to another to make it cache friendly
 
-template <class T>
+template <typename T>
 static void register_member(Variant::Type p_type, const StringName &p_member) {
 	VariantSetterGetterInfo sgi;
 	sgi.setter = T::set;
@@ -873,7 +873,7 @@ struct VariantIndexedSetterGetterInfo {
 
 static VariantIndexedSetterGetterInfo variant_indexed_setters_getters[Variant::VARIANT_MAX];
 
-template <class T>
+template <typename T>
 static void register_indexed_member(Variant::Type p_type) {
 	VariantIndexedSetterGetterInfo &sgi = variant_indexed_setters_getters[p_type];
 
@@ -1094,7 +1094,7 @@ struct VariantKeyedSetterGetterInfo {
 
 static VariantKeyedSetterGetterInfo variant_keyed_setters_getters[Variant::VARIANT_MAX];
 
-template <class T>
+template <typename T>
 static void register_keyed_member(Variant::Type p_type) {
 	VariantKeyedSetterGetterInfo &sgi = variant_keyed_setters_getters[p_type];
 

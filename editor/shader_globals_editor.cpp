@@ -398,6 +398,8 @@ void ShaderGlobalsEditor::_variable_added() {
 	undo_redo->add_do_method(this, "_changed");
 	undo_redo->add_undo_method(this, "_changed");
 	undo_redo->commit_action();
+
+	variable_name->clear();
 }
 
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
@@ -455,6 +457,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	variable_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	variable_name->set_clear_button_enabled(true);
 	variable_name->connect("text_changed", callable_mp(this, &ShaderGlobalsEditor::_variable_name_text_changed));
+	variable_name->connect("text_submitted", callable_mp(this, &ShaderGlobalsEditor::_variable_added).unbind(1));
 
 	add_menu_hb->add_child(variable_name);
 

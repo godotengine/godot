@@ -52,6 +52,7 @@ def get_flags():
         ("target", "template_debug"),
         ("use_volk", False),
         ("supported", ["mono"]),
+        ("builtin_pcre2_with_jit", False),
     ]
 
 
@@ -139,7 +140,6 @@ def configure(env: "SConsEnvironment"):
             )
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
-        env.Append(CPPDEFINES=["NEED_LONG_INT"])
 
     # Temp fix for ABS/MAX/MIN macros in iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])

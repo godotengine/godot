@@ -102,14 +102,14 @@ void Parallax2D::_update_scroll() {
 	scroll_ofs *= scroll_scale;
 
 	if (repeat_size.x) {
-		real_t mod = Math::fposmod(scroll_ofs.x - scroll_offset.x - autoscroll_offset.x, repeat_size.x);
+		real_t mod = Math::fposmod(scroll_ofs.x - scroll_offset.x - autoscroll_offset.x, repeat_size.x * get_scale().x);
 		scroll_ofs.x = screen_offset.x - mod;
 	} else {
 		scroll_ofs.x = screen_offset.x + scroll_offset.x - scroll_ofs.x;
 	}
 
 	if (repeat_size.y) {
-		real_t mod = Math::fposmod(scroll_ofs.y - scroll_offset.y - autoscroll_offset.y, repeat_size.y);
+		real_t mod = Math::fposmod(scroll_ofs.y - scroll_offset.y - autoscroll_offset.y, repeat_size.y * get_scale().y);
 		scroll_ofs.y = screen_offset.y - mod;
 	} else {
 		scroll_ofs.y = screen_offset.y + scroll_offset.y - scroll_ofs.y;
@@ -127,8 +127,8 @@ void Parallax2D::_update_repeat() {
 		return;
 	}
 
-	Point2 repeat_scale = repeat_size * get_scale();
-	RenderingServer::get_singleton()->canvas_set_item_repeat(get_canvas_item(), repeat_scale, repeat_times);
+	RenderingServer::get_singleton()->canvas_set_item_repeat(get_canvas_item(), repeat_size, repeat_times);
+	RenderingServer::get_singleton()->canvas_item_set_interpolated(get_canvas_item(), false);
 }
 
 void Parallax2D::set_scroll_scale(const Size2 &p_scale) {
@@ -287,4 +287,6 @@ void Parallax2D::_bind_methods() {
 }
 
 Parallax2D::Parallax2D() {
+	// Parallax2D is always updated every frame so there is no need to interpolate.
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }

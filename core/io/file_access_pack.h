@@ -44,7 +44,8 @@
 #define PACK_FORMAT_VERSION 2
 
 enum PackFlags {
-	PACK_DIR_ENCRYPTED = 1 << 0
+	PACK_DIR_ENCRYPTED = 1 << 0,
+	PACK_REL_FILEBASE = 1 << 1,
 };
 
 enum PackFileFlags {
@@ -176,6 +177,7 @@ public:
 
 	virtual Error get_error() const override;
 
+	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
 	virtual void store_8(uint8_t p_dest) override;
 

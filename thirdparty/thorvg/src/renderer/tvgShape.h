@@ -56,7 +56,6 @@ struct Shape::Impl
         if (needComp) {
             cmp = renderer->target(bounds(renderer), renderer->colorSpace());
             renderer->beginComposite(cmp, CompositeMethod::None, opacity);
-            needComp = false;
         }
         ret = renderer->renderShape(rd);
         if (cmp) renderer->endComposite(cmp);
@@ -106,7 +105,7 @@ struct Shape::Impl
     {
         //Path bounding size
         if (rs.path.pts.count > 0 ) {
-            auto pts = rs.path.pts.data;
+            auto pts = rs.path.pts.begin();
             Point min = { pts->x, pts->y };
             Point max = { pts->x, pts->y };
 

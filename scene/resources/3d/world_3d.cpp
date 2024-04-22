@@ -39,15 +39,11 @@
 #include "servers/navigation_server_3d.h"
 
 void World3D::_register_camera(Camera3D *p_camera) {
-#ifndef _3D_DISABLED
 	cameras.insert(p_camera);
-#endif
 }
 
 void World3D::_remove_camera(Camera3D *p_camera) {
-#ifndef _3D_DISABLED
 	cameras.erase(p_camera);
-#endif
 }
 
 RID World3D::get_space() const {

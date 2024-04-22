@@ -99,6 +99,7 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	vbc->add_child(method);
 
 	tree = memnew(Tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(3);
 	tree->set_hide_root(true);
 	tree->set_column_titles_visible(true);
@@ -598,8 +599,7 @@ void ScriptTextEditor::_update_warnings() {
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(w.start_line - 1);
 		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
-		warnings_panel->add_text(TTR("Line") + " " + itos(w.start_line));
-		warnings_panel->add_text(" (" + w.string_code + "):");
+		warnings_panel->add_text(vformat(TTR("Line %d (%s):"), w.start_line, w.string_code));
 		warnings_panel->pop(); // Color.
 		warnings_panel->pop(); // Meta goto.
 		warnings_panel->pop(); // Cell.
@@ -625,7 +625,7 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.line - 1);
 		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-		errors_panel->add_text(TTR("Line") + " " + itos(err.line) + ":");
+		errors_panel->add_text(vformat(TTR("Line %d:"), err.line));
 		errors_panel->pop(); // Color.
 		errors_panel->pop(); // Meta goto.
 		errors_panel->pop(); // Cell.
@@ -659,7 +659,7 @@ void ScriptTextEditor::_update_errors() {
 			errors_panel->push_cell();
 			errors_panel->push_meta(click_meta);
 			errors_panel->push_color(errors_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			errors_panel->add_text(TTR("Line") + " " + itos(err.line) + ":");
+			errors_panel->add_text(vformat(TTR("Line %d:"), err.line));
 			errors_panel->pop(); // Color.
 			errors_panel->pop(); // Meta goto.
 			errors_panel->pop(); // Cell.
@@ -1164,9 +1164,17 @@ void ScriptTextEditor::_update_connected_methods() {
 	// Add override icons to methods.
 	methods_found.clear();
 	for (int i = 0; i < functions.size(); i++) {
-		StringName name = StringName(functions[i].get_slice(":", 0));
+		String raw_name = functions[i].get_slice(":", 0);
+		StringName name = StringName(raw_name);
 		if (methods_found.has(name)) {
 			continue;
+		}
+
+		// Account for inner classes by stripping the class names from the method,
+		// starting from the right since our inner class might be inside of another inner class.
+		int pos = raw_name.rfind(".");
+		if (pos != -1) {
+			name = raw_name.substr(pos + 1);
 		}
 
 		String found_base_class;
@@ -1217,7 +1225,7 @@ void ScriptTextEditor::_update_connected_methods() {
 				text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_editor_theme_icon(SNAME("MethodOverrideAndSlot")));
 			}
 
-			methods_found.insert(name);
+			methods_found.insert(StringName(raw_name));
 		}
 	}
 }
@@ -1946,9 +1954,12 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
 		te->remove_secondary_carets();
+
+		bool add_literal = EDITOR_GET("text_editor/completion/add_node_path_literals");
+		String text_to_drop = add_literal ? "^" : "";
 		// It is unclear whether properties may contain single or double quotes.
 		// Assume here that double-quotes may not exist. We are escaping single-quotes if necessary.
-		const String text_to_drop = _quote_drop_data(String(d["property"]));
+		text_to_drop += _quote_drop_data(String(d["property"]));
 
 		te->set_caret_line(row);
 		te->set_caret_column(col);

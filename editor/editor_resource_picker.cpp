@@ -112,7 +112,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 				preview_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 				int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 				thumbnail_size *= EDSCALE;
-				assign_button->set_custom_minimum_size(Size2(MAX(1, assign_button_min_size.x), MAX(thumbnail_size, assign_button_min_size.y)));
+				assign_button->set_custom_minimum_size(assign_button_min_size.max(Size2(1, thumbnail_size)));
 			}
 
 			preview_rect->set_texture(p_preview);
@@ -382,6 +382,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				vb->add_child(label);
 
 				duplicate_resources_tree = memnew(Tree);
+				duplicate_resources_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				vb->add_child(duplicate_resources_tree);
 				duplicate_resources_tree->set_columns(2);
 				duplicate_resources_tree->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -614,6 +615,13 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 }
 
 bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
+	{
+		const ObjectID source_picker = p_drag_data.get("source_picker", ObjectID());
+		if (source_picker == get_instance_id()) {
+			return false;
+		}
+	}
+
 	if (base_type.is_empty()) {
 		return true;
 	}
@@ -669,7 +677,9 @@ bool EditorResourcePicker::_is_type_valid(const String &p_type_name, const HashS
 
 Variant EditorResourcePicker::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (edited_resource.is_valid()) {
-		return EditorNode::get_singleton()->drag_resource(edited_resource, p_from);
+		Dictionary drag_data = EditorNode::get_singleton()->drag_resource(edited_resource, p_from);
+		drag_data["source_picker"] = get_instance_id();
+		return drag_data;
 	}
 
 	return Variant();

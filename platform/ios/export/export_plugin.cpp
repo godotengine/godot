@@ -135,6 +135,11 @@ void EditorExportPlatformIOS::_notification(int p_what) {
 }
 
 bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	// Hide unsupported .NET embedding option.
+	if (p_option == "dotnet/embed_build_outputs") {
+		return false;
+	}
+
 	return true;
 }
 
@@ -416,6 +421,10 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$pbx_launch_screen_build_reference") != -1) {
 			String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */; };";
 			strnew += lines[i].replace("$pbx_launch_screen_build_reference", value) + "\n";
+#ifndef DISABLE_DEPRECATED
+		} else if (lines[i].find("$pbx_launch_image_usage_setting") != -1) {
+			strnew += lines[i].replace("$pbx_launch_image_usage_setting", "") + "\n";
+#endif
 		} else if (lines[i].find("$launch_screen_image_mode") != -1) {
 			int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
 			String value;
@@ -1312,7 +1321,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const Ref<EditorExportP
 		if (asset.begins_with("res://")) {
 			Error err = _copy_asset(p_preset, p_out_dir, asset, nullptr, p_is_framework, p_should_embed, r_exported_assets);
 			ERR_FAIL_COND_V(err != OK, err);
-		} else if (ProjectSettings::get_singleton()->localize_path(asset).begins_with("res://")) {
+		} else if (asset.is_absolute_path() && ProjectSettings::get_singleton()->localize_path(asset).begins_with("res://")) {
 			Error err = _copy_asset(p_preset, p_out_dir, ProjectSettings::get_singleton()->localize_path(asset), nullptr, p_is_framework, p_should_embed, r_exported_assets);
 			ERR_FAIL_COND_V(err != OK, err);
 		} else {

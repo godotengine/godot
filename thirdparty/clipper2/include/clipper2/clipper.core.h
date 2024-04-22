@@ -1,6 +1,6 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  22 March 2023                                                   *
+* Date      :  24 November 2023                                                *
 * Website   :  http://www.angusj.com                                           *
 * Copyright :  Angus Johnson 2010-2023                                         *
 * Purpose   :  Core Clipper Library structures and functions                   *
@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <climits>
 #include <numeric>
+#include "clipper2/clipper.version.h"
 
 #define CLIPPER2_THROW(exception) std::abort()
 
@@ -44,15 +45,27 @@ namespace Clipper2Lib
     "Invalid scale (either 0 or too large)";
   static const char* non_pair_error =
     "There must be 2 values for each coordinate";
+  static const char* undefined_error =
+    "There is an undefined error in Clipper2";
 #endif
 
   // error codes (2^n)
-  const int precision_error_i   = 1; // non-fatal
-  const int scale_error_i       = 2; // non-fatal 
-  const int non_pair_error_i    = 4; // non-fatal 
-  const int range_error_i = 64;
+  const int precision_error_i   = 1;  // non-fatal
+  const int scale_error_i       = 2;  // non-fatal 
+  const int non_pair_error_i    = 4;  // non-fatal 
+  const int undefined_error_i   = 32; // fatal 
+  const int range_error_i       = 64;
 
+#ifndef PI
   static const double PI = 3.141592653589793238;
+#endif
+
+#ifdef CLIPPER2_MAX_PRECISION
+  const int MAX_DECIMAL_PRECISION = CLIPPER2_MAX_PRECISION;
+#else
+  const int MAX_DECIMAL_PRECISION = 8; // see Discussions #564
+#endif
+
   static const int64_t MAX_COORD = INT64_MAX >> 2;
   static const int64_t MIN_COORD = -MAX_COORD;
   static const int64_t INVALID = INT64_MAX;
@@ -72,6 +85,8 @@ namespace Clipper2Lib
       CLIPPER2_THROW(Clipper2Exception(scale_error));
     case non_pair_error_i:
       CLIPPER2_THROW(Clipper2Exception(non_pair_error));
+    case undefined_error_i:
+      CLIPPER2_THROW(Clipper2Exception(undefined_error));
     case range_error_i:
       CLIPPER2_THROW(Clipper2Exception(range_error));
     }
@@ -79,6 +94,7 @@ namespace Clipper2Lib
     if(error_code) {}; // only to stop compiler 'parameter not used' warning
 #endif
   }
+
 
   //By far the most widely used filling rules for polygons are EvenOdd
   //and NonZero, sometimes called Alternate and Winding respectively.
@@ -132,10 +148,11 @@ namespace Clipper2Lib
       return Point(x * scale, y * scale, z);
     }
 
+    void SetZ(const int64_t z_value) { z = z_value; }
 
     friend std::ostream& operator<<(std::ostream& os, const Point& point)
     {
-      os << point.x << "," << point.y << "," << point.z << " ";
+      os << point.x << "," << point.y << "," << point.z;
       return os;
     }
 
@@ -172,7 +189,7 @@ namespace Clipper2Lib
 
     friend std::ostream& operator<<(std::ostream& os, const Point& point)
     {
-      os << point.x << "," << point.y << " ";
+      os << point.x << "," << point.y;
       return os;
     }
 #endif
@@ -220,6 +237,14 @@ namespace Clipper2Lib
   using Paths64 = std::vector< Path64>;
   using PathsD = std::vector< PathD>;
 
+  static const Point64 InvalidPoint64 = Point64(
+    (std::numeric_limits<int64_t>::max)(),
+    (std::numeric_limits<int64_t>::max)());
+  static const PointD InvalidPointD = PointD(
+    (std::numeric_limits<double>::max)(),
+    (std::numeric_limits<double>::max)());
+
+
   // Rect ------------------------------------------------------------------------
 
   template <typename T>
@@ -235,19 +260,13 @@ namespace Clipper2Lib
     T right;
     T bottom;
 
-    Rect() :
-      left(0),
-      top(0),
-      right(0),
-      bottom(0) {}
-
     Rect(T l, T t, T r, T b) :
       left(l),
       top(t),
       right(r),
       bottom(b) {}
 
-    Rect(bool is_valid)
+    Rect(bool is_valid = true)
     {
       if (is_valid)
       {
@@ -255,10 +274,12 @@ namespace Clipper2Lib
       }
       else
       {
-        left = top = std::numeric_limits<T>::max();
-        right = bottom = -std::numeric_limits<int64_t>::max();
+        left = top = (std::numeric_limits<T>::max)();
+        right = bottom = (std::numeric_limits<T>::lowest)();
       }
     }
+
+    bool IsValid() const { return left != (std::numeric_limits<T>::max)(); }
 
     T Width() const { return right - left; }
     T Height() const { return bottom - top; }
@@ -307,10 +328,13 @@ namespace Clipper2Lib
         ((std::max)(top, rec.top) <= (std::min)(bottom, rec.bottom));
     };
 
+    bool operator==(const Rect<T>& other) const {
+      return left == other.left && right == other.right && 
+        top == other.top && bottom == other.bottom;
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const Rect<T>& rect) {
-      os << "("
-        << rect.left << "," << rect.top << "," << rect.right << "," << rect.bottom
-        << ")";
+      os << "(" << rect.left << "," << rect.top << "," << rect.right << "," << rect.bottom << ") ";
       return os;
     }
   };
@@ -338,16 +362,22 @@ namespace Clipper2Lib
     return result;
   }
 
-  static const Rect64 MaxInvalidRect64 = Rect64(
-    INT64_MAX, INT64_MAX, INT64_MIN, INT64_MIN);
-  static const RectD MaxInvalidRectD = RectD(
-    MAX_DBL, MAX_DBL, -MAX_DBL, -MAX_DBL);
+  static const Rect64 InvalidRect64 = Rect64(
+    (std::numeric_limits<int64_t>::max)(), 
+    (std::numeric_limits<int64_t>::max)(), 
+    (std::numeric_limits<int64_t>::lowest)(),
+    (std::numeric_limits<int64_t>::lowest)());
+  static const RectD InvalidRectD = RectD(
+    (std::numeric_limits<double>::max)(),
+    (std::numeric_limits<double>::max)(),
+    (std::numeric_limits<double>::lowest)(),
+    (std::numeric_limits<double>::lowest)());
 
   template <typename T>
   Rect<T> GetBounds(const Path<T>& path)
   {
-    auto xmin = std::numeric_limits<T>::max();
-    auto ymin = std::numeric_limits<T>::max();
+    auto xmin = (std::numeric_limits<T>::max)();
+    auto ymin = (std::numeric_limits<T>::max)();
     auto xmax = std::numeric_limits<T>::lowest();
     auto ymax = std::numeric_limits<T>::lowest();
     for (const auto& p : path)
@@ -363,8 +393,8 @@ namespace Clipper2Lib
   template <typename T>
   Rect<T> GetBounds(const Paths<T>& paths)
   {
-    auto xmin = std::numeric_limits<T>::max();
-    auto ymin = std::numeric_limits<T>::max();
+    auto xmin = (std::numeric_limits<T>::max)();
+    auto ymin = (std::numeric_limits<T>::max)();
     auto xmax = std::numeric_limits<T>::lowest();
     auto ymax = std::numeric_limits<T>::lowest();
     for (const Path<T>& path : paths)
@@ -428,7 +458,7 @@ namespace Clipper2Lib
   }
 
   template <typename T1, typename T2>
-  inline Path<T1> ScalePath(const Path<T2>& path, 
+  inline Path<T1> ScalePath(const Path<T2>& path,
     double scale, int& error_code)
   {
     return ScalePath<T1, T2>(path, scale, scale, error_code);
@@ -488,26 +518,6 @@ namespace Clipper2Lib
     return result;
   }
 
-  inline PathD Path64ToPathD(const Path64& path)
-  {
-    return TransformPath<double, int64_t>(path);
-  }
-
-  inline PathsD Paths64ToPathsD(const Paths64& paths)
-  {
-    return TransformPaths<double, int64_t>(paths);
-  }
-
-  inline Path64 PathDToPath64(const PathD& path)
-  {
-    return TransformPath<int64_t, double>(path);
-  }
-
-  inline Paths64 PathsDToPaths64(const PathsD& paths)
-  {
-    return TransformPaths<int64_t, double>(paths);
-  }
-
   template<typename T>
   inline double Sqr(T val)
   {
@@ -560,48 +570,32 @@ namespace Clipper2Lib
   }
 
   template<typename T>
-  inline Path<T> StripDuplicates(const Path<T>& path, bool is_closed_path)
+  inline void StripDuplicates( Path<T>& path, bool is_closed_path)
   {
-    if (path.size() == 0) return Path<T>();
-    Path<T> result;
-    result.reserve(path.size());
-    typename Path<T>::const_iterator path_iter = path.cbegin();
-    Point<T> first_pt = *path_iter++, last_pt = first_pt;
-    result.push_back(first_pt);
-    for (; path_iter != path.cend(); ++path_iter)
-    {
-      if (*path_iter != last_pt)
-      {
-        last_pt = *path_iter;
-        result.push_back(last_pt);
-      }
-    }
-    if (!is_closed_path) return result;
-    while (result.size() > 1 && result.back() == first_pt) result.pop_back();
-    return result;
+    //https://stackoverflow.com/questions/1041620/whats-the-most-efficient-way-to-erase-duplicates-and-sort-a-vector#:~:text=Let%27s%20compare%20three%20approaches%3A
+    path.erase(std::unique(path.begin(), path.end()), path.end());
+    if (is_closed_path)
+      while (path.size() > 1 && path.back() == path.front()) path.pop_back();
   }
 
   template<typename T>
-  inline Paths<T> StripDuplicates(const Paths<T>& paths, bool is_closed_path)
+  inline void StripDuplicates( Paths<T>& paths, bool is_closed_path)
   {
-    Paths<T> result;
-    result.reserve(paths.size());
-    for (typename Paths<T>::const_iterator paths_citer = paths.cbegin();
-      paths_citer != paths.cend(); ++paths_citer)
+    for (typename Paths<T>::iterator paths_citer = paths.begin();
+      paths_citer != paths.end(); ++paths_citer)
     {
-      result.push_back(StripDuplicates(*paths_citer, is_closed_path));
+      StripDuplicates(*paths_citer, is_closed_path);
     }
-    return result;
   }
 
   // Miscellaneous ------------------------------------------------------------
 
   inline void CheckPrecision(int& precision, int& error_code)
   {
-    if (precision >= -8 && precision <= 8) return;
+    if (precision >= -MAX_DECIMAL_PRECISION && precision <= MAX_DECIMAL_PRECISION) return;
     error_code |= precision_error_i; // non-fatal error
-    DoError(precision_error_i);      // unless exceptions enabled
-    precision = precision > 8 ? 8 : -8;
+    DoError(precision_error_i);      // does nothing unless exceptions enabled
+    precision = precision > 0 ? MAX_DECIMAL_PRECISION : -MAX_DECIMAL_PRECISION;
   }
 
   inline void CheckPrecision(int& precision)
@@ -693,29 +687,27 @@ namespace Clipper2Lib
     //nb: This statement is premised on using Cartesian coordinates
     return Area<T>(poly) >= 0;
   }
-
-  inline int64_t CheckCastInt64(double val)
-  {
-    if ((val >= max_coord) || (val <= min_coord)) return INVALID;
-    else return static_cast<int64_t>(val);
-  }
-
+  
   inline bool GetIntersectPoint(const Point64& ln1a, const Point64& ln1b,
     const Point64& ln2a, const Point64& ln2b, Point64& ip)
   {  
     // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
-
     double dx1 = static_cast<double>(ln1b.x - ln1a.x);
     double dy1 = static_cast<double>(ln1b.y - ln1a.y);
     double dx2 = static_cast<double>(ln2b.x - ln2a.x);
     double dy2 = static_cast<double>(ln2b.y - ln2a.y);
+
     double det = dy1 * dx2 - dy2 * dx1;
-    if (det == 0.0) return 0;
-    double qx = dx1 * ln1a.y - dy1 * ln1a.x;
-    double qy = dx2 * ln2a.y - dy2 * ln2a.x;
-    ip.x = CheckCastInt64((dx1 * qy - dx2 * qx) / det);
-    ip.y = CheckCastInt64((dy1 * qy - dy2 * qx) / det);
-    return (ip.x != INVALID && ip.y != INVALID);
+    if (det == 0.0) return false;
+    double t = ((ln1a.x - ln2a.x) * dy2 - (ln1a.y - ln2a.y) * dx2) / det;
+    if (t <= 0.0) ip = ln1a;        // ?? check further (see also #568)
+    else if (t >= 1.0) ip = ln1b;   // ?? check further
+    else
+    {
+      ip.x = static_cast<int64_t>(ln1a.x + t * dx1);
+      ip.y = static_cast<int64_t>(ln1a.y + t * dy1);
+    }
+    return true;
   }
 
   inline bool SegmentsIntersect(const Point64& seg1a, const Point64& seg1b,
@@ -739,8 +731,9 @@ namespace Clipper2Lib
     }
   }
 
-  inline Point64 GetClosestPointOnSegment(const Point64& offPt,
-    const Point64& seg1, const Point64& seg2)
+  template<typename T>
+  inline Point<T> GetClosestPointOnSegment(const Point<T>& offPt,
+    const Point<T>& seg1, const Point<T>& seg2)
   {
     if (seg1.x == seg2.x && seg1.y == seg2.y) return seg1;
     double dx = static_cast<double>(seg2.x - seg1.x);
@@ -750,9 +743,14 @@ namespace Clipper2Lib
         static_cast<double>(offPt.y - seg1.y) * dy) /
       (Sqr(dx) + Sqr(dy));
     if (q < 0) q = 0; else if (q > 1) q = 1;
-    return Point64(
-      seg1.x + static_cast<int64_t>(nearbyint(q * dx)),
-      seg1.y + static_cast<int64_t>(nearbyint(q * dy)));
+    if constexpr (std::numeric_limits<T>::is_integer)
+      return Point<T>(
+        seg1.x + static_cast<T>(nearbyint(q * dx)),
+        seg1.y + static_cast<T>(nearbyint(q * dy)));
+    else
+      return Point<T>(
+        seg1.x + static_cast<T>(q * dx),
+        seg1.y + static_cast<T>(q * dy));
   }
 
   enum class PointInPolygonResult { IsOn, IsInside, IsOutside };

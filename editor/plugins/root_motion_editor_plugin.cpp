@@ -129,7 +129,7 @@ void EditorPropertyRootMotion::_node_assign() {
 		if (skeleton) {
 			HashMap<int, TreeItem *> items;
 			items.insert(-1, ti);
-			Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("BoneAttachment3D"));
+			Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("Bone"));
 			Vector<int> bones_to_process = skeleton->get_parentless_bones();
 			while (bones_to_process.size() > 0) {
 				int current_bone_idx = bones_to_process[0];
@@ -216,6 +216,7 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 
 	filters = memnew(Tree);
 	filter_dialog->add_child(filters);
+	filters->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	filters->set_v_size_flags(SIZE_EXPAND_FILL);
 	filters->set_hide_root(true);
 	filters->connect("item_activated", callable_mp(this, &EditorPropertyRootMotion::_confirmed));
