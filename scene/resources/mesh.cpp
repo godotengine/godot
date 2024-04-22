@@ -2086,7 +2086,7 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 
 		Array arrays = surface_get_arrays(i);
 		s.material = surface_get_material(i);
-		SurfaceTool::create_vertex_array_from_triangle_arrays(arrays, s.vertices, &s.format);
+		SurfaceTool::create_vertex_array_from_arrays(arrays, s.vertices, &s.format);
 
 		PackedVector3Array rvertices = arrays[Mesh::ARRAY_VERTEX];
 		int vc = rvertices.size();
