@@ -7816,6 +7816,7 @@ void Node3DEditor::set_subgizmo_selection(const Vector<int> &p_ids, Ref<EditorNo
 		se->gizmo = p_gizmo;
 		p_gizmo->redraw();
 		update_transform_gizmo();
+	}
 }
 
 void Node3DEditor::clear_subgizmo_selection(Object *p_obj) {
