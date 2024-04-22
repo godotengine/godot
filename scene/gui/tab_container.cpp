@@ -30,9 +30,6 @@
 
 #include "tab_container.h"
 
-#include "scene/gui/box_container.h"
-#include "scene/gui/label.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/theme/theme_db.h"
 
 int TabContainer::_get_tab_height() const {
@@ -782,6 +779,7 @@ void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 
 	_update_margins();
 	_repaint();
+	queue_redraw();
 }
 
 Ref<Texture2D> TabContainer::get_tab_icon(int p_tab) const {
