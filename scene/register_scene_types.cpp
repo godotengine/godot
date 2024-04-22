@@ -206,6 +206,7 @@
 #include "scene/2d/tile_map_layer.h"
 #include "scene/2d/touch_screen_button.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
+#include "scene/2d/visual_shape_2d.h"
 #include "scene/resources/2d/capsule_shape_2d.h"
 #include "scene/resources/2d/circle_shape_2d.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
@@ -814,6 +815,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(LightOccluder2D);
 	GDREGISTER_CLASS(OccluderPolygon2D);
 	GDREGISTER_CLASS(BackBufferCopy);
+	GDREGISTER_CLASS(VisualShape2D);
 
 	OS::get_singleton()->yield(); // may take time to init
 
