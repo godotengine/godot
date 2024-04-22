@@ -2045,8 +2045,8 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 		if (has_color) {
 			String line = tx->get_line(row);
-			color_position.x = row;
-			color_position.y = col;
+			color_position.x = col;
+			color_position.y = row;
 
 			int begin = -1;
 			int end = -1;
@@ -2128,12 +2128,16 @@ void ScriptTextEditor::_color_changed(const Color &p_color) {
 		new_args = String("(" + rtos(p_color.r) + ", " + rtos(p_color.g) + ", " + rtos(p_color.b) + ", " + rtos(p_color.a) + ")");
 	}
 
-	String line = code_editor->get_text_editor()->get_line(color_position.x);
-	String line_with_replaced_args = line.replace(color_args, new_args);
+	String line = code_editor->get_text_editor()->get_line(color_position.y);
+	String line_with_replaced_args = line;
+	int pos = line.find(color_args, color_position.x);
+	if (pos >= 0) {
+		line_with_replaced_args = line.substr(0, pos) + new_args + line.substr(pos + color_args.length());
+	}
 
 	color_args = new_args;
 	code_editor->get_text_editor()->begin_complex_operation();
-	code_editor->get_text_editor()->set_line(color_position.x, line_with_replaced_args);
+	code_editor->get_text_editor()->set_line(color_position.y, line_with_replaced_args);
 	code_editor->get_text_editor()->end_complex_operation();
 	code_editor->get_text_editor()->queue_redraw();
 }
