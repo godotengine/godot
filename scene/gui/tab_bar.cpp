@@ -30,11 +30,13 @@
 
 #include "tab_bar.h"
 
-#include "core/string/translation.h"
+#include "core/math/vector2.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/font.h"
+#include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 
 Size2 TabBar::get_minimum_size() const {
@@ -324,15 +326,19 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void TabBar::_shape(int p_tab) {
-	tabs.write[p_tab].text_buf->clear();
-	tabs.write[p_tab].text_buf->set_width(-1);
-	if (tabs[p_tab].text_direction == Control::TEXT_DIRECTION_INHERITED) {
-		tabs.write[p_tab].text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
+	TabBar::Tab *tab = &tabs.write[p_tab];
+	tab->text_buf->clear();
+	tab->text_buf->set_width(-1);
+	if (tab->text_direction == Control::TEXT_DIRECTION_INHERITED) {
+		tab->text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 	} else {
-		tabs.write[p_tab].text_buf->set_direction((TextServer::Direction)tabs[p_tab].text_direction);
+		tab->text_buf->set_direction((TextServer::Direction)tabs[p_tab].text_direction);
 	}
-
-	tabs.write[p_tab].text_buf->add_string(atr(tabs[p_tab].text), theme_cache.font, theme_cache.font_size, tabs[p_tab].language);
+	if (tab->title_style == ITALIC_FONT) {
+		tab->text_buf->add_string(atr(tabs[p_tab].text), theme_cache.italics_font, theme_cache.italics_font_size, tabs[p_tab].language);
+	} else {
+		tab->text_buf->add_string(atr(tabs[p_tab].text), theme_cache.font, theme_cache.font_size, tabs[p_tab].language);
+	}
 }
 
 void TabBar::_notification(int p_what) {
@@ -518,8 +524,9 @@ void TabBar::_notification(int p_what) {
 void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, bool p_focus) {
 	RID ci = get_canvas_item();
 	bool rtl = is_layout_rtl();
+	const TabBar::Tab *tab = &tabs[p_index];
 
-	Rect2 sb_rect = Rect2(p_x, 0, tabs[p_index].size_cache, get_size().height);
+	Rect2 sb_rect = Rect2(p_x, 0, tab->size_cache, get_size().height);
 	if (tab_style_v_flip) {
 		draw_set_transform(Point2(0.0, p_tab_style->get_draw_rect(sb_rect).size.y), 0.0, Size2(1.0, -1.0));
 	}
@@ -532,12 +539,12 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 		focus_style->draw(ci, sb_rect);
 	}
 
-	p_x += rtl ? tabs[p_index].size_cache - p_tab_style->get_margin(SIDE_LEFT) : p_tab_style->get_margin(SIDE_LEFT);
+	p_x += rtl ? tab->size_cache - p_tab_style->get_margin(SIDE_LEFT) : p_tab_style->get_margin(SIDE_LEFT);
 
 	Size2i sb_ms = p_tab_style->get_minimum_size();
 
 	// Draw the icon.
-	Ref<Texture2D> icon = tabs[p_index].icon;
+	Ref<Texture2D> icon = tab->icon;
 	if (icon.is_valid()) {
 		const Size2 icon_size = _get_tab_icon_size(p_index);
 		const Point2 icon_pos = Point2i(rtl ? p_x - icon_size.width : p_x, p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - icon_size.height) / 2);
@@ -547,22 +554,21 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 	}
 
 	// Draw the text.
-	if (!tabs[p_index].text.is_empty()) {
-		Point2i text_pos = Point2i(rtl ? p_x - tabs[p_index].size_text : p_x,
-				p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tabs[p_index].text_buf->get_size().y) / 2);
+	if (!tab->text.is_empty()) {
+		Point2i text_pos = Point2i(rtl ? p_x - tab->size_text : p_x,
+				p_tab_style->get_margin(SIDE_TOP) + ((sb_rect.size.y - sb_ms.y) - tab->text_buf->get_size().y) / 2);
 
 		if (theme_cache.outline_size > 0 && theme_cache.font_outline_color.a > 0) {
-			tabs[p_index].text_buf->draw_outline(ci, text_pos, theme_cache.outline_size, theme_cache.font_outline_color);
+			tab->text_buf->draw_outline(ci, text_pos, theme_cache.outline_size, theme_cache.font_outline_color);
 		}
-		tabs[p_index].text_buf->draw(ci, text_pos, p_font_color);
-
-		p_x = rtl ? p_x - tabs[p_index].size_text - theme_cache.h_separation : p_x + tabs[p_index].size_text + theme_cache.h_separation;
+		tab->text_buf->draw(ci, text_pos, p_font_color);
+		p_x = rtl ? p_x - tab->size_text - theme_cache.h_separation : p_x + tab->size_text + theme_cache.h_separation;
 	}
 
 	// Draw and calculate rect of the right button.
-	if (tabs[p_index].right_button.is_valid()) {
+	if (tab->right_button.is_valid()) {
 		Ref<StyleBox> style = theme_cache.button_hl_style;
-		Ref<Texture2D> rb = tabs[p_index].right_button;
+		Ref<Texture2D> rb = tab->right_button;
 
 		Rect2 rb_rect;
 		rb_rect.size = style->get_minimum_size() + rb->get_size();
@@ -598,7 +604,7 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 
 		tabs.write[p_index].cb_rect = cb_rect;
 
-		if (!tabs[p_index].disabled && cb_hover == p_index) {
+		if (!tab->disabled && cb_hover == p_index) {
 			if (cb_pressing) {
 				theme_cache.button_pressed_style->draw(ci, cb_rect);
 			} else {
@@ -755,6 +761,30 @@ void TabBar::set_tab_title(int p_tab, const String &p_title) {
 String TabBar::get_tab_title(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), "");
 	return tabs[p_tab].text;
+}
+
+void TabBar::set_tab_title_style(int p_tab, const TabTitleStyle style) {
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+
+	if (tabs[p_tab].title_style == style) {
+		return;
+	}
+
+	tabs.write[p_tab].title_style = style;
+
+	_shape(p_tab);
+	_update_cache();
+	_ensure_no_over_offset();
+	if (scroll_to_selected) {
+		ensure_tab_visible(current);
+	}
+	queue_redraw();
+	update_minimum_size();
+}
+
+TabBar::TabTitleStyle TabBar::get_tab_title_style(int p_tab) const {
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), TabTitleStyle::NORMAL_FONT);
+	return tabs[p_tab].title_style;
 }
 
 void TabBar::set_tab_text_direction(int p_tab, Control::TextDirection p_text_direction) {
@@ -1834,6 +1864,9 @@ void TabBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, TabBar, font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, TabBar, font_size);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, outline_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, TabBar, italics_font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, TabBar, italics_font_size);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, close_icon, "close");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, button_pressed_style, "button_pressed");
