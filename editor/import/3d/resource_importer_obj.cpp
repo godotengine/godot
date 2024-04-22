@@ -497,7 +497,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 		}
 	}
 
-	if (p_single_mesh) {
+	if (p_single_mesh && mesh->get_surface_count() > 0) {
 		r_meshes.push_back(mesh);
 	}
 
