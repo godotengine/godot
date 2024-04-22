@@ -38,26 +38,10 @@
 #endif
 
 #ifdef TOOLS_ENABLED
-Rect2 Path2D::_edit_get_rect() const {
-	if (!curve.is_valid() || curve->get_point_count() == 0) {
-		return Rect2(0, 0, 0, 0);
-	}
 
-	Rect2 aabb = Rect2(curve->get_point_position(0), Vector2(0, 0));
-
-	for (int i = 0; i < curve->get_point_count(); i++) {
-		for (int j = 0; j <= 8; j++) {
-			real_t frac = j / 8.0;
-			Vector2 p = curve->sample(i, frac);
-			aabb.expand_to(p);
-		}
-	}
-
-	return aabb;
-}
-
-bool Path2D::_edit_use_rect() const {
-	return curve.is_valid() && curve->get_point_count() != 0;
+void Path2D::set_selected(bool p_selected) {
+	selected = p_selected;
+	queue_redraw();
 }
 
 bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
@@ -102,8 +86,13 @@ void Path2D::_notification(int p_what) {
 				return;
 			}
 
+			Color draw_color = get_tree()->get_debug_paths_color();
+
 #ifdef TOOLS_ENABLED
 			const real_t line_width = get_tree()->get_debug_paths_width() * EDSCALE;
+			if (selected) {
+				draw_color = Color(1, 0.6, 0.4, 0.7); // Same color as 2D editor selected node's box.
+			}
 #else
 			const real_t line_width = get_tree()->get_debug_paths_width();
 #endif
@@ -135,7 +124,7 @@ void Path2D::_notification(int p_what) {
 					for (int i = 0; i < sample_count; i++) {
 						w[i] = r[i].get_origin();
 					}
-					draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width, false);
+					draw_polyline(v2p, draw_color, line_width, false);
 				}
 
 				// Draw fish bones
@@ -154,7 +143,7 @@ void Path2D::_notification(int p_what) {
 						w[1] = p;
 						w[2] = p + (-side - forward) * 5;
 
-						draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width * 0.5, false);
+						draw_polyline(v2p, draw_color, line_width * 0.5, false);
 					}
 				}
 			}
