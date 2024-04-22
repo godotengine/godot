@@ -59,6 +59,7 @@ real_t KinematicCollision2D::get_depth() const {
 }
 
 Object *KinematicCollision2D::get_local_shape() const {
+	PhysicsBody2D *owner = Object::cast_to<PhysicsBody2D>(ObjectDB::get_instance(owner_id));
 	if (!owner) {
 		return nullptr;
 	}

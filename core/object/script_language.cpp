@@ -51,7 +51,7 @@ void Script::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			if (EngineDebugger::is_active()) {
-				EngineDebugger::get_script_debugger()->set_break_language(get_language());
+				callable_mp(this, &Script::_set_debugger_break_language).call_deferred();
 			}
 		} break;
 	}
@@ -101,6 +101,12 @@ Dictionary Script::_get_script_constant_map() {
 		ret[E.key] = E.value;
 	}
 	return ret;
+}
+
+void Script::_set_debugger_break_language() {
+	if (EngineDebugger::is_active()) {
+		EngineDebugger::get_script_debugger()->set_break_language(get_language());
+	}
 }
 
 int Script::get_script_method_argument_count(const StringName &p_method, bool *r_is_valid) const {

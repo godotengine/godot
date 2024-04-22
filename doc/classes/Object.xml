@@ -357,7 +357,7 @@
 			<param index="0" name="signal" type="String" />
 			<param index="1" name="arguments" type="Array" default="[]" />
 			<description>
-				Adds a user-defined [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal].
+				Adds a user-defined [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal] and [method remove_user_signal].
 				[codeblocks]
 				[gdscript]
 				add_user_signal("hurt", [
@@ -797,7 +797,7 @@
 			<return type="bool" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the given user-defined [param signal] name exists. Only signals added with [method add_user_signal] are included.
+				Returns [code]true[/code] if the given user-defined [param signal] name exists. Only signals added with [method add_user_signal] are included. See also [method remove_user_signal].
 			</description>
 		</method>
 		<method name="is_blocking_signals" qualifiers="const">
@@ -903,6 +903,13 @@
 				Removes the given entry [param name] from the object's metadata. See also [method has_meta], [method get_meta] and [method set_meta].
 				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
 				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+			</description>
+		</method>
+		<method name="remove_user_signal">
+			<return type="void" />
+			<param index="0" name="signal" type="StringName" />
+			<description>
+				Removes the given user signal [param signal] from the object. See also [method add_user_signal] and [method has_user_signal].
 			</description>
 		</method>
 		<method name="set">

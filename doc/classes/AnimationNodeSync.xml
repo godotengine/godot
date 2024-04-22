@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeSync" inherits="AnimationNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for [AnimationNode]s with more than two input ports that must be synchronized.
+		Base class for [AnimationNode]s with multiple input ports that must be synchronized.
 	</brief_description>
 	<description>
 		An animation node used to combine, mix, or blend two or more animations together while keeping them synchronized within an [AnimationTree].

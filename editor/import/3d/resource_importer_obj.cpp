@@ -384,7 +384,22 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 
 			if (p_disable_compression) {
 				mesh_flags = 0;
+			} else {
+				bool is_mesh_2d = true;
+
+				// Disable compression if all z equals 0 (the mesh is 2D).
+				for (int i = 0; i < vertices.size(); i++) {
+					if (!Math::is_zero_approx(vertices[i].z)) {
+						is_mesh_2d = false;
+						break;
+					}
+				}
+
+				if (is_mesh_2d) {
+					mesh_flags = 0;
+				}
 			}
+
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
 				//another group going on, commit it
@@ -482,7 +497,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 		}
 	}
 
-	if (p_single_mesh) {
+	if (p_single_mesh && mesh->get_surface_count() > 0) {
 		r_meshes.push_back(mesh);
 	}
 

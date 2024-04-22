@@ -114,10 +114,10 @@
 			</description>
 		</method>
 		<method name="get_input_source_tracker" qualifiers="const">
-			<return type="XRPositionalTracker" />
+			<return type="XRControllerTracker" />
 			<param index="0" name="input_source_id" type="int" />
 			<description>
-				Gets an [XRPositionalTracker] for the given [param input_source_id].
+				Gets an [XRControllerTracker] for the given [param input_source_id].
 				In the context of WebXR, an input source can be an advanced VR controller like the Oculus Touch or Index controllers, or even a tap on the screen, a spoken voice command or a button press on the device itself. When a non-traditional input source is used, interpret the position and orientation of the [XRPositionalTracker] as a ray pointing at the object the user wishes to interact with.
 				Use this method to get information about the input source that triggered one of these signals:
 				- [signal selectstart]

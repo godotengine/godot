@@ -121,38 +121,38 @@ elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", False):
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually.
 # Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
-env_base = Environment(tools=custom_tools)
-env_base.PrependENVPath("PATH", os.getenv("PATH"))
-env_base.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
+env = Environment(tools=custom_tools)
+env.PrependENVPath("PATH", os.getenv("PATH"))
+env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
-    env_base["ENV"]["TERM"] = os.environ["TERM"]
+    env["ENV"]["TERM"] = os.environ["TERM"]
 
-env_base.disabled_modules = []
-env_base.module_version_string = ""
-env_base.msvc = False
+env.disabled_modules = []
+env.module_version_string = ""
+env.msvc = False
 
-env_base.__class__.disable_module = methods.disable_module
+env.__class__.disable_module = methods.disable_module
 
-env_base.__class__.add_module_version_string = methods.add_module_version_string
+env.__class__.add_module_version_string = methods.add_module_version_string
 
-env_base.__class__.add_source_files = methods.add_source_files
-env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
+env.__class__.add_source_files = methods.add_source_files
+env.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 
-env_base.__class__.add_shared_library = methods.add_shared_library
-env_base.__class__.add_library = methods.add_library
-env_base.__class__.add_program = methods.add_program
-env_base.__class__.CommandNoCache = methods.CommandNoCache
-env_base.__class__.Run = methods.Run
-env_base.__class__.disable_warnings = methods.disable_warnings
-env_base.__class__.force_optimization_on_debug = methods.force_optimization_on_debug
-env_base.__class__.module_add_dependencies = methods.module_add_dependencies
-env_base.__class__.module_check_dependencies = methods.module_check_dependencies
+env.__class__.add_shared_library = methods.add_shared_library
+env.__class__.add_library = methods.add_library
+env.__class__.add_program = methods.add_program
+env.__class__.CommandNoCache = methods.CommandNoCache
+env.__class__.Run = methods.Run
+env.__class__.disable_warnings = methods.disable_warnings
+env.__class__.force_optimization_on_debug = methods.force_optimization_on_debug
+env.__class__.module_add_dependencies = methods.module_add_dependencies
+env.__class__.module_check_dependencies = methods.module_check_dependencies
 
-env_base["x86_libtheora_opt_gcc"] = False
-env_base["x86_libtheora_opt_vc"] = False
+env["x86_libtheora_opt_gcc"] = False
+env["x86_libtheora_opt_vc"] = False
 
 # avoid issues when building with different versions of python out of the same directory
-env_base.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
+env.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
 
 # Build options
 
@@ -168,8 +168,7 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-opts.Add("platform", "Target platform (%s)" % ("|".join(platform_list),), "")
-opts.Add("p", "Platform (alias for 'platform')", "")
+opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(platform_list), "")
 opts.Add(EnumVariable("target", "Compilation target", "editor", ("editor", "template_release", "template_debug")))
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
 opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
@@ -180,6 +179,7 @@ opts.Add(
 )
 opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
 opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
+opts.Add(BoolVariable("debug_paths_relative", "Make file paths in debug symbols relative (if supported)", False))
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("threads", "Enable threading support", True))
@@ -227,6 +227,7 @@ opts.Add(
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
+opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -273,23 +274,19 @@ opts.Add("linkflags", "Custom flags for the linker")
 
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
-opts.Update(env_base)
+opts.Update(env)
 
 # Copy custom environment variables if set.
-if env_base["import_env_vars"]:
-    for env_var in str(env_base["import_env_vars"]).split(","):
+if env["import_env_vars"]:
+    for env_var in str(env["import_env_vars"]).split(","):
         if env_var in os.environ:
-            env_base["ENV"][env_var] = os.environ[env_var]
+            env["ENV"][env_var] = os.environ[env_var]
 
 # Platform selection: validate input, and add options.
 
-selected_platform = ""
+selected_platform = env["platform"]
 
-if env_base["platform"] != "":
-    selected_platform = env_base["platform"]
-elif env_base["p"] != "":
-    selected_platform = env_base["p"]
-else:
+if selected_platform == "":
     # Missing `platform` argument, try to detect platform automatically
     if (
         sys.platform.startswith("linux")
@@ -341,7 +338,7 @@ if selected_platform not in platform_list:
 
 # Make sure to update this to the found, valid platform as it's used through the buildsystem as the reference.
 # It should always be re-set after calling `opts.Update()` otherwise it uses the original input value.
-env_base["platform"] = selected_platform
+env["platform"] = selected_platform
 
 # Add platform-specific options.
 if selected_platform in platform_opts:
@@ -349,15 +346,15 @@ if selected_platform in platform_opts:
         opts.Add(opt)
 
 # Update the environment to take platform-specific options into account.
-opts.Update(env_base)
-env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
+opts.Update(env)
+env["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
 
 # Detect modules.
 modules_detected = OrderedDict()
 module_search_paths = ["modules"]  # Built-in path.
 
-if env_base["custom_modules"]:
-    paths = env_base["custom_modules"].split(",")
+if env["custom_modules"]:
+    paths = env["custom_modules"].split(",")
     for p in paths:
         try:
             module_search_paths.append(methods.convert_custom_modules_path(p))
@@ -371,13 +368,13 @@ for path in module_search_paths:
         # so save the time it takes to parse directories.
         modules = methods.detect_modules(path, recursive=False)
     else:  # Custom.
-        modules = methods.detect_modules(path, env_base["custom_modules_recursive"])
+        modules = methods.detect_modules(path, env["custom_modules_recursive"])
         # Provide default include path for both the custom module search `path`
         # and the base directory containing custom modules, as it may be different
         # from the built-in "modules" name (e.g. "custom_modules/summator/summator.h"),
         # so it can be referenced simply as `#include "summator/summator.h"`
         # independently of where a module is located on user's filesystem.
-        env_base.Prepend(CPPPATH=[path, os.path.dirname(path)])
+        env.Prepend(CPPPATH=[path, os.path.dirname(path)])
     # Note: custom modules can override built-in ones.
     modules_detected.update(modules)
 
@@ -386,7 +383,7 @@ for name, path in modules_detected.items():
     sys.path.insert(0, path)
     import config
 
-    if env_base["modules_enabled_by_default"]:
+    if env["modules_enabled_by_default"]:
         enabled = True
         try:
             enabled = config.is_enabled()
@@ -410,17 +407,17 @@ for name, path in modules_detected.items():
 methods.write_modules(modules_detected)
 
 # Update the environment again after all the module options are added.
-opts.Update(env_base)
-env_base["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
-Help(opts.GenerateHelpText(env_base))
+opts.Update(env)
+env["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
+Help(opts.GenerateHelpText(env))
 
 # add default include paths
 
-env_base.Prepend(CPPPATH=["#"])
+env.Prepend(CPPPATH=["#"])
 
 # configure ENV for platform
-env_base.platform_exporters = platform_exporters
-env_base.platform_apis = platform_apis
+env.platform_exporters = platform_exporters
+env.platform_apis = platform_apis
 
 # Configuration of build targets:
 # - Editor or template
@@ -429,67 +426,68 @@ env_base.platform_apis = platform_apis
 # - Optimization level
 # - Debug symbols for crash traces / debuggers
 
-env_base.editor_build = env_base["target"] == "editor"
-env_base.dev_build = env_base["dev_build"]
-env_base.debug_features = env_base["target"] in ["editor", "template_debug"]
+env.editor_build = env["target"] == "editor"
+env.dev_build = env["dev_build"]
+env.debug_features = env["target"] in ["editor", "template_debug"]
 
-if env_base.dev_build:
+if env.dev_build:
     opt_level = "none"
-elif env_base.debug_features:
+elif env.debug_features:
     opt_level = "speed_trace"
 else:  # Release
     opt_level = "speed"
 
-env_base["optimize"] = ARGUMENTS.get("optimize", opt_level)
-env_base["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env_base.dev_build)
+env["optimize"] = ARGUMENTS.get("optimize", opt_level)
+env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env.dev_build)
 
-if env_base.editor_build:
-    env_base.Append(CPPDEFINES=["TOOLS_ENABLED"])
+if env.editor_build:
+    env.Append(CPPDEFINES=["TOOLS_ENABLED"])
 
-if env_base.debug_features:
+if env.debug_features:
     # DEBUG_ENABLED enables debugging *features* and debug-only code, which is intended
     # to give *users* extra debugging information for their game development.
-    env_base.Append(CPPDEFINES=["DEBUG_ENABLED"])
+    env.Append(CPPDEFINES=["DEBUG_ENABLED"])
 
-if env_base.dev_build:
+if env.dev_build:
     # DEV_ENABLED enables *engine developer* code which should only be compiled for those
     # working on the engine itself.
-    env_base.Append(CPPDEFINES=["DEV_ENABLED"])
+    env.Append(CPPDEFINES=["DEV_ENABLED"])
 else:
     # Disable assert() for production targets (only used in thirdparty code).
-    env_base.Append(CPPDEFINES=["NDEBUG"])
+    env.Append(CPPDEFINES=["NDEBUG"])
 
 # SCons speed optimization controlled by the `fast_unsafe` option, which provide
 # more than 10 s speed up for incremental rebuilds.
 # Unsafe as they reduce the certainty of rebuilding all changed files, so it's
 # enabled by default for `debug` builds, and can be overridden from command line.
 # Ref: https://github.com/SCons/scons/wiki/GoFastButton
-if methods.get_cmdline_bool("fast_unsafe", env_base.dev_build):
+if methods.get_cmdline_bool("fast_unsafe", env.dev_build):
     # Renamed to `content-timestamp` in SCons >= 4.2, keeping MD5 for compat.
-    env_base.Decider("MD5-timestamp")
-    env_base.SetOption("implicit_cache", 1)
-    env_base.SetOption("max_drift", 60)
+    env.Decider("MD5-timestamp")
+    env.SetOption("implicit_cache", 1)
+    env.SetOption("max_drift", 60)
 
-if env_base["use_precise_math_checks"]:
-    env_base.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
+if env["use_precise_math_checks"]:
+    env.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
-if not env_base.File("#main/splash_editor.png").exists():
+if env.editor_build and env["engine_update_check"]:
+    env.Append(CPPDEFINES=["ENGINE_UPDATE_CHECK_ENABLED"])
+
+if not env.File("#main/splash_editor.png").exists():
     # Force disabling editor splash if missing.
-    env_base["no_editor_splash"] = True
-if env_base["no_editor_splash"]:
-    env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
+    env["no_editor_splash"] = True
+if env["no_editor_splash"]:
+    env.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
 
-if not env_base["deprecated"]:
-    env_base.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
+if not env["deprecated"]:
+    env.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
 
-if env_base["precision"] == "double":
-    env_base.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
+if env["precision"] == "double":
+    env.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
 
 tmppath = "./platform/" + selected_platform
 sys.path.insert(0, tmppath)
 import detect
-
-env = env_base.Clone()
 
 # Default num_jobs to local cpu count if not user specified.
 # SCons has a peculiarity where user-specified options won't be overridden
@@ -565,7 +563,7 @@ if env["production"]:
 # Run SCU file generation script if in a SCU build.
 if env["scu_build"]:
     max_includes_per_scu = 8
-    if env_base.dev_build == True:
+    if env.dev_build == True:
         max_includes_per_scu = 1024
 
     read_scu_limit = int(env["scu_limit"])
@@ -582,73 +580,6 @@ detect.configure(env)
 print(f'Building for platform "{selected_platform}", architecture "{env["arch"]}", target "{env["target"]}".')
 if env.dev_build:
     print("NOTE: Developer build, with debug optimization level and debug symbols (unless overridden).")
-
-# Set optimize and debug_symbols flags.
-# "custom" means do nothing and let users set their own optimization flags.
-# Needs to happen after configure to have `env.msvc` defined.
-if env.msvc:
-    if env["debug_symbols"]:
-        env.Append(CCFLAGS=["/Zi", "/FS"])
-        env.Append(LINKFLAGS=["/DEBUG:FULL"])
-    else:
-        env.Append(LINKFLAGS=["/DEBUG:NONE"])
-
-    if env["optimize"] == "speed":
-        env.Append(CCFLAGS=["/O2"])
-        env.Append(LINKFLAGS=["/OPT:REF"])
-    elif env["optimize"] == "speed_trace":
-        env.Append(CCFLAGS=["/O2"])
-        env.Append(LINKFLAGS=["/OPT:REF", "/OPT:NOICF"])
-    elif env["optimize"] == "size":
-        env.Append(CCFLAGS=["/O1"])
-        env.Append(LINKFLAGS=["/OPT:REF"])
-    elif env["optimize"] == "debug" or env["optimize"] == "none":
-        env.Append(CCFLAGS=["/Od"])
-else:
-    if env["debug_symbols"]:
-        # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
-        # otherwise addr2line doesn't understand them
-        env.Append(CCFLAGS=["-gdwarf-4"])
-        if env.dev_build:
-            env.Append(CCFLAGS=["-g3"])
-        else:
-            env.Append(CCFLAGS=["-g2"])
-    else:
-        if methods.using_clang(env) and not methods.is_vanilla_clang(env):
-            # Apple Clang, its linker doesn't like -s.
-            env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
-        else:
-            env.Append(LINKFLAGS=["-s"])
-
-    if env["optimize"] == "speed":
-        env.Append(CCFLAGS=["-O3"])
-    # `-O2` is friendlier to debuggers than `-O3`, leading to better crash backtraces.
-    elif env["optimize"] == "speed_trace":
-        env.Append(CCFLAGS=["-O2"])
-    elif env["optimize"] == "size":
-        env.Append(CCFLAGS=["-Os"])
-    elif env["optimize"] == "debug":
-        env.Append(CCFLAGS=["-Og"])
-    elif env["optimize"] == "none":
-        env.Append(CCFLAGS=["-O0"])
-
-# Needs to happen after configure to handle "auto".
-if env["lto"] != "none":
-    print("Using LTO: " + env["lto"])
-
-# Set our C and C++ standard requirements.
-# C++17 is required as we need guaranteed copy elision as per GH-36436.
-# Prepending to make it possible to override.
-# This needs to come after `configure`, otherwise we don't have env.msvc.
-if not env.msvc:
-    # Specifying GNU extensions support explicitly, which are supported by
-    # both GCC and Clang. Both currently default to gnu11 and gnu++14.
-    env.Prepend(CFLAGS=["-std=gnu11"])
-    env.Prepend(CXXFLAGS=["-std=gnu++17"])
-else:
-    # MSVC doesn't have clear C standard support, /std only covers C++.
-    # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
-    env.Prepend(CCFLAGS=["/std:c++17"])
 
 # Enforce our minimal compiler version requirements
 cc_version = methods.get_compiler_version(env) or {
@@ -695,6 +626,9 @@ if methods.using_gcc(env):
             "to switch to posix threads."
         )
         Exit(255)
+    if env["debug_paths_relative"] and cc_version_major < 8:
+        print("GCC < 8 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+        env["debug_paths_relative"] = False
 elif methods.using_clang(env):
     if cc_version_major == -1:
         print(
@@ -717,12 +651,89 @@ elif methods.using_clang(env):
                 "support C++17. Supported versions are Apple Clang 10 and later."
             )
             Exit(255)
+        if env["debug_paths_relative"] and not vanilla and cc_version_major < 12:
+            print("Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+            env["debug_paths_relative"] = False
     elif cc_version_major < 6:
         print(
             "Detected Clang version older than 6, which does not fully support "
             "C++17. Supported versions are Clang 6 and later."
         )
         Exit(255)
+    if env["debug_paths_relative"] and cc_version_major < 10:
+        print("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+        env["debug_paths_relative"] = False
+
+# Set optimize and debug_symbols flags.
+# "custom" means do nothing and let users set their own optimization flags.
+# Needs to happen after configure to have `env.msvc` defined.
+if env.msvc:
+    if env["debug_symbols"]:
+        env.Append(CCFLAGS=["/Zi", "/FS"])
+        env.Append(LINKFLAGS=["/DEBUG:FULL"])
+    else:
+        env.Append(LINKFLAGS=["/DEBUG:NONE"])
+
+    if env["optimize"] == "speed":
+        env.Append(CCFLAGS=["/O2"])
+        env.Append(LINKFLAGS=["/OPT:REF"])
+    elif env["optimize"] == "speed_trace":
+        env.Append(CCFLAGS=["/O2"])
+        env.Append(LINKFLAGS=["/OPT:REF", "/OPT:NOICF"])
+    elif env["optimize"] == "size":
+        env.Append(CCFLAGS=["/O1"])
+        env.Append(LINKFLAGS=["/OPT:REF"])
+    elif env["optimize"] == "debug" or env["optimize"] == "none":
+        env.Append(CCFLAGS=["/Od"])
+else:
+    if env["debug_symbols"]:
+        # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
+        # otherwise addr2line doesn't understand them
+        env.Append(CCFLAGS=["-gdwarf-4"])
+        if env.dev_build:
+            env.Append(CCFLAGS=["-g3"])
+        else:
+            env.Append(CCFLAGS=["-g2"])
+        if env["debug_paths_relative"]:
+            # Remap absolute paths to relative paths for debug symbols.
+            project_path = Dir("#").abspath
+            env.Append(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
+    else:
+        if methods.using_clang(env) and not methods.is_vanilla_clang(env):
+            # Apple Clang, its linker doesn't like -s.
+            env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
+        else:
+            env.Append(LINKFLAGS=["-s"])
+
+    if env["optimize"] == "speed":
+        env.Append(CCFLAGS=["-O3"])
+    # `-O2` is friendlier to debuggers than `-O3`, leading to better crash backtraces.
+    elif env["optimize"] == "speed_trace":
+        env.Append(CCFLAGS=["-O2"])
+    elif env["optimize"] == "size":
+        env.Append(CCFLAGS=["-Os"])
+    elif env["optimize"] == "debug":
+        env.Append(CCFLAGS=["-Og"])
+    elif env["optimize"] == "none":
+        env.Append(CCFLAGS=["-O0"])
+
+# Needs to happen after configure to handle "auto".
+if env["lto"] != "none":
+    print("Using LTO: " + env["lto"])
+
+# Set our C and C++ standard requirements.
+# C++17 is required as we need guaranteed copy elision as per GH-36436.
+# Prepending to make it possible to override.
+# This needs to come after `configure`, otherwise we don't have env.msvc.
+if not env.msvc:
+    # Specifying GNU extensions support explicitly, which are supported by
+    # both GCC and Clang. Both currently default to gnu11 and gnu++14.
+    env.Prepend(CFLAGS=["-std=gnu11"])
+    env.Prepend(CXXFLAGS=["-std=gnu++17"])
+else:
+    # MSVC doesn't have clear C standard support, /std only covers C++.
+    # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
+    env.Prepend(CCFLAGS=["/std:c++17"])
 
 # Disable exception handling. Godot doesn't use exceptions anywhere, and this
 # saves around 20% of binary size and very significant build time (GH-80513).
@@ -826,7 +837,7 @@ suffix += "." + env["target"]
 if env.dev_build:
     suffix += ".dev"
 
-if env_base["precision"] == "double":
+if env["precision"] == "double":
     suffix += ".double"
 
 suffix += "." + env["arch"]

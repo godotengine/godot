@@ -120,7 +120,6 @@ void SceneTreeTimer::release_connections() {
 SceneTreeTimer::SceneTreeTimer() {}
 
 void SceneTree::tree_changed() {
-	tree_version++;
 	emit_signal(tree_changed_name);
 }
 
@@ -153,7 +152,6 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 
 	ERR_FAIL_COND_V_MSG(E->value.nodes.has(p_node), &E->value, "Already in group: " + p_group + ".");
 	E->value.nodes.push_back(p_node);
-	//E->value.last_tree_version=0;
 	E->value.changed = true;
 	return &E->value;
 }
@@ -476,8 +474,6 @@ void SceneTree::iteration_prepare() {
 }
 
 bool SceneTree::physics_process(double p_time) {
-	root_lock++;
-
 	current_frame++;
 
 	flush_transform_notifications();
@@ -501,7 +497,6 @@ bool SceneTree::physics_process(double p_time) {
 	process_tweens(p_time, true);
 
 	flush_transform_notifications();
-	root_lock--;
 
 	_flush_delete_queue();
 	_call_idle_callbacks();
@@ -510,8 +505,6 @@ bool SceneTree::physics_process(double p_time) {
 }
 
 bool SceneTree::process(double p_time) {
-	root_lock++;
-
 	if (MainLoop::process(p_time)) {
 		_quit = true;
 	}
@@ -536,8 +529,6 @@ bool SceneTree::process(double p_time) {
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
 	flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
-
-	root_lock--;
 
 	_flush_delete_queue();
 
@@ -1761,7 +1752,7 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_min_size(Size2i(64, 64)); // Define a very small minimum window size to prevent bugs such as GH-37242.
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
-	root->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_ALWAYS);
+	root->set_auto_translate_mode(GLOBAL_GET("internationalization/rendering/root_node_auto_translate") ? Node::AUTO_TRANSLATE_MODE_ALWAYS : Node::AUTO_TRANSLATE_MODE_DISABLED);
 	root->set_name("root");
 	root->set_title(GLOBAL_GET("application/config/name"));
 

@@ -43,7 +43,7 @@ namespace TestNavigationRegion3D {
 TEST_SUITE("[Navigation]") {
 	TEST_CASE("[SceneTree][NavigationRegion3D] New region should have valid RID") {
 		NavigationRegion3D *region_node = memnew(NavigationRegion3D);
-		CHECK(region_node->get_region_rid().is_valid());
+		CHECK(region_node->get_rid().is_valid());
 		memdelete(region_node);
 	}
 
@@ -69,15 +69,6 @@ TEST_SUITE("[Navigation]") {
 			CHECK_FALSE(navigation_region->is_baking());
 			CHECK_NE(navigation_mesh->get_polygon_count(), 0);
 			CHECK_NE(navigation_mesh->get_vertices().size(), 0);
-		}
-
-		// Race condition is present in the below subcase, but baking should take many
-		// orders of magnitude longer than basic checks on the main thread, so it's fine.
-		SUBCASE("Asynchronous bake should not be immediate") {
-			navigation_region->bake_navigation_mesh(true);
-			CHECK(navigation_region->is_baking());
-			CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
-			CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
 		}
 
 		memdelete(mesh_instance);

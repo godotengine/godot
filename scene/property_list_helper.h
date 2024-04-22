@@ -48,10 +48,12 @@ class PropertyListHelper {
 
 	const Property *_get_property(const String &p_property, int *r_index) const;
 	void _call_setter(const MethodBind *p_setter, int p_index, const Variant &p_value) const;
-	Variant _call_getter(const MethodBind *p_getter, int p_index) const;
+	Variant _call_getter(const Property *p_property, int p_index) const;
 
 public:
 	void set_prefix(const String &p_prefix);
+	// Register property without setter/getter. Only use when you don't need PropertyListHelper for _set/_get logic.
+	void register_property(const PropertyInfo &p_info, const Variant &p_default);
 
 	template <typename S, typename G>
 	void register_property(const PropertyInfo &p_info, const Variant &p_default, S p_setter, G p_getter) {
@@ -64,7 +66,9 @@ public:
 		property_list[p_info.name] = property;
 	}
 
+	bool is_initialized() const;
 	void setup_for_instance(const PropertyListHelper &p_base, Object *p_object);
+	bool is_property_valid(const String &p_property, int *r_index = nullptr) const;
 
 	void get_property_list(List<PropertyInfo> *p_list, int p_count) const;
 	bool property_get_value(const String &p_property, Variant &r_ret) const;

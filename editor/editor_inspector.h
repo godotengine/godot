@@ -41,6 +41,7 @@ class ConfirmationDialog;
 class EditorInspector;
 class EditorValidationPanel;
 class LineEdit;
+class MarginContainer;
 class OptionButton;
 class PanelContainer;
 class PopupMenu;
@@ -505,7 +506,12 @@ class EditorInspector : public ScrollContainer {
 	int property_focusable;
 	int update_scroll_request;
 
-	HashMap<StringName, HashMap<StringName, String>> doc_path_cache;
+	struct DocCacheInfo {
+		String doc_path;
+		String theme_item_name;
+	};
+
+	HashMap<StringName, HashMap<StringName, DocCacheInfo>> doc_cache;
 	HashSet<StringName> restart_request_props;
 	HashMap<String, String> custom_property_descriptions;
 

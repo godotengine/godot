@@ -35,8 +35,8 @@
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
 
+#include "servers/xr/xr_controller_tracker.h"
 #include "servers/xr/xr_interface.h"
-#include "servers/xr/xr_positional_tracker.h"
 
 // declare some default strings
 #define INTERACTION_PROFILE_NONE "/interaction_profiles/none"
@@ -73,7 +73,7 @@ private:
 	struct Tracker { // A tracker we've registered with OpenXR
 		String tracker_name; // Name of our tracker (can be altered from the action map)
 		Vector<Action *> actions; // Actions related to this tracker
-		Ref<XRPositionalTracker> positional_tracker; // Our positional tracker object that holds our tracker state
+		Ref<XRControllerTracker> controller_tracker; // Our positional tracker object that holds our tracker state
 		RID tracker_rid; // RID of the tracker registered with our OpenXR API
 		RID interaction_profile; // RID of the interaction profile bound to this tracker (can be null)
 	};

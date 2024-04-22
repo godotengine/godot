@@ -60,6 +60,9 @@ const String ENV_ANDROID_KEYSTORE_RELEASE_PATH = "GODOT_ANDROID_KEYSTORE_RELEASE
 const String ENV_ANDROID_KEYSTORE_RELEASE_USER = "GODOT_ANDROID_KEYSTORE_RELEASE_USER";
 const String ENV_ANDROID_KEYSTORE_RELEASE_PASS = "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD";
 
+const String DEFAULT_ANDROID_KEYSTORE_DEBUG_USER = "androiddebugkey";
+const String DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD = "android";
+
 struct LauncherIcon {
 	const char *export_path;
 	int dimensions = 0;
@@ -166,6 +169,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet);
 
+	static String _get_keystore_path(const Ref<EditorExportPreset> &p_preset, bool p_debug);
+
 	static String _parse_string(const uint8_t *p_bytes, bool p_utf8);
 
 	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &r_manifest);
@@ -185,6 +190,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			const Ref<Image> &main_image,
 			const Ref<Image> &foreground,
 			const Ref<Image> &background);
+
+	static void _create_editor_debug_keystore_if_needed();
 
 	static Vector<ABI> get_enabled_abis(const Ref<EditorExportPreset> &p_preset);
 
@@ -233,6 +240,8 @@ public:
 	static String get_apksigner_path(int p_target_sdk = -1, bool p_check_executes = false);
 
 	static String get_java_path();
+
+	static String get_keytool_path();
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;

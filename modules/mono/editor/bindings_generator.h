@@ -88,6 +88,14 @@ class BindingsGenerator {
 		StringName setter;
 		StringName getter;
 
+		/**
+		 * Determines if the property will be hidden with the [EditorBrowsable(EditorBrowsableState.Never)]
+		 * attribute.
+		 * We do this for propertyies that have the PROPERTY_USAGE_INTERNAL flag, because they are not meant
+		 * to be exposed to scripting but we can't remove them to prevent breaking compatibility.
+		 */
+		bool is_hidden = false;
+
 		const DocData::PropertyDoc *prop_doc;
 
 		bool is_deprecated = false;
@@ -178,6 +186,14 @@ class BindingsGenerator {
 		 * Methods that are not meant to be exposed are those that begin with underscore and are not virtual.
 		 */
 		bool is_internal = false;
+
+		/**
+		 * Determines if the method will be hidden with the [EditorBrowsable(EditorBrowsableState.Never)]
+		 * attribute.
+		 * We do this for methods that we don't want to expose but need to be public to prevent breaking
+		 * compat (i.e: methods with 'is_compat' set to true.)
+		 */
+		bool is_hidden = false;
 
 		/**
 		 * Determines if the method is a compatibility method added to avoid breaking binary compatibility.

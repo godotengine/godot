@@ -63,7 +63,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 
 	void _update_search();
 	void _build_search_cache(EditorFileSystemDirectory *p_efsd);
-	float _score_path(const String &p_search, const String &p_path);
+	float _score_search_result(const PackedStringArray &p_search_tokens, const String &p_path);
 
 	void _confirmed();
 	virtual void cancel_pressed() override;
