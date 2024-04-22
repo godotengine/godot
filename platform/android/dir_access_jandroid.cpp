@@ -321,6 +321,14 @@ void DirAccessJAndroid::setup(jobject p_dir_access_handler) {
 	_current_is_hidden = env->GetMethodID(cls, "isCurrentHidden", "(II)Z");
 }
 
+void DirAccessJAndroid::terminate() {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(cls);
+	env->DeleteGlobalRef(dir_access_handler);
+}
+
 DirAccessJAndroid::DirAccessJAndroid() {
 }
 
