@@ -43,6 +43,7 @@ protected:
 
 public:
 	void share(const String &p_text, const String &p_subject, const String &p_title, const String &p_path);
+	void rate();
 
 	GodotShareData();
 	~GodotShareData();
