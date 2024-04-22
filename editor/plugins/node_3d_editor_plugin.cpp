@@ -2879,9 +2879,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 			if (show_info) {
 				const String viewport_size = vformat(U"%d × %d", viewport->get_size().x, viewport->get_size().y);
 				String text;
-				text += vformat(TTR("X: %s\n"), rtos(current_camera->get_position().x).pad_decimals(1));
-				text += vformat(TTR("Y: %s\n"), rtos(current_camera->get_position().y).pad_decimals(1));
-				text += vformat(TTR("Z: %s\n"), rtos(current_camera->get_position().z).pad_decimals(1));
+				text += vformat(TTR("X: %s\n"), TS->format_number(rtos(current_camera->get_position().x).pad_decimals(1)));
+				text += vformat(TTR("Y: %s\n"), TS->format_number(rtos(current_camera->get_position().y).pad_decimals(1)));
+				text += vformat(TTR("Z: %s\n"), TS->format_number(rtos(current_camera->get_position().z).pad_decimals(1)));
 				text += "\n";
 				text += vformat(
 						TTR("Size: %s (%.1fMP)\n"),
@@ -2889,9 +2889,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 						viewport->get_size().x * viewport->get_size().y * 0.000001);
 
 				text += "\n";
-				text += vformat(TTR("Objects: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_OBJECTS_IN_FRAME));
-				text += vformat(TTR("Primitives: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME));
-				text += vformat(TTR("Draw Calls: %d"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME));
+				text += vformat(TTR("Objects: %s\n"), TS->format_number(itos(viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_OBJECTS_IN_FRAME))));
+				text += vformat(TTR("Primitives: %s\n"), TS->format_number(itos(viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME))));
+				text += vformat(TTR("Draw Calls: %s"), TS->format_number(itos(viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME))));
 
 				info_label->set_text(text);
 			}

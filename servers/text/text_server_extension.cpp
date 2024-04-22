@@ -1467,7 +1467,8 @@ String TextServerExtension::format_number(const String &p_string, const String &
 	if (GDVIRTUAL_CALL(_format_number, p_string, p_language, ret)) {
 		return ret;
 	}
-	return p_string;
+
+	return TextServer::format_number(p_string, p_language);
 }
 
 String TextServerExtension::parse_number(const String &p_string, const String &p_language) const {

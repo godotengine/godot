@@ -265,6 +265,25 @@
 				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
 		</method>
+		<method name="format_number" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="delimiter_separator" type="String" />
+			<param index="1" name="decimal_separator" type="String" default="&quot;,&quot;" />
+			<param index="2" name="delimiter_interval" type="int" default="&quot;.&quot;" />
+			<description>
+				Formats the string representing a number to make its integral part contain separators at regular intervals (thousands by default). This improves readability of large numbers. The decimal separator can also optionally be replaced from its default comma character. Negative and hexadecimal numbers are also supported ([code]-[/code] and [code]0x[/code] prefixes are ignored by the delimiter interval). See also [method pad_decimals], [method pad_zeros] and [method humanize_size].
+				[codeblock]
+				print(str(12345.6).format_number())  # Prints 12,345.678
+
+				print(str(12345.6).format_number(" ", ","))  # Prints 12 345,678
+				print(str(12345.6).pad_decimals(4).format_number())  # Prints 12,345.6000
+				print("0x00060d07".format_number(" ", ".", 4))  # Prints 0x0006 0d07
+
+				[/codeblock]
+				[b]Note:[/b] When using internationalization, consider [method TextServer.format_number] (which internally uses this method with most languages) instead of using this method directly. This allows for better internationalization support, as the thousands and decimal separators will automatically be selected according to the current language (or language override passed as a parameter).
+				[b]Tip:[/b] [method format_number] can be used together with [method pad_decimals] and/or [method pad_zeros] by chaining them. The correct order to use is [code]str(...).pad_zeros(...).format_number()[/code] or [code]str(...).pad_decimals(...).format_number()[/code]. Otherwise, leading zeros will not contain the delimiter separator and they won't be taken into account for formatting the rest of the number.
+			</description>
+		</method>
 		<method name="get_base_dir" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -383,7 +402,7 @@
 			<return type="String" />
 			<param index="0" name="size" type="int" />
 			<description>
-				Converts [param size] which represents a number of bytes into a human-readable form.
+				Converts [param size] which represents a number of bytes into a human-readable form. See also [method format_number].
 				The result is in [url=https://en.wikipedia.org/wiki/Binary_prefix#IEC_prefixes]IEC prefix format[/url], which may end in either [code]"B"[/code], [code]"KiB"[/code], [code]"MiB"[/code], [code]"GiB"[/code], [code]"TiB"[/code], [code]"PiB"[/code], or [code]"EiB"[/code].
 			</description>
 		</method>
@@ -703,14 +722,14 @@
 			<return type="String" />
 			<param index="0" name="digits" type="int" />
 			<description>
-				Formats the string representing a number to have an exact number of [param digits] [i]after[/i] the decimal point.
+				Formats the string representing a number to have an exact number of [param digits] [i]after[/i] the decimal point. See also [method pad_zeros] and [method format_number].
 			</description>
 		</method>
 		<method name="pad_zeros" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="digits" type="int" />
 			<description>
-				Formats the string representing a number to have an exact number of [param digits] [i]before[/i] the decimal point.
+				Formats the string representing a number to have an exact number of [param digits] [i]before[/i] the decimal point. See also [method pad_decimals] and [method format_number].
 			</description>
 		</method>
 		<method name="path_join" qualifiers="const">
