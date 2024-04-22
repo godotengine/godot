@@ -632,6 +632,7 @@ private:
 	int _predelete_ok = 0;
 	ObjectID _instance_id;
 	bool _predelete();
+	void _initialize();
 	void _postinitialize();
 	bool _can_translate = true;
 	bool _emitting = false;

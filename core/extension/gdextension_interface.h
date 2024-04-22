@@ -2592,6 +2592,7 @@ typedef void *(*GDExtensionInterfaceCallableCustomGetUserData)(GDExtensionConstT
 /**
  * @name classdb_construct_object
  * @since 4.1
+ * @deprecated in Godot 4.3. Use `classdb_construct_object2` instead.
  *
  * Constructs an Object of the requested class.
  *
@@ -2602,6 +2603,22 @@ typedef void *(*GDExtensionInterfaceCallableCustomGetUserData)(GDExtensionConstT
  * @return A pointer to the newly created Object.
  */
 typedef GDExtensionObjectPtr (*GDExtensionInterfaceClassdbConstructObject)(GDExtensionConstStringNamePtr p_classname);
+
+/**
+ * @name classdb_construct_object2
+ * @since 4.3
+ *
+ * Constructs an Object of the requested class.
+ *
+ * The passed class must be a built-in godot class, or an already-registered extension class. In both cases, object_set_instance() should be called to fully initialize the object.
+ *
+ * "NOTIFICATION_POSTINITIALIZE" must be sent after construction.
+ *
+ * @param p_classname A pointer to a StringName with the class name.
+ *
+ * @return A pointer to the newly created Object.
+ */
+typedef GDExtensionObjectPtr (*GDExtensionInterfaceClassdbConstructObject2)(GDExtensionConstStringNamePtr p_classname);
 
 /**
  * @name classdb_get_method_bind

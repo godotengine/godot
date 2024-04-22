@@ -491,7 +491,7 @@ StringName ClassDB::get_compatibility_class(const StringName &p_class) {
 	return StringName();
 }
 
-Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class) {
+Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class, bool p_skip_post_initialize) {
 	ClassInfo *ti;
 	{
 		OBJTYPE_RLOCK;
@@ -530,8 +530,12 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 			}
 		}
 #endif
-
-		return ti->creation_func();
+		if (p_skip_post_initialize) {
+			// If creating an extension owner, should not postinitialize here.
+			return ti->creation_without_postinitialization_func();
+		} else {
+			return ti->creation_func();
+		}
 	}
 }
 
@@ -541,6 +545,10 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 
 Object *ClassDB::instantiate_no_placeholders(const StringName &p_class) {
 	return _instantiate_internal(p_class, true);
+}
+
+Object *ClassDB::instantiate_without_postinitialization(const StringName &p_class) {
+	return _instantiate_internal(p_class, true, true);
 }
 
 #ifdef TOOLS_ENABLED

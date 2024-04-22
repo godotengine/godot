@@ -135,6 +135,8 @@ public:
 		bool is_virtual = false;
 		bool is_runtime = false;
 		Object *(*creation_func)() = nullptr;
+		// This should be set if "creation_func" is set.
+		Object *(*creation_without_postinitialization_func)() = nullptr;
 
 		ClassInfo() {}
 		~ClassInfo() {}
@@ -143,6 +145,13 @@ public:
 	template <typename T>
 	static Object *creator() {
 		return memnew(T);
+	}
+
+	template <typename T>
+	static Object *create_without_postinitialization() {
+		Object *ret = new ("") T;
+		ret->_initialize();
+		return ret;
 	}
 
 	static RWLock lock;
@@ -183,7 +192,7 @@ private:
 	static MethodBind *_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility);
 	static void _bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility);
 
-	static Object *_instantiate_internal(const StringName &p_class, bool p_require_real_class = false);
+	static Object *_instantiate_internal(const StringName &p_class, bool p_require_real_class = false, bool p_skip_post_initialize = false);
 
 public:
 	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
@@ -200,6 +209,7 @@ public:
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_NULL(t);
 		t->creation_func = &creator<T>;
+		t->creation_without_postinitialization_func = &create_without_postinitialization<T>;
 		t->exposed = true;
 		t->is_virtual = p_virtual;
 		t->class_ptr = T::get_class_ptr_static();
@@ -228,6 +238,7 @@ public:
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_NULL(t);
 		t->creation_func = &creator<T>;
+		t->creation_without_postinitialization_func = &create_without_postinitialization<T>;
 		t->exposed = false;
 		t->is_virtual = false;
 		t->class_ptr = T::get_class_ptr_static();
@@ -244,6 +255,7 @@ public:
 		ERR_FAIL_NULL(t);
 		ERR_FAIL_COND_MSG(t->inherits_ptr && !t->inherits_ptr->creation_func, vformat("Cannot register runtime class '%s' that descends from an abstract parent class.", T::get_class_static()));
 		t->creation_func = &creator<T>;
+		t->creation_without_postinitialization_func = &create_without_postinitialization<T>;
 		t->exposed = true;
 		t->is_virtual = false;
 		t->is_runtime = true;
@@ -268,6 +280,7 @@ public:
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_NULL(t);
 		t->creation_func = &_create_ptr_func<T>;
+		t->creation_without_postinitialization_func = &_create_ptr_func<T>;
 		t->exposed = true;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
@@ -290,6 +303,7 @@ public:
 	static bool is_virtual(const StringName &p_class);
 	static Object *instantiate(const StringName &p_class);
 	static Object *instantiate_no_placeholders(const StringName &p_class);
+	static Object *instantiate_without_postinitialization(const StringName &p_class);
 	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
 
 	static APIType get_api_type(const StringName &p_class);
