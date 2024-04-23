@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdextension_manager.h                                                 */
+/*  gdextension_loader.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,68 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_MANAGER_H
-#define GDEXTENSION_MANAGER_H
+#ifndef GDEXTENSION_LOADER_H
+#define GDEXTENSION_LOADER_H
 
-#include "core/extension/gdextension.h"
+#include "core/object/ref_counted.h"
 
-class GDExtensionManager : public Object {
-	GDCLASS(GDExtensionManager, Object);
+class GDExtension;
 
-	int32_t level = -1;
-	HashMap<String, Ref<GDExtension>> gdextension_map;
-	HashMap<String, String> gdextension_class_icon_paths;
-
-	static void _bind_methods();
-
-	static GDExtensionManager *singleton;
-
+class GDExtensionLoader : public RefCounted {
 public:
-	enum LoadStatus {
-		LOAD_STATUS_OK,
-		LOAD_STATUS_FAILED,
-		LOAD_STATUS_ALREADY_LOADED,
-		LOAD_STATUS_NOT_LOADED,
-		LOAD_STATUS_NEEDS_RESTART,
-	};
-
-private:
-	LoadStatus _load_extension_internal(const Ref<GDExtension> &p_extension);
-	LoadStatus _unload_extension_internal(const Ref<GDExtension> &p_extension);
-
-#ifdef TOOLS_ENABLED
-	static void _reload_all_scripts();
-#endif
-
-public:
-	LoadStatus load_extension(const String &p_path);
-	LoadStatus load_extension_with_loader(const String &p_path, const Ref<GDExtensionLoader> &p_loader);
-	LoadStatus reload_extension(const String &p_path);
-	LoadStatus unload_extension(const String &p_path);
-	bool is_extension_loaded(const String &p_path) const;
-	Vector<String> get_loaded_extensions() const;
-	Ref<GDExtension> get_extension(const String &p_path);
-
-	bool class_has_icon_path(const String &p_class) const;
-	String class_get_icon_path(const String &p_class) const;
-
-	void initialize_extensions(GDExtension::InitializationLevel p_level);
-	void deinitialize_extensions(GDExtension::InitializationLevel p_level);
-
-#ifdef TOOLS_ENABLED
-	void track_instance_binding(void *p_token, Object *p_object);
-	void untrack_instance_binding(void *p_token, Object *p_object);
-#endif
-
-	static GDExtensionManager *get_singleton();
-
-	void load_extensions();
-	void reload_extensions();
-
-	GDExtensionManager();
-	~GDExtensionManager();
+	virtual Error open_library(const String &p_path) = 0;
+	virtual Error initialize(GDExtensionInterfaceGetProcAddress p_get_proc_address, const Ref<GDExtension> &p_extension, GDExtensionInitialization *r_initialization) = 0;
+	virtual void close_library() = 0;
+	virtual bool is_library_open() const = 0;
+	virtual bool has_library_changed() const = 0;
 };
 
-VARIANT_ENUM_CAST(GDExtensionManager::LoadStatus)
-
-#endif // GDEXTENSION_MANAGER_H
+#endif // GDEXTENSION_LOADER_H
