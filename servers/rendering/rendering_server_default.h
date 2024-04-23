@@ -63,7 +63,7 @@ class RenderingServerDefault : public RenderingServer {
 
 	static void _changes_changed() {}
 
-	uint64_t frame_profile_frame;
+	uint64_t frame_profile_frame = 0;
 	Vector<FrameProfileArea> frame_profile;
 
 	double frame_setup_time = 0;
@@ -76,18 +76,17 @@ class RenderingServerDefault : public RenderingServer {
 
 	mutable CommandQueueMT command_queue;
 
-	void _thread_loop();
-
-	Thread::ID server_thread = Thread::UNASSIGNED_ID;
+	Thread::ID server_thread = Thread::MAIN_ID;
 	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	bool exit = false;
 	bool create_thread = false;
 
-	void _thread_draw(bool p_swap_buffers, double frame_step);
-
+	void _assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id);
 	void _thread_exit();
+	void _thread_loop();
 
 	void _draw(bool p_swap_buffers, double frame_step);
+	void _run_post_draw_steps();
 	void _init();
 	void _finish();
 
@@ -998,9 +997,22 @@ public:
 	FUNC1(global_shader_parameters_load_settings, bool)
 	FUNC0(global_shader_parameters_clear)
 
+	/* COMPOSITOR */
+
 #undef server_name
 #undef ServerName
+#define ServerName RendererCompositor
+#define server_name RSG::rasterizer
+
+	FUNC4S(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
+
 	/* STATUS INFORMATION */
+
+#undef server_name
+#undef ServerName
+
+	/* UTILITIES */
+
 #define ServerName RendererUtilities
 #define server_name RSG::utilities
 	FUNC0RC(String, get_video_adapter_name)
@@ -1056,7 +1068,7 @@ public:
 	virtual void call_on_render_thread(const Callable &p_callable) override {
 		if (Thread::get_caller_id() == server_thread) {
 			command_queue.flush_if_pending();
-			_call_on_render_thread(p_callable);
+			p_callable.call();
 		} else {
 			command_queue.push(this, &RenderingServerDefault::_call_on_render_thread, p_callable);
 		}
@@ -1066,7 +1078,6 @@ public:
 
 	virtual double get_frame_setup_time_cpu() const override;
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) override;
 	virtual Color get_default_clear_color() override;
 	virtual void set_default_clear_color(const Color &p_color) override;
 

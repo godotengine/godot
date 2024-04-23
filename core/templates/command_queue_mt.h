@@ -388,6 +388,8 @@ class CommandQueueMT {
 		} while (sync_head != sync_head_goal); // Can't use lower-than because of wraparound.
 	}
 
+	void _no_op() {}
+
 public:
 	void lock();
 	void unlock();
@@ -409,8 +411,13 @@ public:
 			_flush();
 		}
 	}
+
 	void flush_all() {
 		_flush();
+	}
+
+	void sync() {
+		push_and_sync(this, &CommandQueueMT::_no_op);
 	}
 
 	void wait_and_flush() {
@@ -420,7 +427,9 @@ public:
 	}
 
 	void set_pump_task_id(WorkerThreadPool::TaskID p_task_id) {
+		lock();
 		pump_task_id = p_task_id;
+		unlock();
 	}
 
 	CommandQueueMT();

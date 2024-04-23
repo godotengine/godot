@@ -69,8 +69,6 @@ void RenderingServerDefault::request_frame_drawn_callback(const Callable &p_call
 }
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
-	changes = 0;
-
 	RSG::rasterizer->begin_frame(frame_step);
 
 	TIMESTAMP_BEGIN()
@@ -102,19 +100,11 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::canvas->update_visibility_notifiers();
 	RSG::scene->update_visibility_notifiers();
 
-	while (frame_drawn_callbacks.front()) {
-		Callable c = frame_drawn_callbacks.front()->get();
-		Variant result;
-		Callable::CallError ce;
-		c.callp(nullptr, 0, result, ce);
-		if (ce.error != Callable::CallError::CALL_OK) {
-			String err = Variant::get_callable_error_text(c, nullptr, 0, ce);
-			ERR_PRINT("Error calling frame drawn function: " + err);
-		}
-
-		frame_drawn_callbacks.pop_front();
+	if (create_thread) {
+		callable_mp(this, &RenderingServerDefault::_run_post_draw_steps).call_deferred();
+	} else {
+		_run_post_draw_steps();
 	}
-	RS::get_singleton()->emit_signal(SNAME("frame_post_draw"));
 
 	if (RSG::utilities->get_captured_timestamps_count()) {
 		Vector<FrameProfileArea> new_profile;
@@ -194,6 +184,23 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::utilities->update_memory_info();
 }
 
+void RenderingServerDefault::_run_post_draw_steps() {
+	while (frame_drawn_callbacks.front()) {
+		Callable c = frame_drawn_callbacks.front()->get();
+		Variant result;
+		Callable::CallError ce;
+		c.callp(nullptr, 0, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			String err = Variant::get_callable_error_text(c, nullptr, 0, ce);
+			ERR_PRINT("Error calling frame drawn function: " + err);
+		}
+
+		frame_drawn_callbacks.pop_front();
+	}
+
+	emit_signal(SNAME("frame_post_draw"));
+}
+
 double RenderingServerDefault::get_frame_setup_time_cpu() const {
 	return frame_setup_time;
 }
@@ -203,7 +210,25 @@ bool RenderingServerDefault::has_changed() const {
 }
 
 void RenderingServerDefault::_init() {
+	RSG::threaded = create_thread;
+
+	RSG::canvas = memnew(RendererCanvasCull);
+	RSG::viewport = memnew(RendererViewport);
+	RendererSceneCull *sr = memnew(RendererSceneCull);
+	RSG::camera_attributes = memnew(RendererCameraAttributes);
+	RSG::scene = sr;
+	RSG::rasterizer = RendererCompositor::create();
+	RSG::utilities = RSG::rasterizer->get_utilities();
 	RSG::rasterizer->initialize();
+	RSG::light_storage = RSG::rasterizer->get_light_storage();
+	RSG::material_storage = RSG::rasterizer->get_material_storage();
+	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
+	RSG::particles_storage = RSG::rasterizer->get_particles_storage();
+	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
+	RSG::gi = RSG::rasterizer->get_gi();
+	RSG::fog = RSG::rasterizer->get_fog();
+	RSG::canvas_render = RSG::rasterizer->get_canvas();
+	sr->set_scene_render(RSG::rasterizer->get_scene());
 }
 
 void RenderingServerDefault::_finish() {
@@ -212,26 +237,38 @@ void RenderingServerDefault::_finish() {
 	}
 
 	RSG::canvas->finalize();
+	memdelete(RSG::canvas);
 	RSG::rasterizer->finalize();
+	memdelete(RSG::viewport);
+	memdelete(RSG::rasterizer);
+	memdelete(RSG::scene);
+	memdelete(RSG::camera_attributes);
 }
 
 void RenderingServerDefault::init() {
 	if (create_thread) {
 		print_verbose("RenderingServerWrapMT: Starting render thread");
 		DisplayServer::get_singleton()->release_rendering_thread();
-		server_task_id = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &RenderingServerDefault::_thread_loop), true);
+		WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &RenderingServerDefault::_thread_loop), true);
+		command_queue.set_pump_task_id(tid);
+		command_queue.push(this, &RenderingServerDefault::_assign_mt_ids, tid);
+		command_queue.push_and_sync(this, &RenderingServerDefault::_init);
+		DEV_ASSERT(server_task_id == tid);
 	} else {
+		server_thread = Thread::MAIN_ID;
 		_init();
 	}
 }
 
 void RenderingServerDefault::finish() {
 	if (create_thread) {
+		command_queue.push(this, &RenderingServerDefault::_finish);
 		command_queue.push(this, &RenderingServerDefault::_thread_exit);
 		if (server_task_id != WorkerThreadPool::INVALID_TASK_ID) {
 			WorkerThreadPool::get_singleton()->wait_for_task_completion(server_task_id);
 			server_task_id = WorkerThreadPool::INVALID_TASK_ID;
 		}
+		server_thread = Thread::MAIN_ID;
 	} else {
 		_finish();
 	}
@@ -268,17 +305,12 @@ Vector<RenderingServer::FrameProfileArea> RenderingServerDefault::get_frame_prof
 
 /* TESTING */
 
-void RenderingServerDefault::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
-	redraw_request();
-	RSG::rasterizer->set_boot_image(p_image, p_color, p_scale, p_use_filter);
-}
-
 Color RenderingServerDefault::get_default_clear_color() {
 	return RSG::texture_storage->get_default_clear_color();
 }
 
 void RenderingServerDefault::set_default_clear_color(const Color &p_color) {
-	RSG::viewport->set_default_clear_color(p_color);
+	RSG::texture_storage->set_default_clear_color(p_color);
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -327,29 +359,23 @@ Size2i RenderingServerDefault::get_maximum_viewport_size() const {
 	}
 }
 
+void RenderingServerDefault::_assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id) {
+	server_thread = Thread::get_caller_id();
+	server_task_id = p_pump_task_id;
+}
+
 void RenderingServerDefault::_thread_exit() {
 	exit = true;
 }
 
-void RenderingServerDefault::_thread_draw(bool p_swap_buffers, double frame_step) {
-	_draw(p_swap_buffers, frame_step);
-}
-
 void RenderingServerDefault::_thread_loop() {
-	server_thread = Thread::get_caller_id();
-
 	DisplayServer::get_singleton()->gl_window_make_current(DisplayServer::MAIN_WINDOW_ID); // Move GL to this thread.
-	_init();
 
-	command_queue.set_pump_task_id(server_task_id);
 	while (!exit) {
 		WorkerThreadPool::get_singleton()->yield();
 		command_queue.flush_all();
 	}
 
-	command_queue.flush_all();
-
-	_finish();
 	DisplayServer::get_singleton()->release_rendering_thread();
 }
 
@@ -366,7 +392,9 @@ void RenderingServerDefault::set_physics_interpolation_enabled(bool p_enabled) {
 /* EVENT QUEUING */
 
 void RenderingServerDefault::sync() {
-	if (!create_thread) {
+	if (create_thread) {
+		command_queue.sync();
+	} else {
 		command_queue.flush_all(); // Flush all pending from other threads.
 	}
 }
@@ -375,8 +403,9 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Manually triggering the draw function from the RenderingServer can only be done on the main thread. Call this function from the main thread or use call_deferred().");
 	// Needs to be done before changes is reset to 0, to not force the editor to redraw.
 	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
+	changes = 0;
 	if (create_thread) {
-		command_queue.push(this, &RenderingServerDefault::_thread_draw, p_swap_buffers, frame_step);
+		command_queue.push(this, &RenderingServerDefault::_draw, p_swap_buffers, frame_step);
 	} else {
 		_draw(p_swap_buffers, frame_step);
 	}
@@ -390,36 +419,7 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) {
 	RenderingServer::init();
 
 	create_thread = p_create_thread;
-	if (!create_thread) {
-		server_thread = Thread::MAIN_ID;
-	}
-
-	RSG::threaded = create_thread;
-
-	RSG::canvas = memnew(RendererCanvasCull);
-	RSG::viewport = memnew(RendererViewport);
-	RendererSceneCull *sr = memnew(RendererSceneCull);
-	RSG::camera_attributes = memnew(RendererCameraAttributes);
-	RSG::scene = sr;
-	RSG::rasterizer = RendererCompositor::create();
-	RSG::utilities = RSG::rasterizer->get_utilities();
-	RSG::light_storage = RSG::rasterizer->get_light_storage();
-	RSG::material_storage = RSG::rasterizer->get_material_storage();
-	RSG::mesh_storage = RSG::rasterizer->get_mesh_storage();
-	RSG::particles_storage = RSG::rasterizer->get_particles_storage();
-	RSG::texture_storage = RSG::rasterizer->get_texture_storage();
-	RSG::gi = RSG::rasterizer->get_gi();
-	RSG::fog = RSG::rasterizer->get_fog();
-	RSG::canvas_render = RSG::rasterizer->get_canvas();
-	sr->set_scene_render(RSG::rasterizer->get_scene());
-
-	frame_profile_frame = 0;
 }
 
 RenderingServerDefault::~RenderingServerDefault() {
-	memdelete(RSG::canvas);
-	memdelete(RSG::viewport);
-	memdelete(RSG::rasterizer);
-	memdelete(RSG::scene);
-	memdelete(RSG::camera_attributes);
 }
