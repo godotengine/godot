@@ -13,6 +13,10 @@ import time
 from types import ModuleType
 from collections import OrderedDict
 from importlib.util import spec_from_file_location, module_from_spec
+from SCons import __version__ as scons_raw_version
+from SCons.Script.SConscript import SConsEnvironment
+
+scons_ver = SConsEnvironment._get_major_minor_revision(scons_raw_version)
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -168,7 +172,11 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(platform_list), "")
+if scons_ver >= (4, 3):
+    opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(platform_list), "")
+else:
+    opts.Add("platform", "Target platform (%s)" % "|".join(platform_list), "")
+    opts.Add("p", "Alias for 'platform'", "")
 opts.Add(EnumVariable("target", "Compilation target", "editor", ("editor", "template_release", "template_debug")))
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
 opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
@@ -285,6 +293,9 @@ if env["import_env_vars"]:
 # Platform selection: validate input, and add options.
 
 selected_platform = env["platform"]
+
+if scons_ver < (4, 3) and not selected_platform:
+    selected_platform = env["p"]
 
 if selected_platform == "":
     # Missing `platform` argument, try to detect platform automatically
@@ -972,11 +983,6 @@ if env["vsproj"]:
     env.vs_incs = []
     env.vs_srcs = []
 
-# CompileDB and Ninja are only available with certain SCons versions which
-# not everybody might have yet, so we have to check.
-from SCons import __version__ as scons_raw_version
-
-scons_ver = env._get_major_minor_revision(scons_raw_version)
 if env["compiledb"] and scons_ver < (4, 0, 0):
     # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
     print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
