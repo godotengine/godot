@@ -4344,7 +4344,7 @@ void Tree::_notification(int p_what) {
 						}
 
 						default: {
-							text_pos.x += sb->get_offset().x + (tbrect.size.width - columns[i].text_buf->get_size().x) / 2;
+							text_pos.x += (tbrect.size.width - columns[i].text_buf->get_size().x) / 2;
 							break;
 						}
 					}
@@ -4726,7 +4726,8 @@ int Tree::get_column_minimum_width(int p_column) const {
 
 		// Check if the visible title of the column is wider.
 		if (show_column_titles) {
-			min_width = MAX(theme_cache.font->get_string_size(columns[p_column].xl_title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT), min_width);
+			const float padding = theme_cache.title_button->get_margin(SIDE_LEFT) + theme_cache.title_button->get_margin(SIDE_RIGHT);
+			min_width = MAX(theme_cache.font->get_string_size(columns[p_column].xl_title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + padding, min_width);
 		}
 
 		if (!columns[p_column].clip_content) {
