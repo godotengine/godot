@@ -678,7 +678,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 #endif // _3D_DISABLED
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		set_default_clear_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
+		RSG::texture_storage->set_default_clear_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 	}
 
 	if (sorted_active_viewports_dirty) {
@@ -1519,10 +1519,6 @@ void RendererViewport::handle_timestamp(String p_timestamp, uint64_t p_cpu_time,
 		viewport->time_cpu_end = p_cpu_time;
 		viewport->time_gpu_end = p_gpu_time;
 	}
-}
-
-void RendererViewport::set_default_clear_color(const Color &p_color) {
-	RSG::texture_storage->set_default_clear_color(p_color);
 }
 
 void RendererViewport::viewport_set_canvas_cull_mask(RID p_viewport, uint32_t p_canvas_cull_mask) {

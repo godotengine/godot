@@ -52,17 +52,15 @@ class PhysicsServer3DWrapMT : public PhysicsServer3D {
 
 	mutable CommandQueueMT command_queue;
 
-	void thread_loop();
-
 	Thread::ID server_thread = Thread::UNASSIGNED_ID;
 	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	bool exit = false;
-	Semaphore step_sem;
 	bool create_thread = false;
 
-	void thread_step(real_t p_delta);
-
-	void thread_exit();
+	void _assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id);
+	void _thread_exit();
+	void _thread_step(real_t p_delta);
+	void _thread_loop();
 
 public:
 #define ServerName PhysicsServer3D
