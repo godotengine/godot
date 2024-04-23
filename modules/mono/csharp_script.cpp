@@ -941,6 +941,31 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		to_reload_state.push_back(scr);
 	}
 
+	// Deserialize managed callables.
+	// This is done before reloading script's internal state, so potential callables invoked in properties work.
+	{
+		MutexLock lock(ManagedCallable::instances_mutex);
+
+		for (const KeyValue<ManagedCallable *, Array> &elem : ManagedCallable::instances_pending_reload) {
+			ManagedCallable *managed_callable = elem.key;
+			const Array &serialized_data = elem.value;
+
+			GCHandleIntPtr delegate = { nullptr };
+
+			bool success = GDMonoCache::managed_callbacks.DelegateUtils_TryDeserializeDelegateWithGCHandle(
+					&serialized_data, &delegate);
+
+			if (success) {
+				ERR_CONTINUE(delegate.value == nullptr);
+				managed_callable->delegate_handle = delegate;
+			} else if (OS::get_singleton()->is_stdout_verbose()) {
+				OS::get_singleton()->print("Failed to deserialize delegate\n");
+			}
+		}
+
+		ManagedCallable::instances_pending_reload.clear();
+	}
+
 	for (Ref<CSharpScript> &scr : to_reload_state) {
 		for (const ObjectID &obj_id : scr->pending_reload_instances) {
 			Object *obj = ObjectDB::get_instance(obj_id);
@@ -963,7 +988,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 					properties[G.first] = G.second;
 				}
 
-				// Restore serialized state and call OnAfterDeserialization
+				// Restore serialized state and call OnAfterDeserialize.
 				GDMonoCache::managed_callbacks.CSharpInstanceBridge_DeserializeState(
 						csi->get_gchandle_intptr(), &properties, &state_backup.event_signals);
 			}
@@ -971,30 +996,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		scr->pending_reload_instances.clear();
 		scr->pending_reload_state.clear();
-	}
-
-	// Deserialize managed callables
-	{
-		MutexLock lock(ManagedCallable::instances_mutex);
-
-		for (const KeyValue<ManagedCallable *, Array> &elem : ManagedCallable::instances_pending_reload) {
-			ManagedCallable *managed_callable = elem.key;
-			const Array &serialized_data = elem.value;
-
-			GCHandleIntPtr delegate = { nullptr };
-
-			bool success = GDMonoCache::managed_callbacks.DelegateUtils_TryDeserializeDelegateWithGCHandle(
-					&serialized_data, &delegate);
-
-			if (success) {
-				ERR_CONTINUE(delegate.value == nullptr);
-				managed_callable->delegate_handle = delegate;
-			} else if (OS::get_singleton()->is_stdout_verbose()) {
-				OS::get_singleton()->print("Failed to deserialize delegate\n");
-			}
-		}
-
-		ManagedCallable::instances_pending_reload.clear();
 	}
 
 #ifdef TOOLS_ENABLED
@@ -2518,13 +2519,20 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 		return MethodInfo();
 	}
 
+	MethodInfo mi;
 	for (const CSharpMethodInfo &E : methods) {
 		if (E.name == p_method) {
-			return E.method_info;
+			if (mi.name == p_method) {
+				// We already found a method with the same name before so
+				// that means this method has overloads, the best we can do
+				// is return an empty MethodInfo.
+				return MethodInfo();
+			}
+			mi = E.method_info;
 		}
 	}
 
-	return MethodInfo();
+	return mi;
 }
 
 Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {

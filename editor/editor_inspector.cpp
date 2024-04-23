@@ -44,6 +44,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
@@ -916,34 +917,35 @@ void EditorProperty::_update_pin_flags() {
 }
 
 Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
-	EditorHelpBit *tooltip = nullptr;
-
-	if (has_doc_tooltip) {
-		String custom_description;
-
-		const EditorInspector *inspector = get_parent_inspector();
-		if (inspector) {
-			custom_description = inspector->get_custom_property_description(p_text);
-		}
-		tooltip = memnew(EditorHelpTooltip(p_text, custom_description));
-	}
-
+	String custom_warning;
 	if (object->has_method("_get_property_warning")) {
-		String warn = object->call("_get_property_warning", property);
-		if (!warn.is_empty()) {
-			String prev_text;
-			if (tooltip == nullptr) {
-				tooltip = memnew(EditorHelpBit());
-				tooltip->set_text(p_text);
-				tooltip->get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 0));
-			} else {
-				prev_text = tooltip->get_rich_text()->get_text() + "\n";
-			}
-			tooltip->set_text(prev_text + "[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + warn + "[/color][/b]");
-		}
+		custom_warning = object->call("_get_property_warning", property);
 	}
 
-	return tooltip;
+	if (has_doc_tooltip || !custom_warning.is_empty()) {
+		EditorHelpBit *help_bit = memnew(EditorHelpBit);
+
+		if (has_doc_tooltip) {
+			help_bit->parse_symbol(p_text);
+
+			const EditorInspector *inspector = get_parent_inspector();
+			if (inspector) {
+				const String custom_description = inspector->get_custom_property_description(p_text);
+				if (!custom_description.is_empty()) {
+					help_bit->prepend_description(custom_description);
+				}
+			}
+		}
+
+		if (!custom_warning.is_empty()) {
+			help_bit->prepend_description("[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + custom_warning + "[/color][/b]");
+		}
+
+		EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<EditorProperty *>(this));
+		return memnew(Control); // Make the standard tooltip invisible.
+	}
+
+	return nullptr;
 }
 
 void EditorProperty::menu_option(int p_option) {
@@ -1178,7 +1180,14 @@ void EditorInspectorCategory::_notification(int p_what) {
 }
 
 Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) const {
-	return doc_class_name.is_empty() ? nullptr : memnew(EditorHelpTooltip(p_text));
+	// If it's not a doc tooltip, fallback to the default one.
+	if (doc_class_name.is_empty()) {
+		return nullptr;
+	}
+
+	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_text));
+	EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<EditorInspectorCategory *>(this));
+	return memnew(Control); // Make the standard tooltip invisible.
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
@@ -2887,8 +2896,8 @@ void EditorInspector::update_tree() {
 				category->doc_class_name = doc_name;
 
 				if (use_doc_hints) {
-					// `|` separator used in `EditorHelpTooltip` for formatting.
-					category->set_tooltip_text("class|" + doc_name + "||");
+					// `|` separators used in `EditorHelpBit`.
+					category->set_tooltip_text("class|" + doc_name + "|");
 				}
 			}
 
@@ -3220,12 +3229,13 @@ void EditorInspector::update_tree() {
 			}
 
 			// Search for the doc path in the cache.
-			HashMap<StringName, HashMap<StringName, String>>::Iterator E = doc_path_cache.find(classname);
+			HashMap<StringName, HashMap<StringName, DocCacheInfo>>::Iterator E = doc_cache.find(classname);
 			if (E) {
-				HashMap<StringName, String>::Iterator F = E->value.find(propname);
+				HashMap<StringName, DocCacheInfo>::Iterator F = E->value.find(propname);
 				if (F) {
 					found = true;
-					doc_path = F->value;
+					doc_path = F->value.doc_path;
+					theme_item_name = F->value.theme_item_name;
 				}
 			}
 
@@ -3246,21 +3256,20 @@ void EditorInspector::update_tree() {
 								theme_item_name = F->value.theme_properties[i].name;
 							}
 						}
-
-						if (is_native_class) {
-							doc_path_cache[classname][propname] = doc_path;
-						}
 					} else {
 						for (int i = 0; i < F->value.properties.size(); i++) {
 							String doc_path_current = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
 							if (F->value.properties[i].name == propname.operator String()) {
 								doc_path = doc_path_current;
 							}
-
-							if (is_native_class) {
-								doc_path_cache[classname][propname] = doc_path;
-							}
 						}
+					}
+
+					if (is_native_class) {
+						DocCacheInfo cache_info;
+						cache_info.doc_path = doc_path;
+						cache_info.theme_item_name = theme_item_name;
+						doc_cache[classname][propname] = cache_info;
 					}
 
 					if (!doc_path.is_empty() || F->value.inherits.is_empty()) {
@@ -3368,15 +3377,15 @@ void EditorInspector::update_tree() {
 				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
 
 				if (use_doc_hints) {
-					// `|` separator used in `EditorHelpTooltip` for formatting.
+					// `|` separators used in `EditorHelpBit`.
 					if (theme_item_name.is_empty()) {
 						if (p.usage & PROPERTY_USAGE_INTERNAL) {
-							ep->set_tooltip_text("internal_property|" + classname + "|" + property_prefix + p.name + "|");
+							ep->set_tooltip_text("internal_property|" + classname + "|" + property_prefix + p.name);
 						} else {
-							ep->set_tooltip_text("property|" + classname + "|" + property_prefix + p.name + "|");
+							ep->set_tooltip_text("property|" + classname + "|" + property_prefix + p.name);
 						}
 					} else {
-						ep->set_tooltip_text("theme_item|" + classname + "|" + theme_item_name + "|");
+						ep->set_tooltip_text("theme_item|" + classname + "|" + theme_item_name);
 					}
 					ep->has_doc_tooltip = true;
 				}

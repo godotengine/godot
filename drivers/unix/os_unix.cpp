@@ -168,11 +168,13 @@ void OS_Unix::initialize_core() {
 
 	NetSocketPosix::make_default();
 	IPUnix::make_default();
+	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
 	_setup_clock();
 }
 
 void OS_Unix::finalize_core() {
+	memdelete(process_map);
 	NetSocketPosix::cleanup();
 }
 
@@ -582,6 +584,11 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 	err_pipe.instantiate();
 	err_pipe->open_existing(pipe_err[0], 0);
 
+	ProcessInfo pi;
+	process_map_mutex.lock();
+	process_map->insert(pid, pi);
+	process_map_mutex.unlock();
+
 	ret["stdio"] = main_pipe;
 	ret["stderr"] = err_pipe;
 	ret["pid"] = pid;
@@ -698,6 +705,11 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 		raise(SIGKILL);
 	}
 
+	ProcessInfo pi;
+	process_map_mutex.lock();
+	process_map->insert(pid, pi);
+	process_map_mutex.unlock();
+
 	if (r_child_id) {
 		*r_child_id = pid;
 	}
@@ -720,12 +732,43 @@ int OS_Unix::get_process_id() const {
 }
 
 bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
+	MutexLock lock(process_map_mutex);
+	const ProcessInfo *pi = process_map->getptr(p_pid);
+
+	if (pi && !pi->is_running) {
+		return false;
+	}
+
 	int status = 0;
 	if (waitpid(p_pid, &status, WNOHANG) != 0) {
+		if (pi) {
+			pi->is_running = false;
+			pi->exit_code = status;
+		}
 		return false;
 	}
 
 	return true;
+}
+
+int OS_Unix::get_process_exit_code(const ProcessID &p_pid) const {
+	MutexLock lock(process_map_mutex);
+	const ProcessInfo *pi = process_map->getptr(p_pid);
+
+	if (pi && !pi->is_running) {
+		return pi->exit_code;
+	}
+
+	int status = 0;
+	if (waitpid(p_pid, &status, WNOHANG) != 0) {
+		status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
+		if (pi) {
+			pi->is_running = false;
+			pi->exit_code = status;
+		}
+		return status;
+	}
+	return -1;
 }
 
 String OS_Unix::get_locale() const {
@@ -741,7 +784,7 @@ String OS_Unix::get_locale() const {
 	return locale;
 }
 
-Error OS_Unix::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path, bool p_generate_temp_files) {
+Error OS_Unix::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	String path = p_path;
 
 	if (FileAccess::exists(path) && path.is_relative_path()) {
@@ -765,8 +808,8 @@ Error OS_Unix::open_dynamic_library(const String &p_path, void *&p_library_handl
 	p_library_handle = dlopen(path.utf8().get_data(), GODOT_DLOPEN_MODE);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
-	if (r_resolved_path != nullptr) {
-		*r_resolved_path = path;
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
 	}
 
 	return OK;

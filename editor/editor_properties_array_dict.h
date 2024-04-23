@@ -37,6 +37,7 @@
 
 class Button;
 class EditorSpinSlider;
+class MarginContainer;
 
 class EditorPropertyArrayObject : public RefCounted {
 	GDCLASS(EditorPropertyArrayObject, RefCounted);

@@ -320,7 +320,7 @@ Error FBXDocument::_parse_nodes(Ref<FBXState> p_state) {
 			node->set_name(_as_string(fbx_node->name));
 			node->set_original_name(node->get_name());
 		} else if (fbx_node->is_root) {
-			node->set_name("Root");
+			node->set_name("RootNode");
 		}
 		if (fbx_node->camera) {
 			node->camera = fbx_node->camera->typed_id;
@@ -1629,6 +1629,9 @@ void FBXDocument::_generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTF
 
 	active_skeleton = skeleton;
 	current_node = active_skeleton;
+	if (active_skeleton) {
+		p_scene_parent = active_skeleton;
+	}
 
 	if (requires_extra_node) {
 		current_node = nullptr;
@@ -2019,8 +2022,8 @@ Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool
 	GLTFNodeIndex fbx_root = state->root_nodes.write[0];
 	Node *fbx_root_node = state->get_scene_node(fbx_root);
 	Node *root = fbx_root_node;
-	if (fbx_root_node && fbx_root_node->get_parent()) {
-		root = fbx_root_node->get_parent();
+	if (root && root->get_owner() && root->get_owner() != root) {
+		root = root->get_owner();
 	}
 	ERR_FAIL_NULL_V(root, nullptr);
 	_process_mesh_instances(state, root);

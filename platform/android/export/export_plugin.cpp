@@ -831,12 +831,80 @@ bool EditorExportPlatformAndroid::_uses_vulkan() {
 
 void EditorExportPlatformAndroid::_notification(int p_what) {
 #ifndef ANDROID_ENABLED
-	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		if (EditorExport::get_singleton()) {
-			EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformAndroid::_update_preset_status));
-		}
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			if (EditorExport::get_singleton()) {
+				EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformAndroid::_update_preset_status));
+			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("export/android")) {
+				_create_editor_debug_keystore_if_needed();
+			}
+		} break;
 	}
 #endif
+}
+
+void EditorExportPlatformAndroid::_create_editor_debug_keystore_if_needed() {
+	// Check if we have a valid keytool path.
+	String keytool_path = get_keytool_path();
+	if (!FileAccess::exists(keytool_path)) {
+		return;
+	}
+
+	// Check if the current editor debug keystore exists.
+	String editor_debug_keystore = EDITOR_GET("export/android/debug_keystore");
+	if (FileAccess::exists(editor_debug_keystore)) {
+		return;
+	}
+
+	// Generate the debug keystore.
+	String keystore_path = EditorPaths::get_singleton()->get_debug_keystore_path();
+	String keystores_dir = keystore_path.get_base_dir();
+	if (!DirAccess::exists(keystores_dir)) {
+		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Error err = dir_access->make_dir_recursive(keystores_dir);
+		if (err != OK) {
+			WARN_PRINT(TTR("Error creating keystores directory:") + "\n" + keystores_dir);
+			return;
+		}
+	}
+
+	if (!FileAccess::exists(keystore_path)) {
+		String output;
+		List<String> args;
+		args.push_back("-genkey");
+		args.push_back("-keystore");
+		args.push_back(keystore_path);
+		args.push_back("-storepass");
+		args.push_back("android");
+		args.push_back("-alias");
+		args.push_back(DEFAULT_ANDROID_KEYSTORE_DEBUG_USER);
+		args.push_back("-keypass");
+		args.push_back(DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD);
+		args.push_back("-keyalg");
+		args.push_back("RSA");
+		args.push_back("-keysize");
+		args.push_back("2048");
+		args.push_back("-validity");
+		args.push_back("10000");
+		args.push_back("-dname");
+		args.push_back("cn=Godot, ou=Godot Engine, o=Stichting Godot, c=NL");
+		Error error = OS::get_singleton()->execute(keytool_path, args, &output, nullptr, true);
+		print_verbose(output);
+		if (error != OK) {
+			WARN_PRINT("Error: Unable to create debug keystore");
+			return;
+		}
+	}
+
+	// Update the editor settings.
+	EditorSettings::get_singleton()->set("export/android/debug_keystore", keystore_path);
+	EditorSettings::get_singleton()->set("export/android/debug_keystore_user", DEFAULT_ANDROID_KEYSTORE_DEBUG_USER);
+	EditorSettings::get_singleton()->set("export/android/debug_keystore_pass", DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD);
+	print_verbose("Updated editor debug keystore to " + keystore_path);
 }
 
 void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
@@ -2208,6 +2276,15 @@ String EditorExportPlatformAndroid::get_java_path() {
 	}
 	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
 	return java_sdk_path.path_join("bin/java" + exe_ext);
+}
+
+String EditorExportPlatformAndroid::get_keytool_path() {
+	String exe_ext;
+	if (OS::get_singleton()->get_name() == "Windows") {
+		exe_ext = ".exe";
+	}
+	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
+	return java_sdk_path.path_join("bin/keytool" + exe_ext);
 }
 
 String EditorExportPlatformAndroid::get_adb_path() {
@@ -3655,6 +3732,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 		android_plugins_changed.set();
 #endif // DISABLE_DEPRECATED
 #ifndef ANDROID_ENABLED
+		_create_editor_debug_keystore_if_needed();
 		_update_preset_status();
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 #endif

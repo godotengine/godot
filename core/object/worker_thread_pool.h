@@ -81,7 +81,8 @@ private:
 		void *native_func_userdata = nullptr;
 		String description;
 		Semaphore done_semaphore; // For user threads awaiting.
-		bool completed = false;
+		bool completed : 1;
+		bool pending_notify_yield_over : 1;
 		Group *group = nullptr;
 		SelfList<Task> task_elem;
 		uint32_t waiting_pool = 0;
@@ -92,6 +93,8 @@ private:
 
 		void free_template_userdata();
 		Task() :
+				completed(false),
+				pending_notify_yield_over(false),
 				task_elem(this) {}
 	};
 
@@ -107,13 +110,21 @@ private:
 	BinaryMutex task_mutex;
 
 	struct ThreadData {
+		static Task *const YIELDING; // Too bad constexpr doesn't work here.
+
 		uint32_t index = 0;
 		Thread thread;
-		bool ready_for_scripting = false;
-		bool signaled = false;
+		bool ready_for_scripting : 1;
+		bool signaled : 1;
+		bool yield_is_over : 1;
 		Task *current_task = nullptr;
-		Task *awaited_task = nullptr; // Null if not awaiting the condition variable. Special value for idle-waiting.
+		Task *awaited_task = nullptr; // Null if not awaiting the condition variable, or special value (YIELDING).
 		ConditionVariable cond_var;
+
+		ThreadData() :
+				ready_for_scripting(false),
+				signaled(false),
+				yield_is_over(false) {}
 	};
 
 	TightLocalVector<ThreadData> threads;
@@ -177,6 +188,8 @@ private:
 		}
 	};
 
+	void _wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task);
+
 protected:
 	static void _bind_methods();
 
@@ -195,6 +208,9 @@ public:
 
 	bool is_task_completed(TaskID p_task_id) const;
 	Error wait_for_task_completion(TaskID p_task_id);
+
+	void yield();
+	void notify_yield_over(TaskID p_task_id);
 
 	template <typename C, typename M, typename U>
 	GroupID add_template_group_task(C *p_instance, M p_method, U p_userdata, int p_elements, int p_tasks = -1, bool p_high_priority = false, const String &p_description = String()) {

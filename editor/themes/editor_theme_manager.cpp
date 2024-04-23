@@ -356,20 +356,25 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 		if (config.spacing_preset != "Custom") {
 			int preset_base_spacing = 0;
 			int preset_extra_spacing = 0;
+			Size2 preset_dialogs_buttons_min_size;
 
 			if (config.spacing_preset == "Compact") {
 				preset_base_spacing = 0;
 				preset_extra_spacing = 4;
+				preset_dialogs_buttons_min_size = Size2(90, 26);
 			} else if (config.spacing_preset == "Spacious") {
 				preset_base_spacing = 6;
 				preset_extra_spacing = 2;
+				preset_dialogs_buttons_min_size = Size2(112, 36);
 			} else { // Default
 				preset_base_spacing = 4;
 				preset_extra_spacing = 0;
+				preset_dialogs_buttons_min_size = Size2(105, 34);
 			}
 
 			config.base_spacing = preset_base_spacing;
 			config.extra_spacing = preset_extra_spacing;
+			config.dialogs_buttons_min_size = preset_dialogs_buttons_min_size;
 
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_spacing", config.base_spacing);
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/additional_spacing", config.extra_spacing);
@@ -1271,6 +1276,9 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		// AcceptDialog.
 		p_theme->set_stylebox("panel", "AcceptDialog", p_config.dialog_style);
 		p_theme->set_constant("buttons_separation", "AcceptDialog", 8 * EDSCALE);
+		// Make buttons with short texts such as "OK" easier to click/tap.
+		p_theme->set_constant("buttons_min_width", "AcceptDialog", p_config.dialogs_buttons_min_size.x * EDSCALE);
+		p_theme->set_constant("buttons_min_height", "AcceptDialog", p_config.dialogs_buttons_min_size.y * EDSCALE);
 
 		// FileDialog.
 		p_theme->set_icon("folder", "FileDialog", p_theme->get_icon(SNAME("Folder"), EditorStringName(EditorIcons)));
@@ -2156,6 +2164,28 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_constant("table_v_separation", "EditorHelp", 6 * EDSCALE);
 		p_theme->set_constant("text_highlight_h_padding", "EditorHelp", 1 * EDSCALE);
 		p_theme->set_constant("text_highlight_v_padding", "EditorHelp", 2 * EDSCALE);
+	}
+
+	// EditorHelpBitTitle.
+	{
+		Ref<StyleBoxFlat> style = p_config.tree_panel_style->duplicate();
+		style->set_bg_color(p_config.dark_theme ? style->get_bg_color().lightened(0.04) : style->get_bg_color().darkened(0.04));
+		style->set_border_color(p_config.dark_theme ? style->get_border_color().lightened(0.04) : style->get_border_color().darkened(0.04));
+		style->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		style->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+
+		p_theme->set_type_variation("EditorHelpBitTitle", "RichTextLabel");
+		p_theme->set_stylebox("normal", "EditorHelpBitTitle", style);
+	}
+
+	// EditorHelpBitContent.
+	{
+		Ref<StyleBoxFlat> style = p_config.tree_panel_style->duplicate();
+		style->set_corner_radius(CORNER_TOP_LEFT, 0);
+		style->set_corner_radius(CORNER_TOP_RIGHT, 0);
+
+		p_theme->set_type_variation("EditorHelpBitContent", "RichTextLabel");
+		p_theme->set_stylebox("normal", "EditorHelpBitContent", style);
 	}
 
 	// Asset Library.

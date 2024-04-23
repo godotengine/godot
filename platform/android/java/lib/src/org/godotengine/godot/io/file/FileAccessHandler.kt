@@ -45,7 +45,6 @@ class FileAccessHandler(val context: Context) {
 	companion object {
 		private val TAG = FileAccessHandler::class.java.simpleName
 
-		private const val FILE_NOT_FOUND_ERROR_ID = -1
 		internal const val INVALID_FILE_ID = 0
 		private const val STARTING_FILE_ID = 1
 
@@ -118,7 +117,7 @@ class FileAccessHandler(val context: Context) {
 				lastFileId
 			} ?: INVALID_FILE_ID
 		} catch (e: FileNotFoundException) {
-			FILE_NOT_FOUND_ERROR_ID
+			FileErrors.FILE_NOT_FOUND.nativeValue
 		} catch (e: Exception) {
 			Log.w(TAG, "Error while opening $path", e)
 			INVALID_FILE_ID
@@ -188,6 +187,14 @@ class FileAccessHandler(val context: Context) {
 		} catch (e: SecurityException) {
 			0L
 		}
+	}
+
+	fun fileResize(fileId: Int, length: Long): Int {
+		if (!hasFileId(fileId)) {
+			return FileErrors.FAILED.nativeValue
+		}
+
+		return files[fileId].resize(length)
 	}
 
 	fun fileGetPosition(fileId: Int): Long {

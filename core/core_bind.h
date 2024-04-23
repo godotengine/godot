@@ -164,6 +164,7 @@ public:
 	Error shell_show_in_file_manager(const String &p_path, bool p_open_folder = true);
 
 	bool is_process_running(int p_pid) const;
+	int get_process_exit_code(int p_pid) const;
 	int get_process_id() const;
 
 	void set_restart_on_exit(bool p_restart, const Vector<String> &p_restart_arguments = Vector<String>());
@@ -446,6 +447,8 @@ public:
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
+	Variant class_get_property_default_value(const StringName &p_class, const StringName &p_property) const;
+
 	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
 	int class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
@@ -460,6 +463,8 @@ public:
 	PackedStringArray class_get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
+
+	bool is_class_enum_bitfield(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 
 	bool is_class_enabled(const StringName &p_class) const;
 

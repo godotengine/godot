@@ -30,6 +30,8 @@
 
 #include "xr_hand_tracker.h"
 
+#include "xr_body_tracker.h"
+
 void XRHandTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hand", "hand"), &XRHandTracker::set_hand);
 	ClassDB::bind_method(D_METHOD("get_hand"), &XRHandTracker::get_hand);
@@ -55,7 +57,6 @@ void XRHandTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hand_joint_angular_velocity", "joint", "angular_velocity"), &XRHandTracker::set_hand_joint_angular_velocity);
 	ClassDB::bind_method(D_METHOD("get_hand_joint_angular_velocity", "joint"), &XRHandTracker::get_hand_joint_angular_velocity);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "hand", PROPERTY_HINT_ENUM, "Left,Right"), "set_hand", "get_hand");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "has_tracking_data", PROPERTY_HINT_NONE), "set_has_tracking_data", "get_has_tracking_data");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hand_tracking_source", PROPERTY_HINT_ENUM, "Unknown,Unobstructed,Controller"), "set_hand_tracking_source", "get_hand_tracking_source");
 
@@ -104,8 +105,49 @@ void XRHandTracker::_bind_methods() {
 	BIND_BITFIELD_FLAG(HAND_JOINT_FLAG_ANGULAR_VELOCITY_VALID);
 }
 
+void XRHandTracker::set_tracker_type(XRServer::TrackerType p_type) {
+	ERR_FAIL_COND_MSG(p_type != XRServer::TRACKER_HAND, "XRHandTracker must be of type TRACKER_HAND.");
+}
+
+void XRHandTracker::set_tracker_hand(const XRPositionalTracker::TrackerHand p_hand) {
+	ERR_FAIL_INDEX(p_hand, TRACKER_HAND_MAX);
+
+	switch (p_hand) {
+		case TRACKER_HAND_LEFT:
+			tracker_hand = TRACKER_HAND_LEFT;
+			hand = HAND_LEFT;
+			break;
+
+		case TRACKER_HAND_RIGHT:
+			tracker_hand = TRACKER_HAND_RIGHT;
+			hand = HAND_RIGHT;
+			break;
+
+		case TRACKER_HAND_UNKNOWN:
+		default:
+			ERR_FAIL_MSG("XRHandTracker must specify hand");
+			break;
+	}
+}
+
 void XRHandTracker::set_hand(XRHandTracker::Hand p_hand) {
-	hand = p_hand;
+	ERR_FAIL_INDEX(p_hand, HAND_MAX);
+
+	switch (p_hand) {
+		case HAND_LEFT:
+			tracker_hand = TRACKER_HAND_LEFT;
+			hand = HAND_LEFT;
+			break;
+
+		case HAND_RIGHT:
+			tracker_hand = TRACKER_HAND_RIGHT;
+			hand = HAND_RIGHT;
+			break;
+
+		default:
+			ERR_FAIL_MSG("XRHandTracker must specify hand");
+			break;
+	}
 }
 
 XRHandTracker::Hand XRHandTracker::get_hand() const {
@@ -176,4 +218,8 @@ void XRHandTracker::set_hand_joint_angular_velocity(XRHandTracker::HandJoint p_j
 Vector3 XRHandTracker::get_hand_joint_angular_velocity(XRHandTracker::HandJoint p_joint) const {
 	ERR_FAIL_INDEX_V(p_joint, HAND_JOINT_MAX, Vector3());
 	return hand_joint_angular_velocities[p_joint];
+}
+
+XRHandTracker::XRHandTracker() {
+	type = XRServer::TRACKER_HAND;
 }

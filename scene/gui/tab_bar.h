@@ -32,6 +32,7 @@
 #define TAB_BAR_H
 
 #include "scene/gui/control.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/text_line.h"
 
 class TabBar : public Control {
@@ -55,6 +56,7 @@ public:
 private:
 	struct Tab {
 		String text;
+		String tooltip;
 
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
@@ -65,6 +67,8 @@ private:
 
 		bool disabled = false;
 		bool hidden = false;
+		bool truncated = false;
+
 		Variant metadata;
 		int ofs_cache = 0;
 		int size_cache = 0;
@@ -77,7 +81,12 @@ private:
 		Tab() {
 			text_buf.instantiate();
 		}
+
+		Tab(bool p_dummy) {}
 	};
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	int offset = 0;
 	int max_drawn_tab = 0;
@@ -162,10 +171,13 @@ private:
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list, tabs.size()); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -183,6 +195,9 @@ public:
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
+
+	void set_tab_tooltip(int p_tab, const String &p_tooltip);
+	String get_tab_tooltip(int p_tab) const;
 
 	void set_tab_text_direction(int p_tab, TextDirection p_text_direction);
 	TextDirection get_tab_text_direction(int p_tab) const;

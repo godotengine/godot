@@ -63,6 +63,7 @@ protected:
 public:
 	static void make_default();
 	static void setup(jobject p_net_utils);
+	static void terminate();
 
 	virtual void close();
 

@@ -189,26 +189,26 @@
 				for argument in OS.get_cmdline_args():
 				    if argument.contains("="):
 				        var key_value = argument.split("=")
-				        arguments[key_value[0].lstrip("--")] = key_value[1]
+				        arguments[key_value[0].trim_prefix("--")] = key_value[1]
 				    else:
 				        # Options without an argument will be present in the dictionary,
 				        # with the value set to an empty string.
-				        arguments[argument.lstrip("--")] = ""
+				        arguments[argument.trim_prefix("--")] = ""
 				[/gdscript]
 				[csharp]
-				var arguments = new Godot.Collections.Dictionary();
+				var arguments = new Dictionary&lt;string, string&gt;();
 				foreach (var argument in OS.GetCmdlineArgs())
 				{
 				    if (argument.Contains('='))
 				    {
 				        string[] keyValue = argument.Split("=");
-				        arguments[keyValue[0].LStrip("--")] = keyValue[1];
+				        arguments[keyValue[0].TrimPrefix("--")] = keyValue[1];
 				    }
 				    else
 				    {
 				        // Options without an argument will be present in the dictionary,
 				        // with the value set to an empty string.
-				        arguments[keyValue[0].LStrip("--")] = "";
+				        arguments[argument.TrimPrefix("--")] = "";
 				    }
 				}
 				[/csharp]
@@ -408,11 +408,20 @@
 				[b]Note:[/b] On Web platforms, it is still possible to determine the host platform's OS with feature tags. See [method has_feature].
 			</description>
 		</method>
+		<method name="get_process_exit_code" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="pid" type="int" />
+			<description>
+				Returns the exit code of a spawned process once it has finished running (see [method is_process_running]).
+				Returns [code]-1[/code] if the [param pid] is not a PID of a spawned child process, the process is still running, or the method is not implemented for the current platform.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="get_process_id" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number used by the host machine to uniquely identify this application.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_processor_count" qualifiers="const">
@@ -592,7 +601,7 @@
 			<param index="0" name="pid" type="int" />
 			<description>
 				Returns [code]true[/code] if the child process ID ([param pid]) is still running or [code]false[/code] if it has terminated. [param pid] must be a valid ID generated from [method create_process].
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="is_restart_on_exit_set" qualifiers="const">

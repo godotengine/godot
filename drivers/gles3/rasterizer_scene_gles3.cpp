@@ -3112,39 +3112,47 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 				if (pass == 0) {
 					spec_constants |= SceneShaderGLES3::BASE_PASS;
-					if (inst->omni_light_gl_cache.size() == 0) {
+
+					if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_OMNI;
-					}
-
-					if (inst->spot_light_gl_cache.size() == 0) {
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_SPOT;
-					}
-
-					if (p_render_data->directional_light_count == p_render_data->directional_shadow_count) {
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
-					}
-
-					if (inst->reflection_probe_rid_cache.size() == 0) {
-						// We don't have any probes.
-						spec_constants |= SceneShaderGLES3::DISABLE_REFLECTION_PROBE;
-					} else if (inst->reflection_probe_rid_cache.size() > 1) {
-						// We have a second probe.
-						spec_constants |= SceneShaderGLES3::SECOND_REFLECTION_PROBE;
-					}
-
-					if (inst->lightmap_instance.is_valid()) {
-						spec_constants |= SceneShaderGLES3::USE_LIGHTMAP;
-
-						GLES3::LightmapInstance *li = GLES3::LightStorage::get_singleton()->get_lightmap_instance(inst->lightmap_instance);
-						GLES3::Lightmap *lm = GLES3::LightStorage::get_singleton()->get_lightmap(li->lightmap);
-
-						if (lm->uses_spherical_harmonics) {
-							spec_constants |= SceneShaderGLES3::USE_SH_LIGHTMAP;
-						}
-					} else if (inst->lightmap_sh) {
-						spec_constants |= SceneShaderGLES3::USE_LIGHTMAP_CAPTURE;
-					} else {
 						spec_constants |= SceneShaderGLES3::DISABLE_LIGHTMAP;
+					} else {
+						if (inst->omni_light_gl_cache.size() == 0) {
+							spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_OMNI;
+						}
+
+						if (inst->spot_light_gl_cache.size() == 0) {
+							spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_SPOT;
+						}
+
+						if (p_render_data->directional_light_count == p_render_data->directional_shadow_count) {
+							spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
+						}
+
+						if (inst->reflection_probe_rid_cache.size() == 0) {
+							// We don't have any probes.
+							spec_constants |= SceneShaderGLES3::DISABLE_REFLECTION_PROBE;
+						} else if (inst->reflection_probe_rid_cache.size() > 1) {
+							// We have a second probe.
+							spec_constants |= SceneShaderGLES3::SECOND_REFLECTION_PROBE;
+						}
+
+						if (inst->lightmap_instance.is_valid()) {
+							spec_constants |= SceneShaderGLES3::USE_LIGHTMAP;
+
+							GLES3::LightmapInstance *li = GLES3::LightStorage::get_singleton()->get_lightmap_instance(inst->lightmap_instance);
+							GLES3::Lightmap *lm = GLES3::LightStorage::get_singleton()->get_lightmap(li->lightmap);
+
+							if (lm->uses_spherical_harmonics) {
+								spec_constants |= SceneShaderGLES3::USE_SH_LIGHTMAP;
+							}
+						} else if (inst->lightmap_sh) {
+							spec_constants |= SceneShaderGLES3::USE_LIGHTMAP_CAPTURE;
+						} else {
+							spec_constants |= SceneShaderGLES3::DISABLE_LIGHTMAP;
+						}
 					}
 				} else {
 					// Only base pass uses the radiance map.

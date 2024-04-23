@@ -1157,50 +1157,54 @@ JavaClassWrapper::JavaClassWrapper(jobject p_activity) {
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL(env);
 
-	jclass activity = env->FindClass("android/app/Activity");
-	jmethodID getClassLoader = env->GetMethodID(activity, "getClassLoader", "()Ljava/lang/ClassLoader;");
-	classLoader = env->CallObjectMethod(p_activity, getClassLoader);
-	classLoader = (jclass)env->NewGlobalRef(classLoader);
-	jclass classLoaderClass = env->FindClass("java/lang/ClassLoader");
-	findClass = env->GetMethodID(classLoaderClass, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-
 	jclass bclass = env->FindClass("java/lang/Class");
 	getDeclaredMethods = env->GetMethodID(bclass, "getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
 	getFields = env->GetMethodID(bclass, "getFields", "()[Ljava/lang/reflect/Field;");
 	Class_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/reflect/Method");
 	getParameterTypes = env->GetMethodID(bclass, "getParameterTypes", "()[Ljava/lang/Class;");
 	getReturnType = env->GetMethodID(bclass, "getReturnType", "()Ljava/lang/Class;");
 	getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
 	getModifiers = env->GetMethodID(bclass, "getModifiers", "()I");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/reflect/Field");
 	Field_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
 	Field_getModifiers = env->GetMethodID(bclass, "getModifiers", "()I");
 	Field_get = env->GetMethodID(bclass, "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Boolean");
 	Boolean_booleanValue = env->GetMethodID(bclass, "booleanValue", "()Z");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Byte");
 	Byte_byteValue = env->GetMethodID(bclass, "byteValue", "()B");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Character");
 	Character_characterValue = env->GetMethodID(bclass, "charValue", "()C");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Short");
 	Short_shortValue = env->GetMethodID(bclass, "shortValue", "()S");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Integer");
 	Integer_integerValue = env->GetMethodID(bclass, "intValue", "()I");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Long");
 	Long_longValue = env->GetMethodID(bclass, "longValue", "()J");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Float");
 	Float_floatValue = env->GetMethodID(bclass, "floatValue", "()F");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Double");
 	Double_doubleValue = env->GetMethodID(bclass, "doubleValue", "()D");
+	env->DeleteLocalRef(bclass);
 }

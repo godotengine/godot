@@ -45,12 +45,12 @@
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
 #include "scene/resources/3d/height_map_shape_3d.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
 
@@ -66,11 +66,14 @@
 NavMeshGenerator3D *NavMeshGenerator3D::singleton = nullptr;
 Mutex NavMeshGenerator3D::baking_navmesh_mutex;
 Mutex NavMeshGenerator3D::generator_task_mutex;
+RWLock NavMeshGenerator3D::generator_rid_rwlock;
 bool NavMeshGenerator3D::use_threads = true;
 bool NavMeshGenerator3D::baking_use_multiple_threads = true;
 bool NavMeshGenerator3D::baking_use_high_priority_threads = true;
 HashSet<Ref<NavigationMesh>> NavMeshGenerator3D::baking_navmeshes;
 HashMap<WorkerThreadPool::TaskID, NavMeshGenerator3D::NavMeshGeneratorTask3D *> NavMeshGenerator3D::generator_tasks;
+RID_Owner<NavMeshGenerator3D::NavMeshGeometryParser3D> NavMeshGenerator3D::generator_parser_owner;
+LocalVector<NavMeshGenerator3D::NavMeshGeometryParser3D *> NavMeshGenerator3D::generator_parsers;
 
 NavMeshGenerator3D *NavMeshGenerator3D::get_singleton() {
 	return singleton;
@@ -138,6 +141,13 @@ void NavMeshGenerator3D::cleanup() {
 		memdelete(generator_task);
 	}
 	generator_tasks.clear();
+
+	generator_rid_rwlock.write_lock();
+	for (NavMeshGeometryParser3D *parser : generator_parsers) {
+		generator_parser_owner.free(parser->self);
+	}
+	generator_parsers.clear();
+	generator_rid_rwlock.write_unlock();
 
 	generator_task_mutex.unlock();
 	baking_navmesh_mutex.unlock();
@@ -253,6 +263,15 @@ void NavMeshGenerator3D::generator_parse_geometry_node(const Ref<NavigationMesh>
 	generator_parse_gridmap_node(p_navigation_mesh, p_source_geometry_data, p_node);
 #endif
 	generator_parse_navigationobstacle_node(p_navigation_mesh, p_source_geometry_data, p_node);
+
+	generator_rid_rwlock.read_lock();
+	for (const NavMeshGeometryParser3D *parser : generator_parsers) {
+		if (!parser->callback.is_valid()) {
+			continue;
+		}
+		parser->callback.call(p_navigation_mesh, p_source_geometry_data, p_node);
+	}
+	generator_rid_rwlock.read_unlock();
 
 	if (p_recurse_children) {
 		for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -918,6 +937,47 @@ bool NavMeshGenerator3D::generator_emit_callback(const Callable &p_callback) {
 	p_callback.callp(nullptr, 0, result, ce);
 
 	return ce.error == Callable::CallError::CALL_OK;
+}
+
+RID NavMeshGenerator3D::source_geometry_parser_create() {
+	RWLockWrite write_lock(generator_rid_rwlock);
+
+	RID rid = generator_parser_owner.make_rid();
+
+	NavMeshGeometryParser3D *parser = generator_parser_owner.get_or_null(rid);
+	parser->self = rid;
+
+	generator_parsers.push_back(parser);
+
+	return rid;
+}
+
+void NavMeshGenerator3D::source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) {
+	RWLockWrite write_lock(generator_rid_rwlock);
+
+	NavMeshGeometryParser3D *parser = generator_parser_owner.get_or_null(p_parser);
+	ERR_FAIL_NULL(parser);
+
+	parser->callback = p_callback;
+}
+
+bool NavMeshGenerator3D::owns(RID p_object) {
+	RWLockRead read_lock(generator_rid_rwlock);
+	return generator_parser_owner.owns(p_object);
+}
+
+void NavMeshGenerator3D::free(RID p_object) {
+	RWLockWrite write_lock(generator_rid_rwlock);
+
+	if (generator_parser_owner.owns(p_object)) {
+		NavMeshGeometryParser3D *parser = generator_parser_owner.get_or_null(p_object);
+
+		generator_parsers.erase(parser);
+
+		generator_parser_owner.free(p_object);
+	} else {
+		ERR_PRINT("Attempted to free a NavMeshGenerator3D RID that did not exist (or was already freed).");
+	}
 }
 
 #endif // _3D_DISABLED

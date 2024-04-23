@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_export_shared_object.h                                         */
+/*  xr_tracker.cpp                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_EXPORT_SHARED_OBJECT_H
-#define EDITOR_EXPORT_SHARED_OBJECT_H
+#include "xr_tracker.h"
 
-#include "core/string/ustring.h"
-#include "core/templates/vector.h"
+void XRTracker::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_tracker_type"), &XRTracker::get_tracker_type);
+	ClassDB::bind_method(D_METHOD("set_tracker_type", "type"), &XRTracker::set_tracker_type);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_tracker_type", "get_tracker_type");
 
-struct SharedObject {
-	String path;
-	Vector<String> tags;
-	String target;
+	ClassDB::bind_method(D_METHOD("get_tracker_name"), &XRTracker::get_tracker_name);
+	ClassDB::bind_method(D_METHOD("set_tracker_name", "name"), &XRTracker::set_tracker_name);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_tracker_name", "get_tracker_name");
 
-	SharedObject(const String &p_path, const Vector<String> &p_tags, const String &p_target) :
-			path(p_path),
-			tags(p_tags),
-			target(p_target) {
-	}
-
-	SharedObject() {}
+	ClassDB::bind_method(D_METHOD("get_tracker_desc"), &XRTracker::get_tracker_desc);
+	ClassDB::bind_method(D_METHOD("set_tracker_desc", "description"), &XRTracker::set_tracker_desc);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_tracker_desc", "get_tracker_desc");
 };
 
-#endif // EDITOR_EXPORT_SHARED_OBJECT_H
+void XRTracker::set_tracker_type(XRServer::TrackerType p_type) {
+	type = p_type;
+};
+
+XRServer::TrackerType XRTracker::get_tracker_type() const {
+	return type;
+};
+
+void XRTracker::set_tracker_name(const StringName &p_name) {
+	// Note: this should not be changed after the tracker is registered with the XRServer!
+	name = p_name;
+};
+
+StringName XRTracker::get_tracker_name() const {
+	return name;
+};
+
+void XRTracker::set_tracker_desc(const String &p_desc) {
+	description = p_desc;
+}
+
+String XRTracker::get_tracker_desc() const {
+	return description;
+}

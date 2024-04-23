@@ -103,7 +103,7 @@ struct _NO_DISCARD_ Basis {
 
 	Vector3 get_scale() const;
 	Vector3 get_scale_abs() const;
-	Vector3 get_scale_local() const;
+	Vector3 get_scale_global() const;
 
 	void set_axis_angle_scale(const Vector3 &p_axis, real_t p_angle, const Vector3 &p_scale);
 	void set_euler_scale(const Vector3 &p_euler, const Vector3 &p_scale, EulerOrder p_order = EulerOrder::YXZ);

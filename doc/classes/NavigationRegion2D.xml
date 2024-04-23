@@ -23,13 +23,6 @@
 				Bakes the [NavigationPolygon]. If [param on_thread] is set to [code]true[/code] (default), the baking is done on a separate thread.
 			</description>
 		</method>
-		<method name="get_avoidance_layer_value" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="layer_number" type="int" />
-			<description>
-				Returns whether or not the specified layer of the [member avoidance_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
-			</description>
-		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
@@ -61,14 +54,6 @@
 				Returns [code]true[/code] when the [NavigationPolygon] is being baked on a background thread.
 			</description>
 		</method>
-		<method name="set_avoidance_layer_value">
-			<return type="void" />
-			<param index="0" name="layer_number" type="int" />
-			<param index="1" name="value" type="bool" />
-			<description>
-				Based on [param value], enables or disables the specified layer in the [member avoidance_layers] bitmask, given a [param layer_number] between 1 and 32.
-			</description>
-		</method>
 		<method name="set_navigation_layer_value">
 			<return type="void" />
 			<param index="0" name="layer_number" type="int" />
@@ -86,12 +71,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="avoidance_layers" type="int" setter="set_avoidance_layers" getter="get_avoidance_layers" default="1">
-			A bitfield determining all avoidance layers for the avoidance constrain.
-		</member>
-		<member name="constrain_avoidance" type="bool" setter="set_constrain_avoidance" getter="get_constrain_avoidance" default="false" experimental="When enabled, agents are known to get stuck on the navigation polygon corners and edges, especially at a high frame rate. Not recommended for use in production at this stage.">
-			If [code]true[/code] constraints avoidance agent's with an avoidance mask bit that matches with a bit of the [member avoidance_layers] to the navigation polygon. Due to each navigation polygon outline creating an obstacle and each polygon edge creating an avoidance line constrain keep the navigation polygon shape as simple as possible for performance.
-		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			Determines if the [NavigationRegion2D] is enabled or disabled.
 		</member>

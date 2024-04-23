@@ -33,6 +33,7 @@
 
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/property_list_helper.h"
 
 class OptionButton : public Button {
 	GDCLASS(OptionButton, Button);
@@ -64,11 +65,15 @@ class OptionButton : public Button {
 		int modulate_arrow = 0;
 	} theme_cache;
 
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
+
 	void _focused(int p_which);
 	void _selected(int p_which);
 	void _select(int p_which, bool p_emit = false);
 	void _select_int(int p_which);
 	void _refresh_size_cache();
+	void _dummy_setter() {} // Stub for PropertyListHelper (_set() doesn't use it).
 
 	virtual void pressed() override;
 
@@ -78,8 +83,10 @@ protected:
 
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list, popup->get_item_count()); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 

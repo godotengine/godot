@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  navigation_mesh_source_geometry_data_3d.h                             */
+/*  navigation_mesh_source_geometry_data_2d.h                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,18 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_3D_H
-#define NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_3D_H
+#ifndef NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
+#define NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
 
 #include "core/os/rw_lock.h"
-#include "scene/resources/mesh.h"
+#include "scene/2d/node_2d.h"
+#include "scene/resources/2d/navigation_polygon.h"
 
-class NavigationMeshSourceGeometryData3D : public Resource {
-	GDCLASS(NavigationMeshSourceGeometryData3D, Resource);
+class NavigationMeshSourceGeometryData2D : public Resource {
+	GDCLASS(NavigationMeshSourceGeometryData2D, Resource);
 	RWLock geometry_rwlock;
 
-	Vector<float> vertices;
-	Vector<int> indices;
+	Vector<Vector<Vector2>> traversable_outlines;
+	Vector<Vector<Vector2>> obstruction_outlines;
 
 public:
 	struct ProjectedObstruction;
@@ -52,52 +53,55 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	static void _bind_methods();
 
-private:
-	void _add_vertex(const Vector3 &p_vec3);
-	void _add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform);
-	void _add_mesh_array(const Array &p_array, const Transform3D &p_xform);
-	void _add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform);
-
 public:
 	struct ProjectedObstruction {
 		static inline uint32_t VERSION = 1; // Increase when format changes so we can detect outdated formats and provide compatibility.
 
 		Vector<float> vertices;
-		float elevation = 0.0;
-		float height = 0.0;
 		bool carve = false;
 	};
+
+	void _set_traversable_outlines(const Vector<Vector<Vector2>> &p_traversable_outlines);
+	const Vector<Vector<Vector2>> &_get_traversable_outlines() const { return traversable_outlines; }
+
+	void _set_obstruction_outlines(const Vector<Vector<Vector2>> &p_obstruction_outlines);
+	const Vector<Vector<Vector2>> &_get_obstruction_outlines() const { return obstruction_outlines; }
+
+	void _add_traversable_outline(const Vector<Vector2> &p_shape_outline);
+	void _add_obstruction_outline(const Vector<Vector2> &p_shape_outline);
 
 	// kept root node transform here on the geometry data
 	// if we add this transform to all exposed functions we need to break comp on all functions later
 	// when navmesh changes from global transform to relative to navregion
 	// but if it stays here we can just remove it and change the internal functions only
-	Transform3D root_node_transform;
+	Transform2D root_node_transform;
 
-	void set_vertices(const Vector<float> &p_vertices);
-	const Vector<float> &get_vertices() const { return vertices; }
+	void set_traversable_outlines(const TypedArray<Vector<Vector2>> &p_traversable_outlines);
+	TypedArray<Vector<Vector2>> get_traversable_outlines() const;
 
-	void set_indices(const Vector<int> &p_indices);
-	const Vector<int> &get_indices() const { return indices; }
+	void set_obstruction_outlines(const TypedArray<Vector<Vector2>> &p_obstruction_outlines);
+	TypedArray<Vector<Vector2>> get_obstruction_outlines() const;
 
-	bool has_data() { return vertices.size() && indices.size(); };
+	void append_traversable_outlines(const TypedArray<Vector<Vector2>> &p_traversable_outlines);
+	void append_obstruction_outlines(const TypedArray<Vector<Vector2>> &p_obstruction_outlines);
+
+	void add_traversable_outline(const PackedVector2Array &p_shape_outline);
+	void add_obstruction_outline(const PackedVector2Array &p_shape_outline);
+
+	bool has_data() { return traversable_outlines.size(); };
 	void clear();
 	void clear_projected_obstructions();
 
-	void add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform);
-	void add_mesh_array(const Array &p_mesh_array, const Transform3D &p_xform);
-	void add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform);
-
-	void merge(const Ref<NavigationMeshSourceGeometryData3D> &p_other_geometry);
-
-	void add_projected_obstruction(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, bool p_carve);
+	void add_projected_obstruction(const Vector<Vector2> &p_vertices, bool p_carve);
 	Vector<ProjectedObstruction> _get_projected_obstructions() const;
 
 	void set_projected_obstructions(const Array &p_array);
 	Array get_projected_obstructions() const;
 
-	NavigationMeshSourceGeometryData3D() {}
-	~NavigationMeshSourceGeometryData3D() { clear(); }
+	void merge(const Ref<NavigationMeshSourceGeometryData2D> &p_other_geometry);
+
+	NavigationMeshSourceGeometryData2D() {}
+	~NavigationMeshSourceGeometryData2D() { clear(); }
 };
 
-#endif // NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_3D_H
+#endif // NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
