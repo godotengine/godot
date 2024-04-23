@@ -7,7 +7,7 @@ var lambda_member1 := func(alpha: int, beta): return alpha + beta
 #   |            |         ^^^^^ \1:alpha -> \1:alpha
 #   ^^^^^^^^^^^^^^ \1 -> \1
 
-var lambda_member2 := func(alpha, beta: int) -> int: 
+var lambda_member2 := func(alpha, beta: int) -> int:
 #   |            |         |   |  |  |
 #   |            |         |   |  |  |
 #   |            |         |   |  ^^^^ \2:beta -> \2:beta
@@ -76,7 +76,7 @@ func _ready() -> void:
 	#   |          |        |   |  ^^^^ \local:beta -> \local:beta
 	#   |          |        ^^^^^ \local:alpha -> \local:alpha
 	#   ^^^^^^^^^^^^ \local -> \local
-	
+
 	var value := 42
 	#   ^^^^^ local:value -> local:value
 	var lambda_capture = func(): return value + some_name.length()

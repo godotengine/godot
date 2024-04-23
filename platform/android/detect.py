@@ -80,7 +80,7 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
     sdk_root = env["ANDROID_HOME"]
     if not os.path.exists(get_android_ndk_root(env)):
         extension = ".bat" if os.name == "nt" else ""
-        sdkmanager = f'"{(sdk_root + "/cmdline-tools/latest/bin/sdkmanager" + extension)}"'
+        sdkmanager = f'"{sdk_root + "/cmdline-tools/latest/bin/sdkmanager" + extension}"'
         if os.path.exists(sdkmanager):
             # Install the Android NDK
             print("Installing Android NDK...")

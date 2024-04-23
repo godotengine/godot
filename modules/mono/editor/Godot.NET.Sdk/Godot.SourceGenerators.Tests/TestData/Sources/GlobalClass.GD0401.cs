@@ -2,7 +2,7 @@ using Godot;
 
 // This works because it inherits from GodotObject.
 [GlobalClass]
-public partial class CustomGlobalClass1 : GodotObject 
+public partial class CustomGlobalClass1 : GodotObject
 {
 
 }

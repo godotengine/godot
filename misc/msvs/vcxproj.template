@@ -38,6 +38,9 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
+<<<<<<< HEAD
 <!-- CHECKSUM
 %%HASH%%
 -->
+=======
+>>>>>>> 19e854c7f5 (format: file formatting checks)

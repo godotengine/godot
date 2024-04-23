@@ -9,7 +9,7 @@ func test_member() -> void:
 	#   ^^^^ test -> test
 	test += 3
 	#<^^ -> test
-	member += 5	
+	member += 5
 	#<^^^^ -> member
 	test = return_arg(test)
 	#  |              ^^^^ -> test

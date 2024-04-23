@@ -1,5 +1,5 @@
 # Empty line:
-	  
+
 
 # Comment line:
 	  # Comment.
@@ -10,7 +10,7 @@ func test():
 	if true:
 
 	# Empty line:
-	  
+
 
 		print(2)
 

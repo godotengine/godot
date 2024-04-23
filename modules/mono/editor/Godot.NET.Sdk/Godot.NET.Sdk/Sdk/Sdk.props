@@ -71,7 +71,7 @@
     <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('osx')) ">macos</GodotTargetPlatform>
     <GodotTargetPlatform Condition=" '$(GodotTargetPlatform)' == '' and $(RuntimeIdentifier.StartsWith('win')) ">windows</GodotTargetPlatform>
   </PropertyGroup>
-  
+
   <!-- Auto-detect the target Godot platform if it was not specified and there's no runtime identifier information. -->
   <PropertyGroup Condition=" '$(GodotTargetPlatform)' == '' ">
     <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(Linux))' ">linuxbsd</GodotTargetPlatform>
