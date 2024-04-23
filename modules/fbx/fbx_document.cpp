@@ -320,7 +320,7 @@ Error FBXDocument::_parse_nodes(Ref<FBXState> p_state) {
 			node->set_name(_as_string(fbx_node->name));
 			node->set_original_name(node->get_name());
 		} else if (fbx_node->is_root) {
-			node->set_name("Root");
+			node->set_name("RootNode");
 		}
 		if (fbx_node->camera) {
 			node->camera = fbx_node->camera->typed_id;
