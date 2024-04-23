@@ -1297,7 +1297,7 @@ ProjectManager::ProjectManager() {
 				empty_list_message->add_theme_style_override("normal", memnew(StyleBoxEmpty));
 
 				const String line1 = TTR("You don't have any projects yet.");
-				const String line2 = TTR("Aidan Was Here My First Change!,\nimporting one that exists, or by downloading a project template from the Asset Library!");
+				const String line2 = TTR("\nimporting one that exists, or by downloading a project template from the Asset Library!");
 				empty_list_message->set_text(vformat("[center][b]%s[/b] %s[/center]", line1, line2));
 				empty_list_placeholder->add_child(empty_list_message);
 
