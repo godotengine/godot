@@ -581,10 +581,10 @@ void AudioStreamWAV::set_data(const Vector<uint8_t> &p_data) {
 		data_bytes = 0;
 	}
 
-	int datalen = p_data.size();
-	if (datalen) {
+	int64_t datalen = p_data.size();
+	if (datalen > 0 && datalen <= INT_MAX) {
 		const uint8_t *r = p_data.ptr();
-		int alloc_len = datalen + DATA_PAD * 2;
+		int64_t alloc_len = datalen + DATA_PAD * 2;
 		data = memalloc(alloc_len); //alloc with some padding for interpolation
 		memset(data, 0, alloc_len);
 		uint8_t *dataptr = (uint8_t *)data;
