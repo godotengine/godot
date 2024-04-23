@@ -302,7 +302,7 @@ class CommandQueueMT {
 	struct CommandBase {
 		bool sync = false;
 		virtual void call() = 0;
-		virtual ~CommandBase() = default; // Won't be called.
+		virtual ~CommandBase() = default;
 	};
 
 	struct SyncCommand : public CommandBase {
@@ -367,6 +367,10 @@ class CommandQueueMT {
 				sync_head++;
 				sync_cond_var.notify_all();
 			}
+
+			// If the command involved reallocating the buffer, the address may have changed.
+			cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
+			cmd->~CommandBase();
 
 			flush_read_ptr += size;
 		}
