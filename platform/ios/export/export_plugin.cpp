@@ -541,6 +541,44 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			}
 
 			strnew += lines[i].replace("$interface_orientations", orientations);
+		} else if (lines[i].contains("$ipad_interface_orientations")) {
+			String orientations;
+			const DisplayServer::ScreenOrientation screen_orientation =
+					DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation")));
+
+			switch (screen_orientation) {
+				case DisplayServer::SCREEN_LANDSCAPE:
+					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+					break;
+				case DisplayServer::SCREEN_PORTRAIT:
+					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+					break;
+				case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+					break;
+				case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+					break;
+				case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+					// Allow both landscape orientations depending on sensor direction.
+					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+					break;
+				case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+					// Allow both portrait orientations depending on sensor direction.
+					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+					break;
+				case DisplayServer::SCREEN_SENSOR:
+					// Allow all screen orientations depending on sensor direction.
+					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+					break;
+			}
+
+			strnew += lines[i].replace("$ipad_interface_orientations", orientations);
 		} else if (lines[i].contains("$camera_usage_description")) {
 			String description = p_preset->get("privacy/camera_usage_description");
 			strnew += lines[i].replace("$camera_usage_description", description) + "\n";
