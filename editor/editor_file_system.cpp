@@ -2953,7 +2953,10 @@ bool EditorFileSystem::_scan_extensions() {
 	Vector<String> loaded_extensions = GDExtensionManager::get_singleton()->get_loaded_extensions();
 	for (int i = 0; i < loaded_extensions.size(); i++) {
 		if (!extensions.has(loaded_extensions[i])) {
-			extensions_removed.push_back(loaded_extensions[i]);
+			// The extension may not have a .gdextension file.
+			if (!FileAccess::exists(loaded_extensions[i])) {
+				extensions_removed.push_back(loaded_extensions[i]);
+			}
 		}
 	}
 

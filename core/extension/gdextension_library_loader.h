@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdextension_manager.h                                                 */
+/*  gdextension_library_loader.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,68 +28,57 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_MANAGER_H
-#define GDEXTENSION_MANAGER_H
+#ifndef GDEXTENSION_LIBRARY_LOADER_H
+#define GDEXTENSION_LIBRARY_LOADER_H
 
-#include "core/extension/gdextension.h"
+#include <functional>
 
-class GDExtensionManager : public Object {
-	GDCLASS(GDExtensionManager, Object);
+#include "core/extension/gdextension_loader.h"
+#include "core/io/config_file.h"
+#include "core/os/shared_object.h"
 
-	int32_t level = -1;
-	HashMap<String, Ref<GDExtension>> gdextension_map;
-	HashMap<String, String> gdextension_class_icon_paths;
-
-	static void _bind_methods();
-
-	static GDExtensionManager *singleton;
-
-public:
-	enum LoadStatus {
-		LOAD_STATUS_OK,
-		LOAD_STATUS_FAILED,
-		LOAD_STATUS_ALREADY_LOADED,
-		LOAD_STATUS_NOT_LOADED,
-		LOAD_STATUS_NEEDS_RESTART,
-	};
+class GDExtensionLibraryLoader : public GDExtensionLoader {
+	friend class GDExtensionManager;
+	friend class GDExtension;
 
 private:
-	LoadStatus _load_extension_internal(const Ref<GDExtension> &p_extension);
-	LoadStatus _unload_extension_internal(const Ref<GDExtension> &p_extension);
+	String resource_path;
+
+	void *library = nullptr; // pointer if valid.
+	String library_path;
+	String entry_symbol;
+
+	bool is_static_library = false;
 
 #ifdef TOOLS_ENABLED
-	static void _reload_all_scripts();
+	bool is_reloadable = false;
+#endif
+
+	Vector<SharedObject> library_dependencies;
+
+	HashMap<String, String> class_icon_paths;
+
+#ifdef TOOLS_ENABLED
+	uint64_t resource_last_modified_time = 0;
+	uint64_t library_last_modified_time = 0;
+
+	void update_last_modified_time(uint64_t p_resource_last_modified_time, uint64_t p_library_last_modified_time) {
+		resource_last_modified_time = p_resource_last_modified_time;
+		library_last_modified_time = p_library_last_modified_time;
+	}
 #endif
 
 public:
-	LoadStatus load_extension(const String &p_path);
-	LoadStatus load_extension_with_loader(const String &p_path, const Ref<GDExtensionLoader> &p_loader);
-	LoadStatus reload_extension(const String &p_path);
-	LoadStatus unload_extension(const String &p_path);
-	bool is_extension_loaded(const String &p_path) const;
-	Vector<String> get_loaded_extensions() const;
-	Ref<GDExtension> get_extension(const String &p_path);
+	static String find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags = nullptr);
+	static Vector<SharedObject> find_extension_dependencies(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature);
 
-	bool class_has_icon_path(const String &p_class) const;
-	String class_get_icon_path(const String &p_class) const;
+	virtual Error open_library(const String &p_path) override;
+	virtual Error initialize(GDExtensionInterfaceGetProcAddress p_get_proc_address, const Ref<GDExtension> &p_extension, GDExtensionInitialization *r_initialization) override;
+	virtual void close_library() override;
+	virtual bool is_library_open() const override;
+	virtual bool has_library_changed() const override;
 
-	void initialize_extensions(GDExtension::InitializationLevel p_level);
-	void deinitialize_extensions(GDExtension::InitializationLevel p_level);
-
-#ifdef TOOLS_ENABLED
-	void track_instance_binding(void *p_token, Object *p_object);
-	void untrack_instance_binding(void *p_token, Object *p_object);
-#endif
-
-	static GDExtensionManager *get_singleton();
-
-	void load_extensions();
-	void reload_extensions();
-
-	GDExtensionManager();
-	~GDExtensionManager();
+	Error parse_gdextension_file(const String &p_path);
 };
 
-VARIANT_ENUM_CAST(GDExtensionManager::LoadStatus)
-
-#endif // GDEXTENSION_MANAGER_H
+#endif // GDEXTENSION_LIBRARY_LOADER_H
