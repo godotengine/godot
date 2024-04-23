@@ -129,10 +129,10 @@ public:
 
 	// MARK: Motion
 
-	void update_gravity(float p_x, float p_y, float p_z);
-	void update_accelerometer(float p_x, float p_y, float p_z);
-	void update_magnetometer(float p_x, float p_y, float p_z);
-	void update_gyroscope(float p_x, float p_y, float p_z);
+	void update_gravity(const Vector3 &p_gravity);
+	void update_accelerometer(const Vector3 &p_accelerometer);
+	void update_magnetometer(const Vector3 &p_magnetometer);
+	void update_gyroscope(const Vector3 &p_gyroscope);
 
 	// MARK: -
 
