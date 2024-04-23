@@ -3477,9 +3477,7 @@ void EditorInspector::edit(Object *p_object) {
 	next_object = p_object; // Some plugins need to know the next edited object when clearing the inspector.
 	if (object) {
 		_clear();
-		if (object->is_connected("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback))) {
-			object->disconnect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
-		}
+		object->disconnect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
 	}
 	per_array_page.clear();
 
@@ -4021,13 +4019,14 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
-			edit(nullptr);
+			edit(nullptr); //just in case
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (!sub_inspector) {
 				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
+			edit(nullptr);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

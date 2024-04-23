@@ -147,6 +147,7 @@ void EditorDockManager::_update_layout() {
 	if (!dock_context_popup->is_inside_tree() || EditorNode::get_singleton()->is_exiting()) {
 		return;
 	}
+	EditorNode::get_singleton()->edit_current();
 	dock_context_popup->docks_updated();
 	_update_docks_menu();
 	EditorNode::get_singleton()->save_editor_layout_delayed();
