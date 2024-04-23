@@ -1161,6 +1161,12 @@ void DisplayServerWayland::process_events() {
 		}
 	}
 
+#ifdef DBUS_ENABLED
+	if (portal_desktop) {
+		portal_desktop->process_file_dialog_callbacks();
+	}
+#endif
+
 	wayland_thread.mutex.unlock();
 
 	Input::get_singleton()->flush_buffered_events();
