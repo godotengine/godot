@@ -4024,14 +4024,16 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
-			edit(nullptr); //just in case
+			if (EditorNode::get_singleton() && !EditorNode::get_singleton()->is_exiting()) {
+				// Don't need to clean up if exiting, and object may already be freed.
+				edit(nullptr);
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (!sub_inspector) {
 				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
-			edit(nullptr);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
