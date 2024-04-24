@@ -151,7 +151,6 @@ BTPlayer * CharacterBodyMain::get_bt_player()
     if(btPlayer == nullptr)
     {
         btPlayer = memnew(BTPlayer);
-        btPlayer->set_owner((Node*)this);
         btPlayer->set_name("BTPlayer");
         btPlayer->connect("behavior_tree_finished", callable_mp(this, &CharacterBodyMain::behavior_tree_finished));
         btPlayer->connect("updated", callable_mp(this, &CharacterBodyMain::behavior_tree_update));

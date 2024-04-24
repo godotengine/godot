@@ -840,6 +840,10 @@ void ProjectSettings::set_builtin_order(const String &p_name) {
 }
 
 bool ProjectSettings::is_builtin_setting(const String &p_name) const {
+	if(!props.has(p_name))
+	{
+		return true;
+	}
 	// Return true because a false negative is worse than a false positive.
 	ERR_FAIL_COND_V_MSG(!props.has(p_name), true, "Request for nonexistent project setting: " + p_name + ".");
 	return props[p_name].order < NO_BUILTIN_ORDER_BASE;

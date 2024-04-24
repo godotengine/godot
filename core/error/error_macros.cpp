@@ -38,7 +38,15 @@
     struct StackFrame {
         String file;
         String function;
-        uint32_t line;
+        int32_t line;
+		void to_string(String& out)
+		{
+			if(out.length() > 0)
+			{
+				out += "\n";
+			}
+			out += file + "(" + itos(line) + "):" + function + "";
+		}
     };
 
     static void initialize();
@@ -114,13 +122,13 @@
 
                 DWORD displacementLine = 0;
 
-                uint32_t lineNumber = 0;
+                int32_t lineNumber = -1;
                 const char *fileName;
                 if (SymGetLineFromAddr64(process, stackFrame.AddrPC.Offset, &displacementLine, &line) == TRUE) {
                     lineNumber = line.LineNumber;
                     fileName = line.FileName;
                 } else {
-                    lineNumber = 0;
+                    lineNumber = -1;
                     fileName = "??";
                 }
 
@@ -136,30 +144,39 @@
 
 #elif defined(UNIX_ENABLED) || defined(X11_ENABLED)
 
-    #if __has_include(<execinfo.h>)
+    #if  __has_include(<execinfo.h>)
 
         #include <execinfo.h>
         #include <dlfcn.h>
+		#include <cxxabi.h>
+		#include <stdlib.h>
 
 
             static void initialize() {
 
             }
 
-            static std::vector<StackFrame> getStackTrace() {
-                static std::vector<StackFrame> result;
+            static LocalVector<StackFrame> getStackTrace() {
+                LocalVector<StackFrame> result;
 
-                std::array<void*, 128> addresses = {};
-                const size_t count = backtrace(addresses.data(), addresses.size());
+				void *bt_buffer[256];
+                const size_t count = backtrace(bt_buffer, 256);
 
                 Dl_info info;
                 for (size_t i = 0; i < count; i += 1) {
                     dladdr(addresses[i], &info);
 
-                    auto fileName = info.dli_fname != nullptr ? std::fs::path(info.dli_fname).filename().string() : "??";
-                    auto demangledName = info.dli_sname != nullptr ? tryDemangle(info.dli_sname) : "??";
+                    auto fileName = info.dli_fname != nullptr ? info.dli_fname : "file??";
+                    auto demangledName = "??";
+					if(info.dli_sname != nullptr)
+					{
+						demangledName = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
+					}
 
-                    result.push_back(StackFrame { std::move(fileName), std::move(demangledName), 0 });
+                    result.push_back(StackFrame { std::move(fileName), demangledName, 0 });
+					if (info.dli_sname != nullptr) {
+						free(demangledName);
+					}
                 }
 
                 return result;
@@ -227,7 +244,20 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 
 // Main error printing function.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
-	
+	String temp;
+	CharString data;
+	if(p_type == ERR_HANDLER_ERROR)
+	{
+		temp = p_message;
+		LocalVector<StackFrame> stackFrame = getStackTrace();
+		for(int i = 0; i < stackFrame.size(); ++i)
+		{
+			stackFrame[i].to_string(temp);
+		}
+		data = temp.utf8();
+		p_message = data.get_data();
+
+	}
 	if (OS::get_singleton()) {
 		OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type);
 	} else {
