@@ -149,9 +149,6 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 	optimized_translation->get_message_list(&messages);
 	CHECK(optimized_translation->get_message_count() == 0);
 	CHECK(messages.size() == 0);
-
-
-	MESSAGE("TEST:)");
 }
 
 TEST_CASE("[OptimizedTranslation] Generates translatoins and checks get_translated_message_list") {
