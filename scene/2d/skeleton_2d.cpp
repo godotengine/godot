@@ -635,36 +635,47 @@ Bone2D *Skeleton2D::get_bone(int p_idx) {
 }
 
 void Skeleton2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		if (bone_setup_dirty) {
-			_update_bone_setup();
-		}
-		if (transform_dirty) {
-			_update_transform();
-		}
-		request_ready();
-	}
-
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
-	} else if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (modification_stack.is_valid()) {
-			execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
-		}
-	} else if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		if (modification_stack.is_valid()) {
-			execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
-		}
-	}
-#ifdef TOOLS_ENABLED
-	else if (p_what == NOTIFICATION_DRAW) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			if (modification_stack.is_valid()) {
-				modification_stack->draw_editor_gizmos();
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			if (bone_setup_dirty) {
+				_update_bone_setup();
 			}
-		}
-	}
+			if (transform_dirty) {
+				_update_transform();
+			}
+			request_ready();
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (modification_stack.is_valid()) {
+				execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (modification_stack.is_valid()) {
+				execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
+			}
+		} break;
+
+		case NOTIFICATION_POST_ENTER_TREE: {
+			set_modification_stack(modification_stack);
+		} break;
+
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_DRAW: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				if (modification_stack.is_valid()) {
+					modification_stack->draw_editor_gizmos();
+				}
+			}
+		} break;
 #endif // TOOLS_ENABLED
+	}
 }
 
 RID Skeleton2D::get_skeleton() const {
@@ -692,7 +703,7 @@ void Skeleton2D::set_modification_stack(Ref<SkeletonModificationStack2D> p_stack
 		set_physics_process_internal(false);
 	}
 	modification_stack = p_stack;
-	if (modification_stack.is_valid()) {
+	if (modification_stack.is_valid() && is_inside_tree()) {
 		modification_stack->set_skeleton(this);
 		modification_stack->setup();
 
