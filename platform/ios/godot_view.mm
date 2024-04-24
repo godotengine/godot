@@ -451,28 +451,28 @@ static const float earth_gravity = 9.80665;
 
 	switch (interfaceOrientation) {
 		case UIInterfaceOrientationLandscapeLeft: {
-			DisplayServerIOS::get_singleton()->update_gravity(-gravity.y, gravity.x, gravity.z);
-			DisplayServerIOS::get_singleton()->update_accelerometer(-(acceleration.y + gravity.y), (acceleration.x + gravity.x), acceleration.z + gravity.z);
-			DisplayServerIOS::get_singleton()->update_magnetometer(-magnetic.y, magnetic.x, magnetic.z);
-			DisplayServerIOS::get_singleton()->update_gyroscope(-rotation.y, rotation.x, rotation.z);
+			DisplayServerIOS::get_singleton()->update_gravity(Vector3(gravity.x, gravity.y, gravity.z).rotated(Vector3(0, 0, 1), -Math_PI * 0.5));
+			DisplayServerIOS::get_singleton()->update_accelerometer(Vector3(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z).rotated(Vector3(0, 0, 1), -Math_PI * 0.5));
+			DisplayServerIOS::get_singleton()->update_magnetometer(Vector3(magnetic.x, magnetic.y, magnetic.z).rotated(Vector3(0, 0, 1), -Math_PI * 0.5));
+			DisplayServerIOS::get_singleton()->update_gyroscope(Vector3(rotation.x, rotation.y, rotation.z).rotated(Vector3(0, 0, 1), -Math_PI * 0.5));
 		} break;
 		case UIInterfaceOrientationLandscapeRight: {
-			DisplayServerIOS::get_singleton()->update_gravity(gravity.y, -gravity.x, gravity.z);
-			DisplayServerIOS::get_singleton()->update_accelerometer((acceleration.y + gravity.y), -(acceleration.x + gravity.x), acceleration.z + gravity.z);
-			DisplayServerIOS::get_singleton()->update_magnetometer(magnetic.y, -magnetic.x, magnetic.z);
-			DisplayServerIOS::get_singleton()->update_gyroscope(rotation.y, -rotation.x, rotation.z);
+			DisplayServerIOS::get_singleton()->update_gravity(Vector3(gravity.x, gravity.y, gravity.z).rotated(Vector3(0, 0, 1), Math_PI * 0.5));
+			DisplayServerIOS::get_singleton()->update_accelerometer(Vector3(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z).rotated(Vector3(0, 0, 1), Math_PI * 0.5));
+			DisplayServerIOS::get_singleton()->update_magnetometer(Vector3(magnetic.x, magnetic.y, magnetic.z).rotated(Vector3(0, 0, 1), Math_PI * 0.5));
+			DisplayServerIOS::get_singleton()->update_gyroscope(Vector3(rotation.x, rotation.y, rotation.z).rotated(Vector3(0, 0, 1), Math_PI * 0.5));
 		} break;
 		case UIInterfaceOrientationPortraitUpsideDown: {
-			DisplayServerIOS::get_singleton()->update_gravity(-gravity.x, gravity.y, gravity.z);
-			DisplayServerIOS::get_singleton()->update_accelerometer(-(acceleration.x + gravity.x), (acceleration.y + gravity.y), acceleration.z + gravity.z);
-			DisplayServerIOS::get_singleton()->update_magnetometer(-magnetic.x, magnetic.y, magnetic.z);
-			DisplayServerIOS::get_singleton()->update_gyroscope(-rotation.x, rotation.y, rotation.z);
+			DisplayServerIOS::get_singleton()->update_gravity(Vector3(gravity.x, gravity.y, gravity.z).rotated(Vector3(0, 0, 1), Math_PI));
+			DisplayServerIOS::get_singleton()->update_accelerometer(Vector3(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z).rotated(Vector3(0, 0, 1), Math_PI));
+			DisplayServerIOS::get_singleton()->update_magnetometer(Vector3(magnetic.x, magnetic.y, magnetic.z).rotated(Vector3(0, 0, 1), Math_PI));
+			DisplayServerIOS::get_singleton()->update_gyroscope(Vector3(rotation.x, rotation.y, rotation.z).rotated(Vector3(0, 0, 1), Math_PI));
 		} break;
 		default: { // assume portrait
-			DisplayServerIOS::get_singleton()->update_gravity(gravity.x, gravity.y, gravity.z);
-			DisplayServerIOS::get_singleton()->update_accelerometer(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z);
-			DisplayServerIOS::get_singleton()->update_magnetometer(magnetic.x, magnetic.y, magnetic.z);
-			DisplayServerIOS::get_singleton()->update_gyroscope(rotation.x, rotation.y, rotation.z);
+			DisplayServerIOS::get_singleton()->update_gravity(Vector3(gravity.x, gravity.y, gravity.z));
+			DisplayServerIOS::get_singleton()->update_accelerometer(Vector3(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z));
+			DisplayServerIOS::get_singleton()->update_magnetometer(Vector3(magnetic.x, magnetic.y, magnetic.z));
+			DisplayServerIOS::get_singleton()->update_gyroscope(Vector3(rotation.x, rotation.y, rotation.z));
 		} break;
 	}
 }

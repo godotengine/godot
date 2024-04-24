@@ -76,7 +76,6 @@ private:
 	} theme_cache;
 
 	HTTPRequest *http = nullptr;
-	bool compact_mode = false;
 
 	UpdateStatus status = UpdateStatus::NONE;
 	bool checked_update = false;
@@ -99,8 +98,6 @@ protected:
 	virtual void pressed() override;
 
 public:
-	void enable_compact_mode();
-
 	EngineUpdateLabel();
 };
 

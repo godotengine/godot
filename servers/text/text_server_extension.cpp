@@ -285,7 +285,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_get_line_breaks_adv, "shaped", "width", "start", "once", "break_flags");
 	GDVIRTUAL_BIND(_shaped_text_get_line_breaks, "shaped", "width", "start", "break_flags");
-	GDVIRTUAL_BIND(_shaped_text_get_word_breaks, "shaped", "grapheme_flags");
+	GDVIRTUAL_BIND(_shaped_text_get_word_breaks, "shaped", "grapheme_flags", "skip_grapheme_flags");
 
 	GDVIRTUAL_BIND(_shaped_text_get_trim_pos, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_ellipsis_pos, "shaped");
@@ -1256,12 +1256,12 @@ PackedInt32Array TextServerExtension::shaped_text_get_line_breaks(const RID &p_s
 	return TextServer::shaped_text_get_line_breaks(p_shaped, p_width, p_start, p_break_flags);
 }
 
-PackedInt32Array TextServerExtension::shaped_text_get_word_breaks(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags) const {
+PackedInt32Array TextServerExtension::shaped_text_get_word_breaks(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags, BitField<TextServer::GraphemeFlag> p_skip_grapheme_flags) const {
 	PackedInt32Array ret;
-	if (GDVIRTUAL_CALL(_shaped_text_get_word_breaks, p_shaped, p_grapheme_flags, ret)) {
+	if (GDVIRTUAL_CALL(_shaped_text_get_word_breaks, p_shaped, p_grapheme_flags, p_skip_grapheme_flags, ret)) {
 		return ret;
 	}
-	return TextServer::shaped_text_get_word_breaks(p_shaped, p_grapheme_flags);
+	return TextServer::shaped_text_get_word_breaks(p_shaped, p_grapheme_flags, p_skip_grapheme_flags);
 }
 
 int64_t TextServerExtension::shaped_text_get_trim_pos(const RID &p_shaped) const {

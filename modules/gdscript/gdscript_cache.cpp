@@ -38,70 +38,69 @@
 #include "core/io/file_access.h"
 #include "core/templates/vector.h"
 
-bool GDScriptParserRef::is_valid() const {
-	return parser != nullptr;
-}
-
 GDScriptParserRef::Status GDScriptParserRef::get_status() const {
 	return status;
 }
 
-GDScriptParser *GDScriptParserRef::get_parser() const {
+uint32_t GDScriptParserRef::get_source_hash() const {
+	return source_hash;
+}
+
+GDScriptParser *GDScriptParserRef::get_parser() {
+	if (parser == nullptr) {
+		parser = memnew(GDScriptParser);
+	}
 	return parser;
 }
 
 GDScriptAnalyzer *GDScriptParserRef::get_analyzer() {
 	if (analyzer == nullptr) {
-		analyzer = memnew(GDScriptAnalyzer(parser));
+		analyzer = memnew(GDScriptAnalyzer(get_parser()));
 	}
 	return analyzer;
 }
 
 Error GDScriptParserRef::raise_status(Status p_new_status) {
-	ERR_FAIL_NULL_V(parser, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(clearing, ERR_BUG);
+	ERR_FAIL_COND_V(parser == nullptr && status != EMPTY, ERR_BUG);
 
-	if (result != OK) {
-		return result;
-	}
-
-	while (p_new_status > status) {
+	while (result == OK && p_new_status > status) {
 		switch (status) {
 			case EMPTY: {
+				// Calling parse will clear the parser, which can destruct another GDScriptParserRef which can clear the last reference to the script with this path, calling remove_script, which clears this GDScriptParserRef.
+				// It's ok if its the first thing done here.
+				get_parser()->clear();
 				status = PARSED;
 				String remapped_path = ResourceLoader::path_remap(path);
 				if (remapped_path.get_extension().to_lower() == "gdc") {
-					result = parser->parse_binary(GDScriptCache::get_binary_tokens(remapped_path), path);
+					Vector<uint8_t> tokens = GDScriptCache::get_binary_tokens(remapped_path);
+					source_hash = hash_djb2_buffer(tokens.ptr(), tokens.size());
+					result = get_parser()->parse_binary(tokens, path);
 				} else {
-					result = parser->parse(GDScriptCache::get_source_code(remapped_path), path, false);
+					String source = GDScriptCache::get_source_code(remapped_path);
+					source_hash = source.hash();
+					result = get_parser()->parse(source, path, false);
 				}
 			} break;
 			case PARSED: {
 				status = INHERITANCE_SOLVED;
-				Error inheritance_result = get_analyzer()->resolve_inheritance();
-				if (result == OK) {
-					result = inheritance_result;
-				}
+				result = get_analyzer()->resolve_inheritance();
 			} break;
 			case INHERITANCE_SOLVED: {
 				status = INTERFACE_SOLVED;
-				Error interface_result = get_analyzer()->resolve_interface();
-				if (result == OK) {
-					result = interface_result;
-				}
+				result = get_analyzer()->resolve_interface();
 			} break;
 			case INTERFACE_SOLVED: {
+				status = BODY_SOLVED;
+				result = get_analyzer()->resolve_body();
+			} break;
+			case BODY_SOLVED: {
 				status = FULLY_SOLVED;
-				Error body_result = get_analyzer()->resolve_body();
-				if (result == OK) {
-					result = body_result;
-				}
+				result = get_analyzer()->resolve_dependencies();
 			} break;
 			case FULLY_SOLVED: {
 				return result;
 			}
-		}
-		if (result != OK) {
-			return result;
 		}
 	}
 
@@ -109,17 +108,28 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 }
 
 void GDScriptParserRef::clear() {
-	if (cleared) {
+	if (clearing) {
 		return;
 	}
-	cleared = true;
+	clearing = true;
 
-	if (parser != nullptr) {
-		memdelete(parser);
+	GDScriptParser *lparser = parser;
+	GDScriptAnalyzer *lanalyzer = analyzer;
+
+	parser = nullptr;
+	analyzer = nullptr;
+	status = EMPTY;
+	result = OK;
+	source_hash = 0;
+
+	clearing = false;
+
+	if (lanalyzer != nullptr) {
+		memdelete(lanalyzer);
 	}
 
-	if (analyzer != nullptr) {
-		memdelete(analyzer);
+	if (lparser != nullptr) {
+		memdelete(lparser);
 	}
 }
 
@@ -171,8 +181,11 @@ void GDScriptCache::remove_script(const String &p_path) {
 	}
 
 	if (singleton->parser_map.has(p_path)) {
-		singleton->parser_map[p_path]->clear();
+		// Keep a local reference until it goes out of scope.
+		// Clearing it can trigger a reference to itself to go out of scope, destructing it before clear finishes.
+		Ref<GDScriptParserRef> parser_ref = singleton->parser_map[p_path];
 		singleton->parser_map.erase(p_path);
+		parser_ref->clear();
 	}
 
 	singleton->dependencies.erase(p_path);
@@ -198,15 +211,24 @@ Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptP
 			r_error = ERR_FILE_NOT_FOUND;
 			return ref;
 		}
-		GDScriptParser *parser = memnew(GDScriptParser);
 		ref.instantiate();
-		ref->parser = parser;
 		ref->path = p_path;
 		singleton->parser_map[p_path] = ref.ptr();
 	}
 	r_error = ref->raise_status(p_status);
 
 	return ref;
+}
+
+bool GDScriptCache::has_parser(const String &p_path) {
+	MutexLock lock(singleton->mutex);
+	return singleton->parser_map.has(p_path);
+}
+
+void GDScriptCache::remove_parser(const String &p_path) {
+	MutexLock lock(singleton->mutex);
+	// Can't clear the parser because some other parser might be currently using it in the chain of calls.
+	singleton->parser_map.erase(p_path);
 }
 
 String GDScriptCache::get_source_code(const String &p_path) {
@@ -400,13 +422,15 @@ void GDScriptCache::clear() {
 		parser_map_refs.insert(E.value);
 	}
 
+	singleton->parser_map.clear();
+
 	for (Ref<GDScriptParserRef> &E : parser_map_refs) {
-		if (E.is_valid())
+		if (E.is_valid()) {
 			E->clear();
+		}
 	}
 
 	parser_map_refs.clear();
-	singleton->parser_map.clear();
 	singleton->shallow_gdscript_cache.clear();
 	singleton->full_gdscript_cache.clear();
 }

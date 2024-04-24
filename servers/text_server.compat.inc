@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_docgen.h                                                     */
+/*  text_server.compat.inc                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,28 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_DOCGEN_H
-#define GDSCRIPT_DOCGEN_H
+#ifndef DISABLE_DEPRECATED
 
-#include "../gdscript_parser.h"
+PackedInt32Array TextServer::_shaped_text_get_word_breaks_bind_compat_90732(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags) const {
+	return shaped_text_get_word_breaks(p_shaped, p_grapheme_flags, 0);
+}
 
-#include "core/doc_data.h"
+void TextServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags"), &TextServer::_shaped_text_get_word_breaks_bind_compat_90732, DEFVAL(GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION));
+}
 
-class GDScriptDocGen {
-	using GDP = GDScriptParser;
-	using GDType = GDP::DataType;
-
-	static HashMap<String, String> singletons; // Script path to singleton name.
-
-	static String _get_script_name(const String &p_path);
-	static String _get_class_name(const GDP::ClassNode &p_class);
-	static void _doctype_from_gdtype(const GDType &p_gdtype, String &r_type, String &r_enum, bool p_is_return = false);
-	static String _docvalue_from_variant(const Variant &p_variant, int p_recursion_level = 1);
-	static String _docvalue_from_expression(const GDP::ExpressionNode *p_expression);
-	static void _generate_docs(GDScript *p_script, const GDP::ClassNode *p_class);
-
-public:
-	static void generate_docs(GDScript *p_script, const GDP::ClassNode *p_class);
-};
-
-#endif // GDSCRIPT_DOCGEN_H
+#endif

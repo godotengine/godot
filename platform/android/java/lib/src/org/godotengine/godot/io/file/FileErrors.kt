@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_docgen.h                                                     */
+/*  FileErrors.kt                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,28 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_DOCGEN_H
-#define GDSCRIPT_DOCGEN_H
+package org.godotengine.godot.io.file
 
-#include "../gdscript_parser.h"
+/**
+ * Set of errors that may occur when performing data access.
+ */
+internal enum class FileErrors(val nativeValue: Int) {
+	OK(0),
+	FAILED(-1),
+	FILE_NOT_FOUND(-2),
+	FILE_CANT_OPEN(-3),
+	INVALID_PARAMETER(-4);
 
-#include "core/doc_data.h"
-
-class GDScriptDocGen {
-	using GDP = GDScriptParser;
-	using GDType = GDP::DataType;
-
-	static HashMap<String, String> singletons; // Script path to singleton name.
-
-	static String _get_script_name(const String &p_path);
-	static String _get_class_name(const GDP::ClassNode &p_class);
-	static void _doctype_from_gdtype(const GDType &p_gdtype, String &r_type, String &r_enum, bool p_is_return = false);
-	static String _docvalue_from_variant(const Variant &p_variant, int p_recursion_level = 1);
-	static String _docvalue_from_expression(const GDP::ExpressionNode *p_expression);
-	static void _generate_docs(GDScript *p_script, const GDP::ClassNode *p_class);
-
-public:
-	static void generate_docs(GDScript *p_script, const GDP::ClassNode *p_class);
-};
-
-#endif // GDSCRIPT_DOCGEN_H
+	companion object {
+		fun fromNativeError(error: Int): FileErrors? {
+			for (fileError in entries) {
+				if (fileError.nativeValue == error) {
+					return fileError
+				}
+			}
+			return null
+		}
+	}
+}
