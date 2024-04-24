@@ -14,9 +14,6 @@ from types import ModuleType
 from collections import OrderedDict
 from importlib.util import spec_from_file_location, module_from_spec
 from SCons import __version__ as scons_raw_version
-from SCons.Script.SConscript import SConsEnvironment
-
-scons_ver = SConsEnvironment._get_major_minor_revision(scons_raw_version)
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -134,6 +131,7 @@ if "TERM" in os.environ:  # Used for colored output.
 env.disabled_modules = []
 env.module_version_string = ""
 env.msvc = False
+env.scons_version = env._get_major_minor_revision(scons_raw_version)
 
 env.__class__.disable_module = methods.disable_module
 
@@ -172,7 +170,7 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-if scons_ver >= (4, 3):
+if env.scons_version >= (4, 3):
     opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(platform_list), "")
 else:
     opts.Add("platform", "Target platform (%s)" % "|".join(platform_list), "")
@@ -294,7 +292,7 @@ if env["import_env_vars"]:
 
 selected_platform = env["platform"]
 
-if scons_ver < (4, 3) and not selected_platform:
+if env.scons_version < (4, 3) and not selected_platform:
     selected_platform = env["p"]
 
 if selected_platform == "":
@@ -983,16 +981,16 @@ if env["vsproj"]:
     env.vs_incs = []
     env.vs_srcs = []
 
-if env["compiledb"] and scons_ver < (4, 0, 0):
+if env["compiledb"] and env.scons_version < (4, 0, 0):
     # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
     print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
     Exit(255)
-if scons_ver >= (4, 0, 0):
+if env.scons_version >= (4, 0, 0):
     env.Tool("compilation_db")
     env.Alias("compiledb", env.CompilationDatabase())
 
 if env["ninja"]:
-    if scons_ver < (4, 2, 0):
+    if env.scons_version < (4, 2, 0):
         print("The `ninja=yes` option requires SCons 4.2 or later, but your version is %s." % scons_raw_version)
         Exit(255)
 
