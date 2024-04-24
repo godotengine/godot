@@ -195,7 +195,7 @@ void OpenXRHandTrackingExtension::on_process() {
 
 				Ref<XRHandTracker> godot_tracker;
 				godot_tracker.instantiate();
-				godot_tracker->set_hand(i == 0 ? XRHandTracker::HAND_LEFT : XRHandTracker::HAND_RIGHT);
+				godot_tracker->set_tracker_hand(i == 0 ? XRPositionalTracker::TRACKER_HAND_LEFT : XRPositionalTracker::TRACKER_HAND_RIGHT);
 				godot_tracker->set_tracker_name(i == 0 ? "/user/hand_tracker/left" : "/user/hand_tracker/right");
 				XRServer::get_singleton()->add_tracker(godot_tracker);
 				hand_trackers[i].godot_tracker = godot_tracker;
