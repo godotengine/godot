@@ -379,8 +379,8 @@ void TreeItem::set_text_overrun_behavior(int p_column, TextServer::OverrunBehavi
 
 	cells.write[p_column].text_buf->set_text_overrun_behavior(p_behavior);
 	cells.write[p_column].dirty = true;
-	_changed_notify(p_column);
 	cells.write[p_column].cached_minimum_size_dirty = true;
+	_changed_notify(p_column);
 }
 
 TextServer::OverrunBehavior TreeItem::get_text_overrun_behavior(int p_column) const {
@@ -1512,7 +1512,9 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 	const TreeItem::Cell &cell = cells[p_column];
 
 	if (cell.cached_minimum_size_dirty) {
-		Size2 size;
+		Size2 size = Size2(
+				parent_tree->theme_cache.inner_item_margin_left + parent_tree->theme_cache.inner_item_margin_right,
+				parent_tree->theme_cache.inner_item_margin_top + parent_tree->theme_cache.inner_item_margin_bottom);
 
 		// Text.
 		if (!cell.text.is_empty()) {
@@ -1520,7 +1522,9 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 				parent_tree->update_item_cell(this, p_column);
 			}
 			Size2 text_size = cell.text_buf->get_size();
-			size.width += text_size.width;
+			if (get_text_overrun_behavior(p_column) == TextServer::OVERRUN_NO_TRIMMING) {
+				size.width += text_size.width;
+			}
 			size.height = MAX(size.height, text_size.height);
 		}
 
@@ -1539,12 +1543,9 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 			Ref<Texture2D> texture = cell.buttons[i].texture;
 			if (texture.is_valid()) {
 				Size2 button_size = texture->get_size() + parent_tree->theme_cache.button_pressed->get_minimum_size();
-				size.width += button_size.width;
+				size.width += button_size.width + parent_tree->theme_cache.button_margin;
 				size.height = MAX(size.height, button_size.height);
 			}
-		}
-		if (cell.buttons.size() >= 2) {
-			size.width += (cell.buttons.size() - 1) * parent_tree->theme_cache.button_margin;
 		}
 
 		cells.write[p_column].cached_minimum_size = size;
@@ -4394,17 +4395,23 @@ void Tree::_update_all() {
 }
 
 Size2 Tree::get_minimum_size() const {
-	if (h_scroll_enabled && v_scroll_enabled) {
-		return Size2();
-	} else {
-		Vector2 min_size = get_internal_min_size();
-		Ref<StyleBox> bg = theme_cache.panel_style;
-		if (bg.is_valid()) {
-			min_size.x += bg->get_margin(SIDE_LEFT) + bg->get_margin(SIDE_RIGHT);
-			min_size.y += bg->get_margin(SIDE_TOP) + bg->get_margin(SIDE_BOTTOM);
-		}
-		return Vector2(h_scroll_enabled ? 0 : min_size.x, v_scroll_enabled ? 0 : min_size.y);
+	Vector2 min_size = Vector2(0, _get_title_button_height());
+
+	if (theme_cache.panel_style.is_valid()) {
+		min_size += theme_cache.panel_style->get_minimum_size();
 	}
+
+	Vector2 content_min_size = get_internal_min_size();
+	if (h_scroll_enabled) {
+		content_min_size.x = 0;
+		min_size.y += h_scroll->get_combined_minimum_size().height;
+	}
+	if (v_scroll_enabled) {
+		min_size.x += v_scroll->get_combined_minimum_size().width;
+		content_min_size.y = 0;
+	}
+
+	return min_size + content_min_size;
 }
 
 TreeItem *Tree::create_item(TreeItem *p_parent, int p_index) {
@@ -4582,6 +4589,7 @@ void Tree::set_hide_root(bool p_enabled) {
 
 	hide_root = p_enabled;
 	queue_redraw();
+	update_minimum_size();
 }
 
 bool Tree::is_root_hidden() const {
@@ -4730,31 +4738,33 @@ int Tree::get_column_minimum_width(int p_column) const {
 			min_width = MAX(theme_cache.font->get_string_size(columns[p_column].xl_title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + padding, min_width);
 		}
 
-		if (!columns[p_column].clip_content) {
-			int depth = 0;
-			TreeItem *next;
-			for (TreeItem *item = get_root(); item; item = next) {
-				next = item->get_next_visible();
-				// Compute the depth in tree.
-				if (next && p_column == 0) {
-					if (next->get_parent() == item) {
-						depth += 1;
-					} else {
-						TreeItem *common_parent = item->get_parent();
-						while (common_parent != next->get_parent() && common_parent) {
-							common_parent = common_parent->get_parent();
-							depth -= 1;
+		if (root && !columns[p_column].clip_content) {
+			int depth = 1;
+
+			TreeItem *last = nullptr;
+			TreeItem *first = hide_root ? root->get_next_visible() : root;
+			for (TreeItem *item = first; item; last = item, item = item->get_next_visible()) {
+				// Get column indentation.
+				int indent;
+				if (p_column == 0) {
+					if (last) {
+						if (item->parent == last) {
+							depth += 1;
+						} else if (item->parent != last->parent) {
+							depth = hide_root ? 0 : 1;
+							for (TreeItem *iter = item->parent; iter; iter = iter->parent) {
+								depth += 1;
+							}
 						}
 					}
+					indent = theme_cache.item_margin * depth;
+				} else {
+					indent = theme_cache.h_separation;
 				}
 
 				// Get the item minimum size.
 				Size2 item_size = item->get_minimum_size(p_column);
-				if (p_column == 0) {
-					item_size.width += theme_cache.item_margin * depth;
-				} else {
-					item_size.width += theme_cache.h_separation;
-				}
+				item_size.width += indent;
 
 				// Check if the item is wider.
 				min_width = MAX(min_width, item_size.width);
@@ -4968,6 +4978,7 @@ void Tree::set_column_titles_visible(bool p_show) {
 
 	show_column_titles = p_show;
 	queue_redraw();
+	update_minimum_size();
 }
 
 bool Tree::are_column_titles_visible() const {
