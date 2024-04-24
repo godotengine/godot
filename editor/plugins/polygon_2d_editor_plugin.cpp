@@ -293,8 +293,7 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 }
 
 void Polygon2DEditor::_uv_edit_popup_hide() {
-	EditorSettings::get_singleton()->set("interface/dialogs/uv_editor_bounds", Rect2(uv_edit->get_position(), uv_edit->get_size()));
-
+	EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "uv_editor", Rect2(uv_edit->get_position(), uv_edit->get_size()));
 	_cancel_editing();
 }
 
@@ -321,8 +320,9 @@ void Polygon2DEditor::_menu_option(int p_option) {
 				undo_redo->commit_action();
 			}
 
-			if (EditorSettings::get_singleton()->has_setting("interface/dialogs/uv_editor_bounds")) {
-				uv_edit->popup(EDITOR_GET("interface/dialogs/uv_editor_bounds"));
+			const Rect2 bounds = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "uv_editor", Rect2());
+			if (bounds.has_area()) {
+				uv_edit->popup(bounds);
 			} else {
 				uv_edit->popup_centered_ratio(0.85);
 			}
@@ -1308,6 +1308,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	uv_edit = memnew(AcceptDialog);
 	add_child(uv_edit);
 	uv_edit->set_title(TTR("Polygon 2D UV Editor"));
+	uv_edit->connect("confirmed", callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
 	uv_edit->connect("canceled", callable_mp(this, &Polygon2DEditor::_uv_edit_popup_hide));
 
 	VBoxContainer *uv_main_vb = memnew(VBoxContainer);
