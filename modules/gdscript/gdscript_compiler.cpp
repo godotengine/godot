@@ -1369,7 +1369,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 			}
 
-			GDScriptFunction *function = _parse_function(r_error, codegen.script, codegen.class_node, lambda->function, false, true);
+			GDScriptFunction *function = _parse_function(r_error, codegen.script, codegen.class_node, lambda->function, FUNC_TYPE_LAMBDA);
 			if (r_error) {
 				return GDScriptCodeGenerator::Address();
 			}
@@ -2191,7 +2191,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 	return OK;
 }
 
-GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready, bool p_for_lambda) {
+GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, FuncType p_func_type) {
 	r_error = OK;
 	CodeGen codegen;
 	codegen.generator = memnew(GDScriptByteCodeGenerator);
@@ -2208,21 +2208,27 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	return_type.kind = GDScriptDataType::BUILTIN;
 	return_type.builtin_type = Variant::NIL;
 
-	if (p_func) {
-		if (p_func->identifier) {
-			func_name = p_func->identifier->name;
-		} else {
-			func_name = "<anonymous lambda>";
-		}
-		is_static = p_func->is_static;
-		rpc_config = p_func->rpc_config;
-		return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
-	} else {
-		if (p_for_ready) {
-			func_name = "_ready";
-		} else {
+	switch (p_func_type) {
+		case FUNC_TYPE_MEMBER:
+		case FUNC_TYPE_LAMBDA:
+			if (p_func->identifier) {
+				func_name = p_func->identifier->name;
+			} else {
+				func_name = "<anonymous lambda>";
+			}
+			is_static = p_func->is_static;
+			rpc_config = p_func->rpc_config;
+			return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
+			break;
+		case FUNC_TYPE_IMPLICIT_INITIALIZER:
 			func_name = "@implicit_new";
-		}
+			break;
+		case FUNC_TYPE_IMPLICIT_SCENE_INSTANTIATED:
+			func_name = "@implicit_scene_instantiated";
+			break;
+		case FUNC_TYPE_IMPLICIT_READY:
+			func_name = "@implicit_ready";
+			break;
 	}
 
 	MethodInfo method_info;
@@ -2254,15 +2260,10 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		method_info.default_arguments.append_array(p_func->default_arg_values);
 	}
 
-	// Parse initializer if applies.
-	bool is_implicit_initializer = !p_for_ready && !p_func && !p_for_lambda;
-	bool is_initializer = p_func && !p_for_lambda && p_func->identifier->name == GDScriptLanguage::get_singleton()->strings._init;
-	bool is_implicit_ready = !p_func && p_for_ready;
-
-	if (!p_for_lambda && is_implicit_initializer) {
+	if (p_func_type == FUNC_TYPE_IMPLICIT_INITIALIZER) {
 		// Initialize the default values for typed variables before anything.
 		// This avoids crashes if they are accessed with validated calls before being properly initialized.
-		// It may happen with out-of-order access or with `@onready` variables.
+		// It may happen with out-of-order access or with `@onready` and `@oninstantiated` variables.
 		for (const GDScriptParser::ClassNode::Member &member : p_class->members) {
 			if (member.type != GDScriptParser::ClassNode::Member::VARIABLE) {
 				continue;
@@ -2289,7 +2290,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		}
 	}
 
-	if (!p_for_lambda && (is_implicit_initializer || is_implicit_ready)) {
+	if (p_func_type == FUNC_TYPE_IMPLICIT_INITIALIZER || p_func_type == FUNC_TYPE_IMPLICIT_SCENE_INSTANTIATED || p_func_type == FUNC_TYPE_IMPLICIT_READY) {
 		// Initialize class fields.
 		for (int i = 0; i < p_class->members.size(); i++) {
 			if (p_class->members[i].type != GDScriptParser::ClassNode::Member::VARIABLE) {
@@ -2300,8 +2301,19 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 				continue;
 			}
 
-			if (field->onready != is_implicit_ready) {
-				// Only initialize in @implicit_ready.
+			FuncType expected_func_type = FUNC_TYPE_IMPLICIT_INITIALIZER;
+			switch (field->init_stage) {
+				case GDScriptParser::VariableNode::INIT_STAGE_NORMAL:
+					break; // Nothing to do.
+				case GDScriptParser::VariableNode::INIT_STAGE_ONINSTANTIATED:
+					expected_func_type = FUNC_TYPE_IMPLICIT_SCENE_INSTANTIATED;
+					break;
+				case GDScriptParser::VariableNode::INIT_STAGE_ONREADY:
+					expected_func_type = FUNC_TYPE_IMPLICIT_READY;
+					break;
+			}
+
+			if (p_func_type != expected_func_type) {
 				continue;
 			}
 
@@ -2380,7 +2392,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			signature += "::" + String(func_name);
 		}
 
-		if (p_for_lambda) {
+		if (p_func_type == FUNC_TYPE_LAMBDA) {
 			signature += "(lambda)";
 		}
 
@@ -2395,14 +2407,6 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	}
 
 	GDScriptFunction *gd_function = codegen.generator->write_end();
-
-	if (is_initializer) {
-		p_script->initializer = gd_function;
-	} else if (is_implicit_initializer) {
-		p_script->implicit_initializer = gd_function;
-	} else if (is_implicit_ready) {
-		p_script->implicit_ready = gd_function;
-	}
 
 	if (p_func) {
 		// If no `return` statement, then return type is `void`, not `Variant`.
@@ -2419,8 +2423,24 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 	gd_function->method_info = method_info;
 
-	if (!is_implicit_initializer && !is_implicit_ready && !p_for_lambda) {
-		p_script->member_functions[func_name] = gd_function;
+	switch (p_func_type) {
+		case FUNC_TYPE_MEMBER:
+			p_script->member_functions[func_name] = gd_function;
+			if (p_func && p_func->identifier->name == GDScriptLanguage::get_singleton()->strings._init) {
+				p_script->initializer = gd_function;
+			}
+			break;
+		case FUNC_TYPE_LAMBDA:
+			break; // Nothing to do.
+		case FUNC_TYPE_IMPLICIT_INITIALIZER:
+			p_script->implicit_initializer = gd_function;
+			break;
+		case FUNC_TYPE_IMPLICIT_SCENE_INSTANTIATED:
+			p_script->implicit_scene_instantiated = gd_function;
+			break;
+		case FUNC_TYPE_IMPLICIT_READY:
+			p_script->implicit_ready = gd_function;
+			break;
 	}
 
 	memdelete(codegen.generator);
@@ -2454,7 +2474,7 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 
 	// Initialize the default values for typed variables before anything.
 	// This avoids crashes if they are accessed with validated calls before being properly initialized.
-	// It may happen with out-of-order access or with `@onready` variables.
+	// It may happen with out-of-order access.
 	for (const GDScriptParser::ClassNode::Member &member : p_class->members) {
 		if (member.type != GDScriptParser::ClassNode::Member::VARIABLE) {
 			continue;
@@ -2568,7 +2588,7 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 		function = p_variable->getter;
 	}
 
-	_parse_function(err, p_script, p_class, function);
+	_parse_function(err, p_script, p_class, function, FUNC_TYPE_MEMBER);
 
 	return err;
 }
@@ -2615,14 +2635,17 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	p_script->static_variables.clear();
 
+	if (p_script->static_initializer) {
+		memdelete(p_script->static_initializer);
+	}
 	if (p_script->implicit_initializer) {
 		memdelete(p_script->implicit_initializer);
 	}
+	if (p_script->implicit_scene_instantiated) {
+		memdelete(p_script->implicit_scene_instantiated);
+	}
 	if (p_script->implicit_ready) {
 		memdelete(p_script->implicit_ready);
-	}
-	if (p_script->static_initializer) {
-		memdelete(p_script->static_initializer);
 	}
 
 	p_script->member_functions.clear();
@@ -2630,10 +2653,11 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	p_script->static_variables_indices.clear();
 	p_script->static_variables.clear();
 	p_script->_signals.clear();
+	p_script->static_initializer = nullptr;
 	p_script->initializer = nullptr;
 	p_script->implicit_initializer = nullptr;
+	p_script->implicit_scene_instantiated = nullptr;
 	p_script->implicit_ready = nullptr;
-	p_script->static_initializer = nullptr;
 	p_script->rpc_config.clear();
 	p_script->lambda_info.clear();
 
@@ -2869,7 +2893,7 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 		if (member.type == member.FUNCTION) {
 			const GDScriptParser::FunctionNode *function = member.function;
 			Error err = OK;
-			_parse_function(err, p_script, p_class, function);
+			_parse_function(err, p_script, p_class, function, FUNC_TYPE_MEMBER);
 			if (err) {
 				return err;
 			}
@@ -2895,7 +2919,16 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 	{
 		// Create an implicit constructor in any case.
 		Error err = OK;
-		_parse_function(err, p_script, p_class, nullptr);
+		_parse_function(err, p_script, p_class, nullptr, FUNC_TYPE_IMPLICIT_INITIALIZER);
+		if (err) {
+			return err;
+		}
+	}
+
+	if (p_class->oninstantiated_used) {
+		// Create an implicit_scene_instantiated constructor.
+		Error err = OK;
+		_parse_function(err, p_script, p_class, nullptr, FUNC_TYPE_IMPLICIT_SCENE_INSTANTIATED);
 		if (err) {
 			return err;
 		}
@@ -2904,7 +2937,7 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 	if (p_class->onready_used) {
 		// Create an implicit_ready constructor.
 		Error err = OK;
-		_parse_function(err, p_script, p_class, nullptr, true);
+		_parse_function(err, p_script, p_class, nullptr, FUNC_TYPE_IMPLICIT_READY);
 		if (err) {
 			return err;
 		}
@@ -3085,14 +3118,17 @@ Vector<GDScriptCompiler::FunctionLambdaInfo> GDScriptCompiler::_get_function_lam
 GDScriptCompiler::ScriptLambdaInfo GDScriptCompiler::_get_script_lambda_replacement_info(GDScript *p_script) {
 	ScriptLambdaInfo info;
 
+	if (p_script->static_initializer) {
+		info.static_initializer_info = _get_function_lambda_replacement_info(p_script->static_initializer);
+	}
 	if (p_script->implicit_initializer) {
 		info.implicit_initializer_info = _get_function_lambda_replacement_info(p_script->implicit_initializer);
 	}
+	if (p_script->implicit_scene_instantiated) {
+		info.implicit_scene_instantiated_info = _get_function_lambda_replacement_info(p_script->implicit_scene_instantiated);
+	}
 	if (p_script->implicit_ready) {
 		info.implicit_ready_info = _get_function_lambda_replacement_info(p_script->implicit_ready);
-	}
-	if (p_script->static_initializer) {
-		info.static_initializer_info = _get_function_lambda_replacement_info(p_script->static_initializer);
 	}
 
 	for (const KeyValue<StringName, GDScriptFunction *> &E : p_script->member_functions) {
@@ -3147,9 +3183,10 @@ void GDScriptCompiler::_get_function_ptr_replacements(HashMap<GDScriptFunction *
 }
 
 void GDScriptCompiler::_get_function_ptr_replacements(HashMap<GDScriptFunction *, GDScriptFunction *> &r_replacements, const ScriptLambdaInfo &p_old_info, const ScriptLambdaInfo *p_new_info) {
-	_get_function_ptr_replacements(r_replacements, p_old_info.implicit_initializer_info, p_new_info != nullptr ? &p_new_info->implicit_initializer_info : nullptr);
-	_get_function_ptr_replacements(r_replacements, p_old_info.implicit_ready_info, p_new_info != nullptr ? &p_new_info->implicit_ready_info : nullptr);
 	_get_function_ptr_replacements(r_replacements, p_old_info.static_initializer_info, p_new_info != nullptr ? &p_new_info->static_initializer_info : nullptr);
+	_get_function_ptr_replacements(r_replacements, p_old_info.implicit_initializer_info, p_new_info != nullptr ? &p_new_info->implicit_initializer_info : nullptr);
+	_get_function_ptr_replacements(r_replacements, p_old_info.implicit_scene_instantiated_info, p_new_info != nullptr ? &p_new_info->implicit_scene_instantiated_info : nullptr);
+	_get_function_ptr_replacements(r_replacements, p_old_info.implicit_ready_info, p_new_info != nullptr ? &p_new_info->implicit_ready_info : nullptr);
 
 	for (const KeyValue<StringName, Vector<FunctionLambdaInfo>> &old_kv : p_old_info.member_function_infos) {
 		_get_function_ptr_replacements(r_replacements, old_kv.value, p_new_info != nullptr ? p_new_info->member_function_infos.getptr(old_kv.key) : nullptr);

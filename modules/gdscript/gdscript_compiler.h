@@ -44,6 +44,14 @@ class GDScriptCompiler {
 	HashSet<GDScript *> parsing_classes;
 	GDScript *main_script = nullptr;
 
+	enum FuncType {
+		FUNC_TYPE_MEMBER, // Methods and inline setters/getters.
+		FUNC_TYPE_LAMBDA,
+		FUNC_TYPE_IMPLICIT_INITIALIZER,
+		FUNC_TYPE_IMPLICIT_SCENE_INSTANTIATED,
+		FUNC_TYPE_IMPLICIT_READY,
+	};
+
 	struct FunctionLambdaInfo {
 		GDScriptFunction *function = nullptr;
 		GDScriptFunction *parent = nullptr;
@@ -64,9 +72,10 @@ class GDScriptCompiler {
 	};
 
 	struct ScriptLambdaInfo {
-		Vector<FunctionLambdaInfo> implicit_initializer_info;
-		Vector<FunctionLambdaInfo> implicit_ready_info;
 		Vector<FunctionLambdaInfo> static_initializer_info;
+		Vector<FunctionLambdaInfo> implicit_initializer_info;
+		Vector<FunctionLambdaInfo> implicit_scene_instantiated_info;
+		Vector<FunctionLambdaInfo> implicit_ready_info;
 		HashMap<StringName, Vector<FunctionLambdaInfo>> member_function_infos;
 		Vector<FunctionLambdaInfo> other_function_infos;
 		HashMap<StringName, ScriptLambdaInfo> subclass_info;
@@ -156,7 +165,7 @@ class GDScriptCompiler {
 	List<GDScriptCodeGenerator::Address> _add_locals_in_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block);
 	void _clear_addresses(CodeGen &codegen, const List<GDScriptCodeGenerator::Address> &p_addresses);
 	Error _parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, bool p_add_locals = true, bool p_reset_locals = true);
-	GDScriptFunction *_parse_function(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready = false, bool p_for_lambda = false);
+	GDScriptFunction *_parse_function(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, FuncType p_func_type);
 	GDScriptFunction *_make_static_initializer(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class);
 	Error _parse_setter_getter(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::VariableNode *p_variable, bool p_is_setter);
 	Error _prepare_compilation(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);

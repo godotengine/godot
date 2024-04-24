@@ -213,6 +213,10 @@ void Node::_notification(int p_notification) {
 			GDVIRTUAL_CALL(_ready);
 		} break;
 
+		case NOTIFICATION_SCENE_INSTANTIATED: {
+			GDVIRTUAL_CALL(_scene_instantiated);
+		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			data.in_constructor = false;
 		} break;
@@ -3790,6 +3794,7 @@ void Node::_bind_methods() {
 	GDVIRTUAL_BIND(_enter_tree);
 	GDVIRTUAL_BIND(_exit_tree);
 	GDVIRTUAL_BIND(_ready);
+	GDVIRTUAL_BIND(_scene_instantiated);
 	GDVIRTUAL_BIND(_get_configuration_warnings);
 	GDVIRTUAL_BIND(_input, "event");
 	GDVIRTUAL_BIND(_shortcut_input, "event");

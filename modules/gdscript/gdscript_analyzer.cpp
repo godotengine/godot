@@ -951,13 +951,22 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				static_context = previous_static_context;
 
 #ifdef DEBUG_ENABLED
-				if (member.variable->exported && member.variable->onready) {
-					parser->push_warning(member.variable, GDScriptWarning::ONREADY_WITH_EXPORT);
+				if (member.variable->exported) {
+					switch (member.variable->init_stage) {
+						case GDScriptParser::VariableNode::INIT_STAGE_NORMAL:
+							break; // OK.
+						case GDScriptParser::VariableNode::INIT_STAGE_ONINSTANTIATED:
+							parser->push_warning(member.variable, GDScriptWarning::ONINSTANTIATED_WITH_EXPORT);
+							break;
+						case GDScriptParser::VariableNode::INIT_STAGE_ONREADY:
+							parser->push_warning(member.variable, GDScriptWarning::ONREADY_WITH_EXPORT);
+							break;
+					}
 				}
 				if (member.variable->initializer) {
 					// Check if it is call to get_node() on self (using shorthand $ or not), so we can check if @onready is needed.
 					// This could be improved by traversing the expression fully and checking the presence of get_node at any level.
-					if (!member.variable->is_static && !member.variable->onready && member.variable->initializer && (member.variable->initializer->type == GDScriptParser::Node::GET_NODE || member.variable->initializer->type == GDScriptParser::Node::CALL || member.variable->initializer->type == GDScriptParser::Node::CAST)) {
+					if (!member.variable->is_static && member.variable->init_stage == GDScriptParser::VariableNode::INIT_STAGE_NORMAL && member.variable->initializer && (member.variable->initializer->type == GDScriptParser::Node::GET_NODE || member.variable->initializer->type == GDScriptParser::Node::CALL || member.variable->initializer->type == GDScriptParser::Node::CAST)) {
 						GDScriptParser::Node *expr = member.variable->initializer;
 						if (expr->type == GDScriptParser::Node::CAST) {
 							expr = static_cast<GDScriptParser::CastNode *>(expr)->operand;

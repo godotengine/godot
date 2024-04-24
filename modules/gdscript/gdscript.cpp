@@ -1330,6 +1330,15 @@ void GDScript::_collect_dependencies(RBSet<GDScript *> &p_dependencies, const GD
 		_collect_function_dependencies(implicit_initializer, p_dependencies, p_except);
 	}
 
+	if (implicit_scene_instantiated) {
+		for (const Variant &V : implicit_scene_instantiated->constants) {
+			GDScript *scr = _get_gdscript_from_variant(V);
+			if (scr != nullptr && scr != p_except) {
+				scr->_get_dependencies(p_dependencies, p_except);
+			}
+		}
+	}
+
 	if (implicit_ready) {
 		_collect_function_dependencies(implicit_ready, p_dependencies, p_except);
 	}
@@ -1525,6 +1534,11 @@ void GDScript::clear(ClearData *p_clear_data) {
 	if (implicit_initializer) {
 		clear_data->functions.insert(implicit_initializer);
 		implicit_initializer = nullptr;
+	}
+
+	if (implicit_scene_instantiated) {
+		clear_data->functions.insert(implicit_scene_instantiated);
+		implicit_scene_instantiated = nullptr;
 	}
 
 	if (implicit_ready) {
@@ -1965,6 +1979,17 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 		while (sptr) {
 			if (sptr->implicit_ready) {
 				sptr->implicit_ready->call(this, nullptr, 0, r_error);
+			}
+			sptr = sptr->_base;
+		}
+
+		// Reset this back for the regular call.
+		sptr = script.ptr();
+	} else if (unlikely(p_method == SNAME("_scene_instantiated"))) {
+		// Call implicit scene_instantiate first, including for the super classes.
+		while (sptr) {
+			if (sptr->implicit_scene_instantiated) {
+				sptr->implicit_scene_instantiated->call(this, nullptr, 0, r_error);
 			}
 			sptr = sptr->_base;
 		}

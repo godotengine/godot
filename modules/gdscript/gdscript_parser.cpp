@@ -94,10 +94,12 @@ bool GDScriptParser::annotation_exists(const String &p_annotation_name) const {
 GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
 	if (unlikely(valid_annotations.is_empty())) {
+		// Script annotations.
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
-
+		// Deferred initialization annotations.
+		register_annotation(MethodInfo("@oninstantiated"), AnnotationInfo::VARIABLE, &GDScriptParser::oninstantiated_annotation);
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
@@ -4079,6 +4081,35 @@ bool GDScriptParser::icon_annotation(const AnnotationNode *p_annotation, Node *p
 	return true;
 }
 
+bool GDScriptParser::oninstantiated_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, R"("@oninstantiated" annotation can only be applied to class variables.)");
+
+	if (current_class && !ClassDB::is_parent_class(current_class->get_datatype().native_type, SNAME("Node"))) {
+		push_error(R"("@oninstantiated" can only be used in classes that inherit "Node".)", p_annotation);
+	}
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+	if (variable->is_static) {
+		push_error(R"("@oninstantiated" annotation cannot be applied to a static variable.)", p_annotation);
+		return false;
+	}
+
+	switch (variable->init_stage) {
+		case VariableNode::INIT_STAGE_NORMAL:
+			variable->init_stage = VariableNode::INIT_STAGE_ONINSTANTIATED;
+			current_class->oninstantiated_used = true;
+			return true;
+		case VariableNode::INIT_STAGE_ONINSTANTIATED:
+			push_error(R"("@oninstantiated" annotation can only be used once per variable.)", p_annotation);
+			return false;
+		case VariableNode::INIT_STAGE_ONREADY:
+			push_error(R"("@oninstantiated" annotation cannot be used with "@onready".)", p_annotation);
+			return false;
+	}
+
+	ERR_FAIL_V_MSG(false, "Init stage set outside the enum range.");
+}
+
 bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, R"("@onready" annotation can only be applied to class variables.)");
 
@@ -4092,13 +4123,21 @@ bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node
 		push_error(R"("@onready" annotation cannot be applied to a static variable.)", p_annotation);
 		return false;
 	}
-	if (variable->onready) {
-		push_error(R"("@onready" annotation can only be used once per variable.)", p_annotation);
-		return false;
+
+	switch (variable->init_stage) {
+		case VariableNode::INIT_STAGE_NORMAL:
+			variable->init_stage = VariableNode::INIT_STAGE_ONREADY;
+			current_class->onready_used = true;
+			return true;
+		case VariableNode::INIT_STAGE_ONINSTANTIATED:
+			push_error(R"("@onready" annotation cannot be used with "@oninstantiated".)", p_annotation);
+			return false;
+		case VariableNode::INIT_STAGE_ONREADY:
+			push_error(R"("@onready" annotation can only be used once per variable.)", p_annotation);
+			return false;
 	}
-	variable->onready = true;
-	current_class->onready_used = true;
-	return true;
+
+	ERR_FAIL_V_MSG(false, "Init stage set outside the enum range.");
 }
 
 static String _get_annotation_error_string(const StringName &p_annotation_name, const Vector<Variant::Type> &p_expected_types, const GDScriptParser::DataType &p_provided_type) {

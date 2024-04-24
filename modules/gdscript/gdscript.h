@@ -163,10 +163,11 @@ private:
 	void _add_doc(const DocData::ClassDoc &p_inner_class);
 #endif
 
-	GDScriptFunction *implicit_initializer = nullptr;
-	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
-	GDScriptFunction *implicit_ready = nullptr;
 	GDScriptFunction *static_initializer = nullptr;
+	GDScriptFunction *initializer = nullptr; // Direct pointer to new, faster to locate.
+	GDScriptFunction *implicit_initializer = nullptr;
+	GDScriptFunction *implicit_scene_instantiated = nullptr;
+	GDScriptFunction *implicit_ready = nullptr;
 
 	Error _static_init();
 

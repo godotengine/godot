@@ -91,9 +91,18 @@
 			<return type="void" />
 			<description>
 				Called when the node is "ready", i.e. when both the node and its children have entered the scene tree. If the node has children, their [method _ready] callbacks get triggered first, and the parent node will receive the ready notification afterwards.
-				Corresponds to the [constant NOTIFICATION_READY] notification in [method Object._notification]. See also the [code]@onready[/code] annotation for variables.
-				Usually used for initialization. For even earlier initialization, [method Object._init] may be used. See also [method _enter_tree].
+				Corresponds to the [constant NOTIFICATION_READY] notification in [method Object._notification]. See also the [annotation @GDScript.@onready] annotation.
+				Usually used for initialization. For even earlier initialization, [method Object._init] may be used. See also [method _scene_instantiated] and [method _enter_tree].
 				[b]Note:[/b] This method may be called only once for each node. After removing a node from the scene tree and adding it again, [method _ready] will [b]not[/b] be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
+			</description>
+		</method>
+		<method name="_scene_instantiated" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called on the scene root node when the scene instantiation is complete, after all exported variables have been applied and all child nodes have been added.
+				Corresponds to the [constant NOTIFICATION_SCENE_INSTANTIATED] notification in [method Object._notification]. See also the [annotation @GDScript.@oninstantiated] annotation.
+				Can be used for early initialization if you need to access child nodes before the scene enters the tree.
+				[b]Note:[/b] This method is called only on the scene root node and only when the scene is instantiated via [method PackedScene.instantiate]. This method will [b]not[/b] be called if you create a node using [code]Node.new()[/code].
 			</description>
 		</method>
 		<method name="_shortcut_input" qualifiers="virtual">

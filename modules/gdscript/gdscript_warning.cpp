@@ -154,6 +154,8 @@ String GDScriptWarning::get_message() const {
 		case GET_NODE_DEFAULT_WITHOUT_ONREADY:
 			CHECK_SYMBOLS(1);
 			return vformat(R"*(The default value is using "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
+		case ONINSTANTIATED_WITH_EXPORT:
+			return R"("@oninstantiated" will set the default value after "@export" takes effect and will override it.)";
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
 #ifndef DISABLE_DEPRECATED
@@ -234,6 +236,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"INFERENCE_ON_VARIANT",
 		"NATIVE_METHOD_OVERRIDE",
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",
+		"ONINSTANTIATED_WITH_EXPORT",
 		"ONREADY_WITH_EXPORT",
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",

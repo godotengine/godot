@@ -525,6 +525,9 @@
 		<member name="debug/gdscript/warnings/native_method_override" type="int" setter="" getter="" default="2">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a method in the script overrides a native method, because it may not behave as expected.
 		</member>
+		<member name="debug/gdscript/warnings/oninstantiated_with_export" type="int" setter="" getter="" default="2">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@oninstantiated[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
+		</member>
 		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
 		</member>
