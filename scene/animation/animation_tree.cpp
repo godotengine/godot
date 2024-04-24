@@ -961,6 +961,7 @@ void AnimationTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 
+	ADD_SIGNAL(MethodInfo(SNAME("animation_playback_node_changed"), PropertyInfo(Variant::STRING_NAME, "node_name")));
 	ADD_SIGNAL(MethodInfo(SNAME("animation_player_changed")));
 }
 

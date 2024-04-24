@@ -957,6 +957,7 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationT
 
 		// Update current status.
 		_set_current(p_state_machine, next.node);
+		p_tree->emit_signal("animation_playback_node_changed", next.node);
 		current_curve = next.curve;
 
 		_reset_request_for_fading_from = reset_request; // To avoid processing doubly, it must be reset in the fading process within _process().
