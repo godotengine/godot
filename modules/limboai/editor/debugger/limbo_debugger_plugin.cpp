@@ -315,40 +315,41 @@ void LimboDebuggerPlugin::_window_visibility_changed(bool p_visible) {
 }
 
 #ifdef LIMBOAI_MODULE
-void LimboDebuggerPlugin::setup_session(int p_idx) {
+void LimboDebuggerPlugin::setup_session(int p_session_id) {
 #elif LIMBOAI_GDEXTENSION
-void LimboDebuggerPlugin::_setup_session(int32_t p_idx) {
+void LimboDebuggerPlugin::_setup_session(int32_t p_session_id) {
 #endif
-	Ref<EditorDebuggerSession> session = get_session(p_idx);
+	Ref<EditorDebuggerSession> session = get_session(p_session_id);
+	ERR_FAIL_COND(session.is_null());
 
-	if (tab != nullptr) {
-		tab->queue_free();
-		window_wrapper->queue_free();
-	}
+	CompatWindowWrapper *session_window = memnew(CompatWindowWrapper);
+	session_window->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("LimboAI Debugger")));
+	session_window->set_margins_enabled(true);
 
-	window_wrapper = memnew(CompatWindowWrapper);
-	window_wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("LimboAI Debugger")));
-	window_wrapper->set_margins_enabled(true);
-
-	tab = memnew(LimboDebuggerTab());
-	tab->setup(session, window_wrapper);
+	LimboDebuggerTab *tab = memnew(LimboDebuggerTab());
+	tab->setup(session, session_window);
 	tab->set_name("LimboAI");
-	window_wrapper->set_wrapped_control(tab);
-	window_wrapper->set_name("LimboAI");
+	session_window->set_wrapped_control(tab);
+	session_window->set_name("LimboAI");
 
-	window_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	window_wrapper->connect(LW_NAME(window_visibility_changed), callable_mp(this, &LimboDebuggerPlugin::_window_visibility_changed));
+	session_window->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	session_window->connect(LW_NAME(window_visibility_changed), callable_mp(this, &LimboDebuggerPlugin::_window_visibility_changed));
 
 	session->connect(LW_NAME(started), callable_mp(tab, &LimboDebuggerTab::start_session));
 	session->connect(LW_NAME(stopped), callable_mp(tab, &LimboDebuggerTab::stop_session));
-	session->add_session_tab(window_wrapper);
+	session->add_session_tab(session_window);
+
+	session_windows[p_session_id] = session_window;
 }
 
 #ifdef LIMBOAI_MODULE
-bool LimboDebuggerPlugin::capture(const String &p_message, const Array &p_data, int p_session) {
+bool LimboDebuggerPlugin::capture(const String &p_message, const Array &p_data, int p_session_id) {
 #elif LIMBOAI_GDEXTENSION
-bool LimboDebuggerPlugin::_capture(const String &p_message, const Array &p_data, int32_t p_session) {
+bool LimboDebuggerPlugin::_capture(const String &p_message, const Array &p_data, int32_t p_session_id) {
 #endif
+	ERR_FAIL_COND_V(!session_windows.has(p_session_id), false);
+	LimboDebuggerTab *tab = Object::cast_to<LimboDebuggerTab>(session_windows[p_session_id]->get_wrapped_control());
+	ERR_FAIL_NULL_V(tab, false);
 	bool captured = true;
 	if (p_message == "limboai:active_bt_players") {
 		tab->update_active_bt_players(p_data);
@@ -371,22 +372,23 @@ bool LimboDebuggerPlugin::_has_capture(const String &p_capture) const {
 	return p_capture == "limboai";
 }
 
-CompatWindowWrapper *LimboDebuggerPlugin::get_session_tab() const {
-	return window_wrapper;
+CompatWindowWrapper *LimboDebuggerPlugin::get_first_session_window() const {
+	ERR_FAIL_COND_V(session_windows.is_empty(), nullptr);
+	return session_windows.begin()->value;
 }
 
-int LimboDebuggerPlugin::get_session_tab_index() const {
+int LimboDebuggerPlugin::get_first_session_tab_index() const {
+	ERR_FAIL_COND_V(session_windows.is_empty(), -1);
+	CompatWindowWrapper *window_wrapper = session_windows.begin()->value;
 	TabContainer *c = Object::cast_to<TabContainer>(window_wrapper->get_parent());
 	ERR_FAIL_COND_V(c == nullptr, -1);
 	return c->get_tab_idx_from_control(window_wrapper);
 }
 
 void LimboDebuggerPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_window_visibility_changed"), &LimboDebuggerPlugin::_window_visibility_changed);
 }
 
 LimboDebuggerPlugin::LimboDebuggerPlugin() {
-	tab = nullptr;
 	singleton = this;
 }
 

@@ -33,7 +33,7 @@ on:
 # Global Settings
 env:
   SCONS_CACHE_LIMIT: 4096
-  SCONSFLAGS: production=yes tests=no verbose=yes warnings=extra werror=yes
+  SCONSFLAGS: production=yes tests=no verbose=yes warnings=extra
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
@@ -49,90 +49,80 @@ jobs:
           - name: Editor (x86_64, release)
             target: editor
             arch: x86_64
-            build-mono: false
+            dotnet: false
             should-build: true
 
           - name: Template (x86_64, release)
             target: template_release
             arch: x86_64
-            build-mono: false
+            dotnet: false
             should-build: ${{ !inputs.test-build }}
 
           - name: Template (x86_64, debug)
             target: template_debug
             arch: x86_64
-            build-mono: false
+            dotnet: false
             should-build: ${{ !inputs.test-build }}
 
           - name: Editor (arm64, release)
             target: editor
             arch: arm64
-            build-mono: false
+            dotnet: false
             should-build: true
 
           - name: Template (arm64, release)
             target: template_release
             arch: arm64
-            build-mono: false
+            dotnet: false
             should-build: ${{ !inputs.test-build }}
 
           - name: Template (arm64, debug)
             target: template_debug
             arch: arm64
-            build-mono: false
+            dotnet: false
             should-build: ${{ !inputs.test-build }}
 
-          # ! Disabled for now: .NET version fails to build
+          - name: .NET Editor (x86_64, release)
+            target: editor
+            arch: x86_64
+            dotnet: true
+            should-build: ${{ !inputs.test-build }}
 
-          # - name: .NET Editor (x86_64, release)
-          #   target: editor
-          #   arch: x86_64
-          #   build-mono: true
-          #   artifact-name: macos-mono-editor
-          #   cache-name: macos-editor
-          #   should-build: ${{ !inputs.test-build }}
+          - name: .NET Template (x86_64, release)
+            target: template_release
+            arch: x86_64
+            dotnet: true
+            should-build: ${{ !inputs.test-build }}
 
-          # - name: .NET Template (x86_64, release)
-          #   target: template_release
-          #   arch: x86_64
-          #   build-mono: true
-          #   artifact-name: macos-mono-templates
-          #   should-build: ${{ !inputs.test-build }}
+          - name: .NET Template (x86_64, debug)
+            target: template_debug
+            arch: x86_64
+            dotnet: true
+            should-build: ${{ !inputs.test-build }}
 
-          # - name: .NET Template (x86_64, debug)
-          #   target: template_debug
-          #   arch: x86_64
-          #   build-mono: true
-          #   artifact-name: macos-mono-templates
-          #   should-build: ${{ !inputs.test-build }}
+          - name: .NET Editor (arm64, release)
+            target: editor
+            arch: arm64
+            dotnet: true
+            should-build: ${{ !inputs.test-build }}
 
-          # - name: .NET Editor (arm64, release)
-          #   target: editor
-          #   arch: arm64
-          #   build-mono: true
-          #   artifact-name: macos-mono-editor
-          #   cache-name: macos-editor
-          #   should-build: ${{ !inputs.test-build }}
+          - name: .NET Template (arm64, release)
+            target: template_release
+            arch: arm64
+            dotnet: true
+            should-build: ${{ !inputs.test-build }}
 
-          # - name: .NET Template (arm64, release)
-          #   target: template_release
-          #   arch: arm64
-          #   build-mono: true
-          #   artifact-name: macos-mono-templates
-          #   should-build: ${{ !inputs.test-build }}
-
-          # - name: .NET Template (arm64, debug)
-          #   target: template_debug
-          #   arch: arm64
-          #   build-mono: true
-          #   artifact-name: macos-mono-templates
-          #   should-build: ${{ !inputs.test-build }}
+          - name: .NET Template (arm64, debug)
+            target: template_debug
+            arch: arm64
+            dotnet: true
+            should-build: ${{ !inputs.test-build }}
 
         exclude:
           - { opts: { should-build: false } }
 
     env:
-      BIN: godot.macos.${{matrix.opts.target}}.${{matrix.opts.arch}}${{  matrix.opts.build-mono == true && '.mono' || ''  }}
+      BIN: godot.macos.${{matrix.opts.target}}.${{matrix.opts.arch}}${{  matrix.opts.dotnet == true && '.mono' || ''  }}
 
     steps:
       - name: Clone Godot
@@ -161,6 +151,12 @@ jobs:
           python -c "import sys; print(sys.version)"
           python -m pip install scons==4.4.0
 
+      - name: Set up .NET SDK 6.0
+        if: matrix.opts.dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "6.0.x"
+
       - name: Diagnostics
         run: |
           python --version
@@ -185,19 +181,21 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 platform=macos target=${{matrix.opts.target}} arch=${{matrix.opts.arch}} module_mono_enabled=${{matrix.opts.build-mono}} ${{env.SCONSFLAGS}}
+          scons -j2 platform=macos target=${{matrix.opts.target}} arch=${{matrix.opts.arch}} module_mono_enabled=${{matrix.opts.dotnet}} ${{env.SCONSFLAGS}}
 
-      # ! Disabled for now: .NET version fails to build
+      - name: Generate C# glue
+        if: matrix.opts.dotnet && matrix.opts.target == 'editor' && matrix.opts.arch == 'x86_64'
+        env:
+          GODOT_VERSION_STATUS: limboai
+        run: |
+          ./bin/$BIN --headless --generate-mono-glue ./modules/mono/glue || true
 
-      # - name: Generate C# glue
-      #   if: matrix.opts.build-mono && matrix.opts.target == 'editor'
-      #   run: |
-      #     ./bin/$BIN --headless --generate-mono-glue ./modules/mono/glue || true
-
-      # - name: Build .NET solutions
-      #   if: matrix.opts.build-mono && matrix.opts.target == 'editor'
-      #   run: |
-      #     ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=macos
+      - name: Build .NET solutions
+        if: matrix.opts.dotnet && matrix.opts.target == 'editor' && matrix.opts.arch == 'x86_64'
+        env:
+          GODOT_VERSION_STATUS: limboai
+        run: |
+          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=macos
 
       - name: Prepare artifact
         run: |
@@ -207,13 +205,26 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tmp-macos-${{matrix.opts.target}}-${{matrix.opts.arch}}
+          name: tmp-${{matrix.opts.dotnet == true && 'dotnet-' || ''}}macos-${{matrix.opts.target}}-${{matrix.opts.arch}}
           path: bin/*
 
   make-macos-bundle:
     runs-on: "macos-latest"
     name: Make macOS Bundles
     needs: macos-builds
+
+    strategy:
+      fail-fast: false
+      matrix:
+        opts:
+          - download-prefix: tmp-macos
+            dotnet: false
+            should-build: true
+          - download-prefix: tmp-dotnet-macos
+            dotnet: true
+            should-build: ${{ !inputs.test-build }}
+        exclude:
+          - { opts: { should-build: false } }
 
     steps:
       - name: Clone Godot
@@ -234,41 +245,46 @@ jobs:
       - name: Download editor artifact
         uses: actions/download-artifact@v4
         with:
-          pattern: tmp-macos-editor-*
+          pattern: ${{matrix.opts.download-prefix}}-editor-*
           merge-multiple: true
           path: bin/
 
       # Zipping the editor bundle to retain executable bit;
       # workaround for: https://github.com/actions/upload-artifact/issues/38
       - name: Make editor bundle
+        env:
+          APP_NAME: Godot${{matrix.opts.dotnet == true && '_mono' || ''}}.app
         run: |
           ls bin/
-          lipo -create bin/godot.macos.editor.x86_64 bin/godot.macos.editor.arm64 -output bin/godot.macos.editor.universal
+          lipo -create bin/godot.macos.editor.x86_64* bin/godot.macos.editor.arm64* -output bin/godot.macos.editor.universal
+          du -sh bin/
           strip bin/godot.macos.editor.universal
-          rm bin/godot.macos.editor.{x86_64,arm64}
+          du -sh bin/
           mkdir -p out/editor/
-          cp -r misc/dist/macos_tools.app out/editor/Godot.app
-          mkdir -p out/editor/Godot.app/Contents/MacOS
-          cp bin/godot.macos.editor.universal out/editor/Godot.app/Contents/MacOS/Godot
-          chmod +x out/editor/Godot.app/Contents/MacOS/Godot
+          cp -r misc/dist/macos_tools.app out/editor/${APP_NAME}
+          mkdir -p out/editor/${APP_NAME}/Contents/{MacOS,Resources}
+          cp bin/godot.macos.editor.universal out/editor/${APP_NAME}/Contents/MacOS/Godot
+          chmod +x out/editor/${APP_NAME}/Contents/MacOS/Godot
+          cp -r bin/GodotSharp out/editor/${APP_NAME}/Contents/Resources/GodotSharp || true
           pushd out/editor
-          zip -r Godot.app.zip Godot.app
-          rm -rf Godot.app
+          zip -q -9 -r ${APP_NAME}.zip ${APP_NAME}
+          rm -rf ${APP_NAME}
           echo -e "## Why another ZIP inside?\n\nWorkaround for: https://github.com/actions/upload-artifact/issues/38\n" > README.md
           popd
+          rm -rf bin/*
           ls out/editor/
 
       - name: Upload editor bundle
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.NAME_PREFIX}}.editor.macos.universal
+          name: ${{env.NAME_PREFIX}}${{matrix.opts.dotnet == true && '.dotnet' || ''}}.editor.macos.universal
           path: out/editor/*
 
       - name: Download templates artifact
         if: ${{ !inputs.test-build }}
         uses: actions/download-artifact@v4
         with:
-          pattern: tmp-macos-template_*
+          pattern: ${{matrix.opts.download-prefix}}-template_*
           merge-multiple: true
           path: bin/
 
@@ -277,25 +293,24 @@ jobs:
         run: |
           rm -rf out/
           ls bin/
-          lipo -create bin/godot.macos.template_release.x86_64 bin/godot.macos.template_release.arm64 -output bin/godot.macos.template_release.universal
-          lipo -create bin/godot.macos.template_debug.x86_64 bin/godot.macos.template_debug.arm64 -output bin/godot.macos.template_debug.universal
-          rm bin/godot.macos.template_{debug,release}.{x86_64,arm64}
-          strip bin/godot.*
+          lipo -create bin/godot.macos.template_release.x86_64* bin/godot.macos.template_release.arm64* -output bin/godot.macos.template_release.universal
+          lipo -create bin/godot.macos.template_debug.x86_64* bin/godot.macos.template_debug.arm64* -output bin/godot.macos.template_debug.universal
+          strip bin/godot.*.universal
           cp -r misc/dist/macos_template.app macos_template.app
           mkdir -p macos_template.app/Contents/MacOS
           cp bin/godot.macos.template_debug.universal macos_template.app/Contents/MacOS/godot_macos_debug.universal
           cp bin/godot.macos.template_release.universal macos_template.app/Contents/MacOS/godot_macos_release.universal
           chmod +x macos_template.app/Contents/MacOS/godot_macos_{release,debug}.universal
-          zip -r macos.zip macos_template.app
-          rm bin/*
+          zip -q -9 -r macos.zip macos_template.app
           mkdir -p out/templates/
           mv macos.zip out/templates/macos.zip
           echo "${GODOT_VERSION}.limboai+${LIMBOAI_VERSION}" > out/templates/version.txt
+          rm -rf bin/*
           ls out/templates/
 
       - uses: geekyeggo/delete-artifact@v5
         with:
-          name: tmp-macos-*
+          name: ${{matrix.opts.download-prefix}}-*
           useGlob: true
           failOnError: false
 
@@ -303,5 +318,5 @@ jobs:
         if: ${{ !inputs.test-build }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.NAME_PREFIX}}.export-templates.macos
+          name: ${{env.NAME_PREFIX}}${{matrix.opts.dotnet == true && '.dotnet' || ''}}.export-templates.macos
           path: out/*

@@ -170,9 +170,14 @@ public:
     Ref<JSON> parse_yaml(const String& text);
     Ref<JSON> parse_yaml_file(const String& file_path);
     void set_animation_load_cb(const Callable& cb );
+    Callable get_animation_load_cb()
+    {    
+        return on_load_animation;
+    }
 
     bool is_init = false;
     int version = 0;
+	Callable on_load_animation;
     HashMap<StringName,Ref<DataTableItem>> data_table;
     String data_table_path = "res://data_table.csv";
 };

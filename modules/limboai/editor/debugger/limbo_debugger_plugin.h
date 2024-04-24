@@ -99,9 +99,7 @@ class LimboDebuggerPlugin : public EditorDebuggerPlugin {
 private:
 	static LimboDebuggerPlugin *singleton;
 
-	LimboDebuggerTab *tab = nullptr;
-
-	CompatWindowWrapper *window_wrapper = nullptr;
+	HashMap<int, CompatWindowWrapper *> session_windows;
 
 	void _window_visibility_changed(bool p_visible);
 
@@ -112,17 +110,17 @@ public:
 	static _FORCE_INLINE_ LimboDebuggerPlugin *get_singleton() { return singleton; }
 
 #ifdef LIMBOAI_MODULE
-	void setup_session(int p_idx) override;
+	void setup_session(int p_session_id) override;
 	bool has_capture(const String &p_capture) const override;
-	bool capture(const String &p_message, const Array &p_data, int p_session) override;
+	bool capture(const String &p_message, const Array &p_data, int p_session_id) override;
 #elif LIMBOAI_GDEXTENSION
 	void _setup_session(int32_t p_idx) override;
 	bool _has_capture(const String &p_capture) const override;
-	bool _capture(const String &p_message, const Array &p_data, int32_t p_session) override;
+	bool _capture(const String &p_message, const Array &p_data, int32_t p_session_id) override;
 #endif
 
-	CompatWindowWrapper *get_session_tab() const;
-	int get_session_tab_index() const;
+	CompatWindowWrapper *get_first_session_window() const;
+	int get_first_session_tab_index() const;
 
 	LimboDebuggerPlugin();
 	~LimboDebuggerPlugin();

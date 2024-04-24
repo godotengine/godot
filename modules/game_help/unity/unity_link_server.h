@@ -40,7 +40,6 @@ class UnityLinkServer : public Object {
 	GDCLASS(UnityLinkServer, Object);
 	static void _bind_methods()
 	{
-		ClassDB::bind_method(D_METHOD("set_animation_load_callback", "callback"), &UnityLinkServer::set_animation_load_callback);
 	}
 
 	private:
@@ -48,8 +47,8 @@ class UnityLinkServer : public Object {
 	{
 		Ref<StreamPeerTCP> connection;
 
-		bool poll(Callable& on_load_animation);
-		bool process_msg(Callable& on_load_animation);
+		bool poll();
+		bool process_msg();
 
 		void clear()
 		{
@@ -67,6 +66,15 @@ class UnityLinkServer : public Object {
 			clear();
 		}
 
+		int get_msg_size()
+		{
+			if(curr_read_count < 8 || data == nullptr)
+			{
+				return 0;
+			}
+			return *(((int *)data)+1);
+		}
+
 		int curr_read_count = 0;
 		uint8_t *data = nullptr;
 		int buffer_size = 0;
@@ -75,17 +83,12 @@ class UnityLinkServer : public Object {
 	};
 	Ref<TCPServer> server;
 	String password;
-	Callable on_load_animation;
 	int port = 0;
 	bool active = false;
 	List<Ref<ClientPeer>> clients;
 
 
 public:
-	void set_animation_load_callback(const Callable &p_callback)
-	{
-		on_load_animation = p_callback;
-	}
 	void poll();
 
 	void start();

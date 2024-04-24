@@ -781,9 +781,11 @@ Error GDScript::reload(bool p_keep_state) {
 		}
 
 		const List<GDScriptParser::ParserError>::Element *e = parser.get_errors().front();
+		int err_index = 0;
 		while (e != nullptr) {
-			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().line, ("Parse Error: " + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().line, (itos(err_index) + " : Parse Error error code( " + itos((int)err) + "):" + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 			e = e->next();
+			++err_index;
 		}
 		reloading = false;
 		return ERR_PARSE_ERROR;

@@ -63,13 +63,20 @@ void BTState::_setup() {
 }
 
 void BTState::_exit() {
+	if (tree_instance.is_valid()) {
+		tree_instance->abort();
+	} else {
+		ERR_PRINT_ONCE("BTState: BehaviorTree is not assigned.");
+	}
 	LimboState::_exit();
-	ERR_FAIL_NULL(tree_instance);
-	tree_instance->abort();
 }
 
 void BTState::_update(double p_delta) {
 	VCALL_ARGS(_update, p_delta);
+	if (!active) {
+		// Bail out if a transition happened in the meantime.
+		return;
+	}
 	ERR_FAIL_NULL(tree_instance);
 	int status = tree_instance->execute(p_delta);
 	if (status == BTTask::SUCCESS) {

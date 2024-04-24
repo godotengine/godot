@@ -679,13 +679,13 @@ void LimboAIEditor::_misc_option_selected(int p_id) {
 		} break;
 		case MISC_OPEN_DEBUGGER: {
 			ERR_FAIL_COND(LimboDebuggerPlugin::get_singleton() == nullptr);
-			if (LimboDebuggerPlugin::get_singleton()->get_session_tab()->get_window_enabled()) {
-				LimboDebuggerPlugin::get_singleton()->get_session_tab()->set_window_enabled(true);
+			if (LimboDebuggerPlugin::get_singleton()->get_first_session_window()->get_window_enabled()) {
+				LimboDebuggerPlugin::get_singleton()->get_first_session_window()->set_window_enabled(true);
 			} else {
 #ifdef LIMBOAI_MODULE
 				EditorNode::get_bottom_panel()->make_item_visible(EditorDebuggerNode::get_singleton());
 				EditorDebuggerNode::get_singleton()->get_default_debugger()->switch_to_debugger(
-						LimboDebuggerPlugin::get_singleton()->get_session_tab_index());
+						LimboDebuggerPlugin::get_singleton()->get_first_session_tab_index());
 #elif LIMBOAI_GDEXTENSION
 				// TODO: Unsure how to switch to debugger pane with GDExtension.
 #endif

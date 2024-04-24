@@ -29,11 +29,11 @@ void LimboState::_update_blackboard_plan() {
 }
 
 LimboState *LimboState::get_root() const {
-	const LimboState *state = this;
+	const Node *state = this;
 	while (state->get_parent() && IS_CLASS(state->get_parent(), LimboState)) {
-		state = Object::cast_to<LimboState>(get_parent());
+		state = state->get_parent();
 	}
-	return const_cast<LimboState *>(state);
+	return const_cast<LimboState *>(Object::cast_to<LimboState>(state));
 }
 
 LimboState *LimboState::named(const String &p_name) {

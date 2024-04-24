@@ -226,6 +226,7 @@ jobs:
           cp -R limboai/demo/demo/ out/demo/
           cp limboai/demo/LICENSE_ASSETS.md out/demo/
           rm -f out/addons/limboai/bin/*.{exp,lib,pdb}
+          echo "${LIMBOAI_VERSION}" > out/addons/limboai/version.txt
           echo "---"
           ls -R out/
 

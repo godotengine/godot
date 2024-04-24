@@ -1,4 +1,5 @@
 #include "common.hpp"
+#include "core/io/logger.h"
 
 #ifndef RYML_NO_DEFAULT_CALLBACKS
 #   include <stdlib.h>
@@ -17,29 +18,28 @@ Callbacks s_default_callbacks;
 #ifndef RYML_NO_DEFAULT_CALLBACKS
 void report_error_impl(const char* msg, size_t length, Location loc, FILE *f)
 {
-    if(!f)
-        f = stderr;
+    String msg_str;
     if(loc)
     {
         if(!loc.name.empty())
         {
-            fwrite(loc.name.str, 1, loc.name.len, f);
-            fputc(':', f);
+            msg_str += loc.name.str;
+            msg_str += ":";
         }
-        fprintf(f, "%zu:", loc.line);
+        msg_str += itos(loc.line) + ":line ";
         if(loc.col)
-            fprintf(f, "%zu:", loc.col);
+            msg_str += itos(loc.col) + "col:";
         if(loc.offset)
-            fprintf(f, " (%zuB):", loc.offset);
+            msg_str +=" (" + itos(loc.offset) + " offset ):";
     }
-    fprintf(f, "%.*s\n", (int)length, msg);
-    fflush(f);
+    msg_str += itos(length) + msg;
+    print_error(msg_str);
 }
 
 void error_impl(const char* msg, size_t length, Location loc, void * /*user_data*/)
 {
     report_error_impl(msg, length, loc, nullptr);
-    ::abort();
+    //::abort();
 }
 
 void* allocate_impl(size_t length, void * /*hint*/, void * /*user_data*/)

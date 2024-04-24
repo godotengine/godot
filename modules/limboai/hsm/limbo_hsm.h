@@ -29,7 +29,9 @@ private:
 	LimboState *initial_state;
 	LimboState *active_state;
 	LimboState *previous_active;
+	LimboState *next_active;
 	HashMap<uint64_t, LimboState *> transitions;
+	bool updating = false;
 
 	_FORCE_INLINE_ uint64_t _get_transition_key(LimboState *p_from_state, const StringName &p_event) {
 		uint64_t key = hash_djb2_one_64(Variant::OBJECT);

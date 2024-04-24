@@ -88,7 +88,13 @@ void LimboHSM::_update(double p_delta) {
 }
 
 void LimboHSM::update(double p_delta) {
+	updating = true;
 	_update(p_delta);
+	updating = false;
+	if (next_active) {
+		_change_state(next_active);
+		next_active = nullptr;
+	}
 }
 
 void LimboHSM::add_transition(LimboState *p_from_state, LimboState *p_to_state, const StringName &p_event) {
@@ -170,7 +176,12 @@ bool LimboHSM::_dispatch(const StringName &p_event, const Variant &p_cargo) {
 				}
 			}
 			if (permitted) {
-				_change_state(to_state);
+				if (!updating) {
+					_change_state(to_state);
+				} else if (!next_active) {
+					// Only set next_active if we are not already in the process of changing states.
+					next_active = to_state;
+				}
 				event_consumed = true;
 			}
 		}
@@ -263,5 +274,6 @@ LimboHSM::LimboHSM() {
 	update_mode = UpdateMode::PHYSICS;
 	active_state = nullptr;
 	previous_active = nullptr;
+	next_active = nullptr;
 	initial_state = nullptr;
 }

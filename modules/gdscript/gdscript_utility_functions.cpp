@@ -431,6 +431,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 
 		print_line(s);
+		print_stack(r_ret,p_args,p_arg_count,r_error);
 		*r_ret = Variant();
 	}
 

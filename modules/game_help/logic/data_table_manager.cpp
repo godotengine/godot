@@ -693,10 +693,8 @@ Ref<JSON> DataTableManager::parse_yaml(const String& text)
 }
 void DataTableManager::set_animation_load_cb(const Callable& cb )
 {
-	if(UnityLinkServer::instance)
-	{
-		UnityLinkServer::instance->set_animation_load_callback(cb);
-	}
+	print_line("DataTableManager::set_animation_load_cb");
+	on_load_animation = cb;
 }
 
 void DataTableManager::_bind_methods()

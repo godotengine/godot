@@ -34,6 +34,7 @@
 #include "core/io/file_access.h"
 #include "core/io/dir_access.h"
 #include "../logic/body_animator.h"
+#include "../logic/data_table_manager.h"
 
 #define FILESYSTEM_PROTOCOL_VERSION 1
 #define PASSWORD_LENGTH 32
@@ -186,7 +187,7 @@ static void _buffer_to_animationNode(StreamPeerConstBuffer&  buffer,Ref<Characte
 
 	return ;
 }
-static bool poll_client(StreamPeerConstBuffer& msg_buffer,Callable& on_load_animation) {
+static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 	int tag = msg_buffer.get_u32();
 	int size = msg_buffer.get_u32();
 	int type = msg_buffer.get_u32();
@@ -216,9 +217,6 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer,Callable& on_load_anim
 		ResourceSaver::save(anima_node,save_path);
 	}
 	else if(type == 2){
-		if(on_load_animation.is_null()){
-			return true;
-		}
 		// 解析骨骼映射文件
 		int file_size = msg_buffer.get_32();
 		if(file_size < 0 || file_size > 10240){
@@ -239,22 +237,40 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer,Callable& on_load_anim
 		print_line("UnityLinkServer: save bone map :" + save_path);
 	}
 	else if(type == 3){
+		Callable on_load_animation =  DataTableManager::get_singleton()->get_animation_load_cb();
 		if(on_load_animation.is_null()){
 			return true;
 		}
 		// 解析动画文件
 		int mirror = msg_buffer.get_32();
 		int file_size = size - 16 - path_size;
-		Vector<uint8_t> ba = Vector<uint8_t>();
-		ba.resize(file_size);
-		memcpy(ba.ptrw(),msg_buffer.get_u8_ptr(),file_size);
+		String yaml_anim = msg_buffer.get_utf8_string(file_size);
 		Ref<Animation> anim;
 		anim.instantiate();
-		on_load_animation.call(ba,mirror,anim);
-		anim->optimize();
-		String save_path = "res://" + path + "/" + anim->get_class() + "_" + anim->get_name() +  ".anim.tres";
-		ResourceSaver::save(anim,save_path);
-		print_line("UnityLinkServer: save animation node :" + save_path);		
+		Ref<JSON> json = DataTableManager::get_singleton()->parse_yaml(yaml_anim);
+		auto data = json->get_data();
+		if(data.get_type() == Variant::DICTIONARY)
+		{
+			Dictionary dict = data;
+			if(dict.has("AnimationClip"))
+			{
+				Dictionary clip = dict["AnimationClip"];
+				on_load_animation.call(clip,mirror,anim);
+				anim->optimize();
+				String save_path = "res://" + path + "/" + anim->get_class() + "_" + anim->get_name() + (mirror ? "_mirror" : "") + ".anim.tres";
+				ResourceSaver::save(anim,save_path);
+				print_line("UnityLinkServer: save animation node :" + save_path);	
+			}
+			else
+			{
+				ERR_FAIL_V_MSG(false,"UnityLinkServer: create animation error " + path);
+			}
+
+		}	
+		else
+		{
+			ERR_FAIL_V_MSG(false,"UnityLinkServer: create animation error " + path);
+		}
 	}
 	else if(type == 4){
 		// 直接存儲的文件，fbx，png。。。。
@@ -273,7 +289,7 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer,Callable& on_load_anim
 	return true;
 }
 
-bool UnityLinkServer::ClientPeer::poll(Callable& on_load_animation)
+bool UnityLinkServer::ClientPeer::poll()
 {
 	
 	connection->poll();
@@ -286,10 +302,12 @@ bool UnityLinkServer::ClientPeer::poll(Callable& on_load_animation)
 	if(connection->get_available_bytes() == 0){
 		return true;
 	}
+	print_line(String("UnityLinkServer: poll") + String(connection->get_connected_host()) + ":" + itos(connection->get_connected_port()));
 	if(buffer_size == 0){
 		buffer_size = 102400;
 		data = memnew_arr(uint8_t, buffer_size);
 	}
+	bool msg_finish = false;
 	while (true) {
 		int read = 0;
 		Error err = connection->get_partial_data(&data[curr_read_count], 1, read);
@@ -320,25 +338,31 @@ bool UnityLinkServer::ClientPeer::poll(Callable& on_load_animation)
 			is_msg_statred = true;
 
 		}
-		if(curr_read_count == *(((int *)data)+1))
+		if(curr_read_count >= 8 && curr_read_count == get_msg_size())
 		{
+			msg_finish = true;
 			break;
 		}
 	}
-	curr_read_count = 0;
+	if(!msg_finish){
+		return true;
+	}
+	print_line(String("UnityLinkServer: msg_finish") + String(connection->get_connected_host()) + ":" + itos(connection->get_connected_port()) + " msg size:" + itos(get_msg_size()) + " curr_read_count:" + itos(curr_read_count));
 	is_msg_statred = false;
-	if(!process_msg(on_load_animation)){
+	if(!process_msg()){
+		curr_read_count = 0;
 		return false;
 	}
+	curr_read_count = 0;
 	return true;
 }
 
 
-bool UnityLinkServer::ClientPeer::process_msg(Callable& on_load_animation)
+bool UnityLinkServer::ClientPeer::process_msg()
 {
 	StreamPeerConstBuffer buffer;
-	buffer.set_data_array(data,*(((int*)data)) + 1);
-	return poll_client(buffer,on_load_animation);
+	buffer.set_data_array(data, get_msg_size());
+	return poll_client(buffer);
 }
 void UnityLinkServer::poll() {
 	if (!active) {
@@ -357,6 +381,7 @@ void UnityLinkServer::poll() {
 		}
 		// Got a connection!
 		tcp_peer->set_no_delay(true);
+		print_line(String("UnityLinkServer: Got a connection->") + String(tcp_peer->get_connected_host()) + ":" + itos(tcp_peer->get_connected_port()));
 		Ref<ClientPeer> peer ;
 		peer.instantiate();
 		peer->connection = tcp_peer;
@@ -368,7 +393,8 @@ void UnityLinkServer::poll() {
 	while(it != clients.end())
 	{
 		Ref<ClientPeer>& peer = *it;
-		if(!peer->poll(on_load_animation)){
+		if(!peer->poll()){
+			print_line(String("UnityLinkServer: disconnect") + String(peer->connection->get_connected_host()) + ":" + itos(peer->connection->get_connected_port()));
 			it = clients.erase(it);
 			continue;
 		}
@@ -383,7 +409,7 @@ void UnityLinkServer::start() {
 	}
 	port = 9010;
 	Error err = server->listen(port);
-	ERR_FAIL_COND_MSG(err != OK, "UnityLinkServer: Unable to listen on port " + itos(port));
+	ERR_FAIL_COND_MSG(err != OK, String("UnityLinkServer: Unable to listen on port ") + itos(port));
 	active = true;
 }
 
