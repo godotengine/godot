@@ -12,6 +12,7 @@
     <PackageTags>godot</PackageTags>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/GodotTools/GodotTools.IdeMessaging</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright (c) Godot Engine contributors</Copyright>
     <Description>
 This library enables communication with the Godot Engine editor (the version with .NET support).
 It's intended for use in IDEs/editors plugins for a better experience working with Godot C# projects.
