@@ -229,6 +229,36 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 	}
 }
 
+String GDScriptDocGen::_docvalue_from_expression(const GDP::ExpressionNode *p_expression) {
+	ERR_FAIL_NULL_V(p_expression, String());
+
+	if (p_expression->is_constant) {
+		return _docvalue_from_variant(p_expression->reduced_value);
+	}
+
+	switch (p_expression->type) {
+		case GDP::Node::ARRAY: {
+			const GDP::ArrayNode *array = static_cast<const GDP::ArrayNode *>(p_expression);
+			return array->elements.is_empty() ? "[]" : "[...]";
+		} break;
+		case GDP::Node::CALL: {
+			const GDP::CallNode *call = static_cast<const GDP::CallNode *>(p_expression);
+			return call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
+		} break;
+		case GDP::Node::DICTIONARY: {
+			const GDP::DictionaryNode *dict = static_cast<const GDP::DictionaryNode *>(p_expression);
+			return dict->elements.is_empty() ? "{}" : "{...}";
+		} break;
+		case GDP::Node::IDENTIFIER: {
+			const GDP::IdentifierNode *id = static_cast<const GDP::IdentifierNode *>(p_expression);
+			return id->name;
+		} break;
+		default: {
+			return "<unknown>";
+		} break;
+	}
+}
+
 void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
 	p_script->_clear_doc();
 
@@ -328,16 +358,12 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					method_doc.return_type = "Variant";
 				}
 
-				for (const GDScriptParser::ParameterNode *p : m_func->parameters) {
+				for (const GDP::ParameterNode *p : m_func->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
 					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
 					if (p->initializer != nullptr) {
-						if (p->initializer->is_constant) {
-							arg_doc.default_value = _docvalue_from_variant(p->initializer->reduced_value);
-						} else {
-							arg_doc.default_value = "<unknown>";
-						}
+						arg_doc.default_value = _docvalue_from_expression(p->initializer);
 					}
 					method_doc.arguments.push_back(arg_doc);
 				}
@@ -359,7 +385,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				signal_doc.is_experimental = m_signal->doc_data.is_experimental;
 				signal_doc.experimental_message = m_signal->doc_data.experimental_message;
 
-				for (const GDScriptParser::ParameterNode *p : m_signal->parameters) {
+				for (const GDP::ParameterNode *p : m_signal->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
 					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
@@ -405,12 +431,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 						break;
 				}
 
-				if (m_var->initializer) {
-					if (m_var->initializer->is_constant) {
-						prop_doc.default_value = _docvalue_from_variant(m_var->initializer->reduced_value);
-					} else {
-						prop_doc.default_value = "<unknown>";
-					}
+				if (m_var->initializer != nullptr) {
+					prop_doc.default_value = _docvalue_from_expression(m_var->initializer);
 				}
 
 				prop_doc.overridden = false;
