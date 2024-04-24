@@ -169,21 +169,17 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 			const Basis posture = c->get_point_baked_posture(idx);
 			const Vector3 tangent = -posture.get_column(2);
 			const Vector3 up = posture.get_column(1);
-			const Plane p_tilt = Plane(tangent, position);
+			const Plane tilt_plane_global = gt.xform(Plane(tangent, position));
 
 			Vector3 intersection;
 
-			if (p_tilt.intersects_ray(ray_from, ray_dir, &intersection)) {
-				Vector3 direction = intersection - position;
-				direction.normalize(); // FIXME: redundant?
+			if (tilt_plane_global.intersects_ray(ray_from, ray_dir, &intersection)) {
+				Vector3 direction = gi.xform(intersection) - position;
 				real_t tilt_angle = up.signed_angle_to(direction, tangent);
 
 				if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-					real_t snap = Node3DEditor::get_singleton()->get_rotate_snap();
-
-					tilt_angle = Math::rad_to_deg(tilt_angle) + snap * 0.5; // Else it won't reach +180.
-					tilt_angle -= Math::fmod(tilt_angle, snap);
-					tilt_angle = Math::deg_to_rad(tilt_angle);
+					real_t snap_degrees = Node3DEditor::get_singleton()->get_rotate_snap();
+					tilt_angle = Math::deg_to_rad(Math::snapped(Math::rad_to_deg(tilt_angle), snap_degrees));
 				}
 
 				c->set_point_tilt(idx, tilt_angle);
