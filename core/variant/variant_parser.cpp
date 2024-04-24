@@ -1789,7 +1789,7 @@ static String rtos_fix(double p_value) {
 	}
 }
 
-Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int p_recursion_count) {
+Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int p_recursion_count, bool p_compat) {
 	switch (p_variant.get_type()) {
 		case Variant::NIL: {
 			p_store_string_func(p_store_string_ud, "null");
@@ -2009,7 +2009,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					}
 
 					p_store_string_func(p_store_string_ud, "\"" + E.name + "\":");
-					write(obj->get(E.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
+					write(obj->get(E.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 				}
 			}
 
@@ -2035,9 +2035,9 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 				p_store_string_func(p_store_string_ud, "{\n");
 				for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-					write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
+					write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 					p_store_string_func(p_store_string_ud, ": ");
-					write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
+					write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 					if (E->next()) {
 						p_store_string_func(p_store_string_ud, ",\n");
 					} else {
@@ -2096,7 +2096,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					} else {
 						p_store_string_func(p_store_string_ud, ", ");
 					}
-					write(var, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
+					write(var, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 				}
 
 				p_store_string_func(p_store_string_ud, "]");
@@ -2110,7 +2110,16 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::PACKED_BYTE_ARRAY: {
 			p_store_string_func(p_store_string_ud, "PackedByteArray(");
 			Vector<uint8_t> data = p_variant;
-			if (data.size() > 0) {
+			if (p_compat) {
+				int len = data.size();
+				const uint8_t *ptr = data.ptr();
+				for (int i = 0; i < len; i++) {
+					if (i > 0) {
+						p_store_string_func(p_store_string_ud, ", ");
+					}
+					p_store_string_func(p_store_string_ud, itos(ptr[i]));
+				}
+			} else if (data.size() > 0) {
 				p_store_string_func(p_store_string_ud, "\"");
 				p_store_string_func(p_store_string_ud, CryptoCore::b64_encode_str(data.ptr(), data.size()));
 				p_store_string_func(p_store_string_ud, "\"");
@@ -2255,8 +2264,8 @@ static Error _write_to_str(void *ud, const String &p_string) {
 	return OK;
 }
 
-Error VariantWriter::write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud) {
+Error VariantWriter::write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, bool p_compat) {
 	r_string = String();
 
-	return write(p_variant, _write_to_str, &r_string, p_encode_res_func, p_encode_res_ud);
+	return write(p_variant, _write_to_str, &r_string, p_encode_res_func, p_encode_res_ud, 0, p_compat);
 }

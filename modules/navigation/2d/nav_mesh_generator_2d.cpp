@@ -284,7 +284,7 @@ void NavMeshGenerator2D::generator_parse_meshinstance2d_node(const Ref<Navigatio
 
 	using namespace Clipper2Lib;
 
-	Paths64 subject_paths, dummy_clip_paths;
+	PathsD subject_paths, dummy_clip_paths;
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -295,7 +295,7 @@ void NavMeshGenerator2D::generator_parse_meshinstance2d_node(const Ref<Navigatio
 			continue;
 		}
 
-		Path64 subject_path;
+		PathD subject_path;
 
 		int index_count = 0;
 		if (mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
@@ -314,19 +314,19 @@ void NavMeshGenerator2D::generator_parse_meshinstance2d_node(const Ref<Navigatio
 			Vector<int> mesh_indices = a[Mesh::ARRAY_INDEX];
 			for (int vertex_index : mesh_indices) {
 				const Vector2 &vertex = mesh_vertices[vertex_index];
-				const Point64 &point = Point64(vertex.x, vertex.y);
+				const PointD &point = PointD(vertex.x, vertex.y);
 				subject_path.push_back(point);
 			}
 		} else {
 			for (const Vector2 &vertex : mesh_vertices) {
-				const Point64 &point = Point64(vertex.x, vertex.y);
+				const PointD &point = PointD(vertex.x, vertex.y);
 				subject_path.push_back(point);
 			}
 		}
 		subject_paths.push_back(subject_path);
 	}
 
-	Paths64 path_solution;
+	PathsD path_solution;
 
 	path_solution = Union(subject_paths, dummy_clip_paths, FillRule::NonZero);
 
@@ -334,9 +334,9 @@ void NavMeshGenerator2D::generator_parse_meshinstance2d_node(const Ref<Navigatio
 
 	Vector<Vector<Vector2>> polypaths;
 
-	for (const Path64 &scaled_path : path_solution) {
+	for (const PathD &scaled_path : path_solution) {
 		Vector<Vector2> shape_outline;
-		for (const Point64 &scaled_point : scaled_path) {
+		for (const PointD &scaled_point : scaled_path) {
 			shape_outline.push_back(Point2(static_cast<real_t>(scaled_point.x), static_cast<real_t>(scaled_point.y)));
 		}
 
@@ -372,7 +372,7 @@ void NavMeshGenerator2D::generator_parse_multimeshinstance2d_node(const Ref<Navi
 
 	using namespace Clipper2Lib;
 
-	Paths64 mesh_subject_paths, dummy_clip_paths;
+	PathsD mesh_subject_paths, dummy_clip_paths;
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -383,7 +383,7 @@ void NavMeshGenerator2D::generator_parse_multimeshinstance2d_node(const Ref<Navi
 			continue;
 		}
 
-		Path64 subject_path;
+		PathD subject_path;
 
 		int index_count = 0;
 		if (mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
@@ -402,19 +402,19 @@ void NavMeshGenerator2D::generator_parse_multimeshinstance2d_node(const Ref<Navi
 			Vector<int> mesh_indices = a[Mesh::ARRAY_INDEX];
 			for (int vertex_index : mesh_indices) {
 				const Vector2 &vertex = mesh_vertices[vertex_index];
-				const Point64 &point = Point64(vertex.x, vertex.y);
+				const PointD &point = PointD(vertex.x, vertex.y);
 				subject_path.push_back(point);
 			}
 		} else {
 			for (const Vector2 &vertex : mesh_vertices) {
-				const Point64 &point = Point64(vertex.x, vertex.y);
+				const PointD &point = PointD(vertex.x, vertex.y);
 				subject_path.push_back(point);
 			}
 		}
 		mesh_subject_paths.push_back(subject_path);
 	}
 
-	Paths64 mesh_path_solution = Union(mesh_subject_paths, dummy_clip_paths, FillRule::NonZero);
+	PathsD mesh_path_solution = Union(mesh_subject_paths, dummy_clip_paths, FillRule::NonZero);
 
 	//path_solution = RamerDouglasPeucker(path_solution, 0.025);
 
@@ -428,10 +428,10 @@ void NavMeshGenerator2D::generator_parse_multimeshinstance2d_node(const Ref<Navi
 	for (int i = 0; i < multimesh_instance_count; i++) {
 		const Transform2D multimesh_instance_mesh_instance_xform = multimesh_instance_xform * multimesh->get_instance_transform_2d(i);
 
-		for (const Path64 &mesh_path : mesh_path_solution) {
+		for (const PathD &mesh_path : mesh_path_solution) {
 			Vector<Vector2> shape_outline;
 
-			for (const Point64 &mesh_path_point : mesh_path) {
+			for (const PointD &mesh_path_point : mesh_path) {
 				shape_outline.push_back(Point2(static_cast<real_t>(mesh_path_point.x), static_cast<real_t>(mesh_path_point.y)));
 			}
 
@@ -793,12 +793,12 @@ void NavMeshGenerator2D::generator_parse_source_geometry_data(Ref<NavigationPoly
 	}
 };
 
-static void generator_recursive_process_polytree_items(List<TPPLPoly> &p_tppl_in_polygon, const Clipper2Lib::PolyPath64 *p_polypath_item) {
+static void generator_recursive_process_polytree_items(List<TPPLPoly> &p_tppl_in_polygon, const Clipper2Lib::PolyPathD *p_polypath_item) {
 	using namespace Clipper2Lib;
 
 	Vector<Vector2> polygon_vertices;
 
-	for (const Point64 &polypath_point : p_polypath_item->Polygon()) {
+	for (const PointD &polypath_point : p_polypath_item->Polygon()) {
 		polygon_vertices.push_back(Vector2(static_cast<real_t>(polypath_point.x), static_cast<real_t>(polypath_point.y)));
 	}
 
@@ -817,7 +817,7 @@ static void generator_recursive_process_polytree_items(List<TPPLPoly> &p_tppl_in
 	p_tppl_in_polygon.push_back(tp);
 
 	for (size_t i = 0; i < p_polypath_item->Count(); i++) {
-		const PolyPath64 *polypath_item = p_polypath_item->Child(i);
+		const PolyPathD *polypath_item = p_polypath_item->Child(i);
 		generator_recursive_process_polytree_items(p_tppl_in_polygon, polypath_item);
 	}
 }
@@ -892,38 +892,38 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	using namespace Clipper2Lib;
 
-	Paths64 traversable_polygon_paths;
-	Paths64 obstruction_polygon_paths;
+	PathsD traversable_polygon_paths;
+	PathsD obstruction_polygon_paths;
 
 	traversable_polygon_paths.reserve(outline_count + traversable_outlines.size());
 	obstruction_polygon_paths.reserve(obstruction_outlines.size());
 
 	for (int i = 0; i < outline_count; i++) {
 		const Vector<Vector2> &traversable_outline = p_navigation_mesh->get_outline(i);
-		Path64 subject_path;
+		PathD subject_path;
 		subject_path.reserve(traversable_outline.size());
 		for (const Vector2 &traversable_point : traversable_outline) {
-			const Point64 &point = Point64(traversable_point.x, traversable_point.y);
+			const PointD &point = PointD(traversable_point.x, traversable_point.y);
 			subject_path.push_back(point);
 		}
 		traversable_polygon_paths.push_back(subject_path);
 	}
 
 	for (const Vector<Vector2> &traversable_outline : traversable_outlines) {
-		Path64 subject_path;
+		PathD subject_path;
 		subject_path.reserve(traversable_outline.size());
 		for (const Vector2 &traversable_point : traversable_outline) {
-			const Point64 &point = Point64(traversable_point.x, traversable_point.y);
+			const PointD &point = PointD(traversable_point.x, traversable_point.y);
 			subject_path.push_back(point);
 		}
 		traversable_polygon_paths.push_back(subject_path);
 	}
 
 	for (const Vector<Vector2> &obstruction_outline : obstruction_outlines) {
-		Path64 clip_path;
+		PathD clip_path;
 		clip_path.reserve(obstruction_outline.size());
 		for (const Vector2 &obstruction_point : obstruction_outline) {
-			const Point64 &point = Point64(obstruction_point.x, obstruction_point.y);
+			const PointD &point = PointD(obstruction_point.x, obstruction_point.y);
 			clip_path.push_back(point);
 		}
 		obstruction_polygon_paths.push_back(clip_path);
@@ -940,10 +940,10 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 				continue;
 			}
 
-			Path64 clip_path;
+			PathD clip_path;
 			clip_path.reserve(projected_obstruction.vertices.size() / 2);
 			for (int i = 0; i < projected_obstruction.vertices.size() / 2; i++) {
-				const Point64 &point = Point64(projected_obstruction.vertices[i * 2], projected_obstruction.vertices[i * 2 + 1]);
+				const PointD &point = PointD(projected_obstruction.vertices[i * 2], projected_obstruction.vertices[i * 2 + 1]);
 				clip_path.push_back(point);
 			}
 			if (!IsPositive(clip_path)) {
@@ -962,17 +962,16 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		const int rect_end_x = baking_rect.position[0] + baking_rect.size[0] + baking_rect_offset.x;
 		const int rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y;
 
-		Rect64 clipper_rect = Rect64(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
-		RectClip64 rect_clip = RectClip64(clipper_rect);
+		RectD clipper_rect = RectD(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
 
-		traversable_polygon_paths = rect_clip.Execute(traversable_polygon_paths);
-		obstruction_polygon_paths = rect_clip.Execute(obstruction_polygon_paths);
+		traversable_polygon_paths = RectClip(clipper_rect, traversable_polygon_paths);
+		obstruction_polygon_paths = RectClip(clipper_rect, obstruction_polygon_paths);
 	}
 
-	Paths64 path_solution;
+	PathsD path_solution;
 
 	// first merge all traversable polygons according to user specified fill rule
-	Paths64 dummy_clip_path;
+	PathsD dummy_clip_path;
 	traversable_polygon_paths = Union(traversable_polygon_paths, dummy_clip_path, FillRule::NonZero);
 	// merge all obstruction polygons, don't allow holes for what is considered "solid" 2D geometry
 	obstruction_polygon_paths = Union(obstruction_polygon_paths, dummy_clip_path, FillRule::NonZero);
@@ -994,10 +993,10 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 				continue;
 			}
 
-			Path64 clip_path;
+			PathD clip_path;
 			clip_path.reserve(projected_obstruction.vertices.size() / 2);
 			for (int i = 0; i < projected_obstruction.vertices.size() / 2; i++) {
-				const Point64 &point = Point64(projected_obstruction.vertices[i * 2], projected_obstruction.vertices[i * 2 + 1]);
+				const PointD &point = PointD(projected_obstruction.vertices[i * 2], projected_obstruction.vertices[i * 2 + 1]);
 				clip_path.push_back(point);
 			}
 			if (!IsPositive(clip_path)) {
@@ -1021,17 +1020,16 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		const int rect_end_x = baking_rect.position[0] + baking_rect.size[0] + baking_rect_offset.x - border_size;
 		const int rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y - border_size;
 
-		Rect64 clipper_rect = Rect64(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
-		RectClip64 rect_clip = RectClip64(clipper_rect);
+		RectD clipper_rect = RectD(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
 
-		path_solution = rect_clip.Execute(path_solution);
+		path_solution = RectClip(clipper_rect, path_solution);
 	}
 
 	Vector<Vector<Vector2>> new_baked_outlines;
 
-	for (const Path64 &scaled_path : path_solution) {
+	for (const PathD &scaled_path : path_solution) {
 		Vector<Vector2> polypath;
-		for (const Point64 &scaled_point : scaled_path) {
+		for (const PointD &scaled_point : scaled_path) {
 			polypath.push_back(Vector2(static_cast<real_t>(scaled_point.x), static_cast<real_t>(scaled_point.y)));
 		}
 		new_baked_outlines.push_back(polypath);
@@ -1043,13 +1041,13 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 		return;
 	}
 
-	Paths64 polygon_paths;
+	PathsD polygon_paths;
 	polygon_paths.reserve(new_baked_outlines.size());
 
 	for (const Vector<Vector2> &baked_outline : new_baked_outlines) {
-		Path64 polygon_path;
+		PathD polygon_path;
 		for (const Vector2 &baked_outline_point : baked_outline) {
-			const Point64 &point = Point64(baked_outline_point.x, baked_outline_point.y);
+			const PointD &point = PointD(baked_outline_point.x, baked_outline_point.y);
 			polygon_path.push_back(point);
 		}
 		polygon_paths.push_back(polygon_path);
@@ -1059,14 +1057,14 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	List<TPPLPoly> tppl_in_polygon, tppl_out_polygon;
 
-	PolyTree64 polytree;
-	Clipper64 clipper_64;
+	PolyTreeD polytree;
+	ClipperD clipper_D;
 
-	clipper_64.AddSubject(polygon_paths);
-	clipper_64.Execute(clipper_cliptype, FillRule::NonZero, polytree);
+	clipper_D.AddSubject(polygon_paths);
+	clipper_D.Execute(clipper_cliptype, FillRule::NonZero, polytree);
 
 	for (size_t i = 0; i < polytree.Count(); i++) {
-		const PolyPath64 *polypath_item = polytree[i];
+		const PolyPathD *polypath_item = polytree[i];
 		generator_recursive_process_polytree_items(tppl_in_polygon, polypath_item);
 	}
 

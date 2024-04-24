@@ -78,17 +78,17 @@ public:
 				if (valid && builtin_type == Variant::ARRAY && has_container_element_type(0)) {
 					Array array = p_variant;
 					if (array.is_typed()) {
-						GDScriptDataType array_container_type = get_container_element_type(0);
+						const GDScriptDataType &elem_type = container_element_types[0];
 						Variant::Type array_builtin_type = (Variant::Type)array.get_typed_builtin();
 						StringName array_native_type = array.get_typed_class_name();
 						Ref<Script> array_script_type_ref = array.get_typed_script();
 
 						if (array_script_type_ref.is_valid()) {
-							valid = (array_container_type.kind == SCRIPT || array_container_type.kind == GDSCRIPT) && array_container_type.script_type == array_script_type_ref.ptr();
+							valid = (elem_type.kind == SCRIPT || elem_type.kind == GDSCRIPT) && elem_type.script_type == array_script_type_ref.ptr();
 						} else if (array_native_type != StringName()) {
-							valid = array_container_type.kind == NATIVE && array_container_type.native_type == array_native_type;
+							valid = elem_type.kind == NATIVE && elem_type.native_type == array_native_type;
 						} else {
-							valid = array_container_type.kind == BUILTIN && array_container_type.builtin_type == array_builtin_type;
+							valid = elem_type.kind == BUILTIN && elem_type.builtin_type == array_builtin_type;
 						}
 					} else {
 						valid = false;
@@ -145,6 +145,25 @@ public:
 			} break;
 		}
 		return false;
+	}
+
+	bool can_contain_object() const {
+		if (has_type && kind == BUILTIN) {
+			switch (builtin_type) {
+				case Variant::ARRAY:
+					if (has_container_element_type(0)) {
+						return container_element_types[0].can_contain_object();
+					}
+					return true;
+				case Variant::DICTIONARY:
+				case Variant::NIL:
+				case Variant::OBJECT:
+					return true;
+				default:
+					return false;
+			}
+		}
+		return true;
 	}
 
 	void set_container_element_type(int p_index, const GDScriptDataType &p_element_type) {
@@ -218,6 +237,7 @@ public:
 		OPCODE_SET_STATIC_VARIABLE, // Only for GDScript.
 		OPCODE_GET_STATIC_VARIABLE, // Only for GDScript.
 		OPCODE_ASSIGN,
+		OPCODE_ASSIGN_NULL,
 		OPCODE_ASSIGN_TRUE,
 		OPCODE_ASSIGN_FALSE,
 		OPCODE_ASSIGN_TYPED_BUILTIN,

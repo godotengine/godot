@@ -863,19 +863,20 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		_save_editor_state(current);
 	}
 	memdelete(tselected);
-	if (idx >= tab_container->get_tab_count()) {
-		idx = tab_container->get_tab_count() - 1;
-	}
-	if (idx >= 0) {
-		if (history_pos >= 0) {
-			idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
-		}
-		_go_to_tab(idx);
-	} else {
-		_update_selected_editor_menu();
-	}
 
 	if (script_close_queue.is_empty()) {
+		if (idx >= tab_container->get_tab_count()) {
+			idx = tab_container->get_tab_count() - 1;
+		}
+		if (idx >= 0) {
+			if (history_pos >= 0) {
+				idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
+			}
+			_go_to_tab(idx);
+		} else {
+			_update_selected_editor_menu();
+		}
+
 		_update_history_arrows();
 		_update_script_names();
 		_save_layout();
@@ -883,8 +884,8 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	}
 }
 
-void ScriptEditor::_close_current_tab(bool p_save) {
-	_close_tab(tab_container->get_current_tab(), p_save);
+void ScriptEditor::_close_current_tab(bool p_save, bool p_history_back) {
+	_close_tab(tab_container->get_current_tab(), p_save, p_history_back);
 }
 
 void ScriptEditor::_close_discard_current_tab(const String &p_str) {
@@ -948,7 +949,7 @@ void ScriptEditor::_queue_close_tabs() {
 			}
 		}
 
-		_close_current_tab(false);
+		_close_current_tab(false, false);
 	}
 	_update_find_replace_bar();
 }
@@ -4153,7 +4154,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	erase_tab_confirm = memnew(ConfirmationDialog);
 	erase_tab_confirm->set_ok_button_text(TTR("Save"));
 	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
-	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab).bind(true));
+	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab).bind(true, true));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
 	add_child(erase_tab_confirm);
 

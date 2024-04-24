@@ -153,7 +153,7 @@ void SkeletonModification2DPhysicalBones::_setup_modification(SkeletonModificati
 void SkeletonModification2DPhysicalBones::_physical_bone_update_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, physical_bone_chain.size(), "Cannot update PhysicalBone2D cache: joint index out of range!");
 	if (!is_setup || !stack) {
-		if (!stack) {
+		if (is_setup) {
 			ERR_PRINT_ONCE("Cannot update PhysicalBone2D cache: modification is not properly setup!");
 		}
 		return;

@@ -5881,6 +5881,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 	Ref<Animation> animation;
 	animation.instantiate();
 	animation->set_name(anim_name);
+	animation->set_step(1.0 / p_bake_fps);
 
 	if (anim->get_loop()) {
 		animation->set_loop_mode(Animation::LOOP_LINEAR);

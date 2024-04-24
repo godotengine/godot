@@ -24,7 +24,7 @@ jobs:
             cache-name: macos-editor
             target: editor
             tests: true
-            bin: "./bin/godot.macos.editor.x86_64"
+            bin: "./bin/godot.macos.editor.universal"
 
           - name: Template (target=template_release)
             cache-name: macos-template
@@ -50,16 +50,26 @@ jobs:
         run: |
           sh misc/scripts/install_vulkan_sdk_macos.sh
 
-      - name: Compilation
+      - name: Compilation (x86_64)
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }}
+          sconsflags: ${{ env.SCONSFLAGS }} arch=x86_64
+          platform: macos
+          target: ${{ matrix.target }}
+          tests: ${{ matrix.tests }}
+
+      - name: Compilation (arm64)
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} arch=arm64
           platform: macos
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
 
       - name: Prepare artifact
         run: |
+          lipo -create ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64 -output ./bin/godot.macos.${{ matrix.target }}.universal
+          rm ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64
           strip bin/godot.*
           chmod +x bin/godot.*
 
