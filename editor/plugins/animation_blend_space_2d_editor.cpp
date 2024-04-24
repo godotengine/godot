@@ -807,9 +807,9 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 			open_editor->set_icon(get_editor_theme_icon(SNAME("Edit")));
 			auto_triangles->set_icon(get_editor_theme_icon(SNAME("AutoTriangle")));
 			interpolation->clear();
-			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), "", 0);
-			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), "", 1);
-			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackCapture")), "", 2);
+			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), TTR("Continuous"), 0);
+			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);
+			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackCapture")), TTR("Capture"), 2);
 		} break;
 
 		case NOTIFICATION_PROCESS: {
