@@ -362,42 +362,42 @@ void call_with_ptr_args_static_method_helper(void (*p_method)(P...), const void 
 
 template <typename T, typename... P, size_t... Is>
 void call_with_validated_variant_args_helper(T *p_instance, void (T::*p_method)(P...), const Variant **p_args, IndexSequence<Is...>) {
-	(p_instance->*p_method)((VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...);
+	(p_instance->*p_method)((VariantInternalAccessor<GetSimpleTypeT<P>>::get(p_args[Is]))...);
 }
 
 template <typename T, typename... P, size_t... Is>
 void call_with_validated_variant_argsc_helper(T *p_instance, void (T::*p_method)(P...) const, const Variant **p_args, IndexSequence<Is...>) {
-	(p_instance->*p_method)((VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...);
+	(p_instance->*p_method)((VariantInternalAccessor<GetSimpleTypeT<P>>::get(p_args[Is]))...);
 }
 
 template <typename T, typename R, typename... P, size_t... Is>
 void call_with_validated_variant_args_ret_helper(T *p_instance, R (T::*p_method)(P...), const Variant **p_args, Variant *r_ret, IndexSequence<Is...>) {
-	VariantInternalAccessor<typename GetSimpleTypeT<R>::type_t>::set(r_ret, (p_instance->*p_method)((VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...));
+	VariantInternalAccessor<GetSimpleTypeT<R>>::set(r_ret, (p_instance->*p_method)((VariantInternalAccessor<GetSimpleTypeT<P>>::get(p_args[Is]))...));
 }
 
 template <typename T, typename R, typename... P, size_t... Is>
 void call_with_validated_variant_args_retc_helper(T *p_instance, R (T::*p_method)(P...) const, const Variant **p_args, Variant *r_ret, IndexSequence<Is...>) {
-	VariantInternalAccessor<typename GetSimpleTypeT<R>::type_t>::set(r_ret, (p_instance->*p_method)((VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...));
+	VariantInternalAccessor<GetSimpleTypeT<R>>::set(r_ret, (p_instance->*p_method)((VariantInternalAccessor<GetSimpleTypeT<P>>::get(p_args[Is]))...));
 }
 
 template <typename T, typename R, typename... P, size_t... Is>
 void call_with_validated_variant_args_static_retc_helper(T *p_instance, R (*p_method)(T *, P...), const Variant **p_args, Variant *r_ret, IndexSequence<Is...>) {
-	VariantInternalAccessor<typename GetSimpleTypeT<R>::type_t>::set(r_ret, p_method(p_instance, (VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...));
+	VariantInternalAccessor<GetSimpleTypeT<R>>::set(r_ret, p_method(p_instance, (VariantInternalAccessor<GetSimpleTypeT<P>>::get(p_args[Is]))...));
 }
 
 template <typename T, typename... P, size_t... Is>
 void call_with_validated_variant_args_static_helper(T *p_instance, void (*p_method)(T *, P...), const Variant **p_args, IndexSequence<Is...>) {
-	p_method(p_instance, (VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...);
+	p_method(p_instance, (VariantInternalAccessor<GetSimpleTypeT<P>>::get(p_args[Is]))...);
 }
 
 template <typename R, typename... P, size_t... Is>
 void call_with_validated_variant_args_static_method_ret_helper(R (*p_method)(P...), const Variant **p_args, Variant *r_ret, IndexSequence<Is...>) {
-	VariantInternalAccessor<typename GetSimpleTypeT<R>::type_t>::set(r_ret, p_method((VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...));
+	VariantInternalAccessor<GetSimpleTypeT<R>>::set(r_ret, p_method((VariantInternalAccessor<GetSimpleTypeT<P>>::get(p_args[Is]))...));
 }
 
 template <typename... P, size_t... Is>
 void call_with_validated_variant_args_static_method_helper(void (*p_method)(P...), const Variant **p_args, IndexSequence<Is...>) {
-	p_method((VariantInternalAccessor<typename GetSimpleTypeT<P>::type_t>::get(p_args[Is]))...);
+	p_method((VariantInternalAccessor<GetSimpleTypeT<P>>::get(p_args[Is]))...);
 }
 
 template <typename T, typename... P>
