@@ -122,6 +122,10 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 		bool relaxed_casting_supported = false;
 	};
 
+	struct BarrierCapabilities {
+		bool enhanced_barriers_supported = false;
+	};
+
 	RenderingContextDriverD3D12 *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
 	ComPtr<IDXGIAdapter> adapter;
@@ -136,6 +140,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
 	FormatCapabilities format_capabilities;
+	BarrierCapabilities barrier_capabilities;
 	String pipeline_cache_id;
 
 	class DescriptorsHeap {
@@ -218,11 +223,6 @@ private:
 			// As many subresources as mipmaps * layers; planes (for depth-stencil) are tracked together.
 			TightLocalVector<D3D12_RESOURCE_STATES> subresource_states; // Used only if not a view.
 			uint32_t last_batch_with_uav_barrier = 0;
-			struct CrossFamillyFallback {
-				TightLocalVector<uint64_t> subresources_dirty;
-				ComPtr<ID3D12Resource> interim_buffer;
-				ComPtr<D3D12MA::Allocation> interim_buffer_alloc;
-			} xfamily_fallback; // [[CROSS_FAMILY_FALLBACK]].
 		};
 
 		ID3D12Resource *resource = nullptr; // Non-null even if not owned.
@@ -275,7 +275,6 @@ private:
 		uint64_t size = 0;
 		struct {
 			bool usable_as_uav : 1;
-			bool is_for_upload : 1;
 		} flags = {};
 	};
 
@@ -317,9 +316,13 @@ private:
 	UINT _compute_component_mapping(const TextureView &p_view);
 	UINT _compute_plane_slice(DataFormat p_format, BitField<TextureAspectBits> p_aspect_bits);
 	UINT _compute_plane_slice(DataFormat p_format, TextureAspect p_aspect);
+	UINT _compute_subresource_from_layers(TextureInfo *p_texture, const TextureSubresourceLayers &p_layers, uint32_t p_layer_offset);
 
 	struct CommandBufferInfo;
 	void _discard_texture_subresources(const TextureInfo *p_tex_info, const CommandBufferInfo *p_cmd_buf_info);
+
+protected:
+	virtual bool _unordered_access_supported_by_format(DataFormat p_format);
 
 public:
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
@@ -332,6 +335,7 @@ public:
 	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) override final;
 	virtual void texture_unmap(TextureID p_texture) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
+	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) override final;
 
 private:
 	TextureID _texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps);
@@ -367,8 +371,8 @@ public:
 
 	virtual void command_pipeline_barrier(
 			CommandBufferID p_cmd_buffer,
-			BitField<RDD::PipelineStageBits> p_src_stages,
-			BitField<RDD::PipelineStageBits> p_dst_stages,
+			BitField<PipelineStageBits> p_src_stages,
+			BitField<PipelineStageBits> p_dst_stages,
 			VectorView<RDD::MemoryBarrier> p_memory_barriers,
 			VectorView<RDD::BufferBarrier> p_buffer_barriers,
 			VectorView<RDD::TextureBarrier> p_texture_barriers) override final;
@@ -465,16 +469,6 @@ private:
 
 		RenderPassState render_pass_state;
 		bool descriptor_heaps_set = false;
-
-		// [[CROSS_FAMILY_FALLBACK]].
-		struct FamilyFallbackCopy {
-			TextureInfo *texture = nullptr;
-			uint32_t subresource = 0;
-			uint32_t mipmap = 0;
-			D3D12_RESOURCE_STATES dst_wanted_state = {};
-		};
-		LocalVector<FamilyFallbackCopy> family_fallback_copies;
-		uint32_t family_fallback_copy_count = 0;
 	};
 
 public:
@@ -961,7 +955,6 @@ private:
 			bool rtv = false;
 		} desc_heaps_exhausted_reported;
 		CD3DX12_CPU_DESCRIPTOR_HANDLE null_rtv_handle = {}; // For [[MANUAL_SUBPASSES]].
-		ComPtr<D3D12MA::Allocation> aux_resource;
 		uint32_t segment_serial = 0;
 
 #ifdef DEV_ENABLED

@@ -264,6 +264,63 @@ static const VkFormat RD_TO_VK_FORMAT[RDD::DATA_FORMAT_MAX] = {
 	VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
 };
 
+static VkImageLayout RD_TO_VK_LAYOUT[RDD::TEXTURE_LAYOUT_MAX] = {
+	VK_IMAGE_LAYOUT_UNDEFINED, // TEXTURE_LAYOUT_UNDEFINED
+	VK_IMAGE_LAYOUT_GENERAL, // TEXTURE_LAYOUT_STORAGE_OPTIMAL
+	VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, // TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+	VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, // TEXTURE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TEXTURE_LAYOUT_COPY_SRC_OPTIMAL
+	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TEXTURE_LAYOUT_COPY_DST_OPTIMAL
+	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL
+	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL
+	VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR, // TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL
+};
+
+static VkPipelineStageFlags _rd_to_vk_pipeline_stages(BitField<RDD::PipelineStageBits> p_stages) {
+	VkPipelineStageFlags vk_flags = 0;
+	if (p_stages.has_flag(RDD::PIPELINE_STAGE_COPY_BIT) || p_stages.has_flag(RDD::PIPELINE_STAGE_RESOLVE_BIT)) {
+		// Transfer has been split into copy and resolve bits. Clear them and merge them into one bit.
+		vk_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		p_stages.clear_flag(RDD::PIPELINE_STAGE_COPY_BIT);
+		p_stages.clear_flag(RDD::PIPELINE_STAGE_RESOLVE_BIT);
+	}
+
+	if (p_stages.has_flag(RDD::PIPELINE_STAGE_CLEAR_STORAGE_BIT)) {
+		// Vulkan should never use this as API_TRAIT_CLEAR_RESOURCES_WITH_VIEWS is not specified.
+		// Therefore, storage is never cleared with an explicit command.
+		p_stages.clear_flag(RDD::PIPELINE_STAGE_CLEAR_STORAGE_BIT);
+	}
+
+	// The rest of the flags have compatible numeric values with Vulkan.
+	return VkPipelineStageFlags(p_stages) | vk_flags;
+}
+
+static VkAccessFlags _rd_to_vk_access_flags(BitField<RDD::BarrierAccessBits> p_access) {
+	VkAccessFlags vk_flags = 0;
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_COPY_READ_BIT) || p_access.has_flag(RDD::BARRIER_ACCESS_RESOLVE_READ_BIT)) {
+		vk_flags |= VK_ACCESS_TRANSFER_READ_BIT;
+		p_access.clear_flag(RDD::BARRIER_ACCESS_COPY_READ_BIT);
+		p_access.clear_flag(RDD::BARRIER_ACCESS_RESOLVE_READ_BIT);
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_COPY_WRITE_BIT) || p_access.has_flag(RDD::BARRIER_ACCESS_RESOLVE_WRITE_BIT)) {
+		vk_flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+		p_access.clear_flag(RDD::BARRIER_ACCESS_COPY_WRITE_BIT);
+		p_access.clear_flag(RDD::BARRIER_ACCESS_RESOLVE_WRITE_BIT);
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_STORAGE_CLEAR_BIT)) {
+		// Vulkan should never use this as API_TRAIT_CLEAR_RESOURCES_WITH_VIEWS is not specified.
+		// Therefore, storage is never cleared with an explicit command.
+		p_access.clear_flag(RDD::BARRIER_ACCESS_STORAGE_CLEAR_BIT);
+	}
+
+	// The rest of the flags have compatible numeric values with Vulkan.
+	return VkAccessFlags(p_access) | vk_flags;
+}
+
 // RDD::CompareOperator == VkCompareOp.
 static_assert(ENUM_MEMBERS_EQUAL(RDD::COMPARE_OP_NEVER, VK_COMPARE_OP_NEVER));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::COMPARE_OP_LESS, VK_COMPARE_OP_LESS));
@@ -1334,18 +1391,6 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_SWIZZLE_G, VK_COMPONENT_SWIZZLE_G)
 static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_SWIZZLE_B, VK_COMPONENT_SWIZZLE_B));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_SWIZZLE_A, VK_COMPONENT_SWIZZLE_A));
 
-// RDD::TextureLayout == VkImageLayout.
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_UNDEFINED));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_PREINITIALIZED));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR));
-
 // RDD::TextureAspectBits == VkImageAspectFlagBits.
 static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_ASPECT_COLOR_BIT, VK_IMAGE_ASPECT_COLOR_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::TEXTURE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_DEPTH_BIT));
@@ -1774,6 +1819,11 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_
 	return supported;
 }
 
+bool RenderingDeviceDriverVulkan::texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) {
+	r_raw_reinterpretation = false;
+	return true;
+}
+
 /*****************/
 /**** SAMPLER ****/
 /*****************/
@@ -1893,7 +1943,6 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, V
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT));
@@ -1910,8 +1959,6 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_COLOR_ATTACHMENT_READ_BIT, 
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_TRANSFER_READ_BIT));
-static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_WRITE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_HOST_READ_BIT, VK_ACCESS_HOST_READ_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_HOST_WRITE_BIT, VK_ACCESS_HOST_WRITE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_MEMORY_READ_BIT, VK_ACCESS_MEMORY_READ_BIT));
@@ -1929,8 +1976,8 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 	for (uint32_t i = 0; i < p_memory_barriers.size(); i++) {
 		vk_memory_barriers[i] = {};
 		vk_memory_barriers[i].sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-		vk_memory_barriers[i].srcAccessMask = (VkPipelineStageFlags)p_memory_barriers[i].src_access;
-		vk_memory_barriers[i].dstAccessMask = (VkAccessFlags)p_memory_barriers[i].dst_access;
+		vk_memory_barriers[i].srcAccessMask = _rd_to_vk_access_flags(p_memory_barriers[i].src_access);
+		vk_memory_barriers[i].dstAccessMask = _rd_to_vk_access_flags(p_memory_barriers[i].dst_access);
 	}
 
 	VkBufferMemoryBarrier *vk_buffer_barriers = ALLOCA_ARRAY(VkBufferMemoryBarrier, p_buffer_barriers.size());
@@ -1939,8 +1986,8 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		vk_buffer_barriers[i].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
 		vk_buffer_barriers[i].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		vk_buffer_barriers[i].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		vk_buffer_barriers[i].srcAccessMask = (VkAccessFlags)p_buffer_barriers[i].src_access;
-		vk_buffer_barriers[i].dstAccessMask = (VkAccessFlags)p_buffer_barriers[i].dst_access;
+		vk_buffer_barriers[i].srcAccessMask = _rd_to_vk_access_flags(p_buffer_barriers[i].src_access);
+		vk_buffer_barriers[i].dstAccessMask = _rd_to_vk_access_flags(p_buffer_barriers[i].dst_access);
 		vk_buffer_barriers[i].buffer = ((const BufferInfo *)p_buffer_barriers[i].buffer.id)->vk_buffer;
 		vk_buffer_barriers[i].offset = p_buffer_barriers[i].offset;
 		vk_buffer_barriers[i].size = p_buffer_barriers[i].size;
@@ -1951,10 +1998,10 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		const TextureInfo *tex_info = (const TextureInfo *)p_texture_barriers[i].texture.id;
 		vk_image_barriers[i] = {};
 		vk_image_barriers[i].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		vk_image_barriers[i].srcAccessMask = (VkAccessFlags)p_texture_barriers[i].src_access;
-		vk_image_barriers[i].dstAccessMask = (VkAccessFlags)p_texture_barriers[i].dst_access;
-		vk_image_barriers[i].oldLayout = (VkImageLayout)p_texture_barriers[i].prev_layout;
-		vk_image_barriers[i].newLayout = (VkImageLayout)p_texture_barriers[i].next_layout;
+		vk_image_barriers[i].srcAccessMask = _rd_to_vk_access_flags(p_texture_barriers[i].src_access);
+		vk_image_barriers[i].dstAccessMask = _rd_to_vk_access_flags(p_texture_barriers[i].dst_access);
+		vk_image_barriers[i].oldLayout = RD_TO_VK_LAYOUT[p_texture_barriers[i].prev_layout];
+		vk_image_barriers[i].newLayout = RD_TO_VK_LAYOUT[p_texture_barriers[i].next_layout];
 		vk_image_barriers[i].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		vk_image_barriers[i].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		vk_image_barriers[i].image = tex_info->vk_view_create_info.image;
@@ -1984,8 +2031,8 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 
 	vkCmdPipelineBarrier(
 			(VkCommandBuffer)p_cmd_buffer.id,
-			(VkPipelineStageFlags)p_src_stages,
-			(VkPipelineStageFlags)p_dst_stages,
+			_rd_to_vk_pipeline_stages(p_src_stages),
+			_rd_to_vk_pipeline_stages(p_dst_stages),
 			0,
 			p_memory_barriers.size(), vk_memory_barriers,
 			p_buffer_barriers.size(), vk_buffer_barriers,
@@ -3726,7 +3773,7 @@ void RenderingDeviceDriverVulkan::command_copy_texture(CommandBufferID p_cmd_buf
 
 	const TextureInfo *src_tex_info = (const TextureInfo *)p_src_texture.id;
 	const TextureInfo *dst_tex_info = (const TextureInfo *)p_dst_texture.id;
-	vkCmdCopyImage((VkCommandBuffer)p_cmd_buffer.id, src_tex_info->vk_view_create_info.image, (VkImageLayout)p_src_texture_layout, dst_tex_info->vk_view_create_info.image, (VkImageLayout)p_dst_texture_layout, p_regions.size(), vk_copy_regions);
+	vkCmdCopyImage((VkCommandBuffer)p_cmd_buffer.id, src_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], dst_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], p_regions.size(), vk_copy_regions);
 }
 
 void RenderingDeviceDriverVulkan::command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) {
@@ -3746,7 +3793,7 @@ void RenderingDeviceDriverVulkan::command_resolve_texture(CommandBufferID p_cmd_
 	vk_resolve.extent.height = MAX(1u, src_tex_info->vk_create_info.extent.height >> p_src_mipmap);
 	vk_resolve.extent.depth = MAX(1u, src_tex_info->vk_create_info.extent.depth >> p_src_mipmap);
 
-	vkCmdResolveImage((VkCommandBuffer)p_cmd_buffer.id, src_tex_info->vk_view_create_info.image, (VkImageLayout)p_src_texture_layout, dst_tex_info->vk_view_create_info.image, (VkImageLayout)p_dst_texture_layout, 1, &vk_resolve);
+	vkCmdResolveImage((VkCommandBuffer)p_cmd_buffer.id, src_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], dst_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], 1, &vk_resolve);
 }
 
 void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) {
@@ -3757,7 +3804,7 @@ void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_
 	_texture_subresource_range_to_vk(p_subresources, &vk_subresources);
 
 	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
-	vkCmdClearColorImage((VkCommandBuffer)p_cmd_buffer.id, tex_info->vk_view_create_info.image, (VkImageLayout)p_texture_layout, &vk_color, 1, &vk_subresources);
+	vkCmdClearColorImage((VkCommandBuffer)p_cmd_buffer.id, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_texture_layout], &vk_color, 1, &vk_subresources);
 }
 
 void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
@@ -3768,7 +3815,7 @@ void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID
 
 	const BufferInfo *buf_info = (const BufferInfo *)p_src_buffer.id;
 	const TextureInfo *tex_info = (const TextureInfo *)p_dst_texture.id;
-	vkCmdCopyBufferToImage((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, tex_info->vk_view_create_info.image, (VkImageLayout)p_dst_texture_layout, p_regions.size(), vk_copy_regions);
+	vkCmdCopyBufferToImage((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], p_regions.size(), vk_copy_regions);
 }
 
 void RenderingDeviceDriverVulkan::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) {
@@ -3779,7 +3826,7 @@ void RenderingDeviceDriverVulkan::command_copy_texture_to_buffer(CommandBufferID
 
 	const TextureInfo *tex_info = (const TextureInfo *)p_src_texture.id;
 	const BufferInfo *buf_info = (const BufferInfo *)p_dst_buffer.id;
-	vkCmdCopyImageToBuffer((VkCommandBuffer)p_cmd_buffer.id, tex_info->vk_view_create_info.image, (VkImageLayout)p_src_texture_layout, buf_info->vk_buffer, p_regions.size(), vk_copy_regions);
+	vkCmdCopyImageToBuffer((VkCommandBuffer)p_cmd_buffer.id, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], buf_info->vk_buffer, p_regions.size(), vk_copy_regions);
 }
 
 /******************/
@@ -3925,7 +3972,7 @@ static void _attachment_reference_to_vk(const RDD::AttachmentReference &p_attach
 	*r_vk_attachment_reference = {};
 	r_vk_attachment_reference->sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
 	r_vk_attachment_reference->attachment = p_attachment_reference.attachment;
-	r_vk_attachment_reference->layout = (VkImageLayout)p_attachment_reference.layout;
+	r_vk_attachment_reference->layout = RD_TO_VK_LAYOUT[p_attachment_reference.layout];
 	r_vk_attachment_reference->aspectMask = (VkImageAspectFlags)p_attachment_reference.aspect;
 }
 
@@ -3944,8 +3991,8 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 		vk_attachments[i].storeOp = (VkAttachmentStoreOp)p_attachments[i].store_op;
 		vk_attachments[i].stencilLoadOp = (VkAttachmentLoadOp)p_attachments[i].stencil_load_op;
 		vk_attachments[i].stencilStoreOp = (VkAttachmentStoreOp)p_attachments[i].stencil_store_op;
-		vk_attachments[i].initialLayout = (VkImageLayout)p_attachments[i].initial_layout;
-		vk_attachments[i].finalLayout = (VkImageLayout)p_attachments[i].final_layout;
+		vk_attachments[i].initialLayout = RD_TO_VK_LAYOUT[p_attachments[i].initial_layout];
+		vk_attachments[i].finalLayout = RD_TO_VK_LAYOUT[p_attachments[i].final_layout];
 	}
 
 	VkSubpassDescription2KHR *vk_subpasses = ALLOCA_ARRAY(VkSubpassDescription2KHR, p_subpasses.size());
@@ -4009,10 +4056,10 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 		vk_subpass_dependencies[i].sType = VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2;
 		vk_subpass_dependencies[i].srcSubpass = p_subpass_dependencies[i].src_subpass;
 		vk_subpass_dependencies[i].dstSubpass = p_subpass_dependencies[i].dst_subpass;
-		vk_subpass_dependencies[i].srcStageMask = (VkPipelineStageFlags)p_subpass_dependencies[i].src_stages;
-		vk_subpass_dependencies[i].dstStageMask = (VkPipelineStageFlags)p_subpass_dependencies[i].dst_stages;
-		vk_subpass_dependencies[i].srcAccessMask = (VkAccessFlags)p_subpass_dependencies[i].src_access;
-		vk_subpass_dependencies[i].dstAccessMask = (VkAccessFlags)p_subpass_dependencies[i].dst_access;
+		vk_subpass_dependencies[i].srcStageMask = _rd_to_vk_pipeline_stages(p_subpass_dependencies[i].src_stages);
+		vk_subpass_dependencies[i].dstStageMask = _rd_to_vk_pipeline_stages(p_subpass_dependencies[i].dst_stages);
+		vk_subpass_dependencies[i].srcAccessMask = _rd_to_vk_access_flags(p_subpass_dependencies[i].src_access);
+		vk_subpass_dependencies[i].dstAccessMask = _rd_to_vk_access_flags(p_subpass_dependencies[i].dst_access);
 	}
 
 	VkRenderPassCreateInfo2KHR create_info = {};
