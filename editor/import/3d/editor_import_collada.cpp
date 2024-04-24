@@ -1556,6 +1556,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 	}
 
 	animation->set_length(anim_length);
+	animation->set_step(snapshot_interval);
 
 	bool tracks_found = false;
 

@@ -1699,6 +1699,7 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 	Ref<Animation> animation;
 	animation.instantiate();
 	animation->set_name(anim_name);
+	animation->set_step(1.0 / p_bake_fps);
 
 	if (anim->get_loop()) {
 		animation->set_loop_mode(Animation::LOOP_LINEAR);

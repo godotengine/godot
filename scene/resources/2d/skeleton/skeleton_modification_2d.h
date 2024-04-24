@@ -57,6 +57,8 @@ protected:
 
 	bool _print_execution_error(bool p_condition, String p_message);
 
+	virtual void reset_state() override;
+
 	GDVIRTUAL1(_execute, double)
 	GDVIRTUAL1(_setup_modification, Ref<SkeletonModificationStack2D>)
 	GDVIRTUAL0(_draw_editor_gizmo)

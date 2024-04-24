@@ -5097,6 +5097,12 @@ void DisplayServerX11::process_events() {
 		*/
 	}
 
+#ifdef DBUS_ENABLED
+	if (portal_desktop) {
+		portal_desktop->process_file_dialog_callbacks();
+	}
+#endif
+
 	_THREAD_SAFE_UNLOCK_
 
 	Input::get_singleton()->flush_buffered_events();
