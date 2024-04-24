@@ -150,8 +150,8 @@ struct _NO_DISCARD_ Projection {
 
 	real_t get_lod_multiplier() const;
 
-	Projection();
-	Projection(const Vector4 &p_x, const Vector4 &p_y, const Vector4 &p_z, const Vector4 &p_w);
+	constexpr Projection();
+	constexpr Projection(const Vector4 &p_x, const Vector4 &p_y, const Vector4 &p_z, const Vector4 &p_w);
 	Projection(const Transform3D &p_transform);
 	~Projection();
 };
@@ -164,5 +164,21 @@ Vector3 Projection::xform(const Vector3 &p_vec3) const {
 	real_t w = columns[0][3] * p_vec3.x + columns[1][3] * p_vec3.y + columns[2][3] * p_vec3.z + columns[3][3];
 	return ret / w;
 }
+
+constexpr Projection::Projection() :
+		columns{
+			{ 1, 0, 0, 0 },
+			{ 0, 1, 0, 0 },
+			{ 0, 0, 1, 0 },
+			{ 0, 0, 0, 1 },
+		} {}
+
+constexpr Projection::Projection(const Vector4 &p_x, const Vector4 &p_y, const Vector4 &p_z, const Vector4 &p_w) :
+		columns{
+			p_x,
+			p_y,
+			p_z,
+			p_w,
+		} {}
 
 #endif // PROJECTION_H

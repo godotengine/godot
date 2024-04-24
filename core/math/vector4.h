@@ -130,21 +130,23 @@ struct _NO_DISCARD_ Vector4 {
 
 	operator String() const;
 
-	_FORCE_INLINE_ Vector4() {}
+	constexpr Vector4() :
+			x(0),
+			y(0),
+			z(0),
+			w(0) {}
 
-	_FORCE_INLINE_ Vector4(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
+	constexpr Vector4(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
 			x(p_x),
 			y(p_y),
 			z(p_z),
-			w(p_w) {
-	}
+			w(p_w) {}
 
-	Vector4(const Vector4 &p_vec4) :
+	constexpr Vector4(const Vector4 &p_vec4) :
 			x(p_vec4.x),
 			y(p_vec4.y),
 			z(p_vec4.z),
-			w(p_vec4.w) {
-	}
+			w(p_vec4.w) {}
 
 	void operator=(const Vector4 &p_vec4) {
 		x = p_vec4.x;

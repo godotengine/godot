@@ -124,11 +124,11 @@ struct _NO_DISCARD_ AABB {
 
 	operator String() const;
 
-	_FORCE_INLINE_ AABB() {}
-	inline AABB(const Vector3 &p_pos, const Vector3 &p_size) :
+	constexpr AABB() {}
+
+	constexpr AABB(const Vector3 &p_pos, const Vector3 &p_size) :
 			position(p_pos),
-			size(p_size) {
-	}
+			size(p_size) {}
 };
 
 inline bool AABB::intersects(const AABB &p_aabb) const {

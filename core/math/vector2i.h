@@ -57,7 +57,7 @@ struct _NO_DISCARD_ Vector2i {
 			};
 		};
 
-		int32_t coord[2] = { 0 };
+		int32_t coord[2] = { 0, 0 };
 	};
 
 	_FORCE_INLINE_ int32_t &operator[](int p_axis) {
@@ -132,11 +132,13 @@ struct _NO_DISCARD_ Vector2i {
 	operator String() const;
 	operator Vector2() const;
 
-	inline Vector2i() {}
-	inline Vector2i(int32_t p_x, int32_t p_y) {
-		x = p_x;
-		y = p_y;
-	}
+	constexpr Vector2i() :
+			x(0),
+			y(0) {}
+
+	constexpr Vector2i(int32_t p_x, int32_t p_y) :
+			x(p_x),
+			y(p_y) {}
 };
 
 // Multiplication operators required to workaround issues with LLVM using implicit conversion.

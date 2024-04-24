@@ -165,7 +165,7 @@ private:
 	// Variant takes 20 bytes when real_t is float, and 36 if double
 	// it only allocates extra memory for aabb/matrix.
 
-	Type type;
+	Type type = NIL;
 
 	struct ObjData {
 		ObjectID id;

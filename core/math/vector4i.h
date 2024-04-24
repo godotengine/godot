@@ -55,7 +55,7 @@ struct _NO_DISCARD_ Vector4i {
 			int32_t w;
 		};
 
-		int32_t coord[4] = { 0 };
+		int32_t coord[4] = { 0, 0, 0, 0 };
 	};
 
 	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
@@ -124,14 +124,19 @@ struct _NO_DISCARD_ Vector4i {
 	operator String() const;
 	operator Vector4() const;
 
-	_FORCE_INLINE_ Vector4i() {}
+	constexpr Vector4i() :
+			x(0),
+			y(0),
+			z(0),
+			w(0) {}
+
+	constexpr Vector4i(int32_t p_x, int32_t p_y, int32_t p_z, int32_t p_w) :
+			x(p_x),
+			y(p_y),
+			z(p_z),
+			w(p_w) {}
+
 	Vector4i(const Vector4 &p_vec4);
-	_FORCE_INLINE_ Vector4i(int32_t p_x, int32_t p_y, int32_t p_z, int32_t p_w) {
-		x = p_x;
-		y = p_y;
-		z = p_z;
-		w = p_w;
-	}
 };
 
 int64_t Vector4i::length_squared() const {

@@ -699,10 +699,6 @@ void Projection::flip_y() {
 	}
 }
 
-Projection::Projection() {
-	set_identity();
-}
-
 Projection Projection::operator*(const Projection &p_matrix) const {
 	Projection new_matrix;
 
@@ -902,13 +898,6 @@ Projection::operator Transform3D() const {
 	tr.origin.z = m[14];
 
 	return tr;
-}
-
-Projection::Projection(const Vector4 &p_x, const Vector4 &p_y, const Vector4 &p_z, const Vector4 &p_w) {
-	columns[0] = p_x;
-	columns[1] = p_y;
-	columns[2] = p_z;
-	columns[3] = p_w;
 }
 
 Projection::Projection(const Transform3D &p_transform) {

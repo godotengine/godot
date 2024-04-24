@@ -57,7 +57,7 @@ struct _NO_DISCARD_ Vector2 {
 			};
 		};
 
-		real_t coord[2] = { 0 };
+		real_t coord[2] = { 0, 0 };
 	};
 
 	_FORCE_INLINE_ real_t &operator[](int p_axis) {
@@ -174,11 +174,13 @@ struct _NO_DISCARD_ Vector2 {
 	operator String() const;
 	operator Vector2i() const;
 
-	_FORCE_INLINE_ Vector2() {}
-	_FORCE_INLINE_ Vector2(real_t p_x, real_t p_y) {
-		x = p_x;
-		y = p_y;
-	}
+	constexpr Vector2() :
+			x(0),
+			y(0) {}
+
+	constexpr Vector2(real_t p_x, real_t p_y) :
+			x(p_x),
+			y(p_y) {}
 };
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2 &p_vec) const {
