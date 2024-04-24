@@ -69,7 +69,6 @@ class Skeleton3D : public Node3D {
 #ifndef DISABLE_DEPRECATED
 	Node *simulator = nullptr;
 	void setup_simulator();
-	void remove_simulator();
 #endif // _DISABLE_DEPRECATED
 
 public:
