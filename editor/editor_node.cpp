@@ -456,6 +456,9 @@ void EditorNode::_update_from_settings() {
 void EditorNode::_gdextensions_reloaded() {
 	// In case the developer is inspecting an object that will be changed by the reload.
 	InspectorDock::get_inspector_singleton()->update_tree();
+
+	// Regenerate documentation.
+	EditorHelp::generate_doc();
 }
 
 void EditorNode::_select_default_main_screen_plugin() {
