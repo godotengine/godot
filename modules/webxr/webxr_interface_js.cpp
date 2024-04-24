@@ -713,7 +713,7 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 
 			if (unlikely(hand_tracker.is_null())) {
 				hand_tracker.instantiate();
-				hand_tracker->set_hand(p_input_source_id == 0 ? XRHandTracker::HAND_LEFT : XRHandTracker::HAND_RIGHT);
+				hand_tracker->set_tracker_hand(p_input_source_id == 0 ? XRPositionalTracker::TRACKER_HAND_LEFT : XRPositionalTracker::TRACKER_HAND_RIGHT);
 				hand_tracker->set_tracker_name(p_input_source_id == 0 ? "/user/hand_tracker/left" : "/user/hand_tracker/right");
 
 				// These flags always apply, since WebXR doesn't give us enough insight to be more fine grained.
