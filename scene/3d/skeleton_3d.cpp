@@ -271,16 +271,15 @@ void Skeleton3D::_update_process_order() {
 
 #ifndef DISABLE_DEPRECATED
 void Skeleton3D::setup_simulator() {
+	if (simulator && simulator->get_parent() == this) {
+		remove_child(simulator);
+		simulator->queue_free();
+	}
 	PhysicalBoneSimulator3D *sim = memnew(PhysicalBoneSimulator3D);
 	simulator = sim;
 	sim->is_compat = true;
 	sim->set_active(false); // Don't run unneeded process.
-	add_child(sim);
-}
-
-void Skeleton3D::remove_simulator() {
-	remove_child(simulator);
-	memdelete(simulator);
+	add_child(simulator);
 }
 #endif // _DISABLE_DEPRECATED
 
@@ -294,11 +293,6 @@ void Skeleton3D::_notification(int p_what) {
 			setup_simulator();
 #endif // _DISABLE_DEPRECATED
 		} break;
-#ifndef DISABLE_DEPRECATED
-		case NOTIFICATION_EXIT_TREE: {
-			remove_simulator();
-		} break;
-#endif // _DISABLE_DEPRECATED
 		case NOTIFICATION_UPDATE_SKELETON: {
 			// Update bone transforms to apply unprocessed poses.
 			force_update_all_dirty_bones();
