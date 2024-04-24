@@ -883,6 +883,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	parent_name->connect("text_changed", callable_mp(this, &ScriptCreateDialog::_parent_name_changed));
 	parent_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(parent_name);
+	register_text_enter(parent_name);
 	parent_search_button = memnew(Button);
 	parent_search_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_class_in_tree));
 	hb->add_child(parent_search_button);
