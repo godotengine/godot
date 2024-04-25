@@ -10,7 +10,7 @@
 	</tutorials>
 	<members>
 		<member name="damping" type="float" setter="set_damping" getter="get_damping" default="1.0">
-			The spring joint's damping ratio. A value between [code]0[/code] and [code]1[/code]. When the two bodies move into different directions the system tries to align them to the spring axis again. A high [code]damping[/code] value forces the attached bodies to align faster.
+			The spring joint's damping ratio. A value between [code]0[/code] and [code]1[/code]. When the two bodies move into different directions the system tries to align them to the spring axis again. A high [member damping] value forces the attached bodies to align faster.
 		</member>
 		<member name="length" type="float" setter="set_length" getter="get_length" default="50.0">
 			The spring joint's maximum length. The two attached bodies cannot stretch it past this value.

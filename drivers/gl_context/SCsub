@@ -2,12 +2,14 @@
 
 Import("env")
 
-if env["platform"] in ["haiku", "macos", "windows", "linuxbsd"]:
+if env["platform"] in ["macos", "windows", "linuxbsd"]:
     # Thirdparty source files
     thirdparty_dir = "#thirdparty/glad/"
-    thirdparty_sources = [
-        "gl.c",
-    ]
+    thirdparty_sources = ["gl.c"]
+
+    if not env.get("angle_libs"):
+        thirdparty_sources += ["egl.c"]
+
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     # Treat glad headers as system headers to avoid raising warnings. Not supported on MSVC.
@@ -17,7 +19,7 @@ if env["platform"] in ["haiku", "macos", "windows", "linuxbsd"]:
         env.Prepend(CPPPATH=[thirdparty_dir])
 
     env.Append(CPPDEFINES=["GLAD_ENABLED"])
-    env.Append(CPPDEFINES=["GLES_OVER_GL"])
+    env.Append(CPPDEFINES=["EGL_ENABLED"])
 
     env_thirdparty = env.Clone()
     env_thirdparty.disable_warnings()

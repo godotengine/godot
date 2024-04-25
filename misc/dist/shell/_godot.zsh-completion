@@ -43,6 +43,7 @@ _arguments \
   '--remote-fs[use a remote filesystem]:remote filesystem address' \
   '--remote-fs-password[password for remote filesystem]:remote filesystem password' \
   '--audio-driver[set the audio driver]:audio driver name' \
+  '--audio-output-latency[override audio output latency in milliseconds (default is 15 ms)]:number of milliseconds' \
   '--display-driver[set the display driver]:display driver name' \
   "--rendering-method[set the renderer]:renderer name:((forward_plus\:'Desktop renderer' mobile\:'Desktop and mobile renderer' gl_compatibility\:'Desktop, mobile and web renderer'))" \
   "--rendering-driver[set the rendering driver]:rendering driver name:((vulkan\:'Vulkan renderer' opengl3\:'OpenGL ES 3.0 renderer' dummy\:'Dummy renderer'))" \
@@ -50,7 +51,8 @@ _arguments \
   '--text-driver[set the text driver]:text driver name' \
   '--tablet-driver[set the pen tablet input driver]:tablet driver name' \
   '--headless[enable headless mode (--display-driver headless --audio-driver Dummy), useful for servers and with --script]' \
-  '--write-movie[writes a video to the specified path (usually with .avi or .png extension)]:path to output video file' \
+  '--log-file[write output/error log to the specified path instead of the default location defined by the project]:path to output log file' \
+  '--write-movie[write a video to the specified path (usually with .avi or .png extension)]:path to output video file' \
   '(-f --fullscreen)'{-f,--fullscreen}'[request fullscreen mode]' \
   '(-m --maximized)'{-m,--maximized}'[request a maximized window]' \
   '(-w --windowed)'{-w,--windowed}'[request windowed mode]' \
@@ -69,6 +71,7 @@ _arguments \
   '--debug-collisions[show collision shapes when running the scene]' \
   '--debug-navigation[show navigation polygons when running the scene]' \
   '--debug-stringnames[print all StringName allocations to stdout when the engine quits]' \
+  '--frame-delay[set a maximum number of frames per second rendered (can be used to limit power usage), a value of 0 results in unlimited framerate]:maximum frames per seocnd' \
   '--frame-delay[simulate high CPU load (delay each frame by the given number of milliseconds)]:number of milliseconds' \
   '--time-scale[force time scale (higher values are faster, 1.0 is normal speed)]:time scale' \
   '--disable-vsync[disable vertical synchronization even if enabled in the project settings]' \

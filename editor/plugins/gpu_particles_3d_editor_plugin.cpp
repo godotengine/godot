@@ -223,6 +223,9 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 	emission_dialog->connect("confirmed", callable_mp(this, &GPUParticles3DEditorBase::_generate_emission_points));
 
 	emission_tree_dialog = memnew(SceneTreeDialog);
+	Vector<StringName> valid_types;
+	valid_types.push_back("MeshInstance3D");
+	emission_tree_dialog->set_valid_types(valid_types);
 	add_child(emission_tree_dialog);
 	emission_tree_dialog->connect("selected", callable_mp(this, &GPUParticles3DEditorBase::_node_selected));
 }
@@ -237,7 +240,7 @@ void GPUParticles3DEditor::_node_removed(Node *p_node) {
 void GPUParticles3DEditor::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
-			options->set_icon(options->get_popup()->get_theme_icon(SNAME("GPUParticles3D"), SNAME("EditorIcons")));
+			options->set_icon(options->get_popup()->get_editor_theme_icon(SNAME("GPUParticles3D")));
 			get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
 		} break;
 	}
@@ -276,7 +279,7 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 			cpu_particles->set_process_mode(node->get_process_mode());
 
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(TTR("Convert to CPUParticles3D"));
+			ur->create_action(TTR("Convert to CPUParticles3D"), UndoRedo::MERGE_DISABLE, node);
 			SceneTreeDock::get_singleton()->replace_node(node, cpu_particles);
 			ur->commit_action(false);
 

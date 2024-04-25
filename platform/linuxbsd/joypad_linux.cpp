@@ -82,31 +82,9 @@ void JoypadLinux::Joypad::reset() {
 	events.clear();
 }
 
-#ifdef UDEV_ENABLED
-// This function is derived from SDL:
-// https://github.com/libsdl-org/SDL/blob/main/src/core/linux/SDL_sandbox.c#L28-L45
-static bool detect_sandbox() {
-	if (access("/.flatpak-info", F_OK) == 0) {
-		return true;
-	}
-
-	// For Snap, we check multiple variables because they might be set for
-	// unrelated reasons. This is the same thing WebKitGTK does.
-	if (OS::get_singleton()->has_environment("SNAP") && OS::get_singleton()->has_environment("SNAP_NAME") && OS::get_singleton()->has_environment("SNAP_REVISION")) {
-		return true;
-	}
-
-	if (access("/run/host/container-manager", F_OK) == 0) {
-		return true;
-	}
-
-	return false;
-}
-#endif // UDEV_ENABLED
-
 JoypadLinux::JoypadLinux(Input *in) {
 #ifdef UDEV_ENABLED
-	if (detect_sandbox()) {
+	if (OS::get_singleton()->is_sandboxed()) {
 		// Linux binaries in sandboxes / containers need special handling because
 		// libudev doesn't work there. So we need to fallback to manual parsing
 		// of /dev/input in such case.

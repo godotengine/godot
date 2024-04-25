@@ -32,9 +32,9 @@
 #define EDITOR_EXPORT_PLUGIN_H
 
 #include "core/extension/gdextension.h"
+#include "core/os/shared_object.h"
 #include "editor_export_platform.h"
 #include "editor_export_preset.h"
-#include "editor_export_shared_object.h"
 #include "scene/main/node.h"
 
 class EditorExportPlugin : public RefCounted {
@@ -71,7 +71,7 @@ class EditorExportPlugin : public RefCounted {
 		skipped = false;
 	}
 
-	_FORCE_INLINE_ void _export_end() {
+	_FORCE_INLINE_ void _export_end_clear() {
 		ios_frameworks.clear();
 		ios_embedded_frameworks.clear();
 		ios_bundle_files.clear();
@@ -94,6 +94,7 @@ protected:
 
 	void add_file(const String &p_path, const Vector<uint8_t> &p_file, bool p_remap);
 	void add_shared_object(const String &p_path, const Vector<String> &tags, const String &p_target = String());
+	void _add_shared_object(const SharedObject &p_shared_object);
 
 	void add_ios_framework(const String &p_path);
 	void add_ios_embedded_framework(const String &p_path);
@@ -108,6 +109,7 @@ protected:
 
 	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features);
 	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags);
+	virtual void _export_end();
 
 	static void _bind_methods();
 
@@ -127,6 +129,7 @@ protected:
 
 	GDVIRTUAL2RC(PackedStringArray, _get_export_features, const Ref<EditorExportPlatform> &, bool);
 	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_export_options, const Ref<EditorExportPlatform> &);
+	GDVIRTUAL1RC(Dictionary, _get_export_options_overrides, const Ref<EditorExportPlatform> &);
 	GDVIRTUAL1RC(bool, _should_update_export_options, const Ref<EditorExportPlatform> &);
 	GDVIRTUAL2RC(String, _get_export_option_warning, const Ref<EditorExportPlatform> &, String);
 
@@ -154,6 +157,7 @@ protected:
 
 	virtual PackedStringArray _get_export_features(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual void _get_export_options(const Ref<EditorExportPlatform> &p_export_platform, List<EditorExportPlatform::ExportOption> *r_options) const;
+	virtual Dictionary _get_export_options_overrides(const Ref<EditorExportPlatform> &p_export_platform) const;
 	virtual bool _should_update_export_options(const Ref<EditorExportPlatform> &p_export_platform) const;
 	virtual String _get_export_option_warning(const Ref<EditorExportPlatform> &p_export_platform, const String &p_option_name) const;
 

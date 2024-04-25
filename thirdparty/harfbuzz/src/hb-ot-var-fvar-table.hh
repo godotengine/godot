@@ -99,16 +99,16 @@ struct InstanceRecord
     for (unsigned i = 0 ; i < axis_count; i++)
     {
       uint32_t *axis_tag;
+      Triple *axis_limit;
       // only keep instances whose coordinates == pinned axis location
-      if (!c->plan->axes_old_index_tag_map.has (i, &axis_tag)) continue;
-      if (axes_location->has (*axis_tag))
+      if (!c->plan->axes_old_index_tag_map.has (i, &axis_tag)) return_trace (false);
+      if (axes_location->has (*axis_tag, &axis_limit))
       {
-        Triple axis_limit = axes_location->get (*axis_tag);
-        if (!axis_coord_pinned_or_within_axis_range (coords, i, axis_limit))
+        if (!axis_coord_pinned_or_within_axis_range (coords, i, *axis_limit))
           return_trace (false);
         
         //skip pinned axis
-        if (axis_limit.is_point ())
+        if (axis_limit->is_point ())
           continue;
       }
 
@@ -131,6 +131,7 @@ struct InstanceRecord
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  c->check_array (coordinatesZ.arrayZ, axis_count));
   }
 
@@ -228,6 +229,30 @@ struct AxisRecord
     return defaultValue.to_float ();
   }
 
+  TripleDistances get_triple_distances () const
+  {
+    float min, default_, max;
+    get_coordinates (min, default_, max);
+    return TripleDistances (min, default_, max);
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    auto *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    const hb_hashmap_t<hb_tag_t, Triple>& user_axes_location = c->plan->user_axes_location;
+    Triple *axis_limit;
+    if (user_axes_location.has (axisTag, &axis_limit))
+    {
+      out->minValue.set_float (axis_limit->minimum);
+      out->defaultValue.set_float (axis_limit->middle);
+      out->maxValue.set_float (axis_limit->maximum);
+    }
+    return_trace (true);
+  }
+
   public:
   Tag		axisTag;	/* Tag identifying the design variation for the axis. */
   protected:
@@ -253,8 +278,10 @@ struct fvar
   {
     TRACE_SANITIZE (this);
     return_trace (version.sanitize (c) &&
+		  hb_barrier () &&
 		  likely (version.major == 1) &&
 		  c->check_struct (this) &&
+		  hb_barrier () &&
 		  axisSize == 20 && /* Assumed in our code. */
 		  instanceSize >= axisCount * 4 + 4 &&
 		  get_axes ().sanitize (c) &&
@@ -416,21 +443,25 @@ struct fvar
     for (unsigned i = 0 ; i < (unsigned)axisCount; i++)
     {
       if (!c->plan->axes_index_map.has (i)) continue;
-      if (unlikely (!c->serializer->embed (axes_records[i])))
+      if (unlikely (!axes_records[i].subset (c)))
         return_trace (false);
     }
 
     if (!c->serializer->check_assign (out->firstAxis, get_size (), HB_SERIALIZE_ERROR_INT_OVERFLOW))
       return_trace (false);
 
+    unsigned num_retained_instances = 0;
     for (unsigned i = 0 ; i < (unsigned)instanceCount; i++)
     {
       const InstanceRecord *instance = get_instance (i);
       auto snap = c->serializer->snapshot ();
       if (!instance->subset (c, axisCount, has_postscript_nameid))
         c->serializer->revert (snap);
+      else
+        num_retained_instances++;
     }
-    return_trace (true);
+
+    return_trace (c->serializer->check_assign (out->instanceCount, num_retained_instances, HB_SERIALIZE_ERROR_INT_OVERFLOW));
   }
 
   public:

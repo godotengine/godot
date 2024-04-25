@@ -39,6 +39,9 @@
 #include <mbedtls/md5.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
+#if MBEDTLS_VERSION_MAJOR >= 3
+#include <mbedtls/compat-2.x.h>
+#endif
 
 // RandomGenerator
 CryptoCore::RandomGenerator::RandomGenerator() {
@@ -73,7 +76,7 @@ Error CryptoCore::RandomGenerator::init() {
 }
 
 Error CryptoCore::RandomGenerator::get_random_bytes(uint8_t *r_buffer, size_t p_bytes) {
-	ERR_FAIL_COND_V(!ctx, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(ctx, ERR_UNCONFIGURED);
 	int ret = mbedtls_ctr_drbg_random((mbedtls_ctr_drbg_context *)ctx, r_buffer, p_bytes);
 	ERR_FAIL_COND_V_MSG(ret, FAILED, " failed\n  ! mbedtls_ctr_drbg_seed returned an error" + itos(ret));
 	return OK;

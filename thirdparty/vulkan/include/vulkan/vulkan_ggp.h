@@ -2,7 +2,7 @@
 #define VULKAN_GGP_H_ 1
 
 /*
-** Copyright 2015-2023 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -19,6 +19,7 @@ extern "C" {
 
 
 
+// VK_GGP_stream_descriptor_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_GGP_stream_descriptor_surface 1
 #define VK_GGP_STREAM_DESCRIPTOR_SURFACE_SPEC_VERSION 1
 #define VK_GGP_STREAM_DESCRIPTOR_SURFACE_EXTENSION_NAME "VK_GGP_stream_descriptor_surface"
@@ -41,6 +42,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateStreamDescriptorSurfaceGGP(
 #endif
 
 
+// VK_GGP_frame_token is a preprocessor guard. Do not pass it to API calls.
 #define VK_GGP_frame_token 1
 #define VK_GGP_FRAME_TOKEN_SPEC_VERSION   1
 #define VK_GGP_FRAME_TOKEN_EXTENSION_NAME "VK_GGP_frame_token"

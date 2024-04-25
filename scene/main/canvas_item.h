@@ -132,7 +132,6 @@ private:
 	virtual void _top_level_changed_on_parent();
 
 	void _redraw_callback();
-	void _invalidate_global_transform();
 
 	void _enter_canvas();
 	void _exit_canvas();
@@ -140,6 +139,8 @@ private:
 	void _window_visibility_changed();
 
 	void _notify_transform(CanvasItem *p_node);
+
+	virtual void _physics_interpolated_changed() override;
 
 	static CanvasItem *current_item_drawn;
 	friend class Viewport;
@@ -151,12 +152,12 @@ private:
 	void _notify_transform_deferred();
 
 protected:
+	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat);
+	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter);
+
 	_FORCE_INLINE_ void _notify_transform() {
-		if (!is_inside_tree()) {
-			return;
-		}
 		_notify_transform(this);
-		if (!block_transform_notify && notify_local_transform) {
+		if (is_inside_tree() && !block_transform_notify && notify_local_transform) {
 			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 		}
 	}
@@ -241,7 +242,7 @@ public:
 	Color get_modulate() const;
 	Color get_modulate_in_tree() const;
 
-	void set_self_modulate(const Color &p_self_modulate);
+	virtual void set_self_modulate(const Color &p_self_modulate);
 	Color get_self_modulate() const;
 
 	void set_visibility_layer(uint32_t p_visibility_layer);
@@ -252,7 +253,7 @@ public:
 
 	/* ORDERING */
 
-	void set_z_index(int p_z);
+	virtual void set_z_index(int p_z);
 	int get_z_index() const;
 	int get_effective_z_index() const;
 
@@ -367,6 +368,7 @@ public:
 	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); };
 
 	int get_canvas_layer() const;
+	CanvasLayer *get_canvas_layer_node() const;
 
 	CanvasItem();
 	~CanvasItem();

@@ -1,6 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -126,7 +129,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the inverse of the transform, under the assumption that
-        /// the transformation is composed of rotation, scaling, and translation.
+        /// the basis is invertible (must have non-zero determinant).
         /// </summary>
         /// <seealso cref="Inverse"/>
         /// <returns>The inverse transformation matrix.</returns>
@@ -180,11 +183,12 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector transformed (multiplied) by the inverse basis matrix.
+        /// Returns a vector transformed (multiplied) by the inverse basis matrix,
+        /// under the assumption that the basis is orthonormal (i.e. rotation/reflection
+        /// is fine, scaling/skew is not).
         /// This method does not account for translation (the <see cref="Origin"/> vector).
-        ///
-        /// Note: This results in a multiplication by the inverse of the
-        /// basis matrix only if it represents a rotation-reflection.
+        /// <c>transform.BasisXformInv(vector)</c> is equivalent to <c>transform.Inverse().BasisXform(vector)</c>. See <see cref="Inverse"/>.
+        /// For non-orthonormal transforms (e.g. with scaling) <c>transform.AffineInverse().BasisXform(vector)</c> can be used instead. See <see cref="AffineInverse"/>.
         /// </summary>
         /// <seealso cref="BasisXform(Vector2)"/>
         /// <param name="v">A vector to inversely transform.</param>
@@ -213,8 +217,9 @@ namespace Godot
 
         /// <summary>
         /// Returns the inverse of the transform, under the assumption that
-        /// the transformation is composed of rotation and translation
-        /// (no scaling, use <see cref="AffineInverse"/> for transforms with scaling).
+        /// the transformation basis is orthonormal (i.e. rotation/reflection
+        /// is fine, scaling/skew is not). Use <see cref="AffineInverse"/> for
+        /// non-orthonormal transforms (e.g. with scaling).
         /// </summary>
         /// <returns>The inverse matrix.</returns>
         public readonly Transform2D Inverse()
@@ -480,7 +485,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Vector2 transformed (multiplied) by the inverse transformation matrix.
+        /// Returns a Vector2 transformed (multiplied) by the inverse transformation matrix,
+        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
+        /// is fine, scaling/skew is not).
+        /// <c>vector * transform</c> is equivalent to <c>transform.Inverse() * vector</c>. See <see cref="Inverse"/>.
+        /// For transforming by inverse of an affine transformation (e.g. with scaling) <c>transform.AffineInverse() * vector</c> can be used instead. See <see cref="AffineInverse"/>.
         /// </summary>
         /// <param name="vector">A Vector2 to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
@@ -507,7 +516,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Rect2 transformed (multiplied) by the inverse transformation matrix.
+        /// Returns a Rect2 transformed (multiplied) by the inverse transformation matrix,
+        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
+        /// is fine, scaling/skew is not).
+        /// <c>rect * transform</c> is equivalent to <c>transform.Inverse() * rect</c>. See <see cref="Inverse"/>.
+        /// For transforming by inverse of an affine transformation (e.g. with scaling) <c>transform.AffineInverse() * rect</c> can be used instead. See <see cref="AffineInverse"/>.
         /// </summary>
         /// <param name="rect">A Rect2 to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
@@ -541,7 +554,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the given Vector2[] transformed (multiplied) by the inverse transformation matrix.
+        /// Returns a copy of the given Vector2[] transformed (multiplied) by the inverse transformation matrix,
+        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
+        /// is fine, scaling/skew is not).
+        /// <c>array * transform</c> is equivalent to <c>transform.Inverse() * array</c>. See <see cref="Inverse"/>.
+        /// For transforming by inverse of an affine transformation (e.g. with scaling) <c>transform.AffineInverse() * array</c> can be used instead. See <see cref="AffineInverse"/>.
         /// </summary>
         /// <param name="array">A Vector2[] to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
@@ -592,7 +609,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the transform and the object are exactly equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Transform2D other && Equals(other);
         }
@@ -626,23 +643,20 @@ namespace Godot
         /// <returns>A hash code for this transform.</returns>
         public override readonly int GetHashCode()
         {
-            return X.GetHashCode() ^ Y.GetHashCode() ^ Origin.GetHashCode();
+            return HashCode.Combine(X, Y, Origin);
         }
 
         /// <summary>
         /// Converts this <see cref="Transform2D"/> to a string.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public override readonly string ToString()
-        {
-            return $"[X: {X}, Y: {Y}, O: {Origin}]";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Transform2D"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
             return $"[X: {X.ToString(format)}, Y: {Y.ToString(format)}, O: {Origin.ToString(format)}]";
         }

@@ -63,7 +63,6 @@ class ScrollBar : public Range {
 	double get_grabber_size() const;
 	double get_grabber_min_size() const;
 	double get_area_size() const;
-	double get_area_offset() const;
 	double get_grabber_offset() const;
 
 	static void set_can_focus_by_default(bool p_can_focus);
@@ -108,12 +107,13 @@ class ScrollBar : public Range {
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
-	virtual void _update_theme_item_cache() override;
-
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	void scroll(double p_amount);
+	void scroll_to(double p_position);
+
 	void set_custom_step(float p_custom_step);
 	float get_custom_step() const;
 

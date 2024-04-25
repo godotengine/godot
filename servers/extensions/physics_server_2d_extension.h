@@ -33,7 +33,6 @@
 
 #include "core/extension/ext_wrappers.gen.inc"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/type_info.h"
 #include "core/variant/typed_array.h"
@@ -419,6 +418,9 @@ public:
 	EXBIND4(joint_make_pin, RID, const Vector2 &, RID, RID)
 	EXBIND6(joint_make_groove, RID, const Vector2 &, const Vector2 &, const Vector2 &, RID, RID)
 	EXBIND5(joint_make_damped_spring, RID, const Vector2 &, const Vector2 &, RID, RID)
+
+	EXBIND3(pin_joint_set_flag, RID, PinJointFlag, bool)
+	EXBIND2RC(bool, pin_joint_get_flag, RID, PinJointFlag)
 
 	EXBIND3(pin_joint_set_param, RID, PinJointParam, real_t)
 	EXBIND2RC(real_t, pin_joint_get_param, RID, PinJointParam)

@@ -74,6 +74,9 @@ env.modules_sources += thirdparty_obj
 module_obj = []
 
 env_navigation.add_source_files(module_obj, "*.cpp")
+env_navigation.add_source_files(module_obj, "2d/*.cpp")
+if not env["disable_3d"]:
+    env_navigation.add_source_files(module_obj, "3d/*.cpp")
 if env.editor_build:
     env_navigation.add_source_files(module_obj, "editor/*.cpp")
 env.modules_sources += module_obj

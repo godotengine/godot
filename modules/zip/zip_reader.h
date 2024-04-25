@@ -46,11 +46,12 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error open(String p_path);
+	Error open(const String &p_path);
 	Error close();
 
 	PackedStringArray get_files();
-	PackedByteArray read_file(String p_path, bool p_case_sensitive);
+	PackedByteArray read_file(const String &p_path, bool p_case_sensitive);
+	bool file_exists(const String &p_path, bool p_case_sensitive);
 
 	ZIPReader();
 	~ZIPReader();

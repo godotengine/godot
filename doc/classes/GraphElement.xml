@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GraphElement" inherits="Container" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A container that represents a basic element that can be placed inside a [GraphEdit] control.
+	</brief_description>
+	<description>
+		[GraphElement] allows to create custom elements for a [GraphEdit] graph. By default such elements can be selected, resized, and repositioned, but they cannot be connected. For a graph element that allows for connections see [GraphNode].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="draggable" type="bool" setter="set_draggable" getter="is_draggable" default="true">
+			If [code]true[/code], the user can drag the GraphElement.
+		</member>
+		<member name="position_offset" type="Vector2" setter="set_position_offset" getter="get_position_offset" default="Vector2(0, 0)">
+			The offset of the GraphElement, relative to the scroll offset of the [GraphEdit].
+		</member>
+		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
+			If [code]true[/code], the user can resize the GraphElement.
+			[b]Note:[/b] Dragging the handle will only emit the [signal resize_request] and [signal resize_end] signals, the GraphElement needs to be resized manually.
+		</member>
+		<member name="selectable" type="bool" setter="set_selectable" getter="is_selectable" default="true">
+			If [code]true[/code], the user can select the GraphElement.
+		</member>
+		<member name="selected" type="bool" setter="set_selected" getter="is_selected" default="false">
+			If [code]true[/code], the GraphElement is selected.
+		</member>
+	</members>
+	<signals>
+		<signal name="delete_request">
+			<description>
+				Emitted when removing the GraphElement is requested.
+			</description>
+		</signal>
+		<signal name="dragged">
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
+			<description>
+				Emitted when the GraphElement is dragged.
+			</description>
+		</signal>
+		<signal name="node_deselected">
+			<description>
+				Emitted when the GraphElement is deselected.
+			</description>
+		</signal>
+		<signal name="node_selected">
+			<description>
+				Emitted when the GraphElement is selected.
+			</description>
+		</signal>
+		<signal name="position_offset_changed">
+			<description>
+				Emitted when the GraphElement is moved.
+			</description>
+		</signal>
+		<signal name="raise_request">
+			<description>
+				Emitted when displaying the GraphElement over other ones is requested. Happens on focusing (clicking into) the GraphElement.
+			</description>
+		</signal>
+		<signal name="resize_end">
+			<param index="0" name="new_size" type="Vector2" />
+			<description>
+				Emitted when releasing the mouse button after dragging the resizer handle (see [member resizable]).
+			</description>
+		</signal>
+		<signal name="resize_request">
+			<param index="0" name="new_size" type="Vector2" />
+			<description>
+				Emitted when resizing the GraphElement is requested. Happens on dragging the resizer handle (see [member resizable]).
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="resizer" data_type="icon" type="Texture2D">
+			The icon used for the resizer, visible when [member resizable] is enabled.
+		</theme_item>
+	</theme_items>
+</class>

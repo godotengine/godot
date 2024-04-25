@@ -54,7 +54,7 @@ private:
 	static CreateFunc create_func[ACCESS_MAX]; ///< set this to instance a filesystem object
 	static Ref<DirAccess> _open(const String &p_path);
 
-	Error _copy_dir(Ref<DirAccess> &p_target_da, String p_to, int p_chmod_flags, bool p_copy_links);
+	Error _copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int p_chmod_flags, bool p_copy_links);
 	PackedStringArray _get_contents(bool p_directories);
 
 	thread_local static Error last_dir_open_error;
@@ -68,9 +68,9 @@ protected:
 	virtual String _get_root_string() const;
 
 	AccessType get_access_type() const;
-	virtual String fix_path(String p_path) const;
+	virtual String fix_path(const String &p_path) const;
 
-	template <class T>
+	template <typename T>
 	static Ref<DirAccess> _create_builtin() {
 		return memnew(T);
 	}
@@ -91,18 +91,18 @@ public:
 	virtual Error change_dir(String p_dir) = 0; ///< can be relative or absolute, return false on success
 	virtual String get_current_dir(bool p_include_drive = true) const = 0; ///< return current dir location
 	virtual Error make_dir(String p_dir) = 0;
-	virtual Error make_dir_recursive(String p_dir);
+	virtual Error make_dir_recursive(const String &p_dir);
 	virtual Error erase_contents_recursive(); //super dangerous, use with care!
 
 	virtual bool file_exists(String p_file) = 0;
 	virtual bool dir_exists(String p_dir) = 0;
 	virtual bool is_readable(String p_dir) { return true; };
 	virtual bool is_writable(String p_dir) { return true; };
-	static bool exists(String p_dir);
+	static bool exists(const String &p_dir);
 	virtual uint64_t get_space_left() = 0;
 
-	Error copy_dir(String p_from, String p_to, int p_chmod_flags = -1, bool p_copy_links = false);
-	virtual Error copy(String p_from, String p_to, int p_chmod_flags = -1);
+	Error copy_dir(const String &p_from, String p_to, int p_chmod_flags = -1, bool p_copy_links = false);
+	virtual Error copy(const String &p_from, const String &p_to, int p_chmod_flags = -1);
 	virtual Error rename(String p_from, String p_to) = 0;
 	virtual Error remove(String p_name) = 0;
 
@@ -112,7 +112,7 @@ public:
 
 	// Meant for editor code when we want to quickly remove a file without custom
 	// handling (e.g. removing a cache file).
-	static void remove_file_or_error(String p_path) {
+	static void remove_file_or_error(const String &p_path) {
 		Ref<DirAccess> da = create(ACCESS_FILESYSTEM);
 		if (da->file_exists(p_path)) {
 			if (da->remove(p_path) != OK) {
@@ -130,7 +130,7 @@ public:
 	static Ref<DirAccess> create(AccessType p_access);
 	static Error get_open_error();
 
-	template <class T>
+	template <typename T>
 	static void make_default(AccessType p_access) {
 		create_func[p_access] = _create_builtin<T>;
 	}
@@ -158,6 +158,8 @@ public:
 	bool get_include_navigational() const;
 	void set_include_hidden(bool p_enable);
 	bool get_include_hidden() const;
+
+	virtual bool is_case_sensitive(const String &p_path) const;
 
 	DirAccess() {}
 	virtual ~DirAccess() {}

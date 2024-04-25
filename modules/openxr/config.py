@@ -16,9 +16,16 @@ def get_doc_classes():
         "OpenXRAction",
         "OpenXRActionSet",
         "OpenXRActionMap",
+        "OpenXRAPIExtension",
+        "OpenXRExtensionWrapperExtension",
         "OpenXRInteractionProfile",
+        "OpenXRInteractionProfileMetadata",
         "OpenXRIPBinding",
         "OpenXRHand",
+        "OpenXRCompositionLayer",
+        "OpenXRCompositionLayerQuad",
+        "OpenXRCompositionLayerCylinder",
+        "OpenXRCompositionLayerEquirect",
     ]
 
 

@@ -13,6 +13,16 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="activate_item_by_event">
+			<return type="bool" />
+			<param index="0" name="event" type="InputEvent" />
+			<param index="1" name="for_global_only" type="bool" default="false" />
+			<description>
+				Checks the provided [param event] against the [PopupMenu]'s shortcuts and accelerators, and activates the first item with matching events. If [param for_global_only] is [code]true[/code], only shortcuts and accelerators with [code]global[/code] set to [code]true[/code] will be called.
+				Returns [code]true[/code] if an item was successfully activated.
+				[b]Note:[/b] Certain [Control]s, such as [MenuButton], will call this method automatically.
+			</description>
+		</method>
 		<method name="add_check_item">
 			<return type="void" />
 			<param index="0" name="label" type="String" />
@@ -96,9 +106,11 @@
 			<param index="1" name="shortcut" type="Shortcut" />
 			<param index="2" name="id" type="int" default="-1" />
 			<param index="3" name="global" type="bool" default="false" />
+			<param index="4" name="allow_echo" type="bool" default="false" />
 			<description>
 				Adds a new item and assigns the specified [Shortcut] and icon [param texture] to it. Sets the label of the checkbox to the [Shortcut]'s name.
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+				If [param allow_echo] is [code]true[/code], the shortcut can be activated with echo events.
 			</description>
 		</method>
 		<method name="add_item">
@@ -121,8 +133,25 @@
 			<param index="4" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new multistate item with text [param label].
-				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. Each press or activate of the item will increase the state by one. The default value is defined by [param default_state].
+				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. The default value is defined by [param default_state].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] Multistate items don't update their state automatically and must be done manually. See [method toggle_item_multistate], [method set_item_multistate] and [method get_item_multistate] for more info on how to control it.
+				Example usage:
+				[codeblock]
+				func _ready():
+				    add_multistate_item("Item", 3, 0)
+
+				    index_pressed.connect(func(index: int):
+				            toggle_item_multistate(index)
+				            match get_item_multistate(index):
+				                0:
+				                    print("First state")
+				                1:
+				                    print("Second state")
+				                2:
+				                    print("Third state")
+				        )
+				[/codeblock]
 			</description>
 		</method>
 		<method name="add_radio_check_item">
@@ -161,25 +190,39 @@
 			<param index="0" name="shortcut" type="Shortcut" />
 			<param index="1" name="id" type="int" default="-1" />
 			<param index="2" name="global" type="bool" default="false" />
+			<param index="3" name="allow_echo" type="bool" default="false" />
 			<description>
 				Adds a [Shortcut].
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+				If [param allow_echo] is [code]true[/code], the shortcut can be activated with echo events.
 			</description>
 		</method>
-		<method name="add_submenu_item">
+		<method name="add_submenu_item" deprecated="Prefer using [method add_submenu_node_item] instead.">
 			<return type="void" />
 			<param index="0" name="label" type="String" />
 			<param index="1" name="submenu" type="String" />
 			<param index="2" name="id" type="int" default="-1" />
 			<description>
-				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. The [param submenu] argument is the name of the child [PopupMenu] node that will be shown when the item is clicked.
+				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. The [param submenu] argument must be the name of an existing [PopupMenu] that has been added as a child to this node. This submenu will be shown when the item is clicked, hovered for long enough, or activated using the [code]ui_select[/code] or [code]ui_right[/code] input actions.
+				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+			</description>
+		</method>
+		<method name="add_submenu_node_item">
+			<return type="void" />
+			<param index="0" name="label" type="String" />
+			<param index="1" name="submenu" type="PopupMenu" />
+			<param index="2" name="id" type="int" default="-1" />
+			<description>
+				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. This submenu will be shown when the item is clicked, hovered for long enough, or activated using the [code]ui_select[/code] or [code]ui_right[/code] input actions.
+				[param submenu] must be either child of this [PopupMenu] or has no parent node (in which case it will be automatically added as a child). If the [param submenu] popup has another parent, this method will fail.
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void" />
+			<param index="0" name="free_submenus" type="bool" default="false" />
 			<description>
-				Removes all items from the [PopupMenu].
+				Removes all items from the [PopupMenu]. If [param free_submenus] is [code]true[/code], the submenu nodes are automatically freed.
 			</description>
 		</method>
 		<method name="get_focused_item" qualifiers="const">
@@ -251,6 +294,20 @@
 				Returns the metadata of the specified item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
 			</description>
 		</method>
+		<method name="get_item_multistate" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the state of the item at the given [param index].
+			</description>
+		</method>
+		<method name="get_item_multistate_max" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the max states of the item at the given [param index].
+			</description>
+		</method>
 		<method name="get_item_shortcut" qualifiers="const">
 			<return type="Shortcut" />
 			<param index="0" name="index" type="int" />
@@ -258,11 +315,18 @@
 				Returns the [Shortcut] associated with the item at the given [param index].
 			</description>
 		</method>
-		<method name="get_item_submenu" qualifiers="const">
+		<method name="get_item_submenu" qualifiers="const" deprecated="Prefer using [method get_item_submenu_node] instead.">
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the submenu name of the item at the given [param index]. See [method add_submenu_item] for more info on how to add a submenu.
+			</description>
+		</method>
+		<method name="get_item_submenu_node" qualifiers="const">
+			<return type="PopupMenu" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the submenu of the item at the given [param index], or [code]null[/code] if no submenu was added. See [method add_submenu_node_item] for more info on how to add a submenu.
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
@@ -329,6 +393,12 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns [code]true[/code] if the specified item's shortcut is disabled.
+			</description>
+		</method>
+		<method name="is_system_menu" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the menu is bound to the special system menu.
 			</description>
 		</method>
 		<method name="remove_item">
@@ -468,6 +538,14 @@
 				Sets the state of a multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
+		<method name="set_item_multistate_max">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="max_states" type="int" />
+			<description>
+				Sets the max states of a multistate item. See [method add_multistate_item] for details.
+			</description>
+		</method>
 		<method name="set_item_shortcut">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -485,12 +563,20 @@
 				Disables the [Shortcut] of the item at the given [param index].
 			</description>
 		</method>
-		<method name="set_item_submenu">
+		<method name="set_item_submenu" deprecated="Prefer using [method set_item_submenu_node] instead.">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<param index="1" name="submenu" type="String" />
 			<description>
 				Sets the submenu of the item at the given [param index]. The submenu is the name of a child [PopupMenu] node that would be shown when the item is clicked.
+			</description>
+		</method>
+		<method name="set_item_submenu_node">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="submenu" type="PopupMenu" />
+			<description>
+				Sets the submenu of the item at the given [param index]. The submenu is a [PopupMenu] node that would be shown when the item is clicked. It must either be a child of this [PopupMenu] or has no parent (in which case it will be automatically added as a child). If the [param submenu] popup has another parent, this method will fail.
 			</description>
 		</method>
 		<method name="set_item_text">
@@ -548,8 +634,14 @@
 		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
 			The number of items currently in the list.
 		</member>
+		<member name="prefer_native_menu" type="bool" setter="set_prefer_native_menu" getter="is_prefer_native_menu" default="false">
+			If [code]true[/code], [MenuBar] will use native menu when supported.
+		</member>
 		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.3">
 			Sets the delay time in seconds for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item.
+		</member>
+		<member name="system_menu_id" type="int" setter="set_system_menu" getter="get_system_menu" enum="NativeMenu.SystemMenus" default="0">
+			If set to one of the values of [enum NativeMenu.SystemMenus], this [PopupMenu] is bound to the special system menu. Only one [PopupMenu] can be bound to each special menu at a time.
 		</member>
 	</members>
 	<signals>
@@ -591,13 +683,13 @@
 		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			[Color] used for the hovered text.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the menu item.
 		</theme_item>
 		<theme_item name="font_separator_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			[Color] used for labeled separators' text. See [method add_separator].
 		</theme_item>
-		<theme_item name="font_separator_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_separator_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the labeled separator.
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
@@ -677,10 +769,7 @@
 			[StyleBox] for the right side of labeled separator. See [method add_separator].
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
-			Default [StyleBox] of the [PopupMenu] items.
-		</theme_item>
-		<theme_item name="panel_disabled" data_type="style" type="StyleBox">
-			[StyleBox] used when the [PopupMenu] item is disabled.
+			[StyleBox] for the the background panel.
 		</theme_item>
 		<theme_item name="separator" data_type="style" type="StyleBox">
 			[StyleBox] used for the separators. See [method add_separator].

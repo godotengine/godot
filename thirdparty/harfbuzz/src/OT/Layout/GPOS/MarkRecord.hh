@@ -24,17 +24,16 @@ struct MarkRecord
     return_trace (c->check_struct (this) && markAnchor.sanitize (c, base));
   }
 
-  MarkRecord *subset (hb_subset_context_t    *c,
-                      const void             *src_base,
-                      const hb_map_t         *klass_mapping) const
+  bool subset (hb_subset_context_t    *c,
+	       const void             *src_base,
+	       const hb_map_t         *klass_mapping) const
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->embed (this);
-    if (unlikely (!out)) return_trace (nullptr);
+    if (unlikely (!out)) return_trace (false);
 
     out->klass = klass_mapping->get (klass);
-    out->markAnchor.serialize_subset (c, markAnchor, src_base);
-    return_trace (out);
+    return_trace (out->markAnchor.serialize_subset (c, markAnchor, src_base));
   }
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c,

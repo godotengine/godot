@@ -753,10 +753,10 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			p.custom[0] = 0.0; // unused
 			p.custom[1] = 0.0; // phase [0..1]
 			p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], p.anim_offset_rand);
-			p.custom[3] = 0.0;
+			p.custom[3] = (1.0 - Math::randf() * lifetime_randomness);
 			p.transform = Transform2D();
 			p.time = 0;
-			p.lifetime = lifetime * (1.0 - Math::randf() * lifetime_randomness);
+			p.lifetime = lifetime * p.custom[3];
 			p.base_color = Color(1, 1, 1, 1);
 
 			switch (emission_shape) {
@@ -881,7 +881,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			force += diff.length() > 0.0 ? diff.normalized() * (tex_radial_accel)*Math::lerp(parameters_min[PARAM_RADIAL_ACCEL], parameters_max[PARAM_RADIAL_ACCEL], rand_from_seed(alt_seed)) : Vector2();
 			//apply tangential acceleration;
 			Vector2 yx = Vector2(diff.y, diff.x);
-			force += yx.length() > 0.0 ? yx.normalized() * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector2();
+			force += yx.length() > 0.0 ? (yx * Vector2(-1.0, 1.0)).normalized() * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector2();
 			//apply attractor forces
 			p.velocity += force * local_delta;
 			//orbit velocity

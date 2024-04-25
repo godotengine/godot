@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 #nullable enable
@@ -206,7 +207,7 @@ namespace Godot.NativeInterop
                 }
                 case godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_TOO_MANY_ARGUMENTS:
                 case godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_TOO_FEW_ARGUMENTS:
-                    return $"Invalid call to {where}. Expected {error.Argument} arguments.";
+                    return $"Invalid call to {where}. Expected {error.Expected} arguments.";
                 case godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD:
                     return $"Invalid call. Nonexistent {where}.";
                 case godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL:
@@ -238,6 +239,14 @@ namespace Godot.NativeInterop
             }
 
             return variant->Type.ToString();
+        }
+
+        internal static void ThrowIfNullPtr(IntPtr ptr, [CallerArgumentExpression("ptr")] string? paramName = null)
+        {
+            if (ptr == IntPtr.Zero)
+            {
+                throw new ArgumentNullException(paramName);
+            }
         }
     }
 }

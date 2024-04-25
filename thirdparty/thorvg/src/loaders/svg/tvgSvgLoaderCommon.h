@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -100,6 +100,8 @@ enum class SvgStrokeFlags
     Cap = 0x20,
     Join = 0x40,
     Dash = 0x80,
+    Miterlimit = 0x100,
+    DashOffset = 0x200
 };
 
 constexpr bool operator &(SvgStrokeFlags a, SvgStrokeFlags b)
@@ -137,7 +139,9 @@ enum class SvgStyleFlags
     Mask = 0x2000,
     MaskType = 0x4000,
     Display = 0x8000,
-    PaintOrder = 0x10000
+    PaintOrder = 0x10000,
+    StrokeMiterlimit = 0x20000,
+    StrokeDashOffset = 0x40000,
 };
 
 constexpr bool operator &(SvgStyleFlags a, SvgStyleFlags b)
@@ -180,7 +184,8 @@ enum class SvgGradientFlags
     Cy = 0x80,
     R = 0x100,
     Fx = 0x200,
-    Fy = 0x400
+    Fy = 0x400,
+    Fr = 0x800
 };
 
 constexpr bool operator &(SvgGradientFlags a, SvgGradientFlags b)
@@ -351,8 +356,7 @@ struct SvgPathNode
 
 struct SvgPolygonNode
 {
-    int pointsCount;
-    float* points;
+    Array<float> pts;
 };
 
 struct SvgClipNode
@@ -389,11 +393,13 @@ struct SvgRadialGradient
     float fx;
     float fy;
     float r;
+    float fr;
     bool isCxPercentage;
     bool isCyPercentage;
     bool isFxPercentage;
     bool isFyPercentage;
     bool isRPercentage;
+    bool isFrPercentage;
 };
 
 struct SvgComposite
@@ -422,6 +428,7 @@ struct SvgPaint
 struct SvgDash
 {
     Array<float> array;
+    float offset;
 };
 
 struct SvgStyleGradient
@@ -466,8 +473,8 @@ struct SvgStyleStroke
     float centered;
     StrokeCap cap;
     StrokeJoin join;
+    float miterlimit;
     SvgDash dash;
-    int dashCount;
 };
 
 struct SvgStyleProperty
@@ -482,6 +489,7 @@ struct SvgStyleProperty
     char* cssClass;
     bool paintOrder; //true if default (fill, stroke), false otherwise
     SvgStyleFlags flags;
+    SvgStyleFlags flagsImportance; //indicates the importance of the flag - if set, higher priority is applied (https://drafts.csswg.org/css-cascade-4/#importance)
 };
 
 struct SvgNode
@@ -539,7 +547,7 @@ struct SvgNodeIdPair
 
 struct SvgLoaderData
 {
-    Array<SvgNode*> stack = {nullptr, 0, 0};
+    Array<SvgNode*> stack;
     SvgNode* doc = nullptr;
     SvgNode* def = nullptr;
     SvgNode* cssStyle = nullptr;
@@ -548,6 +556,7 @@ struct SvgLoaderData
     SvgParser* svgParse = nullptr;
     Array<SvgNodeIdPair> cloneNodes;
     Array<SvgNodeIdPair> nodesToStyle;
+    Array<char*> images;        //embedded images
     int level = 0;
     bool result = false;
     bool style = false;
@@ -557,19 +566,5 @@ struct Box
 {
     float x, y, w, h;
 };
-
-/*
- * https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strtof-strtod-l-wcstod-wcstod-l?view=vs-2017
- *
- * src should be one of the following form :
- *
- * [whitespace] [sign] {digits [radix digits] | radix digits} [{e | E} [sign] digits]
- * [whitespace] [sign] {INF | INFINITY}
- * [whitespace] [sign] NAN [sequence]
- *
- * No hexadecimal form supported
- * no sequence supported after NAN
- */
-float customStrtof(const char *nptr, char **endptr);
 
 #endif

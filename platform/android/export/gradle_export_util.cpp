@@ -191,14 +191,14 @@ String _android_xml_escape(const String &p_string) {
 }
 
 // Creates strings.xml files inside the gradle project for different locales.
-Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name) {
+Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name, const String &p_gradle_build_dir) {
 	print_verbose("Creating strings resources for supported locales for project " + project_name);
 	// Stores the string into the default values directory.
 	String processed_default_xml_string = vformat(godot_project_name_xml_string, _android_xml_escape(project_name));
-	store_string_at_path("res://android/build/res/values/godot_project_name_string.xml", processed_default_xml_string);
+	store_string_at_path(p_gradle_build_dir.path_join("res/values/godot_project_name_string.xml"), processed_default_xml_string);
 
 	// Searches the Gradle project res/ directory to find all supported locales
-	Ref<DirAccess> da = DirAccess::open("res://android/build/res");
+	Ref<DirAccess> da = DirAccess::open(p_gradle_build_dir.path_join("res"));
 	if (da.is_null()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			print_error("Unable to open Android resources directory.");
@@ -217,7 +217,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 			continue;
 		}
 		String locale = file.replace("values-", "").replace("-r", "_");
-		String locale_directory = "res://android/build/res/" + file + "/godot_project_name_string.xml";
+		String locale_directory = p_gradle_build_dir.path_join("res/" + file + "/godot_project_name_string.xml");
 		if (appnames.has(locale)) {
 			String locale_project_name = appnames[locale];
 			String processed_xml_string = vformat(godot_project_name_xml_string, _android_xml_escape(locale_project_name));
@@ -269,7 +269,12 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 
 	manifest_activity_text += "            <intent-filter>\n"
 							  "                <action android:name=\"android.intent.action.MAIN\" />\n"
-							  "                <category android:name=\"android.intent.category.LAUNCHER\" />\n";
+							  "                <category android:name=\"android.intent.category.DEFAULT\" />\n";
+
+	bool show_in_app_library = p_preset->get("package/show_in_app_library");
+	if (show_in_app_library) {
+		manifest_activity_text += "                <category android:name=\"android.intent.category.LAUNCHER\" />\n";
+	}
 
 	bool uses_leanback_category = p_preset->get("package/show_in_android_tv");
 	if (uses_leanback_category) {
@@ -279,7 +284,6 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 	bool uses_home_category = p_preset->get("package/show_as_launcher_app");
 	if (uses_home_category) {
 		manifest_activity_text += "                <category android:name=\"android.intent.category.HOME\" />\n";
-		manifest_activity_text += "                <category android:name=\"android.intent.category.DEFAULT\" />\n";
 	}
 
 	manifest_activity_text += "            </intent-filter>\n";

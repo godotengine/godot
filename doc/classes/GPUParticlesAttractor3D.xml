@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GPUParticlesAttractor3D" inherits="VisualInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Abstract class for 3D particle attractors affecting [GPUParticles3D] nodes.
+		Abstract base class for 3D particle attractors.
 	</brief_description>
 	<description>
 		Particle attractors can be used to attract particles towards the attractor's origin, or to push them away from the attractor's origin.
@@ -25,7 +25,7 @@
 			[b]Note:[/b] If [member directionality] is greater than [code]0.0[/code], the direction in which particles are pushed can be changed by rotating the [GPUParticlesAttractor3D] node.
 		</member>
 		<member name="strength" type="float" setter="set_strength" getter="get_strength" default="1.0">
-			If [member strength] is negative, particles will be pushed in the reverse direction. Particles will be pushed [i]away[/i] from the attractor's  origin if [member directionality] is [code]0.0[/code], or towards local +Z if [member directionality] is greater than [code]0.0[/code].
+			Adjusts the strength of the attractor. If [member strength] is negative, particles will be pushed in the opposite direction. Particles will be pushed [i]away[/i] from the attractor's origin if [member directionality] is [code]0.0[/code], or towards local +Z if [member directionality] is greater than [code]0.0[/code].
 		</member>
 	</members>
 </class>

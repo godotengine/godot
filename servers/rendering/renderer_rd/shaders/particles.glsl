@@ -67,7 +67,7 @@ struct FrameParams {
 	float delta;
 
 	uint frame;
-	uint pad0;
+	float amount_ratio;
 	uint pad1;
 	uint pad2;
 
@@ -77,6 +77,8 @@ struct FrameParams {
 	float particle_size;
 
 	mat4 emission_transform;
+	vec3 emitter_velocity;
+	float interp_to_end;
 
 	Attractor attractors[MAX_ATTRACTORS];
 	Collider colliders[MAX_COLLIDERS];

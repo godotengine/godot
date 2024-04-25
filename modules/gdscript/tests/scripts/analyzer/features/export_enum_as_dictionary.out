@@ -1,0 +1,11 @@
+GDTEST_OK
+var test_1: Dictionary
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE
+var test_2: TestExportEnumAsDictionary.MyEnum
+  hint=ENUM hint_string="A:0,B:1,C:2" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM
+var test_3: Dictionary
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE
+var test_4: TestExportEnumAsDictionary.MyEnum
+  hint=ENUM hint_string="A:0,B:1,C:2" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM
+var test_5: TestExportEnumAsDictionary.MyEnum
+  hint=ENUM hint_string="A:0,B:1,C:2" usage=DEFAULT|SCRIPT_VARIABLE|CLASS_IS_ENUM

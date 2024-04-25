@@ -118,7 +118,7 @@
 			<return type="RID" />
 			<param index="0" name="area" type="RID" />
 			<description>
-				Returns the [RID] of the space assigned to the area. Returns [code]RID()[/code] if no space is assigned.
+				Returns the [RID] of the space assigned to the area. Returns an empty [RID] if no space is assigned.
 			</description>
 		</method>
 		<method name="area_get_transform" qualifiers="const">
@@ -486,7 +486,7 @@
 			<return type="RID" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns the [RID] of the space assigned to the body. Returns [code]RID()[/code] if no space is assigned.
+				Returns the [RID] of the space assigned to the body. Returns an empty [RID] if no space is assigned.
 			</description>
 		</method>
 		<method name="body_get_state" qualifiers="const">
@@ -501,7 +501,7 @@
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns [code]true[/code] if the body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Returns [code]true[/code] if the body is omitting the standard force integration. See [method body_set_omit_force_integration].
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
@@ -592,11 +592,12 @@
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="userdata" type="Variant" default="null" />
 			<description>
-				Sets the function used to calculate physics for the body, if that body allows it (see [method body_set_omit_force_integration]).
-				The force integration function takes the following two parameters:
-				1. a [PhysicsDirectBodyState2D] [code]state[/code]: used to retrieve and modify the body's state,
-				2. a [Variant] [param userdata]: optional user data.
-				[b]Note:[/b] This callback is currently not called in Godot Physics.
+				Sets the body's custom force integration callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback.
+				The function [param callable] will be called every physics tick, before the standard force integration (see [method body_set_omit_force_integration]). It can be used for example to update the body's linear and angular velocity based on contact with other bodies.
+				If [param userdata] is not [code]null[/code], the function [param callable] must take the following two parameters:
+				1. [code]state[/code]: a [PhysicsDirectBodyState2D] used to retrieve and modify the body's state,
+				2. [code skip-lint]userdata[/code]: a [Variant]; its value will be the [param userdata] passed into this method.
+				If [param userdata] is [code]null[/code], then [param callable] must take only the [code]state[/code] parameter.
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -620,7 +621,8 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Sets whether the body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Sets whether the body omits the standard force integration. If [param enable] is [code]true[/code], the body will not automatically use applied forces, torques, and damping to update the body's linear and angular velocity. In this case, [method body_set_force_integration_callback] can be used to manually update the linear and angular velocity instead.
+				This method is called when the property [member RigidBody2D.custom_integrator] is set.
 			</description>
 		</method>
 		<method name="body_set_param">
@@ -827,7 +829,7 @@
 			<param index="2" name="body_a" type="RID" />
 			<param index="3" name="body_b" type="RID" default="RID()" />
 			<description>
-				Makes the joint a pin joint. If [param body_b] is [code]RID()[/code], then [param body_a] is pinned to the point [param anchor] (given in global coordinates); otherwise, [param body_a] is pinned to [param body_b] at the point [param anchor] (given in global coordinates). To set the parameters which are specific to the pin joint, see [method pin_joint_set_param].
+				Makes the joint a pin joint. If [param body_b] is an empty [RID], then [param body_a] is pinned to the point [param anchor] (given in global coordinates); otherwise, [param body_a] is pinned to [param body_b] at the point [param anchor] (given in global coordinates). To set the parameters which are specific to the pin joint, see [method pin_joint_set_param].
 			</description>
 		</method>
 		<method name="joint_set_param">
@@ -839,12 +841,29 @@
 				Sets the value of the given joint parameter. See [enum JointParam] for the list of available parameters.
 			</description>
 		</method>
+		<method name="pin_joint_get_flag" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
+			<description>
+				Gets a pin joint flag (see [enum PinJointFlag] constants).
+			</description>
+		</method>
 		<method name="pin_joint_get_param" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
 			<description>
 				Returns the value of a pin joint parameter. See [enum PinJointParam] for a list of available parameters.
+			</description>
+		</method>
+		<method name="pin_joint_set_flag">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer2D.PinJointFlag" />
+			<param index="2" name="enabled" type="bool" />
+			<description>
+				Sets a pin joint flag (see [enum PinJointFlag] constants).
 			</description>
 		</method>
 		<method name="pin_joint_set_param">
@@ -901,13 +920,13 @@
 			<param index="1" name="data" type="Variant" />
 			<description>
 				Sets the shape data that defines the configuration of the shape. The [param data] to be passed depends on the shape's type (see [method shape_get_type]):
-				- [constant SHAPE_WORLD_BOUNDARY]: an array of length two containing a [Vector2] [code]normal[/code] direction and a [code]float[/code] distance [code]d[/code],
-				- [constant SHAPE_SEPARATION_RAY]: a dictionary containing the key [code]length[/code] with a [code]float[/code] value and the key [code]slide_on_slope[/code] with a [code]bool[/code] value,
+				- [constant SHAPE_WORLD_BOUNDARY]: an array of length two containing a [Vector2] [code]normal[/code] direction and a [float] distance [code]d[/code],
+				- [constant SHAPE_SEPARATION_RAY]: a dictionary containing the key [code]length[/code] with a [float] value and the key [code]slide_on_slope[/code] with a [bool] value,
 				- [constant SHAPE_SEGMENT]: a [Rect2] [code]rect[/code] containing the first point of the segment in [code]rect.position[/code] and the second point of the segment in [code]rect.size[/code],
-				- [constant SHAPE_CIRCLE]: a [code]float[/code] [code]radius[/code],
+				- [constant SHAPE_CIRCLE]: a [float] [code]radius[/code],
 				- [constant SHAPE_RECTANGLE]: a [Vector2] [code]half_extents[/code],
-				- [constant SHAPE_CAPSULE]: an array of length two (or a [Vector2]) containing a [code]float[/code] [code]height[/code] and a [code]float[/code] [code]radius[/code],
-				- [constant SHAPE_CONVEX_POLYGON]: either a [PackedVector2Array] of points defining a convex polygon in counterclockwise order (the clockwise outward normal of each segment formed by consecutive points is calculated internally), or a [PackedFloat32Array] of length divisible by four so that every 4-tuple of [code]float[/code]s contains the coordinates of a point followed by the coordinates of the clockwise outward normal vector to the segment between the current point and the next point,
+				- [constant SHAPE_CAPSULE]: an array of length two (or a [Vector2]) containing a [float] [code]height[/code] and a [float] [code]radius[/code],
+				- [constant SHAPE_CONVEX_POLYGON]: either a [PackedVector2Array] of points defining a convex polygon in counterclockwise order (the clockwise outward normal of each segment formed by consecutive points is calculated internally), or a [PackedFloat32Array] of length divisible by four so that every 4-tuple of [float]s contains the coordinates of a point followed by the coordinates of the clockwise outward normal vector to the segment between the current point and the next point,
 				- [constant SHAPE_CONCAVE_POLYGON]: a [PackedVector2Array] of length divisible by two (each pair of points forms one segment).
 				[b]Warning:[/b] In the case of [constant SHAPE_CONVEX_POLYGON], this method does not check if the points supplied actually form a convex polygon (unlike the [member CollisionPolygon2D.polygon] property).
 			</description>
@@ -1159,6 +1178,21 @@
 		</constant>
 		<constant name="PIN_JOINT_SOFTNESS" value="0" enum="PinJointParam">
 			Constant to set/get a how much the bond of the pin joint can flex. The default value of this parameter is [code]0.0[/code].
+		</constant>
+		<constant name="PIN_JOINT_LIMIT_UPPER" value="1" enum="PinJointParam">
+			The maximum rotation around the pin.
+		</constant>
+		<constant name="PIN_JOINT_LIMIT_LOWER" value="2" enum="PinJointParam">
+			The minimum rotation around the pin.
+		</constant>
+		<constant name="PIN_JOINT_MOTOR_TARGET_VELOCITY" value="3" enum="PinJointParam">
+			Target speed for the motor. In radians per second.
+		</constant>
+		<constant name="PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED" value="0" enum="PinJointFlag">
+			If [code]true[/code], the pin has a maximum and a minimum rotation.
+		</constant>
+		<constant name="PIN_JOINT_FLAG_MOTOR_ENABLED" value="1" enum="PinJointFlag">
+			If [code]true[/code], a motor turns the pin.
 		</constant>
 		<constant name="DAMPED_SPRING_REST_LENGTH" value="0" enum="DampedSpringParam">
 			Sets the resting length of the spring joint. The joint will always try to go to back this length when pulled apart. The default value of this parameter is the distance between the joint's anchor points.

@@ -47,7 +47,10 @@ class BindingsGenerator {
 		String name;
 		String proxy_name;
 		int64_t value = 0;
-		const DocData::ConstantDoc *const_doc;
+		const DocData::ConstantDoc *const_doc = nullptr;
+
+		bool is_deprecated = false;
+		String deprecation_message;
 
 		ConstantInterface() {}
 
@@ -60,6 +63,7 @@ class BindingsGenerator {
 
 	struct EnumInterface {
 		StringName cname;
+		String proxy_name;
 		List<ConstantInterface> constants;
 		bool is_flags = false;
 
@@ -69,8 +73,10 @@ class BindingsGenerator {
 
 		EnumInterface() {}
 
-		EnumInterface(const StringName &p_cname) {
+		EnumInterface(const StringName &p_cname, const String &p_proxy_name, bool p_is_flags) {
 			cname = p_cname;
+			proxy_name = p_proxy_name;
+			is_flags = p_is_flags;
 		}
 	};
 
@@ -82,7 +88,18 @@ class BindingsGenerator {
 		StringName setter;
 		StringName getter;
 
+		/**
+		 * Determines if the property will be hidden with the [EditorBrowsable(EditorBrowsableState.Never)]
+		 * attribute.
+		 * We do this for propertyies that have the PROPERTY_USAGE_INTERNAL flag, because they are not meant
+		 * to be exposed to scripting but we can't remove them to prevent breaking compatibility.
+		 */
+		bool is_hidden = false;
+
 		const DocData::PropertyDoc *prop_doc;
+
+		bool is_deprecated = false;
+		String deprecation_message;
 	};
 
 	struct TypeReference {
@@ -131,6 +148,11 @@ class BindingsGenerator {
 		String proxy_name;
 
 		/**
+		 * Hash of the ClassDB method
+		 */
+		uint64_t hash = 0;
+
+		/**
 		 * [TypeInterface::name] of the return type
 		 */
 		TypeReference return_type;
@@ -164,6 +186,20 @@ class BindingsGenerator {
 		 * Methods that are not meant to be exposed are those that begin with underscore and are not virtual.
 		 */
 		bool is_internal = false;
+
+		/**
+		 * Determines if the method will be hidden with the [EditorBrowsable(EditorBrowsableState.Never)]
+		 * attribute.
+		 * We do this for methods that we don't want to expose but need to be public to prevent breaking
+		 * compat (i.e: methods with 'is_compat' set to true.)
+		 */
+		bool is_hidden = false;
+
+		/**
+		 * Determines if the method is a compatibility method added to avoid breaking binary compatibility.
+		 * These methods will be generated but hidden and are considered deprecated.
+		 */
+		bool is_compat = false;
 
 		List<ArgumentInterface> arguments;
 
@@ -412,6 +448,9 @@ class BindingsGenerator {
 		String cs_managed_to_variant;
 
 		const DocData::ClassDoc *class_doc = nullptr;
+
+		bool is_deprecated = false;
+		String deprecation_message;
 
 		List<ConstantInterface> constants;
 		List<EnumInterface> enums;
@@ -751,7 +790,17 @@ class BindingsGenerator {
 		return p_type->name;
 	}
 
-	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype);
+	String bbcode_to_text(const String &p_bbcode, const TypeInterface *p_itype);
+	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal = false);
+
+	void _append_text_method(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_member(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_signal(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_enum(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_constant(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_constant_in_global_scope(StringBuilder &p_output, const String &p_target_cname, const String &p_link_target);
+	void _append_text_param(StringBuilder &p_output, const String &p_link_target);
+	void _append_text_undeclared(StringBuilder &p_output, const String &p_link_target);
 
 	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
@@ -759,6 +808,7 @@ class BindingsGenerator {
 	void _append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_constant(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_constant_in_global_scope(StringBuilder &p_xml_output, const String &p_target_cname, const String &p_link_target);
+	void _append_xml_param(StringBuilder &p_xml_output, const String &p_link_target, bool p_is_signal);
 	void _append_xml_undeclared(StringBuilder &p_xml_output, const String &p_link_target);
 
 	int _determine_enum_prefix(const EnumInterface &p_ienum);
@@ -782,6 +832,9 @@ class BindingsGenerator {
 	void _populate_builtin_type_interfaces();
 
 	void _populate_global_constants();
+
+	bool _method_has_conflicting_signature(const MethodInterface &p_imethod, const TypeInterface &p_itype);
+	bool _method_has_conflicting_signature(const MethodInterface &p_imethod_left, const MethodInterface &p_imethod_right);
 
 	Error _generate_cs_type(const TypeInterface &itype, const String &p_output_file);
 

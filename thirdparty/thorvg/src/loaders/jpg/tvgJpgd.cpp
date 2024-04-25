@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -431,7 +431,7 @@ struct Row<1>
 {
     static void idct(int* pTemp, const jpgd_block_t* pSrc)
     {
-        const int dcval = (pSrc[0] << PASS1_BITS);
+        const int dcval = pSrc[0] * PASS1_BITS * 2;
 
         pTemp[0] = dcval;
         pTemp[1] = dcval;
@@ -1336,11 +1336,10 @@ void jpeg_decoder::read_sos_marker()
 // Finds the next marker.
 int jpeg_decoder::next_marker()
 {
-    uint32_t c, bytes = 0;
+    uint32_t c;
 
     do {
         do {
-            bytes++;
             c = get_bits(8);
         } while (c != 0xFF);
 
@@ -1349,7 +1348,6 @@ int jpeg_decoder::next_marker()
         } while (c == 0xFF);
     } while (c == 0);
 
-    // If bytes > 0 here, there where extra bytes before the marker (not good).
     return c;
 }
 
@@ -1458,7 +1456,11 @@ void jpeg_decoder::locate_sof_marker()
     int c = process_markers();
 
     switch (c) {
-        case M_SOF2: m_progressive_flag = true;
+        case M_SOF2: {
+            m_progressive_flag = true;
+            read_sof_marker();
+            break;
+        }
         case M_SOF0:  /* baseline DCT */
         case M_SOF1: { /* extended sequential DCT */
           read_sof_marker();
@@ -1770,7 +1772,7 @@ void jpeg_decoder::load_next_row()
     int i;
     jpgd_block_t *p;
     jpgd_quant_t *q;
-    int mcu_row, mcu_block, row_block = 0;
+    int mcu_row, mcu_block;
     int component_num, component_id;
     int block_x_mcu[JPGD_MAX_COMPONENTS];
 
@@ -1800,8 +1802,6 @@ void jpeg_decoder::load_next_row()
                     p[g_ZAG[i]] = static_cast<jpgd_block_t>(p[g_ZAG[i]] * q[i]);
                 }
             }
-
-            row_block++;
 
             if (m_comps_in_scan == 1) block_x_mcu[component_id]++;
             else {
@@ -1873,8 +1873,6 @@ static inline int dequantize_ac(int c, int q)
 // Decodes and dequantizes the next row of coefficients.
 void jpeg_decoder::decode_next_row()
 {
-    int row_block = 0;
-
     for (int mcu_row = 0; mcu_row < m_mcus_per_row; mcu_row++) {
         if ((m_restart_interval) && (m_restarts_left == 0)) process_restart();
 
@@ -1937,7 +1935,6 @@ void jpeg_decoder::decode_next_row()
             }
 
             m_mcu_block_max_zag[mcu_block] = k;
-            row_block++;
         }
         if (m_freq_domain_chroma_upsample) transform_mcu_expand(mcu_row);
         else transform_mcu(mcu_row);
@@ -2928,10 +2925,14 @@ jpeg_decoder* jpgdHeader(const char* data, int size, int* width, int* height)
 jpeg_decoder* jpgdHeader(const char* filename, int* width, int* height)
 {
     auto fileStream = new jpeg_decoder_file_stream();
-    if (!fileStream->open(filename)) return nullptr;
+    if (!fileStream->open(filename)) {
+        delete(fileStream);
+        return nullptr;
+    }
 
     auto decoder = new jpeg_decoder(fileStream);
     if (decoder->get_error_code() != JPGD_SUCCESS) {
+        delete(fileStream);
         delete(decoder);
         return nullptr;
     }

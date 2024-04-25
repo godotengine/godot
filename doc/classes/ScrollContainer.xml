@@ -50,7 +50,7 @@
 			Deadzone for touch scrolling. Lower deadzone makes the scrolling more sensitive.
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
-			The current horizontal scroll value. 
+			The current horizontal scroll value.
 			[b]Note:[/b] If you are setting this value in the [method Node._ready] function or earlier, it needs to be wrapped with [method Object.set_deferred], since scroll bar's [member Range.max_value] is not initialized yet.
 			[codeblock]
 			func _ready():
@@ -78,12 +78,14 @@
 	<signals>
 		<signal name="scroll_ended">
 			<description>
-				Emitted when scrolling stops.
+				Emitted when scrolling stops when dragging the scrollable area [i]with a touch event[/i]. This signal is [i]not[/i] emitted when scrolling by dragging the scrollbar, scrolling with the mouse wheel or scrolling with keyboard/gamepad events.
+				[b]Note:[/b] This signal is only emitted on Android or iOS, or on desktop/web platforms when [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is enabled.
 			</description>
 		</signal>
 		<signal name="scroll_started">
 			<description>
-				Emitted when scrolling is started.
+				Emitted when scrolling starts when dragging the scrollable area w[i]ith a touch event[/i]. This signal is [i]not[/i] emitted when scrolling by dragging the scrollbar, scrolling with the mouse wheel or scrolling with keyboard/gamepad events.
+				[b]Note:[/b] This signal is only emitted on Android or iOS, or on desktop/web platforms when [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is enabled.
 			</description>
 		</signal>
 	</signals>

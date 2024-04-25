@@ -30,6 +30,7 @@
 
 #include "openxr_action_set_editor.h"
 
+#include "editor/editor_string_names.h"
 #include "openxr_action_editor.h"
 
 void OpenXRActionSetEditor::_bind_methods() {
@@ -45,16 +46,16 @@ void OpenXRActionSetEditor::_bind_methods() {
 
 void OpenXRActionSetEditor::_set_fold_icon() {
 	if (is_expanded) {
-		fold_btn->set_icon(get_theme_icon(SNAME("GuiTreeArrowDown"), SNAME("EditorIcons")));
+		fold_btn->set_icon(get_theme_icon(SNAME("GuiTreeArrowDown"), EditorStringName(EditorIcons)));
 	} else {
-		fold_btn->set_icon(get_theme_icon(SNAME("GuiTreeArrowRight"), SNAME("EditorIcons")));
+		fold_btn->set_icon(get_theme_icon(SNAME("GuiTreeArrowRight"), EditorStringName(EditorIcons)));
 	}
 }
 
 void OpenXRActionSetEditor::_theme_changed() {
 	_set_fold_icon();
-	add_action->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-	rem_action_set->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+	add_action->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
+	rem_action_set->set_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 }
 
 void OpenXRActionSetEditor::_notification(int p_what) {
@@ -260,13 +261,13 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 	action_set_hb->add_child(action_set_priority);
 
 	add_action = memnew(Button);
-	add_action->set_tooltip_text("Add Action.");
+	add_action->set_tooltip_text(TTR("Add action."));
 	add_action->connect("pressed", callable_mp(this, &OpenXRActionSetEditor::_on_add_action));
 	add_action->set_flat(true);
 	action_set_hb->add_child(add_action);
 
 	rem_action_set = memnew(Button);
-	rem_action_set->set_tooltip_text("Remove Action Set.");
+	rem_action_set->set_tooltip_text(TTR("Remove action set."));
 	rem_action_set->connect("pressed", callable_mp(this, &OpenXRActionSetEditor::_on_remove_action_set));
 	rem_action_set->set_flat(true);
 	action_set_hb->add_child(rem_action_set);

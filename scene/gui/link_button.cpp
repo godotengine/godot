@@ -31,6 +31,7 @@
 #include "link_button.h"
 
 #include "core/string/translation.h"
+#include "scene/theme/theme_db.h"
 
 void LinkButton::_shape() {
 	Ref<Font> font = theme_cache.font;
@@ -129,6 +130,10 @@ LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
 	return underline_mode;
 }
 
+Ref<Font> LinkButton::get_button_font() const {
+	return theme_cache.font;
+}
+
 void LinkButton::pressed() {
 	if (uri.is_empty()) {
 		return;
@@ -139,26 +144,6 @@ void LinkButton::pressed() {
 
 Size2 LinkButton::get_minimum_size() const {
 	return text_buf->get_size();
-}
-
-void LinkButton::_update_theme_item_cache() {
-	BaseButton::_update_theme_item_cache();
-
-	theme_cache.focus = get_theme_stylebox(SNAME("focus"));
-
-	theme_cache.font_color = get_theme_color(SNAME("font_color"));
-	theme_cache.font_focus_color = get_theme_color(SNAME("font_focus_color"));
-	theme_cache.font_pressed_color = get_theme_color(SNAME("font_pressed_color"));
-	theme_cache.font_hover_color = get_theme_color(SNAME("font_hover_color"));
-	theme_cache.font_hover_pressed_color = get_theme_color(SNAME("font_hover_pressed_color"));
-	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
-
-	theme_cache.font = get_theme_font(SNAME("font"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
-	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
-
-	theme_cache.underline_spacing = get_theme_constant(SNAME("underline_spacing"));
 }
 
 void LinkButton::_notification(int p_what) {
@@ -284,6 +269,22 @@ void LinkButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, LinkButton, focus);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_focus_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_hover_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_hover_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_disabled_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, LinkButton, font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, LinkButton, font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LinkButton, outline_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LinkButton, font_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, LinkButton, underline_spacing);
 }
 
 LinkButton::LinkButton(const String &p_text) {

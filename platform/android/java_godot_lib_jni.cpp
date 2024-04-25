@@ -95,6 +95,13 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	if (godot_io_java) {
 		delete godot_io_java;
 	}
+
+	TTS_Android::terminate();
+	FileAccessAndroid::terminate();
+	DirAccessJAndroid::terminate();
+	FileAccessFilesystemJAndroid::terminate();
+	NetSocketAndroid::terminate();
+
 	if (godot_java) {
 		if (!restart_on_cleanup) {
 			if (p_restart) {
@@ -125,10 +132,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 
 	init_thread_jandroid(jvm, env);
 
-	jobject amgr = env->NewGlobalRef(p_asset_manager);
-
-	FileAccessAndroid::asset_manager = AAssetManager_fromJava(env, amgr);
-
+	FileAccessAndroid::setup(p_asset_manager);
 	DirAccessJAndroid::setup(p_directory_access_handler);
 	FileAccessFilesystemJAndroid::setup(p_file_access_handler);
 	NetSocketAndroid::setup(p_net_utils);
@@ -250,7 +254,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 	}
 
 	if (step.get() == 1) {
-		if (!Main::start()) {
+		if (Main::start() != EXIT_SUCCESS) {
 			return true; // should exit instead and print the error
 		}
 
@@ -274,12 +278,12 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 }
 
 // Called on the UI thread
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchMouseEvent(JNIEnv *env, jclass clazz, jint p_event_type, jint p_button_mask, jfloat p_x, jfloat p_y, jfloat p_delta_x, jfloat p_delta_y, jboolean p_double_click, jboolean p_source_mouse_relative) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchMouseEvent(JNIEnv *env, jclass clazz, jint p_event_type, jint p_button_mask, jfloat p_x, jfloat p_y, jfloat p_delta_x, jfloat p_delta_y, jboolean p_double_click, jboolean p_source_mouse_relative, jfloat p_pressure, jfloat p_tilt_x, jfloat p_tilt_y) {
 	if (step.get() <= 0) {
 		return;
 	}
 
-	input_handler->process_mouse_event(p_event_type, p_button_mask, Point2(p_x, p_y), Vector2(p_delta_x, p_delta_y), p_double_click, p_source_mouse_relative);
+	input_handler->process_mouse_event(p_event_type, p_button_mask, Point2(p_x, p_y), Vector2(p_delta_x, p_delta_y), p_double_click, p_source_mouse_relative, p_pressure, Vector2(p_tilt_x, p_tilt_y));
 }
 
 // Called on the UI thread
@@ -484,7 +488,14 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 		env->DeleteLocalRef(jobj);
 	}
 
-	MessageQueue::get_singleton()->push_callp(obj, str_method, argptrs, count);
+	Callable(obj, str_method).call_deferredp(argptrs, count);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onNightModeChanged(JNIEnv *env, jclass clazz) {
+	DisplayServerAndroid *ds = (DisplayServerAndroid *)DisplayServer::get_singleton();
+	if (ds) {
+		ds->emit_system_theme_changed();
+	}
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResult(JNIEnv *env, jclass clazz, jstring p_permission, jboolean p_result) {

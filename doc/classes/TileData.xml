@@ -70,22 +70,30 @@
 		<method name="get_navigation_polygon" qualifiers="const">
 			<return type="NavigationPolygon" />
 			<param index="0" name="layer_id" type="int" />
+			<param index="1" name="flip_h" type="bool" default="false" />
+			<param index="2" name="flip_v" type="bool" default="false" />
+			<param index="3" name="transpose" type="bool" default="false" />
 			<description>
 				Returns the navigation polygon of the tile for the TileSet navigation layer with index [param layer_id].
+				[param flip_h], [param flip_v], and [param transpose] allow transforming the returned polygon.
 			</description>
 		</method>
 		<method name="get_occluder" qualifiers="const">
 			<return type="OccluderPolygon2D" />
 			<param index="0" name="layer_id" type="int" />
+			<param index="1" name="flip_h" type="bool" default="false" />
+			<param index="2" name="flip_v" type="bool" default="false" />
+			<param index="3" name="transpose" type="bool" default="false" />
 			<description>
 				Returns the occluder polygon of the tile for the TileSet occlusion layer with index [param layer_id].
+				[param flip_h], [param flip_v], and [param transpose] allow transforming the returned polygon.
 			</description>
 		</method>
 		<method name="get_terrain_peering_bit" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor" />
 			<description>
-				Returns the tile's terrain bit for the given [param peering_bit] direction.
+				Returns the tile's terrain bit for the given [param peering_bit] direction. To check that a direction is valid, use [method is_valid_terrain_peering_bit].
 			</description>
 		</method>
 		<method name="is_collision_polygon_one_way" qualifiers="const">
@@ -94,6 +102,13 @@
 			<param index="1" name="polygon_index" type="int" />
 			<description>
 				Returns whether one-way collisions are enabled for the polygon at index [param polygon_index] for TileSet physics layer with index [param layer_id].
+			</description>
+		</method>
+		<method name="is_valid_terrain_peering_bit" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor" />
+			<description>
+				Returns whether the given [param peering_bit] direction is valid for this tile.
 			</description>
 		</method>
 		<method name="remove_collision_polygon">
@@ -192,7 +207,7 @@
 			<param index="0" name="peering_bit" type="int" enum="TileSet.CellNeighbor" />
 			<param index="1" name="terrain" type="int" />
 			<description>
-				Sets the tile's terrain bit for the given [param peering_bit] direction.
+				Sets the tile's terrain bit for the given [param peering_bit] direction. To check that a direction is valid, use [method is_valid_terrain_peering_bit].
 			</description>
 		</method>
 	</methods>
@@ -206,7 +221,7 @@
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The [Material] to use for this [TileData]. This can be a [CanvasItemMaterial] to use the default shader, or a [ShaderMaterial] to use a custom shader.
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Color modulation of the tile.
 		</member>
 		<member name="probability" type="float" setter="set_probability" getter="get_probability" default="1.0">

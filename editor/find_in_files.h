@@ -42,10 +42,10 @@ public:
 	static const char *SIGNAL_RESULT_FOUND;
 	static const char *SIGNAL_FINISHED;
 
-	void set_search_text(String p_pattern);
+	void set_search_text(const String &p_pattern);
 	void set_whole_words(bool p_whole_word);
 	void set_match_case(bool p_match_case);
-	void set_folder(String folder);
+	void set_folder(const String &folder);
 	void set_filter(const HashSet<String> &exts);
 
 	String get_search_text() const { return _pattern; }
@@ -67,8 +67,8 @@ protected:
 private:
 	void _process();
 	void _iterate();
-	void _scan_dir(String path, PackedStringArray &out_folders);
-	void _scan_file(String fpath);
+	void _scan_dir(const String &path, PackedStringArray &out_folders, PackedStringArray &out_files_to_scan);
+	void _scan_file(const String &fpath);
 
 	// Config
 	String _pattern;
@@ -105,8 +105,8 @@ public:
 
 	FindInFilesDialog();
 
-	void set_search_text(String text);
-	void set_replace_text(String text);
+	void set_search_text(const String &text);
+	void set_replace_text(const String &text);
 
 	void set_find_in_files_mode(FindInFilesMode p_mode);
 
@@ -127,9 +127,9 @@ protected:
 private:
 	void _on_folder_button_pressed();
 	void _on_folder_selected(String path);
-	void _on_search_text_modified(String text);
-	void _on_search_text_submitted(String text);
-	void _on_replace_text_submitted(String text);
+	void _on_search_text_modified(const String &text);
+	void _on_search_text_submitted(const String &text);
+	void _on_replace_text_submitted(const String &text);
 
 	FindInFilesMode _mode;
 	LineEdit *_search_text_line_edit = nullptr;
@@ -159,13 +159,14 @@ class FindInFilesPanel : public Control {
 public:
 	static const char *SIGNAL_RESULT_SELECTED;
 	static const char *SIGNAL_FILES_MODIFIED;
+	static const char *SIGNAL_CLOSE_BUTTON_CLICKED;
 
 	FindInFilesPanel();
 
 	FindInFiles *get_finder() const { return _finder; }
 
 	void set_with_replace(bool with_replace);
-	void set_replace_text(String text);
+	void set_replace_text(const String &text);
 
 	void start_search();
 	void stop_search();
@@ -176,13 +177,14 @@ protected:
 	void _notification(int p_what);
 
 private:
-	void _on_result_found(String fpath, int line_number, int begin, int end, String text);
+	void _on_result_found(const String &fpath, int line_number, int begin, int end, String text);
 	void _on_finished();
 	void _on_refresh_button_clicked();
 	void _on_cancel_button_clicked();
+	void _on_close_button_clicked();
 	void _on_result_selected();
 	void _on_item_edited();
-	void _on_replace_text_changed(String text);
+	void _on_replace_text_changed(const String &text);
 	void _on_replace_all_clicked();
 
 	struct Result {
@@ -192,7 +194,7 @@ private:
 		int begin_trimmed = 0;
 	};
 
-	void apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text);
+	void apply_replaces_in_file(const String &fpath, const Vector<Result> &locations, const String &new_text);
 	void update_replace_buttons();
 	String get_replace_text();
 
@@ -207,6 +209,7 @@ private:
 	Label *_status_label = nullptr;
 	Button *_refresh_button = nullptr;
 	Button *_cancel_button = nullptr;
+	Button *_close_button = nullptr;
 	ProgressBar *_progress_bar = nullptr;
 	HashMap<String, TreeItem *> _file_items;
 	HashMap<TreeItem *, Result> _result_items;

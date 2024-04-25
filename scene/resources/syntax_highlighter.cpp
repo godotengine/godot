@@ -313,7 +313,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 			}
 		}
 
-		if (!in_word && (is_ascii_char(str[j]) || is_underscore(str[j])) && !is_number) {
+		if (!in_word && (is_ascii_alphabet_char(str[j]) || is_underscore(str[j])) && !is_number) {
 			in_word = true;
 		}
 
@@ -419,7 +419,7 @@ void CodeHighlighter::_clear_highlighting_cache() {
 }
 
 void CodeHighlighter::_update_cache() {
-	font_color = text_edit->get_theme_color(SNAME("font_color"));
+	font_color = text_edit->get_font_color();
 }
 
 void CodeHighlighter::add_keyword_color(const String &p_keyword, const Color &p_color) {

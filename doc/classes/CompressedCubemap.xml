@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CompressedCubemap" inherits="CompressedTextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		6-sided texture typically used in 3D rendering, optionally compressed.
+		An optionally compressed [Cubemap].
 	</brief_description>
 	<description>
-		A cubemap that is loaded from a [code].ccube[/code] file. This file format is internal to Godot; it is created by importing other image formats with the import system. [CompressedCubemap] can use one of 4 compresson methods:
+		A cubemap that is loaded from a [code].ccube[/code] file. This file format is internal to Godot; it is created by importing other image formats with the import system. [CompressedCubemap] can use one of 4 compression methods:
 		- Lossless (WebP or PNG, uncompressed on the GPU)
 		- Lossy (WebP, uncompressed on the GPU)
 		- VRAM Compressed (compressed on the GPU)

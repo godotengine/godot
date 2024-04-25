@@ -32,6 +32,7 @@
 
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
+#include "scene/main/node.h"
 
 void EditorScript::add_root_node(Node *p_node) {
 	if (!EditorNode::get_singleton()) {
@@ -61,9 +62,7 @@ EditorInterface *EditorScript::get_editor_interface() const {
 }
 
 void EditorScript::run() {
-	if (!GDVIRTUAL_CALL(_run)) {
-		EditorNode::add_io_error(TTR("Couldn't run editor script, did you forget to override the '_run' method?"));
-	}
+	GDVIRTUAL_REQUIRED_CALL(_run);
 }
 
 void EditorScript::_bind_methods() {

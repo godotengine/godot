@@ -105,6 +105,8 @@ struct hb_ft_paint_context_t
   FT_Color *palette;
   unsigned palette_index;
   hb_color_t foreground;
+  hb_map_t current_glyphs;
+  hb_map_t current_layers;
   int depth_left = HB_MAX_NESTING_LEVEL;
   int edge_count = HB_COLRV1_MAX_EDGE_COUNT;
 };
@@ -220,9 +222,18 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
 				  &paint.u.colr_layers.layer_iterator,
 				  &other_paint))
       {
+        unsigned i = paint.u.colr_layers.layer_iterator.layer;
+
+	if (unlikely (c->current_layers.has (i)))
+	  continue;
+
+	c->current_layers.add (i);
+
 	c->funcs->push_group (c->data);
 	c->recurse (other_paint);
 	c->funcs->pop_group (c->data, HB_PAINT_COMPOSITE_MODE_SRC_OVER);
+
+	c->current_layers.del (i);
       }
     }
     break;
@@ -320,8 +331,27 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
     break;
     case FT_COLR_PAINTFORMAT_COLR_GLYPH:
     {
+      hb_codepoint_t gid = paint.u.colr_glyph.glyphID;
+
+      if (unlikely (c->current_glyphs.has (gid)))
+	return;
+
+      c->current_glyphs.add (gid);
+
+      c->funcs->push_inverse_root_transform (c->data, c->font);
+      c->ft_font->lock.unlock ();
+      if (c->funcs->color_glyph (c->data, gid, c->font))
+      {
+	c->ft_font->lock.lock ();
+	c->funcs->pop_transform (c->data);
+	c->current_glyphs.del (gid);
+	return;
+      }
+      c->ft_font->lock.lock ();
+      c->funcs->pop_transform (c->data);
+
       FT_OpaquePaint other_paint = {0};
-      if (FT_Get_Color_Glyph_Paint (ft_face, paint.u.colr_glyph.glyphID,
+      if (FT_Get_Color_Glyph_Paint (ft_face, gid,
 				    FT_COLOR_NO_ROOT_TRANSFORM,
 				    &other_paint))
       {
@@ -350,6 +380,8 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
 
         if (has_clip_box)
           c->funcs->pop_clip (c->data);
+
+	c->current_glyphs.del (gid);
       }
     }
     break;
@@ -474,6 +506,7 @@ hb_ft_paint_glyph_colr (hb_font_t *font,
     hb_ft_paint_context_t c (ft_font, font,
 			     paint_funcs, paint_data,
 			     palette, palette_index, foreground);
+    c.current_glyphs.add (gid);
 
     bool is_bounded = true;
     FT_ClipBox clip_box;
@@ -497,6 +530,7 @@ hb_ft_paint_glyph_colr (hb_font_t *font,
       hb_ft_paint_context_t ce (ft_font, font,
 			        extents_funcs, &extents_data,
 			        palette, palette_index, foreground);
+      ce.current_glyphs.add (gid);
       ce.funcs->push_root_transform (ce.data, font);
       ce.recurse (paint);
       ce.funcs->pop_transform (ce.data);

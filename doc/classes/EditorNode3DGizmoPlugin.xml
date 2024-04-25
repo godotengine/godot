@@ -11,6 +11,14 @@
 		<link title="Node3D gizmo plugins">$DOCS_URL/tutorials/plugins/editor/3d_gizmos.html</link>
 	</tutorials>
 	<methods>
+		<method name="_begin_handle_action" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="gizmo" type="EditorNode3DGizmo" />
+			<param index="1" name="handle_id" type="int" />
+			<param index="2" name="secondary" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="_can_be_hidden" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
@@ -147,7 +155,7 @@
 			<param index="1" name="camera" type="Camera3D" />
 			<param index="2" name="frustum_planes" type="Plane[]" />
 			<description>
-				Override this method to allow selecting subgizmos using mouse drag box selection. Given a [param camera] and [param frustum_planes], this method should return which subgizmos are contained within the frustums. The [param frustum_planes] argument consists of an [code]Array[/code] with all the [code]Plane[/code]s that make up the selection frustum. The returned value should contain a list of unique subgizmo identifiers, these identifiers can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos]. Called for this plugin's active gizmos.
+				Override this method to allow selecting subgizmos using mouse drag box selection. Given a [param camera] and [param frustum_planes], this method should return which subgizmos are contained within the frustums. The [param frustum_planes] argument consists of an array with all the [Plane]s that make up the selection frustum. The returned value should contain a list of unique subgizmo identifiers, these identifiers can have any non-negative value and will be used in other virtual methods like [method _get_subgizmo_transform] or [method _commit_subgizmos]. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="_subgizmos_intersect_ray" qualifiers="virtual const">

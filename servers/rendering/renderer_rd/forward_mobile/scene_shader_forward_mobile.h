@@ -97,7 +97,7 @@ public:
 
 		bool valid = false;
 		RID version;
-		uint32_t vertex_input_mask = 0;
+		uint64_t vertex_input_mask = 0;
 		PipelineCacheRD pipelines[CULL_VARIANT_MAX][RS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
 
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
@@ -119,6 +119,7 @@ public:
 		bool uses_discard = false;
 		bool uses_roughness = false;
 		bool uses_normal = false;
+		bool uses_tangent = false;
 		bool uses_particle_trails = false;
 
 		bool unshaded = false;

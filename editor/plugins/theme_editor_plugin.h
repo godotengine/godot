@@ -47,6 +47,7 @@ class OptionButton;
 class PanelContainer;
 class TabBar;
 class TabContainer;
+class ThemeEditorPlugin;
 class TextureRect;
 
 class ThemeItemImportTree : public VBoxContainer {
@@ -320,6 +321,11 @@ public:
 	ThemeTypeDialog();
 };
 
+// Custom `Label` needed to use `EditorHelpBit` to display theme item documentation.
+class ThemeItemLabel : public Label {
+	virtual Control *make_custom_tooltip(const String &p_text) const;
+};
+
 class ThemeTypeEditor : public MarginContainer {
 	GDCLASS(ThemeTypeEditor, MarginContainer);
 
@@ -367,7 +373,7 @@ class ThemeTypeEditor : public MarginContainer {
 	VBoxContainer *_create_item_list(Theme::DataType p_data_type);
 	void _update_type_list();
 	void _update_type_list_debounced();
-	HashMap<StringName, bool> _get_type_items(String p_type_name, void (Theme::*get_list_func)(StringName, List<StringName> *) const, bool include_default);
+	HashMap<StringName, bool> _get_type_items(String p_type_name, Theme::DataType p_type, bool p_include_default);
 	HBoxContainer *_create_property_control(Theme::DataType p_data_type, String p_item_name, bool p_editable);
 	void _add_focusable(Control *p_control);
 	void _update_type_items();
@@ -376,6 +382,7 @@ class ThemeTypeEditor : public MarginContainer {
 	void _add_type_button_cbk();
 	void _add_default_type_items();
 
+	void _update_add_button(const String &p_text, LineEdit *p_for_edit);
 	void _item_add_cbk(int p_data_type, Control *p_control);
 	void _item_add_lineedit_cbk(String p_value, int p_data_type, Control *p_control);
 	void _item_override_cbk(int p_data_type, String p_item_name);
@@ -419,6 +426,9 @@ public:
 class ThemeEditor : public VBoxContainer {
 	GDCLASS(ThemeEditor, VBoxContainer);
 
+	friend class ThemeEditorPlugin;
+	ThemeEditorPlugin *plugin = nullptr;
+
 	Ref<Theme> theme;
 
 	TabBar *preview_tabs = nullptr;
@@ -433,6 +443,7 @@ class ThemeEditor : public VBoxContainer {
 
 	void _theme_save_button_cbk(bool p_save_as);
 	void _theme_edit_button_cbk();
+	void _theme_close_button_cbk();
 
 	void _add_preview_button_cbk();
 	void _preview_scene_dialog_cbk(const String &p_path);
@@ -462,9 +473,10 @@ class ThemeEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const override { return "Theme"; }
 	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_node) override;
-	virtual bool handles(Object *p_node) const override;
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
+	virtual bool can_auto_hide() const override;
 
 	ThemeEditorPlugin();
 };

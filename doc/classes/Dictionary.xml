@@ -138,8 +138,8 @@
 	</description>
 	<tutorials>
 		<link title="GDScript basics: Dictionary">$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#dictionary</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
-		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Dictionary">
@@ -192,6 +192,14 @@
 			<param index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the corresponding value for the given [param key] in the dictionary. If the [param key] does not exist, returns [param default], or [code]null[/code] if the parameter is omitted.
+			</description>
+		</method>
+		<method name="get_or_add">
+			<return type="Variant" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="default" type="Variant" default="null" />
+			<description>
+				Gets a value and ensures the key is set. If the [param key] exists in the dictionary, this behaves like [method get]. Otherwise, the [param default] value is inserted into the dictionary and returned.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -294,6 +302,60 @@
 			<param index="1" name="overwrite" type="bool" default="false" />
 			<description>
 				Adds entries from [param dictionary] to this dictionary. By default, duplicate keys are not copied over, unless [param overwrite] is [code]true[/code].
+				[codeblocks]
+				[gdscript]
+				var dict = { "item": "sword", "quantity": 2 }
+				var other_dict = { "quantity": 15, "color": "silver" }
+
+				# Overwriting of existing keys is disabled by default.
+				dict.merge(other_dict)
+				print(dict)  # { "item": "sword", "quantity": 2, "color": "silver" }
+
+				# With overwriting of existing keys enabled.
+				dict.merge(other_dict, true)
+				print(dict)  # { "item": "sword", "quantity": 15, "color": "silver" }
+				[/gdscript]
+				[csharp]
+				var dict = new Godot.Collections.Dictionary
+				{
+				    ["item"] = "sword",
+				    ["quantity"] = 2,
+				};
+
+				var otherDict = new Godot.Collections.Dictionary
+				{
+				    ["quantity"] = 15,
+				    ["color"] = "silver",
+				};
+
+				// Overwriting of existing keys is disabled by default.
+				dict.Merge(otherDict);
+				GD.Print(dict); // { "item": "sword", "quantity": 2, "color": "silver" }
+
+				// With overwriting of existing keys enabled.
+				dict.Merge(otherDict, true);
+				GD.Print(dict); // { "item": "sword", "quantity": 15, "color": "silver" }
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] [method merge] is [i]not[/i] recursive. Nested dictionaries are considered as keys that can be overwritten or not depending on the value of [param overwrite], but they will never be merged together.
+			</description>
+		</method>
+		<method name="merged" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<param index="1" name="overwrite" type="bool" default="false" />
+			<description>
+				Returns a copy of this dictionary merged with the other [param dictionary]. By default, duplicate keys are not copied over, unless [param overwrite] is [code]true[/code]. See also [method merge].
+				This method is useful for quickly making dictionaries with default values:
+				[codeblock]
+				var base = { "fruit": "apple", "vegetable": "potato" }
+				var extra = { "fruit": "orange", "dressing": "vinegar" }
+				# Prints { "fruit": "orange", "vegetable": "potato", "dressing": "vinegar" }
+				print(extra.merged(base))
+				# Prints { "fruit": "apple", "vegetable": "potato", "dressing": "vinegar" }
+				print(extra.merged(base, true))
+				[/codeblock]
+				See also [method merge].
 			</description>
 		</method>
 		<method name="size" qualifiers="const">

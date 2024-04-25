@@ -31,6 +31,7 @@
 #include "occluder_instance_3d_editor_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 
 void OccluderInstance3DEditorPlugin::_bake_select_file(const String &p_file) {
@@ -103,8 +104,8 @@ void OccluderInstance3DEditorPlugin::_bind_methods() {
 
 OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin() {
 	bake = memnew(Button);
-	bake->set_flat(true);
-	bake->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
+	bake->set_theme_type_variation("FlatButton");
+	bake->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
 	bake->set_text(TTR("Bake Occluders"));
 	bake->hide();
 	bake->connect("pressed", Callable(this, "_bake"));

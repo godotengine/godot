@@ -87,12 +87,6 @@ void GodotArea3D::set_space(GodotSpace3D *p_space) {
 }
 
 void GodotArea3D::set_monitor_callback(const Callable &p_callback) {
-	ObjectID id = p_callback.get_object_id();
-	if (id == monitor_callback.get_object_id()) {
-		monitor_callback = p_callback;
-		return;
-	}
-
 	_unregister_shapes();
 
 	monitor_callback = p_callback;
@@ -108,12 +102,6 @@ void GodotArea3D::set_monitor_callback(const Callable &p_callback) {
 }
 
 void GodotArea3D::set_area_monitor_callback(const Callable &p_callback) {
-	ObjectID id = p_callback.get_object_id();
-	if (id == area_monitor_callback.get_object_id()) {
-		area_monitor_callback = p_callback;
-		return;
-	}
-
 	_unregister_shapes();
 
 	area_monitor_callback = p_callback;
@@ -223,7 +211,7 @@ Variant GodotArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
 }
 
 void GodotArea3D::_queue_monitor_update() {
-	ERR_FAIL_COND(!get_space());
+	ERR_FAIL_NULL(get_space());
 
 	if (!monitor_query_list.in_list()) {
 		get_space()->area_add_to_monitor_query_list(&monitor_query_list);

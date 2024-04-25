@@ -78,7 +78,7 @@ layout(std140) uniform FrameData { //ubo:0
 	float delta;
 
 	float particle_size;
-	float pad0;
+	float amount_ratio;
 	float pad1;
 	float pad2;
 
@@ -88,6 +88,9 @@ layout(std140) uniform FrameData { //ubo:0
 	uint frame;
 
 	mat4 emission_transform;
+
+	vec3 emitter_velocity;
+	float interp_to_end;
 
 	Attractor attractors[MAX_ATTRACTORS];
 	Collider colliders[MAX_COLLIDERS];
@@ -109,22 +112,22 @@ layout(location = 4) in highp vec4 xform_2;
 layout(location = 5) in highp vec4 xform_3;
 #endif
 #ifdef USERDATA1_USED
-layout(location = 6) in highp vec4 userdata1;
+in highp vec4 userdata1;
 #endif
 #ifdef USERDATA2_USED
-layout(location = 7) in highp vec4 userdata2;
+in highp vec4 userdata2;
 #endif
 #ifdef USERDATA3_USED
-layout(location = 8) in highp vec4 userdata3;
+in highp vec4 userdata3;
 #endif
 #ifdef USERDATA4_USED
-layout(location = 9) in highp vec4 userdata4;
+in highp vec4 userdata4;
 #endif
 #ifdef USERDATA5_USED
-layout(location = 10) in highp vec4 userdata5;
+in highp vec4 userdata5;
 #endif
 #ifdef USERDATA6_USED
-layout(location = 11) in highp vec4 userdata6;
+in highp vec4 userdata6;
 #endif
 
 out highp vec4 out_color; //tfb:
@@ -216,6 +219,24 @@ void main() {
 #endif
 		xform = transpose(xform);
 		flags = floatBitsToUint(velocity_flags.w);
+#ifdef USERDATA1_USED
+		out_userdata1 = userdata1;
+#endif
+#ifdef USERDATA2_USED
+		out_userdata2 = userdata2;
+#endif
+#ifdef USERDATA3_USED
+		out_userdata3 = userdata3;
+#endif
+#ifdef USERDATA4_USED
+		out_userdata4 = userdata4;
+#endif
+#ifdef USERDATA5_USED
+		out_userdata5 = userdata5;
+#endif
+#ifdef USERDATA6_USED
+		out_userdata6 = userdata6;
+#endif
 	}
 
 	//clear started flag if set
@@ -318,7 +339,8 @@ void main() {
 				amount = max(0.0, 1.0 - d);
 			} else if (attractors[i].type == ATTRACTOR_TYPE_VECTOR_FIELD) {
 			}
-			amount = pow(amount, attractors[i].attenuation);
+			mediump float attractor_attenuation = attractors[i].attenuation;
+			amount = pow(amount, attractor_attenuation);
 			dir = safe_normalize(mix(dir, attractors[i].transform[2].xyz, attractors[i].directionality));
 			attractor_force -= amount * dir * attractors[i].strength;
 		}

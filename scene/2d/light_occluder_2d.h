@@ -86,6 +86,8 @@ class LightOccluder2D : public Node2D {
 	bool sdf_collision = false;
 	void _poly_changed();
 
+	virtual void _physics_interpolated_changed() override;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

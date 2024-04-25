@@ -7,7 +7,7 @@
 		This class is meant to be used with [AudioStreamGenerator] to play back the generated audio in real-time.
 	</description>
 	<tutorials>
-		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
 		<link title="Godot 3.2 will get new audio features">https://godotengine.org/article/godot-32-will-get-new-audio-features</link>
 	</tutorials>
 	<methods>
@@ -33,6 +33,7 @@
 		<method name="get_skips" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the number of times the playback skipped due to a buffer underrun in the audio sample data. This value is reset at the start of the playback.
 			</description>
 		</method>
 		<method name="push_buffer">

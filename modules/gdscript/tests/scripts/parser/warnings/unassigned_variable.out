@@ -1,5 +1,16 @@
 GDTEST_OK
 >> WARNING
->> Line: 2
+>> Line: 3
 >> UNASSIGNED_VARIABLE
->> The variable "__" was used but never assigned a value.
+>> The variable "unassigned" was used before being assigned a value.
+>> WARNING
+>> Line: 7
+>> UNASSIGNED_VARIABLE
+>> The variable "a" was used before being assigned a value.
+>> WARNING
+>> Line: 8
+>> UNASSIGNED_VARIABLE
+>> The variable "a" was used before being assigned a value.
+<null>
+<null>
+<null>

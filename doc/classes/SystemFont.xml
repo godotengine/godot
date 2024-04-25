@@ -7,7 +7,7 @@
 		[SystemFont] loads a font from a system font with the first matching name from [member font_names].
 		It will attempt to match font style, but it's not guaranteed.
 		The returned font might be part of a font collection or be a variable font with OpenType "weight", "width" and/or "italic" features set.
-		You can create [FontVariation] of the system font for fine control over its features.
+		You can create [FontVariation] of the system font for precise control over its features.
 		[b]Note:[/b] This class is implemented on iOS, Linux, macOS and Windows, on other platforms it will fallback to default theme font.
 	</description>
 	<tutorials>
@@ -18,6 +18,9 @@
 		</member>
 		<member name="antialiasing" type="int" setter="set_antialiasing" getter="get_antialiasing" enum="TextServer.FontAntialiasing" default="1">
 			Font anti-aliasing mode.
+		</member>
+		<member name="disable_embedded_bitmaps" type="bool" setter="set_disable_embedded_bitmaps" getter="get_disable_embedded_bitmaps" default="true">
+			If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
 		</member>
 		<member name="font_italic" type="bool" setter="set_font_italic" getter="get_font_italic" default="false">
 			If set to [code]true[/code], italic or oblique font is preferred.

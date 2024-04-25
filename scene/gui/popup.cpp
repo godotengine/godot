@@ -33,11 +33,13 @@
 #include "core/config/engine.h"
 #include "core/os/keyboard.h"
 #include "scene/gui/panel.h"
+#include "scene/theme/theme_db.h"
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (get_flag(FLAG_POPUP) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
 		_close_pressed();
 	}
+	Window::_input_from_window(p_event);
 }
 
 void Popup::_initialize_visible_parents() {
@@ -65,12 +67,6 @@ void Popup::_deinitialize_visible_parents() {
 
 		visible_parents.clear();
 	}
-}
-
-void Popup::_update_theme_item_cache() {
-	Window::_update_theme_item_cache();
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
 }
 
 void Popup::_notification(int p_what) {
@@ -127,16 +123,12 @@ void Popup::_close_pressed() {
 
 	_deinitialize_visible_parents();
 
-	call_deferred(SNAME("hide"));
+	callable_mp((Window *)this, &Window::hide).call_deferred();
 }
 
 void Popup::_post_popup() {
 	Window::_post_popup();
 	popped_up = true;
-}
-
-void Popup::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("popup_hide"));
 }
 
 void Popup::_validate_property(PropertyInfo &p_property) const {
@@ -200,6 +192,10 @@ Rect2i Popup::_popup_adjust_rect() const {
 	return current;
 }
 
+void Popup::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("popup_hide"));
+}
+
 Popup::Popup() {
 	set_wrap_controls(true);
 	set_visible(false);
@@ -207,8 +203,6 @@ Popup::Popup() {
 	set_flag(FLAG_BORDERLESS, true);
 	set_flag(FLAG_RESIZE_DISABLED, true);
 	set_flag(FLAG_POPUP, true);
-
-	connect("window_input", callable_mp(this, &Popup::_input_from_window));
 }
 
 Popup::~Popup() {
@@ -228,8 +222,7 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 		}
 
 		Size2 cms = c->get_combined_minimum_size();
-		ms.x = MAX(cms.x, ms.x);
-		ms.y = MAX(cms.y, ms.y);
+		ms = cms.max(ms);
 	}
 
 	return ms + theme_cache.panel_style->get_minimum_size();
@@ -237,7 +230,8 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 
 void PopupPanel::_update_child_rects() {
 	Vector2 cpos(theme_cache.panel_style->get_offset());
-	Vector2 csize(get_size() - theme_cache.panel_style->get_minimum_size());
+	Vector2 panel_size = Vector2(get_size()) / get_content_scale_factor();
+	Vector2 csize = panel_size - theme_cache.panel_style->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -251,18 +245,12 @@ void PopupPanel::_update_child_rects() {
 
 		if (c == panel) {
 			c->set_position(Vector2());
-			c->set_size(get_size());
+			c->set_size(panel_size);
 		} else {
 			c->set_position(cpos);
 			c->set_size(csize);
 		}
 	}
-}
-
-void PopupPanel::_update_theme_item_cache() {
-	Popup::_update_theme_item_cache();
-
-	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
 }
 
 void PopupPanel::_notification(int p_what) {
@@ -277,6 +265,10 @@ void PopupPanel::_notification(int p_what) {
 			_update_child_rects();
 		} break;
 	}
+}
+
+void PopupPanel::_bind_methods() {
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, PopupPanel, panel_style, "panel");
 }
 
 PopupPanel::PopupPanel() {

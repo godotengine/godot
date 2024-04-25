@@ -30,13 +30,15 @@
 
 #include "texture_editor_plugin.h"
 
-#include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/animated_texture.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/image_texture.h"
+#include "scene/resources/portable_compressed_texture.h"
 
 TextureRect *TexturePreview::get_texture_display() {
 	return texture_display;
@@ -55,11 +57,11 @@ void TexturePreview::_notification(int p_what) {
 			}
 
 			if (metadata_label) {
-				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), SNAME("EditorFonts"));
+				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				metadata_label->add_theme_font_override("font", metadata_label_font);
 			}
 
-			checkerboard->set_texture(get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons")));
+			checkerboard->set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
 		} break;
 	}
 }
@@ -157,7 +159,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 }
 
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
@@ -166,7 +168,7 @@ void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
 		Ref<Image> image(Object::cast_to<Image>(p_object));
 		texture = ImageTexture::create_from_image(image);
 
-		ERR_FAIL_COND_MSG(texture == nullptr, "Failed to create the texture from an invalid image.");
+		ERR_FAIL_NULL_MSG(texture, "Failed to create the texture from an invalid image.");
 	}
 
 	add_custom_control(memnew(TexturePreview(texture, true)));

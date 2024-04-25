@@ -146,6 +146,7 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::FAVORITES             ,"Favorites"},
 	{Key::SEARCH                ,"Search"},
 	{Key::STANDBY               ,"StandBy"},
+	{Key::OPENURL               ,"OpenURL"},
 	{Key::LAUNCHMAIL            ,"LaunchMail"},
 	{Key::LAUNCHMEDIA           ,"LaunchMedia"},
 	{Key::LAUNCH0               ,"Launch0"},
@@ -238,6 +239,8 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::BAR                   ,"Bar"},
 	{Key::BRACERIGHT            ,"BraceRight"},
 	{Key::ASCIITILDE            ,"AsciiTilde"},
+	{Key::YEN                   ,"Yen"},
+	{Key::SECTION               ,"Section"},
 	{Key::NONE                  ,nullptr}
 	/* clang-format on */
 };
@@ -407,7 +410,7 @@ Key find_keycode(const String &p_codestr) {
 		return keycode;
 	}
 
-	String last_part = code_parts[code_parts.size() - 1];
+	const String &last_part = code_parts[code_parts.size() - 1];
 	const _KeyCodeText *kct = &_keycodes[0];
 
 	while (kct->text) {
@@ -419,7 +422,7 @@ Key find_keycode(const String &p_codestr) {
 	}
 
 	for (int part = 0; part < code_parts.size() - 1; part++) {
-		String code_part = code_parts[part];
+		const String &code_part = code_parts[part];
 		if (code_part.nocasecmp_to(find_keycode_name(Key::SHIFT)) == 0) {
 			keycode |= KeyModifierMask::SHIFT;
 		} else if (code_part.nocasecmp_to(find_keycode_name(Key::CTRL)) == 0) {

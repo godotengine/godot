@@ -88,11 +88,14 @@ TEST_CASE("[Image] Saving and loading") {
 			err == OK,
 			"The image should be saved successfully as a .png file.");
 
+	// Only available on editor builds.
+#ifdef TOOLS_ENABLED
 	// Save EXR
 	err = image->save_exr(save_path_exr, false);
 	CHECK_MESSAGE(
 			err == OK,
 			"The image should be saved successfully as an .exr file.");
+#endif // TOOLS_ENABLED
 
 	// Load using load()
 	Ref<Image> image_load = memnew(Image());
@@ -114,16 +117,6 @@ TEST_CASE("[Image] Saving and loading") {
 	CHECK_MESSAGE(
 			image_bmp->load_bmp_from_buffer(data_bmp) == OK,
 			"The BMP image should load successfully.");
-
-	// Load DDS
-	Ref<Image> image_dds = memnew(Image());
-	Ref<FileAccess> f_dds = FileAccess::open(TestUtils::get_data_path("images/icon.dds"), FileAccess::READ, &err);
-	PackedByteArray data_dds;
-	data_dds.resize(f_dds->get_length() + 1);
-	f_dds->get_buffer(data_dds.ptrw(), f_dds->get_length());
-	CHECK_MESSAGE(
-			image_dds->load_dds_from_buffer(data_dds) == OK,
-			"The DDS image should load successfully.");
 
 	// Load JPG
 	Ref<Image> image_jpg = memnew(Image());
@@ -262,9 +255,7 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 
 		for (const Rect2i &rect : rects) {
 			Ref<Image> img = memnew(Image(img_width, img_height, false, Image::FORMAT_RGBA8));
-			CHECK_NOTHROW_MESSAGE(
-					img->fill_rect(rect, Color(1, 1, 1, 1)),
-					"fill_rect() shouldn't throw for any rect.");
+			img->fill_rect(rect, Color(1, 1, 1, 1));
 			for (int y = 0; y < img->get_height(); y++) {
 				for (int x = 0; x < img->get_width(); x++) {
 					if (rect.abs().has_point(Point2(x, y))) {
@@ -317,7 +308,7 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 	// Pre-multiply Alpha then Convert from RGBA to L8, checking alpha
 	{
 		Ref<Image> gray_image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
-		CHECK_NOTHROW_MESSAGE(gray_image->fill_rect(Rect2i(0, 0, 3, 3), Color(1, 1, 1, 0)), "fill_rect() shouldn't throw for any rect.");
+		gray_image->fill_rect(Rect2i(0, 0, 3, 3), Color(1, 1, 1, 0));
 		gray_image->set_pixel(1, 1, Color(1, 1, 1, 1));
 		gray_image->set_pixel(1, 2, Color(0.5, 0.5, 0.5, 0.5));
 		gray_image->set_pixel(2, 1, Color(0.25, 0.05, 0.5, 1.0));
@@ -413,6 +404,32 @@ TEST_CASE("[Image] Custom mipmaps") {
 			}
 		}
 	}
+}
+
+TEST_CASE("[Image] Convert image") {
+	for (int format = Image::FORMAT_RF; format < Image::FORMAT_RGBE9995; format++) {
+		for (int new_format = Image::FORMAT_RF; new_format < Image::FORMAT_RGBE9995; new_format++) {
+			Ref<Image> image = memnew(Image(4, 4, false, (Image::Format)format));
+			image->convert((Image::Format)new_format);
+			String format_string = Image::format_names[(Image::Format)format];
+			String new_format_string = Image::format_names[(Image::Format)new_format];
+			format_string = "Error converting from " + format_string + " to " + new_format_string + ".";
+			CHECK_MESSAGE(image->get_format() == new_format, format_string);
+		}
+	}
+
+	Ref<Image> image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+	PackedByteArray image_data = image->get_data();
+	ERR_PRINT_OFF;
+	image->convert((Image::Format)-1);
+	ERR_PRINT_ON;
+	CHECK_MESSAGE(image->get_data() == image_data, "Image conversion to invalid type (-1) should not alter image.");
+	Ref<Image> image2 = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
+	image_data = image2->get_data();
+	ERR_PRINT_OFF;
+	image2->convert((Image::Format)(Image::FORMAT_MAX + 1));
+	ERR_PRINT_ON;
+	CHECK_MESSAGE(image2->get_data() == image_data, "Image conversion to invalid type (Image::FORMAT_MAX + 1) should not alter image.");
 }
 
 } // namespace TestImage

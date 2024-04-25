@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 4D vector using floating point coordinates.
+		A 4D vector using floating-point coordinates.
 	</brief_description>
 	<description>
 		A 4-element structure that can be used to represent 4D coordinates or any other quadruplet of numeric values.
@@ -85,7 +85,7 @@
 			<param index="6" name="post_b_t" type="float" />
 			<description>
 				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
-				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
+				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
 			</description>
 		</method>
 		<method name="direction_to" qualifiers="const">
@@ -155,7 +155,7 @@
 				This method is faster than using [method is_equal_approx] with one value as a zero vector.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -168,7 +168,7 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
-		<method name="lerp" qualifiers="const">
+		<method name="lerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector4" />
 			<param index="0" name="to" type="Vector4" />
 			<param index="1" name="weight" type="float" />
@@ -280,7 +280,8 @@
 			<return type="Vector4" />
 			<param index="0" name="right" type="Projection" />
 			<description>
-				Inversely transforms (multiplies) the [Vector4] by the given [Projection] matrix.
+				Transforms (multiplies) the [Vector4] by the transpose of the given [Projection] matrix.
+				For transforming by inverse of a projection [code]projection.inverse() * vector[/code] can be used instead. See [method Projection.inverse].
 			</description>
 		</operator>
 		<operator name="operator *">

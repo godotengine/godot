@@ -31,8 +31,8 @@
 #ifndef TEST_ARRAYMESH_H
 #define TEST_ARRAYMESH_H
 
+#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/primitive_meshes.h"
 
 #include "tests/test_macros.h"
 
@@ -154,7 +154,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 	}
 }
 
-TEST_CASE("[SceneTree][ArrayMesh] Surface meta data tests.") {
+TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 	Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
 	Array cylinder_array{};
@@ -195,7 +195,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Surface meta data tests.") {
 	}
 
 	SUBCASE("Returns correct format for the mesh") {
-		auto format = RS::ARRAY_FORMAT_BLEND_SHAPE_MASK | RS::ARRAY_FORMAT_TEX_UV | RS::ARRAY_FORMAT_INDEX;
+		int format = RS::ARRAY_FORMAT_BLEND_SHAPE_MASK | RS::ARRAY_FORMAT_TEX_UV | RS::ARRAY_FORMAT_INDEX;
 		CHECK((mesh->surface_get_format(0) & format) != 0);
 		CHECK((mesh->surface_get_format(1) & format) != 0);
 	}

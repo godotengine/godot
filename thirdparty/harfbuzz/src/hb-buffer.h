@@ -99,7 +99,7 @@ typedef struct hb_glyph_info_t {
  * 				   layout, by avoiding re-shaping of each line
  * 				   after line-breaking, by limiting the
  * 				   reshaping to a small piece around the
- * 				   breaking positin only, even if the breaking
+ * 				   breaking position only, even if the breaking
  * 				   position carries the
  * 				   #HB_GLYPH_FLAG_UNSAFE_TO_BREAK or when
  * 				   hyphenation or other text transformation
@@ -487,6 +487,12 @@ hb_buffer_set_not_found_glyph (hb_buffer_t    *buffer,
 HB_EXTERN hb_codepoint_t
 hb_buffer_get_not_found_glyph (const hb_buffer_t *buffer);
 
+HB_EXTERN void
+hb_buffer_set_random_state (hb_buffer_t    *buffer,
+			    unsigned        state);
+
+HB_EXTERN unsigned
+hb_buffer_get_random_state (const hb_buffer_t *buffer);
 
 /*
  * Content API.

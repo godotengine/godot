@@ -2,19 +2,7 @@
  *  FIPS-180-1 compliant SHA-1 implementation
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 /*
  *  The SHA-1 standard was published by NIST in 1993.
@@ -34,17 +22,10 @@
 
 #include "mbedtls/platform.h"
 
-#define SHA1_VALIDATE_RET(cond)                             \
-    MBEDTLS_INTERNAL_VALIDATE_RET(cond, MBEDTLS_ERR_SHA1_BAD_INPUT_DATA)
-
-#define SHA1_VALIDATE(cond)  MBEDTLS_INTERNAL_VALIDATE(cond)
-
 #if !defined(MBEDTLS_SHA1_ALT)
 
 void mbedtls_sha1_init(mbedtls_sha1_context *ctx)
 {
-    SHA1_VALIDATE(ctx != NULL);
-
     memset(ctx, 0, sizeof(mbedtls_sha1_context));
 }
 
@@ -60,19 +41,14 @@ void mbedtls_sha1_free(mbedtls_sha1_context *ctx)
 void mbedtls_sha1_clone(mbedtls_sha1_context *dst,
                         const mbedtls_sha1_context *src)
 {
-    SHA1_VALIDATE(dst != NULL);
-    SHA1_VALIDATE(src != NULL);
-
     *dst = *src;
 }
 
 /*
  * SHA-1 context setup
  */
-int mbedtls_sha1_starts_ret(mbedtls_sha1_context *ctx)
+int mbedtls_sha1_starts(mbedtls_sha1_context *ctx)
 {
-    SHA1_VALIDATE_RET(ctx != NULL);
-
     ctx->total[0] = 0;
     ctx->total[1] = 0;
 
@@ -85,13 +61,6 @@ int mbedtls_sha1_starts_ret(mbedtls_sha1_context *ctx)
     return 0;
 }
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_sha1_starts(mbedtls_sha1_context *ctx)
-{
-    mbedtls_sha1_starts_ret(ctx);
-}
-#endif
-
 #if !defined(MBEDTLS_SHA1_PROCESS_ALT)
 int mbedtls_internal_sha1_process(mbedtls_sha1_context *ctx,
                                   const unsigned char data[64])
@@ -99,9 +68,6 @@ int mbedtls_internal_sha1_process(mbedtls_sha1_context *ctx,
     struct {
         uint32_t temp, W[16], A, B, C, D, E;
     } local;
-
-    SHA1_VALIDATE_RET(ctx != NULL);
-    SHA1_VALIDATE_RET((const unsigned char *) data != NULL);
 
     local.W[0] = MBEDTLS_GET_UINT32_BE(data,  0);
     local.W[1] = MBEDTLS_GET_UINT32_BE(data,  4);
@@ -264,28 +230,18 @@ int mbedtls_internal_sha1_process(mbedtls_sha1_context *ctx,
     return 0;
 }
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_sha1_process(mbedtls_sha1_context *ctx,
-                          const unsigned char data[64])
-{
-    mbedtls_internal_sha1_process(ctx, data);
-}
-#endif
 #endif /* !MBEDTLS_SHA1_PROCESS_ALT */
 
 /*
  * SHA-1 process buffer
  */
-int mbedtls_sha1_update_ret(mbedtls_sha1_context *ctx,
-                            const unsigned char *input,
-                            size_t ilen)
+int mbedtls_sha1_update(mbedtls_sha1_context *ctx,
+                        const unsigned char *input,
+                        size_t ilen)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t fill;
     uint32_t left;
-
-    SHA1_VALIDATE_RET(ctx != NULL);
-    SHA1_VALIDATE_RET(ilen == 0 || input != NULL);
 
     if (ilen == 0) {
         return 0;
@@ -329,27 +285,15 @@ int mbedtls_sha1_update_ret(mbedtls_sha1_context *ctx,
     return 0;
 }
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_sha1_update(mbedtls_sha1_context *ctx,
-                         const unsigned char *input,
-                         size_t ilen)
-{
-    mbedtls_sha1_update_ret(ctx, input, ilen);
-}
-#endif
-
 /*
  * SHA-1 final digest
  */
-int mbedtls_sha1_finish_ret(mbedtls_sha1_context *ctx,
-                            unsigned char output[20])
+int mbedtls_sha1_finish(mbedtls_sha1_context *ctx,
+                        unsigned char output[20])
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     uint32_t used;
     uint32_t high, low;
-
-    SHA1_VALIDATE_RET(ctx != NULL);
-    SHA1_VALIDATE_RET((unsigned char *) output != NULL);
 
     /*
      * Add padding: 0x80 then 0x00 until 8 bytes remain for the length
@@ -366,7 +310,7 @@ int mbedtls_sha1_finish_ret(mbedtls_sha1_context *ctx,
         memset(ctx->buffer + used, 0, 64 - used);
 
         if ((ret = mbedtls_internal_sha1_process(ctx, ctx->buffer)) != 0) {
-            return ret;
+            goto exit;
         }
 
         memset(ctx->buffer, 0, 56);
@@ -383,7 +327,7 @@ int mbedtls_sha1_finish_ret(mbedtls_sha1_context *ctx,
     MBEDTLS_PUT_UINT32_BE(low,  ctx->buffer, 60);
 
     if ((ret = mbedtls_internal_sha1_process(ctx, ctx->buffer)) != 0) {
-        return ret;
+        goto exit;
     }
 
     /*
@@ -395,60 +339,43 @@ int mbedtls_sha1_finish_ret(mbedtls_sha1_context *ctx,
     MBEDTLS_PUT_UINT32_BE(ctx->state[3], output, 12);
     MBEDTLS_PUT_UINT32_BE(ctx->state[4], output, 16);
 
-    return 0;
-}
+    ret = 0;
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_sha1_finish(mbedtls_sha1_context *ctx,
-                         unsigned char output[20])
-{
-    mbedtls_sha1_finish_ret(ctx, output);
+exit:
+    mbedtls_sha1_free(ctx);
+    return ret;
 }
-#endif
 
 #endif /* !MBEDTLS_SHA1_ALT */
 
 /*
  * output = SHA-1( input buffer )
  */
-int mbedtls_sha1_ret(const unsigned char *input,
-                     size_t ilen,
-                     unsigned char output[20])
+int mbedtls_sha1(const unsigned char *input,
+                 size_t ilen,
+                 unsigned char output[20])
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     mbedtls_sha1_context ctx;
 
-    SHA1_VALIDATE_RET(ilen == 0 || input != NULL);
-    SHA1_VALIDATE_RET((unsigned char *) output != NULL);
-
     mbedtls_sha1_init(&ctx);
 
-    if ((ret = mbedtls_sha1_starts_ret(&ctx)) != 0) {
+    if ((ret = mbedtls_sha1_starts(&ctx)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_sha1_update_ret(&ctx, input, ilen)) != 0) {
+    if ((ret = mbedtls_sha1_update(&ctx, input, ilen)) != 0) {
         goto exit;
     }
 
-    if ((ret = mbedtls_sha1_finish_ret(&ctx, output)) != 0) {
+    if ((ret = mbedtls_sha1_finish(&ctx, output)) != 0) {
         goto exit;
     }
 
 exit:
     mbedtls_sha1_free(&ctx);
-
     return ret;
 }
-
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_sha1(const unsigned char *input,
-                  size_t ilen,
-                  unsigned char output[20])
-{
-    mbedtls_sha1_ret(input, ilen, output);
-}
-#endif
 
 #if defined(MBEDTLS_SELF_TEST)
 /*
@@ -496,7 +423,7 @@ int mbedtls_sha1_self_test(int verbose)
             mbedtls_printf("  SHA-1 test #%d: ", i + 1);
         }
 
-        if ((ret = mbedtls_sha1_starts_ret(&ctx)) != 0) {
+        if ((ret = mbedtls_sha1_starts(&ctx)) != 0) {
             goto fail;
         }
 
@@ -504,20 +431,20 @@ int mbedtls_sha1_self_test(int verbose)
             memset(buf, 'a', buflen = 1000);
 
             for (j = 0; j < 1000; j++) {
-                ret = mbedtls_sha1_update_ret(&ctx, buf, buflen);
+                ret = mbedtls_sha1_update(&ctx, buf, buflen);
                 if (ret != 0) {
                     goto fail;
                 }
             }
         } else {
-            ret = mbedtls_sha1_update_ret(&ctx, sha1_test_buf[i],
-                                          sha1_test_buflen[i]);
+            ret = mbedtls_sha1_update(&ctx, sha1_test_buf[i],
+                                      sha1_test_buflen[i]);
             if (ret != 0) {
                 goto fail;
             }
         }
 
-        if ((ret = mbedtls_sha1_finish_ret(&ctx, sha1sum)) != 0) {
+        if ((ret = mbedtls_sha1_finish(&ctx, sha1sum)) != 0) {
             goto fail;
         }
 

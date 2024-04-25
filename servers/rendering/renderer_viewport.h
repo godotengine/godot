@@ -37,8 +37,11 @@
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering_server.h"
-#include "servers/xr/xr_interface.h"
 #include "storage/render_scene_buffers.h"
+
+#ifndef _3D_DISABLED
+#include "servers/xr/xr_interface.h"
+#endif // _3D_DISABLED
 
 class RendererViewport {
 public:
@@ -63,6 +66,7 @@ public:
 		float fsr_sharpness = 0.2f;
 		float texture_mipmap_bias = 0.0f;
 		bool fsr_enabled = false;
+		uint32_t jitter_phase_count = 0;
 		RS::ViewportUpdateMode update_mode = RenderingServer::VIEWPORT_UPDATE_WHEN_VISIBLE;
 		RID render_target;
 		RID render_target_texture;
@@ -203,6 +207,7 @@ public:
 private:
 	Vector<Viewport *> _sort_active_viewports();
 	void _viewport_set_size(Viewport *p_viewport, int p_width, int p_height, uint32_t p_view_count);
+	bool _viewport_requires_motion_vectors(Viewport *p_viewport);
 	void _configure_3d_render_buffers(Viewport *p_viewport);
 	void _draw_3d(Viewport *p_viewport);
 	void _draw_viewport(Viewport *p_viewport);
@@ -231,6 +236,7 @@ public:
 	void viewport_set_texture_mipmap_bias(RID p_viewport, float p_mipmap_bias);
 
 	void viewport_set_update_mode(RID p_viewport, RS::ViewportUpdateMode p_mode);
+	RS::ViewportUpdateMode viewport_get_update_mode(RID p_viewport) const;
 	void viewport_set_vflip(RID p_viewport, bool p_enable);
 
 	void viewport_set_clear_mode(RID p_viewport, RS::ViewportClearMode p_clear_mode);
@@ -297,7 +303,7 @@ public:
 	void handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time);
 
 	void set_default_clear_color(const Color &p_color);
-	void draw_viewports();
+	void draw_viewports(bool p_swap_buffers);
 
 	bool free(RID p_rid);
 

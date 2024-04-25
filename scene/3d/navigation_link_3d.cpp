@@ -147,6 +147,8 @@ void NavigationLink3D::_update_debug_mesh() {
 #endif // DEBUG_ENABLED
 
 void NavigationLink3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationLink3D::get_rid);
+
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationLink3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationLink3D::is_enabled);
 
@@ -263,7 +265,13 @@ void NavigationLink3D::_notification(int p_what) {
 
 NavigationLink3D::NavigationLink3D() {
 	link = NavigationServer3D::get_singleton()->link_create();
+
 	NavigationServer3D::get_singleton()->link_set_owner_id(link, get_instance_id());
+	NavigationServer3D::get_singleton()->link_set_enter_cost(link, enter_cost);
+	NavigationServer3D::get_singleton()->link_set_travel_cost(link, travel_cost);
+	NavigationServer3D::get_singleton()->link_set_navigation_layers(link, navigation_layers);
+	NavigationServer3D::get_singleton()->link_set_bidirectional(link, bidirectional);
+	NavigationServer3D::get_singleton()->link_set_enabled(link, enabled);
 
 	set_notify_transform(true);
 }
@@ -282,6 +290,10 @@ NavigationLink3D::~NavigationLink3D() {
 		RenderingServer::get_singleton()->free(debug_mesh->get_rid());
 	}
 #endif // DEBUG_ENABLED
+}
+
+RID NavigationLink3D::get_rid() const {
+	return link;
 }
 
 void NavigationLink3D::set_enabled(bool p_enabled) {
