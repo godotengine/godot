@@ -750,6 +750,10 @@
 			- [b]Localized:[/b] Displays the localized string for the current editor language if a translation is available for the given property. If no translation is available, falls back to [b]Capitalized[/b].
 			[b]Note:[/b] To display translated setting names in Project Settings and Editor Settings, use [member interface/editor/localize_settings] instead.
 		</member>
+		<member name="interface/inspector/delimitate_all_container_and_resources" type="bool" setter="" getter="">
+			If [code]true[/code], add a margin around Array, Dictionary, and Resource Editors that are not already colored.
+			[b]Note:[/b] If [member interface/inspector/nested_color_mode] is set to [b]Containers &amp; Resources[/b] this parameter will have no effect since those editors will already be colored
+		</member>
 		<member name="interface/inspector/disable_folding" type="bool" setter="" getter="">
 			If [code]true[/code], forces all property groups to be expanded in the Inspector dock and prevents collapsing them.
 		</member>
@@ -764,6 +768,12 @@
 		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.
+		</member>
+		<member name="interface/inspector/nested_color_mode" type="int" setter="" getter="">
+			Control which property editors are colored when they are opened.
+			- [b]Containers &amp; Resources:[/b] Color all Array, Dictionary, and Resource Editors.
+			- [b]Resources:[/b] Color all Resource Editors.
+			- [b]External Resources:[/b] Color Resource Editors that edits an external resource.
 		</member>
 		<member name="interface/inspector/open_resources_in_current_inspector" type="bool" setter="" getter="">
 			If [code]true[/code], subresources can be edited in the current inspector view. If the resource type is defined in [member interface/inspector/resources_to_open_in_new_inspector] or if this setting is [code]false[/code], attempting to edit a subresource always opens a new inspector view.
