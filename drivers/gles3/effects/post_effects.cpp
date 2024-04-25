@@ -87,7 +87,7 @@ void PostEffects::_draw_screen_triangle() {
 	glBindVertexArray(0);
 }
 
-void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuint p_source_color, Size2i p_source_size, float p_luminance_multiplier, const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity, uint32_t p_view, bool p_use_multiview) {
+void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuint p_source_color, Size2i p_source_size, float p_luminance_multiplier, const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity, uint32_t p_view, bool p_use_multiview, uint64_t p_spec_constants) {
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
 	glDisable(GL_BLEND);
@@ -96,7 +96,7 @@ void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuin
 	glViewport(0, 0, p_dest_size.x, p_dest_size.y);
 
 	PostShaderGLES3::ShaderVariant mode = PostShaderGLES3::MODE_DEFAULT;
-	uint64_t flags = 0;
+	uint64_t flags = p_spec_constants;
 	if (p_use_multiview) {
 		flags |= PostShaderGLES3::USE_MULTIVIEW;
 	}

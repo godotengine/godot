@@ -1,43 +1,31 @@
-#ifdef USE_BCS
-uniform vec3 bcs;
-#endif
-
-#ifdef USE_COLOR_CORRECTION
-#ifdef USE_1D_LUT
-uniform sampler2D source_color_correction; //texunit:-1
-#else
-uniform sampler3D source_color_correction; //texunit:-1
-#endif
-#endif
-
 layout(std140) uniform TonemapData { //ubo:0
 	float exposure;
 	float white;
 	int tonemapper;
 	int pad;
+
+	int pad2;
+	float brightness;
+	float contrast;
+	float saturation;
 };
 
-vec3 apply_bcs(vec3 color, vec3 bcs) {
-	color = mix(vec3(0.0), color, bcs.x);
-	color = mix(vec3(0.5), color, bcs.y);
-	color = mix(vec3(dot(vec3(1.0), color) * 0.33333), color, bcs.z);
+// This expects 0-1 range input.
+vec3 linear_to_srgb(vec3 color) {
+	//color = clamp(color, vec3(0.0), vec3(1.0));
+	//const vec3 a = vec3(0.055f);
+	//return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
+	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+	return max(vec3(1.055) * pow(color, vec3(0.416666667)) - vec3(0.055), vec3(0.0));
+}
 
-	return color;
+// This expects 0-1 range input, outside that range it behaves poorly.
+vec3 srgb_to_linear(vec3 color) {
+	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+	return color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);
 }
-#ifdef USE_COLOR_CORRECTION
-#ifdef USE_1D_LUT
-vec3 apply_color_correction(vec3 color) {
-	color.r = texture(source_color_correction, vec2(color.r, 0.0f)).r;
-	color.g = texture(source_color_correction, vec2(color.g, 0.0f)).g;
-	color.b = texture(source_color_correction, vec2(color.b, 0.0f)).b;
-	return color;
-}
-#else
-vec3 apply_color_correction(vec3 color) {
-	return textureLod(source_color_correction, color, 0.0).rgb;
-}
-#endif
-#endif
+
+#ifdef APPLY_TONEMAPPING
 
 vec3 tonemap_filmic(vec3 color, float p_white) {
 	// exposure bias: input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
@@ -92,21 +80,6 @@ vec3 tonemap_reinhard(vec3 color, float p_white) {
 	return (p_white * color + color) / (color * p_white + p_white);
 }
 
-// This expects 0-1 range input.
-vec3 linear_to_srgb(vec3 color) {
-	//color = clamp(color, vec3(0.0), vec3(1.0));
-	//const vec3 a = vec3(0.055f);
-	//return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
-	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
-	return max(vec3(1.055) * pow(color, vec3(0.416666667)) - vec3(0.055), vec3(0.0));
-}
-
-// This expects 0-1 range input, outside that range it behaves poorly.
-vec3 srgb_to_linear(vec3 color) {
-	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
-	return color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);
-}
-
 #define TONEMAPPER_LINEAR 0
 #define TONEMAPPER_REINHARD 1
 #define TONEMAPPER_FILMIC 2
@@ -125,3 +98,5 @@ vec3 apply_tonemapping(vec3 color, float p_white) { // inputs are LINEAR, always
 		return tonemap_aces(max(vec3(0.0f), color), p_white);
 	}
 }
+
+#endif // APPLY_TONEMAPPING
