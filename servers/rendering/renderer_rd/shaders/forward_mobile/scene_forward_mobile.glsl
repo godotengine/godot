@@ -1617,6 +1617,12 @@ void main() {
 			tint = mix(tint, vec3(1.0), shadow);
 			shadow = 1.0;
 #endif
+			float light_attenuation = 1.0;
+#ifdef SHADOW_ATTENUATION_USED
+			float shadow_attenuation = shadow;
+#else
+			light_attenuation = shadow;
+#endif
 
 			light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0,
 #ifndef DEBUG_DRAW_PSSM_SPLITS
@@ -1624,7 +1630,7 @@ void main() {
 #else
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
 #endif
-					true, shadow, f0, orms, 1.0, albedo, alpha,
+					true, light_attenuation, f0, orms, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -1647,6 +1653,10 @@ void main() {
 #endif
 #ifdef USE_SOFT_SHADOW
 					directional_lights.data[i].size,
+#endif
+
+#ifdef SHADOW_ATTENUATION_USED
+					shadow_attenuation,
 #endif
 					diffuse_light,
 					specular_light);

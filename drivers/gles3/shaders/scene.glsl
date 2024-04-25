@@ -1020,6 +1020,9 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 B, vec3 T, float anisotropy,
 #endif
+#ifdef SHADOW_ATTENUATION_USED
+		float shadow_attenuation,
+#endif
 		inout vec3 diffuse_light, inout vec3 specular_light) {
 
 #if defined(LIGHT_CODE_USED)
@@ -1196,7 +1199,11 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 		size_A = max(0.0, 1.0 - 1.0 / sqrt(1.0 + t * t));
 	}
 
+#ifdef SHADOW_ATTENUATION_USED
+	float shadow_attenuation = shadow;
+#else
 	omni_attenuation *= shadow;
+#endif
 
 	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, omni_attenuation, f0, roughness, metallic, omni_lights[idx].specular_amount, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
@@ -1210,6 +1217,9 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
+#endif
+#ifdef SHADOW_ATTENUATION_USED
+			shadow_attenuation,
 #endif
 			diffuse_light,
 			specular_light);
@@ -1252,8 +1262,11 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 		size_A = max(0.0, 1.0 - 1.0 / sqrt(1.0 + t * t));
 	}
 
+#ifdef SHADOW_ATTENUATION_USED
+	float shadow_attenuation = shadow;
+#else
 	spot_attenuation *= shadow;
-
+#endif
 	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, spot_attenuation, f0, roughness, metallic, spot_lights[idx].specular_amount, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
@@ -1266,6 +1279,9 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
+#endif
+#ifdef SHADOW_ATTENUATION_USED
+			shadow_attenuation,
 #endif
 			diffuse_light, specular_light);
 }
@@ -1777,6 +1793,10 @@ void main() {
 				binormal,
 				tangent, anisotropy,
 #endif
+
+#ifdef SHADOW_ATTENUATION_USED
+				1.0,
+#endif
 				diffuse_light,
 				specular_light);
 	}
@@ -2049,7 +2069,15 @@ void main() {
 #else
 	float directional_shadow = 1.0f;
 #endif // SHADOWS_DISABLED
-	light_compute(normal, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].size, directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy, true, directional_shadow, f0, roughness, metallic, 1.0, albedo, alpha,
+
+	float light_attenuation = 1.0;
+#ifdef SHADOW_ATTENUATION_USED
+	float shadow_attenuation = directional_shadow;
+#else
+	light_attenuation = directional_shadow;
+#endif // SHADOW_ATTENUATION_USED
+
+	light_compute(normal, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].size, directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy, true, light_attenuation, f0, roughness, metallic, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -2062,6 +2090,9 @@ void main() {
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal,
 			tangent, anisotropy,
+#endif
+#ifdef SHADOW_ATTENUATION_USED
+			shadow_attenuation,
 #endif
 			diffuse_light,
 			specular_light);

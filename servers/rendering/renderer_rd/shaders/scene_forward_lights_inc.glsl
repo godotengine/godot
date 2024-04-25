@@ -58,7 +58,11 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 B, vec3 T, float anisotropy,
 #endif
-		inout vec3 diffuse_light, inout vec3 specular_light) {
+#ifdef SHADOW_ATTENUATION_USED
+		float shadow_attenuation,
+#endif
+		inout vec3 diffuse_light,
+		inout vec3 specular_light) {
 
 	vec4 orms_unpacked = unpackUnorm4x8(orms);
 
@@ -667,8 +671,11 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			color *= proj.rgb * proj.a;
 		}
 	}
-
+#ifdef SHADOW_ATTENUATION_USED
+	float shadow_attenuation = shadow;
+#else
 	light_attenuation *= shadow;
+#endif
 
 	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, light_attenuation, f0, orms, omni_lights.data[idx].specular_amount, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
@@ -688,6 +695,9 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
+#endif
+#ifdef SHADOW_ATTENUATION_USED
+			shadow_attenuation,
 #endif
 			diffuse_light,
 			specular_light);
@@ -875,7 +885,11 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			color *= proj.rgb * proj.a;
 		}
 	}
+#ifdef SHADOW_ATTENUATION_USED
+	float shadow_attenuation = shadow;
+#else
 	light_attenuation *= shadow;
+#endif
 
 	light_compute(normal, normalize(light_rel_vec), eye_vec, size_A, color, false, light_attenuation, f0, orms, spot_lights.data[idx].specular_amount, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
@@ -895,6 +909,9 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
+#endif
+#ifdef SHADOW_ATTENUATION_USED
+			shadow_attenuation,
 #endif
 			diffuse_light, specular_light);
 }
