@@ -479,6 +479,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/inspector/max_array_dictionary_items_per_page", 20, "10,100,1")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/show_low_level_opentype_features", false, "")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/inspector/float_drag_speed", 5.0, "0.1,100,0.01")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/nested_color_mode", 0, "Containers & Resources,Resources,External Resources")
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/delimitate_all_container_and_resources", true, "")
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_property_name_style", EditorPropertyNameProcessor::STYLE_CAPITALIZED, "Raw,Capitalized,Localized", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	// The lowest value is equal to the minimum float step for 32-bit floats.
 	// The step must be set manually, as changing this setting should not change the step here.
