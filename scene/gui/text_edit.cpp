@@ -7491,7 +7491,7 @@ void TextEdit::_update_scrollbars() {
 
 	updating_scrolls = true;
 
-	if (total_rows > visible_rows) {
+	if (!fit_content_height && total_rows > visible_rows) {
 		v_scroll->show();
 		v_scroll->set_max(total_rows + _get_visible_lines_offset());
 		v_scroll->set_page(visible_rows + _get_visible_lines_offset());
