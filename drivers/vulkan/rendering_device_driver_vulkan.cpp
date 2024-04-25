@@ -1008,7 +1008,7 @@ VkResult RenderingDeviceDriverVulkan::_create_render_pass(VkDevice p_device, con
 			const uint32_t depth_attachment_index = vector_base_index + 3;
 			_convert_subpass_attachments(p_create_info->pSubpasses[i].pInputAttachments, p_create_info->pSubpasses[i].inputAttachmentCount, subpasses_attachments[input_attachments_index]);
 			_convert_subpass_attachments(p_create_info->pSubpasses[i].pColorAttachments, p_create_info->pSubpasses[i].colorAttachmentCount, subpasses_attachments[color_attachments_index]);
-			_convert_subpass_attachments(p_create_info->pSubpasses[i].pResolveAttachments, p_create_info->pSubpasses[i].colorAttachmentCount, subpasses_attachments[resolve_attachments_index]);
+			_convert_subpass_attachments(p_create_info->pSubpasses[i].pResolveAttachments, (p_create_info->pSubpasses[i].pResolveAttachments != nullptr) ? p_create_info->pSubpasses[i].colorAttachmentCount : 0, subpasses_attachments[resolve_attachments_index]);
 			_convert_subpass_attachments(p_create_info->pSubpasses[i].pDepthStencilAttachment, (p_create_info->pSubpasses[i].pDepthStencilAttachment != nullptr) ? 1 : 0, subpasses_attachments[depth_attachment_index]);
 
 			// Ignores sType and pNext from the subpass.
