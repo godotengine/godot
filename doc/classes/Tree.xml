@@ -546,16 +546,16 @@
 			The maximum allowed width of the icon in item's cells. This limit is applied on top of the default size of the icon, but before the value set with [method TreeItem.set_icon_max_width]. The height is adjusted according to the icon's ratio.
 		</theme_item>
 		<theme_item name="inner_item_margin_bottom" data_type="constant" type="int" default="0">
-			The inner bottom margin of an item.
+			The inner bottom margin of a cell.
 		</theme_item>
 		<theme_item name="inner_item_margin_left" data_type="constant" type="int" default="0">
-			The inner left margin of an item.
+			The inner left margin of a cell.
 		</theme_item>
 		<theme_item name="inner_item_margin_right" data_type="constant" type="int" default="0">
-			The inner right margin of an item.
+			The inner right margin of a cell.
 		</theme_item>
 		<theme_item name="inner_item_margin_top" data_type="constant" type="int" default="0">
-			The inner top margin of an item.
+			The inner top margin of a cell.
 		</theme_item>
 		<theme_item name="item_margin" data_type="constant" type="int" default="16">
 			The horizontal margin at the start of an item. This is used when folding is enabled for the item.
