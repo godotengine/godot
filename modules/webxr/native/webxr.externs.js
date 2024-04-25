@@ -10,7 +10,7 @@ Navigator.prototype.xr;
 /**
  * @constructor
  */
-function XRSessionInit() {};
+function XRSessionInit() {}
 
 /**
  * @type {Array<string>}
@@ -37,7 +37,7 @@ XR.prototype.ondevicechanged;
  *
  * @return {!Promise<boolean>}
  */
-XR.prototype.isSessionSupported = function(mode) {};
+XR.prototype.isSessionSupported = (mode) => {};
 
 /**
  * @param {string} mode
@@ -45,7 +45,7 @@ XR.prototype.isSessionSupported = function(mode) {};
  *
  * @return {!Promise<XRSession>}
  */
-XR.prototype.requestSession = function(mode, options) {};
+XR.prototype.requestSession = (mode, options) => {};
 
 /**
  * @constructor
@@ -126,41 +126,41 @@ XRSession.prototype.onvisibilitychange;
  * @param {XRRenderStateInit} state
  * @return {void}
  */
-XRSession.prototype.updateRenderState = function (state) {};
+XRSession.prototype.updateRenderState = (state) => {};
 
 /**
  * @param {XRFrameRequestCallback} callback
  * @return {number}
  */
-XRSession.prototype.requestAnimationFrame = function (callback) {};
+XRSession.prototype.requestAnimationFrame = (callback) => {};
 
 /**
  * @param {number} handle
  * @return {void}
  */
-XRSession.prototype.cancelAnimationFrame = function (handle) {};
+XRSession.prototype.cancelAnimationFrame = (handle) => {};
 
 /**
  * @return {Promise<void>}
  */
-XRSession.prototype.end = function () {};
+XRSession.prototype.end = () => {};
 
 /**
  * @param {string} referenceSpaceType
  * @return {Promise<XRReferenceSpace>}
  */
-XRSession.prototype.requestReferenceSpace = function (referenceSpaceType) {};
+XRSession.prototype.requestReferenceSpace = (referenceSpaceType) => {};
 
 /**
  * @param {number} rate
  * @return {Promise<undefined>}
  */
-XRSession.prototype.updateTargetFrameRate = function (rate) {};
+XRSession.prototype.updateTargetFrameRate = (rate) => {};
 
 /**
  * @typedef {function(number, XRFrame): undefined}
  */
-var XRFrameRequestCallback;
+let XRFrameRequestCallback;
 
 /**
  * @constructor
@@ -190,7 +190,7 @@ XRRenderStateInit.prototype.baseLayer;
 /**
  * @constructor
  */
-function XRRenderState() {};
+function XRRenderState() {}
 
 /**
  * @type {number}
@@ -226,14 +226,14 @@ XRFrame.prototype.session;
  * @param {XRReferenceSpace} referenceSpace
  * @return {?XRViewerPose}
  */
-XRFrame.prototype.getViewerPose = function (referenceSpace) {};
+XRFrame.prototype.getViewerPose = (referenceSpace) => {};
 
 /**
  * @param {XRSpace} space
  * @param {XRSpace} baseSpace
  * @return {XRPose}
  */
-XRFrame.prototype.getPose = function (space, baseSpace) {};
+XRFrame.prototype.getPose = (space, baseSpace) => {};
 
 /**
  * @param {Array<XRSpace>} spaces
@@ -241,19 +241,19 @@ XRFrame.prototype.getPose = function (space, baseSpace) {};
  * @param {Float32Array} transforms
  * @return {boolean}
  */
-XRFrame.prototype.fillPoses = function (spaces, baseSpace, transforms) {};
+XRFrame.prototype.fillPoses = (spaces, baseSpace, transforms) => {};
 
 /**
  * @param {Array<XRJointSpace>} jointSpaces
  * @param {Float32Array} radii
  * @return {boolean}
  */
-XRFrame.prototype.fillJointRadii = function (jointSpaces, radii) {};
+XRFrame.prototype.fillJointRadii = (jointSpaces, radii) => {};
 
 /**
  * @constructor
  */
-function XRReferenceSpace() {};
+function XRReferenceSpace() {}
 
 /**
  * @type {Array<DOMPointReadOnly>}
@@ -264,7 +264,7 @@ XRReferenceSpace.prototype.boundsGeometry;
  * @param {XRRigidTransform} originOffset
  * @return {XRReferenceSpace}
  */
-XRReferenceSpace.prototype.getOffsetReferenceSpace = function(originOffset) {};
+XRReferenceSpace.prototype.getOffsetReferenceSpace = (originOffset) => {};
 
 /**
  * @type {?function (Event)}
@@ -274,7 +274,7 @@ XRReferenceSpace.prototype.onreset;
 /**
  * @constructor
  */
-function XRRigidTransform() {};
+function XRRigidTransform() {}
 
 /**
  * @type {DOMPointReadOnly}
@@ -354,7 +354,7 @@ XRViewport.prototype.height;
 /**
  * @constructor
  */
-function XRWebGLLayerInit() {};
+function XRWebGLLayerInit() {}
 
 /**
  * @type {boolean}
@@ -429,28 +429,28 @@ XRWebGLLayer.prototype.framebuffer;
  * @param {XRView} view
  * @return {?XRViewport}
  */
-XRWebGLLayer.prototype.getViewport = function(view) {};
+XRWebGLLayer.prototype.getViewport = (view) => {};
 
 /**
  * @param {XRSession} session
  * @return {number}
  */
-XRWebGLLayer.prototype.getNativeFramebufferScaleFactor = function (session) {};
+XRWebGLLayer.prototype.getNativeFramebufferScaleFactor = (session) => {};
 
 /**
  * @constructor
  */
-function WebGLRenderingContextBase() {};
+function WebGLRenderingContextBase() {}
 
 /**
  * @return {Promise<void>}
  */
-WebGLRenderingContextBase.prototype.makeXRCompatible = function () {};
+WebGLRenderingContextBase.prototype.makeXRCompatible = () => {};
 
 /**
  * @constructor
  */
-function XRInputSourcesChangeEvent() {};
+function XRInputSourcesChangeEvent() {}
 
 /**
  * @type {Array<XRInputSource>}
@@ -465,7 +465,7 @@ XRInputSourcesChangeEvent.prototype.removed;
 /**
  * @constructor
  */
-function XRInputSourceEvent() {};
+function XRInputSourceEvent() {}
 
 /**
  * @type {XRFrame}
@@ -480,7 +480,7 @@ XRInputSourceEvent.prototype.inputSource;
 /**
  * @constructor
  */
-function XRInputSource() {};
+function XRInputSource() {}
 
 /**
  * @type {Gamepad}
@@ -520,7 +520,7 @@ XRInputSource.prototype.hand;
 /**
  * @constructor
  */
-function XRHand() {};
+function XRHand() {}
 
 /**
  * Note: In fact, XRHand acts like a Map<string, XRJointSpace>, but I don't know
@@ -528,7 +528,7 @@ function XRHand() {};
  *
  * @return {Array<XRJointSpace>}
  */
-XRHand.prototype.values = function () {};
+XRHand.prototype.values = () => {};
 
 /**
  * @type {number}
@@ -539,18 +539,18 @@ XRHand.prototype.size;
  * @param {string} key
  * @return {XRJointSpace}
  */
-XRHand.prototype.get = function (key) {};
+XRHand.prototype.get = (key) => {};
 
 /**
  * @constructor
  */
-function XRSpace() {};
+function XRSpace() {}
 
 /**
  * @constructor
  * @extends {XRSpace}
  */
-function XRJointSpace() {};
+function XRJointSpace() {}
 
 /**
  * @type {string}
@@ -560,7 +560,7 @@ XRJointSpace.prototype.jointName;
 /**
  * @constructor
  */
-function XRPose() {};
+function XRPose() {}
 
 /**
  * @type {XRRigidTransform}
@@ -597,7 +597,7 @@ XRLayerEventInit.prototype.layer;
  * @param {string} type
  * @param {XRLayerEventInit} init
  */
-function XRLayerEvent(type, init) {};
+function XRLayerEvent(type, init) {}
 
 /**
  * @type {XRLayer}
@@ -608,7 +608,7 @@ XRLayerEvent.prototype.layer;
  * @constructor XRCompositionLayer
  * @extends {XRLayer}
  */
-function XRCompositionLayer() {};
+function XRCompositionLayer() {}
 
 /**
  * @type {string}
@@ -648,7 +648,7 @@ XRCompositionLayer.prototype.needsRedraw;
 /**
  * @return {void}
  */
-XRCompositionLayer.prototype.destroy = function () {};
+XRCompositionLayer.prototype.destroy = () => {};
 
 /**
  * @constructor XRProjectionLayer
@@ -829,7 +829,7 @@ XRSubImage.prototype.viewport;
  * @constructor XRWebGLSubImage
  * @extends {XRSubImage}
  */
-function XRWebGLSubImage () {}
+function XRWebGLSubImage() {}
 
 /**
  * @type {WebGLTexture}
@@ -1078,31 +1078,31 @@ XRWebGLBinding.prototype.usesDepthValues;
  * @param {XRProjectionLayerInit} init
  * @return {XRProjectionLayer}
  */
-XRWebGLBinding.prototype.createProjectionLayer = function (init) {};
+XRWebGLBinding.prototype.createProjectionLayer = (init) => {};
 
 /**
  * @param {XRQuadLayerInit} init
  * @return {XRQuadLayer}
  */
-XRWebGLBinding.prototype.createQuadLayer = function (init) {};
+XRWebGLBinding.prototype.createQuadLayer = (init) => {};
 
 /**
  * @param {XRCylinderLayerInit} init
  * @return {XRCylinderLayer}
  */
-XRWebGLBinding.prototype.createCylinderLayer = function (init) {};
+XRWebGLBinding.prototype.createCylinderLayer = (init) => {};
 
 /**
  * @param {XREquirectLayerInit} init
  * @return {XREquirectLayer}
  */
-XRWebGLBinding.prototype.createEquirectLayer = function (init) {};
+XRWebGLBinding.prototype.createEquirectLayer = (init) => {};
 
 /**
  * @param {XRCubeLayerInit} init
  * @return {XRCubeLayer}
  */
-XRWebGLBinding.prototype.createCubeLayer = function (init) {};
+XRWebGLBinding.prototype.createCubeLayer = (init) => {};
 
 /**
  * @param {XRCompositionLayer} layer
@@ -1110,14 +1110,14 @@ XRWebGLBinding.prototype.createCubeLayer = function (init) {};
  * @param {string} eye
  * @return {XRWebGLSubImage}
  */
-XRWebGLBinding.prototype.getSubImage = function (layer, frame, eye) {};
+XRWebGLBinding.prototype.getSubImage = (layer, frame, eye) => {};
 
 /**
  * @param {XRProjectionLayer} layer
  * @param {XRView} view
  * @return {XRWebGLSubImage}
  */
-XRWebGLBinding.prototype.getViewSubImage = function (layer, view) {};
+XRWebGLBinding.prototype.getViewSubImage = (layer, view) => {};
 
 /**
  * @constructor XRMediaLayerInit
@@ -1229,21 +1229,21 @@ function XRMediaBinding(session) {}
  * @param {XRMediaQuadLayerInit} init
  * @return {XRQuadLayer}
  */
-XRMediaBinding.prototype.createQuadLayer = function(video, init) {};
+XRMediaBinding.prototype.createQuadLayer = (video, init) => {};
 
 /**
  * @param {HTMLVideoElement} video
  * @param {XRMediaCylinderLayerInit} init
  * @return {XRCylinderLayer}
  */
-XRMediaBinding.prototype.createCylinderLayer = function(video, init) {};
+XRMediaBinding.prototype.createCylinderLayer = (video, init) => {};
 
 /**
  * @param {HTMLVideoElement} video
  * @param {XRMediaEquirectLayerInit} init
  * @return {XREquirectLayer}
  */
-XRMediaBinding.prototype.createEquirectLayer = function(video, init) {};
+XRMediaBinding.prototype.createEquirectLayer = (video, init) => {};
 
 /**
  * @type {Array<XRLayer>}
