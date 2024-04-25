@@ -44,9 +44,11 @@ extern "C" {
 #endif
 
 void godot_webgl2_glFramebufferTextureMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews);
+void godot_webgl2_glFramebufferTextureMultisampleMultiviewOVR(GLenum target, GLenum attachment, GLuint texture, GLint level, GLsizei samples, GLint baseViewIndex, GLsizei numViews);
 void godot_webgl2_glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
 
 #define glFramebufferTextureMultiviewOVR godot_webgl2_glFramebufferTextureMultiviewOVR
+#define glFramebufferTextureMultisampleMultiviewOVR godot_webgl2_glFramebufferTextureMultisampleMultiviewOVR
 
 #ifdef __cplusplus
 }

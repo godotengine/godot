@@ -62,6 +62,9 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
@@ -71,6 +74,8 @@ public:
 
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
+
+	Ref<SkinReference> get_skin_reference() const;
 
 	int get_blend_shape_count() const;
 	int find_blend_shape_by_name(const StringName &p_name);
@@ -95,6 +100,8 @@ public:
 	void create_debug_tangents();
 
 	virtual AABB get_aabb() const override;
+
+	Ref<ArrayMesh> bake_mesh_from_current_blend_shape_mix(Ref<ArrayMesh> p_existing = Ref<ArrayMesh>());
 
 	MeshInstance3D();
 	~MeshInstance3D();

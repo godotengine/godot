@@ -171,7 +171,7 @@ for (p = string; length > 0; p++)
 
   if (((d = *(++p)) & 0xc0) != 0x80)
     {
-    *erroroffset = (int)(p - string) - 1;
+    *erroroffset = (PCRE2_SIZE)(p - string) - 1;
     return PCRE2_ERROR_UTF8_ERR6;
     }
 
@@ -186,7 +186,7 @@ for (p = string; length > 0; p++)
 
     case 1: if ((c & 0x3e) == 0)
       {
-      *erroroffset = (int)(p - string) - 1;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 1;
       return PCRE2_ERROR_UTF8_ERR15;
       }
     break;
@@ -198,17 +198,17 @@ for (p = string; length > 0; p++)
     case 2:
     if ((*(++p) & 0xc0) != 0x80)     /* Third byte */
       {
-      *erroroffset = (int)(p - string) - 2;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 2;
       return PCRE2_ERROR_UTF8_ERR7;
       }
     if (c == 0xe0 && (d & 0x20) == 0)
       {
-      *erroroffset = (int)(p - string) - 2;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 2;
       return PCRE2_ERROR_UTF8_ERR16;
       }
     if (c == 0xed && d >= 0xa0)
       {
-      *erroroffset = (int)(p - string) - 2;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 2;
       return PCRE2_ERROR_UTF8_ERR14;
       }
     break;
@@ -220,22 +220,22 @@ for (p = string; length > 0; p++)
     case 3:
     if ((*(++p) & 0xc0) != 0x80)     /* Third byte */
       {
-      *erroroffset = (int)(p - string) - 2;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 2;
       return PCRE2_ERROR_UTF8_ERR7;
       }
     if ((*(++p) & 0xc0) != 0x80)     /* Fourth byte */
       {
-      *erroroffset = (int)(p - string) - 3;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 3;
       return PCRE2_ERROR_UTF8_ERR8;
       }
     if (c == 0xf0 && (d & 0x30) == 0)
       {
-      *erroroffset = (int)(p - string) - 3;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 3;
       return PCRE2_ERROR_UTF8_ERR17;
       }
     if (c > 0xf4 || (c == 0xf4 && d > 0x8f))
       {
-      *erroroffset = (int)(p - string) - 3;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 3;
       return PCRE2_ERROR_UTF8_ERR13;
       }
     break;
@@ -251,22 +251,22 @@ for (p = string; length > 0; p++)
     case 4:
     if ((*(++p) & 0xc0) != 0x80)     /* Third byte */
       {
-      *erroroffset = (int)(p - string) - 2;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 2;
       return PCRE2_ERROR_UTF8_ERR7;
       }
     if ((*(++p) & 0xc0) != 0x80)     /* Fourth byte */
       {
-      *erroroffset = (int)(p - string) - 3;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 3;
       return PCRE2_ERROR_UTF8_ERR8;
       }
     if ((*(++p) & 0xc0) != 0x80)     /* Fifth byte */
       {
-      *erroroffset = (int)(p - string) - 4;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 4;
       return PCRE2_ERROR_UTF8_ERR9;
       }
     if (c == 0xf8 && (d & 0x38) == 0)
       {
-      *erroroffset = (int)(p - string) - 4;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 4;
       return PCRE2_ERROR_UTF8_ERR18;
       }
     break;
@@ -277,27 +277,27 @@ for (p = string; length > 0; p++)
     case 5:
     if ((*(++p) & 0xc0) != 0x80)     /* Third byte */
       {
-      *erroroffset = (int)(p - string) - 2;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 2;
       return PCRE2_ERROR_UTF8_ERR7;
       }
     if ((*(++p) & 0xc0) != 0x80)     /* Fourth byte */
       {
-      *erroroffset = (int)(p - string) - 3;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 3;
       return PCRE2_ERROR_UTF8_ERR8;
       }
     if ((*(++p) & 0xc0) != 0x80)     /* Fifth byte */
       {
-      *erroroffset = (int)(p - string) - 4;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 4;
       return PCRE2_ERROR_UTF8_ERR9;
       }
     if ((*(++p) & 0xc0) != 0x80)     /* Sixth byte */
       {
-      *erroroffset = (int)(p - string) - 5;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 5;
       return PCRE2_ERROR_UTF8_ERR10;
       }
     if (c == 0xfc && (d & 0x3c) == 0)
       {
-      *erroroffset = (int)(p - string) - 5;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 5;
       return PCRE2_ERROR_UTF8_ERR19;
       }
     break;
@@ -309,7 +309,7 @@ for (p = string; length > 0; p++)
 
   if (ab > 3)
     {
-    *erroroffset = (int)(p - string) - ab;
+    *erroroffset = (PCRE2_SIZE)(p - string) - ab;
     return (ab == 4)? PCRE2_ERROR_UTF8_ERR11 : PCRE2_ERROR_UTF8_ERR12;
     }
   }
@@ -340,21 +340,21 @@ for (p = string; length > 0; p++)
     /* High surrogate. Must be a followed by a low surrogate. */
     if (length == 0)
       {
-      *erroroffset = p - string;
+      *erroroffset = (PCRE2_SIZE)(p - string);
       return PCRE2_ERROR_UTF16_ERR1;
       }
     p++;
     length--;
     if ((*p & 0xfc00) != 0xdc00)
       {
-      *erroroffset = p - string - 1;
+      *erroroffset = (PCRE2_SIZE)(p - string) - 1;
       return PCRE2_ERROR_UTF16_ERR2;
       }
     }
   else
     {
     /* Isolated low surrogate. Always an error. */
-    *erroroffset = p - string;
+    *erroroffset = (PCRE2_SIZE)(p - string);
     return PCRE2_ERROR_UTF16_ERR3;
     }
   }
@@ -379,14 +379,14 @@ for (p = string; length > 0; length--, p++)
     /* Normal UTF-32 code point. Neither high nor low surrogate. */
     if (c > 0x10ffffu)
       {
-      *erroroffset = p - string;
+      *erroroffset = (PCRE2_SIZE)(p - string);
       return PCRE2_ERROR_UTF32_ERR2;
       }
     }
   else
     {
     /* A surrogate */
-    *erroroffset = p - string;
+    *erroroffset = (PCRE2_SIZE)(p - string);
     return PCRE2_ERROR_UTF32_ERR1;
     }
   }

@@ -43,6 +43,8 @@ const Vector3 RendererSceneOcclusionCull::HZBuffer::corners[8] = {
 	Vector3(1, 1, 1)
 };
 
+bool RendererSceneOcclusionCull::HZBuffer::occlusion_jitter_enabled = false;
+
 bool RendererSceneOcclusionCull::HZBuffer::is_empty() const {
 	return sizes.is_empty();
 }
@@ -66,6 +68,8 @@ void RendererSceneOcclusionCull::HZBuffer::clear() {
 }
 
 void RendererSceneOcclusionCull::HZBuffer::resize(const Size2i &p_size) {
+	occlusion_buffer_size = p_size;
+
 	if (p_size == Size2i()) {
 		clear();
 		return;
@@ -124,6 +128,9 @@ void RendererSceneOcclusionCull::HZBuffer::resize(const Size2i &p_size) {
 }
 
 void RendererSceneOcclusionCull::HZBuffer::update_mips() {
+	// Keep this up to date as a local to be used for occlusion timers.
+	occlusion_frame = Engine::get_singleton()->get_frames_drawn();
+
 	if (sizes.is_empty()) {
 		return;
 	}

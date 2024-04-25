@@ -43,7 +43,7 @@
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
-struct RenderDataRD;
+class RenderDataRD;
 
 namespace RendererRD {
 
@@ -232,6 +232,7 @@ private:
 		bool box_projection = false;
 		bool enable_shadows = false;
 		uint32_t cull_mask = (1 << 20) - 1;
+		uint32_t reflection_mask = (1 << 20) - 1;
 		float mesh_lod_threshold = 0.01;
 		float baked_exposure = 1.0;
 
@@ -276,7 +277,6 @@ private:
 		int processing_layer = 1;
 		int processing_side = 0;
 
-		uint32_t render_step = 0;
 		uint64_t last_pass = 0;
 		uint32_t cull_mask = 0;
 
@@ -590,6 +590,29 @@ public:
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
 	virtual void light_instance_mark_visible(RID p_light_instance) override;
 
+	virtual bool light_instance_is_shadow_visible_at_position(RID p_light_instance, const Vector3 &p_position) const override {
+		const LightInstance *light_instance = light_instance_owner.get_or_null(p_light_instance);
+		ERR_FAIL_NULL_V(light_instance, false);
+		const Light *light = light_owner.get_or_null(light_instance->light);
+		ERR_FAIL_NULL_V(light, false);
+
+		if (!light->shadow) {
+			return false;
+		}
+
+		if (!light->distance_fade) {
+			return true;
+		}
+
+		real_t distance = p_position.distance_to(light_instance->transform.origin);
+
+		if (distance > light->distance_fade_shadow + light->distance_fade_length) {
+			return false;
+		}
+
+		return true;
+	}
+
 	_FORCE_INLINE_ RID light_instance_get_base_light(RID p_light_instance) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		return li->light;
@@ -797,6 +820,7 @@ public:
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) override;
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) override;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) override;
+	virtual void reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) override;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) override;
 	virtual void reflection_probe_set_mesh_lod_threshold(RID p_probe, float p_ratio) override;
 
@@ -805,6 +829,7 @@ public:
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const override;
 	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override;
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const override;
+	virtual uint32_t reflection_probe_get_reflection_mask(RID p_probe) const override;
 	virtual Vector3 reflection_probe_get_size(RID p_probe) const override;
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const override;
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override;
@@ -845,6 +870,7 @@ public:
 	virtual RID reflection_probe_instance_create(RID p_probe) override;
 	virtual void reflection_probe_instance_free(RID p_instance) override;
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override;
+	virtual bool reflection_probe_has_atlas_index(RID p_instance) override;
 	virtual void reflection_probe_release_atlas_index(RID p_instance) override;
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override;
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override;

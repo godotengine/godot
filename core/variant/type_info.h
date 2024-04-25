@@ -33,35 +33,7 @@
 
 #include "core/typedefs.h"
 
-template <bool C, typename T = void>
-struct EnableIf {
-	typedef T type;
-};
-
-template <typename T>
-struct EnableIf<false, T> {
-};
-
-template <typename, typename>
-struct TypesAreSame {
-	static bool const value = false;
-};
-
-template <typename A>
-struct TypesAreSame<A, A> {
-	static bool const value = true;
-};
-
-template <typename B, typename D>
-struct TypeInherits {
-	static D *get_d();
-
-	static char (&test(B *))[1];
-	static char (&test(...))[2];
-
-	static bool const value = sizeof(test(get_d())) == sizeof(char) &&
-			!TypesAreSame<B volatile const, void volatile const>::value;
-};
+#include <type_traits>
 
 namespace GodotTypeInfo {
 enum Metadata {
@@ -84,7 +56,7 @@ enum Metadata {
 // If 'T' is a class that inherits 'Object', make sure it can see the actual class declaration
 // instead of a forward declaration. You can always forward declare 'T' in a header file, and then
 // include the actual declaration of 'T' in the source file where 'GetTypeInfo<T>' is instantiated.
-template <class T, typename = void>
+template <typename T, typename = void>
 struct GetTypeInfo;
 
 #define MAKE_TYPE_INFO(m_type, m_var_type)                                            \
@@ -227,16 +199,7 @@ MAKE_TEMPLATE_TYPE_INFO(Vector, Face3, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TEMPLATE_TYPE_INFO(Vector, StringName, Variant::PACKED_STRING_ARRAY)
 
 template <typename T>
-struct GetTypeInfo<T *, typename EnableIf<TypeInherits<Object, T>::value>::type> {
-	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(StringName(T::get_class_static()));
-	}
-};
-
-template <typename T>
-struct GetTypeInfo<const T *, typename EnableIf<TypeInherits<Object, T>::value>::type> {
+struct GetTypeInfo<T *, std::enable_if_t<std::is_base_of_v<Object, T>>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
@@ -282,21 +245,25 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 
-template <class T>
+template <typename T>
 class BitField {
 	int64_t value = 0;
 
 public:
-	_FORCE_INLINE_ void set_flag(T p_flag) { value |= (int64_t)p_flag; }
+	_FORCE_INLINE_ BitField<T> &set_flag(T p_flag) {
+		value |= (int64_t)p_flag;
+		return *this;
+	}
 	_FORCE_INLINE_ bool has_flag(T p_flag) const { return value & (int64_t)p_flag; }
 	_FORCE_INLINE_ bool is_empty() const { return value == 0; }
 	_FORCE_INLINE_ void clear_flag(T p_flag) { value &= ~(int64_t)p_flag; }
 	_FORCE_INLINE_ void clear() { value = 0; }
-	_FORCE_INLINE_ BitField() = default;
-	_FORCE_INLINE_ BitField(int64_t p_value) { value = p_value; }
-	_FORCE_INLINE_ BitField(T p_value) { value = (int64_t)p_value; }
+	_FORCE_INLINE_ constexpr BitField() = default;
+	_FORCE_INLINE_ constexpr BitField(int64_t p_value) { value = p_value; }
+	_FORCE_INLINE_ constexpr BitField(T p_value) { value = (int64_t)p_value; }
 	_FORCE_INLINE_ operator int64_t() const { return value; }
 	_FORCE_INLINE_ operator Variant() const { return value; }
+	_FORCE_INLINE_ BitField<T> operator^(const BitField<T> &p_b) const { return BitField<T>(value ^ p_b.value); }
 };
 
 #define TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_impl)                                                                                            \

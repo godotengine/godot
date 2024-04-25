@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,7 @@ void mathRotate(Matrix* m, float degree)
 {
     if (degree == 0.0f) return;
 
-    auto radian = degree / 180.0f * M_PI;
+    auto radian = degree / 180.0f * MATH_PI;
     auto cosVal = cosf(radian);
     auto sinVal = sinf(radian);
 

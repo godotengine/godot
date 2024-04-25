@@ -84,10 +84,16 @@ private:
 	bool project_manager_hint = false;
 	bool extension_reloading = false;
 
+	bool _print_header = true;
+
 	static Engine *singleton;
 
 	String write_movie_path;
 	String shader_cache_path;
+
+	static constexpr int SERVER_SYNC_FRAME_COUNT_WARNING = 5;
+	int server_syncs = 0;
+	bool frame_server_synced = false;
 
 public:
 	static Engine *get_singleton();
@@ -123,6 +129,8 @@ public:
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
+	void print_header(const String &p_string) const;
+	void print_header_rich(const String &p_string) const;
 
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
@@ -174,6 +182,9 @@ public:
 	bool is_validation_layers_enabled() const;
 	bool is_generate_spirv_debug_info_enabled() const;
 	int32_t get_gpu_index() const;
+
+	void increment_frames_drawn();
+	bool notify_frame_server_synced();
 
 	Engine();
 	virtual ~Engine() {}

@@ -46,6 +46,7 @@ HashMap<unsigned int, Key, HashMapHasherKeys> vk_map;
 HashMap<unsigned int, Key, HashMapHasherKeys> scansym_map;
 HashMap<Key, unsigned int, HashMapHasherKeys> scansym_map_inv;
 HashMap<unsigned int, Key, HashMapHasherKeys> scansym_map_ext;
+HashMap<unsigned int, KeyLocation, HashMapHasherKeys> location_map;
 
 void KeyMappingWindows::initialize() {
 	// VK_LBUTTON (0x01)
@@ -380,6 +381,15 @@ void KeyMappingWindows::initialize() {
 	scansym_map_ext[0x6C] = Key::LAUNCHMAIL;
 	scansym_map_ext[0x6D] = Key::LAUNCHMEDIA;
 	scansym_map_ext[0x78] = Key::MEDIARECORD;
+
+	// Scancode to physical location map.
+	// Shift.
+	location_map[0x2A] = KeyLocation::LEFT;
+	location_map[0x36] = KeyLocation::RIGHT;
+	// Meta.
+	location_map[0x5B] = KeyLocation::LEFT;
+	location_map[0x5C] = KeyLocation::RIGHT;
+	// Ctrl and Alt must be handled differently.
 }
 
 Key KeyMappingWindows::get_keysym(unsigned int p_code) {
@@ -423,4 +433,17 @@ bool KeyMappingWindows::is_extended_key(unsigned int p_code) {
 			p_code == VK_UP ||
 			p_code == VK_RIGHT ||
 			p_code == VK_DOWN;
+}
+
+KeyLocation KeyMappingWindows::get_location(unsigned int p_code, bool p_extended) {
+	// Right- ctrl and alt have the same scancode as left, but are in the extended keys.
+	const Key *key = scansym_map.getptr(p_code);
+	if (key && (*key == Key::CTRL || *key == Key::ALT)) {
+		return p_extended ? KeyLocation::RIGHT : KeyLocation::LEFT;
+	}
+	const KeyLocation *location = location_map.getptr(p_code);
+	if (location) {
+		return *location;
+	}
+	return KeyLocation::UNSPECIFIED;
 }

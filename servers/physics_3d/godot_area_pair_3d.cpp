@@ -67,6 +67,7 @@ bool GodotAreaPair3D::pre_solve(real_t p_step) {
 
 	if (colliding) {
 		if (has_space_override) {
+			body_has_attached_area = true;
 			body->add_area(area);
 		}
 
@@ -75,6 +76,7 @@ bool GodotAreaPair3D::pre_solve(real_t p_step) {
 		}
 	} else {
 		if (has_space_override) {
+			body_has_attached_area = false;
 			body->remove_area(area);
 		}
 
@@ -104,7 +106,8 @@ GodotAreaPair3D::GodotAreaPair3D(GodotBody3D *p_body, int p_body_shape, GodotAre
 
 GodotAreaPair3D::~GodotAreaPair3D() {
 	if (colliding) {
-		if (has_space_override) {
+		if (body_has_attached_area) {
+			body_has_attached_area = false;
 			body->remove_area(area);
 		}
 		if (area->has_monitor_callback()) {
@@ -242,6 +245,7 @@ bool GodotAreaSoftBodyPair3D::pre_solve(real_t p_step) {
 
 	if (colliding) {
 		if (has_space_override) {
+			body_has_attached_area = true;
 			soft_body->add_area(area);
 		}
 
@@ -250,6 +254,7 @@ bool GodotAreaSoftBodyPair3D::pre_solve(real_t p_step) {
 		}
 	} else {
 		if (has_space_override) {
+			body_has_attached_area = false;
 			soft_body->remove_area(area);
 		}
 
@@ -276,7 +281,8 @@ GodotAreaSoftBodyPair3D::GodotAreaSoftBodyPair3D(GodotSoftBody3D *p_soft_body, i
 
 GodotAreaSoftBodyPair3D::~GodotAreaSoftBodyPair3D() {
 	if (colliding) {
-		if (has_space_override) {
+		if (body_has_attached_area) {
+			body_has_attached_area = false;
 			soft_body->remove_area(area);
 		}
 		if (area->has_monitor_callback()) {

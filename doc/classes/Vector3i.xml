@@ -59,7 +59,22 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="distance_squared_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="Vector3i" />
+			<description>
+				Returns the squared distance between this vector and [param to].
+				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="distance_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector3i" />
+			<description>
+				Returns the distance between this vector and [param to].
+			</description>
+		</method>
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.

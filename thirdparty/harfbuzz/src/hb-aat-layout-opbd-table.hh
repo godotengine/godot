@@ -144,6 +144,7 @@ struct opbd
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this) || version.major != 1))
       return_trace (false);
+    hb_barrier ();
 
     switch (format)
     {

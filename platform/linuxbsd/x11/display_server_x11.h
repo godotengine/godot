@@ -57,10 +57,12 @@
 #include "x11/gl_manager_x11_egl.h"
 #endif
 
-#if defined(VULKAN_ENABLED)
-#include "x11/vulkan_context_x11.h"
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
 
-#include "drivers/vulkan/rendering_device_vulkan.h"
+#if defined(VULKAN_ENABLED)
+#include "x11/rendering_context_driver_vulkan_x11.h"
+#endif
 #endif
 
 #if defined(DBUS_ENABLED)
@@ -141,9 +143,9 @@ class DisplayServerX11 : public DisplayServer {
 	GLManager_X11 *gl_manager = nullptr;
 	GLManagerEGL_X11 *gl_manager_egl = nullptr;
 #endif
-#if defined(VULKAN_ENABLED)
-	VulkanContextX11 *context_vulkan = nullptr;
-	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#if defined(RD_ENABLED)
+	RenderingContextDriver *rendering_context = nullptr;
+	RenderingDevice *rendering_device = nullptr;
 #endif
 
 #if defined(DBUS_ENABLED)
@@ -154,6 +156,7 @@ class DisplayServerX11 : public DisplayServer {
 #ifdef SPEECHD_ENABLED
 	TTS_Linux *tts = nullptr;
 #endif
+	NativeMenu *native_menu = nullptr;
 
 #if defined(DBUS_ENABLED)
 	FreeDesktopPortalDesktop *portal_desktop = nullptr;
@@ -352,10 +355,12 @@ class DisplayServerX11 : public DisplayServer {
 	Context context = CONTEXT_ENGINE;
 
 	WindowID _get_focused_window_or_popup() const;
+	bool _window_focus_check();
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
+	void _set_input_focus(Window p_window, int p_revert_to);
 
 	mutable Mutex events_mutex;
 	Thread events_thread;
@@ -396,8 +401,10 @@ public:
 #if defined(DBUS_ENABLED)
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;
 #endif
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
@@ -489,6 +496,8 @@ public:
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
+	virtual WindowID get_focused_window() const override;
+
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool can_any_window_draw() const override;
@@ -517,7 +526,6 @@ public:
 	virtual void process_events() override;
 
 	virtual void release_rendering_thread() override;
-	virtual void make_rendering_thread() override;
 	virtual void swap_buffers() override;
 
 	virtual void set_context(Context p_context) override;

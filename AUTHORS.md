@@ -31,10 +31,13 @@ name is available.
     Aaron Record (LightningAA)
     Adam Scott (adamscott)
     Alexander Holland (AlexHolly)
+    Alex Drozd (brno32)
     Alexey Khoroshavin (allkhor)
     Alfred Reinold Baudisch (alfredbaudisch)
+    Alistair Leslie-Hughes (alesliehughes)
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
+    Andreia Gaita (shana)
     Andrii Doroshenko (Xrayez)
     Andy Maloney (asmaloney)
     Andy Moss (MillionOstrich)
@@ -46,6 +49,7 @@ name is available.
     Aren Villanueva (kurikaesu)
     Ariel Manzur (punto-)
     AThousandShips
+    aXu-AP
     Bartłomiej T. Listwon (Listwon)
     Bastiaan Olij (BastiaanOlij)
     Ben Brookshire (sheepandshepherd)
@@ -53,6 +57,7 @@ name is available.
     Bernhard Liebl (poke1024)
     Bhuvan Vemula (Bhu1-V)
     bitsawer
+    BlueCube3310
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
     Brian Semrau (briansemrau)
@@ -129,6 +134,7 @@ name is available.
     J08nY
     Jake Young (Duroxxigar)
     Jakub Grzesik (kubecz3k)
+    Jakub Marcowski (Chubercik)
     James Buck (jbuck3)
     Jan Haller (Bromeon)
     Jason Knight (jasonwinterpixel)
@@ -159,6 +165,7 @@ name is available.
     Lucien Menassol (Kanabenki)
     Lyuma
     Maganty Rushyendra (mrushyendra)
+    Malcolm Nixon (Malcolmnixon)
     Manuele Finocchiaro (m4nu3lf)
     Marcel Admiraal (madmiraal)
     Marcelo Fernandez (marcelofg55)
@@ -191,6 +198,7 @@ name is available.
     Micky (Mickeon)
     Mikael Hermansson (mihe)
     MinusKube
+    MJacred
     Morris "Tabor" Arroad (mortarroad)
     mrezai
     Muhammad Huri (CakHuri)
@@ -209,6 +217,7 @@ name is available.
     Omar El Sheikh (The-O-King)
     Ovnuniarchos
     Pascal Richter (ShyRed)
+    Patrick Dawson (pkdawson)
     Patrick Exner (FlameLizard)
     Patrick (firefly2442)
     Paul Batty (Paulb23)
@@ -237,6 +246,7 @@ name is available.
     Ricardo Subtil (Ev1lbl0w)
     Riteo Siuga (Riteo)
     Roberto F. Arroyo (robfram)
+    Robert Yevdokimov (ryevdokimov)
     Robin Hübner (profan)
     romulox-x
     Rune Smith (rune-scape)
@@ -245,6 +255,7 @@ name is available.
     Saniko (sanikoyes)
     santouits
     SaracenOne
+    Septian Ganendra S. K. (sepTN)
     Sergey Minakov (naithar)
     sersoong
     Shiqing (kawa-yoiko)
@@ -252,6 +263,8 @@ name is available.
     Simon Wenner (swenner)
     smix8
     snailrhymer
+    Sofox (TheSofox)
+    Stanislav Labzyuk (DarkMessiah)
     Stijn Hinlopen (hinlopen)
     stmSi
     Swarnim Arun (minraws)
@@ -277,7 +290,9 @@ name is available.
     Will Nations (willnationsdev)
     Wilson E. Alvarez (Rubonnek)
     Xavier Cho (mysticfall)
+    Yaohua Xiong (xiongyaohua)
     yg2f (SuperUserNameMan)
+    Yordan Dolchinkov (Jordyfel)
     Yuri Rubinsky (Chaosus)
     Yuri Sizov (YuriSizov)
     Zae Chao (zaevi)

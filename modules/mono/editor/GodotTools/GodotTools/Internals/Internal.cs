@@ -1,3 +1,6 @@
+#pragma warning disable IDE1006 // Naming rule violation
+// ReSharper disable InconsistentNaming
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -8,7 +11,6 @@ using GodotTools.IdeMessaging.Requests;
 
 namespace GodotTools.Internals
 {
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     [GenerateUnmanagedCallbacks(typeof(InternalUnmanagedCallbacks))]
     internal static partial class Internal
     {

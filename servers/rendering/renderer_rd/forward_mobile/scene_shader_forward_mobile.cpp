@@ -271,7 +271,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	if (depth_test != DEPTH_TEST_DISABLED) {
 		depth_stencil_state.enable_depth_test = true;
-		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 		depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED ? true : false;
 	}
 
@@ -398,7 +398,7 @@ void SceneShaderForwardMobile::MaterialData::set_next_pass(RID p_pass) {
 bool SceneShaderForwardMobile::MaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	SceneShaderForwardMobile *shader_singleton = (SceneShaderForwardMobile *)SceneShaderForwardMobile::singleton;
 
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, shader_singleton->shader.version_get_shader(shader_data->version, 0), RenderForwardMobile::MATERIAL_UNIFORM_SET, true, true, RD::BARRIER_MASK_RASTER);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, shader_singleton->shader.version_get_shader(shader_data->version, 0), RenderForwardMobile::MATERIAL_UNIFORM_SET, true, true);
 }
 
 SceneShaderForwardMobile::MaterialData::~MaterialData() {
@@ -463,6 +463,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
 		actions.renames["MODELVIEW_MATRIX"] = "modelview";
 		actions.renames["MODELVIEW_NORMAL_MATRIX"] = "modelview_normal";
+		actions.renames["MAIN_CAM_INV_VIEW_MATRIX"] = "scene_data.main_cam_inv_view_matrix";
 
 		actions.renames["VERTEX"] = "vertex";
 		actions.renames["NORMAL"] = "normal";
@@ -584,9 +585,6 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.usage_defines["BACKLIGHT"] = "#define LIGHT_BACKLIGHT_USED\n";
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 
-		actions.usage_defines["DIFFUSE_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
-		actions.usage_defines["SPECULAR_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
-
 		actions.usage_defines["FOG"] = "#define CUSTOM_FOG_USED\n";
 		actions.usage_defines["RADIANCE"] = "#define CUSTOM_RADIANCE_USED\n";
 		actions.usage_defines["IRRADIANCE"] = "#define CUSTOM_IRRADIANCE_USED\n";
@@ -643,7 +641,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		default_shader = material_storage->shader_allocate();
 		material_storage->shader_initialize(default_shader);
 		material_storage->shader_set_code(default_shader, R"(
-// Default 3D material shader (mobile).
+// Default 3D material shader (Mobile).
 
 shader_type spatial;
 
@@ -673,11 +671,11 @@ void fragment() {
 		material_storage->shader_initialize(overdraw_material_shader);
 		// Use relatively low opacity so that more "layers" of overlapping objects can be distinguished.
 		material_storage->shader_set_code(overdraw_material_shader, R"(
-// 3D editor Overdraw debug draw mode shader (mobile).
+// 3D editor Overdraw debug draw mode shader (Mobile).
 
 shader_type spatial;
 
-render_mode blend_add, unshaded;
+render_mode blend_add, unshaded, fog_disabled;
 
 void fragment() {
 	ALBEDO = vec3(0.4, 0.8, 0.8);
@@ -698,11 +696,11 @@ void fragment() {
 		material_storage->shader_initialize(debug_shadow_splits_material_shader);
 		// Use relatively low opacity so that more "layers" of overlapping objects can be distinguished.
 		material_storage->shader_set_code(debug_shadow_splits_material_shader, R"(
-// 3D debug shadow splits mode shader(mobile).
+// 3D debug shadow splits mode shader (Mobile).
 
 shader_type spatial;
 
-render_mode debug_shadow_splits;
+render_mode debug_shadow_splits, fog_disabled;
 
 void fragment() {
 	ALBEDO = vec3(1.0, 1.0, 1.0);
@@ -733,7 +731,7 @@ void fragment() {
 		sampler.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 		sampler.min_filter = RD::SAMPLER_FILTER_LINEAR;
 		sampler.enable_compare = true;
-		sampler.compare_op = RD::COMPARE_OP_LESS;
+		sampler.compare_op = RD::COMPARE_OP_GREATER;
 		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 }

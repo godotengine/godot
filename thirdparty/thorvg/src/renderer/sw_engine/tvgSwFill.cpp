@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -167,7 +167,6 @@ bool _prepareLinear(SwFill* fill, const LinearGradient* linear, const Matrix* tr
         fill->linear.dy = dx * invTransform.e12 + fill->linear.dy * invTransform.e22;
 
         fill->linear.len = fill->linear.dx * fill->linear.dx + fill->linear.dy * fill->linear.dy;
-        if (fill->linear.len < FLT_EPSILON) return true;
     }
 
     return true;
@@ -202,7 +201,13 @@ bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix* tr
         fill->radial.fy = cy + r * (fy - cy) / dist;
         fill->radial.dx = cx - fill->radial.fx;
         fill->radial.dy = cy - fill->radial.fy;
-        fill->radial.a = fill->radial.dr * fill->radial.dr - fill->radial.dx * fill->radial.dx - fill->radial.dy * fill->radial.dy;
+        // Prevent loss of precision on Apple Silicon when dr=dy and dx=0 due to FMA
+        // https://github.com/thorvg/thorvg/issues/2014
+        auto dr2 = fill->radial.dr * fill->radial.dr;
+        auto dx2 = fill->radial.dx * fill->radial.dx;
+        auto dy2 = fill->radial.dy * fill->radial.dy;
+
+        fill->radial.a = dr2 - dx2 - dy2;
     }
 
     if (fill->radial.a > 0) fill->radial.invA = 1.0f / fill->radial.a;

@@ -63,7 +63,7 @@
 		[b]Note:[/b] Due to performance constraints, this class is best used from C# or from a compiled language via GDExtension. If you still want to use this class from GDScript, consider using a lower [member mix_rate] such as 11,025 Hz or 22,050 Hz.
 	</description>
 	<tutorials>
-		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
 	</tutorials>
 	<members>
 		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="0.5">

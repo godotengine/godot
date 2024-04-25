@@ -66,8 +66,7 @@ public:
 	int64_t max_renderable_lights = 0;
 	int64_t max_lights_per_object = 0;
 
-	// TODO implement wireframe in OpenGL
-	// bool generate_wireframes;
+	bool generate_wireframes = false;
 
 	HashSet<String> extensions;
 
@@ -91,6 +90,8 @@ public:
 	bool rt_msaa_supported = false;
 	bool rt_msaa_multiview_supported = false;
 	bool multiview_supported = false;
+
+	bool adreno_3xx_compatibility = false;
 
 #ifdef ANDROID_ENABLED
 	PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC eglFramebufferTextureMultiviewOVR = nullptr;

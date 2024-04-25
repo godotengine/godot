@@ -31,15 +31,17 @@
 #include "theme_editor_plugin.h"
 
 #include "core/os/keyboard.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_picker.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector_dock.h"
 #include "editor/progress_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/item_list.h"
@@ -852,10 +854,9 @@ bool ThemeItemImportTree::has_selected_items() const {
 
 void ThemeItemImportTree::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			select_icons_warning_icon->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
-			select_icons_warning->add_theme_color_override("font_color", get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+			select_icons_warning->add_theme_color_override("font_color", get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 
 			import_items_filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
@@ -917,6 +918,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	add_child(import_main_hb);
 
 	import_items_tree = memnew(Tree);
+	import_items_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	import_items_tree->set_hide_root(true);
 	import_items_tree->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	import_main_hb->add_child(import_items_tree);
@@ -1927,6 +1929,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_dialog_side_vb->add_child(edit_type_label);
 
 	edit_type_list = memnew(Tree);
+	edit_type_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	edit_type_list->set_hide_root(true);
 	edit_type_list->set_hide_folding(true);
 	edit_type_list->set_columns(1);
@@ -2030,6 +2033,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_remove_all->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_remove_all_items));
 
 	edit_items_tree = memnew(Tree);
+	edit_items_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	edit_items_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	edit_items_tree->set_hide_root(true);
 	edit_items_tree->set_columns(1);
@@ -2247,6 +2251,7 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_vb->add_child(add_type_options_label);
 
 	add_type_options = memnew(ItemList);
+	add_type_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_type_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_type_vb->add_child(add_type_options);
 	add_type_options->connect("item_selected", callable_mp(this, &ThemeTypeDialog::_add_type_options_cbk));
@@ -2262,7 +2267,9 @@ ThemeTypeDialog::ThemeTypeDialog() {
 ///////////////////////
 
 Control *ThemeItemLabel::make_custom_tooltip(const String &p_text) const {
-	return memnew(EditorHelpTooltip(p_text));
+	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_text));
+	EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<ThemeItemLabel *>(this));
+	return memnew(Control); // Make the standard tooltip invisible.
 }
 
 VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
@@ -2287,8 +2294,11 @@ VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
 	item_add_edit->connect("text_submitted", callable_mp(this, &ThemeTypeEditor::_item_add_lineedit_cbk).bind(p_data_type, item_add_edit));
 	Button *item_add_button = memnew(Button);
 	item_add_button->set_text(TTR("Add"));
+	item_add_button->set_disabled(true);
 	item_add_hb->add_child(item_add_button);
 	item_add_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_item_add_cbk).bind(p_data_type, item_add_edit));
+	item_add_edit->set_meta("button", item_add_button);
+	item_add_edit->connect("text_changed", callable_mp(this, &ThemeTypeEditor::_update_add_button).bind(item_add_edit));
 
 	return items_list;
 }
@@ -2370,18 +2380,23 @@ void ThemeTypeEditor::_update_type_list_debounced() {
 	update_debounce_timer->start();
 }
 
-HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, void (Theme::*get_list_func)(StringName, List<StringName> *) const, bool include_default) {
+HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, Theme::DataType p_type, bool p_include_default) {
 	HashMap<StringName, bool> items;
 	List<StringName> names;
 
-	if (include_default) {
+	if (p_include_default) {
 		names.clear();
 		String default_type = p_type_name;
 		if (edited_theme->get_type_variation_base(p_type_name) != StringName()) {
 			default_type = edited_theme->get_type_variation_base(p_type_name);
 		}
 
-		(ThemeDB::get_singleton()->get_default_theme().operator->()->*get_list_func)(default_type, &names);
+		List<ThemeDB::ThemeItemBind> theme_binds;
+		ThemeDB::get_singleton()->get_class_items(default_type, &theme_binds, true, p_type);
+		for (const ThemeDB::ThemeItemBind &E : theme_binds) {
+			names.push_back(E.item_name);
+		}
+
 		names.sort_custom<StringName::AlphCompare>();
 		for (const StringName &E : names) {
 			items[E] = false;
@@ -2390,7 +2405,7 @@ HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, v
 
 	{
 		names.clear();
-		(edited_theme.operator->()->*get_list_func)(p_type_name, &names);
+		edited_theme->get_theme_item_list(p_type, p_type_name, &names);
 		names.sort_custom<StringName::AlphCompare>();
 		for (const StringName &E : names) {
 			items[E] = true;
@@ -2423,8 +2438,8 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 	item_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	item_name->set_clip_text(true);
 	item_name->set_text(p_item_name);
-	// `|` separators used in `EditorHelpTooltip` for formatting.
-	item_name->set_tooltip_text("theme_item|" + edited_type + "|" + p_item_name + "|");
+	// `|` separators used in `EditorHelpBit`.
+	item_name->set_tooltip_text("theme_item|" + edited_type + "|" + p_item_name);
 	item_name->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	item_name_container->add_child(item_name);
 
@@ -2466,7 +2481,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		item_rename_cancel_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_item_rename_canceled).bind(p_data_type, p_item_name, item_name_container));
 		item_rename_cancel_button->hide();
 	} else {
-		item_name->add_theme_color_override("font_color", get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+		item_name->add_theme_color_override("font_color", get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 
 		Button *item_override_button = memnew(Button);
 		item_override_button->set_icon(get_editor_theme_icon(SNAME("Add")));
@@ -2496,7 +2511,7 @@ void ThemeTypeEditor::_update_type_items() {
 			color_items_list->remove_child(node);
 		}
 
-		HashMap<StringName, bool> color_items = _get_type_items(edited_type, &Theme::get_color_list, show_default);
+		HashMap<StringName, bool> color_items = _get_type_items(edited_type, Theme::DATA_TYPE_COLOR, show_default);
 		for (const KeyValue<StringName, bool> &E : color_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_COLOR, E.key, E.value);
 			ColorPickerButton *item_editor = memnew(ColorPickerButton);
@@ -2525,7 +2540,7 @@ void ThemeTypeEditor::_update_type_items() {
 			constant_items_list->remove_child(node);
 		}
 
-		HashMap<StringName, bool> constant_items = _get_type_items(edited_type, &Theme::get_constant_list, show_default);
+		HashMap<StringName, bool> constant_items = _get_type_items(edited_type, Theme::DATA_TYPE_CONSTANT, show_default);
 		for (const KeyValue<StringName, bool> &E : constant_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_CONSTANT, E.key, E.value);
 			SpinBox *item_editor = memnew(SpinBox);
@@ -2558,7 +2573,7 @@ void ThemeTypeEditor::_update_type_items() {
 			font_items_list->remove_child(node);
 		}
 
-		HashMap<StringName, bool> font_items = _get_type_items(edited_type, &Theme::get_font_list, show_default);
+		HashMap<StringName, bool> font_items = _get_type_items(edited_type, Theme::DATA_TYPE_FONT, show_default);
 		for (const KeyValue<StringName, bool> &E : font_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
@@ -2596,7 +2611,7 @@ void ThemeTypeEditor::_update_type_items() {
 			font_size_items_list->remove_child(node);
 		}
 
-		HashMap<StringName, bool> font_size_items = _get_type_items(edited_type, &Theme::get_font_size_list, show_default);
+		HashMap<StringName, bool> font_size_items = _get_type_items(edited_type, Theme::DATA_TYPE_FONT_SIZE, show_default);
 		for (const KeyValue<StringName, bool> &E : font_size_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_FONT_SIZE, E.key, E.value);
 			SpinBox *item_editor = memnew(SpinBox);
@@ -2629,7 +2644,7 @@ void ThemeTypeEditor::_update_type_items() {
 			icon_items_list->remove_child(node);
 		}
 
-		HashMap<StringName, bool> icon_items = _get_type_items(edited_type, &Theme::get_icon_list, show_default);
+		HashMap<StringName, bool> icon_items = _get_type_items(edited_type, Theme::DATA_TYPE_ICON, show_default);
 		for (const KeyValue<StringName, bool> &E : icon_items) {
 			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_ICON, E.key, E.value);
 			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
@@ -2697,7 +2712,7 @@ void ThemeTypeEditor::_update_type_items() {
 			stylebox_items_list->add_child(memnew(HSeparator));
 		}
 
-		HashMap<StringName, bool> stylebox_items = _get_type_items(edited_type, &Theme::get_stylebox_list, show_default);
+		HashMap<StringName, bool> stylebox_items = _get_type_items(edited_type, Theme::DATA_TYPE_STYLEBOX, show_default);
 		for (const KeyValue<StringName, bool> &E : stylebox_items) {
 			if (leading_stylebox.pinned && leading_stylebox.item_name == E.key) {
 				continue;
@@ -2850,6 +2865,11 @@ void ThemeTypeEditor::_add_default_type_items() {
 	ur->commit_action();
 }
 
+void ThemeTypeEditor::_update_add_button(const String &p_text, LineEdit *p_for_edit) {
+	Button *button = Object::cast_to<Button>(p_for_edit->get_meta("button"));
+	button->set_disabled(p_text.strip_edges().is_empty());
+}
+
 void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 	LineEdit *le = Object::cast_to<LineEdit>(p_control);
 	if (le->get_text().strip_edges().is_empty()) {
@@ -2895,6 +2915,7 @@ void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 	ur->commit_action();
 
 	le->set_text("");
+	_update_add_button("", le);
 }
 
 void ThemeTypeEditor::_item_add_lineedit_cbk(String p_value, int p_data_type, Control *p_control) {
@@ -3402,7 +3423,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	theme_type_list = memnew(OptionButton);
 	theme_type_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	theme_type_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-	theme_type_list->set_auto_translate(false);
+	theme_type_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	type_list_hb->add_child(theme_type_list);
 	theme_type_list->connect("item_selected", callable_mp(this, &ThemeTypeEditor::_list_type_selected));
 
@@ -3746,10 +3767,10 @@ bool ThemeEditorPlugin::handles(Object *p_object) const {
 void ThemeEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(theme_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(theme_editor);
 	} else {
 		if (theme_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 
 		button->hide();
@@ -3829,6 +3850,6 @@ ThemeEditorPlugin::ThemeEditorPlugin() {
 	theme_editor->plugin = this;
 	theme_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Theme"), theme_editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("Theme"), theme_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_theme_bottom_panel", TTR("Toggle Theme Bottom Panel")));
 	button->hide();
 }

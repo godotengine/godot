@@ -45,7 +45,6 @@ class FileAccessHandler(val context: Context) {
 	companion object {
 		private val TAG = FileAccessHandler::class.java.simpleName
 
-		private const val FILE_NOT_FOUND_ERROR_ID = -1
 		internal const val INVALID_FILE_ID = 0
 		private const val STARTING_FILE_ID = 1
 
@@ -56,7 +55,9 @@ class FileAccessHandler(val context: Context) {
 			}
 
 			return try {
-				DataAccess.fileExists(storageScope, context, path!!)
+				path?.let {
+					DataAccess.fileExists(storageScope, context, it)
+				} ?: false
 			} catch (e: SecurityException) {
 				false
 			}
@@ -69,20 +70,22 @@ class FileAccessHandler(val context: Context) {
 			}
 
 			return try {
-				DataAccess.removeFile(storageScope, context, path!!)
+				path?.let {
+					DataAccess.removeFile(storageScope, context, it)
+				} ?: false
 			} catch (e: Exception) {
 				false
 			}
 		}
 
-		internal fun renameFile(context: Context, storageScopeIdentifier: StorageScope.Identifier, from: String?, to: String?): Boolean {
+		internal fun renameFile(context: Context, storageScopeIdentifier: StorageScope.Identifier, from: String, to: String): Boolean {
 			val storageScope = storageScopeIdentifier.identifyStorageScope(from)
 			if (storageScope == StorageScope.UNKNOWN) {
 				return false
 			}
 
 			return try {
-				DataAccess.renameFile(storageScope, context, from!!, to!!)
+				DataAccess.renameFile(storageScope, context, from, to)
 			} catch (e: Exception) {
 				false
 			}
@@ -106,16 +109,18 @@ class FileAccessHandler(val context: Context) {
 			return INVALID_FILE_ID
 		}
 
-		try {
-			val dataAccess = DataAccess.generateDataAccess(storageScope, context, path!!, accessFlag) ?: return INVALID_FILE_ID
+		return try {
+			path?.let {
+				val dataAccess = DataAccess.generateDataAccess(storageScope, context, it, accessFlag) ?: return INVALID_FILE_ID
 
-			files.put(++lastFileId, dataAccess)
-			return lastFileId
+				files.put(++lastFileId, dataAccess)
+				lastFileId
+			} ?: INVALID_FILE_ID
 		} catch (e: FileNotFoundException) {
-			return FILE_NOT_FOUND_ERROR_ID
+			FileErrors.FILE_NOT_FOUND.nativeValue
 		} catch (e: Exception) {
 			Log.w(TAG, "Error while opening $path", e)
-			return INVALID_FILE_ID
+			INVALID_FILE_ID
 		}
 	}
 
@@ -176,10 +181,20 @@ class FileAccessHandler(val context: Context) {
 		}
 
 		return try {
-			DataAccess.fileLastModified(storageScope, context, filepath!!)
+			filepath?.let {
+				DataAccess.fileLastModified(storageScope, context, it)
+			} ?: 0L
 		} catch (e: SecurityException) {
 			0L
 		}
+	}
+
+	fun fileResize(fileId: Int, length: Long): Int {
+		if (!hasFileId(fileId)) {
+			return FileErrors.FAILED.nativeValue
+		}
+
+		return files[fileId].resize(length)
 	}
 
 	fun fileGetPosition(fileId: Int): Long {

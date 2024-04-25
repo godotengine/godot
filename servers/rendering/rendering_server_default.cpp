@@ -69,9 +69,6 @@ void RenderingServerDefault::request_frame_drawn_callback(const Callable &p_call
 }
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
-	//needs to be done before changes is reset to 0, to not force the editor to redraw
-	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
-
 	changes = 0;
 
 	RSG::rasterizer->begin_frame(frame_step);
@@ -80,6 +77,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	uint64_t time_usec = OS::get_singleton()->get_ticks_usec();
 
+	RENDER_TIMESTAMP("Prepare Render Frame");
 	RSG::scene->update(); //update scenes stuff before updating instances
 
 	frame_setup_time = double(OS::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;
@@ -91,16 +89,15 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::viewport->draw_viewports(p_swap_buffers);
 	RSG::canvas_render->update();
 
-	if (!OS::get_singleton()->get_current_rendering_driver_name().begins_with("opengl3")) {
-		// Already called for gl_compatibility renderer.
-		RSG::rasterizer->end_frame(p_swap_buffers);
-	}
+	RSG::rasterizer->end_frame(p_swap_buffers);
 
+#ifndef _3D_DISABLED
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
 		// let our XR server know we're done so we can get our frame timing
 		xr_server->end_frame();
 	}
+#endif // _3D_DISABLED
 
 	RSG::canvas->update_visibility_notifiers();
 	RSG::scene->update_visibility_notifiers();
@@ -214,21 +211,15 @@ void RenderingServerDefault::_finish() {
 		free(test_cube);
 	}
 
+	RSG::canvas->finalize();
 	RSG::rasterizer->finalize();
 }
 
 void RenderingServerDefault::init() {
 	if (create_thread) {
-		print_verbose("RenderingServerWrapMT: Creating render thread");
+		print_verbose("RenderingServerWrapMT: Starting render thread");
 		DisplayServer::get_singleton()->release_rendering_thread();
-		if (create_thread) {
-			thread.start(_thread_callback, this);
-			print_verbose("RenderingServerWrapMT: Starting render thread");
-		}
-		while (!draw_thread_up.is_set()) {
-			OS::get_singleton()->delay_usec(1000);
-		}
-		print_verbose("RenderingServerWrapMT: Finished render thread");
+		server_task_id = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &RenderingServerDefault::_thread_loop), true);
 	} else {
 		_init();
 	}
@@ -237,8 +228,9 @@ void RenderingServerDefault::init() {
 void RenderingServerDefault::finish() {
 	if (create_thread) {
 		command_queue.push(this, &RenderingServerDefault::_thread_exit);
-		if (thread.is_started()) {
-			thread.wait_to_finish();
+		if (server_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(server_task_id);
+			server_task_id = WorkerThreadPool::INVALID_TASK_ID;
 		}
 	} else {
 		_finish();
@@ -289,9 +281,11 @@ void RenderingServerDefault::set_default_clear_color(const Color &p_color) {
 	RSG::viewport->set_default_clear_color(p_color);
 }
 
+#ifndef DISABLE_DEPRECATED
 bool RenderingServerDefault::has_feature(Features p_feature) const {
 	return false;
 }
+#endif
 
 void RenderingServerDefault::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
 	RSG::scene->sdfgi_set_debug_probe_select(p_position, p_dir);
@@ -334,51 +328,53 @@ Size2i RenderingServerDefault::get_maximum_viewport_size() const {
 }
 
 void RenderingServerDefault::_thread_exit() {
-	exit.set();
+	exit = true;
 }
 
 void RenderingServerDefault::_thread_draw(bool p_swap_buffers, double frame_step) {
 	_draw(p_swap_buffers, frame_step);
 }
 
-void RenderingServerDefault::_thread_flush() {
-}
-
-void RenderingServerDefault::_thread_callback(void *_instance) {
-	RenderingServerDefault *vsmt = reinterpret_cast<RenderingServerDefault *>(_instance);
-
-	vsmt->_thread_loop();
-}
-
 void RenderingServerDefault::_thread_loop() {
 	server_thread = Thread::get_caller_id();
 
-	DisplayServer::get_singleton()->make_rendering_thread();
-
+	DisplayServer::get_singleton()->gl_window_make_current(DisplayServer::MAIN_WINDOW_ID); // Move GL to this thread.
 	_init();
 
-	draw_thread_up.set();
-	while (!exit.is_set()) {
-		// flush commands one by one, until exit is requested
-		command_queue.wait_and_flush();
+	command_queue.set_pump_task_id(server_task_id);
+	while (!exit) {
+		WorkerThreadPool::get_singleton()->yield();
+		command_queue.flush_all();
 	}
 
-	command_queue.flush_all(); // flush all
+	command_queue.flush_all();
 
 	_finish();
+	DisplayServer::get_singleton()->release_rendering_thread();
+}
+
+/* INTERPOLATION */
+
+void RenderingServerDefault::tick() {
+	RSG::canvas->tick();
+}
+
+void RenderingServerDefault::set_physics_interpolation_enabled(bool p_enabled) {
+	RSG::canvas->set_physics_interpolation_enabled(p_enabled);
 }
 
 /* EVENT QUEUING */
 
 void RenderingServerDefault::sync() {
-	if (create_thread) {
-		command_queue.push_and_sync(this, &RenderingServerDefault::_thread_flush);
-	} else {
-		command_queue.flush_all(); //flush all pending from other threads
+	if (!create_thread) {
+		command_queue.flush_all(); // Flush all pending from other threads.
 	}
 }
 
 void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Manually triggering the draw function from the RenderingServer can only be done on the main thread. Call this function from the main thread or use call_deferred().");
+	// Needs to be done before changes is reset to 0, to not force the editor to redraw.
+	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
 	if (create_thread) {
 		command_queue.push(this, &RenderingServerDefault::_thread_draw, p_swap_buffers, frame_step);
 	} else {
@@ -390,19 +386,16 @@ void RenderingServerDefault::_call_on_render_thread(const Callable &p_callable) 
 	p_callable.call();
 }
 
-RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
-		command_queue(p_create_thread) {
+RenderingServerDefault::RenderingServerDefault(bool p_create_thread) {
 	RenderingServer::init();
 
 	create_thread = p_create_thread;
-
-	if (!p_create_thread) {
-		server_thread = Thread::get_caller_id();
-	} else {
-		server_thread = 0;
+	if (!create_thread) {
+		server_thread = Thread::MAIN_ID;
 	}
 
-	RSG::threaded = p_create_thread;
+	RSG::threaded = create_thread;
+
 	RSG::canvas = memnew(RendererCanvasCull);
 	RSG::viewport = memnew(RendererViewport);
 	RendererSceneCull *sr = memnew(RendererSceneCull);

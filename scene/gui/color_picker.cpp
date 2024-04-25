@@ -36,6 +36,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/gui/color_mode.h"
+#include "scene/gui/margin_container.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
@@ -51,6 +52,22 @@ void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_color();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			List<BaseButton *> buttons;
+			preset_group->get_buttons(&buttons);
+			for (List<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
+				Color preset_color = ((ColorPresetButton *)E->get())->get_preset_color();
+				E->get()->set_tooltip_text(vformat(atr(ETR("Color: #%s\nLMB: Apply color\nRMB: Remove preset")), preset_color.to_html(preset_color.a < 1)));
+			}
+
+			buttons.clear();
+			recent_preset_group->get_buttons(&buttons);
+			for (List<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
+				Color preset_color = ((ColorPresetButton *)E->get())->get_preset_color();
+				E->get()->set_tooltip_text(vformat(atr(ETR("Color: #%s\nLMB: Apply color")), preset_color.to_html(preset_color.a < 1)));
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -74,7 +91,7 @@ void ColorPicker::_notification(int p_what) {
 				sliders[i]->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 			}
 			alpha_label->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
-			alpha_label->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
+			alpha_slider->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 
 			for (int i = 0; i < MODE_BUTTON_COUNT; i++) {
 				mode_btns[i]->begin_bulk_theme_override();
@@ -219,7 +236,7 @@ void ColorPicker::finish_shaders() {
 }
 
 void ColorPicker::set_focus_on_line_edit() {
-	c_text->call_deferred(SNAME("grab_focus"));
+	callable_mp((Control *)c_text, &Control::grab_focus).call_deferred();
 }
 
 void ColorPicker::_update_controls() {
@@ -386,8 +403,9 @@ void ColorPicker::add_mode(ColorMode *p_mode) {
 }
 
 void ColorPicker::create_slider(GridContainer *gc, int idx) {
-	Label *lbl = memnew(Label());
+	Label *lbl = memnew(Label);
 	lbl->set_v_size_flags(SIZE_SHRINK_CENTER);
+	lbl->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	gc->add_child(lbl);
 
 	HSlider *slider = memnew(HSlider);
@@ -556,16 +574,35 @@ void ColorPicker::_html_submitted(const String &p_html) {
 		return;
 	}
 
-	const Color previous_color = color;
-	color = Color::from_string(p_html.strip_edges(), previous_color);
+	Color new_color = Color::from_string(p_html.strip_edges(), color);
+	String html_no_prefix = p_html.strip_edges().trim_prefix("#");
+	if (html_no_prefix.is_valid_hex_number(false)) {
+		// Convert invalid HTML color codes that software like Figma supports.
+		if (html_no_prefix.length() == 1) {
+			// Turn `#1` into `#111111`.
+			html_no_prefix = html_no_prefix.repeat(6);
+		} else if (html_no_prefix.length() == 2) {
+			// Turn `#12` into `#121212`.
+			html_no_prefix = html_no_prefix.repeat(3);
+		} else if (html_no_prefix.length() == 5) {
+			// Turn `#12345` into `#11223344`.
+			html_no_prefix = html_no_prefix.left(4);
+		} else if (html_no_prefix.length() == 7) {
+			// Turn `#1234567` into `#123456`.
+			html_no_prefix = html_no_prefix.left(6);
+		}
+	}
+	new_color = Color::from_string(html_no_prefix, new_color);
 
 	if (!is_editing_alpha()) {
-		color.a = previous_color.a;
+		new_color.a = color.a;
 	}
 
-	if (color == previous_color) {
+	if (new_color.to_argb32() == color.to_argb32()) {
 		return;
 	}
+	color = new_color;
+
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -669,13 +706,17 @@ void ColorPicker::_text_type_toggled() {
 		text_type->set_icon(nullptr);
 
 		c_text->set_editable(true);
-		c_text->set_tooltip_text(RTR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
+		c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	}
 	_update_color();
 }
 
 Color ColorPicker::get_pick_color() const {
 	return color;
+}
+
+Color ColorPicker::get_old_color() const {
+	return old_color;
 }
 
 void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
@@ -693,6 +734,12 @@ void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 
 	current_shape = p_shape;
 
+#ifdef TOOLS_ENABLED
+	if (editor_settings) {
+		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "picker_shape", current_shape);
+	}
+#endif
+
 	_copy_color_to_hsv();
 
 	_update_controls();
@@ -709,7 +756,7 @@ inline int ColorPicker::_get_preset_size() {
 
 void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
 	ColorPresetButton *btn_preset_new = memnew(ColorPresetButton(p_color, p_size));
-	btn_preset_new->set_tooltip_text(vformat(RTR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
+	btn_preset_new->set_tooltip_text(vformat(atr(ETR("Color: #%s\nLMB: Apply color\nRMB: Remove preset")), p_color.to_html(p_color.a < 1)));
 	SET_DRAG_FORWARDING_GCDU(btn_preset_new, ColorPicker);
 	btn_preset_new->set_button_group(preset_group);
 	preset_container->add_child(btn_preset_new);
@@ -719,7 +766,7 @@ void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
 
 void ColorPicker::_add_recent_preset_button(int p_size, const Color &p_color) {
 	ColorPresetButton *btn_preset_new = memnew(ColorPresetButton(p_color, p_size));
-	btn_preset_new->set_tooltip_text(vformat(RTR("Color: #%s\nLMB: Apply color"), p_color.to_html(p_color.a < 1)));
+	btn_preset_new->set_tooltip_text(vformat(atr(ETR("Color: #%s\nLMB: Apply color")), p_color.to_html(p_color.a < 1)));
 	btn_preset_new->set_button_group(recent_preset_group);
 	recent_preset_hbc->add_child(btn_preset_new);
 	recent_preset_hbc->move_child(btn_preset_new, 0);
@@ -927,6 +974,12 @@ void ColorPicker::set_color_mode(ColorModeType p_mode) {
 
 	current_mode = p_mode;
 
+#ifdef TOOLS_ENABLED
+	if (editor_settings) {
+		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "color_mode", current_mode);
+	}
+#endif
+
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -1032,6 +1085,14 @@ void ColorPicker::_sample_draw() {
 		}
 
 		sample->draw_rect(rect_old, old_color);
+
+		if (!old_color.is_equal_approx(color)) {
+			// Draw a revert indicator to indicate that the old sample can be clicked to revert to this old color.
+			// Adapt icon color to the background color (taking alpha checkerboard into account) so that it's always visible.
+			sample->draw_texture(theme_cache.sample_revert,
+					rect_old.size * 0.5 - theme_cache.sample_revert->get_size() * 0.5,
+					Math::lerp(0.75f, old_color.get_luminance(), old_color.a) < 0.455 ? Color(1, 1, 1) : (Color(0.01, 0.01, 0.01)));
+		}
 
 		if (old_color.r > 1 || old_color.g > 1 || old_color.b > 1) {
 			// Draw an indicator to denote that the old color is "overbright" and can't be displayed accurately in the preview.
@@ -1458,7 +1519,7 @@ void ColorPicker::_pick_finished() {
 		return;
 	}
 
-	if (Input::get_singleton()->is_key_pressed(Key::ESCAPE)) {
+	if (Input::get_singleton()->is_action_just_pressed(SNAME("ui_cancel"))) {
 		set_pick_color(old_color);
 	} else {
 		emit_signal(SNAME("color_changed"), color);
@@ -1571,7 +1632,12 @@ void ColorPicker::_html_focus_exit() {
 	if (c_text->is_menu_visible()) {
 		return;
 	}
-	_html_submitted(c_text->get_text());
+
+	if (is_visible_in_tree()) {
+		_html_submitted(c_text->get_text());
+	} else {
+		_update_text_value();
+	}
 }
 
 void ColorPicker::set_can_add_swatches(bool p_enabled) {
@@ -1731,6 +1797,7 @@ void ColorPicker::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, bar_arrow);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, sample_bg);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, sample_revert);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, overbright_indicator);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, picker_cursor);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_hue);
@@ -1766,11 +1833,11 @@ ColorPicker::ColorPicker() {
 	btn_pick = memnew(Button);
 	sample_hbc->add_child(btn_pick);
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE)) {
-		btn_pick->set_tooltip_text(RTR("Pick a color from the screen."));
+		btn_pick->set_tooltip_text(ETR("Pick a color from the screen."));
 		btn_pick->connect(SNAME("pressed"), callable_mp(this, &ColorPicker::_pick_button_pressed));
 	} else {
 		// On unsupported platforms, use a legacy method for color picking.
-		btn_pick->set_tooltip_text(RTR("Pick a color from the application window."));
+		btn_pick->set_tooltip_text(ETR("Pick a color from the application window."));
 		btn_pick->connect(SNAME("pressed"), callable_mp(this, &ColorPicker::_pick_button_pressed_legacy));
 	}
 
@@ -1784,7 +1851,7 @@ ColorPicker::ColorPicker() {
 	btn_shape->set_flat(false);
 	sample_hbc->add_child(btn_shape);
 	btn_shape->set_toggle_mode(true);
-	btn_shape->set_tooltip_text(RTR("Select a picker shape."));
+	btn_shape->set_tooltip_text(ETR("Select a picker shape."));
 
 	current_shape = SHAPE_HSV_RECTANGLE;
 
@@ -1823,7 +1890,7 @@ ColorPicker::ColorPicker() {
 	btn_mode->set_flat(false);
 	mode_hbc->add_child(btn_mode);
 	btn_mode->set_toggle_mode(true);
-	btn_mode->set_tooltip_text(RTR("Select a picker mode."));
+	btn_mode->set_tooltip_text(ETR("Select a picker mode."));
 
 	current_mode = MODE_RGB;
 
@@ -1877,8 +1944,8 @@ ColorPicker::ColorPicker() {
 	hex_hbc->add_child(c_text);
 	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	c_text->set_select_all_on_focus(true);
-	c_text->set_tooltip_text(RTR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
-	c_text->set_placeholder(RTR("Hex code or named color"));
+	c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
+	c_text->set_placeholder(ETR("Hex code or named color"));
 	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect("text_changed", callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect("focus_exited", callable_mp(this, &ColorPicker::_html_focus_exit));
@@ -1956,7 +2023,7 @@ ColorPicker::ColorPicker() {
 
 	btn_add_preset = memnew(Button);
 	btn_add_preset->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	btn_add_preset->set_tooltip_text(RTR("Add current color as a preset."));
+	btn_add_preset->set_tooltip_text(ETR("Add current color as a preset."));
 	btn_add_preset->connect("pressed", callable_mp(this, &ColorPicker::_add_preset_pressed));
 	preset_container->add_child(btn_add_preset);
 }
@@ -1965,6 +2032,15 @@ ColorPicker::~ColorPicker() {
 	for (int i = 0; i < modes.size(); i++) {
 		delete modes[i];
 	}
+}
+
+/////////////////
+
+void ColorPickerPopupPanel::_input_from_window(const Ref<InputEvent> &p_event) {
+	if (p_event->is_action_pressed(SNAME("ui_accept"), false, true)) {
+		_close_pressed();
+	}
+	PopupPanel::_input_from_window(p_event);
 }
 
 /////////////////
@@ -1983,6 +2059,10 @@ void ColorPickerButton::_color_changed(const Color &p_color) {
 }
 
 void ColorPickerButton::_modal_closed() {
+	if (Input::get_singleton()->is_action_just_pressed(SNAME("ui_cancel"))) {
+		set_pick_color(picker->get_old_color());
+		emit_signal(SNAME("color_changed"), color);
+	}
 	emit_signal(SNAME("popup_closed"));
 	set_pressed(false);
 }
@@ -2080,7 +2160,7 @@ PopupPanel *ColorPickerButton::get_popup() {
 
 void ColorPickerButton::_update_picker() {
 	if (!picker) {
-		popup = memnew(PopupPanel);
+		popup = memnew(ColorPickerPopupPanel);
 		popup->set_wrap_controls(true);
 		picker = memnew(ColorPicker);
 		picker->set_anchors_and_offsets_preset(PRESET_FULL_RECT);

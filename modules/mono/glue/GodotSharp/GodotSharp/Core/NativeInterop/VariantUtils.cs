@@ -1,8 +1,11 @@
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming rule violation
+// ReSharper disable InconsistentNaming
+
 using System;
 using System.Runtime.CompilerServices;
 using Godot.Collections;
 
-// ReSharper disable InconsistentNaming
 
 #nullable enable
 
@@ -232,15 +235,29 @@ namespace Godot.NativeInterop
         }
 
         public static godot_variant CreateFromSystemArrayOfStringName(Span<StringName> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from == null)
+                return default;
+            using var fromGodot = new Collections.Array(from);
+            return CreateFromArray((godot_array)fromGodot.NativeValue);
+        }
 
         public static godot_variant CreateFromSystemArrayOfNodePath(Span<NodePath> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from == null)
+                return default;
+            using var fromGodot = new Collections.Array(from);
+            return CreateFromArray((godot_array)fromGodot.NativeValue);
+        }
 
         public static godot_variant CreateFromSystemArrayOfRid(Span<Rid> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from == null)
+                return default;
+            using var fromGodot = new Collections.Array(from);
+            return CreateFromArray((godot_array)fromGodot.NativeValue);
+        }
 
-        // ReSharper disable once RedundantNameQualifier
         public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject[]? from)
         {
             if (from == null)
@@ -306,7 +323,6 @@ namespace Godot.NativeInterop
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // ReSharper disable once RedundantNameQualifier
         public static godot_variant CreateFromGodotObject(GodotObject? from)
             => from != null ? CreateFromGodotObjectPtr(GodotObject.GetPtr(from)) : default;
 
@@ -459,7 +475,6 @@ namespace Godot.NativeInterop
             => p_var.Type == Variant.Type.Object ? p_var.Object : IntPtr.Zero;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // ReSharper disable once RedundantNameQualifier
         public static GodotObject ConvertToGodotObject(in godot_variant p_var)
             => InteropUtils.UnmanagedGetManaged(ConvertToGodotObjectPtr(p_var));
 
@@ -615,7 +630,6 @@ namespace Godot.NativeInterop
         }
 
         public static T[] ConvertToSystemArrayOfGodotObject<T>(in godot_variant p_var)
-            // ReSharper disable once RedundantNameQualifier
             where T : GodotObject
         {
             using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);

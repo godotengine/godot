@@ -34,9 +34,10 @@
 #include "core/io/file_access.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 
 void Path2DEditor::_notification(int p_what) {
@@ -48,6 +49,7 @@ void Path2DEditor::_notification(int p_what) {
 			curve_create->set_icon(get_editor_theme_icon(SNAME("CurveCreate")));
 			curve_del->set_icon(get_editor_theme_icon(SNAME("CurveDelete")));
 			curve_close->set_icon(get_editor_theme_icon(SNAME("CurveClose")));
+			curve_clear_points->set_icon(get_editor_theme_icon(SNAME("Clear")));
 		} break;
 	}
 }
@@ -68,7 +70,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		return false;
 	}
 
-	if (!node->get_curve().is_valid()) {
+	if (node->get_curve().is_null()) {
 		return false;
 	}
 
@@ -83,6 +85,8 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (mb->is_pressed() && action == ACTION_NONE) {
 			Ref<Curve2D> curve = node->get_curve();
+
+			original_mouse_pos = gpoint;
 
 			for (int i = 0; i < curve->get_point_count(); i++) {
 				real_t dist_to_p = gpoint.distance_to(xform.xform(curve->get_point_position(i)));
@@ -121,7 +125,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 				// Check for point deletion.
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-				if ((mb->get_button_index() == MouseButton::RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == MouseButton::LEFT && mode == MODE_DELETE)) {
+				if ((mb->get_button_index() == MouseButton::RIGHT && (mode == MODE_EDIT || mode == MODE_CREATE)) || (mb->get_button_index() == MouseButton::LEFT && mode == MODE_DELETE)) {
 					if (dist_to_p < grab_threshold) {
 						undo_redo->create_action(TTR("Remove Point from Curve"));
 						undo_redo->add_do_method(curve.ptr(), "remove_point", i);
@@ -154,16 +158,14 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		// Check for point creation.
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && ((mb->is_command_or_control_pressed() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
 			Ref<Curve2D> curve = node->get_curve();
+			curve->add_point(cpoint);
 
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Point to Curve"));
 			undo_redo->add_do_method(curve.ptr(), "add_point", cpoint);
-			undo_redo->add_undo_method(curve.ptr(), "remove_point", curve->get_point_count());
-			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-			undo_redo->commit_action();
+			undo_redo->add_undo_method(curve.ptr(), "remove_point", curve->get_point_count() - 1);
 
-			action = ACTION_MOVING_POINT;
+			action = ACTION_MOVING_NEW_POINT;
 			action_point = curve->get_point_count() - 1;
 			moving_from = curve->get_point_position(action_point);
 			moving_screen_from = gpoint;
@@ -191,15 +193,15 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				insertion_point = curve->get_point_count() - 2;
 			}
 
+			const Vector2 new_point = xform.affine_inverse().xform(gpoint2);
+			curve->add_point(new_point, Vector2(0, 0), Vector2(0, 0), insertion_point + 1);
+
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Split Curve"));
-			undo_redo->add_do_method(curve.ptr(), "add_point", xform.affine_inverse().xform(gpoint2), Vector2(0, 0), Vector2(0, 0), insertion_point + 1);
+			undo_redo->add_do_method(curve.ptr(), "add_point", new_point, Vector2(0, 0), Vector2(0, 0), insertion_point + 1);
 			undo_redo->add_undo_method(curve.ptr(), "remove_point", insertion_point + 1);
-			undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-			undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-			undo_redo->commit_action();
 
-			action = ACTION_MOVING_POINT;
+			action = ACTION_MOVING_NEW_POINT;
 			action_point = insertion_point + 1;
 			moving_from = curve->get_point_position(action_point);
 			moving_screen_from = gpoint2;
@@ -222,44 +224,53 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					// N/A, handled in above condition.
 					break;
 
-				case ACTION_MOVING_POINT: {
-					undo_redo->create_action(TTR("Move Point in Curve"));
+				case ACTION_MOVING_POINT:
+					if (original_mouse_pos != gpoint) {
+						undo_redo->create_action(TTR("Move Point in Curve"));
+						undo_redo->add_undo_method(curve.ptr(), "set_point_position", action_point, moving_from);
+						undo_redo->add_do_method(curve.ptr(), "set_point_position", action_point, cpoint);
+						undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+						undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+						undo_redo->commit_action(false);
+					}
+					break;
+				case ACTION_MOVING_NEW_POINT: {
 					undo_redo->add_do_method(curve.ptr(), "set_point_position", action_point, cpoint);
-					undo_redo->add_undo_method(curve.ptr(), "set_point_position", action_point, moving_from);
-					undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 					undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-					undo_redo->commit_action();
-
+					undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+					undo_redo->commit_action(false);
 				} break;
 
 				case ACTION_MOVING_IN: {
-					undo_redo->create_action(TTR("Move In-Control in Curve"));
-					undo_redo->add_do_method(curve.ptr(), "set_point_in", action_point, new_pos);
-					undo_redo->add_undo_method(curve.ptr(), "set_point_in", action_point, moving_from);
+					if (original_mouse_pos != gpoint) {
+						undo_redo->create_action(TTR("Move In-Control in Curve"));
+						undo_redo->add_do_method(curve.ptr(), "set_point_in", action_point, new_pos);
+						undo_redo->add_undo_method(curve.ptr(), "set_point_in", action_point, moving_from);
 
-					if (mirror_handle_angle) {
-						undo_redo->add_do_method(curve.ptr(), "set_point_out", action_point, mirror_handle_length ? -new_pos : (-new_pos.normalized() * orig_out_length));
-						undo_redo->add_undo_method(curve.ptr(), "set_point_out", action_point, mirror_handle_length ? -moving_from : (-moving_from.normalized() * orig_out_length));
+						if (mirror_handle_angle) {
+							undo_redo->add_do_method(curve.ptr(), "set_point_out", action_point, mirror_handle_length ? -new_pos : (-new_pos.normalized() * orig_out_length));
+							undo_redo->add_undo_method(curve.ptr(), "set_point_out", action_point, mirror_handle_length ? -moving_from : (-moving_from.normalized() * orig_out_length));
+						}
+						undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+						undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+						undo_redo->commit_action();
 					}
-					undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-					undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-					undo_redo->commit_action();
-
 				} break;
 
 				case ACTION_MOVING_OUT: {
-					undo_redo->create_action(TTR("Move Out-Control in Curve"));
-					undo_redo->add_do_method(curve.ptr(), "set_point_out", action_point, new_pos);
-					undo_redo->add_undo_method(curve.ptr(), "set_point_out", action_point, moving_from);
+					if (original_mouse_pos != gpoint) {
+						undo_redo->create_action(TTR("Move Out-Control in Curve"));
+						undo_redo->add_do_method(curve.ptr(), "set_point_out", action_point, new_pos);
+						undo_redo->add_undo_method(curve.ptr(), "set_point_out", action_point, moving_from);
 
-					if (mirror_handle_angle) {
-						undo_redo->add_do_method(curve.ptr(), "set_point_in", action_point, mirror_handle_length ? -new_pos : (-new_pos.normalized() * orig_in_length));
-						undo_redo->add_undo_method(curve.ptr(), "set_point_in", action_point, mirror_handle_length ? -moving_from : (-moving_from.normalized() * orig_in_length));
+						if (mirror_handle_angle) {
+							undo_redo->add_do_method(curve.ptr(), "set_point_in", action_point, mirror_handle_length ? -new_pos : (-new_pos.normalized() * orig_in_length));
+							undo_redo->add_undo_method(curve.ptr(), "set_point_in", action_point, mirror_handle_length ? -moving_from : (-moving_from.normalized() * orig_in_length));
+						}
+						undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+						undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+						undo_redo->commit_action();
 					}
-					undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-					undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
-					undo_redo->commit_action();
-
 				} break;
 			}
 
@@ -334,7 +345,8 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					// N/A, handled in above condition.
 					break;
 
-				case ACTION_MOVING_POINT: {
+				case ACTION_MOVING_POINT:
+				case ACTION_MOVING_NEW_POINT: {
 					curve->set_point_position(action_point, cpoint);
 				} break;
 
@@ -364,7 +376,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
-	if (!node || !node->is_visible_in_tree() || !node->get_curve().is_valid()) {
+	if (!node || !node->is_visible_in_tree() || node->get_curve().is_null()) {
 		return;
 	}
 
@@ -437,12 +449,12 @@ void Path2DEditor::edit(Node *p_path2d) {
 
 	if (p_path2d) {
 		node = Object::cast_to<Path2D>(p_path2d);
+
 		if (!node->is_connected("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed))) {
 			node->connect("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed));
 		}
-
 	} else {
-		// node may have been deleted at this point
+		// The node may have been deleted at this point.
 		if (node && node->is_connected("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed))) {
 			node->disconnect("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed));
 		}
@@ -452,6 +464,8 @@ void Path2DEditor::edit(Node *p_path2d) {
 
 void Path2DEditor::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("_menu_option"),&Path2DEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_clear_curve_points"), &Path2DEditor::_clear_curve_points);
+	ClassDB::bind_method(D_METHOD("_restore_curve_points"), &Path2DEditor::_restore_curve_points);
 }
 
 void Path2DEditor::_mode_selected(int p_mode) {
@@ -475,32 +489,46 @@ void Path2DEditor::_mode_selected(int p_mode) {
 		curve_edit->set_pressed(false);
 		curve_edit_curve->set_pressed(false);
 		curve_del->set_pressed(true);
-	} else if (p_mode == ACTION_CLOSE) {
-		//?
-
-		if (!node->get_curve().is_valid()) {
+	} else if (p_mode == MODE_CLOSE) {
+		if (node->get_curve().is_null()) {
 			return;
 		}
 		if (node->get_curve()->get_point_count() < 3) {
 			return;
 		}
-
 		Vector2 begin = node->get_curve()->get_point_position(0);
 		Vector2 end = node->get_curve()->get_point_position(node->get_curve()->get_point_count() - 1);
+
 		if (begin.is_equal_approx(end)) {
 			return;
 		}
-
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Remove Point from Curve"));
+
+		undo_redo->create_action(TTR("Close the Curve"));
 		undo_redo->add_do_method(node->get_curve().ptr(), "add_point", begin);
 		undo_redo->add_undo_method(node->get_curve().ptr(), "remove_point", node->get_curve()->get_point_count());
 		undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 		undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 		undo_redo->commit_action();
 		return;
-	}
+	} else if (p_mode == MODE_CLEAR_POINTS) {
+		if (node->get_curve().is_null()) {
+			return;
+		}
+		if (node->get_curve()->get_point_count() == 0) {
+			return;
+		}
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		PackedVector2Array points = node->get_curve()->get_points().duplicate();
 
+		undo_redo->create_action(TTR("Clear Curve Points"), UndoRedo::MERGE_DISABLE, node);
+		undo_redo->add_do_method(this, "_clear_curve_points", node);
+		undo_redo->add_undo_method(this, "_restore_curve_points", node, points);
+		undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+		undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
+		undo_redo->commit_action();
+		return;
+	}
 	mode = Mode(p_mode);
 }
 
@@ -520,6 +548,52 @@ void Path2DEditor::_handle_option_pressed(int p_option) {
 			mirror_handle_length = !is_checked;
 			pm->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
 		} break;
+	}
+}
+
+void Path2DEditor::_confirm_clear_points() {
+	if (!node || node->get_curve().is_null()) {
+		return;
+	}
+	if (node->get_curve()->get_point_count() == 0) {
+		return;
+	}
+	clear_points_dialog->reset_size();
+	clear_points_dialog->popup_centered();
+}
+
+void Path2DEditor::_clear_curve_points(Path2D *p_path2d) {
+	if (!p_path2d || p_path2d->get_curve().is_null()) {
+		return;
+	}
+	Ref<Curve2D> curve = p_path2d->get_curve();
+
+	if (curve->get_point_count() == 0) {
+		return;
+	}
+	curve->clear_points();
+
+	if (node == p_path2d) {
+		_mode_selected(MODE_CREATE);
+	}
+}
+
+void Path2DEditor::_restore_curve_points(Path2D *p_path2d, const PackedVector2Array &p_points) {
+	if (!p_path2d || p_path2d->get_curve().is_null()) {
+		return;
+	}
+	Ref<Curve2D> curve = p_path2d->get_curve();
+
+	if (curve->get_point_count() > 0) {
+		curve->clear_points();
+	}
+
+	for (int i = 0; i < p_points.size(); i += 3) {
+		curve->add_point(p_points[i + 2], p_points[i], p_points[i + 1]); // The Curve2D::points pattern is [point_in, point_out, point_position].
+	}
+
+	if (node == p_path2d) {
+		_mode_selected(MODE_EDIT);
 	}
 }
 
@@ -553,7 +627,7 @@ Path2DEditor::Path2DEditor() {
 	curve_create->set_theme_type_variation("FlatButton");
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
-	curve_create->set_tooltip_text(TTR("Add Point (in empty space)"));
+	curve_create->set_tooltip_text(TTR("Add Point (in empty space)") + "\n" + TTR("Right Click: Delete Point"));
 	curve_create->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CREATE));
 	add_child(curve_create);
 
@@ -569,8 +643,21 @@ Path2DEditor::Path2DEditor() {
 	curve_close->set_theme_type_variation("FlatButton");
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
 	curve_close->set_tooltip_text(TTR("Close Curve"));
-	curve_close->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected).bind(ACTION_CLOSE));
+	curve_close->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CLOSE));
 	add_child(curve_close);
+
+	curve_clear_points = memnew(Button);
+	curve_clear_points->set_theme_type_variation("FlatButton");
+	curve_clear_points->set_focus_mode(Control::FOCUS_NONE);
+	curve_clear_points->set_tooltip_text(TTR("Clear Points"));
+	curve_clear_points->connect("pressed", callable_mp(this, &Path2DEditor::_confirm_clear_points));
+	add_child(curve_clear_points);
+
+	clear_points_dialog = memnew(ConfirmationDialog);
+	clear_points_dialog->set_title(TTR("Please Confirm..."));
+	clear_points_dialog->set_text(TTR("Remove all curve points?"));
+	clear_points_dialog->connect("confirmed", callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CLEAR_POINTS));
+	add_child(clear_points_dialog);
 
 	PopupMenu *menu;
 

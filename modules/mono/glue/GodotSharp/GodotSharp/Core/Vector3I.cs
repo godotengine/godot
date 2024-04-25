@@ -1,5 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -126,6 +130,29 @@ namespace Godot
                 Mathf.Clamp(Y, min.Y, max.Y),
                 Mathf.Clamp(Z, min.Z, max.Z)
             );
+        }
+
+        /// <summary>
+        /// Returns the squared distance between this vector and <paramref name="to"/>.
+        /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
+        /// you need to compare vectors or need the squared distance for some formula.
+        /// </summary>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The squared distance between the two vectors.</returns>
+        public readonly int DistanceSquaredTo(Vector3I to)
+        {
+            return (to - this).LengthSquared();
+        }
+
+        /// <summary>
+        /// Returns the distance between this vector and <paramref name="to"/>.
+        /// </summary>
+        /// <seealso cref="DistanceSquaredTo(Vector3I)"/>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The distance between the two vectors.</returns>
+        public readonly real_t DistanceTo(Vector3I to)
+        {
+            return (to - this).Length();
         }
 
         /// <summary>
@@ -590,7 +617,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Vector3I other && Equals(other);
         }
@@ -618,18 +645,15 @@ namespace Godot
         /// Converts this <see cref="Vector3I"/> to a string.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public override readonly string ToString()
-        {
-            return $"({X}, {Y}, {Z})";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Vector3I"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
-            return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)})";
+            return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)}, {Z.ToString(format, CultureInfo.InvariantCulture)})";
         }
     }
 }

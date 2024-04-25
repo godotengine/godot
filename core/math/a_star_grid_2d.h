@@ -56,11 +56,19 @@ public:
 		HEURISTIC_MAX,
 	};
 
+	enum CellShape {
+		CELL_SHAPE_SQUARE,
+		CELL_SHAPE_ISOMETRIC_RIGHT,
+		CELL_SHAPE_ISOMETRIC_DOWN,
+		CELL_SHAPE_MAX,
+	};
+
 private:
 	Rect2i region;
 	Vector2 offset;
 	Size2 cell_size = Size2(1, 1);
 	bool dirty = false;
+	CellShape cell_shape = CELL_SHAPE_SQUARE;
 
 	bool jumping_enabled = false;
 	DiagonalMode diagonal_mode = DIAGONAL_MODE_ALWAYS;
@@ -80,6 +88,10 @@ private:
 		real_t f_score = 0;
 		uint64_t open_pass = 0;
 		uint64_t closed_pass = 0;
+
+		// Used for getting last_closest_point.
+		real_t abs_g_score = 0;
+		real_t abs_f_score = 0;
 
 		Point() {}
 
@@ -101,6 +113,7 @@ private:
 
 	LocalVector<LocalVector<Point>> points;
 	Point *end = nullptr;
+	Point *last_closest_point = nullptr;
 
 	uint64_t pass = 1;
 
@@ -144,6 +157,12 @@ protected:
 	GDVIRTUAL2RC(real_t, _estimate_cost, Vector2i, Vector2i)
 	GDVIRTUAL2RC(real_t, _compute_cost, Vector2i, Vector2i)
 
+#ifndef DISABLE_DEPRECATED
+	TypedArray<Vector2i> _get_id_path_bind_compat_88047(const Vector2i &p_from, const Vector2i &p_to);
+	Vector<Vector2> _get_point_path_bind_compat_88047(const Vector2i &p_from, const Vector2i &p_to);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	void set_region(const Rect2i &p_region);
 	Rect2i get_region() const;
@@ -156,6 +175,9 @@ public:
 
 	void set_cell_size(const Size2 &p_cell_size);
 	Size2 get_cell_size() const;
+
+	void set_cell_shape(CellShape p_cell_shape);
+	CellShape get_cell_shape() const;
 
 	void update();
 
@@ -187,11 +209,12 @@ public:
 	void clear();
 
 	Vector2 get_point_position(const Vector2i &p_id) const;
-	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to);
-	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to);
+	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
+	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
 };
 
 VARIANT_ENUM_CAST(AStarGrid2D::DiagonalMode);
 VARIANT_ENUM_CAST(AStarGrid2D::Heuristic);
+VARIANT_ENUM_CAST(AStarGrid2D::CellShape)
 
 #endif // A_STAR_GRID_2D_H

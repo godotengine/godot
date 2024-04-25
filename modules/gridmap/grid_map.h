@@ -32,7 +32,7 @@
 #define GRID_MAP_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/mesh_library.h"
+#include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/multimesh.h"
 
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
@@ -155,7 +155,6 @@ class GridMap : public Node3D {
 	Ref<PhysicsMaterial> physics_material;
 	bool bake_navigation = false;
 	RID map_override;
-	uint32_t navigation_layers = 1;
 
 	Transform3D last_transform;
 
@@ -188,6 +187,7 @@ class GridMap : public Node3D {
 	}
 
 	void _update_physics_bodies_collision_properties();
+	void _update_physics_bodies_characteristics();
 	void _octant_enter_world(const OctantKey &p_key);
 	void _octant_exit_world(const OctantKey &p_key);
 	bool _octant_update(const OctantKey &p_key);

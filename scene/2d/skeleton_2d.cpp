@@ -433,29 +433,23 @@ PackedStringArray Bone2D::get_configuration_warnings() const {
 }
 
 void Bone2D::calculate_length_and_rotation() {
-	// if there is at least a single child Bone2D node, we can calculate
+	// If there is at least a single child Bone2D node, we can calculate
 	// the length and direction. We will always just use the first Bone2D for this.
-	bool calculated = false;
 	int child_count = get_child_count();
-	if (child_count > 0) {
-		for (int i = 0; i < child_count; i++) {
-			Bone2D *child = Object::cast_to<Bone2D>(get_child(i));
-			if (child) {
-				Vector2 child_local_pos = to_local(child->get_global_position());
-				length = child_local_pos.length();
-				bone_angle = child_local_pos.normalized().angle();
-				calculated = true;
-				break;
-			}
+	Transform2D global_inv = get_global_transform().affine_inverse();
+
+	for (int i = 0; i < child_count; i++) {
+		Bone2D *child = Object::cast_to<Bone2D>(get_child(i));
+		if (child) {
+			Vector2 child_local_pos = global_inv.xform(child->get_global_position());
+			length = child_local_pos.length();
+			bone_angle = child_local_pos.angle();
+			return; // Finished!
 		}
 	}
-	if (calculated) {
-		return; // Finished!
-	} else {
-		WARN_PRINT("No Bone2D children of node " + get_name() + ". Cannot calculate bone length or angle reliably.\nUsing transform rotation for bone angle");
-		bone_angle = get_transform().get_rotation();
-		return;
-	}
+
+	WARN_PRINT("No Bone2D children of node " + get_name() + ". Cannot calculate bone length or angle reliably.\nUsing transform rotation for bone angle.");
+	bone_angle = get_transform().get_rotation();
 }
 
 void Bone2D::set_autocalculate_length_and_angle(bool p_autocalculate) {
@@ -555,7 +549,7 @@ void Skeleton2D::_make_bone_setup_dirty() {
 	}
 	bone_setup_dirty = true;
 	if (is_inside_tree()) {
-		call_deferred(SNAME("_update_bone_setup"));
+		callable_mp(this, &Skeleton2D::_update_bone_setup).call_deferred();
 	}
 }
 
@@ -593,7 +587,7 @@ void Skeleton2D::_make_transform_dirty() {
 	}
 	transform_dirty = true;
 	if (is_inside_tree()) {
-		call_deferred(SNAME("_update_transform"));
+		callable_mp(this, &Skeleton2D::_update_transform).call_deferred();
 	}
 }
 
@@ -641,36 +635,47 @@ Bone2D *Skeleton2D::get_bone(int p_idx) {
 }
 
 void Skeleton2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		if (bone_setup_dirty) {
-			_update_bone_setup();
-		}
-		if (transform_dirty) {
-			_update_transform();
-		}
-		request_ready();
-	}
-
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
-	} else if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
-		if (modification_stack.is_valid()) {
-			execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
-		}
-	} else if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		if (modification_stack.is_valid()) {
-			execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
-		}
-	}
-#ifdef TOOLS_ENABLED
-	else if (p_what == NOTIFICATION_DRAW) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			if (modification_stack.is_valid()) {
-				modification_stack->draw_editor_gizmos();
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			if (bone_setup_dirty) {
+				_update_bone_setup();
 			}
-		}
-	}
+			if (transform_dirty) {
+				_update_transform();
+			}
+			request_ready();
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (modification_stack.is_valid()) {
+				execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (modification_stack.is_valid()) {
+				execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
+			}
+		} break;
+
+		case NOTIFICATION_POST_ENTER_TREE: {
+			set_modification_stack(modification_stack);
+		} break;
+
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_DRAW: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				if (modification_stack.is_valid()) {
+					modification_stack->draw_editor_gizmos();
+				}
+			}
+		} break;
 #endif // TOOLS_ENABLED
+	}
 }
 
 RID Skeleton2D::get_skeleton() const {
@@ -698,7 +703,7 @@ void Skeleton2D::set_modification_stack(Ref<SkeletonModificationStack2D> p_stack
 		set_physics_process_internal(false);
 	}
 	modification_stack = p_stack;
-	if (modification_stack.is_valid()) {
+	if (modification_stack.is_valid() && is_inside_tree()) {
 		modification_stack->set_skeleton(this);
 		modification_stack->setup();
 
@@ -764,9 +769,6 @@ void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
 }
 
 void Skeleton2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_bone_setup"), &Skeleton2D::_update_bone_setup);
-	ClassDB::bind_method(D_METHOD("_update_transform"), &Skeleton2D::_update_transform);
-
 	ClassDB::bind_method(D_METHOD("get_bone_count"), &Skeleton2D::get_bone_count);
 	ClassDB::bind_method(D_METHOD("get_bone", "idx"), &Skeleton2D::get_bone);
 

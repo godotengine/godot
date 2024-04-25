@@ -16,10 +16,13 @@ thirdparty_sources = [
     "lib/filestream.c",
     "lib/hashlist.c",
     "lib/memstream.c",
+    "lib/miniz_wrapper.cpp",
     "lib/swap.c",
     "lib/texture.c",
     "lib/texture1.c",
     "lib/texture2.c",
+    "lib/vkformat_check.c",
+    "lib/vkformat_typesize.c",
     "lib/dfdutils/createdfd.c",
     "lib/dfdutils/colourspaces.c",
     "lib/dfdutils/interpretdfd.c",
@@ -33,7 +36,11 @@ env_ktx.Prepend(CPPPATH=[thirdparty_dir + "include"])
 env_ktx.Prepend(CPPPATH=[thirdparty_dir + "utils"])
 env_ktx.Prepend(CPPPATH=[thirdparty_dir + "lib"])
 env_ktx.Prepend(CPPPATH=[thirdparty_dir + "other_include"])
+
 env_ktx.Prepend(CPPPATH=["#thirdparty/basis_universal"])
+if env.editor_build:
+    # We already build miniz in the basis_universal module (editor only).
+    env_ktx.Append(CPPDEFINES=["MINIZ_HEADER_FILE_ONLY"])
 
 if env["vulkan"]:
     env_ktx.Prepend(CPPPATH=["#thirdparty/vulkan/include"])

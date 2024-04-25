@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationPathQueryParameters2D" inherits="RefCounted" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationPathQueryParameters2D" inherits="RefCounted" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides parameters for 2D navigation path queries.
 	</brief_description>
@@ -24,6 +24,13 @@
 		</member>
 		<member name="pathfinding_algorithm" type="int" setter="set_pathfinding_algorithm" getter="get_pathfinding_algorithm" enum="NavigationPathQueryParameters2D.PathfindingAlgorithm" default="0">
 			The pathfinding algorithm used in the path query.
+		</member>
+		<member name="simplify_epsilon" type="float" setter="set_simplify_epsilon" getter="get_simplify_epsilon" default="0.0">
+			The path simplification amount in worlds units.
+		</member>
+		<member name="simplify_path" type="bool" setter="set_simplify_path" getter="get_simplify_path" default="false">
+			If [code]true[/code] a simplified version of the path will be returned with less critical path points removed. The simplification amount is controlled by [member simplify_epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
+			Path simplification can be helpful to mitigate various path following issues that can arise with certain agent types and script behaviors. E.g. "steering" agents or avoidance in "open fields".
 		</member>
 		<member name="start_position" type="Vector2" setter="set_start_position" getter="get_start_position" default="Vector2(0, 0)">
 			The pathfinding start position in global coordinates.

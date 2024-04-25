@@ -4,6 +4,9 @@ using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
+using System.Diagnostics;
+
+#nullable enable
 
 namespace Godot.Collections
 {
@@ -12,6 +15,8 @@ namespace Godot.Collections
     /// typed elements allocated in the engine in C++. Useful when
     /// interfacing with the engine.
     /// </summary>
+    [DebuggerTypeProxy(typeof(DictionaryDebugView<Variant, Variant>))]
+    [DebuggerDisplay("Count = {Count}")]
     public sealed class Dictionary :
         IDictionary<Variant, Variant>,
         IReadOnlyDictionary<Variant, Variant>,
@@ -19,7 +24,7 @@ namespace Godot.Collections
     {
         internal godot_dictionary.movable NativeValue;
 
-        private WeakReference<IDisposable> _weakReferenceToSelf;
+        private WeakReference<IDisposable>? _weakReferenceToSelf;
 
         /// <summary>
         /// Constructs a new empty <see cref="Dictionary"/>.
@@ -478,6 +483,8 @@ namespace Godot.Collections
     /// </summary>
     /// <typeparam name="TKey">The type of the dictionary's keys.</typeparam>
     /// <typeparam name="TValue">The type of the dictionary's values.</typeparam>
+    [DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
+    [DebuggerDisplay("Count = {Count}")]
     public class Dictionary<[MustBeVariant] TKey, [MustBeVariant] TValue> :
         IDictionary<TKey, TValue>,
         IReadOnlyDictionary<TKey, TValue>,
@@ -559,7 +566,8 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="from">The typed dictionary to convert.</param>
         /// <returns>A new Godot Dictionary, or <see langword="null"/> if <see paramref="from"/> was null.</returns>
-        public static explicit operator Dictionary(Dictionary<TKey, TValue> from)
+        [return: NotNullIfNotNull("from")]
+        public static explicit operator Dictionary?(Dictionary<TKey, TValue>? from)
         {
             return from?._underlyingDict;
         }

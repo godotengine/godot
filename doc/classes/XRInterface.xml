@@ -26,13 +26,13 @@
 		<method name="get_name" qualifiers="const">
 			<return type="StringName" />
 			<description>
-				Returns the name of this interface (OpenXR, OpenVR, OpenHMD, ARKit, etc).
+				Returns the name of this interface ([code]"OpenXR"[/code], [code]"OpenVR"[/code], [code]"OpenHMD"[/code], [code]"ARKit"[/code], etc.).
 			</description>
 		</method>
 		<method name="get_play_area" qualifiers="const">
 			<return type="PackedVector3Array" />
 			<description>
-				Returns an array of vectors that denotes the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualize the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
+				Returns an array of vectors that represent the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualize the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
 			</description>
 		</method>
 		<method name="get_projection_for_view">
@@ -99,19 +99,19 @@
 		<method name="is_initialized" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Is [code]true[/code] if this interface has been initialized.
+				Returns [code]true[/code] if this interface has been initialized.
 			</description>
 		</method>
-		<method name="is_passthrough_enabled">
+		<method name="is_passthrough_enabled" deprecated="Check if [member environment_blend_mode] is [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND], instead.">
 			<return type="bool" />
 			<description>
-				Is [code]true[/code] if passthrough is enabled.
+				Returns [code]true[/code] if passthrough is enabled.
 			</description>
 		</method>
-		<method name="is_passthrough_supported">
+		<method name="is_passthrough_supported" deprecated="Check that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is supported using [method get_supported_environment_blend_modes], instead.">
 			<return type="bool" />
 			<description>
-				Is [code]true[/code] if this interface supports passthrough.
+				Returns [code]true[/code] if this interface supports passthrough.
 			</description>
 		</method>
 		<method name="set_environment_blend_mode">
@@ -119,20 +119,20 @@
 			<param index="0" name="mode" type="int" enum="XRInterface.EnvironmentBlendMode" />
 			<description>
 				Sets the active environment blend mode.
-				[param mode] is the [enum XRInterface.EnvironmentBlendMode] starting with the next frame.
+				[param mode] is the environment blend mode starting with the next frame.
 				[b]Note:[/b] Not all runtimes support all environment blend modes, so it is important to check this at startup. For example:
 				[codeblock]
-				                func _ready():
-				                    var xr_interface: XRInterface = XRServer.find_interface("OpenXR")
-				                    if xr_interface and xr_interface.is_initialized():
-				                        var vp: Viewport = get_viewport()
-				                        vp.use_xr = true
-				                        var acceptable_modes = [ XRInterface.XR_ENV_BLEND_MODE_OPAQUE, XRInterface.XR_ENV_BLEND_MODE_ADDITIVE ]
-				                        var modes = xr_interface.get_supported_environment_blend_modes()
-				                        for mode in acceptable_modes:
-				                            if mode in modes:
-				                                xr_interface.set_environment_blend_mode(mode)
-				                                break
+				func _ready():
+				    var xr_interface: XRInterface = XRServer.find_interface("OpenXR")
+				    if xr_interface and xr_interface.is_initialized():
+				        var vp: Viewport = get_viewport()
+				        vp.use_xr = true
+				        var acceptable_modes = [XRInterface.XR_ENV_BLEND_MODE_OPAQUE, XRInterface.XR_ENV_BLEND_MODE_ADDITIVE]
+				        var modes = xr_interface.get_supported_environment_blend_modes()
+				        for mode in acceptable_modes:
+				            if mode in modes:
+				                xr_interface.set_environment_blend_mode(mode)
+				                break
 				[/codeblock]
 			</description>
 		</method>
@@ -141,16 +141,17 @@
 			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Sets the active play area mode, will return [code]false[/code] if the mode can't be used with this interface.
+				[b]Note:[/b] Changing this after the interface has already been initialized can be jarring for the player, so it's recommended to recenter on the HMD with [method XRServer.center_on_hmd] (if switching to [constant XRInterface.XR_PLAY_AREA_STAGE]) or make the switch during a scene change.
 			</description>
 		</method>
-		<method name="start_passthrough">
+		<method name="start_passthrough" deprecated="Set the [member environment_blend_mode] to [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND], instead.">
 			<return type="bool" />
 			<description>
 				Starts passthrough, will return [code]false[/code] if passthrough couldn't be started.
 				[b]Note:[/b] The viewport used for XR must have a transparent background, otherwise passthrough may not properly render.
 			</description>
 		</method>
-		<method name="stop_passthrough">
+		<method name="stop_passthrough" deprecated="Set the [member environment_blend_mode] to [constant XRInterface.XR_ENV_BLEND_MODE_OPAQUE], instead.">
 			<return type="void" />
 			<description>
 				Stops passthrough.
@@ -256,7 +257,7 @@
 			Player is free to move around, full positional tracking.
 		</constant>
 		<constant name="XR_PLAY_AREA_STAGE" value="4" enum="PlayAreaMode">
-			Same as [constant XR_PLAY_AREA_ROOMSCALE] but origin point is fixed to the center of the physical space, [method XRServer.center_on_hmd] disabled.
+			Same as [constant XR_PLAY_AREA_ROOMSCALE] but origin point is fixed to the center of the physical space. In this mode, system-level recentering may be disabled, requiring the use of [method XRServer.center_on_hmd].
 		</constant>
 		<constant name="XR_ENV_BLEND_MODE_OPAQUE" value="0" enum="EnvironmentBlendMode">
 			Opaque blend mode. This is typically used for VR devices.
