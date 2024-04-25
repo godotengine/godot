@@ -503,7 +503,7 @@
 			<param index="0" name="class" type="String" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
-				Allows setting a callback to handle adding, removing and changing the order of elements of an array of the given class in the Godot editor's inspector.
+				Allows setting a callback to handle adding, removing, and changing the order of elements of an array of the given class in the Godot editor's inspector.
 				The values of [param from_index] and [param to_position] in the callback function determine if the array element is being added, removed or moved.
 				If [param from_index] is [code]-1[/code] then a new element is being added.
 				If [param to_position] is [code]-1[/code] then an element is being removed.
