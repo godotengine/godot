@@ -26,16 +26,16 @@
  */
 #define MBEDTLS_VERSION_MAJOR  2
 #define MBEDTLS_VERSION_MINOR  28
-#define MBEDTLS_VERSION_PATCH  7
+#define MBEDTLS_VERSION_PATCH  8
 
 /**
  * The single version number has the following structure:
  *    MMNNPP00
  *    Major version | Minor version | Patch version
  */
-#define MBEDTLS_VERSION_NUMBER         0x021C0700
-#define MBEDTLS_VERSION_STRING         "2.28.7"
-#define MBEDTLS_VERSION_STRING_FULL    "Mbed TLS 2.28.7"
+#define MBEDTLS_VERSION_NUMBER         0x021C0800
+#define MBEDTLS_VERSION_STRING         "2.28.8"
+#define MBEDTLS_VERSION_STRING_FULL    "Mbed TLS 2.28.8"
 
 #if defined(MBEDTLS_VERSION_C)
 
