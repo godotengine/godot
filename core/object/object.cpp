@@ -503,9 +503,14 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 					for (uint32_t i = 0; i < pcount; i++) {
 						p_list->push_back(PropertyInfo(pinfo[i]));
 					}
-					if (current_extension->free_property_list) {
+					if (current_extension->free_property_list2) {
+						current_extension->free_property_list2(_extension_instance, pinfo, pcount);
+					}
+#ifndef DISABLE_DEPRECATED
+					else if (current_extension->free_property_list) {
 						current_extension->free_property_list(_extension_instance, pinfo);
 					}
+#endif // DISABLE_DEPRECATED
 #ifdef TOOLS_ENABLED
 				}
 #endif
