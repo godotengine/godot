@@ -1535,6 +1535,7 @@ void main() {
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
+	alpha = 1.0;
 #else
 #ifdef MODE_RENDER_DEPTH
 #ifdef USE_OPAQUE_PREPASS
@@ -1934,13 +1935,6 @@ void main() {
 #endif
 	frag_color.rgb = linear_to_srgb(frag_color.rgb);
 
-#ifdef USE_BCS
-	frag_color.rgb = apply_bcs(frag_color.rgb, bcs);
-#endif
-
-#ifdef USE_COLOR_CORRECTION
-	frag_color.rgb = apply_color_correction(frag_color.rgb, color_correction);
-#endif
 #else // !BASE_PASS
 	frag_color = vec4(0.0, 0.0, 0.0, alpha);
 #endif // !BASE_PASS
@@ -2151,14 +2145,6 @@ void main() {
 	additive_light_color = apply_tonemapping(additive_light_color, white);
 #endif
 	additive_light_color = linear_to_srgb(additive_light_color);
-
-#ifdef USE_BCS
-	additive_light_color = apply_bcs(additive_light_color, bcs);
-#endif
-
-#ifdef USE_COLOR_CORRECTION
-	additive_light_color = apply_color_correction(additive_light_color, color_correction);
-#endif
 
 	frag_color.rgb += additive_light_color;
 #endif // USE_ADDITIVE_LIGHTING
