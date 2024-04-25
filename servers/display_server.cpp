@@ -34,6 +34,14 @@
 #include "scene/resources/texture.h"
 #include "servers/display_server_headless.h"
 
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#undef CursorShape
+#endif
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#endif
+
 DisplayServer *DisplayServer::singleton = nullptr;
 
 bool DisplayServer::hidpi_allowed = false;
@@ -1209,6 +1217,40 @@ Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {
 
 void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_image, Input::CursorShape p_shape, const Vector2 &p_hostspot) {
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hostspot);
+}
+
+bool DisplayServer::can_create_rendering_device() {
+#if defined(RD_ENABLED)
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+	rcd = memnew(RenderingContextDriverVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverD3D12);
+	}
+#endif
+
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				return true;
+			}
+		}
+
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+
+#endif // RD_ENABLED
+	return false;
 }
 
 DisplayServer::DisplayServer() {
