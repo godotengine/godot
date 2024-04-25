@@ -752,16 +752,15 @@ void TextEdit::_notification(int p_what) {
 				// Draw the minimap.
 
 				// Add visual feedback when dragging or hovering the visible area rectangle.
-				float viewport_alpha;
+				Color viewport_color = theme_cache.caret_color;
 				if (dragging_minimap) {
-					viewport_alpha = 0.25;
+					viewport_color.a = 0.25;
 				} else if (hovering_minimap) {
-					viewport_alpha = 0.175;
+					viewport_color.a = 0.175;
 				} else {
-					viewport_alpha = 0.1;
+					viewport_color.a = 0.1;
 				}
 
-				const Color viewport_color = (theme_cache.background_color.get_v() < 0.5) ? Color(1, 1, 1, viewport_alpha) : Color(0, 0, 0, viewport_alpha);
 				if (rtl) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y, minimap_width, viewport_height), viewport_color);
 				} else {
