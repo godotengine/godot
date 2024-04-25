@@ -298,6 +298,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		}
 		return nullptr;
 	}
+	ERR_FAIL_COND_V(!p_options.has("animation/fps"), nullptr);
 
 #ifndef DISABLE_DEPRECATED
 	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
