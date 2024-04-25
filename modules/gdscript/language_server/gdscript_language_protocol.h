@@ -97,7 +97,7 @@ public:
 	_FORCE_INLINE_ Ref<GDScriptTextDocument> get_text_document() { return text_document; }
 	_FORCE_INLINE_ bool is_initialized() const { return _initialized; }
 
-	void poll();
+	void poll(int p_limit_usec);
 	Error start(int p_port, const IP_Address &p_bind_ip);
 	void stop();
 

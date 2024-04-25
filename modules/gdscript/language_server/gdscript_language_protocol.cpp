@@ -103,7 +103,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 Error GDScriptLanguageProtocol::LSPeer::send_data() {
 	int sent = 0;
-	if (!res_queue.empty()) {
+	while (!res_queue.empty()) {
 		CharString c_res = res_queue[0];
 		if (res_sent < c_res.size()) {
 			Error err = connection->put_partial_data((const uint8_t *)c_res.get_data() + res_sent, c_res.size() - res_sent - 1, sent);
@@ -227,7 +227,9 @@ void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 	notify_client("gdscript/capabilities", capabilities.to_json());
 }
 
-void GDScriptLanguageProtocol::poll() {
+void GDScriptLanguageProtocol::poll(int p_limit_usec) {
+	uint64_t target_ticks = OS::get_singleton()->get_ticks_usec() + p_limit_usec;
+
 	if (server->is_connection_available()) {
 		on_client_connected();
 	}
@@ -239,15 +241,22 @@ void GDScriptLanguageProtocol::poll() {
 			on_client_disconnected(*id);
 			id = nullptr;
 		} else {
-			if (peer->connection->get_available_bytes() > 0) {
+			Error err = OK;
+			while (peer->connection->get_available_bytes() > 0) {
 				latest_client_id = *id;
-				Error err = peer->handle_data();
-				if (err != OK && err != ERR_BUSY) {
-					on_client_disconnected(*id);
-					id = nullptr;
+				err = peer->handle_data();
+				if (err != OK || OS::get_singleton()->get_ticks_usec() >= target_ticks) {
+					break;
 				}
 			}
-			Error err = peer->send_data();
+
+			if (err != OK && err != ERR_BUSY) {
+				on_client_disconnected(*id);
+				id = nullptr;
+				continue;
+			}
+
+			err = peer->send_data();
 			if (err != OK && err != ERR_BUSY) {
 				on_client_disconnected(*id);
 				id = nullptr;
