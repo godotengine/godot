@@ -44,8 +44,8 @@
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
 #include "main/main.h"
-#include <array>
 #include <iostream>
+#include <queue>
 
 template <typename T>
 class TypedArray;
@@ -415,19 +415,19 @@ public:                                                                         
 	}                                                                                                                                            \
 	virtual const StringName *_get_class_namev() const override {                                                                                \
 		static StringName _class_name_static;                                                                                                    \
-		static std::array<StringName, 10> _class_name_statics;                                                                                   \
-		/*static int versionYoloLocal = -1;                                                                                                      \
-		if (unlikely(!_class_name_static) || Main::versionYolo != versionYoloLocal) {*/                                                          \
-		if (unlikely(!_class_name_statics[Main::versionYolo])) {                                                                                 \
-			StringName::assign_static_unique_class_name(&_class_name_statics[Main::versionYolo], #m_class);                                      \
+		static std::queue<StringName> _class_name_statics;                                                                                       \
+		static int versionYoloLocal = -1;                                                                                                        \
+		if (unlikely(Main::versionYolo != versionYoloLocal)) {                                                                                   \
+			versionYoloLocal = Main::versionYolo;                                                                                                \
+			if (_class_name_statics.size() > 0) {                                                                                                \
+				/*_class_name_statics.pop();*/                                                                                                   \
+			}                                                                                                                                    \
+			_class_name_statics.push(StringName());                                                                                              \
 		}                                                                                                                                        \
-		/*if (String(#m_class) == "NavigationServer3D") {                                                                                        \
-		_class_name_static = StringName();                                                                                                       \
-		StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                              \
+		if (unlikely(!_class_name_statics.back())) {                                                                                             \
+			StringName::assign_static_unique_class_name(&_class_name_statics.back(), #m_class);                                                  \
 		}                                                                                                                                        \
-		versionYoloLocal = Main::versionYolo;                                                                                                    \
-	}                       */                                                                                                                   \
-		return &_class_name_statics[Main::versionYolo];                                                                                          \
+		return &_class_name_statics.back();                                                                                                      \
 	}                                                                                                                                            \
 	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                                                         \
 		static int ptr;                                                                                                                          \
