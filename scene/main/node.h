@@ -417,6 +417,8 @@ public:
 	String get_description() const;
 	void set_name(const String &p_name);
 
+	_FORCE_INLINE_ void set_name_to_case_adjusted_class() { set_name(adjust_name_casing(get_class())); }
+
 	InternalMode get_internal_mode() const;
 
 	void add_child(Node *p_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);

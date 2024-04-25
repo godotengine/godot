@@ -393,6 +393,7 @@ void Sprite2DEditor::_create_collision_polygon_2d_node() {
 		Vector<Vector2> outline = computed_outline_lines[i];
 
 		CollisionPolygon2D *collision_polygon_2d_instance = memnew(CollisionPolygon2D);
+		collision_polygon_2d_instance->set_name_to_case_adjusted_class();
 		collision_polygon_2d_instance->set_polygon(outline);
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
@@ -426,6 +427,7 @@ void Sprite2DEditor::_create_light_occluder_2d_node() {
 		polygon->set_polygon(a);
 
 		LightOccluder2D *light_occluder_2d_instance = memnew(LightOccluder2D);
+		light_occluder_2d_instance->set_name_to_case_adjusted_class();
 		light_occluder_2d_instance->set_occluder_polygon(polygon);
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();

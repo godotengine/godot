@@ -1382,6 +1382,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
+			new_node->set_name_to_case_adjusted_class();
 			add_root_node(new_node);
 
 			EditorNode::get_singleton()->edit_node(new_node);

@@ -83,8 +83,10 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				}
 
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
+				cshape->set_name_to_case_adjusted_class();
 				cshape->set_shape(shape);
 				StaticBody3D *body = memnew(StaticBody3D);
+				body->set_name_to_case_adjusted_class();
 				body->add_child(cshape, true);
 
 				Node *owner = get_tree()->get_edited_scene_root();
@@ -120,8 +122,10 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				}
 
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
+				cshape->set_name_to_case_adjusted_class();
 				cshape->set_shape(shape);
 				StaticBody3D *body = memnew(StaticBody3D);
+				body->set_name_to_case_adjusted_class();
 				body->add_child(cshape, true);
 
 				Node *owner = get_tree()->get_edited_scene_root();
@@ -152,6 +156,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			}
 
 			CollisionShape3D *cshape = memnew(CollisionShape3D);
+			cshape->set_name_to_case_adjusted_class();
 			cshape->set_shape(shape);
 			cshape->set_transform(node->get_transform());
 
@@ -196,6 +201,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			}
 
 			CollisionShape3D *cshape = memnew(CollisionShape3D);
+			cshape->set_name_to_case_adjusted_class();
 			cshape->set_shape(shape);
 			cshape->set_transform(node->get_transform());
 
@@ -237,7 +243,6 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			for (int i = 0; i < shapes.size(); i++) {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
-				cshape->set_name("CollisionShape3D");
 
 				cshape->set_shape(shapes[i]);
 				cshape->set_transform(node->get_transform());
@@ -246,6 +251,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 				ur->add_do_method(node->get_parent(), "add_child", cshape);
 				ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
+				ur->add_do_method(cshape, "set_name", adjust_name_casing(cshape->get_class()));
 				ur->add_do_method(cshape, "set_owner", owner);
 				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 				ur->add_do_reference(cshape);
@@ -264,6 +270,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			nmesh->create_from_mesh(mesh);
 			NavigationRegion3D *nmi = memnew(NavigationRegion3D);
+			nmi->set_name_to_case_adjusted_class();
 			nmi->set_navigation_mesh(nmesh);
 
 			Node *owner = get_tree()->get_edited_scene_root();
@@ -284,22 +291,21 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			outline_dialog->popup_centered(Vector2(200, 90));
 		} break;
 		case MENU_OPTION_CREATE_DEBUG_TANGENTS: {
-			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(TTR("Create Debug Tangents"));
-
 			MeshInstance3D *tangents = node->create_debug_tangents_node();
 
 			if (tangents) {
+				tangents->set_name_to_case_adjusted_class();
 				Node *owner = get_tree()->get_edited_scene_root();
 
-				ur->add_do_reference(tangents);
+				EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+				ur->create_action(TTR("Create Debug Tangents"));
 				ur->add_do_method(node, "add_child", tangents, true);
 				ur->add_do_method(tangents, "set_owner", owner);
+				ur->add_do_reference(tangents);
 
 				ur->add_undo_method(node, "remove_child", tangents);
+				ur->commit_action();
 			}
-
-			ur->commit_action();
 		} break;
 		case MENU_OPTION_CREATE_UV2: {
 			Ref<Mesh> mesh2 = node->get_mesh();
@@ -541,6 +547,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 	}
 
 	MeshInstance3D *mi = memnew(MeshInstance3D);
+	mi->set_name_to_case_adjusted_class();
 	mi->set_mesh(mesho);
 	Node *owner = get_tree()->get_edited_scene_root();
 
