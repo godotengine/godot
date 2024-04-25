@@ -71,6 +71,7 @@ class GDExtension : public Resource {
 	struct ClassCreationDeprecatedInfo {
 #ifndef DISABLE_DEPRECATED
 		GDExtensionClassNotification notification_func = nullptr;
+		GDExtensionClassFreePropertyList free_property_list_func = nullptr;
 #endif // DISABLE_DEPRECATED
 	};
 

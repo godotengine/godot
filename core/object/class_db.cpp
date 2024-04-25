@@ -138,7 +138,7 @@ public:
 		return nullptr;
 	}
 
-	static void placeholder_instance_free_property_list(GDExtensionClassInstancePtr p_instance, const GDExtensionPropertyInfo *p_list) {
+	static void placeholder_instance_free_property_list(GDExtensionClassInstancePtr p_instance, const GDExtensionPropertyInfo *p_list, uint32_t p_count) {
 	}
 
 	static GDExtensionBool placeholder_instance_property_can_revert(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name) {
@@ -600,12 +600,13 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 	placeholder_extension->set = &PlaceholderExtensionInstance::placeholder_instance_set;
 	placeholder_extension->get = &PlaceholderExtensionInstance::placeholder_instance_get;
 	placeholder_extension->get_property_list = &PlaceholderExtensionInstance::placeholder_instance_get_property_list;
-	placeholder_extension->free_property_list = &PlaceholderExtensionInstance::placeholder_instance_free_property_list;
+	placeholder_extension->free_property_list2 = &PlaceholderExtensionInstance::placeholder_instance_free_property_list;
 	placeholder_extension->property_can_revert = &PlaceholderExtensionInstance::placeholder_instance_property_can_revert;
 	placeholder_extension->property_get_revert = &PlaceholderExtensionInstance::placeholder_instance_property_get_revert;
 	placeholder_extension->validate_property = &PlaceholderExtensionInstance::placeholder_instance_validate_property;
 #ifndef DISABLE_DEPRECATED
 	placeholder_extension->notification = nullptr;
+	placeholder_extension->free_property_list = nullptr;
 #endif // DISABLE_DEPRECATED
 	placeholder_extension->notification2 = &PlaceholderExtensionInstance::placeholder_instance_notification;
 	placeholder_extension->to_string = &PlaceholderExtensionInstance::placeholder_instance_to_string;
