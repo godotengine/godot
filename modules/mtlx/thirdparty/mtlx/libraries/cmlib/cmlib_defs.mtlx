@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+    Copyright Contributors to the MaterialX Project
+    SPDX-License-Identifier: Apache-2.0
+
+    Declarations of the default color transforms in MaterialX.
+  -->
+
+  <nodedef name="ND_g18_rec709_to_lin_rec709_color3" node="g18_rec709_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color3" value="0.0, 0.0, 0.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <nodedef name="ND_g18_rec709_to_lin_rec709_color4" node="g18_rec709_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    <output name="out" type="color4" />
+  </nodedef>
+
+  <nodedef name="ND_g22_rec709_to_lin_rec709_color3" node="g22_rec709_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color3" value="0.0, 0.0, 0.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <nodedef name="ND_g22_rec709_to_lin_rec709_color4" node="g22_rec709_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    <output name="out" type="color4" />
+  </nodedef>
+
+  <nodedef name="ND_rec709_display_to_lin_rec709_color3" node="rec709_display_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color3" value="0.0, 0.0, 0.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <nodedef name="ND_rec709_display_to_lin_rec709_color4" node="rec709_display_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    <output name="out" type="color4" />
+  </nodedef>
+
+  <nodedef name="ND_acescg_to_lin_rec709_color3" node="acescg_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color3" value="0.0, 0.0, 0.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <nodedef name="ND_acescg_to_lin_rec709_color4" node="acescg_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    <output name="out" type="color4" />
+  </nodedef>
+
+  <nodedef name="ND_g22_ap1_to_lin_rec709_color3" node="g22_ap1_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color3" value="0.0, 0.0, 0.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <nodedef name="ND_g22_ap1_to_lin_rec709_color4" node="g22_ap1_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    <output name="out" type="color4" />
+  </nodedef>
+
+  <nodedef name="ND_srgb_texture_to_lin_rec709_color3" node="srgb_texture_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color3" value="0.0, 0.0, 0.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <nodedef name="ND_srgb_texture_to_lin_rec709_color4" node="srgb_texture_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    <output name="out" type="color4" />
+  </nodedef>
+
+  <nodedef name="ND_lin_adobergb_to_lin_rec709_color3" node="lin_adobergb_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color3" value="0.0, 0.0, 0.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <nodedef name="ND_lin_adobergb_to_lin_rec709_color4" node="lin_adobergb_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    <output name="out" type="color4" />
+  </nodedef>
+
+  <nodedef name="ND_adobergb_to_lin_rec709_color3" node="adobergb_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color3" value="0.0, 0.0, 0.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <nodedef name="ND_adobergb_to_lin_rec709_color4" node="adobergb_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    <output name="out" type="color4" />
+  </nodedef>
+
+  <nodedef name="ND_srgb_displayp3_to_lin_rec709_color3" node="srgb_displayp3_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color3" value="0.0, 0.0, 0.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <nodedef name="ND_srgb_displayp3_to_lin_rec709_color4" node="srgb_displayp3_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    <output name="out" type="color4" />
+  </nodedef>
+
+  <nodedef name="ND_lin_displayp3_to_lin_rec709_color3" node="lin_displayp3_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color3" value="0.0, 0.0, 0.0" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+  <nodedef name="ND_lin_displayp3_to_lin_rec709_color4" node="lin_displayp3_to_lin_rec709" nodegroup="colortransform">
+    <input name="in" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    <output name="out" type="color4" />
+  </nodedef>
+
+</materialx>

@@ -1,0 +1,38 @@
+#include "../lib/mx_microfacet_specular.osl"
+
+void mx_generalized_schlick_bsdf(float weight, color color0, color color90, float exponent, vector2 roughness, normal N, vector U, string distribution, string scatter_mode, output BSDF bsdf)
+{
+    float avgF0 = dot(color0, color(1.0 / 3.0));
+    float ior = mx_f0_to_ior(avgF0);
+
+    if (scatter_mode == "T")
+    {
+        bsdf.response = weight * microfacet(distribution, N, U, roughness.x, roughness.y, ior, 1);
+        bsdf.throughput = weight;
+        return;
+    }
+
+    float NdotV = fabs(dot(N,-I));
+    color F = mx_fresnel_schlick(NdotV, color0, color90, exponent);
+
+    // Calculate compensation for multiple scattering.
+    // This should normally be done inside the closure
+    // but since vanilla OSL doesen't support this we
+    // add it here in shader code instead.
+    vector2 safeAlpha = clamp(roughness, M_FLOAT_EPS, 1.0);
+    float avgAlpha = mx_average_alpha(safeAlpha);
+    color comp = mx_ggx_energy_compensation(NdotV, avgAlpha, F);
+
+    // Calculate throughput from directional albedo.
+    color dirAlbedo = mx_ggx_dir_albedo(NdotV, avgAlpha, color0, color90) * comp;
+    float avgDirAlbedo = dot(dirAlbedo, color(1.0 / 3.0));
+    bsdf.throughput = 1.0 - avgDirAlbedo * weight;
+
+    // Calculate the reflection response, setting IOR to zero to disable internal Fresnel.
+    bsdf.response = F * comp * weight * microfacet(distribution, N, U, safeAlpha.x, safeAlpha.y, 0.0, 0);
+
+    if (scatter_mode == "RT")
+    {
+        bsdf.response += bsdf.throughput * microfacet(distribution, N, U, safeAlpha.x, safeAlpha.y, ior, 1);
+    }
+}

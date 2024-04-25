@@ -1,0 +1,4 @@
+void mx_frame_float(output float result)
+{
+    getattribute("frame", result);
+}

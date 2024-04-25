@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<materialx require="matopgraph" version="1.22">
+  <!--
+    Examples of MaterialX 1.22 syntax
+  -->
+
+  <opgraph name="carpaint_opgraph" colorspace="lin_rec709">
+    <constant name="base_constant" type="float">
+      <parameter name="color" type="float" value="0.5" />
+    </constant>
+    <constant name="base_color_constant" type="color3">
+      <parameter name="color" type="color3" value="0.1037792, 0.59212029, 0.85064936" />
+    </constant>
+    <constant name="specular_constant" type="float">
+      <parameter name="color" type="float" value="1.0" />
+    </constant>
+    <constant name="specular_color_constant" type="color3">
+      <parameter name="color" type="color3" value="1.0, 1.0, 1.0" />
+    </constant>
+    <constant name="specular_roughness_constant" type="float">
+      <parameter name="color" type="float" value="0.4" />
+    </constant>
+    <constant name="specular_anisotropy_constant" type="float">
+      <parameter name="color" type="float" value="0.5" />
+    </constant>
+    <constant name="coat_constant" type="float">
+      <parameter name="color" type="float" value="1.0" />
+    </constant>
+    <constant name="coat_roughness_constant" type="float">
+      <parameter name="color" type="float" value="0.0" />
+    </constant>
+    <output name="base_output" type="float">
+      <parameter name="in" type="opgraphnode" value="base_constant" />
+    </output>
+    <output name="base_color_output" type="color3">
+      <parameter name="in" type="opgraphnode" value="base_color_constant" />
+    </output>
+    <output name="specular_output" type="float">
+      <parameter name="in" type="opgraphnode" value="specular_constant" />
+    </output>
+    <output name="specular_color_output" type="color3">
+      <parameter name="in" type="opgraphnode" value="specular_color_constant" />
+    </output>
+    <output name="specular_roughness_output" type="float">
+      <parameter name="in" type="opgraphnode" value="specular_roughness_constant" />
+    </output>
+    <output name="specular_anisotropy_output" type="float">
+      <parameter name="in" type="opgraphnode" value="specular_anisotropy_constant" />
+    </output>
+    <output name="coat_output" type="float">
+      <parameter name="in" type="opgraphnode" value="coat_constant" />
+    </output>
+    <output name="coat_roughness_output" type="float">
+      <parameter name="in" type="opgraphnode" value="coat_roughness_constant" />
+    </output>
+  </opgraph>
+  <shader name="carpaint_shader" shadertype="surface" shadername="standard_surface">
+    <input name="base" graphoutput="base_output" graphname="carpaint_opgraph" type="float" />
+    <input name="base_color" graphoutput="base_color_output" graphname="carpaint_opgraph" type="color3" />
+    <input name="specular" graphoutput="specular_output" graphname="carpaint_opgraph" type="float" />
+    <input name="specular_color" graphoutput="specular_color_output" graphname="carpaint_opgraph" type="color3" />
+    <input name="specular_roughness" graphoutput="specular_roughness_output" graphname="carpaint_opgraph" type="float" />
+    <input name="specular_anisotropy" graphoutput="specular_anisotropy_output" graphname="carpaint_opgraph" type="float" />
+    <input name="coat" graphoutput="coat_output" graphname="carpaint_opgraph" type="float" />
+    <input name="coat_roughness" graphoutput="coat_roughness_output" graphname="carpaint_opgraph" type="float" />
+  </shader>
+  <material name="carpaint_material">
+    <shaderref name="carpaint_shader" shadertype="surface" />
+  </material>
+</materialx>

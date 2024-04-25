@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <image name="image4_bmp" type="color4">
+    <input name="file" type="filename" value="resources/Images/cloth.bmp" />
+  </image>
+  <output name="image4_output_bmp" type="color4" nodename="image4_bmp" />
+  <image name="image4_gif" type="color4">
+    <input name="file" type="filename" value="resources/Images/cloth.gif" />
+  </image>
+  <output name="image4_output_gif" type="color4" nodename="image4_gif" />
+  <image name="image4_jpg" type="color4">
+    <input name="file" type="filename" value="resources/Images/cloth.jpg" />
+  </image>
+  <output name="image4_output_jpg" type="color4" nodename="image4_jpg" />
+  <image name="image4_png" type="color4">
+    <input name="file" type="filename" value="resources/Images/cloth.png" />
+  </image>
+  <output name="image4_output_png" type="color4" nodename="image4_png" />
+  <image name="image4_tga" type="color4">
+    <input name="file" type="filename" value="resources/Images/cloth.tga" />
+  </image>
+  <output name="image4_output_tga" type="color4" nodename="image4_tga" />
+  <image name="image4_wood1" type="color4">
+    <input name="file" type="filename" value="resources/Images/wood_color.jpg" />
+  </image>
+  <output name="image4_output_wood_png" type="color4" nodename="image4_wood1" />
+  <image name="image4_bridge3" type="color4">
+    <input name="file" type="filename" value="resources/Lights/irradiance/san_giuseppe_bridge.hdr" />
+  </image>
+  <output name="image4_output_bridge3_hdr" type="color4" nodename="image4_bridge3" />
+  <image name="image4_bridge4" type="color4">
+    <input name="file" type="filename" value="resources/Lights/san_giuseppe_bridge.hdr" />
+  </image>
+  <output name="image4_output_bridge4_hdr" type="color4" nodename="image4_bridge4" />
+</materialx>

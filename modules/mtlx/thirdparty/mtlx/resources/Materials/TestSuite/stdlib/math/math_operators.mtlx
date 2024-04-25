@@ -1,0 +1,674 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="add_float">
+    <add name="add1" type="float">
+      <input name="in1" type="float" value="0.2000" />
+      <input name="in2" type="float" value="0.3000" />
+    </add>
+    <output name="out" type="float" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="add_color3">
+    <add name="add1" type="color3">
+      <input name="in1" type="color3" value="0.2000, 0.3000, 0.0" />
+      <input name="in2" type="color3" value="0.3000, 0.4500, 1.0000" />
+    </add>
+    <output name="out" type="color3" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="add_color3FA">
+    <add name="add1" type="color3">
+      <input name="in1" type="color3" value="0.2000, 0.4500, 0.7000" />
+      <input name="in2" type="float" value="0.3000" />
+    </add>
+    <output name="out" type="color3" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="add_color4">
+    <add name="add1" type="color4">
+      <input name="in1" type="color4" value="0.2000, 0.3000, 0.0, 1.0" />
+      <input name="in2" type="color4" value="0.3000, 0.4500, 1.0000, 0.0000" />
+    </add>
+    <output name="out" type="color4" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="add_color4FA">
+    <add name="add1" type="color4">
+      <input name="in1" type="color4" value="0.2000, 0.4500, -0.3000, 0.7000" />
+      <input name="in2" type="float" value="0.3000" />
+    </add>
+    <output name="out" type="color4" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="add_vector2">
+    <add name="add1" type="vector2">
+      <input name="in1" type="vector2" value="0.2000, 0.0" />
+      <input name="in2" type="vector2" value="0.3000, 1.0000" />
+    </add>
+    <output name="out" type="vector2" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="add_vector2FA">
+    <add name="add1" type="vector2">
+      <input name="in1" type="vector2" value="0.2000, 0.4500" />
+      <input name="in2" type="float" value="0.3000" />
+    </add>
+    <output name="out" type="vector2" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="add_vector3">
+    <add name="add1" type="vector3">
+      <input name="in1" type="vector3" value="0.2000, 0.3000, 0.0" />
+      <input name="in2" type="vector3" value="0.3000, 0.4500, 1.0000" />
+    </add>
+    <output name="out" type="vector3" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="add_vector3FA">
+    <add name="add1" type="vector3">
+      <input name="in1" type="vector3" value="0.2000, 0.4500, 0.7000" />
+      <input name="in2" type="float" value="0.3000" />
+    </add>
+    <output name="out" type="vector3" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="add_vector4">
+    <add name="add1" type="vector4">
+      <input name="in1" type="vector4" value="0.2000, 0.3000, 0.0, 1.0" />
+      <input name="in2" type="vector4" value="0.3000, 0.4500, 1.0000, 0.0000" />
+    </add>
+    <output name="out" type="vector4" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="add_vector4FA">
+    <add name="add1" type="vector4">
+      <input name="in1" type="vector4" value="0.2000, 0.4500, -0.3000, 0.7000" />
+      <input name="in2" type="float" value="0.3000" />
+    </add>
+    <output name="out" type="vector4" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="subtract_float">
+    <subtract name="subtract1" type="float">
+      <input name="in1" type="float" value="1.0000" />
+      <input name="in2" type="float" value="0.5000" />
+    </subtract>
+    <output name="out" type="float" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="subtract_color3">
+    <subtract name="subtract1" type="color3">
+      <input name="in1" type="color3" value="1.0000, 1.0000, 0.0" />
+      <input name="in2" type="color3" value="0.5000, 0.0, 0.0" />
+    </subtract>
+    <output name="out" type="color3" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="subtract_color3FA">
+    <subtract name="subtract1" type="color3">
+      <input name="in1" type="color3" value="1.0000, 0.5000, 0.7500" />
+      <input name="in2" type="float" value="0.5000" />
+    </subtract>
+    <output name="out" type="color3" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="subtract_color4">
+    <subtract name="subtract1" type="color4">
+      <input name="in1" type="color4" value="1.0000, 1.0000, 0.0, 0.7500" />
+      <input name="in2" type="color4" value="0.5000, 0.0, 0.0, 0.2500" />
+    </subtract>
+    <output name="out" type="color4" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="subtract_color4FA">
+    <subtract name="subtract1" type="color4">
+      <input name="in1" type="color4" value="1.0000, 0.5000, 0.7500, 1.5000" />
+      <input name="in2" type="float" value="0.5000" />
+    </subtract>
+    <output name="out" type="color4" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="subtract_vector2">
+    <subtract name="subtract1" type="vector2">
+      <input name="in1" type="vector2" value="1.0000, 1.0000" />
+      <input name="in2" type="vector2" value="0.5000, 0.0" />
+    </subtract>
+    <output name="out" type="vector2" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="subtract_vector2FA">
+    <subtract name="subtract1" type="vector2">
+      <input name="in1" type="vector2" value="1.0000, 0.5000" />
+      <input name="in2" type="float" value="0.5000" />
+    </subtract>
+    <output name="out" type="vector2" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="subtract_vector3">
+    <subtract name="subtract1" type="vector3">
+      <input name="in1" type="vector3" value="1.0000, 1.0000, 0.0" />
+      <input name="in2" type="vector3" value="0.5000, 0.0, 0.0" />
+    </subtract>
+    <output name="out" type="vector3" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="subtract_vector3FA">
+    <subtract name="subtract1" type="vector3">
+      <input name="in1" type="vector3" value="1.0000, 0.5000, 0.7500" />
+      <input name="in2" type="float" value="0.5000" />
+    </subtract>
+    <output name="out" type="vector3" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="subtract_vector4">
+    <subtract name="subtract1" type="vector4">
+      <input name="in1" type="vector4" value="1.0000, 1.0000, 0.0, 0.7500" />
+      <input name="in2" type="vector4" value="0.5000, 0.0, 0.0, 0.2500" />
+    </subtract>
+    <output name="out" type="vector4" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="subtract_vector4FA">
+    <subtract name="subtract1" type="vector4">
+      <input name="in1" type="vector4" value="1.0000, 0.5000, 0.7500, 1.5000" />
+      <input name="in2" type="float" value="0.5000" />
+    </subtract>
+    <output name="out" type="vector4" nodename="subtract1" />
+  </nodegraph>
+  <nodegraph name="multiply_float">
+    <multiply name="multiply1" type="float">
+      <input name="in1" type="float" value="1.0000" />
+      <input name="in2" type="float" value="0.5000" />
+    </multiply>
+    <output name="out" type="float" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="multiply_color3">
+    <multiply name="multiply1" type="color3">
+      <input name="in1" type="color3" value="1.0000, 0.5000, 0.0000" />
+      <input name="in2" type="color3" value="0.5000, 0.5000, 1.0000" />
+    </multiply>
+    <output name="out" type="color3" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="multiply_color3FA">
+    <multiply name="multiply1" type="color3">
+      <input name="in1" type="color3" value="1.0000, 0.5000, 0.0" />
+      <input name="in2" type="float" value="0.5000" />
+    </multiply>
+    <output name="out" type="color3" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="multiply_color4">
+    <multiply name="multiply1" type="color4">
+      <input name="in1" type="color4" value="1.0000, 0.5000, 0.0, 1.0" />
+      <input name="in2" type="color4" value="0.5000, 0.5000, 1.0000, 1.0" />
+    </multiply>
+    <output name="out" type="color4" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="multiply_color4FA">
+    <multiply name="multiply1" type="color4">
+      <input name="in1" type="color4" value="1.0000, 0.5000, 0.0, 2.0000" />
+      <input name="in2" type="float" value="0.5000" />
+    </multiply>
+    <output name="out" type="color4" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="multiply_vector2">
+    <multiply name="multiply1" type="vector2">
+      <input name="in1" type="vector2" value="1.0000, 0.5000" />
+      <input name="in2" type="vector2" value="0.5000, 0.5000" />
+    </multiply>
+    <output name="out" type="vector2" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="multiply_vector2FA">
+    <multiply name="multiply1" type="vector2">
+      <input name="in1" type="vector2" value="1.0000, 0.5000" />
+      <input name="in2" type="float" value="0.5000" />
+    </multiply>
+    <output name="out" type="vector2" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="multiply_vector3">
+    <multiply name="multiply1" type="vector3">
+      <input name="in1" type="vector3" value="1.0000, 0.5000, 0.0" />
+      <input name="in2" type="vector3" value="0.5000, 0.5000, 1.0000" />
+    </multiply>
+    <output name="out" type="vector3" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="multiply_vector3FA">
+    <multiply name="multiply1" type="vector3">
+      <input name="in1" type="vector3" value="1.0000, 0.5000, 0.0" />
+      <input name="in2" type="float" value="0.5000" />
+    </multiply>
+    <output name="out" type="vector3" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="multiply_vector4">
+    <multiply name="multiply1" type="vector4">
+      <input name="in1" type="vector4" value="1.0000, 0.5000, 0.0, 1.0" />
+      <input name="in2" type="vector4" value="0.5000, 0.5000, 1.0000, 1.0" />
+    </multiply>
+    <output name="out" type="vector4" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="multiply_vector4FA">
+    <multiply name="multiply1" type="vector4">
+      <input name="in1" type="vector4" value="1.0000, 0.5000, 0.0, 2.0000" />
+      <input name="in2" type="float" value="0.5000" />
+    </multiply>
+    <output name="out" type="vector4" nodename="multiply1" />
+  </nodegraph>
+  <nodegraph name="divide_float">
+    <divide name="divide1" type="float">
+      <input name="in1" type="float" value="1.0000" />
+      <input name="in2" type="float" value="2.0000" />
+    </divide>
+    <output name="out" type="float" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="divide_color3">
+    <divide name="divide1" type="color3">
+      <input name="in1" type="color3" value="1.0000, 1.0000, 0.0" />
+      <input name="in2" type="color3" value="2.0000, 4.0000, 1.0000" />
+    </divide>
+    <output name="out" type="color3" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="divide_color3FA">
+    <divide name="divide1" type="color3">
+      <input name="in1" type="color3" value="2.0000, 1.0000, 0.0" />
+      <input name="in2" type="float" value="4.0000" />
+    </divide>
+    <output name="out" type="color3" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="divide_color4">
+    <divide name="divide1" type="color4">
+      <input name="in1" type="color4" value="1.0000, 1.0000, 0.0, 1.0" />
+      <input name="in2" type="color4" value="2.0000, 4.0000, 1.0000, 1.0" />
+    </divide>
+    <output name="out" type="color4" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="divide_color4FA">
+    <divide name="divide1" type="color4">
+      <input name="in1" type="color4" value="2.0000, 1.0000, 0.0, 4.0000" />
+      <input name="in2" type="float" value="4.0000" />
+    </divide>
+    <output name="out" type="color4" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="divide_vector2">
+    <divide name="divide1" type="vector2">
+      <input name="in1" type="vector2" value="1.0000, 1.0000" />
+      <input name="in2" type="vector2" value="2.0000, 4.0000" />
+    </divide>
+    <output name="out" type="vector2" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="divide_vector2FA">
+    <divide name="divide1" type="vector2">
+      <input name="in1" type="vector2" value="2.0000, 1.0000" />
+      <input name="in2" type="float" value="4.0000" />
+    </divide>
+    <output name="out" type="vector2" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="divide_vector3">
+    <divide name="divide1" type="vector3">
+      <input name="in1" type="vector3" value="1.0000, 1.0000, 0.0" />
+      <input name="in2" type="vector3" value="2.0000, 4.0000, 1.0000" />
+    </divide>
+    <output name="out" type="vector3" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="divide_vector3FA">
+    <divide name="divide1" type="vector3">
+      <input name="in1" type="vector3" value="2.0000, 1.0000, 0.0" />
+      <input name="in2" type="float" value="4.0000" />
+    </divide>
+    <output name="out" type="vector3" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="divide_vector4">
+    <divide name="divide1" type="vector4">
+      <input name="in1" type="vector4" value="1.0000, 1.0000, 0.0, 1.0" />
+      <input name="in2" type="vector4" value="2.0000, 4.0000, 1.0000, 1.0" />
+    </divide>
+    <output name="out" type="vector4" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="divide_vector4FA">
+    <divide name="divide1" type="vector4">
+      <input name="in1" type="vector4" value="2.0000, 1.0000, 0.0, 4.0000" />
+      <input name="in2" type="float" value="4.0000" />
+    </divide>
+    <output name="out" type="vector4" nodename="divide1" />
+  </nodegraph>
+  <nodegraph name="modulo_float">
+    <modulo name="modulo1" type="float">
+      <input name="in1" type="float" value="1.5000" />
+      <input name="in2" type="float" value="1.0000" />
+    </modulo>
+    <output name="out" type="float" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="modulo_color3">
+    <modulo name="modulo1" type="color3">
+      <input name="in1" type="color3" value="1.5000, 1.0000, 0.0" />
+      <input name="in2" type="color3" value="1.0000, 1.0000, 1.0000" />
+    </modulo>
+    <output name="out" type="color3" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="modulo_color3FA">
+    <modulo name="modulo1" type="color3">
+      <input name="in1" type="color3" value="1.5000, 1.0000, 0.0" />
+      <input name="in2" type="float" value="1.0000" />
+    </modulo>
+    <output name="out" type="color3" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="modulo_color4">
+    <modulo name="modulo1" type="color4">
+      <input name="in1" type="color4" value="1.5000, 1.0000, 0.0, 0.5000" />
+      <input name="in2" type="color4" value="1.0000, 1.0000, 1.0000, 1.0" />
+    </modulo>
+    <output name="out" type="color4" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="modulo_color4FA">
+    <modulo name="modulo1" type="color4">
+      <input name="in1" type="color4" value="1.5000, 1.0000, 0.0, 0.2500" />
+      <input name="in2" type="float" value="1.0000" />
+    </modulo>
+    <output name="out" type="color4" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="modulo_vector2">
+    <modulo name="modulo1" type="vector2">
+      <input name="in1" type="vector2" value="1.5000, 1.0000" />
+      <input name="in2" type="vector2" value="1.0000, 1.0000" />
+    </modulo>
+    <output name="out" type="vector2" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="modulo_vector2FA">
+    <modulo name="modulo1" type="vector2">
+      <input name="in1" type="vector2" value="1.5000, 1.0000" />
+      <input name="in2" type="float" value="1.0000" />
+    </modulo>
+    <output name="out" type="vector2" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="modulo_vector3">
+    <modulo name="modulo1" type="vector3">
+      <input name="in1" type="vector3" value="1.5000, 1.0000, 0.0" />
+      <input name="in2" type="vector3" value="1.0000, 1.0000, 1.0000" />
+    </modulo>
+    <output name="out" type="vector3" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="modulo_vector3FA">
+    <modulo name="modulo1" type="vector3">
+      <input name="in1" type="vector3" value="1.5000, 1.0000, 0.0" />
+      <input name="in2" type="float" value="1.0000" />
+    </modulo>
+    <output name="out" type="vector3" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="modulo_vector4">
+    <modulo name="modulo1" type="vector4">
+      <input name="in1" type="vector4" value="1.5000, 1.0000, 0.0, 0.2500" />
+      <input name="in2" type="vector4" value="1.0000, 1.0000, 1.0000, 1.0000" />
+    </modulo>
+    <output name="out" type="vector4" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="modulo_vector4FA">
+    <modulo name="modulo1" type="vector4">
+      <input name="in1" type="vector4" value="1.5000, 1.0000, 0.0, 0.2500" />
+      <input name="in2" type="float" value="1.0000" />
+    </modulo>
+    <output name="out" type="vector4" nodename="modulo1" />
+  </nodegraph>
+  <nodegraph name="power_float">
+    <power name="power1" type="float">
+      <input name="in1" type="float" value="0.5000" />
+      <input name="in2" type="float" value="2.0000" />
+    </power>
+    <output name="out" type="float" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="power_color3">
+    <power name="power1" type="color3">
+      <input name="in1" type="color3" value="0.5000, 1.0000, 1.0000" />
+      <input name="in2" type="color3" value="2.0000, 1.0000, 0.0" />
+    </power>
+    <output name="out" type="color3" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="power_color3FA">
+    <power name="power1" type="color3">
+      <input name="in1" type="color3" value="0.5000, 1.0000, 0.0000" />
+      <input name="in2" type="float" value="2.0000" />
+    </power>
+    <output name="out" type="color3" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="power_color4">
+    <power name="power1" type="color4">
+      <input name="in1" type="color4" value="0.5000, 1.0000, 1.0000, 1.0000" />
+      <input name="in2" type="color4" value="2.0000, 1.0000, 0.0000, 3.0000" />
+    </power>
+    <output name="out" type="color4" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="power_color4FA">
+    <power name="power1" type="color4">
+      <input name="in1" type="color4" value="0.5000, 1.0000, 0.0, 1.0000" />
+      <input name="in2" type="float" value="2.0000" />
+    </power>
+    <output name="out" type="color4" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="power_vector2">
+    <power name="power1" type="vector2">
+      <input name="in1" type="vector2" value="0.5000, 1.0000" />
+      <input name="in2" type="vector2" value="2.0000, 1.0000" />
+    </power>
+    <output name="out" type="vector2" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="power_vector2FA">
+    <power name="power1" type="vector2">
+      <input name="in1" type="vector2" value="0.5000, 1.0000" />
+      <input name="in2" type="float" value="2.0000" />
+    </power>
+    <output name="out" type="vector2" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="power_vector3">
+    <power name="power1" type="vector3">
+      <input name="in1" type="vector3" value="0.5000, 1.0000, 1.0000" />
+      <input name="in2" type="vector3" value="2.0000, 1.0000, 0.0" />
+    </power>
+    <output name="out" type="vector3" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="power_vector3FA">
+    <power name="power1" type="vector3">
+      <input name="in1" type="vector3" value="0.5000, 1.0000, 0.0" />
+      <input name="in2" type="float" value="2.0000" />
+    </power>
+    <output name="out" type="vector3" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="power_vector4">
+    <power name="power1" type="vector4">
+      <input name="in1" type="vector4" value="0.5000, 1.0000, 1.0000, 1.0" />
+      <input name="in2" type="vector4" value="2.0000, 1.0000, 0.0, 3.0000" />
+    </power>
+    <output name="out" type="vector4" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="power_vector4FA">
+    <power name="power1" type="vector4">
+      <input name="in1" type="vector4" value="0.5000, 1.0000, 0.0, 1.0000" />
+      <input name="in2" type="float" value="2.0000" />
+    </power>
+    <output name="out" type="vector4" nodename="power1" />
+  </nodegraph>
+  <nodegraph name="safepower_float">
+    <safepower name="safepower1" type="float">
+      <input name="in1" type="float" value="0.5000" />
+      <input name="in2" type="float" value="2.0000" />
+    </safepower>
+    <output name="out" type="float" nodename="safepower1" />
+  </nodegraph>
+  <nodegraph name="safepower_color3">
+    <safepower name="safepower1" type="color3">
+      <input name="in1" type="color3" value="0.5000, 1.0000, -1.0000" />
+      <input name="in2" type="color3" value="2.0000, 1.0000, 0.0" />
+    </safepower>
+    <output name="out" type="color3" nodename="safepower1" />
+  </nodegraph>
+  <nodegraph name="safepower_color3FA">
+    <safepower name="safepower1" type="color3">
+      <input name="in1" type="color3" value="-0.5000, 1.0000, 0.0000" />
+      <input name="in2" type="float" value="2.0000" />
+    </safepower>
+    <output name="out" type="color3" nodename="safepower1" />
+  </nodegraph>
+  <nodegraph name="safepower_color4">
+    <safepower name="safepower1" type="color4">
+      <input name="in1" type="color4" value="0.5000, 1.0000, -1.0000, 1.0000" />
+      <input name="in2" type="color4" value="2.0000, 1.0000, 0.0000, 3.0000" />
+    </safepower>
+    <output name="out" type="color4" nodename="safepower1" />
+  </nodegraph>
+  <nodegraph name="safepower_color4FA">
+    <safepower name="safepower1" type="color4">
+      <input name="in1" type="color4" value="0.5000, 1.0000, 0.0, 1.0000" />
+      <input name="in2" type="float" value="2.0000" />
+    </safepower>
+    <output name="out" type="color4" nodename="safepower1" />
+  </nodegraph>
+  <nodegraph name="safepower_vector2">
+    <safepower name="safepower1" type="vector2">
+      <input name="in1" type="vector2" value="-0.5000, 1.0000" />
+      <input name="in2" type="vector2" value="2.0000, 1.0000" />
+    </safepower>
+    <output name="out" type="vector2" nodename="safepower1" />
+  </nodegraph>
+  <nodegraph name="safepower_vector2FA">
+    <safepower name="safepower1" type="vector2">
+      <input name="in1" type="vector2" value="0.5000, 1.0000" />
+      <input name="in2" type="float" value="2.0000" />
+    </safepower>
+    <output name="out" type="vector2" nodename="safepower1" />
+  </nodegraph>
+  <nodegraph name="safepower_vector3">
+    <safepower name="safepower1" type="vector3">
+      <input name="in1" type="vector3" value="0.5000, 1.0000, -1.0000" />
+      <input name="in2" type="vector3" value="2.0000, 1.0000, 0.0" />
+    </safepower>
+    <output name="out" type="vector3" nodename="safepower1" />
+  </nodegraph>
+  <nodegraph name="safepower_vector3FA">
+    <safepower name="safepower1" type="vector3">
+      <input name="in1" type="vector3" value="0.5000, 1.0000, 0.0" />
+      <input name="in2" type="float" value="2.0000" />
+    </safepower>
+    <output name="out" type="vector3" nodename="safepower1" />
+  </nodegraph>
+  <nodegraph name="safepower_vector4">
+    <safepower name="safepower1" type="vector4">
+      <input name="in1" type="vector4" value="0.5000, -1.0000, 1.0000, 1.0" />
+      <input name="in2" type="vector4" value="2.0000, 1.0000, 0.0, 3.0000" />
+    </safepower>
+    <output name="out" type="vector4" nodename="safepower1" />
+  </nodegraph>
+  <nodegraph name="safepower_vector4FA">
+    <safepower name="safepower1" type="vector4">
+      <input name="in1" type="vector4" value="0.5000, 1.0000, 0.0, 1.0000" />
+      <input name="in2" type="float" value="2.0000" />
+    </safepower>
+    <output name="out" type="vector4" nodename="safepower1" />
+  </nodegraph>
+  <nodegraph name="add_matrix33">
+    <add name="add1" type="matrix33">
+      <input name="in1" type="matrix33" value="0.5, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5" />
+      <input name="in2" type="matrix33" value="0.5, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5" />
+    </add>
+    <transformmatrix name="transformmatrix1" type="vector3">
+      <input name="in" type="vector3" value="0.5, 0.5, 0.5" />
+      <input name="mat" type="matrix33" nodename="add1" />
+    </transformmatrix>
+    <output name="out" type="vector3" nodename="transformmatrix1" />
+  </nodegraph>
+  <nodegraph name="add_matrix44">
+    <add name="add1" type="matrix44">
+      <input name="in1" type="matrix44" value="0.5, 0.0, 0.0, 0.0,  0.0, 0.5, 0.0, 0.0,  0.0, 0.0, 0.5, 0.0,  0.0, 0.0, 0.0, 0.5" />
+      <input name="in2" type="matrix44" value="0.5, 0.0, 0.0, 0.0,  0.0, 0.5, 0.0, 0.0,  0.0, 0.0, 0.5, 0.0,  0.0, 0.0, 0.0, 0.5" />
+    </add>
+    <transformmatrix name="transformmatrix1" type="vector4">
+      <input name="in" type="vector4" value="0.5, 0.5, 0.5, 1.0" />
+      <input name="mat" type="matrix44" nodename="add1" />
+    </transformmatrix>
+    <output name="out" type="vector4" nodename="transformmatrix1" />
+  </nodegraph>
+  <nodegraph name="add_matrix33FA">
+    <add name="add1" type="matrix33">
+      <input name="in1" type="matrix33" value="1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0" />
+      <input name="in2" type="float" value="0.0" />
+    </add>
+    <transformmatrix name="transformmatrix1" type="vector3">
+      <input name="in" type="vector3" value="0.5, 0.5, 0.5" />
+      <input name="mat" type="matrix33" nodename="add1" />
+    </transformmatrix>
+    <output name="out" type="vector3" nodename="transformmatrix1" />
+  </nodegraph>
+  <nodegraph name="add_matrix44FA">
+    <add name="add1" type="matrix44">
+      <input name="in1" type="matrix44" value="1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0" />
+      <input name="in2" type="float" value="0.0" />
+    </add>
+    <transformmatrix name="transformmatrix1" type="vector4">
+      <input name="in" type="vector4" value="0.5, 0.5, 0.5, 1.0" />
+      <input name="mat" type="matrix44" nodename="add1" />
+    </transformmatrix>
+    <output name="out" type="vector4" nodename="transformmatrix1" />
+  </nodegraph>
+  <nodegraph name="subtract_matrix33">
+    <subtract name="subtract1" type="matrix33">
+      <input name="in1" type="matrix33" value="1.5, 0.0, 0.0,  0.0, 1.5, 0.0,  0.0, 0.0, 1.5" />
+      <input name="in2" type="matrix33" value="0.5, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5" />
+    </subtract>
+    <transformmatrix name="transformmatrix1" type="vector3">
+      <input name="in" type="vector3" value="0.5, 0.5, 0.5" />
+      <input name="mat" type="matrix33" nodename="subtract1" />
+    </transformmatrix>
+    <output name="out" type="vector3" nodename="transformmatrix1" />
+  </nodegraph>
+  <nodegraph name="subtract_matrix44">
+    <subtract name="subtract1" type="matrix44">
+      <input name="in1" type="matrix44" value="1.5, 0.0, 0.0, 0.0,  0.0, 1.5, 0.0, 0.0,  0.0, 0.0, 1.5, 0.0,  0.0, 0.0, 0.0, 1.5" />
+      <input name="in2" type="matrix44" value="0.5, 0.0, 0.0, 0.0,  0.0, 0.5, 0.0, 0.0,  0.0, 0.0, 0.5, 0.0,  0.0, 0.0, 0.0, 0.5" />
+    </subtract>
+    <transformmatrix name="transformmatrix1" type="vector4">
+      <input name="in" type="vector4" value="0.5, 0.5, 0.5, 1.0" />
+      <input name="mat" type="matrix44" nodename="subtract1" />
+    </transformmatrix>
+    <output name="out" type="vector4" nodename="transformmatrix1" />
+  </nodegraph>
+  <nodegraph name="subtract_matrix33FA">
+    <subtract name="subtract1" type="matrix33">
+      <input name="in1" type="matrix33" value="1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0" />
+      <input name="in2" type="float" value="0.0" />
+    </subtract>
+    <transformmatrix name="transformmatrix1" type="vector3">
+      <input name="in" type="vector3" value="0.5, 0.5, 0.5" />
+      <input name="mat" type="matrix33" nodename="subtract1" />
+    </transformmatrix>
+    <output name="out" type="vector3" nodename="transformmatrix1" />
+  </nodegraph>
+  <nodegraph name="subtract_matrix44FA">
+    <subtract name="subtract1" type="matrix44">
+      <input name="in1" type="matrix44" value="1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0" />
+      <input name="in2" type="float" value="0.0" />
+    </subtract>
+    <transformmatrix name="transformmatrix1" type="vector4">
+      <input name="in" type="vector4" value="0.5, 0.5, 0.5, 1.0" />
+      <input name="mat" type="matrix44" nodename="subtract1" />
+    </transformmatrix>
+    <output name="out" type="vector4" nodename="transformmatrix1" />
+  </nodegraph>
+  <nodegraph name="multiply_matrix33">
+    <multiply name="multiply1" type="matrix33">
+      <input name="in1" type="matrix33" value="1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0" />
+      <input name="in2" type="matrix33" value="1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0" />
+    </multiply>
+    <transformmatrix name="transformmatrix1" type="vector3">
+      <input name="in" type="vector3" value="0.5, 0.5, 0.5" />
+      <input name="mat" type="matrix33" nodename="multiply1" />
+    </transformmatrix>
+    <output name="out" type="vector3" nodename="transformmatrix1" />
+  </nodegraph>
+  <nodegraph name="multiply_matrix44">
+    <multiply name="multiply1" type="matrix44">
+      <input name="in1" type="matrix44" value="1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0" />
+      <input name="in2" type="matrix44" value="1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0" />
+    </multiply>
+    <transformmatrix name="transformmatrix1" type="vector4">
+      <input name="in" type="vector4" value="0.5, 0.5, 0.5, 1.0" />
+      <input name="mat" type="matrix44" nodename="multiply1" />
+    </transformmatrix>
+    <output name="out" type="vector4" nodename="transformmatrix1" />
+  </nodegraph>
+  <nodegraph name="divide_matrix33">
+    <divide name="divide1" type="matrix33">
+      <input name="in1" type="matrix33" value="1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0" />
+      <input name="in2" type="matrix33" value="1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  1.0, 1.0, 1.0" />
+    </divide>
+    <transformmatrix name="transformmatrix1" type="vector3">
+      <input name="in" type="vector3" value="0.5, 0.5, 0.5" />
+      <input name="mat" type="matrix33" nodename="divide1" />
+    </transformmatrix>
+    <output name="out" type="vector3" nodename="transformmatrix1" />
+  </nodegraph>
+  <nodegraph name="divide_matrix44">
+    <divide name="divide1" type="matrix44">
+      <input name="in1" type="matrix44" value="1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0" />
+      <input name="in2" type="matrix44" value="1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0,  1.0, 1.0, 1.0, 1.0" />
+    </divide>
+    <transformmatrix name="transformmatrix1" type="vector4">
+      <input name="in" type="vector4" value="0.5, 0.5, 0.5, 1.0" />
+      <input name="mat" type="matrix44" nodename="divide1" />
+    </transformmatrix>
+    <output name="out" type="vector4" nodename="transformmatrix1" />
+  </nodegraph>
+</materialx>

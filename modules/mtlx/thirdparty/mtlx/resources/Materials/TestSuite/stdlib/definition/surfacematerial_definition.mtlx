@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!-- Nodegraph definition with material node -->
+  <nodedef name="ND_mymaterial" node="mymaterial" nodegroup="material" version="1.3" isdefaultversion="true">
+    <output name="out" type="material" />
+  </nodedef>
+  <nodegraph name="NG_mymaterial" nodedef="ND_mymaterial">
+    <surfacematerial name="surfacematerial1" type="material">
+      <input name="surfaceshader" type="surfaceshader" nodename="standard_surface" />
+    </surfacematerial>
+    <standard_surface name="standard_surface" type="surfaceshader">
+      <input name="base_color" type="color3" value="0.264575,1.0,0.0" />
+    </standard_surface>
+    <output name="out" type="material" nodename="surfacematerial1" />
+  </nodegraph>
+
+  <!-- Nodegraph with material node -->
+  <nodegraph name="NG_mymaterial_instance">
+    <surfacematerial name="surfacematerial2" type="material">
+      <input name="surfaceshader" type="surfaceshader" nodename="standard_surface" />
+    </surfacematerial>
+    <standard_surface name="standard_surface" type="surfaceshader">
+      <input name="base_color" type="color3" value="0.264575,0.0,1.0" />
+    </standard_surface>
+    <output name="out" type="material" nodename="surfacematerial2" />
+  </nodegraph>
+
+  <nodedef name="ND_myshader" node="myshader" nodegroup="shader" version="1.3" isdefaultversion="true">
+    <output name="surfaceshader" type="surfaceshader" />
+  </nodedef>
+  <nodegraph name="NG_myshader" nodedef="ND_myshader">
+    <standard_surface name="my_surface_shader" type="surfaceshader">
+      <input name="base_color" type="color3" value="0.264575,1.0,1.0" />
+    </standard_surface>
+    <output name="surfaceshader" type="surfaceshader" nodename="my_surface_shader" />
+  </nodegraph>
+
+  <mymaterial name="mymaterial_instance" type="material" />
+  <output name="output1" type="material" nodename="mymaterial_instance" />
+  <myshader name="myshader_instance" type="surfaceshader" />
+  <output name="output2" type="surfaceshader" nodename="myshader_instance" />
+</materialx>

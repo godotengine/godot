@@ -1,0 +1,4 @@
+void mx_luminance_color4(color4 in, color lumacoeffs, output color4 result)
+{
+    result = color4(dot(in.rgb, lumacoeffs), in.a);
+}

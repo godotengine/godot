@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="combine_vector2">
+    <combine2 name="combine1" type="vector2">
+      <input name="in1" type="float" value="0.5000" />
+      <input name="in2" type="float" value="1.0000" />
+    </combine2>
+    <output name="out" type="vector2" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="combine_color3">
+    <combine3 name="combine1" type="color3">
+      <input name="in1" type="float" value="0.5000" />
+      <input name="in2" type="float" value="1.0000" />
+      <input name="in3" type="float" value="0.2500" />
+    </combine3>
+    <output name="out" type="color3" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="combine_vector3">
+    <combine3 name="combine1" type="vector3">
+      <input name="in1" type="float" value="0.5000" />
+      <input name="in2" type="float" value="1.0000" />
+      <input name="in3" type="float" value="0.2500" />
+    </combine3>
+    <output name="out" type="vector3" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="combine_color4">
+    <combine4 name="combine1" type="color4">
+      <input name="in1" type="float" value="0.5000" />
+      <input name="in2" type="float" value="1.0000" />
+      <input name="in3" type="float" value="0.2500" />
+      <input name="in4" type="float" value="0.7500" />
+    </combine4>
+    <output name="out" type="color4" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="combine_vector4">
+    <combine4 name="combine1" type="vector4">
+      <input name="in1" type="float" value="0.5000" />
+      <input name="in2" type="float" value="1.0000" />
+      <input name="in3" type="float" value="0.2500" />
+      <input name="in4" type="float" value="0.7500" />
+    </combine4>
+    <output name="out" type="vector4" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="combine_color4CF">
+    <combine2 name="combine1" type="color4">
+      <input name="in1" type="color3" value="0.5000, 1.0000, 0.2500" />
+      <input name="in2" type="float" value="0.7500" />
+    </combine2>
+    <output name="out" type="color4" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="combine_vector4VF">
+    <combine2 name="combine1" type="vector4">
+      <input name="in1" type="vector3" value="0.5000, 1.0000, 0.2500" />
+      <input name="in2" type="float" value="0.7500" />
+    </combine2>
+    <output name="out" type="vector4" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="combine_vector4VV">
+    <combine2 name="combine1" type="vector4">
+      <input name="in1" type="vector2" value="0.5000, 1.0000" />
+      <input name="in2" type="vector2" value="0.2500, 1.0000" />
+    </combine2>
+    <output name="out" type="vector4" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="extract_color3">
+    <extract name="extract1" type="float">
+      <input name="in" type="color3" value="0.0, 0.5000, 1.0000" />
+      <input name="index" type="integer" value="1" />
+    </extract>
+    <output name="out" type="float" nodename="extract1" />
+  </nodegraph>
+  <nodegraph name="extract_color4">
+    <extract name="extract1" type="float">
+      <input name="in" type="color4" value="0.0000, 0.2500, 0.7500, 1.0" />
+      <input name="index" type="integer" value="1" />
+    </extract>
+    <output name="out" type="float" nodename="extract1" />
+  </nodegraph>
+  <nodegraph name="extract_vector2">
+    <extract name="extract1" type="float">
+      <input name="in" type="vector2" value="0.5000, 1.0000" />
+      <input name="index" type="integer" value="1" />
+    </extract>
+    <output name="out" type="float" nodename="extract1" />
+  </nodegraph>
+  <nodegraph name="extract_vector3">
+    <extract name="extract1" type="float">
+      <input name="in" type="vector3" value="0.0, 0.5000, 1.0000" />
+      <input name="index" type="integer" value="1" />
+    </extract>
+    <output name="out" type="float" nodename="extract1" />
+  </nodegraph>
+  <nodegraph name="extract_vector4">
+    <extract name="extract1" type="float">
+      <input name="in" type="vector4" value="0.0, 0.2500, 0.7500, 1.0" />
+      <input name="index" type="integer" value="1" />
+    </extract>
+    <output name="out" type="float" nodename="extract1" />
+  </nodegraph>
+  <nodegraph name="separate_color3" type="color3">
+    <separate3 name="separate1" type="multioutput">
+      <input name="in" type="color3" value="0.42, 0.77, 0.93" />
+    </separate3>
+    <combine3 name="combine1" type="color3">
+      <input name="in1" type="float" nodename="separate1" output="outb" />
+      <input name="in2" type="float" nodename="separate1" output="outg" />
+      <input name="in3" type="float" nodename="separate1" output="outr" />
+    </combine3>
+    <output name="out" type="color3" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="separate_color4" type="color4">
+    <separate4 name="separate1" type="multioutput">
+      <input name="in" type="color4" value="0.42, 0.77, 0.93, 1.0" />
+    </separate4>
+    <combine4 name="combine1" type="color4">
+      <input name="in1" type="float" nodename="separate1" output="outa" />
+      <input name="in2" type="float" nodename="separate1" output="outb" />
+      <input name="in3" type="float" nodename="separate1" output="outg" />
+      <input name="in4" type="float" nodename="separate1" output="outr" />
+    </combine4>
+    <output name="out" type="color4" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="separate_vector2" type="vector2">
+    <separate2 name="separate1" type="multioutput">
+      <input name="in" type="vector2" value="0.42, 0.77" />
+    </separate2>
+    <combine2 name="combine1" type="vector2">
+      <input name="in1" type="float" nodename="separate1" output="outy" />
+      <input name="in2" type="float" nodename="separate1" output="outx" />
+    </combine2>
+    <output name="out" type="vector2" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="separate_vector3" type="vector3">
+    <separate3 name="separate1" type="multioutput">
+      <input name="in" type="vector3" value="0.42, 0.77, 0.93" />
+    </separate3>
+    <combine3 name="combine1" type="vector3">
+      <input name="in1" type="float" nodename="separate1" output="outz" />
+      <input name="in2" type="float" nodename="separate1" output="outy" />
+      <input name="in3" type="float" nodename="separate1" output="outx" />
+    </combine3>
+    <output name="out" type="vector3" nodename="combine1" />
+  </nodegraph>
+  <nodegraph name="separate_vector4" type="vector4">
+    <separate4 name="separate1" type="multioutput">
+      <input name="in" type="vector4" value="0.42, 0.77, 0.93, 1.0" />
+    </separate4>
+    <combine4 name="combine1" type="vector4">
+      <input name="in1" type="float" nodename="separate1" output="outw" />
+      <input name="in2" type="float" nodename="separate1" output="outz" />
+      <input name="in3" type="float" nodename="separate1" output="outy" />
+      <input name="in4" type="float" nodename="separate1" output="outx" />
+    </combine4>
+    <output name="out" type="vector4" nodename="combine1" />
+  </nodegraph>
+</materialx>

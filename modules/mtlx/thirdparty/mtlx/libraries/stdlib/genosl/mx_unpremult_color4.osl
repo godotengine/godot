@@ -1,0 +1,4 @@
+void mx_unpremult_color4(color4 in, output color4 result)
+{
+    result = color4(in.rgb / in.a, in.a);
+}

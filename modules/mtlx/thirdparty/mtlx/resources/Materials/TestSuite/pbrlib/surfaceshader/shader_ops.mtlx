@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!-- Define a node that implements a checker board pattern -->
+  <!-- Using a graph for the implementation.                 -->
+  <nodedef name="ND_checker_float" node="checker">
+    <input name="scale" type="vector2" value="8.0, 8.0" />
+    <output name="out" type="float" />
+  </nodedef>
+  <nodegraph name="NG_checker_float" nodedef="ND_checker_float">
+    <texcoord name="texcoord1" type="vector2">
+      <input name="index" type="integer" value="0" />
+    </texcoord>
+    <multiply name="mult1" type="vector2">
+      <input name="in1" type="vector2" nodename="texcoord1" />
+      <input name="in2" type="vector2" interfacename="scale" />
+    </multiply>
+    <swizzle name="swizz_x" type="float">
+      <input name="in" type="vector2" nodename="mult1" />
+      <input name="channels" type="string" value="x" />
+    </swizzle>
+    <swizzle name="swizz_y" type="float">
+      <input name="in" type="vector2" nodename="mult1" />
+      <input name="channels" type="string" value="y" />
+    </swizzle>
+    <floor name="floor1" type="float">
+      <input name="in" type="float" nodename="swizz_x" />
+    </floor>
+    <floor name="floor2" type="float">
+      <input name="in" type="float" nodename="swizz_y" />
+    </floor>
+    <add name="add1" type="float">
+      <input name="in1" type="float" nodename="floor1" />
+      <input name="in2" type="float" nodename="floor2" />
+    </add>
+    <modulo name="mod1" type="float">
+      <input name="in1" type="float" nodename="add1" />
+      <input name="in2" type="float" value="2.0" />
+    </modulo>
+    <output name="out" type="float" nodename="mod1" />
+  </nodegraph>
+
+  <!-- Mix two surface shaders-->
+  <nodegraph name="mix_surface">
+    <standard_surface name="standard_surface1" type="surfaceshader">
+      <input name="base_color" type="color3" value="0.85, 0.1, 0.1" />
+    </standard_surface>
+    <standard_surface name="standard_surface2" type="surfaceshader">
+      <input name="base_color" type="color3" value="0.1, 0.1, 0.85" />
+    </standard_surface>
+    <mix name="mix_surface_shader" type="surfaceshader">
+      <input name="fg" type="surfaceshader" nodename="standard_surface1" />
+      <input name="bg" type="surfaceshader" nodename="standard_surface2" />
+      <input name="mix" type="float" value="0.5000" />
+    </mix>
+    <surfacematerial name="material" type="material">
+      <input name="surfaceshader" type="surfaceshader" nodename="mix_surface_shader" />
+    </surfacematerial>
+    <output name="out" type="material" nodename="material" />
+  </nodegraph>
+
+  <!-- Mix two surface shaders with opacity -->
+  <nodegraph name="mix_surface_with_opacity">
+    <checker name="checker1" type="float">
+      <input name="scale" type="vector2" value="6.0, 6.0" />
+    </checker>
+    <mix name="checker3" type="color3">
+      <input name="fg" type="color3" value="0.0, 0.0, 0.0" />
+      <input name="bg" type="color3" value="1.0, 1.0, 1.0" />
+      <input name="mix" type="float" nodename="checker1" />
+    </mix>
+    <standard_surface name="standard_surface1" type="surfaceshader">
+      <input name="base_color" type="color3" value="0.85, 0.1, 0.1" />
+      <input name="opacity" type="color3" nodename="checker3" />
+    </standard_surface>
+    <standard_surface name="standard_surface2" type="surfaceshader">
+      <input name="base_color" type="color3" value="0.1, 0.1, 0.85" />
+      <input name="opacity" type="color3" value="1, 1, 1" />
+    </standard_surface>
+    <mix name="mix_surface_shader" type="surfaceshader">
+      <input name="fg" type="surfaceshader" nodename="standard_surface1" />
+      <input name="bg" type="surfaceshader" nodename="standard_surface2" />
+      <input name="mix" type="float" value="0.7000" />
+    </mix>
+    <surfacematerial name="material" type="material">
+      <input name="surfaceshader" type="surfaceshader" nodename="mix_surface_shader" />
+    </surfacematerial>
+    <output name="out" type="material" nodename="material" />
+  </nodegraph>
+
+  <!-- Mix two surface shaders with emission -->
+  <nodegraph name="mix_surface_with_emission">
+    <checker name="checker1" type="float">
+      <input name="scale" type="vector2" value="10.0, 10.0" />
+    </checker>
+    <mix name="checker3" type="color3">
+      <input name="fg" type="color3" value="1.0, 0.0, 0.0" />
+      <input name="bg" type="color3" value="0.0, 0.0, 0.0" />
+      <input name="mix" type="float" nodename="checker1" />
+    </mix>
+    <standard_surface name="standard_surface1" type="surfaceshader">
+      <input name="base_color" type="color3" value="0.85, 0.1, 0.1" />
+      <input name="emission" type="float" value="1" />
+      <input name="emission_color" type="color3" nodename="checker3" />
+    </standard_surface>
+    <standard_surface name="standard_surface2" type="surfaceshader">
+      <input name="base_color" type="color3" value="0.1, 0.1, 0.85" />
+      <input name="emission" type="float" value="1" />
+      <input name="emission_color" type="color3" value="0, 0, 0" />
+    </standard_surface>
+    <mix name="mix_surface_shader" type="surfaceshader">
+      <input name="fg" type="surfaceshader" nodename="standard_surface1" />
+      <input name="bg" type="surfaceshader" nodename="standard_surface2" />
+      <input name="mix" type="float" value="0.5000" />
+    </mix>
+    <surfacematerial name="material" type="material">
+      <input name="surfaceshader" type="surfaceshader" nodename="mix_surface_shader" />
+    </surfacematerial>
+    <output name="out" type="material" nodename="material" />
+  </nodegraph>
+
+</materialx>

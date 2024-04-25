@@ -1,0 +1,555 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <!-- Chess Set geometry and material contributed by Side Effects, artwork by Moeen Sayed and Mujtaba Sayed. -->
+
+  <!-- Bishop Black -->
+  <nodegraph name="NG_BishopBlack">
+    <image name="diffuse2" type="color3">
+      <input name="file" type="filename" value="chess_set/bishop_black_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="metallic2" type="float">
+      <input name="file" type="filename" value="chess_set/bishop_shared_metallic.jpg" />
+    </image>
+    <image name="roughness2" type="float">
+      <input name="file" type="filename" value="chess_set/bishop_black_roughness.jpg" />
+    </image>
+    <image name="normal2" type="vector3">
+      <input name="file" type="filename" value="chess_set/bishop_black_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap4" type="vector3">
+      <input name="in" type="vector3" nodename="normal2" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="diffuse2" />
+    <output name="metalness_output" type="float" nodename="metallic2" />
+    <output name="roughness_output" type="float" nodename="roughness2" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap4" />
+  </nodegraph>
+  <standard_surface name="Bishop_B" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_BishopBlack" output="base_color_output" />
+    <input name="metalness" type="float" nodegraph="NG_BishopBlack" output="metalness_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_BishopBlack" output="roughness_output" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_BishopBlack" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_BishopBlack" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_BishopBlack" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_Bishop_B" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Bishop_B" />
+  </surfacematerial>
+
+  <!-- Bishop White -->
+  <nodegraph name="NG_BishopWhite">
+    <image name="diffuse3" type="color3">
+      <input name="file" type="filename" value="chess_set/bishop_white_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="metallic3" type="float">
+      <input name="file" type="filename" value="chess_set/bishop_shared_metallic.jpg" />
+    </image>
+    <image name="roughness3" type="float">
+      <input name="file" type="filename" value="chess_set/bishop_white_roughness.jpg" />
+    </image>
+    <image name="normal3" type="vector3">
+      <input name="file" type="filename" value="chess_set/bishop_white_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap5" type="vector3">
+      <input name="in" type="vector3" nodename="normal3" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="diffuse3" />
+    <output name="metalness_output" type="float" nodename="metallic3" />
+    <output name="roughness_output" type="float" nodename="roughness3" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap5" />
+  </nodegraph>
+  <standard_surface name="Bishop_W" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_BishopWhite" output="base_color_output" />
+    <input name="metalness" type="float" nodegraph="NG_BishopWhite" output="metalness_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_BishopWhite" output="roughness_output" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_BishopWhite" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_BishopWhite" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_BishopWhite" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_Bishop_W" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Bishop_W" />
+  </surfacematerial>
+
+  <!-- Castle Black -->
+  <nodegraph name="NG_CastleBlack">
+    <image name="diffuse6" type="color3">
+      <input name="file" type="filename" value="chess_set/castle_black_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="metallic6" type="float">
+      <input name="file" type="filename" value="chess_set/castle_shared_metallic.jpg" />
+    </image>
+    <image name="roughness6" type="float">
+      <input name="file" type="filename" value="chess_set/castle_shared_roughness.jpg" />
+    </image>
+    <image name="normal6" type="vector3">
+      <input name="file" type="filename" value="chess_set/castle_shared_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap8" type="vector3">
+      <input name="in" type="vector3" nodename="normal6" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="diffuse6" />
+    <output name="metalness_output" type="float" nodename="metallic6" />
+    <output name="roughness_output" type="float" nodename="roughness6" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap8" />
+  </nodegraph>
+  <standard_surface name="Castle_B" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_CastleBlack" output="base_color_output" />
+    <input name="metalness" type="float" nodegraph="NG_CastleBlack" output="metalness_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_CastleBlack" output="roughness_output" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_CastleBlack" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_CastleBlack" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_CastleBlack" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_Castle_B" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Castle_B" />
+  </surfacematerial>
+
+  <!-- Castle White -->
+  <nodegraph name="NG_CastleWhite">
+    <image name="diffuse7" type="color3">
+      <input name="file" type="filename" value="chess_set/castle_white_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="metallic7" type="float">
+      <input name="file" type="filename" value="chess_set/castle_shared_metallic.jpg" />
+    </image>
+    <image name="roughness7" type="float">
+      <input name="file" type="filename" value="chess_set/castle_shared_roughness.jpg" />
+    </image>
+    <image name="normal7" type="vector3">
+      <input name="file" type="filename" value="chess_set/castle_shared_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap9" type="vector3">
+      <input name="in" type="vector3" nodename="normal7" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="diffuse7" />
+    <output name="metalness_output" type="float" nodename="metallic7" />
+    <output name="roughness_output" type="float" nodename="roughness7" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap9" />
+  </nodegraph>
+  <standard_surface name="Castle_W" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_CastleWhite" output="base_color_output" />
+    <input name="metalness" type="float" nodegraph="NG_CastleWhite" output="metalness_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_CastleWhite" output="roughness_output" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_CastleWhite" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_CastleWhite" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_CastleWhite" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_Castle_W" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Castle_W" />
+  </surfacematerial>
+
+  <!-- Chess Board -->
+  <nodegraph name="NG_ChessBoard">
+    <image name="mtlximage13" type="color3">
+      <input name="file" type="filename" value="chess_set/chessboard_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="mtlximage16" type="float">
+      <input name="file" type="filename" value="chess_set/chessboard_metallic.jpg" />
+    </image>
+    <image name="mtlximage17" type="float">
+      <input name="file" type="filename" value="chess_set/chessboard_roughness.jpg" />
+    </image>
+    <image name="mtlximage15" type="vector3">
+      <input name="file" type="filename" value="chess_set/chessboard_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap12" type="vector3">
+      <input name="in" type="vector3" nodename="mtlximage15" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="mtlximage13" />
+    <output name="metalness_output" type="float" nodename="mtlximage16" />
+    <output name="roughness_output" type="float" nodename="mtlximage17" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap12" />
+  </nodegraph>
+  <standard_surface name="Chessboard" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_ChessBoard" output="base_color_output" />
+    <input name="metalness" type="float" nodegraph="NG_ChessBoard" output="metalness_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_ChessBoard" output="roughness_output" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_ChessBoard" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_ChessBoard" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_ChessBoard" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_Chessboard" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Chessboard" />
+  </surfacematerial>
+
+  <!-- King Black -->
+  <nodegraph name="NG_KingBlack">
+    <image name="mtlximage1" type="color3">
+      <input name="file" type="filename" value="chess_set/king_black_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="mtlximage2" type="float">
+      <input name="file" type="filename" value="chess_set/king_shared_metallic.jpg" />
+    </image>
+    <image name="mtlximage4" type="float">
+      <input name="file" type="filename" value="chess_set/king_black_roughness.jpg" />
+    </image>
+    <image name="mtlximage3" type="float">
+      <input name="file" type="filename" value="chess_set/king_shared_scattering.jpg" />
+    </image>
+    <image name="mtlximage6" type="vector3">
+      <input name="file" type="filename" value="chess_set/king_black_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap1" type="vector3">
+      <input name="in" type="vector3" nodename="mtlximage6" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="mtlximage1" />
+    <output name="metalness_output" type="float" nodename="mtlximage2" />
+    <output name="roughness_output" type="float" nodename="mtlximage4" />
+    <output name="subsurface_output" type="float" nodename="mtlximage3" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap1" />
+  </nodegraph>
+  <standard_surface name="King_B" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_KingBlack" output="base_color_output" />
+    <input name="metalness" type="float" nodegraph="NG_KingBlack" output="metalness_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_KingBlack" output="roughness_output" />
+    <input name="subsurface" type="float" nodegraph="NG_KingBlack" output="subsurface_output" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_KingBlack" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_KingBlack" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_KingBlack" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_King_B" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="King_B" />
+  </surfacematerial>
+
+  <!-- King White -->
+  <nodegraph name="NG_KingWhite">
+    <image name="mtlximage7" type="color3">
+      <input name="file" type="filename" value="chess_set/king_white_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="mtlximage10" type="float">
+      <input name="file" type="filename" value="chess_set/king_shared_metallic.jpg" />
+    </image>
+    <image name="mtlximage11" type="float">
+      <input name="file" type="filename" value="chess_set/king_white_roughness.jpg" />
+    </image>
+    <image name="mtlximage8" type="float">
+      <input name="file" type="filename" value="chess_set/king_shared_scattering.jpg" />
+    </image>
+    <image name="mtlximage9" type="vector3">
+      <input name="file" type="filename" value="chess_set/king_white_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap11" type="vector3">
+      <input name="in" type="vector3" nodename="mtlximage9" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="mtlximage7" />
+    <output name="metalness_output" type="float" nodename="mtlximage10" />
+    <output name="roughness_output" type="float" nodename="mtlximage11" />
+    <output name="subsurface_output" type="float" nodename="mtlximage8" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap11" />
+  </nodegraph>
+  <standard_surface name="King_W" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_KingWhite" output="base_color_output" />
+    <input name="metalness" type="float" nodegraph="NG_KingWhite" output="metalness_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_KingWhite" output="roughness_output" />
+    <input name="subsurface" type="float" nodegraph="NG_KingWhite" output="subsurface_output" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_KingWhite" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_KingWhite" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_KingWhite" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_King_W" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="King_W" />
+  </surfacematerial>
+
+  <!-- Knight Black -->
+  <nodegraph name="NG_KnightBlack">
+    <image name="diffuse4" type="color3">
+      <input name="file" type="filename" value="chess_set/knight_black_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="roughness4" type="float">
+      <input name="file" type="filename" value="chess_set/knight_black_roughness.jpg" />
+    </image>
+    <image name="normal4" type="vector3">
+      <input name="file" type="filename" value="chess_set/knight_black_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap6" type="vector3">
+      <input name="in" type="vector3" nodename="normal4" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="diffuse4" />
+    <output name="roughness_output" type="float" nodename="roughness4" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap6" />
+  </nodegraph>
+  <standard_surface name="Knight_B" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_KnightBlack" output="base_color_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_KnightBlack" output="roughness_output" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_KnightBlack" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_KnightBlack" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_KnightBlack" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_Knight_B" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Knight_B" />
+  </surfacematerial>
+
+  <!-- Knight White -->
+  <nodegraph name="NG_KnightWhite">
+    <image name="diffuse5" type="color3">
+      <input name="file" type="filename" value="chess_set/knight_white_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="roughness5" type="float">
+      <input name="file" type="filename" value="chess_set/knight_white_roughness.jpg" />
+    </image>
+    <image name="normal5" type="vector3">
+      <input name="file" type="filename" value="chess_set/knight_white_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap7" type="vector3">
+      <input name="in" type="vector3" nodename="normal5" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="diffuse5" />
+    <output name="roughness_output" type="float" nodename="roughness5" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap7" />
+  </nodegraph>
+  <standard_surface name="Knight_W" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_KnightWhite" output="base_color_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_KnightWhite" output="roughness_output" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_KnightWhite" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_KnightWhite" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_KnightWhite" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_Knight_W" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Knight_W" />
+  </surfacematerial>
+
+  <!-- Pawn Body Black -->
+  <nodegraph name="NG_PawnBodyBlack">
+    <image name="diffuse9" type="color3">
+      <input name="file" type="filename" value="chess_set/pawn_black_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="metallic9" type="float">
+      <input name="file" type="filename" value="chess_set/pawn_shared_metallic.jpg" />
+    </image>
+    <image name="roughness9" type="float">
+      <input name="file" type="filename" value="chess_set/pawn_shared_roughness.jpg" />
+    </image>
+    <image name="normal9" type="vector3">
+      <input name="file" type="filename" value="chess_set/pawn_shared_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap13" type="vector3">
+      <input name="in" type="vector3" nodename="normal9" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="diffuse9" />
+    <output name="metalness_output" type="float" nodename="metallic9" />
+    <output name="roughness_output" type="float" nodename="roughness9" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap13" />
+  </nodegraph>
+  <standard_surface name="Pawn_Body_B" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_PawnBodyBlack" output="base_color_output" />
+    <input name="metalness" type="float" nodegraph="NG_PawnBodyBlack" output="metalness_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_PawnBodyBlack" output="roughness_output" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_PawnBodyBlack" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_PawnBodyBlack" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_PawnBodyBlack" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_Pawn_Body_B" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Pawn_Body_B" />
+  </surfacematerial>
+
+  <!-- Pawn Body White -->
+  <nodegraph name="NG_PawnBodyWhite">
+    <image name="diffuse8" type="color3">
+      <input name="file" type="filename" value="chess_set/pawn_white_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="metallic8" type="float">
+      <input name="file" type="filename" value="chess_set/pawn_shared_metallic.jpg" />
+    </image>
+    <image name="roughness8" type="float">
+      <input name="file" type="filename" value="chess_set/pawn_shared_roughness.jpg" />
+    </image>
+    <image name="normal8" type="vector3">
+      <input name="file" type="filename" value="chess_set/pawn_shared_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap10" type="vector3">
+      <input name="in" type="vector3" nodename="normal8" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="diffuse8" />
+    <output name="metalness_output" type="float" nodename="metallic8" />
+    <output name="roughness_output" type="float" nodename="roughness8" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap10" />
+  </nodegraph>
+  <standard_surface name="Pawn_Body_W" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_PawnBodyWhite" output="base_color_output" />
+    <input name="metalness" type="float" nodegraph="NG_PawnBodyWhite" output="metalness_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_PawnBodyWhite" output="roughness_output" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_PawnBodyWhite" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_PawnBodyWhite" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_PawnBodyWhite" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_Pawn_Body_W" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Pawn_Body_W" />
+  </surfacematerial>
+
+  <!-- Pawn Top Black -->
+  <nodegraph name="NG_PawnTopBlack">
+    <image name="mtlximage19" type="float">
+      <input name="file" type="filename" value="chess_set/pawn_shared_roughness.jpg" />
+    </image>
+    <image name="mtlximage18" type="vector3">
+      <input name="file" type="filename" value="chess_set/pawn_shared_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap14" type="vector3">
+      <input name="in" type="vector3" nodename="mtlximage18" />
+    </normalmap>
+    <output name="roughness_output" type="float" nodename="mtlximage19" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap14" />
+  </nodegraph>
+  <standard_surface name="Pawn_Top_B" type="surfaceshader">
+    <input name="specular_roughness" type="float" nodegraph="NG_PawnTopBlack" output="roughness_output" />
+    <input name="normal" type="vector3" nodegraph="NG_PawnTopBlack" output="normal_output" />
+    <input name="base_color" type="color3" value="1, 1, 1" />
+    <input name="transmission" type="float" value="1" />
+    <input name="transmission_color" type="color3" value="0.2995, 0.5, 0.450276" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" value="1, 1, 1" />
+    <input name="subsurface_radius" type="color3" value="1, 1, 1" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+  </standard_surface>
+  <surfacematerial name="M_Pawn_Top_B" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Pawn_Top_B" />
+  </surfacematerial>
+
+  <!-- Pawn Top White -->
+  <nodegraph name="NG_PawnTopWhite">
+    <image name="mtlximage21" type="float">
+      <input name="file" type="filename" value="chess_set/pawn_shared_roughness.jpg" />
+    </image>
+    <image name="mtlximage20" type="vector3">
+      <input name="file" type="filename" value="chess_set/pawn_shared_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap15" type="vector3">
+      <input name="in" type="vector3" nodename="mtlximage20" />
+    </normalmap>
+    <output name="roughness_output" type="float" nodename="mtlximage21" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap15" />
+  </nodegraph>
+  <standard_surface name="Pawn_Top_W" type="surfaceshader">
+    <input name="specular_roughness" type="float" nodegraph="NG_PawnTopWhite" output="roughness_output" />
+    <input name="normal" type="vector3" nodegraph="NG_PawnTopWhite" output="normal_output" />
+    <input name="base_color" type="color3" value="1, 1, 1" />
+    <input name="transmission" type="float" value="1" />
+    <input name="transmission_color" type="color3" value="1, 1, 0.828" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" value="1, 1, 1" />
+    <input name="subsurface_radius" type="color3" value="1, 1, 1" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+  </standard_surface>
+  <surfacematerial name="M_Pawn_Top_W" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Pawn_Top_W" />
+  </surfacematerial>
+
+  <!-- Queen Black -->
+  <nodegraph name="NG_QueenBlack">
+    <image name="diffuse" type="color3">
+      <input name="file" type="filename" value="chess_set/queen_black_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="metallic" type="float">
+      <input name="file" type="filename" value="chess_set/queen_shared_metallic.jpg" />
+    </image>
+    <image name="roughness" type="float">
+      <input name="file" type="filename" value="chess_set/queen_black_roughness.jpg" />
+    </image>
+    <image name="sss" type="float">
+      <input name="file" type="filename" value="chess_set/queen_shared_scattering.jpg" />
+    </image>
+    <image name="normal" type="vector3">
+      <input name="file" type="filename" value="chess_set/queen_black_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap2" type="vector3">
+      <input name="in" type="vector3" nodename="normal" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="diffuse" />
+    <output name="metalness_output" type="float" nodename="metallic" />
+    <output name="roughness_output" type="float" nodename="roughness" />
+    <output name="subsurface_output" type="float" nodename="sss" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap2" />
+  </nodegraph>
+  <standard_surface name="Queen_B" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_QueenBlack" output="base_color_output" />
+    <input name="metalness" type="float" nodegraph="NG_QueenBlack" output="metalness_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_QueenBlack" output="roughness_output" />
+    <input name="subsurface" type="float" nodegraph="NG_QueenBlack" output="subsurface_output" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_QueenBlack" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_QueenBlack" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.003" />
+    <input name="normal" type="vector3" nodegraph="NG_QueenBlack" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_Queen_B" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Queen_B" />
+  </surfacematerial>
+
+  <!-- Queen White -->
+  <nodegraph name="NG_QueenWhite">
+    <image name="diffuse1" type="color3">
+      <input name="file" type="filename" value="chess_set/queen_white_base_color.jpg" colorspace="srgb_texture" />
+    </image>
+    <image name="metallic1" type="float">
+      <input name="file" type="filename" value="chess_set/queen_shared_metallic.jpg" />
+    </image>
+    <image name="roughness1" type="float">
+      <input name="file" type="filename" value="chess_set/queen_white_roughness.jpg" />
+    </image>
+    <image name="sss1" type="float">
+      <input name="file" type="filename" value="chess_set/queen_shared_scattering.jpg" />
+    </image>
+    <image name="normal1" type="vector3">
+      <input name="file" type="filename" value="chess_set/queen_white_normal.jpg" />
+    </image>
+    <normalmap name="mtlxnormalmap3" type="vector3">
+      <input name="in" type="vector3" nodename="normal1" />
+    </normalmap>
+    <output name="base_color_output" type="color3" nodename="diffuse1" />
+    <output name="metalness_output" type="float" nodename="metallic1" />
+    <output name="roughness_output" type="float" nodename="roughness1" />
+    <output name="subsurface_output" type="float" nodename="sss1" />
+    <output name="normal_output" type="vector3" nodename="mtlxnormalmap3" />
+  </nodegraph>
+  <standard_surface name="Queen_W" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_QueenWhite" output="base_color_output" />
+    <input name="metalness" type="float" nodegraph="NG_QueenWhite" output="metalness_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_QueenWhite" output="roughness_output" />
+    <input name="subsurface" type="float" nodegraph="NG_QueenWhite" output="subsurface_output" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_QueenWhite" output="base_color_output" />
+    <input name="subsurface_radius" type="color3" nodegraph="NG_QueenWhite" output="base_color_output" />
+    <input name="subsurface_scale" type="float" value="0.001" />
+    <input name="normal" type="vector3" nodegraph="NG_QueenWhite" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_Queen_W" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Queen_W" />
+  </surfacematerial>
+
+  <!-- Chess Set Look -->
+  <look name="L_ChessSet">
+    <materialassign name="Chessboard" geom="Chessboard" material="M_Chessboard" />
+    <materialassign name="Bishop_B" geom="Bishop_B" material="M_Bishop_B" />
+    <materialassign name="Bishop_W" geom="Bishop_W" material="M_Bishop_W" />
+    <materialassign name="Castle_B" geom="Castle_B" material="M_Castle_B" />
+    <materialassign name="Castle_W" geom="Castle_W" material="M_Castle_W" />
+    <materialassign name="Knight_B" geom="Knight_B" material="M_Knight_B" />
+    <materialassign name="Knight_W" geom="Knight_W" material="M_Knight_W" />
+    <materialassign name="King_B" geom="King_B" material="M_King_B" />
+    <materialassign name="King_W" geom="King_W" material="M_King_W" />
+    <materialassign name="Pawn_Body_B" geom="Pawn_Body_B" material="M_Pawn_Body_B" />
+    <materialassign name="Pawn_Top_B" geom="Pawn_Top_B" material="M_Pawn_Top_B" />
+    <materialassign name="Pawn_Body_W" geom="Pawn_Body_W" material="M_Pawn_Body_W" />
+    <materialassign name="Pawn_Top_W" geom="Pawn_Top_W" material="M_Pawn_Top_W" />
+    <materialassign name="Queen_B" geom="Queen_B" material="M_Queen_B" />
+    <materialassign name="Queen_W" geom="Queen_W" material="M_Queen_W" />
+  </look>
+</materialx>

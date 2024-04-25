@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <surface_unlit name="surface_unlit" type="surfaceshader">
+    <input name="emission_color" type="color3" nodename="toon_shade1" />
+  </surface_unlit>
+  <surfacematerial name="surfacematerial" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="surface_unlit" />
+  </surfacematerial>
+  <nodedef name="ND_toon_sample" node="toon_shade" namespace="npr_test" doc="Sample Toon Shader">
+    <input name="base_color" type="color3" value="0.0156384, 0.632771, 0.799511" uiname="Base Color" />
+    <input name="ambient_color" type="color3" value="0.574572, 0.207914, 0.207914" uiname="Ambient Color" />
+    <input name="specular_color" type="color3" value="0.726161, 0.726161, 0.726161" uiname="Specular Color" />
+    <input name="glossiness" type="float" value="16" uiname="Glossiness" uimin="1" uimax="256" />
+    <input name="rim_color" type="color3" value="0.775061, 0.775061, 0.775061" uiname="Rim Color" />
+    <input name="light_direction" type="vector3" value="1.0, -0.5, -0.5" uiname="Light Direction" uimin="-1, -1, -1" uimax="1, 1, 1" />
+    <input name="light_color" type="color3" value="0.885086, 0.885086, 0.885086" uiname="Light Color" />
+    <output name="output_color3" type="color3" />
+  </nodedef>
+  <npr_test:toon_shade name="toon_shade1" type="color3">
+    <input name="base_color" type="color3" value="0.4, 0.4, 0.4" />
+    <input name="ambient_color" type="color3" value="0.1, 0.1, 0.1" />
+    <input name="specular_color" type="color3" value="0.769337, 0.872861, 0.599692" />
+    <input name="glossiness" type="float" value="16" />
+    <input name="rim_color" type="color3" value="0.5, 0.5, 0.5" />
+    <input name="light_direction" type="vector3" value="1, -0.5, -0.5" />
+    <input name="light_color" type="color3" value="0.968215, 0.968215, 0.968215" />
+  </npr_test:toon_shade>
+  <nodegraph name="NG_toon_sample" namespace="npr_test" nodedef="ND_toon_sample">
+    <output name="output_color3" type="color3" nodename="multiply_color3" />
+    <normal name="normal" type="vector3" >
+      <input name="space" type="string" value="world" />
+    </normal>
+    <dotproduct name="NdotL" type="float">
+      <input name="in1" type="vector3" nodename="unit_normal" />
+      <input name="in2" type="vector3" nodename="multiply_vector4" />
+    </dotproduct>
+    <normalize name="unit_light_direction" type="vector3">
+      <input name="in" type="vector3" interfacename="light_direction" />
+    </normalize>
+    <multiply name="multiply_color3" type="color3">
+      <input name="in1" type="color3" interfacename="base_color" />
+      <input name="in2" type="color3" nodename="add_color5" />
+    </multiply>
+    <add name="add_color3" type="color3">
+      <input name="in1" type="color3" nodename="gradient_light" />
+      <input name="in2" type="color3" interfacename="ambient_color" />
+    </add>
+    <smoothstep name="smooth_gradient" type="float">
+      <input name="in" type="float" nodename="NdotL" />
+      <input name="high" type="float" value="0.001" />
+    </smoothstep>
+    <viewdirection name="viewdirection_vector3" type="vector3" >
+      <input name="space" type="string" value="world" />
+    </viewdirection>
+    <normalize name="unit_viewdirection" type="vector3">
+      <input name="in" type="vector3" nodename="viewdirection_vector3" />
+    </normalize>
+    <multiply name="multiply_float" type="float">
+      <input name="in1" type="float" nodename="smooth_gradient" />
+      <input name="in2" type="float" nodename="max_float" />
+    </multiply>
+    <power name="specular_intensity_power" type="float">
+      <input name="in1" type="float" nodename="multiply_float" />
+      <input name="in2" type="float" interfacename="glossiness" />
+    </power>
+    <convert name="specular_intensity_color" type="color3">
+      <input name="in" type="float" nodename="specular_remap" />
+    </convert>
+    <add name="add_color4" type="color3">
+      <input name="in1" type="color3" nodename="add_color3" />
+      <input name="in2" type="color3" nodename="specular" />
+    </add>
+    <multiply name="multiply_vector3" type="vector3">
+      <input name="in1" type="vector3" nodename="unit_viewdirection" />
+      <input name="in2" type="vector3" value="-1, -1, -1" />
+    </multiply>
+    <smoothstep name="specular_remap" type="float">
+      <input name="in" type="float" nodename="specular_intensity_power" />
+      <input name="low" type="float" value="0.005" />
+      <input name="high" type="float" value="0.008" />
+    </smoothstep>
+    <multiply name="specular" type="color3">
+      <input name="in1" type="color3" nodename="specular_intensity_color" />
+      <input name="in2" type="color3" interfacename="specular_color" />
+    </multiply>
+    <dotproduct name="NdotV" type="float">
+      <input name="in1" type="vector3" nodename="unit_normal" />
+      <input name="in2" type="vector3" nodename="multiply_vector3" />
+    </dotproduct>
+    <invert name="NdotV_invert" type="float">
+      <input name="in" type="float" nodename="NdotV" />
+    </invert>
+    <add name="add_color5" type="color3">
+      <input name="in1" type="color3" nodename="add_color4" />
+      <input name="in2" type="color3" nodename="rim" />
+    </add>
+    <smoothstep name="rim_gradient" type="float">
+      <input name="in" type="float" nodename="rmi_intensity" />
+      <input name="low" type="float" nodename="add_float" />
+      <input name="high" type="float" nodename="subtract_float" />
+    </smoothstep>
+    <constant name="rim_amount" type="float">
+      <input name="value" type="float" value="0.7" />
+    </constant>
+    <add name="add_float" type="float">
+      <input name="in1" type="float" nodename="rim_amount" />
+      <input name="in2" type="float" value="0.01" />
+    </add>
+    <subtract name="subtract_float" type="float">
+      <input name="in1" type="float" nodename="rim_amount" />
+      <input name="in2" type="float" value="0.01" />
+    </subtract>
+    <multiply name="rmi_intensity" type="float">
+      <input name="in1" type="float" nodename="NdotV_invert" />
+      <input name="in2" type="float" nodename="rim_power" />
+    </multiply>
+    <constant name="rim_threshold" type="float">
+      <input name="value" type="float" value="0.1" />
+    </constant>
+    <power name="rim_power" type="float">
+      <input name="in1" type="float" nodename="NdotL" />
+      <input name="in2" type="float" nodename="rim_threshold" />
+    </power>
+    <multiply name="multiply_vector4" type="vector3">
+      <input name="in1" type="vector3" nodename="unit_light_direction" />
+      <input name="in2" type="vector3" value="-1, -1, -1" />
+    </multiply>
+    <normalize name="unit_normal" type="vector3">
+      <input name="in" type="vector3" nodename="normal" />
+    </normalize>
+    <multiply name="rim" type="color3">
+      <input name="in1" type="color3" interfacename="rim_color" />
+      <input name="in2" type="float" nodename="rim_gradient" />
+    </multiply>
+    <multiply name="gradient_light" type="color3">
+      <input name="in2" type="float" nodename="smooth_gradient" />
+      <input name="in1" type="color3" interfacename="light_color" />
+    </multiply>
+    <reflect name="reflect" type="vector3">
+      <input name="in" type="vector3" nodename="unit_viewdirection" />
+      <input name="normal" type="vector3" nodename="unit_normal" />
+    </reflect>
+    <dotproduct name="LdotV" type="float">
+      <input name="in2" type="vector3" nodename="reflect" />
+      <input name="in1" type="vector3" nodename="multiply_vector4" />
+    </dotproduct>
+    <max name="max_float" type="float">
+      <input name="in1" type="float" nodename="LdotV" />
+    </max>
+  </nodegraph>
+</materialx>

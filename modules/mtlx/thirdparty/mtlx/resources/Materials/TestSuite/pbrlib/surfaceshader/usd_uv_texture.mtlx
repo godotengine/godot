@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+
+  <!-- UsdUVTexture: version 2.2 test -->
+  <UsdUVTexture name="UsdUVTexture22" type="multioutput" version="2.2">
+    <input name="file" type="filename" value="resources/Images/brass_color.jpg" colorspace="srgb_texture" />
+  </UsdUVTexture>
+  <swizzle name="extractColor" type="color3">
+    <input name="in" type="color4" nodename="UsdUVTexture22" output="rgba" />
+    <input name="channels" type="string" value="rgb" />
+  </swizzle>
+  <UsdUVTexture name="UsdUVTexture22_rough" type="multioutput" version="2.2">
+    <input name="file" type="filename" value="resources/Images/brass_roughness.jpg" />
+  </UsdUVTexture>
+  <swizzle name="extractRoughness" type="float">
+    <input name="in" type="color4" nodename="UsdUVTexture22_rough" output="rgba" />
+    <input name="channels" type="string" value="r" />
+  </swizzle>
+
+  <UsdPreviewSurface name="UsdPreviewSurface22" type="surfaceshader" nodedef="ND_UsdPreviewSurface_surfaceshader" version="2.3">
+    <input name="diffuseColor" type="color3" nodename="extractColor" />
+    <input name="roughness" type="float" nodename="extractRoughness" />
+    <input name="metallic" type="float" value="1" />
+  </UsdPreviewSurface>
+  <surfacematerial name="USDTexture_Tiled_Brass22" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="UsdPreviewSurface22" />
+  </surfacematerial>
+
+  <!-- UsdUVTexture: version 2.3 test. Default is currently 2.3 so no version specifier required -->
+  <UsdUVTexture name="UsdUVTexture23_rough" type="multioutput">
+    <input name="file" type="filename" value="resources/Images/brass_roughness.jpg" />
+  </UsdUVTexture>
+  <UsdUVTexture name="UsdUVTexture23" type="multioutput">
+    <input name="file" type="filename" value="resources/Images/brass_color.jpg" colorspace="srgb_texture" />
+  </UsdUVTexture>
+
+  <UsdPreviewSurface name="UsdPreviewSurface23" type="surfaceshader" nodedef="ND_UsdPreviewSurface_surfaceshader" version="2.3">
+    <input name="diffuseColor" type="color3" nodename="UsdUVTexture23" output="rgb" />
+    <input name="roughness" type="float" nodename="UsdUVTexture23_rough" output="r" />
+    <input name="metallic" type="float" value="1" />
+  </UsdPreviewSurface>
+  <surfacematerial name="USDTexture_Tiled_Brass23" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="UsdPreviewSurface23" />
+  </surfacematerial>
+
+</materialx>

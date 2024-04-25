@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <nodegraph name="NG_brass1" fileprefix="../../../Images/">
+    <tiledimage name="image_color" type="color3">
+      <input name="file" type="filename" value="brass_color.jpg" colorspace="srgb_texture" />
+      <input name="uvtiling" type="vector2" value="1.0, 1.0" />
+    </tiledimage>
+    <tiledimage name="image_roughness" type="float">
+      <input name="file" type="filename" value="brass_roughness.jpg" />
+      <input name="uvtiling" type="vector2" value="1.0, 1.0" />
+    </tiledimage>
+    <output name="out_color" type="color3" nodename="image_color" />
+    <output name="out_roughness" type="float" nodename="image_roughness" />
+  </nodegraph>
+  <UsdPreviewSurface name="SR_brass1" type="surfaceshader">
+    <input name="diffuseColor" type="color3" nodegraph="NG_brass1" output="out_color" />
+    <input name="metallic" type="float" value="1" />
+    <input name="roughness" type="float" nodegraph="NG_brass1" output="out_roughness" />
+  </UsdPreviewSurface>
+  <surfacematerial name="USD_Tiled_Brass" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_brass1" />
+  </surfacematerial>
+</materialx>

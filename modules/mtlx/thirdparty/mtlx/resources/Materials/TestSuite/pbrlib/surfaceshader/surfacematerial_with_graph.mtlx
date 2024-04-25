@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="NG_Blue">
+    <standard_surface name="standard_surface" type="surfaceshader">
+      <input name="base_color" type="color3" value="0.3, 0.3, 1" />
+    </standard_surface>
+    <displacement name="displacement" type="displacementshader" />
+    <output name="out" type="surfaceshader" nodename="standard_surface" />
+    <output name="displacementshader" type="displacementshader" nodename="displacement" />
+  </nodegraph>
+  <surfacematerial name="M_Blue" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodegraph="NG_Blue" output="out" />
+    <input name="displacementshader" type="displacementshader" nodegraph="NG_Blue" output="displacementshader" />
+  </surfacematerial>
+
+  <nodegraph name="NG_Magenta">
+    <standard_surface name="standard_surface1" type="surfaceshader">
+      <input name="base_color" type="color3" value="1, 0, 1" />
+    </standard_surface>
+    <output name="out" type="surfaceshader" nodename="standard_surface1" />
+  </nodegraph>
+  <surfacematerial name="M_Magenta" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodegraph="NG_Magenta" />
+  </surfacematerial>
+
+  <standard_surface name="SR_Orange" type="surfaceshader">
+    <input name="base_color" type="color3" value="1, 0.3, 0" />
+  </standard_surface>
+  <surfacematerial name="M_Orange" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_Orange" />
+  </surfacematerial>
+
+  <nodegraph name="NG_White">
+    <ramp4 name="ramp4" type="color3">
+      <input name="valuetl" type="color3" value="0, 0, 1" />
+      <input name="valuetr" type="color3" value="1, 0, 0" />
+      <input name="valuebl" type="color3" value="0, 1, 0" />
+      <input name="valuebr" type="color3" value="0, 1, 1" />
+    </ramp4>
+    <standard_surface name="SR_White" type="surfaceshader" />
+    <surfacematerial name="M_White" type="material">
+      <input name="surfaceshader" type="surfaceshader" nodename="SR_White" />
+    </surfacematerial>
+    <output name="out" type="material" nodename="M_White" />
+  </nodegraph>
+
+  <surfacematerial name="M_EmptySurface" type="material">
+    <input name="surfaceshader" type="surfaceshader" value="" />
+  </surfacematerial>
+  <volumematerial name="M_EmptyVolume" type="material">
+    <input name="volumeshader" type="volumeshader" value="" />
+  </volumematerial>
+</materialx>

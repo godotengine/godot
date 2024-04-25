@@ -1,0 +1,200 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="acescg">
+
+  <!-- LamaConductor -->
+  <LamaConductor name="LamaConductor" type="BSDF">
+    <input name="tint" type="color3" value="1, 1, 1" />
+    <input name="fresnelMode" type="integer" value="0" />
+    <input name="IOR" type="vector3" value="0.180000007153,0.419999986887,1.37000000477" />
+    <input name="extinction" type="vector3" value="3.42000007629,2.34999990463,1.76999998093" />
+    <input name="reflectivity" type="color3" value="0.9450, 0.7772, 0.3737" />
+    <input name="edgeColor" type="color3" value="0.9979, 0.9813, 0.7523" />
+    <input name="roughness" type="float" value="0.1" />
+    <input name="anisotropy" type="float" value="0.0" />
+    <input name="anisotropyRotation" type="float" value="0.0" />
+    <input name="iridescenceThickness" type="float" value="0.0" />
+    <input name="iridescenceIOR" type="float" value="1.5" />
+    <input name="exteriorIOR" type="float" value="1.0" />
+  </LamaConductor>
+  <surface name="LamaConductorSurface" type="surfaceshader">
+    <input name="bsdf" type="BSDF" nodename="LamaConductor" />
+  </surface>
+  <surfacematerial name="LamaConductorTest" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="LamaConductorSurface" />
+  </surfacematerial>
+
+  <!-- LamaDielectric -->
+  <LamaDielectric name="LamaDielectric" type="BSDF">
+    <input name="reflectionTint" type="color3" value="1.0, 1.0, 1.0" />
+    <input name="transmissionTint" type="color3" value="1.0, 1.0, 1.0" />
+    <input name="fresnelMode" type="integer" value="0" />
+    <input name="IOR" type="float" value="1.5" />
+    <input name="reflectivity" type="float" value="0.04" />
+    <input name="roughness" type="float" value="0.1" />
+    <input name="anisotropy" type="float" value="0.0" />
+    <input name="rotation" type="float" value="0.0" />
+    <input name="exteriorIOR" type="float" value="1.0" />
+    <input name="absorptionColor" type="color3" value="1.0, 1.0, 1.0" />
+    <input name="absorptionRadius" type="float" value="1.0" />
+    <input name="scatterColor" type="color3" value="0.0, 0.0, 0.0" />
+    <input name="scatterAnisotropy" type="float" value="0.0" />
+  </LamaDielectric>
+  <surface name="LamaDielectricSurface" type="surfaceshader">
+    <input name="bsdf" type="BSDF" nodename="LamaDielectric" />
+  </surface>
+  <surfacematerial name="LamaDielectricTest" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="LamaDielectricSurface" />
+  </surfacematerial>
+
+  <!-- LamaDiffuse -->
+  <LamaDiffuse name="LamaDiffuse" type="BSDF">
+    <input name="color" type="color3" value="0.1, 0.2, 0.3" />
+    <input name="roughness" type="float" value="0.5" />
+    <input name="energyCompensation" type="float" value="1.0" />
+    <input name="lobeName" type="string" value="diffuse" />
+    <input name="matte" type="string" value="" />
+  </LamaDiffuse>
+  <surface name="LamaDiffuseSurface" type="surfaceshader">
+    <input name="bsdf" type="BSDF" nodename="LamaDiffuse" />
+  </surface>
+  <surfacematerial name="LamaDiffuseTest" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="LamaDiffuseSurface" />
+  </surfacematerial>
+
+  <!-- LamaEmission -->
+  <LamaEmission name="LamaEmission" type="EDF">
+    <input name="color" type="color3" value="0.0, 1.0, 0.0" />
+  </LamaEmission>
+  <surface name="LamaEmissionSurface" type="surfaceshader">
+    <input name="edf" type="EDF" nodename="LamaEmission" />
+  </surface>
+  <surfacematerial name="LamaEmissionTest" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="LamaEmissionSurface" />
+  </surfacematerial>
+
+  <!-- LamaSheen -->
+  <LamaSheen name="LamaSheen" type="BSDF">
+    <input name="color" type="color3" value="1, 1, 1" />
+    <input name="roughness" type="float" value="0.1" />
+  </LamaSheen>
+  <surface name="LamaSheenSurface" type="surfaceshader">
+    <input name="bsdf" type="BSDF" nodename="LamaSheen" />
+  </surface>
+  <surfacematerial name="LamaSheenTest" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="LamaSheenSurface" />
+  </surfacematerial>
+
+  <!-- LamaSSS -->
+  <LamaSSS name="LamaSSS" type="BSDF">
+    <input name="color" type="color3" value="0.43, 0.21, 0.17" />
+    <input name="sssRadius" type="color3" value="11.61, 3.88, 1.75" />
+    <input name="sssScale" type="float" value="0.01" />
+    <input name="sssMode" type="integer" value="1" />
+    <input name="sssIOR" type="float" value="1.0" />
+    <input name="sssContinuationRays" type="integer" value="1" />
+    <input name="sssUnitLength" type="float" value="1.0" />
+    <input name="mode" type="integer" value="2" />
+    <input name="albedoInversionMethod" type="integer" value="1" />
+  </LamaSSS>
+  <surface name="LamaSSSSurface" type="surfaceshader">
+    <input name="bsdf" type="BSDF" nodename="LamaSSS" />
+  </surface>
+  <surfacematerial name="LamaSSSTest" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="LamaSSSSurface" />
+  </surfacematerial>
+
+  <!-- LamaTranslucent -->
+  <LamaTranslucent name="LamaTranslucent" type="BSDF">
+    <input name="color" type="color3" value="0.9, 0.0, 0.6" />
+    <input name="roughness" type="float" value="0.0" />
+    <input name="energyCompensation" type="float" value="1.0" />
+    <input name="lobeName" type="string" value="diffuse" />
+    <input name="matte" type="string" value="" />
+  </LamaTranslucent>
+  <surface name="LamaTranslucentSurface" type="surfaceshader">
+    <input name="bsdf" type="BSDF" nodename="LamaTranslucent" />
+  </surface>
+  <surfacematerial name="LamaTranslucentTest" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="LamaTranslucentSurface" />
+  </surfacematerial>
+
+  <!-- LamaAdd with BSDFs -->
+  <LamaAdd name="LamaAddBSDF" type="BSDF">
+    <input name="material1" type="BSDF" nodename="LamaConductor" />
+    <input name="material2" type="BSDF" nodename="LamaDielectric" />
+    <input name="weight1" type="float" value="0.5" />
+    <input name="weight2" type="float" value="0.5" />
+  </LamaAdd>
+  <surface name="LamaAddBSDFSurface" type="surfaceshader">
+    <input name="bsdf" type="BSDF" nodename="LamaAddBSDF" />
+  </surface>
+  <surfacematerial name="LamaAddBSDFTest" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="LamaAddBSDFSurface" />
+  </surfacematerial>
+
+  <!-- LamaAdd with EDFs -->
+  <LamaEmission name="LamaEmission1" type="EDF">
+    <input name="color" type="color3" value="1.0, 1.0, 0.0" />
+  </LamaEmission>
+  <LamaEmission name="LamaEmission2" type="EDF">
+    <input name="color" type="color3" value="1.0, 0.0, 1.0" />
+  </LamaEmission>
+  <LamaAdd name="LamaAddEDF" type="EDF">
+    <input name="material1" type="EDF" nodename="LamaEmission1" />
+    <input name="material2" type="EDF" nodename="LamaEmission2" />
+    <input name="weight1" type="float" value="0.5" />
+    <input name="weight2" type="float" value="0.5" />
+  </LamaAdd>
+  <surface name="LamaAddEDFSurface" type="surfaceshader">
+    <input name="edf" type="EDF" nodename="LamaAddEDF" />
+  </surface>
+  <surfacematerial name="LamaAddEDFTest" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="LamaAddEDFSurface" />
+  </surfacematerial>
+
+  <!-- LamaMix with BSDFs -->
+  <LamaMix name="LamaMixBSDF" type="BSDF">
+    <input name="material1" type="BSDF" nodename="LamaConductor" />
+    <input name="material2" type="BSDF" nodename="LamaDielectric" />
+    <input name="mix" type="float" value="0.5" />
+  </LamaMix>
+  <surface name="LamaMixBSDFSurface" type="surfaceshader">
+    <input name="bsdf" type="BSDF" nodename="LamaMixBSDF" />
+  </surface>
+  <surfacematerial name="LamaMixBSDFTest" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="LamaMixBSDFSurface" />
+  </surfacematerial>
+
+  <!-- LamaMix with EDFs -->
+  <LamaMix name="LamaMixEDF" type="EDF">
+    <input name="material1" type="EDF" nodename="LamaEmission1" />
+    <input name="material2" type="EDF" nodename="LamaEmission2" />
+    <input name="mix" type="float" value="0.5" />
+  </LamaMix>
+  <surface name="LamaMixEDFSurface" type="surfaceshader">
+    <input name="edf" type="EDF" nodename="LamaMixEDF" />
+  </surface>
+  <surfacematerial name="LamaMixEDFTest" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="LamaMixEDFSurface" />
+  </surfacematerial>
+
+  <!-- LamaLayer with BSDFs -->
+  <!-- TODO: re-enable this test once any BSDF can be layered as the top material.
+
+    <LamaLayer name="LamaLayerBSDF" type="BSDF">
+        <input name="materialTop" type="BSDF" nodename="LamaDielectric" />
+        <input name="materialBase" type="BSDF" nodename="LamaConductor" />
+        <input name="topMix" type="float" value="1.0" />
+        <input name="topThickness" type="float" value="0.0" />
+    </LamaLayer>
+
+    <surface name="LamaLayerBSDFSurface" type="surfaceshader">
+        <input name="bsdf" type="BSDF" nodename="LamaLayerBSDF" />
+    </surface>
+
+    <surfacematerial name="LamaLayerBSDFTest" type="material">
+        <input name="surfaceshader" type="surfaceshader" nodename="LamaLayerBSDFSurface" />
+    </surfacematerial>
+    
+    -->
+</materialx>

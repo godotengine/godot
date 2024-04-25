@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="timeGraph">
+    <time name="time1" type="float">
+      <input name="fps" type="float" value="36.0000" />
+    </time>
+    <remap name="remap1" type="float">
+      <input name="in" type="float" nodename="time1" />
+      <input name="inlow" type="float" value="0.0" />
+      <input name="inhigh" type="float" value="100.0000" />
+      <input name="outlow" type="float" value="0.0" />
+      <input name="outhigh" type="float" value="1.0" />
+    </remap>
+    <output name="out" type="float" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="frameGraph">
+    <frame name="frame1" type="float" />
+    <remap name="remap1" type="float">
+      <input name="in" type="float" nodename="frame1" />
+      <input name="inlow" type="float" value="0.0" />
+      <input name="inhigh" type="float" value="100.0000" />
+      <input name="outlow" type="float" value="0.0" />
+      <input name="outhigh" type="float" value="1.0" />
+    </remap>
+    <output name="out" type="float" nodename="remap1" />
+  </nodegraph>
+</materialx>

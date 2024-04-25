@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <standard_surface name="SR_carpaint" type="surfaceshader">
+    <input name="base" type="float" value="0.5" />
+    <input name="base_color" type="color3" value="0.1037792, 0.59212029, 0.85064936" />
+    <input name="specular" type="float" value="1.0" />
+    <input name="specular_color" type="color3" value="1.0, 1.0, 1.0" />
+    <input name="specular_roughness" type="float" value="0.4" />
+    <input name="specular_anisotropy" type="float" value="0.5" />
+    <input name="coat" type="float" value="1" />
+    <input name="coat_roughness" type="float" value="0" />
+  </standard_surface>
+  <surfacematerial name="Car_Paint" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_carpaint" />
+  </surfacematerial>
+</materialx>

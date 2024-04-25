@@ -1,0 +1,231 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+  Basic conditional if* function tests each test is in a separate graph for each variation in input type.
+  Tests are for integer and boolean comparisons.
+  -->
+
+  <!-- greater int condition -->
+  <nodegraph name="ifgreater_float">
+    <ifgreater name="ifgreater1" type="float">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="float" value="1.0000" />
+      <input name="in2" type="float" value="0.0" />
+    </ifgreater>
+    <output name="out" type="float" nodename="ifgreater1" />
+  </nodegraph>
+  <nodegraph name="ifgreater_color3">
+    <ifgreater name="ifgreater1" type="color3">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="color3" value="1.0000, 1.0000, 1.0000" />
+      <input name="in2" type="color3" value="0.0, 0.0, 0.0" />
+    </ifgreater>
+    <output name="out" type="color3" nodename="ifgreater1" />
+  </nodegraph>
+  <nodegraph name="ifgreater_color4">
+    <ifgreater name="ifgreater1" type="color4">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="color4" value="1.0000, 1.0000, 1.0000, 1.0" />
+      <input name="in2" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    </ifgreater>
+    <output name="out" type="color4" nodename="ifgreater1" />
+  </nodegraph>
+  <nodegraph name="ifgreater_vector2">
+    <ifgreater name="ifgreater1" type="vector2">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="vector2" value="1.0000, 1.0000" />
+      <input name="in2" type="vector2" value="0.0, 0.0" />
+    </ifgreater>
+    <output name="out" type="vector2" nodename="ifgreater1" />
+  </nodegraph>
+  <nodegraph name="ifgreater_vector3">
+    <ifgreater name="ifgreater1" type="vector3">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="vector3" value="1.0000, 1.0000, 1.0000" />
+      <input name="in2" type="vector3" value="0.0, 0.0, 0.0" />
+    </ifgreater>
+    <output name="out" type="vector3" nodename="ifgreater1" />
+  </nodegraph>
+  <nodegraph name="ifgreater_vector4">
+    <ifgreater name="ifgreater1" type="vector4">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="vector4" value="1.0000, 1.0000, 1.0000, 1.0" />
+      <input name="in2" type="vector4" value="0.0, 0.0, 0.0, 1.0" />
+    </ifgreater>
+    <output name="out" type="vector4" nodename="ifgreater1" />
+  </nodegraph>
+
+  <!-- equal int condition -->
+  <nodegraph name="ifequal_float">
+    <ifequal name="ifequal1" type="float">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="8" />
+      <input name="in1" type="float" value="1.0000" />
+      <input name="in2" type="float" value="0.0" />
+    </ifequal>
+    <output name="out" type="float" nodename="ifequal1" />
+  </nodegraph>
+  <nodegraph name="ifequal_color3">
+    <ifequal name="ifequal1" type="color3">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="8" />
+      <input name="in1" type="color3" value="1.0000, 1.0000, 1.0000" />
+      <input name="in2" type="color3" value="0.0, 0.0, 0.0" />
+    </ifequal>
+    <output name="out" type="color3" nodename="ifequal1" />
+  </nodegraph>
+  <nodegraph name="ifequal_color4">
+    <ifequal name="ifequal1" type="color4">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="8" />
+      <input name="in1" type="color4" value="1.0000, 1.0000, 1.0000, 1.0" />
+      <input name="in2" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    </ifequal>
+    <output name="out" type="color4" nodename="ifequal1" />
+  </nodegraph>
+  <nodegraph name="ifequal_vector2">
+    <ifequal name="ifequal1" type="vector2">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="8" />
+      <input name="in1" type="vector2" value="1.0000, 1.0000" />
+      <input name="in2" type="vector2" value="0.0, 0.0" />
+    </ifequal>
+    <output name="out" type="vector2" nodename="ifequal1" />
+  </nodegraph>
+  <nodegraph name="ifequal_vector3">
+    <ifequal name="ifequal1" type="vector3">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="8" />
+      <input name="in1" type="vector3" value="1.0000, 1.0000, 1.0000" />
+      <input name="in2" type="vector3" value="0.0, 0.0, 0.0" />
+    </ifequal>
+    <output name="out" type="vector3" nodename="ifequal1" />
+  </nodegraph>
+  <nodegraph name="ifequal_vector4">
+    <ifequal name="ifequal1" type="vector4">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="8" />
+      <input name="in1" type="vector4" value="1.0000, 1.0000, 1.0000, 1.0" />
+      <input name="in2" type="vector4" value="0.0, 0.0, 0.0, 1.0" />
+    </ifequal>
+    <output name="out" type="vector4" nodename="ifequal1" />
+  </nodegraph>
+
+  <!-- equal boolean condition -->
+  <nodegraph name="ifequalB_float">
+    <ifequal name="ifequal1" type="float">
+      <input name="value1" type="boolean" value="true" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="float" value="1.0000" />
+      <input name="in2" type="float" value="0.0" />
+    </ifequal>
+    <output name="out" type="float" nodename="ifequal1" />
+  </nodegraph>
+  <nodegraph name="ifequalB_color3">
+    <ifequal name="ifequal1" type="color3">
+      <input name="value1" type="boolean" value="true" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="color3" value="1.0000, 1.0000, 1.0000" />
+      <input name="in2" type="color3" value="0.0, 0.0, 0.0" />
+    </ifequal>
+    <output name="out" type="color3" nodename="ifequal1" />
+  </nodegraph>
+  <nodegraph name="ifequalB_color4">
+    <ifequal name="ifequal1" type="color4">
+      <input name="value1" type="boolean" value="true" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="color4" value="1.0000, 1.0000, 1.0000, 1.0" />
+      <input name="in2" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    </ifequal>
+    <output name="out" type="color4" nodename="ifequal1" />
+  </nodegraph>
+  <nodegraph name="ifequalB_vector2">
+    <ifequal name="ifequal1" type="vector2">
+      <input name="value1" type="boolean" value="true" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="vector2" value="1.0000, 1.0000" />
+      <input name="in2" type="vector2" value="0.0, 0.0" />
+    </ifequal>
+    <output name="out" type="vector2" nodename="ifequal1" />
+  </nodegraph>
+  <nodegraph name="ifequalB_vector3">
+    <ifequal name="ifequal1" type="vector3">
+      <input name="value1" type="boolean" value="true" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="vector3" value="1.0000, 1.0000, 1.0000" />
+      <input name="in2" type="vector3" value="0.0, 0.0, 0.0" />
+    </ifequal>
+    <output name="out" type="vector3" nodename="ifequal1" />
+  </nodegraph>
+  <nodegraph name="ifequalB_vector4">
+    <ifequal name="ifequal1" type="vector4">
+      <input name="value1" type="boolean" value="true" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="vector4" value="1.0000, 1.0000, 1.0000, 1.0" />
+      <input name="in2" type="vector4" value="0.0, 0.0, 0.0, 1.0" />
+    </ifequal>
+    <output name="out" type="vector4" nodename="ifequal1" />
+  </nodegraph>
+
+  <!-- greatereq int condition -->
+  <nodegraph name="ifgreatereq_float">
+    <ifgreatereq name="ifgreatereq1" type="float">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="float" value="1.0000" />
+      <input name="in2" type="float" value="0.0" />
+    </ifgreatereq>
+    <output name="out" type="float" nodename="ifgreatereq1" />
+  </nodegraph>
+  <nodegraph name="ifgreatereq_color3">
+    <ifgreatereq name="ifgreatereq1" type="color3">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="color3" value="1.0000, 1.0000, 1.0000" />
+      <input name="in2" type="color3" value="0.0, 0.0, 0.0" />
+    </ifgreatereq>
+    <output name="out" type="color3" nodename="ifgreatereq1" />
+  </nodegraph>
+  <nodegraph name="ifgreatereq_color4">
+    <ifgreatereq name="ifgreatereq1" type="color4">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="color4" value="1.0000, 1.0000, 1.0000, 1.0" />
+      <input name="in2" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+    </ifgreatereq>
+    <output name="out" type="color4" nodename="ifgreatereq1" />
+  </nodegraph>
+  <nodegraph name="ifgreatereq_vector2">
+    <ifgreatereq name="ifgreatereq1" type="vector2">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="vector2" value="1.0000, 1.0000" />
+      <input name="in2" type="vector2" value="0.0, 0.0" />
+    </ifgreatereq>
+    <output name="out" type="vector2" nodename="ifgreatereq1" />
+  </nodegraph>
+  <nodegraph name="ifgreatereq_vector3">
+    <ifgreatereq name="ifgreatereq1" type="vector3">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="vector3" value="1.0000, 1.0000, 1.0000" />
+      <input name="in2" type="vector3" value="0.0, 0.0, 0.0" />
+    </ifgreatereq>
+    <output name="out" type="vector3" nodename="ifgreatereq1" />
+  </nodegraph>
+  <nodegraph name="ifgreatereq_vector4">
+    <ifgreatereq name="ifgreatereq1" type="vector4">
+      <input name="value1" type="integer" value="8" />
+      <input name="value2" type="integer" value="6" />
+      <input name="in1" type="vector4" value="1.0000, 1.0000, 1.0000, 1.0" />
+      <input name="in2" type="vector4" value="0.0, 0.0, 0.0, 1.0" />
+    </ifgreatereq>
+    <output name="out" type="vector4" nodename="ifgreatereq1" />
+  </nodegraph>
+</materialx>

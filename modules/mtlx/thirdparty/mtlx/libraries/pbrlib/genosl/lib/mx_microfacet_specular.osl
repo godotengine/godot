@@ -1,0 +1,68 @@
+#include "mx_microfacet.osl"
+
+// Compute the average of an anisotropic alpha pair.
+float mx_average_alpha(vector2 alpha)
+{
+    return sqrt(alpha.x * alpha.y);
+}
+
+// Convert a real-valued index of refraction to normal-incidence reflectivity.
+float mx_ior_to_f0(float ior)
+{
+    return mx_square((ior - 1.0) / (ior + 1.0));
+}
+
+// Convert normal-incidence reflectivity to real-valued index of refraction.
+float mx_f0_to_ior(float F0)
+{
+    float sqrtF0 = sqrt(clamp(F0, 0.01, 0.99));
+    return (1.0 + sqrtF0) / (1.0 - sqrtF0);
+}
+
+// Rational quadratic fit to Monte Carlo data for GGX directional albedo.
+color mx_ggx_dir_albedo(float NdotV, float alpha, color F0, color F90)
+{
+    float x = NdotV;
+    float y = alpha;
+    float x2 = mx_square(x);
+    float y2 = mx_square(y);
+    vector4 r = vector4(0.1003, 0.9345, 1.0, 1.0) +
+                vector4(-0.6303, -2.323, -1.765, 0.2281) * x +
+                vector4(9.748, 2.229, 8.263, 15.94) * y +
+                vector4(-2.038, -3.748, 11.53, -55.83) * x * y +
+                vector4(29.34, 1.424, 28.96, 13.08) * x2 +
+                vector4(-8.245, -0.7684, -7.507, 41.26) * y2 +
+                vector4(-26.44, 1.436, -36.11, 54.9) * x2 * y +
+                vector4(19.99, 0.2913, 15.86, 300.2) * x * y2 +
+                vector4(-5.448, 0.6286, 33.37, -285.1) * x2 * y2;
+    vector2 AB = vector2(r.x, r.y) / vector2(r.z, r.w);
+    AB.x = clamp(AB.x, 0.0, 1.0);
+    AB.y = clamp(AB.y, 0.0, 1.0);
+    return F0 * AB.x + F90 * AB.y;
+}
+
+float mx_ggx_dir_albedo(float NdotV, float alpha, float F0, float F90)
+{
+    color result = mx_ggx_dir_albedo(NdotV, alpha, color(F0), color(F90));
+    return result[0];
+}
+
+float mx_ggx_dir_albedo(float NdotV, float alpha, float ior)
+{
+    color result = mx_ggx_dir_albedo(NdotV, alpha, color(mx_ior_to_f0(ior)), color(1.0));
+    return result[0];
+}
+
+// https://blog.selfshadow.com/publications/turquin/ms_comp_final.pdf
+// Equations 14 and 16
+color mx_ggx_energy_compensation(float NdotV, float alpha, color Fss)
+{
+    float Ess = mx_ggx_dir_albedo(NdotV, alpha, 1.0, 1.0);
+    return 1.0 + Fss * (1.0 - Ess) / Ess;
+}
+
+float mx_ggx_energy_compensation(float NdotV, float alpha, float Fss)
+{
+    color result = mx_ggx_energy_compensation(NdotV, alpha, color(Fss));
+    return result[0];
+}

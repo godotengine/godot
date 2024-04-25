@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <nodegraph name="NG_wood1" fileprefix="../../../Images/">
+    <tiledimage name="image_color" type="color3">
+      <input name="file" type="filename" value="wood_color.jpg" colorspace="srgb_texture" />
+      <input name="uvtiling" type="vector2" value="4.0, 4.0" />
+    </tiledimage>
+    <tiledimage name="image_roughness" type="float">
+      <input name="file" type="filename" value="wood_roughness.jpg" />
+      <input name="uvtiling" type="vector2" value="4.0, 4.0" />
+    </tiledimage>
+    <output name="out_color" type="color3" nodename="image_color" />
+    <output name="out_roughness" type="float" nodename="image_roughness" />
+  </nodegraph>
+  <standard_surface name="SR_wood1" type="surfaceshader">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" nodegraph="NG_wood1" output="out_color" />
+    <input name="specular" type="float" value="0.4" />
+    <input name="specular_roughness" type="float" nodegraph="NG_wood1" output="out_roughness" />
+    <input name="specular_anisotropy" type="float" value="0.5" />
+    <input name="coat" type="float" value="0.1" />
+    <input name="coat_roughness" type="float" value="0.2" />
+    <input name="coat_anisotropy" type="float" value="0.5" />
+  </standard_surface>
+  <surfacematerial name="Tiled_Wood" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_wood1" />
+  </surfacematerial>
+</materialx>

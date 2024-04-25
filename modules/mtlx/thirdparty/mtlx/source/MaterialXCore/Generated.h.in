@@ -1,0 +1,28 @@
+//
+// Copyright Contributors to the MaterialX Project
+// SPDX-License-Identifier: Apache-2.0
+//
+
+#ifndef MATERIALX_GENERATED_H
+#define MATERIALX_GENERATED_H
+
+#define MATERIALX_MAJOR_VERSION @MATERIALX_MAJOR_VERSION@
+#define MATERIALX_MINOR_VERSION @MATERIALX_MINOR_VERSION@
+#define MATERIALX_BUILD_VERSION @MATERIALX_BUILD_VERSION@
+
+#cmakedefine MATERIALX_BUILD_SHARED_LIBS
+
+// Establish namespace:
+namespace @MATERIALX_NAMESPACE@
+{
+}
+
+// Establish alias to allow downstream clients to still use the MaterialX namespace:
+namespace MaterialX = @MATERIALX_NAMESPACE@;
+
+// All code in this project must use these macros for opening and closing the
+// global MaterialX namespace:
+#define MATERIALX_NAMESPACE_BEGIN namespace @MATERIALX_NAMESPACE@ {
+#define MATERIALX_NAMESPACE_END }
+
+#endif

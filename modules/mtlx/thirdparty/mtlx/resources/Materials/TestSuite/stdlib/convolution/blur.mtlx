@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!---
+     Blur unit test
+  -->
+  <nodegraph name="blur_color3">
+    <image name="image1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+    </image>
+    <blur name="blur_color3" type="color3">
+      <input name="in" type="color3" nodename="image1" />
+      <input name="size" type="float" value="0.5" />
+      <input name="filtertype" type="string" value="gaussian" />
+    </blur>
+    <output name="blur_color3_out" type="color3" nodename="blur_color3" />
+  </nodegraph>
+  <nodegraph name="blur_color4">
+    <tiledimage name="tiledimage1" type="color4">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+    </tiledimage>
+    <blur name="blur_color4" type="color4">
+      <input name="in" type="color4" nodename="tiledimage1" />
+      <input name="size" type="float" value="0.5" />
+      <input name="filtertype" type="string" value="gaussian" />
+    </blur>
+    <output name="blur_color4_out" type="color4" nodename="blur_color4" />
+  </nodegraph>
+  <nodegraph name="blur_float">
+    <image name="image1" type="float">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+    </image>
+    <blur name="blur_float" type="float">
+      <input name="in" type="float" nodename="image1" />
+      <input name="size" type="float" value="0.5" />
+      <input name="filtertype" type="string" value="box" />
+    </blur>
+    <output name="blur_float_out" type="float" nodename="blur_float" />
+  </nodegraph>
+  <nodegraph name="blur_vector2">
+    <tiledimage name="tiledimage1" type="vector2">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+    </tiledimage>
+    <blur name="blur_vector2" type="vector2">
+      <input name="in" type="vector2" nodename="tiledimage1" />
+      <input name="size" type="float" value="0.5" />
+      <input name="filtertype" type="string" value="box" />
+    </blur>
+    <output name="blur_vector2_out" type="vector2" nodename="blur_vector2" />
+  </nodegraph>
+  <nodegraph name="blur_vector3">
+    <tiledimage name="tiledimage1" type="vector3">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+    </tiledimage>
+    <blur name="blur_vector3" type="vector3">
+      <input name="in" type="vector3" nodename="tiledimage1" />
+      <input name="size" type="float" value="0.5" />
+      <input name="filtertype" type="string" value="box" />
+    </blur>
+    <output name="blur_vector3_out" type="vector3" nodename="blur_vector3" />
+  </nodegraph>
+  <nodegraph name="blur_vector4">
+    <tiledimage name="tiledimage1" type="vector4">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+    </tiledimage>
+    <blur name="blur_vector4" type="vector4">
+      <input name="in" type="vector4" nodename="tiledimage1" />
+      <input name="size" type="float" value="0.5" />
+      <input name="filtertype" type="string" value="box" />
+    </blur>
+    <output name="blur_vector4_out" type="vector4" nodename="blur_vector4" />
+  </nodegraph>
+  <nodegraph name="blur_cellnoise">
+    <texcoord name="texcoord1" type="vector2" />
+    <multiply name="multiply1" type="vector2">
+      <input name="in1" type="vector2" nodename="texcoord1" />
+      <input name="in2" type="float" value="100" />
+    </multiply>
+    <cellnoise2d name="cellnoise2d1" type="float">
+      <input name="texcoord" type="vector2" nodename="multiply1" />
+    </cellnoise2d>
+    <blur name="blur_cellnoise" type="float">
+      <input name="in" type="float" nodename="cellnoise2d1" />
+      <input name="size" type="float" value="0.5" />
+      <input name="filtertype" type="string" value="gaussian" />
+    </blur>
+    <output name="blur_cellnoise_out" type="float" nodename="blur_cellnoise" />
+  </nodegraph>
+</materialx>

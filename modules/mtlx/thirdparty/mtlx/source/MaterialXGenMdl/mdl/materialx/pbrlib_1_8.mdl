@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// MDL implementation of all types and nodes of
+//     MaterialX Physically-Based Shading Nodes
+//     Document v1.37 REV2, July 16, 2019 (Revised October 17, 2019)
+//     see www.materialx.org 
+// in
+//     NVIDIA Material Definition Language 1.8
+//     Language Specification
+//     Document version 1.8.2, May 24, 2023
+//     www.nvidia.com/mdl
+
+mdl 1.8;
+
+// Changes since MDL 1.7
+// - Support thin-film on custom curve layer to improve generalized_schlick_bsdf,
+//   no new implementation required
+
+// forward all unchanged definitions from the previous version
+export using .::pbrlib_1_7 import *;
+
+// without changing any source code

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <UsdPreviewSurface name="SR_plastic" type="surfaceshader">
+    <input name="diffuseColor" type="color3" value="0.10470402, 0.24188282, 0.81800002" />
+    <input name="roughness" type="float" value="0.32467532157897949" />
+    <input name="ior" type="float" value="1.5" />
+  </UsdPreviewSurface>
+  <surfacematerial name="USD_Plastic" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_plastic" />
+  </surfacematerial>
+</materialx>

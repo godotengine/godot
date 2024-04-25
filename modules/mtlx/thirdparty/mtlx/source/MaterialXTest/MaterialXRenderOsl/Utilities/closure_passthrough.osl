@@ -1,0 +1,10 @@
+surface 
+closure_passthrough
+    [[ string description = "Simple closure for pass-through of another closure to Ci" ]]
+(
+	closure color Cin = 0.0
+        [[  string description = "Input closure" ]]
+)
+{
+	Ci = Cin; 
+}

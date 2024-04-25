@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="syntaxGraph">
+    <constant name="gl_consttant" type="float">
+      <input name="value" type="float" value="0.0" />
+    </constant>
+    <convert name="gl_consttant1" type="color3">
+      <input name="in" type="float" nodename="gl_consttant" />
+    </convert>
+    <output name="out_gl_constant" type="color3" nodename="gl_consttant1" />
+    <constant name="webgl_constant" type="float">
+      <input name="value" type="float" value="0.0" />
+    </constant>
+    <convert name="webgl_constant1" type="color3">
+      <input name="in" type="float" nodename="webgl_constant" />
+    </convert>
+    <output name="out_webgl_constant" type="color3" nodename="webgl_constant1" />
+    <constant name="_webgl_constant" type="float">
+      <input name="value" type="float" value="0.0" />
+    </constant>
+    <convert name="_webgl_constant1" type="color3">
+      <input name="in" type="float" nodename="_webgl_constant" />
+    </convert>
+    <output name="out__webgl_constant" type="color3" nodename="_webgl_constant1" />
+    <constant name="__doubleUnderScore" type="float">
+      <input name="value" type="float" value="0.0" />
+    </constant>
+    <convert name="__doubleUnderScore1" type="color3">
+      <input name="in" type="float" nodename="__doubleUnderScore" />
+    </convert>
+    <output name="out__doubleUnderScore" type="color3" nodename="__doubleUnderScore1" />
+  </nodegraph>
+</materialx>

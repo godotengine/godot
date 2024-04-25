@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/AcademySoftwareFoundation/MaterialX.git
+	branch = main
+	commit = 5f9fee7ef4a29bb2e2bfbb353fb7427b8072b6dc
+	parent = 60e093599612bc44cf4786fc6067f2a223e19238
+	method = merge
+	cmdver = 0.4.6

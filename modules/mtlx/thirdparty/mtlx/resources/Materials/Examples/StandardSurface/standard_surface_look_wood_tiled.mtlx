@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<materialx version="1.38" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="standard_surface_wood_tiled.mtlx" />
+  <xi:include href="standard_surface_greysphere_calibration.mtlx" />
+  <look name="Wood_Look">
+    <materialassign name="preview" geom="Preview_Mesh" material="Tiled_Wood" />
+    <materialassign name="calibration" geom="Calibration_Mesh" material="Greysphere_Calibration" />
+  </look>
+</materialx>

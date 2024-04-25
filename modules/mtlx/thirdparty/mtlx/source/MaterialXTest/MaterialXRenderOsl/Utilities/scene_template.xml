@@ -1,0 +1,35 @@
+<!-- Template for a lit scene in testrender -->
+<World>
+   <Camera eye="0, 0, 3" dir="0, 0, -1" fov="79.3" />
+
+   <!-- Background environment map. -->
+   <ShaderGroup>
+      %environment_shader_parameter_overrides%
+      shader envmap layer1;
+   </ShaderGroup>
+   <Background resolution="1024" />
+
+   <!-- Background quad with raytype test. -->
+   <ShaderGroup>
+      color Cin %background_color%;
+      %environment_shader_parameter_overrides%
+      shader raytype_background layer1;
+   </ShaderGroup>
+   <Quad corner="-340, -340, -800" edge_x="680, 0, 0" edge_y="0, 680, 0" />
+
+   <!-- Shader graph for routing to output layer:
+   input_shader_parameter_overrides : are parameter overrides for the input shader
+   %input_shader_type% : type of an input shader to feed into the output shader.
+   %input_shader_output% : name of output argument on input shader.
+   %output_shader_type%: type of the output shader used to render with
+   %output_shader_input% : name of input argument on output shader.
+   -->
+   <ShaderGroup>
+      %input_shader_parameter_overrides%;
+      shader %input_shader_type% inputShader;
+      shader %output_shader_type% outputShader;
+      connect inputShader.%input_shader_output% outputShader.%output_shader_input%;
+   </ShaderGroup>
+
+   <Sphere center="0, 0, 0" radius="1" />
+</World>

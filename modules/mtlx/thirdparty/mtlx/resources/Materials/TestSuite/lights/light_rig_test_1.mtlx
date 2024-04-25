@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <directional_light name="headlight" type="lightshader">
+    <input name="direction" type="vector3" value="0, 0, -1" />
+    <input name="color" type="color3" value="1, 1, 1" />
+    <input name="intensity" type="float" value="1.0" />
+  </directional_light>
+  <directional_light name="backlight" type="lightshader">
+    <input name="direction" type="vector3" value="0, 0, 1" />
+    <input name="color" type="color3" value="1, 1, 1" />
+    <input name="intensity" type="float" value="0.0" />
+  </directional_light>
+  <directional_light name="leftlight" type="lightshader">
+    <input name="direction" type="vector3" value="0, 1, 0" />
+    <input name="color" type="color3" value="1, 1, 1" />
+    <input name="intensity" type="float" value="0.5" />
+  </directional_light>
+  <directional_light name="rightlight" type="lightshader">
+    <input name="direction" type="vector3" value="0, -1, 0" />
+    <input name="color" type="color3" value="1, 1, 1" />
+    <input name="intensity" type="float" value="0.5" />
+  </directional_light>
+  <directional_light name="bottomlight" type="lightshader">
+    <input name="direction" type="vector3" value="1, 0, 0" />
+    <input name="color" type="color3" value="1, 1, 1" />
+    <input name="intensity" type="float" value="0.5" />
+  </directional_light>
+  <directional_light name="toplight" type="lightshader">
+    <input name="direction" type="vector3" value="-1, 0, 0" />
+    <input name="color" type="color3" value="1, 1, 1" />
+    <input name="intensity" type="float" value="0.5" />
+  </directional_light>
+
+  <!-- Lights only for test completion. All have 0 intensity so do not contribute -->
+  <point_light name="pointLight1" type="lightshader">
+    <input name="position" type="vector3" value="2, 2, 2" />
+    <input name="color" type="color3" value="1, 1, 1" />
+    <input name="intensity" type="float" value="0.0" />
+    <input name="decay_rate" type="float" value="3.0" />
+  </point_light>
+  <spot_light name="spotLight1" type="lightshader">
+    <input name="position" type="vector3" value="3, 3, 3" />
+    <input name="direction" type="vector3" value="-0.57735026919, -0.57735026919, -0.57735026919" />
+    <input name="color" type="color3" value="1, 0, 0" />
+    <input name="intensity" type="float" value="0.0" />
+    <input name="decay_rate" type="float" value="0.0" />
+    <input name="inner_angle" type="float" value="0.99619469809" />
+    <input name="outer_angle" type="float" value="0.98480775301" />
+  </spot_light>
+  <lightcompoundtest name="lightcompound1" type="lightshader">
+    <input name="position" type="vector3" value="-3, 3, 3" />
+    <input name="direction" type="vector3" value="0.57735026919, -0.57735026919, -0.57735026919" />
+    <input name="color" type="color3" value="0, 1, 0" />
+    <input name="intensity" type="float" value="0.0" />
+  </lightcompoundtest>
+</materialx>

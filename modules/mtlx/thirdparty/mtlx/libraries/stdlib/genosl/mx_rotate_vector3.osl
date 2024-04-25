@@ -1,0 +1,20 @@
+matrix rotationMatrix(vector axis, float angle)
+{
+    vector nAxis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+
+    return matrix(oc * nAxis[0] * nAxis[0] + c,             oc * nAxis[0] * nAxis[1] - nAxis[2] * s,  oc * nAxis[2] * nAxis[0] + nAxis[1] * s,  0.0,
+                  oc * nAxis[0] * nAxis[1] + nAxis[2] * s,  oc * nAxis[1] * nAxis[1] + c,             oc * nAxis[1] * nAxis[2] - nAxis[0] * s,  0.0,
+                  oc * nAxis[2] * nAxis[0] - nAxis[1] * s,  oc * nAxis[1] * nAxis[2] + nAxis[0] * s,  oc * nAxis[2] * nAxis[2] + c,             0.0,
+                  0.0,                                      0.0,                                      0.0,                                      1.0);
+}
+
+void mx_rotate_vector3(vector _in, float amount, vector axis, output vector result)
+{
+    float rotationRadians = radians(amount);
+    matrix m = rotationMatrix(axis, rotationRadians);
+    vector4 trans = transform(m, vector4(_in[0], _in[1], _in[2], 1.0));
+    result = vector(trans.x, trans.y, trans.z);
+}

@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <nodegraph name="NG_marble1">
+    <input name="base_color_1" type="color3" value="0.8, 0.8, 0.8" uiname="Color 1" uifolder="Marble Color" />
+    <input name="base_color_2" type="color3" value="0.1, 0.1, 0.3" uiname="Color 2" uifolder="Marble Color" />
+    <input name="noise_scale_1" type="float" value="6.0" uisoftmin="1.0" uisoftmax="10.0" uiname="Scale 1" uifolder="Marble Noise" />
+    <input name="noise_scale_2" type="float" value="4.0" uisoftmin="1.0" uisoftmax="10.0" uiname="Scale 2" uifolder="Marble Noise" />
+    <input name="noise_power" type="float" value="3.0" uisoftmin="1.0" uisoftmax="10.0" uiname="Power" uifolder="Marble Noise" />
+    <input name="noise_octaves" type="integer" value="3" uisoftmin="1" uisoftmax="8" uiname="Octaves" uifolder="Marble Noise" />
+    <position name="obj_pos" type="vector3" />
+    <dotproduct name="add_xyz" type="float">
+      <input name="in1" type="vector3" nodename="obj_pos" />
+      <input name="in2" type="vector3" value="1, 1, 1" />
+    </dotproduct>
+    <multiply name="scale_xyz" type="float">
+      <input name="in1" type="float" nodename="add_xyz" />
+      <input name="in2" type="float" interfacename="noise_scale_1" />
+    </multiply>
+    <multiply name="scale_pos" type="vector3">
+      <input name="in1" type="vector3" nodename="obj_pos" />
+      <input name="in2" type="float" interfacename="noise_scale_2" />
+    </multiply>
+    <fractal3d name="noise" type="float">
+      <input name="octaves" type="integer" interfacename="noise_octaves" />
+      <input name="position" type="vector3" nodename="scale_pos" />
+    </fractal3d>
+    <multiply name="scale_noise" type="float">
+      <input name="in1" type="float" nodename="noise" />
+      <input name="in2" type="float" value="3.0" />
+    </multiply>
+    <add name="sum" type="float">
+      <input name="in1" type="float" nodename="scale_xyz" />
+      <input name="in2" type="float" nodename="scale_noise" />
+    </add>
+    <sin name="sin" type="float">
+      <input name="in" type="float" nodename="sum" />
+    </sin>
+    <multiply name="scale" type="float">
+      <input name="in1" type="float" nodename="sin" />
+      <input name="in2" type="float" value="0.5" />
+    </multiply>
+    <add name="bias" type="float">
+      <input name="in1" type="float" nodename="scale" />
+      <input name="in2" type="float" value="0.5" />
+    </add>
+    <power name="power" type="float">
+      <input name="in1" type="float" nodename="bias" />
+      <input name="in2" type="float" interfacename="noise_power" />
+    </power>
+    <mix name="color_mix" type="color3">
+      <input name="bg" type="color3" interfacename="base_color_1" />
+      <input name="fg" type="color3" interfacename="base_color_2" />
+      <input name="mix" type="float" nodename="power" />
+    </mix>
+    <output name="out" type="color3" nodename="color_mix" />
+  </nodegraph>
+  <standard_surface name="SR_marble1" type="surfaceshader">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" nodegraph="NG_marble1" output="out" />
+    <input name="specular_roughness" type="float" value="0.1" />
+    <input name="subsurface" type="float" value="0.4" />
+    <input name="subsurface_color" type="color3" nodegraph="NG_marble1" output="out" />
+  </standard_surface>
+  <surfacematerial name="Marble_3D" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_marble1" />
+  </surfacematerial>
+</materialx>

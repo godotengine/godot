@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="add_bsdf_test">
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5" />
+    </constant>
+    <clamp name="clamp1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+      <input name="low" type="float" value="0.0" />
+      <input name="high" type="float" value="1.0" />
+    </clamp>
+    <invert name="invert1" type="float">
+      <input name="in" type="float" nodename="clamp1" />
+      <input name="amount" type="float" value="1.0" />
+    </invert>
+    <oren_nayar_diffuse_bsdf name="diffuse_brdf1" type="BSDF">
+      <input name="weight" type="float" nodename="invert1" />
+      <input name="color" type="color3" value="0.9600, 0.1, 0.1" />
+      <input name="roughness" type="float" value="0.0" />
+      <input name="normal" type="vector3" value="0.0, 0.0, 0.0" />
+    </oren_nayar_diffuse_bsdf>
+    <dielectric_bsdf name="dielectric_brdf1" type="BSDF">
+      <input name="weight" type="float" nodename="clamp1" />
+      <input name="tint" type="color3" value="1.0, 1.0, 1.0" />
+      <input name="ior" type="float" value="1.52" />
+    </dielectric_bsdf>
+    <add name="add_bsdf1" type="BSDF">
+      <input name="in1" type="BSDF" nodename="dielectric_brdf1" />
+      <input name="in2" type="BSDF" nodename="diffuse_brdf1" />
+    </add>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="add_bsdf1" />
+      <input name="edf" type="EDF" value="" />
+      <input name="opacity" type="float" value="1.0" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+</materialx>

@@ -1,0 +1,6 @@
+void mx_anisotropic_vdf(vector absorption, vector scattering, float anisotropy, output VDF vdf)
+{
+    // TODO: Need to remap parameters to match the new closure, 
+    // or change the MaterialX spec to OSL parameterization.
+    vdf = 0;
+}

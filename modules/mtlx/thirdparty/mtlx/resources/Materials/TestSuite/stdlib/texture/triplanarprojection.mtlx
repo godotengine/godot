@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+  Basic triplanar mapping unit test.
+  -->
+  <output name="triplanarprojection_4_output" type="color4" nodename="triplanarprojection_4" />
+  <triplanarprojection name="triplanarprojection_4" type="color4">
+    <input name="filex" type="filename" value="resources/Images/grid.png" />
+    <input name="filey" type="filename" value="resources/Images/grid.png" />
+    <input name="filez" type="filename" value="resources/Images/grid.png" />
+    <input name="filtertype" type="string" value="cubic" />
+    <input name="frameendaction" type="string" value="clamp" />
+  </triplanarprojection>
+  <output name="triplanarprojection_3_output" type="color3" nodename="triplanarprojection_3" />
+  <triplanarprojection name="triplanarprojection_3" type="color3">
+    <input name="filex" type="filename" value="resources/Images/grid.png" />
+    <input name="filey" type="filename" value="resources/Images/grid.png" />
+    <input name="filez" type="filename" value="resources/Images/grid.png" />
+    <input name="filtertype" type="string" value="cubic" />
+    <input name="frameendaction" type="string" value="clamp" />
+  </triplanarprojection>
+  <output name="triplanarprojection_2_output" type="vector2" nodename="triplanarprojection_2" />
+  <triplanarprojection name="triplanarprojection_2" type="vector2">
+    <input name="filex" type="filename" value="resources/Images/grid.png" />
+    <input name="filey" type="filename" value="resources/Images/grid.png" />
+    <input name="filez" type="filename" value="resources/Images/grid.png" />
+    <input name="filtertype" type="string" value="cubic" />
+    <input name="frameendaction" type="string" value="clamp" />
+  </triplanarprojection>
+  <output name="triplanarprojection_1_output" type="float" nodename="triplanarprojection_1" />
+  <triplanarprojection name="triplanarprojection_1" type="float">
+    <input name="filex" type="filename" value="resources/Images/grid.png" />
+    <input name="filey" type="filename" value="resources/Images/grid.png" />
+    <input name="filez" type="filename" value="resources/Images/grid.png" />
+    <input name="filtertype" type="string" value="cubic" />
+    <input name="frameendaction" type="string" value="clamp" />
+  </triplanarprojection>
+  <output name="triplanarprojection_4v_output" type="vector4" nodename="triplanarprojection_4v" />
+  <triplanarprojection name="triplanarprojection_4v" type="vector4">
+    <input name="filex" type="filename" value="resources/Images/grid.png" />
+    <input name="filey" type="filename" value="resources/Images/grid.png" />
+    <input name="filez" type="filename" value="resources/Images/grid.png" />
+    <input name="filtertype" type="string" value="cubic" />
+    <input name="frameendaction" type="string" value="clamp" />
+  </triplanarprojection>
+  <output name="triplanarprojection_3v_output" type="vector3" nodename="triplanarprojection_3v" />
+  <triplanarprojection name="triplanarprojection_3v" type="vector3">
+    <input name="filex" type="filename" value="resources/Images/grid.png" />
+    <input name="filey" type="filename" value="resources/Images/grid.png" />
+    <input name="filez" type="filename" value="resources/Images/grid.png" />
+    <input name="filtertype" type="string" value="cubic" />
+    <input name="frameendaction" type="string" value="clamp" />
+  </triplanarprojection>
+  <output name="triplanarprojection_2v_output" type="vector2" nodename="triplanarprojection_2v" />
+  <triplanarprojection name="triplanarprojection_2v" type="vector2">
+    <input name="filex" type="filename" value="resources/Images/grid.png" />
+    <input name="filey" type="filename" value="resources/Images/grid.png" />
+    <input name="filez" type="filename" value="resources/Images/grid.png" />
+    <input name="filtertype" type="string" value="cubic" />
+    <input name="frameendaction" type="string" value="clamp" />
+  </triplanarprojection>
+</materialx>

@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+    Define a custom edf node.
+  -->
+  <nodedef name="ND_myedf" node="myedf">
+    <input name="intensity1" type="float" value="1.0" />
+    <input name="color1" type="color3" value="1.0, 0.0, 0.0" />
+    <input name="intensity2" type="float" value="1.0" />
+    <input name="color2" type="color3" value="0.0, 1.0, 0.0" />
+    <output name="out" type="EDF" />
+  </nodedef>
+  <nodegraph name="IMP_myedf" nodedef="ND_myedf">
+    <multiply name="col1" type="color3">
+      <input name="in1" type="color3" interfacename="color1" />
+      <input name="in2" type="float" interfacename="intensity1" />
+    </multiply>
+    <uniform_edf name="edf1" type="EDF">
+      <input name="color" type="color3" nodename="col1" />
+    </uniform_edf>
+    <multiply name="col2" type="color3">
+      <input name="in1" type="color3" interfacename="color2" />
+      <input name="in2" type="float" interfacename="intensity2" />
+    </multiply>
+    <uniform_edf name="edf2" type="EDF">
+      <input name="color" type="color3" nodename="col2" />
+    </uniform_edf>
+    <texcoord name="t1" type="vector2" />
+    <multiply name="m1" type="vector2">
+      <input name="in1" type="vector2" nodename="t1" />
+      <input name="in2" type="float" value="16" />
+    </multiply>
+    <noise2d name="noise1" type="float">
+      <input name="texcoord" type="vector2" nodename="m1" />
+    </noise2d>
+    <mix name="mixer" type="EDF">
+      <input name="fg" type="EDF" nodename="edf1" />
+      <input name="bg" type="EDF" nodename="edf2" />
+      <input name="mix" type="float" nodename="noise1" />
+    </mix>
+    <output name="out" type="EDF" nodename="mixer" />
+  </nodegraph>
+  <!--
+    Use the edf node above in a surface shader.
+  -->
+  <nodegraph name="test_mybsdf" type="surfaceshader">
+    <myedf name="myedf1" type="EDF">
+      <input name="intensity1" type="float" value="1.0" />
+      <input name="color1" type="color3" value="1.0, 0.0, 0.0" />
+      <input name="intensity2" type="float" value="1.0" />
+      <input name="color2" type="color3" value="0.0, 1.0, 0.0" />
+    </myedf>
+    <surface name="surface1" type="surfaceshader">
+      <input name="edf" type="EDF" nodename="myedf1" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+</materialx>

@@ -1,0 +1,10 @@
+surface 
+constant_color
+    [[ string description = "Simple closure for constant color surface rendering" ]]
+(
+	color Cin = 1
+        [[  string description = "Input color to modulate emission with" ]]
+)
+{
+	Ci = Cin * emission(); 
+}

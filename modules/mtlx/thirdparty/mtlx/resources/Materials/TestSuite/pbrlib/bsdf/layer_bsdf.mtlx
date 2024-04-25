@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="layer_bsdf_test1">
+    <oren_nayar_diffuse_bsdf name="diffuse_brdf_1" type="BSDF" />
+    <sheen_bsdf name="sheen_brdf_1" type="BSDF" />
+    <dielectric_bsdf name="dielectric_brdf_1" type="BSDF">
+      <input name="ior" type="float" value="2.5" />
+    </dielectric_bsdf>
+    <dielectric_bsdf name="dielectric_brdf_2" type="BSDF">
+      <input name="ior" type="float" value="1.2" />
+      <input name="tint" type="color3" value="1,0,0" />
+    </dielectric_bsdf>
+    <layer name="layer_bsdf_1" type="BSDF">
+      <input name="top" type="BSDF" nodename="sheen_brdf_1" />
+      <input name="base" type="BSDF" nodename="diffuse_brdf_1" />
+    </layer>
+    <layer name="layer_bsdf_2" type="BSDF">
+      <input name="top" type="BSDF" nodename="dielectric_brdf_1" />
+      <input name="base" type="BSDF" nodename="layer_bsdf_1" />
+    </layer>
+    <layer name="layer_bsdf_3" type="BSDF">
+      <input name="top" type="BSDF" nodename="dielectric_brdf_2" />
+      <input name="base" type="BSDF" nodename="layer_bsdf_2" />
+    </layer>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="layer_bsdf_3" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+  <nodegraph name="layer_bsdf_test2">
+    <dielectric_bsdf name="dielectric_R" type="BSDF">
+      <input name="ior" type="float" value="1.8" />
+      <input name="scatter_mode" type="string" value="R" uniform="true" />
+    </dielectric_bsdf>
+    <dielectric_bsdf name="dielectric_T" type="BSDF">
+      <input name="ior" type="float" value="1.5" />
+      <input name="scatter_mode" type="string" value="T" uniform="true" />
+    </dielectric_bsdf>
+    <anisotropic_vdf name="dielectric_interior" type="VDF">
+      <input name="absorption" type="vector3" value="0.8, 0.8, 0.1" />
+      <input name="scattering" type="vector3" value="0.0, 0.0, 0.0" />
+      <input name="anisotropy" type="float" value="0.0" />
+    </anisotropic_vdf>
+    <layer name="dielectric_T_with_interior" type="BSDF">
+      <input name="top" type="BSDF" nodename="dielectric_T" />
+      <input name="base" type="VDF" nodename="dielectric_interior" />
+    </layer>
+    <layer name="dielectric" type="BSDF">
+      <input name="top" type="BSDF" nodename="dielectric_R" />
+      <input name="base" type="BSDF" nodename="dielectric_T_with_interior" />
+    </layer>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="dielectric" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+</materialx>

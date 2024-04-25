@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+    Copyright Contributors to the MaterialX Project
+    SPDX-License-Identifier: Apache-2.0
+
+    Graph definitions of standard nodes included in the MaterialX specification.
+  -->
+
+  <!-- ======================================================================== -->
+  <!-- View-dependent nodes                                                     -->
+  <!-- ======================================================================== -->
+
+  <!--
+    Node: <facingratio>
+  -->
+  <nodegraph name="NG_facingratio_float" nodedef="ND_facingratio_float">
+    <dotproduct name="N_dotproduct" type="float">
+      <input name="in1" type="vector3" interfacename="viewdirection" />
+      <input name="in2" type="vector3" interfacename="normal" />
+    </dotproduct>
+    <multiply name="N_scale" type="float">
+      <input name="in1" type="float" nodename="N_dotproduct" />
+      <input name="in2" type="float" value="-1" />
+    </multiply>
+    <absval name="N_absval" type="float">
+      <input name="in" type="float" nodename="N_dotproduct" />
+    </absval>
+    <ifequal name="N_facing" type="float">
+      <input name="value1" type="boolean" interfacename="faceforward" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="float" nodename="N_absval" />
+      <input name="in2" type="float" nodename="N_scale" />
+    </ifequal>
+    <invert name="N_invert" type="float">
+      <input name="in" type="float" nodename="N_facing" />
+    </invert>
+    <ifequal name="N_result" type="float">
+      <input name="value1" type="boolean" interfacename="invert" />
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="float" nodename="N_invert" />
+      <input name="in2" type="float" nodename="N_facing" />
+    </ifequal>
+    <output name="out" type="float" nodename="N_result" />
+  </nodegraph>
+
+  <!--
+    Node: <gooch_shade>
+  -->
+  <nodegraph name="NG_gooch_shade" type="color3" nodedef="ND_gooch_shade">
+    <normal name="normal" type="vector3" >
+      <input name="space" type="string" value="world" />
+    </normal>
+    <viewdirection name="viewdir" type="vector3" >
+      <input name="space" type="string" value="world" />
+    </viewdirection>
+    <normalize name="unit_normal" type="vector3">
+      <input name="in" type="vector3" nodename="normal" />
+    </normalize>
+    <normalize name="unit_viewdir" type="vector3">
+      <input name="in" type="vector3" nodename="viewdir" />
+    </normalize>
+    <normalize name="unit_lightdir" type="vector3">
+      <input name="in" type="vector3" interfacename="light_direction" />
+    </normalize>
+    <dotproduct name="NdotL" type="float">
+      <input name="in1" type="vector3" nodename="unit_normal" />
+      <input name="in2" type="vector3" nodename="unit_lightdir" />
+    </dotproduct>
+    <add name="one_plus_NdotL" type="float">
+      <input name="in2" type="float" nodename="NdotL" />
+      <input name="in1" type="float" value="1" />
+    </add>
+    <divide name="cool_intensity" type="float">
+      <input name="in1" type="float" nodename="one_plus_NdotL" />
+      <input name="in2" type="float" value="2" />
+    </divide>
+    <mix name="diffuse" type="color3">
+      <input name="bg" type="color3" interfacename="warm_color" />
+      <input name="fg" type="color3" interfacename="cool_color" />
+      <input name="mix" type="float" nodename="cool_intensity" />
+    </mix>
+    <reflect name="view_reflect" type="vector3">
+      <input name="in" type="vector3" nodename="unit_viewdir" />
+      <input name="normal" type="vector3" nodename="unit_normal" />
+    </reflect>
+    <multiply name="invert_lightdir" type="vector3">
+      <input name="in1" type="vector3" nodename="unit_lightdir" />
+      <input name="in2" type="float" value="-1" />
+    </multiply>
+    <dotproduct name="VdotR" type="float">
+      <input name="in1" type="vector3" nodename="invert_lightdir" />
+      <input name="in2" type="vector3" nodename="view_reflect" />
+    </dotproduct>
+    <max name="VdotR_nonnegative" type="float">
+      <input name="in1" type="float" nodename="VdotR" />
+      <input name="in2" type="float" value="0" />
+    </max>
+    <power name="specular_highlight" type="float">
+      <input name="in1" type="float" nodename="VdotR_nonnegative" />
+      <input name="in2" type="float" interfacename="shininess" />
+    </power>
+    <multiply name="specular" type="float">
+      <input name="in1" type="float" nodename="specular_highlight" />
+      <input name="in2" type="float" interfacename="specular_intensity" />
+    </multiply>
+    <add name="final_color" type="color3">
+      <input name="in1" type="color3" nodename="diffuse" />
+      <input name="in2" type="float" nodename="specular" />
+    </add>
+    <output name="out" type="color3" nodename="final_color" />
+  </nodegraph>
+
+</materialx>

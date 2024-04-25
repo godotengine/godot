@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <UsdPreviewSurface name="SR_gold" type="surfaceshader">
+    <input name="diffuseColor" type="color3" value="0.944, 0.776, 0.373" />
+    <input name="metallic" type="float" value="1" />
+    <input name="roughness" type="float" value="0.02" />
+  </UsdPreviewSurface>
+  <surfacematerial name="USD_Gold" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_gold" />
+  </surfacematerial>
+</materialx>

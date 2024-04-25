@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <standard_surface name="SR_Localetest" type="surfaceshader">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" value="0.18,0.18, 0.18" uiname="びまん性" />
+    <input name="specular" type="float" value="0" uiname="spéculaire" />
+    <input name="specular_roughness" type="float" value="0.25" uiname="表面粗さ" />
+    <input name="metalness" type="float" value="1" />
+    <input name="coat" type="float" value="1" />
+    <input name="coat_color" type="color3" value="0.05, 0.05,0.05" />
+    <input name="coat_roughness" type="float" value="0.20000000298023224" />
+  </standard_surface>
+  <surfacematerial name="Locale" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_Localetest" />
+  </surfacematerial>
+</materialx>

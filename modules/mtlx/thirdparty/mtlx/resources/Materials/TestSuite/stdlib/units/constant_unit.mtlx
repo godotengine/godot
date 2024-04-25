@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <multiply name="total_scale" type="vector2">
+    <input name="in1" type="vector2" value="1.0, 1.0" />
+    <input name="in2" type="float" value="10.0" unit="centimeter" unittype="distance" />
+  </multiply>
+</materialx>

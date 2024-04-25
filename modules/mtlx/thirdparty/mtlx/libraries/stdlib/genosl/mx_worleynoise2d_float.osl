@@ -1,0 +1,4 @@
+void mx_worleynoise2d_float(vector2 texcoord, float jitter, output float result)
+{
+    result = mx_worley_noise_float(texcoord, jitter, 0);
+}

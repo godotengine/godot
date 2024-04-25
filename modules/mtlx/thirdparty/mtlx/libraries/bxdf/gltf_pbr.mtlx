@@ -1,0 +1,726 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodedef name="ND_gltf_pbr_surfaceshader" node="gltf_pbr" nodegroup="pbr" doc="glTF PBR" version="2.0.1" isdefaultversion="true">
+    <input name="base_color" type="color3" value="1, 1, 1" uimin="0, 0, 0" uimax="1, 1, 1" uiname="Base Color" uifolder="Base" />
+    <input name="metallic" type="float" value="1" uimin="0" uimax="1" uiname="Metallic" uifolder="Base" />
+    <input name="roughness" type="float" value="1" uimin="0" uimax="1" uiname="Roughness" uifolder="Base" />
+    <input name="normal" type="vector3" defaultgeomprop="Nworld" uiname="Normal" uifolder="Base" />
+    <input name="tangent" type="vector3" defaultgeomprop="Tworld" uiname="Tangent" uifolder="Base" />
+    <input name="occlusion" type="float" value="1" uimin="0" uimax="1" uiname="Occlusion" uifolder="Base" />
+    <input name="transmission" type="float" value="0" uimin="0" uimax="1" uiname="Transmission" uifolder="Base" />
+    <input name="specular" type="float" value="1" uimin="0" uimax="1" uiname="Specular" uifolder="Base" />
+    <input name="specular_color" type="color3" value="1, 1, 1" uimin="0, 0, 0" uisoftmax="1, 1, 1" uiname="Specular Color" uifolder="Base" />
+    <input name="ior" uniform="true" type="float" value="1.5" uimin="1" uisoftmax="3" uiname="Index of Refraction" uifolder="Base" />
+    <input name="alpha" type="float" value="1" uimin="0" uimax="1" uiname="Alpha" uifolder="Alpha" />
+    <input name="alpha_mode" uniform="true" type="integer" enum="OPAQUE, MASK, BLEND" enumvalues="0, 1, 2" value="0" uiname="Alpha Mode" uifolder="Alpha" />
+    <input name="alpha_cutoff" uniform="true" type="float" value="0.5" uimin="0" uimax="1" uiname="Alpha Cutoff" uifolder="Alpha" />
+    <input name="iridescence" type="float" value="0" uimin="0" uimax="1" uiname="Iridescence" uifolder="Iridescence" />
+    <input name="iridescence_ior" uniform="true" type="float" value="1.3" uimin="1" uisoftmax="3" uiname="Iridescence Index of Refraction" uifolder="Iridescence" />
+    <input name="iridescence_thickness" type="float" value="100" uimin="0" uisoftmin="100" uisoftmax="400" uiname="Iridescence Thickness" uifolder="Iridescence" />
+    <input name="sheen_color" type="color3" value="0, 0, 0" uimin="0, 0, 0" uimax="1, 1, 1" uiname="Sheen Color" uifolder="Sheen" />
+    <input name="sheen_roughness" type="float" value="0" uimin="0" uimax="1" uiname="Sheen Roughness" uifolder="Sheen" />
+    <input name="clearcoat" type="float" value="0" uimin="0" uimax="1" uiname="Clearcoat" uifolder="Clearcoat" />
+    <input name="clearcoat_roughness" type="float" value="0" uimin="0" uimax="1" uiname="Clearcoat Roughness" uifolder="Clearcoat" />
+    <input name="clearcoat_normal" type="vector3" defaultgeomprop="Nworld" uiname="Clearcoat Normal" uifolder="Clearcoat" />
+    <input name="emissive" type="color3" value="0, 0, 0" uimin="0, 0, 0" uimax="1, 1, 1" uiname="Emissive" uifolder="Emission" />
+    <input name="emissive_strength" uniform="true" type="float" value="1" uimin="0" uiname="Emissive Strength" uifolder="Emission" />
+    <input name="thickness" uniform="false" type="float" value="0" uimin="0" uiname="Thickness" uifolder="Volume" />
+    <input name="attenuation_distance" uniform="true" type="float" uimin="0" uiname="Attenuation Distance" uifolder="Volume" />
+    <input name="attenuation_color" uniform="true" type="color3" value="1, 1, 1" uimin="0, 0, 0" uimax="1, 1, 1" uiname="Attenuation Color" uifolder="Volume" />
+    <output name="out" type="surfaceshader" />
+  </nodedef>
+
+  <nodegraph name="IMPL_gltf_pbr_surfaceshader" nodedef="ND_gltf_pbr_surfaceshader">
+
+    <!-- Volume -->
+
+    <convert name="attenuation_color_vec" type="vector3">
+      <input name="in" type="color3" interfacename="attenuation_color" />
+    </convert>
+
+    <ln name="ln_attenuation_color_vec" type="vector3">
+      <input name="in" type="vector3" nodename="attenuation_color_vec" />
+    </ln>
+
+    <divide name="ln_attenuation_color_vec_over_distance" type="vector3">
+      <input name="in1" type="vector3" nodename="ln_attenuation_color_vec" />
+      <input name="in2" type="float" interfacename="attenuation_distance" />
+    </divide>
+
+    <multiply name="attenuation_coeff" type="vector3">
+      <input name="in1" type="vector3" nodename="ln_attenuation_color_vec_over_distance" />
+      <input name="in2" type="float" value="-1" />
+    </multiply>
+
+    <anisotropic_vdf name="isotropic_volume" type="VDF">
+      <!-- No scattering yet, so absorption_coeff == attenuation_coeff -->
+      <input name="absorption" type="vector3" nodename="attenuation_coeff" />
+      <input name="scattering" type="vector3" value="0, 0, 0" />
+      <input name="anisotropy" type="float" value="0" />
+    </anisotropic_vdf>
+
+    <!-- Base layer -->
+
+    <!-- Compute F0 and F90 of dielectric component -->
+    <subtract name="one_minus_ior" type="float">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" interfacename="ior" />
+    </subtract>
+
+    <add name="one_plus_ior" type="float">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" interfacename="ior" />
+    </add>
+
+    <divide name="ior_div" type="float">
+      <input name="in1" type="float" nodename="one_minus_ior" />
+      <input name="in2" type="float" nodename="one_plus_ior" />
+    </divide>
+
+    <multiply name="dielectric_f0_from_ior" type="float">
+      <input name="in1" type="float" nodename="ior_div" />
+      <input name="in2" type="float" nodename="ior_div" />
+    </multiply>
+
+    <multiply name="dielectric_f0_from_ior_specular_color" type="color3">
+      <input name="in1" type="color3" interfacename="specular_color" />
+      <input name="in2" type="float" nodename="dielectric_f0_from_ior" />
+    </multiply>
+
+    <min name="clamped_dielectric_f0_from_ior_specular_color" type="color3">
+      <input name="in1" type="color3" nodename="dielectric_f0_from_ior_specular_color" />
+      <input name="in2" type="float" value="1" />
+    </min>
+
+    <multiply name="dielectric_f0" type="color3">
+      <input name="in1" type="color3" nodename="clamped_dielectric_f0_from_ior_specular_color" />
+      <input name="in2" type="float" interfacename="specular" />
+    </multiply>
+
+    <multiply name="dielectric_f90" type="color3">
+      <input name="in1" type="color3" value="1, 1, 1" />
+      <input name="in2" type="float" interfacename="specular" />
+    </multiply>
+
+    <!-- Roughness -->
+
+    <roughness_anisotropy name="roughness_uv" type="vector2">
+      <input name="roughness" type="float" interfacename="roughness" />
+    </roughness_anisotropy>
+
+    <!-- Dielectric -->
+
+    <oren_nayar_diffuse_bsdf name="diffuse_bsdf" type="BSDF">
+      <input name="color" type="color3" interfacename="base_color" />
+      <input name="normal" type="vector3" interfacename="normal" />
+    </oren_nayar_diffuse_bsdf>
+
+    <dielectric_bsdf name="transmission_bsdf" type="BSDF">
+      <input name="weight" type="float" value="1" />
+      <input name="tint" type="color3" interfacename="base_color" />
+      <input name="ior" type="float" interfacename="ior" />
+      <input name="roughness" type="vector2" nodename="roughness_uv" />
+      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="tangent" type="vector3" interfacename="tangent" />
+      <input name="scatter_mode" type="string" value="T" />
+    </dielectric_bsdf>
+
+    <generalized_schlick_bsdf name="reflection_bsdf" type="BSDF">
+      <input name="color0" type="color3" nodename="dielectric_f0" />
+      <input name="color90" type="color3" nodename="dielectric_f90" />
+      <input name="roughness" type="vector2" nodename="roughness_uv" />
+      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="tangent" type="vector3" interfacename="tangent" />
+      <input name="scatter_mode" type="string" value="R" />
+    </generalized_schlick_bsdf>
+
+    <mix name="transmission_mix" type="BSDF">
+      <input name="bg" type="BSDF" nodename="diffuse_bsdf" />
+      <input name="fg" type="BSDF" nodename="transmission_bsdf" />
+      <input name="mix" type="float" interfacename="transmission" />
+    </mix>
+
+    <layer name="dielectric_bsdf" type="BSDF">
+      <input name="top" type="BSDF" nodename="reflection_bsdf" />
+      <input name="base" type="BSDF" nodename="transmission_mix" />
+    </layer>
+
+    <!-- Thin-film + Dielectric
+         Note: Due to limitations in codegen, the base layer BSDF is duplicated (#1035). -->
+
+    <dielectric_bsdf name="tf_transmission_bsdf" type="BSDF">
+      <input name="weight" type="float" value="1" />
+      <input name="tint" type="color3" interfacename="base_color" />
+      <input name="ior" type="float" interfacename="ior" />
+      <input name="roughness" type="vector2" nodename="roughness_uv" />
+      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="tangent" type="vector3" interfacename="tangent" />
+      <input name="scatter_mode" type="string" value="T" />
+    </dielectric_bsdf>
+
+    <generalized_schlick_bsdf name="tf_reflection_bsdf" type="BSDF">
+      <input name="color0" type="color3" nodename="dielectric_f0" />
+      <input name="color90" type="color3" nodename="dielectric_f90" />
+      <input name="roughness" type="vector2" nodename="roughness_uv" />
+      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="tangent" type="vector3" interfacename="tangent" />
+      <input name="scatter_mode" type="string" value="R" />
+    </generalized_schlick_bsdf>
+
+    <mix name="tf_transmission_mix" type="BSDF">
+      <input name="bg" type="BSDF" nodename="diffuse_bsdf" />
+      <input name="fg" type="BSDF" nodename="tf_transmission_bsdf" />
+      <input name="mix" type="float" interfacename="transmission" />
+    </mix>
+
+    <layer name="tf_dielectric_bsdf" type="BSDF">
+      <input name="top" type="BSDF" nodename="tf_reflection_bsdf" />
+      <input name="base" type="BSDF" nodename="tf_transmission_mix" />
+    </layer>
+
+    <thin_film_bsdf name="dielectric_thinfilm_bsdf" type="BSDF">
+      <input name="thickness" type="float" interfacename="iridescence_thickness" />
+      <input name="ior" type="float" interfacename="iridescence_ior" />
+    </thin_film_bsdf>
+
+    <layer name="iridescent_dielectric_bsdf" type="BSDF">
+      <input name="top" type="BSDF" nodename="dielectric_thinfilm_bsdf" />
+      <input name="base" type="BSDF" nodename="tf_dielectric_bsdf" />
+    </layer>
+
+    <mix name="mix_iridescent_dielectric_bsdf" type="BSDF">
+      <input name="bg" type="BSDF" nodename="dielectric_bsdf" />
+      <input name="fg" type="BSDF" nodename="iridescent_dielectric_bsdf" />
+      <input name="mix" type="float" interfacename="iridescence" />
+    </mix>
+
+    <!-- Metal -->
+
+    <generalized_schlick_bsdf name="metal_bsdf" type="BSDF">
+      <input name="color0" type="color3" interfacename="base_color" />
+      <input name="color90" type="color3" value="1, 1, 1" />
+      <input name="roughness" type="vector2" nodename="roughness_uv" />
+      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="tangent" type="vector3" interfacename="tangent" />
+    </generalized_schlick_bsdf>
+
+    <!-- Thin-film + Metal
+         Note: Due to limitations in codegen, the base layer BSDF is duplicated (#1035). -->
+
+    <generalized_schlick_bsdf name="tf_metal_bsdf" type="BSDF">
+      <input name="color0" type="color3" interfacename="base_color" />
+      <input name="color90" type="color3" value="1, 1, 1" />
+      <input name="roughness" type="vector2" nodename="roughness_uv" />
+      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="tangent" type="vector3" interfacename="tangent" />
+    </generalized_schlick_bsdf>
+
+    <thin_film_bsdf name="metal_thinfilm_bsdf" type="BSDF">
+      <input name="thickness" type="float" interfacename="iridescence_thickness" />
+      <input name="ior" type="float" interfacename="iridescence_ior" />
+    </thin_film_bsdf>
+
+    <layer name="iridescent_metal_bsdf" type="BSDF">
+      <input name="top" type="BSDF" nodename="metal_thinfilm_bsdf" />
+      <input name="base" type="BSDF" nodename="tf_metal_bsdf" />
+    </layer>
+
+    <mix name="mix_iridescent_metal_bsdf" type="BSDF">
+      <input name="bg" type="BSDF" nodename="metal_bsdf" />
+      <input name="fg" type="BSDF" nodename="iridescent_metal_bsdf" />
+      <input name="mix" type="float" interfacename="iridescence" />
+    </mix>
+
+    <!-- Dielectric/metal mix -->
+
+    <mix name="base_mix" type="BSDF">
+      <input name="bg" type="BSDF" nodename="mix_iridescent_dielectric_bsdf" />
+      <input name="fg" type="BSDF" nodename="mix_iridescent_metal_bsdf" />
+      <input name="mix" type="float" interfacename="metallic" />
+    </mix>
+
+    <!-- Sheen layer -->
+
+    <!-- Compute sheen intensity = max(sheen_color.r, sheen_color.g, sheen_color.b) -->
+    <extract name="sheen_color_r" type="float">
+      <input name="in" type="color3" interfacename="sheen_color" />
+      <input name="index" type="integer" value="0" />
+    </extract>
+
+    <extract name="sheen_color_g" type="float">
+      <input name="in" type="color3" interfacename="sheen_color" />
+      <input name="index" type="integer" value="1" />
+    </extract>
+
+    <extract name="sheen_color_b" type="float">
+      <input name="in" type="color3" interfacename="sheen_color" />
+      <input name="index" type="integer" value="2" />
+    </extract>
+
+    <max name="sheen_color_max_rg" type="float">
+      <input name="in1" type="float" nodename="sheen_color_r" />
+      <input name="in2" type="float" nodename="sheen_color_g" />
+    </max>
+
+    <max name="sheen_intensity" type="float">
+      <input name="in1" type="float" nodename="sheen_color_max_rg" />
+      <input name="in2" type="float" nodename="sheen_color_b" />
+    </max>
+
+    <multiply name="sheen_roughness_sq" type="float">
+      <input name="in1" type="float" interfacename="sheen_roughness" />
+      <input name="in2" type="float" interfacename="sheen_roughness" />
+    </multiply>
+
+    <divide name="sheen_color_normalized" type="color3">
+      <input name="in1" type="color3" interfacename="sheen_color" />
+      <input name="in2" type="float" nodename="sheen_intensity" />
+    </divide>
+
+    <sheen_bsdf name="sheen_bsdf" type="BSDF">
+      <input name="weight" type="float" nodename="sheen_intensity" />
+      <input name="color" type="color3" nodename="sheen_color_normalized" />
+      <input name="roughness" type="float" nodename="sheen_roughness_sq" />
+      <input name="normal" type="vector3" interfacename="normal" />
+    </sheen_bsdf>
+
+    <layer name="sheen_layer" type="BSDF">
+      <input name="top" type="BSDF" nodename="sheen_bsdf" />
+      <input name="base" type="BSDF" nodename="base_mix" />
+    </layer>
+
+    <!-- Clearcoat -->
+
+    <roughness_anisotropy name="clearcoat_roughness_uv" type="vector2">
+      <input name="roughness" type="float" interfacename="clearcoat_roughness" />
+    </roughness_anisotropy>
+
+    <dielectric_bsdf name="clearcoat_bsdf" type="BSDF">
+      <input name="weight" type="float" interfacename="clearcoat" />
+      <input name="roughness" type="vector2" nodename="clearcoat_roughness_uv" />
+      <input name="ior" type="float" value="1.5" />
+      <input name="normal" type="vector3" interfacename="clearcoat_normal" />
+      <input name="tangent" type="vector3" interfacename="tangent" />
+    </dielectric_bsdf>
+
+    <layer name="clearcoat_layer" type="BSDF">
+      <input name="top" type="BSDF" nodename="clearcoat_bsdf" />
+      <input name="base" type="BSDF" nodename="sheen_layer" />
+    </layer>
+
+    <!-- Emission -->
+
+    <multiply name="emission_color" type="color3">
+      <input name="in1" type="color3" interfacename="emissive" />
+      <input name="in2" type="float" interfacename="emissive_strength" />
+    </multiply>
+
+    <uniform_edf name="emission" type="EDF">
+      <input name="color" type="color3" nodename="emission_color" />
+    </uniform_edf>
+
+    <!-- Alpha -->
+
+    <ifgreatereq name="opacity_mask_cutoff" type="float">
+      <input name="value1" type="float" interfacename="alpha" />
+      <input name="value2" type="float" interfacename="alpha_cutoff" />
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" value="0" />
+    </ifgreatereq>
+
+    <ifequal name="opacity_mask" type="float">
+      <input name="value1" type="integer" interfacename="alpha_mode" />
+      <input name="value2" type="integer" value="1" />
+      <input name="in1" type="float" nodename="opacity_mask_cutoff" />
+      <input name="in2" type="float" interfacename="alpha" />
+    </ifequal>
+
+    <ifequal name="opacity" type="float">
+      <input name="value1" type="integer" interfacename="alpha_mode" />
+      <input name="value2" type="integer" value="0" />
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" nodename="opacity_mask" />
+    </ifequal>
+
+    <!-- Surface -->
+
+    <surface name="shader_constructor" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="clearcoat_layer" />
+      <input name="edf" type="EDF" nodename="emission" />
+      <input name="opacity" type="float" nodename="opacity" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="shader_constructor" />
+  </nodegraph>
+
+  <!--
+    Node: <gltf_colorimage> Supplemental Node
+    Multiply a color4 image modulated by uniform color and geometry color. Default uniform and geometry colors are 1,1,1,1 which results in no change to the image.
+  -->
+  <nodedef name="ND_gltf_colorimage" node="gltf_colorimage" version="1.0" isdefaultversion="true" nodegroup="texture2d">
+    <input name="file" type="filename" uniform="true" value="" uifolder="Image" />
+    <input name="default" type="color4" value="0, 0, 0, 0" uifolder="Image" />
+    <input name="texcoord" type="vector2" defaultgeomprop="UV0" uifolder="Image" />
+    <input name="pivot" type="vector2" value="0, 1" uifolder="Image" />
+    <input name="scale" type="vector2" value="1, 1" uifolder="Image" />
+    <input name="rotate" type="float" value="0" unit="degree" unittype="angle" uimin="0" uimax="360" uifolder="Image" />
+    <input name="offset" type="vector2" value="0, 0" uifolder="Image" />
+    <input name="operationorder" type="integer" value="1" uifolder="Image" />
+    <input name="uaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" uifolder="Image" />
+    <input name="vaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" uifolder="Image" />
+    <input name="filtertype" type="string" uniform="true" value="linear" enum="closest,linear,cubic" uifolder="Image" />
+    <input name="color" type="color4" value="1, 1, 1, 1" uifolder="Color" />
+    <input name="geomcolor" type="color4" value="1, 1, 1, 1" uifolder="Color" uiname="Geometry Color" />
+    <output name="outcolor" type="color3" value="0, 0, 0" />
+    <output name="outa" type="float" value="0" />
+  </nodedef>
+
+  <nodegraph name="NG_gltf_colorimage" nodedef="ND_gltf_colorimage">
+    <gltf_image name="image" type="color4">
+      <input name="file" type="filename" uniform="true" interfacename="file" />
+      <input name="default" type="color4" interfacename="default" />
+      <input name="texcoord" type="vector2" interfacename="texcoord" />
+      <input name="pivot" type="vector2" interfacename="pivot" />
+      <input name="scale" type="vector2" interfacename="scale" />
+      <input name="rotate" type="float" interfacename="rotate" />
+      <input name="offset" type="vector2" interfacename="offset" />
+      <input name="operationorder" type="integer" value="0" />
+      <input name="uaddressmode" type="string" uniform="true" value="periodic" />
+      <input name="vaddressmode" type="string" uniform="true" value="periodic" />
+      <input name="filtertype" type="string" uniform="true" interfacename="filtertype" />
+    </gltf_image>
+    <multiply name="modulate_color" type="color4">
+      <input name="in1" type="color4" interfacename="color" />
+      <input name="in2" type="color4" nodename="image" />
+    </multiply>
+    <multiply name="modulate_geomcolor" type="color4">
+      <input name="in1" type="color4" nodename="modulate_color" />
+      <input name="in2" type="color4" interfacename="geomcolor" />
+    </multiply>
+    <separate4 name="separate_color" type="multioutput">
+      <input name="in" type="color4" nodename="modulate_geomcolor" />
+    </separate4>
+    <combine3 name="combine_color" type="color3">
+      <input name="in1" type="float" nodename="separate_color" output="outr" />
+      <input name="in2" type="float" nodename="separate_color" output="outg" />
+      <input name="in3" type="float" nodename="separate_color" output="outb" />
+    </combine3>
+    <dot name="separate_alpha" type="float">
+      <input name="in" type="float" nodename="separate_color" output="outa" />
+    </dot>
+    <output name="outcolor" type="color3" nodename="combine_color" />
+    <output name="outa" type="float" nodename="separate_alpha" />
+  </nodegraph>
+
+  <!--- 
+    Node: <gltf_image> 
+    color3 image lookup which matches glTF
+  -->
+  <nodedef name="ND_gltf_image_color3_color3_1_0" node="gltf_image" version="1.0" isdefaultversion="true" nodegroup="texture2d">
+    <input name="file" type="filename" uniform="true" value="" />
+    <input name="factor" type="color3" value="1,1,1" />
+    <input name="default" type="color3" value="0, 0, 0" />
+    <input name="texcoord" type="vector2" defaultgeomprop="UV0" />
+    <input name="pivot" type="vector2" value="0, 1" />
+    <input name="scale" type="vector2" value="1, 1" />
+    <input name="rotate" type="float" value="0" unit="degree" unittype="angle" uimin="0" uimax="360" />
+    <input name="offset" type="vector2" value="0, 0" />
+    <input name="operationorder" type="integer" value="0" />
+    <input name="uaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" />
+    <input name="vaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" />
+    <input name="filtertype" type="string" uniform="true" value="linear" enum="closest,linear,cubic" />
+    <output name="out" type="color3" value="0, 0, 0" />
+  </nodedef>
+  <nodegraph name="NG_NG_gltf_image_color3_color3_1_0" nodedef="ND_gltf_image_color3_color3_1_0">
+    <image name="image" type="color3">
+      <input name="file" type="filename" uniform="true" interfacename="file" />
+      <input name="default" type="color3" interfacename="default" />
+      <input name="texcoord" type="vector2" nodename="place2d" />
+      <input name="uaddressmode" type="string" uniform="true" interfacename="uaddressmode" />
+      <input name="vaddressmode" type="string" uniform="true" interfacename="vaddressmode" />
+      <input name="filtertype" type="string" uniform="true" interfacename="filtertype" />
+    </image>
+    <divide name="invert_scale" type="vector2">
+      <input name="in1" type="vector2" value="1.0, 1.0" />
+      <input name="in2" type="vector2" interfacename="scale" />
+    </divide>
+    <multiply name="negate_rotate" type="float">
+      <input name="in1" type="float" interfacename="rotate" />
+      <input name="in2" type="float" value="-1.0" />
+    </multiply>
+    <multiply name="negate_offset" type="vector2">
+      <input name="in1" type="vector2" interfacename="offset" />
+      <input name="in2" type="vector2" value="-1.0, 1.0" />
+    </multiply>
+    <place2d name="place2d" type="vector2">
+      <input name="texcoord" type="vector2" interfacename="texcoord" />
+      <input name="pivot" type="vector2" interfacename="pivot" />
+      <input name="scale" type="vector2" nodename="invert_scale" />
+      <input name="rotate" type="float" nodename="negate_rotate" />
+      <input name="offset" type="vector2" nodename="negate_offset" />
+      <input name="operationorder" type="integer" interfacename="operationorder" />
+    </place2d>
+    <multiply name="scale_image" type="color3">
+      <input name="in1" type="color3" interfacename="factor" />
+      <input name="in2" type="color3" nodename="image" />
+    </multiply>
+    <output name="out" type="color3" nodename="scale_image" />
+  </nodegraph>
+
+  <!--- 
+    Node: <gltf_image> 
+    color4 image lookup which matches glTF
+  -->
+  <nodedef name="ND_gltf_image_color4_color4_1_0" node="gltf_image" version="1.0" isdefaultversion="true" nodegroup="texture2d">
+    <input name="file" type="filename" uniform="true" value="" />
+    <input name="factor" type="color4" value="1,1,1,1" />
+    <input name="default" type="color4" value="0, 0, 0, 0" />
+    <input name="texcoord" type="vector2" defaultgeomprop="UV0" />
+    <input name="pivot" type="vector2" value="0, 1" />
+    <input name="scale" type="vector2" value="1, 1" />
+    <input name="rotate" type="float" value="0" unit="degree" unittype="angle" uimin="0" uimax="360" />
+    <input name="offset" type="vector2" value="0, 0" />
+    <input name="operationorder" type="integer" value="1" />
+    <input name="uaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" />
+    <input name="vaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" />
+    <input name="filtertype" type="string" uniform="true" value="linear" enum="closest,linear,cubic" />
+    <output name="out" type="color4" value="0, 0, 0, 0" />
+  </nodedef>
+  <nodegraph name="NG_gltf_image_color4_color4_1_0" nodedef="ND_gltf_image_color4_color4_1_0">
+    <image name="image" type="color4">
+      <input name="file" type="filename" uniform="true" interfacename="file" />
+      <input name="default" type="color4" interfacename="default" />
+      <input name="texcoord" type="vector2" nodename="place2d" />
+      <input name="uaddressmode" type="string" uniform="true" interfacename="uaddressmode" />
+      <input name="vaddressmode" type="string" uniform="true" interfacename="vaddressmode" />
+      <input name="filtertype" type="string" uniform="true" interfacename="filtertype" />
+    </image>
+    <divide name="invert_scale" type="vector2">
+      <input name="in1" type="vector2" value="1.0, 1.0" />
+      <input name="in2" type="vector2" interfacename="scale" />
+    </divide>
+    <multiply name="negate_rotate" type="float">
+      <input name="in1" type="float" interfacename="rotate" />
+      <input name="in2" type="float" value="-1.0" />
+    </multiply>
+    <multiply name="negate_offset" type="vector2">
+      <input name="in1" type="vector2" interfacename="offset" />
+      <input name="in2" type="vector2" value="-1.0, 1.0" />
+    </multiply>
+    <place2d name="place2d" type="vector2">
+      <input name="texcoord" type="vector2" interfacename="texcoord" />
+      <input name="pivot" type="vector2" interfacename="pivot" />
+      <input name="scale" type="vector2" nodename="invert_scale" />
+      <input name="rotate" type="float" nodename="negate_rotate" />
+      <input name="offset" type="vector2" nodename="negate_offset" />
+      <input name="operationorder" type="integer" interfacename="operationorder" />
+    </place2d>
+    <multiply name="scale_image" type="color4">
+      <input name="in1" type="color4" interfacename="factor" />
+      <input name="in2" type="color4" nodename="image" />
+    </multiply>
+    <output name="out" type="color4" nodename="scale_image" />
+  </nodegraph>
+
+  <!--- 
+    Node: <gltf_image> 
+    float image lookup which matches glTF
+  -->
+  <nodedef name="ND_gltf_image_float_float_1_0" node="gltf_image" version="1.0" isdefaultversion="true" nodegroup="texture2d">
+    <input name="file" type="filename" uniform="true" value="" />
+    <input name="factor" type="float" value="1" />
+    <input name="default" type="float" value="0" />
+    <input name="texcoord" type="vector2" defaultgeomprop="UV0" />
+    <input name="pivot" type="vector2" value="0, 1" />
+    <input name="scale" type="vector2" value="1, 1" />
+    <input name="rotate" type="float" value="0" unit="degree" unittype="angle" uimin="0" uimax="360" />
+    <input name="offset" type="vector2" value="0, 0" />
+    <input name="operationorder" type="integer" value="0" />
+    <input name="uaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" />
+    <input name="vaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" />
+    <input name="filtertype" type="string" uniform="true" value="linear" enum="closest,linear,cubic" />
+    <output name="out" type="float" value="0" />
+  </nodedef>
+  <nodegraph name="NG_gltf_image_float_float_1_0" nodedef="ND_gltf_image_float_float_1_0">
+    <image name="image" type="float">
+      <input name="file" type="filename" uniform="true" interfacename="file" />
+      <input name="default" type="float" interfacename="default" />
+      <input name="texcoord" type="vector2" nodename="place2d" />
+      <input name="uaddressmode" type="string" uniform="true" interfacename="uaddressmode" />
+      <input name="vaddressmode" type="string" uniform="true" interfacename="vaddressmode" />
+      <input name="filtertype" type="string" uniform="true" interfacename="filtertype" />
+    </image>
+    <divide name="invert_scale" type="vector2">
+      <input name="in1" type="vector2" value="1.0, 1.0" />
+      <input name="in2" type="vector2" interfacename="scale" />
+    </divide>
+    <multiply name="negate_rotate" type="float">
+      <input name="in1" type="float" interfacename="rotate" />
+      <input name="in2" type="float" value="-1.0" />
+    </multiply>
+    <multiply name="negate_offset" type="vector2">
+      <input name="in1" type="vector2" interfacename="offset" />
+      <input name="in2" type="vector2" value="-1.0, 1.0" />
+    </multiply>
+    <place2d name="place2d" type="vector2">
+      <input name="texcoord" type="vector2" interfacename="texcoord" />
+      <input name="pivot" type="vector2" interfacename="pivot" />
+      <input name="scale" type="vector2" nodename="invert_scale" />
+      <input name="rotate" type="float" nodename="negate_rotate" />
+      <input name="offset" type="vector2" nodename="negate_offset" />
+      <input name="operationorder" type="integer" interfacename="operationorder" />
+    </place2d>
+    <multiply name="scale_image" type="float">
+      <input name="in1" type="float" interfacename="factor" />
+      <input name="in2" type="float" nodename="image" />
+    </multiply>
+    <output name="out" type="float" nodename="scale_image" />
+  </nodegraph>
+
+  <!--- 
+    Node: <gltf_image> 
+    vector3 image lookup which matches glTF
+  -->
+  <nodedef name="ND_gltf_image_vector3_vector3_1_0" node="gltf_image" version="1.0" isdefaultversion="true" nodegroup="texture2d">
+    <input name="file" type="filename" uniform="true" value="" />
+    <input name="default" type="vector3" value="0, 0, 0" />
+    <input name="texcoord" type="vector2" defaultgeomprop="UV0" />
+    <input name="pivot" type="vector2" value="0, 1" />
+    <input name="scale" type="vector2" value="1, 1" />
+    <input name="rotate" type="float" value="0" unit="degree" unittype="angle" uimin="0" uimax="360" />
+    <input name="offset" type="vector2" value="0, 0" />
+    <input name="operationorder" type="integer" value="0" />
+    <input name="uaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" />
+    <input name="vaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" />
+    <input name="filtertype" type="string" uniform="true" value="linear" enum="closest,linear,cubic" />
+    <output name="out" type="vector3" value="0, 0, 0" />
+  </nodedef>
+  <nodegraph name="NG_gltf_image_vector3_vector3_1_0" nodedef="ND_gltf_image_vector3_vector3_1_0">
+    <image name="image" type="vector3">
+      <input name="file" type="filename" uniform="true" interfacename="file" />
+      <input name="default" type="vector3" interfacename="default" />
+      <input name="texcoord" type="vector2" nodename="place2d" />
+      <input name="uaddressmode" type="string" uniform="true" interfacename="uaddressmode" />
+      <input name="vaddressmode" type="string" uniform="true" interfacename="vaddressmode" />
+      <input name="filtertype" type="string" uniform="true" interfacename="filtertype" />
+    </image>
+    <divide name="invert_scale" type="vector2">
+      <input name="in1" type="vector2" value="1.0, 1.0" />
+      <input name="in2" type="vector2" interfacename="scale" />
+    </divide>
+    <multiply name="negate_rotate" type="float">
+      <input name="in1" type="float" interfacename="rotate" />
+      <input name="in2" type="float" value="-1.0" />
+    </multiply>
+    <multiply name="negate_offset" type="vector2">
+      <input name="in1" type="vector2" interfacename="offset" />
+      <input name="in2" type="vector2" value="-1.0, 1.0" />
+    </multiply>
+    <place2d name="place2d" type="vector2">
+      <input name="texcoord" type="vector2" interfacename="texcoord" />
+      <input name="pivot" type="vector2" interfacename="pivot" />
+      <input name="scale" type="vector2" nodename="invert_scale" />
+      <input name="rotate" type="float" nodename="negate_rotate" />
+      <input name="offset" type="vector2" nodename="negate_offset" />
+      <input name="operationorder" type="integer" interfacename="operationorder" />
+    </place2d>
+    <output name="out" type="vector3" nodename="image" />
+  </nodegraph>
+
+  <!--- 
+    Node: <gltf_normalmap> 
+    normalmap image lookup which matches glTF
+  -->
+  <nodedef name="ND_gltf_normalmap_vector3_1_0" node="gltf_normalmap" version="1.0" isdefaultversion="true" nodegroup="texture2d">
+    <input name="file" type="filename" uniform="true" value="" />
+    <input name="default" type="vector3" value="0.5, 0.5, 1" />
+    <input name="texcoord" type="vector2" defaultgeomprop="UV0" />
+    <input name="pivot" type="vector2" value="0, 1" />
+    <input name="scale" type="vector2" value="1, 1" />
+    <input name="rotate" type="float" value="0" unit="degree" unittype="angle" uimin="0" uimax="360" />
+    <input name="offset" type="vector2" value="0, 0" />
+    <input name="operationorder" type="integer" value="0" />
+    <input name="uaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" />
+    <input name="vaddressmode" type="string" uniform="true" value="periodic" enum="constant,clamp,periodic,mirror" />
+    <input name="filtertype" type="string" uniform="true" value="linear" enum="closest,linear,cubic" />
+    <output name="out" type="vector3" value="0, 0, 0" />
+  </nodedef>
+  <nodegraph name="NG_gltf_normalmap_vector3_1_0" nodedef="ND_gltf_normalmap_vector3_1_0">
+    <image name="image" type="vector3">
+      <input name="file" type="filename" uniform="true" interfacename="file" />
+      <input name="default" type="vector3" interfacename="default" />
+      <input name="texcoord" type="vector2" nodename="place2d" />
+      <input name="uaddressmode" type="string" uniform="true" interfacename="uaddressmode" />
+      <input name="vaddressmode" type="string" uniform="true" interfacename="vaddressmode" />
+      <input name="filtertype" type="string" uniform="true" interfacename="filtertype" />
+    </image>
+    <normalmap name="normalmap" type="vector3">
+      <input name="in" type="vector3" nodename="image" />
+    </normalmap>
+    <divide name="invert_scale" type="vector2">
+      <input name="in1" type="vector2" value="1.0, 1.0" />
+      <input name="in2" type="vector2" interfacename="scale" />
+    </divide>
+    <multiply name="negate_rotate" type="float">
+      <input name="in1" type="float" interfacename="rotate" />
+      <input name="in2" type="float" value="-1.0" />
+    </multiply>
+    <multiply name="negate_offset" type="vector2">
+      <input name="in1" type="vector2" interfacename="offset" />
+      <input name="in2" type="vector2" value="-1.0, 1.0" />
+    </multiply>
+    <place2d name="place2d" type="vector2" nodedef="ND_place2d_vector2">
+      <input name="texcoord" type="vector2" interfacename="texcoord" />
+      <input name="pivot" type="vector2" interfacename="pivot" />
+      <input name="scale" type="vector2" nodename="invert_scale" />
+      <input name="rotate" type="float" nodename="negate_rotate" />
+      <input name="offset" type="vector2" nodename="negate_offset" />
+      <input name="operationorder" type="integer" interfacename="operationorder" />
+    </place2d>
+    <output name="out" type="vector3" nodename="normalmap" />
+  </nodegraph>
+
+  <!--
+    Node: <gltf_iridescence> 
+    normalmap image lookup which matches glTF  
+  -->
+  <nodedef name="ND_gltf_iridescence_thickness_float_1_0" node="gltf_iridescence_thickness" version="1.0" isdefaultversion="true" nodegroup="texture2d">
+    <input name="file" type="filename" uniform="true" value="" uifolder="Image" />
+    <input name="default" type="vector3" value="0, 0, 0" uifolder="Image" />
+    <input name="texcoord" type="vector2" defaultgeomprop="UV0" uifolder="Image" />
+    <input name="pivot" type="vector2" value="0, 0" uifolder="Image" />
+    <input name="scale" type="vector2" value="1, 1" uifolder="Image" />
+    <input name="rotate" type="float" value="0" uifolder="Image" />
+    <input name="offset" type="vector2" value="0, 0" uifolder="Image" />
+    <input name="uaddressmode" type="string" uniform="true" value="periodic" uifolder="Image" enum="constant,clamp,periodic,mirror" />
+    <input name="vaddressmode" type="string" uniform="true" value="periodic" uifolder="Image" enum="constant,clamp,periodic,mirror" />
+    <input name="filtertype" type="string" uniform="true" value="linear" enum="closest,linear,cubic" uifolder="Image" />
+    <input name="thicknessMin" type="float" value="100" uifolder="Thickness" />
+    <input name="thicknessMax" type="float" value="400" uifolder="Thickness" />
+    <output name="out" type="float" value="0" />
+  </nodedef>
+  <nodegraph name="NG_gltf_iridescence_thickness_float_1_0" nodedef="ND_gltf_iridescence_thickness_float_1_0">
+    <mix name="mixThickness" type="float" nodedef="ND_mix_float">
+      <input name="fg" type="float" interfacename="thicknessMin" />
+      <input name="bg" type="float" interfacename="thicknessMax" />
+      <input name="mix" type="float" nodename="extract" />
+    </mix>
+    <gltf_image name="thickness_image" type="vector3">
+      <input name="file" type="filename" uniform="true" interfacename="file" />
+      <input name="default" type="vector3" interfacename="default" />
+      <input name="texcoord" type="vector2" interfacename="texcoord" />
+      <input name="pivot" type="vector2" interfacename="pivot" />
+      <input name="scale" type="vector2" interfacename="scale" />
+      <input name="rotate" type="float" interfacename="rotate" />
+      <input name="offset" type="vector2" interfacename="offset" />
+      <input name="uaddressmode" type="string" uniform="true" interfacename="uaddressmode" />
+      <input name="vaddressmode" type="string" uniform="true" interfacename="vaddressmode" />
+      <input name="filtertype" type="string" uniform="true" interfacename="filtertype" />
+    </gltf_image>
+    <extract name="extract" type="float">
+      <input name="in" type="vector3" nodename="thickness_image" />
+      <input name="index" type="integer" uniform="true" value="1" />
+    </extract>
+    <output name="out" type="float" nodename="mixThickness" />
+  </nodegraph>
+
+</materialx>

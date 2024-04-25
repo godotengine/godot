@@ -1,0 +1,80 @@
+/*
+ * Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Support functions for HSV <--> RGB color conversions
+
+mdl 1.6;
+
+import ::limits::*;
+import ::math::*;
+
+// Convert from the HSV color model to the RGB color model
+export float3 mx_hsvtorgb(float3 hsv) {
+    // from "Color Imaging, Fundamentals and Applications", Reinhard et al., p. 442
+
+    float h = 6.0 * (hsv.x - math::floor(hsv.x));
+    int hi = int(h); // truncate
+    float f = h - float(hi);
+
+    float zy = hsv.z*hsv.y;
+    float a = hsv.z - zy;
+    float b = hsv.z - zy*f;
+    float c = a + zy*f;
+
+    switch(hi) {
+        default:
+            // hue out of [0,1] range...
+            // fall through...
+        case 0:
+            return float3(hsv.z, c, a);
+        case 1:
+            return float3(b, hsv.z, a);
+        case 2:
+            return float3(a, hsv.z, c);
+        case 3:
+            return float3(a, b, hsv.z);
+        case 4:
+            return float3(c, a, hsv.z);
+        case 5:
+            return float3(hsv.z, a, b);
+    }
+}
+
+// Convert from the RGB color model to the HSV color model
+export float3 mx_rgbtohsv(float3 rgb) {
+    // from "Color Imaging, Fundamentals and Applications", Reinhard et al., p. 442
+    // H = 
+    //      60*(G-B)/(max-min) if R is max
+    //      60*(2+((B-R)/(max-min))) if G is max
+    //      60*(4+((R-G)/(max-min))) if B if max
+    //      and normalize the result by dividing by 360deg
+    // S = (max-min)/max
+    // V = max
+
+    float max = math::max(rgb.x, math::max(rgb.y, rgb.z));
+    float min = math::min(rgb.x, math::min(rgb.y, rgb.z));
+    float range = max - min;
+    float inv_range = (1.0f/6.0f)/range;
+
+    float saturation = (max > limits::FLOAT_MIN) ? (range / max) : 0.0f;
+    float hue = (saturation != 0.0f) ?
+             ((max == rgb.x) ? ((rgb.y-rgb.z)*inv_range)               // R is max
+            : (max == rgb.y) ? ((2.0f/6.0f) + (rgb.z-rgb.x)*inv_range) // G is max
+            : ((4.0f/6.0f) + (rgb.x-rgb.y)*inv_range))                 // B is max
+        : 0.0f;                                     // hue is undefined (assume 0)
+
+    return float3((hue >= 0.0f) ? hue : (hue + 1.0f), saturation, max);
+}

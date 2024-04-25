@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="libraries/metal_definition.mtlx" />
+
+  <!-- Example using existing "test metal" definition -->
+
+  <nodegraph name="Brass_Wire_Mesh_Input_Graph">
+    <!-- SurfaceAlbedo -->
+    <image name="SurfaceAlbedo_color" type="color3">
+      <input name="file" type="filename" value="textures/mesh_wire_spec.png" colorspace="lin_rec709" />
+    </image>
+    <output name="SurfaceAlbedo_output" type="color3" nodename="SurfaceAlbedo_color" />
+
+    <!-- SurfaceNormal -->
+    <texcoord name="normal_texcoord" type="vector2" />
+    <transformmatrix name="normal_transform" type="vector2">
+      <input name="mat" type="matrix33" value="31.4961, 0.0, 0.0, 0.0, 31.4961, 0.0, 0.0, 0.0,1.0" />
+      <input name="in" type="vector2" nodename="normal_texcoord" />
+    </transformmatrix>
+    <image name="normal_image" type="vector3" colorspace="Raw">
+      <input name="file" type="filename" value="textures/mesh_wire_norm.png" />
+      <input name="texcoord" type="vector2" nodename="normal_transform" />
+    </image>
+    <normalmap name="SurfaceNormal_normal" type="vector3">
+      <input name="in" type="vector3" nodename="normal_image" />
+      <input name="scale" type="float" value="1.5" />
+    </normalmap>
+    <output name="SurfaceNormal_output" type="vector3" nodename="SurfaceNormal_normal" />
+
+    <!-- SurfaceCutout -->
+    <image name="SurfaceCutout_mask" type="color3">
+      <input name="file" type="filename" value="textures/mesh_wire_cutout.png" colorspace="lin_rec709" />
+      <input name="texcoord" type="vector2" nodename="cutout_transform" />
+    </image>
+    <texcoord name="cutout_texcoord" type="vector2" />
+    <transformmatrix name="cutout_transform" type="vector2">
+      <input name="mat" type="matrix33" value="31.4961, 0.0, 0.0, 0.0, 31.4961, 0.0, 0.0, 0.0,1.0" />
+      <input name="in" type="vector2" nodename="cutout_texcoord" />
+    </transformmatrix>
+    <output name="SurfaceCutout_output" type="color3" nodename="SurfaceCutout_mask" />
+  </nodegraph>
+
+  <!-- Shader and material nodes -->
+  <testmetal name="shaderref0" type="surfaceshader">
+    <input name="MetalF0" type="color3" value="0.9, 0.6, 0.2" />
+    <input name="SurfaceAlbedo" type="color3" output="SurfaceAlbedo_output" nodegraph="Brass_Wire_Mesh_Input_Graph" />
+    <input name="SurfaceAnisotropy" type="float" value="0.95" />
+    <input name="SurfaceNormal" type="vector3" output="SurfaceNormal_output" nodegraph="Brass_Wire_Mesh_Input_Graph" />
+    <input name="SurfaceRotation" type="float" value="0.0" />
+    <input name="SurfaceRoughness" type="float" value="0.122474" />
+    <input name="SurfaceCutout" type="color3" output="SurfaceCutout_output" nodegraph="Brass_Wire_Mesh_Input_Graph" />
+  </testmetal>
+  <surfacematerial name="Brass_Wire_Mesh" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="shaderref0" />
+  </surfacematerial>
+</materialx>

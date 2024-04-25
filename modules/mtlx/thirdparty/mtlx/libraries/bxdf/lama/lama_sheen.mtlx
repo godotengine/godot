@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="acescg">
+  <nodedef name="ND_lama_sheen" node="LamaSheen" nodegroup="pbr" doc="Lama sheen" version="1.0" isdefaultversion="true">
+    <input name="color" type="color3" value="1, 1, 1" uiname="Color" uifolder="Main"
+           doc="Amount of sheen to add, per channel. When this node is used as top material in a stack, the more sheen is added, the less energy will be transmitted to the base material." />
+    <input name="roughness" type="float" value="0.1" uimin="0.0" uimax="1.0" uiname="Roughness" uifolder="Main"
+           doc="Roughness of the sheen effect. Very rough sheen can be used to create a rough diffuse look (when combined with a diffuse node by a stack or mix)." />
+    <input name="normal" type="vector3" defaultgeomprop="Nworld" uiname="Normal" uifolder="Main"
+           doc="Shading normal, typically defined by bump or normal mapping. Defaults to the smooth surface normal if not set." />
+    <output name="out" type="BSDF" />
+  </nodedef>
+
+  <nodegraph name="IMPL_lama_sheen" nodedef="ND_lama_sheen">
+
+    <!-- Roughness -->
+    <multiply name="roughness_compressed" type="float">
+      <input name="in1" type="float" interfacename="roughness" />
+      <input name="in2" type="float" value="0.9" />
+    </multiply>
+    <add name="roughness_remapped" type="float">
+      <input name="in1" type="float" nodename="roughness_compressed" />
+      <input name="in2" type="float" value="0.1" />
+    </add>
+    <power name="roughness_squared" type="float">
+      <input name="in1" type="float" nodename="roughness_remapped" />
+      <input name="in2" type="float" value="2" />
+    </power>
+
+    <!-- BRDF -->
+    <sheen_bsdf name="sheen_bsdf" type="BSDF">
+      <input name="weight" type="float" value="1.0" />
+      <input name="color" type="color3" interfacename="color" />
+      <input name="roughness" type="float" nodename="roughness_squared" />
+      <input name="normal" type="vector3" interfacename="normal" />
+    </sheen_bsdf>
+
+    <!-- Output -->
+    <output name="out" type="BSDF" nodename="sheen_bsdf" />
+
+  </nodegraph>
+</materialx>

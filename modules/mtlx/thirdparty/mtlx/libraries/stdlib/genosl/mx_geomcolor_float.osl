@@ -1,0 +1,4 @@
+void mx_geomcolor_float(int index, output float result)
+{
+    getattribute("color", result);
+}

@@ -1,0 +1,259 @@
+/*
+ * Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// MDL implementation of all types and nodes of
+//     MaterialX Physically-Based Shading Nodes
+//     Document v1.37 REV2, July 16, 2019 (Revised October 17, 2019)
+//     see www.materialx.org 
+// in
+//     NVIDIA Material Definition Language 1.7
+//     Language Specification
+//     Document version 1.7.2, January 17, 2022
+//     www.nvidia.com/mdl
+
+mdl 1.7;
+
+// Changes since MDL 1.6
+// - Support for unbounded_mix to implement add_bsdf, add_edf, and add_vdf
+// - Support for df::sheen_bsdf with a custom base BSDF
+// - Support for df::directional_factor on EDFs to implement generalized_schlick_edf
+// - Support for emission on VDFs
+
+import ::anno::*;
+import ::df::*;
+import ::math::*;
+import ::state::*;
+
+// forward all unchanged definitions from the previous version
+export using .::pbrlib_1_6 import mx_scatter_mode;
+export using .::pbrlib_1_6 import mx_map_scatter_mode;
+export using .::pbrlib_1_6 import mx_oren_nayar_diffuse_bsdf;
+export using .::pbrlib_1_6 import mx_burley_diffuse_bsdf;
+export using .::pbrlib_1_6 import mx_translucent_bsdf;
+export using .::pbrlib_1_6 import mx_dielectric_bsdf;
+export using .::pbrlib_1_6 import mx_conductor_bsdf;
+export using .::pbrlib_1_6 import mx_generalized_schlick_bsdf;
+export using .::pbrlib_1_6 import mx_subsurface_bsdf;
+export using .::pbrlib_1_6 import mx_thin_film_bsdf;
+export using .::pbrlib_1_6 import mx_uniform_edf;
+export using .::pbrlib_1_6 import mx_conical_edf;
+export using .::pbrlib_1_6 import mx_measured_edf;
+export using .::pbrlib_1_6 import mx_absorption_vdf;
+export using .::pbrlib_1_6 import mx_anisotropic_vdf;
+export using .::pbrlib_1_6 import mx_surface;
+export using .::pbrlib_1_6 import mx_thin_surface;
+export using .::pbrlib_1_6 import mx_light;
+export using .::pbrlib_1_6 import mx_displacement_float;
+export using .::pbrlib_1_6 import mx_displacement_vector3;
+export using .::pbrlib_1_6 import volume_mix_return;
+export using .::pbrlib_1_6 import volume_mix;
+export using .::pbrlib_1_6 import mx_mix_bsdf;
+export using .::pbrlib_1_6 import mx_mix_vdf;
+export using .::pbrlib_1_6 import mx_multiply_bsdf_color3;
+export using .::pbrlib_1_6 import mx_multiply_bsdf_float;
+export using .::pbrlib_1_6 import mx_multiply_edf_color3;
+export using .::pbrlib_1_6 import mx_multiply_edf_float;
+export using .::pbrlib_1_6 import mx_multiply_vdf_color3;
+export using .::pbrlib_1_6 import mx_multiply_vdf_float;
+export using .::pbrlib_1_6 import mx_roughness_anisotropy;
+export using .::pbrlib_1_6 import mx_roughness_dual;
+export using .::pbrlib_1_6 import mx_blackbody;
+export using .::pbrlib_1_6 import mx_artistic_ior__result ;
+export using .::pbrlib_1_6 import mx_artistic_ior;
+
+
+
+// To match with OSL, the sheen weight is scaled with average color as approximation of albedo.
+// OSL uses the layer operator which mixes based on albedo.
+export material mx_sheen_bsdf(
+    float  mxp_weight    = 1.0,
+    color  mxp_color     = color(1.0),
+    float  mxp_roughness = 0.2,
+    float3 mxp_normal    = state::normal(),
+    material mxp_base = material(
+                            surface: material_surface(
+                                scattering: df::diffuse_reflection_bsdf(
+                                ))) [[ anno::usage( "materialx:bsdf") ]]
+) [[ 
+    anno::usage( "materialx:bsdf") 
+]]
+= material(
+    surface: material_surface( 
+        // using the mix seems to fit OSL best, at least in the test cases
+        scattering: df::weighted_layer(
+            weight:  math::average(mxp_color) * mxp_weight,
+            layer: df::sheen_bsdf(
+                roughness: mxp_roughness,
+                tint: mxp_color,
+                multiscatter_tint: color(1.0),
+                multiscatter: mxp_base.surface.scattering
+            ),
+            base: mxp_base.surface.scattering,
+            normal: mxp_normal)),
+    // we need to carry volume properties along for SSS
+    ior:    mxp_base.ior,
+    volume: mxp_base.volume
+);
+
+
+// NOTE: Adding two BSDFs is not supported in MDL, the generator would best
+//       analyze the context for mixing weights and replace the add with a mix.
+//       The provided implementation just mixes the BSDFs with equal weight.
+export material mx_add_bsdf(
+    material mxp_in1 = material() [[ anno::usage( "materialx:bsdf") ]],
+    material mxp_in2 = material() [[ anno::usage( "materialx:bsdf") ]]
+) [[ 
+    anno::usage( "materialx:bsdf") 
+]]
+= let {
+    volume_mix_return v = volume_mix(
+        mxp_in1.volume.scattering_coefficient, 1.0f,
+        mxp_in2.volume.scattering_coefficient, 1.0f);
+} in material(
+    surface: material_surface( 
+        scattering: df::unbounded_mix(
+            df::bsdf_component[](
+                df::bsdf_component( 1.0, mxp_in1.surface.scattering), 
+                df::bsdf_component( 1.0, mxp_in2.surface.scattering)
+            )
+        )
+    ),
+    // we need to carry volume properties along for SSS
+    volume: material_volume(
+        scattering: df::unbounded_mix( 
+            df::vdf_component[]( 
+                df::vdf_component( v.mix_weight1, mxp_in1.volume.scattering), 
+                df::vdf_component( 1.0 - v.mix_weight1, mxp_in2.volume.scattering))
+        ),
+        absorption_coefficient: mxp_in1.volume.absorption_coefficient + 
+                                mxp_in2.volume.absorption_coefficient,
+        scattering_coefficient: v.scattering_coefficient
+    )
+);
+
+// NOTE: Adding two EDFs is not supported in MDL, the generator would best
+//       analyze the context for mixing weights and replace the add with a mix.
+//       The provided implementation just mixes the EDFs with equal weight
+//       and adds the intensities.
+export material mx_add_edf(
+    material mxp_in1 = material() [[ anno::usage( "materialx:edf") ]],
+    material mxp_in2 = material() [[ anno::usage( "materialx:edf") ]]
+) [[ 
+    anno::usage( "materialx:edf") 
+]]
+= material(
+    surface: material_surface( 
+        emission: material_emission(
+            emission: df::unbounded_mix( 
+            df::edf_component[]( 
+                df::edf_component( 1.0, mxp_in1.surface.emission.emission), 
+                df::edf_component( 1.0, mxp_in2.surface.emission.emission))
+            ),
+            intensity: mxp_in1.surface.emission.intensity + mxp_in2.surface.emission.intensity
+        )
+    )
+);
+
+export material mx_mix_edf(
+    material mxp_fg = material() [[ anno::usage( "materialx:edf") ]],
+    material mxp_bg = material() [[ anno::usage( "materialx:edf") ]],
+    float mxp_mix = 0.0
+) [[ 
+    anno::usage( "materialx:edf") 
+]]
+= let {
+    float mix = math::saturate(mxp_mix);
+} in material(
+    surface: material_surface( 
+        emission: material_emission(
+            emission: df::unbounded_mix(
+            df::edf_component[]( 
+                df::edf_component( mix, mxp_fg.surface.emission.emission), 
+                df::edf_component( 1.0 - mix, mxp_bg.surface.emission.emission))
+            ),
+            intensity: mix * mxp_fg.surface.emission.intensity +
+                       (1.0 - mix) * mxp_bg.surface.emission.intensity
+        )
+    )
+);
+
+// NOTE: Adding two VDFs is not supported in MDL, the generator would best
+//       analyze the context for mixing weights and replace the add with a mix.
+//       The provided implementation just mixes the VDFs with equal weight.
+export material mx_add_vdf(
+    material mxp_in1 = material() [[ anno::usage( "materialx:vdf") ]],
+    material mxp_in2 = material() [[ anno::usage( "materialx:vdf") ]]
+) [[ 
+    anno::usage( "materialx:vdf") 
+]]
+= let {
+    volume_mix_return v = volume_mix(
+        mxp_in1.volume.scattering_coefficient, 1.0f,
+        mxp_in2.volume.scattering_coefficient, 1.0f);
+} in material(
+    // assuming mixing the IOR is the best we can do here
+    ior:    0.5 * mxp_in1.ior + 0.5 * mxp_in2.ior,
+    volume: material_volume(
+        scattering: df::unbounded_mix( 
+            df::vdf_component[]( 
+                df::vdf_component( v.mix_weight1, mxp_in1.volume.scattering), 
+                df::vdf_component( 1.0 - v.mix_weight1, mxp_in2.volume.scattering))
+        ),
+        absorption_coefficient: mxp_in1.volume.absorption_coefficient + 
+                                mxp_in2.volume.absorption_coefficient,
+        scattering_coefficient: v.scattering_coefficient
+    )
+);
+
+export material mx_generalized_schlick_edf(
+    color mxp_color0 = color(1.0),
+    color mxp_color90 = color(1.0),
+    float mxp_exponent = 5.0,
+    material mxp_base = material() [[ anno::usage( "materialx:bsdf") ]]
+) [[ 
+    anno::usage( "materialx:edf") 
+]]
+= material(
+    thin_walled: mxp_base.thin_walled,
+    surface: material_surface(
+        scattering: mxp_base.surface.scattering,
+        emission: material_emission(
+            emission: df::directional_factor(mxp_color0, mxp_color90, mxp_exponent, mxp_base.surface.emission.emission),
+            intensity: mxp_base.surface.emission.intensity,
+            mode: mxp_base.surface.emission.mode)
+        ),
+    backface: mxp_base.backface,
+    ior:      mxp_base.ior,
+    volume:   mxp_base.volume,
+    geometry: mxp_base.geometry,
+    hair:     mxp_base.hair
+);
+
+// MDL 1.7, Volumes do support emission, but not as EDF, just emission intensity.
+// A uniform emission DF is the only practical DF here.
+export material mx_volume(
+    material mxp_vdf    = material() [[ anno::usage( "materialx:vdf") ]],
+    material mxp_edf    = material() [[ anno::usage( "materialx:edf") ]]
+) [[ 
+    anno::usage( "materialx:volumeshader") 
+]]
+= material(
+    volume: material_volume(
+        absorption_coefficient: mxp_vdf.volume.absorption_coefficient,
+        scattering_coefficient: mxp_vdf.volume.scattering_coefficient,
+        emission_intensity: mxp_edf.surface.emission.intensity
+    )
+);

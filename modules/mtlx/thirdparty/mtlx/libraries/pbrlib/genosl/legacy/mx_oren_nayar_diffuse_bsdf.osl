@@ -1,0 +1,5 @@
+void mx_oren_nayar_diffuse_bsdf(float weight, color _color, float roughness, normal N, output BSDF bsdf)
+{
+    bsdf.response = _color * weight * oren_nayar(N, roughness);
+    bsdf.throughput = color(0.0);
+}

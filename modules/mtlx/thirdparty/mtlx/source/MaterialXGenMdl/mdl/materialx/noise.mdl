@@ -1,0 +1,760 @@
+//
+// Copyright Contributors to the MaterialX Project
+// SPDX-License-Identifier: Apache-2.0
+//
+
+/********************************************************************************
+MaterialX Noise Library.
+
+This library is a modified version of the noise library found in
+Open Shading Language:
+github.com/imageworks/OpenShadingLanguage/blob/master/src/include/OSL/oslnoise.h
+
+It contains the subset of noise types needed to implement the MaterialX
+standard library. The modifications are mainly conversions from C++ to MDL.
+Produced results should be identical to the OSL noise functions.
+
+Original copyright notice:
+------------------------------------------------------------------------
+Copyright (c) 2009-2010 Sony Pictures Imageworks Inc., et al.
+All Rights Reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+* Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+* Neither the name of Sony Pictures Imageworks nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+------------------------------------------------------------------------
+********************************************************************************/
+
+mdl 1.6;
+
+import ::anno::*;
+import ::math::*;
+import ::state::*;
+
+import .::core::*;
+import .::swizzle::*;
+
+float mx_bilerp_float(float v0, float v1, float v2, float v3, float s, float t)
+{
+    float s1 = 1.0 - s;
+    return (1.0 - t) * (v0*s1 + v1*s) + t * (v2*s1 + v3*s);
+}
+float3 mx_bilerp_float3(float3 v0, float3 v1, float3 v2, float3 v3, float s, float t)
+{
+    float s1 = 1.0 - s;
+    return (1.0 - t) * (v0*s1 + v1*s) + t * (v2*s1 + v3*s);
+}
+float mx_trilerp_float(float v0, float v1, float v2, float v3, float v4, float v5, float v6, float v7, float s, float t, float r)
+{
+    float s1 = 1.0 - s;
+    float t1 = 1.0 - t;
+    float r1 = 1.0 - r;
+    return (r1*(t1*(v0*s1 + v1*s) + t*(v2*s1 + v3*s)) +
+            r*(t1*(v4*s1 + v5*s) + t*(v6*s1 + v7*s)));
+}
+float3 mx_trilerp_float3(float3 v0, float3 v1, float3 v2, float3 v3, float3 v4, float3 v5, float3 v6, float3 v7, float s, float t, float r)
+{
+    float s1 = 1.0 - s;
+    float t1 = 1.0 - t;
+    float r1 = 1.0 - r;
+    return (r1*(t1*(v0*s1 + v1*s) + t*(v2*s1 + v3*s)) +
+            r*(t1*(v4*s1 + v5*s) + t*(v6*s1 + v7*s)));
+}
+
+// 2 and 3 dimensional gradient functions - perform a dot product against a
+// randomly chosen vector. Note that the gradient vector is not normalized, but
+// this only affects the overal "scale" of the result, so we simply account for
+// the scale by multiplying in the corresponding "perlin" function.
+float mx_gradient_float(int mxp_hash, float mxp_x, float mxp_y)
+{
+    // 8 possible directions (+-1,+-2) and (+-2,+-1)
+    int h = mxp_hash & 7;
+    float u = h<4 ? mxp_x : mxp_y;
+    float v = 2.0 * (h<4 ? mxp_y : mxp_x);
+    // compute the dot product with (x,y).
+    return (((h&1)!=0) ? -u : u) + (((h&2) != 0) ? -v : v);
+}
+float mx_gradient_float(int mxp_hash, float mxp_x, float mxp_y, float mxp_z)
+{
+    // use vectors pointing to the edges of the cube
+    int h = mxp_hash & 15;
+    float u = h<8 ? mxp_x : mxp_y;
+    float v = h<4 ? mxp_y : ((h==12)||(h==14)) ? mxp_x : mxp_z;
+    return (((h&1)!=0)?-u:u) + (((h&2)!=0)?-v:v);
+}
+float3 mx_gradient_float3(int3 mxp_hash, float mxp_x, float mxp_y)
+{
+    return float3(mx_gradient_float(mxp_hash.x, mxp_x, mxp_y), 
+          mx_gradient_float(mxp_hash.y, mxp_x, mxp_y), 
+          mx_gradient_float(mxp_hash.z, mxp_x, mxp_y));
+}
+float3 mx_gradient_float3(int3 mxp_hash, float mxp_x, float mxp_y, float mxp_z)
+{
+    return float3(mx_gradient_float(mxp_hash.x, mxp_x, mxp_y, mxp_z), 
+          mx_gradient_float(mxp_hash.y, mxp_x, mxp_y, mxp_z),
+          mx_gradient_float(mxp_hash.z, mxp_x, mxp_y, mxp_z));
+}
+// Scaling factors to normalize the result of gradients above.
+// These factors were experimentally calculated to be:
+//    2D:   0.6616
+//    3D:   0.9820
+//JAN: why do those differ from osl sourcecode?
+float  mx_gradient_scale2d_float(float mxp_v) { return 0.6616 * mxp_v; }
+float  mx_gradient_scale3d_float(float mxp_v) { return 0.9820 * mxp_v; }
+float3 mx_gradient_scale2d_float3(float3 mxp_v) { return 0.6616 * mxp_v; }
+float3 mx_gradient_scale3d_float3(float3 mxp_v) { return 0.9820 * mxp_v; }
+
+/// Bitwise circular rotation left by k bits (for 32 bit unsigned integers)
+int mx_rotl32(int mxp_x, int mxp_k)
+{
+    return (mxp_x<<mxp_k) | (mxp_x>>>(32-mxp_k)); //note the unsigned right shift
+}
+
+int3 mx_bjmix(int a, int b, int c)
+{
+    a -= c; a ^= mx_rotl32(c, 4); c += b;
+    b -= a; b ^= mx_rotl32(a, 6); a += c;
+    c -= b; c ^= mx_rotl32(b, 8); b += a;
+    a -= c; a ^= mx_rotl32(c,16); c += b;
+    b -= a; b ^= mx_rotl32(a,19); a += c;
+    c -= b; c ^= mx_rotl32(b, 4); b += a;
+    return int3(a, b, c);
+}
+
+// Mix up and combine the bits of a, b, and c (doesn't change them, but
+// returns a hash of those three original values).
+int mx_bjfinal(int mxp_a, int mxp_b, int mxp_c)
+{
+    mxp_c ^= mxp_b; mxp_c -= mx_rotl32(mxp_b,14);
+    mxp_a ^= mxp_c; mxp_a -= mx_rotl32(mxp_c,11);
+    mxp_b ^= mxp_a; mxp_b -= mx_rotl32(mxp_a,25);
+    mxp_c ^= mxp_b; mxp_c -= mx_rotl32(mxp_b,16);
+    mxp_a ^= mxp_c; mxp_a -= mx_rotl32(mxp_c,4);
+    mxp_b ^= mxp_a; mxp_b -= mx_rotl32(mxp_a,14);
+    mxp_c ^= mxp_b; mxp_c -= mx_rotl32(mxp_b,24);
+    return mxp_c;
+}
+
+// Convert a 32 bit integer into a floating point number in [0,1]
+float mx_bits_to_01(int mxp_bits)
+{
+  return mxp_bits >=0 ? float(mxp_bits) / 4294967295.:
+            float(mxp_bits>>>1)/ 2147483647.;
+}
+
+float mx_fade(float mxp_t)
+{
+   return mxp_t * mxp_t * mxp_t * (mxp_t * (mxp_t * 6.0 - 15.0) + 10.0);
+}
+
+int mx_hash_int(int mxp_x)
+{
+    int len = 1;
+    int seed = int(0xdeadbeef) + (len << 2) + 13;
+    return mx_bjfinal(seed + mxp_x, seed, seed);
+}
+
+int mx_hash_int(int mxp_x, int mxp_y)
+{
+    int len = 2;
+    int a, b, c;
+    a = b = c = int(0xdeadbeef) + (len << 2) + 13;
+    a += mxp_x;
+    b += mxp_y;
+    return mx_bjfinal(a, b, c);
+}
+
+int mx_hash_int(int mxp_x, int mxp_y, int mxp_z)
+{
+    int len = 3;
+    int a, b, c;
+    a = b = c = int(0xdeadbeef) + (len << 2) + 13;
+    a += mxp_x;
+    b += mxp_y;
+    c += mxp_z;
+    return mx_bjfinal(a, b, c);
+}
+
+int mx_hash_int(int x, int y, int z, int xx)
+{
+    int len = 4;
+    int a, b, c;
+    a = b = c = int(0xdeadbeef) + (len << 2) + 13;
+    a += x;
+    b += y;
+    c += z;
+    int3 abc = mx_bjmix(a, b, c);
+    a = abc.x;
+    b = abc.y;
+    c = abc.z;
+    a += xx;
+    return mx_bjfinal(a, b, c);
+}
+
+int mx_hash_int(int x, int y, int z, int xx, int yy)
+{
+    int len = 5;
+    int a, b, c;
+    a = b = c = int(0xdeadbeef) + (len << 2) + 13;
+    a += x;
+    b += y;
+    c += z;
+    int3 abc = mx_bjmix(a, b, c);
+    a = abc.x;
+    b = abc.y;
+    c = abc.z;
+    a += xx;
+    b += yy;
+    return mx_bjfinal(a, b, c);
+}
+
+int3 mx_hash_int3(int mxp_x, int mxp_y)
+{
+    int h = mx_hash_int(mxp_x, mxp_y);
+    // we only need the low-order bits to be random, so split out
+    // the 32 bit result into 3 parts for each channel
+    int3 result;
+    result.x = (h       ) & 0xFF;
+    result.y = (h >>> 8 ) & 0xFF;
+    result.z = (h >>> 16) & 0xFF;
+    return result;
+}
+
+int3 mx_hash_int3(int mxp_x, int mxp_y, int mxp_z)
+{
+    int h = mx_hash_int(mxp_x, mxp_y, mxp_z);
+    // we only need the low-order bits to be random, so split out
+    // the 32 bit result into 3 parts for each channel
+    int3 result;
+    result.x = (h       ) & 0xFF;
+    result.y = (h >>> 8 ) & 0xFF;
+    result.z = (h >>> 16) & 0xFF;
+    return result;
+}
+
+export float mx_perlin_noise_float(
+  float2 mxp_p = swizzle::xy( ::state::texture_coordinate(0)))
+[[
+    anno::noinline()
+]]
+{
+  float ix=math::floor(mxp_p.x);
+  float iy=math::floor(mxp_p.y);
+  int X = int(ix);
+  int Y = int(iy);
+  float fx = mxp_p.x-ix;
+  float fy = mxp_p.y-iy;
+  float u = mx_fade(fx);
+  float v = mx_fade(fy);
+  float result = mx_bilerp_float(
+      mx_gradient_float(mx_hash_int(X  , Y  ), fx    , fy     ),
+      mx_gradient_float(mx_hash_int(X+1, Y  ), fx-1.0, fy     ),
+      mx_gradient_float(mx_hash_int(X  , Y+1), fx    , fy-1.0),
+      mx_gradient_float(mx_hash_int(X+1, Y+1), fx-1.0, fy-1.0),
+      u, v);
+  return mx_gradient_scale2d_float(result);
+}
+
+export float3 mx_perlin_noise_float3(
+  float2 mxp_p = swizzle::xy( ::state::texture_coordinate(0)))
+[[
+    anno::noinline()
+]]
+{
+  float ix=math::floor(mxp_p.x);
+  float iy=math::floor(mxp_p.y);
+  int X = int(ix);
+  int Y = int(iy);
+  float fx = mxp_p.x-ix;
+  float fy = mxp_p.y-iy;
+  float u = mx_fade(fx);
+  float v = mx_fade(fy);
+  float3 result = mx_bilerp_float3(
+      mx_gradient_float3(mx_hash_int3(X  , Y  ), fx    , fy     ),
+      mx_gradient_float3(mx_hash_int3(X+1, Y  ), fx-1.0, fy     ),
+      mx_gradient_float3(mx_hash_int3(X  , Y+1), fx    , fy-1.0),
+      mx_gradient_float3(mx_hash_int3(X+1, Y+1), fx-1.0, fy-1.0),
+      u, v);
+  return mx_gradient_scale2d_float3(result);
+}
+
+export float mx_perlin_noise_float(
+  float3 mxp_p = state::transform_point(state::coordinate_internal, state::coordinate_object, state::position()))
+[[
+    anno::noinline()
+]]
+{
+  float ix=math::floor(mxp_p.x);
+  float iy=math::floor(mxp_p.y);
+  float iz=math::floor(mxp_p.z);
+  int X = int(ix);
+  int Y = int(iy);
+  int Z = int(iz);
+  float fx = mxp_p.x-ix;
+  float fy = mxp_p.y-iy;
+  float fz = mxp_p.z-iz;
+  float u = mx_fade(fx);
+  float v = mx_fade(fy);
+  float w = mx_fade(fz);
+  float result = mx_trilerp_float(
+      mx_gradient_float(mx_hash_int(X  , Y  , Z  ), fx    , fy    , fz     ),
+      mx_gradient_float(mx_hash_int(X+1, Y  , Z  ), fx-1.0, fy    , fz     ),
+      mx_gradient_float(mx_hash_int(X  , Y+1, Z  ), fx    , fy-1.0, fz     ),
+      mx_gradient_float(mx_hash_int(X+1, Y+1, Z  ), fx-1.0, fy-1.0, fz     ),
+      mx_gradient_float(mx_hash_int(X  , Y  , Z+1), fx    , fy    , fz-1.0),
+      mx_gradient_float(mx_hash_int(X+1, Y  , Z+1), fx-1.0, fy    , fz-1.0),
+      mx_gradient_float(mx_hash_int(X  , Y+1, Z+1), fx    , fy-1.0, fz-1.0),
+      mx_gradient_float(mx_hash_int(X+1, Y+1, Z+1), fx-1.0, fy-1.0, fz-1.0),
+      u, v, w);
+  return mx_gradient_scale3d_float(result);
+}
+
+export float3 mx_perlin_noise_float3(
+  float3 mxp_p = state::transform_point(state::coordinate_internal, state::coordinate_object, state::position()))
+[[
+    anno::noinline() 
+]]
+{
+  float ix=math::floor(mxp_p.x);
+  float iy=math::floor(mxp_p.y);
+  float iz=math::floor(mxp_p.z);
+  int X = int(ix);
+  int Y = int(iy);
+  int Z = int(iz);
+  float fx = mxp_p.x-ix;
+  float fy = mxp_p.y-iy;
+  float fz = mxp_p.z-iz;
+  float u = mx_fade(fx);
+  float v = mx_fade(fy);
+  float w = mx_fade(fz);
+  float3 result = mx_trilerp_float3(
+      mx_gradient_float3(mx_hash_int3(X  , Y  , Z  ), fx    , fy    , fz     ),
+      mx_gradient_float3(mx_hash_int3(X+1, Y  , Z  ), fx-1.0, fy    , fz     ),
+      mx_gradient_float3(mx_hash_int3(X  , Y+1, Z  ), fx    , fy-1.0, fz     ),
+      mx_gradient_float3(mx_hash_int3(X+1, Y+1, Z  ), fx-1.0, fy-1.0, fz     ),
+      mx_gradient_float3(mx_hash_int3(X  , Y  , Z+1), fx    , fy    , fz-1.0),
+      mx_gradient_float3(mx_hash_int3(X+1, Y  , Z+1), fx-1.0, fy    , fz-1.0),
+      mx_gradient_float3(mx_hash_int3(X  , Y+1, Z+1), fx    , fy-1.0, fz-1.0),
+      mx_gradient_float3(mx_hash_int3(X+1, Y+1, Z+1), fx-1.0, fy-1.0, fz-1.0),
+      u, v, w);
+  return mx_gradient_scale3d_float3(result);
+}
+
+export float mx_cell_noise_float(float mxp_p)
+[[
+    anno::noinline() 
+]]
+{
+    int ix = math::floor(mxp_p);
+    return mx_bits_to_01(mx_hash_int(ix));
+}
+
+export float mx_cell_noise_float(
+  float2 mxp_p = swizzle::xy( ::state::texture_coordinate(0)))
+[[
+    anno::noinline() 
+]]
+{
+    int ix = math::floor(mxp_p.x);
+    int iy = math::floor(mxp_p.y);
+    return mx_bits_to_01(mx_hash_int(ix, iy));
+}
+
+export float mx_cell_noise_float(
+  float3 mxp_p = state::transform_point(state::coordinate_internal, state::coordinate_object, state::position()))
+[[
+    anno::noinline() 
+]]
+{
+    int ix = math::floor(mxp_p.x);
+    int iy = math::floor(mxp_p.y);
+    int iz = math::floor(mxp_p.z);
+    return mx_bits_to_01(mx_hash_int(ix, iy, iz));
+}
+
+export float mx_cell_noise_float(float4 mxp_p)
+[[
+    anno::noinline() 
+]]
+{
+    int ix = math::floor(mxp_p.x);
+    int iy = math::floor(mxp_p.y);
+    int iz = math::floor(mxp_p.z);
+    int iw = math::floor(mxp_p.w);
+    return mx_bits_to_01(mx_hash_int(ix, iy, iz, iw));
+}
+
+export float3 mx_cell_noise_float3(float mxp_p)
+[[
+    anno::noinline() 
+]]
+{
+    int ix = math::floor(mxp_p);
+    return float3(
+        mx_bits_to_01(mx_hash_int(ix, 0)),
+        mx_bits_to_01(mx_hash_int(ix, 1)),
+        mx_bits_to_01(mx_hash_int(ix, 2))
+    );
+}
+
+export float3 mx_cell_noise_float3(
+    float2 mxp_p = swizzle::xy( ::state::texture_coordinate(0)))
+[[
+    anno::noinline() 
+]]
+{
+    int ix = math::floor(mxp_p.x);
+    int iy = math::floor(mxp_p.y);
+    return float3(
+        mx_bits_to_01(mx_hash_int(ix, iy, 0)),
+        mx_bits_to_01(mx_hash_int(ix, iy, 1)),
+        mx_bits_to_01(mx_hash_int(ix, iy, 2))
+    );
+}
+
+export float3 mx_cell_noise_float3(
+    float3 mxp_p = state::transform_point(state::coordinate_internal, state::coordinate_object, state::position()))
+[[
+    anno::noinline() 
+]]
+{
+    int ix = math::floor(mxp_p.x);
+    int iy = math::floor(mxp_p.y);
+    int iz = math::floor(mxp_p.z);
+    return float3(
+        mx_bits_to_01(mx_hash_int(ix, iy, iz, 0)),
+        mx_bits_to_01(mx_hash_int(ix, iy, iz, 1)),
+        mx_bits_to_01(mx_hash_int(ix, iy, iz, 2))
+    );
+}
+
+export float3 mx_cell_noise_float3(float4 mxp_p)
+[[
+    anno::noinline() 
+]]
+{
+    int ix = math::floor(mxp_p.x);
+    int iy = math::floor(mxp_p.y);
+    int iz = math::floor(mxp_p.z);
+    int iw = math::floor(mxp_p.w);
+    return float3(
+        mx_bits_to_01(mx_hash_int(ix, iy, iz, iw, 0)),
+        mx_bits_to_01(mx_hash_int(ix, iy, iz, iw, 1)),
+        mx_bits_to_01(mx_hash_int(ix, iy, iz, iw, 2))
+    );
+}
+
+export float mx_fractal_noise_float(
+  float3 mxp_p = state::transform_point(state::coordinate_internal, state::coordinate_object, state::position()),
+  int mxp_octaves = 3, 
+  float mxp_lacunarity = 2.0, 
+  float mxp_diminish= 0.5)
+[[
+    anno::noinline() 
+]]
+{
+    float result = 0.0;
+    float amplitude = 1.0;
+    for (int i = 0;  i < mxp_octaves; ++i)
+    {
+        result += amplitude * mx_perlin_noise_float(mxp_p);
+        amplitude *= mxp_diminish;
+        mxp_p *= mxp_lacunarity;
+    }
+    return result;
+}
+
+export float3 mx_fractal_noise_float3(
+  float3 mxp_p = state::transform_point(state::coordinate_internal, state::coordinate_object, state::position()),
+  int mxp_octaves = 3,
+  float mxp_lacunarity = 2.0,
+  float mxp_diminish= 0.5)
+[[
+    anno::noinline()
+]]
+{
+    float3 result = float3(0.0);
+    float amplitude = 1.0;
+    for (int i = 0;  i < mxp_octaves; ++i)
+    {
+        result += amplitude * mx_perlin_noise_float3(mxp_p);
+        amplitude *= mxp_diminish;
+        mxp_p *= mxp_lacunarity;
+    }
+    return result;
+}
+
+export float2 mx_fractal_noise_float2(
+  float3 mxp_p = state::transform_point(state::coordinate_internal, state::coordinate_object, state::position()),
+  int mxp_octaves = 3,
+  float mxp_lacunarity = 2.0,
+  float mxp_diminish= 0.5)
+[[
+    anno::noinline()
+]]
+{
+    return float2(mx_fractal_noise_float(mxp_p, mxp_octaves, mxp_lacunarity, mxp_diminish),
+                  mx_fractal_noise_float(mxp_p+float3(19, 193, 17), mxp_octaves, mxp_lacunarity, mxp_diminish));
+}
+
+export float4 mx_fractal_noise_float4(
+  float3 mxp_p = state::transform_point(state::coordinate_internal, state::coordinate_object, state::position()),
+  int mxp_octaves = 3,
+  float mxp_lacunarity = 2.0,
+  float mxp_diminish= 0.5)
+[[
+    anno::noinline()
+]]
+{
+
+    float3 c = mx_fractal_noise_float3(mxp_p, mxp_octaves, mxp_lacunarity, mxp_diminish);
+    float a = mx_fractal_noise_float(mxp_p+float3(19, 193, 17), mxp_octaves, mxp_lacunarity, mxp_diminish);
+    return float4(c.x, c.y, c.z, a);
+}
+
+float mx_worley_distance2(float2 p, int x, int y, int xoff, int yoff, float jitter, int metric)
+{
+    float3 tmp = mx_cell_noise_float3(float2(x+xoff, y+yoff));
+    float2 off = float2(tmp.x, tmp.y);
+
+    off -= 0.5f;
+    off *= jitter;
+    off += 0.5f;
+
+    float2 cellpos = float2(float(x), float(y)) + off;
+    float2 diff = cellpos - p;
+    if (metric == 2)
+        return math::abs(diff.x) + math::abs(diff.y); // Manhattan distance
+    if (metric == 3)
+        return math::max(math::abs(diff.x), math::abs(diff.y)); // Chebyshev distance
+    // Either Euclidian or Distance^2
+    return math::dot(diff, diff);
+}
+
+float mx_worley_distance3(float3 p, int x, int y, int z, int xoff, int yoff, int zoff, float jitter, int metric)
+{
+    float3 off = mx_cell_noise_float3(float3(x+xoff, y+yoff, z+zoff));
+
+    off -= 0.5f;
+    off *= jitter;
+    off += 0.5f;
+
+    float3 cellpos = float3(float(x), float(y), float(z)) + off;
+    float3 diff = cellpos - p;
+    if (metric == 2)
+        return math::abs(diff.x) + math::abs(diff.y) + math::abs(diff.z); // Manhattan distance
+    if (metric == 3)
+        return math::max(math::max(math::abs(diff.x), math::abs(diff.y)), math::abs(diff.z)); // Chebyshev distance
+    // Either Euclidian or Distance^2
+    return math::dot(diff, diff);
+}
+
+export float mx_worley_noise_float(float2 p, float jitter, int metric)
+{
+    float ix = math::floor(p.x);
+    float iy = math::floor(p.y);
+    int X = int(ix);
+    int Y = int(iy);
+    float2 localpos = float2(p.x-ix, p.y-iy);
+
+    float sqdist = 1e6f;        // Some big number for jitter > 1 (not all GPUs may be IEEE)
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float dist = mx_worley_distance2(localpos, x, y, X, Y, jitter, metric);
+            sqdist = math::min(sqdist, dist);
+        }
+    }
+    if (metric == 0)
+        sqdist = math::sqrt(sqdist);
+    return sqdist;
+}
+
+export float2 mx_worley_noise_float2(float2 p, float jitter, int metric)
+{
+    float ix = math::floor(p.x);
+    float iy = math::floor(p.y);
+    int X = int(ix);
+    int Y = int(iy);
+    float2 localpos = float2(p.x-ix, p.y-iy);
+
+    float2 sqdist = float2(1e6f, 1e6f);
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float dist = mx_worley_distance2(localpos, x, y, X, Y, jitter, metric);
+            if (dist < sqdist.x)
+            {
+                sqdist.y = sqdist.x;
+                sqdist.x = dist;
+            }
+            else if (dist < sqdist.y)
+            {
+                sqdist.y = dist;
+            }
+        }
+    }
+    if (metric == 0)
+        sqdist = math::sqrt(sqdist);
+    return sqdist;
+}
+
+export float3 mx_worley_noise_float3(float2 p, float jitter, int metric)
+{
+    float ix = math::floor(p.x);
+    float iy = math::floor(p.y);
+    int X = int(ix);
+    int Y = int(iy);
+    float2 localpos = float2(p.x-ix, p.y-iy);
+
+    float3 sqdist = float3(1e6f, 1e6f, 1e6f);
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float dist = mx_worley_distance2(localpos, x, y, X, Y, jitter, metric);
+            if (dist < sqdist.x)
+            {
+                sqdist.z = sqdist.y;
+                sqdist.y = sqdist.x;
+                sqdist.x = dist;
+            }
+            else if (dist < sqdist.y)
+            {
+                sqdist.z = sqdist.y;
+                sqdist.y = dist;
+            }
+            else if (dist < sqdist.z)
+            {
+                sqdist.z = dist;
+            }
+        }
+    }
+    if (metric == 0)
+        sqdist = math::sqrt(sqdist);
+    return sqdist;
+}
+
+export float mx_worley_noise_float(float3 p, float jitter, int metric)
+{
+    float ix = math::floor(p.x);
+    float iy = math::floor(p.y);
+    float iz = math::floor(p.z);
+    int X = int(ix);
+    int Y = int(iy);
+    int Z = int(iz);
+    float3 localpos = float3(p.x-ix, p.y-iy, p.z-iz);
+
+    float sqdist = 1e6f;
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            for (int z = -1; z <= 1; ++z)
+            {
+                float dist = mx_worley_distance3(localpos, x, y, z, X, Y, Z, jitter, metric);
+                sqdist = math::min(sqdist, dist);
+            }
+        }
+    }
+    if (metric == 0)
+        sqdist = math::sqrt(sqdist);
+    return sqdist;
+}
+
+export float2 mx_worley_noise_float2(float3 p, float jitter, int metric)
+{
+    float ix = math::floor(p.x);
+    float iy = math::floor(p.y);
+    float iz = math::floor(p.z);
+    int X = int(ix);
+    int Y = int(iy);
+    int Z = int(iz);
+    float3 localpos = float3(p.x-ix, p.y-iy, p.z-iz);
+
+    float2 sqdist = float2(1e6f, 1e6f);
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            for (int z = -1; z <= 1; ++z)
+            {
+                float dist = mx_worley_distance3(localpos, x, y, z, X, Y, Z, jitter, metric);
+                if (dist < sqdist.x)
+                {
+                    sqdist.y = sqdist.x;
+                    sqdist.x = dist;
+                }
+                else if (dist < sqdist.y)
+                {
+                    sqdist.y = dist;
+                }
+            }
+        }
+    }
+    if (metric == 0)
+        sqdist = math::sqrt(sqdist);
+    return sqdist;
+}
+
+export float3 mx_worley_noise_float3(float3 p, float jitter, int metric)
+{
+    float ix = math::floor(p.x);
+    float iy = math::floor(p.y);
+    float iz = math::floor(p.z);
+    int X = int(ix);
+    int Y = int(iy);
+    int Z = int(iz);
+    float3 localpos = float3(p.x-ix, p.y-iy, p.z-iz);
+
+    float3 sqdist = float3(1e6f, 1e6f, 1e6f);
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            for (int z = -1; z <= 1; ++z)
+            {
+                float dist = mx_worley_distance3(localpos, x, y, z, X, Y, Z, jitter, metric);
+                if (dist < sqdist.x)
+                {
+                    sqdist.z = sqdist.y;
+                    sqdist.y = sqdist.x;
+                    sqdist.x = dist;
+                }
+                else if (dist < sqdist.y)
+                {
+                    sqdist.z = sqdist.y;
+                    sqdist.y = dist;
+                }
+                else if (dist < sqdist.z)
+                {
+                    sqdist.z = dist;
+                }
+            }
+        }
+    }
+    if (metric == 0)
+        sqdist = math::sqrt(sqdist);
+    return sqdist;
+}

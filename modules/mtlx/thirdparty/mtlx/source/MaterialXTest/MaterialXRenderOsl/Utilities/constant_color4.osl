@@ -1,0 +1,12 @@
+#include "color4.h"
+
+surface
+constant_color4
+    [[ string description = "Simple closure for constant color surface rendering" ]]
+(
+	color4 Cin = {color(0.0, 0.0, 0.0), 0.0}
+        [[  string description = "Input color to modulate emission with" ]]
+)
+{
+	Ci = color(Cin.rgb[0], Cin.rgb[1], Cin.rgb[2]) * Cin.a * emission();
+}

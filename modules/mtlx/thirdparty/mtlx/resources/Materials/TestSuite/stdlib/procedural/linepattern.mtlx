@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <grid name="grid_color3" type="color3">
+    <input name="uvtiling" type="vector2" value="58, 58" />
+    <input name="thickness" type="float" value="0.1" />
+  </grid>
+  <crosshatch name="crosshatch_color3" type="color3">
+    <input name="uvtiling" type="vector2" value="29, 29" />
+    <input name="thickness" type="float" value="0.05" />
+  </crosshatch>
+  <max name="union_color3" type="color3">
+    <input name="in1" type="color3" nodename="grid_color3" />
+    <input name="in2" type="color3" nodename="crosshatch_color3" />
+  </max>
+
+  <standard_surface name="SR_test_grid" type="surfaceshader">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" nodename="grid_color3" />
+  </standard_surface>
+  <surfacematerial name="test_grid" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_test_grid" />
+  </surfacematerial>
+
+  <standard_surface name="SR_test_crosshatch" type="surfaceshader">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" nodename="crosshatch_color3" />
+  </standard_surface>
+  <surfacematerial name="test_crosshatch" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_test_crosshatch" />
+  </surfacematerial>
+
+  <standard_surface name="SR_test_union" type="surfaceshader">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" nodename="union_color3" />
+  </standard_surface>
+  <surfacematerial name="test_union" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_test_union" />
+  </surfacematerial>
+</materialx>

@@ -1,0 +1,5 @@
+void mx_translucent_bsdf(float weight, color _color, normal N, output BSDF bsdf)
+{
+    bsdf.response = _color * weight * translucent(N);
+    bsdf.throughput = color(0.0);
+}

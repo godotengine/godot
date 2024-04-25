@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+
+  <nodegraph name="envMap">
+
+    <!-- Get view direction -->
+    <viewdirection name="viewDir" type="vector3" />
+
+    <!-- Compute longitude coordinate -->
+    <atan2 name="angleXZ" type="float">
+      <input name="in1" type="float" nodename="viewDir" channels="x" />
+      <input name="in2" type="float" nodename="viewDir" channels="z" />
+    </atan2>
+    <multiply name="scaleXZ" type="float">
+      <input name="in1" type="float" nodename="angleXZ" />
+      <input name="in2" type="float" value="-0.15915494" />
+    </multiply>
+    <add name="longitude" type="float">
+      <input name="in1" type="float" nodename="scaleXZ" />
+      <input name="in2" type="float" value="0.5" />
+    </add>
+
+    <!-- Compute latitude coordinate -->
+    <asin name="angleY" type="float">
+      <input name="in" type="float" nodename="viewDir" channels="y" />
+    </asin>
+    <multiply name="scaleY" type="float">
+      <input name="in1" type="float" nodename="angleY" />
+      <input name="in2" type="float" value="0.31830989" />
+    </multiply>
+    <add name="latitude" type="float">
+      <input name="in1" type="float" nodename="scaleY" />
+      <input name="in2" type="float" value="0.5" />
+    </add>
+
+    <!-- Sample the latitude-longitude map -->
+    <combine2 name="mapUvs" type="vector2">
+      <input name="in1" type="float" nodename="longitude" />
+      <input name="in2" type="float" nodename="latitude" />
+    </combine2>
+    <image name="envImage" type="color3">
+      <input name="file" type="filename" value="resources/Lights/san_giuseppe_bridge.hdr" />
+      <input name="texcoord" type="vector2" nodename="mapUvs" />
+      <input name="uaddressmode" type="string" value="periodic" />
+      <input name="vaddressmode" type="string" value="clamp" />
+      <input name="filtertype" type="string" value="linear" />
+    </image>
+
+    <!-- Return the resulting color -->
+    <output name="out" type="color3" nodename="envImage" />
+  </nodegraph>
+</materialx>

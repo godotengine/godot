@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <standard_surface name="NormalMappedShader" type="surfaceshader">
+    <input name="base" type="float" value="0.6" />
+    <input name="metalness" type="float" value="1.0" />
+    <input name="specular" type="float" value="0.7" />
+    <input name="coat" type="float" value="1" />
+    <input name="normal" type="vector3" nodegraph="NormalMapGraph" />
+  </standard_surface>
+  <surfacematerial name="NormalMappedShaderMaterial" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="NormalMappedShader" />
+    <input name="displacementshader" type="displacementshader" value="" />
+  </surfacematerial>
+  <nodegraph name="NormalMapGraph">
+    <normalmap name="normalmap" type="vector3">
+      <input name="in" type="vector3" nodename="tiledimage" />
+      <input name="scale" type="float" value="1.1" />
+      <input name="space" type="string" value="tangent" />
+    </normalmap>
+    <tiledimage name="tiledimage" type="vector3">
+      <input name="file" type="filename" value="resources/images/mesh_wire_norm.png" />
+      <input name="realworldimagesize" type="vector2" value="1.0, 2.0" unit="centimeter" unittype="distance" />
+      <input name="realworldtilesize" type="vector2" value="3.0, 2.0" unit="centimeter" unittype="distance" />
+      <input name="uvtiling" type="vector2" value="12, 10" />
+    </tiledimage>
+    <output name="normal" type="vector3" nodename="normalmap" />
+  </nodegraph>
+  <standard_surface name="NormalMappedShader2" type="surfaceshader">
+    <input name="base" type="float" value="0.6" />
+    <input name="metalness" type="float" value="1.0" />
+    <input name="specular" type="float" value="0.7" />
+    <input name="coat" type="float" value="1" />
+    <input name="normal" type="vector3" nodegraph="NormalMapGraph2" />
+  </standard_surface>
+  <surfacematerial name="NormalMappedShaderMaterial2" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="NormalMappedShader2" />
+    <input name="displacementshader" type="displacementshader" value="" />
+  </surfacematerial>
+  <nodegraph name="NormalMapGraph2">
+    <normalmap name="normalmap_vector2" type="vector3">
+      <input name="in" type="vector3" nodename="tiledimage2" />
+      <input name="scale" type="vector2" value="1.1, 1.1" />
+      <input name="space" type="string" value="tangent" />
+    </normalmap>
+    <tiledimage name="tiledimage2" type="vector3">
+      <input name="file" type="filename" value="resources/images/mesh_wire_norm.png" />
+      <input name="realworldimagesize" type="vector2" value="1.0, 2.0" unit="centimeter" unittype="distance" />
+      <input name="realworldtilesize" type="vector2" value="3.0, 2.0" unit="centimeter" unittype="distance" />
+      <input name="uvtiling" type="vector2" value="12, 10" />
+    </tiledimage>
+    <output name="normal" type="vector3" nodename="normalmap_vector2" />
+  </nodegraph>
+</materialx>

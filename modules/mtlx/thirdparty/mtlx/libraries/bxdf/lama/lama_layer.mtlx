@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="acescg">
+  <!-- LamaLayer for BSDFs -->
+  <nodedef name="ND_lama_layer_bsdf" node="LamaLayer" nodegroup="pbr" version="1.0" isdefaultversion="true">
+    <input name="materialTop" uiname="Material Top" type="BSDF" 
+           doc="Material used for the top slab. If not set, the base material will be used by itself." />
+    <input name="materialBase" uiname="Material Base" type="BSDF" 
+           doc="Base material, right under the top one." />
+    <input name="topMix" uiname="Top Mix" type="float" uimin="0.0" uimax="1.0" value="1.0"
+           doc="Defines how visible the top material is." />
+    <!-- NOTE: The topThickness feature isn't supported by the MaterialX definitions of the nodes right now. -->
+    <input name="topThickness" uiname="Top Thickness" type="float" uimin="0.0" value="0.0"
+           doc="Thickness of the top slab. It is only relevant for interior effects associated with the top material, such as absorption. If the top material is itself a layer node, this value is passed on to its base component. And if the top material is a mix or add, this value is passed on to both child materials." />
+    <output name="out" type="BSDF" />
+  </nodedef>
+  <nodegraph name="NG_lama_layer_bsdf" nodedef="ND_lama_layer_bsdf">
+    <multiply name="mul" type="BSDF">
+      <input name="in1" type="BSDF" interfacename="materialTop" />
+      <input name="in2" type="float" interfacename="topMix" />
+    </multiply>
+    <layer name="layer" type="BSDF">
+      <input name="top" type="BSDF" nodename="mul" />
+      <input name="base" type="BSDF" interfacename="materialBase" />
+    </layer>
+    <output name="out" type="BSDF" nodename="layer" />
+  </nodegraph>
+</materialx>

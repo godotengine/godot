@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+
+  <!-- <oren_nayar_diffuse_bsdf> -->
+  <implementation name="IM_oren_nayar_diffuse_bsdf_genmsl" nodedef="ND_oren_nayar_diffuse_bsdf" file="../genglsl/mx_oren_nayar_diffuse_bsdf.glsl" function="mx_oren_nayar_diffuse_bsdf" target="genmsl" />
+
+  <!-- <burley_diffuse_bsdf> -->
+  <implementation name="IM_burley_diffuse_bsdf_genmsl" nodedef="ND_burley_diffuse_bsdf" file="../genglsl/mx_burley_diffuse_bsdf.glsl" function="mx_burley_diffuse_bsdf" target="genmsl" />
+
+  <!-- <translucent_bsdf> -->
+  <implementation name="IM_translucent_bsdf_genmsl" nodedef="ND_translucent_bsdf" file="../genglsl/mx_translucent_bsdf.glsl" function="mx_translucent_bsdf" target="genmsl" />
+
+  <!-- <dielectric_bsdf> -->
+  <implementation name="IM_dielectric_bsdf_genmsl" nodedef="ND_dielectric_bsdf" file="../genglsl/mx_dielectric_bsdf.glsl" function="mx_dielectric_bsdf" target="genmsl" />
+
+  <!-- <conductor_bsdf> -->
+  <implementation name="IM_conductor_bsdf_genmsl" nodedef="ND_conductor_bsdf" file="../genglsl/mx_conductor_bsdf.glsl" function="mx_conductor_bsdf" target="genmsl" />
+
+  <!-- <generalized_schlick_bsdf> -->
+  <implementation name="IM_generalized_schlick_bsdf_genmsl" nodedef="ND_generalized_schlick_bsdf" file="../genglsl/mx_generalized_schlick_bsdf.glsl" function="mx_generalized_schlick_bsdf" target="genmsl" />
+
+  <!-- <subsurface_bsdf> -->
+  <implementation name="IM_subsurface_bsdf_genmsl" nodedef="ND_subsurface_bsdf" file="../genglsl/mx_subsurface_bsdf.glsl" function="mx_subsurface_bsdf" target="genmsl" />
+
+  <!-- <sheen_bsdf> -->
+  <implementation name="IM_sheen_bsdf_genmsl" nodedef="ND_sheen_bsdf" file="../genglsl/mx_sheen_bsdf.glsl" function="mx_sheen_bsdf" target="genmsl" />
+
+  <!-- <anisotropic_vdf> -->
+  <implementation name="IM_anisotropic_vdf_genmsl" nodedef="ND_anisotropic_vdf" file="../genglsl/mx_anisotropic_vdf.glsl" function="mx_anisotropic_vdf" target="genmsl" />
+
+  <!-- <thin_film_bsdf> -->
+  <implementation name="IM_thin_film_bsdf_genmsl" nodedef="ND_thin_film_bsdf" target="genmsl" />
+
+  <!-- <layer> -->
+  <implementation name="IM_layer_bsdf_genmsl" nodedef="ND_layer_bsdf" target="genmsl" />
+  <implementation name="IM_layer_vdf_genmsl" nodedef="ND_layer_vdf" target="genmsl" />
+
+  <!-- <mix> -->
+  <implementation name="IM_mix_bsdf_genmsl" nodedef="ND_mix_bsdf" target="genmsl" />
+  <implementation name="IM_mix_edf_genmsl" nodedef="ND_mix_edf" target="genmsl" />
+
+  <!-- <add> -->
+  <implementation name="IM_add_bsdf_genmsl" nodedef="ND_add_bsdf" target="genmsl" />
+  <implementation name="IM_add_edf_genmsl" nodedef="ND_add_edf" target="genmsl" />
+
+  <!-- <multiply> -->
+  <implementation name="IM_multiply_bsdfC_genmsl" nodedef="ND_multiply_bsdfC" target="genmsl" />
+  <implementation name="IM_multiply_bsdfF_genmsl" nodedef="ND_multiply_bsdfF" target="genmsl" />
+  <implementation name="IM_multiply_edfC_genmsl" nodedef="ND_multiply_edfC" target="genmsl" />
+  <implementation name="IM_multiply_edfF_genmsl" nodedef="ND_multiply_edfF" target="genmsl" />
+
+  <!-- <uniform_edf> -->
+  <implementation name="IM_uniform_edf_genmsl" nodedef="ND_uniform_edf" file="../genglsl/mx_uniform_edf.glsl" function="mx_uniform_edf" target="genmsl" />
+
+  <!-- <surface> -->
+  <implementation name="IM_surface_genmsl" nodedef="ND_surface" target="genmsl" />
+
+  <!-- <displacement> -->
+  <implementation name="IM_displacement_float_genmsl" nodedef="ND_displacement_float" file="../genglsl/mx_displacement_float.glsl" function="mx_displacement_float" target="genmsl" />
+  <implementation name="IM_displacement_vector3_genmsl" nodedef="ND_displacement_vector3" file="../genglsl/mx_displacement_vector3.glsl" function="mx_displacement_vector3" target="genmsl" />
+
+  <!-- <light> -->
+  <implementation name="IM_light_genmsl" nodedef="ND_light" target="genmsl" />
+
+  <!-- <roughness_anisotropy> -->
+  <implementation name="IM_roughness_anisotropy_genmsl" nodedef="ND_roughness_anisotropy" file="../genglsl/mx_roughness_anisotropy.glsl" function="mx_roughness_anisotropy" target="genmsl" />
+
+  <!-- <roughness_dual> -->
+  <implementation name="IM_roughness_dual_genmsl" nodedef="ND_roughness_dual" file="../genglsl/mx_roughness_dual.glsl" function="mx_roughness_dual" target="genmsl" />
+
+  <!-- <artistic_ior> -->
+  <implementation name="IM_artistic_ior_genmsl" nodedef="ND_artistic_ior" file="../genglsl/mx_artistic_ior.glsl" function="mx_artistic_ior" target="genmsl" />
+
+  <!-- <blackbody> -->
+  <implementation name="IM_blackbody_genmsl" nodedef="ND_blackbody" file="../genglsl/mx_blackbody.glsl" function="mx_blackbody" target="genmsl" />
+
+</materialx>

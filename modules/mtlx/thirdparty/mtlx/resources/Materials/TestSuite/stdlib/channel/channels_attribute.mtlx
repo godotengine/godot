@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+
+    Output test
+
+    -->
+  <nodegraph name="image4_to_color3_bgr_out">
+    <image name="image4" type="color4">
+      <input name="file" type="filename" value="resources/Lights/san_giuseppe_bridge.hdr" />
+    </image>
+    <output name="out" type="color3" nodename="image4" channels="bbb" />
+  </nodegraph>
+  <nodegraph name="image4_to_float_g_out">
+    <image name="image4" type="color4">
+      <input name="file" type="filename" value="resources/Lights/san_giuseppe_bridge.hdr" />
+    </image>
+    <output name="out" type="float" nodename="image4" channels="g" />
+  </nodegraph>
+  <nodegraph name="float_to_color4_rrrr_out">
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="1.0" />
+    </constant>
+    <output name="out" type="color4" nodename="constant1" channels="rrrr" />
+  </nodegraph>
+  <nodegraph name="color3_to_color4_bgr1_out">
+    <constant name="constant1" type="color3">
+      <input name="value" type="color3" value="0.5, 0.7, 1.0" />
+    </constant>
+    <output name="out" type="color4" nodename="constant1" channels="bgr1" />
+  </nodegraph>
+  <nodegraph name="color4_to_color3_bgr_out">
+    <constant name="constant1" type="color4">
+      <input name="value" type="color4" value="0.5, 0.7, 0.9, 1.0" />
+    </constant>
+    <output name="out" type="color3" nodename="constant1" channels="bgr" />
+  </nodegraph>
+  <nodegraph name="color4_to_float_g_out">
+    <constant name="constant1" type="color4">
+      <input name="value" type="color4" value="0.0, 0.5, 0.75, 1.0" />
+    </constant>
+    <output name="out" type="float" nodename="constant1" channels="g" />
+  </nodegraph>
+  <!--
+
+   Input tests
+
+    -->
+  <nodegraph name="image4_to_color3_bga_in">
+    <image name="image4" type="color4">
+      <input name="file" type="filename" value="resources/Lights/san_giuseppe_bridge.hdr" />
+      <input name="uaddressmode" type="string" value="constant" />
+      <input name="vaddressmode" type="string" value="clamp" />
+    </image>
+    <add name="add1" type="color3">
+      <input name="in1" type="color3" nodename="image4" channels="bgr" />
+      <input name="in2" type="color3" value="0.5, 0.5, 0.5" />
+    </add>
+    <output name="out" type="color3" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="image4_to_float_g_in">
+    <image name="image4" type="color4">
+      <input name="file" type="filename" value="resources/Lights/san_giuseppe_bridge.hdr" />
+      <input name="uaddressmode" type="string" value="constant" />
+      <input name="vaddressmode" type="string" value="clamp" />
+    </image>
+    <add name="add1" type="float">
+      <input name="in1" type="float" nodename="image4" channels="g" />
+      <input name="in2" type="float" value="0.5" />
+    </add>
+    <output name="out" type="float" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="float_to_color4_rrrr_in">
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="1.0" />
+    </constant>
+    <add name="add1" type="color4">
+      <input name="in1" type="color4" nodename="constant1" channels="rrrr" />
+      <input name="in2" type="color4" value="0.0, 0.0, 0.0, 0.0" />
+    </add>
+    <output name="out" type="color4" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="color3_to_color4_bgr1_in">
+    <constant name="constant1" type="color3">
+      <input name="value" type="color3" value="0.5, 0.7, 1.0" />
+    </constant>
+    <add name="add1" type="color4">
+      <input name="in1" type="color4" nodename="constant1" channels="bgr1" />
+      <input name="in2" type="color4" value="0.1, 0.1, 0.1, 0.0" />
+    </add>
+    <output name="out" type="color4" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="color4_to_color3_rga_in">
+    <constant name="constant1" type="color4">
+      <input name="value" type="color4" value="0.0, 0.5, 0.75, 1.0" />
+    </constant>
+    <add name="add1" type="color3">
+      <input name="in1" type="color3" nodename="constant1" channels="rga" />
+      <input name="in2" type="color3" value="0.5, 0.5, 0.5" />
+    </add>
+    <output name="out" type="color3" nodename="add1" />
+  </nodegraph>
+  <nodegraph name="color4_to_float_g_in">
+    <constant name="constant1" type="color4">
+      <input name="value" type="color4" value="0.0, 0.5, 0.75, 1.0" />
+    </constant>
+    <add name="add1" type="float">
+      <input name="in1" type="float" nodename="constant1" channels="g" />
+      <input name="in2" type="float" value="0.0" />
+    </add>
+    <output name="out" type="float" nodename="add1" />
+  </nodegraph>
+</materialx>

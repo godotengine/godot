@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="Unit_test_inputGraph" fileprefix="resources/Images/">
+    <!-- opacity_output -->
+    <output name="base_color_output" type="color3" nodename="base_color_image" />
+    <!-- multiply unit converted realworldscale and additional scale-->
+    <multiply name="total_scale" type="vector2">
+      <input name="in1" type="vector2" value="1.0, 1.0" />
+      <input name="in2" type="float" value="10.0" unit="centimeter" unittype="distance" />
+    </multiply>
+    <texcoord name="texcoord1" type="vector2" />
+    <place2d name="a_place2d" type="vector2">
+      <input name="texcoord" type="vector2" nodename="texcoord1" />
+      <input name="offset" type="vector2" value="0.0, 0.0" />
+      <input name="scale" type="vector2" nodename="total_scale" />
+      <input name="pivot" type="vector2" value="0.5, 0.5" />
+    </place2d>
+    <image name="base_color_image" type="color3">
+      <input name="file" type="filename" value="grid.png" colorspace="srgb_texture" />
+      <input name="texcoord" type="vector2" nodename="a_place2d" />
+    </image>
+  </nodegraph>
+  <standard_surface name="ut_shader" type="surfaceshader">
+    <input name="base_color" type="color3" output="base_color_output" nodegraph="Unit_test_inputGraph" />
+  </standard_surface>
+  <surfacematerial name="Unit_test" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="ut_shader" />
+  </surfacematerial>
+</materialx>

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<materialx version="1.38" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <nodegraph name="NG_multi" nodedef="ND_multi">
+    <burley_diffuse_bsdf name="burley_bsdf" type="BSDF">
+      <input name="color" type="color3" interfacename="diffuse_color" />
+    </burley_diffuse_bsdf>
+    <dielectric_bsdf name="dielectric_bsdf" type="BSDF">
+      <input name="tint" type="color3" interfacename="diffuse_color" />
+    </dielectric_bsdf>
+    <surface name="burley_surface" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="burley_bsdf" />
+    </surface>
+    <surface name="dielectric_surface" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="dielectric_bsdf" />
+    </surface>
+    <output name="burley_out" type="surfaceshader" nodename="burley_surface" />
+    <output name="dielectric_out" type="surfaceshader" nodename="dielectric_surface" />
+  </nodegraph>
+  <nodedef name="ND_multi" node="customtype" version="1.0" isdefaultversion="true">
+    <input name="diffuse_color" type="color3" value="0.25, 0.50, 0.75" />
+    <output name="burley_out" type="surfaceshader" />
+    <output name="dielectric_out" type="surfaceshader" />
+  </nodedef>
+  <customtype name="customtype_1" type="multioutput">
+    <input name="diffuse_color" type="color3" value="0.25, 0.50, 0.75" />
+    <output name="burley_out" type="surfaceshader" value="" />
+    <output name="dielectric_out" type="surfaceshader" value="" />
+  </customtype>
+  <output name="burley_out2" nodename="customtype_1" output="burley_out" type="surfaceshader" />
+  <output name="dielectric_out2" nodename="customtype_1" output="dielectric_out" type="surfaceshader" />
+</materialx>

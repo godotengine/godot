@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="mix_bsdf_test1">
+    <oren_nayar_diffuse_bsdf name="diffuse_brdf1" type="BSDF">
+      <input name="color" type="color3" value="0.96, 0.1, 0.1" />
+    </oren_nayar_diffuse_bsdf>
+    <oren_nayar_diffuse_bsdf name="diffuse_brdf2" type="BSDF">
+      <input name="color" type="color3" value="0.0, 0.73, 0.1" />
+    </oren_nayar_diffuse_bsdf>
+    <mix name="mix_bsdf1" type="BSDF">
+      <input name="fg" type="BSDF" nodename="diffuse_brdf1" />
+      <input name="bg" type="BSDF" nodename="diffuse_brdf2" />
+      <input name="mix" type="float" value="0.5" />
+    </mix>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="mix_bsdf1" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+
+  <nodegraph name="mix_bsdf_test2">
+    <oren_nayar_diffuse_bsdf name="diffuse_brdf1" type="BSDF">
+      <input name="color" type="color3" value="0.96, 0.1, 0.1" />
+      <input name="roughness" type="float" value="0.0" />
+      <input name="normal" type="vector3" value="0.0, 0.0, 0.0" />
+    </oren_nayar_diffuse_bsdf>
+    <dielectric_bsdf name="dielectric_brdf1" type="BSDF">
+      <input name="tint" type="color3" value="1.0, 1.0, 1.0" />
+      <input name="ior" type="float" value="1.52" />
+    </dielectric_bsdf>
+    <mix name="mix_bsdf1" type="BSDF">
+      <input name="fg" type="BSDF" nodename="dielectric_brdf1" />
+      <input name="bg" type="BSDF" nodename="diffuse_brdf1" />
+      <input name="mix" type="float" value="0.5" />
+    </mix>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="mix_bsdf1" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+
+  <nodedef name="ND_substratebsdf" node="substratebsdf">
+    <input name="albedo" type="color3" value="0.8, 0.2, 0.1" />
+    <input name="subsurface" type="color3" value="0.1, 0.1, 0.8" />
+    <input name="subsurface_weight" type="float" value="0.0" />
+    <output name="out" type="BSDF" />
+  </nodedef>
+  <nodegraph name="IMP_substratebsdf" nodedef="ND_substratebsdf">
+    <oren_nayar_diffuse_bsdf name="diffuse" type="BSDF">
+      <input name="color" type="color3" interfacename="albedo" />
+    </oren_nayar_diffuse_bsdf>
+    <translucent_bsdf name="subsurface2" type="BSDF">
+      <input name="color" type="color3" interfacename="subsurface" />
+    </translucent_bsdf>
+    <mix name="mix1" type="BSDF">
+      <input name="fg" type="BSDF" nodename="diffuse" />
+      <input name="bg" type="BSDF" nodename="subsurface2" />
+      <input name="mix" type="float" interfacename="subsurface_weight" />
+    </mix>
+    <output name="out" type="BSDF" nodename="mix1" />
+  </nodegraph>
+  <nodedef name="ND_substrateshader" node="substrateshader">
+    <input name="albedo" type="color3" value="0.8, 0.2, 0.1" />
+    <input name="subsurface" type="color3" value="0.1, 0.1, 0.8" />
+    <input name="subsurface_weight" type="float" value="0.0" />
+    <input name="emission" type="color3" value="0.0, 0.0, 0.0" />
+    <input name="opacity" type="float" value="1.0" />
+    <output name="out" type="surfaceshader" />
+  </nodedef>
+  <nodegraph name="IMP_substrateshader" nodedef="ND_substrateshader">
+    <substratebsdf name="substrate1" type="BSDF">
+      <input name="albedo" type="color3" interfacename="albedo" />
+      <input name="subsurface" type="color3" interfacename="subsurface" />
+      <input name="subsurface_weight" type="float" interfacename="subsurface_weight" />
+    </substratebsdf>
+    <uniform_edf name="edf1" type="EDF">
+      <input name="color" type="color3" interfacename="emission" />
+    </uniform_edf>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="substrate1" />
+      <input name="edf" type="EDF" nodename="edf1" />
+      <input name="opacity" type="float" interfacename="opacity" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+  <nodegraph name="mix_bsdf_test3">
+    <substrateshader name="shader1" type="surfaceshader" />
+    <output name="out" type="surfaceshader" nodename="shader1" />
+  </nodegraph>
+</materialx>

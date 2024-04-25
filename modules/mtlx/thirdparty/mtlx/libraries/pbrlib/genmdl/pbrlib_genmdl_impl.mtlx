@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+
+  <!-- <oren_nayar_diffuse_bsdf> -->
+  <implementation name="IM_oren_nayar_diffuse_bsdf_genmdl" nodedef="ND_oren_nayar_diffuse_bsdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_oren_nayar_diffuse_bsdf(mxp_weight:{{weight}}, mxp_color:{{color}}, mxp_roughness:{{roughness}}, mxp_normal:{{normal}})" target="genmdl" />
+
+  <!-- <burley_diffuse_bsdf> -->
+  <implementation name="IM_burley_diffuse_bsdf_genmdl" nodedef="ND_burley_diffuse_bsdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_burley_diffuse_bsdf(mxp_weight:{{weight}}, mxp_color:{{color}}, mxp_roughness:{{roughness}}, mxp_normal:{{normal}})" target="genmdl" />
+
+  <!-- <translucent_bsdf> -->
+  <implementation name="IM_translucent_bsdf_genmdl" nodedef="ND_translucent_bsdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_translucent_bsdf(mxp_weight:{{weight}}, mxp_color:{{color}}, mxp_normal:{{normal}})" target="genmdl" />
+
+  <!-- <dielectric_bsdf> -->
+  <implementation name="IM_dielectric_bsdf_genmdl" nodedef="ND_dielectric_bsdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_dielectric_bsdf(mxp_weight:{{weight}}, mxp_tint:{{tint}}, mxp_ior:{{ior}}, mxp_roughness:{{roughness}}, mxp_normal:{{normal}}, mxp_tangent:{{tangent}}, mxp_distribution:{{distribution}}, mxp_scatter_mode:{{scatter_mode}}, mxp_base:{{base}}, mxp_thinfilm_thickness:{{thinfilm_thickness}}, mxp_thinfilm_ior:{{thinfilm_ior}})" target="genmdl" />
+
+  <!-- <conductor_bsdf> -->
+  <implementation name="IM_conductor_bsdf_genmdl" nodedef="ND_conductor_bsdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_conductor_bsdf(mxp_weight:{{weight}}, mxp_ior:{{ior}}, mxp_extinction:{{extinction}}, mxp_roughness:{{roughness}}, mxp_normal:{{normal}}, mxp_tangent:{{tangent}}, mxp_distribution:{{distribution}}, mxp_thinfilm_thickness:{{thinfilm_thickness}}, mxp_thinfilm_ior:{{thinfilm_ior}})" target="genmdl" />
+
+  <!-- <generalized_schlick_bsdf> -->
+  <implementation name="IM_generalized_schlick_bsdf_genmdl" nodedef="ND_generalized_schlick_bsdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_generalized_schlick_bsdf(mxp_weight:{{weight}}, mxp_color0:{{color0}}, mxp_color90:{{color90}}, mxp_exponent:{{exponent}},mxp_roughness:{{roughness}}, mxp_normal:{{normal}}, mxp_tangent:{{tangent}}, mxp_distribution:{{distribution}}, mxp_scatter_mode:{{scatter_mode}}, mxp_base:{{base}}, mxp_thinfilm_thickness:{{thinfilm_thickness}}, mxp_thinfilm_ior:{{thinfilm_ior}})" target="genmdl" />
+
+  <!-- <subsurface_bsdf> -->
+  <implementation name="IM_subsurface_bsdf_genmdl" nodedef="ND_subsurface_bsdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_subsurface_bsdf(mxp_weight:{{weight}}, mxp_color:{{color}}, mxp_radius:{{radius}}, mxp_anisotropy:{{anisotropy}}, mxp_normal:{{normal}})" target="genmdl" />
+
+  <!-- <sheen_bsdf> -->
+  <implementation name="IM_sheen_bsdf_genmdl" nodedef="ND_sheen_bsdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_sheen_bsdf(mxp_weight:{{weight}}, mxp_color:{{color}}, mxp_roughness:{{roughness}}, mxp_normal:{{normal}}, mxp_base:{{base}})" target="genmdl" />
+
+  <!-- <thin_film_bsdf> -->
+  <implementation name="IM_thin_film_bsdf_genmdl" nodedef="ND_thin_film_bsdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_thin_film_bsdf(mxp_thickness:{{thickness}}, mxp_ior:{{ior}}, mxp_base:{{base}})" target="genmdl" />
+
+  <!-- <uniform_edf> -->
+  <implementation name="IM_uniform_edf_genmdl" nodedef="ND_uniform_edf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_uniform_edf(mxp_color:{{color}})" target="genmdl" />
+
+  <!-- <conical_edf> -->
+  <implementation name="IM_conical_edf_genmdl" nodedef="ND_conical_edf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_conical_edf(mxp_color:{{color}}, mxp_normal:{{normal}}, mxp_inner_angle:{{inner_angle}}, mxp_outer_angle:{{outer_angle}})" target="genmdl" />
+
+  <!-- <measured_edf> -->
+  <implementation name="IM_measured_edf_genmdl" nodedef="ND_measured_edf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_measured_edf(mxp_color:{{color}}, mxp_normal:{{normal}}, mxp_file:{{file}}" target="genmdl" />
+
+  <!-- <generalized_schlick_edf> -->
+  <implementation name="IM_generalized_schlick_edf_genmdl" nodedef="ND_generalized_schlick_edf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_generalized_schlick_edf(mxp_color0:{{color0}}, mxp_color90:{{color90}}, mxp_exponent:{{exponent}}, mxp_base:{{base}})" target="genmdl" />
+
+  <!-- <absorption_vdf> -->
+  <implementation name="IM_absorption_vdf_genmdl" nodedef="ND_absorption_vdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_absorption_vdf(mxp_absorption:{{absorption}})" target="genmdl" />
+
+  <!-- <anisotropic_vdf> -->
+  <implementation name="IM_anisotropic_vdf_genmdl" nodedef="ND_anisotropic_vdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_anisotropic_vdf(mxp_absorption:{{absorption}}, mxp_scattering:{{scattering}}, mxp_anisotropy:{{anisotropy}})" target="genmdl" />
+
+  <!-- <surface> -->
+  <implementation name="IM_surface_genmdl" nodedef="ND_surface" target="genmdl" />
+
+  <!-- <thin_surface> -->
+  <implementation name="IM_thin_surface_genmdl" nodedef="ND_thin_surface" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_thin_surface(mxp_front_bsdf:{{front_bsdf}}, mxp_front_edf:{{front_edf}}, mxp_back_bsdf:{{back_bsdf}}, mxp_back_edf:{{back_edf}}, mxp_opacity:{{opacity}})" target="genmdl" />
+
+  <!-- <volume> -->
+  <implementation name="IM_volume_genmdl" nodedef="ND_volume" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_volume(mxp_vdf:{{vdf}}, mxp_edf:{{edf}})" target="genmdl" />
+
+  <!-- <light> -->
+  <implementation name="IM_light_genmdl" nodedef="ND_light" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_light(mxp_edf:{{edf}}, mxp_intensity:{{intensity}}, mxp_exposure:{{exposure}})" target="genmdl" />
+
+  <!-- <displacement> -->
+  <implementation name="IM_displacement_float_genmdl" nodedef="ND_displacement_float" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_displacement_float(mxp_displacement:{{displacement}}, mxp_scale:{{scale}})" target="genmdl" />
+  <implementation name="IM_displacement_vector3_genmdl" nodedef="ND_displacement_vector3" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_displacement_vector3(mxp_displacement:{{displacement}}, mxp_scale:{{scale}})" target="genmdl" />
+
+  <!-- <layer> -->
+  <implementation name="IM_layer_bsdf_genmdl" nodedef="ND_layer_bsdf" target="genmdl" />
+  <implementation name="IM_layer_vdf_genmdl" nodedef="ND_layer_vdf" target="genmdl" />
+
+  <!-- <mix> -->
+  <implementation name="IM_mix_bsdf_genmdl" nodedef="ND_mix_bsdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_mix_bsdf(mxp_fg:{{fg}}, mxp_bg:{{bg}}, mxp_mix:{{mix}})" target="genmdl" />
+  <implementation name="IM_mix_edf_genmdl" nodedef="ND_mix_edf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_mix_edf(mxp_fg:{{fg}}, mxp_bg:{{bg}}, mxp_mix:{{mix}})" target="genmdl" />
+  <implementation name="IM_mix_vdf_genmdl" nodedef="ND_mix_vdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_mix_vdf(mxp_fg:{{fg}}, mxp_bg:{{bg}}, mxp_mix:{{mix}})" target="genmdl" />
+
+  <!-- <add> -->
+  <implementation name="IM_add_bsdf_genmdl" nodedef="ND_add_bsdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_add_bsdf(mxp_in1:{{in1}}, mxp_in2:{{in2}})" target="genmdl" />
+  <implementation name="IM_add_edf_genmdl" nodedef="ND_add_edf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_add_edf(mxp_in1:{{in1}}, mxp_in2:{{in2}})" target="genmdl" />
+  <implementation name="IM_add_vdf_genmdl" nodedef="ND_add_vdf" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_add_vdf(mxp_in1:{{in1}}, mxp_in2:{{in2}})" target="genmdl" />
+
+  <!-- <multiply> -->
+  <implementation name="IM_multiply_bsdfC_genmdl" nodedef="ND_multiply_bsdfC" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_multiply_bsdf_color3(mxp_in1:{{in1}}, mxp_in2:{{in2}})" target="genmdl" />
+  <implementation name="IM_multiply_bsdfF_genmdl" nodedef="ND_multiply_bsdfF" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_multiply_bsdf_float(mxp_in1:{{in1}}, mxp_in2:{{in2}})" target="genmdl" />
+  <implementation name="IM_multiply_edfC_genmdl" nodedef="ND_multiply_edfC" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_multiply_edf_color3(mxp_in1:{{in1}}, mxp_in2:{{in2}})" target="genmdl" />
+  <implementation name="IM_multiply_edfF_genmdl" nodedef="ND_multiply_edfF" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_multiply_edf_float(mxp_in1:{{in1}}, mxp_in2:{{in2}})" target="genmdl" />
+  <implementation name="IM_multiply_vdfC_genmdl" nodedef="ND_multiply_vdfC" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_multiply_vdf_color3(mxp_in1:{{in1}}, mxp_in2:{{in2}})" target="genmdl" />
+  <implementation name="IM_multiply_vdfF_genmdl" nodedef="ND_multiply_vdfF" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_multiply_vdf_float(mxp_in1:{{in1}}, mxp_in2:{{in2}})" target="genmdl" />
+
+  <!-- <roughness_anisotropy> -->
+  <implementation name="IM_roughness_anisotropy_genmdl" nodedef="ND_roughness_anisotropy" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_roughness_anisotropy(mxp_roughness:{{roughness}}, mxp_anisotropy:{{anisotropy}})" target="genmdl" />
+
+  <!-- <roughness_dual> -->
+  <implementation name="IM_roughness_dual_genmdl" nodedef="ND_roughness_dual" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_roughness_dual(mxp_roughness:{{roughness}})" target="genmdl" />
+
+  <!-- <artistic_ior> -->
+  <implementation name="IM_artistic_ior_genmdl" nodedef="ND_artistic_ior" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_artistic_ior(mxp_reflectivity:{{reflectivity}}, mxp_edge_color:{{edge_color}})" target="genmdl" />
+
+  <!-- <blackbody> -->
+  <implementation name="IM_blackbody_genmdl" nodedef="ND_blackbody" sourcecode="materialx::pbrlib_{{MDL_VERSION_SUFFIX}}::mx_blackbody(mxp_temperature:{{temperature}})" target="genmdl" />
+
+</materialx>

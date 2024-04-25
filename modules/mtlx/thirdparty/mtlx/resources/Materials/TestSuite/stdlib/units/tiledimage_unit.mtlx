@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+  Basic tiled image unit test with one image node for each variation in input type.
+  A scale and offset of 2,2 and 0.5,0.5 is applied to the texture coordinates
+  used to lookup each image
+  -->
+  <output name="tiled_unit_image4_output" type="color4" nodename="tiled_unit_image4" />
+  <tiledimage name="tiled_unit_image4" type="color4">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+    <input name="uvtiling" type="vector2" value="2.0, 2.0" />
+    <input name="uvoffset" type="vector2" value="0.5, 0.5" />
+    <input name="realworldimagesize" type="vector2" value="0.5 0.5" unit="foot" unittype="distance" />
+    <input name="realworldtilesize" type="vector2" value="0.5 0.5" unit="inch" unittype="distance" />
+    <input name="filtertype" type="string" value="cubic" />
+    <input name="frameendaction" type="string" value="constant" />
+  </tiledimage>
+  <output name="tiled_unit_image3_output" type="color3" nodename="tiled_unit_image3" />
+  <tiledimage name="tiled_unit_image3" type="color3">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+    <input name="uvtiling" type="vector2" value="2.0, 2.0" />
+    <input name="uvoffset" type="vector2" value="0.5, 0.5" />
+    <input name="realworldimagesize" type="vector2" value="0.5 0.5" unit="foot" unittype="distance" />
+    <input name="realworldtilesize" type="vector2" value="0.5 0.5" unit="inch" unittype="distance" />
+    <input name="filtertype" type="string" value="closest" />
+    <input name="frameendaction" type="string" value="clamp" />
+  </tiledimage>
+  <output name="tiled_unit_image2_output" type="vector2" nodename="tiled_unit_image2" />
+  <tiledimage name="tiled_unit_image2" type="vector2">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+    <input name="uvtiling" type="vector2" value="2.0, 2.0" />
+    <input name="uvoffset" type="vector2" value="0.5, 0.5" />
+    <input name="realworldimagesize" type="vector2" value="0.5 0.5" unit="foot" unittype="distance" />
+    <input name="realworldtilesize" type="vector2" value="0.5 0.5" unit="inch" unittype="distance" />
+    <input name="filtertype" type="string" value="linear" />
+    <input name="frameendaction" type="string" value="periodic" />
+  </tiledimage>
+  <output name="tiled_unit_image1_output" type="float" nodename="tiled_unit_image1" />
+  <tiledimage name="tiled_unit_image1" type="float">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+    <input name="uvtiling" type="vector2" value="2.0, 2.0" />
+    <input name="uvoffset" type="vector2" value="0.5, 0.5" />
+    <input name="realworldimagesize" type="vector2" value="0.5 0.5" unit="foot" unittype="distance" />
+    <input name="realworldtilesize" type="vector2" value="0.5 0.5" unit="inch" unittype="distance" />
+    <input name="filtertype" type="string" value="cubic" />
+    <input name="frameendaction" type="string" value="constant" />
+  </tiledimage>
+  <output name="tiled_unit_image4v_output" type="vector4" nodename="tiled_unit_image4v" />
+  <tiledimage name="tiled_unit_image4v" type="vector4">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+    <input name="uvtiling" type="vector2" value="2.0, 2.0" />
+    <input name="uvoffset" type="vector2" value="0.5, 0.5" />
+    <input name="realworldimagesize" type="vector2" value="0.5 0.5" unit="foot" unittype="distance" />
+    <input name="realworldtilesize" type="vector2" value="0.5 0.5" unit="inch" unittype="distance" />
+    <input name="filtertype" type="string" value="closest" />
+    <input name="frameendaction" type="string" value="clamp" />
+  </tiledimage>
+  <output name="tiled_unit_image3v_output" type="vector3" nodename="tiled_unit_image3v" />
+  <tiledimage name="tiled_unit_image3v" type="vector3">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+    <input name="uvtiling" type="vector2" value="2.0, 2.0" />
+    <input name="uvoffset" type="vector2" value="0.5, 0.5" />
+    <input name="realworldimagesize" type="vector2" value="0.5 0.5" unit="foot" unittype="distance" />
+    <input name="realworldtilesize" type="vector2" value="0.5 0.5" unit="inch" unittype="distance" />
+    <input name="filtertype" type="string" value="linear" />
+    <input name="frameendaction" type="string" value="periodic" />
+  </tiledimage>
+  <output name="tiled_unit_image2v_output" type="vector2" nodename="tiled_unit_image2v" />
+  <tiledimage name="tiled_unit_image2v" type="vector2">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+    <input name="uvtiling" type="vector2" value="2.0, 2.0" />
+    <input name="uvoffset" type="vector2" value="0.5, 0.5" />
+    <input name="realworldimagesize" type="vector2" value="0.5 0.5" unit="meter" unittype="distance" />
+    <input name="realworldtilesize" type="vector2" value="0.5 0.5" unit="inch" unittype="distance" />
+    <input name="filtertype" type="string" value="closest" />
+    <input name="frameendaction" type="string" value="periodic" />
+  </tiledimage>
+</materialx>

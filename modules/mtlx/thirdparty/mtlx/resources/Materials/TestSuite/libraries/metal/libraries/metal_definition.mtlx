@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--- Test metal node definition -->
+  <nodedef name="ND_TestMetal" node="testmetal">
+    <input name="MetalF0" type="color3" value="1, 1, 1" uiname="Color" uifolder="Basic Parameters" />
+    <input name="SurfaceRoughness" type="float" value="0.1" uiname="Roughness" uifolder="Basic Parameters" />
+    <input name="SurfaceAlbedo" type="color3" value="1, 1, 1" uiname="Color" uifolder="Hilight Parameters" />
+    <input name="SurfaceAnisotropy" type="float" value="0.0" uiname="Anisotropy" uifolder="Hilight Parameters" />
+    <input name="SurfaceNormal" type="vector3" value="1, 1, 1" uiname="Relief Pattern (Bump)" uifolder="Hilight Parameters" />
+    <input name="SurfaceRotation" type="float" value="0" uiname="Orientation" uifolder="Hilight Parameters" />
+    <input name="SurfaceCutout" type="color3" value="1, 1, 1" uiname="Image" uifolder="Cutout" />
+    <output name="out" type="surfaceshader" />
+  </nodedef>
+
+  <!-- Graph implementation -->
+  <nodegraph name="NG_TestMetal" nodedef="ND_TestMetal">
+    <output name="out" type="surfaceshader" nodename="standard_surface_metal" />
+    <standard_surface name="standard_surface_metal" type="surfaceshader">
+      <input name="base" type="float" value="0.8" />
+      <input name="base_color" type="color3" interfacename="MetalF0" />
+      <input name="diffuse_roughness" type="float" value="0" />
+      <input name="specular" type="float" value="1" />
+      <input name="specular_color" type="color3" interfacename="SurfaceAlbedo" />
+      <input name="specular_roughness" type="float" interfacename="SurfaceRoughness" />
+      <input name="specular_IOR" type="float" value="1.52" />
+      <input name="specular_anisotropy" type="float" interfacename="SurfaceAnisotropy" />
+      <input name="specular_rotation" type="float" interfacename="SurfaceRotation" />
+      <input name="metalness" type="float" value="1" />
+      <input name="normal" type="vector3" interfacename="SurfaceNormal" />
+      <input name="tangent" type="vector3" value="0.0, 0.0, 0.0" />
+      <input name="opacity" type="color3" interfacename="SurfaceCutout" />
+      <input name="coat" type="float" value="0" />
+      <input name="coat_color" type="color3" value="1, 1, 1" />
+      <input name="coat_roughness" type="float" value="0.1" />
+      <input name="coat_IOR" type="float" value="1.5" />
+      <input name="coat_normal" type="vector3" value="0.0, 0.0, 0.0" />
+      <input name="thin_walled" type="boolean" value="false" />
+      <input name="thin_film_thickness" type="float" value="0" />
+      <input name="thin_film_IOR" type="float" value="1.5" />
+      <input name="emission" type="float" value="0" />
+      <input name="emission_color" type="color3" value="1, 1, 1" />
+    </standard_surface>
+  </nodegraph>
+</materialx>

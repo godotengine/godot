@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="multiply_edf_test">
+    <uniform_edf name="edf1" type="EDF">
+      <input name="color" type="color3" value="1.0, 0.0, 0.0" />
+    </uniform_edf>
+    <multiply name="multiply_edf1" type="EDF">
+      <input name="in1" type="EDF" nodename="edf1" />
+      <input name="in2" type="float" value="0.5" />
+    </multiply>
+    <uniform_edf name="edf2" type="EDF">
+      <input name="color" type="color3" value="0.0, 1.0, 0.0" />
+    </uniform_edf>
+    <multiply name="multiply_edf2" type="EDF">
+      <input name="in1" type="EDF" nodename="edf2" />
+      <input name="in2" type="color3" value="0.5, 0.5, 0.5" />
+    </multiply>
+    <mix name="mix_edf1" type="EDF">
+      <input name="fg" type="EDF" nodename="multiply_edf1" />
+      <input name="bg" type="EDF" nodename="multiply_edf2" />
+      <input name="mix" type="float" value="0.5" />
+    </mix>
+    <surface name="surface1" type="surfaceshader">
+      <input name="edf" type="EDF" nodename="mix_edf1" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+</materialx>

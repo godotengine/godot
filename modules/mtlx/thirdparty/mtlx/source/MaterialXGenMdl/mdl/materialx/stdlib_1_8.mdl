@@ -1,0 +1,449 @@
+//
+// Copyright Contributors to the MaterialX Project
+// SPDX-License-Identifier: Apache-2.0
+//
+// MDL implementation of all Standard Source Nodes of
+//     MaterialX: An Open Standard for Network-Based CG Object Looks
+//     Document v1.37 REV2, January 19, 2020
+//     www.materialx.org 
+// in
+//     NVIDIA Material Definition Language 1.8
+//     Language Specification
+//     Document version 1.8.2, May 24, 2023
+//     www.nvidia.com/mdl
+
+mdl 1.8;
+
+import ::anno::*;
+import ::math::*;
+import ::scene::*;
+import ::state::*;
+
+import .::core::*;
+import .::noise::*;
+import .::swizzle::*;
+import .::hsv::*;
+
+// Changes since MDL 1.7
+// - Scene data lookups used for PrimVar readers allow non-literal string names
+
+// forward all unchanged definitions from the previous version
+export using .::stdlib_1_7 import mx_surfacematerial;
+export using .::stdlib_1_7 import mx_surface_unlit;
+export using .::stdlib_1_7 import mx_image_float;
+export using .::stdlib_1_7 import mx_image_color3;
+export using .::stdlib_1_7 import mx_image_color4;
+export using .::stdlib_1_7 import mx_image_vector2;
+export using .::stdlib_1_7 import mx_image_vector3;
+export using .::stdlib_1_7 import mx_image_vector4;
+export using .::stdlib_1_7 import mx_constant_float;
+export using .::stdlib_1_7 import mx_constant_color3;
+export using .::stdlib_1_7 import mx_constant_color4;
+export using .::stdlib_1_7 import mx_constant_vector2;
+export using .::stdlib_1_7 import mx_constant_vector3;
+export using .::stdlib_1_7 import mx_constant_vector4;
+export using .::stdlib_1_7 import mx_constant_boolean;
+export using .::stdlib_1_7 import mx_constant_integer;
+export using .::stdlib_1_7 import mx_constant_matrix33;
+export using .::stdlib_1_7 import mx_constant_matrix44;
+export using .::stdlib_1_7 import mx_constant_string;
+export using .::stdlib_1_7 import mx_constant_filename;
+export using .::stdlib_1_7 import mx_ramplr_float;
+export using .::stdlib_1_7 import mx_ramplr_color3;
+export using .::stdlib_1_7 import mx_ramplr_color4;
+export using .::stdlib_1_7 import mx_ramplr_vector2;
+export using .::stdlib_1_7 import mx_ramplr_vector3;
+export using .::stdlib_1_7 import mx_ramplr_vector4;
+export using .::stdlib_1_7 import mx_ramptb_float;
+export using .::stdlib_1_7 import mx_ramptb_color3;
+export using .::stdlib_1_7 import mx_ramptb_color4;
+export using .::stdlib_1_7 import mx_ramptb_vector2;
+export using .::stdlib_1_7 import mx_ramptb_vector3;
+export using .::stdlib_1_7 import mx_ramptb_vector4;
+export using .::stdlib_1_7 import mx_splitlr_float;
+export using .::stdlib_1_7 import mx_splitlr_color3;
+export using .::stdlib_1_7 import mx_splitlr_color4;
+export using .::stdlib_1_7 import mx_splitlr_vector2;
+export using .::stdlib_1_7 import mx_splitlr_vector3;
+export using .::stdlib_1_7 import mx_splitlr_vector4;
+export using .::stdlib_1_7 import mx_splittb_float;
+export using .::stdlib_1_7 import mx_splittb_color3;
+export using .::stdlib_1_7 import mx_splittb_color4;
+export using .::stdlib_1_7 import mx_splittb_vector2;
+export using .::stdlib_1_7 import mx_splittb_vector3;
+export using .::stdlib_1_7 import mx_splittb_vector4;
+export using .::stdlib_1_7 import mx_position_vector3;
+export using .::stdlib_1_7 import mx_normal_vector3;
+export using .::stdlib_1_7 import mx_tangent_vector3;
+export using .::stdlib_1_7 import mx_bitangent_vector3;
+export using .::stdlib_1_7 import mx_texcoord_vector2;
+export using .::stdlib_1_7 import mx_texcoord_vector3;
+export using .::stdlib_1_7 import mx_geomcolor_float;
+export using .::stdlib_1_7 import mx_geomcolor_color3;
+export using .::stdlib_1_7 import mx_geomcolor_color4;
+export using .::stdlib_1_7 import mx_ambientocclusion_float;
+export using .::stdlib_1_7 import mx_frame_float;
+export using .::stdlib_1_7 import mx_time_float;
+export using .::stdlib_1_7 import mx_modulo_color3;
+export using .::stdlib_1_7 import mx_modulo_color4;
+export using .::stdlib_1_7 import mx_modulo_color3FA;
+export using .::stdlib_1_7 import mx_modulo_color4FA;
+export using .::stdlib_1_7 import mx_invert_color4;
+export using .::stdlib_1_7 import mx_invert_color4FA;
+export using .::stdlib_1_7 import mx_absval_color4;
+export using .::stdlib_1_7 import mx_floor_color3;
+export using .::stdlib_1_7 import mx_floor_color4;
+export using .::stdlib_1_7 import mx_ceil_color3;
+export using .::stdlib_1_7 import mx_ceil_color4;
+export using .::stdlib_1_7 import mx_round_color3;
+export using .::stdlib_1_7 import mx_round_color4;
+export using .::stdlib_1_7 import mx_power_color4;
+export using .::stdlib_1_7 import mx_power_color4FA;
+export using .::stdlib_1_7 import mx_sin_float;
+export using .::stdlib_1_7 import mx_cos_float;
+export using .::stdlib_1_7 import mx_tan_float;
+export using .::stdlib_1_7 import mx_asin_float;
+export using .::stdlib_1_7 import mx_acos_float;
+export using .::stdlib_1_7 import mx_atan2_float;
+export using .::stdlib_1_7 import mx_sin_vector2;
+export using .::stdlib_1_7 import mx_cos_vector2;
+export using .::stdlib_1_7 import mx_tan_vector2;
+export using .::stdlib_1_7 import mx_asin_vector2;
+export using .::stdlib_1_7 import mx_acos_vector2;
+export using .::stdlib_1_7 import mx_atan2_vector2;
+export using .::stdlib_1_7 import mx_sin_vector3;
+export using .::stdlib_1_7 import mx_cos_vector3;
+export using .::stdlib_1_7 import mx_tan_vector3;
+export using .::stdlib_1_7 import mx_asin_vector3;
+export using .::stdlib_1_7 import mx_acos_vector3;
+export using .::stdlib_1_7 import mx_atan2_vector3;
+export using .::stdlib_1_7 import mx_sin_vector4;
+export using .::stdlib_1_7 import mx_cos_vector4;
+export using .::stdlib_1_7 import mx_tan_vector4;
+export using .::stdlib_1_7 import mx_asin_vector4;
+export using .::stdlib_1_7 import mx_acos_vector4;
+export using .::stdlib_1_7 import mx_atan2_vector4;
+export using .::stdlib_1_7 import mx_sqrt_float;
+export using .::stdlib_1_7 import mx_ln_float;
+export using .::stdlib_1_7 import mx_exp_float;
+export using .::stdlib_1_7 import mx_sqrt_vector2;
+export using .::stdlib_1_7 import mx_ln_vector2;
+export using .::stdlib_1_7 import mx_exp_vector2;
+export using .::stdlib_1_7 import mx_sqrt_vector3;
+export using .::stdlib_1_7 import mx_ln_vector3;
+export using .::stdlib_1_7 import mx_exp_vector3;
+export using .::stdlib_1_7 import mx_sqrt_vector4;
+export using .::stdlib_1_7 import mx_ln_vector4;
+export using .::stdlib_1_7 import mx_exp_vector4;
+export using .::stdlib_1_7 import mx_sign_color3;
+export using .::stdlib_1_7 import mx_sign_color4;
+export using .::stdlib_1_7 import mx_clamp_color4;
+export using .::stdlib_1_7 import mx_clamp_color4FA;
+export using .::stdlib_1_7 import mx_min_color4;
+export using .::stdlib_1_7 import mx_min_color4;
+export using .::stdlib_1_7 import mx_max_color4;
+export using .::stdlib_1_7 import mx_max_color4;
+export using .::stdlib_1_7 import mx_transformpoint_vector3;
+export using .::stdlib_1_7 import mx_transformvector_vector3;
+export using .::stdlib_1_7 import mx_transformnormal_vector3;
+export using .::stdlib_1_7 import mx_transformmatrix_vector2M3;
+export using .::stdlib_1_7 import mx_transformmatrix_vector3;
+export using .::stdlib_1_7 import mx_transformmatrix_vector3M4;
+export using .::stdlib_1_7 import mx_transformmatrix_vector4;
+export using .::stdlib_1_7 import mx_normalmap_float;
+export using .::stdlib_1_7 import mx_normalmap_vector2;
+export using .::stdlib_1_7 import mx_transpose_matrix33;
+export using .::stdlib_1_7 import mx_transpose_matrix44;
+export using .::stdlib_1_7 import mx_determinant_matrix33;
+export using .::stdlib_1_7 import mx_determinant_matrix44;
+export using .::stdlib_1_7 import mx_invertmatrix_matrix33;
+export using .::stdlib_1_7 import mx_invertmatrix_matrix44;
+export using .::stdlib_1_7 import mx_rotate2d_vector2;
+export using .::stdlib_1_7 import mx_rotate3d_vector3;
+export using .::stdlib_1_7 import mx_remap_float;
+export using .::stdlib_1_7 import mx_remap_color3;
+export using .::stdlib_1_7 import mx_remap_color4;
+export using .::stdlib_1_7 import mx_remap_vector2;
+export using .::stdlib_1_7 import mx_remap_vector3;
+export using .::stdlib_1_7 import mx_remap_vector4;
+export using .::stdlib_1_7 import mx_remap_color3FA;
+export using .::stdlib_1_7 import mx_remap_color4FA;
+export using .::stdlib_1_7 import mx_remap_vector2FA;
+export using .::stdlib_1_7 import mx_remap_vector3FA;
+export using .::stdlib_1_7 import mx_remap_vector4FA;
+export using .::stdlib_1_7 import mx_smoothstep_float;
+export using .::stdlib_1_7 import mx_smoothstep_color3;
+export using .::stdlib_1_7 import mx_smoothstep_color4;
+export using .::stdlib_1_7 import mx_smoothstep_vector2;
+export using .::stdlib_1_7 import mx_smoothstep_vector3;
+export using .::stdlib_1_7 import mx_smoothstep_vector4;
+export using .::stdlib_1_7 import mx_smoothstep_color3FA;
+export using .::stdlib_1_7 import mx_smoothstep_color4FA;
+export using .::stdlib_1_7 import mx_smoothstep_vector2FA;
+export using .::stdlib_1_7 import mx_smoothstep_vector3FA;
+export using .::stdlib_1_7 import mx_smoothstep_vector4FA;
+export using .::stdlib_1_7 import mx_curveadjust_float;
+export using .::stdlib_1_7 import mx_curveadjust_color3;
+export using .::stdlib_1_7 import mx_curveadjust_color4;
+export using .::stdlib_1_7 import mx_curveadjust_vector2;
+export using .::stdlib_1_7 import mx_curveadjust_vector3;
+export using .::stdlib_1_7 import mx_curveadjust_vector4;
+export using .::stdlib_1_7 import mx_luminance_color3;
+export using .::stdlib_1_7 import mx_luminance_color4;
+export using .::stdlib_1_7 import mx_rgbtohsv_color3;
+export using .::stdlib_1_7 import mx_rgbtohsv_color4;
+export using .::stdlib_1_7 import mx_hsvtorgb_color3;
+export using .::stdlib_1_7 import mx_hsvtorgb_color4;
+export using .::stdlib_1_7 import mx_premult_color4;
+export using .::stdlib_1_7 import mx_unpremult_color4;
+export using .::stdlib_1_7 import mx_plus_color4;
+export using .::stdlib_1_7 import mx_minus_color4;
+export using .::stdlib_1_7 import mx_difference_color4;
+export using .::stdlib_1_7 import mx_burn_float;
+export using .::stdlib_1_7 import mx_burn_color3;
+export using .::stdlib_1_7 import mx_burn_color4;
+export using .::stdlib_1_7 import mx_dodge_float;
+export using .::stdlib_1_7 import mx_dodge_color3;
+export using .::stdlib_1_7 import mx_dodge_color4;
+export using .::stdlib_1_7 import mx_screen_color4;
+export using .::stdlib_1_7 import mx_disjointover_color4;
+export using .::stdlib_1_7 import mx_in_color4;
+export using .::stdlib_1_7 import mx_mask_color4;
+export using .::stdlib_1_7 import mx_matte_color4;
+export using .::stdlib_1_7 import mx_out_color4;
+export using .::stdlib_1_7 import mx_over_color4;
+export using .::stdlib_1_7 import mx_mix_color4;
+export using .::stdlib_1_7 import mx_mix_color4_color4;
+export using .::stdlib_1_7 import mx_mix_surfaceshader;
+export using .::stdlib_1_7 import mx_mix_volumeshader;
+export using .::stdlib_1_7 import mx_mix_displacementshader;
+export using .::stdlib_1_7 import mx_ifgreater_float;
+export using .::stdlib_1_7 import mx_ifgreater_color3;
+export using .::stdlib_1_7 import mx_ifgreater_color4;
+export using .::stdlib_1_7 import mx_ifgreater_vector2;
+export using .::stdlib_1_7 import mx_ifgreater_vector3;
+export using .::stdlib_1_7 import mx_ifgreater_vector4;
+export using .::stdlib_1_7 import mx_ifgreater_floatI;
+export using .::stdlib_1_7 import mx_ifgreater_color3I;
+export using .::stdlib_1_7 import mx_ifgreater_color4I;
+export using .::stdlib_1_7 import mx_ifgreater_vector2I;
+export using .::stdlib_1_7 import mx_ifgreater_vector3I;
+export using .::stdlib_1_7 import mx_ifgreater_vector4I;
+export using .::stdlib_1_7 import mx_ifgreatereq_float;
+export using .::stdlib_1_7 import mx_ifgreatereq_color3;
+export using .::stdlib_1_7 import mx_ifgreatereq_color4;
+export using .::stdlib_1_7 import mx_ifgreatereq_vector2;
+export using .::stdlib_1_7 import mx_ifgreatereq_vector3;
+export using .::stdlib_1_7 import mx_ifgreatereq_vector4;
+export using .::stdlib_1_7 import mx_ifgreatereq_floatI;
+export using .::stdlib_1_7 import mx_ifgreatereq_color3I;
+export using .::stdlib_1_7 import mx_ifgreatereq_color4I;
+export using .::stdlib_1_7 import mx_ifgreatereq_vector2I;
+export using .::stdlib_1_7 import mx_ifgreatereq_vector3I;
+export using .::stdlib_1_7 import mx_ifgreatereq_vector4I;
+export using .::stdlib_1_7 import mx_ifequal_float;
+export using .::stdlib_1_7 import mx_ifequal_color3;
+export using .::stdlib_1_7 import mx_ifequal_color4;
+export using .::stdlib_1_7 import mx_ifequal_vector2;
+export using .::stdlib_1_7 import mx_ifequal_vector3;
+export using .::stdlib_1_7 import mx_ifequal_vector4;
+export using .::stdlib_1_7 import mx_ifequal_floatI;
+export using .::stdlib_1_7 import mx_ifequal_color3I;
+export using .::stdlib_1_7 import mx_ifequal_color4I;
+export using .::stdlib_1_7 import mx_ifequal_vector2I;
+export using .::stdlib_1_7 import mx_ifequal_vector3I;
+export using .::stdlib_1_7 import mx_ifequal_vector4I;
+export using .::stdlib_1_7 import mx_ifequal_floatB;
+export using .::stdlib_1_7 import mx_ifequal_color3B;
+export using .::stdlib_1_7 import mx_ifequal_color4B;
+export using .::stdlib_1_7 import mx_ifequal_vector2B;
+export using .::stdlib_1_7 import mx_ifequal_vector3B;
+export using .::stdlib_1_7 import mx_ifequal_vector4B;
+export using .::stdlib_1_7 import mx_switch_float;
+export using .::stdlib_1_7 import mx_switch_color3;
+export using .::stdlib_1_7 import mx_switch_color4;
+export using .::stdlib_1_7 import mx_switch_vector2;
+export using .::stdlib_1_7 import mx_switch_vector3;
+export using .::stdlib_1_7 import mx_switch_vector4;
+export using .::stdlib_1_7 import mx_switch_floatI;
+export using .::stdlib_1_7 import mx_switch_color3I;
+export using .::stdlib_1_7 import mx_switch_color4I;
+export using .::stdlib_1_7 import mx_switch_vector2I;
+export using .::stdlib_1_7 import mx_switch_vector3I;
+export using .::stdlib_1_7 import mx_switch_vector4I;
+export using .::stdlib_1_7 import mx_convert_float_color3;
+export using .::stdlib_1_7 import mx_convert_float_color4;
+export using .::stdlib_1_7 import mx_convert_float_vector2;
+export using .::stdlib_1_7 import mx_convert_float_vector3;
+export using .::stdlib_1_7 import mx_convert_float_vector4;
+export using .::stdlib_1_7 import mx_convert_vector2_vector3;
+export using .::stdlib_1_7 import mx_convert_vector3_color3;
+export using .::stdlib_1_7 import mx_convert_vector3_vector2;
+export using .::stdlib_1_7 import mx_convert_vector3_vector4;
+export using .::stdlib_1_7 import mx_convert_vector4_color4;
+export using .::stdlib_1_7 import mx_convert_vector4_vector3;
+export using .::stdlib_1_7 import mx_convert_color3_vector3;
+export using .::stdlib_1_7 import mx_convert_color4_vector4;
+export using .::stdlib_1_7 import mx_convert_color3_color4;
+export using .::stdlib_1_7 import mx_convert_color4_color3;
+export using .::stdlib_1_7 import mx_convert_boolean_float;
+export using .::stdlib_1_7 import mx_convert_integer_float;
+export using .::stdlib_1_7 import mx_combine2_vector2;
+export using .::stdlib_1_7 import mx_combine2_color4CF;
+export using .::stdlib_1_7 import mx_combine2_vector4VF;
+export using .::stdlib_1_7 import mx_combine2_color4CC;
+export using .::stdlib_1_7 import mx_combine2_vector4VV;
+export using .::stdlib_1_7 import mx_combine3_color3;
+export using .::stdlib_1_7 import mx_combine3_vector3;
+export using .::stdlib_1_7 import mx_combine4_color4;
+export using .::stdlib_1_7 import mx_combine4_vector4;
+export using .::stdlib_1_7 import mx_creatematrix_vector3_matrix33;
+export using .::stdlib_1_7 import mx_creatematrix_vector3_matrix44;
+export using .::stdlib_1_7 import mx_creatematrix_vector4_matrix44;
+export using .::stdlib_1_7 import mx_blur_float;
+export using .::stdlib_1_7 import mx_blur_color3;
+export using .::stdlib_1_7 import mx_blur_color4;
+export using .::stdlib_1_7 import mx_blur_vector2;
+export using .::stdlib_1_7 import mx_blur_vector3;
+export using .::stdlib_1_7 import mx_blur_vector4;
+export using .::stdlib_1_7 import mx_heighttonormal_vector3;
+export using .::stdlib_1_7 import mx_noise2d_float;
+export using .::stdlib_1_7 import mx_noise2d_float2;
+export using .::stdlib_1_7 import mx_noise2d_float3;
+export using .::stdlib_1_7 import mx_noise2d_float4;
+export using .::stdlib_1_7 import mx_noise3d_float;
+export using .::stdlib_1_7 import mx_noise3d_float2;
+export using .::stdlib_1_7 import mx_noise3d_float3;
+export using .::stdlib_1_7 import mx_noise3d_float4;
+export using .::stdlib_1_7 import mx_fractal3d_float;
+export using .::stdlib_1_7 import mx_fractal3d_float2;
+export using .::stdlib_1_7 import mx_fractal3d_float3;
+export using .::stdlib_1_7 import mx_fractal3d_float4;
+export using .::stdlib_1_7 import mx_cellnoise2d_float;
+export using .::stdlib_1_7 import mx_cellnoise3d_float;
+export using .::stdlib_1_7 import mx_worleynoise2d_float;
+export using .::stdlib_1_7 import mx_worleynoise2d_float2;
+export using .::stdlib_1_7 import mx_worleynoise2d_float3;
+export using .::stdlib_1_7 import mx_worleynoise3d_float;
+export using .::stdlib_1_7 import mx_worleynoise3d_float2;
+export using .::stdlib_1_7 import mx_worleynoise3d_float3;
+
+// NOTE: Not planned to be implemented.
+export using .::stdlib_1_7 import mx_geompropvalue_string;
+
+// NOTE: No boolean scene data in MDL so it's mapped to integer.
+//       Returns false if the scene data is zero, true otherwise.
+export bool mx_geompropvalue_boolean(
+	uniform string mxp_geomprop = string(""),
+	bool mxp_default = bool(false)
+)
+	[[
+		anno::description("Node Group: geometric")
+	]]
+{
+	int defaultValue = mxp_default ? 1 : 0;
+	return scene::data_lookup_int(mxp_geomprop, defaultValue) == 0 ? false : true;
+}
+
+export int mx_geompropvalue_integer(
+	uniform string mxp_geomprop = string(""),
+	int mxp_default = int(0)
+)
+	[[
+		anno::description("Node Group: geometric")
+	]]
+{
+	return scene::data_lookup_int(mxp_geomprop, mxp_default);
+}
+
+export float mx_geompropvalue_float(
+	uniform string mxp_geomprop = string(""),
+	float mxp_default = float(0.0)
+)
+	[[
+		anno::description("Node Group: geometric")
+	]]
+{
+	return scene::data_lookup_float(mxp_geomprop, mxp_default);
+}
+
+export color mx_geompropvalue_color3(
+	uniform string mxp_geomprop = string(""),
+	color mxp_default = color(0.0, 0.0, 0.0)
+)
+	[[
+		anno::description("Node Group: geometric")
+	]]
+{
+	return scene::data_lookup_color(mxp_geomprop, mxp_default);
+}
+
+export core::color4 mx_geompropvalue_color4(
+	uniform string mxp_geomprop = string(""),
+	core::color4 mxp_default = core::mk_color4(0.0, 0.0, 0.0, 0.0)
+)
+	[[
+		anno::description("Node Group: geometric")
+	]]
+{
+    float3 rgbValue = float3(mxp_default.rgb);
+    float4 defaultValue = float4(rgbValue.x, rgbValue.y, rgbValue.z, mxp_default.a);
+	float4 value = scene::data_lookup_float4(mxp_geomprop, defaultValue);
+	return core::mk_color4(value.x, value.y, value.z, value.w);
+}
+
+export float2 mx_geompropvalue_vector2(
+	uniform string mxp_geomprop = string(""),
+	float2 mxp_default = float2(0.0, 0.0)
+)
+	[[
+		anno::description("Node Group: geometric")
+	]]
+{
+	return scene::data_lookup_float2(mxp_geomprop, mxp_default);
+}
+
+export float3 mx_geompropvalue_vector3(
+	uniform string mxp_geomprop = string(""),
+	float3 mxp_default = float3(0.0, 0.0, 0.0)
+)
+	[[
+		anno::description("Node Group: geometric")
+	]]
+{
+	return scene::data_lookup_float3(mxp_geomprop, mxp_default);
+}
+
+export float4 mx_geompropvalue_vector4(
+	uniform string mxp_geomprop = string(""),
+	float4 mxp_default = float4(0.0, 0.0, 0.0, 0.0)
+)
+{
+    return scene::data_lookup_float4(mxp_geomprop, mxp_default);
+}
+
+export float3 mx_viewdirection_vector3(
+	uniform core::mx_coordinatespace_type mxp_space = core::mx_coordinatespace_type_world
+	[[
+		anno::description("Enumeration {model,object,world}."),
+		anno::unused()
+	]]
+)
+	[[
+		anno::description("Node Group: nprlib")
+	]]
+{
+	float3 internal_space_direction =
+		state::position() - scene::data_lookup_float3("CAMERA_POSITION", float3(0.0, 0.0, 0.0));
+
+	if (mxp_space == core::mx_coordinatespace_type_world)
+		return math::normalize(state::transform_vector(
+			::state::coordinate_internal,
+			::state::coordinate_world,
+			internal_space_direction));
+	else
+		return math::normalize(state::transform_vector(
+			::state::coordinate_internal,
+			::state::coordinate_object,
+			internal_space_direction));
+}

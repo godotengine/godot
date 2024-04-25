@@ -1,0 +1,4 @@
+void mx_hsvtorgb_color4(color4 _in, output color4 result)
+{
+    result = color4(transformc("hsv","rgb", _in.rgb), 1.0);
+}

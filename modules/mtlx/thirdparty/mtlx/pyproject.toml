@@ -1,0 +1,78 @@
+[build-system]
+# Use a fixed version because we use an experimental feature
+# (a custom plugin) and for now that functionality has
+# no compatibility promises.
+requires = ["scikit-build-core==0.4.4"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "MaterialX"
+dynamic = ["version"]
+
+authors = [
+  { name="Contributors to the MaterialX project", email="materialx-discussion@lists.aswf.io" },
+]
+readme = "README.md"
+requires-python = ">=3.6"
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://materialx.org"
+"Source" = "https://github.com/AcademySoftwareFoundation/MaterialX"
+"Bug Tracker" = "https://github.com/AcademySoftwareFoundation/MaterialX/issues"
+
+[project.scripts]
+baketextures = "MaterialX._scripts.baketextures:main"
+generateshader = "MaterialX._scripts.generateshader:main"
+genmdl = "MaterialX._scripts.genmdl:main"
+mxdoc = "MaterialX._scripts.mxdoc:main"
+mxupdate = "MaterialX._scripts.mxupdate:main"
+mxvalidate = "MaterialX._scripts.mxvalidate:main"
+translateshader = "MaterialX._scripts.translateshader:main"
+writenodegraphs = "MaterialX._scripts.writenodegraphs:main"
+
+[tool.scikit-build]
+cmake.minimum-version = "3.18"
+cmake.verbose = false
+cmake.build-type = "Release"
+
+# Enable experimental features if any are available
+# In this case we need custom local plugin to get
+# the project version from cmake.
+experimental = true
+metadata.version.provider = "mtx_skbuild_plugin"
+metadata.version.provider-path = "./python"
+
+# Uncoment when developing locally to enable inplace builds.
+# build-dir = "build/"
+
+logging.level = "DEBUG"
+
+# Since the python package doesn't live in a standard directory
+# in the source (i.e ./src or ./), we need to manually specify
+# where the package is.
+wheel.packages = ["python/MaterialX"]
+
+sdist.exclude = [
+    "/build",
+    "/dist",
+    "/resources",
+    "/javascript",
+    "/documents",
+    "/.github",
+    "MANIFEST.in"
+]
+
+[tool.scikit-build.cmake.define]
+MATERIALX_BUILD_SHARED_LIBS = 'OFF' # Be explicit
+MATERIALX_BUILD_PYTHON = 'ON'
+MATERIALX_TEST_RENDER = 'OFF'
+MATERIALX_WARNINGS_AS_ERRORS = 'ON'
+MATERIALX_BUILD_TESTS = 'OFF'
+# TODO: How could we harmonize this variable with SKBUILD?
+MATERIALX_INSTALL_PYTHON = 'OFF'

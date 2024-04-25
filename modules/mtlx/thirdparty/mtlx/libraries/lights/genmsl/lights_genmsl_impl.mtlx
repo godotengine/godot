@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+
+  <!-- <point_light> -->
+  <implementation name="IM_point_light_genmsl" nodedef="ND_point_light" file="mx_point_light.metal" function="mx_point_light" target="genmsl" />
+
+  <!-- <directional_light> -->
+  <implementation name="IM_directional_light_genmsl" nodedef="ND_directional_light" file="mx_directional_light.metal" function="mx_directional_light" target="genmsl" />
+
+  <!-- <spot_light> -->
+  <implementation name="IM_spot_light_genmsl" nodedef="ND_spot_light" file="mx_spot_light.metal" function="mx_spot_light" target="genmsl" />
+
+</materialx>

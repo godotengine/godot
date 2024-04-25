@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+
+  <nodedef name="ND_standard_surface_to_gltf_pbr" node="standard_surface_to_gltf_pbr" nodegroup="translation">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" value="0.8, 0.8, 0.8" />
+    <input name="metalness" type="float" value="0" />
+    <input name="specular_roughness" type="float" value="0.2" />
+    <input name="transmission" type="float" value="0" />
+    <input name="transmission_color" type="color3" value="1, 1, 1" />
+    <input name="transmission_depth" type="float" value="0" />
+    <input name="sheen" type="float" value="0" />
+    <input name="sheen_color" type="color3" value="1, 1, 1" />
+    <input name="sheen_roughness" type="float" value="0.3" />
+    <input name="coat" type="float" value="0" />
+    <input name="coat_color" type="color3" value="0, 0, 0" />
+    <input name="coat_roughness" type="float" value="0.1" />
+    <input name="emission" type="float" value="0" />
+    <input name="emission_color" type="color3" value="1, 1, 1" />
+
+    <output name="base_color_out" type="color3" />
+    <output name="metallic_out" type="float" />
+    <output name="roughness_out" type="float" />
+    <output name="transmission_out" type="float" />
+    <output name="thickness_out" type="float" />
+    <output name="attenuation_color_out" type="color3" />
+    <output name="sheen_color_out" type="color3" />
+    <output name="sheen_roughness_out" type="float" />
+    <output name="clearcoat_out" type="float" />
+    <output name="clearcoat_roughness_out" type="float" />
+    <output name="emissive_out" type="color3" />
+  </nodedef>
+
+  <nodegraph name="NG_standard_surface_to_gltf_pbr" nodedef="ND_standard_surface_to_gltf_pbr">
+
+    <!-- Coat attenuation -->
+    <dotproduct name="has_coat_color" type="float">
+      <input name="in1" type="vector3" interfacename="coat_color" channels="rgb" />
+      <input name="in2" type="vector3" value="1,1,1" />
+    </dotproduct>
+    <multiply name="scaledBaseColor" type="color3">
+      <input name="in1" type="color3" interfacename="base_color" />
+      <input name="in2" type="float" interfacename="base" />
+    </multiply>
+    <mix name="coatAttenuation" type="color3">
+      <input name="fg" type="color3" interfacename="coat_color" />
+      <input name="bg" type="color3" value="1.0, 1.0, 1.0" />
+      <input name="mix" type="float" interfacename="coat" />
+    </mix>
+    <multiply name="mixedBaseColor" type="color3">
+      <input name="in1" type="color3" nodename="scaledBaseColor" />
+      <input name="in2" type="color3" nodename="coatAttenuation" />
+    </multiply>
+    <divide name="constantOneThird" type="float">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" value="3" />
+    </divide>
+    <multiply name="coatColor" type="color3">
+      <input name="in1" type="color3" interfacename="coat_color" />
+      <input name="in2" type="float" interfacename="coat" />
+    </multiply>
+    <dotproduct name="weightedCoat" type="float">
+      <input name="in1" type="vector3" nodename="coatColor" channels="rgb" />
+      <input name="in2" type="vector3" nodename="constantOneThird" channels="xxx" />
+    </dotproduct>
+
+    <!-- Metallic roughness -->
+    <ifequal name="base_color" type="color3">
+      <input name="value1" type="float" nodename="has_coat_color" />
+      <input name="value2" type="float" value="0" />
+      <input name="in1" type="color3" nodename="scaledBaseColor" />
+      <input name="in2" type="color3" nodename="mixedBaseColor" />
+    </ifequal>
+    <dot name="metallic" type="float">
+      <input name="in" type="float" interfacename="metalness" />
+    </dot>
+    <dot name="roughness" type="float">
+      <input name="in" type="float" interfacename="specular_roughness" />
+    </dot>
+
+    <!-- Transmission -->
+    <dot name="transmission" type="float">
+      <input name="in" type="float" interfacename="transmission" />
+    </dot>
+    <dot name="thickness" type="float">
+      <input name="in" type="float" interfacename="transmission_depth" />
+    </dot>
+    <dot name="attenuation_color" type="color3">
+      <input name="in" type="color3" interfacename="transmission_color" />
+    </dot>
+
+    <!-- Sheen -->
+    <multiply name="sheen_color" type="color3">
+      <input name="in1" type="color3" interfacename="sheen_color" />
+      <input name="in2" type="float" interfacename="sheen" />
+    </multiply>
+    <ifgreater name="sheen_roughness" type="float">
+      <input name="value1" type="float" interfacename="sheen" />
+      <input name="value2" type="float" value="0" />
+      <input name="in1" type="float" interfacename="sheen_roughness" />
+      <input name="in2" type="float" value="0" />
+    </ifgreater>
+
+    <!-- Clearcoat -->
+    <ifequal name="clearcoat" type="float">
+      <input name="value1" type="float" nodename="has_coat_color" />
+      <input name="value2" type="float" value="0" />
+      <input name="in1" type="float" interfacename="coat" />
+      <input name="in2" type="float" nodename="weightedCoat" />
+    </ifequal>
+    <dot name="clearcoat_roughness" type="float">
+      <input name="in" type="float" interfacename="coat_roughness" />
+    </dot>
+
+    <!-- Emission -->
+    <multiply name="emissive" type="color3">
+      <input name="in1" type="color3" interfacename="emission_color" />
+      <input name="in2" type="float" interfacename="emission" />
+    </multiply>
+
+    <output name="base_color_out" type="color3" nodename="base_color" />
+    <output name="metallic_out" type="float" nodename="metallic" />
+    <output name="roughness_out" type="float" nodename="roughness" />
+    <output name="transmission_out" type="float" nodename="transmission" />
+    <output name="thickness_out" type="float" nodename="thickness" />
+    <output name="attenuation_color_out" type="color3" nodename="attenuation_color" />
+    <output name="sheen_color_out" type="color3" nodename="sheen_color" />
+    <output name="sheen_roughness_out" type="float" nodename="sheen_roughness" />
+    <output name="clearcoat_out" type="float" nodename="clearcoat" />
+    <output name="clearcoat_roughness_out" type="float" nodename="clearcoat_roughness" />
+    <output name="emissive_out" type="color3" nodename="emissive" />
+
+  </nodegraph>
+</materialx>

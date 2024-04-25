@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!-- Test multioutput node artistic_ior connected directly to output -->
+  <nodegraph name="multioutput_test2">
+    <artistic_ior name="artistic_ior1" type="multioutput">
+      <input name="reflectivity" type="color3" value="0.4, 0.4, 0.4" />
+      <input name="edge_color" type="color3" value="0.8, 0.8, 0.8" />
+    </artistic_ior>
+    <output name="out" type="color3" nodename="artistic_ior1" output="ior" />
+  </nodegraph>
+
+  <!-- Test multioutput node separate connected internally -->
+  <nodegraph name="multioutput_test3">
+    <separate4 name="separate_color4" type="multioutput">
+      <input name="in" type="color4" value="0.15, 0.42, 0.78, 1.0" />
+    </separate4>
+    <multiply name="multiply1" type="float">
+      <input name="in1" type="float" nodename="separate_color4" output="outr" />
+      <input name="in2" type="float" nodename="separate_color4" output="outg" />
+    </multiply>
+    <multiply name="multiply2" type="float">
+      <input name="in1" type="float" nodename="separate_color4" output="outb" />
+      <input name="in2" type="float" nodename="separate_color4" output="outa" />
+    </multiply>
+    <multiply name="multiply3" type="float">
+      <input name="in1" type="float" nodename="multiply1" />
+      <input name="in2" type="float" nodename="multiply2" />
+    </multiply>
+    <output name="out" type="float" nodename="multiply3" />
+  </nodegraph>
+
+  <!-- Test custom node graph implementation with multioutput -->
+  <nodedef name="ND_color4split" node="color4split">
+    <input name="in" type="color4" />
+    <output name="colour" type="color3" />
+    <output name="alpha" type="float" />
+  </nodedef>
+  <nodegraph name="IM_color4split" nodedef="ND_color4split">
+    <swizzle name="swizz_color3" type="color3">
+      <input name="in" type="color4" interfacename="in" />
+      <input name="channels" type="string" value="rgb" />
+    </swizzle>
+    <swizzle name="swizz_float" type="float">
+      <input name="in" type="color4" interfacename="in" />
+      <input name="channels" type="string" value="a" />
+    </swizzle>
+    <output name="colour" type="color3" nodename="swizz_color3" />
+    <output name="alpha" type="float" nodename="swizz_float" />
+  </nodegraph>
+  <nodegraph name="multioutput_test4">
+    <color4split name="color4split1" type="multioutput">
+      <input name="in" type="color4" value="1.0, 0.2, 0.2, 0.5" />
+    </color4split>
+    <multiply name="multiply1" type="color3">
+      <input name="in1" type="color3" nodename="color4split1" output="colour" />
+      <input name="in2" type="float" nodename="color4split1" output="alpha" />
+    </multiply>
+    <output name="out" type="color3" nodename="multiply1" />
+  </nodegraph>
+
+  <!-- Test custom node implementation with multioutput in a material context -->
+  <color4split name="color4split1" type="multioutput">
+    <input name="in" type="color4" value="1.0, 0.25, 0.25, 0.42" />
+  </color4split>
+  <output name="color4split1_colour" type="color3" nodename="color4split1" output="colour" />
+  <output name="color4split1_alpha" type="float" nodename="color4split1" output="alpha" />
+  <standard_surface name="standard_surface1" type="surfaceshader">
+    <input name="base_color" type="color3" output="color4split1_colour" />
+    <input name="specular_roughness" type="float" output="color4split1_alpha" />
+  </standard_surface>
+  <surfacematerial name="multioutput_test5" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="standard_surface1" />
+  </surfacematerial>
+
+  <!-- Test node graph with multioutput in a material context -->
+  <nodegraph name="multioutput_graph">
+    <constant name="value_color3" type="color3">
+      <input name="value" type="color3" value="1.0, 0.25, 0.25" />
+    </constant>
+    <constant name="value_float" type="float">
+      <input name="value" type="float" value="0.42" />
+    </constant>
+    <output name="colour" type="color3" nodename="value_color3" />
+    <output name="alpha" type="float" nodename="value_float" />
+  </nodegraph>
+  <standard_surface name="standard_surface2" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="multioutput_graph" output="colour" />
+    <input name="specular_roughness" type="float" nodegraph="multioutput_graph" output="alpha" />
+  </standard_surface>
+  <surfacematerial name="multioutput_test6" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="standard_surface2" />
+  </surfacematerial>
+</materialx>

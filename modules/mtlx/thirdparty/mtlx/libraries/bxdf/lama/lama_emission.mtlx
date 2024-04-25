@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="acescg">
+  <nodedef name="ND_lama_emission" node="LamaEmission" nodegroup="pbr" doc="Lama emission" version="1.0" isdefaultversion="true">
+    <input name="color" type="color3" value="1.0, 1.0, 1.0" uiname="Color" uifolder="Main"
+           doc="Color being uniformly emitted in all directions above the surface." />
+    <output name="out" type="EDF" />
+  </nodedef>
+
+  <nodegraph name="IMPL_lama_emission" nodedef="ND_lama_emission">
+
+    <!-- EDF -->
+    <uniform_edf name="emission" type="EDF">
+      <input name="color" type="color3" interfacename="color" />
+    </uniform_edf>
+
+    <!-- Output -->
+    <output name="out" type="EDF" nodename="emission" />
+
+  </nodegraph>
+</materialx>

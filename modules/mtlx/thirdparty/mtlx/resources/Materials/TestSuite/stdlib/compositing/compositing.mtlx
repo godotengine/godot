@@ -1,0 +1,398 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+  Basic compositing function tests each test is in a separate graph for each variation in input type.
+  - plus
+  - minus
+  - difference
+  - burn
+  - dodge
+  - screen
+  - overlay
+  - disjointover
+  - mask
+  - matte
+  - in
+  - out
+  - over
+  - inside
+  - outside
+  - mix
+  - premult
+  - unpremult
+-->
+  <nodegraph name="plus_float">
+    <plus name="plus1" type="float">
+      <input name="fg" type="float" value="0.4000" />
+      <input name="bg" type="float" value="0.3000" />
+      <input name="mix" type="float" value="0.5000" />
+    </plus>
+    <output name="out" type="float" nodename="plus1" />
+  </nodegraph>
+  <nodegraph name="plus_color3">
+    <plus name="plus1" type="color3">
+      <input name="fg" type="color3" value="0.2000, 0.4000, 0.0" />
+      <input name="bg" type="color3" value="0.3000, 0.3000, 1.0000" />
+      <input name="mix" type="float" value="0.5000" />
+    </plus>
+    <output name="out" type="color3" nodename="plus1" />
+  </nodegraph>
+  <nodegraph name="plus_color4">
+    <plus name="plus1" type="color4">
+      <input name="fg" type="color4" value="0.2000, 0.4000, 0.0000, 0.0000" />
+      <input name="bg" type="color4" value="0.3000, 0.3000, 1.0000, 1.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </plus>
+    <output name="out" type="color4" nodename="plus1" />
+  </nodegraph>
+  <nodegraph name="minus_float">
+    <minus name="minus1" type="float">
+      <input name="fg" type="float" value="1.0000" />
+      <input name="bg" type="float" value="1.0000" />
+      <input name="mix" type="float" value="0.5000" />
+    </minus>
+    <output name="out" type="float" nodename="minus1" />
+  </nodegraph>
+  <nodegraph name="minus_color3">
+    <minus name="minus1" type="color3">
+      <input name="fg" type="color3" value="1.0000, 0.0, 0.0" />
+      <input name="bg" type="color3" value="1.0000, 1.0000, 0.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </minus>
+    <output name="out" type="color3" nodename="minus1" />
+  </nodegraph>
+  <nodegraph name="minus_color4">
+    <minus name="minus1" type="color4">
+      <input name="fg" type="color4" value="1.0000, 0.0, 0.0, 0.000" />
+      <input name="bg" type="color4" value="1.0000, 1.0000, 0.0, 1.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </minus>
+    <output name="out" type="color4" nodename="minus1" />
+  </nodegraph>
+  <nodegraph name="difference_float">
+    <difference name="difference1" type="float">
+      <input name="fg" type="float" value="1.0000" />
+      <input name="bg" type="float" value="0.5000" />
+      <input name="mix" type="float" value="0.5000" />
+    </difference>
+    <output name="out" type="float" nodename="difference1" />
+  </nodegraph>
+  <nodegraph name="difference_color3">
+    <difference name="difference1" type="color3">
+      <input name="fg" type="color3" value="1.0000, 1.0000, 0.0" />
+      <input name="bg" type="color3" value="0.5000, 0.0000, 0.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </difference>
+    <output name="out" type="color3" nodename="difference1" />
+  </nodegraph>
+  <nodegraph name="difference_color4">
+    <difference name="difference1" type="color4">
+      <input name="fg" type="color4" value="1.0000, 1.0000, 0.0, 0.0000" />
+      <input name="bg" type="color4" value="0.5000, 0.0, 0.0, 1.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </difference>
+    <output name="out" type="color4" nodename="difference1" />
+  </nodegraph>
+  <nodegraph name="burn_float">
+    <burn name="burn1" type="float">
+      <input name="fg" type="float" value="0.5000" />
+      <input name="bg" type="float" value="0.5000" />
+      <input name="mix" type="float" value="0.5000" />
+    </burn>
+    <output name="out" type="float" nodename="burn1" />
+  </nodegraph>
+  <nodegraph name="burn_float_divzero">
+    <burn name="burn1" type="float">
+      <input name="fg" type="float" value="0.0000" />
+      <input name="bg" type="float" value="0.5000" />
+      <input name="mix" type="float" value="0.5000" />
+    </burn>
+    <output name="out" type="float" nodename="burn1" />
+  </nodegraph>
+  <nodegraph name="burn_color3">
+    <burn name="burn1" type="color3">
+      <input name="fg" type="color3" value="0.5000, 0.7500, 1.0000" />
+      <input name="bg" type="color3" value="0.5000, 0.7500, 0.0000" />
+      <input name="mix" type="float" value="0.5000" />
+    </burn>
+    <output name="out" type="color3" nodename="burn1" />
+  </nodegraph>
+  <nodegraph name="burn_color4">
+    <burn name="burn1" type="color4">
+      <input name="fg" type="color4" value="0.5000, 0.7500, 1.0000, 1.0000" />
+      <input name="bg" type="color4" value="0.5000, 0.7500, 0.0, 1.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </burn>
+    <output name="out" type="color4" nodename="burn1" />
+  </nodegraph>
+  <nodegraph name="dodge_float">
+    <dodge name="dodge1" type="float">
+      <input name="fg" type="float" value="0.0000" />
+      <input name="bg" type="float" value="0.5000" />
+      <input name="mix" type="float" value="0.5000" />
+    </dodge>
+    <output name="out" type="float" nodename="dodge1" />
+  </nodegraph>
+  <nodegraph name="dodge_float_divzero">
+    <dodge name="dodge1" type="float">
+      <input name="fg" type="float" value="1.0000" />
+      <input name="bg" type="float" value="0.5000" />
+      <input name="mix" type="float" value="0.5000" />
+    </dodge>
+    <output name="out" type="float" nodename="dodge1" />
+  </nodegraph>
+  <nodegraph name="dodge_color3">
+    <dodge name="dodge1" type="color3">
+      <input name="fg" type="color3" value="0.0, 0.2000, 0.0" />
+      <input name="bg" type="color3" value="0.5000, 0.8000, 0.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </dodge>
+    <output name="out" type="color3" nodename="dodge1" />
+  </nodegraph>
+  <nodegraph name="dodge_color4">
+    <dodge name="dodge1" type="color4">
+      <input name="fg" type="color4" value="0.0, 0.2000, 0.0, 0.0" />
+      <input name="bg" type="color4" value="0.5000, 0.8000, 0.0, 1.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </dodge>
+    <output name="out" type="color4" nodename="dodge1" />
+  </nodegraph>
+  <nodegraph name="screen_float">
+    <screen name="screen1" type="float">
+      <input name="fg" type="float" value="0.5000" />
+      <input name="bg" type="float" value="0.5000" />
+      <input name="mix" type="float" value="0.5000" />
+    </screen>
+    <output name="out" type="float" nodename="screen1" />
+  </nodegraph>
+  <nodegraph name="screen_color3">
+    <screen name="screen1" type="color3">
+      <input name="fg" type="color3" value="0.5000, 0.0, 0.0000" />
+      <input name="bg" type="color3" value="0.5000, 1.0000, 0.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </screen>
+    <output name="out" type="color3" nodename="screen1" />
+  </nodegraph>
+  <nodegraph name="screen_color4">
+    <screen name="screen1" type="color4">
+      <input name="fg" type="color4" value="0.5000, 0.0, 0.0, 1.0" />
+      <input name="bg" type="color4" value="0.5000, 1.0000, 0.0, 1.0000" />
+      <input name="mix" type="float" value="0.5000" />
+    </screen>
+    <output name="out" type="color4" nodename="screen1" />
+  </nodegraph>
+  <nodegraph name="overlay_float">
+    <overlay name="overlay1" type="float">
+      <input name="fg" type="float" value="0.2" />
+      <input name="bg" type="float" value="0.6" />
+      <input name="mix" type="float" value="0.5000" />
+    </overlay>
+    <output name="out" type="float" nodename="overlay1" />
+  </nodegraph>
+  <nodegraph name="overlay_color3">
+    <overlay name="overlay1" type="color3">
+      <input name="fg" type="color3" value="0.2, 0.6, 0.6" />
+      <input name="bg" type="color3" value="0.8, 0.2, 0.4" />
+      <input name="mix" type="float" value="0.5000" />
+    </overlay>
+    <output name="out" type="color3" nodename="overlay1" />
+  </nodegraph>
+  <nodegraph name="overlay_color4">
+    <overlay name="overlay1" type="color4">
+      <input name="fg" type="color4" value="0.6, 0.8, 0.8, 1.0" />
+      <input name="bg" type="color4" value="0.6, 0.2, 0.4, 1.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </overlay>
+    <output name="out" type="color4" nodename="overlay1" />
+  </nodegraph>
+  <nodegraph name="disjointover_color4">
+    <disjointover name="disjointover1" type="color4">
+      <input name="fg" type="color4" value="0.5000, 1.0000, 0.0, 1.0" />
+      <input name="bg" type="color4" value="0.5000, 1.0000, 1.0000, 1.0000" />
+      <input name="mix" type="float" value="0.5000" />
+    </disjointover>
+    <output name="out" type="color4" nodename="disjointover1" />
+  </nodegraph>
+  <nodegraph name="disjointover_color4_divzero">
+    <disjointover name="disjointover1" type="color4">
+      <input name="fg" type="color4" value="0.5000, 1.0000, 0.0, 2.0" />
+      <input name="bg" type="color4" value="0.5000, 1.0000, 1.0000, 0.0000" />
+      <input name="mix" type="float" value="0.5000" />
+    </disjointover>
+    <output name="out" type="color4" nodename="disjointover1" />
+  </nodegraph>
+  <nodegraph name="mask_color4">
+    <mask name="mask1" type="color4">
+      <input name="fg" type="color4" value="1.0000, 1.0000, 1.0000, 1.000" />
+      <input name="bg" type="color4" value="0.5000, 0.7500, 0.0, 1.000" />
+      <input name="mix" type="float" value="0.5000" />
+    </mask>
+    <output name="out" type="color4" nodename="mask1" />
+  </nodegraph>
+  <nodegraph name="out_color4">
+    <out name="out1" type="color4">
+      <input name="fg" type="color4" value="1.0000, 1.0000, 1.0000, 1.0000" />
+      <input name="bg" type="color4" value="1.0000, 1.0000, 0.0, 1.0000" />
+      <input name="mix" type="float" value="0.5000" />
+    </out>
+    <output name="out" type="color4" nodename="out1" />
+  </nodegraph>
+  <nodegraph name="over_color4">
+    <over name="over1" type="color4">
+      <input name="fg" type="color4" value="1.0000, 1.0000, 1.0000, 0.5000" />
+      <input name="bg" type="color4" value="1.0000, 1.0000, 0.0, 0.5000" />
+      <input name="mix" type="float" value="0.5000" />
+    </over>
+    <output name="out" type="color4" nodename="over1" />
+  </nodegraph>
+  <nodegraph name="inside_float">
+    <inside name="inside1" type="float">
+      <input name="in" type="float" value="1.0000" />
+      <input name="mask" type="float" value="0.5000" />
+    </inside>
+    <output name="out" type="float" nodename="inside1" />
+  </nodegraph>
+  <nodegraph name="mix_float">
+    <mix name="mix1" type="float">
+      <input name="fg" type="float" value="1.0000" />
+      <input name="bg" type="float" value="0.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </mix>
+    <output name="out" type="float" nodename="mix1" />
+  </nodegraph>
+  <nodegraph name="inside_color3">
+    <inside name="inside1" type="color3">
+      <input name="in" type="color3" value="0.5000, 0.8000, 0.0000" />
+      <input name="mask" type="float" value="0.5000" />
+    </inside>
+    <output name="out" type="color3" nodename="inside1" />
+  </nodegraph>
+  <nodegraph name="inside_color4">
+    <inside name="inside1" type="color4">
+      <input name="in" type="color4" value="0.5000, 0.8000, 0.0, 2.0" />
+      <input name="mask" type="float" value="0.5000" />
+    </inside>
+    <output name="out" type="color4" nodename="inside1" />
+  </nodegraph>
+  <nodegraph name="mix_color3">
+    <mix name="mix1" type="color3">
+      <input name="fg" type="color3" value="1.0000, 0.0, 0.0" />
+      <input name="bg" type="color3" value="0.0, 1.0000, 0.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </mix>
+    <output name="out" type="color3" nodename="mix1" />
+  </nodegraph>
+  <nodegraph name="mix_color3_color3">
+    <mix name="mix1" type="color3">
+      <input name="fg" type="color3" value="1.0000, 0.0, 0.0" />
+      <input name="bg" type="color3" value="0.0, 1.0000, 0.0" />
+      <input name="mix" type="color3" value="0.5000, 0.5000, 0.5000" />
+    </mix>
+    <output name="out" type="color3" nodename="mix1" />
+  </nodegraph>
+  <nodegraph name="mix_color4_color4">
+    <mix name="mix1" type="color4">
+      <input name="fg" type="color4" value="1.0000, 0.0, 0.0, 1.0" />
+      <input name="bg" type="color4" value="0.0000, 1.0000, 0.0, 1.0" />
+      <input name="mix" type="color4" value="0.5000, 0.5000, 0.5000, 0.5000" />
+    </mix>
+    <output name="out" type="color4" nodename="mix1" />
+  </nodegraph>
+  <nodegraph name="mix_vector2">
+    <mix name="mix1" type="vector2">
+      <input name="fg" type="vector2" value="1.0000, 0.0" />
+      <input name="bg" type="vector2" value="0.0, 1.0000" />
+      <input name="mix" type="float" value="0.5000" />
+    </mix>
+    <output name="out" type="vector2" nodename="mix1" />
+  </nodegraph>
+  <nodegraph name="mix_vector2_vector2">
+    <mix name="mix1" type="vector2">
+      <input name="fg" type="vector2" value="1.0000, 0.0" />
+      <input name="bg" type="vector2" value="0.0, 1.0000" />
+      <input name="mix" type="vector2" value="0.5000, 0.5000" />
+    </mix>
+    <output name="out" type="vector2" nodename="mix1" />
+  </nodegraph>
+  <nodegraph name="mix_vector3">
+    <mix name="mix1" type="vector3">
+      <input name="fg" type="vector3" value="1.0000, 0.0, 0.0" />
+      <input name="bg" type="vector3" value="0.0, 1.0000, 0.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </mix>
+    <output name="out" type="vector3" nodename="mix1" />
+  </nodegraph>
+  <nodegraph name="mix_vector3_vector3">
+    <mix name="mix1" type="vector3">
+      <input name="fg" type="vector3" value="1.0000, 0.0, 0.0" />
+      <input name="bg" type="vector3" value="0.0, 1.0000, 0.0" />
+      <input name="mix" type="vector3" value="0.5000, 0.5000, 0.5000" />
+    </mix>
+    <output name="out" type="vector3" nodename="mix1" />
+  </nodegraph>
+  <nodegraph name="mix_vector4">
+    <mix name="mix1" type="vector4">
+      <input name="fg" type="vector4" value="1.0000, 0.0, 0.0, 1.0" />
+      <input name="bg" type="vector4" value="0.0, 1.0000, 0.0, 1.0" />
+      <input name="mix" type="float" value="0.5000" />
+    </mix>
+    <output name="out" type="vector4" nodename="mix1" />
+  </nodegraph>
+  <nodegraph name="mix_vector4_vector4">
+    <mix name="mix1" type="vector4">
+      <input name="fg" type="vector4" value="1.0000, 0.0, 0.0, 1.0" />
+      <input name="bg" type="vector4" value="0.0, 1.0000, 0.0, 1.0" />
+      <input name="mix" type="vector4" value="0.5000, 0.5000, 0.5000, 0.5000" />
+    </mix>
+    <output name="out" type="vector4" nodename="mix1" />
+  </nodegraph>
+  <nodegraph name="premult_color4">
+    <premult name="premult1" type="color4">
+      <input name="in" type="color4" value="1.0000, 0.0, 0.5000, 0.5000" />
+    </premult>
+    <output name="out" type="color4" nodename="premult1" />
+  </nodegraph>
+  <nodegraph name="unpremult_color4">
+    <unpremult name="unpremult1" type="color4">
+      <input name="in" type="color4" value="1.0000, 0.0, 0.5000, 0.5000" />
+    </unpremult>
+    <output name="out" type="color4" nodename="unpremult1" />
+  </nodegraph>
+  <nodegraph name="in_color4">
+    <in name="in1" type="color4">
+      <input name="fg" type="color4" value="1.0000, 1.0000, 1.0000, 1.000" />
+      <input name="bg" type="color4" value="1.0000, 1.0000, 0.0, 1.000" />
+      <input name="mix" type="float" value="0.5000" />
+    </in>
+    <output name="out" type="color4" nodename="in1" />
+  </nodegraph>
+  <nodegraph name="outside_float">
+    <outside name="outside1" type="float">
+      <input name="in" type="float" value="1.0000" />
+      <input name="mask" type="float" value="0.5000" />
+    </outside>
+    <output name="out" type="float" nodename="outside1" />
+  </nodegraph>
+  <nodegraph name="outside_color3">
+    <outside name="outside1" type="color3">
+      <input name="in" type="color3" value="0.5000, 0.8000, 0.0" />
+      <input name="mask" type="float" value="0.5000" />
+    </outside>
+    <output name="out" type="color3" nodename="outside1" />
+  </nodegraph>
+  <nodegraph name="outside_color4">
+    <outside name="outside1" type="color4">
+      <input name="in" type="color4" value="0.5000, 0.8000, 0.0, 2.0" />
+      <input name="mask" type="float" value="0.5000" />
+    </outside>
+    <output name="out" type="color4" nodename="outside1" />
+  </nodegraph>
+  <nodegraph name="matte_color4">
+    <matte name="matte1" type="color4">
+      <input name="fg" type="color4" value="1.0000, 1.0000, 1.0000, 1.0000" />
+      <input name="bg" type="color4" value="0.5000, 0.7500, 0.0, 1.0000" />
+      <input name="mix" type="float" value="0.5000" />
+    </matte>
+    <output name="out" type="color4" nodename="matte1" />
+  </nodegraph>
+</materialx>

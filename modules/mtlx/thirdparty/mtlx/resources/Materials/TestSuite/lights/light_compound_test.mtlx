@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+    Node definition: <lightcompound>
+  -->
+  <nodedef name="ND_lightcompoundtest" node="lightcompoundtest" nodegroup="test" doc="A light shader node of 'lightcompoundtest' type.">
+    <input name="position" type="vector3" doc="Light source position." />
+    <input name="direction" type="vector3" doc="Light source direction." />
+    <input name="color" type="color3" doc="Light color." />
+    <input name="intensity" type="float" doc="Light intensity." />
+    <output name="out" type="lightshader" />
+  </nodedef>
+  <!--
+    Node implementation: <lightcompound>
+  -->
+  <nodegraph name="NG_lightcompoundtest" nodedef="ND_lightcompoundtest">
+    <uniform_edf name="edf1" type="EDF">
+      <input name="color" type="color3" interfacename="color" />
+    </uniform_edf>
+    <light name="light1" type="lightshader">
+      <input name="edf" type="EDF" nodename="edf1" />
+      <input name="intensity" type="float" interfacename="intensity" />
+    </light>
+    <output name="out" type="lightshader" nodename="light1" />
+  </nodegraph>
+</materialx>

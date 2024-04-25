@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709" fileprefix="../../../Images/">
+  <nodegraph name="NG_BrickPattern">
+    <input name="brick_color" type="color3" value="0.661876, 0.19088, 0" uiname="Brick Color" uifolder="Color" />
+    <input name="hue_variation" type="float" value="0.083" uimin="0" uimax="1" uiname="Hue Variation" uifolder="Color" />
+    <input name="value_variation" type="float" value="0.787" uimin="0" uimax="1" uiname="Value Variation" uifolder="Color" />
+    <input name="roughness_amount" type="float" value="0.853" uimin="0" uimax="1" uiname="Roughness Amount" uifolder="Roughness" />
+    <input name="dirt_color" type="color3" value="0.56372, 0.56372, 0.56372" uiname="Dirt Color" uifolder="Dirt" />
+    <input name="dirt_amount" type="float" value="0.248" uimin="0" uimax="1" uiname="Dirt Amount" uifolder="Dirt" />
+    <input name="uvtiling" type="float" value="3" uisoftmin="1" uisoftmax="16" uiname="UV Tiling" uifolder="Texturing" />
+    <multiply name="node_multiply_5" type="color3">
+      <input name="in1" type="color3" nodename="node_mix_6" />
+      <input name="in2" type="float" nodename="node_tiledimage_float_7" />
+    </multiply>
+    <mix name="node_mix_8" type="color3">
+      <input name="fg" type="color3" nodename="node_multiply_5" />
+      <input name="bg" type="color3" nodename="node_multiply_9" />
+      <input name="mix" type="float" nodename="node_tiledimage_float_10" />
+    </mix>
+    <constant name="node_color_11" type="color3">
+      <input name="value" type="color3" value="0.263273, 0.263273, 0.263273" />
+    </constant>
+    <multiply name="node_multiply_9" type="color3">
+      <input name="in1" type="color3" nodename="node_color_11" />
+      <input name="in2" type="float" nodename="node_tiledimage_float_7" />
+    </multiply>
+    <rgbtohsv name="node_rgbtohsv_12" type="color3">
+      <input name="in" type="color3" interfacename="brick_color" />
+    </rgbtohsv>
+    <combine3 name="node_combine3_color3_13" type="color3">
+      <input name="in1" type="float" nodename="node_multiply_14" />
+      <input name="in2" type="float" value="0" />
+      <input name="in3" type="float" nodename="node_multiply_15" />
+    </combine3>
+    <add name="node_add_16" type="color3">
+      <input name="in1" type="color3" nodename="node_combine3_color3_13" />
+      <input name="in2" type="color3" nodename="node_rgbtohsv_12" />
+    </add>
+    <hsvtorgb name="node_hsvtorgb_17" type="color3">
+      <input name="in" type="color3" nodename="node_add_16" />
+    </hsvtorgb>
+    <subtract name="node_subtract_18" type="float">
+      <input name="in1" type="float" nodename="node_add_19" />
+      <input name="in2" type="float" value="0.35" />
+    </subtract>
+    <multiply name="node_multiply_14" type="float">
+      <input name="in1" type="float" nodename="node_subtract_18" />
+      <input name="in2" type="float" interfacename="hue_variation" />
+    </multiply>
+    <multiply name="node_multiply_15" type="float">
+      <input name="in1" type="float" nodename="node_add_19" />
+      <input name="in2" type="float" nodename="node_multiply_20" />
+    </multiply>
+    <clamp name="node_clamp_0" type="color3">
+      <input name="in" type="color3" nodename="node_mix_8" />
+    </clamp>
+    <multiply name="node_multiply_1" type="float">
+      <input name="in1" type="float" nodename="node_divide_21" />
+      <input name="in2" type="float" nodename="node_tiledimage_float_22" />
+    </multiply>
+    <max name="node_max_1" type="float">
+      <input name="in1" type="float" nodename="node_tiledimage_float_10" />
+      <input name="in2" type="float" value="0.00001" />
+    </max>
+    <divide name="node_divide_21" type="float">
+      <input name="in1" type="float" interfacename="roughness_amount" />
+      <input name="in2" type="float" nodename="node_max_1" />
+    </divide>
+    <mix name="node_mix_6" type="color3">
+      <input name="fg" type="color3" interfacename="dirt_color" />
+      <input name="bg" type="color3" nodename="node_hsvtorgb_17" />
+      <input name="mix" type="float" nodename="node_multiply_23" />
+    </mix>
+    <multiply name="node_multiply_23" type="float">
+      <input name="in1" type="float" interfacename="dirt_amount" />
+      <input name="in2" type="float" nodename="node_tiledimage_float_24" />
+    </multiply>
+    <multiply name="node_multiply_25" type="float">
+      <input name="in1" type="float" interfacename="hue_variation" />
+      <input name="in2" type="float" nodename="node_tiledimage_float_26" />
+    </multiply>
+    <add name="node_add_19" type="float">
+      <input name="in1" type="float" nodename="node_multiply_25" />
+      <input name="in2" type="float" nodename="node_tiledimage_float_7" />
+    </add>
+    <multiply name="node_multiply_20" type="float">
+      <input name="in1" type="float" interfacename="value_variation" />
+      <input name="in2" type="float" nodename="node_tiledimage_float_26" />
+    </multiply>
+    <normalmap name="node_normalmap_3" type="vector3">
+      <input name="in" type="vector3" nodename="node_tiledimage_vector3_27" />
+    </normalmap>
+    <convert name="node_convert_1" type="vector2">
+      <input name="in" type="float" interfacename="uvtiling" />
+    </convert>
+    <tiledimage name="node_tiledimage_vector3_27" type="vector3">
+      <input name="file" type="filename" value="brick_normal.jpg" />
+      <input name="uvtiling" type="vector2" nodename="node_convert_1" />
+    </tiledimage>
+    <tiledimage name="node_tiledimage_float_22" type="float">
+      <input name="file" type="filename" value="brick_roughness.jpg" />
+      <input name="uvtiling" type="vector2" nodename="node_convert_1" />
+    </tiledimage>
+    <tiledimage name="node_tiledimage_float_10" type="float">
+      <input name="file" type="filename" value="brick_mask.jpg" />
+      <input name="uvtiling" type="vector2" nodename="node_convert_1" />
+    </tiledimage>
+    <tiledimage name="node_tiledimage_float_7" type="float">
+      <input name="file" type="filename" value="brick_base_gray.jpg" />
+      <input name="uvtiling" type="vector2" nodename="node_convert_1" />
+    </tiledimage>
+    <tiledimage name="node_tiledimage_float_26" type="float">
+      <input name="file" type="filename" value="brick_variation_mask.jpg" />
+      <input name="uvtiling" type="vector2" nodename="node_convert_1" />
+    </tiledimage>
+    <tiledimage name="node_tiledimage_float_24" type="float">
+      <input name="file" type="filename" value="brick_dirt_mask.jpg" />
+      <input name="uvtiling" type="vector2" nodename="node_convert_1" />
+    </tiledimage>
+    <output name="base_color_output" type="color3" nodename="node_clamp_0" />
+    <output name="specular_roughness_output" type="float" nodename="node_multiply_1" />
+    <output name="normal_output" type="vector3" nodename="node_normalmap_3" />
+  </nodegraph>
+  <standard_surface name="N_StandardSurface" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="NG_BrickPattern" output="base_color_output" />
+    <input name="specular_roughness" type="float" nodegraph="NG_BrickPattern" output="specular_roughness_output" />
+    <input name="normal" type="vector3" nodegraph="NG_BrickPattern" output="normal_output" />
+  </standard_surface>
+  <surfacematerial name="M_BrickPattern" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="N_StandardSurface" />
+  </surfacematerial>
+</materialx>

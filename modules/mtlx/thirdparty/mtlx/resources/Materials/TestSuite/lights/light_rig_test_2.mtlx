@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <point_light name="viewer_pointLight" type="lightshader">
+    <input name="position" type="vector3" value="-3, -3, 3" />
+    <input name="color" type="color3" value="1.0, 1.0, 1.0" />
+    <input name="intensity" type="float" value="10.0" />
+    <input name="decay_rate" type="float" value="2.0" />
+  </point_light>
+  <spot_light name="viewer_spotLight1" type="lightshader">
+    <input name="position" type="vector3" value="3, 3, 3" />
+    <input name="direction" type="vector3" value="-0.57735026919, -0.57735026919, -0.57735026919" />
+    <input name="color" type="color3" value="1.0, 1.0, 1.0" />
+    <input name="intensity" type="float" value="10.0" />
+    <input name="decay_rate" type="float" value="2.0" />
+    <input name="inner_angle" type="float" value="0.39619469809" />
+    <input name="outer_angle" type="float" value="0.98480775301" />
+  </spot_light>
+  <directional_light name="viewer_backlight" type="lightshader">
+    <input name="direction" type="vector3" value="0.0, 0.0, 1.0" />
+    <input name="color" type="color3" value="1.0, 1.0, 1.0" />
+    <input name="intensity" type="float" value="0.5" />
+  </directional_light>
+  <directional_light name="viewer_bottomlight" type="lightshader">
+    <input name="direction" type="vector3" value="0.0, 1.0, 0.0" />
+    <input name="color" type="color3" value="1.0, 1.0, 1.0" />
+    <input name="intensity" type="float" value="0.5" />
+  </directional_light>
+</materialx>

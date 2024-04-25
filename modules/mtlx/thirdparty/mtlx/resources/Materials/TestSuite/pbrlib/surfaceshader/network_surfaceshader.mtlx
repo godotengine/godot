@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodedef name="ND_network_surface" node="network_surface">
+    <input name="base_color_filename" type="filename" value="" />
+    <output name="out" type="surfaceshader" />
+  </nodedef>  
+  <nodegraph name="NG_network_surface" nodedef="ND_network_surface">
+    <tiledimage name="base_color_image" type="color3">
+      <input name="file" type="filename" interfacename="base_color_filename" />
+    </tiledimage>
+    <standard_surface name="standard_surface" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="base_color_image" />
+    </standard_surface>
+    <output name="out" type="surfaceshader" nodename="standard_surface" />
+  </nodegraph>
+  <network_surface name="N_surfaceshader" type="surfaceshader">
+    <input name="base_color_filename" type="filename" value="resources/Images/grid.png" colorspace="srgb_texture" />
+  </network_surface>  
+  <surfacematerial name="N_surfacematerial" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="N_surfaceshader" />
+  </surfacematerial>
+</materialx>

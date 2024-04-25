@@ -1,0 +1,8 @@
+#include "mx_dodge_float.osl"
+
+void mx_dodge_color3(color fg, color bg, float mix, output color result)
+{
+    mx_dodge_float(fg[0], bg[0], mix, result[0]);
+    mx_dodge_float(fg[1], bg[1], mix, result[1]);
+    mx_dodge_float(fg[2], bg[2], mix, result[2]);
+}

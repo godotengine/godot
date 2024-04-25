@@ -1,0 +1,199 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="thin_film_test1">
+    <dielectric_bsdf name="dielectric_brdf_1" type="BSDF">
+      <input name="ior" type="float" value="2.5" />
+      <input name="roughness" type="vector2" value="0, 0" />
+    </dielectric_bsdf>
+    <thin_film_bsdf name="thin_film_brdf_1" type="BSDF">
+      <input name="thickness" type="float" value="550" />
+      <input name="ior" type="float" value="1.5" />
+    </thin_film_bsdf>
+    <layer name="layer_bsdf_1" type="BSDF">
+      <input name="top" type="BSDF" nodename="thin_film_brdf_1" />
+      <input name="base" type="BSDF" nodename="dielectric_brdf_1" />
+    </layer>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="layer_bsdf_1" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+
+  <nodegraph name="thin_film_test2">
+    <oren_nayar_diffuse_bsdf name="diffuse_bsdf" type="BSDF">
+      <input name="weight" type="float" value="0.5" />
+      <input name="color" type="color3" value="1,1,1" />
+    </oren_nayar_diffuse_bsdf>
+    <dielectric_bsdf name="dielectric_brdf_1" type="BSDF">
+      <input name="ior" type="float" value="2.5" />
+      <input name="roughness" type="vector2" value="0, 0" />
+    </dielectric_bsdf>
+    <layer name="layer_bsdf_1" type="BSDF">
+      <input name="top" type="BSDF" nodename="dielectric_brdf_1" />
+      <input name="base" type="BSDF" nodename="diffuse_bsdf" />
+    </layer>
+    <thin_film_bsdf name="thin_film_brdf_1" type="BSDF">
+      <input name="thickness" type="float" value="550" />
+      <input name="ior" type="float" value="1.5" />
+    </thin_film_bsdf>
+    <layer name="layer_bsdf_2" type="BSDF">
+      <input name="top" type="BSDF" nodename="thin_film_brdf_1" />
+      <input name="base" type="BSDF" nodename="layer_bsdf_1" />
+    </layer>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="layer_bsdf_2" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+
+  <nodegraph name="thin_film_test3">
+    <dielectric_bsdf name="dielectric_brdf_1" type="BSDF">
+      <input name="ior" type="float" value="2.5" />
+      <input name="roughness" type="vector2" value="0, 0" />
+    </dielectric_bsdf>
+    <thin_film_bsdf name="thin_film_brdf_1" type="BSDF">
+      <input name="thickness" type="float" value="550" />
+      <input name="ior" type="float" value="1.5" />
+    </thin_film_bsdf>
+    <layer name="layer_bsdf_1" type="BSDF">
+      <input name="top" type="BSDF" nodename="thin_film_brdf_1" />
+      <input name="base" type="BSDF" nodename="dielectric_brdf_1" />
+    </layer>
+    <oren_nayar_diffuse_bsdf name="diffuse_bsdf" type="BSDF">
+      <input name="weight" type="float" value="0.5" />
+      <input name="color" type="color3" value="1,1,1" />
+    </oren_nayar_diffuse_bsdf>
+    <layer name="layer_bsdf_2" type="BSDF">
+      <input name="top" type="BSDF" nodename="layer_bsdf_1" />
+      <input name="base" type="BSDF" nodename="diffuse_bsdf" />
+    </layer>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="layer_bsdf_2" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+
+  <nodegraph name="thin_film_test4">
+    <dielectric_bsdf name="dielectric_brdf_1" type="BSDF">
+      <input name="tint" type="color3" value="1.0, 1.0, 1.0" />
+      <input name="ior" type="float" value="1.5" />
+      <input name="roughness" type="vector2" value="0.3, 0.3" />
+    </dielectric_bsdf>
+    <dielectric_bsdf name="dielectric_brdf_2" type="BSDF">
+      <input name="tint" type="color3" value="0.1, 1.0, 0.1" />
+      <input name="ior" type="float" value="2.5" />
+      <input name="roughness" type="vector2" value="0.0, 0.0" />
+    </dielectric_bsdf>
+    <layer name="layer_bsdf_1" type="BSDF">
+      <input name="top" type="BSDF" nodename="dielectric_brdf_2" />
+      <input name="base" type="BSDF" nodename="dielectric_brdf_1" />
+    </layer>
+    <thin_film_bsdf name="thin_film_brdf_1" type="BSDF">
+      <input name="thickness" type="float" value="550" />
+      <input name="ior" type="float" value="1.5" />
+    </thin_film_bsdf>
+    <layer name="layer_bsdf_2" type="BSDF">
+      <input name="top" type="BSDF" nodename="thin_film_brdf_1" />
+      <input name="base" type="BSDF" nodename="layer_bsdf_1" />
+    </layer>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="layer_bsdf_2" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+
+  <nodegraph name="thin_film_test5">
+    <dielectric_bsdf name="dielectric_brdf_1" type="BSDF">
+      <input name="tint" type="color3" value="1.0, 0.0, 0.0" />
+      <input name="ior" type="float" value="1.5" />
+      <input name="roughness" type="vector2" value="0.3, 0.3" />
+    </dielectric_bsdf>
+    <dielectric_bsdf name="dielectric_brdf_2" type="BSDF">
+      <input name="tint" type="color3" value="0.0, 1.0, 0.0" />
+      <input name="ior" type="float" value="2.5" />
+      <input name="roughness" type="vector2" value="0.3, 0.3" />
+    </dielectric_bsdf>
+    <mix name="mix_bsdf_1" type="BSDF">
+      <input name="fg" type="BSDF" nodename="dielectric_brdf_2" />
+      <input name="bg" type="BSDF" nodename="dielectric_brdf_1" />
+      <input name="mix" type="float" value="0.5" />
+    </mix>
+    <thin_film_bsdf name="thin_film_brdf_1" type="BSDF">
+      <input name="thickness" type="float" value="550" />
+      <input name="ior" type="float" value="1.5" />
+    </thin_film_bsdf>
+    <layer name="layer_bsdf_1" type="BSDF">
+      <input name="top" type="BSDF" nodename="thin_film_brdf_1" />
+      <input name="base" type="BSDF" nodename="mix_bsdf_1" />
+    </layer>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="layer_bsdf_1" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+
+  <nodegraph name="thin_film_test6">
+    <dielectric_bsdf name="dielectric_brdf_1" type="BSDF">
+      <input name="tint" type="color3" value="1.0, 1.0, 1.0" />
+      <input name="ior" type="float" value="2.5" />
+      <input name="roughness" type="vector2" value="0.0, 0.0" />
+    </dielectric_bsdf>
+    <multiply name="multiply_bsdf_1" type="BSDF">
+      <input name="in1" type="BSDF" nodename="dielectric_brdf_1" />
+      <input name="in2" type="float" value="0.8" />
+    </multiply>
+    <thin_film_bsdf name="thin_film_brdf_1" type="BSDF">
+      <input name="thickness" type="float" value="550" />
+      <input name="ior" type="float" value="1.5" />
+    </thin_film_bsdf>
+    <layer name="layer_bsdf_1" type="BSDF">
+      <input name="top" type="BSDF" nodename="thin_film_brdf_1" />
+      <input name="base" type="BSDF" nodename="multiply_bsdf_1" />
+    </layer>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="layer_bsdf_1" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+
+  <nodegraph name="thin_film_test7">
+    <conductor_bsdf name="conductor_brdf_1" type="BSDF">
+      <input name="ior" type="color3" value="0.18, 0.42, 1.37" />
+      <input name="extinction" type="color3" value="3.42, 2.35, 1.77" />
+      <input name="roughness" type="vector2" value="0.0, 0.0" />
+    </conductor_bsdf>
+    <thin_film_bsdf name="thin_film_brdf_1" type="BSDF">
+      <input name="thickness" type="float" value="550" />
+      <input name="ior" type="float" value="1.5" />
+    </thin_film_bsdf>
+    <layer name="layer_bsdf_1" type="BSDF">
+      <input name="top" type="BSDF" nodename="thin_film_brdf_1" />
+      <input name="base" type="BSDF" nodename="conductor_brdf_1" />
+    </layer>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="layer_bsdf_1" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+
+  <nodegraph name="thin_film_test8">
+    <generalized_schlick_bsdf name="generalized_schlick_brdf_1" type="BSDF">
+      <input name="color0" type="color3" value="0.04, 0.04, 0.04" />
+      <input name="color90" type="color3" value="1.0, 1.0, 1.0" />
+      <input name="roughness" type="vector2" value="0, 0" />
+    </generalized_schlick_bsdf>
+    <thin_film_bsdf name="thin_film_brdf_1" type="BSDF">
+      <input name="thickness" type="float" value="550" />
+      <input name="ior" type="float" value="1.5" />
+    </thin_film_bsdf>
+    <layer name="layer_bsdf_1" type="BSDF">
+      <input name="top" type="BSDF" nodename="thin_film_brdf_1" />
+      <input name="base" type="BSDF" nodename="generalized_schlick_brdf_1" />
+    </layer>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="layer_bsdf_1" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+
+</materialx>

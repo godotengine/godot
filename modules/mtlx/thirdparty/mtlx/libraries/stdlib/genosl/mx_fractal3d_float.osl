@@ -1,0 +1,5 @@
+void mx_fractal3d_float(float amplitude, int octaves, float lacunarity, float diminish, vector position, output float result)
+{
+    float f = mx_fbm(position, octaves, lacunarity, diminish, "snoise");
+    result = f * amplitude;
+}

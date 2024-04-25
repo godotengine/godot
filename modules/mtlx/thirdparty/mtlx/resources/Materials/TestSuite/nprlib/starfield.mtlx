@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <nodegraph name="starfield">
+    <viewdirection name="viewDir" type="vector3" />
+    <multiply name="multiply_vector3FA" type="vector3">
+      <input name="in1" type="vector3" nodename="viewDir" />
+      <input name="in2" type="float" value="260" />
+    </multiply>
+    <noise3d name="noise3d_float" type="float">
+      <input name="position" type="vector3" nodename="multiply_vector3FA" />
+    </noise3d>
+    <contrast name="contrast_float" type="float">
+      <input name="in" type="float" nodename="noise3d_float" />
+      <input name="amount" type="float" value="5" />
+      <input name="pivot" type="float" value="0.8" />
+    </contrast>
+    <clamp name="clamp_float" type="float">
+      <input name="in" type="float" nodename="contrast_float" />
+    </clamp>
+    <convert name="convert_float_color3" type="color3">
+      <input name="in" type="float" nodename="clamp_float" />
+    </convert>
+    <output name="out" type="color3" nodename="convert_float_color3" />
+  </nodegraph>
+</materialx>

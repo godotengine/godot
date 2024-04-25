@@ -1,0 +1,383 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+  Basic adjustment function tests each test is in a separate graph for each variation in input type.
+  - remap
+  - range
+  - smoothstep
+  - luminance
+  - contrast
+  - hsvadjust
+  - saturate
+  -->
+  <nodegraph name="remap_float">
+    <remap name="remap1" type="float">
+      <input name="in" type="float" value="0.2000" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+    </remap>
+    <output name="remap_float_out" type="float" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="remap_color3">
+    <remap name="remap1" type="color3">
+      <input name="in" type="color3" value="0.2000, 0.6000, 0.8000" />
+      <input name="inlow" type="color3" value="0.1000, -0.2000, 0.4000" />
+      <input name="inhigh" type="color3" value="0.9000, 1.2000, 0.6000" />
+      <input name="outlow" type="color3" value="0.4000, 0.2000, 0.3000" />
+      <input name="outhigh" type="color3" value="0.6000, 0.8000, 0.7000" />
+    </remap>
+    <output name="remap_color3_out" type="color3" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="remap_color3FA">
+    <remap name="remap1" type="color3">
+      <input name="in" type="color3" value="0.2000, 0.6000, 0.8000" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+    </remap>
+    <output name="remap_color3FA_out" type="color3" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="remap_color4">
+    <remap name="remap1" type="color4">
+      <input name="in" type="color4" value="0.2000, 0.6000, 0.8000, 1.0" />
+      <input name="inlow" type="color4" value="0.1000, -0.2000, 0.4000, 0.0" />
+      <input name="inhigh" type="color4" value="0.9000, 1.2000, 0.6000, 1.0" />
+      <input name="outlow" type="color4" value="0.4000, 0.2000, 0.3000, 0.0" />
+      <input name="outhigh" type="color4" value="0.6000, 0.8000, 0.7000, 1.0" />
+    </remap>
+    <output name="remap_color4_out" type="color4" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="remap_color4FA">
+    <remap name="remap1" type="color4">
+      <input name="in" type="color4" value="0.2000, 0.6000, 0.8000, 1.0000" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+    </remap>
+    <output name="remap_color4FA_out" type="color4" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="remap_vector2">
+    <remap name="remap1" type="vector2">
+      <input name="in" type="vector2" value="0.2000, 0.5000" />
+      <input name="inlow" type="vector2" value="0.1000, -0.2000" />
+      <input name="inhigh" type="vector2" value="0.9000, 1.2000" />
+      <input name="outlow" type="vector2" value="0.4000, 0.2000" />
+      <input name="outhigh" type="vector2" value="0.6000, 0.8000" />
+    </remap>
+    <output name="remap_vector2_out" type="vector2" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="remap_vector2FA">
+    <remap name="remap1" type="vector2">
+      <input name="in" type="vector2" value="0.2000, 0.5000" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+    </remap>
+    <output name="remap_vector2FA_out" type="vector2" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="remap_vector3">
+    <remap name="remap1" type="vector3">
+      <input name="in" type="vector3" value="0.2000, 0.6000, 0.8000" />
+      <input name="inlow" type="vector3" value="0.1000, -0.2000, 0.4000" />
+      <input name="inhigh" type="vector3" value="0.9000, 1.2000, 0.6000" />
+      <input name="outlow" type="vector3" value="0.4000, 0.2000, 0.3000" />
+      <input name="outhigh" type="vector3" value="0.6000, 0.8000, 0.7000" />
+    </remap>
+    <output name="remap_vector3_out" type="vector3" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="remap_vector3FA">
+    <remap name="remap1" type="vector3">
+      <input name="in" type="vector3" value="0.2000, 0.6000, 0.8000" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+    </remap>
+    <output name="remap_vector3FA_out" type="vector3" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="remap_vector4">
+    <remap name="remap1" type="vector4">
+      <input name="in" type="vector4" value="0.2000, 0.6000, 0.8000, 1.0" />
+      <input name="inlow" type="vector4" value="0.1000, -0.2000, 0.4000, 0.0" />
+      <input name="inhigh" type="vector4" value="0.9000, 1.2000, 0.6000, 1.0" />
+      <input name="outlow" type="vector4" value="0.4000, 0.2000, 0.3000, 0.0" />
+      <input name="outhigh" type="vector4" value="0.6000, 0.8000, 0.7000, 1.0" />
+    </remap>
+    <output name="remap_vector4_out" type="vector4" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="remap_vector4FA">
+    <remap name="remap1" type="vector4">
+      <input name="in" type="vector4" value="0.2000, 0.6000, 0.8000, 1.0" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+    </remap>
+    <output name="remap_vector4FA_out" type="vector4" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="luminance_color3">
+    <luminance name="luminance1" type="color3">
+      <input name="in" type="color3" value="1.0000, 0.7500, 0.5000" />
+    </luminance>
+    <output name="luminance_color3_out" type="color3" nodename="luminance1" />
+  </nodegraph>
+  <nodegraph name="luminance_color4">
+    <luminance name="luminance1" type="color4">
+      <input name="in" type="color4" value="1.0000, 0.7500, 0.5000, 0.2500" />
+    </luminance>
+    <output name="luminance_color4_out" type="color4" nodename="luminance1" />
+  </nodegraph>
+  <nodegraph name="contrast_float">
+    <contrast name="contrast1" type="float">
+      <input name="in" type="float" value="1.0000" />
+      <input name="amount" type="float" value="0.0000" />
+      <input name="pivot" type="float" value="0.5" />
+    </contrast>
+    <output name="contrast_float_out" type="float" nodename="contrast1" />
+  </nodegraph>
+  <nodegraph name="contrast_color3">
+    <contrast name="contrast1" type="color3">
+      <input name="in" type="color3" value="1.0000, 0.5000, 0.2000" />
+      <input name="amount" type="color3" value="0.0000, 0.5000, 1.0000" />
+      <input name="pivot" type="color3" value="0.5, 0.5, 0.5" />
+    </contrast>
+    <output name="contrast_color3_out" type="color3" nodename="contrast1" />
+  </nodegraph>
+  <nodegraph name="contrast_color3FA">
+    <contrast name="contrast1" type="color3">
+      <input name="in" type="color3" value="1.0000, 0.5000, 0.2000" />
+      <input name="amount" type="float" value="1.0000" />
+      <input name="pivot" type="float" value="0.5" />
+    </contrast>
+    <output name="contrast_color3FA_out" type="color3" nodename="contrast1" />
+  </nodegraph>
+  <nodegraph name="contrast_color4">
+    <contrast name="contrast1" type="color4">
+      <input name="in" type="color4" value="1.0000, 0.5000, 0.2000, 1.0" />
+      <input name="amount" type="color4" value="0.0, 0.5000, 1.0000, 1.0" />
+      <input name="pivot" type="color4" value="0.5, 0.5, 0.5, 0.5" />
+    </contrast>
+    <output name="contrast_color4_out" type="color4" nodename="contrast1" />
+  </nodegraph>
+  <nodegraph name="contrast_color4FA">
+    <contrast name="contrast1" type="color4">
+      <input name="in" type="color4" value="1.0000, 0.5000, 0.2000, 1.0" />
+      <input name="amount" type="float" value="1.0000" />
+      <input name="pivot" type="float" value="0.5" />
+    </contrast>
+    <output name="contrast_color4FA_out" type="color4" nodename="contrast1" />
+  </nodegraph>
+  <nodegraph name="contrast_vector2">
+    <contrast name="contrast1" type="vector2">
+      <input name="in" type="vector2" value="1.0000, 0.5000" />
+      <input name="amount" type="vector2" value="0.0000, 0.5000" />
+      <input name="pivot" type="vector2" value="0.5, 0.5" />
+    </contrast>
+    <output name="contrast_vector2_out" type="vector2" nodename="contrast1" />
+  </nodegraph>
+  <nodegraph name="contrast_vector2FA">
+    <contrast name="contrast1" type="vector2">
+      <input name="in" type="vector2" value="1.0000, 0.5000" />
+      <input name="amount" type="float" value="1.0000" />
+      <input name="pivot" type="float" value="0.5" />
+    </contrast>
+    <output name="contrast_vector2FA_out" type="vector2" nodename="contrast1" />
+  </nodegraph>
+  <nodegraph name="contrast_vector3">
+    <contrast name="contrast1" type="vector3">
+      <input name="in" type="vector3" value="1.0000, 0.5000, 0.2000" />
+      <input name="amount" type="vector3" value="0.0, 0.5000, 1.0000" />
+      <input name="pivot" type="vector3" value="0.5, 0.5, 0.5" />
+    </contrast>
+    <output name="contrast_vector3_out" type="vector3" nodename="contrast1" />
+  </nodegraph>
+  <nodegraph name="constrast_vector3FA">
+    <contrast name="contrast1" type="vector3">
+      <input name="in" type="vector3" value="1.0000, 0.5000, 0.2000" />
+      <input name="amount" type="float" value="1.0000" />
+      <input name="pivot" type="float" value="0.5" />
+    </contrast>
+    <output name="constrast_vector3FA_out" type="vector3" nodename="contrast1" />
+  </nodegraph>
+  <nodegraph name="contrast_vector4">
+    <contrast name="contrast1" type="vector4">
+      <input name="in" type="vector4" value="1.0000, 0.5000, 0.2000, 1.0" />
+      <input name="amount" type="vector4" value="0.0, 0.5000, 1.0000, 1.0" />
+      <input name="pivot" type="vector4" value="0.5, 0.5, 0.5, 0.5" />
+    </contrast>
+    <output name="contrast_vector4_out" type="vector4" nodename="contrast1" />
+  </nodegraph>
+  <nodegraph name="contrast_vector4FA">
+    <contrast name="contrast1" type="vector4">
+      <input name="in" type="vector4" value="1.0000, 0.5000, 0.2000, 1.0" />
+      <input name="amount" type="float" value="1.0000" />
+      <input name="pivot" type="float" value="0.5" />
+    </contrast>
+    <output name="contrast_vector4FA_out" type="vector4" nodename="contrast1" />
+  </nodegraph>
+  <nodegraph name="range_float">
+    <range name="range1" type="float">
+      <input name="in" type="float" value="0.2000" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="gamma" type="float" value="2.0000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+      <input name="doclamp" type="boolean" value="false" />
+    </range>
+    <output name="range_float_out" type="float" nodename="range1" />
+  </nodegraph>
+  <nodegraph name="range_color3">
+    <range name="range1" type="color3">
+      <input name="in" type="color3" value="0.2000, 0.6000, 0.8000" />
+      <input name="inlow" type="color3" value="0.1000, -0.2000, 0.4000" />
+      <input name="inhigh" type="color3" value="0.9000, 1.2000, 0.6000" />
+      <input name="gamma" type="color3" value="2.0000, 2.0000, 2.0000" />
+      <input name="outlow" type="color3" value="0.4000, 0.2000, 0.3000" />
+      <input name="outhigh" type="color3" value="0.6000, 0.8000, 0.7000" />
+      <input name="doclamp" type="boolean" value="false" />
+    </range>
+    <output name="range_color3_out" type="color3" nodename="range1" />
+  </nodegraph>
+  <nodegraph name="range_color3FA">
+    <range name="range1" type="color3">
+      <input name="in" type="color3" value="0.2000, 0.6000, 0.8000" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="gamma" type="float" value="2.0000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+      <input name="doclamp" type="boolean" value="false" />
+    </range>
+    <output name="range_color3FA_out" type="color3" nodename="range1" />
+  </nodegraph>
+  <nodegraph name="range_color4">
+    <range name="range1" type="color4">
+      <input name="in" type="color4" value="0.2000, 0.6000, 0.8000, 1.0" />
+      <input name="inlow" type="color4" value="0.1000, -0.2000, 0.4000, 0.0" />
+      <input name="inhigh" type="color4" value="0.9000, 1.2000, 0.6000, 1.0" />
+      <input name="gamma" type="color4" value="2.0000, 2.0000, 2.0000, 2.0000" />
+      <input name="outlow" type="color4" value="0.4000, 0.2000, 0.3000, 0.0" />
+      <input name="outhigh" type="color4" value="0.6000, 0.8000, 0.7000, 1.0" />
+      <input name="doclamp" type="boolean" value="false" />
+    </range>
+    <output name="range_color4_out" type="color4" nodename="range1" />
+  </nodegraph>
+  <nodegraph name="range_color4FA">
+    <range name="range1" type="color4">
+      <input name="in" type="color4" value="0.2000, 0.6000, 0.8000, 1.0" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="gamma" type="float" value="2.0000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+      <input name="doclamp" type="boolean" value="false" />
+    </range>
+    <output name="range_color4FA_out" type="color4" nodename="range1" />
+  </nodegraph>
+  <nodegraph name="range_vector2">
+    <range name="range1" type="vector2">
+      <input name="in" type="vector2" value="0.2000, 0.5000" />
+      <input name="inlow" type="vector2" value="0.1000, -0.2000" />
+      <input name="inhigh" type="vector2" value="0.9000, 1.2000" />
+      <input name="gamma" type="vector2" value="2.0000, 2.0000" />
+      <input name="outlow" type="vector2" value="0.4000, 0.2000" />
+      <input name="outhigh" type="vector2" value="0.6000, 0.8000" />
+      <input name="doclamp" type="boolean" value="false" />
+    </range>
+    <output name="range_vector2_out" type="vector2" nodename="range1" />
+  </nodegraph>
+  <nodegraph name="range_vector2FA">
+    <range name="range1" type="vector2">
+      <input name="in" type="vector2" value="0.2000, 0.5000" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="gamma" type="float" value="2.0000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+      <input name="doclamp" type="boolean" value="false" />
+    </range>
+    <output name="range_vector2FA_out" type="vector2" nodename="range1" />
+  </nodegraph>
+  <nodegraph name="range_vector3">
+    <range name="range1" type="vector3">
+      <input name="in" type="vector3" value="0.2000, 0.6000, 0.8000" />
+      <input name="inlow" type="vector3" value="0.1000, -0.2000, 0.4000" />
+      <input name="inhigh" type="vector3" value="0.9000, 1.2000, 0.6000" />
+      <input name="gamma" type="vector3" value="2.0000, 2.0000, 2.0000" />
+      <input name="outlow" type="vector3" value="0.4000, 0.2000, 0.3000" />
+      <input name="outhigh" type="vector3" value="0.6000, 0.8000, 0.7000" />
+      <input name="doclamp" type="boolean" value="false" />
+    </range>
+    <output name="range_vector3_out" type="vector3" nodename="range1" />
+  </nodegraph>
+  <nodegraph name="range_vector3FA">
+    <range name="range1" type="vector3">
+      <input name="in" type="vector3" value="0.2000, 0.6000, 0.8000" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="gamma" type="float" value="2.0000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+      <input name="doclamp" type="boolean" value="false" />
+    </range>
+    <output name="range_vector3FA_out" type="vector3" nodename="range1" />
+  </nodegraph>
+  <nodegraph name="range_vector4">
+    <range name="range1" type="vector4">
+      <input name="in" type="vector4" value="0.2000, 0.6000, 0.8000, 1.0" />
+      <input name="inlow" type="vector4" value="0.1000, -0.2000, 0.4000, 0.0" />
+      <input name="inhigh" type="vector4" value="0.9000, 1.2000, 0.6000, 1.0" />
+      <input name="gamma" type="vector4" value="2.0000, 2.0000, 2.0000, 2.0000" />
+      <input name="outlow" type="vector4" value="0.4000, 0.2000, 0.3000, 0.0" />
+      <input name="outhigh" type="vector4" value="0.6000, 0.8000, 0.7000, 1.0" />
+      <input name="doclamp" type="boolean" value="false" />
+    </range>
+    <output name="range_vector4_out" type="vector4" nodename="range1" />
+  </nodegraph>
+  <nodegraph name="range_vector4FA">
+    <range name="range1" type="vector4">
+      <input name="in" type="vector4" value="0.2000, 0.6000, 0.8000, 1.0" />
+      <input name="inlow" type="float" value="0.1000" />
+      <input name="inhigh" type="float" value="0.9000" />
+      <input name="gamma" type="float" value="2.0000" />
+      <input name="outlow" type="float" value="0.4000" />
+      <input name="outhigh" type="float" value="0.6000" />
+      <input name="doclamp" type="boolean" value="false" />
+    </range>
+    <output name="range_vector4FA_out" type="vector4" nodename="range1" />
+  </nodegraph>
+  <nodegraph name="hsvadjust_color3">
+    <hsvadjust name="hsvadjust1" type="color3">
+      <input name="in" type="color3" value="0.5000, 0.5000, 0.5000" />
+      <input name="amount" type="vector3" value="1.0000, 0.7500, 0.5000" />
+    </hsvadjust>
+    <output name="hsvadjust_color3_out" type="color3" nodename="hsvadjust1" />
+  </nodegraph>
+  <nodegraph name="hsvadjust_color4">
+    <hsvadjust name="hsvadjust1" type="color4">
+      <input name="in" type="color4" value="0.5000, 0.5000, 0.5000, 0.5000" />
+      <input name="amount" type="vector3" value="1.0000, 0.7500, 0.5000" />
+    </hsvadjust>
+    <output name="hsvadjust_color4_out" type="color4" nodename="hsvadjust1" />
+  </nodegraph>
+  <nodegraph name="saturate_color3">
+    <saturate name="saturate1" type="color3">
+      <input name="in" type="color3" value="1.0000, 0.5000, 0.2500" />
+      <input name="amount" type="float" value="0.5000" />
+    </saturate>
+    <output name="saturate_color3_out" type="color3" nodename="saturate1" />
+  </nodegraph>
+  <nodegraph name="saturate_color4">
+    <saturate name="saturate1" type="color4">
+      <input name="in" type="color4" value="1.0000, 0.5000, 0.2500, 1.0" />
+      <input name="amount" type="float" value="0.5000" />
+    </saturate>
+    <output name="saturate_color4_out" type="color4" nodename="saturate1" />
+  </nodegraph>
+</materialx>

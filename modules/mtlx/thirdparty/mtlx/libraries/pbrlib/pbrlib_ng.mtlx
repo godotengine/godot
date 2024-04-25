@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+    Copyright Contributors to the MaterialX Project
+    SPDX-License-Identifier: Apache-2.0
+
+    Graph definitions of standard nodes included in the MaterialX specification.
+  -->
+
+  <!-- <glossiness_anisotropy> -->
+  <nodegraph name="IMP_glossiness_anisotropy" nodedef="ND_glossiness_anisotropy">
+    <invert name="invert1" type="float">
+      <input name="in" type="float" interfacename="glossiness" />
+    </invert>
+    <roughness_anisotropy name="roughness1" type="vector2">
+      <input name="roughness" type="float" nodename="invert1" />
+      <input name="anisotropy" type="float" interfacename="anisotropy" />
+    </roughness_anisotropy>
+    <output name="out" type="vector2" nodename="roughness1" />
+  </nodegraph>
+
+</materialx>

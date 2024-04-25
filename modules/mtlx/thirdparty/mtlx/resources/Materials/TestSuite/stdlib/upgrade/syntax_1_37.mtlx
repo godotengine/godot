@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<materialx version="1.37" colorspace="lin_rec709">
+  <!--
+    Examples of MaterialX 1.37 syntax
+  -->
+
+  <nodedef name="ND_example_surface" node="example_surface">
+    <input name="diffuseColor" type="color3" value="0.18, 0.18, 0.18" />
+    <input name="metalness" type="float" value="0" />
+    <input name="roughness" type="float" value="0.01" />
+    <input name="clearcoat" type="float" value="0" />
+    <input name="clearcoatRoughness" type="float" value="0.01" />
+    <input name="transmission" type="float" value="0" />
+    <input name="ior" type="float" value="1.5" />
+    <input name="emissiveColor" type="color3" value="0, 0, 0" />
+    <output name="out" type="surfaceshader" />
+  </nodedef>
+
+  <nodegraph name="NG_example_surface" nodedef="ND_example_surface">
+    <diffuse_brdf name="diffuse_bsdf" type="BSDF">
+      <input name="weight" type="float" value="1" />
+      <input name="color" type="color3" interfacename="diffuseColor" />
+      <input name="roughness" type="float" value="0" />
+    </diffuse_brdf>
+    <dielectric_btdf name="transmission_bsdf" type="BSDF">
+      <input name="weight" type="float" value="1" />
+      <input name="tint" type="color3" value="1, 1, 1" />
+      <input name="ior" type="float" interfacename="ior" />
+    </dielectric_btdf>
+    <mix name="transmission_mix" type="BSDF">
+      <input name="fg" type="BSDF" nodename="transmission_bsdf" />
+      <input name="bg" type="BSDF" nodename="diffuse_bsdf" />
+      <input name="mix" type="float" interfacename="transmission" />
+    </mix>
+    <roughness_anisotropy name="specular_roughness" type="vector2">
+      <input name="roughness" type="float" interfacename="roughness" />
+      <input name="anisotropy" type="float" value="0" />
+    </roughness_anisotropy>
+    <subtract name="one_minus_ior" type="float">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" interfacename="ior" />
+    </subtract>
+    <add name="one_plus_ior" type="float">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" interfacename="ior" />
+    </add>
+    <divide name="div_ior" type="float">
+      <input name="in1" type="float" nodename="one_minus_ior" />
+      <input name="in2" type="float" nodename="one_plus_ior" />
+    </divide>
+    <multiply name="F0" type="float">
+      <input name="in1" type="float" nodename="div_ior" />
+      <input name="in2" type="float" nodename="div_ior" />
+    </multiply>
+    <multiply name="F0_albedo" type="color3">
+      <input name="in1" type="color3" interfacename="diffuseColor" />
+      <input name="in2" type="float" nodename="F0" />
+    </multiply>
+    <generalized_schlick_brdf name="dielectric_bsdf" type="BSDF">
+      <input name="weight" type="float" value="1" />
+      <input name="color0" type="color3" nodename="F0" channels="rrr" />
+      <input name="color90" type="color3" value="1, 1, 1" />
+      <input name="roughness" type="vector2" nodename="specular_roughness" />
+      <input name="base" type="BSDF" nodename="transmission_mix" />
+    </generalized_schlick_brdf>
+    <conductor_brdf name="conductor_bsdf" type="BSDF">
+      <input name="weight" type="float" value="1" />
+      <input name="reflectivity" type="color3" nodename="F0_albedo" />
+      <input name="edge_color" type="color3" interfacename="diffuseColor" />
+      <input name="roughness" type="vector2" nodename="specular_roughness" />
+    </conductor_brdf>
+    <mix name="specular_bsdf" type="BSDF">
+      <input name="fg" type="BSDF" nodename="conductor_bsdf" />
+      <input name="bg" type="BSDF" nodename="dielectric_bsdf" />
+      <input name="mix" type="float" interfacename="metalness" />
+    </mix>
+    <roughness_anisotropy name="coat_roughness" type="vector2">
+      <input name="roughness" type="float" interfacename="clearcoatRoughness" />
+      <input name="anisotropy" type="float" value="0" />
+    </roughness_anisotropy>
+    <dielectric_brdf name="coat_bsdf" type="BSDF">
+      <input name="weight" type="float" interfacename="clearcoat" />
+      <input name="tint" type="color3" value="1, 1, 1" />
+      <input name="ior" type="float" value="1.5" />
+      <input name="roughness" type="vector2" nodename="coat_roughness" />
+      <input name="base" type="BSDF" nodename="specular_bsdf" />
+    </dielectric_brdf>
+    <uniform_edf name="emission_edf" type="EDF">
+      <input name="color" type="color3" interfacename="emissiveColor" />
+    </uniform_edf>
+    <surface name="surface_constructor" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="coat_bsdf" />
+      <input name="edf" type="EDF" nodename="emission_edf" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface_constructor" />
+  </nodegraph>
+
+  <material name="M_example_surface">
+    <shaderref name="SR_example_surface" node="example_surface">
+      <bindinput name="diffuseColor" type="color3" value="0.2, 0.2, 0.6" />
+    </shaderref>
+  </material>
+
+  <atan2 name="atan2" type="float">
+    <input name="in1" type="float" value="0.5" />
+    <input name="in2" type="float" value="1.0" />
+  </atan2>
+  <rotate3d name="rot1" type="vector3">
+    <input name="in" type="vector3" value="1.0, 0.0, 0.0" />
+    <input name="amount" type="float" value="10.0" />
+    <parameter name="axis" type="vector3" value="0.0, 0.0, 1.0" />
+  </rotate3d>
+</materialx>

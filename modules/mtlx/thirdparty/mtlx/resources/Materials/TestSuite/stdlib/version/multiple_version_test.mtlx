@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!-- Version 1. Non-default -->
+  <nodedef name="ND_myimage_color3_v1" node="myimage" version="1.0" nodegroup="texture2d">
+    <input name="file" type="filename" uniform="true" value="resources/Images/grid.png" />
+    <output name="out" type="color3" value="0, 0, 0" />
+  </nodedef>
+  <nodegraph name="NG_myimage_color3_v1" nodedef="ND_myimage_color3_v1">
+    <image name="image" type="color3">
+      <input name="file" type="filename" uniform="true" interfacename="file" />
+    </image>
+    <output name="out" type="color3" nodename="image" />
+  </nodegraph>
+
+  <!-- Version 2. Default -->
+  <nodedef name="ND_myimage_color3_v2" node="myimage" version="2.0" isdefaultversion="true" nodegroup="texture2d">
+    <input name="file" type="filename" uniform="true" value="resources/Images/cloth.png" />
+    <output name="out" type="color3" value="0, 0, 0" />
+  </nodedef>
+  <nodegraph name="NG_myimage_color3_v2" nodedef="ND_myimage_color3_v2">
+    <image name="image" type="color3">
+      <input name="file" type="filename" uniform="true" interfacename="file" />
+    </image>
+    <output name="out" type="color3" nodename="image" />
+  </nodegraph>
+
+  <!-- Instance of version 1 -->
+  <myimage name="image_version1_instance" type="color3" version="1.0" />
+  <output name="v1_out" type="color3" nodename="image_version1_instance" />
+
+  <!-- Instance of version 2 -->
+  <myimage name="image_version2_instance" type="color3" version="2.0" />
+  <output name="v2_out" type="color3" nodename="image_version2_instance" />
+
+  <!-- Instance of version 2. Implicitly created as there is no version set and the default is version 2 -->
+  <myimage name="image_version2_implicit_instance" type="color3" />
+  <output name="v2_implicit_out" type="color3" nodename="image_version2_implicit_instance" />
+</materialx>

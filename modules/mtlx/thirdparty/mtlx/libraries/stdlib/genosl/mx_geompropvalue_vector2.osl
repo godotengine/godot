@@ -1,0 +1,13 @@
+void mx_geompropvalue_vector2(string geomprop, vector2 defaultVal, output vector2 out)
+{
+    float value[2];
+    if (getattribute(geomprop, value) == 0)
+    {
+        out = defaultVal;
+    }
+    else
+    {
+        out.x = value[0];
+        out.y = value[1];
+    }
+}

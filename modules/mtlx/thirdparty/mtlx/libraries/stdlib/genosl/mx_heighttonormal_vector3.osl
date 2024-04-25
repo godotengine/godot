@@ -1,0 +1,5 @@
+void mx_heighttonormal_vector3(float in, float scale, output vector result)
+{
+    point htP = P + normalize(N) * in * scale;
+    result = normalize(calculatenormal(htP));
+}

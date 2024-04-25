@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+
+  <!-- <point_light> -->
+  <implementation name="IM_point_light_genglsl" nodedef="ND_point_light" file="mx_point_light.glsl" function="mx_point_light" target="genglsl" />
+
+  <!-- <directional_light> -->
+  <implementation name="IM_directional_light_genglsl" nodedef="ND_directional_light" file="mx_directional_light.glsl" function="mx_directional_light" target="genglsl" />
+
+  <!-- <spot_light> -->
+  <implementation name="IM_spot_light_genglsl" nodedef="ND_spot_light" file="mx_spot_light.glsl" function="mx_spot_light" target="genglsl" />
+
+</materialx>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <standard_surface name="SR_velvet" type="surfaceshader">
+    <input name="base" type="float" value="0.8" />
+    <input name="base_color" type="color3" value="0.029, 0, 0.047" />
+    <input name="specular" type="float" value="0" />
+    <input name="specular_color" type="color3" value="0, 0, 0" />
+    <input name="specular_roughness" type="float" value="0.693" />
+    <input name="specular_IOR" type="float" value="0" />
+    <input name="sheen" type="float" value="1" />
+    <input name="sheen_color" type="color3" value="0.404, 0.058, 1" />
+    <input name="sheen_roughness" type="float" value="0.3" />
+  </standard_surface>
+  <surfacematerial name="Velvet" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_velvet" />
+  </surfacematerial>
+</materialx>

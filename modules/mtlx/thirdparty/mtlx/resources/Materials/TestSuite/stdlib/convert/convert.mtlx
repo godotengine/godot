@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!-- Tuple conversion tests to feed into surfaceshader conversions 
+       Note that as surfaceshader performs most of the basic tuple
+       conversions they are not added explicitly here. -->
+  <nodegraph name="convert_float_color4">
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+    <convert name="convert1" type="color4">
+      <input name="in" type="float" nodename="constant1" />
+    </convert>
+    <output name="out" type="color4" nodename="convert1" />
+  </nodegraph>
+  <nodegraph name="convert_float_vector4">
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+    <convert name="convert1" type="vector4">
+      <input name="in" type="float" nodename="constant1" />
+    </convert>
+    <output name="out" type="vector4" nodename="convert1" />
+  </nodegraph>
+  <nodegraph name="convert_color4_vector4">
+    <constant name="constant1" type="color4">
+      <input name="value" type="color4" value="0.2000, 0.8000, 0.5000, 1.0" />
+    </constant>
+    <convert name="convert1" type="vector4">
+      <input name="in" type="color4" nodename="constant1" />
+    </convert>
+    <output name="out" type="vector4" nodename="convert1" />
+  </nodegraph>
+
+  <!-- Conversion to shader tests -->
+  <convert name="convert_boolean_surfaceshader" type="surfaceshader" version="1.0">
+    <input name="in" type="boolean" value="true" />
+  </convert>
+  <surfacematerial name="material_convert_boolean_surfaceshader_out" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="convert_boolean_surfaceshader" />
+  </surfacematerial>
+
+  <convert name="convert_color3_surfaceshader" type="surfaceshader" version="1.0">
+    <input name="in" type="color3" value="1, 1, 1" />
+  </convert>
+  <surfacematerial name="material_convert_color3_surfaceshader_out" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="convert_color3_surfaceshader" />
+  </surfacematerial>
+
+  <convert name="convert_color4_surfaceshader" type="surfaceshader" version="1.0">
+    <input name="in" type="color4" value="1, 1, 1, 1" />
+  </convert>
+  <surfacematerial name="material_convert_color4_surfaceshader_out" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="convert_color4_surfaceshader" />
+  </surfacematerial>
+
+  <convert name="convert_float_surfaceshader" type="surfaceshader" version="1.0">
+    <input name="in" type="float" value="1" />
+  </convert>
+  <surfacematerial name="material_convert_float_surfaceshader_out" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="convert_float_surfaceshader" />
+  </surfacematerial>
+
+  <convert name="convert_integer_surfaceshader" type="surfaceshader" version="1.0">
+    <input name="in" type="integer" value="1" />
+  </convert>
+  <surfacematerial name="material_convert_integer_surfaceshader_out" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="convert_integer_surfaceshader" />
+  </surfacematerial>
+
+  <convert name="convert_vector2_surfaceshader" type="surfaceshader" version="1.0">
+    <input name="in" type="vector2" value="1, 1" />
+  </convert>
+  <surfacematerial name="material_convert_vector2_surfaceshader_out" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="convert_vector2_surfaceshader" />
+  </surfacematerial>
+
+  <convert name="convert_vector3_surfaceshader" type="surfaceshader" version="1.0">
+    <input name="in" type="vector3" value="1, 1, 1" />
+  </convert>
+  <surfacematerial name="material_convert_vector3_surfaceshader_out" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="convert_vector3_surfaceshader" />
+  </surfacematerial>
+
+  <convert name="convert_vector4_surfaceshader" type="surfaceshader" version="1.0">
+    <input name="in" type="vector4" value="1, 1, 1, 1" />
+  </convert>
+  <surfacematerial name="material_convert_vector4_surfaceshader_out" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="convert_vector4_surfaceshader" />
+  </surfacematerial>
+
+  <!-- With upstream convert graphs to test remaining convert variants -->
+  <convert name="convert_vector4_surfaceshader2" type="surfaceshader" version="1.0">
+    <input name="in" type="vector4" nodegraph="convert_float_vector4" />
+  </convert>
+  <surfacematerial name="material_convert_vector4_surfaceshader_out2" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="convert_vector4_surfaceshader2" />
+  </surfacematerial>
+
+  <convert name="convert_vector4_surfaceshader3" type="surfaceshader" version="1.0">
+    <input name="in" type="vector4" nodegraph="convert_color4_vector4" />
+  </convert>
+  <surfacematerial name="material_convert_vector4_surfaceshader_out3" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="convert_vector4_surfaceshader3" />
+  </surfacematerial>
+
+  <convert name="convert_color4_surfaceshader2" type="surfaceshader" version="1.0">
+    <input name="in" type="color4" nodegraph="convert_float_color4" />
+  </convert>
+  <surfacematerial name="material_convert_color4_surfaceshader_out2" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="convert_color4_surfaceshader2" />
+  </surfacematerial>
+
+
+</materialx>

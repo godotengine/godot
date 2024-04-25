@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="mix_edf_test">
+    <uniform_edf name="edf1" type="EDF">
+      <input name="color" type="color3" value="1.0, 0.0, 0.0" />
+    </uniform_edf>
+    <uniform_edf name="edf2" type="EDF">
+      <input name="color" type="color3" value="0.0, 1.0, 0.0" />
+    </uniform_edf>
+    <mix name="mix_edf1" type="EDF">
+      <input name="fg" type="EDF" nodename="edf1" />
+      <input name="bg" type="EDF" nodename="edf2" />
+      <input name="mix" type="float" value="0.5" />
+    </mix>
+    <surface name="surface1" type="surfaceshader">
+      <input name="edf" type="EDF" nodename="mix_edf1" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+</materialx>

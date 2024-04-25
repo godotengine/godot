@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <gltf_pbr name="SR_default" type="surfaceshader">
+    <input name="base_color" type="color3" value="1.0, 1.0, 1.0" />
+    <input name="metallic" type="float" value="1" />
+    <input name="roughness" type="float" value="1" />
+    <input name="normal" type="vector3" value="0, 0, 1" />
+    <input name="occlusion" type="float" value="0" />
+    <input name="transmission" type="float" value="0" />
+    <input name="specular" type="float" value="1" />
+    <input name="specular_color" type="color3" value="1, 1, 1" />
+    <input name="ior" type="float" value="1.5" />
+    <input name="alpha" type="float" value="1" />
+    <input name="alpha_mode" type="integer" value="0" />
+    <input name="alpha_cutoff" type="float" value="0.5" />
+    <input name="iridescence" type="float" value="0" />
+    <input name="iridescence_ior" type="float" value="1.3" />
+    <input name="iridescence_thickness" type="float" value="300" />
+    <input name="sheen_color" type="color3" value="0, 0, 0" />
+    <input name="sheen_roughness" type="float" value="0" />
+    <input name="clearcoat" type="float" value="0" />
+    <input name="clearcoat_roughness" type="float" value="0" />
+    <input name="clearcoat_normal" type="vector3" value="0, 0, 1" />
+    <input name="emissive" type="color3" value="0, 0, 0" />
+    <input name="emissive_strength" type="float" value="1" />
+    <input name="thickness" type="float" value="0" />
+    <input name="attenuation_distance" type="float" value="100000" />
+    <input name="attenuation_color" type="color3" value="0, 0, 0" />
+  </gltf_pbr>
+  <surfacematerial name="Default" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_default" />
+  </surfacematerial>
+</materialx>

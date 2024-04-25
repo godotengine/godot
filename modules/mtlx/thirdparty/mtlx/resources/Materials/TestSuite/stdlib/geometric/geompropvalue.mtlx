@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <output name="geompropvalue_integer_out" type="vector4" nodename="switch1" />
+  <switch name="switch1" type="vector4">
+    <input name="in1" type="vector4" value="0.0, 0.0, 0.0, 1.0" />
+    <input name="in2" type="vector4" value="0.0, 1.0, 1.0, 1.0" />
+    <input name="in3" type="vector4" value="1.0, 0.0, 1.0, 1.0" />
+    <input name="in4" type="vector4" value="1.0, 0.0, 0.0, 1.0" />
+    <input name="in5" type="vector4" value="0.0, 1.0, 0.0, 1.0" />
+    <input name="which" type="integer" nodename="geompropvalue_integer" />
+  </switch>
+  <geompropvalue name="geompropvalue_integer" type="integer">
+    <input name="geomprop" type="string" value="geompropvalue_integer" />
+  </geompropvalue>
+  <output name="geompropvalue_boolean_out" type="color3" nodename="switch2" />
+  <ifequal name="switch2" type="color3">
+    <input name="in1" type="color3" value="1.0000, 1.0000, 1.0000" />
+    <input name="in2" type="color3" value="0.0, 0.0, 0.0" />
+    <input name="value1" type="boolean" nodename="geompropvalue_boolean" />
+    <input name="value2" type="boolean" value="true" />
+  </ifequal>
+  <geompropvalue name="geompropvalue_boolean" type="boolean">
+    <input name="geomprop" type="string" value="geompropvalue_bool" />
+  </geompropvalue>
+  <output name="geompropvalue_string_out" type="color3" nodename="swizzle1" />
+  <swizzle name="swizzle1" type="color3">
+    <input name="in" type="color3" value="0.5, 0.5, 0.5" />
+    <input name="channels" type="string" nodename="geompropvalue_string" />
+  </swizzle>
+  <geompropvalue name="geompropvalue_string" type="string">
+    <input name="geomprop" type="string" value="geompropvalue_string" />
+  </geompropvalue>
+  <output name="geompropvalue_float_out" type="float" nodename="geompropvalue_float" />
+  <geompropvalue name="geompropvalue_float" type="float">
+    <input name="geomprop" type="string" value="geompropvalue_float" />
+  </geompropvalue>
+  <output name="geompropvalue_color3_out" type="color3" nodename="geompropvalue_color3" />
+  <geompropvalue name="geompropvalue_color3" type="color3">
+    <input name="geomprop" type="string" value="geompropvalue_color3" />
+  </geompropvalue>
+  <output name="geompropvalue_color4_out" type="color4" nodename="geompropvalue_color4" />
+  <geompropvalue name="geompropvalue_color4" type="color4">
+    <input name="geomprop" type="string" value="geompropvalue_color4" />
+  </geompropvalue>
+  <output name="geompropvalue_vector2_out" type="vector2" nodename="geompropvalue_vector2" />
+  <geompropvalue name="geompropvalue_vector2" type="vector2">
+    <input name="geomprop" type="string" value="geompropvalue_vector2" />
+  </geompropvalue>
+  <output name="geompropvalue_vector3_out" type="vector3" nodename="geompropvalue_vector3" />
+  <geompropvalue name="geompropvalue_vector3" type="vector3">
+    <input name="geomprop" type="string" value="geompropvalue_vector3" />
+  </geompropvalue>
+  <output name="geompropvalue_vector4_out" type="vector4" nodename="geompropvalue_vector4" />
+  <geompropvalue name="geompropvalue_vector4" type="vector4">
+    <input name="geomprop" type="string" value="geompropvalue_vector4" />
+  </geompropvalue>
+</materialx>

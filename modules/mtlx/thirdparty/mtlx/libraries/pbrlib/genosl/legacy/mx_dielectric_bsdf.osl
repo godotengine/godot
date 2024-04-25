@@ -1,0 +1,36 @@
+#include "../lib/mx_microfacet_specular.osl"
+
+void mx_dielectric_bsdf(float weight, color tint, float ior, vector2 roughness, normal N, vector U, string distribution, string scatter_mode, output BSDF bsdf)
+{
+    if (scatter_mode == "T")
+    {
+        bsdf.response = tint * weight * microfacet(distribution, N, U, roughness.x, roughness.y, ior, 1);
+        bsdf.throughput = tint * weight;
+        return;
+    }
+
+    float NdotV = clamp(dot(N,-I), M_FLOAT_EPS, 1.0);
+    float F0 = mx_ior_to_f0(ior);
+    float F = mx_fresnel_schlick(NdotV, F0);
+
+    // Calculate compensation for multiple scattering.
+    // This should normally be done inside the closure
+    // but since vanilla OSL doesen't support this we
+    // add it here in shader code instead.
+    vector2 safeAlpha = clamp(roughness, M_FLOAT_EPS, 1.0);
+    float avgAlpha = mx_average_alpha(safeAlpha);
+    float comp = mx_ggx_energy_compensation(NdotV, avgAlpha, F);
+
+    // Calculate throughput from directional albedo.
+    float dirAlbedo = mx_ggx_dir_albedo(NdotV, avgAlpha, ior) * comp;
+    bsdf.throughput = 1.0 - dirAlbedo * weight;
+
+    if (scatter_mode == "R")
+    {
+        bsdf.response = tint * weight * comp * microfacet(distribution, N, U, safeAlpha.x, safeAlpha.y, ior, 0);
+    }
+    else
+    {
+        bsdf.response = tint * weight * comp * microfacet(distribution, N, U, safeAlpha.x, safeAlpha.y, ior, 2);
+    }
+}

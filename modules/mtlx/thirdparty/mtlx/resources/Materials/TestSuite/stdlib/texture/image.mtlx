@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="srgb_texture">
+  <!--
+  Basic image unit test with one image node for each variation in input type.
+  -->
+  <image name="image_color4" type="color4">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+  </image>
+  <output name="image_color4_output" type="color4" nodename="image_color4" />
+  <image name="image_color3" type="color3">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+  </image>
+  <output name="image_color3_output" type="color3" nodename="image_color3" />
+  <image name="image_vector4" type="vector4">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+  </image>
+  <output name="image_vector4_output" type="vector4" nodename="image_vector4" />
+  <image name="image_vector3" type="vector3">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+  </image>
+  <output name="image_vector3_output" type="vector3" nodename="image_vector3" />
+  <image name="image_vector2" type="vector2">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+  </image>
+  <output name="image_vector2_output" type="vector2" nodename="image_vector2" />
+  <image name="image_float" type="float">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+  </image>
+  <output name="image_float_output" type="float" nodename="image_float" />
+</materialx>

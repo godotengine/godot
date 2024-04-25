@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="acescg">
+
+  <!-- LamaAdd for BSDFs -->
+  <nodedef name="ND_lama_add_bsdf" node="LamaAdd" nodegroup="pbr" version="1.0" isdefaultversion="true">
+    <input name="material1" uiname="Material 1" type="BSDF" doc="First material to add." />
+    <input name="material2" uiname="Material 2" type="BSDF" doc="Second material to add." />
+    <input name="weight1" uiname="Weight 1" type="float" uimin="0.0" uimax="1.0" value="1.0" doc="Weight of the first material." />
+    <input name="weight2" uiname="Weight 2" type="float" uimin="0.0" uimax="1.0" value="0.0" doc="Weight of the second material." />
+    <output name="out" type="BSDF" />
+  </nodedef>
+  <nodegraph name="NG_lama_add_bsdf" nodedef="ND_lama_add_bsdf">
+    <multiply name="mul1" type="BSDF">
+      <input name="in1" type="BSDF" interfacename="material1" />
+      <input name="in2" type="float" interfacename="weight1" />
+    </multiply>
+    <multiply name="mul2" type="BSDF">
+      <input name="in1" type="BSDF" interfacename="material2" />
+      <input name="in2" type="float" interfacename="weight2" />
+    </multiply>
+    <add name="add1" type="BSDF">
+      <input name="in1" type="BSDF" nodename="mul1" />
+      <input name="in2" type="BSDF" nodename="mul2" />
+    </add>
+    <output name="out" type="BSDF" nodename="add1" />
+  </nodegraph>
+
+  <!-- LamaAdd for EDFs -->
+  <nodedef name="ND_lama_add_edf" node="LamaAdd" nodegroup="pbr" version="1.0" isdefaultversion="true">
+    <input name="material1" uiname="Material 1" type="EDF" doc="First material to add." />
+    <input name="material2" uiname="Material 2" type="EDF" doc="Second material to add." />
+    <input name="weight1" uiname="Weight 1" type="float" uimin="0.0" uimax="1.0" value="1.0" doc="Weight of the first material." />
+    <input name="weight2" uiname="Weight 2" type="float" uimin="0.0" uimax="1.0" value="0.0" doc="Weight of the second material." />
+    <output name="out" type="EDF" />
+  </nodedef>
+  <nodegraph name="NG_lama_add_edf" nodedef="ND_lama_add_edf">
+    <multiply name="mul1" type="EDF">
+      <input name="in1" type="EDF" interfacename="material1" />
+      <input name="in2" type="float" interfacename="weight1" />
+    </multiply>
+    <multiply name="mul2" type="EDF">
+      <input name="in1" type="EDF" interfacename="material2" />
+      <input name="in2" type="float" interfacename="weight2" />
+    </multiply>
+    <add name="add1" type="EDF">
+      <input name="in1" type="EDF" nodename="mul1" />
+      <input name="in2" type="EDF" nodename="mul2" />
+    </add>
+    <output name="out" type="EDF" nodename="add1" />
+  </nodegraph>
+
+</materialx>

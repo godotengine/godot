@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <!--
+  Validation of default color fallbacks for missing image files.
+  -->
+  <image name="image_color4" type="color4">
+    <input name="file" type="filename" value="resources/Images/invalid.png" />
+    <input name="default" type="color4" value="0.8, 0.2, 0.2, 1.0" />
+  </image>
+  <output name="image_color4_output" type="color4" nodename="image_color4" />
+  <image name="image_color3" type="color3">
+    <input name="file" type="filename" value="resources/Images/invalid.png" />
+    <input name="default" type="color3" value="0.8, 0.2, 0.2" />
+  </image>
+  <output name="image_color3_output" type="color3" nodename="image_color3" />
+  <image name="image_vector4" type="vector4">
+    <input name="file" type="filename" value="resources/Images/invalid.png" />
+    <input name="default" type="vector4" value="0.8, 0.2, 0.2, 1.0" />
+  </image>
+  <output name="image_vector4_output" type="vector4" nodename="image_vector4" />
+  <image name="image_vector3" type="vector3">
+    <input name="file" type="filename" value="resources/Images/invalid.png" />
+    <input name="default" type="vector3" value="0.8, 0.2, 0.2" />
+  </image>
+  <output name="image_vector3_output" type="vector3" nodename="image_vector3" />
+  <image name="image_vector2" type="vector2">
+    <input name="file" type="filename" value="resources/Images/invalid.png" />
+    <input name="default" type="vector2" value="0.8, 0.2" />
+  </image>
+  <output name="image_vector2_output" type="vector2" nodename="image_vector2" />
+  <image name="image_float" type="float">
+    <input name="file" type="filename" value="resources/Images/invalid.png" />
+    <input name="default" type="float" value="0.8" />
+  </image>
+  <output name="image_float_output" type="float" nodename="image_float" />
+</materialx>

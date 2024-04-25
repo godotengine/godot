@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+  Basic ramp unit test :
+  - Ramp (left-to-right)
+  - Ramp (top-to-bottom)
+  - Ramp (four coner)
+  -->
+
+  <!-- Left-to-right tests -->
+  <output name="lr_ramp4_output" type="color4" nodename="lr_ramp4" />
+  <ramplr name="lr_ramp4" type="color4">
+    <input name="valuel" type="color4" value="1.0, 0.0, 0.0, 0.5" />
+    <input name="valuer" type="color4" value="0.0, 0.0, 1.0, 0.5" />
+  </ramplr>
+  <output name="lr_ramp3_output" type="color3" nodename="lr_ramp3" />
+  <ramplr name="lr_ramp3" type="color3">
+    <input name="valuel" type="color3" value="1.0, 0.0, 0.0" />
+    <input name="valuer" type="color3" value="0.0, 0.0, 1.0" />
+  </ramplr>
+  <output name="lr_ramp2_output" type="vector2" nodename="lr_ramp2" />
+  <ramplr name="lr_ramp2" type="vector2">
+    <input name="valuel" type="vector2" value="1.0, 0.0" />
+    <input name="valuer" type="vector2" value="0.0, 1.0" />
+  </ramplr>
+  <output name="lr_ramp1_output" type="float" nodename="lr_ramp1" />
+  <ramplr name="lr_ramp1" type="float">
+    <input name="valuel" type="float" value="1.0" />
+    <input name="valuer" type="float" value="0.0" />
+  </ramplr>
+  <output name="lr_ramp4v_output" type="vector4" nodename="lr_ramp4v" />
+  <ramplr name="lr_ramp4v" type="vector4">
+    <input name="valuel" type="vector4" value="1.0, 0.0, 0.0, 0.5" />
+    <input name="valuer" type="vector4" value="0.0, 0.0, 1.0, 0.5" />
+  </ramplr>
+  <output name="lr_ramp3v_output" type="vector3" nodename="lr_ramp3v" />
+  <ramplr name="lr_ramp3v" type="vector3">
+    <input name="valuel" type="vector3" value="1.0, 0.0, 0.0" />
+    <input name="valuer" type="vector3" value="0.0, 0.0, 1.0" />
+  </ramplr>
+  <output name="lr_ramp2v_output" type="vector2" nodename="lr_ramp2v" />
+  <ramplr name="lr_ramp2v" type="vector2">
+    <input name="valuel" type="vector2" value="1.0, 0.0" />
+    <input name="valuer" type="vector2" value="0.0, 1.0" />
+  </ramplr>
+
+  <!-- Top-to-bottom tests -->
+  <output name="tb_ramp4_output" type="color4" nodename="tb_ramp4" />
+  <ramptb name="tb_ramp4" type="color4">
+    <input name="valuet" type="color4" value="1.0, 0.0, 0.0, 0.5" />
+    <input name="valueb" type="color4" value="0.0, 0.0, 1.0, 0.5" />
+  </ramptb>
+  <output name="tb_ramp3_output" type="color3" nodename="tb_ramp3" />
+  <ramptb name="tb_ramp3" type="color3">
+    <input name="valuet" type="color3" value="1.0, 0.0, 0.0" />
+    <input name="valueb" type="color3" value="0.0, 0.0, 1.0" />
+  </ramptb>
+  <output name="tb_ramp2_output" type="vector2" nodename="tb_ramp2" />
+  <ramptb name="tb_ramp2" type="vector2">
+    <input name="valuet" type="vector2" value="1.0, 0.0" />
+    <input name="valueb" type="vector2" value="0.0, 1.0" />
+  </ramptb>
+  <output name="tb_ramp1_output" type="float" nodename="tb_ramp1" />
+  <ramptb name="tb_ramp1" type="float">
+    <input name="valuet" type="float" value="1.0" />
+    <input name="valueb" type="float" value="0.0" />
+  </ramptb>
+  <output name="tb_ramp4v_output" type="vector4" nodename="tb_ramp4v" />
+  <ramptb name="tb_ramp4v" type="vector4">
+    <input name="valuet" type="vector4" value="1.0, 0.0, 0.0, 0.5" />
+    <input name="valueb" type="vector4" value="0.0, 0.0, 1.0, 0.5" />
+  </ramptb>
+  <output name="tb_ramp3v_output" type="vector3" nodename="tb_ramp3v" />
+  <ramptb name="tb_ramp3v" type="vector3">
+    <input name="valuet" type="vector3" value="1.0, 0.0, 0.0" />
+    <input name="valueb" type="vector3" value="0.0, 0.0, 1.0" />
+  </ramptb>
+  <output name="tb_ramp2v_output" type="vector2" nodename="tb_ramp2v" />
+  <ramptb name="tb_ramp2v" type="vector2">
+    <input name="valuet" type="vector2" value="1.0, 0.0" />
+    <input name="valueb" type="vector2" value="0.0, 1.0" />
+  </ramptb>
+
+  <!-- Four-corner tests -->
+  <output name="fc_ramp4_output" type="color4" nodename="fc_ramp4" />
+  <ramp4 name="fc_ramp4" type="color4">
+    <input name="valuetl" type="color4" value="1.0, 0.0, 0.0, 0.5" />
+    <input name="valuetr" type="color4" value="0.0, 1.0, 0.0, 0.5" />
+    <input name="valuebr" type="color4" value="0.0, 0.0, 1.0, 0.5" />
+    <input name="valuebl" type="color4" value="1.0, 1.0, 0.0, 0.5" />
+  </ramp4>
+  <output name="fc_ramp3_output" type="color3" nodename="fc_ramp3" />
+  <ramp4 name="fc_ramp3" type="color3">
+    <input name="valuetl" type="color3" value="1.0, 0.0, 0.0" />
+    <input name="valuetr" type="color3" value="0.0, 1.0, 0.0" />
+    <input name="valuebr" type="color3" value="0.0, 0.0, 1.0" />
+    <input name="valuebl" type="color3" value="1.0, 1.0, 0.0" />
+  </ramp4>
+  <output name="fc_ramp2_output" type="vector2" nodename="fc_ramp2" />
+  <ramp4 name="fc_ramp2" type="vector2">
+    <input name="valuetl" type="vector2" value="1.0, 0.0" />
+    <input name="valuetr" type="vector2" value="1.0, 1.0" />
+    <input name="valuebr" type="vector2" value="0.0, 1.0" />
+    <input name="valuebl" type="vector2" value="0.0, 0.0" />
+  </ramp4>
+  <output name="fc_ramp1_output" type="float" nodename="fc_ramp1" />
+  <ramp4 name="fc_ramp1" type="float">
+    <input name="valuetl" type="float" value="1.0" />
+    <input name="valuetr" type="float" value="0.5" />
+    <input name="valuebr" type="float" value="0.0" />
+    <input name="valuebl" type="float" value="0.25" />
+  </ramp4>
+  <output name="fc_ramp4v_output" type="vector4" nodename="fc_ramp4v" />
+  <ramp4 name="fc_ramp4v" type="vector4">
+    <input name="valuetl" type="vector4" value="1.0, 0.0, 0.0, 0.5" />
+    <input name="valuetr" type="vector4" value="0.0, 1.0, 0.0, 0.5" />
+    <input name="valuebr" type="vector4" value="0.0, 0.0, 1.0, 0.5" />
+    <input name="valuebl" type="vector4" value="1.0, 1.0, 0.0, 0.5" />
+  </ramp4>
+  <output name="fc_ramp3v_output" type="vector3" nodename="fc_ramp3v" />
+  <ramp4 name="fc_ramp3v" type="vector3">
+    <input name="valuetl" type="vector3" value="1.0, 0.0, 0.0" />
+    <input name="valuetr" type="vector3" value="0.0, 1.0, 0.0" />
+    <input name="valuebr" type="vector3" value="0.0, 0.0, 1.0" />
+    <input name="valuebl" type="vector3" value="1.0, 1.0, 0.0" />
+  </ramp4>
+  <output name="fc_ramp2v_output" type="vector2" nodename="fc_ramp2v" />
+  <ramp4 name="fc_ramp2v" type="vector2">
+    <input name="valuetl" type="vector2" value="1.0, 0.0" />
+    <input name="valuetr" type="vector2" value="1.0, 1.0" />
+    <input name="valuebr" type="vector2" value="0.0, 1.0" />
+    <input name="valuebl" type="vector2" value="0.0, 0.0" />
+  </ramp4>
+</materialx>

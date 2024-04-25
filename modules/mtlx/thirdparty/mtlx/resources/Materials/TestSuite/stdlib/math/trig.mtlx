@@ -1,0 +1,217 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="sin_nodegraph">
+    <sin name="sin1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </sin>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="1.0000" />
+    </constant>
+    <output name="sin_out" type="float" nodename="sin1" />
+  </nodegraph>
+  <nodegraph name="sin_vector2_nodegraph">
+    <sin name="sin1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </sin>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="1.0000, 1.0" />
+    </constant>
+    <output name="sin_out" type="vector2" nodename="sin1" />
+  </nodegraph>
+  <nodegraph name="sin_vector3_nodegraph">
+    <sin name="sin1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </sin>
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="1.0, 1.0, 1.0" />
+    </constant>
+    <output name="sin_out" type="vector3" nodename="sin1" />
+  </nodegraph>
+  <nodegraph name="sin_vector4_nodegraph">
+    <sin name="sin1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </sin>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="1.0, 1.0, 1.0, 1.0" />
+    </constant>
+    <output name="sin_out" type="vector4" nodename="sin1" />
+  </nodegraph>
+  <nodegraph name="cos_nodegraph">
+    <cos name="cos1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </cos>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="1.0000" />
+    </constant>
+    <output name="cos_out" type="float" nodename="cos1" />
+  </nodegraph>
+  <nodegraph name="cos_vector2_nodegraph">
+    <cos name="cos1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </cos>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="1.0000, 1.0" />
+    </constant>
+    <output name="cos_out" type="vector2" nodename="cos1" />
+  </nodegraph>
+  <nodegraph name="cos_vector3_nodegraph">
+    <cos name="cos1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </cos>
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="1.0, 1.0, 1.0" />
+    </constant>
+    <output name="cos_out" type="vector3" nodename="cos1" />
+  </nodegraph>
+  <nodegraph name="cos_vector4_nodegraph">
+    <cos name="cos1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </cos>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="1.0, 1.0, 1.0, 1.0" />
+    </constant>
+    <output name="cos_out" type="vector4" nodename="cos1" />
+  </nodegraph>
+  <nodegraph name="tan_nodegraph">
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+    <tan name="tan1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </tan>
+    <output name="tan_out" type="float" nodename="tan1" />
+  </nodegraph>
+  <nodegraph name="tan_vector2_nodegraph">
+    <tan name="tan1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </tan>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="1.0000, 1.0" />
+    </constant>
+    <output name="tan_out" type="vector2" nodename="tan1" />
+  </nodegraph>
+  <nodegraph name="tan_vector3_nodegraph">
+    <tan name="tan1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </tan>
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="1.0, 1.0, 1.0" />
+    </constant>
+    <output name="tan_out" type="vector3" nodename="tan1" />
+  </nodegraph>
+  <nodegraph name="tan_vector4_nodegraph">
+    <tan name="tan1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </tan>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="1.0, 1.0, 1.0, 1.0" />
+    </constant>
+    <output name="tan_out" type="vector4" nodename="tan1" />
+  </nodegraph>
+  <nodegraph name="asin_nodegraph">
+    <asin name="asin1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </asin>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+    <output name="asin_out" type="float" nodename="asin1" />
+  </nodegraph>
+  <nodegraph name="asin_vector2_nodegraph">
+    <asin name="asin1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </asin>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="1.0000, 1.0" />
+    </constant>
+    <output name="asin_out" type="vector2" nodename="asin1" />
+  </nodegraph>
+  <nodegraph name="asin_vector3_nodegraph">
+    <asin name="asin1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </asin>
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="1.0, 1.0, 1.0" />
+    </constant>
+    <output name="asin_out" type="vector3" nodename="asin1" />
+  </nodegraph>
+  <nodegraph name="asin_vector4_nodegraph">
+    <asin name="asin1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </asin>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="1.0, 1.0, 1.0, 1.0" />
+    </constant>
+    <output name="asin_out" type="vector4" nodename="asin1" />
+  </nodegraph>
+  <nodegraph name="acos_nodegraph">
+    <acos name="acos1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </acos>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.8000" />
+    </constant>
+    <output name="acos_out" type="float" nodename="acos1" />
+  </nodegraph>
+  <nodegraph name="acos_vector2_nodegraph">
+    <acos name="acos1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </acos>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="1.0000, 1.0" />
+    </constant>
+    <output name="acos_out" type="vector2" nodename="acos1" />
+  </nodegraph>
+  <nodegraph name="acos_vector3_nodegraph">
+    <acos name="acos1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </acos>
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="1.0, 1.0, 1.0" />
+    </constant>
+    <output name="acos_out" type="vector3" nodename="acos1" />
+  </nodegraph>
+  <nodegraph name="acos_vector4_nodegraph">
+    <acos name="acos1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </acos>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="1.0, 1.0, 1.0, 1.0" />
+    </constant>
+    <output name="acos_out" type="vector4" nodename="acos1" />
+  </nodegraph>
+  <nodegraph name="atan_nodegraph">
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+    <constant name="constant2" type="float">
+      <input name="value" type="float" value="1.0000" />
+    </constant>
+    <atan2 name="atan21" type="float">
+      <input name="in1" type="float" nodename="constant1" />
+      <input name="in2" type="float" nodename="constant2" />
+    </atan2>
+    <output name="atan2_out" type="float" nodename="atan21" />
+  </nodegraph>
+  <nodegraph name="atan_vector2_nodegraph">
+    <atan2 name="atan21" type="vector2">
+      <input name="in1" type="vector2" value="0.5, 0.5" />
+      <input name="in2" type="vector2" value="1.0, 1.0" />
+    </atan2>
+    <output name="atan_out" type="vector2" nodename="atan21" />
+  </nodegraph>
+  <nodegraph name="atan_vector3_nodegraph">
+    <atan2 name="atan21" type="vector3">
+      <input name="in1" type="vector3" value="0.5, 0.5, 0.5" />
+      <input name="in2" type="vector3" value="1.0, 1.0, 1.0" />
+    </atan2>
+    <output name="atan_out" type="vector3" nodename="atan21" />
+  </nodegraph>
+  <nodegraph name="atan_vector4_nodegraph">
+    <atan2 name="atan21" type="vector4">
+      <input name="in1" type="vector4" value="0.5, 0.5, 0.5, 0.5" />
+      <input name="in2" type="vector4" value="1.0, 1.0, 1.0, 1.0" />
+    </atan2>
+    <output name="atan_out" type="vector4" nodename="atan21" />
+  </nodegraph>
+</materialx>

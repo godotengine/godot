@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+
+  <!--
+    Copyright Contributors to the MaterialX Project
+    SPDX-License-Identifier: Apache-2.0
+  -->
+
+  <!-- ======================================================================== -->
+  <!-- Base target definition for MSL targets using shader generation.          -->
+  <!-- ======================================================================== -->
+  <targetdef name="genmsl" inherit="genglsl" />
+
+</materialx>

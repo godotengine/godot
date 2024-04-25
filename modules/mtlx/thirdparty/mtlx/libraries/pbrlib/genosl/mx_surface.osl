@@ -1,0 +1,6 @@
+void mx_surface(BSDF bsdf, EDF edf, float opacity, output surfaceshader result)
+{
+    result.bsdf    = bsdf;
+    result.edf     = edf;
+    result.opacity = clamp(opacity, 0.0, 1.0);
+}

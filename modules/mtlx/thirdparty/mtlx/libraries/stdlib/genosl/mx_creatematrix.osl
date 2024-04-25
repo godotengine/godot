@@ -1,0 +1,23 @@
+void mx_creatematrix_vector3_matrix33(vector in1, vector in2, vector in3, output matrix result)
+{
+    result = matrix(in1.x, in1.y, in1.z,  0.0,
+                    in2.x, in2.y, in2.z,  0.0,
+                    in3.x, in3.y, in3.z,  0.0,
+                    0.0,   0.0,   0.0,    1.0);
+}
+
+void mx_creatematrix_vector3_matrix44(vector in1, vector in2, vector in3, vector in4, output matrix result)
+{
+    result = matrix(in1.x, in1.y, in1.z,  0.0,
+                    in2.x, in2.y, in2.z,  0.0,
+                    in3.x, in3.y, in3.z,  0.0,
+                    in4.x, in4.y, in4.z,  1.0);
+}
+
+void mx_creatematrix_vector4_matrix44(vector4 in1, vector4 in2, vector4 in3, vector4 in4, output matrix result)
+{
+    result = matrix(in1.x, in1.y, in1.z,  in1.w,
+                    in2.x, in2.y, in2.z,  in2.w,
+                    in3.x, in3.y, in3.z,  in3.w,
+                    in4.x, in4.y, in4.z,  in4.w);
+}

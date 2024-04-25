@@ -1,0 +1,24 @@
+#include "../lib/mx_microfacet_sheen.osl"
+
+// TODO: Vanilla OSL doesn't have a proper sheen closure,
+// so use 'diffuse' scaled by sheen directional albedo for now.
+void mx_sheen_bsdf(float weight, color Ks, float roughness, vector N, output BSDF bsdf)
+{
+    if (weight < M_FLOAT_EPS)
+    {
+        bsdf.response = 0;
+        bsdf.throughput = color(1.0);
+        return;
+    }
+
+    // TODO: Normalization should not be needed. My suspicion is that
+    // BSDF sampling of new outgoing direction in 'testrender' needs
+    // to be fixed.
+    vector V = normalize(-I);
+
+    float NdotV = fabs(dot(N,V));
+    float alpha = clamp(roughness, M_FLOAT_EPS, 1.0);
+    float albedo = weight * mx_imageworks_sheen_dir_albedo(NdotV, alpha);
+    bsdf.response = albedo * Ks * diffuse(N);
+    bsdf.throughput = 1.0 - albedo;
+}

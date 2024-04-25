@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+    Test suite options file which is parsed when the "render" category units tests are executed.
+
+     Execution uses existing code generator instances to produce the code and corresponding validator
+     instance to check the validity of the generated code by compiling and/or rendering
+     the code to produce images on disk.
+
+     Input uniform and stream checking as well as node implementation coverage and profiling
+     can also be performed depending on the options enabled.
+  -->
+
+  <!-- Render test Suite Options -->
+  <nodedef name="TestSuiteOptions">
+    <!-- List of comma separated file names acts as a filter to only test documents with these names -->
+    <input name="overrideFiles" type="string" value="" />
+
+    <!-- Comma separated list of light setup files. Only used for hardware shading languages  -->
+    <input name="lightFiles" type="string" value="light_rig_test_2.mtlx" />
+
+    <!-- Comma separated list of target" specifiers to indicate which
+         code generators to use. -->
+    <input name="targets" type="string" value="genglsl,genosl,genmdl,genmsl" />
+
+    <!-- Check the count of number of implementations used for a given generator -->
+    <input name="checkImplCount" type="boolean" value="true" />
+
+    <!-- Run using a given set of shader interface generation options. Default value is 2 where:
+         1 = run reduced only.
+         2 = run complete only.
+         3 = run complete + reduced.
+    -->
+    <input name="shaderInterfaces" type="integer" value="2" />
+
+    <!-- Validate element before attempting to generate code. Default is false  -->
+    <input name="validateElementToRender" type="boolean" value="false" />
+
+    <!-- Perform source code compilation validation test -->
+    <input name="compileCode" type="boolean" value="true" />
+
+    <!-- Perform rendering validation test -->
+    <input name="renderImages" type="boolean" value="true" />
+
+    <!-- Rendered image size if render validation test enabled -->
+    <input name="renderSize" type="vector2" value="512, 512" />
+
+    <!-- Perform saving of image. Can only be disabled for GLSL tests -->
+    <input name="saveImages" type="boolean" value="true" />
+
+    <!-- Set this to be true if it is desired to dump out uniform and attribut information to the logging file -->
+    <input name="dumpUniformsAndAttributes" type="boolean" value="true" />
+
+    <!-- Set this to be true if it is desired to always dump out generated source code to disk instead of just on compile errors -->
+    <input name="dumpGeneratedCode" type="boolean" value="true" />
+
+    <!-- The geometry file to be rendered in tests.
+         File path is relative to the "/resources/Geometry/" folder -->
+    <input name="renderGeometry" type="string" value="sphere.obj" />
+
+    <!-- Enable direct lighting. Default is true. -->
+    <input name="enableDirectLighting" type="boolean" value="false" />
+
+    <!-- Enable indirect lighting. Default is true. -->
+    <input name="enableIndirectLighting" type="boolean" value="true" />
+
+    <!-- Suggested radiance IBL file path -->
+    <input name="radianceIBLPath" type="string" value="resources/Lights/san_giuseppe_bridge.hdr" />
+
+    <!-- Suggested irradiance IBL file path -->
+    <input name="irradianceIBLPath" type="string" value="resources/Lights/irradiance/san_giuseppe_bridge.hdr" />
+
+    <!-- List of extra library paths for generator and render tests -->
+    <input name="extraLibraryPaths" type="string" value="" />
+
+    <!-- List of document paths for render tests -->
+    <input name="renderTestPaths" type="string" value="resources/Materials/Examples/StandardSurface,resources/Materials/TestSuite/stdlib/color_management,resources/Materials/TestSuite/stdlib/convolution,resources/Materials/TestSuite/stdlib/geometric,resources/Materials/TestSuite/stdlib/procedural,resources/Materials/TestSuite/pbrlib,resources/Materials/TestSuite/nprlib" />
+
+    <!-- Enable reference quality rendering. Default is false. -->
+    <input name="enableReferenceQuality" type="boolean" value="false" />
+  </nodedef>
+</materialx>

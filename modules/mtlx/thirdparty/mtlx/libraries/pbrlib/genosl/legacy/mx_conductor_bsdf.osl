@@ -1,0 +1,32 @@
+#include "../lib/mx_microfacet_specular.osl"
+
+void mx_conductor_bsdf(float weight, color ior_n, color ior_k, vector2 roughness, normal N, vector U, string distribution, output BSDF bsdf)
+{
+    bsdf.throughput = color(0.0);
+
+    if (weight < M_FLOAT_EPS)
+    {
+        bsdf.response = 0;
+        return;
+    }
+
+    // Calculate conductor fresnel
+    //
+    // Fresnel should be based on microfacet normal
+    // but we have no access to that from here, so just use
+    // view direction and surface normal instead
+    //
+    float NdotV = fabs(dot(N,-I));
+    color F = mx_fresnel_conductor(NdotV, ior_n, ior_k);
+
+    // Calculate compensation for multiple scattering.
+    // This should normally be done inside the closure
+    // but since vanilla OSL doesen't support this we
+    // add it here in shader code instead.
+    vector2 safeAlpha = clamp(roughness, M_FLOAT_EPS, 1.0);
+    float avgAlpha = mx_average_alpha(safeAlpha);
+    color comp = mx_ggx_energy_compensation(NdotV, avgAlpha, F);
+
+    // Set ior to 0.0 to disable the internal dielectric fresnel
+    bsdf.response = F * comp * weight * microfacet(distribution, N, U, safeAlpha.x, safeAlpha.y, 0.0, false);
+}

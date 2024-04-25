@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <nodedef name="ND_disney_brdf_2012_surface" node="disney_brdf_2012" nodegroup="pbr">
+    <input name="baseColor" type="color3" value="0.16, 0.16, 0.16" />
+    <input name="metallic" type="float" value="0" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="specular" type="float" value="0.5" />
+    <input name="roughness" type="float" value="0.5" />
+    <input name="specularTint" type="float" value="0" />
+    <input name="anisotropic" type="float" value="0" />
+    <input name="sheen" type="float" value="0" />
+    <input name="sheenTint" type="float" value="0.5" />
+    <input name="clearcoat" type="float" value="0" />
+    <input name="clearcoatGloss" type="float" value="1" />
+    <output name="out" type="surfaceshader" />
+  </nodedef>
+  <implementation name="IM_disney_brdf_2012_surface_brdf_explorer" nodedef="ND_disney_brdf_2012_surface" target="brdf_explorer" file="https://github.com/wdas/brdf/blob/master/src/brdfs/disney.brdf" />
+</materialx>

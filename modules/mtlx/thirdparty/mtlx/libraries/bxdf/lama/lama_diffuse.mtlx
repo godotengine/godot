@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="acescg">
+  <nodedef name="ND_lama_diffuse" node="LamaDiffuse" nodegroup="pbr" version="1.0" isdefaultversion="true">
+    <input name="color" uiname="Color" type="color3" value="0.18, 0.18, 0.18"
+           doc="Diffuse color (aka albedo), defining what ratio of light is reflected for each color channel." />
+    <input name="roughness" uiname="Roughness" type="float" uimin="0.0" uimax="1.0" value="0.0" doc="Micro-facet distribution (Oren-Nayar) roughness." />
+    <input name="normal" uiname="Normal" type="vector3" defaultgeomprop="Nworld"
+           doc="Shading normal, typically defined by bump or normal mapping. Defaults to the smooth surface normal if not set." />
+    <input name="energyCompensation" uiname="Energy Compensation" uifolder="Advanced" type="float" uniform="true" uimin="0.0" uimax="1.0" value="1.0"
+           doc="Indicates how much energy should be added to compensate for the loss inherent to the Oren-Nayar model, ranging from no compensation at all, to the expected energy from multiple scattering between the micro-facets. This prevents overly dark results when roughness is high." />
+    <input name="lobeName" uiname="Lobe Name" uifolder="Advanced" type="string" uniform="true" value="diffuse"
+           doc="Defines the name that can be used in LPE AOVs for this lobe." />
+    <input name="matte" uiname="Matte" uifolder="Advanced" type="string" uniform="true" value=""
+           doc="Defines the name that can be used by the matte system, to output the weight of this lobe in the final material as an AOV." />
+    <output name="out" type="BSDF" />
+  </nodedef>
+
+  <nodegraph name="NG_lama_diffuse" nodedef="ND_lama_diffuse">
+    <multiply name="roughness_squared" type="float">
+      <input name="in1" type="float" interfacename="roughness" />
+      <input name="in2" type="float" interfacename="roughness" />
+    </multiply>
+    <multiply name="half_roughness_squared" type="float">
+      <input name="in1" type="float" nodename="roughness_squared" />
+      <input name="in2" type="float" value="0.5" />
+    </multiply>
+    <oren_nayar_diffuse_bsdf name="oren_nayar" type="BSDF">
+      <input name="weight" type="float" value="1.0" />
+      <input name="color" type="color3" interfacename="color" />
+      <input name="roughness" type="float" nodename="half_roughness_squared" />
+      <input name="normal" type="vector3" interfacename="normal" />
+    </oren_nayar_diffuse_bsdf>
+    <output name="out" type="BSDF" nodename="oren_nayar" />
+  </nodegraph>
+</materialx>

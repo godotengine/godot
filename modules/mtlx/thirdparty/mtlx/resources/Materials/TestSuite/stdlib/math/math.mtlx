@@ -1,0 +1,757 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="ln_nodegraph">
+    <ln name="ln1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </ln>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="1.5000" />
+    </constant>
+    <output name="out" type="float" nodename="ln1" />
+  </nodegraph>
+  <nodegraph name="ln_vector2_nodegraph">
+    <ln name="ln1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </ln>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="1.5, 1.5" />
+    </constant>
+    <output name="out" type="vector2" nodename="ln1" />
+  </nodegraph>
+  <nodegraph name="ln_vector3_nodegraph">
+    <ln name="ln1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </ln>
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="1.5, 1.5, 1.5" />
+    </constant>
+    <output name="out" type="vector3" nodename="ln1" />
+  </nodegraph>
+  <nodegraph name="ln_vector4_nodegraph">
+    <ln name="ln1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </ln>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="1.5, 1.5, 1.5, 1.0" />
+    </constant>
+    <output name="out" type="vector4" nodename="ln1" />
+  </nodegraph>
+  <nodegraph name="exp_nodegraph">
+    <exp name="exp1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </exp>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="-1.0000" />
+    </constant>
+    <output name="out" type="float" nodename="exp1" />
+  </nodegraph>
+  <nodegraph name="exp_vector2_nodegraph">
+    <exp name="exp1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </exp>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="1.5, 1.5" />
+    </constant>
+    <output name="out" type="vector2" nodename="exp1" />
+  </nodegraph>
+  <nodegraph name="exp_vector3_nodegraph">
+    <exp name="exp1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </exp>
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="1.5, 1.5, 1.5" />
+    </constant>
+    <output name="out" type="vector3" nodename="exp1" />
+  </nodegraph>
+  <nodegraph name="exp_vector4_nodegraph">
+    <exp name="exp1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </exp>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="1.5, 1.5, 1.5, 1.0" />
+    </constant>
+    <output name="out" type="vector4" nodename="exp1" />
+  </nodegraph>
+  <nodegraph name="sqrt_nodegraph">
+    <sqrt name="sqrt1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </sqrt>
+    <output name="out" type="float" nodename="sqrt1" />
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.2500" />
+    </constant>
+  </nodegraph>
+  <nodegraph name="sqrt_vector2_nodegraph">
+    <sqrt name="sqrt1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </sqrt>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="1.5, 1.5" />
+    </constant>
+    <output name="out" type="vector2" nodename="sqrt1" />
+  </nodegraph>
+  <nodegraph name="sqrt_vector3_nodegraph">
+    <sqrt name="sqrt1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </sqrt>
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="1.5, 1.5, 1.5" />
+    </constant>
+    <output name="out" type="vector3" nodename="sqrt1" />
+  </nodegraph>
+  <nodegraph name="sqrt_vector4_nodegraph">
+    <sqrt name="sqrt1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </sqrt>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="1.5, 1.5, 1.5, 1.0" />
+    </constant>
+    <output name="out" type="vector4" nodename="sqrt1" />
+  </nodegraph>
+  <nodegraph name="floor_float_nodegraph">
+    <floor name="floor1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </floor>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+    <output name="out" type="float" nodename="floor1" />
+  </nodegraph>
+  <nodegraph name="floor_vector2_nodegraph">
+    <floor name="floor1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </floor>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="0.5000, 1.5000" />
+    </constant>
+    <output name="out" type="vector2" nodename="floor1" />
+  </nodegraph>
+  <nodegraph name="floor_vector3_nodegraph">
+    <floor name="floor1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </floor>
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="0.5000, 1.5000, 0.0" />
+    </constant>
+    <output name="out" type="vector3" nodename="floor1" />
+  </nodegraph>
+  <nodegraph name="floor_vector4_nodegraph">
+    <floor name="floor1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </floor>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="0.5000, 1.5000, 0.0, 1.0" />
+    </constant>
+    <output name="out" type="vector4" nodename="floor1" />
+  </nodegraph>
+  <nodegraph name="floor_color3_nodegraph">
+    <constant name="constant1" type="color3">
+      <input name="value" type="color3" value="0.5000, 1.5000, 0.0" />
+    </constant>
+    <floor name="floor1" type="color3">
+      <input name="in" type="color3" nodename="constant1" />
+    </floor>
+    <output name="out" type="color3" nodename="floor1" />
+  </nodegraph>
+  <nodegraph name="floor_color4_nodegraph">
+    <constant name="constant1" type="color4">
+      <input name="value" type="color4" value="0.5000, 1.5000, 0.0, 1.0" />
+    </constant>
+    <floor name="floor1" type="color4">
+      <input name="in" type="color4" nodename="constant1" />
+    </floor>
+    <output name="out" type="color4" nodename="floor1" />
+  </nodegraph>
+  <nodegraph name="floor_integer_nodegraph">
+    <floor name="floor1" type="integer">
+      <input name="in" type="float" nodename="constant1" />
+    </floor>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+    <output name="out" type="integer" nodename="floor1" />
+  </nodegraph>
+  <nodegraph name="ceil_float_nodegraph">
+    <ceil name="ceil1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </ceil>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+    <output name="out" type="float" nodename="ceil1" />
+  </nodegraph>
+  <nodegraph name="ceil_vector2_nodegraph">
+    <ceil name="ceil1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </ceil>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="-0.5000, 0.5000" />
+    </constant>
+    <output name="out" type="vector2" nodename="ceil1" />
+  </nodegraph>
+  <nodegraph name="ceil_vector3_nodegraph">
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="-0.5000, 0.5000, 0.0000" />
+    </constant>
+    <output name="out" type="vector3" nodename="ceil1" />
+    <ceil name="ceil1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </ceil>
+  </nodegraph>
+  <nodegraph name="ceil_vector4_nodegraph">
+    <ceil name="ceil1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </ceil>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="-0.5000, 0.5000, 0.0, 1.0" />
+    </constant>
+    <output name="out" type="vector4" nodename="ceil1" />
+  </nodegraph>
+  <nodegraph name="ceil_color3_nodegraph">
+    <constant name="constant1" type="color3">
+      <input name="value" type="color3" value="-0.5000, 0.5000, 0.0" />
+    </constant>
+    <ceil name="ceil1" type="color3">
+      <input name="in" type="color3" nodename="constant1" />
+    </ceil>
+    <output name="out" type="color3" nodename="ceil1" />
+  </nodegraph>
+  <nodegraph name="ceil_color4_nodegraph">
+    <constant name="constant1" type="color4">
+      <input name="value" type="color4" value="-0.5000, 0.5000, 0.0, 1.0" />
+    </constant>
+    <ceil name="ceil1" type="color4">
+      <input name="in" type="color4" nodename="constant1" />
+    </ceil>
+    <output name="out" type="color4" nodename="ceil1" />
+  </nodegraph>
+  <nodegraph name="ceil_integer_nodegraph">
+    <ceil name="ceil1" type="integer">
+      <input name="in" type="float" nodename="constant1" />
+    </ceil>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+    <output name="out" type="integer" nodename="ceil1" />
+  </nodegraph>
+  <nodegraph name="round_float_nodegraph">
+    <round name="round1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </round>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+    <output name="out" type="float" nodename="round1" />
+  </nodegraph>
+  <nodegraph name="round_vector2_nodegraph">
+    <round name="round1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </round>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="-0.5000, 0.5000" />
+    </constant>
+    <output name="out" type="vector2" nodename="round1" />
+  </nodegraph>
+  <nodegraph name="round_vector3_nodegraph">
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="-0.5000, 0.5000, 0.0000" />
+    </constant>
+    <output name="out" type="vector3" nodename="round1" />
+    <round name="round1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </round>
+  </nodegraph>
+  <nodegraph name="round_vector4_nodegraph">
+    <round name="round1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </round>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="-0.5000, 0.5000, 0.0, 1.0" />
+    </constant>
+    <output name="out" type="vector4" nodename="round1" />
+  </nodegraph>
+  <nodegraph name="round_color3_nodegraph">
+    <constant name="constant1" type="color3">
+      <input name="value" type="color3" value="-0.5000, 0.5000, 0.0" />
+    </constant>
+    <round name="round1" type="color3">
+      <input name="in" type="color3" nodename="constant1" />
+    </round>
+    <output name="out" type="color3" nodename="round1" />
+  </nodegraph>
+  <nodegraph name="round_color4_nodegraph">
+    <constant name="constant1" type="color4">
+      <input name="value" type="color4" value="-0.5000, 0.5000, 0.0, 1.0" />
+    </constant>
+    <round name="round1" type="color4">
+      <input name="in" type="color4" nodename="constant1" />
+    </round>
+    <output name="out" type="color4" nodename="round1" />
+  </nodegraph>
+  <nodegraph name="round_integer_nodegraph">
+    <round name="round1" type="integer">
+      <input name="in" type="float" nodename="constant1" />
+    </round>
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+    <output name="out" type="integer" nodename="round1" />
+  </nodegraph>
+  <nodegraph name="sign_float">
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="1.0000" />
+    </constant>
+    <sign name="sign1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+    </sign>
+    <output name="out" type="float" nodename="sign1" />
+  </nodegraph>
+  <nodegraph name="sign_color3">
+    <constant name="constant1" type="color3">
+      <input name="value" type="color3" value="-0.5000, 0.0, 0.5000" />
+    </constant>
+    <sign name="sign1" type="color3">
+      <input name="in" type="color3" nodename="constant1" />
+    </sign>
+    <output name="out" type="color3" nodename="remap1" />
+    <remap name="remap1" type="color3">
+      <input name="in" type="color3" nodename="sign1" />
+      <input name="inlow" type="float" value="-1.0000" />
+      <input name="inhigh" type="float" value="1.0" />
+      <input name="outlow" type="float" value="0.0" />
+      <input name="outhigh" type="float" value="1.0" />
+    </remap>
+  </nodegraph>
+  <nodegraph name="sign_color4">
+    <sign name="sign1" type="color4">
+      <input name="in" type="color4" nodename="constant1" />
+    </sign>
+    <constant name="constant1" type="color4">
+      <input name="value" type="color4" value="-0.5000, 0.0, 0.5000, 1.0" />
+    </constant>
+    <output name="out" type="color4" nodename="remap2" />
+    <remap name="remap2" type="color4">
+      <input name="in" type="color4" nodename="sign1" />
+      <input name="inlow" type="float" value="-1.0000" />
+      <input name="inhigh" type="float" value="1.0" />
+      <input name="outlow" type="float" value="0.0" />
+      <input name="outhigh" type="float" value="1.0" />
+    </remap>
+  </nodegraph>
+  <nodegraph name="sign_vector2">
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="0.0, 1.0000" />
+    </constant>
+    <sign name="sign1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+    </sign>
+    <output name="out" type="vector2" nodename="sign1" />
+  </nodegraph>
+  <nodegraph name="sign_vector3">
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="-0.5000, 0.0, 0.5000" />
+    </constant>
+    <remap name="remap1" type="vector3">
+      <input name="in" type="vector3" nodename="sign1" />
+      <input name="inlow" type="float" value="-1.0000" />
+      <input name="inhigh" type="float" value="1.0" />
+      <input name="outlow" type="float" value="0.0" />
+      <input name="outhigh" type="float" value="1.0" />
+    </remap>
+    <sign name="sign1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+    </sign>
+    <output name="out" type="vector3" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="sign_vector4">
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="-0.5000, 0.0, 0.5000, 1.0" />
+    </constant>
+    <sign name="sign1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+    </sign>
+    <remap name="remap1" type="vector4">
+      <input name="in" type="vector4" nodename="sign1" />
+      <input name="inlow" type="float" value="-1.0000" />
+      <input name="inhigh" type="float" value="1.0" />
+      <input name="outlow" type="float" value="0.0" />
+      <input name="outhigh" type="float" value="1.0" />
+    </remap>
+    <output name="out" type="vector4" nodename="remap1" />
+  </nodegraph>
+  <nodegraph name="absval_float">
+    <absval name="absval1" type="float">
+      <input name="in" type="float" value="-0.5000" />
+    </absval>
+    <output name="out" type="float" nodename="absval1" />
+  </nodegraph>
+  <nodegraph name="absval_color3">
+    <absval name="absval1" type="color3">
+      <input name="in" type="color3" value="-0.5000, -0.2500, 0.5000" />
+    </absval>
+    <output name="out" type="color3" nodename="absval1" />
+  </nodegraph>
+  <nodegraph name="absval_color4">
+    <absval name="absval1" type="color4">
+      <input name="in" type="color4" value="-0.5000, -0.2500, 0.5000, -1.0000" />
+    </absval>
+    <output name="out" type="color4" nodename="absval1" />
+  </nodegraph>
+  <nodegraph name="absval_vector2">
+    <absval name="absval1" type="vector2">
+      <input name="in" type="vector2" value="-0.5000, -0.2500" />
+    </absval>
+    <output name="out" type="vector2" nodename="absval1" />
+  </nodegraph>
+  <nodegraph name="absval_vector3">
+    <absval name="absval1" type="vector3">
+      <input name="in" type="vector3" value="-0.5000, -0.2500, 0.5000" />
+    </absval>
+    <output name="out" type="vector3" nodename="absval1" />
+  </nodegraph>
+  <nodegraph name="absval_vector4">
+    <absval name="absval1" type="vector4">
+      <input name="in" type="vector4" value="-0.5000, -0.2500, 0.5000, -1.0000" />
+    </absval>
+    <output name="out" type="vector4" nodename="absval1" />
+  </nodegraph>
+  <nodegraph name="invert_float">
+    <invert name="invert1" type="float">
+      <input name="in" type="float" value="0.5000" />
+      <input name="amount" type="float" value="1.0" />
+    </invert>
+    <output name="out" type="float" nodename="invert1" />
+  </nodegraph>
+  <nodegraph name="invert_vector2">
+    <invert name="invert1" type="vector2">
+      <input name="in" type="vector2" value="0.5000, 0.5000" />
+      <input name="amount" type="vector2" value="1.0, 0.5000" />
+    </invert>
+    <output name="out" type="vector2" nodename="invert1" />
+  </nodegraph>
+  <nodegraph name="invert_vector2FA">
+    <invert name="invert1" type="vector2">
+      <input name="in" type="vector2" value="0.5000, 1.0000" />
+      <input name="amount" type="float" value="1.0" />
+    </invert>
+    <output name="out" type="vector2" nodename="invert1" />
+  </nodegraph>
+  <nodegraph name="invert_vector3">
+    <invert name="invert1" type="vector3">
+      <input name="in" type="vector3" value="0.5000, 0.5000, 0.0" />
+      <input name="amount" type="vector3" value="1.0, 0.5000, 0.0000" />
+    </invert>
+    <output name="out" type="vector3" nodename="invert1" />
+  </nodegraph>
+  <nodegraph name="invert_vector3FA">
+    <invert name="invert1" type="vector3">
+      <input name="in" type="vector3" value="0.5000, 1.0000, 0.0" />
+      <input name="amount" type="float" value="1.0" />
+    </invert>
+    <output name="out" type="vector3" nodename="invert1" />
+  </nodegraph>
+  <nodegraph name="invert_vector4">
+    <invert name="invert1" type="vector4">
+      <input name="in" type="vector4" value="0.5000, 0.5000, 0.0, 1.0" />
+      <input name="amount" type="vector4" value="1.0, 0.5000, 0.0000, 2.0000" />
+    </invert>
+    <output name="out" type="vector4" nodename="invert1" />
+  </nodegraph>
+  <nodegraph name="invert_vector4FA">
+    <invert name="invert1" type="vector4">
+      <input name="in" type="vector4" value="0.5000, 1.0000, 0.0, 0.2500" />
+      <input name="amount" type="float" value="1.0" />
+    </invert>
+    <output name="out" type="vector4" nodename="invert1" />
+  </nodegraph>
+  <nodegraph name="invert_color3">
+    <invert name="invert1" type="color3">
+      <input name="in" type="color3" value="0.5000, 0.5000, 0.0" />
+      <input name="amount" type="color3" value="1.0, 0.5000, 0.0000" />
+    </invert>
+    <output name="out" type="color3" nodename="invert1" />
+  </nodegraph>
+  <nodegraph name="invert_color3FA">
+    <invert name="invert1" type="color3">
+      <input name="in" type="color3" value="0.5000, 1.0000, 0.0" />
+      <input name="amount" type="float" value="1.0" />
+    </invert>
+    <output name="out" type="color3" nodename="invert1" />
+  </nodegraph>
+  <nodegraph name="invert_color4">
+    <invert name="invert1" type="color4">
+      <input name="in" type="color4" value="0.5000, 0.5000, 0.0, 1.0000" />
+      <input name="amount" type="color4" value="1.0, 0.5000, 0.0000, 2.0000" />
+    </invert>
+    <output name="out" type="color4" nodename="invert1" />
+  </nodegraph>
+  <nodegraph name="invert_color4FA">
+    <invert name="invert1" type="color4">
+      <input name="in" type="color4" value="0.5000, 1.0000, 0.0, 0.2500" />
+      <input name="amount" type="float" value="1.0" />
+    </invert>
+    <output name="out" type="color4" nodename="invert1" />
+  </nodegraph>
+  <nodegraph name="clamp_float">
+    <clamp name="clamp1" type="float">
+      <input name="in" type="float" value="1.0000" />
+      <input name="low" type="float" value="0.0" />
+      <input name="high" type="float" value="0.5000" />
+    </clamp>
+    <output name="out" type="float" nodename="clamp1" />
+  </nodegraph>
+  <nodegraph name="clamp_color3">
+    <clamp name="clamp1" type="color3">
+      <input name="in" type="color3" value="1.0000, 0.0, 1.0000" />
+      <input name="low" type="color3" value="0.0, 0.5000, 0.0" />
+      <input name="high" type="color3" value="0.5000, 1.0, 0.0000" />
+    </clamp>
+    <output name="out" type="color3" nodename="clamp1" />
+  </nodegraph>
+  <nodegraph name="clamp_color3FA">
+    <clamp name="clamp1" type="color3">
+      <input name="in" type="color3" value="1.0000, 0.0, 0.5000" />
+      <input name="low" type="float" value="0.5000" />
+      <input name="high" type="float" value="0.5000" />
+    </clamp>
+    <output name="out" type="color3" nodename="clamp1" />
+  </nodegraph>
+  <nodegraph name="clamp_color4">
+    <clamp name="clamp1" type="color4">
+      <input name="in" type="color4" value="0.0, 0.0, 0.0, 2.0000" />
+      <input name="low" type="color4" value="0.5000, 0.0, 0.5000, 0.0" />
+      <input name="high" type="color4" value="1.0, 0.5000, 0.5000, 1.0" />
+    </clamp>
+    <output name="out" type="color4" nodename="clamp1" />
+  </nodegraph>
+  <nodegraph name="clamp_color4FA">
+    <clamp name="clamp1" type="color4">
+      <input name="in" type="color4" value="1.0000, 0.0000, 0.5000, 2.0000" />
+      <input name="low" type="float" value="0.5000" />
+      <input name="high" type="float" value="0.5000" />
+    </clamp>
+    <output name="out" type="color4" nodename="clamp1" />
+  </nodegraph>
+  <nodegraph name="clamp_vector2">
+    <clamp name="clamp1" type="vector2">
+      <input name="in" type="vector2" value="1.0000, 0.0" />
+      <input name="low" type="vector2" value="0.0, 0.5000" />
+      <input name="high" type="vector2" value="0.5000, 1.0" />
+    </clamp>
+    <output name="out" type="vector2" nodename="clamp1" />
+  </nodegraph>
+  <nodegraph name="clamp_vector2FA">
+    <clamp name="clamp1" type="vector2">
+      <input name="in" type="vector2" value="0.0000, 1.0000" />
+      <input name="low" type="float" value="0.5000" />
+      <input name="high" type="float" value="0.5000" />
+    </clamp>
+    <output name="out" type="vector2" nodename="clamp1" />
+  </nodegraph>
+  <nodegraph name="clamp_vector3">
+    <clamp name="clamp1" type="vector3">
+      <input name="in" type="vector3" value="1.0000, 0.0, 1.0000" />
+      <input name="low" type="vector3" value="0.0, 0.5000, 0.0" />
+      <input name="high" type="vector3" value="0.5000, 1.0, 0.0000" />
+    </clamp>
+    <output name="out" type="vector3" nodename="clamp1" />
+  </nodegraph>
+  <nodegraph name="clamp_vector3FA">
+    <clamp name="clamp1" type="vector3">
+      <input name="in" type="vector3" value="1.0000, 0.0, 0.5000" />
+      <input name="low" type="float" value="0.5000" />
+      <input name="high" type="float" value="0.5000" />
+    </clamp>
+    <output name="out" type="vector3" nodename="clamp1" />
+  </nodegraph>
+  <nodegraph name="clamp_vector4">
+    <clamp name="clamp1" type="vector4">
+      <input name="in" type="vector4" value="0.0, 0.0, 0.0, 2.0000" />
+      <input name="low" type="vector4" value="0.5000, 0.0, 0.5000, 0.0" />
+      <input name="high" type="vector4" value="1.0, 0.5000, 0.5000, 1.0" />
+    </clamp>
+    <output name="out" type="vector4" nodename="clamp1" />
+  </nodegraph>
+  <nodegraph name="clamp_vector4FA">
+    <clamp name="clamp1" type="vector4">
+      <input name="in" type="vector4" value="1.0000, 0.0, 0.5000, 2.0000" />
+      <input name="low" type="float" value="0.5000" />
+      <input name="high" type="float" value="0.5000" />
+    </clamp>
+    <output name="out" type="vector4" nodename="clamp1" />
+  </nodegraph>
+  <nodegraph name="min_float">
+    <min name="min1" type="float">
+      <input name="in1" type="float" value="0.5000" />
+      <input name="in2" type="float" value="1.0000" />
+    </min>
+    <output name="out" type="float" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="min_color3">
+    <min name="min1" type="color3">
+      <input name="in1" type="color3" value="0.5000, 1.0000, 0.5000" />
+      <input name="in2" type="color3" value="1.0000, 0.5000, 0.5000" />
+    </min>
+    <output name="out" type="color3" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="min_color3FA">
+    <min name="min1" type="color3">
+      <input name="in1" type="color3" value="0.5000, 1.0000, 0.0" />
+      <input name="in2" type="float" value="0.5000" />
+    </min>
+    <output name="out" type="color3" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="min_color4">
+    <min name="min1" type="color4">
+      <input name="in1" type="color4" value="0.5000, 1.0000, 0.5000, 1.0000" />
+      <input name="in2" type="color4" value="1.0000, 0.5000, 0.5000, 2.0000" />
+    </min>
+    <output name="out" type="color4" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="min_color4FA">
+    <min name="min1" type="color4">
+      <input name="in1" type="color4" value="0.5000, 1.0000, 0.0, 0.5000" />
+      <input name="in2" type="float" value="0.5000" />
+    </min>
+    <output name="out" type="color4" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="min_vector2">
+    <min name="min1" type="vector2">
+      <input name="in1" type="vector2" value="0.5000, 1.0000" />
+      <input name="in2" type="vector2" value="1.0000, 0.5000" />
+    </min>
+    <output name="out" type="vector2" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="min_vector2FA">
+    <min name="min1" type="vector2">
+      <input name="in1" type="vector2" value="0.0, 1.0000" />
+      <input name="in2" type="float" value="0.5000" />
+    </min>
+    <output name="out" type="vector2" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="min_vector3">
+    <min name="min1" type="vector3">
+      <input name="in1" type="vector3" value="0.5000, 1.0000, 0.5000" />
+      <input name="in2" type="vector3" value="1.0000, 0.5000, 0.5000" />
+    </min>
+    <output name="out" type="vector3" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="min_vector3FA">
+    <min name="min1" type="vector3">
+      <input name="in1" type="vector3" value="0.5000, 1.0000, 0.0" />
+      <input name="in2" type="float" value="0.5000" />
+    </min>
+    <output name="out" type="vector3" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="min_vector4">
+    <min name="min1" type="vector4">
+      <input name="in1" type="vector4" value="0.5000, 1.0000, 0.5000, 1.0" />
+      <input name="in2" type="vector4" value="1.0000, 0.5000, 0.5000, 2.0000" />
+    </min>
+    <output name="out" type="vector4" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="min_vector4FA">
+    <min name="min1" type="vector4">
+      <input name="in1" type="vector4" value="0.5000, 1.0000, 0.0, 0.5000" />
+      <input name="in2" type="float" value="0.5000" />
+    </min>
+    <output name="out" type="vector4" nodename="min1" />
+  </nodegraph>
+  <nodegraph name="max_float">
+    <max name="max1" type="float">
+      <input name="in1" type="float" value="0.5000" />
+      <input name="in2" type="float" value="1.0000" />
+    </max>
+    <output name="out" type="float" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="max_color3">
+    <max name="max1" type="color3">
+      <input name="in1" type="color3" value="0.5000, 1.0000, 0.5000" />
+      <input name="in2" type="color3" value="1.0000, 0.5000, 0.5000" />
+    </max>
+    <output name="out" type="color3" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="max_color3FA">
+    <max name="max1" type="color3">
+      <input name="in1" type="color3" value="0.5000, 1.0000, 0.0" />
+      <input name="in2" type="float" value="0.5000" />
+    </max>
+    <output name="out" type="color3" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="max_color4">
+    <max name="max1" type="color4">
+      <input name="in1" type="color4" value="0.5000, 1.0000, 0.5000, 1.0000" />
+      <input name="in2" type="color4" value="1.0000, 0.5000, 0.5000, 0.2500" />
+    </max>
+    <output name="out" type="color4" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="max_color4FA">
+    <max name="max1" type="color4">
+      <input name="in1" type="color4" value="0.5000, 1.0000, 0.0, 0.5000" />
+      <input name="in2" type="float" value="0.5000" />
+    </max>
+    <output name="out" type="color4" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="max_vector2">
+    <max name="max1" type="vector2">
+      <input name="in1" type="vector2" value="0.5000, 1.0000" />
+      <input name="in2" type="vector2" value="1.0000, 0.5000" />
+    </max>
+    <output name="out" type="vector2" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="max_vector2FA">
+    <max name="max1" type="vector2">
+      <input name="in1" type="vector2" value="0.0, 1.0000" />
+      <input name="in2" type="float" value="0.5000" />
+    </max>
+    <output name="out" type="vector2" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="max_vector3">
+    <max name="max1" type="vector3">
+      <input name="in1" type="vector3" value="0.5000, 1.0000, 0.5000" />
+      <input name="in2" type="vector3" value="1.0000, 0.5000, 0.5000" />
+    </max>
+    <output name="out" type="vector3" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="max_vector3FA">
+    <max name="max1" type="vector3">
+      <input name="in1" type="vector3" value="0.5000, 1.0000, 0.0" />
+      <input name="in2" type="float" value="0.5000" />
+    </max>
+    <output name="out" type="vector3" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="max_vector4">
+    <max name="max1" type="vector4">
+      <input name="in1" type="vector4" value="0.5000, 1.0000, 0.5000, 1.0" />
+      <input name="in2" type="vector4" value="1.0000, 0.5000, 0.5000, 0.2500" />
+    </max>
+    <output name="out" type="vector4" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="max_vector4FA">
+    <max name="max1" type="vector4">
+      <input name="in1" type="vector4" value="0.5000, 1.0000, 0.0, 0.5000" />
+      <input name="in2" type="float" value="0.5000" />
+    </max>
+    <output name="out" type="vector4" nodename="max1" />
+  </nodegraph>
+  <nodegraph name="invert_matrix33">
+    <invertmatrix name="invert1" type="matrix33">
+      <input name="in" type="matrix33" value="1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0" />
+    </invertmatrix>
+    <transformmatrix name="transformvector1" type="vector3">
+      <input name="in" type="vector3" value="0.5, 0.5, 0.5" />
+      <input name="mat" type="matrix33" nodename="invert1" />
+    </transformmatrix>
+    <output name="out" type="vector3" nodename="transformvector1" />
+  </nodegraph>
+  <nodegraph name="invert_matrix44">
+    <invertmatrix name="invert1" type="matrix44">
+      <input name="in" type="matrix44" value="1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0" />
+    </invertmatrix>
+    <transformmatrix name="transformvector1" type="vector4">
+      <input name="in" type="vector4" value="0.5, 0.5, 0.5, 1.0" />
+      <input name="mat" type="matrix44" nodename="invert1" />
+    </transformmatrix>
+    <output name="out" type="vector4" nodename="transformvector1" />
+  </nodegraph>
+</materialx>

@@ -1,0 +1,30 @@
+
+#include <winver.h>
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION @GLFW_VERSION_MAJOR@,@GLFW_VERSION_MINOR@,@GLFW_VERSION_PATCH@,0
+PRODUCTVERSION @GLFW_VERSION_MAJOR@,@GLFW_VERSION_MINOR@,@GLFW_VERSION_PATCH@,0
+FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+FILEFLAGS 0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_DLL
+FILESUBTYPE 0
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904B0"
+        {
+            VALUE "CompanyName", "GLFW"
+            VALUE "FileDescription", "GLFW @GLFW_VERSION@ DLL"
+            VALUE "FileVersion", "@GLFW_VERSION@"
+            VALUE "OriginalFilename", "glfw3.dll"
+            VALUE "ProductName", "GLFW"
+            VALUE "ProductVersion", "@GLFW_VERSION@"
+        }
+    }
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x409, 1200
+    }
+}
+

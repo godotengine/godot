@@ -1,0 +1,5 @@
+void mx_geompropvalue_string(string geomprop, string defaultVal, output string out)
+{
+    if (getattribute(geomprop, out) == 0)
+        out = defaultVal;
+}

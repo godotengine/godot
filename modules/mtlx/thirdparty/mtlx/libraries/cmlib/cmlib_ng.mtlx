@@ -1,0 +1,367 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+    Copyright Contributors to the MaterialX Project
+    SPDX-License-Identifier: Apache-2.0
+
+    Nodegraph implementations for the default color transforms in MaterialX.
+  -->
+
+  <nodegraph name="NG_g18_rec709_to_lin_rec709_color3" nodedef="ND_g18_rec709_to_lin_rec709_color3">
+    <max name="max" type="color3">
+      <input name="in1" type="color3" interfacename="in" />
+      <input name="in2" type="float" value="0" />
+    </max>
+    <power name="gamma" type="color3">
+      <input name="in1" type="color3" nodename="max" />
+      <input name="in2" type="float" value="1.8" />
+    </power>
+    <output name="out" type="color3" nodename="gamma" />
+  </nodegraph>
+
+  <nodegraph name="NG_g18_rec709_to_lin_rec709_color4" nodedef="ND_g18_rec709_to_lin_rec709_color4">
+    <convert name="asColor3" type="color3">
+      <input name="in" type="color4" interfacename="in" />
+    </convert>
+    <g18_rec709_to_lin_rec709 name="transform" type="color3">
+      <input name="in" type="color3" nodename="asColor3" />
+    </g18_rec709_to_lin_rec709>
+    <combine4 name="asColor4" type="color4">
+      <input name="in1" type="float" nodename="transform" channels="r" />
+      <input name="in2" type="float" nodename="transform" channels="g" />
+      <input name="in3" type="float" nodename="transform" channels="b" />
+      <input name="in4" type="float" interfacename="in" channels="a" />
+    </combine4>
+    <output name="out" type="color4" nodename="asColor4" />
+  </nodegraph>
+
+  <nodegraph name="NG_g22_rec709_to_lin_rec709_color3" nodedef="ND_g22_rec709_to_lin_rec709_color3">
+    <max name="max" type="color3">
+      <input name="in1" type="color3" interfacename="in" />
+      <input name="in2" type="float" value="0" />
+    </max>
+    <power name="gamma" type="color3">
+      <input name="in1" type="color3" nodename="max" />
+      <input name="in2" type="float" value="2.2" />
+    </power>
+    <output name="out" type="color3" nodename="gamma" />
+  </nodegraph>
+
+  <nodegraph name="NG_g22_rec709_to_lin_rec709_color4" nodedef="ND_g22_rec709_to_lin_rec709_color4">
+    <convert name="asColor3" type="color3">
+      <input name="in" type="color4" interfacename="in" />
+    </convert>
+    <g22_rec709_to_lin_rec709 name="transform" type="color3">
+      <input name="in" type="color3" nodename="asColor3" />
+    </g22_rec709_to_lin_rec709>
+    <combine4 name="asColor4" type="color4">
+      <input name="in1" type="float" nodename="transform" channels="r" />
+      <input name="in2" type="float" nodename="transform" channels="g" />
+      <input name="in3" type="float" nodename="transform" channels="b" />
+      <input name="in4" type="float" interfacename="in" channels="a" />
+    </combine4>
+    <output name="out" type="color4" nodename="asColor4" />
+  </nodegraph>
+
+  <nodegraph name="NG_rec709_display_to_lin_rec709_color3" nodedef="ND_rec709_display_to_lin_rec709_color3">
+    <max name="max" type="color3">
+      <input name="in1" type="color3" interfacename="in" />
+      <input name="in2" type="float" value="0" />
+    </max>
+    <power name="gamma" type="color3">
+      <input name="in1" type="color3" nodename="max" />
+      <input name="in2" type="float" value="2.4" />
+    </power>
+    <output name="out" type="color3" nodename="gamma" />
+  </nodegraph>
+
+  <nodegraph name="NG_rec709_display_to_lin_rec709_color4" nodedef="ND_rec709_display_to_lin_rec709_color4">
+    <convert name="asColor3" type="color3">
+      <input name="in" type="color4" interfacename="in" />
+    </convert>
+    <rec709_display_to_lin_rec709 name="transform" type="color3">
+      <input name="in" type="color3" nodename="asColor3" />
+    </rec709_display_to_lin_rec709>
+    <combine4 name="asColor4" type="color4">
+      <input name="in1" type="float" nodename="transform" channels="r" />
+      <input name="in2" type="float" nodename="transform" channels="g" />
+      <input name="in3" type="float" nodename="transform" channels="b" />
+      <input name="in4" type="float" interfacename="in" channels="a" />
+    </combine4>
+    <output name="out" type="color4" nodename="asColor4" />
+  </nodegraph>
+
+  <nodegraph name="NG_acescg_to_lin_rec709_color3" nodedef="ND_acescg_to_lin_rec709_color3">
+    <constant name="mat" type="matrix33">
+      <input name="value" type="matrix33" value="1.705050992658, -0.130256417507, -0.024003356805, -0.621792120657,  1.140804736575, -0.128968976065, -0.083258872001, -0.010548319068, 1.15297233287" />
+    </constant>
+    <convert name="asVec" type="vector3">
+      <input name="in" type="color3" interfacename="in" />
+    </convert>
+    <transformmatrix name="transform" type="vector3">
+      <input name="in" type="vector3" nodename="asVec" />
+      <input name="mat" type="matrix33" nodename="mat" />
+    </transformmatrix>
+    <convert name="asColor" type="color3">
+      <input name="in" type="vector3" nodename="transform" />
+    </convert>
+    <output name="out" type="color3" nodename="asColor" />
+  </nodegraph>
+
+  <nodegraph name="NG_acescg_to_lin_rec709_color4" nodedef="ND_acescg_to_lin_rec709_color4">
+    <convert name="asColor3" type="color3">
+      <input name="in" type="color4" interfacename="in" />
+    </convert>
+    <acescg_to_lin_rec709 name="transform" type="color3">
+      <input name="in" type="color3" nodename="asColor3" />
+    </acescg_to_lin_rec709>
+    <combine4 name="asColor4" type="color4">
+      <input name="in1" type="float" nodename="transform" channels="r" />
+      <input name="in2" type="float" nodename="transform" channels="g" />
+      <input name="in3" type="float" nodename="transform" channels="b" />
+      <input name="in4" type="float" interfacename="in" channels="a" />
+    </combine4>
+    <output name="out" type="color4" nodename="asColor4" />
+  </nodegraph>
+
+  <nodegraph name="NG_g22_ap1_to_lin_rec709_color3" nodedef="ND_g22_ap1_to_lin_rec709_color3">
+    <max name="max" type="color3">
+      <input name="in1" type="color3" interfacename="in" />
+      <input name="in2" type="float" value="0" />
+    </max>
+    <power name="gamma" type="color3">
+      <input name="in1" type="color3" nodename="max" />
+      <input name="in2" type="float" value="2.2" />
+    </power>
+    <acescg_to_lin_rec709 name="rec709" type="color3">
+      <input name="in" type="color3" nodename="gamma" />
+    </acescg_to_lin_rec709>
+    <output name="out" type="color3" nodename="rec709" />
+  </nodegraph>
+
+  <nodegraph name="NG_g22_ap1_to_lin_rec709_color4" nodedef="ND_g22_ap1_to_lin_rec709_color4">
+    <convert name="asColor3" type="color3">
+      <input name="in" type="color4" interfacename="in" />
+    </convert>
+    <g22_ap1_to_lin_rec709 name="transform" type="color3">
+      <input name="in" type="color3" nodename="asColor3" />
+    </g22_ap1_to_lin_rec709>
+    <combine4 name="asColor4" type="color4">
+      <input name="in1" type="float" nodename="transform" channels="r" />
+      <input name="in2" type="float" nodename="transform" channels="g" />
+      <input name="in3" type="float" nodename="transform" channels="b" />
+      <input name="in4" type="float" interfacename="in" channels="a" />
+    </combine4>
+    <output name="out" type="color4" nodename="asColor4" />
+  </nodegraph>
+
+  <nodegraph name="NG_srgb_texture_to_lin_rec709_color3" nodedef="ND_srgb_texture_to_lin_rec709_color3">
+    <constant name="threshhold" type="float">
+      <input name="value" type="float" value="0.04045" />
+    </constant>
+    <ifgreater name="isAboveR" type="float">
+      <input name="value1" type="float" interfacename="in" channels="r" />
+      <input name="value2" type="float" nodename="threshhold" />
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" value="0" />
+    </ifgreater>
+    <ifgreater name="isAboveG" type="float">
+      <input name="value1" type="float" interfacename="in" channels="g" />
+      <input name="value2" type="float" nodename="threshhold" />
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" value="0" />
+    </ifgreater>
+    <ifgreater name="isAboveB" type="float">
+      <input name="value1" type="float" interfacename="in" channels="b" />
+      <input name="value2" type="float" nodename="threshhold" />
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" value="0" />
+    </ifgreater>
+    <combine3 name="isAbove" type="color3">
+      <input name="in1" type="float" nodename="isAboveR" />
+      <input name="in2" type="float" nodename="isAboveG" />
+      <input name="in3" type="float" nodename="isAboveB" />
+    </combine3>
+    <divide name="linSeg" type="color3">
+      <input name="in1" type="color3" interfacename="in" />
+      <input name="in2" type="float" value="12.92" />
+    </divide>
+    <add name="bias" type="color3">
+      <input name="in1" type="color3" interfacename="in" />
+      <input name="in2" type="float" value="0.055" />
+    </add>
+    <max name="max" type="color3">
+      <input name="in1" type="color3" nodename="bias" />
+      <input name="in2" type="float" value="0" />
+    </max>
+    <divide name="scale" type="color3">
+      <input name="in1" type="color3" nodename="max" />
+      <input name="in2" type="float" value="1.055" />
+    </divide>
+    <power name="powSeg" type="color3">
+      <input name="in1" type="color3" nodename="scale" />
+      <input name="in2" type="float" value="2.4" />
+    </power>
+    <mix name="mix" type="color3">
+      <input name="bg" type="color3" nodename="linSeg" />
+      <input name="fg" type="color3" nodename="powSeg" />
+      <input name="mix" type="color3" nodename="isAbove" />
+    </mix>
+    <output name="out" type="color3" nodename="mix" />
+  </nodegraph>
+
+  <nodegraph name="NG_srgb_texture_to_lin_rec709_color4" nodedef="ND_srgb_texture_to_lin_rec709_color4">
+    <convert name="asColor3" type="color3">
+      <input name="in" type="color4" interfacename="in" />
+    </convert>
+    <srgb_texture_to_lin_rec709 name="transform" type="color3">
+      <input name="in" type="color3" nodename="asColor3" />
+    </srgb_texture_to_lin_rec709>
+    <combine4 name="asColor4" type="color4">
+      <input name="in1" type="float" nodename="transform" channels="r" />
+      <input name="in2" type="float" nodename="transform" channels="g" />
+      <input name="in3" type="float" nodename="transform" channels="b" />
+      <input name="in4" type="float" interfacename="in" channels="a" />
+    </combine4>
+    <output name="out" type="color4" nodename="asColor4" />
+  </nodegraph>
+
+  <nodegraph name="NG_lin_adobergb_to_lin_rec709_color3" nodedef="ND_lin_adobergb_to_lin_rec709_color3">
+    <constant name="mat" type="matrix33">
+      <input name="value" type="matrix33" value="1.39835574e+00, -2.50233861e-16,  2.77555756e-17, -3.98355744e-01,  1.00000000e+00, -4.29289893e-02, 0.00000000e+00,  0.00000000e+00,  1.04292899e+00" />
+    </constant>
+    <convert name="asVec" type="vector3">
+      <input name="in" type="color3" interfacename="in" />
+    </convert>
+    <transformmatrix name="transform" type="vector3">
+      <input name="in" type="vector3" nodename="asVec" />
+      <input name="mat" type="matrix33" nodename="mat" />
+    </transformmatrix>
+    <convert name="asColor" type="color3">
+      <input name="in" type="vector3" nodename="transform" />
+    </convert>
+    <output name="out" type="color3" nodename="asColor" />
+  </nodegraph>
+
+  <nodegraph name="NG_lin_adobergb_to_lin_rec709_color4" nodedef="ND_lin_adobergb_to_lin_rec709_color4">
+    <convert name="asColor3" type="color3">
+      <input name="in" type="color4" interfacename="in" />
+    </convert>
+    <lin_adobergb_to_lin_rec709 name="transform" type="color3">
+      <input name="in" type="color3" nodename="asColor3" />
+    </lin_adobergb_to_lin_rec709>
+    <combine4 name="asColor4" type="color4">
+      <input name="in1" type="float" nodename="transform" channels="r" />
+      <input name="in2" type="float" nodename="transform" channels="g" />
+      <input name="in3" type="float" nodename="transform" channels="b" />
+      <input name="in4" type="float" interfacename="in" channels="a" />
+    </combine4>
+    <output name="out" type="color4" nodename="asColor4" />
+  </nodegraph>
+
+  <nodegraph name="NG_adobergb_to_lin_rec709_color3" nodedef="ND_adobergb_to_lin_rec709_color3">
+    <divide name="constant" type="float">
+      <input name="in1" type="float" value="563.0" />
+      <input name="in2" type="float" value="256.0" />
+    </divide>
+    <max name="max" type="color3">
+      <input name="in1" type="color3" interfacename="in" />
+      <input name="in2" type="float" value="0" />
+    </max>
+    <power name="gamma" type="color3">
+      <input name="in1" type="color3" nodename="max" />
+      <input name="in2" type="float" nodename="constant" />
+    </power>
+    <lin_adobergb_to_lin_rec709 name="rec709" type="color3">
+      <input name="in" type="color3" nodename="gamma" />
+    </lin_adobergb_to_lin_rec709>
+    <output name="out" type="color3" nodename="rec709" />
+  </nodegraph>
+
+  <nodegraph name="NG_adobergb_to_lin_rec709_color4" nodedef="ND_adobergb_to_lin_rec709_color4">
+    <convert name="asColor3" type="color3">
+      <input name="in" type="color4" interfacename="in" />
+    </convert>
+    <adobergb_to_lin_rec709 name="transform" type="color3">
+      <input name="in" type="color3" nodename="asColor3" />
+    </adobergb_to_lin_rec709>
+    <combine4 name="asColor4" type="color4">
+      <input name="in1" type="float" nodename="transform" channels="r" />
+      <input name="in2" type="float" nodename="transform" channels="g" />
+      <input name="in3" type="float" nodename="transform" channels="b" />
+      <input name="in4" type="float" interfacename="in" channels="a" />
+    </combine4>
+    <output name="out" type="color4" nodename="asColor4" />
+  </nodegraph>
+
+  <nodegraph name="NG_srgb_displayp3_to_lin_rec709_color3" nodedef="ND_srgb_displayp3_to_lin_rec709_color3">
+    <constant name="mat" type="matrix33">
+      <input name="value" type="matrix33" value="1.22493029, -0.22492968, 0.00000006, -0.04205868,  1.04205894, -0.00000001, -0.01964128, -0.07864794, 1.09828925" />
+    </constant>
+    <!--  Use srgb_texture_to_lin_rec709 to convert from sRGB to Lin before passing to the mat conversion -->
+    <srgb_texture_to_lin_rec709 name="srgb_transform" type="color3">
+      <input name="in" type="color3" interfacename="in" />
+    </srgb_texture_to_lin_rec709>
+    <convert name="asVec" type="vector3">
+      <input name="in" type="color3" nodename="srgb_transform" />
+    </convert>
+    <transformmatrix name="transform" type="vector3">
+      <input name="in" type="vector3" nodename="asVec" />
+      <input name="mat" type="matrix33" nodename="mat" />
+    </transformmatrix>
+    <convert name="asColor" type="color3">
+      <input name="in" type="vector3" nodename="transform" />
+    </convert>
+    <output name="out" type="color3" nodename="asColor" />
+  </nodegraph>
+
+  <nodegraph name="NG_srgb_displayp3_to_lin_rec709_color4" nodedef="ND_srgb_displayp3_to_lin_rec709_color4">
+    <convert name="asColor3" type="color3">
+      <input name="in" type="color4" interfacename="in" />
+    </convert>
+    <srgb_displayp3_to_lin_rec709 name="transform" type="color3">
+      <input name="in" type="color3" nodename="asColor3" />
+    </srgb_displayp3_to_lin_rec709>
+    <combine4 name="asColor4" type="color4">
+      <input name="in1" type="float" nodename="transform" channels="r" />
+      <input name="in2" type="float" nodename="transform" channels="g" />
+      <input name="in3" type="float" nodename="transform" channels="b" />
+      <input name="in4" type="float" interfacename="in" channels="a" />
+    </combine4>
+    <output name="out" type="color4" nodename="asColor4" />
+  </nodegraph>
+
+  <nodegraph name="NG_lin_displayp3_to_lin_rec709_color3" nodedef="ND_lin_displayp3_to_lin_rec709_color3">
+    <constant name="mat" type="matrix33">
+      <input name="value" type="matrix33" value="1.22493029, -0.22492968, 0.00000006, -0.04205868,  1.04205894, -0.00000001, -0.01964128, -0.07864794, 1.09828925" />
+    </constant>
+    <convert name="asVec" type="vector3">
+      <input name="in" type="color3" interfacename="in" />
+    </convert>
+    <transformmatrix name="transform" type="vector3">
+      <input name="in" type="vector3" nodename="asVec" />
+      <input name="mat" type="matrix33" nodename="mat" />
+    </transformmatrix>
+    <convert name="asColor" type="color3">
+      <input name="in" type="vector3" nodename="transform" />
+    </convert>
+    <output name="out" type="color3" nodename="asColor" />
+  </nodegraph>
+
+  <nodegraph name="NG_lin_displayp3_to_lin_rec709_color4" nodedef="ND_lin_displayp3_to_lin_rec709_color4">
+    <convert name="asColor3" type="color3">
+      <input name="in" type="color4" interfacename="in" />
+    </convert>
+    <lin_displayp3_to_lin_rec709 name="transform" type="color3">
+      <input name="in" type="color3" nodename="asColor3" />
+    </lin_displayp3_to_lin_rec709>
+    <combine4 name="asColor4" type="color4">
+      <input name="in1" type="float" nodename="transform" channels="r" />
+      <input name="in2" type="float" nodename="transform" channels="g" />
+      <input name="in3" type="float" nodename="transform" channels="b" />
+      <input name="in4" type="float" interfacename="in" channels="a" />
+    </combine4>
+    <output name="out" type="color4" nodename="asColor4" />
+  </nodegraph>
+
+</materialx>

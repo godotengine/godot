@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <tiledcircles name="tiledcircles_color3" type="color3">
+    <input name="uvtiling" type="vector2" value="29, 29" />
+    <input name="size" type="float" value="0.8" />
+  </tiledcircles>
+  <standard_surface name="SR_test_tiledcircles" type="surfaceshader">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" nodename="tiledcircles_color3" />
+  </standard_surface>
+  <surfacematerial name="test_tiledcircles" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_test_tiledcircles" />
+  </surfacematerial>
+
+  <tiledcloverleafs name="tiledcloverleafs_color3" type="color3">
+    <input name="uvtiling" type="vector2" value="29, 29" />
+    <input name="size" type="float" value="0.8" />
+  </tiledcloverleafs>
+  <standard_surface name="SR_test_tiledcloverleafs" type="surfaceshader">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" nodename="tiledcloverleafs_color3" />
+  </standard_surface>
+  <surfacematerial name="test_tiledcloverleafs" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_test_tiledcloverleafs" />
+  </surfacematerial>
+
+  <tiledhexagons name="tiledhexagons_color3" type="color3">
+    <input name="uvtiling" type="vector2" value="29, 29" />
+    <input name="size" type="float" value="0.7" />
+  </tiledhexagons>
+  <standard_surface name="SR_test_tiledhexagons" type="surfaceshader">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" nodename="tiledhexagons_color3" />
+  </standard_surface>
+  <surfacematerial name="test_tiledhexagons" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_test_tiledhexagons" />
+  </surfacematerial>
+</materialx>

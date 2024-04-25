@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="uclamp">
+    <image name="image_number_1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+      <input name="default" type="color3" value="1.0, 0.0, 0.0" />
+      <input name="texcoord" type="vector2" nodename="multiply1" />
+      <input name="uaddressmode" type="string" value="clamp" />
+    </image>
+    <output name="out" type="color3" nodename="image_number_1" />
+    <texcoord name="texcoord1" type="vector2">
+      <input name="index" type="integer" value="0" />
+    </texcoord>
+    <multiply name="multiply1" type="vector2">
+      <input name="in1" type="vector2" nodename="texcoord1" />
+      <input name="in2" type="vector2" value="2.0000, 2.0000" />
+    </multiply>
+  </nodegraph>
+  <nodegraph name="vclamp">
+    <image name="image_number_1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+      <input name="default" type="color3" value="1.0, 0.0, 0.0" />
+      <input name="texcoord" type="vector2" nodename="multiply1" />
+      <input name="vaddressmode" type="string" value="clamp" />
+    </image>
+    <output name="out" type="color3" nodename="image_number_1" />
+    <texcoord name="texcoord1" type="vector2">
+      <input name="index" type="integer" value="0" />
+    </texcoord>
+    <multiply name="multiply1" type="vector2">
+      <input name="in1" type="vector2" nodename="texcoord1" />
+      <input name="in2" type="vector2" value="2.0000, 2.0000" />
+    </multiply>
+  </nodegraph>
+  <nodegraph name="uborder_color">
+    <image name="image_number_1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+      <input name="default" type="color3" value="1.0, 0.0, 0.0" />
+      <input name="texcoord" type="vector2" nodename="multiply1" />
+      <input name="uaddressmode" type="string" value="constant" />
+    </image>
+    <output name="out" type="color3" nodename="image_number_1" />
+    <texcoord name="texcoord1" type="vector2">
+      <input name="index" type="integer" value="0" />
+    </texcoord>
+    <multiply name="multiply1" type="vector2">
+      <input name="in1" type="vector2" nodename="texcoord1" />
+      <input name="in2" type="vector2" value="2.0000, 2.0000" />
+    </multiply>
+  </nodegraph>
+  <nodegraph name="vborder_color">
+    <image name="image_number_1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+      <input name="default" type="color3" value="1.0, 0.0, 0.0" />
+      <input name="texcoord" type="vector2" nodename="multiply1" />
+      <input name="vaddressmode" type="string" value="constant" />
+    </image>
+    <output name="out" type="color3" nodename="image_number_1" />
+    <texcoord name="texcoord1" type="vector2">
+      <input name="index" type="integer" value="0" />
+    </texcoord>
+    <multiply name="multiply1" type="vector2">
+      <input name="in1" type="vector2" nodename="texcoord1" />
+      <input name="in2" type="vector2" value="2.0000, 2.0000" />
+    </multiply>
+  </nodegraph>
+  <nodegraph name="uv_decal_black">
+    <image name="image_number_1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+      <input name="texcoord" type="vector2" nodename="add1" />
+      <input name="uaddressmode" type="string" value="constant" />
+      <input name="vaddressmode" type="string" value="constant" />
+    </image>
+    <output name="out" type="color3" nodename="image_number_1" />
+    <texcoord name="texcoord1" type="vector2">
+      <input name="index" type="integer" value="0" />
+    </texcoord>
+    <multiply name="multiply1" type="vector2">
+      <input name="in1" type="vector2" nodename="texcoord1" />
+      <input name="in2" type="vector2" value="2.0000, 2.0000" />
+    </multiply>
+    <add name="add1" type="vector2">
+      <input name="in1" type="vector2" nodename="multiply1" />
+      <input name="in2" type="vector2" value="-0.5000, -0.5000" />
+    </add>
+  </nodegraph>
+  <nodegraph name="vmirror">
+    <image name="image_number_1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+      <input name="default" type="color3" value="1.0, 0.0, 0.0" />
+      <input name="texcoord" type="vector2" nodename="multiply1" />
+      <input name="uaddressmode" type="string" value="clamp" />
+      <input name="vaddressmode" type="string" value="mirror" />
+    </image>
+    <output name="out" type="color3" nodename="image_number_1" />
+    <texcoord name="texcoord1" type="vector2">
+      <input name="index" type="integer" value="0" />
+    </texcoord>
+    <multiply name="multiply1" type="vector2">
+      <input name="in1" type="vector2" nodename="texcoord1" />
+      <input name="in2" type="vector2" value="2.0000, 2.0000" />
+    </multiply>
+  </nodegraph>
+  <nodegraph name="umirror">
+    <image name="image_number_1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+      <input name="default" type="color3" value="1.0, 0.0, 0.0" />
+      <input name="texcoord" type="vector2" nodename="multiply1" />
+      <input name="uaddressmode" type="string" value="mirror" />
+      <input name="vaddressmode" type="string" value="clamp" />
+    </image>
+    <output name="out" type="color3" nodename="image_number_1" />
+    <texcoord name="texcoord1" type="vector2">
+      <input name="index" type="integer" value="0" />
+    </texcoord>
+    <multiply name="multiply1" type="vector2">
+      <input name="in1" type="vector2" nodename="texcoord1" />
+      <input name="in2" type="vector2" value="2.0000, 2.0000" />
+    </multiply>
+  </nodegraph>
+</materialx>

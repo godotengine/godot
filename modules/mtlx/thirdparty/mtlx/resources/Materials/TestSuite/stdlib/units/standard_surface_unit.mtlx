@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="NG_base">
+    <constant name="realscale" type="float">
+      <input name="value" type="float" value="1.25" unit="meter" unittype="distance" />
+    </constant>
+    <output name="NG_base_output" type="float" nodename="realscale" />
+  </nodegraph>
+  <standard_surface name="SR_jade" type="surfaceshader">
+    <input name="base" type="float" nodegraph="NG_base" output="NG_base_output" />
+    <input name="base_color" type="color3" value="0.0603, 0.43979999, 0.19159999" />
+    <input name="specular_roughness" type="float" unit="millimeter" unittype="distance" value="0.25" />
+    <input name="specular_IOR" type="float" value="2.4179999828338623" unit="centimeter" unittype="distance" />
+    <input name="subsurface" type="float" value="0.4" unit="millimeter" unittype="distance" />
+    <input name="subsurface_color" type="color3" value="0.0603, 0.43979999, 0.19159999" />
+    <input name="subsurface_scale" type="float" value="0.10000000149011612" />
+  </standard_surface>
+  <surfacematerial name="Jade" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_jade" />
+  </surfacematerial>
+</materialx>

@@ -1,0 +1,4 @@
+void mx_cellnoise2d_float(vector2 texcoord, output float result)
+{
+    result = cellnoise(texcoord.x, texcoord.y);
+}

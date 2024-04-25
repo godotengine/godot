@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+    Copyright Contributors to the MaterialX Project
+    SPDX-License-Identifier: Apache-2.0
+
+    Declarations for OSL implementations of standard nodes included in the MaterialX specification.
+  -->
+
+  <!-- ======================================================================== -->
+  <!-- View-dependent nodes                                                     -->
+  <!-- ======================================================================== -->
+
+  <!-- <viewdirection> -->
+  <implementation name="IM_viewdirection_vector3_genosl" nodedef="ND_viewdirection_vector3" sourcecode="transform({{space}}, I)" target="genosl" />
+
+</materialx>

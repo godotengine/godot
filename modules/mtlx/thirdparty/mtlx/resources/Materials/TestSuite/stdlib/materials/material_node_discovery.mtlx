@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodedef name="ND_material_def_material_1_0" node="material_def" version="1.0" isdefaultversion="true">
+    <output name="out" type="material" />
+  </nodedef>
+  <standard_surface name="top_level_shader" type="surfaceshader" version="1.0.1" />
+  <surfacematerial name="top_level_material_no_asssign" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="top_level_shader" />
+  </surfacematerial>
+  <nodegraph name="top_level_material_in_graph_no_assign">
+    <standard_surface name="standard_surface2" type="surfaceshader" version="1.0.1" />
+    <surfacematerial name="surfacematerial1" type="material">
+      <input name="surfaceshader" type="surfaceshader" nodename="standard_surface2" />
+    </surfacematerial>
+    <output name="out" type="material" nodename="surfacematerial1" />
+  </nodegraph>
+  <standard_surface name="top_level_shader1" type="surfaceshader" version="1.0.1" />
+  <surfacematerial name="top_level_material_assigned" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="top_level_shader1" />
+  </surfacematerial>
+  <nodegraph name="NG_material_def_material_1_0" nodedef="ND_material_def_material_1_0">
+    <standard_surface name="standard_surface2" type="surfaceshader" version="1.0.1" />
+    <surfacematerial name="surfacematerial1" type="material">
+      <input name="surfaceshader" type="surfaceshader" nodename="standard_surface2" />
+    </surfacematerial>
+    <output name="out" type="material" nodename="surfacematerial1" />
+  </nodegraph>
+  <material_def name="top_level_material_def" type="material" />
+  <nodegraph name="top_level_material_in_graph_assigned">
+    <standard_surface name="standard_surface2" type="surfaceshader" version="1.0.1" />
+    <surfacematerial name="surfacematerial1" type="material">
+      <input name="surfaceshader" type="surfaceshader" nodename="standard_surface2" />
+    </surfacematerial>
+    <output name="out" type="material" nodename="surfacematerial1" />
+  </nodegraph>
+  <material_def name="top_level_material_def_assigned" type="material" />
+  <collection name="collection1" />
+  <collection name="collection2" />
+  <collection name="collection3" />
+  <look name="look1">
+    <materialassign name="materialnode_to_materialassign" collection="collection1" material="top_level_material_assigned" />
+  </look>
+  <look name="look2">
+    <materialassign name="materialgraph_to_materialassign" collection="collection2" material="top_level_material_in_graph_assigned" />
+  </look>
+  <look name="look3">
+    <materialassign name="materialdef_to_materialassign" collection="collection3" material="top_level_material_def_assigned" />
+  </look>
+</materialx>

@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="dot_float">
+    <dot name="dot1" type="float">
+      <input name="in" type="float" nodename="constant1" />
+      <input name="note" type="string" value="" />
+    </dot>
+    <output name="out" type="float" nodename="dot1" />
+    <constant name="constant1" type="float">
+      <input name="value" type="float" value="0.5000" />
+    </constant>
+  </nodegraph>
+  <nodegraph name="dot_color3">
+    <dot name="dot1" type="color3">
+      <input name="in" type="color3" nodename="constant1" />
+      <input name="note" type="string" value="" />
+    </dot>
+    <constant name="constant1" type="color3">
+      <input name="value" type="color3" value="0.0000, 0.5000, 1.0000" />
+    </constant>
+    <output name="out" type="color3" nodename="dot1" />
+  </nodegraph>
+  <nodegraph name="dot_color4">
+    <dot name="dot1" type="color4">
+      <input name="in" type="color4" nodename="constant1" />
+      <input name="note" type="string" value="" />
+    </dot>
+    <constant name="constant1" type="color4">
+      <input name="value" type="color4" value="0.0, 0.2500, 0.5000, 1.0" />
+    </constant>
+    <output name="out" type="color4" nodename="dot1" />
+  </nodegraph>
+  <nodegraph name="dot_vector2">
+    <dot name="dot1" type="vector2">
+      <input name="in" type="vector2" nodename="constant1" />
+      <input name="note" type="string" value="" />
+    </dot>
+    <constant name="constant1" type="vector2">
+      <input name="value" type="vector2" value="0.5000, 1.0000" />
+    </constant>
+    <output name="out" type="vector2" nodename="dot1" />
+  </nodegraph>
+  <nodegraph name="dot_vector3">
+    <dot name="dot1" type="vector3">
+      <input name="in" type="vector3" nodename="constant1" />
+      <input name="note" type="string" value="" />
+    </dot>
+    <constant name="constant1" type="vector3">
+      <input name="value" type="vector3" value="0.0, 0.5000, 1.0000" />
+    </constant>
+    <output name="out" type="vector3" nodename="dot1" />
+  </nodegraph>
+  <nodegraph name="dot_vector4">
+    <dot name="dot1" type="vector4">
+      <input name="in" type="vector4" nodename="constant1" />
+      <input name="note" type="string" value="" />
+    </dot>
+    <constant name="constant1" type="vector4">
+      <input name="value" type="vector4" value="0.0, 0.2500, 0.5000, 1.0" />
+    </constant>
+    <output name="out" type="vector4" nodename="dot1" />
+  </nodegraph>
+  <!--
+  <nodegraph name="dot_matrix33">
+    <dot name="dot1" type="matrix33">
+      <input name="in" type="matrix33" nodename="constant1" />
+      <input name="note" type="string" value="" uniform="true" />
+    </dot>
+    <constant name="constant1" type="matrix33">
+      <input name="value" type="matrix33" value="1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0" />
+    </constant>
+    <transformmatrix name="transformvector1" type="vector3">
+      <input name="in" type="vector3" value="0.5, 0.5, 0.5"/>
+      <input name="mat" type="matrix33" nodename="dot1"/>
+    </transformmatrix>
+    <output name="out" type="vector3" nodename="transformvector1"/>
+  </nodegraph>
+  -->
+  <nodegraph name="dot_matrix44">
+    <dot name="dot1" type="matrix44">
+      <input name="in" type="matrix44" nodename="constant1" />
+      <input name="note" type="string" value="" />
+    </dot>
+    <constant name="constant1" type="matrix44">
+      <input name="value" type="matrix44" value="1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0" />
+    </constant>
+    <transformmatrix name="transformvector1" type="vector4">
+      <input name="in" type="vector4" value="0.5, 0.5, 0.5, 1.0" />
+      <input name="mat" type="matrix44" nodename="dot1" />
+    </transformmatrix>
+    <output name="out" type="vector4" nodename="transformvector1" />
+  </nodegraph>
+  <nodegraph name="dot_filename">
+    <dot name="dot1" type="filename">
+      <input name="in" type="filename" value="resources/Images/grid.png" />
+      <input name="note" type="string" value="Checking for spurious samplers" />
+    </dot>
+    <image name="image_color3" type="color3">
+      <input name="file" type="filename" nodename="dot1" />
+    </image>
+    <output name="out" type="color3" nodename="image_color3" />
+  </nodegraph>
+</materialx>

@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="test_colorcorrect">
+    <range name="AlphaClampAndGamma" type="float">
+      <input name="in" type="float" nodename="AlphaOffset" />
+      <input name="gamma" type="float" value="3" />
+      <input name="doclamp" type="boolean" value="true" />
+    </range>
+    <multiply name="AlphaGain" type="float">
+      <input name="in1" type="float" nodename="extractAlphaForGain" />
+    </multiply>
+    <add name="AlphaOffset" type="float">
+      <input name="in1" type="float" nodename="AlphaGain" />
+    </add>
+    <range name="ColorClampAndGamma" type="color3">
+      <input name="in" type="color3" nodename="ColorOffset" />
+      <input name="gamma" type="color3" value="2, 1, 1" />
+    </range>
+    <multiply name="ColorGain" type="color3">
+      <input name="in1" type="color3" nodename="HSV_adjust" />
+    </multiply>
+    <add name="ColorOffset" type="color3">
+      <input name="in1" type="color3" nodename="ColorGain" />
+    </add>
+    <combine2 name="CombineColorAlpha" type="color4">
+      <input name="in1" type="color3" nodename="ColorClampAndGamma" />
+      <input name="in2" type="float" nodename="AlphaClampAndGamma" />
+    </combine2>
+    <hsvadjust name="HSV_adjust" type="color3">
+      <input name="in" type="color3" nodename="extractColorForHsv" />
+    </hsvadjust>
+    <premult name="premultiplyColor" type="color4">
+      <input name="in" type="color4" nodename="CombineColorAlpha" />
+    </premult>
+    <ifequal name="if_premultiply_condition" type="color4">
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="color4" nodename="premultiplyColor" />
+      <input name="in2" type="color4" nodename="CombineColorAlpha" />
+    </ifequal>
+    <unpremult name="unpremultiply" type="color4">
+      <input name="in" type="color4" nodename="combineInput" />
+    </unpremult>
+    <ifequal name="if_unpremultiply_condition" type="color4">
+      <input name="value2" type="boolean" value="true" />
+      <input name="in1" type="color4" nodename="unpremultiply" />
+      <input name="in2" type="color4" nodename="combineInput" />
+    </ifequal>
+    <swizzle name="outputColor" type="color3">
+      <input name="in" type="color4" nodename="if_premultiply_condition" />
+      <input name="channels" type="string" value="rgb" />
+    </swizzle>
+    <swizzle name="outputAlpha" type="float">
+      <input name="in" type="color4" nodename="if_premultiply_condition" />
+      <input name="channels" type="string" value="a" />
+    </swizzle>
+    <swizzle name="extractColorForHsv" type="color3">
+      <input name="in" type="color4" nodename="if_unpremultiply_condition" />
+      <input name="channels" type="string" value="rgb" />
+    </swizzle>
+    <swizzle name="extractAlphaForGain" type="float">
+      <input name="in" type="color4" nodename="if_unpremultiply_condition" />
+    </swizzle>
+    <constant name="inputColor" type="color3">
+      <input name="value" type="color3" value="0.5, 0.5, 0.5" />
+    </constant>
+    <constant name="inputAlpha" type="float">
+      <input name="value" type="float" value="1" />
+    </constant>
+    <combine2 name="combineInput" type="color4">
+      <input name="in1" type="color3" nodename="inputColor" />
+      <input name="in2" type="float" nodename="inputAlpha" />
+    </combine2>
+    <output name="out" type="color3" nodename="outputColor" />
+    <output name="out1" type="float" nodename="outputAlpha" />
+  </nodegraph>
+</materialx>

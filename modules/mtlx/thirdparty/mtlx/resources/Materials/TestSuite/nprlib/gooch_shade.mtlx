@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+
+  <gooch_shade name="default_gooch" type="color3">
+    <input name="warm_color" type="color3" value="0.8, 0.8, 0.7" />
+    <input name="cool_color" type="color3" value="0.3, 0.3, 0.8" />
+    <input name="specular_intensity" type="float" value="1" />
+    <input name="shininess" type="float" value="64" />
+  </gooch_shade>
+  <surface_unlit name="unlit_surface" type="surfaceshader">
+    <input name="emission_color" type="color3" nodename="default_gooch" />
+  </surface_unlit>
+  <surfacematerial name="default_gooch_material" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="unlit_surface" />
+  </surfacematerial>
+
+  <gooch_shade name="red_blue_gooch" type="color3">
+    <input name="warm_color" type="color3" value="0.9, 0.1, 0.1" />
+    <input name="cool_color" type="color3" value="0.1, 0.1, 0.9" />
+    <input name="specular_intensity" type="float" value="1" />
+    <input name="shininess" type="float" value="64" />
+  </gooch_shade>
+  <surface_unlit name="redblue_gooch_surface" type="surfaceshader">
+    <input name="emission_color" type="color3" nodename="red_blue_gooch" />
+  </surface_unlit>
+  <surfacematerial name="redblue_gooch_material" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="redblue_gooch_surface" />
+  </surfacematerial>
+
+</materialx>

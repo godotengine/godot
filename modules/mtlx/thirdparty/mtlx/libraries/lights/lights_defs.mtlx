@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+    Copyright Contributors to the MaterialX Project
+    SPDX-License-Identifier: Apache-2.0
+
+    Declarations of common light nodes, used in code generation for hardware
+    shading languages that require explicit light loops.
+
+    These nodes are a required implementation detail for hardware shader
+    generation, and are not themselves part of the MaterialX standard.
+  -->
+
+  <!-- ======================================================================== -->
+  <!-- Light shader nodes                                                       -->
+  <!-- ======================================================================== -->
+
+  <!--
+    Node: <point_light>
+  -->
+  <nodedef name="ND_point_light" node="point_light" nodegroup="light" doc="A light shader node of 'point' type.">
+    <input name="position" type="vector3" doc="Light source position." />
+    <input name="color" type="color3" doc="Light color." />
+    <input name="intensity" type="float" doc="Light intensity." />
+    <input name="decay_rate" type="float" value="2.0" doc="Light decay exponent. Defaults to 2 for quadratic decay." />
+    <output name="out" type="lightshader" />
+  </nodedef>
+
+  <!--
+    Node: <directional_light>
+  -->
+  <nodedef name="ND_directional_light" node="directional_light" nodegroup="light" doc="A light shader node of 'directional' type.">
+    <input name="direction" type="vector3" doc="Light source direction." />
+    <input name="color" type="color3" doc="Light color." />
+    <input name="intensity" type="float" doc="Light intensity." />
+    <output name="out" type="lightshader" />
+  </nodedef>
+
+  <!--
+    Node: <spot_light>
+  -->
+  <nodedef name="ND_spot_light" node="spot_light" nodegroup="light" doc="A light shader node of 'spot' type.">
+    <input name="position" type="vector3" doc="Light source position." />
+    <input name="direction" type="vector3" doc="Light source direction." />
+    <input name="color" type="color3" doc="Light color." />
+    <input name="intensity" type="float" doc="Light intensity." />
+    <input name="decay_rate" type="float" value="2.0" doc="Light decay exponent. Defaults to 2 for quadratic decay." />
+    <input name="inner_angle" type="float" doc="Inner cone angle." />
+    <input name="outer_angle" type="float" doc="Outer cone angle." />
+    <output name="out" type="lightshader" />
+  </nodedef>
+
+</materialx>

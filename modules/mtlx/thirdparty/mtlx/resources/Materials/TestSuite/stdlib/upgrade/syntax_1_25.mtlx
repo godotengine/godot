@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<materialx require="matopgraph" version="1.25" colorspace="lin_rec709">
+  <!--
+    Examples of MaterialX 1.25 syntax
+  -->
+
+  <shader name="standard_surface" shadertype="surface" shaderprogram="standard_surface">
+    <input name="base" type="float" value="1.0" publicname="base_public" />
+    <input name="base_color" type="color3" value="0.8, 0.8, 0.8" publicname="base_color_public" />
+    <input name="specular" type="float" value="1.0" publicname="specular_public" />
+    <input name="specular_color" type="color3" value="1.0, 1.0, 1.0" publicname="specular_color_public" />
+    <input name="specular_roughness" type="float" value="0.2" publicname="specular_roughness_public" />
+    <input name="specular_anisotropy" type="float" value="0.0" publicname="specular_anisotropy_public" />
+    <input name="coat" type="float" value="0.0" publicname="coat_public" />
+    <input name="coat_roughness" type="float" value="0.1" publicname="coat_roughness_public" />
+  </shader>
+  <material name="carpaint">
+    <shaderref name="standard_surface" shadertype="surface" />
+    <override name="base_public" type="float" value="0.5" />
+    <override name="base_color_public" type="color3" value="0.1037792, 0.59212029, 0.85064936" />
+    <override name="specular_public" type="float" value="1.0" />
+    <override name="specular_color_public" type="color3" value="1.0, 1.0, 1.0" />
+    <override name="specular_roughness_public" type="float" value="0.4" />
+    <override name="specular_anisotropy_public" type="float" value="0.5" />
+    <override name="coat_public" type="float" value="1.0" />
+    <override name="coat_roughness_public" type="float" value="0.0" />
+  </material>
+</materialx>

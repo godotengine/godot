@@ -1,0 +1,9 @@
+#include "mx_burn_float.osl"
+
+void mx_burn_color4(color4 fg, color4 bg, float mix, output color4 result)
+{
+    mx_burn_float(fg.rgb[0], bg.rgb[0], mix, result.rgb[0]);
+    mx_burn_float(fg.rgb[1], bg.rgb[1], mix, result.rgb[1]);
+    mx_burn_float(fg.rgb[2], bg.rgb[2], mix, result.rgb[2]);
+    mx_burn_float(fg.a, bg.a, mix, result.a);
+}

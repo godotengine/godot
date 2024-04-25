@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <nodedef name="ND_disney_bsdf_2015_surface" node="disney_bsdf_2015" nodegroup="pbr">
+    <input name="baseColor" type="color3" value="0.16, 0.16, 0.16" />
+    <input name="metallic" type="float" value="0" />
+    <input name="roughness" type="float" value="0.5" />
+    <input name="anisotropic" type="float" value="0" />
+    <input name="specularTint" type="float" value="0" />
+    <input name="sheen" type="float" value="0" />
+    <input name="sheenTint" type="float" value="0.5" />
+    <input name="clearcoat" type="float" value="0" />
+    <input name="clearcoatGloss" type="float" value="1" />
+    <input name="specTrans" type="float" value="0" />
+    <input name="ior" type="float" value="1.5" />
+    <input name="scatterDistance" type="vector3" value="0, 0, 0" />
+    <input name="flatness" type="float" value="0" />
+    <input name="diffTrans" type="float" value="0" />
+    <input name="thin" type="boolean" value="false" uniform="true" />
+    <output name="out" type="surfaceshader" />
+  </nodedef>
+  <implementation name="IM_disney_bsdf_2015_surface_pbrt" nodedef="ND_disney_bsdf_2015_surface" target="pbrt" file="https://github.com/mmp/pbrt-v3/blob/master/src/materials/disney.cpp" function="DisneyMaterial::DisneyMaterial">
+    <input name="baseColor" type="color3" implname="color" />
+    <input name="ior" type="float" implname="eta" />
+  </implementation>
+</materialx>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <gltf_pbr name="SR_carpaint" type="surfaceshader">
+    <input name="base_color" type="color3" value="0.0518895, 0.29606, 0.425324" />
+    <input name="metallic" type="float" value="0" />
+    <input name="roughness" type="float" value="0.4" />
+    <input name="clearcoat" type="float" value="1" />
+  </gltf_pbr>
+  <surfacematerial name="PBR_Car_Paint" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_carpaint" />
+  </surfacematerial>
+</materialx>

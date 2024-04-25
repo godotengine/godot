@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <nodegraph name="ng1">
+    <image name="image_lin_rec709" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="lin_rec709" />
+    </image>
+    <standard_surface name="image_lin_rec709_standard_surface" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="image_lin_rec709" />
+    </standard_surface>
+    <output name="image_lin_rec709_output" type="surfaceshader" nodename="image_lin_rec709_standard_surface" />
+    <image name="image_gamma18" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="gamma18" />
+    </image>
+    <standard_surface name="image_gamma18_standard_surface2" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="image_gamma18" />
+    </standard_surface>
+    <output name="image_gamma18_output" type="surfaceshader" nodename="image_gamma18_standard_surface2" />
+    <image name="image_gamma22" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="gamma22" />
+    </image>
+    <standard_surface name="image_gamma22_standard_surface3" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="image_gamma22" />
+    </standard_surface>
+    <output name="image_gamma22_output" type="surfaceshader" nodename="image_gamma22_standard_surface3" />
+    <image name="image_gamma24" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="gamma24" />
+    </image>
+    <standard_surface name="image_gamma24_standard_surface4" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="image_gamma24" />
+    </standard_surface>
+    <output name="image_gamma24_output" type="surfaceshader" nodename="image_gamma24_standard_surface4" />
+    <image name="image_acescg" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="acescg" />
+    </image>
+    <standard_surface name="image_acescg_standard_surface5" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="image_acescg" />
+    </standard_surface>
+    <output name="image_acescg_output" type="surfaceshader" nodename="image_acescg_standard_surface5" />
+    <image name="image_g22_ap1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="g22_ap1" />
+    </image>
+    <standard_surface name="image_g22_ap1_standard_surface5" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="image_g22_ap1" />
+    </standard_surface>
+    <output name="image_g22_ap1_output" type="surfaceshader" nodename="image_g22_ap1_standard_surface5" />
+    <image name="image_srgb_texture" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="srgb_texture" />
+    </image>
+    <standard_surface name="image_srgb_texture_standard_surface6" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="image_srgb_texture" />
+    </standard_surface>
+    <output name="image_srgb_texture_output" type="surfaceshader" nodename="image_srgb_texture_standard_surface6" />
+    <image name="image_adobergb" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="adobergb" />
+    </image>
+    <standard_surface name="image_adobergb_standard_surface7" type="surfaceshader">
+      <input name="base_color" type="color3" value="1, 1, 1" nodename="image_adobergb" />
+    </standard_surface>
+    <output name="image_adobergb_output" type="surfaceshader" nodename="image_adobergb_standard_surface7" />
+    <image name="image_lin_adobergb" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="lin_adobergb" />
+    </image>
+    <standard_surface name="image_lin_adobergb_standard_surface8" type="surfaceshader">
+      <input name="base_color" type="color3" value="1, 1, 1" nodename="image_lin_adobergb" />
+    </standard_surface>
+    <output name="image_lin_adobergb_output" type="surfaceshader" nodename="image_lin_adobergb_standard_surface8" />
+    <image name="image_srgb_displayp3" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="srgb_displayp3" />
+    </image>
+    <standard_surface name="image_srgb_displayp3_standard_surface9" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="image_srgb_displayp3" />
+    </standard_surface>
+    <output name="image_srgb_displayp3_output" type="surfaceshader" nodename="image_srgb_displayp3_standard_surface9" />
+    <image name="image_lin_displayp3" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="lin_displayp3" />
+    </image>
+    <standard_surface name="image_lin_displayp3_standard_surface10" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="image_lin_displayp3" />
+    </standard_surface>
+    <output name="image_lin_displayp3_output" type="surfaceshader" nodename="image_lin_displayp3_standard_surface10" />
+    <constant name="color_lin_rec709" type="color4">
+      <input name="value" type="color4" value="0.5, 0.0, 0.0, 1.0" colorspace="lin_rec709" />
+    </constant>
+    <standard_surface name="color_lin_rec709_standard_surface" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="color_lin_rec709" channels="rgb" />
+    </standard_surface>
+    <output name="color_lin_rec709_output" type="surfaceshader" nodename="color_lin_rec709_standard_surface" />
+    <constant name="color_gamma18" type="color4">
+      <input name="value" type="color4" value="0.5, 0.0, 0.0, 1.0" colorspace="gamma18" />
+    </constant>
+    <standard_surface name="color_gamma18_standard_surface2" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="color_gamma18" channels="rgb" />
+    </standard_surface>
+    <output name="color_gamma18_output" type="surfaceshader" nodename="color_gamma18_standard_surface2" />
+    <constant name="color_gamma22" type="color4">
+      <input name="value" type="color4" value="0.5, 0.0, 0.0, 1.0" colorspace="gamma22" />
+    </constant>
+    <standard_surface name="color_gamma22_standard_surface3" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="color_gamma22" channels="rgb" />
+    </standard_surface>
+    <output name="color_gamma22_output" type="surfaceshader" nodename="color_gamma22_standard_surface3" />
+    <constant name="color_gamma24" type="color4">
+      <input name="value" type="color4" value="0.5, 0.0, 0.0, 1.0" colorspace="gamma24" />
+    </constant>
+    <standard_surface name="color_gamma24_standard_surface4" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="color_gamma24" channels="rgb" />
+    </standard_surface>
+    <output name="color_gamma24_output" type="surfaceshader" nodename="color_gamma24_standard_surface4" />
+    <constant name="color_acescg" type="color4">
+      <input name="value" type="color4" value="0.5, 0.0, 0.0, 1.0" colorspace="acescg" />
+    </constant>
+    <standard_surface name="color_acescg_standard_surface5" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="color_acescg" channels="rgb" />
+    </standard_surface>
+    <output name="color_acescg_output" type="surfaceshader" nodename="color_acescg_standard_surface5" />
+    <constant name="color_g22_ap1" type="color4">
+      <input name="value" type="color4" value="0.5, 0.0, 0.0, 1.0" colorspace="g22_ap1" />
+    </constant>
+    <standard_surface name="color_g22_ap1_standard_surface5" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="color_g22_ap1" channels="rgb" />
+    </standard_surface>
+    <output name="color_g22_ap1_output" type="surfaceshader" nodename="color_g22_ap1_standard_surface5" />
+    <constant name="color_srgb_texture" type="color4">
+      <input name="value" type="color4" value="0.5, 0.0, 0.0, 1.0" colorspace="srgb_texture" />
+    </constant>
+    <standard_surface name="color_srgb_texture_standard_surface6" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="color_srgb_texture" channels="rgb" />
+    </standard_surface>
+    <output name="color_srgb_texture_output" type="surfaceshader" nodename="color_srgb_texture_standard_surface6" />
+    <constant name="color_adobergb" type="color4">
+      <input name="value" type="color4" value="0.5, 0.0, 0.0, 1.0" colorspace="adobergb" />
+    </constant>
+    <standard_surface name="color_adobergb_standard_surface7" type="surfaceshader">
+      <input name="base_color" type="color3" value="1, 1, 1" nodename="color_adobergb" channels="rgb" />
+    </standard_surface>
+    <output name="color_adobergb_output" type="surfaceshader" nodename="color_adobergb_standard_surface7" />
+    <constant name="color_lin_adobergb" type="color4">
+      <input name="value" type="color4" value="0.5, 0.0, 0.0, 1.0" colorspace="lin_adobergb" />
+    </constant>
+    <standard_surface name="color_lin_adobergb_standard_surface8" type="surfaceshader">
+      <input name="base_color" type="color3" value="1, 1, 1" nodename="color_lin_adobergb" channels="rgb" />
+    </standard_surface>
+    <output name="color_lin_adobergb_output" type="surfaceshader" nodename="color_lin_adobergb_standard_surface8" />
+    <constant name="color_srgb_displayp3" type="color4">
+      <input name="value" type="color4" value="0.5, 0.0, 0.0, 1.0" colorspace="srgb_displayp3" />
+    </constant>
+    <standard_surface name="color_srgb_displayp3_standard_surface5" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="color_srgb_displayp3" channels="rgb" />
+    </standard_surface>
+    <output name="color_srgb_displayp3_output" type="surfaceshader" nodename="color_srgb_displayp3_standard_surface5" />
+    <constant name="color_lin_displayp3" type="color4">
+      <input name="value" type="color4" value="0.5, 0.0, 0.0, 1.0" colorspace="lin_displayp3" />
+    </constant>
+    <standard_surface name="color_lin_displayp3_standard_surface5" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="color_lin_displayp3" channels="rgb" />
+    </standard_surface>
+    <output name="color_lin_displayp3_output" type="surfaceshader" nodename="color_lin_displayp3_standard_surface5" />
+  </nodegraph>
+</materialx>

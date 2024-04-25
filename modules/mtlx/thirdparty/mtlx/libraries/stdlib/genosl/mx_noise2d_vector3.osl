@@ -1,0 +1,5 @@
+void mx_noise2d_vector3(vector amplitude, float pivot, vector2 texcoord, output vector result)
+{
+    vector value = noise("snoise", texcoord.x, texcoord.y);
+    result = value * amplitude + pivot;
+}

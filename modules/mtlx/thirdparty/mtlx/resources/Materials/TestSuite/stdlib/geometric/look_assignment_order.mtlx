@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!-- Simple test to check look assignment order. The target geometry
+       is assumed to be the default shader ball with the intended
+       result being that the Preview mesh is "blue" and the Calibration mesh is
+       "red.
+  -->
+  <standard_surface name="Red_Shader" type="surfaceshader">
+    <input name="base_color" type="color3" value="1, 0, 0" />
+  </standard_surface>
+  <surfacematerial name="Red_Material" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Red_Shader" />
+  </surfacematerial>
+
+  <standard_surface name="Blue_Shader" type="surfaceshader">
+    <input name="base_color" type="color3" value="0, 0, 1" />
+  </standard_surface>
+  <surfacematerial name="Blue_Material" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="Blue_Shader" />
+  </surfacematerial>
+
+  <look name="Look">
+    <materialassign name="Red_Preview" geom="/Preview_Mesh" material="Red_Material" />
+    <materialassign name="Blue_Preview" geom="/Preview_Mesh" material="Blue_Material" />
+    <materialassign name="Blue_Calibration" geom="/Calibration_Mesh" material="Blue_Material" />
+    <materialassign name="Red_Calibration" geom="/Calibration_Mesh" material="Red_Material" />
+  </look>
+</materialx>

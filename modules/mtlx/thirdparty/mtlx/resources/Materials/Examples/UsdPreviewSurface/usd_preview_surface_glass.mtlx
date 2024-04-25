@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <UsdPreviewSurface name="SR_glass" type="surfaceshader">
+    <input name="diffuseColor" type="color3" value="0.0, 0.0, 0.0" />
+    <input name="useSpecularWorkflow" type="integer" value="0" />
+    <input name="metallic" type="float" value="0" />
+    <input name="roughness" type="float" value="0.01" />
+    <input name="opacity" type="float" value="0" />
+    <input name="opacityThreshold" type="float" value="0" />
+    <input name="ior" type="float" value="1.52" />
+  </UsdPreviewSurface>
+  <surfacematerial name="USD_Glass" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_glass" />
+  </surfacematerial>
+</materialx>

@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="normalize_vector2">
+    <normalize name="normalize1" type="vector2">
+      <input name="in" type="vector2" value="1.0000, 0.5000" />
+    </normalize>
+    <output name="out" type="vector2" nodename="normalize1" />
+  </nodegraph>
+  <nodegraph name="normalize_vector3">
+    <normalize name="normalize1" type="vector3">
+      <input name="in" type="vector3" value="1.0000, 0.5000, 0.0" />
+    </normalize>
+    <output name="out" type="vector3" nodename="normalize1" />
+  </nodegraph>
+  <nodegraph name="normalize_vector4">
+    <normalize name="normalize1" type="vector4">
+      <input name="in" type="vector4" value="1.0000, 0.5000, 0.0, 0.7500" />
+    </normalize>
+    <output name="out" type="vector4" nodename="normalize1" />
+  </nodegraph>
+  <nodegraph name="magnitude_vector2">
+    <magnitude name="magnitude1" type="float">
+      <input name="in" type="vector2" value="1.0000, 0.5000" />
+    </magnitude>
+    <output name="out" type="float" nodename="magnitude1" />
+  </nodegraph>
+  <nodegraph name="magnitude_vector3">
+    <magnitude name="magnitude1" type="float">
+      <input name="in" type="vector3" value="1.0000, 0.5000, 0.0" />
+    </magnitude>
+    <output name="out" type="float" nodename="magnitude1" />
+  </nodegraph>
+  <nodegraph name="magnitude_vector4">
+    <magnitude name="magnitude1" type="float">
+      <input name="in" type="vector4" value="1.0000, 0.5000, 0.0, 0.7500" />
+    </magnitude>
+    <output name="out" type="float" nodename="magnitude1" />
+  </nodegraph>
+  <nodegraph name="dotproduct_vector2">
+    <output name="out" type="float" nodename="dotproduct1" />
+    <dotproduct name="dotproduct1" type="float">
+      <input name="in1" type="vector2" value="1.0000, 0.5000" />
+      <input name="in2" type="vector2" value="0.5000, 1.0000" />
+    </dotproduct>
+  </nodegraph>
+  <nodegraph name="dotproduct_vector3">
+    <dotproduct name="dotproduct1" type="float">
+      <input name="in1" type="vector3" value="1.0000, 0.5000, 0.0" />
+      <input name="in2" type="vector3" value="0.5000, 1.0000, 1.0000" />
+    </dotproduct>
+    <output name="out" type="float" nodename="dotproduct1" />
+  </nodegraph>
+  <nodegraph name="dotproduct_vector4">
+    <dotproduct name="dotproduct1" type="float">
+      <input name="in1" type="vector4" value="1.0000, 0.5000, 0.0, 1.0000" />
+      <input name="in2" type="vector4" value="0.5000, 1.0000, 1.0000, 1.0000" />
+    </dotproduct>
+    <output name="out" type="float" nodename="dotproduct1" />
+  </nodegraph>
+  <nodegraph name="crossproduct_vector3">
+    <crossproduct name="crossproduct1" type="vector3">
+      <input name="in1" type="vector3" value="1.0000, 1.0000, 0.0" />
+      <input name="in2" type="vector3" value="0.0, 1.0000, 1.0000" />
+    </crossproduct>
+    <output name="out" type="vector3" nodename="crossproduct1" />
+  </nodegraph>
+  <nodegraph name="rotate_vector2">
+    <position name="position1" type="vector3">
+      <input name="space" type="string" value="object" />
+    </position>
+    <output name="out" type="vector2" nodename="rotate1" />
+    <rotate2d name="rotate1" type="vector2">
+      <input name="in" type="vector2" nodename="swizzle1" />
+      <input name="amount" type="float" value="1.5708" unittype="angle" unit="radian" />
+    </rotate2d>
+    <swizzle name="swizzle1" type="vector2">
+      <input name="in" type="vector3" nodename="position1" />
+      <input name="channels" type="string" value="xy" />
+    </swizzle>
+  </nodegraph>
+  <nodegraph name="rotate_vector3">
+    <position name="position1" type="vector3">
+      <input name="space" type="string" value="object" />
+    </position>
+    <rotate3d name="rotate1" type="vector3">
+      <input name="in" type="vector3" nodename="position1" />
+      <input name="amount" type="float" value="180.0000" unittype="angle" unit="degree" />
+      <input name="axis" type="vector3" value="0.0, 1.0000, 1.0000" />
+    </rotate3d>
+    <output name="out" type="vector3" nodename="rotate1" />
+  </nodegraph>
+  <nodegraph name="determinant_matrix33">
+    <determinant name="determinant1" type="float">
+      <input name="in" type="matrix33" value="1.0,0.0,0.5, 0.0,1.0,0.0, 1.0,0.0,1.0" />
+    </determinant>
+    <output name="out" type="float" nodename="determinant1" />
+  </nodegraph>
+  <nodegraph name="determinant_matrix44">
+    <determinant name="determinant1" type="float">
+      <input name="in" type="matrix44" value="1.0,0.0,0.0,1.0, 0.0,1.0,1.0,0.0, 0.0,0.5.0,1.0,0.0, 1.0,0.0,0.0,1.0" />
+    </determinant>
+    <output name="out" type="float" nodename="determinant1" />
+  </nodegraph>
+  <nodegraph name="transpose_matrix33">
+    <transpose name="transpose1" type="matrix33">
+      <input name="in" type="matrix33" value="1.0,1.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0" />
+    </transpose>
+    <position name="position1" type="vector3">
+      <input name="space" type="string" value="object" />
+    </position>
+    <transformmatrix name="transformvector1" type="vector3">
+      <input name="in" type="vector3" nodename="position1" />
+      <input name="mat" type="matrix33" nodename="transpose1" />
+    </transformmatrix>
+    <output name="out" type="vector3" nodename="transformvector1" />
+  </nodegraph>
+  <nodegraph name="transpose_matrix44">
+    <position name="position1" type="vector3">
+      <input name="space" type="string" value="object" />
+    </position>
+    <swizzle name="swizzle1" type="vector4">
+      <input name="in" type="vector3" nodename="position1" />
+      <input name="channels" type="string" value="xyz1" />
+    </swizzle>
+    <transformmatrix name="transformvector1" type="vector4">
+      <input name="in" type="vector4" nodename="swizzle1" />
+      <input name="mat" type="matrix44" nodename="transpose1" />
+    </transformmatrix>
+    <transpose name="transpose1" type="matrix44">
+      <input name="in" type="matrix44" value="1.0,1.0,0.0,0.0, 0.0,1.0,0.0,0.0, 0.0,0.0,1.0,0.0, 0.0,0.0,0.0,1.0" />
+    </transpose>
+    <output name="out" type="vector4" nodename="transformvector1" />
+  </nodegraph>
+</materialx>

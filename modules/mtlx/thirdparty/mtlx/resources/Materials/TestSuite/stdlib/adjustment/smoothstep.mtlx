@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+    Basic adjustment function tests each test is in a separate graph for each variation in input type.
+    - smoothstep
+  -->
+  <nodegraph name="smoothstep_float_range_min">
+    <smoothstep name="smoothstep1" type="float">
+      <input name="in" type="float" value="0.2000" />
+      <input name="low" type="float" value="0.2000" />
+      <input name="high" type="float" value="0.8000" />
+    </smoothstep>
+    <output name="out" type="float" nodename="smoothstep1" />
+  </nodegraph>
+  <nodegraph name="smoothstep_float_range_max">
+    <smoothstep name="smoothstep1" type="float">
+      <input name="in" type="float" value="0.8000" />
+      <input name="low" type="float" value="0.2000" />
+      <input name="high" type="float" value="0.8000" />
+    </smoothstep>
+    <output name="out" type="float" nodename="smoothstep1" />
+  </nodegraph>
+  <nodegraph name="smoothstep_vector2">
+    <smoothstep name="smoothstep1" type="vector2">
+      <input name="in" type="vector2" value="0.6000, 0.5000" />
+      <input name="low" type="vector2" value="0.2000, 0.2000" />
+      <input name="high" type="vector2" value="0.8000, 0.8000" />
+    </smoothstep>
+    <output name="out" type="vector2" nodename="smoothstep1" />
+  </nodegraph>
+  <nodegraph name="smoothstep_vector3">
+    <smoothstep name="smoothstep1" type="vector3">
+      <input name="in" type="vector3" value="0.6000, 0.5000, 0.2000" />
+      <input name="low" type="vector3" value="0.2000, 0.2000, 0.0" />
+      <input name="high" type="vector3" value="0.8000, 0.8000, 1.0" />
+    </smoothstep>
+    <output name="out" type="vector3" nodename="smoothstep1" />
+  </nodegraph>
+  <nodegraph name="smoothstep_vector4">
+    <smoothstep name="smoothstep1" type="vector4">
+      <input name="in" type="vector4" value="0.6000, 0.5000, 0.2000, 1.0" />
+      <input name="low" type="vector4" value="0.2000, 0.2000, 0.0, 0.0" />
+      <input name="high" type="vector4" value="0.8000, 0.8000, 1.0, 1.0" />
+    </smoothstep>
+    <output name="out" type="vector4" nodename="smoothstep1" />
+  </nodegraph>
+</materialx>

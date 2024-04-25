@@ -1,0 +1,180 @@
+<?xml version="1.0"?>
+<materialx version="1.36">
+  <!--
+    Examples of MaterialX 1.36 syntax
+  -->
+
+  <!-- invert matrix to invertmatrix -->
+  <invert name="invert1" type="matrix33">
+    <input name="in" type="matrix33" value="1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0" />
+  </invert>
+  <invert name="invert2" type="matrix44">
+    <input name="in" type="matrix44" value="1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0" />
+  </invert>
+
+  <!-- no change for non-matrix invert variants -->
+  <invert name="invert_no_change_float" type="float">
+    <input name="in" type="float" value="0.5" />
+  </invert>
+  <invert name="invert_no_change_vec2" type="vector2">
+    <input name="in" type="vector2" value="0.5000, 0.5000" />
+    <parameter name="amount" type="vector2" value="1.0, 0.5000" />
+  </invert>
+  <invert name="invert_no_change_vec3" type="vector3">
+    <input name="in" type="vector3" value="0.5000, 0.5000, 0.0" />
+    <parameter name="amount" type="vector3" value="1.0, 0.5000, 0.0000" />
+  </invert>
+  <invert name="invert_no_change_vec4" type="vector4">
+    <input name="in" type="vector4" value="0.5000, 0.5000, 0.0, 1.0" />
+    <parameter name="amount" type="vector4" value="1.0, 0.5000, 0.0000, 2.0000" />
+  </invert>
+
+  <!-- rotate to rotate2d and rotate3d -->
+  <rotate name="rotate1" type="vector2">
+    <input name="in" type="vector2" value="0.0, 0.0" />
+    <input name="amount" type="float" value="1.5708" unittype="angle" unit="radian" />
+  </rotate>
+  <rotate name="rotate2" type="vector3">
+    <input name="in" type="vector3" value="0.0, 0.0, 0.0" />
+    <input name="amount" type="float" value="180.0000" unittype="angle" unit="degree" />
+    <parameter name="axis" type="vector3" value="0.0, 1.0000, 1.0000" />
+  </rotate>
+
+  <!-- compare to ifgreater -->
+  <compare name="compare_float" type="float">
+    <input name="intest" type="float" value="0.5000" />
+    <parameter name="cutoff" type="float" value="0.6000" />
+    <input name="in1" type="float" value="1.0000" />
+    <input name="in2" type="float" value="0.0" />
+  </compare>
+  <compare name="compare_color2" type="color2">
+    <input name="intest" type="float" value="0.5000" />
+    <parameter name="cutoff" type="float" value="1.2000" />
+    <input name="in1" type="color2" value="1.0000, 1.0" />
+    <input name="in2" type="color2" value="0.0, 0.0000" />
+  </compare>
+  <compare name="compare_color3" type="color3">
+    <input name="intest" type="float" value="0.5000" />
+    <parameter name="cutoff" type="float" value="-0.2000" />
+    <input name="in1" type="color3" value="1.0000, 1.0000, 1.0000" />
+    <input name="in2" type="color3" value="0.0, 0.0, 0.0" />
+  </compare>
+  <compare name="compare_color4" type="color4">
+    <input name="intest" type="float" value="0.5000" />
+    <parameter name="cutoff" type="float" value="0.4000" />
+    <input name="in1" type="color4" value="1.0000, 1.0000, 1.0000, 1.0" />
+    <input name="in2" type="color4" value="0.0, 0.0, 0.0, 1.0" />
+  </compare>
+  <compare name="compare_vector2" type="vector2">
+    <input name="intest" type="float" value="0.5000" />
+    <parameter name="cutoff" type="float" value="1.2000" />
+    <input name="in1" type="vector2" value="1.0000, 1.0000" />
+    <input name="in2" type="vector2" value="0.0, 0.0" />
+  </compare>
+  <compare name="compare_vector3" type="vector3">
+    <input name="intest" type="float" value="0.5000" />
+    <parameter name="cutoff" type="float" value="-0.2000" />
+    <input name="in1" type="vector3" value="1.0000, 1.0000, 1.0000" />
+    <input name="in2" type="vector3" value="0.0, 0.0, 0.0" />
+  </compare>
+  <compare name="compare_vector4" type="vector4">
+    <input name="intest" type="float" value="0.5000" />
+    <parameter name="cutoff" type="float" value="0.4000" />
+    <input name="in1" type="vector4" value="1.0000, 1.0000, 1.0000, 1.0" />
+    <input name="in2" type="vector4" value="0.0, 0.0, 0.0, 1.0" />
+  </compare>
+
+  <!-- transformpoint, transformvector, transformnormal to transformmatrix -->
+  <transformpoint name="point_transform23" type="vector2">
+    <input name="in" type="vector2" value="0.5, 0.5" />
+    <input name="mat" type="matrix33" value="31.4961, 0.0, 0.0, 0.0, 31.4961, 0.0, 0.0, 0.0,1.0" />
+  </transformpoint>
+  <transformpoint name="point_transform33" type="vector3">
+    <input name="in" type="vector3" value="0.5, 0.5, 0.5" />
+    <input name="mat" type="matrix33" value="1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0" />
+  </transformpoint>
+  <transformpoint name="point_transform34" type="vector3">
+    <input name="in" type="vector3" value="0.5, 0.5, 0.5" />
+    <input name="mat" type="matrix44" value="1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0" />
+  </transformpoint>
+
+  <transformvector name="vector_transform33" type="vector3">
+    <input name="in" type="vector3" value="0.5, 0.5, 0.5" />
+    <input name="mat" type="matrix33" value="1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0" />
+  </transformvector>
+  <transformvector name="vector_transform34" type="vector3">
+    <input name="in" type="vector3" value="0.5, 0.5, 0.5" />
+    <input name="mat" type="matrix44" value="1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0" />
+  </transformvector>
+  <transformvector name="vector_transform44" type="vector4">
+    <input name="in" type="vector4" value="0.5, 0.5, 0.5, 1.0" />
+    <input name="mat" type="matrix44" value="1.0, 0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 1.0" />
+  </transformvector>
+
+  <transformnormal name="normal_transform33" type="vector3">
+    <input name="in" type="vector3" value="1.0, 0.5, 0.0" />
+    <input name="mat" type="matrix33" value="0.5, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.5" />
+  </transformnormal>
+
+  <!-- No change to transform space variants -->
+  <transformpoint name="no_transformpoint_change" type="vector3">
+    <input name="in" type="vector3" value="1.0, 0.5, 0.0" />
+    <parameter name="fromspace" type="string" value="object" />
+    <parameter name="tospace" type="string" value="world" />
+  </transformpoint>
+  <transformvector name="no_transformvector_change" type="vector3">
+    <input name="in" type="vector3" value="1.0, 0.5, 0.0" />
+    <parameter name="fromspace" type="string" value="object" />
+    <parameter name="tospace" type="string" value="world" />
+  </transformvector>
+  <transformnormal name="no_transformnormal_change" type="vector3">
+    <input name="in" type="vector3" value="1.0, 0.5, 0.0" />
+    <parameter name="fromspace" type="string" value="object" />
+    <parameter name="tospace" type="string" value="world" />
+  </transformnormal>
+
+  <!-- combine to combine2/combine3/combine4-->
+  <combine name="combine2" type="color2">
+    <input name="in1" type="float" value="0.5000" />
+    <input name="in2" type="float" value="1.0000" />
+  </combine>
+  <combine name="combine3" type="color3">
+    <input name="in1" type="float" value="0.5000" />
+    <input name="in2" type="float" value="1.0000" />
+    <input name="in3" type="float" value="0.2500" />
+  </combine>
+  <combine name="combine4" type="color4">
+    <input name="in1" type="float" value="0.5000" />
+    <input name="in2" type="float" value="1.0000" />
+    <input name="in3" type="float" value="0.2500" />
+    <input name="in4" type="float" value="0.7500" />
+  </combine>
+
+  <!-- separate to separate2/separate3/separate4-->
+  <separate name="separate2" type="multioutput">
+    <input name="in" type="color2" value="0.42, 0.77" />
+  </separate>
+  <separate name="separate3" type="multioutput">
+    <input name="in" type="color3" value="0.42, 0.77, 0.93" />
+  </separate>
+  <separate name="separate4" type="multioutput">
+    <input name="in" type="vector4" value="0.42, 0.77, 0.93, 1.0" />
+  </separate>
+
+  <!-- backdrop -->
+  <backdrop name="custom1_backdrop">
+    <parameter name="contains" type="string" value="custom1" />
+    <parameter name="width" type="float" value="20" />
+    <parameter name="height" type="float" value="30" />
+    <parameter name="note" type="string" value="Backdrop for custom1." />
+  </backdrop>
+
+  <!-- geomattr -->
+  <geominfo name="gi1" geom="/a/g1">
+    <geomattr name="surfid" type="integer" value="15" />
+  </geominfo>
+
+  <!-- geomattrvalue -->
+  <geomattrvalue name="srfidval1" type="integer" attrname="surfid" />
+
+</materialx>

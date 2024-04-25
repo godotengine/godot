@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <nodegraph name="NG_blackbody">
+    <input name="blackbody_temperature" type="float" value="5000.0" uimin="1500.0" uimax="25000.0" uistep="100.0" uiname="Blackbody Temperature Kelvin" />
+    <blackbody name="blackbody_color_out" type="color3">
+      <input name="temperature" type="float" interfacename="blackbody_temperature" />
+    </blackbody>
+    <output name="emission_color_output" type="color3" nodename="blackbody_color_out" />
+  </nodegraph>
+  <surface_unlit name="SR_blackbody" type="surfaceshader">
+    <input name="emission_color" type="color3" nodegraph="NG_blackbody" output="emission_color_output" />
+  </surface_unlit>
+  <surfacematerial name="Blackbody" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_blackbody" />
+  </surfacematerial>
+</materialx>

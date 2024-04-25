@@ -1,0 +1,435 @@
+name: main
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - name: Linux_GCC_9_Python37
+          os: ubuntu-20.04
+          compiler: gcc
+          compiler_version: "9"
+          python: 3.7
+          cmake_config: -DMATERIALX_BUILD_SHARED_LIBS=ON
+
+        - name: Linux_GCC_12_Python311
+          os: ubuntu-22.04
+          compiler: gcc
+          compiler_version: "12"
+          python: 3.11
+          build_javascript: ON
+
+        - name: Linux_GCC_13_Python312
+          os: ubuntu-22.04
+          compiler: gcc
+          compiler_version: "13"
+          python: 3.12
+          static_analysis: ON
+          cmake_config: -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+        - name: Linux_GCC_CoverageAnalysis
+          os: ubuntu-22.04
+          compiler: gcc
+          compiler_version: "None"
+          python: None
+          coverage_analysis: ON
+          cmake_config: -DMATERIALX_COVERAGE_ANALYSIS=ON -DMATERIALX_BUILD_RENDER=OFF -DMATERIALX_BUILD_PYTHON=OFF
+
+        - name: Linux_Clang_10_Python37
+          os: ubuntu-20.04
+          compiler: clang
+          compiler_version: "10"
+          python: 3.7
+          cmake_config: -DMATERIALX_BUILD_SHARED_LIBS=ON
+
+        - name: Linux_Clang_15_Python312
+          os: ubuntu-22.04
+          compiler: clang
+          compiler_version: "15"
+          python: 3.12
+          test_render: ON
+          clang_format: ON
+
+        - name: Linux_Clang_DynamicAnalysis
+          os: ubuntu-22.04
+          compiler: clang
+          compiler_version: "15"
+          python: None
+          cmake_config: -DMATERIALX_DYNAMIC_ANALYSIS=ON
+          dynamic_analysis: ON
+
+        - name: MacOS_Xcode_13_Python37
+          os: macos-12
+          compiler: xcode
+          compiler_version: "13.1"
+          cmake_config: -DMATERIALX_BUILD_SHARED_LIBS=ON
+          python: 3.7
+
+        - name: MacOS_Xcode_14_Python311
+          os: macos-13
+          compiler: xcode
+          compiler_version: "14.3"
+          python: 3.11
+
+        - name: MacOS_Xcode_15_Python312
+          os: macos-14
+          compiler: xcode
+          compiler_version: "15.0"
+          python: 3.12
+          test_shaders: ON
+
+        - name: iOS_Xcode_15
+          os: macos-14
+          compiler: xcode
+          compiler_version: "15.0"
+          python: None
+          cmake_config: -DMATERIALX_BUILD_IOS=ON -DCMAKE_OSX_SYSROOT=`xcrun --sdk iphoneos --show-sdk-path` -DCMAKE_OSX_ARCHITECTURES=arm64
+
+        - name: Windows_VS2019_Win32_Python37
+          os: windows-2019
+          architecture: x86
+          python: 3.7
+          cmake_config: -G "Visual Studio 16 2019" -A "Win32" -DMATERIALX_BUILD_SHARED_LIBS=ON
+
+        - name: Windows_VS2022_x64_Python311
+          os: windows-2022
+          architecture: x64
+          python: 3.11
+          cmake_config: -G "Visual Studio 17 2022" -A "x64"
+          test_shaders: ON
+
+        - name: Windows_VS2022_x64_Python312
+          os: windows-2022
+          architecture: x64
+          python: 3.12
+          cmake_config: -G "Visual Studio 17 2022" -A "x64"
+          upload_shaders: ON
+
+    steps:
+    - name: Sync Repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install xorg-dev mesa-utils
+        if [ "${{ matrix.compiler_version }}" != 'None' ]; then
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            sudo apt-get install -y g++-${{ matrix.compiler_version }} g++-${{ matrix.compiler_version }}-multilib
+            echo "CC=gcc-${{ matrix.compiler_version }}" >> $GITHUB_ENV
+            echo "CXX=g++-${{ matrix.compiler_version }}" >> $GITHUB_ENV
+          else
+            sudo apt-get install -y clang-${{ matrix.compiler_version }} libc++-${{ matrix.compiler_version }}-dev libc++abi-${{ matrix.compiler_version }}-dev
+            echo "CC=clang-${{ matrix.compiler_version }}" >> $GITHUB_ENV
+            echo "CXX=clang++-${{ matrix.compiler_version }}" >> $GITHUB_ENV
+          fi
+        fi
+
+    - name: Install Dependencies (MacOS)
+      if: runner.os == 'macOS'
+      run: |
+        if [ "${{ matrix.compiler_version }}" != 'None' ]; then
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            brew install gcc@${{ matrix.compiler_version }}
+            echo "CC=gcc-${{ matrix.compiler_version }}" >> $GITHUB_ENV
+            echo "CXX=g++-${{ matrix.compiler_version }}" >> $GITHUB_ENV
+          else
+            ls -ls /Applications/
+            sudo xcode-select -switch /Applications/Xcode_${{ matrix.compiler_version }}.app
+            echo "CC=clang" >> $GITHUB_ENV
+            echo "CXX=clang++" >> $GITHUB_ENV
+          fi
+        fi
+
+    - name: Install Dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        git clone https://github.com/Microsoft/vcpkg -b 2021.05.12 -c advice.detachedHead=false
+        vcpkg/bootstrap-vcpkg.bat -disableMetrics
+        Add-Content $env:GITHUB_PATH "$PWD/build/installed/bin"
+        Add-Content $env:GITHUB_PATH "$PWD/vcpkg/installed/x64-windows/bin"
+        Add-Content $env:GITHUB_PATH "$PWD/vcpkg/installed/x64-windows/tools"
+
+    - name: Install Python ${{ matrix.python }}
+      if: matrix.python != 'None'
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python }}
+        architecture: ${{ matrix.architecture }}
+
+    - name: Install Python Dependencies
+      if: matrix.python != 'None'
+      run: pip install setuptools
+
+    - name: Install Emscripten
+      if: matrix.build_javascript == 'ON'
+      run: |
+        git clone https://github.com/emscripten-core/emsdk --recursive
+        cd emsdk
+        ./emsdk install 2.0.20
+        ./emsdk activate 2.0.20
+        source ./emsdk_env.sh
+        echo "EMSDK=$EMSDK" >> $GITHUB_ENV
+
+    - name: Install Node
+      if: matrix.build_javascript == 'ON'
+      uses: actions/setup-node@v4
+      with:
+         node-version: '16'
+
+    - name: Run Clang Format
+      if: matrix.clang_format == 'ON'
+      run: find source \( -name *.h -o -name *.cpp -o -name *.mm -o -name *.inl \) ! -path "*/External/*" ! -path "*/NanoGUI/*" | xargs clang-format -i --verbose
+
+    - name: CMake Generate
+      run: cmake -S . -B build -DMATERIALX_BUILD_PYTHON=ON -DMATERIALX_BUILD_VIEWER=ON -DMATERIALX_BUILD_GRAPH_EDITOR=ON -DMATERIALX_TEST_RENDER=OFF -DMATERIALX_WARNINGS_AS_ERRORS=ON ${{matrix.cmake_config}}
+
+    - name: CMake Build
+      run: cmake --build build --target install --config Release --parallel 2
+
+    - name: CMake Unit Tests
+      run: ctest -VV --output-on-failure --build-config Release
+      working-directory: build
+
+    - name: Python Tests
+      if: matrix.python != 'None'
+      run: |
+        python MaterialXTest/main.py
+        python MaterialXTest/genshader.py
+        python Scripts/mxformat.py ../resources/Materials/TestSuite/stdlib/upgrade --yes --upgrade
+        python Scripts/mxvalidate.py ../resources/Materials/Examples/StandardSurface/standard_surface_marble_solid.mtlx --stdlib --verbose
+        python Scripts/mxdoc.py --docType md ../libraries/pbrlib/pbrlib_defs.mtlx
+        python Scripts/mxdoc.py --docType html ../libraries/bxdf/standard_surface.mtlx
+        python Scripts/generateshader.py ../resources/Materials/Examples/StandardSurface --target glsl
+        python Scripts/generateshader.py ../resources/Materials/Examples/StandardSurface --target osl
+        python Scripts/generateshader.py ../resources/Materials/Examples/StandardSurface --target mdl
+        python Scripts/generateshader.py ../resources/Materials/Examples/StandardSurface --target msl
+      working-directory: python
+
+    - name: Shader Validation Tests (Windows)
+      if: matrix.test_shaders == 'ON' && runner.os == 'Windows'
+      run: |
+        vcpkg/vcpkg install glslang --triplet=x64-windows
+        glslangValidator.exe -v
+        python python/Scripts/generateshader.py resources/Materials/Examples/StandardSurface --target glsl --validator glslangValidator.exe --vulkanGlsl True --validatorArgs="-V --aml"
+        python python/Scripts/generateshader.py resources/Materials/Examples/StandardSurface --target essl --validator glslangValidator.exe
+
+    - name: Shader Validation Tests (MacOS)
+      if: matrix.test_shaders == 'ON' && runner.os == 'macOS'
+      run: |
+        python python/Scripts/generateshader.py resources/Materials/Examples/StandardSurface --target msl --validator "xcrun metal --language=metal" --validatorArgs="-w"
+
+    - name: Coverage Analysis Tests
+      if: matrix.coverage_analysis == 'ON'
+      run: |
+        sudo apt-get install gcovr
+        mkdir coverage
+        gcovr --html --html-details --output coverage/index.html --exclude .*\/External\/.* --root .. .
+      working-directory: build
+
+    - name: Static Analysis Tests
+      if: matrix.static_analysis == 'ON' && runner.os == 'Linux'
+      run: |
+        sudo apt-get install cppcheck
+        cppcheck --project=build/compile_commands.json --error-exitcode=1 --suppress=*:*/External/* --suppress=*:*/NanoGUI/*
+
+    - name: Initialize Virtual Framebuffer
+      if: matrix.test_render == 'ON' && runner.os == 'Linux'
+      run: |
+        Xvfb :1 -screen 0 1280x960x24 &
+        echo "DISPLAY=:1" >> $GITHUB_ENV
+        echo "LIBGL_ALWAYS_SOFTWARE=1" >> $GITHUB_ENV
+        echo "GALLIUM_DRIVER=llvmpipe" >> $GITHUB_ENV
+
+    - name: Render Script Tests
+      if: matrix.test_render == 'ON'
+      run: |
+        mkdir build/render
+        python python/Scripts/baketextures.py resources/Materials/Examples/StandardSurface/standard_surface_brass_tiled.mtlx build/render/brass_average_baked.mtlx --average
+        python python/Scripts/translateshader.py resources/Materials/Examples/StandardSurface/standard_surface_carpaint.mtlx build/render/usd_preview_surface_carpaint.mtlx UsdPreviewSurface --hdr
+
+    - name: Render Application Tests
+      if: matrix.test_render == 'ON'
+      run: |
+        ../installed/bin/MaterialXView --material brass_average_baked.mtlx --mesh ../../resources/Geometry/sphere.obj --screenWidth 128 --screenHeight 128 --cameraZoom 1.4 --shadowMap false --captureFilename Viewer_BrassAverage.png
+        ../installed/bin/MaterialXView --material usd_preview_surface_carpaint.mtlx --mesh ../../resources/Geometry/sphere.obj --screenWidth 128 --screenHeight 128 --cameraZoom 1.4 --shadowMap false --captureFilename Viewer_CarpaintTranslated.png
+        ../installed/bin/MaterialXGraphEditor --material ../../resources/Materials/Examples/StandardSurface/standard_surface_marble_solid.mtlx --viewWidth 128 --viewHeight 128 --captureFilename GraphEditor_MarbleSolid.png
+      working-directory: build/render
+
+    - name: Upload Installed Package
+      if: matrix.python != 'None'
+      uses: actions/upload-artifact@v4
+      with:
+        name: MaterialX_${{ matrix.name }}
+        path: build/installed/
+
+    - name: Upload Formatted Source
+      if: matrix.clang_format == 'ON'
+      uses: actions/upload-artifact@v4
+      with:
+        name: MaterialX_ClangFormat
+        path: source
+
+    - name: Upload Reference Shaders
+      uses: actions/upload-artifact@v4
+      if: matrix.upload_shaders == 'ON'
+      with:
+        name: Reference_Shaders_${{ matrix.name }}
+        path: build/bin/reference/
+
+    - name: Upload Renders
+      uses: actions/upload-artifact@v4
+      if: matrix.test_render == 'ON'
+      with:
+        name: Renders_${{ matrix.name }}
+        path: build/render/*.png
+
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v4
+      if: matrix.coverage_analysis == 'ON'
+      with:
+        name: MaterialX_Coverage
+        path: build/coverage
+
+    - name: JavaScript CMake Generate
+      if: matrix.build_javascript == 'ON'
+      run: cmake -S . -B javascript/build -DMATERIALX_BUILD_JS=ON -DMATERIALX_EMSDK_PATH=${{ env.EMSDK }}
+
+    - name: JavaScript CMake Build
+      if: matrix.build_javascript == 'ON'
+      run: cmake --build javascript/build --target install --config Release --parallel 2
+    
+    - name: JavaScript Unit Tests
+      if: matrix.build_javascript == 'ON'
+      run: |
+        npm install
+        npm run test
+        npm run test:browser
+      working-directory: javascript/MaterialXTest
+
+    - name: Build Web Viewer
+      if: matrix.build_javascript == 'ON'
+      run: |
+        npm install
+        npm run build
+      working-directory: javascript/MaterialXView
+
+    - name: Deploy Web Viewer
+      if: matrix.build_javascript == 'ON' && github.ref == 'refs/heads/main'
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        branch: gh-pages
+        folder: javascript/MaterialXView/dist
+        single-commit: true
+
+    - name: Upload JavaScript Package
+      if: matrix.build_javascript == 'ON'
+      uses: actions/upload-artifact@v4
+      with:
+        name: MaterialX_JavaScript
+        path: javascript/build/installed/JavaScript/MaterialX        
+        if-no-files-found: ignore   
+
+  sdist:
+    name: Python SDist
+    runs-on: ubuntu-latest
+    if: github.repository == 'AcademySoftwareFoundation/MaterialX'
+    outputs:
+      sdist_filename: ${{ steps.generate.outputs.filename }}
+
+    steps:
+    - name: Sync Repository
+      uses: actions/checkout@v4
+
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+
+    - name: Build SDist
+      id: generate
+      run: |
+        python -m pip install build
+        python -m build -s . --outdir dist
+        echo "filename=$(ls dist)" >> "$GITHUB_OUTPUT"
+
+    - name: Upload SDist
+      uses: actions/upload-artifact@v4
+      with:
+        name: MaterialX_Python_SDist
+        path: dist/*.tar.gz
+
+  wheels:
+    name: Python Wheels
+    runs-on: ${{ matrix.os }}
+    needs: ['sdist']
+    if: github.repository == 'AcademySoftwareFoundation/MaterialX'
+    strategy:
+      fail-fast: false
+      matrix:
+        python-minor: ['7', '8', '9', '10', '11']
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+
+    steps:
+    - name: Sync Repository
+      uses: actions/checkout@v4
+
+    - name: Install Python 3.${{ matrix.python-minor }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.${{ matrix.python-minor }}
+
+    - name: Download Sdist
+      uses: actions/download-artifact@v4
+      with:
+        name: MaterialX_Python_SDist
+        path: sdist
+
+    - name: Build Wheel
+      uses: pypa/cibuildwheel@v2.16.5
+      with:
+        package-dir: ${{ github.workspace }}/sdist/${{ needs.sdist.outputs.sdist_filename }}
+      env:
+        CIBW_BUILD: 'cp3${{ matrix.python-minor }}-*'
+        CIBW_SKIP: '*musllinux*'
+        CIBW_ARCHS: 'auto64'
+        # https://github.com/pypa/manylinux
+        # manylinux2014 is CentOS 7 based. Which means GCC 10 and glibc 2.17.
+        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+        CIBW_BEFORE_ALL_LINUX: yum install -y libXt-devel
+        CIBW_BEFORE_ALL_MACOS: sudo xcode-select -switch /Applications/Xcode_13.4.app
+        CIBW_BUILD_VERBOSITY: 1
+        CIBW_ENVIRONMENT: CMAKE_BUILD_PARALLEL_LEVEL=2
+        # CIBW_BUILD_FRONTEND: build  # https://github.com/pypa/build
+        MACOSX_DEPLOYMENT_TARGET: '10.15'
+
+    - name: Install Wheel
+      run: python -m pip install MaterialX --find-links wheelhouse --no-index
+
+    - name: Python Tests
+      run: |
+        python MaterialXTest/main.py
+        python MaterialXTest/genshader.py
+      working-directory: python
+
+    - name: Upload Wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: MaterialX_Python_Wheel_${{ runner.os }}_3_${{ matrix.python-minor }}
+        path: wheelhouse/*.whl

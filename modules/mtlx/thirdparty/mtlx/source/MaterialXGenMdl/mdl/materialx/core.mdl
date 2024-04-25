@@ -1,0 +1,199 @@
+/*
+ * Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// MDL implementation of core types and supporting functions from
+//     MaterialX: An Open Standard for Network-Based CG Object Looks
+//     Document v1.37 REV2, January 19, 2020
+// and
+//     MaterialX: An Open Standard for Network-Based CG Object Looks
+//     Document v1.37 REV2, January 19, 2020
+//     www.materialx.org 
+// in
+//     NVIDIA Material Definition Language 1.7
+//     Language Specification
+//     Document version 1.7.2, January 17, 2022
+//     www.nvidia.com/mdl
+
+mdl 1.6;
+
+import ::math::*;
+import ::state::*;
+import ::tex::*;
+
+// Epsilon value used in float calculations.
+export const float FLOAT_EPS = 0.000001;
+
+// MaterialX Data Types
+// NOTE: We use native MDL types where possible and rely on the translator
+//       to map MaterialX types to MDL types according to this table:
+//
+//       MaterialX --> MDL
+//       ------------------
+//       integer   --> int
+//       boolean   --> bool
+//       float     --> float
+//       color3    --> color
+//       color4    --> struct color4 (see below)
+//       vector2   --> float2
+//       vector3   --> float3
+//       vector4   --> float4
+//       matrix33  --> float3x3
+//       matrix44  --> float4x4
+//       string    --> string, or context specific enums (see below)
+//       filename  --> texture_2d, or other repective resource type
+//       geomname  --> (N.A.)
+//       <T>array  --> T[<N>] (deferred-size arrays)
+//
+// NOTE: The type mapping is not bijective, multiple types in MaterialX
+//       map to the same type in MDL, which can impact the translation
+//       of overloaded nodes to not generate mutliple identical definitions.
+
+// Special struct type for color4
+export struct color4 {
+    color rgb  = color(0.0);
+    float a    = 1.0;
+};
+
+// NOTE: MDL does not support operator overloading nor custom constructors,
+//       we use constructor-like functions defined here to help the generator 
+//       to work with the vector and color types, as well as operator-like
+//       functions for the color4 type.
+export color4 mk_color4( float  v) { return color4( color(v), v);}
+export color4 mk_color4( float  r, float g, float b, float a) { return color4(color(r,g,b), a); }
+export color4 mk_color4( float3 v) { return color4(color(v.x, v.y, v.z), 1.0); }
+export color4 mk_color4( float4 v) { return color4(color(v.x, v.y, v.z), v.w); }
+export color4 mk_color4( color  v) { return color4(v, 1.0); }
+export color4 mk_color4( color  v, float a) { return color4(v, a); }
+export color  mk_color3( float  r, float g, float b) { return color(r, g, b); }
+export color  mk_color3( float  v) { return color(v); }
+export color  mk_color3( float2 v) { return color(v.x, v.y, 0.0); }
+export color  mk_color3( float3 v) { return color(v.x, v.y, v.z); }
+export color  mk_color3( float4 v) { return color(v.x, v.y, v.z); }
+export color  mk_color3( color  v) { return v; }
+export color  mk_color3( color4 v) { return v.rgb; }
+export float3 mk_float3( color4 v) { return float3(v.rgb); }
+export float4 mk_float4( color4 v) {
+    float3 rgb = float3(v.rgb);
+    return float4(rgb.x, rgb.y, rgb.z, v.a);
+}
+
+export color4 mx_add(      color4 v1, color4 v2) { return color4(v1.rgb + v2.rgb, v1.a + v2.a); }
+export color4 mx_add(      color4 v1,  float v2) { return color4(v1.rgb + v2    , v1.a + v2  ); }
+export color4 mx_subtract( color4 v1, color4 v2) { return color4(v1.rgb - v2.rgb, v1.a - v2.a); }
+export color4 mx_subtract( color4 v1,  float v2) { return color4(v1.rgb - v2    , v1.a - v2  ); }
+export color4 mx_multiply( color4 v1, color4 v2) { return color4(v1.rgb * v2.rgb, v1.a * v2.a); }
+export color4 mx_multiply( color4 v1,  float v2) { return color4(v1.rgb * v2    , v1.a * v2  ); }
+export color4 mx_divide(   color4 v1, color4 v2) { return color4(v1.rgb / v2.rgb, v1.a / v2.a); }
+export color4 mx_divide(   color4 v1,  float v2) { return color4(v1.rgb / v2    , v1.a / v2  ); }
+export float mx_mod(       float x, float y) { return x - y * math::floor(x/y); }
+export float2 mx_mod(      float2 x, float2 y) { return x - y * math::floor(x/y); }
+export float3 mx_mod(      float3 x, float3 y) { return x - y * math::floor(x/y); }
+export float4 mx_mod(      float4 x, float4 y) { return x - y * math::floor(x/y); }
+export float2 mx_mod(      float2 x, float y) { return mx_mod(x, float2(y,y)); }
+export float3 mx_mod(      float3 x, float y) { return mx_mod(x, float3(y,y,y)); }
+export float4 mx_mod(      float4 x, float y) { return mx_mod(x, float4(y,y,y,y)); }
+
+// Parameter Expressions and Function Curves
+// Idea: attach an auxiliary lookup function if an array of frame values is
+//       given in a <valuecurve> attribute
+export int curve_lookup( int index, int[<N>] values, int min, int max) {
+    return values[::math::clamp( index, min, max) - min];
+}
+export float curve_lookup( int index, float[<N>] values, int min, int max) {
+    return values[::math::clamp( index, min, max) - min];
+}
+export float2 curve_lookup( int index, float2[<N>] values, int min, int max) {
+    return values[::math::clamp( index, min, max) - min];
+}
+export float3 curve_lookup( int index, float3[<N>] values, int min, int max) {
+    return values[::math::clamp( index, min, max) - min];
+}
+export float4 curve_lookup( int index, float4[<N>] values, int min, int max) {
+    return values[::math::clamp( index, min, max) - min];
+}
+export color curve_lookup( int index, color[<N>] values, int min, int max) {
+    return values[::math::clamp( index, min, max) - min];
+}
+
+// Enum selecting address modes for texture nodes, instead of string
+export enum mx_addressmode_type {
+    mx_addressmode_type_constant,
+    mx_addressmode_type_clamp,
+    mx_addressmode_type_periodic,
+    mx_addressmode_type_mirror
+};
+
+// Enum selecting filter modes for texture nodes, instead of string
+export enum mx_filterlookup_type {
+    mx_filterlookup_type_closest,
+    mx_filterlookup_type_linear,
+    mx_filterlookup_type_cubic
+};
+
+// Enum selecting coordinate spaces, instead of string
+export enum mx_coordinatespace_type {
+    mx_coordinatespace_type_model,
+    mx_coordinatespace_type_object,
+    mx_coordinatespace_type_world
+};
+
+// Helper function mapping MaterialX coordinate spaces to MDL coordinate spaces
+export state::coordinate_space mx_map_space( mx_coordinatespace_type space) {
+    switch (space) {
+    case mx_coordinatespace_type_world:
+        return state::coordinate_world;
+    case mx_coordinatespace_type_object:
+        return state::coordinate_object;
+    default:
+        return state::coordinate_internal;
+    }
+}
+
+// Helper function mapping MaterialX coordinate space strings to MDL coordinate spaces
+export state::coordinate_space mx_map_space( string space) {
+    if (space == "world") {
+        return state::coordinate_world;
+    }
+    else if (space == "object") {
+        return state::coordinate_object;
+    }
+    else {
+        return state::coordinate_internal;
+    }
+}
+
+// Support return type structures for the separate[234] types
+export struct mx_separate2_vector2_type { float outx = 0.0; float outy = 0.0; };
+export struct mx_separate3_color3_type  { float outr = 0.0; float outg = 0.0; float outb = 0.0; };
+export struct mx_separate3_vector3_type { float outx = 0.0; float outy = 0.0; float outz = 0.0; };
+export struct mx_separate4_color4_type  { float outr = 0.0; float outg = 0.0; float outb = 0.0; float outa = 0.0; };
+export struct mx_separate4_vector4_type { float outx = 0.0; float outy = 0.0; float outz = 0.0; float outw = 0.0; };
+
+// Enum for blur filter type, instead of string
+export enum mx_filter_type {
+    mx_filter_type_box,
+    mx_filter_type_gaussian
+};
+
+// Enum selecting microfacet models, instead of string
+export enum mx_distribution_type {
+    mx_distribution_type_ggx
+};
+
+// Custom annotation for MDL function parameters to map between MDL and the original MaterialX graph.
+// *  When added to a paramater, the "name" will contain the path in the MaterialX graph starting
+//    from the root up to the input using `/` as separator.
+export annotation origin(string name);

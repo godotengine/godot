@@ -1,0 +1,21 @@
+#include "lib/$fileTransformUv"
+
+void mx_image_color4(textureresource file, string layer, color4 default_value, vector2 texcoord, string uaddressmode, string vaddressmode, string filtertype, string framerange, int frameoffset, string frameendaction, output color4 out)
+{
+    if (file.filename == "" ||
+        (uaddressmode == "constant" && (texcoord.x<0.0 || texcoord.x>1.0)) ||
+        (vaddressmode == "constant" && (texcoord.y<0.0 || texcoord.y>1.0)))
+    {
+        out = default_value;
+        return;
+    }
+
+    color missingColor = default_value.rgb;
+    float missingAlpha = default_value.a;
+    vector2 st = mx_transform_uv(texcoord);
+    float alpha;
+    color rgb = texture(file.filename, st.x, st.y, "alpha", alpha, "subimage", layer,
+                        "missingcolor", missingColor, "missingalpha", missingAlpha, "swrap", uaddressmode, "twrap", vaddressmode, "colorspace", file.colorspace);
+
+    out = color4(rgb, alpha);
+}

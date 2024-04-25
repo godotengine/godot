@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <!--
+  Test for texture coordinates. This test makes sure that two texture coordinate nodes with various
+  widths can coexist.
+  -->
+  <standard_surface name="standard_surface" type="surfaceshader" xpos="6.152174" ypos="-0.560345">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" nodename="swizzle_vector2_color3" />
+    <input name="specular_roughness" type="float" value="0.1" />
+    <input name="subsurface" type="float" value="0.4" />
+    <input name="subsurface_color" type="color3" nodename="swizzle_vector3_color3" />
+  </standard_surface>
+  <surfacematerial name="surfacematerial" type="material" xpos="8.695652" ypos="0.000000">
+    <input name="surfaceshader" type="surfaceshader" nodename="standard_surface" />
+  </surfacematerial>
+  <texcoord name="texcoord_vector2" type="vector2" xpos="1.666667" ypos="-1.405172" />
+  <texcoord name="texcoord_vector3" type="vector3" xpos="0.268116" ypos="1.068966" />
+  <swizzle name="swizzle_vector3_color3" type="color3" xpos="3.101449" ypos="0.698276">
+    <input name="in" type="vector3" nodename="texcoord_vector3" />
+  </swizzle>
+  <swizzle name="swizzle_vector2_color3" type="color3" xpos="4.260870" ypos="-2.896552">
+    <input name="in" type="vector2" nodename="texcoord_vector2" />
+  </swizzle>
+</materialx>

@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <constant name="worldscale" type="vector2">
+    <input name="value" type="vector2" value="5.0, 5.0" unit="meter" unittype="distance" />
+  </constant>
+  <divide name="recip_worldscale" type="vector2">
+    <input name="in1" type="vector2" value="1.0, 1.0" />
+    <input name="in2" type="vector2" nodename="worldscale" />
+  </divide>
+  <texcoord name="albedo_texcoord" type="vector2" />
+  <place2d name="albedo_placement_transform" type="vector2">
+    <input name="texcoord" type="vector2" nodename="albedo_texcoord" />
+    <input name="scale" type="vector2" nodename="recip_worldscale" />
+  </place2d>
+  <image name="albedo_color" type="color3" colorspace="raw">
+    <input name="file" type="filename" value="resources/Images/grid.png" colorspace="srgb_texture" />
+    <input name="texcoord" type="vector2" nodename="albedo_placement_transform" />
+  </image>
+  <output name="albedo_output" type="color3" nodename="albedo_color" />
+  <image name="displacement_vector" type="vector3">
+    <input name="file" type="filename" value="resources/Images/cloth.png" unittype="distance" unit="millimeter" />
+    <input name="texcoord" type="vector2" nodename="albedo_placement_transform" />
+  </image>
+  <output name="displacement_output" type="vector3" nodename="displacement_vector" />
+  <constant name="constant_v3" type="vector3">
+    <input name="value" type="vector3" value="0.25, 0.25, 0.25" unittype="distance" unit="inch" />
+  </constant>
+  <output name="unit_vector3" type="vector3" nodename="constant_v3" />
+  <constant name="constant_v4" type="vector4">
+    <input name="value" type="vector4" value="0.25, 0.25, 0.25, 1.0" unittype="distance" unit="inch" />
+  </constant>
+  <output name="unit_vector4" type="vector4" nodename="constant_v4" />
+</materialx>

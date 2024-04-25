@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <!-- create nodegraph to test cm conversion on image node before feeding to heighttonormal  -->
+  <nodegraph name="height_to_normal_cm">
+    <image name="b_image" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="srgb_texture" />
+    </image>
+    <extract name="extract1" type="float">
+      <input name="in" type="color3" nodename="b_image" />
+      <input name="index" type="integer" value="1" />
+    </extract>
+    <heighttonormal name="impl_heighttonormalmap" type="vector3">
+      <input name="in" type="float" nodename="extract1" />
+      <input name="scale" type="float" value="1.0" />
+    </heighttonormal>
+    <output name="height_normal_map_output" type="vector3" nodename="impl_heighttonormalmap" />
+  </nodegraph>
+  <!-- create nodegraph to test cm conversion on image node before feeding to normalmap  -->
+  <nodegraph name="normalmap_cm">
+    <image name="b_image" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="srgb_texture" />
+    </image>
+    <convert name="c3tov3" type="vector3">
+      <input name="in" type="color3" nodename="b_image" />
+    </convert>
+    <normalmap name="impl_normalmap" type="vector3">
+      <input name="in" type="vector3" nodename="c3tov3" />
+      <input name="scale" type="float" value="1.5" />
+      <input name="space" type="string" value="tangent" />
+    </normalmap>
+    <output name="normal_map_output" type="vector3" nodename="impl_normalmap" />
+  </nodegraph>
+</materialx>

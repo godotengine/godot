@@ -1,0 +1,12 @@
+#include "vector2.h"
+
+surface 
+constant_vector2
+    [[ string description = "Simple closure for constant color surface rendering" ]]
+(
+	vector2 Cin = {0.0, 0.0}
+        [[  string description = "Input color to modulate emission with" ]]
+)
+{
+	Ci = color(Cin.x, Cin.y, 0.0) * emission(); 
+}

@@ -1,0 +1,16 @@
+void mx_geompropvalue_color4(string geomprop, color4 defaultVal, output color4 out)
+{
+    float value[4];
+    if (getattribute(geomprop, value) == 0)
+    {
+        out.rgb = defaultVal.rgb;
+        out.a = defaultVal.a;
+    }
+    else
+    {
+        out.rgb[0] = value[0];
+        out.rgb[1] = value[1];
+        out.rgb[2] = value[2];
+        out.a = value[3];
+    }
+}

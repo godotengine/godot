@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+
+  <nodedef name="ND_standard_surface_to_UsdPreviewSurface" node="standard_surface_to_UsdPreviewSurface" nodegroup="translation">
+    <input name="metalness" type="float" value="0" />
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" value="0.8, 0.8, 0.8" />
+    <input name="specular" type="float" value="1" />
+    <input name="specular_color" type="color3" value="1, 1, 1" />
+    <input name="specular_IOR" type="float" value="1.5" />
+    <input name="specular_roughness" type="float" value="0.2" />
+    <input name="coat" type="float" value="0" />
+    <input name="coat_color" type="color3" value="1, 1, 1" />
+    <input name="coat_roughness" type="float" value="0.1" />
+    <input name="emission" type="float" value="0" />
+    <input name="emission_color" type="color3" value="1, 1, 1" />
+    <input name="opacity" type="color3" value="1, 1, 1" />
+    <input name="normal" type="vector3" value="0.5, 0.5, 1.0" />
+
+    <output name="diffuseColor_out" type="color3" />
+    <output name="emissiveColor_out" type="color3" />
+    <output name="metallic_out" type="float" />
+    <output name="roughness_out" type="float" />
+    <output name="clearcoat_out" type="float" />
+    <output name="clearcoatRoughness_out" type="float" />
+    <output name="opacity_out" type="float" />
+    <output name="ior_out" type="float" />
+    <output name="normal_out" type="vector3" />
+  </nodedef>
+
+  <nodegraph name="NG_standard_surface_to_UsdPreviewSurface" nodedef="ND_standard_surface_to_UsdPreviewSurface">
+
+    <!-- Constants -->
+    <divide name="constantOneThird" type="float">
+      <input name="in1" type="float" value="1" />
+      <input name="in2" type="float" value="3" />
+    </divide>
+
+    <!-- Diffuse/Specular -->
+    <dot name="metallic" type="float">
+      <input name="in" type="float" interfacename="metalness" />
+    </dot>
+    <multiply name="scaledBaseColor" type="color3">
+      <input name="in1" type="color3" interfacename="base_color" />
+      <input name="in2" type="float" interfacename="base" />
+    </multiply>
+    <mix name="coatAttenuation" type="color3">
+      <input name="fg" type="color3" interfacename="coat_color" />
+      <input name="bg" type="color3" value="1.0, 1.0, 1.0" />
+      <input name="mix" type="float" interfacename="coat" />
+    </mix>
+    <multiply name="diffuseColor" type="color3">
+      <input name="in1" type="color3" nodename="scaledBaseColor" />
+      <input name="in2" type="color3" nodename="coatAttenuation" />
+    </multiply>
+    <dot name="roughness" type="float">
+      <input name="in" type="float" interfacename="specular_roughness" />
+    </dot>
+    <dot name="ior" type="float">
+      <input name="in" type="float" interfacename="specular_IOR" />
+    </dot>
+
+    <!-- Clearcoat -->
+    <multiply name="coatColor" type="color3">
+      <input name="in1" type="color3" interfacename="coat_color" />
+      <input name="in2" type="float" interfacename="coat" />
+    </multiply>
+    <dotproduct name="clearcoat" type="float">
+      <input name="in1" type="vector3" nodename="coatColor" channels="rgb" />
+      <input name="in2" type="vector3" nodename="constantOneThird" channels="xxx" />
+    </dotproduct>
+    <dot name="clearcoatRoughness" type="float">
+      <input name="in" type="float" interfacename="coat_roughness" />
+    </dot>
+
+    <!-- Emissive -->
+    <multiply name="emissiveColor" type="color3">
+      <input name="in1" type="color3" interfacename="emission_color" />
+      <input name="in2" type="float" interfacename="emission" />
+    </multiply>
+
+    <!-- Opacity -->
+    <dotproduct name="opacity" type="float">
+      <input name="in1" type="vector3" interfacename="opacity" channels="rgb" />
+      <input name="in2" type="vector3" nodename="constantOneThird" channels="xxx" />
+    </dotproduct>
+
+    <!-- Normal Map -->
+    <subtract name="biasNormal" type="vector3">
+      <input name="in1" type="vector3" interfacename="normal" />
+      <input name="in2" type="float" value="0.5" />
+    </subtract>
+    <multiply name="normal" type="vector3">
+      <input name="in1" type="vector3" nodename="biasNormal" />
+      <input name="in2" type="float" value="2" />
+    </multiply>
+
+    <output name="diffuseColor_out" type="color3" nodename="diffuseColor" />
+    <output name="emissiveColor_out" type="color3" nodename="emissiveColor" />
+    <output name="metallic_out" type="float" nodename="metallic" />
+    <output name="roughness_out" type="float" nodename="roughness" />
+    <output name="clearcoat_out" type="float" nodename="clearcoat" />
+    <output name="clearcoatRoughness_out" type="float" nodename="clearcoatRoughness" />
+    <output name="opacity_out" type="float" nodename="opacity" />
+    <output name="ior_out" type="float" nodename="ior" />
+    <output name="normal_out" type="vector3" nodename="normal" />
+  </nodegraph>
+</materialx>

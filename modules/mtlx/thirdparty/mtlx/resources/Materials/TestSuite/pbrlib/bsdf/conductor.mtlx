@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="test_conductor">
+    <roughness_anisotropy name="roughness1" type="vector2">
+      <input name="roughness" type="float" value="0.2" />
+      <input name="anisotropy" type="float" value="0.0" />
+    </roughness_anisotropy>
+    <conductor_bsdf name="conductor_brdf1" type="BSDF">
+      <input name="roughness" type="vector2" nodename="roughness1" />
+      <input name="ior" type="color3" nodename="conductor_brdf1__artistic_ior" output="ior" />
+      <input name="extinction" type="color3" nodename="conductor_brdf1__artistic_ior" output="extinction" />
+    </conductor_bsdf>
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="conductor_brdf1" />
+      <input name="opacity" type="float" value="1.0" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+    <artistic_ior name="conductor_brdf1__artistic_ior" type="multioutput">
+      <output name="ior" type="color3" />
+      <output name="extinction" type="color3" />
+      <input name="reflectivity" type="color3" value="1, 1, 1" />
+      <input name="edge_color" type="color3" value="1, 1, 1" />
+    </artistic_ior>
+  </nodegraph>
+</materialx>

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="dielectric_bsdf">
+    <dielectric_bsdf name="dielectric_R" type="BSDF">
+      <input name="weight" type="float" value="1.0" />
+      <input name="tint" type="color3" value="0.7, 0.7, 0.7" />
+      <input name="scatter_mode" type="string" value="R" />
+    </dielectric_bsdf>
+    <surface name="surface_R" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="dielectric_R" />
+    </surface>
+    <output name="R_out" type="surfaceshader" nodename="surface_R" />
+
+    <dielectric_bsdf name="dielectric_T" type="BSDF">
+      <input name="weight" type="float" value="1.0" />
+      <input name="tint" type="color3" value="0.7, 0.7, 0.7" />
+      <input name="scatter_mode" type="string" value="T" />
+    </dielectric_bsdf>
+    <surface name="surface_T" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="dielectric_T" />
+    </surface>
+    <output name="T_out" type="surfaceshader" nodename="surface_T" />
+
+    <dielectric_bsdf name="dielectric_RT" type="BSDF">
+      <input name="weight" type="float" value="1.0" />
+      <input name="tint" type="color3" value="0.7, 0.7, 0.7" />
+      <input name="scatter_mode" type="string" value="RT" />
+    </dielectric_bsdf>
+    <surface name="surface_RT" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="dielectric_RT" />
+    </surface>
+    <output name="RT_out" type="surfaceshader" nodename="surface_RT" />
+
+    <layer name="layer_RT" type="BSDF">
+      <input name="top" type="BSDF" nodename="dielectric_R" />
+      <input name="base" type="BSDF" nodename="dielectric_T" />
+    </layer>
+    <surface name="surface_layer_RT" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="layer_RT" />
+    </surface>
+    <output name="layer_RT_out" type="surfaceshader" nodename="surface_layer_RT" />
+  </nodegraph>
+</materialx>

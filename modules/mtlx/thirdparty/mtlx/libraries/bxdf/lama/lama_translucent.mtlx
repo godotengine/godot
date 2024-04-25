@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="acescg">
+  <nodedef name="ND_lama_translucent" node="LamaTranslucent" nodegroup="pbr" version="1.0" isdefaultversion="true">
+    <input name="color" uiname="Color" type="color3" value="0.18, 0.18, 0.18"
+           doc="Translucent color (aka albedo), defining what ratio of light is transmitted for each color channel." />
+    <input name="roughness" uiname="Roughness" type="float" uimin="0.0" uimax="1.0" value="0.0"
+           doc="Micro-facet distribution (Oren-Nayar) roughness." />
+    <input name="normal" uiname="Normal" type="vector3" defaultgeomprop="Nworld"
+           doc="Shading normal, typically defined by bump or normal mapping. Defaults to the smooth surface normal if not set." />
+    <input name="energyCompensation" uiname="Energy Compensation" uifolder="Advanced" type="float" uniform="true" uimin="0.0" uimax="1.0" value="1.0"
+           doc="Indicates how much energy should be added to compensate for the loss inherent to the Oren-Nayar model, ranging from no compensation at all, to the expected energy from multiple scattering between the micro-facets. This prevents overly dark results when roughness is high." />
+    <input name="lobeName" uiname="Lobe Name" uifolder="Advanced" type="string" uniform="true" value="diffuse"
+           doc="Defines the name that can be used in LPE AOVs for this lobe." />
+    <input name="matte" uiname="Matte" uifolder="Advanced" type="string" uniform="true" value=""
+           doc="Defines the name that can be used by the matte system, to output the weight of this lobe in the final material as an AOV." />
+    <output name="out" type="BSDF" />
+  </nodedef>
+
+  <nodegraph name="NG_lama_translucent" nodedef="ND_lama_translucent">
+    <translucent_bsdf name="translucent_bsdf1" type="BSDF">
+      <input name="color" type="color3" interfacename="color" />
+      <input name="normal" type="vector3" interfacename="normal" />
+    </translucent_bsdf>
+    <output name="out" type="BSDF" nodename="translucent_bsdf1" />
+  </nodegraph>
+</materialx>

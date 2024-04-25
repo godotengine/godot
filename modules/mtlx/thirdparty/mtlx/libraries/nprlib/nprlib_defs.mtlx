@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+    Copyright Contributors to the MaterialX Project
+    SPDX-License-Identifier: Apache-2.0
+
+    Declarations of standard data types and nodes included in the MaterialX specification.
+  -->
+
+  <!-- ======================================================================== -->
+  <!-- View-dependent properties                                                -->
+  <!-- ======================================================================== -->
+
+  <geompropdef name="Vworld" type="vector3" geomprop="viewdirection" space="world" />
+
+  <!-- ======================================================================== -->
+  <!-- View-dependent nodes                                                     -->
+  <!-- ======================================================================== -->
+
+  <!--
+    Node: <viewdirection>
+    The current scene view direction, as defined by the shading environment.
+  -->
+  <nodedef name="ND_viewdirection_vector3" node="viewdirection" nodegroup="npr">
+    <input name="space" type="string" value="world" enum="model,object,world" uniform="true" />
+    <output name="out" type="vector3" default="0.0, 0.0, 1.0" />
+  </nodedef>
+
+  <!--
+    Node: <facingratio>
+    Return the geometric facing ratio, computed as the dot product between the
+    view direction and geometric normal.
+  -->
+  <nodedef name="ND_facingratio_float" node="facingratio" nodegroup="npr">
+    <input name="viewdirection" type="vector3" defaultgeomprop="Vworld" />
+    <input name="normal" type="vector3" defaultgeomprop="Nworld" />
+    <input name="faceforward" type="boolean" value="true" />
+    <input name="invert" type="boolean" value="false" />
+    <output name="out" type="float" default="0.0" />
+  </nodedef>
+
+  <!--
+    Node: <gooch_shade>
+    Compute Gooch Shading.
+  -->
+  <nodedef name="ND_gooch_shade" node="gooch_shade" nodegroup="npr" doc="Compute Gooch shading">
+    <input name="warm_color" type="color3" value="0.8, 0.8, 0.7" uiname="Warm Color" doc="Warm color" />
+    <input name="cool_color" type="color3" value="0.3, 0.3, 0.8" uiname="Cool Color" doc="Cool color" />
+    <input name="specular_intensity" type="float" value="1" uimin="0" uimax="1" uiname="Specular Intensity" doc="Specular Intensity" />
+    <input name="shininess" type="float" value="64" uimin="1" uisoftmax="256" uiname="Shininess" doc="Specular Power" />
+    <input name="light_direction" type="vector3" value="1, -0.5, -0.5" uimin="-1, -1, -1" uimax="1, 1, 1" uiname="Light Direction" doc="Light vector in world space" />
+    <output name="out" type="color3" />
+  </nodedef>
+
+</materialx>

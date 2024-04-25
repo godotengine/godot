@@ -1,0 +1,5 @@
+shader envmap(float Kb = 1, string envmap_filename = "")
+{
+    color envColor = environment(envmap_filename, I);
+    Ci = Kb * envColor * background();
+}

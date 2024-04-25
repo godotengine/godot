@@ -1,0 +1,17 @@
+void mx_artistic_ior(color reflectivity, color edge_color, output vector ior, output vector extinction)
+{
+    // "Artist Friendly Metallic Fresnel", Ole Gulbrandsen, 2014
+    // http://jcgt.org/published/0003/04/03/paper.pdf
+
+    color r = clamp(reflectivity, 0.0, 0.99);
+    color r_sqrt = sqrt(r);
+    color n_min = (1.0 - r) / (1.0 + r);
+    color n_max = (1.0 + r_sqrt) / (1.0 - r_sqrt);
+    ior = mix(n_max, n_min, edge_color);
+
+    color np1 = ior + 1.0;
+    color nm1 = ior - 1.0;
+    color k2 = (np1*np1 * r - nm1*nm1) / (1.0 - r);
+    k2 = max(k2, 0.0);
+    extinction = sqrt(k2);
+}

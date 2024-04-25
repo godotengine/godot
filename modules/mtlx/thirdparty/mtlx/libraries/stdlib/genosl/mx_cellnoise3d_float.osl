@@ -1,0 +1,4 @@
+void mx_cellnoise3d_float(vector position, output float result)
+{
+    result = cellnoise(position);
+}

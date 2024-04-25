@@ -1,0 +1,78 @@
+float mx_square(float x)
+{
+    return x*x;
+}
+
+vector2 mx_square(vector2 x)
+{
+    return x*x;
+}
+
+vector mx_square(vector x)
+{
+    return x*x;
+}
+
+vector4 mx_square(vector4 x)
+{
+    return x*x;
+}
+
+float mx_pow5(float x)
+{
+    return mx_square(mx_square(x)) * x;
+}
+
+color mx_fresnel_conductor(float cosTheta, vector n, vector k)
+{
+   float c2 = cosTheta*cosTheta;
+   vector n2_k2 = n*n + k*k;
+   vector nc2 = 2.0 * n * cosTheta;
+
+   vector rs_a = n2_k2 + c2;
+   vector rp_a = n2_k2 * c2 + 1.0;
+   vector rs = (rs_a - nc2) / (rs_a + nc2);
+   vector rp = (rp_a - nc2) / (rp_a + nc2);
+
+   return 0.5 * (rs + rp);
+}
+
+// Standard Schlick Fresnel
+float mx_fresnel_schlick(float cosTheta, float F0)
+{
+    float x = clamp(1.0 - cosTheta, 0.0, 1.0);
+    float x5 = mx_pow5(x);
+    return F0 + (1.0 - F0) * x5;
+}
+color mx_fresnel_schlick(float cosTheta, color F0)
+{
+    float x = clamp(1.0 - cosTheta, 0.0, 1.0);
+    float x5 = mx_pow5(x);
+    return F0 + (1.0 - F0) * x5;
+}
+
+// Generalized Schlick Fresnel
+float mx_fresnel_schlick(float cosTheta, float F0, float F90)
+{
+    float x = clamp(1.0 - cosTheta, 0.0, 1.0);
+    float x5 = mx_pow5(x);
+    return mix(F0, F90, x5);
+}
+color mx_fresnel_schlick(float cosTheta, color F0, color F90)
+{
+    float x = clamp(1.0 - cosTheta, 0.0, 1.0);
+    float x5 = mx_pow5(x);
+    return mix(F0, F90, x5);
+}
+
+// Generalized Schlick Fresnel with a variable exponent
+color mx_fresnel_schlick(float cosTheta, float f0, float f90, float exponent)
+{
+    float x = clamp(1.0 - cosTheta, 0.0, 1.0);
+    return mix(f0, f90, pow(x, exponent));
+}
+color mx_fresnel_schlick(float cosTheta, color f0, color f90, float exponent)
+{
+    float x = clamp(1.0 - cosTheta, 0.0, 1.0);
+    return mix(f0, f90, pow(x, exponent));
+}

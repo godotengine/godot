@@ -1,0 +1,181 @@
+//
+// Copyright Contributors to the MaterialX Project
+// SPDX-License-Identifier: Apache-2.0
+//
+
+mdl 1.6;
+
+import ::math::*;
+
+import .::core::*;
+
+// Restrict to 7x7 kernel size for performance reasons
+export const int MX_MAX_SAMPLE_COUNT = 49;
+// Size of all weights for all levels (including level 1)
+export const int MX_WEIGHT_ARRAY_SIZE = 84;
+
+// This is not available in MDL so just use a "small" number
+float2 dFdx(float2 uv)
+{
+    return uv+0.0001;
+}
+
+float2 dFdy(float2 uv)
+{
+    return uv+0.0001;
+}
+
+//
+// Function to compute the sample size relative to a texture coordinate
+//
+export float2 mx_compute_sample_size_uv(float2 uv, float filterSize, float filterOffset)
+{
+   float2 derivUVx = dFdx(uv) * 0.5f;
+   float2 derivUVy = dFdy(uv) * 0.5f;
+   float derivX = ::math::abs(derivUVx.x) + ::math::abs(derivUVy.x);
+   float derivY = ::math::abs(derivUVx.y) + ::math::abs(derivUVy.y);
+   float sampleSizeU = 2.0f * filterSize * derivX + filterOffset;
+   if (sampleSizeU < 1.0E-05f)
+       sampleSizeU = 1.0E-05f;
+   float sampleSizeV = 2.0f * filterSize * derivY + filterOffset;
+   if (sampleSizeV < 1.0E-05f)
+       sampleSizeV = 1.0E-05f;
+   return float2(sampleSizeU, sampleSizeV);
+}
+
+//
+// Compute a normal mapped to 0..1 space based on a set of input
+// samples using a Sobel filter.
+//
+export float3 mx_normal_from_samples_sobel(float[9] S, float scale)
+{
+   float nx = S[0] - S[2] + (2.0*S[3]) - (2.0*S[5]) + S[6] - S[8];
+   float ny = S[0] + (2.0*S[1]) + S[2] - S[6] - (2.0*S[7]) - S[8];
+   float nz = scale * ::math::sqrt(1.0 - nx*nx - ny*ny);
+   float3 norm = ::math::normalize(float3(nx, ny, nz));
+   return (norm + 1.0) * 0.5;
+}
+
+// Kernel weights for box filter
+export float[MX_MAX_SAMPLE_COUNT] mx_get_box_weights(int filterSize)
+{
+    float[MX_MAX_SAMPLE_COUNT] W;
+    int sampleCount = filterSize*filterSize;
+    float value = 1.0 / float(sampleCount);
+    for (int i=0; i<sampleCount; i++)
+    {
+        W[i] = value;
+    }
+    return W;
+}
+
+// Kernel weights for Gaussian filter. Sigma is assumed to be 1.
+export float[MX_MAX_SAMPLE_COUNT] mx_get_gaussian_weights(int filterSize)
+{
+    float[MX_MAX_SAMPLE_COUNT] W;
+    if (filterSize >= 7)
+    {
+        W[0] = 0.000036;  W[1] = 0.000363;  W[2] = 0.001446;  W[3] = 0.002291;  W[4] = 0.001446;  W[5] = 0.000363;  W[6] = 0.000036;
+        W[7] = 0.000363;  W[8] = 0.003676;  W[9] = 0.014662;  W[10] = 0.023226; W[11] = 0.014662; W[12] = 0.003676; W[13] = 0.000363;
+        W[14] = 0.001446; W[15] = 0.014662; W[16] = 0.058488; W[17] = 0.092651; W[18] = 0.058488; W[19] = 0.014662; W[20] = 0.001446;
+        W[21] = 0.002291; W[22] = 0.023226; W[23] = 0.092651; W[24] = 0.146768; W[25] = 0.092651; W[26] = 0.023226; W[27] = 0.002291;
+        W[28] = 0.001446; W[29] = 0.014662; W[30] = 0.058488; W[31] = 0.092651; W[32] = 0.058488; W[33] = 0.014662; W[34] = 0.001446;
+        W[35] = 0.000363; W[36] = 0.003676; W[37] = 0.014662; W[38] = 0.023226; W[39] = 0.014662; W[40] = 0.003676; W[41] = 0.000363;
+        W[42] = 0.000036; W[43] = 0.000363; W[44] = 0.001446; W[45] = 0.002291; W[46] = 0.001446; W[47] = 0.000363; W[48] = 0.000036;
+    }
+    else if (filterSize >= 5)
+    {
+        W[0] = 0.003765;  W[1] = 0.015019;  W[2] = 0.023792;  W[3] = 0.015019;  W[4] = 0.003765;
+        W[5] = 0.015019;  W[6] = 0.059912;  W[7] = 0.094907;  W[8] = 0.059912;  W[9] = 0.015019;
+        W[10] = 0.023792; W[11] = 0.094907; W[12] = 0.150342; W[13] = 0.094907; W[14] = 0.023792;
+        W[15] = 0.015019; W[16] = 0.059912; W[17] = 0.094907; W[18] = 0.059912; W[19] = 0.015019;
+        W[20] = 0.003765; W[21] = 0.015019; W[22] = 0.023792; W[23] = 0.015019; W[24] = 0.003765;
+    }
+    else if (filterSize >= 3)
+    {
+        W[0] = 0.0625; W[1] = 0.125; W[2] = 0.0625;
+        W[3] = 0.125;  W[4] = 0.25;  W[5] = 0.125;
+        W[6] = 0.0625; W[7] = 0.125; W[8] = 0.0625;
+    }
+    else
+    {
+        W[0] = 1.0;
+    }
+    return W;
+}
+
+//
+// Apply filter for float samples S, using weights W.
+// sampleCount should be a square of a odd number in the range { 1, 3, 5, 7 }
+//
+export float mx_convolution_float(float[MX_MAX_SAMPLE_COUNT] S, float[MX_WEIGHT_ARRAY_SIZE] W, int offset, int sampleCount)
+{
+    float result = 0.0;
+    for (int i = 0;  i < sampleCount; i++)
+    {
+        result += S[i]*W[i+offset];
+    }
+    return result;
+}
+
+//
+// Apply filter for float2 samples S, using weights W.
+// sampleCount should be a square of a odd number in the range { 1, 3, 5, 7 }
+//
+export float2 mx_convolution_float2(float2[MX_MAX_SAMPLE_COUNT] S, float[MX_WEIGHT_ARRAY_SIZE] W, int offset, int sampleCount)
+{
+    float2 result = float2(0.0);
+    for (int i=0;  i<sampleCount; i++)
+    {
+        result += S[i]*W[i+offset];
+    }
+    return result;
+}
+
+//
+// Apply filter for float3 samples S, using weights W.
+// sampleCount should be a square of a odd number in the range { 1, 3, 5, 7 }
+//
+export float3 mx_convolution_float3(float3[MX_MAX_SAMPLE_COUNT] S, float[MX_WEIGHT_ARRAY_SIZE] W, int offset, int sampleCount)
+{
+    float3 result = float3(0.0);
+    for (int i=0;  i<sampleCount; i++)
+    {
+        result += S[i]*W[i+offset];
+    }
+    return result;
+}
+
+//
+// Apply filter for float4 samples S, using weights W.
+// sampleCount should be a square of a odd number { 1, 3, 5, 7 }
+//
+export float4 mx_convolution_float4(float4[MX_MAX_SAMPLE_COUNT] S, float[MX_WEIGHT_ARRAY_SIZE] W, int offset, int sampleCount)
+{
+    float4 result = float4(0.0);
+    for (int i=0;  i<sampleCount; i++)
+    {
+        result += S[i]*W[i+offset];
+    }
+    return result;
+}
+
+export color mx_convolution_color(color[MX_MAX_SAMPLE_COUNT] S, float[MX_WEIGHT_ARRAY_SIZE] W, int offset, int sampleCount)
+{
+    color result = color(0.0);
+    for (int i=0;  i<sampleCount; i++)
+    {
+        result += S[i]*W[i+offset];
+    }
+    return result;
+}
+
+export core::color4 mx_convolution_color4(core::color4[MX_MAX_SAMPLE_COUNT] S, float[MX_WEIGHT_ARRAY_SIZE] W, int offset, int sampleCount)
+{
+    core::color4 result = core::mk_color4(0.0, 0.0, 0.0, 0.0);
+    for (int i=0;  i<sampleCount; i++)
+    {
+        core::mx_add(result, core::mx_multiply(S[i], W[i+offset]));
+    }
+    return result;
+}

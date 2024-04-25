@@ -1,0 +1,15 @@
+#include "mx_microfacet.osl"
+
+// Rational curve fit approximation for the directional albedo of Imageworks sheen.
+float mx_imageworks_sheen_dir_albedo_analytic(float NdotV, float roughness)
+{
+    float a = 5.25248 - 7.66024 * NdotV + 14.26377 * roughness;
+    float b = 1.0 + 30.66449 * NdotV + 32.53420 * roughness;
+    return a / b;
+}
+
+float mx_imageworks_sheen_dir_albedo(float NdotV, float roughness)
+{
+    float dirAlbedo = mx_imageworks_sheen_dir_albedo_analytic(NdotV, roughness);
+    return clamp(dirAlbedo, 0.0, 1.0);
+}

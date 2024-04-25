@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709" fileprefix="../../../Images/">
+  <nodegraph name="NG_Greysphere_Calibration">
+    <texcoord name="texcoord1" type="vector2" />
+    <place2d name="place2d" type="vector2">
+      <input name="texcoord" type="vector2" nodename="texcoord1" />
+      <input name="offset" type="vector2" value="-1.66, -0.49" />
+      <input name="scale" type="vector2" value="0.21, 0.21" />
+      <input name="pivot" type="vector2" value="0.5, 0.5" />
+    </place2d>
+    <image name="image1" type="color3">
+      <input name="texcoord" type="vector2" nodename="place2d" />
+      <input name="file" type="filename" value="greysphere_calibration.png" colorspace="srgb_texture" />
+      <input name="uaddressmode" type="string" value="clamp" />
+      <input name="vaddressmode" type="string" value="clamp" />
+    </image>
+    <output name="out1" type="color3" nodename="image1" />
+  </nodegraph>
+  <standard_surface name="SR_Greysphere_Calibration" type="surfaceshader">
+    <input name="base" type="float" value="1.0" />
+    <input name="base_color" type="color3" nodegraph="NG_Greysphere_Calibration" output="out1" />
+    <input name="diffuse_roughness" type="float" value="0" />
+    <input name="specular_roughness" type="float" value="0.7" />
+    <input name="specular_IOR" type="float" value="1.5" />
+  </standard_surface>
+  <surfacematerial name="Greysphere_Calibration" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_Greysphere_Calibration" />
+  </surfacematerial>
+</materialx>

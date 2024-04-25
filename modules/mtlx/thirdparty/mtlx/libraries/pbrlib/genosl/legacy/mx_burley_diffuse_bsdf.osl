@@ -1,0 +1,6 @@
+void mx_burley_diffuse_bsdf(float weight, color reflectance, float roughness, normal N, output BSDF bsdf)
+{
+    // TODO: Implement properly.
+    bsdf.response = reflectance * weight * oren_nayar(N, roughness);
+    bsdf.throughput = color(0.0);
+}

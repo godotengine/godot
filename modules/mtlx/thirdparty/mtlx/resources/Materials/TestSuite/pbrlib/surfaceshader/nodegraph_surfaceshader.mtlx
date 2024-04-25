@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="lighting1">
+    <surface name="surface1" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="diffusebsdf1" />
+      <input name="edf" type="EDF" value="" />
+      <input name="opacity" type="float" value="1.0" />
+    </surface>
+    <oren_nayar_diffuse_bsdf name="diffusebsdf1" type="BSDF">
+      <input name="color" type="color3" value="0.3, 0.3, 1.0" />
+      <input name="roughness" type="float" value="0.8" />
+    </oren_nayar_diffuse_bsdf>
+    <output name="out" type="surfaceshader" nodename="surface1" />
+  </nodegraph>
+</materialx>

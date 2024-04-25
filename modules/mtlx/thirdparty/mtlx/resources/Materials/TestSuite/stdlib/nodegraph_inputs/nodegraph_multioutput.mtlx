@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="green_graph">
+    <input name="in" type="color3" value="0, 1, 0" />
+    <separate3 name="green_node" type="multioutput" nodedef="ND_separate3_color3">
+      <input name="in" type="color3" interfacename="in" />
+      <output name="outr" type="float" />
+      <output name="outg" type="float" />
+      <output name="outb" type="float" />
+    </separate3>
+    <output name="green_output" type="float" nodename="green_node" output="outg" />
+    <output name="blue_output" type="float" nodename="green_node" output="outb" />
+  </nodegraph>
+
+  <!-- Test to pick the appropriate output from the nodegraph. In this case this is the green output which is 1.0 or white -->
+  <standard_surface name="white_multiout_shader" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" version="1.0.1">
+    <input name="base" type="float" nodegraph="green_graph" output="green_output" />
+  </standard_surface>
+
+  <!-- Test to pick the appropriate output from the nodegraph. In this case this is the blue output which is 0.0 or black -->
+  <standard_surface name="black_multiout_shader" type="surfaceshader" nodedef="ND_standard_surface_surfaceshader" version="1.0.1">
+    <input name="base" type="float" nodegraph="green_graph" output="blue_output" />
+  </standard_surface>
+
+  <surfacematerial name="white_multiout_material" type="material" nodedef="ND_surfacematerial">
+    <input name="surfaceshader" type="surfaceshader" nodename="white_multiout_shader" />
+  </surfacematerial>
+  <surfacematerial name="black_multiout_material" type="material" nodedef="ND_surfacematerial">
+    <input name="surfaceshader" type="surfaceshader" nodename="black_multiout_shader" />
+  </surfacematerial>
+</materialx>

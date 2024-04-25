@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+  Basic split node unit test :
+  - Split (left-to-right)
+  - Split (top-to-bottom)
+  -->
+
+  <!-- Left-to-right tests -->
+  <output name="lr_split4_output" type="color4" nodename="lr_split4" />
+  <splitlr name="lr_split4" type="color4">
+    <input name="valuel" type="color4" value="1.0, 0.0, 0.0, 0.5" />
+    <input name="valuer" type="color4" value="0.0, 0.0, 1.0, 0.5" />
+    <input name="center" type="float" value="0.3" />
+  </splitlr>
+  <output name="lr_split3_output" type="color3" nodename="lr_split3" />
+  <splitlr name="lr_split3" type="color3">
+    <input name="valuel" type="color3" value="1.0, 0.0, 0.0" />
+    <input name="valuer" type="color3" value="0.0, 0.0, 1.0" />
+    <input name="center" type="float" value="0.3" />
+  </splitlr>
+  <output name="lr_split2_output" type="vector2" nodename="lr_split2" />
+  <splitlr name="lr_split2" type="vector2">
+    <input name="valuel" type="vector2" value="1.0, 0.0" />
+    <input name="valuer" type="vector2" value="0.0, 1.0" />
+    <input name="center" type="float" value="0.3" />
+  </splitlr>
+  <output name="lr_split1_output" type="float" nodename="lr_split1" />
+  <splitlr name="lr_split1" type="float">
+    <input name="valuel" type="float" value="1.0" />
+    <input name="valuer" type="float" value="0.0" />
+    <input name="center" type="float" value="0.3" />
+  </splitlr>
+  <output name="lr_split4v_output" type="vector4" nodename="lr_split4v" />
+  <splitlr name="lr_split4v" type="vector4">
+    <input name="valuel" type="vector4" value="1.0, 0.0, 0.0, 0.5" />
+    <input name="valuer" type="vector4" value="0.0, 0.0, 1.0, 0.5" />
+    <input name="center" type="float" value="0.3" />
+  </splitlr>
+  <output name="lr_split3v_output" type="vector3" nodename="lr_split3v" />
+  <splitlr name="lr_split3v" type="vector3">
+    <input name="valuel" type="vector3" value="1.0, 0.0, 0.0" />
+    <input name="valuer" type="vector3" value="0.0, 0.0, 1.0" />
+    <input name="center" type="float" value="0.3" />
+  </splitlr>
+  <output name="lr_split2v_output" type="vector2" nodename="lr_split2v" />
+  <splitlr name="lr_split2v" type="vector2">
+    <input name="valuel" type="vector2" value="1.0, 0.0" />
+    <input name="valuer" type="vector2" value="0.0, 1.0" />
+    <input name="center" type="float" value="0.3" />
+  </splitlr>
+
+  <!-- Top-to-bottom tests -->
+  <output name="tb_split4_output" type="color4" nodename="tb_split4" />
+  <splittb name="tb_split4" type="color4">
+    <input name="valuet" type="color4" value="1.0, 0.0, 0.0, 0.5" />
+    <input name="valueb" type="color4" value="0.0, 0.0, 1.0, 0.5" />
+    <input name="center" type="float" value="0.3" />
+  </splittb>
+  <output name="tb_split3_output" type="color3" nodename="tb_split3" />
+  <splittb name="tb_split3" type="color3">
+    <input name="valuet" type="color3" value="1.0, 0.0, 0.0" />
+    <input name="valueb" type="color3" value="0.0, 0.0, 1.0" />
+    <input name="center" type="float" value="0.3" />
+  </splittb>
+  <output name="tb_split2_output" type="vector2" nodename="tb_split2" />
+  <splittb name="tb_split2" type="vector2">
+    <input name="valuet" type="vector2" value="1.0, 0.0" />
+    <input name="valueb" type="vector2" value="0.0, 1.0" />
+    <input name="center" type="float" value="0.3" />
+  </splittb>
+  <output name="tb_split1_output" type="float" nodename="tb_split1" />
+  <splittb name="tb_split1" type="float">
+    <input name="valuet" type="float" value="1.0" />
+    <input name="valueb" type="float" value="0.0" />
+    <input name="center" type="float" value="0.3" />
+  </splittb>
+  <output name="tb_split4v_output" type="vector4" nodename="tb_split4v" />
+  <splittb name="tb_split4v" type="vector4">
+    <input name="valuet" type="vector4" value="1.0, 0.0, 0.0, 0.5" />
+    <input name="valueb" type="vector4" value="0.0, 0.0, 1.0, 0.5" />
+    <input name="center" type="float" value="0.3" />
+  </splittb>
+  <output name="tb_split3v_output" type="vector3" nodename="tb_split3v" />
+  <splittb name="tb_split3v" type="vector3">
+    <input name="valuet" type="vector3" value="1.0, 0.0, 0.0" />
+    <input name="valueb" type="vector3" value="0.0, 0.0, 1.0" />
+    <input name="center" type="float" value="0.3" />
+  </splittb>
+  <output name="tb_split2v_output" type="vector2" nodename="tb_split2v" />
+  <splittb name="tb_split2v" type="vector2">
+    <input name="valuet" type="vector2" value="1.0, 0.0" />
+    <input name="valueb" type="vector2" value="0.0, 1.0" />
+    <input name="center" type="float" value="0.3" />
+  </splittb>
+</materialx>

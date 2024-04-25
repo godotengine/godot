@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="test_place2d_SRT">
+    <texcoord name="texcoord1" type="vector2" />
+    <place2d name="a_place2d" type="vector2">
+      <input name="texcoord" type="vector2" nodename="texcoord1" />
+      <input name="offset" type="vector2" value="0.0, 0.0" />
+      <input name="rotate" type="float" value="30.0" unittype="angle" unit="degree" />
+      <input name="scale" type="vector2" value="2.0, 1.0" />
+      <input name="pivot" type="vector2" value="0.5, 0.5" />
+      <input name="operationorder" type="integer" value="0" />
+    </place2d>
+    <image name="image_number_1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+      <input name="default" type="color3" value="1.0, 0.0, 0.0" />
+      <input name="texcoord" type="vector2" nodename="a_place2d" />
+    </image>
+    <output name="out" type="color3" nodename="image_number_1" />
+  </nodegraph>
+  <nodegraph name="test_place2d_TRS">
+    <texcoord name="texcoord1" type="vector2" />
+    <place2d name="a_place2d" type="vector2">
+      <input name="texcoord" type="vector2" nodename="texcoord1" />
+      <input name="offset" type="vector2" value="0.2, 0.2" />
+      <input name="rotate" type="float" value="30.0" unittype="angle" unit="degree" />
+      <input name="scale" type="vector2" value="2.0, 1.0" />
+      <input name="pivot" type="vector2" value="0.5, 0.5" />
+      <input name="operationorder" type="integer" value="1" />
+    </place2d>
+    <image name="image_number_1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" />
+      <input name="default" type="color3" value="1.0, 0.0, 0.0" />
+      <input name="texcoord" type="vector2" nodename="a_place2d" />
+    </image>
+    <output name="out" type="color3" nodename="image_number_1" />
+  </nodegraph>
+</materialx>

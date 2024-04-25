@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <standard_surface name="surf" type="surfaceshader">
+    <input name="base_color" type="color3" value="0.2, 0.2, 1.0" />
+    <input name="specular_roughness" type="float" value="0.5" />
+  </standard_surface>
+  <position name="position1" type="vector3">
+    <input name="space" type="string" value="object" />
+  </position>
+  <multiply name="multiply1" type="vector3">
+    <input name="in1" type="vector3" nodename="position1" />
+    <input name="in2" type="vector3" value="20.0000, 20.0000, 20.0000" />
+  </multiply>
+  <fractal3d name="fractal3d1" type="float">
+    <input name="amplitude" type="float" value="10.0000" />
+    <input name="octaves" type="integer" value="2" />
+    <input name="lacunarity" type="float" value="2.0000" />
+    <input name="diminish" type="float" value="0.5000" />
+    <input name="position" type="vector3" nodename="multiply1" />
+  </fractal3d>
+  <displacement name="disp1" type="displacementshader">
+    <input name="displacement" type="float" nodename="fractal3d1" />
+    <input name="scale" type="float" value="1.0" />
+  </displacement>
+  <convert name="fractal3d1_vec3" type="vector3">
+    <input name="in" type="float" nodename="fractal3d1" />
+  </convert>
+  <displacement name="disp2" type="displacementshader">
+    <input name="displacement" type="vector3" nodename="fractal3d1_vec3" />
+    <input name="scale" type="float" value="1.0" />
+  </displacement>
+  <surfacematerial name="surfacematerial1" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="surf" />
+    <input name="displacementshader" type="displacementshader" nodename="disp1" />
+  </surfacematerial>
+  <surfacematerial name="surfacematerial2" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="surf" />
+    <input name="displacementshader" type="displacementshader" nodename="disp2" />
+  </surfacematerial>
+</materialx>

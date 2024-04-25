@@ -1,0 +1,15 @@
+void mx_generalized_schlick_bsdf(float weight, color color0, color color90, float exponent, vector2 roughness, normal N, vector U, string distribution, string scatter_mode, output BSDF bsdf)
+{
+    if (scatter_mode == "R")
+    {
+        bsdf = weight * generalized_schlick_bsdf(N, U, color(1.0), color(0.0), roughness.x, roughness.y, color0, color90, exponent, distribution);
+    }
+    else if (scatter_mode == "T")
+    {
+        bsdf = weight * generalized_schlick_bsdf(N, U, color(0.0), color(1.0), roughness.x, roughness.y, color0, color90, exponent, distribution);
+    }
+    else
+    {
+        bsdf = weight * generalized_schlick_bsdf(N, U, color(1.0), color(1.0), roughness.x, roughness.y, color0, color90, exponent, distribution);
+    }
+}

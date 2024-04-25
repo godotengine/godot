@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="srgb_texture">
+  <nodedef name="ND_NodeA" node="NodeA">
+    <input name="diffColor" type="color3" />
+    <output name="out" type="surfaceshader" />
+  </nodedef>
+  <nodedef name="ND_NodeB" node="NodeB" inherit="ND_NodeA">
+    <output name="out" type="surfaceshader" />
+  </nodedef>
+  <nodegraph name="NG_NodeA" nodedef="ND_NodeA">
+    <oren_nayar_diffuse_bsdf name="diffuseBsdf" type="BSDF">
+      <input name="color" type="color3" interfacename="diffColor" />
+    </oren_nayar_diffuse_bsdf>
+    <surface name="surfaceConstructor" type="surfaceshader">
+      <input name="bsdf" type="BSDF" nodename="diffuseBsdf" />
+    </surface>
+    <output name="out" type="surfaceshader" nodename="surfaceConstructor" />
+  </nodegraph>
+  <nodegraph name="NG_NodeB" nodedef="ND_NodeB" fileprefix="resources/Images/">
+    <tiledimage name="TI_diffColorEffect" type="color3">
+      <input name="file" type="filename" value="wood_color.jpg" />
+    </tiledimage>
+    <NodeA name="NodeA_instanceForNodeB" type="surfaceshader">
+      <input name="diffColor" type="color3" nodename="TI_diffColorEffect" />
+    </NodeA>
+    <output name="out" type="surfaceshader" nodename="NodeA_instanceForNodeB" />
+  </nodegraph>
+  <NodeB name="SR_test" type="surfaceshader" />
+  <surfacematerial name="M_test" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_test" />
+  </surfacematerial>
+</materialx>

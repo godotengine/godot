@@ -1,0 +1,15 @@
+void mx_dielectric_bsdf(float weight, color tint, float ior, vector2 roughness, normal N, vector U, string distribution, string scatter_mode, output BSDF bsdf)
+{
+    if (scatter_mode == "R")
+    {
+        bsdf = weight * dielectric_bsdf(N, U, tint, color(0.0), roughness.x, roughness.y, ior, distribution);
+    }
+    else if (scatter_mode == "T")
+    {
+        bsdf = weight * dielectric_bsdf(N, U, color(0.0), tint, roughness.x, roughness.y, ior, distribution);
+    }
+    else
+    {
+        bsdf = weight * dielectric_bsdf(N, U, tint, tint, roughness.x, roughness.y, ior, distribution);
+    }
+}

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="acescg">
+
+  <!-- LamaMix for BSDFs -->
+  <nodedef name="ND_lama_mix_bsdf" node="LamaMix" nodegroup="pbr" version="1.0" isdefaultversion="true">
+    <input name="material1" uiname="Material 1" type="BSDF"
+           doc="First material to mix." />
+    <input name="material2" uiname="Material 2" type="BSDF"
+           doc="Second material to mix." />
+    <input name="mix" type="float" uimin="0.0" uimax="1.0" value="0.0"
+           doc="Defines the balance between the two materials, ranging from 0 (Material 1 only) to 1 (Material 2 only). Can also be seen as a Material 2 over Material 1 mask." />
+    <output name="out" type="BSDF" />
+  </nodedef>
+  <nodegraph name="NG_lama_mix_bsdf" nodedef="ND_lama_mix_bsdf">
+    <mix name="mix" type="BSDF">
+      <input name="fg" type="BSDF" interfacename="material2" />
+      <input name="bg" type="BSDF" interfacename="material1" />
+      <input name="mix" type="float" interfacename="mix" />
+    </mix>
+    <output name="out" type="BSDF" nodename="mix" />
+  </nodegraph>
+
+  <!-- LamaMix for EDFs -->
+  <nodedef name="ND_lama_mix_edf" node="LamaMix" nodegroup="pbr" version="1.0" isdefaultversion="true">
+    <input name="material1" uiname="Material 1" type="EDF"
+           doc="First material to mix." />
+    <input name="material2" uiname="Material 2" type="EDF"
+           doc="Second material to mix." />
+    <input name="mix" type="float" uimin="0.0" uimax="1.0" value="0.0"
+           doc="Defines the balance between the two materials, ranging from 0 (Material 1 only) to 1 (Material 2 only). Can also be seen as a Material 2 over Material 1 mask." />
+    <output name="out" type="EDF" />
+  </nodedef>
+  <nodegraph name="NG_lama_mix_edf" nodedef="ND_lama_mix_edf">
+    <mix name="mix" type="EDF">
+      <input name="fg" type="EDF" interfacename="material2" />
+      <input name="bg" type="EDF" interfacename="material1" />
+      <input name="mix" type="float" interfacename="mix" />
+    </mix>
+    <output name="out" type="EDF" nodename="mix" />
+  </nodegraph>
+</materialx>

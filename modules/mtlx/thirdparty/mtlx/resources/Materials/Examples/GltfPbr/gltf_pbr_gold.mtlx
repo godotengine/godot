@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <gltf_pbr name="SR_gold" type="surfaceshader">
+    <input name="base_color" type="color3" value="0.944, 0.776, 0.373" />
+    <input name="roughness" type="float" value="0.02" />
+  </gltf_pbr>
+  <surfacematerial name="PBR_Gold" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_gold" />
+  </surfacematerial>
+</materialx>

@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <standard_surface name="SR_default" type="surfaceshader">
+    <input name="base" type="float" value="1.0" />
+    <input name="base_color" type="color3" value="0.8, 0.8, 0.8" />
+    <input name="diffuse_roughness" type="float" value="0" />
+    <input name="specular" type="float" value="1" />
+    <input name="specular_color" type="color3" value="1, 1, 1" />
+    <input name="specular_roughness" type="float" value="0.2" />
+    <input name="specular_IOR" type="float" value="1.5" />
+    <input name="specular_anisotropy" type="float" value="0" />
+    <input name="specular_rotation" type="float" value="0" />
+    <input name="metalness" type="float" value="0" />
+    <input name="transmission" type="float" value="0" />
+    <input name="transmission_color" type="color3" value="1, 1, 1" />
+    <input name="transmission_depth" type="float" value="0" />
+    <input name="transmission_scatter" type="color3" value="0, 0, 0" />
+    <input name="transmission_scatter_anisotropy" type="float" value="0" />
+    <input name="transmission_dispersion" type="float" value="0" />
+    <input name="transmission_extra_roughness" type="float" value="0" />
+    <input name="subsurface" type="float" value="0" />
+    <input name="subsurface_color" type="color3" value="1, 1, 1" />
+    <input name="subsurface_radius" type="color3" value="1, 1, 1" />
+    <input name="subsurface_scale" type="float" value="1" />
+    <input name="subsurface_anisotropy" type="float" value="0" />
+    <input name="sheen" type="float" value="0" />
+    <input name="sheen_color" type="color3" value="1, 1, 1" />
+    <input name="sheen_roughness" type="float" value="0.3" />
+    <input name="thin_walled" type="boolean" value="false" />
+    <input name="coat" type="float" value="0" />
+    <input name="coat_color" type="color3" value="1, 1, 1" />
+    <input name="coat_roughness" type="float" value="0.1" />
+    <input name="coat_anisotropy" type="float" value="0.0" />
+    <input name="coat_rotation" type="float" value="0.0" />
+    <input name="coat_IOR" type="float" value="1.5" />
+    <input name="coat_affect_color" type="float" value="0" />
+    <input name="coat_affect_roughness" type="float" value="0" />
+    <input name="thin_film_thickness" type="float" value="0" />
+    <input name="thin_film_IOR" type="float" value="1.5" />
+    <input name="emission" type="float" value="0" />
+    <input name="emission_color" type="color3" value="1, 1, 1" />
+    <input name="opacity" type="color3" value="1, 1, 1" />
+  </standard_surface>
+  <surfacematerial name="Default" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_default" />
+  </surfacematerial>
+</materialx>

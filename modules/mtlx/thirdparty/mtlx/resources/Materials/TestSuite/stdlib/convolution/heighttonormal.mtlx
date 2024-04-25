@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="height_to_normal">
+    <input name="file" type="filename" uniform="true" value="resources/Images/plain_heightmap.png" />
+    <tiledimage name="tiledimage" type="float">
+      <input name="file" type="filename" uniform="true" interfacename="file" />
+      <input name="uvtiling" type="vector2" value="10, 10" />
+    </tiledimage>
+    <heighttonormal name="heighttonormal" type="vector3">
+      <input name="in" type="float" nodename="tiledimage" />
+      <input name="scale" type="float" value="0.2" />
+    </heighttonormal>
+    <normalmap name="normalmap" type="vector3">
+      <input name="in" type="vector3" nodename="heighttonormal" />
+    </normalmap>
+    <standard_surface name="standard_surface" type="surfaceshader">
+      <input name="normal" type="vector3" nodename="normalmap" />
+    </standard_surface>
+    <multiply name="scale" type="vector3">
+      <input name="in1" type="vector3" nodename="heighttonormal" />
+      <input name="in2" type="float" value="2" />
+    </multiply>
+    <add name="bias" type="vector3">
+      <input name="in1" type="vector3" nodename="scale" />
+      <input name="in2" type="vector3" value="-1, -1, -1" />
+    </add>
+    <UsdPreviewSurface name="UsdPreviewSurface" type="surfaceshader">
+      <input name="normal" type="vector3" nodename="bias" />
+    </UsdPreviewSurface>
+    <output name="height_to_normal_out" type="vector3" nodename="heighttonormal" />
+    <output name="standard_surface_out" type="surfaceshader" nodename="standard_surface" />
+    <output name="usd_preview_surface_out" type="surfaceshader" nodename="UsdPreviewSurface" />
+  </nodegraph>
+</materialx>

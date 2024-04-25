@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <standard_surface name="SR_subsurface" type="surfaceshader">
+    <input name="specular" type="float" value="0.0" />
+    <input name="thin_walled" type="boolean" value="true" />
+    <input name="subsurface" type="float" value="1.0" />
+    <input name="subsurface_color" type="color3" value="0.816, 0.140, 0.124" />
+    <input name="subsurface_scale" type="float" value="1.0" />
+  </standard_surface>
+  <surfacematerial name="M_subsurface_thin" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_subsurface" />
+  </surfacematerial>
+  <standard_surface name="SR_subsurface2" type="surfaceshader">
+    <input name="specular" type="float" value="0.0" />
+    <input name="thin_walled" type="boolean" value="false" />
+    <input name="subsurface" type="float" value="1.0" />
+    <input name="subsurface_color" type="color3" value="0.816, 0.140, 0.124" />
+    <input name="subsurface_scale" type="float" value="1.0" />
+  </standard_surface>
+  <surfacematerial name="M_subsurface_thick" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_subsurface2" />
+  </surfacematerial>
+</materialx>

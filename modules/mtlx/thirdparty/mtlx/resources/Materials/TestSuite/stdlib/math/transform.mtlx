@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!-- point space transform -->
+  <nodegraph name="tf_point_vector3">
+    <transformpoint name="transformpoint1" type="vector3">
+      <input name="in" type="vector3" nodename="position1" />
+      <input name="fromspace" type="string" value="object" />
+      <input name="tospace" type="string" value="world" />
+    </transformpoint>
+    <position name="position1" type="vector3">
+      <input name="space" type="string" value="object" />
+    </position>
+    <output name="out" type="vector3" nodename="transformpoint1" />
+  </nodegraph>
+  <!-- vector space transform -->
+  <nodegraph name="tf_vector_vector3">
+    <transformvector name="transformvector1" type="vector3">
+      <input name="in" type="vector3" nodename="normal1" />
+      <input name="fromspace" type="string" value="object" />
+      <input name="tospace" type="string" value="world" />
+    </transformvector>
+    <normal name="normal1" type="vector3">
+      <input name="space" type="string" value="object" />
+    </normal>
+    <output name="out" type="vector3" nodename="transformvector1" />
+  </nodegraph>
+  <!-- normal space transform -->
+  <nodegraph name="tf_normal_vector3">
+    <transformnormal name="transformnormal1" type="vector3">
+      <input name="in" type="vector3" nodename="normal1" />
+      <input name="fromspace" type="string" value="object" />
+      <input name="tospace" type="string" value="world" />
+    </transformnormal>
+    <normal name="normal1" type="vector3">
+      <input name="space" type="string" value="object" />
+    </normal>
+    <output name="out" type="vector3" nodename="transformnormal1" />
+  </nodegraph>
+  <!-- vector/matrix transform -->
+  <nodegraph name="tf_matrix3_vector2">
+    <transformmatrix name="transformpoint2M3" type="vector2">
+      <input name="in" type="vector2" nodename="texcoord1" />
+      <input name="mat" type="matrix33" value="0.5, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 1.0" />
+    </transformmatrix>
+    <output name="out" type="vector2" nodename="transformpoint2M3" />
+    <texcoord name="texcoord1" type="vector2">
+      <input name="index" type="integer" value="0" />
+    </texcoord>
+  </nodegraph>
+  <nodegraph name="tf_matrix3_vector3">
+    <transformmatrix name="transformpoint1" type="vector3">
+      <input name="in" type="vector3" nodename="position1" />
+      <input name="mat" type="matrix33" value="0.5, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0" />
+    </transformmatrix>
+    <position name="position1" type="vector3">
+      <input name="space" type="string" value="object" />
+    </position>
+    <output name="out" type="vector3" nodename="transformpoint1" />
+  </nodegraph>
+  <nodegraph name="tf_matrix4_vector3">
+    <output name="out" type="vector3" nodename="transformpoint3M4" />
+    <transformmatrix name="transformpoint3M4" type="vector3">
+      <input name="in" type="vector3" nodename="position1" />
+      <input name="mat" type="matrix44" value="0.5, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 1.0" />
+    </transformmatrix>
+    <position name="position1" type="vector3">
+      <input name="space" type="string" value="object" />
+    </position>
+  </nodegraph>
+  <nodegraph name="tf_matrix4_vector4">
+    <transformmatrix name="transformvector1" type="vector4">
+      <input name="in" type="vector4" nodename="normal1" channels="xyz0" />
+      <input name="mat" type="matrix44" value="0.5, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0" />
+    </transformmatrix>
+    <output name="out" type="vector4" nodename="transformvector1" channels="xyz1" />
+    <normal name="normal1" type="vector3">
+      <input name="space" type="string" value="object" />
+    </normal>
+  </nodegraph>
+  <!--
+    Node: <transformmatrix>  (2M3 and 3M4 variants)
+    Transform a vector coordinate by a specified matrix.
+  -->
+  <nodegraph name="NG_transformpoint_vector2M3">
+    <convert name="N_convtov3" type="vector3">
+      <input name="in" type="vector2" value="0.5, 0.5" />
+    </convert>
+    <transformmatrix name="N_transformpt" type="vector3">
+      <input name="in" type="vector3" nodename="N_convtov3" />
+      <input name="mat" type="matrix33" value="31.4961, 0.0, 0.0, 0.0, 31.4961, 0.0, 0.0, 0.0, 1.0" />
+    </transformmatrix>
+    <convert name="N_convtov2" type="vector2">
+      <input name="in" type="vector3" nodename="N_transformpt" />
+    </convert>
+    <output name="N_out_vec2" type="vector2" nodename="N_convtov2" />
+  </nodegraph>
+  <nodegraph name="NG_transformpoint_vector3M4">
+    <convert name="N_convtov4" type="vector4">
+      <input name="in" type="vector3" value="1.0, 0.0, 0.0" />
+    </convert>
+    <transformmatrix name="N_transformpt" type="vector4">
+      <input name="in" type="vector4" nodename="N_convtov4" />
+      <input name="mat" type="matrix44" value="1.0,0.0,0.0,0.0, 0.0,1.0,0.0,0.0, 0.0,0.0,1.0,0.0, 0.0,0.0,0.0,1.0" />
+      <!--
+         />
+      -->
+    </transformmatrix>
+    <divide name="N_convtov3" type="vector3">
+      <input name="in1" type="vector3" nodename="N_transformpt" channels="xyz" />
+      <input name="in2" type="float" nodename="N_transformpt" channels="w" />
+    </divide>
+    <output name="N_out_vec3" type="vector3" nodename="N_convtov3" />
+  </nodegraph>
+  <!--
+    Node: <transformvector>  (2M3 and 3M4 variants)
+    Transform a vector coordinate by a specified matrix.
+  -->
+  <nodegraph name="NG_transformvector_vector2M3">
+    <convert name="N_convtov3" type="vector3">
+      <input name="in" type="vector2" value="0.5, 0.5" />
+    </convert>
+    <transformmatrix name="N_transformvec" type="vector3">
+      <input name="in" type="vector3" nodename="N_convtov3" />
+      <input name="mat" type="matrix33" value="31.4961, 0.0, 0.0, 0.0, 31.4961, 0.0, 0.0, 0.0,1.0" />
+    </transformmatrix>
+    <convert name="N_convtov2" type="vector2">
+      <input name="in" type="vector3" nodename="N_transformvec" />
+    </convert>
+    <output name="N_out_vec2" type="vector2" nodename="N_convtov2" />
+  </nodegraph>
+  <nodegraph name="NG_transformvector_vector3M4">
+    <convert name="N_convtov4" type="vector4">
+      <input name="in" type="vector3" value="1.0, 0.0, 0.0" />
+    </convert>
+    <transformmatrix name="N_transformvec" type="vector4">
+      <input name="in" type="vector4" nodename="N_convtov4" />
+      <input name="mat" type="matrix44" value="1.0,0.0,0.0,0.0, 0.0,1.0,0.0,0.0, 0.0,0.0,1.0,0.0, 0.0,0.0,0.0,1.0" />
+    </transformmatrix>
+    <convert name="N_convtov3" type="vector3">
+      <input name="in" type="vector4" nodename="N_transformvec" />
+    </convert>
+    <output name="N_out_vec3" type="vector3" nodename="N_convtov3" />
+  </nodegraph>
+  <!--
+    Node: <transformnormal>  (3M4 variant)
+    Transform a vector coordinate by a specified matrix.
+    Fourth channel of converted vector3 set to zero since normals typically can only
+    be scaled or rotated, not translated.
+  -->
+  <nodegraph name="NG_transformnormal_vector3M4">
+    <convert name="N_convtov4" type="vector4">
+      <input name="in" type="vector3" value="1.0, 0.0, 0.0" />
+    </convert>
+    <multiply name="N_zerow" type="vector4">
+      <input name="in1" type="vector4" nodename="N_convtov4" />
+      <input name="in2" type="vector4" value="1.0, 1.0, 1.0, 0.0" />
+    </multiply>
+    <transformmatrix name="N_transformnorm" type="vector4">
+      <input name="in" type="vector4" nodename="N_zerow" />
+      <input name="mat" type="matrix44" value="1.0,0.0,0.0,0.0, 0.0,1.0,0.0,0.0, 0.0,0.0,1.0,0.0, 0.0,0.0,0.0,1.0" />
+    </transformmatrix>
+    <convert name="N_convtov3" type="vector3">
+      <input name="in" type="vector4" nodename="N_transformnorm" />
+    </convert>
+    <output name="N_out_vec3" type="vector3" nodename="N_convtov3" />
+  </nodegraph>
+  <!-- place2d -->
+  <nodegraph name="place2d_vector2">
+    <texcoord name="texcoord1" type="vector2">
+      <input name="index" type="integer" value="0" />
+    </texcoord>
+    <place2d name="place2d1_1" type="vector2">
+      <input name="texcoord" type="vector2" nodename="texcoord1" />
+      <input name="pivot" type="vector2" value="0.5,0.5" />
+      <input name="scale" type="vector2" value="2.0,2.0" />
+      <input name="rotate" type="float" value="1.0" unittype="angle" unit="radian" />
+      <input name="offset" type="vector2" value="0.2,0.2" />
+    </place2d>
+    <output name="out" type="vector2" nodename="place2d1_1" />
+  </nodegraph>
+</materialx>

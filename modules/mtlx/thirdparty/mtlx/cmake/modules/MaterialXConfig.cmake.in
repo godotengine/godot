@@ -1,0 +1,29 @@
+#
+# Copyright Contributors to the MaterialX Project
+# SPDX-License-Identifier: Apache-2.0
+#
+# MaterialX CMake configuration file. Mostly auto-generated.
+#
+
+# Auto-generated content:
+@PACKAGE_INIT@
+
+# Gather MaterialX targets:
+include("${CMAKE_CURRENT_LIST_DIR}/@CMAKE_PROJECT_NAME@Targets.cmake")
+
+# Resource paths:
+# MATERIALX_BASE_DIR         MaterialX root installation directory
+# MATERIALX_STDLIB_DIR       Path to the MaterialX standard library directory
+# MATERIALX_PYTHON_DIR       Path to MaterialX Python library
+# MATERIALX_RESOURCES_DIR    Path to MaterialX Resources (sample data, mtlx etc)
+
+set_and_check(MATERIALX_BASE_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@")
+set_and_check(MATERIALX_STDLIB_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@/libraries")
+if(@MATERIALX_BUILD_PYTHON@ AND @MATERIALX_INSTALL_PYTHON@)
+    set_and_check(MATERIALX_PYTHON_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@/python")
+endif()
+if(@MATERIALX_BUILD_RENDER@ AND @MATERIALX_INSTALL_RESOURCES@)
+    set_and_check(MATERIALX_RESOURCES_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@/resources")
+endif()
+
+check_required_components(@CMAKE_PROJECT_NAME@)

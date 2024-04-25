@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodegraph name="upstream3">
+    <input name="file" type="filename" uniform="true" value="resources/Images/cloth.png" />
+    <input name="file1" type="filename" uniform="true" value="resources/Images/grid.png" />
+    <image name="upstream_image" type="color3">
+      <input name="file" type="filename" uniform="true" interfacename="file" />
+    </image>
+    <image name="upstream_image1" type="color3">
+      <input name="file" type="filename" uniform="true" interfacename="file1" />
+    </image>
+    <output name="out" type="color3" nodename="upstream_image" />
+    <output name="out1" type="color3" nodename="upstream_image1" />
+  </nodegraph>
+  <nodegraph name="upstream2">
+    <input name="upstream2_in1" type="color3" nodegraph="upstream3" output="out" />
+    <input name="upstream2_in2" type="color3" nodegraph="upstream3" output="out1" />
+    <multiply name="multiply_by_image" type="color3">
+      <input name="in1" type="color3" interfacename="upstream2_in1" />
+      <input name="in2" type="color3" nodename="image" />
+    </multiply>
+    <multiply name="make_red" type="color3">
+      <input name="in1" type="color3" interfacename="upstream2_in2" />
+      <input name="in2" type="color3" value="1, 0.1, 0.1" />
+    </multiply>
+    <image name="image" type="color3">
+      <input name="file" type="filename" uniform="true" value="resources/Images/grid.png" />
+    </image>
+    <output name="upstream2_out1" type="color3" nodename="multiply_by_image" />
+    <output name="upstream2_out2" type="color3" nodename="make_red" />
+  </nodegraph>
+  <nodegraph name="upstream1">
+    <input name="upstream1_in1" type="color3" nodegraph="upstream2" output="upstream2_out1" />
+    <input name="upstream1_in2" type="color3" nodegraph="upstream2" output="upstream2_out2" />
+    <multiply name="make_yellow" type="color3">
+      <input name="in1" type="color3" interfacename="upstream1_in1" />
+      <input name="in2" type="color3" value="1, 1, 0" />
+    </multiply>
+    <multiply name="remove_red" type="color3">
+      <input name="in1" type="color3" interfacename="upstream1_in2" />
+      <input name="in2" type="color3" value="0, 1, 1" />
+    </multiply>
+    <output name="upstream1_out1" type="color3" nodename="make_yellow" />
+    <output name="upstream1_out2" type="color3" nodename="remove_red" />
+  </nodegraph>
+  <output name="top_upstream1_out1" type="color3" nodename="upstream1" output="upstream1_out1" />
+  <output name="top_upstream1_out2" type="color3" nodename="upstream1" output="upstream1_out2" />
+  <standard_surface name="standard_surface" type="surfaceshader" version="1.0.1">
+    <input name="base_color" type="color3" nodegraph="upstream1" output="upstream1_out1" />
+  </standard_surface>
+  <standard_surface name="standard_surface1" type="surfaceshader" version="1.0.1">
+    <input name="base_color" type="color3" nodegraph="upstream1" output="upstream1_out2" />
+  </standard_surface>
+  <surfacematerial name="surfacematerial" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="standard_surface" />
+    <input name="displacementshader" type="displacementshader" value="" />
+  </surfacematerial>
+  <surfacematerial name="surfacematerial1" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="standard_surface1" />
+    <input name="displacementshader" type="displacementshader" value="" />
+  </surfacematerial>
+</materialx>

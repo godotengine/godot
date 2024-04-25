@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <nodegraph name="edge_brighten">
+    <facingratio name="facingratio_float" type="float">
+      <input name="invert" type="boolean" value="true" />
+    </facingratio>
+    <power name="power_float" type="float">
+      <input name="in1" type="float" nodename="facingratio_float" />
+      <input name="in2" type="float" value="3.0" />
+    </power>
+    <mix name="mix_color3" type="color3">
+      <input name="bg" type="color3" value="0, 0.0986187, 0.186275" />
+      <input name="fg" type="color3" value="0.735294, 0.735294, 0.735294" />
+      <input name="mix" type="float" nodename="power_float" />
+    </mix>
+    <output name="out" type="color3" nodename="mix_color3" />
+  </nodegraph>
+</materialx>

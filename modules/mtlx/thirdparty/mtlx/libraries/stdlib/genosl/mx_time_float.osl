@@ -1,0 +1,6 @@
+void mx_time_float(float fps, output float result)
+{
+    float frame;
+    getattribute("frame", frame);    
+    result = frame / fps;
+}

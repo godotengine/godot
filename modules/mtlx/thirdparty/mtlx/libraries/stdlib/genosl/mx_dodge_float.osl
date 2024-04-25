@@ -1,0 +1,9 @@
+void mx_dodge_float(float fg, float bg, float mix, output float out)
+{
+    if (abs(1.0 - fg) < M_FLOAT_EPS)
+    {
+        out = 0.0;
+        return;
+    }
+    out = mix*(bg / (1.0 - fg)) + ((1.0-mix)*bg);
+}

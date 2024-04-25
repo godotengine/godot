@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!-- Nodegraph to nodegraph connections -->
+  <nodegraph name="upstream_graph">
+    <input name="file" type="filename" value="resources/Images/grid.png" />
+    <input name="file2" type="filename" value="resources/Images/cloth.png" />
+    <image name="image" type="color3">
+      <input name="file" type="filename" interfacename="file" />
+    </image>
+    <image name="image2" type="color3">
+      <input name="file" type="filename" interfacename="file2" />
+    </image>
+    <output name="graph_out_image" type="color3" nodename="image" />
+    <output name="graph_out_image2" type="color3" nodename="image2" />
+  </nodegraph>
+  <nodegraph name="graph_graph">
+    <input name="input" type="color3" nodegraph="upstream_graph" output="graph_out_image" />
+    <input name="input2" type="color3" nodegraph="upstream_graph" output="graph_out_image2" />
+    <multiply name="multiply" type="color3">
+      <input name="in1" type="color3" interfacename="input" />
+      <input name="in2" type="color3" value="0.4, 0.4, 0.4" />
+    </multiply>
+    <multiply name="multiply2" type="color3">
+      <input name="in1" type="color3" interfacename="input2" />
+      <input name="in2" type="color3" value="0.4, 0.4, 0.4" />
+    </multiply>
+    <output name="graph_graph_out" type="color3" nodename="multiply" />
+    <output name="graph_graph_out2" type="color3" nodename="multiply2" />
+  </nodegraph>
+  <nodegraph name="surf_graph_graph">
+    <input name="input" type="color3" nodegraph="graph_graph" output="graph_graph_out" />
+    <input name="input2" type="color3" nodegraph="graph_graph" output="graph_graph_out2" />
+    <standard_surface name="default_shader" type="surfaceshader">
+      <input name="base_color" type="color3" interfacename="input" />
+    </standard_surface>
+    <standard_surface name="default_shader2" type="surfaceshader">
+      <input name="base_color" type="color3" interfacename="input2" />
+    </standard_surface>
+    <output name="surf_graph_graph_out" type="surfaceshader" nodename="default_shader" />
+    <output name="surf_graph_graph_out2" type="surfaceshader" nodename="default_shader2" />
+  </nodegraph>
+
+  <!-- Connect node instance with multiple outputs to nodegraph -->
+  <nodedef name="ND_upstream_graph" node="upstream_graph_def" version="1.0" isdefaultversion="true" nodegroup="procedural2d">
+    <input name="nd_file" type="filename" uniform="true" value="resources/Images/grid.png" />
+    <input name="nd_file2" type="filename" uniform="true" value="resources/Images/cloth.png" />
+    <output name="nd_graph_out_image" type="color3" value="0, 0, 0" />
+    <output name="nd_graph_out_image2" type="color3" value="0, 0, 0" />
+  </nodedef>
+  <nodegraph name="NG_upstream_graph" nodedef="ND_upstream_graph">
+    <image name="image" type="color3">
+      <input name="file" type="filename" uniform="true" interfacename="nd_file" />
+    </image>
+    <image name="image2" type="color3">
+      <input name="file" type="filename" uniform="true" interfacename="nd_file2" />
+    </image>
+    <output name="nd_graph_out_image" type="color3" nodename="image" />
+    <output name="nd_graph_out_image2" type="color3" nodename="image2" />
+  </nodegraph>
+  <upstream_graph_def name="upstream_graph_instance" type="multioutput">
+    <output name="nd_graph_out_image" type="color3" />
+    <output name="nd_graph_out_image2" type="color3" />
+  </upstream_graph_def>
+  <nodegraph name="nd_graph_graph">
+    <input name="nd_input" type="color3" nodename="upstream_graph_instance" output="nd_graph_out_image" />
+    <input name="nd_input2" type="color3" nodename="upstream_graph_instance" output="nd_graph_out_image2" />
+    <multiply name="multiply" type="color3">
+      <input name="in1" type="color3" interfacename="nd_input" />
+      <input name="in2" type="color3" value="0.4, 0.4, 0.4" />
+    </multiply>
+    <multiply name="multiply2" type="color3">
+      <input name="in1" type="color3" interfacename="nd_input2" />
+      <input name="in2" type="color3" value="0.4, 0.4, 0.4" />
+    </multiply>
+    <output name="nd_graph_graph_out" type="color3" nodename="multiply" />
+    <output name="nd_graph_graph_out2" type="color3" nodename="multiply2" />
+  </nodegraph>
+  <nodegraph name="ng_surf_graph_graph">
+    <input name="nd_input" type="color3" nodename="upstream_graph_instance" output="nd_graph_out_image" />
+    <input name="nd_input2" type="color3" nodename="upstream_graph_instance" output="nd_graph_out_image2" />
+    <standard_surface name="default_shader" type="surfaceshader">
+      <input name="base_color" type="color3" interfacename="nd_input" />
+    </standard_surface>
+    <standard_surface name="default_shader2" type="surfaceshader">
+      <input name="base_color" type="color3" interfacename="nd_input2" />
+    </standard_surface>
+    <output name="nd_surf_graph_graph_out" type="surfaceshader" nodename="default_shader" />
+    <output name="nd_surf_graph_graph_out2" type="surfaceshader" nodename="default_shader2" />
+  </nodegraph>
+  <!-- Nodegraph to nodegraph to top level shader and utility node -->
+  <standard_surface name="default_shader_top" type="surfaceshader">
+    <input name="base_color" type="color3" nodegraph="graph_graph" output="graph_graph_out" />
+  </standard_surface>
+  <output name="surf_graph_graph_out_top" type="surfaceshader" nodename="default_shader_top" />
+  <multiply name="multiply_top" type="color3">
+    <input name="in1" type="color3" nodegraph="graph_graph" output="graph_graph_out" />
+    <input name="in2" type="color3" value="0.4, 0.4, 0.4" />
+  </multiply>
+  <output name="graph_graph_out_top" type="color3" nodename="multiply_top" />
+
+  <!-- Nodegraph to node connection -->
+  <image name="upstream_image" type="color3">
+    <input name="file" type="filename" value="resources/Images/cloth.png" />
+  </image>
+  <nodegraph name="graph_to_node">
+    <input name="input" type="color3" nodename="upstream_image" />
+    <multiply name="multiply" type="color3">
+      <input name="in1" type="color3" interfacename="input" />
+      <input name="in2" type="color3" value="0.4, 0.4, 0.4" />
+    </multiply>
+    <output name="node_graph_out" type="color3" nodename="multiply" />
+  </nodegraph>
+  <nodegraph name="surf_graph_node">
+    <input name="input" type="color3" nodegraph="graph_to_node" />
+    <standard_surface name="default_shader" type="surfaceshader">
+      <input name="base_color" type="color3" interfacename="input" />
+    </standard_surface>
+    <output name="surf_graph_node_out" type="surfaceshader" nodename="default_shader" />
+  </nodegraph>
+</materialx>

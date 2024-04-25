@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!-- Test of surfacematerial in nodegraph to shader node traversal -->
+  <standard_surface name="standard_surface" type="surfaceshader" version="1.0.1">
+    <input name="base_color" type="color3" value="0.3,0.8,0.1" />
+  </standard_surface>
+  <nodegraph name="green_material_graph">
+    <input name="input_shader" type="surfaceshader" nodename="standard_surface" />
+    <surfacematerial name="green_surfacematerial" type="material">
+      <input name="surfaceshader" type="surfaceshader" interfacename="input_shader" />
+      <input name="displacementshader" type="displacementshader" value="" />
+    </surfacematerial>
+    <output name="green_material" nodename="green_surfacematerial" type="material" />
+  </nodegraph>
+
+  <!-- Test of surfacematerial nodegraph to shader nodegraph traversal -->
+  <nodegraph name="surfaceshader_graph">
+    <standard_surface name="standard_surface" type="surfaceshader" version="1.0.1">
+      <input name="base_color" type="color3" value="0.8,0.1,0.1" />
+    </standard_surface>
+    <output name="red_shader" nodename="standard_surface" type="surfaceshader" />
+  </nodegraph>
+  <nodegraph name="red_material_graph2">
+    <input name="input_shader" type="surfaceshader" nodegraph="surfaceshader_graph" />
+    <surfacematerial name="red_surfacematerial" type="material">
+      <input name="surfaceshader" type="surfaceshader" interfacename="input_shader" />
+      <input name="displacementshader" type="displacementshader" value="" />
+    </surfacematerial>
+    <output name="red_material" nodename="red_surfacematerial" type="material" />
+  </nodegraph>
+</materialx>

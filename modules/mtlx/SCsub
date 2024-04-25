@@ -1,0 +1,47 @@
+Import("env")
+
+module_env = env.Clone()
+
+if env.msvc:
+    module_env.Append(CCFLAGS="/EHsc")
+else:
+    module_env.Append(CCFLAGS="-fexceptions")
+
+module_env.Prepend(CPPPATH=["thirdparty/mtlx/source", "#modules/mtlx", "thirdparty/mtlx/include"])
+
+if env["platform"] == "macos" or env["platform"] == "ios":
+    module_env.Append(CPPDEFINES=["DMATERIALXVIEW_METAL_BACKEND=1"])
+elif env["platform"] == "linux":
+    module_env.Append(CPPDEFINES=["__linux__"])
+
+module_env.Append(CPPDEFINES=["GL_SILENCE_DEPRECATION"])
+
+env_thirdparty = module_env.Clone()
+env_thirdparty.disable_warnings()
+
+exclude_files = ["thirdparty/mtlx/source/MaterialXRender/OiioImageLoader.cpp"]
+
+
+def add_source_files_with_exclusion(env, sources, pattern):
+    import glob
+    import os
+
+    for file in glob.glob(pattern, recursive=True):
+        if file not in exclude_files:
+            env.add_source_files(sources, file)
+
+
+add_source_files_with_exclusion(env_thirdparty, env.modules_sources, "thirdparty/mtlx/source/MaterialXCore/*.cpp")
+add_source_files_with_exclusion(env_thirdparty, env.modules_sources, "thirdparty/mtlx/source/MaterialXFormat/*.cpp")
+add_source_files_with_exclusion(
+    env_thirdparty, env.modules_sources, "thirdparty/mtlx/source/MaterialXFormat/External/PugiXML/*.cpp"
+)
+add_source_files_with_exclusion(env_thirdparty, env.modules_sources, "thirdparty/mtlx/source/MaterialXGenShader/*.cpp")
+add_source_files_with_exclusion(
+    env_thirdparty, env.modules_sources, "thirdparty/mtlx/source/MaterialXGenShader/Nodes/*.cpp"
+)
+add_source_files_with_exclusion(
+    env_thirdparty, env.modules_sources, "thirdparty/mtlx/source/MaterialXRenderHw/WindowWrapper.cpp"
+)
+
+module_env.add_source_files(env.modules_sources, "*.cpp")

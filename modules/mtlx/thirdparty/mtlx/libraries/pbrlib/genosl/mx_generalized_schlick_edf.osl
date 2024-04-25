@@ -1,0 +1,8 @@
+#include "lib/mx_microfacet.osl"
+
+void mx_generalized_schlick_edf(color color0, color color90, float exponent, EDF base, output EDF result)
+{
+    float NdotV = fabs(dot(N,-I));
+    color f = mx_fresnel_schlick(NdotV, color0, color90, exponent);
+    result = base * f;
+}

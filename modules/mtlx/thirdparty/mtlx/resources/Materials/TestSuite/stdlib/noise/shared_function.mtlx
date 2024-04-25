@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!--
+      Test using noise2d for both color3 and vector3 in the same graph,
+      since these share the same node implementation for GLSL.
+  -->
+  <nodegraph name="shared_function_test">
+    <texcoord name="texcoord1" type="vector2">
+      <input name="index" type="integer" value="0" />
+    </texcoord>
+    <multiply name="texcoord2" type="vector2">
+      <input name="in1" type="vector2" nodename="texcoord1" />
+      <input name="in2" type="vector2" value="16.0000, 16.0000" />
+    </multiply>
+    <noise2d name="noise2d_1" type="color3">
+      <input name="amplitude" type="float" value="1.0000" />
+      <input name="pivot" type="float" value="0.4000" />
+      <input name="texcoord" type="vector2" nodename="texcoord2" />
+    </noise2d>
+    <noise2d name="noise2d_2" type="vector3">
+      <input name="amplitude" type="float" value="1.0000" />
+      <input name="pivot" type="float" value="0.4000" />
+      <input name="texcoord" type="vector2" nodename="texcoord2" />
+    </noise2d>
+    <convert name="convert1" type="color3">
+      <input name="in" type="vector3" nodename="noise2d_2" />
+    </convert>
+    <multiply name="multiply2" type="color3">
+      <input name="in1" type="color3" nodename="noise2d_1" />
+      <input name="in2" type="color3" nodename="convert1" />
+    </multiply>
+    <output name="out" type="color3" nodename="multiply2" />
+  </nodegraph>
+</materialx>

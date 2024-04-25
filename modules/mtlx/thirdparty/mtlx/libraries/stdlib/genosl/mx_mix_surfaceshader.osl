@@ -1,0 +1,6 @@
+void mx_mix_surfaceshader(surfaceshader fg, surfaceshader bg, float w, output surfaceshader result)
+{
+    result.bsdf = mix(bg.bsdf, fg.bsdf, w);
+    result.edf = mix(bg.edf, fg.edf, w);
+    result.opacity = mix(bg.opacity, fg.opacity, w);
+}

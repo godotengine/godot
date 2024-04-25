@@ -1,0 +1,387 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <nodedef name="ND_layered" node="mylayered" version="1.0.1" isdefaultversion="true">
+    <input name="surface_normal" type="vector3" value="1, 1, 1" defaultgeomprop="Nworld" />
+    <input name="surface_cutout" type="color3" value="1, 1, 1" />
+    <input name="surface_albedo" type="color3" value="1, 1, 1" />
+    <input name="surface_roughness" type="float" value="0" />
+    <input name="surface_anisotropy" type="float" value="0" />
+    <input name="surface_rotation" type="float" value="0" />
+    <input name="layered_normal" type="vector3" value="1, 1, 1" defaultgeomprop="Nworld" />
+    <input name="layered_f0" type="float" value="1" />
+    <input name="layered_roughness" type="float" value="0" />
+    <input name="layered_anisotropy" type="float" value="0" />
+    <input name="layered_rotation" type="float" value="0" />
+    <input name="layered_fraction" type="float" value="0.5" />
+    <input name="layered_fraction_invert" type="boolean" value="false" />
+    <input name="layered_diffuse" type="color3" value="1, 1, 1" />
+    <input name="layered_bottom_f0" type="color3" value="1, 1, 1" />
+    <output name="out" type="surfaceshader" />
+  </nodedef>
+  <nodegraph name="NG_layered" nodedef="ND_layered">
+    <luminance name="coat_value_color3" type="color3">
+      <input name="in" type="color3" interfacename="surface_albedo" />
+    </luminance>
+    <extract name="coat_value" type="float">
+      <input name="in" type="color3" nodename="coat_value_color3" />
+      <input name="index" type="integer" value="0" />
+    </extract>
+    <subtract name="oneminus_surfaniso0" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" interfacename="surface_anisotropy" />
+    </subtract>
+    <sqrt name="sqrt1minus_surfaniso0" type="float">
+      <input name="in" type="float" nodename="oneminus_surfaniso0" />
+    </sqrt>
+    <multiply name="coat_roughness_value" type="float">
+      <input name="in1" type="float" nodename="sqrt1minus_surfaniso0" />
+      <input name="in2" type="float" interfacename="surface_roughness" />
+    </multiply>
+    <multiply name="twotimes_surfaniso0" type="float">
+      <input name="in1" type="float" value="2.0" />
+      <input name="in2" type="float" interfacename="surface_anisotropy" />
+    </multiply>
+    <multiply name="pow2_surfaniso0" type="float">
+      <input name="in1" type="float" interfacename="surface_anisotropy" />
+      <input name="in2" type="float" interfacename="surface_anisotropy" />
+    </multiply>
+    <subtract name="coat_anisotropy_value" type="float">
+      <input name="in1" type="float" nodename="twotimes_surfaniso0" />
+      <input name="in2" type="float" nodename="pow2_surfaniso0" />
+    </subtract>
+    <constant name="surface_rotation_param" type="float">
+      <input name="value" type="float" interfacename="surface_rotation" />
+    </constant>
+    <divide name="div_rotation0" type="float">
+      <input name="in1" type="float" nodename="surface_rotation_param" />
+      <input name="in2" type="float" value="360.0" />
+    </divide>
+    <modulo name="coat_rotation_value" type="float">
+      <input name="in1" type="float" nodename="div_rotation0" />
+    </modulo>
+    <constant name="layered_f0_param" type="float">
+      <input name="value" type="float" interfacename="layered_f0" />
+    </constant>
+    <sqrt name="sqrt_layeredf0" type="float">
+      <input name="in" type="float" nodename="layered_f0_param" />
+    </sqrt>
+    <add name="oneplus_sqrtlayeredf0" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="sqrt_layeredf0" />
+    </add>
+    <subtract name="oneminus_sqrtlayeredf0" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="sqrt_layeredf0" />
+    </subtract>
+    <divide name="coat_IOR_value" type="float">
+      <input name="in1" type="float" nodename="oneplus_sqrtlayeredf0" />
+      <input name="in2" type="float" nodename="oneminus_sqrtlayeredf0" />
+    </divide>
+    <constant name="layered_roughness_param" type="float">
+      <input name="value" type="float" interfacename="layered_roughness" />
+    </constant>
+    <constant name="layered_anisotropy_param" type="float">
+      <input name="value" type="float" interfacename="layered_anisotropy" />
+    </constant>
+    <subtract name="oneminus_layeraniso0" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="layered_anisotropy_param" />
+    </subtract>
+    <sqrt name="sqrt1minus_layeraniso0" type="float">
+      <input name="in" type="float" nodename="oneminus_layeraniso0" />
+    </sqrt>
+    <multiply name="specular_roughness_value" type="float">
+      <input name="in1" type="float" nodename="sqrt1minus_layeraniso0" />
+      <input name="in2" type="float" nodename="layered_roughness_param" />
+    </multiply>
+    <multiply name="twotimes_layeraniso0" type="float">
+      <input name="in1" type="float" value="2.0" />
+      <input name="in2" type="float" nodename="layered_anisotropy_param" />
+    </multiply>
+    <multiply name="pow2_layeraniso0" type="float">
+      <input name="in1" type="float" nodename="layered_anisotropy_param" />
+      <input name="in2" type="float" nodename="layered_anisotropy_param" />
+    </multiply>
+    <subtract name="specular_anisotropy_value" type="float">
+      <input name="in1" type="float" nodename="twotimes_layeraniso0" />
+      <input name="in2" type="float" nodename="pow2_layeraniso0" />
+    </subtract>
+    <constant name="layered_rotation_param" type="float">
+      <input name="value" type="float" interfacename="layered_rotation" />
+    </constant>
+    <divide name="div_rotation1" type="float">
+      <input name="in1" type="float" nodename="layered_rotation_param" />
+      <input name="in2" type="float" value="360.0" />
+    </divide>
+    <modulo name="specular_rotation_value" type="float">
+      <input name="in1" type="float" nodename="div_rotation1" />
+    </modulo>
+    <constant name="layered_fraction_param" type="float">
+      <input name="value" type="float" interfacename="layered_fraction" />
+    </constant>
+    <constant name="layered_diffuse_param" type="color3">
+      <input name="value" type="color3" interfacename="layered_diffuse" />
+    </constant>
+    <constant name="layered_bottom_f0_param" type="color3">
+      <input name="value" type="color3" interfacename="layered_bottom_f0" />
+    </constant>
+    <subtract name="oneminus_layerfraction" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" nodename="layered_fraction_param" />
+    </subtract>
+    <multiply name="oneminuslf_x_layerdiffuse" type="color3">
+      <input name="in1" type="color3" nodename="layered_diffuse_param" />
+      <input name="in2" type="float" nodename="oneminus_layerfraction" />
+    </multiply>
+    <multiply name="lfract_x_lbottomf0" type="color3">
+      <input name="in1" type="color3" nodename="layered_bottom_f0_param" />
+      <input name="in2" type="float" nodename="layered_fraction_param" />
+    </multiply>
+    <add name="base_color_value" type="color3">
+      <input name="in1" type="color3" nodename="lfract_x_lbottomf0" />
+      <input name="in2" type="color3" nodename="oneminuslf_x_layerdiffuse" />
+    </add>
+    <ifequal name="layered_fraction_value" type="float">
+      <input name="in1" type="float" nodename="oneminus_layerfraction" />
+      <input name="in2" type="float" nodename="layered_fraction_param" />
+      <input name="value1" type="boolean" interfacename="layered_fraction_invert" />
+      <input name="value2" type="boolean" value="true" />
+    </ifequal>
+    <standard_surface name="standard_surface0" type="surfaceshader" version="1.0.1">
+      <input name="normal" type="vector3" interfacename="layered_normal" />
+      <input name="coat_normal" type="vector3" interfacename="surface_normal" />
+      <input name="opacity" type="color3" interfacename="surface_cutout" />
+      <input name="coat" type="float" nodename="coat_value" />
+      <input name="metalness" type="float" nodename="layered_fraction_value" />
+      <input name="specular" type="float" value="0.0" />
+      <input name="base" type="float" value="1.0" />
+      <input name="coat_color" type="color3" value="1.0, 1.0, 1.0" />
+      <input name="coat_roughness" type="float" nodename="coat_roughness_value" />
+      <input name="coat_anisotropy" type="float" nodename="coat_anisotropy_value" />
+      <input name="coat_rotation" type="float" nodename="coat_rotation_value" />
+      <input name="coat_IOR" type="float" nodename="coat_IOR_value" />
+      <input name="specular_roughness" type="float" nodename="specular_roughness_value" />
+      <input name="specular_anisotropy" type="float" nodename="specular_anisotropy_value" />
+      <input name="specular_rotation" type="float" nodename="specular_rotation_value" />
+      <input name="base_color" type="color3" nodename="base_color_value" />
+    </standard_surface>
+    <output name="out" type="surfaceshader" nodename="standard_surface0" />
+  </nodegraph>
+  <nodedef name="ND_bitmap_color3" node="mybitmap" nodegroup="texture2d" version="1.0.1" isdefaultversion="true">
+    <input name="file" type="filename" />
+    <input name="realworld_offset" type="vector2" unittype="distance" />
+    <input name="realworld_scale" type="vector2" unittype="distance" />
+    <input name="uv_offset" type="vector2" value="0.0, 0.0" />
+    <input name="uv_scale" type="vector2" value="1.0, 1.0" />
+    <input name="rotation_angle" type="float" value="0" />
+    <input name="rgbamount" type="float" value="1.0" />
+    <input name="invert" type="boolean" value="false" />
+    <input name="uaddressmode" type="string" value="periodic" enum="constant,clamp,periodic,mirror" uniform="true" />
+    <input name="vaddressmode" type="string" value="periodic" enum="constant,clamp,periodic,mirror" uniform="true" />
+    <output name="out" type="color3" />
+  </nodedef>
+  <nodegraph name="NG_bitmap_color3" nodedef="ND_bitmap_color3">
+    <divide name="total_scale" type="vector2">
+      <input name="in1" type="vector2" interfacename="uv_scale" />
+      <input name="in2" type="vector2" interfacename="realworld_scale" />
+    </divide>
+    <add name="total_offset" type="vector2">
+      <input name="in1" type="vector2" interfacename="realworld_offset" />
+      <input name="in2" type="vector2" interfacename="uv_offset" />
+    </add>
+    <multiply name="rotation_angle_param" type="float">
+      <input name="in1" type="float" interfacename="rotation_angle" />
+      <input name="in2" type="float" value="-1.0" />
+    </multiply>
+    <texcoord name="texcoord1" type="vector2" />
+    <place2d name="a_place2d" type="vector2">
+      <input name="texcoord" type="vector2" nodename="texcoord1" />
+      <input name="offset" type="vector2" nodename="total_offset" />
+      <input name="scale" type="vector2" nodename="total_scale" />
+      <input name="pivot" type="vector2" value="0.0, 0.0" />
+      <input name="rotate" type="float" nodename="rotation_angle_param" />
+    </place2d>
+    <image name="b_image" type="color3">
+      <input name="file" type="filename" interfacename="file" />
+      <input name="uaddressmode" type="string" interfacename="uaddressmode" />
+      <input name="vaddressmode" type="string" interfacename="vaddressmode" />
+      <input name="texcoord" type="vector2" nodename="a_place2d" />
+    </image>
+    <multiply name="image_brightness" type="color3">
+      <input name="in1" type="color3" nodename="b_image" />
+      <input name="in2" type="float" interfacename="rgbamount" />
+    </multiply>
+    <invert name="image_invert" type="color3">
+      <input name="in" type="color3" nodename="image_brightness" />
+    </invert>
+    <ifequal name="image_convert" type="color3">
+      <input name="in1" type="color3" nodename="image_invert" />
+      <input name="in2" type="color3" nodename="image_brightness" />
+      <input name="value1" type="boolean" interfacename="invert" />
+      <input name="value2" type="boolean" value="true" />
+    </ifequal>
+    <output name="out" type="color3" nodename="image_convert" />
+  </nodegraph>
+  <nodedef name="ND_normal_map" node="mynormal_map" nodegroup="texture2d" version="1.0.1" isdefaultversion="true">
+    <input name="file" type="filename" />
+    <input name="realworld_offset" type="vector2" unittype="distance" />
+    <input name="realworld_scale" type="vector2" unittype="distance" />
+    <input name="uv_offset" type="vector2" value="0.0, 0.0" />
+    <input name="uv_scale" type="vector2" value="1.0, 1.0" />
+    <!-- wAngle - rotation -->
+    <input name="rotation_angle" type="float" value="0" unittype="angle" />
+    <!-- normal scale -->
+    <input name="normal_scale" type="float" value="1.0" />
+    <input name="uaddressmode" type="string" value="periodic" enum="constant,clamp,periodic,mirror" uniform="true" />
+    <input name="vaddressmode" type="string" value="periodic" enum="constant,clamp,periodic,mirror" uniform="true" />
+    <output name="out" type="vector3" />
+  </nodedef>
+  <nodegraph name="NG_normal_map" nodedef="ND_normal_map">
+    <divide name="total_scale" type="vector2">
+      <input name="in1" type="vector2" interfacename="uv_scale" />
+      <input name="in2" type="vector2" interfacename="realworld_scale" />
+    </divide>
+    <add name="total_offset" type="vector2">
+      <input name="in1" type="vector2" interfacename="realworld_offset" />
+      <input name="in2" type="vector2" interfacename="uv_offset" />
+    </add>
+    <multiply name="rotation_angle_param" type="float">
+      <input name="in1" type="float" interfacename="rotation_angle" />
+      <input name="in2" type="float" value="-1.0" />
+    </multiply>
+    <texcoord name="texcoord1" type="vector2" />
+    <place2d name="a_place2d" type="vector2">
+      <input name="texcoord" type="vector2" nodename="texcoord1" />
+      <input name="offset" type="vector2" nodename="total_offset" />
+      <input name="scale" type="vector2" nodename="total_scale" />
+      <input name="pivot" type="vector2" value="0.0, 0.0" />
+      <input name="rotate" type="float" nodename="rotation_angle_param" />
+    </place2d>
+    <image name="b_image" type="vector3">
+      <input name="file" type="filename" interfacename="file" />
+      <input name="uaddressmode" type="string" interfacename="uaddressmode" />
+      <input name="vaddressmode" type="string" interfacename="vaddressmode" />
+      <input name="texcoord" type="vector2" nodename="a_place2d" />
+    </image>
+    <multiply name="b_image_negate_y" type="vector3">
+      <input name="in1" type="vector3" nodename="b_image" />
+      <input name="in2" type="vector3" value="1.0, -1.0, 1.0" />
+    </multiply>
+    <add name="b_image_invert_y" type="vector3">
+      <input name="in1" type="vector3" value="0.0, 1.0, 0.0" />
+      <input name="in2" type="vector3" nodename="b_image_negate_y" />
+    </add>
+    <normalmap name="impl_normalmap" type="vector3">
+      <input name="in" type="vector3" nodename="b_image_invert_y" />
+      <input name="scale" type="float" interfacename="normal_scale" />
+      <input name="space" type="string" value="tangent" />
+    </normalmap>
+    <output name="out" type="vector3" nodename="impl_normalmap" />
+  </nodegraph>
+  <nodedef name="ND_bitmap_remap_float" node="mybitmap_remap" nodegroup="texture2d" version="1.0.1" isdefaultversion="true">
+    <input name="file" type="filename" />
+    <input name="realworld_offset" type="vector2" unittype="distance" />
+    <input name="realworld_scale" type="vector2" unittype="distance" />
+    <input name="uv_offset" type="vector2" value="0.0, 0.0" />
+    <input name="uv_scale" type="vector2" value="1.0, 1.0" />
+    <input name="rotation_angle" type="float" value="0" />
+    <input name="rgbamount" type="float" value="1.0" />
+    <input name="invert" type="boolean" value="false" />
+    <input name="outlow" type="float" value="0.0" />
+    <input name="outhigh" type="float" value="1.0" />
+    <input name="uaddressmode" type="string" value="periodic" enum="constant,clamp,periodic,mirror" uniform="true" />
+    <input name="vaddressmode" type="string" value="periodic" enum="constant,clamp,periodic,mirror" uniform="true" />
+    <output name="out" type="float" />
+  </nodedef>
+  <nodegraph name="NG_bitmap_remap_float" nodedef="ND_bitmap_remap_float">
+    <divide name="total_scale" type="vector2">
+      <input name="in1" type="vector2" interfacename="uv_scale" />
+      <input name="in2" type="vector2" interfacename="realworld_scale" />
+    </divide>
+    <add name="total_offset" type="vector2">
+      <input name="in1" type="vector2" interfacename="realworld_offset" />
+      <input name="in2" type="vector2" interfacename="uv_offset" />
+    </add>
+    <multiply name="rotation_angle_param" type="float">
+      <input name="in1" type="float" interfacename="rotation_angle" />
+      <input name="in2" type="float" value="-1.0" />
+    </multiply>
+    <texcoord name="texcoord1" type="vector2" />
+    <place2d name="a_place2d" type="vector2">
+      <input name="texcoord" type="vector2" nodename="texcoord1" />
+      <input name="offset" type="vector2" nodename="total_offset" />
+      <input name="scale" type="vector2" nodename="total_scale" />
+      <input name="pivot" type="vector2" value="0.0, 0.0" />
+      <input name="rotate" type="float" nodename="rotation_angle_param" />
+    </place2d>
+    <image name="b_image" type="color3">
+      <input name="file" type="filename" interfacename="file" />
+      <input name="uaddressmode" type="string" interfacename="uaddressmode" />
+      <input name="vaddressmode" type="string" interfacename="vaddressmode" />
+      <input name="texcoord" type="vector2" nodename="a_place2d" />
+    </image>
+    <multiply name="image_brightness" type="color3">
+      <input name="in1" type="color3" nodename="b_image" />
+      <input name="in2" type="float" interfacename="rgbamount" />
+    </multiply>
+    <invert name="image_invert" type="color3">
+      <input name="in" type="color3" nodename="image_brightness" />
+    </invert>
+    <ifequal name="image_convert" type="color3">
+      <input name="in1" type="color3" nodename="image_invert" />
+      <input name="in2" type="color3" nodename="image_brightness" />
+      <input name="value1" type="boolean" interfacename="invert" />
+      <input name="value2" type="boolean" value="true" />
+    </ifequal>
+    <extract name="extract1f" type="float">
+      <input name="in" type="color3" nodename="image_convert" />
+      <input name="index" type="integer" value="0" />
+    </extract>
+    <remap name="value_remapped" type="float">
+      <input name="in" type="float" nodename="extract1f" />
+      <input name="outlow" type="float" interfacename="outlow" />
+      <input name="outhigh" type="float" interfacename="outhigh" />
+    </remap>
+    <output name="out" type="float" nodename="value_remapped" />
+  </nodegraph>
+  <!-- ================================================================================== -->
+  <!-- Test usage of node definitions -->
+  <!-- ================================================================================== -->
+  <surfacematerial name="material_layered" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="shader_layered" />
+  </surfacematerial>
+  <mylayered name="shader_layered" type="surfaceshader">
+    <input name="surface_albedo" type="color3" colorspace="gamma24" value="1, 1, 1" />
+    <input name="surface_roughness" type="float" value="0.0774597" />
+    <input name="surface_anisotropy" type="float" value="0" />
+    <input name="surface_rotation" type="float" value="0" />
+    <input name="layered_f0" type="float" value="0.0602702" />
+    <input name="layered_fraction" type="float" value="0.15" />
+    <input name="layered_fraction_invert" type="boolean" value="true" />
+    <input name="layered_bottom_f0" type="color3" output="layered_bottom_f0_map_output" nodegraph="layered_inputGraph" />
+    <input name="layered_diffuse" type="color3" colorspace="gamma24" value="0.0998528, 0.0998528, 0.0998528" />
+    <input name="layered_normal" type="vector3" output="layered_normal_map_output" nodegraph="layered_inputGraph" />
+    <input name="layered_roughness" type="float" value="0.447214" />
+    <input name="layered_anisotropy" type="float" value="0.95" />
+    <input name="layered_rotation" type="float" output="layered_rotation_map_output" nodegraph="layered_inputGraph" />
+  </mylayered>
+  <nodegraph name="layered_inputGraph">
+    <mybitmap name="layered_bottom_f0_texture" type="color3">
+      <input name="file" type="filename" value="" colorspace="srgb_texture" />
+      <input name="realworld_scale" type="vector2" value="0.33, 0.33" unit="inch" unittype="distance" />
+    </mybitmap>
+    <output name="layered_bottom_f0_map_output" type="color3" nodename="layered_bottom_f0_texture" />
+    <mynormal_map name="layered_normal_texture" type="vector3">
+      <input name="file" type="filename" value="" colorspace="lin_rec709" />
+      <input name="realworld_scale" type="vector2" value="0.33, 0.33" unit="inch" unittype="distance" />
+    </mynormal_map>
+    <output name="layered_normal_map_output" type="vector3" nodename="layered_normal_texture" />
+    <mybitmap_remap name="layered_rotation_texture" type="float">
+      <input name="file" type="filename" value="" colorspace="lin_rec709" />
+      <input name="realworld_scale" type="vector2" value="0.33, 0.33" unit="inch" unittype="distance" />
+      <input name="outlow" type="float" value="0" />
+      <input name="outhigh" type="float" value="180" />
+    </mybitmap_remap>
+    <output name="layered_rotation_map_output" type="float" nodename="layered_rotation_texture" />
+  </nodegraph>
+</materialx>

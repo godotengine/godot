@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <nodedef name="ND_blah2_float_float" node="blah2" version="1.0" isdefaultversion="true">
+    <input name="out1" type="float" value="1" />
+    <input name="out3" type="vector2" value="0, 0" />
+    <output name="out" type="float" value="0" />
+    <output name="out2" type="float" value="0" />
+  </nodedef>
+  <nodegraph name="NG_blah2_float_float" nodedef="ND_blah2_float_float">
+    <constant name="constant" type="float">
+      <input name="value" type="float" value="10" uniform="true" uivisible="true" />
+    </constant>
+    <multiply name="multiply" type="float">
+      <input name="in1" type="float" nodename="constant" uivisible="true" />
+      <input name="in2" type="float" nodename="swizzle" uivisible="true" />
+    </multiply>
+    <multiply name="multiply1" type="float">
+      <input name="in1" type="float" nodename="constant" uivisible="true" />
+      <input name="in2" type="float" interfacename="out1" uivisible="true" />
+    </multiply>
+    <swizzle name="swizzle" type="float">
+      <input name="in" type="vector2" interfacename="out3" uivisible="true" />
+    </swizzle>
+    <output name="out" type="float" nodename="multiply" />
+    <output name="out2" type="float" nodename="multiply1" />
+  </nodegraph>
+  <blah2 name="blah2" type="multioutput">
+    <output name="out" type="float" value="0" />
+  </blah2>
+  <output name="blah2_output" type="float" nodename="blah2" output="out" />
+</materialx>

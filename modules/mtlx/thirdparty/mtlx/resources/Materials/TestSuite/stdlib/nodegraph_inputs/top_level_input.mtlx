@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <surfacematerial name="surfacematerial" type="material" xpos="17.246376" ypos="-15.689655">
+    <input name="surfaceshader" type="surfaceshader" nodename="surface_unlit" />
+  </surfacematerial>
+  <input name="input_color3" type="color3" value="0, 0, 1" xpos="10.905797" ypos="-15.982759" />
+  <surface_unlit name="surface_unlit" type="surfaceshader" xpos="14.231884" ypos="-16.241379">
+    <input name="emission_color" type="color3" interfacename="input_color3" />
+  </surface_unlit>
+</materialx>

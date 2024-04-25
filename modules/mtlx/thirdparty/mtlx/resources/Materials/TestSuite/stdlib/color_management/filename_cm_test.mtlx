@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <!-- create tm_retest node to wrap Image Node -->
+  <nodedef name="ND_tm_retest" node="tm_retest">
+    <input name="texture_file" type="filename" uniform="true" />
+    <output name="out" type="color3" />
+  </nodedef>
+  <nodegraph name="NG_tm_retest" nodedef="ND_tm_retest">
+    <image name="b_image" type="color3">
+      <input name="file" type="filename" interfacename="texture_file" />
+    </image>
+    <output name="out" type="color3" nodename="b_image" />
+  </nodegraph>
+
+  <!-- create tm_test node to wrap Image Node -->
+  <nodedef name="ND_tm_test" node="tm_test">
+    <input name="texture_file" type="filename" uniform="true" />
+    <output name="out" type="color3" />
+  </nodedef>
+  <nodegraph name="NG_tm_test" nodedef="ND_tm_test">
+    <image name="b_image" type="color3">
+      <input name="file" type="filename" interfacename="texture_file" />
+    </image>
+    <output name="out" type="color3" nodename="b_image" />
+  </nodegraph>
+
+  <!-- create nodegraph to use tm_retest, tm_test and image node -->
+  <nodegraph name="nodegraph1">
+    <tm_test name="bl" type="color3">
+      <input name="texture_file" type="filename" value="resources/Images/grid.png" colorspace="srgb_texture" />
+    </tm_test>
+    <output name="tmtestout" type="color3" nodename="bl" />
+    <tm_retest name="bl1" type="color3">
+      <input name="texture_file" type="filename" value="resources/Images/grid.png" colorspace="srgb_texture" />
+    </tm_retest>
+    <output name="tmtestout2" type="color3" nodename="bl1" />
+    <image name="tr1" type="color3">
+      <input name="file" type="filename" value="resources/Images/grid.png" colorspace="srgb_texture" />
+    </image>
+    <output name="troutput" type="color3" nodename="tr1" />
+  </nodegraph>
+
+  <standard_surface name="shaderref1" type="surfaceshader">
+    <input name="base_color" type="color3" output="tmtestout" nodegraph="nodegraph1" />
+    <input name="specular_color" type="color3" output="tmtestout2" nodegraph="nodegraph1" />
+    <input name="transmission_color" type="color3" output="troutput" nodegraph="nodegraph1" />
+  </standard_surface>
+  <surfacematerial name="Filename_CM_Test" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="shaderref1" />
+  </surfacematerial>
+</materialx>

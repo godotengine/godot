@@ -1,0 +1,6 @@
+void mx_transformmatrix_vector2M3(vector2 val, matrix m, output vector2 result)
+{
+    point res = transform(m, point(val.x, val.y, 1.0));
+    result.x = res[0];
+    result.y = res[1];
+}

@@ -1,0 +1,5 @@
+void mx_anisotropic_vdf(vector absorption, vector scattering, float anisotropy, output VDF vdf)
+{
+    // Not implemented in vanilla OSL
+    vdf = 0; // volume_henyey_greenstein(color(absorption), color(scattering), color(0.0), anisotropy);
+}

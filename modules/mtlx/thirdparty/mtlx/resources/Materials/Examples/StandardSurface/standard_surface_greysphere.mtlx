@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <standard_surface name="SR_greysphere" type="surfaceshader">
+    <input name="base" type="float" value="1.0" />
+    <input name="base_color" type="color3" value="0.18, 0.18, 0.18" />
+    <input name="diffuse_roughness" type="float" value="0" />
+    <input name="specular_roughness" type="float" value="0.7" />
+    <input name="specular_IOR" type="float" value="1.5" />
+  </standard_surface>
+  <surfacematerial name="Greysphere" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_greysphere" />
+  </surfacematerial>
+</materialx>

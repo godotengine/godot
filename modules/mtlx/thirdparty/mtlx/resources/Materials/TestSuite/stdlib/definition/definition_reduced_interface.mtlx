@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709" fileprefix="../../../Images/">
+
+  <!-- 
+    Test file for reduced interface:
+    - Without generating without a reduced interface all inputs on all nodegraph nodes
+    are exposed as editable in the shader.
+    - Compared with generating with a reduced interface, only the file input will show
+    up as this must be bound externally. All other value inputs are not exposed. 
+  -->
+  <nodedef name="ND_pattern_shader" nodename="pattern_shader">
+    <output name="out" type="surfaceshader" value="" />
+  </nodedef>
+  <nodegraph name="NG_pattern_shader" nodedef="ND_pattern_shader">
+    <standard_surface name="SHD_pattern_shader1" type="surfaceshader">
+      <input name="base_color" type="color3" nodename="modulo" />
+      <input name="specular_roughness" type="float" value="0.7" />
+      <input name="normal" type="vector3" nodename="pattern_normalmap" />
+    </standard_surface>
+    <modulo name="modulo" type="color3">
+      <input name="in1" type="color3" nodename="noise2d" />
+      <input name="in2" type="color3" value="2, 1.5, 4.2" />
+    </modulo>
+    <noise2d name="noise2d" type="color3">
+      <input name="amplitude" type="vector3" value="0.3, 3.6, 0.3" />
+      <input name="pivot" type="float" value="0.365385" />
+      <input name="texcoord" type="vector2" nodename="place2d" />
+    </noise2d>
+    <place2d name="place2d" type="vector2">
+      <input name="texcoord" type="vector2" nodename="texcoord" />
+      <input name="scale" type="vector2" value="0.5, 0.5" />
+    </place2d>
+    <normalmap name="pattern_normalmap" type="vector3">
+      <input name="in" type="vector3" nodename="pattern_tiledimage" />
+      <input name="scale" type="float" value="3" />
+    </normalmap>
+    <tiledimage name="pattern_tiledimage" type="vector3">
+      <input name="file" type="filename" uniform="true" value="mesh_wire_norm.png" />
+      <input name="default" type="vector3" value="0.5, 0.5, 1" />
+      <input name="uvtiling" type="vector2" value="10, 10" />
+    </tiledimage>
+    <texcoord name="texcoord" type="vector2" nodedef="ND_texcoord_vector2" />
+    <output name="out" type="surfaceshader" nodename="SHD_pattern_shader1" />
+  </nodegraph>
+
+  <pattern_shader name="SHD_pattern_shader" type="surfaceshader" />
+</materialx>

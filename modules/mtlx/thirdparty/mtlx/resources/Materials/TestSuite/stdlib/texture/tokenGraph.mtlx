@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+  <!-- use tokens which are defined by the parent nodegraph -->
+  <nodegraph name="Tokenized_Image_2k_png">
+    <token name="Image_Resolution" type="string" value="2k" uiname="Image Resolution" />
+    <token name="Image_Extension" type="string" value="png" uiname="Image Extension" />
+    <input name="Image_Filename" type="filename" uniform="true" value="resources/Images/cloth.[Image_Extension]" />
+    <tiledimage name="tiledimage" type="color3" nodedef="ND_tiledimage_color3">
+      <input name="file" type="filename" uniform="true" interfacename="Image_Filename" />
+    </tiledimage>
+    <output name="out_png" type="color3" nodename="tiledimage" />
+  </nodegraph>
+
+  <!-- use tokens which are sibling of the input -->
+  <nodegraph name="Tokenized_Image_4k_jpg">
+    <tiledimage name="tiledimage" type="color3" nodedef="ND_tiledimage_color3">
+      <token name="Image_Resolution" type="string" value="4k" uiname="Image Resolution" />
+      <token name="Image_Extension" type="string" value="jpg" uiname="Image Extension" />
+      <input name="file" type="filename" uniform="true" value="resources/images/cloth.[Image_Extension]" />
+    </tiledimage>
+    <output name="out_4k_jpg" type="color3" nodename="tiledimage" />
+  </nodegraph>
+
+  <!-- top level tokens are not support. bmp will be the found token -->
+  <token name="Image_Extension" type="string" value="png" uiname="Image Extension" />
+  <nodegraph name="Tokenized_Image_top_level">
+    <tiledimage name="tiledimage" type="color3" nodedef="ND_tiledimage_color3">
+      <token name="Image_Extension" type="string" value="bmp" uiname="Image Extension" />
+      <input name="file" type="filename" uniform="true" value="resources/Images/cloth.[Image_Extension]" />
+    </tiledimage>
+    <output name="out_bmp" type="color3" nodename="tiledimage" />
+  </nodegraph>
+
+</materialx>

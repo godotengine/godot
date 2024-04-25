@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<materialx version="1.38">
+
+  <!-- Shared Computations -->
+  <texcoord name="texcoord" type="vector2" />
+  <multiply name="scaled_texcoord" type="vector2">
+    <input name="in1" type="vector2" nodename="texcoord" />
+    <input name="in2" type="vector2" value="100.0, 100.0" />
+  </multiply>
+  <position name="position" type="vector3" />
+  <multiply name="scaled_position" type="vector3">
+    <input name="in1" type="vector3" nodename="position" />
+    <input name="in2" type="vector3" value="20.0, 20.0, 20.0" />
+  </multiply>
+
+  <!-- 2D Perlin noise -->
+  <noise2d name="noise2d_float" type="float">
+    <input name="amplitude" type="float" value="4.0" />
+    <input name="texcoord" type="vector2" nodename="scaled_texcoord" />
+  </noise2d>
+  <noise2d name="noise2d_vector2" type="vector2">
+    <input name="amplitude" type="vector2" value="4.0, 4.0" />
+    <input name="texcoord" type="vector2" nodename="scaled_texcoord" />
+  </noise2d>
+  <noise2d name="noise2d_vector3" type="vector3">
+    <input name="amplitude" type="vector3" value="4.0, 4.0, 4.0" />
+    <input name="texcoord" type="vector2" nodename="scaled_texcoord" />
+  </noise2d>
+  <noise2d name="noise2d_vector4" type="vector4">
+    <input name="amplitude" type="vector4" value="4.0, 4.0, 4.0, 4.0" />
+    <input name="texcoord" type="vector2" nodename="scaled_texcoord" />
+  </noise2d>
+  <output name="out_noise2d_float" type="float" nodename="noise2d_float" />
+  <output name="out_noise2d_vector2" type="vector2" nodename="noise2d_vector2" />
+  <output name="out_noise2d_vector3" type="vector3" nodename="noise2d_vector3" />
+  <output name="out_noise2d_vector4" type="vector4" nodename="noise2d_vector4" />
+
+  <!-- 3D Perlin noise -->
+  <noise3d name="noise3d_float" type="float">
+    <input name="amplitude" type="float" value="4.0" />
+    <input name="position" type="vector3" nodename="scaled_position" />
+  </noise3d>
+  <noise3d name="noise3d_vector2" type="vector2">
+    <input name="amplitude" type="vector2" value="4.0, 4.0" />
+    <input name="position" type="vector3" nodename="scaled_position" />
+  </noise3d>
+  <noise3d name="noise3d_vector3" type="vector3">
+    <input name="amplitude" type="vector3" value="4.0, 4.0, 4.0" />
+    <input name="position" type="vector3" nodename="scaled_position" />
+  </noise3d>
+  <noise3d name="noise3d_vector4" type="vector4">
+    <input name="amplitude" type="vector4" value="4.0, 4.0, 4.0, 4.0" />
+    <input name="position" type="vector3" nodename="scaled_position" />
+  </noise3d>
+  <output name="out_noise3d_float" type="float" nodename="noise3d_float" />
+  <output name="out_noise3d_vector2" type="vector2" nodename="noise3d_vector2" />
+  <output name="out_noise3d_vector3" type="vector3" nodename="noise3d_vector3" />
+  <output name="out_noise3d_vector4" type="vector4" nodename="noise3d_vector4" />
+
+  <!-- 3D Fractal noise -->
+  <fractal3d name="fractal3d_float" type="float">
+    <input name="amplitude" type="float" value="4.0" />
+    <input name="position" type="vector3" nodename="scaled_position" />
+  </fractal3d>
+  <fractal3d name="fractal3d_vector2" type="vector2">
+    <input name="amplitude" type="vector2" value="4.0, 4.0" />
+    <input name="position" type="vector3" nodename="scaled_position" />
+  </fractal3d>
+  <fractal3d name="fractal3d_vector3" type="vector3">
+    <input name="amplitude" type="vector3" value="4.0, 4.0, 4.0" />
+    <input name="position" type="vector3" nodename="scaled_position" />
+  </fractal3d>
+  <fractal3d name="fractal3d_vector4" type="vector4">
+    <input name="amplitude" type="vector4" value="4.0, 4.0, 4.0, 4.0" />
+    <input name="position" type="vector3" nodename="scaled_position" />
+  </fractal3d>
+  <output name="out_fractal3d_float" type="float" nodename="fractal3d_float" />
+  <output name="out_fractal3d_vector2" type="vector2" nodename="fractal3d_vector2" />
+  <output name="out_fractal3d_vector3" type="vector3" nodename="fractal3d_vector3" />
+  <output name="out_fractal3d_vector4" type="vector4" nodename="fractal3d_vector4" />
+
+  <!-- 2D Cell noise -->
+  <cellnoise2d name="cellnoise2d_float" type="float">
+    <input name="texcoord" type="vector2" nodename="scaled_texcoord" />
+  </cellnoise2d>
+  <output name="out_cellnoise2d_float" type="float" nodename="cellnoise2d_float" />
+
+  <!-- 3D Cell noise -->
+  <cellnoise3d name="cellnoise3d_float" type="float">
+    <input name="position" type="vector3" nodename="scaled_position" />
+  </cellnoise3d>
+  <output name="out_cellnoise3d_float" type="float" nodename="cellnoise3d_float" />
+
+  <!-- 2D Worley noise -->
+  <worleynoise2d name="worley2d_float" type="float">
+    <input name="texcoord" type="vector2" nodename="scaled_texcoord" />
+  </worleynoise2d>
+  <worleynoise2d name="worley2d_vector2" type="vector2">
+    <input name="texcoord" type="vector2" nodename="scaled_texcoord" />
+    <input name="jitter" type="float" value="0.8" />
+  </worleynoise2d>
+  <worleynoise2d name="worley2d_vector3" type="vector3">
+    <input name="texcoord" type="vector2" nodename="scaled_texcoord" />
+    <input name="jitter" type="float" value="1.0" />
+  </worleynoise2d>
+  <output name="out_worley2d_float" type="float" nodename="worley2d_float" />
+  <output name="out_worley2d_vector2" type="vector2" nodename="worley2d_vector2" />
+  <output name="out_worley2d_vector3" type="vector3" nodename="worley2d_vector3" />
+
+  <!-- 3D Worley noise -->
+  <worleynoise3d name="worley3d_float" type="float">
+    <input name="position" type="vector3" nodename="scaled_position" />
+    <input name="jitter" type="float" value="0.6" />
+  </worleynoise3d>
+  <worleynoise3d name="worley3d_vector2" type="vector2">
+    <input name="position" type="vector3" nodename="scaled_position" />
+    <input name="jitter" type="float" value="0.9" />
+  </worleynoise3d>
+  <worleynoise3d name="worley3d_vector3" type="vector3">
+    <input name="position" type="vector3" nodename="scaled_position" />
+    <input name="jitter" type="float" value="1.0" />
+  </worleynoise3d>
+  <output name="out_worley3d_float" type="float" nodename="worley3d_float" />
+  <output name="out_worley3d_vector2" type="vector2" nodename="worley3d_vector2" />
+  <output name="out_worley3d_vector3" type="vector3" nodename="worley3d_vector3" />
+
+</materialx>

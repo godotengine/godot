@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="acescg">
+  <nodedef name="ND_lama_conductor" node="LamaConductor" nodegroup="pbr" doc="Lama conductor" version="1.0" isdefaultversion="true">
+    <input name="tint" type="color3" value="1, 1, 1" uiname="Tint" uifolder="Main"
+           doc="Overall color multiplier. It should be used with parcimony, as a non-white value breaks physicality. The prefered way to define the color of a conductor is through the Fresnel attributes right below." />
+    <input name="fresnelMode" type="integer" uniform="true" enum="Scientific,Artistic" enumvalues="0,1" value="0" uiname="Fresnel Mode" uifolder="Main"
+           doc="Fresnel mode" />
+    <input name="IOR" type="vector3" value="0.180000007153,0.419999986887,1.37000000477" uiname="IOR" uifolder="Main"
+           doc="Index of refraction (often denoted by eta), defining the color reflected by the surface in the normal direction." />
+    <input name="extinction" type="vector3" value="3.42000007629,2.34999990463,1.76999998093" uiname="Extinction" uifolder="Main"
+           doc="Extinction coefficient (often denoted by kappa), influencing how the reflected color curve evolves between its value in the normal direction (or 0 degree), and 1 when reaching 90 degrees. A null value does not deviate the curve at all." />
+    <input name="reflectivity" type="color3" value="0.9450, 0.7772, 0.3737" uiname="Reflectivity" uifolder="Main"
+           doc="Color reflected by the surface in the normal direction." />
+    <input name="edgeColor" type="color3" value="0.9979, 0.9813, 0.7523" uiname="Edge Color" uifolder="Main"
+           doc="Indicates how the reflected color curve evolves between its value in the normal direction (or 0 degree), and 1 when reaching 90 degrees. Note that this color is unlikely to be reached, and just bends the curve towards it when reaching grazing angles. A null value does not deviate the curve at all." />
+    <input name="roughness" type="float" value="0.1" uimin="0.0" uimax="1.0" uiname="Roughness" uifolder="Main"
+           doc="Micro-facet distribution roughness." />
+    <input name="normal" type="vector3" defaultgeomprop="Nworld" uiname="Normal" uifolder="Main"
+           doc="Shading normal, typically defined by bump or normal mapping. Defaults to the smooth surface normal if not set." />
+    <input name="anisotropy" type="float" value="0.0" uimin="-1.0" uimax="1.0" uiname="Anisotropy" uifolder="Anisotropy"
+           doc="Defines the amount of anisotropy, changing the co-tangent axis roughness from the original value to 1 (or to 0 with a negative value)." />
+    <input name="anisotropyDirection" type="vector3" defaultgeomprop="Tworld" uiname="Direction" uifolder="Anisotropy"
+           doc="Overrides the surface tangent as the anisotropy direction." />
+    <input name="anisotropyRotation" type="float" value="0.0" uiname="Rotation" uifolder="Anisotropy"
+           doc="Rotates the anisotropy direction (possibly overriden by the previous attribute) around the normal, from 0 to 360 degrees." />
+    <input name="iridescenceThickness" type="float" value="0.0" uimin="0.0" uisoftmax="200.0" uiname="Thickness" uifolder="Iridescence"
+           doc="Thin film thickness in nanometers, driving the iridescent effect." />
+    <input name="iridescenceIOR" type="float" value="1.5" uimin="1.0" uimax="3.0" uiname="IOR" uifolder="Iridescence"
+           doc="Thin film index of refraction, driving the iridescent effect." />
+    <input name="exteriorIOR" type="float" value="1.0" uimin="1.0" uimax="3.0" uiname="Exterior IOR" uifolder="Advanced"
+           doc="Defines what the IOR of the exterior medium is (can be either the outside medium, eg. air or water, or in case of a layered material, the top layer medium, like plexiglass or varnish)." />
+    <output name="out" type="BSDF" />
+  </nodedef>
+
+  <nodegraph name="IMPL_lama_conductor" nodedef="ND_lama_conductor">
+
+    <!-- IOR -->
+    <ifgreater name="exterior_ior_switch" type="float">
+      <input name="in1" type="float" interfacename="iridescenceIOR" />
+      <input name="in2" type="float" interfacename="exteriorIOR" />
+      <input name="value1" type="float" interfacename="iridescenceThickness" />
+      <input name="value2" type="float" value="0" />
+    </ifgreater>
+    <artistic_ior name="artistic_ior" type="multioutput">
+      <input name="reflectivity" type="color3" interfacename="reflectivity" />
+      <input name="edge_color" type="color3" interfacename="edgeColor" />
+    </artistic_ior>
+    <convert name="convert_ior" type="color3">
+      <input name="in" type="vector3" interfacename="IOR" />
+    </convert>
+    <convert name="convert_extinction" type="color3">
+      <input name="in" type="vector3" interfacename="extinction" />
+    </convert>
+    <switch name="eta_switch" type="color3">
+      <input name="in1" type="color3" nodename="convert_ior" />
+      <input name="in2" type="color3" nodename="artistic_ior" output="ior" />
+      <input name="which" type="integer" interfacename="fresnelMode" />
+    </switch>
+    <switch name="kappa_switch" type="color3">
+      <input name="in1" type="color3" nodename="convert_extinction" />
+      <input name="in2" type="color3" nodename="artistic_ior" output="extinction" />
+      <input name="which" type="integer" interfacename="fresnelMode" />
+    </switch>
+    <divide name="relative_eta" type="color3">
+      <input name="in1" type="color3" nodename="eta_switch" />
+      <input name="in2" type="float" nodename="exterior_ior_switch" />
+    </divide>
+    <divide name="relative_kappa" type="color3">
+      <input name="in1" type="color3" nodename="kappa_switch" />
+      <input name="in2" type="float" nodename="exterior_ior_switch" />
+    </divide>
+
+    <!-- Roughness -->
+    <subtract name="roughness_inverse" type="float">
+      <input name="in1" type="float" value="1.0" />
+      <input name="in2" type="float" interfacename="roughness" />
+    </subtract>
+    <ifgreatereq name="delta" type="float">
+      <input name="in1" type="float" nodename="roughness_inverse" />
+      <input name="in2" type="float" interfacename="roughness" />
+      <input name="value1" type="float" interfacename="anisotropy" />
+      <input name="value2" type="float" value="0" />
+    </ifgreatereq>
+    <multiply name="roughness_additional" type="float">
+      <input name="in1" type="float" interfacename="anisotropy" />
+      <input name="in2" type="float" nodename="delta" />
+    </multiply>
+    <add name="roughness_bitangent" type="float">
+      <input name="in1" type="float" interfacename="roughness" />
+      <input name="in2" type="float" nodename="roughness_additional" />
+    </add>
+    <clamp name="roughness_bitangent_clamped" type="float">
+      <input name="in" type="float" nodename="roughness_bitangent" />
+    </clamp>
+    <combine2 name="roughness_linear" type="vector2">
+      <input name="in1" type="float" interfacename="roughness" />
+      <input name="in2" type="float" nodename="roughness_bitangent_clamped" />
+    </combine2>
+    <power name="roughness_anisotropic_squared" type="vector2">
+      <input name="in1" type="vector2" nodename="roughness_linear" />
+      <input name="in2" type="float" value="2" />
+    </power>
+    <max name="roughness_anisotropic_squared_clamped" type="vector2">
+      <input name="in1" type="vector2" nodename="roughness_anisotropic_squared" />
+      <input name="in2" type="float" value="0.000001" />
+    </max>
+
+    <!-- Tangent -->
+    <multiply name="tangent_rotate_degree" type="float">
+      <input name="in1" type="float" interfacename="anisotropyRotation" />
+      <input name="in2" type="float" value="-360" />
+    </multiply>
+    <rotate3d name="tangent_rotate" type="vector3">
+      <input name="in" type="vector3" interfacename="anisotropyDirection" />
+      <input name="amount" type="float" nodename="tangent_rotate_degree" />
+      <input name="axis" type="vector3" interfacename="normal" />
+    </rotate3d>
+    <normalize name="tangent_rotate_normalize" type="vector3">
+      <input name="in" type="vector3" nodename="tangent_rotate" />
+    </normalize>
+
+    <!-- BRDF -->
+    <conductor_bsdf name="conductor_bsdf" type="BSDF">
+      <input name="weight" type="float" value="1.0" />
+      <input name="ior" type="color3" nodename="relative_eta" />
+      <input name="extinction" type="color3" nodename="relative_kappa" />
+      <input name="roughness" type="vector2" nodename="roughness_anisotropic_squared_clamped" />
+      <input name="normal" type="vector3" interfacename="normal" />
+      <input name="tangent" type="vector3" nodename="tangent_rotate_normalize" />
+      <input name="distribution" type="string" value="ggx" />
+    </conductor_bsdf>
+
+    <!-- BRDF + Thin film -->
+    <divide name="iridescence_relative_ior" type="float">
+      <input name="in1" type="float" interfacename="iridescenceIOR" />
+      <input name="in2" type="float" interfacename="exteriorIOR" />
+    </divide>
+    <thin_film_bsdf name="thin_film_bsdf" type="BSDF">
+      <input name="thickness" type="float" interfacename="iridescenceThickness" />
+      <input name="ior" type="float" nodename="iridescence_relative_ior" />
+    </thin_film_bsdf>
+
+    <!-- Layered BRDF -->
+    <layer name="thin_film_conductor_bsdf" type="BSDF">
+      <input name="top" type="BSDF" nodename="thin_film_bsdf" />
+      <input name="base" type="BSDF" nodename="conductor_bsdf" />
+    </layer>
+
+    <!-- Tinted BRDF -->
+    <multiply name="tinted_bsdf" type="BSDF">
+      <input name="in1" type="BSDF" nodename="thin_film_conductor_bsdf" />
+      <input name="in2" type="color3" interfacename="tint" />
+    </multiply>
+
+    <!-- Output -->
+    <output name="out" type="BSDF" nodename="tinted_bsdf" />
+
+  </nodegraph>
+</materialx>

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709">
+  <standard_surface name="SR_copper" type="surfaceshader">
+    <input name="base" type="float" value="1" />
+    <input name="base_color" type="color3" value="1, 1, 1" />
+    <input name="specular" type="float" value="0" />
+    <input name="specular_roughness" type="float" value="0.25" />
+    <input name="metalness" type="float" value="1" />
+    <input name="coat" type="float" value="1" />
+    <input name="coat_color" type="color3" value="0.96467984, 0.37626296, 0.25818297" />
+    <input name="coat_roughness" type="float" value="0.20000000298023224" />
+  </standard_surface>
+  <surfacematerial name="Copper" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="SR_copper" />
+  </surfacematerial>
+</materialx>

@@ -1,0 +1,9 @@
+surface raytype_background(color Cin = 1, string envmap_filename = "")
+{
+    color bgColor = Cin;
+    if (!raytype("camera"))
+    {
+        bgColor = environment(envmap_filename, I);
+    }
+    Ci = bgColor * emission();
+}
