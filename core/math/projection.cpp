@@ -93,6 +93,24 @@ Vector4 Projection::xform_inv(const Vector4 &p_vec4) const {
 			columns[3][0] * p_vec4.x + columns[3][1] * p_vec4.y + columns[3][2] * p_vec4.z + columns[3][3] * p_vec4.w);
 }
 
+void Projection::apply_oblique_plane(Vector4 p_oblique_plane) {
+	// Here goes oblique magic!
+	// Eric Lengyel Solution: http://terathon.com/code/oblique.html
+	Vector4 q;
+
+	q.x = (SIGN(p_oblique_plane.x) + columns[2][0]) / columns[0][0];
+	q.y = (SIGN(p_oblique_plane.y) + columns[2][1]) / columns[1][1];
+
+	q.z = -1.0F;
+	q.w = (1.0F + columns[2][2]) / columns[3][2];
+
+	Vector4 c = p_oblique_plane * (2.0F / p_oblique_plane.dot(q));
+	columns[0][2] = c.x - columns[0][3];
+	columns[1][2] = c.y - columns[1][3];
+	columns[2][2] = c.z - columns[2][3];
+	columns[3][2] = c.w - columns[3][3];
+}
+
 void Projection::adjust_perspective_znear(real_t p_new_znear) {
 	real_t zfar = get_z_far();
 	real_t znear = p_new_znear;

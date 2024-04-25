@@ -66,6 +66,10 @@ private:
 	ProjectionType mode = PROJECTION_PERSPECTIVE;
 
 	real_t fov = 75.0;
+	bool use_oblique_frustum = false;
+	Vector3 oblique_normal = Vector3(0, 1, 0);
+	Vector3 oblique_position = Vector3();
+	real_t oblique_offset = 0;
 	real_t size = 1.0;
 	Vector2 frustum_offset;
 	// _ prefix to avoid conflict with Windows defines.
@@ -109,6 +113,7 @@ protected:
 	static void _bind_methods();
 
 	Projection _get_camera_projection(real_t p_near) const;
+	Vector4 _get_oblique_plane() const;
 
 public:
 	enum {
@@ -129,6 +134,10 @@ public:
 	RID get_camera() const;
 
 	real_t get_fov() const;
+	bool get_use_oblique_frustum() const;
+	Vector3 get_oblique_normal() const;
+	Vector3 get_oblique_position() const;
+	real_t get_oblique_offset() const;
 	real_t get_size() const;
 	real_t get_far() const;
 	real_t get_near() const;
@@ -137,6 +146,11 @@ public:
 	ProjectionType get_projection() const;
 
 	void set_fov(real_t p_fov);
+	void set_use_oblique_frustum(bool P_use_oblique_frustum);
+	void set_oblique_normal(Vector3 p_oblique_normal);
+	void set_oblique_position(Vector3 p_oblique_position);
+	void set_oblique_offset(real_t p_oblique_offset);
+	void set_oblique_plane_from_transform(Transform3D p_oblique_plane_transform);
 	void set_size(real_t p_size);
 	void set_far(real_t p_far);
 	void set_near(real_t p_near);
