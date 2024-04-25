@@ -194,34 +194,29 @@ void vertex_shader(vec3 vertex_input,
 		in vec3 tangent_input,
 		in vec3 binormal_input,
 #endif
-		in uint instance_index, in bool is_multimesh, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
+		in uint instance_index, in bool is_multimesh, in uint multimesh_offset, in SceneData scene_data, in mat4x3 model_matrix,
+#ifdef USE_DOUBLE_PRECISION
+		in vec3 model_precision,
+		in vec3 view_precision,
+#endif
+		out vec4 screen_pos) {
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
 #endif
 
-	mat4 inv_view_matrix = scene_data.inv_view_matrix;
-
-#ifdef USE_DOUBLE_PRECISION
-	vec3 model_precision = vec3(model_matrix[0][3], model_matrix[1][3], model_matrix[2][3]);
-	model_matrix[0][3] = 0.0;
-	model_matrix[1][3] = 0.0;
-	model_matrix[2][3] = 0.0;
-	vec3 view_precision = vec3(inv_view_matrix[0][3], inv_view_matrix[1][3], inv_view_matrix[2][3]);
-	inv_view_matrix[0][3] = 0.0;
-	inv_view_matrix[1][3] = 0.0;
-	inv_view_matrix[2][3] = 0.0;
-#endif
-
 	mat3 model_normal_matrix;
+	/*
+		The model_normal matrix is later on modified during the multimesh code. Keeping this in a register all the time until then is pointless
 	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
 		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
 	} else {
 		model_normal_matrix = mat3(model_matrix);
 	}
+	*/
 
 	mat4 matrix;
-	mat4 read_model_matrix = model_matrix;
+	mat4x3 read_model_matrix_small = model_matrix;
 
 	if (is_multimesh) {
 		//multimesh, instances are for it
@@ -314,12 +309,38 @@ void vertex_shader(vec3 vertex_input,
 #if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED) || defined(MODEL_MATRIX_USED)
 		// Normally we can bake the multimesh transform into the model matrix, but when using double precision
 		// we avoid baking it in so we can emulate high precision.
-		read_model_matrix = model_matrix * matrix;
+		mat4 model_matrix_full = mat4(
+				model_matrix[0], 0,
+				model_matrix[1], 0,
+				model_matrix[2], 0,
+				model_matrix[3], 1);
+		mat4 res_temp = model_matrix_full * matrix;
+
+		read_model_matrix_small = mat4x3(res_temp);
 #if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED)
-		model_matrix = read_model_matrix;
+		model_matrix = read_model_matrix_small;
 #endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED)
 #endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED) || defined(MODEL_MATRIX_USED)
-		model_normal_matrix = model_normal_matrix * mat3(matrix);
+	   //model_normal_matrix = model_normal_matrix * mat3(matrix);
+
+		// model_normal_matrix = model_normal_matrix * mat3(matrix);
+		// we needed to move this to the end of the multimesh if statement to
+		// avoid unnecessary register usage
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
+			model_normal_matrix = transpose(inverse(mat3(model_matrix))) * mat3(matrix);
+		} else {
+			model_normal_matrix = mat3(model_matrix) * mat3(matrix);
+		}
+	} else {
+		//not multimesh
+
+		// we needed to move this to the end of the multimesh if statement to
+		// avoid unnecessary register usage
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
+			model_normal_matrix = transpose(inverse(mat3(model_matrix)));
+		} else {
+			model_normal_matrix = mat3(model_matrix);
+		}
 	}
 
 	vec3 vertex = vertex_input;
@@ -369,7 +390,7 @@ void vertex_shader(vec3 vertex_input,
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (model_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = (mat4(model_matrix[0], 0, model_matrix[1], 0, model_matrix[2], 0, model_matrix[3], 1) * vec4(vertex, 1.0)).xyz;
 
 #ifdef NORMAL_USED
 	normal = model_normal_matrix * normal;
@@ -385,10 +406,35 @@ void vertex_shader(vec3 vertex_input,
 
 	float roughness = 1.0;
 
-	mat4 modelview = scene_data.view_matrix * model_matrix;
-	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
-	mat4 read_view_matrix = scene_data.view_matrix;
+	mat4 view_matrix_load = scene_data.view_matrix;
+	mat4 view_matrix = mat4(
+			view_matrix_load[0].xyz, 0,
+			view_matrix_load[1].xyz, 0,
+			view_matrix_load[2].xyz, 0,
+			view_matrix_load[3].xyz, 1);
+	mat4 modelview_calc = view_matrix * mat4(model_matrix[0], 0, model_matrix[1], 0, model_matrix[2], 0, model_matrix[3], 1);
+	mat4 modelview = mat4(
+			modelview_calc[0].xyz, 0,
+			modelview_calc[1].xyz, 0,
+			modelview_calc[2].xyz, 0,
+			modelview_calc[3].xyz, 1);
+
+	mat3 modelview_normal = mat3(view_matrix) * model_normal_matrix;
+	mat4 read_view_matrix = view_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
+
+	// we need to prepare stuff with the full data for the user code
+	mat4 read_model_matrix = mat4(
+			read_model_matrix_small[0], 0,
+			read_model_matrix_small[1], 0,
+			read_model_matrix_small[2], 0,
+			read_model_matrix_small[3], 1);
+	mat4 inv_view_matrix_load = scene_data.inv_view_matrix;
+	mat4 inv_view_matrix = mat4(
+			inv_view_matrix_load[0].xyz, 0,
+			inv_view_matrix_load[1].xyz, 0,
+			inv_view_matrix_load[2].xyz, 0,
+			inv_view_matrix_load[3].xyz, 1);
 
 	{
 #CODE : VERTEX
@@ -408,8 +454,8 @@ void vertex_shader(vec3 vertex_input,
 	}
 	vertex = mat3(inv_view_matrix * modelview) * vertex;
 	vec3 temp_precision; // Will be ignored.
-	vertex += double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
-	vertex = mat3(scene_data.view_matrix) * vertex;
+	vertex += double_add_vec3(model_origin, model_precision, inv_view_matrix[3].xyz, view_precision, temp_precision);
+	vertex = mat3(view_matrix) * vertex;
 #else
 	vertex = (modelview * vec4(vertex, 1.0)).xyz;
 #endif
@@ -427,14 +473,14 @@ void vertex_shader(vec3 vertex_input,
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (scene_data.view_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = (view_matrix * vec4(vertex, 1.0)).xyz;
 #ifdef NORMAL_USED
-	normal = (scene_data.view_matrix * vec4(normal, 0.0)).xyz;
+	normal = (view_matrix * vec4(normal, 0.0)).xyz;
 #endif
 
 #ifdef TANGENT_USED
-	binormal = (scene_data.view_matrix * vec4(binormal, 0.0)).xyz;
-	tangent = (scene_data.view_matrix * vec4(tangent, 0.0)).xyz;
+	binormal = (view_matrix * vec4(binormal, 0.0)).xyz;
+	tangent = (view_matrix * vec4(tangent, 0.0)).xyz;
 #endif
 #endif
 
@@ -552,7 +598,8 @@ void main() {
 
 	instance_index_interp = instance_index;
 
-	mat4 model_matrix = instances.data[instance_index].transform;
+	mat4 transform_load = instances.data[instance_index].transform;
+	mat4x3 model_matrix = mat4x3(transform_load);
 
 #ifdef MOTION_VECTORS
 	// Previous vertex.
@@ -581,6 +628,10 @@ void main() {
 			prev_vertex);
 
 	global_time = scene_data_block.prev_data.time;
+
+	mat4 prev_transform_load = instances.data[instance_index].prev_transform;
+	mat4x3 prev_model_matrix = mat4x3(prev_transform_load);
+
 	vertex_shader(prev_vertex,
 #ifdef NORMAL_USED
 			prev_normal,
@@ -589,7 +640,14 @@ void main() {
 			prev_tangent,
 			prev_binormal,
 #endif
-			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data,
+			prev_model_matrix,
+#ifdef USE_DOUBLE_PRECISION
+			// extract the double precision data from the model matrix and inv_view_matrix
+			vec3(instances.data[instance_index].prev_transform[0][3], instances.data[instance_index].prev_transform[1][3], instances.data[instance_index].prev_transform[2][3]),
+			vec3(scene_data_block.prev_data.inv_view_matrix[0][3], scene_data_block.prev_data.inv_view_matrix[1][3], scene_data_block.prev_data.inv_view_matrix[2][3]),
+#endif
+			prev_screen_position);
 #else
 	// Unused output.
 	vec4 screen_position;
@@ -628,7 +686,13 @@ void main() {
 			tangent,
 			binormal,
 #endif
-			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
+			instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix,
+#ifdef USE_DOUBLE_PRECISION
+			// extract the double precision date from the model matrix and inv_view_matrix
+			vec3(instances.data[instance_index].transform[0][3], instances.data[instance_index].transform[1][3], instances.data[instance_index].transform[2][3]),
+			vec3(scene_data_block.data.inv_view_matrix[0][3], scene_data_block.data.inv_view_matrix[1][3], scene_data_block.data.inv_view_matrix[2][3]),
+#endif
+			screen_position);
 }
 
 #[fragment]
@@ -860,7 +924,13 @@ vec4 fog_process(vec3 vertex) {
 	}
 
 	if (abs(scene_data_block.data.fog_height_density) >= 0.0001) {
-		float y = (scene_data_block.data.inv_view_matrix * vec4(vertex, 1.0)).y;
+		mat4 inv_view_matrix_load = scene_data_block.data.inv_view_matrix;
+		mat4 inv_view_matrix = mat4(
+				inv_view_matrix_load[0].xyz, 0,
+				inv_view_matrix_load[1].xyz, 0,
+				inv_view_matrix_load[2].xyz, 0,
+				inv_view_matrix_load[3].xyz, 1);
+		float y = (inv_view_matrix * vec4(vertex, 1.0)).y;
 
 		float y_dist = y - scene_data_block.data.fog_height;
 
@@ -1012,17 +1082,22 @@ void fragment_shader(in SceneData scene_data) {
 	vec2 alpha_texture_coordinate = vec2(0.0, 0.0);
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
-	mat4 inv_view_matrix = scene_data.inv_view_matrix;
-	mat4 read_model_matrix = instances.data[instance_index].transform;
-#ifdef USE_DOUBLE_PRECISION
-	read_model_matrix[0][3] = 0.0;
-	read_model_matrix[1][3] = 0.0;
-	read_model_matrix[2][3] = 0.0;
-	inv_view_matrix[0][3] = 0.0;
-	inv_view_matrix[1][3] = 0.0;
-	inv_view_matrix[2][3] = 0.0;
-#endif
-	mat4 read_view_matrix = scene_data.view_matrix;
+	mat4 inv_view_matrix = mat4(
+			scene_data_block.data.inv_view_matrix[0].xyz, 0,
+			scene_data_block.data.inv_view_matrix[1].xyz, 0,
+			scene_data_block.data.inv_view_matrix[2].xyz, 0,
+			scene_data_block.data.inv_view_matrix[3].xyz, 1);
+	mat4 read_model_matrix = mat4(
+			instances.data[instance_index].transform[0].xyz, 0,
+			instances.data[instance_index].transform[1].xyz, 0,
+			instances.data[instance_index].transform[2].xyz, 0,
+			instances.data[instance_index].transform[3].xyz, 1);
+
+	mat4 read_view_matrix = mat4(
+			scene_data.view_matrix[0].xyz, 0,
+			scene_data.view_matrix[1].xyz, 0,
+			scene_data.view_matrix[2].xyz, 0,
+			scene_data.view_matrix[3].xyz, 1);
 	vec2 read_viewport_size = scene_data.viewport_size;
 	{
 #CODE : FRAGMENT
