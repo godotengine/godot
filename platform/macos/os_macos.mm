@@ -177,6 +177,9 @@ String OS_MacOS::get_version() const {
 }
 
 void OS_MacOS::alert(const String &p_alert, const String &p_title) {
+	// Make sure we are shown in the dock/task switcher now (even if we were headless).
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+
 	NSAlert *window = [[NSAlert alloc] init];
 	NSString *ns_title = [NSString stringWithUTF8String:p_title.utf8().get_data()];
 	NSString *ns_alert = [NSString stringWithUTF8String:p_alert.utf8().get_data()];
@@ -807,8 +810,8 @@ OS_MacOS::OS_MacOS() {
 	// Implicitly create shared NSApplication instance.
 	[GodotApplication sharedApplication];
 
-	// In case we are unbundled, make us a proper UI application.
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+	// Disable our icon in the dock until we either load a non-headless driver or need to display an alert.
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
 
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
