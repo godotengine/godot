@@ -241,7 +241,7 @@ int mbedtls_gcm_starts(mbedtls_gcm_context *ctx,
     uint64_t iv_bits;
 
     GCM_VALIDATE_RET(ctx != NULL);
-    GCM_VALIDATE_RET(iv != NULL);
+    GCM_VALIDATE_RET(iv_len == 0 || iv != NULL);
     GCM_VALIDATE_RET(add_len == 0 || add != NULL);
 
     /* IV and AD are limited to 2^64 bits, so 2^61 bytes */
@@ -433,7 +433,7 @@ int mbedtls_gcm_crypt_and_tag(mbedtls_gcm_context *ctx,
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
     GCM_VALIDATE_RET(ctx != NULL);
-    GCM_VALIDATE_RET(iv != NULL);
+    GCM_VALIDATE_RET(iv_len == 0 || iv != NULL);
     GCM_VALIDATE_RET(add_len == 0 || add != NULL);
     GCM_VALIDATE_RET(length == 0 || input != NULL);
     GCM_VALIDATE_RET(length == 0 || output != NULL);
@@ -470,7 +470,7 @@ int mbedtls_gcm_auth_decrypt(mbedtls_gcm_context *ctx,
     int diff;
 
     GCM_VALIDATE_RET(ctx != NULL);
-    GCM_VALIDATE_RET(iv != NULL);
+    GCM_VALIDATE_RET(iv_len == 0 || iv != NULL);
     GCM_VALIDATE_RET(add_len == 0 || add != NULL);
     GCM_VALIDATE_RET(tag != NULL);
     GCM_VALIDATE_RET(length == 0 || input != NULL);

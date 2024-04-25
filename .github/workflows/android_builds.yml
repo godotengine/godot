@@ -28,7 +28,7 @@ jobs:
           sudo apt-get update
 
       - name: Set up Java 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 11

@@ -35,7 +35,7 @@ Includes some patches in the `patches` folder which have been sent upstream.
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (bef37a977ccb45fb4c1b213b79dd6ba438077561, 2023)
+- Version: git (c5a419971b1bec220368c619aaafd0b818aa119f, 2024)
 - License: MPL 2.0
 
 
@@ -187,14 +187,14 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.38 (0a158f3506502dfa23edfc42790dfaed82efba17, 2022)
+- Version: 1.6.43 (ed217e3e601d8e462f7fd1e04bed43ac42212429, 2024)
 - License: libpng/zlib
 
 Files extracted from upstream source:
 
-- all .c and .h files of the main directory, except from
-  `example.c` and `pngtest.c`
-- the arm/ folder
+- All `.c` and `.h` files of the main directory, apart from `example.c` and
+  `pngtest.c`
+- The `arm/` folder
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
 - `LICENSE`
 
@@ -279,7 +279,7 @@ Files extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.28.7 (555f84735aecdbd76a566cf087ec8425dfb0c8ab, 2024)
+- Version: 2.28.8 (5a764e5555c64337ed17444410269ff21cb617b1, 2024)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -539,7 +539,7 @@ comments and a patch is provided in the squish/ folder.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.5 (3627ab3060592468d49547b4cdf5353e9e2b50dc, 2023)
+- Version: 1.0.8 (6c8742cc8145c8f629698cd8248900990946d6b1, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

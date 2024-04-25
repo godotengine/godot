@@ -476,9 +476,8 @@ def copy_mono_root_files(env, mono_root, mono_bcl):
 
 
 def copy_mono_etc_dir(mono_root, target_mono_config_dir, platform):
-    from distutils.dir_util import copy_tree
     from glob import glob
-    from shutil import copy
+    from shutil import copy, copytree
 
     if not os.path.isdir(target_mono_config_dir):
         os.makedirs(target_mono_config_dir)
@@ -498,11 +497,11 @@ def copy_mono_etc_dir(mono_root, target_mono_config_dir, platform):
         if not mono_etc_dir:
             raise RuntimeError("Mono installation etc directory not found")
 
-    copy_tree(os.path.join(mono_etc_dir, "2.0"), os.path.join(target_mono_config_dir, "2.0"))
-    copy_tree(os.path.join(mono_etc_dir, "4.0"), os.path.join(target_mono_config_dir, "4.0"))
-    copy_tree(os.path.join(mono_etc_dir, "4.5"), os.path.join(target_mono_config_dir, "4.5"))
+    copytree(os.path.join(mono_etc_dir, "2.0"), os.path.join(target_mono_config_dir, "2.0"))
+    copytree(os.path.join(mono_etc_dir, "4.0"), os.path.join(target_mono_config_dir, "4.0"))
+    copytree(os.path.join(mono_etc_dir, "4.5"), os.path.join(target_mono_config_dir, "4.5"))
     if os.path.isdir(os.path.join(mono_etc_dir, "mconfig")):
-        copy_tree(os.path.join(mono_etc_dir, "mconfig"), os.path.join(target_mono_config_dir, "mconfig"))
+        copytree(os.path.join(mono_etc_dir, "mconfig"), os.path.join(target_mono_config_dir, "mconfig"))
 
     for file in glob(os.path.join(mono_etc_dir, "*")):
         if os.path.isfile(file):
