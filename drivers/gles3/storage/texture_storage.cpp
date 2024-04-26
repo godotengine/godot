@@ -1984,9 +1984,9 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	if (rt->hdr) {
 		rt->color_internal_format = GL_RGBA16F;
 		rt->color_format = GL_RGBA;
-		rt->color_type = GL_FLOAT;
+		rt->color_type = GL_HALF_FLOAT;
 		rt->color_format_size = 8;
-		rt->image_format = Image::FORMAT_RGBAF;
+		rt->image_format = Image::FORMAT_RGBAH;
 	} else if (rt->is_transparent) {
 		rt->color_internal_format = GL_RGBA8;
 		rt->color_format = GL_RGBA;
@@ -2119,7 +2119,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 				texture->layers = 1;
 			}
 			texture->gl_format_cache = rt->color_format;
-			texture->gl_type_cache = GL_UNSIGNED_BYTE;
+			texture->gl_type_cache = rt->hdr ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
 			texture->gl_internal_format_cache = rt->color_internal_format;
 			texture->tex_id = rt->color;
 			texture->width = rt->size.x;
