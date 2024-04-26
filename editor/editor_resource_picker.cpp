@@ -896,7 +896,10 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 			ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
 		}
 	}
+	set_edited_resource_no_check(p_resource);
+}
 
+void EditorResourcePicker::set_edited_resource_no_check(Ref<Resource> p_resource) {
 	edited_resource = p_resource;
 	_update_resource();
 }
