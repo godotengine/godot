@@ -15,6 +15,17 @@ from collections import OrderedDict
 from importlib.util import spec_from_file_location, module_from_spec
 from SCons import __version__ as scons_raw_version
 
+# Enable ANSI escape code support on Windows 10 and later (for colored console output).
+# <https://github.com/python/cpython/issues/73245>
+if sys.platform == "win32":
+    from ctypes import windll, c_int, byref
+
+    stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
+    mode = c_int(0)
+    windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
+    mode = c_int(mode.value | 4)
+    windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
+
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
 # an `editor.py` file at the root of the module creates a clash with the editor
@@ -57,6 +68,7 @@ import methods
 import glsl_builders
 import gles3_builders
 import scu_builders
+from methods import print_warning, print_error
 from platform_methods import architectures, architecture_aliases, generate_export_icons
 
 if ARGUMENTS.get("target", "editor") == "editor":
@@ -311,38 +323,41 @@ if selected_platform == "":
         selected_platform = "windows"
 
     if selected_platform != "":
-        print("Automatically detected platform: " + selected_platform)
+        print(f"Automatically detected platform: {selected_platform}")
 
 if selected_platform == "osx":
     # Deprecated alias kept for compatibility.
-    print('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
+    print_warning('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
     selected_platform = "macos"
 
 if selected_platform == "iphone":
     # Deprecated alias kept for compatibility.
-    print('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
+    print_warning('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
     selected_platform = "ios"
 
 if selected_platform in ["linux", "bsd", "x11"]:
     if selected_platform == "x11":
         # Deprecated alias kept for compatibility.
-        print('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
+        print_warning('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
     # Alias for convenience.
     selected_platform = "linuxbsd"
 
 if selected_platform == "javascript":
     # Deprecated alias kept for compatibility.
-    print('Platform "javascript" has been renamed to "web" in Godot 4. Building for platform "web".')
+    print_warning('Platform "javascript" has been renamed to "web" in Godot 4. Building for platform "web".')
     selected_platform = "web"
 
 if selected_platform not in platform_list:
-    if selected_platform == "":
-        print("Could not detect platform automatically.")
-    elif selected_platform != "list":
-        print(f'Invalid target platform "{selected_platform}".')
+    text = "The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list))
+    text += "Please run SCons again and select a valid platform: platform=<string>."
 
-    print("The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list)))
-    print("Please run SCons again and select a valid platform: platform=<string>.")
+    if selected_platform == "list":
+        print(text)
+    elif selected_platform == "":
+        print_error("Could not detect platform automatically.\n" + text)
+    else:
+        print_error(f'Invalid target platform "{selected_platform}".\n' + text)
+
     Exit(0 if selected_platform == "list" else 255)
 
 # Make sure to update this to the found, valid platform as it's used through the buildsystem as the reference.
@@ -368,7 +383,7 @@ if env["custom_modules"]:
         try:
             module_search_paths.append(methods.convert_custom_modules_path(p))
         except ValueError as e:
-            print(e)
+            print_error(e)
             Exit(255)
 
 for path in module_search_paths:
@@ -507,7 +522,7 @@ env.SetOption("num_jobs", altered_num_jobs)
 if env.GetOption("num_jobs") == altered_num_jobs:
     cpu_count = os.cpu_count()
     if cpu_count is None:
-        print("Couldn't auto-detect CPU count to configure build parallelism. Specify it with the -j argument.")
+        print_warning("Couldn't auto-detect CPU count to configure build parallelism. Specify it with the -j argument.")
     else:
         safer_cpu_count = cpu_count if cpu_count <= 4 else cpu_count - 1
         print(
@@ -531,7 +546,7 @@ env.Append(LINKFLAGS=env.get("linkflags", "").split())
 # Feature build profile
 disabled_classes = []
 if env["build_profile"] != "":
-    print("Using feature build profile: " + env["build_profile"])
+    print('Using feature build profile: "{}"'.format(env["build_profile"]))
     import json
 
     try:
@@ -543,7 +558,7 @@ if env["build_profile"] != "":
             for c in dbo:
                 env[c] = dbo[c]
     except:
-        print("Error opening feature build profile: " + env["build_profile"])
+        print_error('Failed to open feature build profile: "{}"'.format(env["build_profile"]))
         Exit(255)
 methods.write_disabled_classes(disabled_classes)
 
@@ -605,14 +620,14 @@ cc_version_metadata1 = cc_version["metadata1"] or ""
 
 if methods.using_gcc(env):
     if cc_version_major == -1:
-        print(
+        print_warning(
             "Couldn't detect compiler version, skipping version checks. "
             "Build may fail if the compiler doesn't support C++17 fully."
         )
     # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
     # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
     elif cc_version_major == 8 and cc_version_minor < 4:
-        print(
+        print_error(
             "Detected GCC 8 version < 8.4, which is not supported due to a "
             "regression in its C++17 guaranteed copy elision support. Use a "
             'newer GCC version, or Clang 6 or later by passing "use_llvm=yes" '
@@ -620,7 +635,7 @@ if methods.using_gcc(env):
         )
         Exit(255)
     elif cc_version_major < 7:
-        print(
+        print_error(
             "Detected GCC version older than 7, which does not fully support "
             "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
             'version, or Clang 6 or later by passing "use_llvm=yes" to the '
@@ -628,7 +643,7 @@ if methods.using_gcc(env):
         )
         Exit(255)
     elif cc_version_metadata1 == "win32":
-        print(
+        print_error(
             "Detected mingw version is not using posix threads. Only posix "
             "version of mingw is supported. "
             'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
@@ -636,11 +651,11 @@ if methods.using_gcc(env):
         )
         Exit(255)
     if env["debug_paths_relative"] and cc_version_major < 8:
-        print("GCC < 8 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+        print_warning("GCC < 8 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
         env["debug_paths_relative"] = False
 elif methods.using_clang(env):
     if cc_version_major == -1:
-        print(
+        print_warning(
             "Couldn't detect compiler version, skipping version checks. "
             "Build may fail if the compiler doesn't support C++17 fully."
         )
@@ -649,28 +664,30 @@ elif methods.using_clang(env):
     elif env["platform"] == "macos" or env["platform"] == "ios":
         vanilla = methods.is_vanilla_clang(env)
         if vanilla and cc_version_major < 6:
-            print(
+            print_warning(
                 "Detected Clang version older than 6, which does not fully support "
                 "C++17. Supported versions are Clang 6 and later."
             )
             Exit(255)
         elif not vanilla and cc_version_major < 10:
-            print(
+            print_error(
                 "Detected Apple Clang version older than 10, which does not fully "
                 "support C++17. Supported versions are Apple Clang 10 and later."
             )
             Exit(255)
         if env["debug_paths_relative"] and not vanilla and cc_version_major < 12:
-            print("Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+            print_warning(
+                "Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option."
+            )
             env["debug_paths_relative"] = False
     elif cc_version_major < 6:
-        print(
+        print_error(
             "Detected Clang version older than 6, which does not fully support "
             "C++17. Supported versions are Clang 6 and later."
         )
         Exit(255)
     if env["debug_paths_relative"] and cc_version_major < 10:
-        print("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+        print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
         env["debug_paths_relative"] = False
 
 # Set optimize and debug_symbols flags.
@@ -906,7 +923,7 @@ if env.editor_build:
 
     # And check if they are met.
     if not env.module_check_dependencies("editor"):
-        print("Not all modules required by editor builds are enabled.")
+        print_error("Not all modules required by editor builds are enabled.")
         Exit(255)
 
 methods.generate_version_header(env.module_version_string)
@@ -932,14 +949,14 @@ env["SHOBJPREFIX"] = env["object_prefix"]
 
 if env["disable_3d"]:
     if env.editor_build:
-        print("Build option 'disable_3d=yes' cannot be used for editor builds, only for export template builds.")
+        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
         Exit(255)
     else:
         env.Append(CPPDEFINES=["_3D_DISABLED"])
 if env["disable_advanced_gui"]:
     if env.editor_build:
-        print(
-            "Build option 'disable_advanced_gui=yes' cannot be used for editor builds, "
+        print_error(
+            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, "
             "only for export template builds."
         )
         Exit(255)
@@ -951,7 +968,7 @@ if env["brotli"]:
     env.Append(CPPDEFINES=["BROTLI_ENABLED"])
 
 if not env["verbose"]:
-    methods.no_verbose(sys, env)
+    methods.no_verbose(env)
 
 GLSL_BUILDERS = {
     "RD_GLSL": env.Builder(
@@ -983,7 +1000,7 @@ if env["vsproj"]:
 
 if env["compiledb"] and env.scons_version < (4, 0, 0):
     # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-    print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
+    print_error("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
     Exit(255)
 if env.scons_version >= (4, 0, 0):
     env.Tool("compilation_db")
@@ -991,7 +1008,7 @@ if env.scons_version >= (4, 0, 0):
 
 if env["ninja"]:
     if env.scons_version < (4, 2, 0):
-        print("The `ninja=yes` option requires SCons 4.2 or later, but your version is %s." % scons_raw_version)
+        print_error("The `ninja=yes` option requires SCons 4.2 or later, but your version is %s." % scons_raw_version)
         Exit(255)
 
     SetOption("experimental", "ninja")
@@ -1048,9 +1065,16 @@ methods.dump(env)
 
 
 def print_elapsed_time():
-    elapsed_time_sec = round(time.time() - time_at_start, 3)
-    time_ms = round((elapsed_time_sec % 1) * 1000)
-    print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
+    elapsed_time_sec = round(time.time() - time_at_start, 2)
+    time_centiseconds = round((elapsed_time_sec % 1) * 100)
+    print(
+        "{}[Time elapsed: {}.{:02}]{}".format(
+            methods.ANSI.GRAY,
+            time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)),
+            time_centiseconds,
+            methods.ANSI.RESET,
+        )
+    )
 
 
 atexit.register(print_elapsed_time)
