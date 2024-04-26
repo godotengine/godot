@@ -548,8 +548,10 @@ int GridMap::get_orthogonal_index_from_basis(const Basis &p_basis) const {
 	return 0;
 }
 
-Vector3i GridMap::local_to_map(const Vector3 &p_world_position) const {
-	Vector3 map_position = (p_world_position / cell_size);
+Vector3i GridMap::local_to_map(const Vector3 &p_local_position) const {
+	Vector3 map_position = p_local_position - _get_offset();
+	map_position /= cell_size;
+
 
 	// Divide by the overlapping ratio
 	double overlapping_ratio = 1.0;
