@@ -106,6 +106,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	String color_args;
 
 	bool theme_loaded = false;
+	double block_input_time = 0.0;
 
 	enum {
 		EDIT_UNDO,
@@ -259,6 +260,8 @@ public:
 	virtual CodeTextEditor *get_code_editor() const override;
 
 	virtual void validate() override;
+
+	void block_input_until_released();
 
 	ScriptTextEditor();
 	~ScriptTextEditor();

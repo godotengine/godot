@@ -492,6 +492,8 @@ void ScriptEditor::_goto_script_line(Ref<RefCounted> p_script, int p_line) {
 			ScriptEditorBase *current = _get_current_editor();
 			if (ScriptTextEditor *script_text_editor = Object::cast_to<ScriptTextEditor>(current)) {
 				script_text_editor->goto_line_centered(p_line);
+				// In case user is holding some key, disable script editor input to prevent accidentally modifying the script.
+				script_text_editor->block_input_until_released();
 			} else if (current) {
 				current->goto_line(p_line, true);
 			}

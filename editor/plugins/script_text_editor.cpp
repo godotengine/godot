@@ -1647,6 +1647,12 @@ void ScriptTextEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
 		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (!Input::get_singleton()->is_anything_pressed() && OS::get_singleton()->get_unix_time() - block_input_time > 0.25) {
+				code_editor->get_text_editor()->set_editable(true);
+				set_process_internal(false);
+			}
+		}
 	}
 }
 
@@ -2519,4 +2525,13 @@ void ScriptTextEditor::register_editor() {
 
 void ScriptTextEditor::validate() {
 	code_editor->validate_script();
+}
+
+void ScriptTextEditor::block_input_until_released() {
+	if (!Input::get_singleton()->is_anything_pressed()) {
+		return;
+	}
+	code_editor->get_text_editor()->set_editable(false);
+	block_input_time = OS::get_singleton()->get_unix_time();
+	set_process_internal(true);
 }
