@@ -375,7 +375,7 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 	for (uint i = 0; i < sc_directional_penumbra_shadow_samples; i++) {
 		vec2 suv = pssm_coord.xy + (disk_rotation * scene_data_block.data.directional_penumbra_shadow_kernel[i].xy) * tex_scale;
 		float d = textureLod(sampler2D(shadow, SAMPLER_LINEAR_CLAMP), suv, 0.0).r;
-		if (d < pssm_coord.z) {
+		if (d > pssm_coord.z) {
 			blocker_average += d;
 			blocker_count += 1.0;
 		}
@@ -384,7 +384,7 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 	if (blocker_count > 0.0) {
 		//blockers found, do soft shadow
 		blocker_average /= blocker_count;
-		float penumbra = (pssm_coord.z - blocker_average) / blocker_average;
+		float penumbra = (-pssm_coord.z + blocker_average) / (1.0 - blocker_average);
 		tex_scale *= penumbra;
 
 		float s = 0.0;
@@ -488,7 +488,7 @@ float light_process_omni_shadow(uint idx, vec3 vertex, vec3 normal) {
 			if (blocker_count > 0.0) {
 				//blockers found, do soft shadow
 				blocker_average /= blocker_count;
-				float penumbra = (z_norm + blocker_average) / blocker_average;
+				float penumbra = (-z_norm + blocker_average) / (1.0 - blocker_average);
 				tangent *= penumbra;
 				bitangent *= penumbra;
 
@@ -736,7 +736,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 				vec2 suv = shadow_uv + (disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy) * uv_size;
 				suv = clamp(suv, spot_lights.data[idx].atlas_rect.xy, clamp_max);
 				float d = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), suv, 0.0).r;
-				if (d < splane.z) {
+				if (d > splane.z) {
 					blocker_average += d;
 					blocker_count += 1.0;
 				}
@@ -745,7 +745,7 @@ float light_process_spot_shadow(uint idx, vec3 vertex, vec3 normal) {
 			if (blocker_count > 0.0) {
 				//blockers found, do soft shadow
 				blocker_average /= blocker_count;
-				float penumbra = (z_norm - blocker_average) / blocker_average;
+				float penumbra = (-z_norm + blocker_average) / (1.0 - blocker_average);
 				uv_size *= penumbra;
 
 				shadow = 0.0;
