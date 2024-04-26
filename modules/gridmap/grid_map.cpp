@@ -136,9 +136,9 @@ void GridMap::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void GridMap::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "cell_layout" && cell_shape == CELL_SHAPE_SQUARE) {
-		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 	} else if (p_property.name == "cell_offset_axis" && cell_shape == CELL_SHAPE_SQUARE) {
-		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 	}
 }
 
@@ -552,8 +552,7 @@ Vector3i GridMap::local_to_map(const Vector3 &p_local_position) const {
 	Vector3 map_position = p_local_position - _get_offset();
 	map_position /= cell_size;
 
-
-	// Divide by the overlapping ratio
+	// Divide by the overlapping ratio.
 	double overlapping_ratio = 1.0;
 	if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
 		if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
@@ -570,17 +569,17 @@ Vector3i GridMap::local_to_map(const Vector3 &p_local_position) const {
 	// For each half-offset shape, we check if we are in the corner of the tile, and thus should correct the world position accordingly.
 	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
 		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
-		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap
+		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap.
 		if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
-			// Smart floor of the position
+			// Smart floor of the position.
 			Vector3 raw_pos = map_position;
-			if (Math::posmod(Math::floor(map_position.z), 2) ^ (cell_layout == GridMap::CELL_LAYOUT_STACKED_OFFSET)) {
+			if ((Math::posmod(Math::floor(map_position.z), 2) != 0.0) ^ (cell_layout == GridMap::CELL_LAYOUT_STACKED_OFFSET)) {
 				map_position = Vector3(Math::floor(map_position.x + 0.5) - 0.5, map_position.y, Math::floor(map_position.z));
 			} else {
 				map_position = map_position.floor();
 			}
 
-			// Compute the tile offset, and if we might the output for a neighbour top tile
+			// Compute the tile offset, and if we might the output for a neighbor top tile.
 			Vector2 in_cell_pos = Vector2(raw_pos.x - map_position.x, raw_pos.z - map_position.z);
 			bool in_top_left_triangle = (in_cell_pos - Vector2(0.5, 0.0)).cross(Vector2(-0.5, 1.0 / overlapping_ratio - 1)) <= 0;
 			bool in_top_right_triangle = (in_cell_pos - Vector2(0.5, 0.0)).cross(Vector2(0.5, 1.0 / overlapping_ratio - 1)) > 0;
@@ -589,9 +588,9 @@ Vector3i GridMap::local_to_map(const Vector3 &p_local_position) const {
 				case GridMap::CELL_LAYOUT_STACKED:
 					map_position = map_position.floor();
 					if (in_top_left_triangle) {
-						map_position += Vector3i(Math::posmod(Math::floor(map_position.z), 2) ? 0 : -1, 0, -1);
+						map_position += Vector3i(Math::posmod(Math::floor(map_position.z), 2) != 0.0 ? 0 : -1, 0, -1);
 					} else if (in_top_right_triangle) {
-						map_position += Vector3i(Math::posmod(Math::floor(map_position.z), 2) ? 1 : 0, 0, -1);
+						map_position += Vector3i(Math::posmod(Math::floor(map_position.z), 2) != 0.0 ? 1 : 0, 0, -1);
 					}
 					break;
 				case GridMap::CELL_LAYOUT_STACKED_OFFSET:
@@ -638,15 +637,15 @@ Vector3i GridMap::local_to_map(const Vector3 &p_local_position) const {
 					break;
 			}
 		} else { // CELL_OFFSET_AXIS_VERTICAL
-			// Smart floor of the position
+			// Smart floor of the position.
 			Vector3 raw_pos = map_position;
-			if (Math::posmod(Math::floor(map_position.x), 2) ^ (cell_layout == GridMap::CELL_LAYOUT_STACKED_OFFSET)) {
+			if ((Math::posmod(Math::floor(map_position.x), 2) != 0.0) ^ (cell_layout == GridMap::CELL_LAYOUT_STACKED_OFFSET)) {
 				map_position = Vector3(Math::floor(map_position.x), Math::floor(map_position.y), Math::floor(map_position.z + 0.5) - 0.5);
 			} else {
 				map_position = map_position.floor();
 			}
 
-			// Compute the tile offset, and if we might the output for a neighbour top tile
+			// Compute the tile offset, and if we might the output for a neighbor top tile.
 			Vector2 in_cell_pos = Vector2(raw_pos.x - map_position.x, raw_pos.z - map_position.z);
 			bool in_top_left_triangle = (in_cell_pos - Vector2(0.0, 0.5)).cross(Vector2(1.0 / overlapping_ratio - 1, -0.5)) > 0;
 			bool in_bottom_left_triangle = (in_cell_pos - Vector2(0.0, 0.5)).cross(Vector2(1.0 / overlapping_ratio - 1, 0.5)) <= 0;
@@ -655,17 +654,17 @@ Vector3i GridMap::local_to_map(const Vector3 &p_local_position) const {
 				case GridMap::CELL_LAYOUT_STACKED:
 					map_position = map_position.floor();
 					if (in_top_left_triangle) {
-						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) ? 0 : -1);
+						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) != 0.0 ? 0 : -1);
 					} else if (in_bottom_left_triangle) {
-						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) ? 1 : 0);
+						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) != 0.0 ? 1 : 0);
 					}
 					break;
 				case GridMap::CELL_LAYOUT_STACKED_OFFSET:
 					map_position = map_position.floor();
 					if (in_top_left_triangle) {
-						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) ? -1 : 0);
+						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) != 0.0 ? -1 : 0);
 					} else if (in_bottom_left_triangle) {
-						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) ? 0 : 1);
+						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) != 0.0 ? 0 : 1);
 					}
 					break;
 				case GridMap::CELL_LAYOUT_STAIRS_RIGHT:
@@ -765,7 +764,7 @@ Vector3 GridMap::map_to_local(const Vector3i &p_map_position) const {
 		}
 	}
 
-	// Multiply by the overlapping ratio
+	// Multiply by the overlapping ratio.
 	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
 		if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
 			map_position.z *= 0.75;
