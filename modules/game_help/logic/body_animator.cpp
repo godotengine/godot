@@ -944,30 +944,64 @@ CharacterAnimatorLayer::~CharacterAnimatorLayer()
         m_Animator->on_layer_delete(this);
 }
 
-
-void CharacterAnimator::add_layer(const StringName& name,const Ref<CharacterAnimatorLayerConfig>& _mask)
+void CharacterAnimator::set_body(class CharacterBodyMain* p_body)
 {
-    if(m_Body == nullptr || _mask.is_null())
+     m_Body = p_body; 
+     create_layers();
+}
+
+void CharacterAnimator::add_layer(const Ref<CharacterAnimatorLayerConfig>& _mask)
+{
+    if(_mask.is_null())
     {
         return ;
+    }
+    animation_layer_arrays.push_back(_mask);
+    if(m_Body == nullptr )
+    {
+        return;
     }
 
     CharacterAnimatorLayer* layer = memnew(CharacterAnimatorLayer);
     layer->config = _mask;
-    layer->set_name(name.str());
+    layer->set_name(_mask->get_layer_name());
     layer->m_Animator = this;
 
     m_Body->add_child(layer);
     layer->set_owner(m_Body);
     m_LayerList.push_back(layer);
 }
+void CharacterAnimator::create_layers()
+{
+    clear_layer();
+     if(m_Body)
+     {
+        for(int i = 0; i < animation_layer_arrays.size(); ++i)
+        {
+            Ref<CharacterAnimatorLayerConfig> _mask = animation_layer_arrays[i];
+            CharacterAnimatorLayer* layer = memnew(CharacterAnimatorLayer);
+            layer->config = _mask;
+            layer->set_name(_mask->get_layer_name());
+            layer->m_Animator = this;
+
+            m_Body->add_child(layer);
+            layer->set_owner(m_Body);
+            m_LayerList.push_back(layer);
+
+        }
+     }
+
+}
 void CharacterAnimator::clear_layer()
 {
-    while(m_LayerList.size()>0)
+    auto it = m_LayerList.begin();
+    while(it != m_LayerList.end())
     {
-        CharacterAnimatorLayer* layer = *m_LayerList.begin();
-        memdelete(layer);
+        CharacterAnimatorLayer* layer = *it;
+        layer->queue_free();
+
     }
+    m_LayerList.clear();
 }
 void CharacterAnimator::update_animation(float delta)
 {
@@ -986,3 +1020,10 @@ void CharacterAnimator::update_animation(float delta)
 }
 
 
+void CharacterAnimator::_bind_methods()
+{
+	ClassDB::bind_method(D_METHOD("set_animation_layer_arrays", "animation_layer_arrays"), &CharacterAnimator::set_animation_layer_arrays);
+    ClassDB::bind_method(D_METHOD("get_animation_layer_arrays"), &CharacterAnimator::get_animation_layer_arrays);
+
+    ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "animation_layer_arrays"), "set_animation_layer_arrays", "get_animation_layer_arrays");
+}

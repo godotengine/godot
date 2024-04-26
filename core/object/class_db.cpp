@@ -2046,7 +2046,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	if (var.get_type() == Variant::OBJECT) {
 		Object *obj = var.get_validated_object();
 		if (obj) {
-			WARN_PRINT(vformat("Instantiated %s used as default value for %s's \"%s\" property.", obj->get_class(), p_class, p_property));
+			ERR_PRINT_ED(vformat("Instantiated %s used as default value for %s's \"%s\" property, The default value of the Object type must be null, and no constructor initialization is required..", obj->get_class(), p_class, p_property));
 		}
 	}
 #endif

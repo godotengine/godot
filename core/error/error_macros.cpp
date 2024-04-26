@@ -248,7 +248,12 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 	CharString data;
 	if(p_type == ERR_HANDLER_ERROR)
 	{
-		temp = p_message;
+		temp = p_error;
+        if(p_message)
+        {
+            temp += ": ";
+            temp += p_message;
+        }
 		LocalVector<StackFrame> stackFrame = getStackTrace();
 		for(int i = 0; i < stackFrame.size(); ++i)
 		{

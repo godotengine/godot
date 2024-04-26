@@ -14,7 +14,7 @@ void CharacterBodyMain::_bind_methods()
 	ClassDB::bind_method(D_METHOD("set_update_mode", "update_mode"), &CharacterBodyMain::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &CharacterBodyMain::get_update_mode);
 	ClassDB::bind_method(D_METHOD("set_blackboard", "blackboard"), &CharacterBodyMain::set_blackboard);
-	ClassDB::bind_method(D_METHOD("get_blackboard"), &CharacterBodyMain::get_blackboard);
+	ClassDB::bind_method(D_METHOD("get_blackboard"), &CharacterBodyMain::_get_blackboard);
 
 	ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &CharacterBodyMain::set_blackboard_plan);
 	ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &CharacterBodyMain::get_blackboard_plan);
@@ -41,12 +41,12 @@ void CharacterBodyMain::_bind_methods()
 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "behavior_tree", PROPERTY_HINT_RESOURCE_TYPE, "BehaviorTree"), "set_behavior_tree", "get_behavior_tree");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,Manual"), "set_update_mode", "get_update_mode");	
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard",PROPERTY_USAGE_EDITOR), "_set_blackboard", "get_blackboard");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_blackboard_plan", "get_blackboard_plan");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard", PROPERTY_HINT_RESOURCE_TYPE, "Blackboard",PROPERTY_USAGE_DEFAULT ), "set_blackboard", "get_blackboard");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan", PROPERTY_USAGE_DEFAULT ), "set_blackboard_plan", "get_blackboard_plan");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "controller", PROPERTY_HINT_RESOURCE_TYPE, "CharacterController"), "set_controller", "get_controller");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skeleton", PROPERTY_HINT_NODE_TYPE, "Skeleton",PROPERTY_USAGE_EDITOR), "set_skeleton", "get_skeleton");    
     // 只能編輯不能保存
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_EDITOR), "set_animator", "get_animator");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animator", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimator",PROPERTY_USAGE_DEFAULT ), "set_animator", "get_animator");
 
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "main_shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D",PROPERTY_USAGE_DEFAULT), "set_main_shape", "get_main_shape");
     ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "body_part", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT), "set_body_part", "get_body_part");
@@ -154,13 +154,28 @@ BTPlayer * CharacterBodyMain::get_bt_player()
         btPlayer->set_name("BTPlayer");
         btPlayer->connect("behavior_tree_finished", callable_mp(this, &CharacterBodyMain::behavior_tree_finished));
         btPlayer->connect("updated", callable_mp(this, &CharacterBodyMain::behavior_tree_update));
-        btPlayer->get_blackboard()->set_parent(player_blackboard);
+        btPlayer->get_blackboard()->set_parent(_get_blackboard());
         add_child(btPlayer);
         btPlayer->set_owner(this);
     }
     return btPlayer;
 }
 
+void CharacterBodyMain::set_blackboard(const Ref<Blackboard> &p_blackboard) 
+{ 
+    if(player_blackboard.is_null())
+    {
+        player_blackboard = p_blackboard;
+        if(btPlayer == nullptr)
+        {                
+            btPlayer->get_blackboard()->set_parent(_get_blackboard());
+        }
+    }
+    else
+    {
+        player_blackboard->copy_form(p_blackboard);
+    }
+}
 
 void CharacterBodyMain::set_controller(const Ref<CharacterController> &p_controller) 
 {
@@ -187,7 +202,7 @@ bool CharacterBodyMain::play_skill(String p_skill_name)
     {
         call("skill_tree_init",p_skill_name);
     }
-    btSkillPlayer->get_blackboard()->set_parent(player_blackboard);
+    btSkillPlayer->get_blackboard()->set_parent(get_blackboard());
 
     get_blackboard()->set_var("skill_name",p_skill_name);
     get_blackboard()->set_var("skill_play",true);
@@ -278,9 +293,6 @@ Dictionary CharacterBodyMain::get_body_part()
 
 CharacterBodyMain::CharacterBodyMain()
 {
-    player_blackboard.instantiate();
-    animator.instantiate();
-    animator->set_body(this);
     mainShape = memnew(CollisionShape3D);
     mainShape->set_name("MainCollision");
     add_child(mainShape);

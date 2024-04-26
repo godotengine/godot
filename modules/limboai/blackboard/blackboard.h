@@ -58,6 +58,11 @@ public:
 
 	void link_var(const StringName &p_name, const Ref<Blackboard> &p_target_blackboard, const StringName &p_target_var);
 
+	void copy_form(const Ref<Blackboard> &p_blackboard)
+	{
+		data = p_blackboard->data;
+	}
+
 	// TODO: Add serialization API.
 };
 

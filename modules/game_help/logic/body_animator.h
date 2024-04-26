@@ -379,16 +379,21 @@ class CharacterTimelineNode : public Node3D
 class CharacterAnimator : public RefCounted
 {
     GDCLASS(CharacterAnimator, RefCounted);
+    static void _bind_methods();
 
     List<CharacterAnimatorLayer*> m_LayerList;
+    TypedArray<CharacterAnimatorLayerConfig> animation_layer_arrays;
     class CharacterBodyMain* m_Body = nullptr;
+    bool is_init = false;
 public:
 
-    void set_body(class CharacterBodyMain* p_body) { m_Body = p_body; }
+    void set_body(class CharacterBodyMain* p_body);
 
-    void add_layer(const StringName& name,const Ref<CharacterAnimatorLayerConfig>& _mask);
+    void add_layer(const Ref<CharacterAnimatorLayerConfig>& _mask);
 
     void update_animation(float delta);
+
+    void create_layers();
 
     void clear_layer();
 
@@ -408,6 +413,13 @@ public:
             }
         }
     }
+    void set_animation_layer_arrays(TypedArray<CharacterAnimatorLayerConfig> p_animation_layer_arrays)
+    {
+        animation_layer_arrays = p_animation_layer_arrays;        
+        create_layers();
+    }
+    TypedArray<CharacterAnimatorLayerConfig> get_animation_layer_arrays() { return animation_layer_arrays; }
+
     ~CharacterAnimator()
     {
         clear_layer();

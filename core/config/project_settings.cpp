@@ -244,6 +244,10 @@ void ProjectSettings::set_ignore_value_in_docs(const String &p_name, bool p_igno
 }
 
 bool ProjectSettings::get_ignore_value_in_docs(const String &p_name) const {
+	if(!props.has(p_name))
+	{
+		return false;
+	}
 	ERR_FAIL_COND_V_MSG(!props.has(p_name), false, "Request for nonexistent project setting: " + p_name + ".");
 #ifdef DEBUG_METHODS_ENABLED
 	return props[p_name].ignore_value_in_docs;

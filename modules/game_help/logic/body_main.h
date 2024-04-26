@@ -63,21 +63,19 @@ public:
     Skeleton3D *get_skeleton() { return skeleton; }
 
     // 设置黑板
-	void set_blackboard(const Ref<Blackboard> &p_blackboard) 
-    { 
-        player_blackboard = p_blackboard; 
-        get_bt_player()->get_blackboard()->set_parent(p_blackboard);
-        if(btSkillPlayer != nullptr)
+	void set_blackboard(const Ref<Blackboard> &p_blackboard) ;
+    // 
+    // 可编辑属性,必须初始类返回一个空对象
+	Ref<Blackboard> _get_blackboard()  { return player_blackboard; }
+	Ref<Blackboard> get_blackboard() 
+     {
+        if(player_blackboard.is_null())
         {
-            btSkillPlayer->get_blackboard()->set_parent(player_blackboard); 
+            player_blackboard.instantiate();
+            ERR_PRINT_ED("get_blackboard");
         }
+         return player_blackboard; 
     }
-	void _set_blackboard(const Ref<Blackboard> &p_blackboard) 
-    {
-        
-    }
-
-	Ref<Blackboard> get_blackboard()  { return player_blackboard; }
 
 	void restart()
     {
@@ -119,10 +117,25 @@ public:
 public:
     void set_animator(const Ref<CharacterAnimator> &p_animator)
     {
-
+        if(animator.is_valid())
+        {
+            return;
+        }
+        animator = p_animator;
+        animator->set_body(this);
     }
 
     Ref<CharacterAnimator> get_animator()
+    {
+        if(animator.is_valid())
+        {
+            animator.instantiate();
+            animator->set_body(this);
+        }
+        return animator;
+    }
+    // 可编辑属性,必须初始类返回一个空对象
+    Ref<CharacterAnimator> _get_animator()
     {
         return animator;
     }
