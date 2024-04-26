@@ -803,6 +803,8 @@ const uint32_t SurfaceTool::custom_mask[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_
 const uint32_t SurfaceTool::custom_shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
 
 void SurfaceTool::create_vertex_array_from_arrays(const Array &p_arrays, LocalVector<SurfaceTool::Vertex> &ret, uint64_t *r_format) {
+	ERR_FAIL_INDEX(RS::ARRAY_WEIGHTS, p_arrays.size());
+
 	ret.clear();
 
 	Vector<Vector3> varr = p_arrays[RS::ARRAY_VERTEX];
