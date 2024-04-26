@@ -41,10 +41,6 @@
 #include "servers/display_server.h"
 #include "servers/text_server.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif
-
 void LineEdit::_swap_current_input_direction() {
 	if (input_direction == TEXT_DIRECTION_LTR) {
 		input_direction = TEXT_DIRECTION_RTL;
@@ -770,14 +766,10 @@ void LineEdit::_update_theme_item_cache() {
 void LineEdit::_notification(int p_what) {
 	switch (p_what) {
 #ifdef TOOLS_ENABLED
-		case NOTIFICATION_ENTER_TREE: {
-			if (Engine::get_singleton()->is_editor_hint() && !get_tree()->is_node_being_edited(this)) {
-				set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
-				set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
-
-				if (!EditorSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed))) {
-					EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed));
-				}
+		case NOTIFICATION_READY: {
+			if (editor_settings && !is_part_of_edited_scene()) {
+				_editor_settings_changed(true);
+				editor_settings->connect(SNAME("settings_changed"), callable_mp(this, &LineEdit::_editor_settings_changed).bind(false));
 			}
 		} break;
 #endif
@@ -2154,15 +2146,15 @@ PopupMenu *LineEdit::get_menu() const {
 	return menu;
 }
 
-void LineEdit::_editor_settings_changed() {
 #ifdef TOOLS_ENABLED
-	if (!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/appearance/caret")) {
+void LineEdit::_editor_settings_changed(bool p_force_update) {
+	if (!p_force_update && !editor_settings->call(SNAME("check_changed_settings_in_group"), "text_editor/appearance/caret")) {
 		return;
 	}
-	set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
-	set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
-#endif
+	set_caret_blink_enabled(editor_settings->get(SNAME("text_editor/appearance/caret/caret_blink")));
+	set_caret_blink_interval(editor_settings->get(SNAME("text_editor/appearance/caret/caret_blink_interval")));
 }
+#endif
 
 void LineEdit::set_expand_to_text_length_enabled(bool p_enabled) {
 	expand_to_text_length = p_enabled;

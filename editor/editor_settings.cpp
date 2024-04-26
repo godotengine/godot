@@ -51,6 +51,7 @@
 #include "editor/editor_translation.h"
 #include "editor/engine_update_label.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/line_edit.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -1064,6 +1065,7 @@ void EditorSettings::create() {
 		singleton->setup_network();
 		singleton->load_favorites_and_recent_dirs();
 		singleton->list_text_editor_themes();
+		LineEdit::editor_settings = singleton.ptr();
 
 		return;
 	}
@@ -1087,6 +1089,7 @@ fail:
 	singleton->setup_language();
 	singleton->setup_network();
 	singleton->list_text_editor_themes();
+	LineEdit::editor_settings = singleton.ptr();
 }
 
 void EditorSettings::setup_language() {
@@ -1889,4 +1892,7 @@ EditorSettings::EditorSettings() {
 }
 
 EditorSettings::~EditorSettings() {
+	if (singleton == this) {
+		LineEdit::editor_settings = nullptr;
+	}
 }
