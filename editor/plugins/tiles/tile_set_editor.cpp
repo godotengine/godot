@@ -875,6 +875,7 @@ TileSetEditor::TileSetEditor() {
 	sources_delete_button->set_theme_type_variation("FlatButton");
 	sources_delete_button->set_disabled(true);
 	sources_delete_button->connect("pressed", callable_mp(this, &TileSetEditor::_source_delete_pressed));
+	sources_delete_button->set_shortcut(ED_SHORTCUT("tile_set_editor/delete_tile_source", TTR("Delete Tile Source"), Key::KEY_DELETE)); 
 	sources_bottom_actions->add_child(sources_delete_button);
 
 	sources_add_button = memnew(MenuButton);
@@ -882,6 +883,7 @@ TileSetEditor::TileSetEditor() {
 	sources_add_button->set_theme_type_variation("FlatButton");
 	sources_add_button->get_popup()->add_item(TTR("Atlas"));
 	sources_add_button->get_popup()->add_item(TTR("Scenes Collection"));
+	sources_add_button->set_shortcut(ED_SHORTCUT("tile_set_editor/add_tile_source", TTR("Add Tile Source"), KeyModifierMask::CMD_OR_CTRL | Key::A));
 	sources_add_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_source_add_id_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
 
