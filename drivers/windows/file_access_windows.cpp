@@ -123,17 +123,9 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	// a file using the wrong case (which *works* on Windows, but won't on other
 	// platforms).
 	if (p_mode_flags == READ) {
-		WIN32_FIND_DATAW d;
-		HANDLE fnd = FindFirstFileW((LPCWSTR)(path.utf16().get_data()), &d);
-		if (fnd != INVALID_HANDLE_VALUE) {
-			String fname = String::utf16((const char16_t *)(d.cFileName));
-			if (!fname.is_empty()) {
-				String base_file = path.get_file();
-				if (base_file != fname && base_file.findn(fname) == 0) {
-					WARN_PRINT("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
-				}
-			}
-			FindClose(fnd);
+		String physical_path;
+		if (is_case_mismatch(false, &physical_path)) {
+			WARN_PRINT("Case mismatch opening requested file '" + path.get_file() + "', stored as '" + physical_path.get_file() + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
 		}
 	}
 #endif
@@ -222,6 +214,46 @@ String FileAccessWindows::get_path_absolute() const {
 
 bool FileAccessWindows::is_open() const {
 	return (f != nullptr);
+}
+
+bool FileAccessWindows::is_case_mismatch(bool p_full_check, String *r_physical_path) const {
+	bool mismatch = false;
+
+	String check_path = path;
+	PackedStringArray splits;
+	if (r_physical_path) {
+		splits = path.split("/");
+	}
+
+	for (int i = splits.size() - 1; i >= 0; i--) {
+		WIN32_FIND_DATAW d;
+		HANDLE fnd = FindFirstFileW((LPCWSTR)(check_path.utf16().get_data()), &d);
+		if (fnd != INVALID_HANDLE_VALUE) {
+			String fname = String::utf16((const char16_t *)(d.cFileName));
+			if (!fname.is_empty()) {
+				String base_file = check_path.get_file();
+				if (base_file != fname && base_file.findn(fname) == 0) {
+					mismatch = true;
+
+					if (r_physical_path) {
+						splits.write[i] = fname;
+					}
+				}
+			}
+			FindClose(fnd);
+		}
+
+		if (!p_full_check) {
+			break;
+		}
+		check_path = check_path.get_base_dir();
+	}
+
+	if (r_physical_path) {
+		*r_physical_path = String("/").join(splits);
+	}
+
+	return mismatch;
 }
 
 void FileAccessWindows::seek(uint64_t p_position) {

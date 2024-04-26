@@ -3556,8 +3556,18 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		addon_path = "res://addons/" + addon_path + "/plugin.cfg";
 	}
 
-	ERR_FAIL_COND(p_enabled && addon_name_to_plugin.has(addon_path));
-	ERR_FAIL_COND(!p_enabled && !addon_name_to_plugin.has(addon_path));
+	{
+		Ref<FileAccess> case_checker = FileAccess::open(addon_path, FileAccess::READ);
+		String physical_path;
+
+		if (case_checker.is_valid() && case_checker->is_case_mismatch(true, &physical_path)) {
+			WARN_PRINT(vformat("Path case mismatch when enabling addon: '%s'.", p_addon));
+			addon_path = ProjectSettings::get_singleton()->localize_path(physical_path);
+		}
+	}
+
+	ERR_FAIL_COND_MSG(p_enabled && addon_name_to_plugin.has(addon_path), vformat("Can't enable addon: '%s'. Already enabled.", p_addon));
+	ERR_FAIL_COND_MSG(!p_enabled && !addon_name_to_plugin.has(addon_path), vformat("Can't disable addon: '%s'. Already disabled.", p_addon));
 
 	if (!p_enabled) {
 		EditorPlugin *addon = addon_name_to_plugin[addon_path];
@@ -3575,6 +3585,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		WARN_PRINT("Addon '" + addon_path + "' failed to load. No directory found. Removing from enabled plugins.");
 		return;
 	}
+
 	Error err = cf->load(addon_path);
 	if (err != OK) {
 		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), addon_path));

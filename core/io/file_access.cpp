@@ -224,6 +224,10 @@ String FileAccess::fix_path(const String &p_path) const {
 	return r_path;
 }
 
+bool FileAccess::is_case_mismatch(bool p_full_check, String *r_physical_path) const {
+	return false;
+}
+
 /* these are all implemented for ease of porting, then can later be optimized */
 
 uint16_t FileAccess::get_16() const {

@@ -126,6 +126,7 @@ public:
 	static void set_file_close_fail_notify_callback(FileCloseFailNotify p_cbk) { close_fail_notify = p_cbk; }
 
 	virtual bool is_open() const = 0; ///< true when file is open
+	virtual bool is_case_mismatch(bool p_full_check, String *r_physical_path = nullptr) const;
 
 	virtual String get_path() const { return ""; } /// returns the path for the current open file
 	virtual String get_path_absolute() const { return ""; } /// returns the absolute path for the current open file
