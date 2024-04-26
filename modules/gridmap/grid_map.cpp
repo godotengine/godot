@@ -601,8 +601,9 @@ GridMap::OctantKey GridMap::get_octant_key_from_cell_coords(const Vector3i &p_ce
 	return ok;
 }
 
-Vector3i GridMap::local_to_map(const Vector3 &p_world_position) const {
-	Vector3 map_position = (p_world_position / cell_size);
+Vector3i GridMap::local_to_map(const Vector3 &p_local_position) const {
+	Vector3 map_position = p_local_position - _get_offset();
+	map_position /= cell_size;
 
 	// Divide by the overlapping ratio
 	double overlapping_ratio = 1.0;
