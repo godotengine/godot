@@ -2,6 +2,7 @@ import methods
 import os
 import subprocess
 import sys
+from methods import print_warning, print_error
 from platform_methods import detect_arch
 
 from typing import TYPE_CHECKING
@@ -293,16 +294,14 @@ def setup_msvc_manual(env: "SConsEnvironment"):
 
     env_arch = detect_build_env_arch()
     if env["arch"] != env_arch:
-        print(
-            """
-            Arch argument (%s) is not matching Native/Cross Compile Tools Prompt/Developer Console (or Visual Studio settings) that is being used to run SCons (%s).
-            Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSVC compiler will be executed and inform you.
-            """
+        print_error(
+            "Arch argument (%s) is not matching Native/Cross Compile Tools Prompt/Developer Console (or Visual Studio settings) that is being used to run SCons (%s).\n"
+            "Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSVC compiler will be executed and inform you."
             % (env["arch"], env_arch)
         )
-        sys.exit(200)
+        sys.exit(255)
 
-    print("Found MSVC, arch %s" % (env_arch))
+    print("Using VCVARS-determined MSVC, arch %s" % (env_arch))
 
 
 def setup_msvc_auto(env: "SConsEnvironment"):
@@ -338,7 +337,7 @@ def setup_msvc_auto(env: "SConsEnvironment"):
     env.Tool("mssdk")  # we want the MS SDK
 
     # Note: actual compiler version can be found in env['MSVC_VERSION'], e.g. "14.1" for VS2015
-    print("Found MSVC version %s, arch %s" % (env["MSVC_VERSION"], env["arch"]))
+    print("Using SCons-detected MSVC version %s, arch %s" % (env["MSVC_VERSION"], env["arch"]))
 
 
 def setup_mingw(env: "SConsEnvironment"):
@@ -346,32 +345,24 @@ def setup_mingw(env: "SConsEnvironment"):
 
     env_arch = detect_build_env_arch()
     if os.getenv("MSYSTEM") == "MSYS":
-        print(
-            """
-            Running from base MSYS2 console/environment, use target specific environment instead (e.g., mingw32, mingw64, clang32, clang64).
-            """
+        print_error(
+            "Running from base MSYS2 console/environment, use target specific environment instead (e.g., mingw32, mingw64, clang32, clang64)."
         )
-        sys.exit(201)
+        sys.exit(255)
 
     if env_arch != "" and env["arch"] != env_arch:
-        print(
-            """
-            Arch argument (%s) is not matching MSYS2 console/environment that is being used to run SCons (%s).
-            Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSYS2 compiler will be executed and inform you.
-            """
+        print_error(
+            "Arch argument (%s) is not matching MSYS2 console/environment that is being used to run SCons (%s).\n"
+            "Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSYS2 compiler will be executed and inform you."
             % (env["arch"], env_arch)
         )
-        sys.exit(202)
+        sys.exit(255)
 
     if not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]) and not try_cmd(
         "clang --version", env["mingw_prefix"], env["arch"]
     ):
-        print(
-            """
-            No valid compilers found, use MINGW_PREFIX environment variable to set MinGW path.
-            """
-        )
-        sys.exit(202)
+        print_error("No valid compilers found, use MINGW_PREFIX environment variable to set MinGW path.")
+        sys.exit(255)
 
     print("Using MinGW, arch %s" % (env["arch"]))
 
@@ -454,10 +445,10 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         if os.getenv("WindowsSdkDir") is not None:
             env.Prepend(CPPPATH=[str(os.getenv("WindowsSdkDir")) + "/Include"])
         else:
-            print("Missing environment variable: WindowsSdkDir")
+            print_warning("Missing environment variable: WindowsSdkDir")
 
     if int(env["target_win_version"], 16) < 0x0601:
-        print("`target_win_version` should be 0x0601 or higher (Windows 7).")
+        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
         sys.exit(255)
 
     env.AppendUnique(
@@ -515,10 +506,10 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     if env["d3d12"]:
         # Check whether we have d3d12 dependencies installed.
         if not os.path.exists(env["mesa_libs"]):
-            print("The Direct3D 12 rendering driver requires dependencies to be installed.")
-            print(r"You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
-            print("See the documentation for more information:")
-            print(
+            print_error(
+                "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
+                "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
+                "See the documentation for more information:\n\t"
                 "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
             )
             sys.exit(255)
@@ -566,7 +557,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         if os.getenv("WindowsSdkDir") is not None:
             env.Append(LIBPATH=[str(os.getenv("WindowsSdkDir")) + "/Lib"])
         else:
-            print("Missing environment variable: WindowsSdkDir")
+            print_warning("Missing environment variable: WindowsSdkDir")
 
     ## LTO
 
@@ -575,7 +566,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
-            print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
+            print_error("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
             sys.exit(255)
         env.AppendUnique(CCFLAGS=["/GL"])
         env.AppendUnique(ARFLAGS=["/LTCG"])
@@ -693,7 +684,7 @@ def configure_mingw(env: "SConsEnvironment"):
     ## Compile flags
 
     if int(env["target_win_version"], 16) < 0x0601:
-        print("`target_win_version` should be 0x0601 or higher (Windows 7).")
+        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
         sys.exit(255)
 
     if not env["use_llvm"]:
@@ -747,10 +738,10 @@ def configure_mingw(env: "SConsEnvironment"):
     if env["d3d12"]:
         # Check whether we have d3d12 dependencies installed.
         if not os.path.exists(env["mesa_libs"]):
-            print("The Direct3D 12 rendering driver requires dependencies to be installed.")
-            print(r"You can install them by running `python misc\scripts\install_d3d12_sdk_windows.py`.")
-            print("See the documentation for more information:")
-            print(
+            print_error(
+                "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
+                "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
+                "See the documentation for more information:\n\t"
                 "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
             )
             sys.exit(255)
@@ -797,11 +788,11 @@ def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:
-        print(
+        print_error(
             'Unsupported CPU architecture "%s" for Windows. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit()
+        sys.exit(255)
 
     # At this point the env has been set up with basic tools/compilers.
     env.Prepend(CPPPATH=["#platform/windows"])

@@ -5,6 +5,7 @@ import glob
 import subprocess
 from collections import OrderedDict
 from collections.abc import Mapping
+from enum import Enum
 from typing import Iterator
 from pathlib import Path
 from os.path import normpath, basename
@@ -15,11 +16,57 @@ base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
 # Listing all the folders we have converted
 # for SCU in scu_builders.py
 _scu_folders = set()
+# Colors are disabled in non-TTY environments such as pipes. This means
+# that if output is redirected to a file, it won't contain color codes.
+# Colors are always enabled on continuous integration.
+_colorize = bool(sys.stdout.isatty() or os.environ.get("CI"))
 
 
 def set_scu_folders(scu_folders):
     global _scu_folders
     _scu_folders = scu_folders
+
+
+class ANSI(Enum):
+    """
+    Enum class for adding ansi colorcodes directly into strings.
+    Automatically converts values to strings representing their
+    internal value, or an empty string in a non-colorized scope.
+    """
+
+    GRAY = "\x1b[0;30m"
+    RED = "\x1b[0;31m"
+    GREEN = "\x1b[0;32m"
+    YELLOW = "\x1b[0;33m"
+    BLUE = "\x1b[0;34m"
+    PURPLE = "\x1b[0;35m"
+    CYAN = "\x1b[0;36m"
+    WHITE = "\x1b[0;37m"
+
+    BOLD_GRAY = "\x1b[1;90m"
+    BOLD_RED = "\x1b[1;91m"
+    BOLD_GREEN = "\x1b[1;92m"
+    BOLD_YELLOW = "\x1b[1;93m"
+    BOLD_BLUE = "\x1b[1;94m"
+    BOLD_PURPLE = "\x1b[1;95m"
+    BOLD_CYAN = "\x1b[1;96m"
+    BOLD_WHITE = "\x1b[1;97m"
+
+    RESET = "\x1b[0m"
+
+    def __str__(self):
+        global _colorize
+        return self.value if _colorize else ""
+
+
+def print_warning(*values: object) -> None:
+    """Prints a warning message with formatting."""
+    print(f"{ANSI.BOLD_YELLOW}WARNING:{ANSI.YELLOW}", *values, ANSI.RESET, file=sys.stderr)
+
+
+def print_error(*values: object) -> None:
+    """Prints an error message with formatting."""
+    print(f"{ANSI.BOLD_RED}ERROR:{ANSI.RED}", *values, ANSI.RESET, file=sys.stderr)
 
 
 def add_source_files_orig(self, sources, files, allow_gen=False):
@@ -28,7 +75,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
         # Keep SCons project-absolute path as they are (no wildcard support)
         if files.startswith("#"):
             if "*" in files:
-                print("ERROR: Wildcards can't be expanded in SCons project-absolute path: '{}'".format(files))
+                print_error("Wildcards can't be expanded in SCons project-absolute path: '{}'".format(files))
                 return
             files = [files]
         else:
@@ -44,7 +91,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
     for path in files:
         obj = self.Object(path)
         if obj in sources:
-            print('WARNING: Object "{}" already included in environment sources.'.format(obj))
+            print_warning('Object "{}" already included in environment sources.'.format(obj))
             continue
         sources.append(obj)
 
@@ -517,7 +564,7 @@ def module_check_dependencies(self, module):
             missing_deps.append(dep)
 
     if missing_deps != []:
-        print(
+        print_warning(
             "Disabling '{}' module as the following dependencies are not satisfied: {}".format(
                 module, ", ".join(missing_deps)
             )
@@ -576,9 +623,7 @@ def use_windows_spawn_fix(self, platform=None):
         _, err = proc.communicate()
         rv = proc.wait()
         if rv:
-            print("=====")
-            print(err)
-            print("=====")
+            print_error(err)
         return rv
 
     def mySpawn(sh, escape, cmd, args, env):
@@ -601,65 +646,34 @@ def use_windows_spawn_fix(self, platform=None):
     self["SPAWN"] = mySpawn
 
 
-def no_verbose(sys, env):
-    colors = {}
-
-    # Colors are disabled in non-TTY environments such as pipes. This means
-    # that if output is redirected to a file, it will not contain color codes
-    if sys.stdout.isatty():
-        colors["blue"] = "\033[0;94m"
-        colors["bold_blue"] = "\033[1;94m"
-        colors["reset"] = "\033[0m"
-    else:
-        colors["blue"] = ""
-        colors["bold_blue"] = ""
-        colors["reset"] = ""
+def no_verbose(env):
+    colors = [ANSI.BLUE, ANSI.BOLD_BLUE, ANSI.RESET]
 
     # There is a space before "..." to ensure that source file names can be
     # Ctrl + clicked in the VS Code terminal.
-    compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
-    java_compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
-    compile_shared_source_message = "{}Compiling shared {}$SOURCE{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
-    link_program_message = "{}Linking Program {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
-    link_library_message = "{}Linking Static Library {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
-    ranlib_library_message = "{}Ranlib Library {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
-    link_shared_library_message = "{}Linking Shared Library {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
-    java_library_message = "{}Creating Java Archive {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
-    compiled_resource_message = "{}Creating Compiled Resource {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
-    generated_file_message = "{}Generating {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
+    compile_source_message = "{0}Compiling {1}$SOURCE{0} ...{2}".format(*colors)
+    java_compile_source_message = "{0}Compiling {1}$SOURCE{0} ...{2}".format(*colors)
+    compile_shared_source_message = "{0}Compiling shared {1}$SOURCE{0} ...{2}".format(*colors)
+    link_program_message = "{0}Linking Program {1}$TARGET{0} ...{2}".format(*colors)
+    link_library_message = "{0}Linking Static Library {1}$TARGET{0} ...{2}".format(*colors)
+    ranlib_library_message = "{0}Ranlib Library {1}$TARGET{0} ...{2}".format(*colors)
+    link_shared_library_message = "{0}Linking Shared Library {1}$TARGET{0} ...{2}".format(*colors)
+    java_library_message = "{0}Creating Java Archive {1}$TARGET{0} ...{2}".format(*colors)
+    compiled_resource_message = "{0}Creating Compiled Resource {1}$TARGET{0} ...{2}".format(*colors)
+    generated_file_message = "{0}Generating {1}$TARGET{0} ...{2}".format(*colors)
 
-    env.Append(CXXCOMSTR=[compile_source_message])
-    env.Append(CCCOMSTR=[compile_source_message])
-    env.Append(SHCCCOMSTR=[compile_shared_source_message])
-    env.Append(SHCXXCOMSTR=[compile_shared_source_message])
-    env.Append(ARCOMSTR=[link_library_message])
-    env.Append(RANLIBCOMSTR=[ranlib_library_message])
-    env.Append(SHLINKCOMSTR=[link_shared_library_message])
-    env.Append(LINKCOMSTR=[link_program_message])
-    env.Append(JARCOMSTR=[java_library_message])
-    env.Append(JAVACCOMSTR=[java_compile_source_message])
-    env.Append(RCCOMSTR=[compiled_resource_message])
-    env.Append(GENCOMSTR=[generated_file_message])
+    env.Append(CXXCOMSTR=compile_source_message)
+    env.Append(CCCOMSTR=compile_source_message)
+    env.Append(SHCCCOMSTR=compile_shared_source_message)
+    env.Append(SHCXXCOMSTR=compile_shared_source_message)
+    env.Append(ARCOMSTR=link_library_message)
+    env.Append(RANLIBCOMSTR=ranlib_library_message)
+    env.Append(SHLINKCOMSTR=link_shared_library_message)
+    env.Append(LINKCOMSTR=link_program_message)
+    env.Append(JARCOMSTR=java_library_message)
+    env.Append(JAVACCOMSTR=java_compile_source_message)
+    env.Append(RCCOMSTR=compiled_resource_message)
+    env.Append(GENCOMSTR=generated_file_message)
 
 
 def detect_visual_c_compiler_version(tools_env):
@@ -790,7 +804,7 @@ def generate_cpp_hint_file(filename):
             with open(filename, "w", encoding="utf-8", newline="\n") as fd:
                 fd.write("#define GDCLASS(m_class, m_inherits)\n")
         except OSError:
-            print("Could not write cpp.hint file.")
+            print_warning("Could not write cpp.hint file.")
 
 
 def glob_recursive(pattern, node="."):
@@ -881,7 +895,7 @@ def detect_darwin_sdk_path(platform, env):
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
-            print("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
+            print_error("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
             raise
 
 
@@ -891,7 +905,7 @@ def is_vanilla_clang(env):
     try:
         version = subprocess.check_output([env.subst(env["CXX"]), "--version"]).strip().decode("utf-8")
     except (subprocess.CalledProcessError, OSError):
-        print("Couldn't parse CXX environment variable to infer compiler version.")
+        print_warning("Couldn't parse CXX environment variable to infer compiler version.")
         return False
     return not version.startswith("Apple")
 
@@ -928,7 +942,7 @@ def get_compiler_version(env):
                 .decode("utf-8")
             )
         except (subprocess.CalledProcessError, OSError):
-            print("Couldn't parse CXX environment variable to infer compiler version.")
+            print_warning("Couldn't parse CXX environment variable to infer compiler version.")
             return ret
     else:
         # TODO: Implement for MSVC

@@ -29,8 +29,8 @@ if "SCRIPT_AES256_ENCRYPTION_KEY" in os.environ:
                 ec_valid = False
             txt += txts
     if not ec_valid:
-        print("Error: Invalid AES256 encryption key, not 64 hexadecimal characters: '" + key + "'.")
-        print(
+        methods.print_error(
+            f'Invalid AES256 encryption key, not 64 hexadecimal characters: "{key}".\n'
             "Unset 'SCRIPT_AES256_ENCRYPTION_KEY' in your environment "
             "or make sure that it contains exactly 64 hexadecimal characters."
         )

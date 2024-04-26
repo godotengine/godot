@@ -1,9 +1,19 @@
 #!/usr/bin/env python
 import atexit
-import os
 import sys
 import methods
 import time
+
+# Enable ANSI escape code support on Windows 10 and later (for colored console output).
+# <https://github.com/python/cpython/issues/73245>
+if sys.platform == "win32":
+    from ctypes import windll, c_int, byref
+
+    stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
+    mode = c_int(0)
+    windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
+    mode = c_int(mode.value | 4)
+    windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
 
 # For the reference:
 # - CCFLAGS are compilation flags shared between C and C++
@@ -30,7 +40,7 @@ opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", Fa
 opts.Update(env)
 
 if not env["verbose"]:
-    methods.no_verbose(sys, env)
+    methods.no_verbose(env)
 
 if env["platform"] == "windows" and not env["use_mingw"]:
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
@@ -764,9 +774,16 @@ Default(library)
 
 
 def print_elapsed_time():
-    elapsed_time_sec = round(time.time() - time_at_start, 3)
-    time_ms = round((elapsed_time_sec % 1) * 1000)
-    print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
+    elapsed_time_sec = round(time.time() - time_at_start, 2)
+    time_centiseconds = round((elapsed_time_sec % 1) * 100)
+    print(
+        "{}[Time elapsed: {}.{:02}]{}".format(
+            methods.ANSI.GRAY,
+            time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)),
+            time_centiseconds,
+            methods.ANSI.RESET,
+        )
+    )
 
 
 atexit.register(print_elapsed_time)
