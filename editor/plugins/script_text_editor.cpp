@@ -412,6 +412,14 @@ Variant ScriptTextEditor::get_navigation_state() {
 	return code_editor->get_navigation_state();
 }
 
+Variant ScriptTextEditor::get_previous_state() {
+	return code_editor->get_previous_state();
+}
+
+void ScriptTextEditor::store_previous_state() {
+	return code_editor->store_previous_state();
+}
+
 void ScriptTextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 	code_editor->convert_case(p_case);
 }
@@ -904,6 +912,18 @@ void ScriptTextEditor::_breakpoint_toggled(int p_row) {
 	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_editor()->is_line_breakpointed(p_row));
 }
 
+void ScriptTextEditor::_on_caret_moved() {
+	int current_line = code_editor->get_text_editor()->get_caret_line();
+	if (ABS(current_line - previous_line) >= 10) {
+		Dictionary nav_state = get_navigation_state();
+		nav_state["row"] = previous_line;
+		nav_state["scroll_position"] = -1;
+		emit_signal(SNAME("request_save_previous_state"), nav_state);
+		store_previous_state();
+	}
+	previous_line = current_line;
+}
+
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
@@ -1344,12 +1364,12 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->get_text_editor()->duplicate_lines();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			int previous_line = -1;
+			int prev_line = -1;
 			for (int caret_idx : tx->get_caret_index_edit_order()) {
 				int line_idx = tx->get_caret_line(caret_idx);
-				if (line_idx != previous_line) {
+				if (line_idx != prev_line) {
 					tx->toggle_foldable_line(line_idx);
-					previous_line = line_idx;
+					prev_line = line_idx;
 				}
 			}
 			tx->queue_redraw();
@@ -2352,6 +2372,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
 	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
+	code_editor->get_text_editor()->connect("caret_changed", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
 
 	connection_gutter = 1;
 	code_editor->get_text_editor()->add_gutter(connection_gutter);
