@@ -255,6 +255,7 @@ opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
+opts.Add("profile", "Path to a file containing build arguments (used in addition to root `custom.py`).", "")
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -446,6 +447,14 @@ env.modules_detected = modules_detected
 # Update the environment again after all the module options are added.
 opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
 Help(opts.GenerateHelpText(env))
+
+# Detect and print a warning listing unknown SCons variables to ease troubleshooting.
+unknown = opts.UnknownVariables()
+if unknown:
+    print_warning(
+        "Unknown SCons variables were passed and will be ignored:"
+        + "".join([f"\n\t{key} = {value}" for key, value in unknown.items()])
+    )
 
 # add default include paths
 
