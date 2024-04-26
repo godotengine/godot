@@ -673,7 +673,15 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							} else if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && call->function_name != SNAME("new") &&
 									ClassDB::class_exists(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) && !Engine::get_singleton()->has_singleton(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name)) {
 								// It's a static native method call.
-								gen->write_call_native_static(result, static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name, subscript->attribute->name, arguments);
+								StringName class_name = static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name;
+								MethodBind *method = ClassDB::get_method(class_name, subscript->attribute->name);
+								if (_can_use_validate_call(method, arguments)) {
+									// Exact arguments, use validated call.
+									gen->write_call_native_static_validated(result, method, arguments);
+								} else {
+									// Not exact arguments, use regular static call
+									gen->write_call_native_static(result, class_name, subscript->attribute->name, arguments);
+								}
 							} else {
 								GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
 								if (r_error) {
