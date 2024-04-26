@@ -134,6 +134,8 @@ class OS_Windows : public OS {
 	DWRITE_FONT_WEIGHT _weight_to_dw(int p_weight) const;
 	DWRITE_FONT_STRETCH _stretch_to_dw(int p_stretch) const;
 
+	bool is_using_con_wrapper() const;
+
 	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual void initialize() override;
@@ -143,7 +145,12 @@ protected:
 
 	virtual void finalize() override;
 	virtual void finalize_core() override;
-	virtual String get_stdin_string() override;
+
+	virtual String get_stdin_string(int64_t p_buffer_size = 1024) override;
+	virtual PackedByteArray get_stdin_buffer(int64_t p_buffer_size = 1024) override;
+	virtual StdHandleType get_stdin_type() const override;
+	virtual StdHandleType get_stdout_type() const override;
+	virtual StdHandleType get_stderr_type() const override;
 
 	String _quote_command_line_argument(const String &p_text) const;
 
