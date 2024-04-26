@@ -773,11 +773,7 @@ RS::EnvironmentSDFGIYScale RendererEnvironmentStorage::environment_get_sdfgi_y_s
 void RendererEnvironmentStorage::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
-#ifdef DEBUG_ENABLED
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && p_enable) {
-		WARN_PRINT_ONCE_ED("Adjustments are not supported when using the GL Compatibility backend yet. Support will be added in a future release.");
-	}
-#endif
+
 	env->adjustments_enabled = p_enable;
 	env->adjustments_brightness = p_brightness;
 	env->adjustments_contrast = p_contrast;
