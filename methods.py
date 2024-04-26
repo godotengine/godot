@@ -28,7 +28,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
         # Keep SCons project-absolute path as they are (no wildcard support)
         if files.startswith("#"):
             if "*" in files:
-                print("ERROR: Wildcards can't be expanded in SCons project-absolute path: '{}'".format(files))
+                print(f"ERROR: Wildcards can't be expanded in SCons project-absolute path: '{files}'")
                 return
             files = [files]
         else:
@@ -44,7 +44,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
     for path in files:
         obj = self.Object(path)
         if obj in sources:
-            print('WARNING: Object "{}" already included in environment sources.'.format(obj))
+            print(f"WARNING: Object '{obj}' already included in environment sources.")
             continue
         sources.append(obj)
 
@@ -881,7 +881,7 @@ def detect_darwin_sdk_path(platform, env):
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
-            print("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
+            print(f"Failed to find SDK path while running xcrun --sdk {sdk_name} --show-sdk-path.")
             raise
 
 
