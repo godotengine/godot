@@ -802,18 +802,20 @@ void ProjectManager::_apply_project_tags() {
 		}
 	}
 
-	ConfigFile cfg;
 	const String project_godot = project_list->get_selected_projects()[0].path.path_join("project.godot");
-	Error err = cfg.load(project_godot);
-	if (err != OK) {
-		tag_edit_error->set_text(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err));
+	ProjectSettings *cfg = memnew(ProjectSettings(project_godot));
+	if (!cfg->is_project_loaded()) {
+		memdelete(cfg);
+		tag_edit_error->set_text(vformat(TTR("Couldn't load project at '%s'. It may be missing or corrupted."), project_godot));
 		tag_edit_error->show();
 		callable_mp((Window *)tag_manage_dialog, &Window::show).call_deferred(); // Make sure the dialog does not disappear.
 		return;
 	} else {
 		tags.sort();
-		cfg.set_value("application", "config/tags", tags);
-		err = cfg.save(project_godot);
+		cfg->set("application/config/tags", tags);
+		Error err = cfg->save_custom(project_godot);
+		memdelete(cfg);
+
 		if (err != OK) {
 			tag_edit_error->set_text(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err));
 			tag_edit_error->show();

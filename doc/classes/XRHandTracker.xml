@@ -11,12 +11,6 @@
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_hand" qualifiers="const">
-			<return type="int" enum="XRHandTracker.Hand" />
-			<description>
-				Returns the type of hand.
-			</description>
-		</method>
 		<method name="get_hand_joint_angular_velocity" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
@@ -50,13 +44,6 @@
 			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
 			<description>
 				Returns the transform for the given hand joint.
-			</description>
-		</method>
-		<method name="set_hand">
-			<return type="void" />
-			<param index="0" name="hand" type="int" enum="XRHandTracker.Hand" />
-			<description>
-				Sets the type of hand.
 			</description>
 		</method>
 		<method name="set_hand_joint_angular_velocity">
@@ -101,6 +88,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="hand" type="int" setter="set_tracker_hand" getter="get_tracker_hand" overrides="XRPositionalTracker" enum="XRPositionalTracker.TrackerHand" default="1" />
 		<member name="hand_tracking_source" type="int" setter="set_hand_tracking_source" getter="get_hand_tracking_source" enum="XRHandTracker.HandTrackingSource" default="0">
 			The source of the hand tracking data.
 		</member>
@@ -110,15 +98,6 @@
 		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" overrides="XRTracker" enum="XRServer.TrackerType" default="16" />
 	</members>
 	<constants>
-		<constant name="HAND_LEFT" value="0" enum="Hand">
-			A left hand.
-		</constant>
-		<constant name="HAND_RIGHT" value="1" enum="Hand">
-			A right hand.
-		</constant>
-		<constant name="HAND_MAX" value="2" enum="Hand">
-			Represents the size of the [enum Hand] enum.
-		</constant>
 		<constant name="HAND_TRACKING_SOURCE_UNKNOWN" value="0" enum="HandTrackingSource">
 			The source of hand tracking data is unknown.
 		</constant>

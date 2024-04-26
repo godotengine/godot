@@ -864,12 +864,23 @@ public:
 //typedef Dictionary Dictionary; no
 //typedef Array Array;
 
-Vector<Variant> varray();
-Vector<Variant> varray(const Variant &p_arg1);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5);
+template <typename... VarArgs>
+Vector<Variant> varray(VarArgs... p_args) {
+	Vector<Variant> v;
+
+	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+	uint32_t argc = sizeof...(p_args);
+
+	if (argc > 0) {
+		v.resize(argc);
+		Variant *vw = v.ptrw();
+
+		for (uint32_t i = 0; i < argc; i++) {
+			vw[i] = args[i];
+		}
+	}
+	return v;
+}
 
 struct VariantHasher {
 	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }

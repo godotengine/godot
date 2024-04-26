@@ -273,6 +273,7 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(Variant::STRING, "topic")));
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("request_save_history"));
+	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
@@ -639,6 +640,32 @@ void ScriptEditor::_save_history() {
 	_update_history_arrows();
 }
 
+void ScriptEditor::_save_previous_state(Dictionary p_state) {
+	if (lock_history) {
+		// Done as a result of a deferred call triggered by set_edit_state().
+		lock_history = false;
+		return;
+	}
+
+	if (history_pos >= 0 && history_pos < history.size() && history[history_pos].control == tab_container->get_current_tab_control()) {
+		Node *n = tab_container->get_current_tab_control();
+
+		if (Object::cast_to<ScriptTextEditor>(n)) {
+			history.write[history_pos].state = p_state;
+		}
+	}
+
+	history.resize(history_pos + 1);
+	ScriptHistory sh;
+	sh.control = tab_container->get_current_tab_control();
+	sh.state = Variant();
+
+	history.push_back(sh);
+	history_pos++;
+
+	_update_history_arrows();
+}
+
 void ScriptEditor::_go_to_tab(int p_idx) {
 	ScriptEditorBase *current = _get_current_editor();
 	if (current) {
@@ -668,8 +695,10 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	sh.control = c;
 	sh.state = Variant();
 
-	history.push_back(sh);
-	history_pos++;
+	if (!lock_history && (history.is_empty() || history[history.size() - 1].control != sh.control)) {
+		history.push_back(sh);
+		history_pos++;
+	}
 
 	tab_container->set_current_tab(p_idx);
 
@@ -2185,8 +2214,11 @@ void ScriptEditor::_update_script_names() {
 			sd.index = i;
 			sedata.set(i, sd);
 		}
+
+		lock_history = true;
 		_go_to_tab(new_prev_tab);
 		_go_to_tab(new_cur_tab);
+		lock_history = false;
 		_sort_list_on_update = false;
 	}
 
@@ -2474,6 +2506,10 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	if (script_editor_cache->has_section(p_resource->get_path())) {
 		se->set_edit_state(script_editor_cache->get_value(p_resource->get_path(), "state"));
+		ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(se);
+		if (ste) {
+			ste->store_previous_state();
+		}
 	}
 
 	_sort_list_on_update = true;
@@ -2485,6 +2521,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	se->connect("request_open_script_at_line", callable_mp(this, &ScriptEditor::_goto_script_line));
 	se->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 	se->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
+	se->connect("request_save_previous_state", callable_mp(this, &ScriptEditor::_save_previous_state));
 	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::_on_find_in_files_requested));
 	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
 	se->connect("go_to_method", callable_mp(this, &ScriptEditor::script_goto_method));
@@ -3421,6 +3458,7 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 	_go_to_tab(tab_container->get_tab_count() - 1);
 	eh->go_to_class(p_class);
 	eh->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
+	eh->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
 	_add_recent_script(p_class);
 	_sort_list_on_update = true;
 	_update_script_names();
@@ -3549,6 +3587,7 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 
 	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(n);
 	if (seb) {
+		lock_history = true;
 		seb->set_edit_state(history[history_pos].state);
 		seb->ensure_focus();
 
@@ -3558,9 +3597,10 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 		}
 	}
 
-	if (Object::cast_to<EditorHelp>(n)) {
-		Object::cast_to<EditorHelp>(n)->set_scroll(history[history_pos].state);
-		Object::cast_to<EditorHelp>(n)->set_focused();
+	EditorHelp *eh = Object::cast_to<EditorHelp>(n);
+	if (eh) {
+		eh->set_scroll(history[history_pos].state);
+		eh->set_focused();
 	}
 
 	n->set_meta("__editor_pass", ++edit_pass);

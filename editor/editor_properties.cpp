@@ -3458,7 +3458,7 @@ void EditorPropertyResource::update_property() {
 		}
 	}
 
-	resource_picker->set_edited_resource(res);
+	resource_picker->set_edited_resource_no_check(res);
 }
 
 void EditorPropertyResource::collapse_all_folding() {

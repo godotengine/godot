@@ -1022,6 +1022,11 @@ void fragment_shader(in SceneData scene_data) {
 	inv_view_matrix[1][3] = 0.0;
 	inv_view_matrix[2][3] = 0.0;
 #endif
+
+#ifdef LIGHT_VERTEX_USED
+	vec3 light_vertex = vertex;
+#endif //LIGHT_VERTEX_USED
+
 	mat4 read_view_matrix = scene_data.view_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
 	{
@@ -1031,6 +1036,15 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_TRANSMITTANCE_USED
 	transmittance_color.a *= sss_strength;
 #endif
+
+#ifdef LIGHT_VERTEX_USED
+	vertex = light_vertex;
+#ifdef USE_MULTIVIEW
+	view = -normalize(vertex - eye_offset);
+#else
+	view = -normalize(vertex);
+#endif //USE_MULTIVIEW
+#endif //LIGHT_VERTEX_USED
 
 #ifndef USE_SHADOW_TO_OPACITY
 
@@ -2043,7 +2057,7 @@ void fragment_shader(in SceneData scene_data) {
 			shadow = 1.0;
 #endif
 
-			float size_A = sc_use_light_soft_shadows ? directional_lights.data[i].size : 0.0;
+			float size_A = sc_use_directional_soft_shadows ? directional_lights.data[i].size : 0.0;
 
 			light_compute(normal, directional_lights.data[i].direction, normalize(view), size_A,
 #ifndef DEBUG_DRAW_PSSM_SPLITS
@@ -2221,24 +2235,16 @@ void fragment_shader(in SceneData scene_data) {
 	}
 
 #ifdef USE_SHADOW_TO_OPACITY
+#ifndef MODE_RENDER_DEPTH
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
 
 #if defined(ALPHA_SCISSOR_USED)
 	if (alpha < alpha_scissor) {
 		discard;
 	}
-#else
-#ifdef MODE_RENDER_DEPTH
-#ifdef USE_OPAQUE_PREPASS
-
-	if (alpha < scene_data.opaque_prepass_threshold) {
-		discard;
-	}
-
-#endif // USE_OPAQUE_PREPASS
-#endif // MODE_RENDER_DEPTH
 #endif // ALPHA_SCISSOR_USED
 
+#endif // !MODE_RENDER_DEPTH
 #endif // USE_SHADOW_TO_OPACITY
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)

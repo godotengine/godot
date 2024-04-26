@@ -330,12 +330,6 @@ public:
 	_FORCE_INLINE_ double get_physics_process_time() const { return physics_process_time; }
 	_FORCE_INLINE_ double get_process_time() const { return process_time; }
 
-#ifdef TOOLS_ENABLED
-	bool is_node_being_edited(const Node *p_node) const;
-#else
-	bool is_node_being_edited(const Node *p_node) const { return false; }
-#endif
-
 	void set_pause(bool p_enabled);
 	bool is_paused() const;
 

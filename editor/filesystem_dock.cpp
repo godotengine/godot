@@ -2402,6 +2402,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_SHOW_IN_FILESYSTEM: {
+			if (!p_selected.is_empty()) {
+				navigate_to_path(p_selected[0]);
+			}
+		} break;
+
 		case FILE_DEPENDENCIES: {
 			// Checkout the file dependencies.
 			if (!p_selected.is_empty()) {
@@ -3294,8 +3300,33 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	if (p_paths.size() == 1) {
 		const String &fpath = p_paths[0];
 
+		bool added_separator = false;
+
+		if (favorites_list.has(fpath)) {
+			TreeItem *favorites_item = tree->get_root()->get_first_child();
+			TreeItem *cursor_item = tree->get_selected();
+			bool is_item_in_favorites = false;
+			while (cursor_item != nullptr) {
+				if (cursor_item == favorites_item) {
+					is_item_in_favorites = true;
+					break;
+				}
+
+				cursor_item = cursor_item->get_parent();
+			}
+
+			if (is_item_in_favorites) {
+				p_popup->add_separator();
+				added_separator = true;
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTR("Show in FileSystem"), FILE_SHOW_IN_FILESYSTEM);
+			}
+		}
+
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-		p_popup->add_separator();
+		if (!added_separator) {
+			p_popup->add_separator();
+			added_separator = true;
+		}
 
 		// Opening the system file manager is not supported on the Android and web editors.
 		const bool is_directory = fpath.ends_with("/");
@@ -4161,6 +4192,7 @@ FileSystemDock::FileSystemDock() {
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FileSystemDock::_project_settings_changed));
 	add_resource_tooltip_plugin(memnew(EditorTextureTooltipPlugin));
+	add_resource_tooltip_plugin(memnew(EditorAudioStreamTooltipPlugin));
 }
 
 FileSystemDock::~FileSystemDock() {

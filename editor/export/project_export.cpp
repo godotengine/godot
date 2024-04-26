@@ -419,6 +419,12 @@ void ProjectExportDialog::_update_feature_list() {
 		feature_set.insert(E);
 	}
 
+#ifdef REAL_T_IS_DOUBLE
+	feature_set.insert("double");
+#else
+	feature_set.insert("single");
+#endif // REAL_T_IS_DOUBLE
+
 	custom_feature_display->clear();
 	String text;
 	bool first = true;

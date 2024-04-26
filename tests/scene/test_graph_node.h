@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_resource_tooltip_plugins.h                                     */
+/*  test_graph_node.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,50 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_RESOURCE_TOOLTIP_PLUGINS_H
-#define EDITOR_RESOURCE_TOOLTIP_PLUGINS_H
+#ifndef TEST_GRAPH_NODE_H
+#define TEST_GRAPH_NODE_H
 
-#include "core/object/gdvirtual.gen.inc"
-#include "core/object/ref_counted.h"
-#include "scene/gui/control.h"
+#include "scene/gui/graph_node.h"
+#include "scene/main/window.h"
 
-class Texture2D;
-class TextureRect;
-class VBoxContainer;
+#include "tests/test_macros.h"
 
-class EditorResourceTooltipPlugin : public RefCounted {
-	GDCLASS(EditorResourceTooltipPlugin, RefCounted);
+namespace TestGraphNode {
 
-	void _thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
+TEST_CASE("[GraphNode][SceneTree]") {
+	SUBCASE("[GraphNode] Graph Node only child on delete should not cause error.") {
+		// Setup.
+		GraphNode *test_node = memnew(GraphNode);
+		test_child->set_name("Graph Node");
+		Control *test_child = memnew(Control);
+		test_child->set_name("child");
+		test_node->add_child(test_child);
 
-protected:
-	static void _bind_methods();
+		// Test.
+		CHECK_NOTHROW_MESSAGE(test_node->remove_child(test_child));
 
-	GDVIRTUAL1RC(bool, _handles, String)
-	GDVIRTUAL3RC(Control *, _make_tooltip_for_path, String, Dictionary, Control *)
+		memdelete(test_node);
+	}
+}
 
-public:
-	static VBoxContainer *make_default_tooltip(const String &p_resource_path);
-	void request_thumbnail(const String &p_path, TextureRect *p_for_control) const;
+} // namespace TestGraphNode
 
-	virtual bool handles(const String &p_resource_type) const;
-	virtual Control *make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata, Control *p_base) const;
-};
-
-class EditorTextureTooltipPlugin : public EditorResourceTooltipPlugin {
-	GDCLASS(EditorTextureTooltipPlugin, EditorResourceTooltipPlugin);
-
-public:
-	virtual bool handles(const String &p_resource_type) const override;
-	virtual Control *make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata, Control *p_base) const override;
-};
-
-class EditorAudioStreamTooltipPlugin : public EditorResourceTooltipPlugin {
-	GDCLASS(EditorAudioStreamTooltipPlugin, EditorResourceTooltipPlugin);
-
-public:
-	virtual bool handles(const String &p_resource_type) const override;
-	virtual Control *make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata, Control *p_base) const override;
-};
-
-#endif // EDITOR_RESOURCE_TOOLTIP_PLUGINS_H
+#endif // TEST_GRAPH_NODE_H

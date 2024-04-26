@@ -1511,9 +1511,23 @@ void main() {
 	float alpha_antialiasing_edge = 0.0;
 	vec2 alpha_texture_coordinate = vec2(0.0, 0.0);
 #endif // ALPHA_ANTIALIASING_EDGE_USED
+
+#ifdef LIGHT_VERTEX_USED
+	vec3 light_vertex = vertex;
+#endif //LIGHT_VERTEX_USED
+
 	{
 #CODE : FRAGMENT
 	}
+
+#ifdef LIGHT_VERTEX_USED
+	vertex = light_vertex;
+#ifdef USE_MULTIVIEW
+	view = -normalize(vertex - eye_offset);
+#else
+	view = -normalize(vertex);
+#endif //USE_MULTIVIEW
+#endif //LIGHT_VERTEX_USED
 
 #ifndef USE_SHADOW_TO_OPACITY
 
@@ -1521,6 +1535,7 @@ void main() {
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
+	alpha = 1.0;
 #else
 #ifdef MODE_RENDER_DEPTH
 #ifdef USE_OPAQUE_PREPASS
@@ -1844,23 +1859,16 @@ void main() {
 #endif // !MODE_RENDER_DEPTH
 
 #if defined(USE_SHADOW_TO_OPACITY)
+#ifndef MODE_RENDER_DEPTH
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
 
 #if defined(ALPHA_SCISSOR_USED)
 	if (alpha < alpha_scissor) {
 		discard;
 	}
-#else
-#ifdef MODE_RENDER_DEPTH
-#ifdef USE_OPAQUE_PREPASS
-
-	if (alpha < opaque_prepass_threshold) {
-		discard;
-	}
-#endif // USE_OPAQUE_PREPASS
-#endif // MODE_RENDER_DEPTH
 #endif // !ALPHA_SCISSOR_USED
 
+#endif // !MODE_RENDER_DEPTH
 #endif // USE_SHADOW_TO_OPACITY
 
 #ifdef MODE_RENDER_DEPTH
@@ -1920,13 +1928,6 @@ void main() {
 #endif
 	frag_color.rgb = linear_to_srgb(frag_color.rgb);
 
-#ifdef USE_BCS
-	frag_color.rgb = apply_bcs(frag_color.rgb, bcs);
-#endif
-
-#ifdef USE_COLOR_CORRECTION
-	frag_color.rgb = apply_color_correction(frag_color.rgb, color_correction);
-#endif
 #else // !BASE_PASS
 	frag_color = vec4(0.0, 0.0, 0.0, alpha);
 #endif // !BASE_PASS
@@ -2137,14 +2138,6 @@ void main() {
 	additive_light_color = apply_tonemapping(additive_light_color, white);
 #endif
 	additive_light_color = linear_to_srgb(additive_light_color);
-
-#ifdef USE_BCS
-	additive_light_color = apply_bcs(additive_light_color, bcs);
-#endif
-
-#ifdef USE_COLOR_CORRECTION
-	additive_light_color = apply_color_correction(additive_light_color, color_correction);
-#endif
 
 	frag_color.rgb += additive_light_color;
 #endif // USE_ADDITIVE_LIGHTING

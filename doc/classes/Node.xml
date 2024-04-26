@@ -619,6 +619,12 @@
 				[method request_ready] resets it back to [code]false[/code].
 			</description>
 		</method>
+		<method name="is_part_of_edited_scene" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the node is part of the scene currently opened in the editor.
+			</description>
+		</method>
 		<method name="is_physics_interpolated" qualifiers="const">
 			<return type="bool" />
 			<description>

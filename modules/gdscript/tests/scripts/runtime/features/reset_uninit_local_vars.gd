@@ -10,12 +10,12 @@ func test():
 		var c := 1
 
 	if true:
-		@warning_ignore("unassigned_variable")
 		var a
+		@warning_ignore("unassigned_variable")
 		print(a)
-		@warning_ignore("unassigned_variable")
 		var b
-		print(b)
 		@warning_ignore("unassigned_variable")
+		print(b)
 		var c: Object
+		@warning_ignore("unassigned_variable")
 		print(c)
