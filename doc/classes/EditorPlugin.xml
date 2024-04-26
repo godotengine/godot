@@ -498,6 +498,18 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="add_move_array_element_function">
+			<return type="void" />
+			<param index="0" name="class" type="String" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+				Allows setting a callback to handle adding, removing, and changing the order of elements of an array of the given class in the Godot editor's inspector.
+				The values of [param from_index] and [param to_position] in the callback function determine if the array element is being added, removed, or moved.
+				If [param from_index] is [code]-1[/code] then a new element is being added.
+				If [param to_position] is [code]-1[/code] then an element is being removed.
+				If [param from_index] and [param to_position] are greater or equal to [code]0[/code] then they indicate respectively the current and previous positions in the array for a specific element.
+			</description>
+		</method>
 		<method name="add_node_3d_gizmo_plugin">
 			<return type="void" />
 			<param index="0" name="plugin" type="EditorNode3DGizmoPlugin" />
@@ -676,6 +688,13 @@
 			<param index="0" name="plugin" type="EditorInspectorPlugin" />
 			<description>
 				Removes an inspector plugin registered by [method add_import_plugin]
+			</description>
+		</method>
+		<method name="remove_move_array_element_function">
+			<return type="void" />
+			<param index="0" name="class" type="String" />
+			<description>
+				Removes a move array element function registered by [method add_move_array_element_function].
 			</description>
 		</method>
 		<method name="remove_node_3d_gizmo_plugin">

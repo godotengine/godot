@@ -396,6 +396,14 @@ void EditorPlugin::remove_undo_redo_inspector_hook_callback(Callable p_callable)
 	EditorNode::get_editor_data().remove_undo_redo_inspector_hook_callback(p_callable);
 }
 
+void EditorPlugin::add_move_array_element_function(const String &p_class, Callable p_callable) {
+	EditorNode::get_editor_data().add_move_array_element_function(p_class, p_callable);
+}
+
+void EditorPlugin::remove_move_array_element_function(const String &p_class) {
+	EditorNode::get_editor_data().remove_move_array_element_function(p_class);
+}
+
 void EditorPlugin::add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
 	ERR_FAIL_COND(!p_parser.is_valid());
 	EditorTranslationParser::get_singleton()->add_parser(p_parser, EditorTranslationParser::CUSTOM);
@@ -583,6 +591,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_undo_redo"), &EditorPlugin::get_undo_redo);
 	ClassDB::bind_method(D_METHOD("add_undo_redo_inspector_hook_callback", "callable"), &EditorPlugin::add_undo_redo_inspector_hook_callback);
 	ClassDB::bind_method(D_METHOD("remove_undo_redo_inspector_hook_callback", "callable"), &EditorPlugin::remove_undo_redo_inspector_hook_callback);
+	ClassDB::bind_method(D_METHOD("add_move_array_element_function", "class", "callable"), &EditorPlugin::add_move_array_element_function);
+	ClassDB::bind_method(D_METHOD("remove_move_array_element_function", "class"), &EditorPlugin::remove_move_array_element_function);
 	ClassDB::bind_method(D_METHOD("queue_save_layout"), &EditorPlugin::queue_save_layout);
 	ClassDB::bind_method(D_METHOD("add_translation_parser_plugin", "parser"), &EditorPlugin::add_translation_parser_plugin);
 	ClassDB::bind_method(D_METHOD("remove_translation_parser_plugin", "parser"), &EditorPlugin::remove_translation_parser_plugin);
