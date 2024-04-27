@@ -545,7 +545,7 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 					result->Release();
 				}
 			}
-			if (!p_callback.is_null()) {
+			if (p_callback.is_valid()) {
 				if (p_options_in_cb) {
 					Variant v_result = true;
 					Variant v_files = file_names;
@@ -574,7 +574,7 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 				}
 			}
 		} else {
-			if (!p_callback.is_null()) {
+			if (p_callback.is_valid()) {
 				if (p_options_in_cb) {
 					Variant v_result = false;
 					Variant v_files = Vector<String>();
@@ -2556,7 +2556,7 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 		int button_pressed;
 
 		if (task_dialog_indirect && SUCCEEDED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
-			if (!p_callback.is_null()) {
+			if (p_callback.is_valid()) {
 				Variant button = button_pressed;
 				const Variant *args[1] = { &button };
 				Variant ret;
@@ -4591,7 +4591,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (rect_changed) {
-				if (!window.rect_changed_callback.is_null()) {
+				if (window.rect_changed_callback.is_valid()) {
 					window.rect_changed_callback.call(Rect2i(window.last_pos.x, window.last_pos.y, window.width, window.height));
 				}
 
@@ -4803,7 +4803,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				files.push_back(file);
 			}
 
-			if (files.size() && !windows[window_id].drop_files_callback.is_null()) {
+			if (files.size() && windows[window_id].drop_files_callback.is_valid()) {
 				windows[window_id].drop_files_callback.call(files);
 			}
 		} break;

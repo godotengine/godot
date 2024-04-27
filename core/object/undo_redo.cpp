@@ -144,7 +144,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 }
 
 void UndoRedo::add_do_method(const Callable &p_callable) {
-	ERR_FAIL_COND(p_callable.is_null());
+	ERR_FAIL_COND(!p_callable.is_valid());
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
@@ -169,7 +169,7 @@ void UndoRedo::add_do_method(const Callable &p_callable) {
 }
 
 void UndoRedo::add_undo_method(const Callable &p_callable) {
-	ERR_FAIL_COND(p_callable.is_null());
+	ERR_FAIL_COND(!p_callable.is_valid());
 	ERR_FAIL_COND(action_level <= 0);
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 

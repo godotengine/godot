@@ -248,7 +248,7 @@ Variant JavaScriptObjectImpl::callp(const StringName &p_method, const Variant **
 
 void JavaScriptObjectImpl::callback(void *p_ref, int p_args_id, int p_argc) {
 	const JavaScriptObjectImpl *obj = (JavaScriptObjectImpl *)p_ref;
-	ERR_FAIL_COND_MSG(obj->_callable.is_null(), "JavaScript callback failed.");
+	ERR_FAIL_COND_MSG(!obj->_callable.is_valid(), "JavaScript callback failed.");
 
 	Vector<const Variant *> argp;
 	Array arg_arr;

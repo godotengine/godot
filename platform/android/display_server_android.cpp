@@ -326,7 +326,7 @@ void DisplayServerAndroid::window_set_drop_files_callback(const Callable &p_call
 }
 
 void DisplayServerAndroid::_window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred) const {
-	if (!p_callable.is_null()) {
+	if (p_callable.is_valid()) {
 		if (p_deferred) {
 			p_callable.call_deferred(p_arg);
 		} else {
