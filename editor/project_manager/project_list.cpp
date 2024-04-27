@@ -897,6 +897,16 @@ Vector<ProjectList::Item> ProjectList::get_selected_projects() const {
 	return items;
 }
 
+Vector<String> ProjectList::get_missing_project_paths() const {
+	Vector<String> paths;
+	for (const Item &project : _projects) {
+		if (project.missing) {
+			paths.push_back(project.path);
+		}
+	}
+	return paths;
+}
+
 const HashSet<String> &ProjectList::get_selected_project_keys() const {
 	// Faster if that's all you need
 	return _selected_project_paths;
@@ -963,22 +973,17 @@ bool ProjectList::is_any_project_missing() const {
 	return false;
 }
 
-void ProjectList::erase_missing_projects() {
-	if (_projects.is_empty()) {
-		return;
-	}
-
+void ProjectList::erase_missing_projects(const Vector<String> &p_paths) {
 	int deleted_count = 0;
 	int remaining_count = 0;
 
 	for (int i = 0; i < _projects.size(); ++i) {
 		const Item &item = _projects[i];
 
-		if (item.missing) {
+		if (item.missing && p_paths.has(item.path)) {
 			_remove_project(i, true);
 			--i;
 			++deleted_count;
-
 		} else {
 			++remaining_count;
 		}

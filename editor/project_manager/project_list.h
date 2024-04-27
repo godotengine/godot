@@ -240,6 +240,7 @@ public:
 	void select_project(int p_index);
 	void select_first_visible_project();
 	Vector<Item> get_selected_projects() const;
+	Vector<String> get_missing_project_paths() const;
 	const HashSet<String> &get_selected_project_keys() const;
 	int get_single_selected_index() const;
 	void erase_selected_projects(bool p_delete_project_contents);
@@ -247,7 +248,7 @@ public:
 	// Missing projects.
 
 	bool is_any_project_missing() const;
-	void erase_missing_projects();
+	void erase_missing_projects(const Vector<String> &p_paths);
 
 	// Project list sorting and filtering.
 

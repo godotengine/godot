@@ -32,7 +32,6 @@
 #define PROJECT_MANAGER_H
 
 #include "scene/gui/dialogs.h"
-#include "scene/gui/scroll_container.h"
 
 class CheckBox;
 class EditorAbout;
@@ -48,6 +47,7 @@ class PanelContainer;
 class ProjectDialog;
 class ProjectList;
 class QuickSettingsDialog;
+class RemoveMissingDialog;
 class RichTextLabel;
 class TabContainer;
 class VBoxContainer;
@@ -165,7 +165,7 @@ class ProjectManager : public Control {
 	// Comment out for now until we have a better warning system to
 	// ensure users delete their project only.
 	//CheckBox *delete_project_contents = nullptr;
-	ConfirmationDialog *erase_missing_ask = nullptr;
+	RemoveMissingDialog *remove_missing_dialog = nullptr;
 	ConfirmationDialog *multi_open_ask = nullptr;
 	ConfirmationDialog *multi_run_ask = nullptr;
 
@@ -184,7 +184,7 @@ class ProjectManager : public Control {
 	void _erase_project();
 	void _erase_missing_projects();
 	void _erase_project_confirm();
-	void _erase_missing_projects_confirm();
+	void _erase_missing_projects_confirm(const Vector<String> &p_paths);
 	void _update_project_buttons();
 
 	void _on_project_created(const String &dir);
