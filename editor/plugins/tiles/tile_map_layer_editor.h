@@ -381,11 +381,11 @@ private:
 
 	ObjectID edited_tile_map_layer_id;
 	bool is_multi_node_edit = false;
-	Vector<TileMapLayer *> tile_map_layers_in_scene_cache;
+	
 	bool layers_in_scene_list_cache_needs_update = false;
 	TileMapLayer *_get_edited_layer() const;
 	void _find_tile_map_layers_in_scene(Node *p_current, const Node *p_owner, Vector<TileMapLayer *> &r_list) const;
-	void _update_tile_map_layers_in_scene_list_cache();
+	
 	void _node_change(Node *p_node);
 
 	// Vector to keep plugins.
@@ -448,6 +448,9 @@ protected:
 	void _draw_shape(Control *p_control, Rect2 p_region, TileSet::TileShape p_shape, TileSet::TileOffsetAxis p_offset_axis, Color p_color);
 
 public:
+	inline static Vector<TileMapLayer *> tile_map_layers_in_scene_cache;
+	void _update_tile_map_layers_in_scene_list_cache();
+	Vector<TileMapLayer *> get_tile_map_layers_in_scene() const; 
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 

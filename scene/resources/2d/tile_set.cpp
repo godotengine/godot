@@ -249,7 +249,7 @@ TypedArray<Vector2i> TileMapPattern::get_used_cells() {
 		return used_cells;
 
 	} else {
-		CRASH_NOW_MSG("get_used_cells: The pattern is neither single or multi_layer, this should not happen.");
+		WARN_PRINT_ED("get_used_cells: The pattern is neither single or multi_layer, this should not happen.");
 		return used_cells;
 	}
 }
@@ -780,9 +780,9 @@ bool TileSet::has_source(int p_source_id) const {
 }
 
 Ref<TileSetSource> TileSet::get_source(int p_source_id) const {
-	/* check me if (p_source_id == -1) {
+	if (p_source_id == -1) {
 		CRASH_NOW_MSG("id is - 1, crashing now");
-	}*/
+	}
 	ERR_FAIL_COND_V_MSG(!sources.has(p_source_id), nullptr, vformat("TileSet::get_source. No TileSet atlas source with id %d.", p_source_id));
 	return sources[p_source_id];
 }
@@ -2533,7 +2533,9 @@ TypedArray<Vector2i> TileSet::get_surrounding_cells(const Vector2i &p_coords) co
 
 Vector2i TileSet::map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern) const {
 	ERR_FAIL_COND_V(p_pattern.is_null(), Vector2i());
-	ERR_FAIL_COND_V(!p_pattern->has_cell(p_coords_in_pattern), Vector2i());
+	if (p_pattern->get_is_single_layer()) {
+		ERR_FAIL_COND_V(!p_pattern->has_cell(p_coords_in_pattern), Vector2i());
+	}
 
 	Vector2i output = p_position_in_tilemap + p_coords_in_pattern;
 	if (tile_shape != TileSet::TILE_SHAPE_SQUARE) {

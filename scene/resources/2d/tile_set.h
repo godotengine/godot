@@ -133,8 +133,8 @@ protected:
 
 public:
 
-	int get_pattern_set_index() const; //<--
-	void set_pattern_set_index(int p_pattern_set_index); //<--
+	int get_pattern_set_index() const; 
+	void set_pattern_set_index(int p_pattern_set_index);
 
 	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0);
 	bool has_cell(const Vector2i &p_coords) const;
@@ -149,14 +149,14 @@ public:
 	TypedArray<Vector2i> get_used_cells();
 	TypedArray<Vector2i> get_used_cells_on_layer(int p_layer = 0);
 
-	int get_number_of_layers() const; // <--
-	void set_number_of_layers(int p_number_of_layers); // <--
+	int get_number_of_layers() const; 
+	void set_number_of_layers(int p_number_of_layers);
 	Size2i get_size() const;
 	void set_size(const Size2i &p_size);
 	bool is_empty() const;
 
-	bool get_is_single_layer() const; // <--
-	void set_is_single_layer(bool p_is_single_layer); // <--
+	bool get_is_single_layer() const; 
+	void set_is_single_layer(bool p_is_single_layer); 
 	Vector2i get_pattern_start_position() const;
 	void set_pattern_start_position(Vector2i p_position = Vector2i(0, 0));
 	void clear();

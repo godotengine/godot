@@ -394,7 +394,7 @@ public:
 	const HashMap<Vector2i, CellData> &get_tile_map_layer_data() const {
 		return tile_map_layer_data;
 	}
-
+	
 	// Rect caching.
 	Rect2 get_rect(bool &r_changed) const;
 
