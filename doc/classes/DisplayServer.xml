@@ -1602,7 +1602,7 @@
 			<param index="0" name="max_size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the maximum size of the window specified by [param window_id] in pixels. Normally, the user will not be able to drag the window to make it smaller than the specified size. See also [method window_get_max_size].
+				Sets the maximum size of the window specified by [param window_id] in pixels. Normally, the user will not be able to drag the window to make it larger than the specified size. See also [method window_get_max_size].
 				[b]Note:[/b] It's recommended to change this value using [member Window.max_size] instead.
 				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.
 			</description>
@@ -1612,7 +1612,7 @@
 			<param index="0" name="min_size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the minimum size for the given window to [param min_size] (in pixels). Normally, the user will not be able to drag the window to make it larger than the specified size. See also [method window_get_min_size].
+				Sets the minimum size for the given window to [param min_size] in pixels. Normally, the user will not be able to drag the window to make it smaller than the specified size. See also [method window_get_min_size].
 				[b]Note:[/b] It's recommended to change this value using [member Window.min_size] instead.
 				[b]Note:[/b] By default, the main window has a minimum size of [code]Vector2i(64, 64)[/code]. This prevents issues that can arise when the window is resized to a near-zero size.
 				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.
