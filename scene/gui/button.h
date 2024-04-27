@@ -74,6 +74,7 @@ private:
 		Color font_pressed_color;
 		Color font_hover_color;
 		Color font_hover_pressed_color;
+		Color font_focus_pressed_color;
 		Color font_disabled_color;
 
 		Ref<Font> font;
