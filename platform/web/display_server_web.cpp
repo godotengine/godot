@@ -58,7 +58,7 @@ DisplayServerWeb *DisplayServerWeb::get_singleton() {
 // Window (canvas)
 bool DisplayServerWeb::check_size_force_redraw() {
 	bool size_changed = godot_js_display_size_update() != 0;
-	if (size_changed && !rect_changed_callback.is_null()) {
+	if (size_changed && rect_changed_callback.is_valid()) {
 		Size2i window_size = window_get_size();
 		Variant size = Rect2i(Point2i(), window_size); // TODO use window_get_position if implemented.
 		rect_changed_callback.call(size);
@@ -109,7 +109,7 @@ void DisplayServerWeb::_drop_files_js_callback(const Vector<String> &p_files) {
 	if (!ds) {
 		ERR_FAIL_MSG("Unable to drop files because the DisplayServer is not active");
 	}
-	if (ds->drop_files_callback.is_null()) {
+	if (!ds->drop_files_callback.is_valid()) {
 		return;
 	}
 	ds->drop_files_callback.call(p_files);
@@ -129,7 +129,7 @@ void DisplayServerWeb::request_quit_callback() {
 
 void DisplayServerWeb::_request_quit_callback() {
 	DisplayServerWeb *ds = get_singleton();
-	if (ds && !ds->window_event_callback.is_null()) {
+	if (ds && ds->window_event_callback.is_valid()) {
 		Variant event = int(DisplayServer::WINDOW_EVENT_CLOSE_REQUEST);
 		ds->window_event_callback.call(event);
 	}
@@ -722,7 +722,7 @@ void DisplayServerWeb::vk_input_text_callback(const char *p_text, int p_cursor) 
 
 void DisplayServerWeb::_vk_input_text_callback(const String &p_text, int p_cursor) {
 	DisplayServerWeb *ds = DisplayServerWeb::get_singleton();
-	if (!ds || ds->input_text_callback.is_null()) {
+	if (!ds || !ds->input_text_callback.is_valid()) {
 		return;
 	}
 	// Call input_text
@@ -972,7 +972,7 @@ void DisplayServerWeb::_send_window_event_callback(int p_notification) {
 	if (godot_js_is_ime_focused() && (p_notification == DisplayServer::WINDOW_EVENT_FOCUS_IN || p_notification == DisplayServer::WINDOW_EVENT_FOCUS_OUT)) {
 		return;
 	}
-	if (!ds->window_event_callback.is_null()) {
+	if (ds->window_event_callback.is_valid()) {
 		Variant event = int(p_notification);
 		ds->window_event_callback.call(event);
 	}

@@ -218,7 +218,7 @@ void DisplayServerIOS::send_window_event(DisplayServer::WindowEvent p_event) con
 }
 
 void DisplayServerIOS::_window_callback(const Callable &p_callable, const Variant &p_arg) const {
-	if (!p_callable.is_null()) {
+	if (p_callable.is_valid()) {
 		p_callable.call(p_arg);
 	}
 }

@@ -4992,7 +4992,7 @@ void DisplayServerX11::process_events() {
 						files.write[i] = files[i].replace("file://", "").uri_decode();
 					}
 
-					if (!windows[window_id].drop_files_callback.is_null()) {
+					if (windows[window_id].drop_files_callback.is_valid()) {
 						windows[window_id].drop_files_callback.call(files);
 					}
 

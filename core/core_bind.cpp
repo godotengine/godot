@@ -1921,7 +1921,7 @@ void EngineDebugger::send_message(const String &p_msg, const Array &p_data) {
 
 Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
 	Callable &capture = *(Callable *)p_user;
-	if (capture.is_null()) {
+	if (!capture.is_valid()) {
 		return FAILED;
 	}
 	Variant cmd = p_cmd, data = p_data;
