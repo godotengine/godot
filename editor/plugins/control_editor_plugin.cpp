@@ -413,7 +413,15 @@ bool EditorInspectorPluginControl::can_handle(Object *p_object) {
 	return Object::cast_to<Control>(p_object) != nullptr;
 }
 
+void EditorInspectorPluginControl::parse_category(Object *p_object, const String &p_category) {
+	inside_control_category = p_category == "Control";
+}
+
 void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p_group) {
+	if (!inside_control_category) {
+		return;
+	}
+
 	Control *control = Object::cast_to<Control>(p_object);
 	if (!control || p_group != "Layout") {
 		return;
