@@ -288,6 +288,8 @@ private:
 	RID navigation_map_override;
 	DebugVisibilityMode navigation_visibility_mode = DEBUG_VISIBILITY_MODE_DEFAULT;
 
+	bool animation_paused = false;
+
 	// Internal.
 	bool pending_update = false;
 
@@ -484,6 +486,9 @@ public:
 	RID get_navigation_map() const;
 	void set_navigation_visibility_mode(DebugVisibilityMode p_show_navigation);
 	DebugVisibilityMode get_navigation_visibility_mode() const;
+
+	void set_animation_paused(bool p_animation_paused);
+	bool is_animation_paused() const;
 
 	TileMapLayer();
 	~TileMapLayer();

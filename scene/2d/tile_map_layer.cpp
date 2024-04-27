@@ -342,7 +342,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 					}
 
 					// Drawing the tile in the canvas item.
-					TileMap::draw_tile(ci, local_tile_pos - rendering_quadrant->canvas_items_position, tile_set, cell_data.cell.source_id, cell_data.cell.get_atlas_coords(), cell_data.cell.alternative_tile, -1, get_self_modulate(), tile_data, random_animation_offset);
+					TileMap::draw_tile(ci, local_tile_pos - rendering_quadrant->canvas_items_position, tile_set, cell_data.cell.source_id, cell_data.cell.get_atlas_coords(), cell_data.cell.alternative_tile, -1, get_self_modulate(), tile_data, random_animation_offset, animation_paused);
 				}
 
 				// Reset physics interpolation for any recreated canvas items.
@@ -1788,6 +1788,8 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &TileMapLayer::get_navigation_map);
 	ClassDB::bind_method(D_METHOD("set_navigation_visibility_mode", "show_navigation"), &TileMapLayer::set_navigation_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_navigation_visibility_mode"), &TileMapLayer::get_navigation_visibility_mode);
+	ClassDB::bind_method(D_METHOD("set_animation_paused", "enabled"), &TileMapLayer::set_animation_paused);
+	ClassDB::bind_method(D_METHOD("is_animation_paused"), &TileMapLayer::is_animation_paused);
 
 	GDVIRTUAL_BIND(_use_tile_data_runtime_update, "coords");
 	GDVIRTUAL_BIND(_tile_data_runtime_update, "coords", "tile_data");
@@ -1806,6 +1808,7 @@ void TileMapLayer::_bind_methods() {
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_enabled"), "set_navigation_enabled", "is_navigation_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "animation_paused"), "set_animation_paused", "is_animation_paused");
 
 	ADD_SIGNAL(MethodInfo(CoreStringNames::get_singleton()->changed));
 
@@ -2826,6 +2829,20 @@ void TileMapLayer::set_navigation_visibility_mode(TileMapLayer::DebugVisibilityM
 
 TileMapLayer::DebugVisibilityMode TileMapLayer::get_navigation_visibility_mode() const {
 	return navigation_visibility_mode;
+}
+
+void TileMapLayer::set_animation_paused(bool p_animation_paused) {
+	if (animation_paused == p_animation_paused) {
+		return;
+	}
+	animation_paused = p_animation_paused;
+	dirty.flags[DIRTY_FLAGS_TILE_SET] = true;
+	_queue_internal_update();
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+bool TileMapLayer::is_animation_paused() const {
+	return animation_paused;
 }
 
 TileMapLayer::TileMapLayer() {

@@ -123,7 +123,7 @@ public:
 	void set_rendering_quadrant_size(int p_size);
 	int get_rendering_quadrant_size() const;
 
-	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
+	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0, bool p_animation_paused = false);
 
 	// Accessors.
 	void set_tileset(const Ref<TileSet> &p_tileset);
@@ -151,6 +151,8 @@ public:
 	bool is_layer_navigation_enabled(int p_layer) const;
 	void set_layer_navigation_map(int p_layer, RID p_map);
 	RID get_layer_navigation_map(int p_layer) const;
+	void set_layer_animation_paused(int p_layer, bool p_animation_paused);
+	bool is_layer_animation_paused(int p_layer) const;
 
 	void set_collision_animatable(bool p_collision_animatable);
 	bool is_collision_animatable() const;

@@ -226,7 +226,7 @@ int TileMap::get_rendering_quadrant_size() const {
 	return rendering_quadrant_size;
 }
 
-void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override, real_t p_normalized_animation_offset) {
+void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override, real_t p_normalized_animation_offset, bool p_animation_paused) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
 	ERR_FAIL_COND(!p_tile_set->has_source(p_atlas_source_id));
 	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile(p_atlas_coords));
@@ -292,11 +292,18 @@ void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<
 			real_t speed = atlas_source->get_tile_animation_speed(p_atlas_coords);
 			real_t animation_duration = atlas_source->get_tile_animation_total_duration(p_atlas_coords) / speed;
 			real_t animation_offset = p_normalized_animation_offset * animation_duration;
+			if (p_animation_paused) {
+				speed = 1.0;
+				animation_duration = 1e20;
+			}
 			// Accumulate durations unaffected by the speed to avoid accumulating floating point division errors.
 			// Aka do `sum(duration[i]) / speed` instead of `sum(duration[i] / speed)`.
 			real_t time_unscaled = 0.0;
 			for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(p_atlas_coords); frame++) {
 				real_t frame_duration_unscaled = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, frame);
+				if (p_animation_paused) {
+					frame_duration_unscaled = 1e20;
+				}
 				real_t slice_start = time_unscaled / speed;
 				real_t slice_end = (time_unscaled + frame_duration_unscaled) / speed;
 				RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, animation_duration, slice_start, slice_end, animation_offset);
@@ -471,6 +478,14 @@ void TileMap::set_layer_navigation_map(int p_layer, RID p_map) {
 
 RID TileMap::get_layer_navigation_map(int p_layer) const {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, RID(), get_navigation_map);
+}
+
+void TileMap::set_layer_animation_paused(int p_layer, bool p_animation_paused) {
+	TILEMAP_CALL_FOR_LAYER(p_layer, set_animation_paused, p_animation_paused);
+}
+
+bool TileMap::is_layer_animation_paused(int p_layer) const {
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, false, is_animation_paused);
 }
 
 void TileMap::set_collision_animatable(bool p_collision_animatable) {
@@ -994,6 +1009,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_layer_navigation_enabled", "layer"), &TileMap::is_layer_navigation_enabled);
 	ClassDB::bind_method(D_METHOD("set_layer_navigation_map", "layer", "map"), &TileMap::set_layer_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_layer_navigation_map", "layer"), &TileMap::get_layer_navigation_map);
+	ClassDB::bind_method(D_METHOD("set_layer_animation_paused", "layer", "enabled"), &TileMap::set_layer_animation_paused);
+	ClassDB::bind_method(D_METHOD("is_layer_animation_paused", "layer"), &TileMap::is_layer_animation_paused);
 
 	ClassDB::bind_method(D_METHOD("set_collision_animatable", "enabled"), &TileMap::set_collision_animatable);
 	ClassDB::bind_method(D_METHOD("is_collision_animatable"), &TileMap::is_collision_animatable);
@@ -1080,6 +1097,7 @@ TileMap::TileMap() {
 		base_property_helper.register_property(PropertyInfo(Variant::INT, "y_sort_origin", PROPERTY_HINT_NONE, "suffix:px"), defaults->get_y_sort_origin(), &TileMap::set_layer_y_sort_origin, &TileMap::get_layer_y_sort_origin);
 		base_property_helper.register_property(PropertyInfo(Variant::INT, "z_index"), defaults->get_z_index(), &TileMap::set_layer_z_index, &TileMap::get_layer_z_index);
 		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "navigation_enabled"), defaults->is_navigation_enabled(), &TileMap::set_layer_navigation_enabled, &TileMap::is_layer_navigation_enabled);
+		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "animation_paused"), defaults->is_animation_paused(), &TileMap::set_layer_animation_paused, &TileMap::is_layer_animation_paused);
 		base_property_helper.register_property(PropertyInfo(Variant::PACKED_INT32_ARRAY, "tile_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Vector<int>(), &TileMap::_set_layer_tile_data, &TileMap::_get_tile_map_data_using_compatibility_format);
 
 		memdelete(defaults);
