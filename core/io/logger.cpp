@@ -533,8 +533,13 @@ void UserLogManagerLogger::dispatch_message(const Dictionary &p_message, const C
 	// ideally we should verify that the mutex is *not* held by this thread, but the current API provides no way to do that
 	// (it's possible it's already been scooped up by another thread, that's fine)
 
-	if (p_callable.is_null()) {
-		// this is a deleted callable, ignore it
+	if (!p_callable.is_valid()) {
+		// in most cases, this is going to be a deleted callable, so ignore it;
+		// is_null() would be enough for that, we intentionally invalidate it to null in register_callable
+		//
+		// it's apparently possible for callables to be yanked out from under us, though, and if we call them, we crash
+		// so, do the full is_valid() check
+		//
 		// (easier to put the check here than everywhere that calls this)
 		return;
 	}
