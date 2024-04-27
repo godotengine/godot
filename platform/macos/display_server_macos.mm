@@ -1729,8 +1729,14 @@ DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode,
 }
 
 void DisplayServerMacOS::show_window(WindowID p_id) {
+	ERR_FAIL_COND(!windows.has(p_id));
 	WindowData &wd = windows[p_id];
+	wd.visible = true;
 
+	if (p_id == MAIN_WINDOW_ID) {
+		[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+		[NSApp setApplicationIconImage:app_icon];
+	}
 	popup_open(p_id);
 	if ([wd.window_object isMiniaturized]) {
 		return;
@@ -1738,6 +1744,17 @@ void DisplayServerMacOS::show_window(WindowID p_id) {
 		[wd.window_object orderFront:nil];
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
+	}
+}
+
+void DisplayServerMacOS::hide_window(WindowID p_id) {
+	ERR_FAIL_COND(!windows.has(p_id));
+	WindowData &wd = windows[p_id];
+	wd.visible = false;
+
+	[wd.window_object orderOut:nil];
+	if (p_id == MAIN_WINDOW_ID) {
+		[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
 	}
 }
 
@@ -1908,7 +1925,9 @@ void DisplayServerMacOS::reparent_check(WindowID p_window) {
 			if ([[wd_parent.window_object childWindows] containsObject:wd.window_object]) {
 				[wd_parent.window_object removeChildWindow:wd.window_object];
 				[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-				[wd.window_object orderFront:nil];
+				if (wd.visible) {
+					[wd.window_object orderFront:nil];
+				}
 			}
 		}
 	}
@@ -2442,7 +2461,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				[wd.window_object setFrame:frameRect display:NO];
 			}
 			_update_window_style(wd);
-			if (was_visible || [wd.window_object isVisible]) {
+			if ((was_visible || [wd.window_object isVisible]) && wd.visible) {
 				if ([wd.window_object isMiniaturized]) {
 					return;
 				} else if (wd.no_focus) {
@@ -2553,6 +2572,9 @@ void DisplayServerMacOS::window_move_to_foreground(WindowID p_window) {
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	const WindowData &wd = windows[p_window];
+	if (!wd.visible) {
+		return;
+	}
 
 	[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 	if (wd.no_focus || wd.is_popup) {
@@ -3100,6 +3122,7 @@ void DisplayServerMacOS::set_native_icon(const String &p_filename) {
 		NSImage *icon = [[NSImage alloc] initWithData:icon_data];
 		ERR_FAIL_NULL_MSG(icon, "Error loading icon.");
 
+		app_icon = icon;
 		[NSApp setApplicationIconImage:icon];
 	} @catch (NSException *exception) {
 		ERR_FAIL_MSG("NSException: " + String::utf8([exception reason].UTF8String));
@@ -3145,8 +3168,11 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 		ERR_FAIL_NULL(nsimg);
 
 		[nsimg addRepresentation:imgrep];
+
+		app_icon = nsimg;
 		[NSApp setApplicationIconImage:nsimg];
 	} else {
+		app_icon = nil;
 		[NSApp setApplicationIconImage:nil];
 	}
 }
@@ -3323,8 +3349,8 @@ bool DisplayServerMacOS::is_window_transparency_available() const {
 	return OS::get_singleton()->is_layered_allowed();
 }
 
-DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
+DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, bool p_visible, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_visible, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_command;
@@ -3509,7 +3535,7 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 	return closed;
 }
 
-DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, bool p_visible, Error &r_error) {
 	KeyMappingMacOS::initialize();
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
@@ -3701,7 +3727,11 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
-	show_window(MAIN_WINDOW_ID);
+	if (p_visible) {
+		show_window(MAIN_WINDOW_ID);
+	} else {
+		[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+	}
 	force_process_and_drop_events();
 
 #if defined(GLES3_ENABLED)

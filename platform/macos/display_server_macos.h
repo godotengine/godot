@@ -126,6 +126,7 @@ public:
 		bool focused = false;
 		bool is_visible = true;
 		bool extend_to_title = false;
+		bool visible = false;
 
 		Rect2i parent_safe_rect;
 	};
@@ -151,6 +152,8 @@ private:
 	List<WarpEvent> warp_events;
 	NSTimeInterval last_warp = 0;
 	bool ignore_warp = false;
+
+	NSImage *app_icon = nullptr;
 
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos = 0;
@@ -330,6 +333,7 @@ public:
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
 	virtual void show_window(WindowID p_id) override;
+	virtual void hide_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
 
 	virtual WindowID window_get_active_popup() const override;
@@ -441,12 +445,12 @@ public:
 
 	virtual bool is_window_transparency_available() const override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, bool p_visible, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 
 	static void register_macos_driver();
 
-	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error);
+	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, bool p_visible, Error &r_error);
 	~DisplayServerMacOS();
 };
 

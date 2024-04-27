@@ -871,6 +871,9 @@
 		<member name="display/window/size/viewport_width" type="int" setter="" getter="" default="1152">
 			Sets the game's main viewport width. On desktop platforms, this is also the initial window width, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_height], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
 		</member>
+		<member name="display/window/size/visible" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the main window is showing on the application start. Otherwise you can use [code]get_window().visible = true[/code] to show it when necessary.
+		</member>
 		<member name="display/window/size/window_height_override" type="int" setter="" getter="" default="0">
 			On desktop platforms, overrides the game's initial window height. See also [member display/window/size/window_width_override], [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
 			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window height is the [member display/window/size/viewport_height]. This setting is ignored on iOS, Android, and Web.

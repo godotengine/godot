@@ -826,6 +826,11 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			strnew += lines[i].replace("$min_version", p_preset->get("application/min_macos_version")) + "\n";
 		} else if (lines[i].contains("$highres")) {
 			strnew += lines[i].replace("$highres", p_preset->get("display/high_res") ? "\t<true/>" : "\t<false/>") + "\n";
+		} else if (lines[i].contains("$uielement")) {
+			bool window_visible = GLOBAL_GET("display/window/size/visible").operator bool();
+			String uielement = "\t<key>LSUIElement</key>\n";
+			uielement += window_visible ? "\t<false/>" : "\t<true/>";
+			strnew += lines[i].replace("$uielement", uielement) + "\n";
 		} else if (lines[i].contains("$additional_plist_content")) {
 			strnew += lines[i].replace("$additional_plist_content", p_preset->get("application/additional_plist_content")) + "\n";
 		} else if (lines[i].contains("$platfbuild")) {

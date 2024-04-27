@@ -1704,7 +1704,10 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, V
 void DisplayServerX11::show_window(WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
-	const WindowData &wd = windows[p_id];
+	ERR_FAIL_COND(!windows.has(p_id));
+	WindowData &wd = windows[p_id];
+	wd.visible = true;
+
 	popup_open(p_id);
 
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
@@ -1712,6 +1715,19 @@ void DisplayServerX11::show_window(WindowID p_id) {
 	XMapWindow(x11_display, wd.x11_window);
 	XSync(x11_display, False);
 	_validate_mode_on_map(p_id);
+}
+
+void DisplayServerX11::hide_window(WindowID p_id) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_id));
+	WindowData &wd = windows[p_id];
+	wd.visible = false;
+
+	DEBUG_LOG_X11("hide_window: %lu (%u) \n", wd.x11_window, p_id);
+
+	XUnmapWindow(x11_display, wd.x11_window);
+	XSync(x11_display, False);
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
@@ -2916,6 +2932,10 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	const WindowData &wd = windows[p_window];
 
+	if (!wd.visible) {
+		return;
+	}
+
 	XEvent xev;
 	Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
 
@@ -2968,6 +2988,9 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	if (!wd.visible) {
+		return;
+	}
 	if (!wd.xic) {
 		return;
 	}
@@ -4539,13 +4562,24 @@ void DisplayServerX11::process_events() {
 		XFreeEventData(x11_display, &event.xcookie);
 
 		switch (event.type) {
+			case UnmapNotify: {
+				DEBUG_LOG_X11("[%u] UnmapNotify window=%lu (%u) \n", frame, event.xunmap.window, window_id);
+				if (ime_window_event) {
+					break;
+				}
+
+				WindowData &wd = windows[window_id];
+				wd.visible = false;
+			} break;
+
 			case MapNotify: {
 				DEBUG_LOG_X11("[%u] MapNotify window=%lu (%u) \n", frame, event.xmap.window, window_id);
 				if (ime_window_event) {
 					break;
 				}
 
-				const WindowData &wd = windows[window_id];
+				WindowData &wd = windows[window_id];
+				wd.visible = true;
 
 				XWindowAttributes xwa;
 				XSync(x11_display, False);
@@ -5350,8 +5384,8 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
+DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, bool p_visible, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_visible, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_name = OS::get_singleton()->get_executable_path().get_file();
@@ -5782,7 +5816,7 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 	return p_style_a;
 }
 
-DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, bool p_visible, Error &r_error) {
 	KeyMappingX11::initialize();
 
 	native_menu = memnew(NativeMenu);
@@ -6202,7 +6236,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
-	show_window(main_window);
+	if (p_visible) {
+		show_window(main_window);
+	}
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
