@@ -83,7 +83,7 @@
 			More information about normal maps (including a coordinate order table for popular engines) can be found [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details]here[/url].
 		</member>
 		<member name="process/invert_color" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], invert rgb channels.
+			If [code]true[/code], invert all RGB color channels. The alpha channel is not affected by this option.
 		</member>
 		<member name="process/premult_alpha" type="bool" setter="" getter="" default="false">
 			An alternative to fixing darkened borders with [member process/fix_alpha_border] is to use premultiplied alpha. By enabling this option, the texture will be converted to this format. A premultiplied alpha texture requires specific materials to be displayed correctly:
