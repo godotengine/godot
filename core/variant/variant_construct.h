@@ -155,7 +155,7 @@ public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
 		VariantInternal::clear(&r_ret);
 		if (p_args[0]->get_type() == Variant::NIL) {
-			VariantInternal::object_assign_null(&r_ret);
+			VariantInternal::init_object(&r_ret);
 			r_error.error = Callable::CallError::CALL_OK;
 		} else if (p_args[0]->get_type() == Variant::OBJECT) {
 			VariantInternal::object_assign(&r_ret, p_args[0]);
