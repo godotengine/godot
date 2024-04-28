@@ -241,6 +241,7 @@ class SceneTreeDock : public VBoxContainer {
 	Timer *inspect_hovered_node_delay = nullptr;
 	Node *node_hovered_now = nullptr;
 	Node *node_hovered_previously = nullptr;
+	bool drop_completed = false;
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;

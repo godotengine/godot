@@ -75,7 +75,7 @@ void SceneTreeDock::_quick_open() {
 }
 
 void SceneTreeDock::_inspect_hovered_node() {
-	scene_tree->set_selected(node_hovered_now);
+	scene_tree->set_selected(node_hovered_now, false);
 	scene_tree->set_marked(node_hovered_now);
 	Tree *tree = scene_tree->get_scene_tree();
 	TreeItem *item = tree->get_item_at_position(tree->get_local_mouse_position());
@@ -97,8 +97,8 @@ void SceneTreeDock::_handle_hover_to_inspect() {
 		node_hovered_now = get_node_or_null(np);
 		if (node_hovered_previously != node_hovered_now) {
 			inspect_hovered_node_delay->start();
+			node_hovered_previously = node_hovered_now;
 		}
-		node_hovered_previously = node_hovered_now;
 	} else {
 		_reset_hovering_timer();
 	}
@@ -1586,8 +1586,15 @@ void SceneTreeDock::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_DRAG_BEGIN: {
+			drop_completed = false;
+		} break;
+
 		case NOTIFICATION_DRAG_END: {
 			_reset_hovering_timer();
+			if (!drop_completed) {
+				EditorNode::get_singleton()->edit_current();
+			}
 		} break;
 	}
 }
@@ -3306,6 +3313,8 @@ void SceneTreeDock::_nodes_dragged(const Array &p_nodes, NodePath p_to, int p_ty
 	for (Node *E : nodes) {
 		editor_selection->add_node(E);
 	}
+
+	drop_completed = true;
 }
 
 void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
