@@ -1291,7 +1291,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		// Use a different color for folder icons to make them easier to distinguish from files.
 		// On a light theme, the icon will be dark, so we need to lighten it before blending it with the accent color.
 		p_theme->set_color("folder_icon_color", "FileDialog", (p_config.dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(p_config.accent_color, 0.7));
-		p_theme->set_color("files_disabled", "FileDialog", p_config.font_disabled_color);
+		p_theme->set_color("file_disabled_color", "FileDialog", p_config.font_disabled_color);
 
 		// PopupDialog.
 		p_theme->set_stylebox("panel", "PopupDialog", p_config.popup_style);
