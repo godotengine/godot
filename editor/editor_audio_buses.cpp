@@ -380,8 +380,8 @@ float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
 			/* To accommodate for NaN on negative numbers for root, we will mirror the
 			 * results of the positive db range in order to get the desired numerical
 			 * value on the negative side. */
-			float positive_x = Math::pow(Math::abs(db) / 45.0f, 1.0f / 3.0f) + 1.0f;
-			Vector2 translation = Vector2(1.0f, 0.0f) - Vector2(positive_x, Math::abs(db));
+			float positive_x = Math::pow(ABS(db) / 45.0f, 1.0f / 3.0f) + 1.0f;
+			Vector2 translation = Vector2(1.0f, 0.0f) - Vector2(positive_x, ABS(db));
 			Vector2 reflected_position = Vector2(1.0, 0.0f) + translation;
 			return reflected_position.x;
 		} else {
@@ -1417,7 +1417,7 @@ Size2 EditorAudioMeterNotches::get_minimum_size() const {
 
 	for (int i = 0; i < notches.size(); i++) {
 		if (notches[i].render_db_value) {
-			width = MAX(width, font->get_string_size(String::num(Math::abs(notches[i].db_value)) + "dB", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
+			width = MAX(width, font->get_string_size(String::num(ABS(notches[i].db_value)) + "dB", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
 			height += font_height;
 		}
 	}
@@ -1462,7 +1462,7 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 			draw_string(theme_cache.font,
 					Vector2((line_length + label_space) * EDSCALE,
 							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
-					String::num(Math::abs(n.db_value)) + "dB",
+					String::num(ABS(n.db_value)) + "dB",
 					HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size,
 					theme_cache.notch_color);
 		}

@@ -302,7 +302,7 @@ float GradientTexture2D::_get_gradient_offset_at(int x, int y) const {
 	} else if (fill == Fill::FILL_RADIAL) {
 		ofs = (pos - fill_from).length() / (fill_to - fill_from).length();
 	} else if (fill == Fill::FILL_SQUARE) {
-		ofs = MAX(Math::abs(pos.x - fill_from.x), Math::abs(pos.y - fill_from.y)) / MAX(Math::abs(fill_to.x - fill_from.x), Math::abs(fill_to.y - fill_from.y));
+		ofs = MAX(ABS(pos.x - fill_from.x), ABS(pos.y - fill_from.y)) / MAX(ABS(fill_to.x - fill_from.x), ABS(fill_to.y - fill_from.y));
 	}
 	if (repeat == Repeat::REPEAT_NONE) {
 		ofs = CLAMP(ofs, 0.0, 1.0);
@@ -312,7 +312,7 @@ float GradientTexture2D::_get_gradient_offset_at(int x, int y) const {
 			ofs = 1 + ofs;
 		}
 	} else if (repeat == Repeat::REPEAT_MIRROR) {
-		ofs = Math::abs(ofs);
+		ofs = ABS(ofs);
 		ofs = Math::fmod(ofs, 2.0f);
 		if (ofs > 1.0) {
 			ofs = 2.0 - ofs;

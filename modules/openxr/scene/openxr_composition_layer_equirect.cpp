@@ -235,13 +235,13 @@ Vector2 OpenXRCompositionLayerEquirect::intersects_ray(const Vector3 &p_origin, 
 	Vector3 relative_point = correction.xform(intersection - equirect_transform.origin);
 
 	float horizontal_intersection_angle = Math::atan2(relative_point.z, relative_point.x);
-	if (Math::abs(horizontal_intersection_angle) > central_horizontal_angle / 2.0) {
+	if (ABS(horizontal_intersection_angle) > central_horizontal_angle / 2.0) {
 		return Vector2(-1.0, -1.0);
 	}
 
 	float vertical_intersection_angle = Math::acos(relative_point.y / radius) - (Math_PI / 2.0);
 	if (vertical_intersection_angle < 0) {
-		if (Math::abs(vertical_intersection_angle) > upper_vertical_angle) {
+		if (ABS(vertical_intersection_angle) > upper_vertical_angle) {
 			return Vector2(-1.0, -1.0);
 		}
 	} else if (vertical_intersection_angle > lower_vertical_angle) {

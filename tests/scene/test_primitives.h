@@ -301,7 +301,7 @@ TEST_CASE("[SceneTree][Primitive][Cylinder] Cylinder Primitive") {
 				Vector3 point_to_normal = normals[index].normalized() - yaxis_to_point.normalized();
 				//				std::cout << "<" << point_to_normal.x << ", " << point_to_normal.y << ", " << point_to_normal.z << ">\n";
 				if (!(point_to_normal.is_equal_approx(Vector3(0, 0, 0))) &&
-						(!Math::is_equal_approx(Math::abs(normals[index].normalized().y), 1))) {
+						(!Math::is_equal_approx(ABS(normals[index].normalized().y), 1))) {
 					is_correct_normals = false;
 					break;
 				}

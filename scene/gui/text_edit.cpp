@@ -497,11 +497,11 @@ void TextEdit::_notification(int p_what) {
 				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_physics_process_delta_time();
 
 				// Prevent small velocities from blocking scrolling.
-				if (Math::abs(vel) < v_scroll->get_step()) {
+				if (ABS(vel) < v_scroll->get_step()) {
 					vel = v_scroll->get_step() * SIGN(vel);
 				}
 
-				if (Math::abs(vel) >= dist) {
+				if (ABS(vel) >= dist) {
 					set_v_scroll(target_v_scroll);
 					scrolling = false;
 					minimap_clicked = false;
@@ -7604,7 +7604,7 @@ void TextEdit::_scroll_up(real_t p_delta, bool p_animate) {
 		if (target_v_scroll <= 0) {
 			target_v_scroll = 0;
 		}
-		if (!p_animate || Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
+		if (!p_animate || ABS(target_v_scroll - v_scroll->get_value()) < 1.0) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;
@@ -7632,7 +7632,7 @@ void TextEdit::_scroll_down(real_t p_delta, bool p_animate) {
 		if (target_v_scroll > max_v_scroll) {
 			target_v_scroll = max_v_scroll;
 		}
-		if (!p_animate || Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
+		if (!p_animate || ABS(target_v_scroll - v_scroll->get_value()) < 1.0) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;

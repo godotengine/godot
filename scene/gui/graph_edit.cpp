@@ -88,11 +88,11 @@ void GraphEditMinimap::update_minimap() {
 	if (graph_ratio > target_ratio) {
 		graph_proportions.width = graph_size.width;
 		graph_proportions.height = graph_size.width / target_ratio;
-		graph_padding.y = Math::abs(graph_size.height - graph_proportions.y) / 2;
+		graph_padding.y = ABS(graph_size.height - graph_proportions.y) / 2;
 	} else {
 		graph_proportions.width = graph_size.height * target_ratio;
 		graph_proportions.height = graph_size.height;
-		graph_padding.x = Math::abs(graph_size.width - graph_proportions.x) / 2;
+		graph_padding.x = ABS(graph_size.width - graph_proportions.x) / 2;
 	}
 
 	// This centers minimap inside the minimap rectangle.

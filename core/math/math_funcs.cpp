@@ -72,7 +72,7 @@ int Math::step_decimals(double p_step) {
 		0.0000000009999
 	};
 
-	double abs = Math::abs(p_step);
+	double abs = ABS(p_step);
 	double decs = abs - (int)abs; // Strip away integer part
 	for (int i = 0; i < maxn; i++) {
 		if (decs >= sd[i]) {

@@ -91,10 +91,10 @@ TEST_CASE("[Math] Power of two functions") {
 }
 
 TEST_CASE_TEMPLATE("[Math] abs", T, int, float, double) {
-	CHECK(Math::abs((T)-1) == (T)1);
-	CHECK(Math::abs((T)0) == (T)0);
-	CHECK(Math::abs((T)1) == (T)1);
-	CHECK(Math::abs((T)0.1) == (T)0.1);
+	CHECK(ABS((T)-1) == (T)1);
+	CHECK(ABS((T)0) == (T)0);
+	CHECK(ABS((T)1) == (T)1);
+	CHECK(ABS((T)0.1) == (T)0.1);
 }
 
 TEST_CASE_TEMPLATE("[Math] round/floor/ceil", T, float, double) {

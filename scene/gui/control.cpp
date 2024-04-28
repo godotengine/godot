@@ -682,7 +682,7 @@ void Control::_update_canvas_item_transform() {
 	xform[2] += get_position();
 
 	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
-	if (is_inside_tree() && Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
+	if (is_inside_tree() && ABS(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
 		xform[2] = xform[2].round();
 	}
 

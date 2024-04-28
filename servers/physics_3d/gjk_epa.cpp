@@ -396,7 +396,7 @@ struct	GJK
 				break;
 			case	4:
 				{
-					if(Math::abs(det(	m_simplex->c[0]->w-m_simplex->c[3]->w,
+					if(ABS(det(	m_simplex->c[0]->w-m_simplex->c[3]->w,
 						m_simplex->c[1]->w-m_simplex->c[3]->w,
 						m_simplex->c[2]->w-m_simplex->c[3]->w))>0) {
 						return(true);
@@ -500,7 +500,7 @@ struct	GJK
 			const Vector3		dl[]={a-d,b-d,c-d};
 			const real_t		vl=det(dl[0],dl[1],dl[2]);
 			const bool			ng=(vl*vec3_dot(a,vec3_cross(b-c,a-b)))<=0;
-			if(ng&&(Math::abs(vl)>GJK_SIMPLEX4_EPS))
+			if(ng&&(ABS(vl)>GJK_SIMPLEX4_EPS))
 			{
 				real_t	mindist=-1;
 				real_t	subw[3] = {0.f, 0.f, 0.f};

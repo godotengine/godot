@@ -292,7 +292,7 @@ void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 					// Allow to snap to axes with Shift.
 					if (mm->is_shift_pressed()) {
 						Vector2 initial_mpos = get_view_pos(initial_grab_pos);
-						if (Math::abs(mpos.x - initial_mpos.x) > Math::abs(mpos.y - initial_mpos.y)) {
+						if (ABS(mpos.x - initial_mpos.x) > ABS(mpos.y - initial_mpos.y)) {
 							new_pos.y = initial_grab_pos.y;
 						} else {
 							new_pos.x = initial_grab_pos.x;

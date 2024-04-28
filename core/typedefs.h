@@ -103,15 +103,14 @@
 #undef MAX
 #undef CLAMP
 
-// Generic ABS function, for math uses please use Math::abs.
 template <typename T>
-constexpr T ABS(T m_v) {
-	return m_v < 0 ? -m_v : m_v;
+constexpr T ABS(const T m_v) {
+	return m_v == T(0) ? T(0) : (m_v > T(0) ? m_v : -m_v);
 }
 
 template <typename T>
 constexpr const T SIGN(const T m_v) {
-	return m_v > 0 ? +1.0f : (m_v < 0 ? -1.0f : 0.0f);
+	return m_v > T(0) ? T(1) : (m_v < T(0) ? T(-1) : T(0));
 }
 
 template <typename T, typename T2>

@@ -339,7 +339,7 @@ void _get_axis_angle(const Vector3 &p_normal, const Vector4 &p_tangent, float &r
 // and p_angle includes the binormal direction.
 void _get_tbn_from_axis_angle(const Vector3 &p_axis, float p_angle, Vector3 &r_normal, Vector4 &r_tangent) {
 	float binormal_sign = p_angle > 0.5 ? 1.0 : -1.0;
-	float angle = Math::abs(p_angle * 2.0 - 1.0) * Math_PI;
+	float angle = ABS(p_angle * 2.0 - 1.0) * Math_PI;
 
 	Basis tbn = Basis(p_axis, angle);
 	Vector3 tan = tbn.rows[0];

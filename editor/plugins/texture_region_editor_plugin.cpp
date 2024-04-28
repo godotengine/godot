@@ -369,16 +369,16 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 							mtx.basis_xform(rect.position + Vector2(margins[2], 0)) - draw_ofs * draw_zoom,
 							mtx.basis_xform(rect.position + rect.size - Vector2(margins[3], 0)) - draw_ofs * draw_zoom
 						};
-						if (Math::abs(mb->get_position().y - pos[0].y) < 8) {
+						if (ABS(mb->get_position().y - pos[0].y) < 8) {
 							edited_margin = 0;
 							prev_margin = margins[0];
-						} else if (Math::abs(mb->get_position().y - pos[1].y) < 8) {
+						} else if (ABS(mb->get_position().y - pos[1].y) < 8) {
 							edited_margin = 1;
 							prev_margin = margins[1];
-						} else if (Math::abs(mb->get_position().x - pos[2].x) < 8) {
+						} else if (ABS(mb->get_position().x - pos[2].x) < 8) {
 							edited_margin = 2;
 							prev_margin = margins[2];
-						} else if (Math::abs(mb->get_position().x - pos[3].x) < 8) {
+						} else if (ABS(mb->get_position().x - pos[3].x) < 8) {
 							edited_margin = 3;
 							prev_margin = margins[3];
 						}

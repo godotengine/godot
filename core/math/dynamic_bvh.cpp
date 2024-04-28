@@ -226,7 +226,7 @@ DynamicBVH::Node *DynamicBVH::_top_down(Node **leaves, int p_count, int p_bu_thr
 			}
 			for (i = 0; i < 3; ++i) {
 				if ((splitcount[i][0] > 0) && (splitcount[i][1] > 0)) {
-					const int midp = (int)Math::abs(real_t(splitcount[i][0] - splitcount[i][1]));
+					const int midp = (int)ABS(real_t(splitcount[i][0] - splitcount[i][1]));
 					if (midp < bestmidp) {
 						bestaxis = i;
 						bestmidp = midp;

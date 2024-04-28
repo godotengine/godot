@@ -151,7 +151,7 @@ int64_t Vector4i::distance_squared_to(const Vector4i &p_to) const {
 }
 
 Vector4i Vector4i::abs() const {
-	return Vector4i(Math::abs(x), Math::abs(y), Math::abs(z), Math::abs(w));
+	return Vector4i(ABS(x), ABS(y), ABS(z), ABS(w));
 }
 
 Vector4i Vector4i::sign() const {

@@ -705,7 +705,7 @@ bool GodotBody2D::sleep_test(real_t p_step) {
 		return false;
 	}
 
-	if (Math::abs(angular_velocity) < get_space()->get_body_angular_velocity_sleep_threshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
+	if (ABS(angular_velocity) < get_space()->get_body_angular_velocity_sleep_threshold() && ABS(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
 		still_time += p_step;
 
 		return still_time > get_space()->get_body_time_to_sleep();

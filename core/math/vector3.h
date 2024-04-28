@@ -197,7 +197,7 @@ real_t Vector3::dot(const Vector3 &p_with) const {
 }
 
 Vector3 Vector3::abs() const {
-	return Vector3(Math::abs(x), Math::abs(y), Math::abs(z));
+	return Vector3(ABS(x), ABS(y), ABS(z));
 }
 
 Vector3 Vector3::sign() const {

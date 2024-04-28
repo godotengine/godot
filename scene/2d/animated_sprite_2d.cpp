@@ -182,7 +182,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 			while (remaining) {
 				// Animation speed may be changed by animation_finished or frame_changed signals.
 				double speed = frames->get_animation_speed(animation) * speed_scale * custom_speed_scale * frame_speed_scale;
-				double abs_speed = Math::abs(speed);
+				double abs_speed = ABS(speed);
 
 				if (speed == 0) {
 					return; // Do nothing.

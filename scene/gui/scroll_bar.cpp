@@ -331,7 +331,7 @@ void ScrollBar::_notification(int p_what) {
 					double dist = abs(target);
 					double vel = ((target / dist) * 500) * get_physics_process_delta_time();
 
-					if (Math::abs(vel) >= dist) {
+					if (ABS(vel) >= dist) {
 						scroll_to(target_scroll);
 						scrolling = false;
 						set_physics_process_internal(false);
@@ -364,7 +364,7 @@ void ScrollBar::_notification(int p_what) {
 						scroll_to(pos.x);
 
 						float sgn_x = drag_node_speed.x < 0 ? -1 : 1;
-						float val_x = Math::abs(drag_node_speed.x);
+						float val_x = ABS(drag_node_speed.x);
 						val_x -= 1000 * get_physics_process_delta_time();
 
 						if (val_x < 0) {
@@ -387,7 +387,7 @@ void ScrollBar::_notification(int p_what) {
 						scroll_to(pos.y);
 
 						float sgn_y = drag_node_speed.y < 0 ? -1 : 1;
-						float val_y = Math::abs(drag_node_speed.y);
+						float val_y = ABS(drag_node_speed.y);
 						val_y -= 1000 * get_physics_process_delta_time();
 
 						if (val_y < 0) {

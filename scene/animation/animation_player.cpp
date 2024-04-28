@@ -271,7 +271,7 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 	List<List<Blend>::Element *> to_erase;
 	for (List<Blend>::Element *E = c.blend.front(); E; E = E->next()) {
 		Blend &b = E->get();
-		b.blend_left = MAX(0, b.blend_left - Math::absf(speed_scale * p_delta) / b.blend_time);
+		b.blend_left = MAX(0, b.blend_left - ABS(speed_scale * p_delta) / b.blend_time);
 		if (b.blend_left <= 0) {
 			to_erase.push_back(E);
 			b.blend_left = CMP_EPSILON; // May want to play last frame.
@@ -311,7 +311,7 @@ bool AnimationPlayer::_blend_pre_process(double p_delta, int p_track_count, cons
 }
 
 void AnimationPlayer::_blend_capture(double p_delta) {
-	blend_capture(p_delta * Math::abs(speed_scale));
+	blend_capture(p_delta * ABS(speed_scale));
 }
 
 void AnimationPlayer::_blend_post_process() {

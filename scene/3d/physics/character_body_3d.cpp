@@ -209,7 +209,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					// to properly test the angle and avoid standing on slopes
 					Vector3 horizontal_motion = motion.slide(up_direction);
 					Vector3 horizontal_normal = wall_normal.slide(up_direction).normalized();
-					real_t motion_angle = Math::abs(Math::acos(-horizontal_normal.dot(horizontal_motion.normalized())));
+					real_t motion_angle = ABS(Math::acos(-horizontal_normal.dot(horizontal_motion.normalized())));
 
 					// Avoid to move forward on a wall if floor_block_on_wall is true.
 					// Applies only when the motion angle is under 90 degrees,
@@ -290,7 +290,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				// Stop horizontal motion when under wall slide threshold.
 				if (p_was_on_floor && (wall_min_slide_angle > 0.0) && result_state.wall) {
 					Vector3 horizontal_normal = wall_normal.slide(up_direction).normalized();
-					real_t motion_angle = Math::abs(Math::acos(-horizontal_normal.dot(motion_slide_up.normalized())));
+					real_t motion_angle = ABS(Math::acos(-horizontal_normal.dot(motion_slide_up.normalized())));
 					if (motion_angle < wall_min_slide_angle) {
 						motion = up_direction * motion.dot(up_direction);
 						velocity = up_direction * velocity.dot(up_direction);

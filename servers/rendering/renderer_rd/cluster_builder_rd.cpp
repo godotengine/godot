@@ -130,7 +130,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 				}
 			}
 			Plane p(vertices[0], vertices[1], vertices[2]);
-			min_d = MIN(Math::abs(p.d), min_d);
+			min_d = MIN(ABS(p.d), min_d);
 		}
 		sphere_overfit = 1.0 / min_d;
 	}
@@ -183,7 +183,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 				Vector3 b = vertices[(zero_index + 2) % 3];
 				Vector3 c = a + Vector3(0, 0, 1);
 				Plane p(a, b, c);
-				min_d = MIN(Math::abs(p.d), min_d);
+				min_d = MIN(ABS(p.d), min_d);
 			}
 		}
 		cone_overfit = 1.0 / min_d;

@@ -218,13 +218,13 @@ Vector2 OpenXRCompositionLayerCylinder::intersects_ray(const Vector3 &p_origin, 
 
 	Vector2 projected_point = Vector2(relative_point.x, relative_point.z);
 	float intersection_angle = Math::atan2(projected_point.y, projected_point.x);
-	if (Math::abs(intersection_angle) > central_angle / 2.0) {
+	if (ABS(intersection_angle) > central_angle / 2.0) {
 		return Vector2(-1.0, -1.0);
 	}
 
 	float arc_length = radius * central_angle;
 	float height = aspect_ratio * arc_length;
-	if (Math::abs(relative_point.y) > height / 2.0) {
+	if (ABS(relative_point.y) > height / 2.0) {
 		return Vector2(-1.0, -1.0);
 	}
 

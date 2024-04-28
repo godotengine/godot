@@ -519,7 +519,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 
 	double p_time = p_playback_info.time;
 	double p_delta = p_playback_info.delta;
-	double abs_delta = Math::abs(p_delta);
+	double abs_delta = ABS(p_delta);
 	bool p_seek = p_playback_info.seeked;
 	bool p_is_external_seeking = p_playback_info.is_external_seeking;
 
@@ -653,7 +653,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 				set_parameter(time_to_restart, restart_sec);
 			}
 		}
-		double d = Math::abs(os_nti.delta);
+		double d = ABS(os_nti.delta);
 		if (!do_start) {
 			cur_fade_in_remaining = MAX(0, cur_fade_in_remaining - d); // Don't consider seeked delta by restart.
 		}
@@ -1353,7 +1353,7 @@ AnimationNode::NodeTimeInfo AnimationNodeTransition::_process(const AnimationMix
 			if (cur_prev_xfading <= 0) {
 				set_parameter(prev_index, -1);
 			}
-			cur_prev_xfading -= Math::abs(p_playback_info.delta);
+			cur_prev_xfading -= ABS(p_playback_info.delta);
 		}
 	}
 

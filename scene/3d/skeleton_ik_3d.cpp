@@ -127,7 +127,7 @@ void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet, Vec
 	real_t distance_to_goal(1e4);
 	real_t previous_distance_to_goal(0);
 	int can_solve(p_task->max_iterations);
-	while (distance_to_goal > p_task->min_distance && Math::abs(previous_distance_to_goal - distance_to_goal) > 0.005 && can_solve) {
+	while (distance_to_goal > p_task->min_distance && ABS(previous_distance_to_goal - distance_to_goal) > 0.005 && can_solve) {
 		previous_distance_to_goal = distance_to_goal;
 		--can_solve;
 

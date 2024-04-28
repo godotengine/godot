@@ -579,8 +579,8 @@ Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_na
 		if (E->get().script.has(p_script)) {
 			score += 240;
 		}
-		score += (20 - Math::abs(E->get().weight - p_weight) / 50);
-		score += (20 - Math::abs(E->get().stretch - p_stretch) / 10);
+		score += (20 - ABS(E->get().weight - p_weight) / 50);
+		score += (20 - ABS(E->get().stretch - p_stretch) / 10);
 		if (E->get().italic == p_italic) {
 			score += 30;
 		}
@@ -620,8 +620,8 @@ String OS_Android::get_system_font_path(const String &p_font_name, int p_weight,
 		if (E->get().font_name == font_name) {
 			score += (65 - E->get().priority);
 		}
-		score += (20 - Math::abs(E->get().weight - p_weight) / 50);
-		score += (20 - Math::abs(E->get().stretch - p_stretch) / 10);
+		score += (20 - ABS(E->get().weight - p_weight) / 50);
+		score += (20 - ABS(E->get().stretch - p_stretch) / 10);
 		if (E->get().italic == p_italic) {
 			score += 30;
 		}

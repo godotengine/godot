@@ -274,7 +274,7 @@ public:
 
 		//use the smallest depth
 
-		dmin = Math::abs(dmin);
+		dmin = ABS(dmin);
 
 		if (dmax < dmin) {
 			if (dmax < best_depth) {

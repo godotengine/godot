@@ -110,7 +110,7 @@ Vector4 Vector4::direction_to(const Vector4 &p_to) const {
 }
 
 Vector4 Vector4::abs() const {
-	return Vector4(Math::abs(x), Math::abs(y), Math::abs(z), Math::abs(w));
+	return Vector4(ABS(x), ABS(y), ABS(z), ABS(w));
 }
 
 Vector4 Vector4::sign() const {

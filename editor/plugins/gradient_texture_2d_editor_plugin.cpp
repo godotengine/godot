@@ -120,7 +120,7 @@ void GradientTexture2DEdit::gui_input(const Ref<InputEvent> &p_event) {
 		// Allow to snap to an axis with Shift.
 		if (mm->is_shift_pressed()) {
 			Vector2 initial_mpos = initial_grab_pos * size;
-			if (Math::abs(mpos.x - initial_mpos.x) > Math::abs(mpos.y - initial_mpos.y)) {
+			if (ABS(mpos.x - initial_mpos.x) > ABS(mpos.y - initial_mpos.y)) {
 				new_pos.y = initial_grab_pos.y;
 			} else {
 				new_pos.x = initial_grab_pos.x;

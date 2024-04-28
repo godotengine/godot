@@ -371,13 +371,13 @@ static float perpendicular_distance(const Vector2 &i, const Vector2 &start, cons
 	float intercept;
 
 	if (start.x == end.x) {
-		res = Math::absf(i.x - end.x);
+		res = ABS(i.x - end.x);
 	} else if (start.y == end.y) {
-		res = Math::absf(i.y - end.y);
+		res = ABS(i.y - end.y);
 	} else {
 		slope = (end.y - start.y) / (end.x - start.x);
 		intercept = start.y - (slope * start.x);
-		res = Math::absf(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
+		res = ABS(slope * i.x - i.y + intercept) / Math::sqrt(Math::pow(slope, 2.0f) + 1.0);
 	}
 	return res;
 }
@@ -558,7 +558,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2i &p_rect) {
 	}
 
 	bool bit_value = p_pixels > 0;
-	p_pixels = Math::abs(p_pixels);
+	p_pixels = ABS(p_pixels);
 
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 

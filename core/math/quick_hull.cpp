@@ -103,7 +103,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 			}
 
 			Vector3 n = rel12.cross(p_points[simplex[0]] - p_points[i]).cross(rel12).normalized();
-			real_t d = Math::abs(n.dot(p_points[simplex[0]]) - n.dot(p_points[i]));
+			real_t d = ABS(n.dot(p_points[simplex[0]]) - n.dot(p_points[i]));
 
 			if (i == 0 || d > maxd) {
 				maxd = d;
@@ -123,7 +123,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 				continue;
 			}
 
-			real_t d = Math::abs(p.distance_to(p_points[i]));
+			real_t d = ABS(p.distance_to(p_points[i]));
 
 			if (i == 0 || d > maxd) {
 				maxd = d;

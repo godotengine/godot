@@ -372,7 +372,7 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 		Vector3 axis_3d = camera_basis.get_column(i);
 		Vector2i axis_vector = Vector2(axis_3d.x, -axis_3d.y) * radius;
 
-		if (Math::abs(axis_3d.z) <= 1.0) {
+		if (ABS(axis_3d.z) <= 1.0) {
 			Axis2D pos_axis;
 			pos_axis.axis = i;
 			pos_axis.screen_point = center + axis_vector;
@@ -530,11 +530,11 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 
-			if (Math::abs(camera_cursor.x_rot - cursor.x_rot) < 0.1) {
+			if (ABS(camera_cursor.x_rot - cursor.x_rot) < 0.1) {
 				camera_cursor.x_rot = cursor.x_rot;
 			}
 
-			if (Math::abs(camera_cursor.y_rot - cursor.y_rot) < 0.1) {
+			if (ABS(camera_cursor.y_rot - cursor.y_rot) < 0.1) {
 				camera_cursor.y_rot = cursor.y_rot;
 			}
 
@@ -549,11 +549,11 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 
-			if (Math::abs(camera_cursor.x_rot - cursor.x_rot) < 0.1) {
+			if (ABS(camera_cursor.x_rot - cursor.x_rot) < 0.1) {
 				camera_cursor.x_rot = cursor.x_rot;
 			}
 
-			if (Math::abs(camera_cursor.y_rot - cursor.y_rot) < 0.1) {
+			if (ABS(camera_cursor.y_rot - cursor.y_rot) < 0.1) {
 				camera_cursor.y_rot = cursor.y_rot;
 			}
 
@@ -3797,17 +3797,17 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	const Vector3 camz = -camera_xform.get_basis().get_column(2).normalized();
 	const Vector3 camy = -camera_xform.get_basis().get_column(1).normalized();
 	const Plane p = Plane(camz, camera_xform.origin);
-	const real_t gizmo_d = MAX(Math::abs(p.distance_to(xform.origin)), CMP_EPSILON);
+	const real_t gizmo_d = MAX(ABS(p.distance_to(xform.origin)), CMP_EPSILON);
 	const real_t d0 = camera->unproject_position(camera_xform.origin + camz * gizmo_d).y;
 	const real_t d1 = camera->unproject_position(camera_xform.origin + camz * gizmo_d + camy).y;
-	const real_t dd = MAX(Math::abs(d0 - d1), CMP_EPSILON);
+	const real_t dd = MAX(ABS(d0 - d1), CMP_EPSILON);
 
 	const real_t gizmo_size = EDITOR_GET("editors/3d/manipulator_gizmo_size");
 	// At low viewport heights, multiply the gizmo scale based on the viewport height.
 	// This prevents the gizmo from growing very large and going outside the viewport.
 	const int viewport_base_height = 400 * MAX(1, EDSCALE);
 	gizmo_scale =
-			(gizmo_size / Math::abs(dd)) * MAX(1, EDSCALE) *
+			(gizmo_size / ABS(dd)) * MAX(1, EDSCALE) *
 			MIN(viewport_base_height, subviewport_container->get_size().height) / viewport_base_height /
 			subviewport_container->get_stretch_shrink();
 	Vector3 scale = Vector3(1, 1, 1) * gizmo_scale;
@@ -7191,7 +7191,7 @@ void Node3DEditor::_init_grid() {
 		Vector3 normal;
 		normal[c] = 1.0;
 
-		real_t camera_distance = Math::abs(camera_position[c]);
+		real_t camera_distance = ABS(camera_position[c]);
 
 		if (orthogonal) {
 			camera_distance = camera->get_size() / 2.0;
@@ -7203,7 +7203,7 @@ void Node3DEditor::_init_grid() {
 			}
 		}
 
-		real_t division_level = Math::log(Math::abs(camera_distance)) / Math::log((double)primary_grid_steps) + division_level_bias;
+		real_t division_level = Math::log(ABS(camera_distance)) / Math::log((double)primary_grid_steps) + division_level_bias;
 
 		real_t clamped_division_level = CLAMP(division_level, division_level_min, division_level_max);
 		real_t division_level_floored = Math::floor(clamped_division_level);

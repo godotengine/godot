@@ -202,7 +202,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			Vector2 motion = mm->get_relative();
 			drag_accum -= motion;
 
-			if (beyond_deadzone || (h_scroll_enabled && Math::abs(drag_accum.x) > deadzone) || (v_scroll_enabled && Math::abs(drag_accum.y) > deadzone)) {
+			if (beyond_deadzone || (h_scroll_enabled && ABS(drag_accum.x) > deadzone) || (v_scroll_enabled && ABS(drag_accum.y) > deadzone)) {
 				if (!beyond_deadzone) {
 					propagate_notification(NOTIFICATION_SCROLL_BEGIN);
 					emit_signal(SNAME("scroll_started"));
@@ -398,7 +398,7 @@ void ScrollContainer::_notification(int p_what) {
 					}
 
 					float sgn_x = drag_speed.x < 0 ? -1 : 1;
-					float val_x = Math::abs(drag_speed.x);
+					float val_x = ABS(drag_speed.x);
 					val_x -= 1000 * get_physics_process_delta_time();
 
 					if (val_x < 0) {
@@ -406,7 +406,7 @@ void ScrollContainer::_notification(int p_what) {
 					}
 
 					float sgn_y = drag_speed.y < 0 ? -1 : 1;
-					float val_y = Math::abs(drag_speed.y);
+					float val_y = ABS(drag_speed.y);
 					val_y -= 1000 * get_physics_process_delta_time();
 
 					if (val_y < 0) {

@@ -118,7 +118,7 @@ private:
 
 		_FORCE_INLINE_ real_t get_proximity_to(const Volume &b) const {
 			const Vector3 d = (min + max) - (b.min + b.max);
-			return (Math::abs(d.x) + Math::abs(d.y) + Math::abs(d.z));
+			return (ABS(d.x) + ABS(d.y) + ABS(d.z));
 		}
 
 		_FORCE_INLINE_ int select_by_proximity(const Volume &a, const Volume &b) const {

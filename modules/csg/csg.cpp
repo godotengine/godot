@@ -624,7 +624,7 @@ bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *r_facebvhptr, int p_max_
 									potential_intersection.found = true;
 									potential_intersection.conormal = face_normal.dot(current_normal);
 									potential_intersection.distance_squared = face_center.distance_squared_to(intersection_point);
-									potential_intersection.origin_angle = Math::abs(potential_intersection.conormal);
+									potential_intersection.origin_angle = ABS(potential_intersection.conormal);
 									real_t intersection_dist_from_face = face_normal.dot(intersection_point - face_center);
 									for (int i = 0; i < 3; i++) {
 										real_t point_dist_from_face = face_normal.dot(current_points[i] - face_center);
@@ -869,7 +869,7 @@ void CSGBrushOperation::Build2DFaces::_add_vertex_idx_sorted(Vector<int> &r_vert
 
 			// Sort along the axis with the greatest difference.
 			int axis = 0;
-			if (Math::abs(new_point.x - first_point.x) < Math::abs(new_point.y - first_point.y)) {
+			if (ABS(new_point.x - first_point.x) < ABS(new_point.y - first_point.y)) {
 				axis = 1;
 			}
 
@@ -890,7 +890,7 @@ void CSGBrushOperation::Build2DFaces::_add_vertex_idx_sorted(Vector<int> &r_vert
 
 		// Determine axis being sorted against i.e. the axis with the greatest difference.
 		int axis = 0;
-		if (Math::abs(last_point.x - first_point.x) < Math::abs(last_point.y - first_point.y)) {
+		if (ABS(last_point.x - first_point.x) < ABS(last_point.y - first_point.y)) {
 			axis = 1;
 		}
 

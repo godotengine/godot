@@ -608,7 +608,7 @@ void Projection::invert() {
 		pvt_j[k] = k;
 		for (i = k; i < 4; i++) {
 			for (j = k; j < 4; j++) {
-				if (Math::abs(columns[i][j]) > Math::abs(pvt_val)) {
+				if (ABS(columns[i][j]) > ABS(pvt_val)) {
 					pvt_i[k] = i;
 					pvt_j[k] = j;
 					pvt_val = columns[i][j];
@@ -819,7 +819,7 @@ real_t Projection::get_fov() const {
 	right_plane.normalize();
 
 	if ((matrix[8] == 0) && (matrix[9] == 0)) {
-		return Math::rad_to_deg(Math::acos(Math::abs(right_plane.normal.x))) * 2.0;
+		return Math::rad_to_deg(Math::acos(ABS(right_plane.normal.x))) * 2.0;
 	} else {
 		// our frustum is asymmetrical need to calculate the left planes angle separately..
 		Plane left_plane = Plane(matrix[3] + matrix[0],
@@ -828,7 +828,7 @@ real_t Projection::get_fov() const {
 				matrix[15] + matrix[12]);
 		left_plane.normalize();
 
-		return Math::rad_to_deg(Math::acos(Math::abs(left_plane.normal.x))) + Math::rad_to_deg(Math::acos(Math::abs(right_plane.normal.x)));
+		return Math::rad_to_deg(Math::acos(ABS(left_plane.normal.x))) + Math::rad_to_deg(Math::acos(ABS(right_plane.normal.x)));
 	}
 }
 

@@ -3366,8 +3366,8 @@ void Animation::bezier_track_set_key_handle_mode(int p_track, int p_index, Handl
 				}
 			} else {
 				real_t handle_length = 1.0 / 4.0;
-				real_t prev_interval = Math::abs(bt->values[p_index].time - bt->values[prev_key].time);
-				real_t next_interval = Math::abs(bt->values[p_index].time - bt->values[next_key].time);
+				real_t prev_interval = ABS(bt->values[p_index].time - bt->values[prev_key].time);
+				real_t next_interval = ABS(bt->values[p_index].time - bt->values[next_key].time);
 				real_t min_time = 0;
 				if (Math::is_zero_approx(prev_interval)) {
 					min_time = next_interval;

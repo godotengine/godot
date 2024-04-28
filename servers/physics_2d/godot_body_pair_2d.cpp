@@ -553,7 +553,7 @@ void GodotBodyPair2D::solve(real_t p_step) {
 
 		vbn = dbv.dot(c.normal);
 
-		if (Math::abs(-vbn + c.bias) > MIN_VELOCITY) {
+		if (ABS(-vbn + c.bias) > MIN_VELOCITY) {
 			real_t jbn_com = (-vbn + c.bias) / (inv_mass_A + inv_mass_B);
 			real_t jbnOld_com = c.acc_bias_impulse_center_of_mass;
 			c.acc_bias_impulse_center_of_mass = MAX(jbnOld_com + jbn_com, 0.0f);

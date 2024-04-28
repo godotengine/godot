@@ -483,7 +483,7 @@ void GodotBodyPair3D::solve(real_t p_step) {
 
 		real_t vbn = dbv.dot(c.normal);
 
-		if (Math::abs(-vbn + c.bias) > MIN_VELOCITY) {
+		if (ABS(-vbn + c.bias) > MIN_VELOCITY) {
 			real_t jbn = (-vbn + c.bias) * c.mass_normal;
 			real_t jbnOld = c.acc_bias_impulse;
 			c.acc_bias_impulse = MAX(jbnOld + jbn, 0.0f);
@@ -503,7 +503,7 @@ void GodotBodyPair3D::solve(real_t p_step) {
 
 			vbn = dbv.dot(c.normal);
 
-			if (Math::abs(-vbn + c.bias) > MIN_VELOCITY) {
+			if (ABS(-vbn + c.bias) > MIN_VELOCITY) {
 				real_t jbn_com = (-vbn + c.bias) / (inv_mass_A + inv_mass_B);
 				real_t jbnOld_com = c.acc_bias_impulse_center_of_mass;
 				c.acc_bias_impulse_center_of_mass = MAX(jbnOld_com + jbn_com, 0.0f);
@@ -528,7 +528,7 @@ void GodotBodyPair3D::solve(real_t p_step) {
 		//normal impulse
 		real_t vn = dv.dot(c.normal);
 
-		if (Math::abs(vn) > MIN_VELOCITY) {
+		if (ABS(vn) > MIN_VELOCITY) {
 			real_t jn = -(c.bounce + vn) * c.mass_normal;
 			real_t jnOld = c.acc_normal_impulse;
 			c.acc_normal_impulse = MAX(jnOld + jn, 0.0f);
@@ -864,7 +864,7 @@ void GodotBodySoftBodyPair3D::solve(real_t p_step) {
 
 		real_t vbn = dbv.dot(c.normal);
 
-		if (Math::abs(-vbn + c.bias) > MIN_VELOCITY) {
+		if (ABS(-vbn + c.bias) > MIN_VELOCITY) {
 			real_t jbn = (-vbn + c.bias) * c.mass_normal;
 			real_t jbnOld = c.acc_bias_impulse;
 			c.acc_bias_impulse = MAX(jbnOld + jbn, 0.0f);
@@ -883,7 +883,7 @@ void GodotBodySoftBodyPair3D::solve(real_t p_step) {
 
 			vbn = dbv.dot(c.normal);
 
-			if (Math::abs(-vbn + c.bias) > MIN_VELOCITY) {
+			if (ABS(-vbn + c.bias) > MIN_VELOCITY) {
 				real_t jbn_com = (-vbn + c.bias) / (body_inv_mass + node_inv_mass);
 				real_t jbnOld_com = c.acc_bias_impulse_center_of_mass;
 				c.acc_bias_impulse_center_of_mass = MAX(jbnOld_com + jbn_com, 0.0f);
@@ -907,7 +907,7 @@ void GodotBodySoftBodyPair3D::solve(real_t p_step) {
 		// Normal impulse.
 		real_t vn = dv.dot(c.normal);
 
-		if (Math::abs(vn) > MIN_VELOCITY) {
+		if (ABS(vn) > MIN_VELOCITY) {
 			real_t jn = -(c.bounce + vn) * c.mass_normal;
 			real_t jnOld = c.acc_normal_impulse;
 			c.acc_normal_impulse = MAX(jnOld + jn, 0.0f);

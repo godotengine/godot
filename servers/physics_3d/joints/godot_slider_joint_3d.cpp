@@ -163,7 +163,7 @@ void GodotSliderJoint3D::solve(real_t p_step) {
 				real_t motor_relvel = desiredMotorVel + rel_vel;
 				normalImpulse = -motor_relvel * m_jacLinDiagABInv[i];
 				// clamp accumulated impulse
-				real_t new_acc = m_accumulatedLinMotorImpulse + Math::abs(normalImpulse);
+				real_t new_acc = m_accumulatedLinMotorImpulse + ABS(normalImpulse);
 				if (new_acc > m_maxLinMotorForce) {
 					new_acc = m_maxLinMotorForce;
 				}
@@ -248,7 +248,7 @@ void GodotSliderJoint3D::solve(real_t p_step) {
 
 			real_t angImpulse = m_kAngle * motor_relvel;
 			// clamp accumulated impulse
-			real_t new_acc = m_accumulatedAngMotorImpulse + Math::abs(angImpulse);
+			real_t new_acc = m_accumulatedAngMotorImpulse + ABS(angImpulse);
 			if (new_acc > m_maxAngMotorForce) {
 				new_acc = m_maxAngMotorForce;
 			}

@@ -217,10 +217,6 @@ public:
 	static _ALWAYS_INLINE_ bool is_finite(double p_val) { return isfinite(p_val); }
 	static _ALWAYS_INLINE_ bool is_finite(float p_val) { return isfinite(p_val); }
 
-	static _ALWAYS_INLINE_ double abs(double g) { return absd(g); }
-	static _ALWAYS_INLINE_ float abs(float g) { return absf(g); }
-	static _ALWAYS_INLINE_ int abs(int g) { return g > 0 ? g : -g; }
-
 	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
 		double value = Math::fmod(p_x, p_y);
 		if (((value < 0) && (p_y > 0)) || ((value > 0) && (p_y < 0))) {
@@ -461,21 +457,21 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) {
-		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+		return ABS(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
 	}
 	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) {
-		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+		return ABS(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
 	}
 
 	static _ALWAYS_INLINE_ double rotate_toward(double p_from, double p_to, double p_delta) {
 		double difference = Math::angle_difference(p_from, p_to);
-		double abs_difference = Math::abs(difference);
+		double abs_difference = ABS(difference);
 		// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
 		return p_from + CLAMP(p_delta, abs_difference - Math_PI, abs_difference) * (difference >= 0.0 ? 1.0 : -1.0);
 	}
 	static _ALWAYS_INLINE_ float rotate_toward(float p_from, float p_to, float p_delta) {
 		float difference = Math::angle_difference(p_from, p_to);
-		float abs_difference = Math::abs(difference);
+		float abs_difference = ABS(difference);
 		// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
 		return p_from + CLAMP(p_delta, abs_difference - (float)Math_PI, abs_difference) * (difference >= 0.0f ? 1.0f : -1.0f);
 	}
@@ -531,10 +527,10 @@ public:
 		return value - floor(value);
 	}
 	static _ALWAYS_INLINE_ float pingpong(float value, float length) {
-		return (length != 0.0f) ? abs(fract((value - length) / (length * 2.0f)) * length * 2.0f - length) : 0.0f;
+		return (length != 0.0f) ? ABS(fract((value - length) / (length * 2.0f)) * length * 2.0f - length) : 0.0f;
 	}
 	static _ALWAYS_INLINE_ double pingpong(double value, double length) {
-		return (length != 0.0) ? abs(fract((value - length) / (length * 2.0)) * length * 2.0 - length) : 0.0;
+		return (length != 0.0) ? ABS(fract((value - length) / (length * 2.0)) * length * 2.0 - length) : 0.0;
 	}
 
 	// double only, as these functions are mainly used by the editor and not performance-critical,
@@ -563,11 +559,11 @@ public:
 			return true;
 		}
 		// Then check for approximate equality.
-		float tolerance = (float)CMP_EPSILON * abs(a);
+		float tolerance = (float)CMP_EPSILON * ABS(a);
 		if (tolerance < (float)CMP_EPSILON) {
 			tolerance = (float)CMP_EPSILON;
 		}
-		return abs(a - b) < tolerance;
+		return ABS(a - b) < tolerance;
 	}
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(float a, float b, float tolerance) {
@@ -576,11 +572,11 @@ public:
 			return true;
 		}
 		// Then check for approximate equality.
-		return abs(a - b) < tolerance;
+		return ABS(a - b) < tolerance;
 	}
 
 	static _ALWAYS_INLINE_ bool is_zero_approx(float s) {
-		return abs(s) < (float)CMP_EPSILON;
+		return ABS(s) < (float)CMP_EPSILON;
 	}
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(double a, double b) {
@@ -589,11 +585,11 @@ public:
 			return true;
 		}
 		// Then check for approximate equality.
-		double tolerance = CMP_EPSILON * abs(a);
+		double tolerance = CMP_EPSILON * ABS(a);
 		if (tolerance < CMP_EPSILON) {
 			tolerance = CMP_EPSILON;
 		}
-		return abs(a - b) < tolerance;
+		return ABS(a - b) < tolerance;
 	}
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(double a, double b, double tolerance) {
@@ -602,32 +598,11 @@ public:
 			return true;
 		}
 		// Then check for approximate equality.
-		return abs(a - b) < tolerance;
+		return ABS(a - b) < tolerance;
 	}
 
 	static _ALWAYS_INLINE_ bool is_zero_approx(double s) {
-		return abs(s) < CMP_EPSILON;
-	}
-
-	static _ALWAYS_INLINE_ float absf(float g) {
-		union {
-			float f;
-			uint32_t i;
-		} u;
-
-		u.f = g;
-		u.i &= 2147483647u;
-		return u.f;
-	}
-
-	static _ALWAYS_INLINE_ double absd(double g) {
-		union {
-			double d;
-			uint64_t i;
-		} u;
-		u.d = g;
-		u.i &= (uint64_t)9223372036854775807ll;
-		return u.d;
+		return ABS(s) < CMP_EPSILON;
 	}
 
 	// This function should be as fast as possible and rounding mode should not matter.
@@ -742,7 +717,7 @@ public:
 			} else {
 				b += p_step;
 			}
-			return (Math::abs(p_target - a) < Math::abs(p_target - b)) ? a : b;
+			return (ABS(p_target - a) < ABS(p_target - b)) ? a : b;
 		}
 		return p_target;
 	}

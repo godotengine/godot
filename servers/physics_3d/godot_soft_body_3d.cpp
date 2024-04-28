@@ -254,7 +254,7 @@ void GodotSoftBody3D::update_area() {
 		for (int j = 0; j < 3; ++j) {
 			const int index = (int)(face.n[j] - &nodes[0]);
 			counts[index]++;
-			face.n[j]->area += Math::abs(face.ra);
+			face.n[j]->area += ABS(face.ra);
 		}
 	}
 
@@ -943,7 +943,7 @@ void GodotSoftBody3D::apply_forces(const LocalVector<GodotArea3D *> &p_wind_area
 
 	// Apply nodal pressure forces.
 	if (pressure_coefficient > CMP_EPSILON) {
-		real_t ivolumetp = 1.0 / Math::abs(volume) * pressure_coefficient;
+		real_t ivolumetp = 1.0 / ABS(volume) * pressure_coefficient;
 		for (Node &node : nodes) {
 			if (node.im > 0) {
 				node.f += node.n * (node.area * ivolumetp);

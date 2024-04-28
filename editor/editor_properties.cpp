@@ -1535,7 +1535,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 
 		float val = get_edited_property_value();
 		bool sg = val < 0;
-		val = Math::absf(val);
+		val = ABS(val);
 
 		val = Math::log(val) / Math::log((float)2.0);
 		// Logarithmic space.
@@ -1596,11 +1596,11 @@ void EditorPropertyEasing::_draw_easing() {
 	easing_draw->draw_polyline(points, line_color, 1.0, true);
 	// Draw more decimals for small numbers since higher precision is usually required for fine adjustments.
 	int decimals;
-	if (Math::abs(exp) < 0.1 - CMP_EPSILON) {
+	if (ABS(exp) < 0.1 - CMP_EPSILON) {
 		decimals = 4;
-	} else if (Math::abs(exp) < 1 - CMP_EPSILON) {
+	} else if (ABS(exp) < 1 - CMP_EPSILON) {
 		decimals = 3;
-	} else if (Math::abs(exp) < 10 - CMP_EPSILON) {
+	} else if (ABS(exp) < 10 - CMP_EPSILON) {
 		decimals = 2;
 	} else {
 		decimals = 1;

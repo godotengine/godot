@@ -293,7 +293,7 @@ public:
 
 			real_t den = p.normal.dot(dir);
 
-			if (Math::abs(den) <= (real_t)CMP_EPSILON) {
+			if (ABS(den) <= (real_t)CMP_EPSILON) {
 				continue; // Ignore parallel plane.
 			}
 
@@ -733,23 +733,23 @@ public:
 
 		/* Bullet 3:  */
 		/*  test the 9 tests first (this was faster) */
-		fex = Math::abs(e0.x);
-		fey = Math::abs(e0.y);
-		fez = Math::abs(e0.z);
+		fex = ABS(e0.x);
+		fey = ABS(e0.y);
+		fez = ABS(e0.z);
 		AXISTEST_X01(e0.z, e0.y, fez, fey);
 		AXISTEST_Y02(e0.z, e0.x, fez, fex);
 		AXISTEST_Z12(e0.y, e0.x, fey, fex);
 
-		fex = Math::abs(e1.x);
-		fey = Math::abs(e1.y);
-		fez = Math::abs(e1.z);
+		fex = ABS(e1.x);
+		fey = ABS(e1.y);
+		fez = ABS(e1.z);
 		AXISTEST_X01(e1.z, e1.y, fez, fey);
 		AXISTEST_Y02(e1.z, e1.x, fez, fex);
 		AXISTEST_Z0(e1.y, e1.x, fey, fex);
 
-		fex = Math::abs(e2.x);
-		fey = Math::abs(e2.y);
-		fez = Math::abs(e2.z);
+		fex = ABS(e2.x);
+		fey = ABS(e2.y);
+		fez = ABS(e2.z);
 		AXISTEST_X2(e2.z, e2.y, fez, fey);
 		AXISTEST_Y1(e2.z, e2.x, fez, fex);
 		AXISTEST_Z12(e2.y, e2.x, fey, fex);
@@ -833,7 +833,7 @@ public:
 	_FORCE_INLINE_ static Vector3 octahedron_map_decode(const Vector2 &p_uv) {
 		// https://twitter.com/Stubbesaurus/status/937994790553227264
 		const Vector2 f = p_uv * 2.0f - Vector2(1.0f, 1.0f);
-		Vector3 n = Vector3(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
+		Vector3 n = Vector3(f.x, f.y, 1.0f - ABS(f.x) - ABS(f.y));
 		const real_t t = CLAMP(-n.z, 0.0f, 1.0f);
 		n.x += n.x >= 0 ? -t : t;
 		n.y += n.y >= 0 ? -t : t;

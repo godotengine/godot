@@ -160,7 +160,7 @@ Quaternion Quaternion::slerpni(const Quaternion &p_to, real_t p_weight) const {
 
 	real_t dot = from.dot(p_to);
 
-	if (Math::absf(dot) > 0.9999f) {
+	if (ABS(dot) > 0.9999f) {
 		return from;
 	}
 
@@ -281,7 +281,7 @@ Quaternion::operator String() const {
 }
 
 Vector3 Quaternion::get_axis() const {
-	if (Math::abs(w) > 1 - CMP_EPSILON) {
+	if (ABS(w) > 1 - CMP_EPSILON) {
 		return Vector3(x, y, z);
 	}
 	real_t r = ((real_t)1) / Math::sqrt(1 - w * w);

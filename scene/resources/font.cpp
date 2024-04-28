@@ -3158,8 +3158,8 @@ void SystemFont::_update_base_font() {
 			BitField<TextServer::FontStyle> style = file->get_font_style();
 			int font_weight = file->get_font_weight();
 			int font_stretch = file->get_font_stretch();
-			score += (20 - Math::abs(font_weight - weight) / 50);
-			score += (20 - Math::abs(font_stretch - stretch) / 10);
+			score += (20 - ABS(font_weight - weight) / 50);
+			score += (20 - ABS(font_stretch - stretch) / 10);
 			if (bool(style & TextServer::FONT_ITALIC) == italic) {
 				score += 30;
 			}

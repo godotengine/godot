@@ -826,7 +826,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 			fading_from = StringName();
 		} else {
 			if (!p_seek) {
-				fading_pos += Math::abs(p_delta);
+				fading_pos += ABS(p_delta);
 			}
 			fade_blend = MIN(1.0, fading_pos / fading_time);
 		}

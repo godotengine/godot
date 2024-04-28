@@ -482,7 +482,7 @@ void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
 }
 
 float JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool p_negate) const {
-	if (Math::abs(p_val) < MIN_JOY_AXIS) {
+	if (ABS(p_val) < MIN_JOY_AXIS) {
 		return p_trigger ? -1.0f : 0.0f;
 	}
 	if (!p_xinput) {

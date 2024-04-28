@@ -349,7 +349,7 @@ public:
 			xform.basis.rows[i] /= s;
 		};
 
-		float box_depth = Math::abs(xform.basis.xform_inv(Vector3(0, 0, -1)).dot(scale));
+		float box_depth = ABS(xform.basis.xform_inv(Vector3(0, 0, -1)).dot(scale));
 		float depth = -xform.origin.z;
 
 		if (camera_orthogonal) {

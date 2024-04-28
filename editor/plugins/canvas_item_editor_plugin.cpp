@@ -272,8 +272,8 @@ void CanvasItemEditor::_snap_if_closer_float(
 		const real_t p_target_value, const SnapTarget p_snap_target,
 		const real_t p_radius) {
 	const real_t radius = p_radius / zoom;
-	const real_t dist = Math::abs(p_value - p_target_value);
-	if ((p_radius < 0 || dist < radius) && (r_current_snap_target == SNAP_TARGET_NONE || dist < Math::abs(r_current_snap - p_value))) {
+	const real_t dist = ABS(p_value - p_target_value);
+	if ((p_radius < 0 || dist < radius) && (r_current_snap_target == SNAP_TARGET_NONE || dist < ABS(r_current_snap - p_value))) {
 		r_current_snap = p_target_value;
 		r_current_snap_target = p_snap_target;
 	}
@@ -1629,7 +1629,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 
 			bool use_single_axis = m->is_shift_pressed();
 			Vector2 drag_vector = xform.xform(drag_to) - xform.xform(drag_from);
-			bool use_y = Math::abs(drag_vector.y) > Math::abs(drag_vector.x);
+			bool use_y = ABS(drag_vector.y) > ABS(drag_vector.x);
 
 			switch (drag_type) {
 				case DRAG_ANCHOR_TOP_LEFT:

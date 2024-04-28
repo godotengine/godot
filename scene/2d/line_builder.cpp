@@ -505,7 +505,7 @@ void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation o
 	Vector2 vbegin = vertices[_last_index[opposite_orientation]] - center;
 	float radius = vbegin.length();
 	float angle_step = Math_PI / static_cast<float>(round_precision);
-	float steps = Math::abs(angle_delta) / angle_step;
+	float steps = ABS(angle_delta) / angle_step;
 
 	if (angle_delta < 0.f) {
 		angle_step = -angle_step;
@@ -532,7 +532,7 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 
 	float radius = vbegin.length();
 	float angle_step = Math_PI / static_cast<float>(round_precision);
-	float steps = Math::abs(angle_delta) / angle_step;
+	float steps = ABS(angle_delta) / angle_step;
 
 	if (angle_delta < 0.f) {
 		angle_step = -angle_step;

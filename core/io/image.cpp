@@ -880,7 +880,7 @@ static void _scale_nearest(const uint8_t *__restrict p_src, uint8_t *__restrict 
 #define LANCZOS_TYPE 3
 
 static float _lanczos(float p_x) {
-	return Math::abs(p_x) >= LANCZOS_TYPE ? 0 : Math::sincn(p_x) * Math::sincn(p_x / LANCZOS_TYPE);
+	return ABS(p_x) >= LANCZOS_TYPE ? 0 : Math::sincn(p_x) * Math::sincn(p_x / LANCZOS_TYPE);
 }
 
 template <int CC, typename T>
@@ -4086,23 +4086,23 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 			if (!p_luma_metric) {
 				ERR_FAIL_COND_V_MSG(color_a.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
 				ERR_FAIL_COND_V_MSG(color_b.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
-				hist[Math::abs(color_a.get_r8() - color_b.get_r8())]++;
+				hist[ABS(color_a.get_r8() - color_b.get_r8())]++;
 				ERR_FAIL_COND_V_MSG(color_a.g > 1.0f, Dictionary(), "Can't compare HDR colors.");
 				ERR_FAIL_COND_V_MSG(color_b.g > 1.0f, Dictionary(), "Can't compare HDR colors.");
-				hist[Math::abs(color_a.get_g8() - color_b.get_g8())]++;
+				hist[ABS(color_a.get_g8() - color_b.get_g8())]++;
 				ERR_FAIL_COND_V_MSG(color_a.b > 1.0f, Dictionary(), "Can't compare HDR colors.");
 				ERR_FAIL_COND_V_MSG(color_b.b > 1.0f, Dictionary(), "Can't compare HDR colors.");
-				hist[Math::abs(color_a.get_b8() - color_b.get_b8())]++;
+				hist[ABS(color_a.get_b8() - color_b.get_b8())]++;
 				ERR_FAIL_COND_V_MSG(color_a.a > 1.0f, Dictionary(), "Can't compare HDR colors.");
 				ERR_FAIL_COND_V_MSG(color_b.a > 1.0f, Dictionary(), "Can't compare HDR colors.");
-				hist[Math::abs(color_a.get_a8() - color_b.get_a8())]++;
+				hist[ABS(color_a.get_a8() - color_b.get_a8())]++;
 			} else {
 				ERR_FAIL_COND_V_MSG(color_a.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
 				ERR_FAIL_COND_V_MSG(color_b.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
 				// REC709 weightings
 				int luma_a = (13938U * color_a.get_r8() + 46869U * color_a.get_g8() + 4729U * color_a.get_b8() + 32768U) >> 16U;
 				int luma_b = (13938U * color_b.get_r8() + 46869U * color_b.get_g8() + 4729U * color_b.get_b8() + 32768U) >> 16U;
-				hist[Math::abs(luma_a - luma_b)]++;
+				hist[ABS(luma_a - luma_b)]++;
 			}
 		}
 	}

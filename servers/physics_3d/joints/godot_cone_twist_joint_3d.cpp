@@ -148,7 +148,7 @@ bool GodotConeTwistJoint3D::setup(real_t p_timestep) {
 
 	real_t RMaxAngle1Sq = 1.0f / (m_swingSpan1 * m_swingSpan1);
 	real_t RMaxAngle2Sq = 1.0f / (m_swingSpan2 * m_swingSpan2);
-	real_t EllipseAngle = Math::abs(swing1 * swing1) * RMaxAngle1Sq + Math::abs(swing2 * swing2) * RMaxAngle2Sq;
+	real_t EllipseAngle = ABS(swing1 * swing1) * RMaxAngle1Sq + ABS(swing2 * swing2) * RMaxAngle2Sq;
 
 	if (EllipseAngle > 1.0f) {
 		m_swingCorrection = EllipseAngle - 1.0f;

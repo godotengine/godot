@@ -1100,7 +1100,7 @@ JoyAxis InputEventJoypadMotion::get_axis() const {
 
 void InputEventJoypadMotion::set_axis_value(float p_value) {
 	axis_value = p_value;
-	pressed = Math::abs(axis_value) >= 0.5f;
+	pressed = ABS(axis_value) >= 0.5f;
 	emit_changed();
 }
 
@@ -1120,7 +1120,7 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool p
 		match &= (axis_value < 0) == (jm->axis_value < 0);
 	}
 	if (match) {
-		float jm_abs_axis_value = Math::abs(jm->get_axis_value());
+		float jm_abs_axis_value = ABS(jm->get_axis_value());
 		bool same_direction = (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0);
 		bool pressed_state = same_direction && jm_abs_axis_value >= p_deadzone;
 		if (r_pressed != nullptr) {

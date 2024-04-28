@@ -120,9 +120,9 @@ void OptionButton::_notification(int p_what) {
 
 			Point2 ofs;
 			if (is_layout_rtl()) {
-				ofs = Point2(theme_cache.arrow_margin, int(Math::abs((size.height - theme_cache.arrow_icon->get_height()) / 2)));
+				ofs = Point2(theme_cache.arrow_margin, int(ABS((size.height - theme_cache.arrow_icon->get_height()) / 2)));
 			} else {
-				ofs = Point2(size.width - theme_cache.arrow_icon->get_width() - theme_cache.arrow_margin, int(Math::abs((size.height - theme_cache.arrow_icon->get_height()) / 2)));
+				ofs = Point2(size.width - theme_cache.arrow_icon->get_width() - theme_cache.arrow_margin, int(ABS((size.height - theme_cache.arrow_icon->get_height()) / 2)));
 			}
 			theme_cache.arrow_icon->draw(ci, ofs, clr);
 		} break;

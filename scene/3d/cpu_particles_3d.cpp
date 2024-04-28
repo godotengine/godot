@@ -863,7 +863,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 							p.velocity.y = velocity_2d.y;
 						} else {
 							Vector3 normal = emission_normals.get(random_idx);
-							Vector3 v0 = Math::abs(normal.z) < 0.999 ? Vector3(0.0, 0.0, 1.0) : Vector3(0, 1.0, 0.0);
+							Vector3 v0 = ABS(normal.z) < 0.999 ? Vector3(0.0, 0.0, 1.0) : Vector3(0, 1.0, 0.0);
 							Vector3 tangent = v0.cross(normal).normalized();
 							Vector3 bitangent = tangent.cross(normal).normalized();
 							Basis m3;

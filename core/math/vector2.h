@@ -155,7 +155,7 @@ struct _NO_DISCARD_ Vector2 {
 	static Vector2 from_angle(real_t p_angle);
 
 	_FORCE_INLINE_ Vector2 abs() const {
-		return Vector2(Math::abs(x), Math::abs(y));
+		return Vector2(ABS(x), ABS(y));
 	}
 
 	Vector2 rotated(real_t p_by) const;

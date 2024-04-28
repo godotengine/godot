@@ -3782,8 +3782,8 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 					BitField<FontStyle> style = _font_get_style(F.rid);
 					int weight = _font_get_weight(F.rid);
 					int stretch = _font_get_stretch(F.rid);
-					int score = (20 - Math::abs(weight - font_weight) / 50);
-					score += (20 - Math::abs(stretch - font_stretch) / 10);
+					int score = (20 - ABS(weight - font_weight) / 50);
+					score += (20 - ABS(stretch - font_stretch) / 10);
 					if (bool(style & TextServer::FONT_ITALIC) == bool(font_style & TextServer::FONT_ITALIC)) {
 						score += 30;
 					}
@@ -3830,8 +3830,8 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 					BitField<FontStyle> style = _font_get_style(sysf.rid);
 					int weight = _font_get_weight(sysf.rid);
 					int stretch = _font_get_stretch(sysf.rid);
-					int score = (20 - Math::abs(weight - font_weight) / 50);
-					score += (20 - Math::abs(stretch - font_stretch) / 10);
+					int score = (20 - ABS(weight - font_weight) / 50);
+					score += (20 - ABS(stretch - font_stretch) / 10);
 					if (bool(style & TextServer::FONT_ITALIC) == bool(font_style & TextServer::FONT_ITALIC)) {
 						score += 30;
 					}

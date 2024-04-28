@@ -1746,9 +1746,9 @@ void AnimationMixer::_blend_apply() {
 
 				// Trim unused elements if init array/string is not blended.
 				if (t->value.is_array()) {
-					int actual_blended_size = (int)Math::round(Math::abs(t->element_size.operator real_t()));
+					int actual_blended_size = (int)Math::round(ABS(t->element_size.operator real_t()));
 					if (actual_blended_size < (t->value.operator Array()).size()) {
-						real_t abs_weight = Math::abs(track->total_weight);
+						real_t abs_weight = ABS(track->total_weight);
 						if (abs_weight >= 1.0) {
 							(t->value.operator Array()).resize(actual_blended_size);
 						} else if (t->init_value.is_string()) {

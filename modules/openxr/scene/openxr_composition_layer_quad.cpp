@@ -102,7 +102,7 @@ Vector2 OpenXRCompositionLayerQuad::intersects_ray(const Vector3 &p_origin, cons
 	Vector3 quad_normal = quad_transform.basis.get_column(2);
 
 	float denom = quad_normal.dot(p_direction);
-	if (Math::abs(denom) > 0.0001) {
+	if (ABS(denom) > 0.0001) {
 		Vector3 vector = quad_transform.origin - p_origin;
 		float t = vector.dot(quad_normal) / denom;
 		if (t < 0.0) {
@@ -114,10 +114,10 @@ Vector2 OpenXRCompositionLayerQuad::intersects_ray(const Vector3 &p_origin, cons
 		Vector2 projected_point = Vector2(
 				relative_point.dot(quad_transform.basis.get_column(0)),
 				relative_point.dot(quad_transform.basis.get_column(1)));
-		if (Math::abs(projected_point.x) > quad_size.x / 2.0) {
+		if (ABS(projected_point.x) > quad_size.x / 2.0) {
 			return Vector2(-1.0, -1.0);
 		}
-		if (Math::abs(projected_point.y) > quad_size.y / 2.0) {
+		if (ABS(projected_point.y) > quad_size.y / 2.0) {
 			return Vector2(-1.0, -1.0);
 		}
 

@@ -4251,7 +4251,7 @@ void Tree::_notification(int p_what) {
 
 					v_scroll->set_value(pos);
 					float sgn = drag_speed < 0 ? -1 : 1;
-					float val = Math::abs(drag_speed);
+					float val = ABS(drag_speed);
 					val -= 1000 * get_physics_process_delta_time();
 
 					if (val < 0) {

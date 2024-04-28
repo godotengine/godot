@@ -191,7 +191,7 @@ Vector3 GodotSeparationRayShape3D::get_support(const Vector3 &p_normal) const {
 }
 
 void GodotSeparationRayShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
-	if (Math::abs(p_normal.z) < edge_support_threshold_lower) {
+	if (ABS(p_normal.z) < edge_support_threshold_lower) {
 		r_amount = 2;
 		r_type = FEATURE_EDGE;
 		r_supports[0] = Vector3(0, 0, 0);
@@ -342,7 +342,7 @@ void GodotBoxShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *
 		Vector3 axis;
 		axis[i] = 1.0;
 		real_t dot = p_normal.dot(axis);
-		if (Math::abs(dot) > face_support_threshold) {
+		if (ABS(dot) > face_support_threshold) {
 			//Vector3 axis_b;
 
 			bool neg = dot < 0;
@@ -383,7 +383,7 @@ void GodotBoxShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *
 		Vector3 axis;
 		axis[i] = 1.0;
 
-		if (Math::abs(p_normal.dot(axis)) < edge_support_threshold_lower) {
+		if (ABS(p_normal.dot(axis)) < edge_support_threshold_lower) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
 
@@ -424,7 +424,7 @@ bool GodotBoxShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p
 }
 
 bool GodotBoxShape3D::intersect_point(const Vector3 &p_point) const {
-	return (Math::abs(p_point.x) < half_extents.x && Math::abs(p_point.y) < half_extents.y && Math::abs(p_point.z) < half_extents.z);
+	return (ABS(p_point.x) < half_extents.x && ABS(p_point.y) < half_extents.y && ABS(p_point.z) < half_extents.z);
 }
 
 Vector3 GodotBoxShape3D::get_closest_point_to(const Vector3 &p_point) const {
@@ -432,7 +432,7 @@ Vector3 GodotBoxShape3D::get_closest_point_to(const Vector3 &p_point) const {
 	Vector3 min_point;
 
 	for (int i = 0; i < 3; i++) {
-		if (Math::abs(p_point[i]) > half_extents[i]) {
+		if (ABS(p_point[i]) > half_extents[i]) {
 			outside++;
 			if (outside == 1) {
 				//use plane if only one side matches
@@ -530,7 +530,7 @@ void GodotCapsuleShape3D::get_supports(const Vector3 &p_normal, int p_max, Vecto
 	real_t d = n.y;
 	real_t h = height * 0.5 - radius; // half-height of the cylinder part
 
-	if (h > 0 && Math::abs(d) < edge_support_threshold_lower) {
+	if (h > 0 && ABS(d) < edge_support_threshold_lower) {
 		// make it flat
 		n.y = 0.0;
 		n.normalize();
@@ -608,11 +608,11 @@ bool GodotCapsuleShape3D::intersect_segment(const Vector3 &p_begin, const Vector
 }
 
 bool GodotCapsuleShape3D::intersect_point(const Vector3 &p_point) const {
-	if (Math::abs(p_point.y) < height * 0.5 - radius) {
+	if (ABS(p_point.y) < height * 0.5 - radius) {
 		return Vector3(p_point.x, 0, p_point.z).length() < radius;
 	} else {
 		Vector3 p = p_point;
-		p.y = Math::abs(p.y) - height * 0.5 + radius;
+		p.y = ABS(p.y) - height * 0.5 + radius;
 		return p.length() < radius;
 	}
 }
@@ -676,10 +676,10 @@ void GodotCylinderShape3D::project_range(const Vector3 &p_normal, const Transfor
 	real_t scaled_height = height * scale;
 
 	real_t length;
-	if (Math::abs(axis_dot) > 1.0) {
+	if (ABS(axis_dot) > 1.0) {
 		length = scaled_height * 0.5;
 	} else {
-		length = Math::abs(axis_dot * scaled_height * 0.5) + scaled_radius * Math::sqrt(1.0 - axis_dot * axis_dot);
+		length = ABS(axis_dot * scaled_height * 0.5) + scaled_radius * Math::sqrt(1.0 - axis_dot * axis_dot);
 	}
 
 	real_t distance = p_normal.dot(p_transform.origin);
@@ -708,7 +708,7 @@ Vector3 GodotCylinderShape3D::get_support(const Vector3 &p_normal) const {
 
 void GodotCylinderShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
 	real_t d = p_normal.y;
-	if (Math::abs(d) > cylinder_face_support_threshold) {
+	if (ABS(d) > cylinder_face_support_threshold) {
 		real_t h = (d > 0) ? height : -height;
 
 		Vector3 n = p_normal;
@@ -723,7 +723,7 @@ void GodotCylinderShape3D::get_supports(const Vector3 &p_normal, int p_max, Vect
 		r_supports[1].x += radius;
 		r_supports[2] = n;
 		r_supports[2].z += radius;
-	} else if (Math::abs(d) < cylinder_edge_support_threshold_lower) {
+	} else if (ABS(d) < cylinder_edge_support_threshold_lower) {
 		// make it flat
 		Vector3 n = p_normal;
 		n.y = 0.0;
@@ -748,14 +748,14 @@ bool GodotCylinderShape3D::intersect_segment(const Vector3 &p_begin, const Vecto
 }
 
 bool GodotCylinderShape3D::intersect_point(const Vector3 &p_point) const {
-	if (Math::abs(p_point.y) < height * 0.5) {
+	if (ABS(p_point.y) < height * 0.5) {
 		return Vector3(p_point.x, 0, p_point.z).length() < radius;
 	}
 	return false;
 }
 
 Vector3 GodotCylinderShape3D::get_closest_point_to(const Vector3 &p_point) const {
-	if (Math::absf(p_point.y) > height * 0.5) {
+	if (ABS(p_point.y) > height * 0.5) {
 		// Project point to top disk.
 		real_t dir = p_point.y > 0.0 ? 1.0 : -1.0;
 		Vector3 circle_pos(0.0, dir * height * 0.5, 0.0);
@@ -1204,7 +1204,7 @@ void GodotFaceShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 	Vector3 n = p_normal;
 
 	/** TEST FACE AS SUPPORT **/
-	if (Math::abs(normal.dot(n)) > face_support_threshold) {
+	if (ABS(normal.dot(n)) > face_support_threshold) {
 		r_amount = 3;
 		r_type = FEATURE_FACE;
 		for (int i = 0; i < 3; i++) {
@@ -1842,8 +1842,8 @@ bool GodotHeightMapShape3D::_intersect_grid_segment(ProcessFunction &p_process, 
 	const int z_step = (ray_dir_flat.y > CMP_EPSILON) ? 1 : ((ray_dir_flat.y < -CMP_EPSILON) ? -1 : 0);
 
 	const real_t infinite = 1e20;
-	const real_t delta_x = (x_step != 0) ? 1.f / Math::abs(ray_dir_flat.x) : infinite;
-	const real_t delta_z = (z_step != 0) ? 1.f / Math::abs(ray_dir_flat.y) : infinite;
+	const real_t delta_x = (x_step != 0) ? 1.f / ABS(ray_dir_flat.x) : infinite;
+	const real_t delta_z = (z_step != 0) ? 1.f / ABS(ray_dir_flat.y) : infinite;
 
 	real_t cross_x; // At which value of `param` we will cross a x-axis lane?
 	real_t cross_z; // At which value of `param` we will cross a z-axis lane?

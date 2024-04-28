@@ -128,7 +128,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 			if (idx < 2) {
 				Ref<CapsuleShape2D> capsule = node->get_shape();
 
-				real_t parameter = Math::abs(p_point[idx]);
+				real_t parameter = ABS(p_point[idx]);
 
 				if (idx == 0) {
 					capsule->set_radius(parameter);
@@ -166,7 +166,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 		case SEPARATION_RAY_SHAPE: {
 			Ref<SeparationRayShape2D> ray = node->get_shape();
 
-			ray->set_length(Math::abs(p_point.y));
+			ray->set_length(ABS(p_point.y));
 		} break;
 
 		case RECTANGLE_SHAPE: {

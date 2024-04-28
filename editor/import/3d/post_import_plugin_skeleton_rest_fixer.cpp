@@ -335,7 +335,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				Vector3 src_dir = src_tail - src_head;
 
 				// Rotate rest.
-				if (Math::abs(Math::rad_to_deg(src_dir.angle_to(prof_dir))) > float(p_options["retarget/rest_fixer/fix_silhouette/threshold"])) {
+				if (ABS(Math::rad_to_deg(src_dir.angle_to(prof_dir))) > float(p_options["retarget/rest_fixer/fix_silhouette/threshold"])) {
 					// Get rotation difference.
 					Vector3 up_vec; // Need to rotate other than roll axis.
 					switch (Vector3(abs(src_dir.x), abs(src_dir.y), abs(src_dir.z)).min_axis_index()) {

@@ -96,7 +96,7 @@ bool GodotWorldBoundaryShape2D::intersect_segment(const Vector2 &p_begin, const 
 	real_t den = normal.dot(segment);
 
 	//printf("den is %i\n",den);
-	if (Math::abs(den) <= CMP_EPSILON) {
+	if (ABS(den) <= CMP_EPSILON) {
 		return false;
 	}
 
@@ -179,7 +179,7 @@ Variant GodotSeparationRayShape2D::get_data() const {
 /*********************************************************/
 
 void GodotSegmentShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
-	if (Math::abs(p_normal.dot(n)) > segment_is_valid_support_threshold) {
+	if (ABS(p_normal.dot(n)) > segment_is_valid_support_threshold) {
 		r_supports[0] = a;
 		r_supports[1] = b;
 		r_amount = 2;
@@ -308,7 +308,7 @@ void GodotRectangleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_sup
 		Vector2 ag;
 		ag[i] = 1.0;
 		real_t dp = ag.dot(p_normal);
-		if (Math::abs(dp) <= segment_is_valid_support_threshold) {
+		if (ABS(dp) <= segment_is_valid_support_threshold) {
 			continue;
 		}
 
@@ -370,7 +370,7 @@ void GodotCapsuleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_suppo
 
 	real_t h = height * 0.5 - radius; // half-height of the rectangle part
 
-	if (h > 0 && Math::abs(n.x) > segment_is_valid_support_threshold) {
+	if (h > 0 && ABS(n.x) > segment_is_valid_support_threshold) {
 		// make it flat
 		n.y = 0.0;
 		n.x = SIGN(n.x) * radius;
@@ -390,7 +390,7 @@ void GodotCapsuleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_suppo
 
 bool GodotCapsuleShape2D::contains_point(const Vector2 &p_point) const {
 	Vector2 p = p_point;
-	p.y = Math::abs(p.y);
+	p.y = ABS(p.y);
 	p.y -= height * 0.5 - radius;
 	if (p.y < 0) {
 		p.y = 0;

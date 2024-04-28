@@ -364,7 +364,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	if (normalize) {
 		float max = 0;
 		for (int i = 0; i < data.size(); i++) {
-			float amp = Math::abs(data[i]);
+			float amp = ABS(data[i]);
 			if (amp > max) {
 				max = amp;
 			}
@@ -389,10 +389,10 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		for (int i = 0; i < data.size() / format_channels; i++) {
 			float ampChannelSum = 0;
 			for (int j = 0; j < format_channels; j++) {
-				ampChannelSum += Math::abs(data[(i * format_channels) + j]);
+				ampChannelSum += ABS(data[(i * format_channels) + j]);
 			}
 
-			float amp = Math::abs(ampChannelSum / (float)format_channels);
+			float amp = ABS(ampChannelSum / (float)format_channels);
 
 			if (!found && amp > limit) {
 				first = i;

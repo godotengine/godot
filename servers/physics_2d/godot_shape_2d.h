@@ -98,7 +98,7 @@ public:
 		}
 
 		if (r_amount == 1) {
-			if (Math::abs(p_normal.dot(p_cast.normalized())) < segment_is_valid_support_threshold_lower) {
+			if (ABS(p_normal.dot(p_cast.normalized())) < segment_is_valid_support_threshold_lower) {
 				//make line because they are parallel
 				r_amount = 2;
 				r_supports[1] = r_supports[0] + p_cast;
@@ -108,7 +108,7 @@ public:
 			}
 
 		} else {
-			if (Math::abs(p_normal.dot(p_cast.normalized())) < segment_is_valid_support_threshold_lower) {
+			if (ABS(p_normal.dot(p_cast.normalized())) < segment_is_valid_support_threshold_lower) {
 				//optimize line and make it larger because they are parallel
 				if ((r_supports[1] - r_supports[0]).dot(p_cast) > 0) {
 					//larger towards 1

@@ -268,7 +268,7 @@ Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
 	Vector3 dots;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			dots[j] += s[i] * abs(m.get_column(i).normalized().dot(b.get_column(j)));
+			dots[j] += s[i] * ABS(m.get_column(i).normalized().dot(b.get_column(j)));
 		}
 	}
 	if (sign != signbit(dots.x + dots.y + dots.z)) {
@@ -768,7 +768,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	if (Math::is_zero_approx(rows[0][1] - rows[1][0]) && Math::is_zero_approx(rows[0][2] - rows[2][0]) && Math::is_zero_approx(rows[1][2] - rows[2][1])) {
 		// Singularity found.
 		// First check for identity matrix which must have +1 for all terms in leading diagonal and zero in other terms.
-		if (is_diagonal() && (Math::abs(rows[0][0] + rows[1][1] + rows[2][2] - 3) < 3 * CMP_EPSILON)) {
+		if (is_diagonal() && (ABS(rows[0][0] + rows[1][1] + rows[2][2] - 3) < 3 * CMP_EPSILON)) {
 			// This singularity is identity matrix so angle = 0.
 			r_axis = Vector3(0, 1, 0);
 			r_angle = 0;
@@ -820,7 +820,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	// As we have reached here there are no singularities so we can handle normally.
 	double s = Math::sqrt((rows[2][1] - rows[1][2]) * (rows[2][1] - rows[1][2]) + (rows[0][2] - rows[2][0]) * (rows[0][2] - rows[2][0]) + (rows[1][0] - rows[0][1]) * (rows[1][0] - rows[0][1])); // Used to normalize.
 
-	if (Math::abs(s) < CMP_EPSILON) {
+	if (ABS(s) < CMP_EPSILON) {
 		// Prevent divide by zero, should not happen if matrix is orthogonal and should be caught by singularity test above.
 		s = 1;
 	}
