@@ -548,7 +548,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			target_image->premultiply_alpha();
 		}
 
-		// Invert rgb channels
+		// Invert RGB channels.
 		if (invert_color) {
 			const int height = target_image->get_height();
 			const int width = target_image->get_width();
