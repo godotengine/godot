@@ -1803,7 +1803,7 @@ void RichTextLabel::_scroll_changed(double) {
 		return;
 	}
 
-	if (scroll_follow && vscroll->get_value() >= (vscroll->get_max() - Math::round(vscroll->get_page()))) {
+	if (scroll_follow && vscroll->get_value() > (vscroll->get_max() - vscroll->get_page() - 1)) {
 		scroll_following = true;
 	} else {
 		scroll_following = false;
@@ -4121,7 +4121,7 @@ bool RichTextLabel::is_scroll_active() const {
 
 void RichTextLabel::set_scroll_follow(bool p_follow) {
 	scroll_follow = p_follow;
-	if (!vscroll->is_visible_in_tree() || vscroll->get_value() >= (vscroll->get_max() - vscroll->get_page())) {
+	if (!vscroll->is_visible_in_tree() || vscroll->get_value() > (vscroll->get_max() - vscroll->get_page() - 1)) {
 		scroll_following = true;
 	}
 }
