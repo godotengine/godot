@@ -133,14 +133,10 @@ private:
 	}
 
 	_FORCE_INLINE_ USize _get_alloc_size(USize p_elements) const {
-		return next_po2(p_elements * sizeof(T));
+		return next_po2(p_elements) * sizeof(T);
 	}
 
 	_FORCE_INLINE_ bool _get_alloc_size_checked(USize p_elements, USize *out) const {
-		if (unlikely(p_elements == 0)) {
-			*out = 0;
-			return true;
-		}
 #if defined(__GNUC__) && defined(IS_32_BIT)
 		USize o;
 		USize p;
@@ -157,7 +153,7 @@ private:
 		// and hope for the best.
 		*out = _get_alloc_size(p_elements);
 #endif
-		return *out;
+		return true;
 	}
 
 	void _unref(void *p_data);
