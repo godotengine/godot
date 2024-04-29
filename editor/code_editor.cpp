@@ -881,6 +881,11 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		_text_editor_unhide_cursor();
+	}
 }
 
 void CodeTextEditor::_line_col_changed() {
@@ -925,6 +930,10 @@ void CodeTextEditor::_text_changed() {
 
 	if (find_replace_bar) {
 		find_replace_bar->needs_to_count_results = true;
+	}
+
+	if (hide_cursor_while_typing && text_editor_hovered) {
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_HIDDEN);
 	}
 }
 
@@ -1042,6 +1051,9 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_draw_tabs(EDITOR_GET("text_editor/appearance/whitespace/draw_tabs"));
 	text_editor->set_draw_spaces(EDITOR_GET("text_editor/appearance/whitespace/draw_spaces"));
 	text_editor->add_theme_constant_override("line_spacing", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
+
+	// Appearance: Cursor
+	hide_cursor_while_typing = EDITOR_GET("text_editor/appearance/cursor/hide_cursor_while_typing");
 
 	// Behavior: Navigation
 	text_editor->set_scroll_past_end_of_file_enabled(EDITOR_GET("text_editor/behavior/navigation/scroll_past_end_of_file"));
@@ -1499,6 +1511,10 @@ void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 
 void CodeTextEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			get_window()->connect("focus_exited", callable_mp(this, &CodeTextEditor::_text_editor_unhide_cursor));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			if (toggle_scripts_button->is_visible()) {
 				update_toggle_scripts_button();
@@ -1630,6 +1646,21 @@ void CodeTextEditor::_zoom_to(float p_zoom_factor) {
 	}
 }
 
+void CodeTextEditor::_text_editor_unhide_cursor() {
+	if (hide_cursor_while_typing) {
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+	}
+}
+
+void CodeTextEditor::_text_editor_mouse_entered() {
+	text_editor_hovered = true;
+}
+
+void CodeTextEditor::_text_editor_mouse_exited() {
+	text_editor_hovered = false;
+	_text_editor_unhide_cursor();
+}
+
 void CodeTextEditor::set_zoom_factor(float p_zoom_factor) {
 	int preset_count = sizeof(ZOOM_FACTOR_PRESETS) / sizeof(float);
 	zoom_factor = CLAMP(p_zoom_factor, ZOOM_FACTOR_PRESETS[0], ZOOM_FACTOR_PRESETS[preset_count - 1]);
@@ -1691,6 +1722,10 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_highlight_matching_braces_enabled(true);
 	text_editor->set_auto_indent_enabled(true);
 	text_editor->set_deselect_on_focus_loss_enabled(false);
+
+	text_editor->connect("focus_exited", callable_mp(this, &CodeTextEditor::_text_editor_unhide_cursor));
+	text_editor->connect("mouse_entered", callable_mp(this, &CodeTextEditor::_text_editor_mouse_entered));
+	text_editor->connect("mouse_exited", callable_mp(this, &CodeTextEditor::_text_editor_mouse_exited));
 
 	status_bar = memnew(HBoxContainer);
 	add_child(status_bar);

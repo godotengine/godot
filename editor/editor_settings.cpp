@@ -629,6 +629,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/whitespace/draw_spaces", false);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "0,50,1")
 
+	// Appearance: Cursor
+	_initial_set("text_editor/appearance/cursor/hide_cursor_while_typing", false);
+
 	// Behavior
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true);

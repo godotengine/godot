@@ -955,6 +955,9 @@
 		<member name="text_editor/appearance/caret/type" type="int" setter="" getter="">
 			The shape of the caret to use in the script editor. [b]Line[/b] displays a vertical line to the left of the current character, whereas [b]Block[/b] displays an outline over the current character.
 		</member>
+		<member name="text_editor/appearance/cursor/hide_cursor_while_typing" type="bool" setter="" getter="">
+			If [code]true[/code], typing in the script editor will hide the mouse cursor. The cursor is only hidden if within the bounds of the script editor and returns to being visible when moved.
+		</member>
 		<member name="text_editor/appearance/guidelines/line_length_guideline_hard_column" type="int" setter="" getter="">
 			The column at which to display a subtle line as a line length guideline for scripts. This should generally be greater than [member text_editor/appearance/guidelines/line_length_guideline_soft_column].
 		</member>
