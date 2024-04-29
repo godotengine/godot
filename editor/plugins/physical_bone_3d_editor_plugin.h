@@ -31,7 +31,7 @@
 #ifndef PHYSICAL_BONE_3D_EDITOR_PLUGIN_H
 #define PHYSICAL_BONE_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 

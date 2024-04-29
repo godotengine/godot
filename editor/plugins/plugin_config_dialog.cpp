@@ -33,9 +33,10 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/object/script_language.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
 #include "editor/gui/editor_validation_panel.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
@@ -58,30 +59,35 @@ void PluginConfigDialog::_on_confirmed() {
 			return;
 		}
 	}
-
-	int lang_idx = script_option_edit->get_selected();
-	ScriptLanguage *language = ScriptServer::get_language(lang_idx);
-	if (language == nullptr) {
-		return;
-	}
-	String ext = language->get_extension();
-	String script_name = script_edit->get_text().is_empty() ? _get_subfolder() : script_edit->get_text();
-	if (script_name.get_extension() != ext) {
-		script_name += "." + ext;
-	}
-	String script_path = path.path_join(script_name);
-
+	// Create the plugin.cfg file.
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	cf->load(path.path_join("plugin.cfg"));
 	cf->set_value("plugin", "name", name_edit->get_text());
 	cf->set_value("plugin", "description", desc_edit->get_text());
 	cf->set_value("plugin", "author", author_edit->get_text());
 	cf->set_value("plugin", "version", version_edit->get_text());
-	cf->set_value("plugin", "script", script_name);
-
+	// Language-specific settings.
+	int lang_index = script_option_edit->get_selected();
+	_create_script_for_plugin(path, cf, lang_index);
+	// Save and inform the editor.
 	cf->save(path.path_join("plugin.cfg"));
+	EditorNode::get_singleton()->get_project_settings()->update_plugins();
+	EditorFileSystem::get_singleton()->scan();
+	_clear_fields();
+}
 
-	if (!_edit_mode) {
+void PluginConfigDialog::_create_script_for_plugin(const String &p_plugin_path, Ref<ConfigFile> p_config_file, int p_script_lang_index) {
+	ScriptLanguage *language = ScriptServer::get_language(p_script_lang_index);
+	ERR_FAIL_COND(language == nullptr);
+	String ext = language->get_extension();
+	String script_name = script_edit->get_text().is_empty() ? _get_subfolder() : script_edit->get_text();
+	if (script_name.get_extension() != ext) {
+		script_name += "." + ext;
+	}
+	String script_path = p_plugin_path.path_join(script_name);
+	p_config_file->set_value("plugin", "script", script_name);
+	// If the requested script does not exist, create it.
+	if (!_edit_mode && !FileAccess::exists(script_path)) {
 		String class_name = script_name.get_basename();
 		String template_content = "";
 		Vector<ScriptLanguage::ScriptTemplate> templates = language->get_built_in_templates("EditorPlugin");
@@ -91,12 +97,9 @@ void PluginConfigDialog::_on_confirmed() {
 		Ref<Script> scr = language->make_template(template_content, class_name, "EditorPlugin");
 		scr->set_path(script_path, true);
 		ResourceSaver::save(scr);
-
+		p_config_file->save(p_plugin_path.path_join("plugin.cfg"));
 		emit_signal(SNAME("plugin_ready"), scr.ptr(), active_edit->is_pressed() ? _to_absolute_plugin_path(_get_subfolder()) : "");
-	} else {
-		EditorNode::get_singleton()->get_project_settings()->update_plugins();
 	}
-	_clear_fields();
 }
 
 void PluginConfigDialog::_on_canceled() {
@@ -104,18 +107,8 @@ void PluginConfigDialog::_on_canceled() {
 }
 
 void PluginConfigDialog::_on_required_text_changed() {
-	int lang_idx = script_option_edit->get_selected();
-	ScriptLanguage *language = ScriptServer::get_language(lang_idx);
-	if (language == nullptr) {
-		return;
-	}
-	String ext = language->get_extension();
-
 	if (name_edit->get_text().is_empty()) {
 		validation_panel->set_message(MSG_ID_PLUGIN, TTR("Plugin name cannot be blank."), EditorValidationPanel::MSG_ERROR);
-	}
-	if ((!script_edit->get_text().get_extension().is_empty() && script_edit->get_text().get_extension() != ext) || script_edit->get_text().ends_with(".")) {
-		validation_panel->set_message(MSG_ID_SCRIPT, vformat(TTR("Script extension must match chosen language extension (.%s)."), ext), EditorValidationPanel::MSG_ERROR);
 	}
 	if (subfolder_edit->is_visible()) {
 		if (!subfolder_edit->get_text().is_empty() && !subfolder_edit->get_text().is_valid_filename()) {
@@ -128,6 +121,16 @@ void PluginConfigDialog::_on_required_text_changed() {
 		}
 	} else {
 		validation_panel->set_message(MSG_ID_SUBFOLDER, "", EditorValidationPanel::MSG_OK);
+	}
+	// Language and script validation.
+	int lang_idx = script_option_edit->get_selected();
+	ScriptLanguage *language = ScriptServer::get_language(lang_idx);
+	if (language == nullptr) {
+		return;
+	}
+	String ext = language->get_extension();
+	if ((!script_edit->get_text().get_extension().is_empty() && script_edit->get_text().get_extension() != ext) || script_edit->get_text().ends_with(".")) {
+		validation_panel->set_message(MSG_ID_SCRIPT, vformat(TTR("Script extension must match chosen language extension (.%s)."), ext), EditorValidationPanel::MSG_ERROR);
 	}
 	if (active_edit->is_visible()) {
 		if (language->get_name() == "C#") {
@@ -296,10 +299,10 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(script_option_edit);
 
 	// Plugin Script Name
-	Label *script_lb = memnew(Label);
-	script_lb->set_text(TTR("Script Name:"));
-	script_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-	grid->add_child(script_lb);
+	Label *script_name_label = memnew(Label);
+	script_name_label->set_text(TTR("Script Name:"));
+	script_name_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	grid->add_child(script_name_label);
 
 	script_edit = memnew(LineEdit);
 	script_edit->set_tooltip_text(TTR("Optional. The path to the script (relative to the add-on folder). If left empty, will default to \"plugin.gd\"."));
@@ -308,11 +311,11 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(script_edit);
 
 	// Activate now checkbox
-	Label *active_lb = memnew(Label);
-	active_lb->set_text(TTR("Activate now?"));
-	active_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-	grid->add_child(active_lb);
-	plugin_edit_hidden_controls.push_back(active_lb);
+	Label *active_label = memnew(Label);
+	active_label->set_text(TTR("Activate now?"));
+	active_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	grid->add_child(active_label);
+	plugin_edit_hidden_controls.push_back(active_label);
 
 	active_edit = memnew(CheckBox);
 	active_edit->set_pressed(true);
