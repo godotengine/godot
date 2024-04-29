@@ -346,6 +346,7 @@ Dictionary PhysicsDirectSpaceState2D::_intersect_ray(const Ref<PhysicsRayQueryPa
 	d["collider"] = result.collider;
 	d["shape"] = result.shape;
 	d["rid"] = result.rid;
+	d["distance"] = result.distance;
 
 	return d;
 }
@@ -371,6 +372,7 @@ TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_ray_multiple(const 
 	  d["collider"] = results[i].collider;
 	  d["shape"] = results[i].shape;
 	  d["rid"] = results[i].rid;
+	  d["distance"] = results[i].distance;
 		r[i] = d;
 	}
 	return r;
