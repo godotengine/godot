@@ -126,7 +126,7 @@ void MobileVRInterface::set_position_from_sensors() {
 	// 9dof is a misleading marketing term coming from 3 accelerometer axis + 3 gyro axis + 3 magnetometer axis = 9 axis
 	// but in reality this only offers 3 dof (yaw, pitch, roll) orientation
 
-	Basis orientation;
+	Basis orientation = head_transform.basis;
 
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	uint64_t ticks_elapsed = ticks - last_ticks;
