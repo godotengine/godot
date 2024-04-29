@@ -287,6 +287,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/delete_old_export_files_unconditionally"), false));
 
 	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
@@ -1856,19 +1857,72 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	}
 
 	{
+		bool delete_old = p_preset->get("application/delete_old_export_files_unconditionally");
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (da.is_valid()) {
 			String current_dir = da->get_current_dir();
 
-			// remove leftovers from last export so they don't interfere
-			// in case some files are no longer needed
+			// Remove leftovers from last export so they don't interfere in case some files are no longer needed.
 			if (da->change_dir(binary_dir + ".xcodeproj") == OK) {
-				da->erase_contents_recursive();
+				// Check directory content before deleting.
+				int expected_files = 0;
+				int total_files = 0;
+				if (!delete_old) {
+					da->list_dir_begin();
+					for (String n = da->get_next(); !n.is_empty(); n = da->get_next()) {
+						if (!n.begins_with(".")) { // Ignore ".", ".." and hidden files.
+							if (da->current_is_dir()) {
+								if (n == "xcshareddata" || n == "project.xcworkspace") {
+									expected_files++;
+								}
+							} else {
+								if (n == "project.pbxproj") {
+									expected_files++;
+								}
+							}
+							total_files++;
+						}
+					}
+					da->list_dir_end();
+				}
+				if ((total_files == 0) || (expected_files >= Math::floor(total_files * 0.8))) {
+					da->erase_contents_recursive();
+				} else {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unexpected files found in the export destination directory \"%s.xcodeproj\", delete it manually or select another destination."), binary_dir));
+					return ERR_CANT_CREATE;
+				}
 			}
-			if (da->change_dir(binary_dir) == OK) {
-				da->erase_contents_recursive();
-			}
+			da->change_dir(current_dir);
 
+			if (da->change_dir(binary_dir) == OK) {
+				// Check directory content before deleting.
+				int expected_files = 0;
+				int total_files = 0;
+				if (!delete_old) {
+					da->list_dir_begin();
+					for (String n = da->get_next(); !n.is_empty(); n = da->get_next()) {
+						if (!n.begins_with(".")) { // Ignore ".", ".." and hidden files.
+							if (da->current_is_dir()) {
+								if (n == "dylibs" || n == "Images.xcassets" || n.ends_with(".lproj") || n == "godot-publish-dotnet" || n.ends_with(".xcframework") || n.ends_with(".framework")) {
+									expected_files++;
+								}
+							} else {
+								if (n == binary_name + "-Info.plist" || n == binary_name + ".entitlements" || n == "Launch Screen.storyboard" || n == "export_options.plist" || n.begins_with("dummy.") || n.ends_with(".gdip")) {
+									expected_files++;
+								}
+							}
+							total_files++;
+						}
+					}
+					da->list_dir_end();
+				}
+				if ((total_files == 0) || (expected_files >= Math::floor(total_files * 0.8))) {
+					da->erase_contents_recursive();
+				} else {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unexpected files found in the export destination directory \"%s\", delete it manually or select another destination."), binary_dir));
+					return ERR_CANT_CREATE;
+				}
+			}
 			da->change_dir(current_dir);
 
 			if (!da->dir_exists(binary_dir)) {
