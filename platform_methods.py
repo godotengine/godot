@@ -39,8 +39,7 @@ def detect_arch():
         # Catches x86, i386, i486, i586, i686, etc.
         return "x86_32"
     else:
-        print("Unsupported CPU architecture: " + host_machine)
-        print("Falling back to x86_64.")
+        methods.print_warning(f'Unsupported CPU architecture: "{host_machine}". Falling back to x86_64.')
         return "x86_64"
 
 

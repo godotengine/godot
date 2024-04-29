@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import subprocess
+from methods import print_warning
 
 Import("env")
 
@@ -52,7 +53,7 @@ elif env["arch"] == "x86_32":
 elif env["arch"] == "x86_64":
     lib_arch_dir = "x86_64"
 else:
-    print("WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin")
+    print_warning("Architecture not suitable for embedding into APK; keeping .so at \\bin")
 
 if lib_arch_dir != "":
     if env.dev_build:
